@@ -54,7 +54,12 @@ import {
 import { IUsageInfoRedis } from '../user/interfaces'
 import { ProjectSubscriber } from './entity'
 import { AddSubscriberType } from './types'
-import { GetSubscribersQueriesDto, UpdateSubscriberBodyDto } from './dto'
+import {
+  CreateProjectDTO,
+  GetSubscribersQueriesDto,
+  UpdateProjectDto,
+  UpdateSubscriberBodyDto,
+} from './dto'
 import { ReportFrequency } from './enums'
 import { nFormatter } from '../common/utils'
 
@@ -578,25 +583,12 @@ export class ProjectService {
     ])
   }
 
-  validateProject(projectDTO: ProjectDTO, creatingProject = false) {
-    if (_size(projectDTO.name) > 50)
-      throw new UnprocessableEntityException('The project name is too long')
-
-    if (creatingProject) {
-      return
-    }
-
-    if (!isValidPID(projectDTO.id))
-      throw new UnprocessableEntityException(
-        'The provided Project ID (pid) is incorrect',
-      )
+  validateOrigins(
+    projectDTO: ProjectDTO | UpdateProjectDto | CreateProjectDTO,
+  ) {
     if (_size(_join(projectDTO.origins, ',')) > 300)
       throw new UnprocessableEntityException(
         'The list of allowed origins has to be smaller than 300 symbols',
-      )
-    if (_size(_join(projectDTO.ipBlacklist, ',')) > 300)
-      throw new UnprocessableEntityException(
-        'The list of allowed blacklisted IP addresses must be less than 300 characters.',
       )
 
     _map(projectDTO.origins, host => {
@@ -604,12 +596,41 @@ export class ProjectService {
         throw new ConflictException(`Host ${host} is not correct`)
       }
     })
+  }
 
+  validateIPBlacklist(
+    projectDTO: ProjectDTO | UpdateProjectDto | CreateProjectDTO,
+  ) {
+    if (_size(_join(projectDTO.ipBlacklist, ',')) > 300)
+      throw new UnprocessableEntityException(
+        'The list of allowed blacklisted IP addresses must be less than 300 characters.',
+      )
     _map(projectDTO.ipBlacklist, ip => {
       if (!net.isIP(_trim(ip)) && !IP_REGEX.test(_trim(ip))) {
         throw new ConflictException(`IP address ${ip} is not correct`)
       }
     })
+  }
+
+  validateProject(
+    projectDTO: ProjectDTO | UpdateProjectDto | CreateProjectDTO,
+    creatingProject = false,
+  ) {
+    if (_size(projectDTO.name) > 50)
+      throw new UnprocessableEntityException('The project name is too long')
+
+    if (creatingProject) {
+      return
+    }
+
+    // @ts-ignore
+    if (projectDTO?.id && !isValidPID(projectDTO.id))
+      throw new UnprocessableEntityException(
+        'The provided Project ID (pid) is incorrect',
+      )
+
+    this.validateOrigins(projectDTO)
+    this.validateIPBlacklist(projectDTO)
   }
 
   // Returns amount of existing events starting from month
