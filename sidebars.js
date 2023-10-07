@@ -23,6 +23,7 @@ module.exports = {
     'API': [
       'api/stats',
       'api/events',
+      'api/admin',
     ],
     'CAPTCHA': [
       'captcha/introduction',
