@@ -669,9 +669,6 @@ const UserSettings = ({
                       {/* API access setup */}
                       <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
                         {t('profileSettings.apiKey')}
-                        <div className='ml-5'>
-                          <Beta />
-                        </div>
                       </h3>
                       {user.apiKey ? (
                         <>
