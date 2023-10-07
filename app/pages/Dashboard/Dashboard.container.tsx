@@ -55,11 +55,11 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
       message,
     }))
   },
-  loadProjects: (take: number, skip: number) => {
-    dispatch(sagaActions.loadProjects(take, skip))
+  loadProjects: (take: number, skip: number, search: string) => {
+    dispatch(sagaActions.loadProjects(take, skip, search))
   },
-  loadSharedProjects: (take: number, skip: number) => {
-    dispatch(sagaActions.loadSharedProjects(take, skip))
+  loadSharedProjects: (take: number, skip: number, search: string) => {
+    dispatch(sagaActions.loadSharedProjects(take, skip, search))
   },
   setDashboardPaginationPage: (page: number) => {
     dispatch(UIActions.setDashboardPaginationPage(page))
@@ -70,8 +70,8 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
   setDashboardTabs: (tab: string) => {
     dispatch(UIActions.setDashboardTabs(tab))
   },
-  loadProjectsCaptcha: (take: number, skip: number) => {
-    dispatch(sagaActions.loadProjectsCaptcha(take, skip))
+  loadProjectsCaptcha: (take: number, skip: number, search: string) => {
+    dispatch(sagaActions.loadProjectsCaptcha(take, skip, search))
   },
   setDashboardPaginationPageCaptcha: (page: number) => {
     dispatch(UIActions.setDashboardPaginationPageCaptcha(page))

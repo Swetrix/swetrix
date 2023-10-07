@@ -291,9 +291,9 @@ export const verifyShare = ({ path, id }: { path: string, id: string }) =>
         : error.response.data.message
     })
 
-export const getProjects = (take: number = 0, skip: number = 0, isCaptcha: boolean = false) =>
+export const getProjects = (take: number = 0, skip: number = 0, isCaptcha: boolean = false, search?: string) =>
   api
-    .get(`/project?take=${take}&skip=${skip}&isCaptcha=${isCaptcha}`)
+    .get(`/project?take=${take}&skip=${skip}&isCaptcha=${isCaptcha}&search=${search}`)
     .then((response): {
       results: IProject[]
       total: number
@@ -307,9 +307,9 @@ export const getProjects = (take: number = 0, skip: number = 0, isCaptcha: boole
         : error.response.data.message
     })
 
-export const getSharedProjects = (take: number = 0, skip: number = 0) =>
+export const getSharedProjects = (take: number = 0, skip: number = 0, search?: string) =>
   api
-    .get(`/project/shared?take=${take}&skip=${skip}`)
+    .get(`/project/shared?take=${take}&skip=${skip}&search=${search}`)
     .then((response): {
       results: ISharedProject[]
       total: number

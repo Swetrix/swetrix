@@ -13,7 +13,7 @@ const {
 
 const debug = Debug('swetrix:rx:s:load-projects')
 
-export default function* loadProjects({ payload: { take = ENTRIES_PER_PAGE_DASHBOARD, skip = 0, isCaptcha = false } }) {
+export default function* loadProjects({ payload: { take = ENTRIES_PER_PAGE_DASHBOARD, skip = 0, isCaptcha = false, search = '' } }) {
   try {
     if (isCaptcha) {
       yield put(UIActions.setCaptchaLoading(true))
@@ -27,7 +27,7 @@ export default function* loadProjects({ payload: { take = ENTRIES_PER_PAGE_DASHB
     let {
       // eslint-disable-next-line prefer-const, camelcase
       results, totalMonthlyEvents, total,
-    } = yield call(getProjects, take, skip, isCaptcha)
+    } = yield call(getProjects, take, skip, isCaptcha, search)
 
     const pids = _map(results, result => result.id)
 

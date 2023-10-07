@@ -13,7 +13,7 @@ const {
 
 const debug = Debug('swetrix:rx:s:load-projects')
 
-export default function* loadSharedProjects({ payload: { take = ENTRIES_PER_PAGE_DASHBOARD, skip = 0 } }) {
+export default function* loadSharedProjects({ payload: { take = ENTRIES_PER_PAGE_DASHBOARD, skip = 0, search = '' } }) {
   if (isSelfhosted) {
     return
   }
@@ -27,7 +27,7 @@ export default function* loadSharedProjects({ payload: { take = ENTRIES_PER_PAGE
     let {
       // eslint-disable-next-line prefer-const
       results, total,
-    } = yield call(getSharedProjects, take, skip)
+    } = yield call(getSharedProjects, take, skip, search)
 
     if (total === 0) {
       return

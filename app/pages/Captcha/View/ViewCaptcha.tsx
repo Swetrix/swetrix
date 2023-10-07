@@ -278,7 +278,7 @@ const ViewProject = ({
         columns: getColumns({ ...chartData }, activeChartMetrics),
       })
     }
-  }, [chartData])
+  }, [chartData, mainChart, activeChartMetrics])
 
   // this funtion is used for requesting the data from the API when the filter is changed
   const filterHandler = (column: any, filter: any, isExclusive: boolean = false) => {

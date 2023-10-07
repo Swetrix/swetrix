@@ -5,9 +5,9 @@ import { removeItem } from 'utils/localstorage'
 import { LS_VIEW_PREFS_SETTING, LS_CAPTCHA_VIEW_PREFS_SETTING } from 'redux/constants'
 import { IUser } from '../../models/IUser'
 
-const loadProjects = (take?: number, skip?: number) => ({
+const loadProjects = (take?: number, skip?: number, search?: string) => ({
   type: types.LOAD_PROJECTS,
-  payload: { take, skip },
+  payload: { take, skip, search },
 })
 
 const loadMetainfo = () => ({
@@ -18,14 +18,14 @@ const loadUsageinfo = () => ({
   type: types.LOAD_USAGEINFO,
 })
 
-const loadSharedProjects = (take?: number, skip?: number) => ({
+const loadSharedProjects = (take?: number, skip?: number, search?: string) => ({
   type: types.LOAD_SHARED_PROJECTS,
-  payload: { take, skip },
+  payload: { take, skip, search },
 })
 
-const loadProjectsCaptcha = (take?: number, skip?: number) => ({
+const loadProjectsCaptcha = (take?: number, skip?: number, search?: string) => ({
   type: types.LOAD_PROJECTS,
-  payload: { take, skip, isCaptcha: true },
+  payload: { take, skip, isCaptcha: true, search },
 })
 
 const loadExtensions = () => ({
