@@ -19,6 +19,7 @@ import {
   Patch,
   ConflictException,
   Res,
+  UnauthorizedException,
 } from '@nestjs/common'
 import { Response } from 'express'
 import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
@@ -28,6 +29,7 @@ import * as _map from 'lodash/map'
 import * as _trim from 'lodash/trim'
 import * as _size from 'lodash/size'
 import * as _includes from 'lodash/includes'
+import * as _isBoolean from 'lodash/isBoolean'
 import * as _omit from 'lodash/omit'
 import * as _split from 'lodash/split'
 import * as _head from 'lodash/head'
@@ -97,7 +99,7 @@ const isValidUpdateShareDTO = (share: ShareUpdateDTO): boolean => {
 }
 
 @ApiTags('Project')
-@Controller('project')
+@Controller(['project', 'v1/project'])
 export class ProjectController {
   constructor(
     private readonly projectService: ProjectService,
@@ -331,13 +333,16 @@ export class ProjectController {
 
   @Post('/')
   @ApiResponse({ status: 201, type: Project })
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth([], true)
   async create(
     @Body() projectDTO: CreateProjectDTO,
     @CurrentUserId() userId: string,
   ): Promise<Project> {
     this.logger.log({ projectDTO, userId }, 'POST /project')
+
+    if (!userId) {
+      throw new UnauthorizedException('Please auth first')
+    }
 
     const user = await this.userService.findOneWithRelations(userId, [
       'projects',
@@ -406,12 +411,35 @@ export class ProjectController {
         )
       }
 
+      if (projectDTO.isPasswordProtected && projectDTO.password) {
+        project.isPasswordProtected = true
+        project.passwordHash = await hash(projectDTO.password, 10)
+      }
+
+      if (projectDTO.public) {
+        project.public = Boolean(projectDTO.public)
+      }
+
+      if (projectDTO.active) {
+        project.active = Boolean(projectDTO.active)
+      }
+
+      if (projectDTO.origins) {
+        this.projectService.validateOrigins(projectDTO)
+        project.origins = projectDTO.origins
+      }
+
+      if (projectDTO.ipBlacklist) {
+        this.projectService.validateIPBlacklist(projectDTO)
+        project.ipBlacklist = projectDTO.ipBlacklist
+      }
+
       const newProject = await this.projectService.create(project)
       user.projects.push(project)
 
       await this.userService.create(user)
 
-      return newProject
+      return _omit(newProject, ['passwordHash'])
     } catch (reason) {
       console.error('[ERROR] Failed to create a new project:')
       console.error(reason)
@@ -1187,14 +1215,18 @@ export class ProjectController {
 
   @Delete('/:id')
   @HttpCode(204)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth([], true)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async delete(
     @Param('id') id: string,
     @CurrentUserId() uid: string,
   ): Promise<any> {
     this.logger.log({ uid, id }, 'DELETE /project/:id')
+
+    if (!uid) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
     if (!isValidPID(id)) {
       throw new BadRequestException(
         'The provided Project ID (pid) is incorrect',
@@ -1366,8 +1398,7 @@ export class ProjectController {
 
   @Put('/:id')
   @HttpCode(200)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth([], true)
   @ApiResponse({ status: 200, type: Project })
   async update(
     @Param('id') id: string,
@@ -1378,6 +1409,11 @@ export class ProjectController {
       { ..._omit(projectDTO, ['password']), uid, id },
       'PUT /project/:id',
     )
+
+    if (!uid) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
     this.projectService.validateProject(projectDTO)
     const project = await this.projectService.findOne(id, {
       relations: ['admin', 'share', 'share.user'],
@@ -1390,20 +1426,36 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, uid, user.roles)
 
-    project.active = projectDTO.active
-    project.origins = _map(projectDTO.origins, _trim)
-    project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim)
-    project.name = _trim(projectDTO.name)
-    project.public = projectDTO.public
+    if (projectDTO.public) {
+      project.public = Boolean(projectDTO.public)
+    }
 
-    if (projectDTO.isPasswordProtected) {
-      if (projectDTO.password) {
-        project.isPasswordProtected = true
-        project.passwordHash = await hash(projectDTO.password, 10)
+    if (projectDTO.active) {
+      project.active = Boolean(projectDTO.active)
+    }
+
+    if (projectDTO.origins) {
+      project.origins = _map(projectDTO.origins, _trim)
+    }
+
+    if (projectDTO.ipBlacklist) {
+      project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim)
+    }
+
+    if (projectDTO.name) {
+      project.name = _trim(projectDTO.name)
+    }
+
+    if (_isBoolean(projectDTO.isPasswordProtected)) {
+      if (projectDTO.isPasswordProtected) {
+        if (projectDTO.password) {
+          project.isPasswordProtected = true
+          project.passwordHash = await hash(projectDTO.password, 10)
+        }
+      } else {
+        project.isPasswordProtected = false
+        project.passwordHash = null
       }
-    } else {
-      project.isPasswordProtected = false
-      project.passwordHash = null
     }
 
     await this.projectService.update(id, _omit(project, ['share', 'admin']))
@@ -1411,7 +1463,7 @@ export class ProjectController {
     // await updateProjectRedis(id, project)
     await deleteProjectRedis(id)
 
-    return project
+    return _omit(project, ['admin', 'passwordHash', 'share'])
   }
 
   // The routes related to sharing projects feature

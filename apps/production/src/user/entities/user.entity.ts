@@ -35,21 +35,18 @@ export const ACCOUNT_PLANS = {
     id: PlanCode.none,
     monthlyUsageLimit: 0,
     maxAlerts: 0,
-    maxApiKeyRequestsPerHour: 0,
     legacy: false,
   },
   [PlanCode.free]: {
     id: PlanCode.free,
     monthlyUsageLimit: 5000,
     maxAlerts: 1,
-    maxApiKeyRequestsPerHour: 600,
     legacy: true,
   },
   [PlanCode.trial]: {
     id: PlanCode.trial,
     monthlyUsageLimit: 100000,
     maxAlerts: 50,
-    maxApiKeyRequestsPerHour: 600,
     legacy: false,
   },
   [PlanCode.hobby]: {
@@ -58,7 +55,6 @@ export const ACCOUNT_PLANS = {
     pid: '813694', // Plan ID
     ypid: '813695', // Plan ID - Yearly billing
     maxAlerts: 50,
-    maxApiKeyRequestsPerHour: 600,
     legacy: false,
   },
   [PlanCode.freelancer]: {
@@ -67,7 +63,6 @@ export const ACCOUNT_PLANS = {
     pid: '752316', // Plan ID
     ypid: '776469', // Plan ID - Yearly billing
     maxAlerts: 50,
-    maxApiKeyRequestsPerHour: 600,
     legacy: false,
   },
   [PlanCode['200k']]: {
@@ -76,7 +71,6 @@ export const ACCOUNT_PLANS = {
     pid: '854654', // Plan ID
     ypid: '854655', // Plan ID - Yearly billing
     maxAlerts: 50,
-    maxApiKeyRequestsPerHour: 600,
     legacy: false,
   },
   [PlanCode['500k']]: {
@@ -85,7 +79,6 @@ export const ACCOUNT_PLANS = {
     pid: '854656', // Plan ID
     ypid: '854657', // Plan ID - Yearly billing
     maxAlerts: 50,
-    maxApiKeyRequestsPerHour: 600,
     legacy: false,
   },
   [PlanCode.startup]: {
@@ -94,7 +87,6 @@ export const ACCOUNT_PLANS = {
     pid: '752317',
     ypid: '776470',
     maxAlerts: 50,
-    maxApiKeyRequestsPerHour: 600,
     legacy: false,
   },
   [PlanCode['2m']]: {
@@ -103,7 +95,6 @@ export const ACCOUNT_PLANS = {
     pid: '854663', // Plan ID
     ypid: '854664', // Plan ID - Yearly billing
     maxAlerts: 50,
-    maxApiKeyRequestsPerHour: 600,
     legacy: false,
   },
   [PlanCode.enterprise]: {
@@ -112,7 +103,6 @@ export const ACCOUNT_PLANS = {
     pid: '752318',
     ypid: '776471',
     maxAlerts: 50,
-    maxApiKeyRequestsPerHour: 600,
     legacy: false,
   },
   [PlanCode['10m']]: {
@@ -121,7 +111,6 @@ export const ACCOUNT_PLANS = {
     pid: '854665', // Plan ID
     ypid: '854666', // Plan ID - Yearly billing
     maxAlerts: 50,
-    maxApiKeyRequestsPerHour: 600,
     legacy: false,
   },
 }
@@ -239,6 +228,9 @@ export class User {
 
   @Column('int', { default: 50 })
   maxProjects: number
+
+  @Column('int', { default: 600 })
+  maxApiKeyRequestsPerHour: number
 
   @Column({ default: false })
   isTwoFactorAuthenticationEnabled: boolean
