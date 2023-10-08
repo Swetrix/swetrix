@@ -1144,3 +1144,39 @@ export const changeSubscriptionPlan = (planId: number) =>
       debug('%s', error)
       throw error
     })
+
+export const getBlogPosts = () =>
+  api
+    .get('v1/blog')
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw error
+    })
+
+export const getBlogPost = (slug: string) =>
+  api
+    .get(`v1/blog/${slug}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw error
+    })
+
+export const getSitemap = () => 
+  api
+    .get('blog/sitemap')
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw error
+    })
+
+export const getBlogPostWithCategory = (category: string, slug: string) =>
+  api
+    .get(`v1/blog/${category}/${slug}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw error
+    })
