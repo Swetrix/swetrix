@@ -12,6 +12,7 @@ import { MailerModule } from './mailer/mailer.module'
 import { ActionTokensModule } from './action-tokens/action-tokens.module'
 import { TwoFactorAuthModule } from './twoFactorAuth/twoFactorAuth.module'
 import { TaskManagerModule } from './task-manager/task-manager.module'
+import { BlogModule } from './blog/blog.module'
 import { WebhookModule } from './webhook/webhook.module'
 import { PingModule } from './ping/ping.module'
 import { MarketplaceModule } from './marketplace/marketplace.module'
@@ -43,6 +44,7 @@ const modules = [
   ScheduleModule.forRoot(),
   NestjsFormDataModule.config({ isGlobal: true }),
   TaskManagerModule,
+  BlogModule,
   UserModule,
   MailerModule,
   ActionTokensModule,

@@ -46,7 +46,7 @@ import {
   deleteProjectRedis,
   generateProjectId,
 } from './project.service'
-import { UserType, ACCOUNT_PLANS, PlanCode } from '../user/entities/user.entity'
+import { UserType, PlanCode } from '../user/entities/user.entity'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
 import { MailerService } from '../mailer/mailer.service'

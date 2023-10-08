@@ -1,5 +1,6 @@
 import { ClickHouse } from 'clickhouse'
 import Redis from 'ioredis'
+import * as path from 'path'
 import { hash } from 'blake3'
 import * as _toNumber from 'lodash/toNumber'
 
@@ -110,6 +111,10 @@ const CAPTCHA_COOKIE_KEY = 'swetrix-captcha-token'
 const CAPTCHA_TOKEN_LIFETIME = 300 // seconds (5 minutes).
 const CAPTCHA_SECRET_KEY_LENGTH = 50
 
+const BLOG_POSTS_PATH = isDevelopment
+  ? path.join(__dirname, '../../../..', 'blog-posts', 'posts')
+  : path.join(__dirname, '../..', 'blog-posts', 'posts')
+
 const TRAFFIC_COLUMNS = [
   'cc',
   'rg',
@@ -210,4 +215,5 @@ export {
   isProxiedByCloudflare,
   PAYPAL_CLIENT_ID,
   PAYPAL_CLIENT_SECRET,
+  BLOG_POSTS_PATH,
 }
