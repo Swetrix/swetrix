@@ -32,6 +32,7 @@ const routes = Object.freeze({
   project_protected_password: '/projects/:id/password',
   open: '/open',
   ref: '/ref/:id',
+  blog: '/blog',
 })
 
 export default routes

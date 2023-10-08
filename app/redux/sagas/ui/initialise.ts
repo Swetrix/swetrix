@@ -6,7 +6,7 @@ import { getRefreshToken } from 'utils/refreshToken'
 import UIActions from 'redux/reducers/ui'
 import { isSelfhosted } from 'redux/constants'
 import sagaActions from '../actions'
-const { getLastPost } = require('api/blog')
+const { getLastPost } = require('api')
 
 const debug = Debug('swetrix:rx:s:initialise')
 
@@ -28,7 +28,7 @@ export default function* initialise() {
 
       const lastBlogPost: {
         title: string,
-        url_path: string,
+        handle: string,
       } = yield call(getLastPost)
       yield put(UIActions.setLastBlogPost(lastBlogPost))
     }

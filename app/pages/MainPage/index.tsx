@@ -19,7 +19,7 @@ import routesPath from 'routesPath'
 import { getAccessToken } from 'utils/accessToken'
 import { nFormatterSeparated } from 'utils/generic'
 import {
-  GITHUB_URL, MARKETPLACE_URL, LIVE_DEMO_URL, isBrowser, BLOG_URL,
+  GITHUB_URL, MARKETPLACE_URL, LIVE_DEMO_URL, isBrowser,
 } from 'redux/constants'
 import { StateType } from 'redux/store/index'
 import BackgroundSvg from 'ui/icons/BackgroundSvg'
@@ -246,17 +246,15 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                   ) : (
                     <ClientOnly fallback={<div className='h-6 ml-1 bg-slate-300 dark:bg-slate-700 w-full max-w-xs rounded-md animate-pulse' />}>
                       {() => (
-                        <a
+                        <Link
                           className='inline-flex ml-1 items-center space-x-1 text-sm font-semibold leading-6 text-slate-700 dark:text-slate-300 hover:underline'
-                          href={`${BLOG_URL}post/${lastBlogPost.url_path}`}
-                          target='_blank'
-                          rel='noopener noreferrer'
+                          to={`blog/${lastBlogPost.handle}`}
                         >
                           <span>
                             {lastBlogPost.title}
                           </span>
                           <ChevronRightIcon className='h-4 w-4 text-slate-500' aria-hidden='true' />
-                        </a>
+                        </Link>
                       )}
                     </ClientOnly>
                   )}

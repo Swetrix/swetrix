@@ -8,7 +8,7 @@ import PropTypes from 'prop-types'
 
 import {
   isSelfhosted, DONATE_URL, FIREFOX_ADDON_URL, CHROME_EXTENSION_URL, GITHUB_URL,
-  LINKEDIN_URL, STATUSPAGE_URL, TWITTER_URL, BLOG_URL, UTM_GENERATOR_URL, SWETRIX_VS_GOOGLE,
+  LINKEDIN_URL, STATUSPAGE_URL, TWITTER_URL, UTM_GENERATOR_URL, SWETRIX_VS_GOOGLE,
   SWETRIX_VS_CLOUDFLARE, DOCS_URL, SWETRIX_VS_SIMPLE_ANALYTICS, DISCORD_URL, CAPTCHA_URL,
 } from 'redux/constants'
 import routesPath from 'routesPath'
@@ -21,7 +21,7 @@ const navigation = {
     { key: 'press', href: routesPath.press, internal: true },
     { key: 'status', href: STATUSPAGE_URL },
     { key: 'donate', href: DONATE_URL },
-    { key: 'blog', href: BLOG_URL },
+    { key: 'blog', href: routesPath.blog, internal: true },
   ],
   legal: [
     (authenticated: boolean | undefined): {

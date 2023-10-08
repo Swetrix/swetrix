@@ -1180,3 +1180,18 @@ export const getBlogPostWithCategory = (category: string, slug: string) =>
       debug('%s', error)
       throw error
     })
+
+export const getLastPost = () =>
+  api
+    .get('v1/blog/last-post')
+    .then((response): {
+      title: string
+      handle: string
+    } => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+  

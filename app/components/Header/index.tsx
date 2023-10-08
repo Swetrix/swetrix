@@ -27,8 +27,7 @@ import { authActions } from 'redux/reducers/auth'
 import sagaActions from 'redux/sagas/actions'
 import UIActions from 'redux/reducers/ui'
 import {
-  whitelist, languages, languageFlag, isSelfhosted, BLOG_URL,
-  DOCS_URL, SUPPORTED_THEMES, isBrowser,
+  whitelist, languages, languageFlag, isSelfhosted, DOCS_URL, SUPPORTED_THEMES, isBrowser,
 } from 'redux/constants'
 import Dropdown from 'ui/Dropdown'
 import { IUser } from 'redux/models/IUser'
@@ -336,14 +335,12 @@ const AuthedHeader = ({
                 {t('billing.inactive')}
               </Link>
             )}
-            <a
-              href={BLOG_URL}
+            <Link
+              to={routesPath.blog}
               className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
-              target='_blank'
-              rel='noreferrer noopener'
             >
               {t('footer.blog')}
-            </a>
+            </Link>
             <a
               href={DOCS_URL}
               className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
@@ -394,14 +391,12 @@ const AuthedHeader = ({
         </div>
       </div>
       <div className='py-4 flex gap-4 flex-wrap justify-center space-x-2 lg:hidden'>
-        <a
-          href={BLOG_URL}
+        <Link
+          to={routesPath.blog}
           className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
-          target='_blank'
-          rel='noreferrer noopener'
         >
           {t('footer.blog')}
-        </a>
+        </Link>
         <a
           href={DOCS_URL}
           className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
@@ -465,22 +460,21 @@ const NotAuthedHeader = ({
 
           {!refPage && (
             <div className='hidden ml-10 space-x-1 lg:flex gap-4 items-center'>
-              <a
-                href={BLOG_URL}
+
+              <Link
+                to={routesPath.blog}
                 className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
-                target='_blank'
-                rel='noreferrer noopener'
               >
                 {t('footer.blog')}
-              </a>
+              </Link>
               {!isSelfhosted && (
-                  <Link
-                    to={`${routesPath.main}#pricing`}
-                    className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
-                    key='Pricing'
-                  >
-                    {t('common.pricing')}
-                  </Link>
+                <Link
+                  to={`${routesPath.main}#pricing`}
+                  className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                  key='Pricing'
+                >
+                  {t('common.pricing')}
+                </Link>
               )}
               <a href={DOCS_URL} className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white' target='_blank' rel='noreferrer noopener'>
                 {/* <DocumentTextIcon className='w-5 h-5 mr-1' /> */}
@@ -549,14 +543,12 @@ const NotAuthedHeader = ({
       </div>
       {!refPage && (
         <div className='py-4 flex gap-4 flex-wrap justify-center space-x-2 lg:hidden'>
-          <a
-            href={BLOG_URL}
+          <Link
+            to={routesPath.blog}
             className='flex items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
-            target='_blank'
-            rel='noreferrer noopener'
           >
             {t('footer.blog')}
-          </a>
+          </Link>
           <Link
             to={`${routesPath.main}#pricing`}
             className='flex items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'

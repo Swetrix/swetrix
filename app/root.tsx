@@ -191,7 +191,6 @@ export async function loader({ request }: LoaderArgs) {
     API_URL: process.env.API_URL,
     API_STAGING_URL: process.env.API_STAGING_URL,
     CDN_URL: process.env.CDN_URL,
-    BLOG_URL: process.env.BLOG_URL,
     SELFHOSTED: process.env.SELFHOSTED,
     STAGING: process.env.STAGING,
   }
