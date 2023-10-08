@@ -6,6 +6,7 @@ import * as _filter from 'lodash/filter'
 import * as _map from 'lodash/map'
 import * as _replace from 'lodash/replace'
 import * as _isEmpty from 'lodash/isEmpty'
+import * as _last from 'lodash/last'
 import * as _size from 'lodash/size'
 import * as path from 'path'
 import * as fs from 'fs/promises'
@@ -16,8 +17,10 @@ import { BLOG_POSTS_PATH, redis } from '../common/constants'
 const parseFrontMatter = require('front-matter')
 
 const REDIS_SITEMAP_KEY = 'blog-sitemap'
+const REDIS_LAST_POST_KEY = 'blog-last-post'
 // in seconds; 3600 seconds = 1 hour
 const REDIS_SITEMAP_LIFETIME = 3600
+const REDIS_LAST_POST_LIFETIME = 900
 
 // Removes first 10 characters from the string (i.e. 2023-10-07-)
 const getSlugFromFilename = (filename: string) => filename.substring(11)
@@ -125,6 +128,41 @@ export class BlogService {
     }
 
     return post
+  }
+
+  async getLastPost() {
+    const rawRedisLastPost = await redis.get(REDIS_LAST_POST_KEY)
+
+    if (rawRedisLastPost) {
+      try {
+        return JSON.parse(rawRedisLastPost)
+      } catch (reason) {
+        this.logger.error(
+          `[getLastPost][JSON.parse] An error occured: ${reason}`,
+        )
+      }
+    }
+
+    const posts = (await getFileNames()).sort()
+    const lastPost = _last(posts)
+    const file = await fs.readFile(path.join(BLOG_POSTS_PATH, lastPost))
+    const {
+      attributes: { title },
+    }: IParseFontMatter = parseFrontMatter(file.toString())
+
+    const result = {
+      handle: getSlugFromFilename(_replace(lastPost, /\.md$/, '')),
+      title,
+    }
+
+    await redis.set(
+      REDIS_LAST_POST_KEY,
+      JSON.stringify(result),
+      'EX',
+      REDIS_LAST_POST_LIFETIME,
+    )
+
+    return result
   }
 
   async getSitemapFileNames(
