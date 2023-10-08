@@ -376,10 +376,12 @@ const Dashboard = ({
       setTabProjects(tabForOwnedProject)
     }
 
-    setSearch('')
-
     setDashboardTabs(tabProjects)
   }, [tabProjects, setDashboardTabs, sharedTotal])
+
+  useEffect(() => {
+    setSearch('')
+  }, [tabProjects])
 
   useEffect(() => {
     if (tabProjects === tabForOwnedProject) {
