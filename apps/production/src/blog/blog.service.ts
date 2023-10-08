@@ -136,7 +136,10 @@ export class BlogService {
       return allFiles
     }
 
-    const files = _filter(allFiles, file => _endsWith(file, '.md'))
+    const files = _map(
+      _filter(allFiles, file => _endsWith(file, '.md')),
+      file => _replace(file, /\.md$/, ''),
+    )
 
     let filesInDirectories: any[] = []
 
