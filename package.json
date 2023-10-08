@@ -9,6 +9,7 @@
     "deploy": "npm run prebuild && nest build production && mv apps/production/dist dist",
     "deploy:selfhosted": "npm run prebuild && nest build selfhosted && mv apps/selfhosted/dist dist",
     "refresh-submodules": "git submodule foreach git pull",
+    "init-submodules": "git submodule update --init --recursive",
     "prebuild": "rimraf dist",
     "build": "npm run refresh-submodules && nest build production && mv apps/production/dist dist",
     "build:selfhosted": "npm run prebuild && nest build selfhosted && mv apps/selfhosted/dist dist && npm run postbuild",
