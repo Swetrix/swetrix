@@ -35,10 +35,13 @@ const Filter = ({
     displayFilter = filter || t('project.redactedPage')
   }
 
-  displayFilter = _truncate(displayFilter)
+  const truncatedFilter = _truncate(displayFilter)
 
   return (
-    <span className='inline-flex rounded-md items-center py-0.5 pl-2.5 pr-1 mr-2 mt-2 text-sm font-medium bg-gray-200 text-gray-800 dark:text-gray-50 dark:bg-slate-800'>
+    <span
+      title={truncatedFilter === displayFilter ? undefined : displayFilter}
+      className='inline-flex rounded-md items-center py-0.5 pl-2.5 pr-1 mr-2 mt-2 text-sm font-medium bg-gray-200 text-gray-800 dark:text-gray-50 dark:bg-slate-800'
+    >
       {displayColumn}
       &nbsp;
       <span className='text-blue-400 border-blue-400 border-b-2 border-dotted cursor-pointer' onClick={() => onChangeExclusive(column, filter, !isExclusive)}>
@@ -46,7 +49,7 @@ const Filter = ({
       </span>
       &nbsp;
       &quot;
-      {displayFilter}
+      {truncatedFilter}
       &quot;
       <button
         onClick={() => onRemoveFilter(column, filter)}
