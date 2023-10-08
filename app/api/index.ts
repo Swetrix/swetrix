@@ -1165,7 +1165,7 @@ export const getBlogPost = (slug: string) =>
 
 export const getSitemap = () => 
   api
-    .get('blog/sitemap')
+    .get('v1/blog/sitemap')
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)

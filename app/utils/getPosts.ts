@@ -1,8 +1,7 @@
 import { marked } from 'marked'
-import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 import { LoaderFunction } from '@remix-run/node'
-import { getBlogPosts, getBlogPost, getBlogPostWithCategory, getSitemap } from 'api'
+import { getBlogPosts, getBlogPost, getBlogPostWithCategory } from 'api'
 
 const renderer = new marked.Renderer()
 
@@ -28,20 +27,6 @@ export type PostMarkdownAttributes = {
 // Removes first 10 characters from the string (i.e. 2023-10-07-)
 export const getSlugFromFilename = (filename: string) => filename.substring(11)
 export const getDateFromFilename = (filename: string) => filename.substring(0, 10)
-
-export const getSitemapFileNames = async (category?: string, infiniteRecursive?: boolean): Promise<any[]> => {
-  const sitemap = await getSitemap()
-
-  if (infiniteRecursive) {
-    return sitemap
-  }
-
-  if (category) {
-    return _filter(sitemap, (item) => item === category)
-  }
-
-  return sitemap
-}
 
 export async function getPost(slug: string, category?: string) {
   let post: any = null
