@@ -30,6 +30,7 @@ module.exports = {
     'delaunator',
     'internmap',
     'robust-predicates',
+    'marked',
   ],
   serverMinify: process.env.NODE_ENV === 'production',
   routes(defineRoutes) {

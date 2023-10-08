@@ -2,6 +2,7 @@ import type { EntryContext } from '@remix-run/node'
 import { PassThrough } from 'node:stream'
 import { resolve as feResolve } from 'node:path'
 import { createInstance } from 'i18next'
+import Redis from 'ioredis'
 import { I18nextProvider, initReactI18next } from 'react-i18next'
 import FSBackend from 'i18next-fs-backend'
 import { Response } from '@remix-run/node'
@@ -10,16 +11,31 @@ import isbot from 'isbot'
 import { renderToPipeableStream } from 'react-dom/server'
 import { createSitemapGenerator } from 'remix-sitemap'
 
-import { MAIN_URL } from './redux/constants'
+import { MAIN_URL, isDevelopment } from './redux/constants'
 import i18next from './i18next.server'
 import i18n, { detectLanguage } from './i18n'
 
 const ABORT_DELAY = 5_000
 
+const { REDIS_URL } = process.env
+
+const redis = (REDIS_URL && !isDevelopment) ? new Redis(REDIS_URL) : null
+
+// in seconds; 3600 seconds = 1 hour
+const SITEMAP_CACHE_TIME = 3600
+
 const { isSitemapUrl, sitemap } = createSitemapGenerator({
   siteUrl: MAIN_URL,
   autoLastmod: false,
   priority: 0.8,
+  cache: redis ? {
+    get: async () => {
+      return await redis.get('sitemap') || null
+    },
+    set: async (sitemap) => {
+      await redis.set('sitemap', sitemap, 'EX', SITEMAP_CACHE_TIME)
+    },
+  } : undefined,
 })
 
 export default async function handleRequest(
