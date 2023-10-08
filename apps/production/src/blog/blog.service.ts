@@ -10,10 +10,14 @@ import * as _size from 'lodash/size'
 import * as path from 'path'
 import * as fs from 'fs/promises'
 import { AppLoggerService } from '../logger/logger.service'
-import { BLOG_POSTS_PATH } from '../common/constants'
+import { BLOG_POSTS_PATH, redis } from '../common/constants'
 
 // eslint-disable-next-line
 const parseFrontMatter = require('front-matter')
+
+const REDIS_SITEMAP_KEY = 'blog-sitemap'
+// in seconds; 3600 seconds = 1 hour
+const REDIS_SITEMAP_LIFETIME = 3600
 
 // Removes first 10 characters from the string (i.e. 2023-10-07-)
 const getSlugFromFilename = (filename: string) => filename.substring(11)
@@ -127,6 +131,18 @@ export class BlogService {
     category?: string,
     infiniteRecursive?: boolean,
   ): Promise<any> {
+    const rawRedisSitemap = await redis.get(REDIS_SITEMAP_KEY)
+
+    if (rawRedisSitemap) {
+      try {
+        return JSON.parse(rawRedisSitemap)
+      } catch (reason) {
+        this.logger.error(
+          `[getSitemapFileNames][JSON.parse] An error occured: ${reason}`,
+        )
+      }
+    }
+
     const allFiles = (await fs.readdir(
       category ? path.join(BLOG_POSTS_PATH, category) : BLOG_POSTS_PATH,
     )) as string[]
@@ -155,7 +171,16 @@ export class BlogService {
       ]
     }
 
-    return [...files, ...filesInDirectories]
+    const sitemap = [...files, ...filesInDirectories]
+
+    await redis.set(
+      REDIS_SITEMAP_KEY,
+      JSON.stringify(sitemap),
+      'EX',
+      REDIS_SITEMAP_LIFETIME,
+    )
+
+    return sitemap
   }
 
   async getAll() {
