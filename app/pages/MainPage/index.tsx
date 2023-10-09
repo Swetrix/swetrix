@@ -342,7 +342,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
             </div>
           </section>
           {/* end section Core Analytics Features */}
-          {/* section Marketplace & build-in Extensions */}
+          {/* section Marketplace & built-in Extensions */}
           <section className='flex flex-col md:flex-row items-center md:justify-between max-w-7xl m-auto'>
             <div className='max-w-[516px]'>
               <h2 className='font-extrabold text-4xl text-slate-900 dark:text-white'>
@@ -367,7 +367,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
             </div>
             <img className='md:max-w-[450px] lg:max-w-lg md:ml-5 mt-8 md:mt-0' src='/assets/teardown.svg' alt='Marketplace' />
           </section>
-          {/* end section Marketplace & build-in Extensions */}
+          {/* end section Marketplace & built-in Extensions */}
           {/* section Privacy compliance. */}
           <section className='flex pt-20 md:pt-28 flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
             <img className='md:max-w-[360px] md:mr-3 mt-3 md:mt-0 lg:max-w-lg' src='/assets/gdpr.svg' alt='GDPR compliant' />
