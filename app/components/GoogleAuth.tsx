@@ -33,6 +33,7 @@ const GoogleAuth: React.FC<IGoogleAuth> = ({
   if (isMiniButton) {
     return (
       <Button
+        title={t('auth.common.continueWithGoogle')}
         className={cx(className, 'ring-1 ring-slate-300 bg-transparent hover:bg-slate-100 dark:ring-slate-700 dark:hover:bg-slate-800/60')}
         onClick={googleLogin}
         secondary

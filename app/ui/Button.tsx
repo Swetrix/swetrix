@@ -1,11 +1,11 @@
 /* eslint-disable react/button-has-type */
-import React, { memo } from 'react'
+import React, { ButtonHTMLAttributes, memo } from 'react'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
 import Spin from './icons/Spin'
 
 // Define the prop types for the component
-interface IButton {
+interface IButton extends React.DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> {
   // (string): The text to be displayed in the button.
   text?: string,
   // (node): The content to be displayed in the button.
@@ -38,8 +38,10 @@ interface IButton {
 const Button = ({
   text, children, primary, secondary, danger, onClick, white, small, regular, large,
   giant, type, className, loading, semiSmall, semiDanger, noBorder, focus, disabled,
+  ...props
 }: IButton): JSX.Element => (
   <button
+    {...props}
     disabled={disabled || loading}
     type={type}
     onClick={onClick}
