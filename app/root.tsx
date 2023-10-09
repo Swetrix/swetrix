@@ -257,13 +257,13 @@ export default function App() {
         <meta charSet='utf-8' />
         <title>{title}</title>
         <meta name='theme-color' content='#818cf8' />
-        <meta name='description' content='Ultimate open-source analytics to satisfy all your needs' />
+        <meta name='description' content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative' />
         <meta name='twitter:title' content='Swetrix | Ultimate open-source analytics to satisfy all your needs' />
         <meta name='twitter:site' content='@swetrix' />
-        <meta name='twitter:description' content='Swetrix is a cookie-less, fully opensource and privacy-first web analytics service which provides a huge variety of services' />
+        <meta name='twitter:description' content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative' />
         <meta name='twitter:card' content='summary_large_image' />
         <meta property='og:title' content='Swetrix' />
-        <meta property='og:description' content='Ultimate open-source analytics to satisfy all your needs' />
+        <meta property='og:description' content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative' />
         <meta property='og:site_name' content='Swetrix' />
         <meta property='og:url' content='https://swetrix.com' />
         <meta property='og:type' content='website' />
