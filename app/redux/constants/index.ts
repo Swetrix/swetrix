@@ -289,6 +289,17 @@ export const IS_ACTIVE_COMPARE = 'is-active-compare'
 
 // List of languages with translations available
 export const whitelist: string[] = ['en', 'uk', 'pl', 'de', 'sv', 'el', 'ru', 'hi', 'zh']
+export const whitelistWithCC = {
+  en: 'en-GB',
+  uk: 'uk-UA',
+  pl: 'pl-PL',
+  de: 'de-DE',
+  sv: 'sv-SE',
+  el: 'el-GR',
+  ru: 'ru-RU',
+  hi: 'hi-IN',
+  zh: 'zh-Hans',
+}
 export const defaultLanguage: string = 'en'
 export const languages: IStringObject = {
   en: 'English',

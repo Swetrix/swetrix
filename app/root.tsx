@@ -15,7 +15,7 @@ import {
 } from '@remix-run/react'
 import { store } from 'redux/store'
 import {
-  whitelist, isBrowser, CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted,
+  whitelist, isBrowser, CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted, whitelistWithCC,
 } from 'redux/constants'
 import {
   getCookie, generateCookieString,
@@ -226,6 +226,9 @@ export default function App() {
   const { title } = getPageMeta(t, url)
 
   const urlObject = new URL(url)
+  urlObject.searchParams.delete('lng')
+
+  const lnglessUrl = urlObject.toString()
 
   const alternateLinks = _map(whitelist, (lc) => {
     urlObject.searchParams.set('lng', lc)
@@ -233,6 +236,15 @@ export default function App() {
     return {
       rel: 'alternate',
       hrefLang: lc,
+      href: urlObject.toString(),
+    }
+  })
+  const alternateLinksWithCountryCodes = _map(whitelistWithCC, (value, key) => {
+    urlObject.searchParams.set('lng', key)
+
+    return {
+      rel: 'alternate',
+      hrefLang: value,
       href: urlObject.toString(),
     }
   })
@@ -263,9 +275,10 @@ export default function App() {
         <Links />
         {theme === 'dark' && <link rel='stylesheet' href={FlatpickrDarkCss} />}
         {theme === 'light' && <link rel='stylesheet' href={FlatpickrLightCss} />}
-        {_map(alternateLinks, (link) => (
+        {_map([...alternateLinks, ...alternateLinksWithCountryCodes], (link) => (
           <link key={link.hrefLang} {...link} />
         ))}
+        <link rel='alternate' href={lnglessUrl} hrefLang='x-default' />
         <link rel='preload' href={`/locales/${locale}.json`} as='fetch' type='application/json' crossOrigin='anonymous' />
         <script
           // eslint-disable-next-line react/no-danger
