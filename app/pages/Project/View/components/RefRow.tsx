@@ -23,7 +23,7 @@ const RefRow = ({ rowName, showIcons }: {
   }
 
   return (
-    <div>
+    <div className='overflow-auto'>
       {showIcons && isUrl && !_isEmpty(url?.hostname) && (
         <img
           className='w-5 h-5 mr-1.5 float-left'
@@ -34,7 +34,7 @@ const RefRow = ({ rowName, showIcons }: {
       )}
       {isUrl ? (
         <a
-          className='flex label overflow-visible hover:underline text-blue-600 dark:text-blue-500'
+          className='flex label hover:underline text-blue-600 dark:text-blue-500'
           href={rowName}
           target='_blank'
           rel='noopener noreferrer nofollow'
@@ -44,7 +44,7 @@ const RefRow = ({ rowName, showIcons }: {
           {rowName}
         </a>
       ) : (
-        <span className='flex label overflow-visible hover:underline text-blue-600 dark:text-blue-500'>
+        <span className='flex label hover:underline text-blue-600 dark:text-blue-500'>
           {rowName}
         </span>
       )}

@@ -9,7 +9,7 @@ renderer.link = (href: string, title: string | null | undefined, text: string) =
   const url = new URL(href)
   
   if (url.hostname !== 'swetrix.com') {
-    url.searchParams.append('utm_source', 'swetrix.com')
+    url.searchParams.set('utm_source', 'swetrix.com')
   }
 
   return `<a href="${url.toString()}" referrerpolicy="strict-origin-when-cross-origin" target="_blank" rel="noopener noreferrer">${text}</a>`

@@ -126,13 +126,14 @@ interface IViewProject {
   ssrTheme: 'dark' | 'light',
   embedded: boolean,
   ssrAuthenticated: boolean,
+  queryPassword: string | null,
 }
 
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, cachePerf, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
   setLiveStatsForProject, authenticated: csrAuthenticated, timezone, user, sharedProjects, extensions, generateAlert, setProjectCachePerf,
   projectTab, setProjectTab, setProjects, setProjectForcastCache, customEventsPrefs, setCustomEventsPrefs, liveStats, password, theme,
-  ssrTheme, embedded, ssrAuthenticated,
+  ssrTheme, embedded, ssrAuthenticated, queryPassword,
 }: IViewProject) => {
   const authenticated = isBrowser ? csrAuthenticated : ssrAuthenticated
 
@@ -182,7 +183,7 @@ const ViewProject = ({
   // find project by id from url from state in redux projects and sharedProjects. projects and sharedProjects loading from api in Saga on page load
   const project: IProjectForShared = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => ({ ...item.project, role: item.role }))], p => p.id === id) || {} as IProjectForShared, [projects, id, sharedProjects])
 
-  const projectPassword: string = useMemo(() => password[id] || getItem(PROJECTS_PROTECTED)?.[id] || new URLSearchParams(window.location.search).get('password') || '', [id, password])
+  const projectPassword: string = useMemo(() => password[id] || getItem(PROJECTS_PROTECTED)?.[id] || queryPassword || '', [id, password, queryPassword])
 
   /* isSharedProject is a boolean check if project is shared. If isSharedProject is true,
   we used role and other colummn from sharedProjects.
@@ -2715,10 +2716,12 @@ ViewProject.propTypes = {
   timezone: PropTypes.string,
   embedded: PropTypes.bool.isRequired,
   ssrAuthenticated: PropTypes.bool.isRequired,
+  queryPassword: PropTypes.string,
 }
 
 ViewProject.defaultProps = {
   timezone: DEFAULT_TIMEZONE,
+  queryPassword: null,
 }
 
 export default memo(withProjectProtected(ViewProject))

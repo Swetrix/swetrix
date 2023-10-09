@@ -44,15 +44,24 @@ export function detectTheme(request: Request): [ThemeType, boolean] {
   return ['light', false]
 }
 
-
 /**
- * Function detects theme based on user's browser hints and cookies
+ * Function detects theme based on the query
  * 
  * @param request
  * @returns boolean
  */
 export function isEmbedded(request: Request): boolean {
   return new URL(request.url).searchParams.get('embedded') === 'true'
+}
+
+/**
+ * Function returns password from query
+ * 
+ * @param request
+ * @returns boolean
+ */
+export function getProjectPassword(request: Request): string | null {
+  return new URL(request.url).searchParams.get('password')
 }
 
 export function getAccessToken(request: Request): string | null {

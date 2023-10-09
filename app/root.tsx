@@ -218,11 +218,17 @@ export default function App() {
   const { i18n, t } = useTranslation('common')
   const { title } = getPageMeta(t, url)
 
-  const alternateLinks = _map(whitelist, (lc) => ({
-    rel: 'alternate',
-    hrefLang: lc,
-    href: `${url}?lng=${lc}`,
-  }))
+  const urlObject = new URL(url)
+
+  const alternateLinks = _map(whitelist, (lc) => {
+    urlObject.searchParams.set('lng', lc)
+
+    return {
+      rel: 'alternate',
+      hrefLang: lc,
+      href: urlObject.toString(),
+    }
+  })
 
   useChangeLanguage(locale)
 
