@@ -269,9 +269,9 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
           <div className='sm:flex sm:flex-col sm:align-center'>
             {!authenticated && (
               <>
-                <h1 className='text-3xl font-extrabold text-gray-900 dark:text-gray-50 sm:text-center'>
+                <h2 className='text-3xl font-extrabold text-gray-900 dark:text-gray-50 sm:text-center'>
                   {t('pricing.title')}
-                </h1>
+                </h2>
                 <p className='mt-5 text-xl text-gray-500 dark:text-gray-200 sm:text-center mb-5'>
                   {t('pricing.adv')}
                 </p>
