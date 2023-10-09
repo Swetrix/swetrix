@@ -592,7 +592,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
               />
             </div>
             <section className='relative z-20 px-3'>
-              <h1 className='mt-20 text-center h-8 mb-5 text-3xl sm:text-5xl text-slate-900 dark:text-white font-extrabold max-w-prose w-full mx-auto'>
+              <h2 className='mt-20 text-center h-8 mb-5 text-3xl sm:text-5xl text-slate-900 dark:text-white font-extrabold max-w-prose w-full mx-auto'>
                 <Trans
                   // @ts-ignore
                   t={t}
@@ -612,7 +612,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                     swetrix: <span className='text-indigo-600 dark:text-indigo-500'>Swetrix</span>,
                   }}
                 />
-              </h1>
+              </h2>
               <div className='py-20 text-lg text-gray-50 tracking-tight'>
                 <div className='mt-2 flex flex-col'>
                   <div className='-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8'>
