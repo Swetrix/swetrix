@@ -258,7 +258,7 @@ export default function App() {
         <title>{title}</title>
         <meta name='theme-color' content='#818cf8' />
         <meta name='description' content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative' />
-        <meta name='twitter:title' content='Swetrix | Ultimate open-source analytics to satisfy all your needs' />
+        <meta name='twitter:title' content='Swetrix | Ultimate open-source web analytics to satisfy all your needs' />
         <meta name='twitter:site' content='@swetrix' />
         <meta name='twitter:description' content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative' />
         <meta name='twitter:card' content='summary_large_image' />
