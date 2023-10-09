@@ -1,5 +1,6 @@
 import routes from 'routesPath'
 import _includes from 'lodash/includes'
+import _startsWith from 'lodash/startsWith'
 import { TITLE_SUFFIX, SUPPORTED_THEMES, ThemeType } from 'redux/constants'
 
 export const hasAuthCookies = (request: Request) => {
@@ -73,6 +74,10 @@ export function getAccessToken(request: Request): string | null {
 
 export function isAuthenticated(request: Request): boolean {
   return !!getAccessToken(request)
+}
+
+export function isWWW(url: URL): boolean {
+  return _startsWith(url.hostname, 'www.')
 }
 
 interface IPageMeta {

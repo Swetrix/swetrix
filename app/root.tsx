@@ -1,7 +1,7 @@
 import type {
   LinksFunction, LoaderArgs, V2_MetaFunction, HeadersFunction,
 } from '@remix-run/node'
-import { json } from '@remix-run/node'
+import { json, redirect } from '@remix-run/node'
 import { useState } from 'react'
 import {
   Links,
@@ -15,7 +15,7 @@ import {
 } from '@remix-run/react'
 import { store } from 'redux/store'
 import {
-  whitelist, isBrowser, CONTACT_EMAIL, LS_THEME_SETTING,
+  whitelist, isBrowser, CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted,
 } from 'redux/constants'
 import {
   getCookie, generateCookieString,
@@ -24,6 +24,7 @@ import { ExclamationTriangleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroic
 import { Provider } from 'react-redux'
 import clsx from 'clsx'
 import _map from 'lodash/map'
+import _replace from 'lodash/replace'
 // @ts-ignore
 import { transitions, positions, Provider as AlertProvider } from '@blaumaus/react-alert'
 import BillboardCss from 'billboard.js/dist/billboard.min.css'
@@ -35,7 +36,7 @@ import { useTranslation } from 'react-i18next'
 import AppWrapper from 'App'
 import { detectLanguage } from 'i18n'
 import {
-  detectTheme, getPageMeta, isAuthenticated,
+  detectTheme, getPageMeta, isAuthenticated, isWWW,
 } from 'utils/server'
 
 import mainCss from 'styles/index.css'
@@ -181,6 +182,12 @@ export function ErrorBoundary() {
 
 export async function loader({ request }: LoaderArgs) {
   const { url } = request
+  const urlObject = new URL(url)
+
+  if (!isSelfhosted && isWWW(urlObject)) {
+    redirect(_replace(urlObject.href, 'www.', ''), 301)
+  }
+
   const locale = detectLanguage(request)
   const [theme, storeThemeToCookie] = detectTheme(request)
   const isAuthed = isAuthenticated(request)
