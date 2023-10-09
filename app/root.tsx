@@ -268,6 +268,7 @@ export default function App() {
         <meta property='og:url' content='https://swetrix.com' />
         <meta property='og:type' content='website' />
         <meta name='google' content='notranslate' />
+        <link rel='icon' type='image/x-icon' href='/favicon.ico' />
         {/* <meta name='apple-mobile-web-app-title' content='Swetrix' /> */}
         {/* <meta name='application-name' content='Swetrix' /> */}
         <Meta />
