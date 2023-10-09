@@ -185,7 +185,7 @@ export async function loader({ request }: LoaderArgs) {
   const urlObject = new URL(url)
 
   if (!isSelfhosted && isWWW(urlObject)) {
-    redirect(_replace(urlObject.href, 'www.', ''), 301)
+    return redirect(_replace(urlObject.href, 'www.', ''), 301)
   }
 
   const locale = detectLanguage(request)
