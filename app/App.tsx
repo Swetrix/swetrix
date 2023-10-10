@@ -1,12 +1,9 @@
-import React, {
-  useEffect, Suspense, useState,
-} from 'react'
+import React, { useEffect } from 'react'
 import { useLocation, Outlet } from '@remix-run/react'
 import { useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 // @ts-ignore
 import { useAlert } from '@blaumaus/react-alert'
-import cx from 'clsx'
 import _some from 'lodash/some'
 import _includes from 'lodash/includes'
 import _startsWith from 'lodash/startsWith'
@@ -16,9 +13,7 @@ import 'dayjs/locale/uk'
 
 import Header from 'components/Header'
 import Footer from 'components/Footer'
-import Loader from 'ui/Loader'
 
-import ScrollToTop from 'hoc/ScrollToTop'
 import { getAccessToken } from 'utils/accessToken'
 import { authActions } from 'redux/reducers/auth'
 import sagaActions from 'redux/sagas/actions'
@@ -33,36 +28,6 @@ import { authMe } from './api'
 const minimalFooterPages = [
   '/projects', '/dashboard', '/settings', '/contact',
 ]
-
-type FallbackProps = {
-  isMinimalFooter: boolean
-}
-
-const Fallback = ({ isMinimalFooter }: FallbackProps): JSX.Element => {
-  const [showLoader, setShowLoader] = useState(false)
-
-  useEffect(() => {
-    let isMounted = true
-
-    setTimeout(() => {
-      if (isMounted) {
-        setShowLoader(true)
-      }
-    }, 1000)
-
-    return () => {
-      isMounted = false
-    }
-  }, [])
-
-  return (
-    <div className={cx('bg-gray-50 dark:bg-slate-900', { 'min-h-page': !isMinimalFooter, 'min-h-min-footer': isMinimalFooter })}>
-      {showLoader && (
-        <Loader />
-      )}
-    </div>
-  )
-}
 
 interface IApp {
   ssrTheme: 'dark' | 'light'
@@ -148,20 +113,15 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
 
   return (
     // eslint-disable-next-line react/jsx-no-useless-fragment
-    <Suspense fallback={<></>}>
+    <>
       {pathname !== routesPath.main && !isReferralPage && !isProjectViewPage && (
         <Header ssrTheme={ssrTheme} authenticated={authenticated} />
       )}
-      {/* @ts-ignore */}
-      <ScrollToTop>
-        <Suspense fallback={<Fallback isMinimalFooter={isMinimalFooter} />}>
-          <Outlet />
-        </Suspense>
-      </ScrollToTop>
+      <Outlet />
       {!isReferralPage && !isProjectViewPage && (
         <Footer minimal={isMinimalFooter} authenticated={authenticated} />
       )}
-    </Suspense>
+    </>
   )
 }
 

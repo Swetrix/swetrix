@@ -2,7 +2,7 @@
 import React, {
   useState, useEffect, useMemo, memo,
 } from 'react'
-import { useLocation, useNavigate, useParams } from '@remix-run/react'
+import { useNavigate, useParams } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
@@ -244,12 +244,14 @@ interface IProjectSettings {
   dashboardPaginationPage: number,
   dashboardPaginationPageShared: number,
   loading: boolean,
+  isSettings: boolean,
 }
 
 const ProjectSettings = ({
   updateProjectFailed, createNewProjectFailed, generateAlerts, projectDeleted, deleteProjectFailed,
   loadProjects, isLoading, projects, showError, removeProject, user, isSharedProject, sharedProjects,
-  deleteProjectCache, setProjectProtectedPassword, dashboardPaginationPage, dashboardPaginationPageShared, loading,
+  deleteProjectCache, setProjectProtectedPassword, dashboardPaginationPage, dashboardPaginationPageShared,
+  loading, isSettings,
 }: IProjectSettings) => {
   const { t, i18n: { language } }: {
     t: (key: string, options?: {
@@ -259,13 +261,11 @@ const ProjectSettings = ({
       language: string,
     },
   } = useTranslation('common')
-  const { pathname } = useLocation()
   // @ts-ignore
   const { id }: {
     id: string,
   } = useParams()
   const project: IProjectForShared = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => item.project)], p => p.id === id) || {} as IProjectForShared, [projects, id, sharedProjects])
-  const isSettings: boolean = !_isEmpty(id) && (_replace(routes.project_settings, ':id', id) === pathname)
   const navigate = useNavigate()
 
   const [form, setForm] = useState<IForm>({
@@ -521,7 +521,11 @@ const ProjectSettings = ({
   }, [form, t, isSettings])
 
   if (loading) {
-    return <Loader />
+    return (
+      <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+        <Loader />
+      </div>
+    )
   }
 
   return (
@@ -790,6 +794,11 @@ ProjectSettings.propTypes = {
   user: PropTypes.object.isRequired,
   isSharedProject: PropTypes.bool.isRequired,
   deleteProjectCache: PropTypes.func.isRequired,
+  isSettings: PropTypes.bool,
+}
+
+ProjectSettings.defaultProps = {
+  isSettings: false,
 }
 
 export default memo(withAuthentication(ProjectSettings, auth.authenticated))

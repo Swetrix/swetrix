@@ -9,6 +9,7 @@ import ProjectAlerts from './ProjectAlertsSettings'
 const mapStateToProps = (state: StateType) => ({
   alerts: state.ui.alerts.alerts,
   user: state.auth.user,
+  loading: state.auth.loading,
   total: state.ui.alerts.total,
 })
 

@@ -127,15 +127,20 @@ interface IViewProject {
   embedded: boolean,
   ssrAuthenticated: boolean,
   queryPassword: string | null,
+  authLoading: boolean,
 }
 
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, cachePerf, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
   setLiveStatsForProject, authenticated: csrAuthenticated, timezone, user, sharedProjects, extensions, generateAlert, setProjectCachePerf,
   projectTab, setProjectTab, setProjects, setProjectForcastCache, customEventsPrefs, setCustomEventsPrefs, liveStats, password, theme,
-  ssrTheme, embedded, ssrAuthenticated, queryPassword,
+  ssrTheme, embedded, ssrAuthenticated, queryPassword, authLoading,
 }: IViewProject) => {
-  const authenticated = isBrowser ? csrAuthenticated : ssrAuthenticated
+  const authenticated = isBrowser
+    ? authLoading
+      ? ssrAuthenticated
+      : csrAuthenticated
+    : ssrAuthenticated
 
   // t is used for translation
   const { t, i18n: { language } }: {
@@ -2426,6 +2431,7 @@ const ViewProject = ({
                           activeTab={activeTab}
                           data={panelsData.data[type]}
                           customTabs={customTabs}
+                          // @ts-ignore
                           rowMapper={({ name: entryName }) => (
                             <RefRow rowName={entryName} showIcons={showIcons} />
                           )}
@@ -2445,6 +2451,7 @@ const ViewProject = ({
                           name={panelName}
                           data={panelsData.data[type]}
                           customTabs={customTabs}
+                          // @ts-ignore
                           rowMapper={({ name: entryName }) => decodeURIComponent(entryName)}
                         />
                       )
@@ -2459,6 +2466,7 @@ const ViewProject = ({
                           id={type}
                           onFilter={filterHandler}
                           onFragmentChange={setPgActiveFragment}
+                          // @ts-ignore
                           rowMapper={({ name: entryName }) => {
                             // todo: add uppercase
                             return entryName || t('project.redactedPage')
@@ -2568,6 +2576,7 @@ const ViewProject = ({
                           data={panelsDataPerf.data[countryActiveTab]}
                           customTabs={customTabs}
                           rowMapper={rowMapper}
+                          // @ts-ignore
                           valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
                         />
                       )
@@ -2585,6 +2594,7 @@ const ViewProject = ({
                           activeTab={activeTab}
                           data={panelsDataPerf.data[type]}
                           customTabs={customTabs}
+                          // @ts-ignore
                           valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
                           capitalize
                         />
@@ -2603,7 +2613,9 @@ const ViewProject = ({
                           name={panelName}
                           data={panelsDataPerf.data[type]}
                           customTabs={customTabs}
+                          // @ts-ignore
                           valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
+                          // @ts-ignore
                           rowMapper={({ name: entryName }) => {
                             // todo: add uppercase
                             return entryName || t('project.redactedPage')
@@ -2623,6 +2635,7 @@ const ViewProject = ({
                         name={panelName}
                         data={panelsDataPerf.data[type]}
                         customTabs={customTabs}
+                        // @ts-ignore
                         valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
                       />
                     )
@@ -2716,6 +2729,7 @@ ViewProject.propTypes = {
   timezone: PropTypes.string,
   embedded: PropTypes.bool.isRequired,
   ssrAuthenticated: PropTypes.bool.isRequired,
+  authLoading: PropTypes.bool.isRequired,
   queryPassword: PropTypes.string,
 }
 

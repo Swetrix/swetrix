@@ -37,9 +37,7 @@ import { IUser } from 'redux/models/IUser'
 
 const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 
-const ProjectAlertsSettings = ({
-  alerts, setProjectAlerts, showError, user, setProjectAlertsTotal, total, generateAlerts,
-}: {
+interface IProjectAlertsSettings {
   alerts: IAlerts[]
   setProjectAlerts: (item: IAlerts[]) => void
   showError: (message: string) => void
@@ -47,15 +45,15 @@ const ProjectAlertsSettings = ({
   setProjectAlertsTotal: (num: number) => void
   total: number
   generateAlerts: (message: string) => void
-}): JSX.Element => {
+  loading: boolean
+}
+
+const ProjectAlertsSettings = ({
+  alerts, setProjectAlerts, showError, user, setProjectAlertsTotal, total, generateAlerts, loading,
+}: IProjectAlertsSettings): JSX.Element => {
   const navigate = useNavigate()
-  const { id, pid }: {
-    id?: string
-    pid?: string
-  } = useParams()
-  const { pathname }: {
-    pathname: string
-  } = useLocation()
+  const { id, pid } = useParams()
+  const { pathname } = useLocation()
   const { t }: {
     t: (key: string, options?: {
       [key: string]: string | number | null | undefined
@@ -247,19 +245,19 @@ const ProjectAlertsSettings = ({
         <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
           {title}
         </h2>
-        {!isIntegrationLinked && (
-        <div className='flex items-center bg-blue-50 dark:text-gray-50 dark:bg-slate-800 rounded px-5 py-3 mt-2 whitespace-pre-wrap text-base'>
-          <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
-          <Trans
-                // @ts-ignore
-            t={t}
-            i18nKey='alert.noIntegration'
-            components={{
-              // eslint-disable-next-line jsx-a11y/anchor-has-content
-              url: <Link to={INTEGRATIONS_LINK} className='hover:underline text-blue-600 dark:text-blue-500' />,
-            }}
-          />
-        </div>
+        {!loading && !isIntegrationLinked && (
+          <div className='flex items-center bg-blue-50 dark:text-gray-50 dark:bg-slate-800 rounded px-5 py-3 mt-2 whitespace-pre-wrap text-base'>
+            <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
+            <Trans
+                  // @ts-ignore
+              t={t}
+              i18nKey='alert.noIntegration'
+              components={{
+                // eslint-disable-next-line jsx-a11y/anchor-has-content
+                url: <Link to={INTEGRATIONS_LINK} className='hover:underline text-blue-600 dark:text-blue-500' />,
+              }}
+            />
+          </div>
         )}
         <Input
           name='name'
@@ -401,6 +399,7 @@ ProjectAlertsSettings.propTypes = {
   setProjectAlerts: PropTypes.func.isRequired,
   showError: PropTypes.func.isRequired,
   user: PropTypes.object.isRequired,
+  loading: PropTypes.bool.isRequired,
 }
 
 export default withAuthentication(ProjectAlertsSettings, auth.authenticated)

@@ -2,7 +2,7 @@
 import React, {
   useState, useEffect, useMemo, memo, useRef,
 } from 'react'
-import { useLocation, useNavigate, useParams } from '@remix-run/react'
+import { useNavigate, useParams } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
@@ -74,25 +74,24 @@ interface ICaptchaSettings {
   deleteProjectCache: (pid: string) => void,
   analyticsProjects: IProject[],
   loading: boolean,
+  isSettings: boolean,
 }
 
 const CaptchaSettings = ({
   updateProjectFailed, createNewProjectFailed, newProject, projectDeleted, deleteProjectFailed,
   loadProjects, isLoading, projects, showError, removeProject, user,
-  deleteProjectCache, analyticsProjects, loading,
+  deleteProjectCache, analyticsProjects, loading, isSettings,
 }: ICaptchaSettings): JSX.Element => {
   const { t }: {
     t: (key: string, options?: {
       [key: string]: string | number | boolean | undefined
     }) => string,
   } = useTranslation('common')
-  const { pathname } = useLocation()
   // @ts-ignore
   const { id }: {
     id: string,
   } = useParams()
   const project: ICaptchaProject | IProject = useMemo(() => _find([...projects, ...analyticsProjects], p => p.id === id) || {} as IProject | ICaptchaProject, [projects, analyticsProjects, id])
-  const isSettings: boolean = !_isEmpty(id) && (_replace(routes.captcha_settings, ':id', id) === pathname)
   const navigate = useNavigate()
   const [form, setForm] = useState<IForm>({
     name: '',
@@ -344,7 +343,11 @@ const CaptchaSettings = ({
   }, [tab])
 
   if (loading) {
-    return <Loader />
+    return (
+      <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+        <Loader />
+      </div>
+    )
   }
 
   return (
@@ -612,6 +615,11 @@ CaptchaSettings.propTypes = {
   isLoading: PropTypes.bool.isRequired,
   user: PropTypes.object.isRequired,
   deleteProjectCache: PropTypes.func.isRequired,
+  isSettings: PropTypes.bool,
+}
+
+CaptchaSettings.defaultProps = {
+  isSettings: false,
 }
 
 export default memo(withAuthentication(CaptchaSettings, auth.authenticated))
