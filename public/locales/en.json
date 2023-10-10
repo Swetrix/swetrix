@@ -89,8 +89,8 @@
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
     "slogan": "<span>Ultimate open-source web analytics</span> to satisfy all your needs.",
-    "trackEveryMetric": "Track every metric you need without invading your users' privacy.",
-    "description": "Swetrix brings an advanced and customisable analytics service for your web applications.",
+    "trackEveryMetric": "This is the way analytics should be: GDPR compliant, lightweight and easy to use.",
+    "description": "Swetrix is a cookieless Google Analytics alternative that does not invade your users' privacy.",
     "start": "Start for free",
     "signup": "Sign up, it's free!",
     "signupTerms": "By signing up, you agree to our <tos>Terms and Conditions</tos> and <pp>Privacy Policy</pp>.",

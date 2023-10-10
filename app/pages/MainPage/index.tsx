@@ -259,7 +259,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                     </ClientOnly>
                   )}
                 </div>
-                <p className='text-base text-slate-700 dark:text-slate-300 sm:text-xl lg:text-lg xl:text-lg'>
+                <p className='text-base leading-8 text-slate-900 dark:text-slate-300 sm:text-xl lg:text-lg xl:text-lg'>
                   {t('main.description')}
                   <br />
                   {t('main.trackEveryMetric')}
