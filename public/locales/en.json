@@ -756,8 +756,8 @@
     }
   },
   "pricing": {
-    "title": "Pricing Plans",
-    "adv": "Start out for free, no credit card needed.\nWhen your business grows, you can upgrade your plan at any time.",
+    "title": "Simple, traffic-based pricing",
+    "adv": "Try Swetrix on your website for {{amount}} days - completely free of charge.\nNo credit card required. No strings attached.",
     "currentPlan": "Current plan",
     "free": "Free",
     "legacy": "Legacy",

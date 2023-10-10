@@ -427,7 +427,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                   </div>
                   <div className='px-4 sm:px-10'>
                     <div className='py-6 bg-transparent border-t border-gray-200 dark:border-slate-700'>
-                      <p className='text-xs leading-5 text-gray-500 dark:text-gray-100'>
+                      <p className='text-xs leading-5 text-gray-600 dark:text-gray-100'>
                         <Trans
                           // @ts-ignore
                           t={t}
@@ -476,7 +476,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                 <span className='text-indigo-500 text-3xl font-semibold'>{1 + index}</span>
                 <div className='mt-2'>
                   <h2 className='text-slate-900 dark:text-white text-xl font-semibold max-w-[300px] mx-auto mb-3 whitespace-pre-line'>{item.name}</h2>
-                  <p className='text-gray-500 max-w-xs mx-auto dark:text-gray-400'>{item.desc}</p>
+                  <p className='text-gray-600 max-w-xs mx-auto dark:text-gray-400'>{item.desc}</p>
                 </div>
               </div>
             ))}
@@ -700,7 +700,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                 >
                   <Quote theme={theme} color={index === 1 ? 'indigo' : 'black'} className='mx-auto relative -top-4' />
                   <div className='px-10 mb-10 max-h-80 overflow-auto'>
-                    <p className='text-gray-500 text-sm mt-8 dark:text-gray-400'>
+                    <p className='text-gray-600 text-sm mt-8 dark:text-gray-400'>
                       {item.name}
                       <br />
                       {item.role}

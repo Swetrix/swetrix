@@ -15,7 +15,8 @@ import cx from 'clsx'
 import Modal from 'ui/Modal'
 import Button from 'ui/Button'
 import {
-  CONTACT_EMAIL, paddleLanguageMapping, PLAN_LIMITS, CURRENCIES, BillingFrequency, REFERRAL_DISCOUNT_CODE, STANDARD_PLANS,
+  CONTACT_EMAIL, paddleLanguageMapping, PLAN_LIMITS, CURRENCIES, BillingFrequency,
+  REFERRAL_DISCOUNT_CODE, STANDARD_PLANS, TRIAL_DAYS,
 } from 'redux/constants'
 import { errorsActions } from 'redux/reducers/errors'
 import { alertsActions } from 'redux/reducers/alerts'
@@ -272,8 +273,10 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
                 <h2 className='text-3xl font-extrabold text-gray-900 dark:text-gray-50 sm:text-center'>
                   {t('pricing.title')}
                 </h2>
-                <p className='mt-5 text-xl text-gray-500 dark:text-gray-200 sm:text-center mb-5'>
-                  {t('pricing.adv')}
+                <p className='mt-5 text-xl max-w-prose text-gray-600 dark:text-gray-200 sm:text-center mb-5'>
+                  {t('pricing.adv', {
+                    amount: TRIAL_DAYS,
+                  })}
                 </p>
               </>
             )}
