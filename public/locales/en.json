@@ -205,11 +205,12 @@
       }
     ],
     "supports": "Supports all popular platforms",
-    "becomeDev": "Become a developer",
-    "becomeDevDesc": "Write your extensions, follow the news and join our developer community.",
+    "peopleLoveSwetrix": "People 🥰 Swetrix",
+    "whyPeopleLoveSwetrix": "Swetrix is an ethical and powerful service. Hundreds of people have already made the switch from Google Analytics and other alternatives.",
     "marketplaceBlock": "Marketplace and extension features",
     "coreFeaturesBlock": "Core features",
     "testimonials": "Testimonials",
+    "peopleUseSwetrix": "Hundreds of people already use Swetrix as their web analytics solution",
     "lTestimonials": [
       {
         "name": "Alex",
@@ -239,7 +240,8 @@
         "desc": "Your data is protected, all the features and fixes are implemented in a matter of days by our developers."
       }
     ],
-    "os": "<gradi>Open source</gradi> analytics - a powerful and simple tool.",
+    "timeToDitchGoogleAnalytics": "It's time <colour>to ditch</colour> Google Analytics.",
+    "whyDitch": "Tired of the frustration, complexity and privacy issues of Google Analytics? We were too. That's why we built Swetrix - the ethical, open source and fully cookieless alternative.",
     "custSupport": "Could not find the answer you're looking for? Reach out to our <mail>customer support</mail> team.",
     "whyUs": "Why us",
     "ourStats": "Our statistics",
@@ -263,7 +265,7 @@
     }
   },
   "referral": {
-    "desc": "Swetrix is an ethical, open-source and fully cookieless Google Analytics alternative. It allows you to understand your users behaviour, monitor your website performance, track your marketing campaigns and much more. All of that without invading your users' privacy!",
+    "desc": "Swetrix is an ethical, open source and completely cookie-less alternative to Google Analytics. It allows you to understand your users' behaviour, monitor your website performance, track your marketing campaigns and much more. All without invading your users' privacy!",
     "cookieDetails": "If you click on the buttons above, a cookie will be stored for {{days}} days to reward the person who referred you and give you {{discount}}% off your first bill.",
     "buttons": "Click on these buttons to receive {{discount}}% off your first bill!"
   },

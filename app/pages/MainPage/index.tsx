@@ -679,9 +679,12 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
             <BackgroundSvg theme={theme} type='shapes' />
           </div>
           <div className='max-w-[1000px] w-full mx-auto'>
-            <h2 className='text-slate-900 text-center font-extrabold text-5xl relative z-20 dark:text-white'>
+            <h2 className='text-slate-900 text-center font-extrabold text-4xl relative z-20 dark:text-white'>
               {t('main.testimonials')}
             </h2>
+            <p className='mt-5 text-xl max-w-prose text-gray-600 dark:text-gray-200 text-center mx-auto'>
+              {t('main.peopleUseSwetrix')}
+            </p>
             <div className='flex items-center flex-col md:flex-row justify-between mt-16'>
               {_map(t('main.lTestimonials', { returnObjects: true }), (item: {
                 name: string;
@@ -730,20 +733,19 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
               </div>
             </div>
             <div className='flex items-start justify-between pt-8 pl-8 sm:pl-14 lg:pl-28 md:flex-row flex-col'>
-              <div className='max-w-[430px] w-full pt-14 pr-3 mb-16 md:mb-0'>
+              <div className='max-w-[520px] w-full pt-14 pr-3 mb-16 md:mb-0'>
                 <h2 className='font-bold text-2xl leading-9 sm:text-4xl sm:leading-[48px] md:text-[28px] md:leading-10 lg:text-[33px] lg:leading-[48px] text-white mb-3'>
                   <Trans
                     // @ts-ignore
                     t={t}
-                    i18nKey='main.os'
+                    i18nKey='main.timeToDitchGoogleAnalytics'
                     components={{
-                      // eslint-disable-next-line jsx-a11y/anchor-has-content
-                      gradi: <span className='text-transparent !bg-clip-text' style={{ background: 'linear-gradient(91.37deg, #4E46DD 10%, #5C3CDA 55%, #A274EF 100%)' }} />,
+                      colour: <span className='text-red-600' />,
                     }}
                   />
                 </h2>
                 <p className='text-gray-300 mb-9 font-medium text-base sm:text-lg'>
-                  {t('main.demoGeoReports')}
+                  {t('main.whyDitch')}
                 </p>
                 <Link to={routesPath.signup} className='rounded-md border !duration-300 transition-all w-full max-w-[210px] h-[50px] flex items-center justify-center sm:mr-6 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 border-transparent' aria-label={t('titles.signup')}>
                   <span className='text-base font-semibold mr-1'>{t('main.start')}</span>
@@ -812,12 +814,12 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
             <BackgroundSvg theme={theme} type='shapes' />
           </div>
           <div className='max-w-5xl w-full mx-auto px-3'>
-            <div className='max-w-sm w-full mx-auto'>
+            <div className='max-w-prose w-full mx-auto'>
               <h2 className='text-gray-900 dark:text-white text-3xl md:text-4xl font-extrabold text-center'>
-                {t('main.becomeDev')}
+                {t('main.peopleLoveSwetrix')}
               </h2>
-              <p className='text-gray-600 dark:text-gray-400 text-base font-medium text-center mt-2'>
-                {t('main.becomeDevDesc')}
+              <p className='mt-5 text-xl max-w-prose text-gray-600 dark:text-gray-200 text-center mx-auto'>
+                {t('main.whyPeopleLoveSwetrix')}
               </p>
             </div>
             <div className='flex items-center justify-between mt-20 md:mt-32 md:flex-row flex-col'>

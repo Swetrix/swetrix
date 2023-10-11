@@ -16,6 +16,7 @@
     "userRemoved": "The user has been removed from your project",
     "userRemoveError": "Error occurred while removing the user from your project",
     "quitProjectError": "Error occurred while quitting the project",
+    "payoutInfoError": "Something went wrong whilst requesting payouts information",
     "quitProject": "You have quit the project",
     "acceptInvitationError": "Error occurred while accepting the project invitation",
     "acceptInvitation": "The project invitation has been accepted",
@@ -87,9 +88,9 @@
   },
   "main": {
     "ukrSupport": "Υποστηρίξτε τον ουκρανικό στρατό για να πολεμήσει τη ρωσική εισβολή.",
-    "slogan": "<span>Απόλυτα αναλυτικά στοιχεία ανοικτού κώδικα</span> για να ικανοποιήσετε όλες τις ανάγκες σας.",
-    "trackEveryMetric": "Παρακολουθήστε κάθε μετρικό που χρειάζεστε χωρίς να εισβάλετε στην ιδιωτικότητα των χρηστών σας.",
-    "description": "Το Swetrix φέρνει μια προηγμένη και προσαρμόσιμη υπηρεσία ανάλυσης για τις εφαρμογές ιστού σας.",
+    "slogan": "<span>Ultimate open-source web analytics</span> to satisfy all your needs.",
+    "trackEveryMetric": "This is the way analytics should be: GDPR compliant, lightweight and easy to use.",
+    "description": "Swetrix is a cookieless Google Analytics alternative that does not invade your users' privacy.",
     "start": "Ξεκινήστε δωρεάν",
     "signup": "Εγγραφείτε, είναι δωρεάν!",
     "signupTerms": "Με την εγγραφή σας, συμφωνείτε με τους <tos>Όρους και Προϋποθέσεις</tos> και την <pp>Πολιτική Προστασίας Προσωπικών Δεδομένων</pp>.",
@@ -102,7 +103,7 @@
       "desc": "Powerful and easy analytics to display all the metrics you need. Cookieless. No need to be a data scientist to understand our analytics."
     },
     "marketplace": {
-      "title": "Marketplace & build-in Extensions",
+      "title": "Marketplace & built-in Extensions",
       "desc1": "Need additional features? Connect extensions or write your own! Now you do not need to use many sources from different systems - expand and supplement everything in one!",
       "desc2": "Install extensions and sell your own. Came up with a great extension for your company? Great! Publish it on the marketplace and share your insights with the whole community."
     },
@@ -204,11 +205,12 @@
       }
     ],
     "supports": "Supports all popular platforms",
-    "becomeDev": "Become a developer",
-    "becomeDevDesc": "Write your extensions, follow the news and join our developer community.",
+    "peopleLoveSwetrix": "People 🥰 Swetrix",
+    "whyPeopleLoveSwetrix": "Swetrix is an ethical and powerful service. Hundreds of people have already made the switch from Google Analytics and other alternatives.",
     "marketplaceBlock": "Marketplace and extension features",
     "coreFeaturesBlock": "Core features",
     "testimonials": "Testimonials",
+    "peopleUseSwetrix": "Hundreds of people already use Swetrix as their web analytics solution",
     "lTestimonials": [
       {
         "name": "Alex",
@@ -238,7 +240,8 @@
         "desc": "Your data is protected, all the features and fixes are implemented in a matter of days by our developers."
       }
     ],
-    "os": "<gradi>Open source</gradi> analytics - a powerful and simple tool.",
+    "timeToDitchGoogleAnalytics": "It's time <colour>to ditch</colour> Google Analytics.",
+    "whyDitch": "Tired of the frustration, complexity and privacy issues of Google Analytics? We were too. That's why we built Swetrix - the ethical, open source and fully cookieless alternative.",
     "custSupport": "Could not find the answer you're looking for? Reach out to our <mail>customer support</mail> team.",
     "whyUs": "Γιατί εμάς",
     "ourStats": "Τα στατιστικά μας",
@@ -261,6 +264,11 @@
       "2fa": "Two-factor authentication"
     }
   },
+  "referral": {
+    "desc": "Swetrix is an ethical, open source and completely cookie-less alternative to Google Analytics. It allows you to understand your users' behaviour, monitor your website performance, track your marketing campaigns and much more. All without invading your users' privacy!",
+    "cookieDetails": "If you click on the buttons above, a cookie will be stored for {{days}} days to reward the person who referred you and give you {{discount}}% off your first bill.",
+    "buttons": "Click on these buttons to receive {{discount}}% off your first bill!"
+  },
   "auth": {
     "recovery": {
       "title": "Ανάκτηση λογαριασμού",
@@ -279,7 +287,8 @@
       "2fa": "Επαλήθευση δύο βημάτων",
       "2faDesc": "Ανοίξτε την εφαρμογή ελέγχου ταυτότητας δύο παραγόντων στη συσκευή σας για να δείτε τον κωδικό ελέγχου ταυτότητας και να επαληθεύσετε την ταυτότητά σας.\nΜπορείτε επίσης να χρησιμοποιήσετε τον εφεδρικό σας κωδικό.",
       "2faUnavailable": "Μην έχετε πρόσβαση σε 2FA?\n<ctl>Επικοινωνήστε με την υποστήριξη</ctl>.",
-      "6digitCode": "6ψήφιος κωδικός πιστοποίησης"
+      "6digitCode": "6ψήφιος κωδικός πιστοποίησης",
+      "notAMember": "Not a member? <url>Start a {{amount}} day free trial</url>"
     },
     "signup": {
       "button": "Εγγραφή",
@@ -287,7 +296,8 @@
       "email": "Διεύθυνση e-mail",
       "create": "Δημιουργήστε τον λογαριασμό σας",
       "trial": "Start your free {{amount}} day trial",
-      "noCC": "No credit card required."
+      "noCC": "No credit card required.",
+      "alreadyAMember": "Already a member? <url>Sign in</url>"
     },
     "verification": {
       "success": "Το email σας επαληθεύτηκε επιτυχώς!"
@@ -315,69 +325,15 @@
       "checkLeakedPasswordDesc": "Όταν είναι ενεργοποιημένο, ελέγχουμε τον κωδικό πρόσβασής σας με τη βάση δεδομένων <db>{{database}}</db>. Δεν στέλνουμε τον κωδικό πρόσβασής σας στην υπηρεσία. Πρώτα κατακερµατίζουµε τον κωδικό σας (χρησιµοποιώντας SHA1) και στέλνουµε µόνο τους 5 πρώτους χαρακτήρες αυτού του κατακερµατισµού στην υπηρεσία. Η υπηρεσία επιστρέφει όλους τους διαρρεύσαντες κωδικούς πρόσβασης που ξεκινούν με αυτούς τους 5 χαρακτήρες. Στο τέλος μας ελέγχουμε αν ένας από αυτούς ταιριάζει με τον κωδικό πρόσβασής σας. Σας εμφανίζουμε μια προειδοποίηση εάν έχει διαρρεύσει ξανά. Ποτέ δεν αποθηκεύουμε τον κωδικό πρόσβασής σας σε απλό κείμενο.",
       "addedOn": "Added on",
       "continueWithGoogle": "Continue with Google",
-      "continueWithGithub": "Continue with Github"
+      "continueWithGithub": "Continue with Github",
+      "google": "Google",
+      "github": "Github",
+      "orContinueWith": "Or continue with"
     }
-  },
-  "features": {
-    "feature1Name": "Διαφάνεια",
-    "feature1Content": "Στη Swetrix, πιστεύουμε ότι όλοι έχουν δικαίωμα στην ιδιωτικότητα και τη διαφάνεια, ειδικά όταν πρόκειται για αναλύσεις.\nΔεν συλλέγουμε περισσότερες πληροφορίες από όσες <docs>διεκδικούμε</docs>, όλα τα δεδομένα αποθηκεύονται σε διακομιστές που βρίσκονται φυσικά στην Ευρωπαϊκή Ένωση και το σενάριο ανάλυσης είναι δημόσια διαθέσιμο και προσβάσιμο σε όλους στο <gh>Github</gh>.",
-    "feature2Name": "Πρόσθετα προγράμματος περιήγησης",
-    "feature2Content": "Θέλετε να δείτε γρήγορα στατιστικά στοιχεία για τον ιστότοπό σας;\nΈχουμε αναπτύξει τις επεκτάσεις <chrome>Chrome</chrome> και <firefox>Firefox</firefox> για το σκοπό αυτό.\nΧρησιμοποιώντας τις, μπορείτε να προβάλετε άμεσα τις πιο σημαντικές πληροφορίες, να λαμβάνετε ειδοποιήσεις για αιχμές επισκεψιμότητας και πολλά άλλα!",
-    "ready": "Είστε έτοιμοι να γνωρίσετε τους χρήστες σας;",
-    "start": "Ξεκινήστε να χρησιμοποιείτε το Swetrix σήμερα.",
-    "list": [
-      {
-        "name": "Performance monitoring",
-        "content": "With Swetrix you can stop guessing how fast does your website load across the globe.\nWe offer a wide range of metrics, such as page load time, DNS lookup time, TTFB and more.\nYou can see data breakdowns by time spent on frontend, backend or network, view this data for the specific countries, browsers, devices.\nAll of this is available in real-time, so you can see how your website performs at any given moment."
-      },
-      {
-        "name": "Custom alerts",
-        "content": "Do you want to track traffic spikes? Or maybe the pageviews for a specific time period? All this is available with custom alerts.\nYou can set up alerts for a wide range of metrics and receive notifications via messengers like Telegram when they get triggered."
-      },
-      {
-        "name": "Extensions & Extension Marketplace",
-        "content": "Is there some feature missing or you want to modify the Dashboard specifically for your needs? All of this is possible with Swetrix Extensions: we offer a customisable SDK which will allow you to modify the dashboard in any way you want, you can also publish your extension for other people to use or install addons people created from our Extension Marketplace."
-      },
-      {
-        "name": "AI forecasting",
-        "content": "You can forecast your website traffic with our AI-powered forecasting tool."
-      },
-      {
-        "name": "Public & Shared Dashboards",
-        "content": "With Swetrix you can make your dashboard available for other people to view.\nYou can also invite other Swetrix users to your projects, assign different roles to them."
-      },
-      {
-        "name": "Απλότητα",
-        "content": "Όταν δημιουργήσαμε την υπηρεσία μας, προσπαθήσαμε να την κάνουμε όσο το δυνατόν πιο απλή και ευέλικτη.\nΤέρμα οι μπερδεμένες μετρήσεις και τα περίπλοκα ταμπλό - μαζί μας μπορείτε να έχετε τον έλεγχο όλων των έργων και των δεδομένων σας με απλό και ξεκάθαρο τρόπο."
-      },
-      {
-        "name": "Παρακολούθηση προβολών σελίδας",
-        "content": "Η Swetrix προσφέρει τη δυνατότητα παρακολούθησης των προβολών σελίδων, συμπεριλαμβανομένων των μοναδικών προβολών καθώς και της ροής χρηστών.\nΌλες οι προβολές περιλαμβάνουν ένα ευρύ φάσμα δεδομένων, όπως η χώρα του χρήστη, η τοποθεσία, ο τύπος συσκευής, ο χρόνος φόρτωσης της σελίδας και πολλά άλλα.\nΔεν χρησιμοποιούμε cookies ή οποιοδήποτε άλλο είδος σκιαγράφησης προφίλ χρήστη για τη συλλογή δεδομένων. Όλα τα εισερχόμενα δεδομένα ανωνυμοποιούνται, διασφαλίζοντας ότι οι χρήστες δεν μπορούν να εντοπιστούν με οποιονδήποτε τρόπο βάσει αυτών."
-      },
-      {
-        "name": "Προσαρμοσμένη Παρακολούθηση Γεγονότων",
-        "content": "Εκτός από την παρακολούθηση των προβολών σελίδων, προσφέρουμε επίσης τη δυνατότητα παρακολούθησης προσαρμοσμένων συμβάντων.\nΜπορείτε να παρακολουθείτε οποιοδήποτε συμβάν, όπως κλικ σε κουμπιά, εγγραφές ή εξουσιοδοτήσεις.\nΌλα αυτά είναι επίσης εντελώς ιδιωτικά για τον χρήστη, καθώς δεν αποθηκεύουμε άλλες πληροφορίες για αυτόν μαζί με τα συμβάντα.\nΜπορείτε να διαβάσετε περισσότερα σχετικά με τα προσαρμοσμένα συμβάντα στην τεκμηρίωσή μας."
-      },
-      {
-        "name": "API προγραμματιστών",
-        "content": "We offer a developer API, which allows you to integrate Swetrix into your own applications.\nYou can use our API to create custom dashboards, or to integrate Swetrix into your own applications."
-      },
-      {
-        "name": "Ευκολία",
-        "content": "Besides the big features we try to focus on small things that make any project better.\nYou can customise Swetrix for your needs, for example use your native language or your favourite theme, set up 2FA, use a timezone or a time notation you prefer."
-      },
-      {
-        "name": "Ταχύτητα",
-        "content": "Είμαστε γρήγοροι. Το σενάριό μας για τις αναλύσεις είναι όσο το δυνατόν πιο βελτιστοποιημένο και χρησιμοποιεί CDN για την παράδοσή του, γεγονός που διασφαλίζει ότι το σενάριο δεν θα επιβραδύνει τους ιστότοπούς σας."
-      },
-      {
-        "name": "Εμπιστοσύνη",
-        "content": "Είμαστε μια μικρή επιχείρηση, όχι μια μεγάλη εταιρεία.\nΜας ενδιαφέρει να δημιουργήσουμε ένα καλό και ποιοτικό προϊόν που θα χρησιμοποιείται από ικανοποιημένους πελάτες, όχι να αποσπάσουμε όσο το δυνατόν περισσότερα χρήματα από τους χρήστες μας ή να πουλήσουμε τα προσωπικά σας δεδομένα."
-      }
-    ]
   },
   "profileSettings": {
     "logoutAll": "Log out from all devices",
+    "account": "Account",
     "general": "Γενικές ρυθμίσεις",
     "update": "Ενημέρωση προφίλ",
     "email": "Αναφορές email",
@@ -463,7 +419,45 @@
     "regenerateSecretKeyMessage": "Are you sure you want to regenerate your secret key?\nAll the existing CAPTCHA widgets will stop working and you will need to update them with the new secret key.",
     "captchaSecretKeyHint": "This is your secret key, it is used to verify the CAPTCHA response on your server. Keep it secret and do not share it with anyone.",
     "showVisitorsInTitle": "Show live visitors in the page title",
-    "uiSettings": "UI Settings"
+    "uiSettings": "UI Settings",
+    "passwordChangeWarningModal": {
+      "title": "You're about to change your password",
+      "body": "You're about to change your password, this will log you out from all devices (including this one) and you will need to log in again with your new password."
+    },
+    "referral": {
+      "title": "Referral program",
+      "desc": "Referral program allows you to earn money by inviting new users to Swetrix.\nYou will receive a part of the subscription fee paid by the invited user and will be able to withdraw it to your PayPal account. Learn more about the referral program at <url>Swetrix Referral Program</url> documentation page.",
+      "referralLink": "Referral link",
+      "payoutEmail": "Referral payout email address",
+      "payoutEmailDesc": "We will send your referral payouts via PayPal to this email address each month. Double check that it is correct.",
+      "payoutEmailUpdated": "Payout email address has been updated",
+      "yourReferralLink": "Your referral link",
+      "referralLinkDesc": "This is your referral link, you can share it with your friends and earn money for each user that signs up and buys a paid plan using it.",
+      "generateRefLink": "Generate referral link",
+      "referralStats": "Referral statistics",
+      "activeReferrals": "Active referrals",
+      "trial": "Trial referrals",
+      "trialDesc": "Trial users referred by you",
+      "active": "Active referrals",
+      "activeDesc": "Paid subsribers referred by you",
+      "paid": "Paid",
+      "paidDesc": "Total amount paid to you",
+      "nextPayout": "Next payout",
+      "nextPayoutDesc": "How much you will get paid next time",
+      "pending": "Pending",
+      "pendingDesc": "Amount of money pending to be paid to you. It takes {{days}} days for the funds to become available.",
+      "activeReferralsTable": {
+        "plan": "Referral tier",
+        "yourCut": "Your cut",
+        "yourCutDesc": "You will receive {{amount}}% of the subscription fee paid by the user after all fees. Currently our merchant provider charges us {{fee}} per transaction.",
+        "registrationDate": "Registration date"
+      }
+    }
+  },
+  "alertsSettings": {
+    "alertCreated": "The alert has been created",
+    "alertUpdated": "The alert has been updated",
+    "alertDeleted": "The alert has been deleted"
   },
   "dashboard": {
     "newProject": "Νέο έργο",
@@ -512,6 +506,7 @@
   },
   "alert": {
     "create": "Create an alert",
+    "customEvent": "Custom event name",
     "add": "Add Alert",
     "delete": "Delete alert",
     "noNameError": "Please enter a name for the alert.",
@@ -542,7 +537,8 @@
     "metrics": {
       "page_views": "Page views",
       "unique_page_views": "Unique sessions",
-      "online_users": "Online users"
+      "online_users": "Online users",
+      "custom_events": "Custom events"
     }
   },
   "notFoundPage": {
@@ -720,9 +716,10 @@
   "billing": {
     "title": "Χρέωση & Σχέδια",
     "desc": "Είναι δωρεάν να ξεκινήσετε και να χρησιμοποιήσετε τις υπηρεσίες μας.\nΑν χρειαστεί να διαχειριστείτε περισσότερη κίνηση, πιθανότατα θα πρέπει να αναβαθμίσετε το πρόγραμμά σας.\nΠαρακάτω παρατίθεται μια λίστα με τα διαθέσιμα πακέτα. Δεν υπάρχουν κρυφές χρεώσεις ή άλλα BS, όλα είναι ξεκάθαρα και διαφανή!",
-    "contact": "Need to track more than {{amount}} million events per month?\nContact us at <mail>{{email}}</mail> to discuss your needs.",
+    "contact": "Do you have more than {{amount}} million events per month? <url>Get in touch</url> to discuss your needs!",
     "update": "Ενημέρωση στοιχείων πληρωμής",
     "nextBillDate": "Επόμενη ημερομηνία λογαριασμού:",
+    "nextBillDateIs": "Your next bill date is {{date}}",
     "trialEnds": "Trial ends {{date}}",
     "cancelSub": "Cancel subscription",
     "noSubWarning": "You don't have an active subscription.\nNo new analytics data will be stored into our database. You can still view the data that was collected before the subscription was cancelled.",
@@ -740,7 +737,14 @@
     "dueNow": "Due now",
     "dueNowDescription": "You will be charged pro-rated amount for the remaining days of the current billing period.",
     "negativePayment": "Negative 'Amount' means that you will have a credit balance of {{currency}}{{dueNowAmount}}. You will be billed {{currency}}0.00 on {{dueNowDate}}. Once the credit balance is used up, your recurring billing amount will be {{currency}}{{nextPaymentAmount}} every billing cycle of your subscription plan.",
-    "nextPayment": "Next payment"
+    "nextPayment": "Next payment",
+    "subscription": "Subscription",
+    "planUsageDesc": "The plan usage shows the number of events (page views, custom events, CAPTCHA completions) that you have used for the current month.",
+    "xofy": "{{x}} of {{y}}",
+    "resetDate": "The plan usage resets on the first day of each month.",
+    "selectPlan": "Select a subscription plan to unveil full Swetrix potential.",
+    "changePlan": "You can change or cancel your subscription plan at any time here.",
+    "membersNotification": "Pageviews, custom events and CAPTCHA completions are counted towards the limit of the subscription of the account owner. People you invite into your projects don't need a subscription."
   },
   "modals": {
     "paidFeature": {
@@ -754,10 +758,9 @@
     }
   },
   "pricing": {
-    "title": "Προγράμματα Τιμολόγησης",
-    "adv": "Ξεκινήστε δωρεάν, χωρίς πιστωτική κάρτα.\nΌταν η επιχείρησή σας αναπτύσσεται, μπορείτε να αναβαθμίσετε το πρόγραμμά σας ανά πάσα στιγμή.",
+    "title": "Simple, traffic-based pricing",
+    "adv": "Try Swetrix on your website for {{amount}} days - completely free of charge.\nNo credit card required. No strings attached.",
     "currentPlan": "Τρέχον πλάνο",
-    "mostPopular": "Τα πιο δημοφιλή",
     "free": "Δωρεἀν",
     "legacy": "Legacy",
     "perMonth": "μήν",
@@ -766,9 +769,11 @@
     "downgrade": "Υποβάθμιση",
     "upgrade": "Αναβάθμιση",
     "whatIncl": "Τι περιλαμβάνεται",
-    "monthlyBilling": "Μηνιαία τιμολόγηση",
-    "yearlyBilling": "Ετήσια τιμολόγηση",
+    "monthlyBilling": "Monthly",
+    "yearlyBilling": "Yearly",
     "switchToMonthly": "Αλλαγή σε μηνιαία χρέωση",
+    "frequency": "Payment frequency",
+    "eventPerMonth": "Events per month",
     "switchToYearly": "Αλλαγή σε ετήσια χρέωση",
     "xTrialDaysLeft": "{{amount}} trial days left",
     "trialEnded": "Trial ended",
@@ -846,13 +851,12 @@
     "verification": "Επαλήθευση email",
     "invitation": "Shared project invitation",
     "profileSettings": "Ρυθμίσεις προφίλ",
-    "features": "Χαρακτηριστικά",
     "dashboard": "Πίνακας ελέγχου",
     "docs": "Τεκμηρίωση",
     "billing": "Χρέωση",
     "contact": "Επικοινωνία",
     "changelog": "Changelog",
-    "main": "Απόλυτα analytics ανοιχτού κώδικα για να ικανοποιήσετε όλες τις ανάγκες σας",
+    "main": "Ultimate open-source web analytics to satisfy all your needs",
     "press": "Media & Press",
     "socialisation": "Socialisation",
     "open": "Open startup",
