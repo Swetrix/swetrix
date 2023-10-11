@@ -24,6 +24,16 @@ const CLICKHOUSE_INIT_QUERIES = [
   )
   ENGINE = MergeTree()
   ORDER BY userId;`,
+
+  `CREATE TABLE IF NOT EXISTS ${dbName}.sfuser
+  (
+    id String,
+    timezone Nullable(String),
+    timeFormat Nullable(String),
+    showLiveVisitorsInTitle Int8
+  )
+  ENGINE = MergeTree()
+  PRIMARY KEY id;`,
 ]
 
 const initialiseSelfhosted = async () => {
