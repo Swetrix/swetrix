@@ -51,7 +51,11 @@ export class UserController {
       await updateUserClickhouse({
         showLiveVisitorsInTitle: Number(show),
       })
-    } catch (_) {
+    } catch (reason) {
+      console.error(
+        '[ERROR](setShowLiveVisitors) Failed to update current user',
+        reason,
+      )
       throw new BadRequestException(
         'An error occurred while updating live visitors user setting',
       )
@@ -84,7 +88,11 @@ export class UserController {
         ...user,
         ...settings,
       }
-    } catch (_) {
+    } catch (reason) {
+      console.error(
+        '[ERROR](updateCurrentUser) Failed to update current user',
+        reason,
+      )
       throw new BadRequestException('An error occurred while updating user')
     }
   }

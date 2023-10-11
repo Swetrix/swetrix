@@ -25,6 +25,7 @@ import {
   isDevelopment,
   isProxiedByCloudflare,
 } from './constants'
+import { DEFAULT_TIMEZONE, TimeFormat } from '../user/entities/user.entity'
 import { Project } from '../project/entity/project.entity'
 
 dayjs.extend(utc)
@@ -241,7 +242,12 @@ const updateUserClickhouse = async (user: IClickhouseUser) => {
   const userExists = await userClickhouseExists()
 
   if (!userExists) {
-    await createUserClickhouse(user)
+    await createUserClickhouse({
+      timezone: DEFAULT_TIMEZONE,
+      timeFormat: TimeFormat['12-hour'],
+      showLiveVisitorsInTitle: 0,
+      ...user,
+    })
   }
 
   const paramsData = {
