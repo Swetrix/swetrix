@@ -30,7 +30,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     id String,
     timezone Nullable(String),
     timeFormat Nullable(String),
-    showLiveVisitorsInTitle Int8
+    showLiveVisitorsInTitle Nullable(Int8)
   )
   ENGINE = MergeTree()
   PRIMARY KEY id;`,

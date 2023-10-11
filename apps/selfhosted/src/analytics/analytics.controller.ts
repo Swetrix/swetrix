@@ -769,7 +769,6 @@ export class AnalyticsController {
     try {
       const values = `(${dto.map(getElValue).join(',')})`
       await redis.rpush(REDIS_LOG_CUSTOM_CACHE_KEY, values)
-      return
     } catch (e) {
       this.logger.error(e)
       throw new InternalServerErrorException(
@@ -903,8 +902,6 @@ export class AnalyticsController {
       if (!_isEmpty(perfDTO)) {
         await redis.rpush(REDIS_LOG_PERF_CACHE_KEY, perfValues)
       }
-
-      return
     } catch (e) {
       this.logger.error(e)
       throw new InternalServerErrorException(
