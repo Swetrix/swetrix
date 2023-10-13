@@ -72,6 +72,7 @@ import {
   IBuildUserFlow,
   IExtractChartData,
   IGenerateXAxis,
+  IAggregatedMetadata,
 } from './interfaces'
 
 dayjs.extend(utc)
@@ -1710,7 +1711,9 @@ export class AnalyticsService {
     }
   }
 
-  async getCustomEventMetadata(data: GetCustomEventMetadata) {
+  async getCustomEventMetadata(
+    data: GetCustomEventMetadata,
+  ): Promise<IAggregatedMetadata[]> {
     const {
       pid,
       period,
@@ -1769,7 +1772,7 @@ export class AnalyticsService {
 
     try {
       const result = await clickhouse.query(query, paramsData).toPromise()
-      return result
+      return result as IAggregatedMetadata[]
     } catch (reason) {
       console.error(`[ERROR](getCustomEventMetadata): ${reason}`)
       throw new InternalServerErrorException(

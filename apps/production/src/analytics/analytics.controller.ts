@@ -5,7 +5,6 @@ import * as _pick from 'lodash/pick'
 import * as _includes from 'lodash/includes'
 import * as _keys from 'lodash/keys'
 import * as _values from 'lodash/values'
-import * as _toString from 'lodash/toString'
 import * as _map from 'lodash/map'
 import * as _uniqBy from 'lodash/uniqBy'
 import * as _round from 'lodash/round'
@@ -68,7 +67,7 @@ import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { GetCustomEventsDto } from './dto/get-custom-events.dto'
 import { GetFiltersDto } from './dto/get-filters.dto'
-import { IUserFlow } from './interfaces'
+import { IAggregatedMetadata, IUserFlow } from './interfaces'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mysql = require('mysql2')
@@ -421,7 +420,7 @@ export class AnalyticsController {
     @Query() data: GetCustomEventMetadata,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
-  ): Promise<any> {
+  ): Promise<IAggregatedMetadata[]> {
     const { pid, period } = data
     this.analyticsService.validatePID(pid)
 

@@ -62,7 +62,7 @@ import { getGeoDetails, getIPFromHeaders } from '../common/utils'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { GetCustomEventsDto } from './dto/get-custom-events.dto'
-import { IUserFlow } from './interfaces'
+import { IAggregatedMetadata, IUserFlow } from './interfaces'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mysql = require('mysql2')
@@ -380,7 +380,7 @@ export class AnalyticsController {
   async getCustomEventMetadata(
     @Query() data: GetCustomEventMetadata,
     @CurrentUserId() uid: string,
-  ): Promise<any> {
+  ): Promise<IAggregatedMetadata[]> {
     const { pid, period } = data
     this.analyticsService.validatePID(pid)
 
