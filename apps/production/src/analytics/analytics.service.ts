@@ -1756,7 +1756,7 @@ export class AnalyticsService {
     WHERE pid = {pid:FixedString(12)}
       AND created BETWEEN {groupFrom:String} AND {groupTo:String}
       AND ev = {event:String}
-    GROUP BY k, v`
+    GROUP BY key, value`
 
     const paramsData = {
       params: {
