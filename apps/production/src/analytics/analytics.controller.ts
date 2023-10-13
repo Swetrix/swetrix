@@ -913,6 +913,8 @@ export class AnalyticsController {
 
     await this.analyticsService.validate(eventsDTO, origin, 'custom', ip)
 
+    this.analyticsService.validateCustomEVMeta(eventsDTO.meta)
+
     if (eventsDTO.unique) {
       const salt = await redis.get(REDIS_SESSION_SALT_KEY)
       const sessionHash = getSessionKeyCustom(

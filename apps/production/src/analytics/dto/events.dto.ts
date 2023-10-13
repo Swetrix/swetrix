@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty } from 'class-validator'
+import { IsNotEmpty, IsOptional, IsObject } from 'class-validator'
 
 export class EventsDTO {
   @ApiProperty({
@@ -74,5 +74,7 @@ export class EventsDTO {
     },
     description: 'Event-related metadata object with string values',
   })
+  @IsOptional()
+  @IsObject()
   meta?: Record<string, string>
 }

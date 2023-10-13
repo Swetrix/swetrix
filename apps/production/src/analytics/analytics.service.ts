@@ -12,6 +12,7 @@ import * as _last from 'lodash/last'
 import * as _some from 'lodash/some'
 import * as _find from 'lodash/find'
 import * as _now from 'lodash/now'
+import * as _isString from 'lodash/isString'
 import * as _values from 'lodash/values'
 import * as _round from 'lodash/round'
 import * as _filter from 'lodash/filter'
@@ -1695,6 +1696,18 @@ export class AnalyticsService {
     }
 
     return result
+  }
+
+  validateCustomEVMeta(meta: any) {
+    if (typeof meta === 'undefined') {
+      return
+    }
+
+    if (_some(_values(meta), val => !_isString(val))) {
+      throw new UnprocessableEntityException(
+        'The provided custom event metadata is incorrect (some values are not strings)',
+      )
+    }
   }
 
   async getCustomEventMetadata(data: GetCustomEventMetadata) {
