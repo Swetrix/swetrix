@@ -911,9 +911,8 @@ export class AnalyticsController {
 
     const ip = getIPFromHeaders(headers, true) || reqIP || ''
 
-    await this.analyticsService.validate(eventsDTO, origin, 'custom', ip)
-
     this.analyticsService.validateCustomEVMeta(eventsDTO.meta)
+    await this.analyticsService.validate(eventsDTO, origin, 'custom', ip)
 
     if (eventsDTO.unique) {
       const salt = await redis.get(REDIS_SESSION_SALT_KEY)
@@ -960,7 +959,7 @@ export class AnalyticsController {
       region,
       city,
       _keys(eventsDTO.meta),
-      _map(_values(eventsDTO.meta), _toString),
+      _values(eventsDTO.meta),
     )
 
     try {
