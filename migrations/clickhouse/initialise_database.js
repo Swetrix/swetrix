@@ -49,6 +49,11 @@ const CLICKHOUSE_INIT_QUERIES = [
     cc Nullable(FixedString(2)),
     rg LowCardinality(Nullable(String)),
     ct Nullable(String),
+    meta Nested
+    (
+      key String,
+      value String
+    ),
     created DateTime('UTC')
   )
   ENGINE = MergeTree()

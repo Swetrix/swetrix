@@ -56,6 +56,7 @@ import { EventsDTO } from './dto/events.dto'
 import { ProjectService } from '../project/project.service'
 import { Project } from '../project/entity/project.entity'
 import { TimeBucketType } from './dto/getData.dto'
+import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
 import {
   PerformanceCHResponse,
   CustomsCHResponse,
@@ -1694,6 +1695,74 @@ export class AnalyticsService {
     }
 
     return result
+  }
+
+  async getCustomEventMetadata(data: GetCustomEventMetadata) {
+    const {
+      pid,
+      period,
+      timeBucket,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE,
+      event,
+    } = data
+
+    let newTimebucket = timeBucket
+
+    let diff
+
+    if (period === 'all') {
+      const res = await this.getTimeBucketForAllTime(pid, period, timezone)
+
+      diff = res.diff
+      // eslint-disable-next-line prefer-destructuring
+      newTimebucket = _includes(res.timeBucket, timeBucket)
+        ? timeBucket
+        : res.timeBucket[0]
+    }
+
+    this.validateTimebucket(newTimebucket)
+
+    const safeTimezone = this.getSafeTimezone(timezone)
+    const { groupFromUTC, groupToUTC } = this.getGroupFromTo(
+      from,
+      to,
+      newTimebucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const query = `SELECT 
+      meta.key AS key, 
+      meta.value AS value,
+      count() AS count
+    FROM customEV
+    ARRAY JOIN meta.key, meta.value
+    WHERE pid = {pid:FixedString(12)}
+      AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+      AND ev = {event:String}
+    GROUP BY k, v`
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+        event,
+      },
+    }
+
+    try {
+      const result = await clickhouse.query(query, paramsData).toPromise()
+      return result
+    } catch (reason) {
+      console.error(`[ERROR](getCustomEventMetadata): ${reason}`)
+      throw new InternalServerErrorException(
+        'Something went wrong. Please, try again later.',
+      )
+    }
   }
 
   async getOnlineUserCount(pid: string): Promise<number> {

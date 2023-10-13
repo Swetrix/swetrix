@@ -66,4 +66,13 @@ export class EventsDTO {
     description: 'utm_campaign URL parameter',
   })
   ca?: string
+
+  @ApiProperty({
+    example: {
+      affiliate: 'Yes',
+      protocol: 'HTTPS',
+    },
+    description: 'Event-related metadata object with string values',
+  })
+  meta?: Record<string, string>
 }

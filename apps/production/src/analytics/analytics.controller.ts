@@ -3,6 +3,9 @@ import * as _isArray from 'lodash/isArray'
 import * as _toNumber from 'lodash/toNumber'
 import * as _pick from 'lodash/pick'
 import * as _includes from 'lodash/includes'
+import * as _keys from 'lodash/keys'
+import * as _values from 'lodash/values'
+import * as _toString from 'lodash/toString'
 import * as _map from 'lodash/map'
 import * as _uniqBy from 'lodash/uniqBy'
 import * as _round from 'lodash/round'
@@ -45,6 +48,7 @@ import { RolesGuard } from '../auth/guards/roles.guard'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
 import { AnalyticsGET_DTO } from './dto/getData.dto'
+import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
 import { GetUserFlowDTO } from './dto/getUserFlow.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import {
@@ -173,7 +177,9 @@ const customLogDTO = (
   cc: string,
   rg: string,
   ct: string,
-): Array<string | number> => {
+  keys: string[],
+  values: string[],
+): Array<string | number | string[]> => {
   return [
     pid,
     ev,
@@ -189,11 +195,17 @@ const customLogDTO = (
     cc,
     rg,
     ct,
+    keys,
+    values,
     dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
   ]
 }
 
 export const getElValue = el => {
+  if (_isArray(el)) {
+    return `[${_map(el, getElValue).join(',')}]`
+  }
+
   if (el === undefined || el === null || el === 'NULL') return 'NULL'
   return mysql.escape(el)
 }
@@ -401,6 +413,29 @@ export class AnalyticsController {
       appliedFilters,
       timeBucket: allowedTumebucketForPeriodAll,
     }
+  }
+
+  @Get('meta')
+  @Auth([], true, true)
+  async getCustomEventMetadata(
+    @Query() data: GetCustomEventMetadata,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<any> {
+    const { pid, period } = data
+    this.analyticsService.validatePID(pid)
+
+    if (!_isEmpty(period)) {
+      this.analyticsService.validatePeriod(period)
+    }
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    return this.analyticsService.getCustomEventMetadata(data)
   }
 
   @Get('filters')
@@ -922,6 +957,8 @@ export class AnalyticsController {
       country,
       region,
       city,
+      _keys(eventsDTO.meta),
+      _map(_values(eventsDTO.meta), _toString),
     )
 
     try {
