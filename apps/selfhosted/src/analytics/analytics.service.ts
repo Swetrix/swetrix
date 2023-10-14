@@ -15,6 +15,7 @@ import * as _now from 'lodash/now'
 import * as _values from 'lodash/values'
 import * as _round from 'lodash/round'
 import * as _filter from 'lodash/filter'
+import * as _isString from 'lodash/isString'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as dayjsTimezone from 'dayjs/plugin/timezone'
@@ -48,6 +49,7 @@ import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
 import { ProjectService } from '../project/project.service'
 import { Project } from '../project/entity/project.entity'
+import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
 import { TimeBucketType } from './dto/getData.dto'
 import {
   PerformanceCHResponse,
@@ -63,6 +65,7 @@ import {
   IBuildUserFlow,
   IExtractChartData,
   IGenerateXAxis,
+  IAggregatedMetadata,
 } from './interfaces'
 
 dayjs.extend(utc)
@@ -1521,6 +1524,88 @@ export class AnalyticsService {
     }
 
     return result
+  }
+
+  validateCustomEVMeta(meta: any) {
+    if (typeof meta === 'undefined') {
+      return
+    }
+
+    if (_some(_values(meta), val => !_isString(val))) {
+      throw new UnprocessableEntityException(
+        'The provided custom event metadata is incorrect (some values are not strings)',
+      )
+    }
+  }
+
+  async getCustomEventMetadata(
+    data: GetCustomEventMetadata,
+  ): Promise<IAggregatedMetadata[]> {
+    const {
+      pid,
+      period,
+      timeBucket,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE,
+      event,
+    } = data
+
+    let newTimebucket = timeBucket
+
+    let diff
+
+    if (period === 'all') {
+      const res = await this.getTimeBucketForAllTime(pid, period, timezone)
+
+      diff = res.diff
+      // eslint-disable-next-line prefer-destructuring
+      newTimebucket = _includes(res.timeBucket, timeBucket)
+        ? timeBucket
+        : res.timeBucket[0]
+    }
+
+    this.validateTimebucket(newTimebucket)
+
+    const safeTimezone = this.getSafeTimezone(timezone)
+    const { groupFromUTC, groupToUTC } = this.getGroupFromTo(
+      from,
+      to,
+      newTimebucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const query = `SELECT 
+      meta.key AS key, 
+      meta.value AS value,
+      count() AS count
+    FROM customEV
+    ARRAY JOIN meta.key, meta.value
+    WHERE pid = {pid:FixedString(12)}
+      AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+      AND ev = {event:String}
+    GROUP BY key, value`
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+        event,
+      },
+    }
+
+    try {
+      const result = await clickhouse.query(query, paramsData).toPromise()
+      return result as IAggregatedMetadata[]
+    } catch (reason) {
+      console.error(`[ERROR](getCustomEventMetadata): ${reason}`)
+      throw new InternalServerErrorException(
+        'Something went wrong. Please, try again later.',
+      )
+    }
   }
 
   async getOnlineUserCount(pid: string): Promise<number> {

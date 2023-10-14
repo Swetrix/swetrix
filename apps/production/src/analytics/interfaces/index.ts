@@ -93,3 +93,9 @@ export interface IExtractChartData {
   uniques: number[]
   sdur: number[]
 }
+
+export interface IAggregatedMetadata {
+  key: string
+  value: string
+  count: number
+}

@@ -5,6 +5,8 @@ import * as _map from 'lodash/map'
 import * as _uniqBy from 'lodash/uniqBy'
 import * as _round from 'lodash/round'
 import * as _includes from 'lodash/includes'
+import * as _keys from 'lodash/keys'
+import * as _values from 'lodash/values'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as dayjsTimezone from 'dayjs/plugin/timezone'
@@ -44,6 +46,7 @@ import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
 import { AnalyticsGET_DTO } from './dto/getData.dto'
 import { GetFiltersDto } from './dto/get-filters.dto'
+import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
 import { GetUserFlowDTO } from './dto/getUserFlow.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import {
@@ -59,7 +62,7 @@ import { getGeoDetails, getIPFromHeaders } from '../common/utils'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { GetCustomEventsDto } from './dto/get-custom-events.dto'
-import { IUserFlow } from './interfaces'
+import { IAggregatedMetadata, IUserFlow } from './interfaces'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mysql = require('mysql2')
@@ -168,7 +171,9 @@ const customLogDTO = (
   cc: string,
   rg: string,
   ct: string,
-): Array<string | number> => {
+  keys: string[],
+  values: string[],
+): Array<string | number | string[]> => {
   return [
     pid,
     ev,
@@ -184,11 +189,17 @@ const customLogDTO = (
     cc,
     rg,
     ct,
+    keys,
+    values,
     dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
   ]
 }
 
 const getElValue = el => {
+  if (_isArray(el)) {
+    return `[${_map(el, getElValue).join(',')}]`
+  }
+
   if (el === undefined || el === null || el === 'NULL') return 'NULL'
   return mysql.escape(el)
 }
@@ -362,6 +373,24 @@ export class AnalyticsController {
       appliedFilters: parsedFilters,
       timeBucket: allowedTumebucketForPeriodAll,
     }
+  }
+
+  @Get('meta')
+  @Auth([], true, true)
+  async getCustomEventMetadata(
+    @Query() data: GetCustomEventMetadata,
+    @CurrentUserId() uid: string,
+  ): Promise<IAggregatedMetadata[]> {
+    const { pid, period } = data
+    this.analyticsService.validatePID(pid)
+
+    if (!_isEmpty(period)) {
+      this.analyticsService.validatePeriod(period)
+    }
+
+    await this.analyticsService.checkProjectAccess(pid, uid)
+
+    return this.analyticsService.getCustomEventMetadata(data)
   }
 
   @Get('filters')
@@ -739,6 +768,7 @@ export class AnalyticsController {
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
+    this.analyticsService.validateCustomEVMeta(eventsDTO.meta)
     await this.analyticsService.validate(eventsDTO, origin, 'custom', ip)
 
     if (eventsDTO.unique) {
@@ -785,6 +815,8 @@ export class AnalyticsController {
       country,
       region,
       city,
+      _keys(eventsDTO.meta),
+      _values(eventsDTO.meta),
     )
 
     try {
