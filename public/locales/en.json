@@ -576,6 +576,7 @@
       "os": "OS name"
     },
     "redactedPage": "Redacted page",
+    "noData": "No data to display",
     "overview": "Overview",
     "weeklyStats": "Weekly stats",
     "statsFor": "Stats for",

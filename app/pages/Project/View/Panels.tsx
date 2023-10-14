@@ -578,7 +578,7 @@ const KVTable = ({
   if (_isEmpty(data)) {
     return (
       <p className='text-gray-600 dark:text-gray-200 mb-2'>
-        No data to display
+        {t('project.noData')}
       </p>
     )
   }
