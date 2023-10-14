@@ -250,9 +250,9 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                           className='inline-flex ml-1 items-center space-x-1 text-sm font-semibold leading-6 text-slate-700 dark:text-slate-300 hover:underline'
                           to={`blog/${lastBlogPost.handle}`}
                         >
-                          <span>
+                          <small className='text-sm'>
                             {lastBlogPost.title}
-                          </span>
+                          </small>
                           <ChevronRightIcon className='h-4 w-4 text-slate-500' aria-hidden='true' />
                         </Link>
                       )}
