@@ -708,9 +708,9 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                       <br />
                       {item.role}
                     </p>
-                    <p className='text-slate-900 dark:text-white text-md text mt-2 leading-9 whitespace-pre-line'>
+                    <cite className='text-slate-900 dark:text-white text-md text mt-2 leading-9 whitespace-pre-line not-italic'>
                       {item.desc}
-                    </p>
+                    </cite>
                   </div>
                 </div>
               ))}
