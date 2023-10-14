@@ -30,6 +30,11 @@ export interface TrackEventOptions {
 
   /** If set to `true`, only 1 event with the same ID will be saved per user session. */
   unique?: boolean
+
+  /** Event-related metadata object with string values. */
+  meta?: {
+    [key: string]: string
+  }
 }
 
 /**

@@ -20,6 +20,10 @@ export interface TrackEventOptions {
     ev: string;
     /** If set to `true`, only 1 event with the same ID will be saved per user session. */
     unique?: boolean;
+    /** Event-related metadata object with string values. */
+    meta?: {
+        [key: string]: string;
+    };
 }
 /**
  * The object returned by `trackPageViews()`, used to stop tracking pages.
