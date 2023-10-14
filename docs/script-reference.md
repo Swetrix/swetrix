@@ -34,6 +34,11 @@ swetrix.init('YOUR_PROJECT_ID', {
 | apiURL | Set a custom URL of the API server (for selfhosted variants of Swetrix). | `'https://api.swetrix.com/log'` |
 
 ## track()
+:::warning
+It is important to ensure that no [Personal Data](https://en.wikipedia.org/wiki/Personal_data) that could identify a specific individual is transmitted in a metadata or custom event name field. Personally identifiable information (PII) is any information that can uniquely identify an individual, including full name, email address, phone number, credit card number, etc.
+All other information is anonymised.
+:::
+
 With this function you can track any custom events you want.
 You should never send any identifiable data (like User ID, email, session cookie, etc.) as an event name.
 The total number of track calls and their conversion rate will be saved.
@@ -50,6 +55,7 @@ swetrix.track({
 | --- | --- | --- |
 | ev | The event identifier you want to track.<br />This has to be a string, which:<br />1. Contains only English letters (a-Z A-Z), numbers (0-9), underscores (_) and dots (.).<br />2. Is fewer than 64 characters.<br />3. Starts with an English letter. | REQUIRED PARAMETER |
 | unique | If true, only 1 event with the same ID will be saved per user session.<br />The principle of this parameter is similar to page views and unique views. | `false` |
+| meta | An object that contains event-related metadata. The values of the object must be strings, the maximum number of keys allowed is `20` and the total length of the values combined must be less than `1000` characters.<br /> This feature is useful if you want to track additional data about your custom events, for example the custom event name might be `Sign up` and the metadata might be `{ affiliate: 'Yes', footer: 'No' }`. | `{}` |
 
 ## trackViews()
 Calling trackViews will result in sending the data about the user to our servers.
