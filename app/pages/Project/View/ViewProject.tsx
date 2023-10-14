@@ -65,7 +65,8 @@ import routes from 'routesPath'
 import Header from 'components/Header'
 import Footer from 'components/Footer'
 import {
-  getProjectData, getProject, getOverallStats, getLiveVisitors, getPerfData, getProjectDataCustomEvents, getProjectCompareData, checkPassword,
+  getProjectData, getProject, getOverallStats, getLiveVisitors, getPerfData, getProjectDataCustomEvents,
+  getProjectCompareData, checkPassword, getCustomEventsMetadata,
 } from 'api'
 import { getChartPrediction } from 'api/ai'
 import {
@@ -855,6 +856,14 @@ const ViewProject = ({
       console.error('[ERROR](loadAnalytics) Loading analytics data failed')
       console.error(e)
     }
+  }
+
+  const getCustomEventMetadata = async (event: string) => {
+    if (period === 'custom' && dateRange) {
+      return getCustomEventsMetadata(id, event, timeBucket, '', getFormatDate(dateRange[0]), getFormatDate(dateRange[1]), timezone, projectPassword)
+    }
+
+    return getCustomEventsMetadata(id, event, timeBucket, period, '', '', timezone, projectPassword)
   }
 
   // similar to loadAnalytics but using for performance tab
@@ -2507,6 +2516,7 @@ const ViewProject = ({
                       onFilter={filterHandler}
                       chartData={chartData}
                       customTabs={_filter(customPanelTabs, tab => tab.panelID === 'ce')}
+                      getCustomEventMetadata={getCustomEventMetadata}
                     />
                   )}
                 </div>

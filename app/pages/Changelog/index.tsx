@@ -15,6 +15,20 @@ const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 // Date format: YYYY-MM-DD
 const changelog = [
   {
+    date: '2023-10-14',
+    changes: [
+      'Added custom events metadata feature.',
+      'Reworked the plan usage section on the billing page.',
+      'Reworked billing page, added a lot of new tiers',
+      'Reworked auth pages.',
+      'Added alerts for custom events.',
+      'Rewritten and moved blog from a separate domain to the main domain.',
+      'Fixed an issue which caused unclickable "Shared projects" tab on mobile devices for account that have no shared projects.',
+      'Added Admin API.',
+      'And a lot of other small improvements and fixes.',
+    ],
+  },
+  {
     date: '2023-07-22',
     changes: [
       'Added 2 new periods: \'All time\' and \'This hour\'. The \'All time\' period will show you the statistics for the whole period since you\'ve created the project, and the \'This hour\' period will show you the statistics for the last 60 minutes (with the \'minute\' time bucket).',

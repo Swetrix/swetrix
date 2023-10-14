@@ -434,6 +434,33 @@ export const getProjectData = (
         : error.response.data.message
     })
 
+export const getCustomEventsMetadata = (
+  pid: string,
+  event: string,
+  tb: string = 'hour',
+  period: string = '1d',
+  from: string = '',
+  to: string = '',
+  timezone: string = '',
+  password: string | undefined = '',
+) =>
+  api
+    .get(
+      `log/meta?pid=${pid}&timeBucket=${tb}&period=${period}&from=${from}&to=${to}&timezone=${timezone}&event=${event}`,
+      {
+        headers: {
+          'x-password': password,
+        },
+      },
+    )
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
 export const getProjectCompareData = (
   pid: string,
   tb: string = 'hour',
@@ -1163,7 +1190,7 @@ export const getBlogPost = (slug: string) =>
       throw error
     })
 
-export const getSitemap = () => 
+export const getSitemap = () =>
   api
     .get('v1/blog/sitemap')
     .then((response) => response.data)
@@ -1194,4 +1221,3 @@ export const getLastPost = () =>
         ? error.response.data
         : error.response.data.message
     })
-  

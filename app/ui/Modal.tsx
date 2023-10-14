@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import cx from 'clsx'
 import { Dialog, Transition } from '@headlessui/react'
 import {
-  CheckIcon, ExclamationTriangleIcon, InformationCircleIcon, UserGroupIcon,
+  CheckIcon, ExclamationTriangleIcon, InformationCircleIcon, UserGroupIcon, XMarkIcon,
 } from '@heroicons/react/24/outline'
 import Beta from 'ui/Beta'
 import Spin from './icons/Spin'
@@ -26,7 +26,8 @@ interface IModal {
 }
 
 const Modal = ({
-  className, type, title, message, isOpened, onClose, onSubmit, closeText, submitText, submitType, size, customButtons, isBeta, isLoading,
+  className, type, title, message, isOpened, onClose, onSubmit, closeText, submitText,
+  submitType, size, customButtons, isBeta, isLoading,
 }: IModal): JSX.Element => (
   <Transition.Root show={isOpened} as={Fragment}>
     <Dialog
@@ -96,10 +97,24 @@ const Modal = ({
               )}
               <div className='mt-3 text-center sm:mt-0 sm:text-left w-full'>
                 {title && (
-                  <Dialog.Title as='h3' className='flex items-center justify-center sm:justify-start text-lg leading-6 font-medium text-gray-900 dark:text-gray-50'>
-                    {title}
-                    {isBeta && (
-                      <Beta className='ml-10' />
+                  <Dialog.Title
+                    as='h3'
+                    className={cx('flex items-center text-lg leading-6 font-medium text-gray-900 dark:text-gray-50', {
+                      'justify-between': !closeText,
+                      'justify-center sm:justify-start': closeText,
+                    })}
+                  >
+                    <div>
+                      {title}
+                      {isBeta && (
+                        <Beta className='ml-10' />
+                      )}
+                    </div>
+                    {!closeText && (
+                      <XMarkIcon
+                        className='h-6 w-6 cursor-pointer text-gray-700 dark:text-gray-200 hover:text-gray-500 dark:hover:text-gray-300'
+                        onClick={onClose}
+                      />
                     )}
                   </Dialog.Title>
                 )}

@@ -31,15 +31,15 @@ import _sortBy from 'lodash/sortBy'
 import _fromPairs from 'lodash/fromPairs'
 import _toPairs from 'lodash/toPairs'
 import _reverse from 'lodash/reverse'
-import { nFormatter } from 'utils/generic'
 
+import { nFormatter } from 'utils/generic'
 import Progress from 'ui/Progress'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import Sort from 'ui/icons/Sort'
 import Modal from 'ui/Modal'
 import Button from 'ui/Button'
 import Chart from 'ui/Chart'
-
+import Loader from 'ui/Loader'
 import { PROJECT_TABS } from 'redux/constants'
 import { IEntry } from 'redux/models/IEntry'
 import LiveVisitorsDropdown from './components/LiveVisitorsDropdown'
@@ -101,7 +101,7 @@ interface IPanelContainer {
   noSwitch?: boolean,
   icon?: React.ReactNode,
   type: string,
-  openModal?: () => void,
+  onExpandClick?: () => void,
   activeFragment: number | string,
   setActiveFragment: (arg: number) => void,
   customTabs?: any,
@@ -111,7 +111,8 @@ interface IPanelContainer {
 
 // noSwitch - 'previous' and 'next' buttons
 const PanelContainer = ({
-  name, children, noSwitch, icon, type, openModal, activeFragment, setActiveFragment, customTabs, activeTab, isCustomContent,
+  name, children, noSwitch, icon, type, activeFragment, setActiveFragment,
+  customTabs, activeTab, isCustomContent, onExpandClick,
 }: IPanelContainer): JSX.Element => (
   <div
     className={cx('relative bg-white dark:bg-slate-800/25 dark:border dark:border-slate-800/50 pt-5 px-4 min-h-72 max-h-96 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden', {
@@ -154,7 +155,7 @@ const PanelContainer = ({
               className={cx(iconClassName, 'ml-2 cursor-pointer text-slate-400 dark:text-slate-500', {
                 hidden: activeFragment === 0,
               })}
-              onClick={openModal}
+              onClick={onExpandClick}
             />
           </>
         )}
@@ -172,7 +173,7 @@ const PanelContainer = ({
               className={cx(iconClassName, 'ml-2 cursor-pointer text-slate-400 dark:text-slate-500', {
                 hidden: activeFragment === 0,
               })}
-              onClick={openModal}
+              onClick={onExpandClick}
             />
           </>
         )}
@@ -187,6 +188,17 @@ const PanelContainer = ({
             onClick={() => setActiveFragment(1)}
           />
         )}
+
+        {/* if it is a 'Custom events' tab  */}
+        {type === 'ce' && (
+          <>
+            <ArrowsPointingOutIcon
+              className={cx(iconClassName, 'ml-2 cursor-pointer text-slate-400 dark:text-slate-500')}
+              onClick={onExpandClick}
+            />
+          </>
+        )}
+
         {checkCustomTabs(type, customTabs) && (
           <>
             {/* This is a temp fix to prevent multiple tabs of the same extensionID be displayed */}
@@ -235,6 +247,7 @@ PanelContainer.propTypes = {
   noSwitch: PropTypes.bool,
   activeFragment: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   setActiveFragment: PropTypes.func,
+  onExpandClick: PropTypes.func,
   icon: PropTypes.node,
 }
 
@@ -243,7 +256,7 @@ PanelContainer.defaultProps = {
   noSwitch: false,
   activeFragment: 0,
   setActiveFragment: () => { },
-  openModal: () => { },
+  onExpandClick: () => { },
   customTabs: [],
   activeTab: '',
   isCustomContent: false,
@@ -284,7 +297,7 @@ const Overview = ({
   }
 
   return (
-    <PanelContainer name={t('project.overview')} noSwitch type='' openModal={() => {}}>
+    <PanelContainer name={t('project.overview')} type='overview' noSwitch>
       <div className='flex text-lg justify-between'>
         <div className='flex items-center dark:text-gray-50'>
           <PulsatingCircle className='mr-1.5' type='big' />
@@ -302,12 +315,12 @@ const Overview = ({
               {activePeriod.label}
             </span>
             {isActiveCompare && (
-            // return vs activeDropdownLabelCompare
-            <span className='text-sm text-gray-500 dark:text-gray-400'>
+              // return vs activeDropdownLabelCompare
+              <span className='text-sm text-gray-500 dark:text-gray-400'>
                 &nbsp;(
-              {activeDropdownLabelCompare}
-              )
-            </span>
+                {activeDropdownLabelCompare}
+                )
+              </span>
             )}
           </p>
 
@@ -519,6 +532,7 @@ interface ICustomEvents {
   chartData: any
   onFilter: any
   t: (arg0: string) => string
+  getCustomEventMetadata: (event: string) => any
   customTabs: any
 }
 
@@ -528,11 +542,101 @@ interface ISortRows {
   sortByDescend: boolean
 }
 
+interface IKVTable {
+  data: any
+  t: any
+  uniques: number
+  loading: boolean
+}
+
+const KVTable = ({
+  data, t, uniques, loading,
+}: IKVTable) => {
+  const processed = useMemo(() => {
+    return _reduce(data, (acc: any, curr: any) => {
+      if (!acc[curr.key]) {
+        acc[curr.key] = []
+      }
+
+      acc[curr.key].push({
+        value: curr.value,
+        count: curr.count,
+      })
+
+      return acc
+    }, {})
+  }, [data])
+
+  if (loading) {
+    return (
+      <div className='flex justify-center items-center pt-5 pb-10 w-full'>
+        <Loader />
+      </div>
+    )
+  }
+
+  if (_isEmpty(data)) {
+    return (
+      <p className='text-gray-600 dark:text-gray-200 mb-2'>
+        No data to display
+      </p>
+    )
+  }
+
+  return _map(processed, (value, key) => {
+    return (
+      <table key={key} className='table-fixed w-full mb-2'>
+        <thead>
+          <tr className='text-gray-600 dark:text-gray-200'>
+            <th className='w-2/5 sm:w-4/6 text-left flex items-center'>
+              {key}
+            </th>
+            <th className='w-[30%] sm:w-1/6'>
+              <p className='flex justify-end items-center'>
+                {t('project.quantity')}
+              </p>
+            </th>
+            <th className='w-[30%] sm:w-1/6'>
+              <p className='flex justify-end items-center'>
+                {t('project.conversion')}
+              </p>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {_map(value, ({ value: nestedValue, count }) => (
+            <tr
+              key={nestedValue}
+              className='text-gray-900 dark:text-gray-50 group hover:bg-gray-100 hover:dark:bg-slate-700 py-3'
+            >
+              <td className='text-left flex items-center'>
+                {nestedValue}
+              </td>
+              <td className='text-right'>
+                {count}
+                &nbsp;&nbsp;
+              </td>
+              <td className='text-right'>
+                {uniques === 0 ? 100 : _round((count / uniques) * 100, 2)}
+                %
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )
+  })
+}
+
 // Tabs with custom events like submit form, press button, go to the link rate etc.
 const CustomEvents = ({
-  customs, chartData, onFilter, t, customTabs,
+  customs, chartData, onFilter, t, customTabs, getCustomEventMetadata,
 }: ICustomEvents) => {
   const [page, setPage] = useState(0)
+  const [modal, setModal] = useState(false)
+  const [activeEvents, setActiveEvents] = useState<any>({})
+  const [loadingEvents, setLoadingEvents] = useState<any>({})
+  const [eventsMetadata, setEventsMetadata] = useState<any>({})
   const [customsEventsData, setCustomsEventsData] = useState<any>(customs)
   const currentIndex = page * ENTRIES_PER_CUSTOM_EVENTS_PANEL
   const keys = _keys(customsEventsData)
@@ -602,6 +706,47 @@ const CustomEvents = ({
     }))
   }
 
+  const toggleEventMetadata = (ev: string) => async (e: any) => {
+    e.stopPropagation()
+
+    setActiveEvents((events: any) => ({
+      ...events,
+      [ev]: !events[ev],
+    }))
+
+    if (!eventsMetadata[ev]) {
+      setLoadingEvents((events: any) => ({
+        ...events,
+        [ev]: true,
+      }))
+
+      try {
+        const data = await getCustomEventMetadata(ev)
+        setEventsMetadata((metadata: any) => ({
+          ...metadata,
+          [ev]: data,
+        }))
+      } catch (reason) {
+        console.error(`[ERROR](toggleEventMetadata) Failed to get metadata for event ${ev}`, reason)
+        setEventsMetadata((metadata: any) => ({
+          ...metadata,
+          [ev]: [],
+        }))
+      }
+
+      setLoadingEvents((events: any) => ({
+        ...events,
+        [ev]: false,
+      }))
+    }
+  }
+
+  const onModalClose = () => {
+    setModal(false)
+    setActiveEvents({})
+    setEventsMetadata({})
+  }
+
   const onSortBy = (label: string) => {
     const sortByKeys = label === 'event'
 
@@ -654,6 +799,7 @@ const CustomEvents = ({
         type='ce'
         setActiveFragment={setActiveFragment}
         activeFragment={activeFragment}
+        onExpandClick={() => setModal(true)}
       >
         {_isEmpty(chartData) ? (
           <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>
@@ -665,6 +811,95 @@ const CustomEvents = ({
             current='panels-ce'
           />
         )}
+        <Modal
+          onClose={onModalClose}
+          isOpened={modal}
+          title={t('project.customEv')}
+          message={(
+            <table className='table-fixed w-full'>
+              <thead>
+                <tr className='text-gray-900 dark:text-gray-50 text-base'>
+                  <th className='w-2/5 sm:w-4/6 text-left flex items-center cursor-pointer hover:opacity-90' onClick={() => onSortBy('event')}>
+                    {t('project.event')}
+                    <Sort
+                      className='ml-1'
+                      sortByAscend={sort.label === 'event' && sort.sortByAscend}
+                      sortByDescend={sort.label === 'event' && sort.sortByDescend}
+                    />
+                  </th>
+                  <th className='w-[30%] sm:w-1/6'>
+                    <p className='flex justify-end items-center cursor-pointer hover:opacity-90' onClick={() => onSortBy('quantity')}>
+                      {t('project.quantity')}
+                      <Sort
+                        className='ml-1'
+                        sortByAscend={sort.label === 'quantity' && sort.sortByAscend}
+                        sortByDescend={sort.label === 'quantity' && sort.sortByDescend}
+                      />
+                      &nbsp;&nbsp;
+                    </p>
+                  </th>
+                  <th className='w-[30%] sm:w-1/6'>
+                    <p className='flex justify-end items-center cursor-pointer hover:opacity-90' onClick={() => onSortBy('conversion')}>
+                      {t('project.conversion')}
+                      <Sort
+                        className='ml-1'
+                        sortByAscend={sort.label === 'conversion' && sort.sortByAscend}
+                        sortByDescend={sort.label === 'conversion' && sort.sortByDescend}
+                      />
+                    </p>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {_map(keysToDisplay, (ev) => (
+                  <Fragment key={ev}>
+                    <tr
+                      className='text-gray-900 dark:text-gray-50 group hover:bg-gray-100 hover:dark:bg-slate-700 cursor-pointer text-base py-1'
+                      onClick={() => onFilter('ev', ev)}
+                    >
+                      <td className='text-left flex items-center'>
+                        {activeEvents[ev] ? (
+                          <ChevronUpIcon
+                            className='w-auto h-5 text-gray-500 dark:text-gray-300 px-2 hover:opacity-80'
+                            onClick={toggleEventMetadata(ev)}
+                          />
+                        ) : (
+                          <ChevronDownIcon
+                            className='w-auto h-5 text-gray-500 dark:text-gray-300 px-2 hover:opacity-80'
+                            onClick={toggleEventMetadata(ev)}
+                          />
+                        )}
+                        {ev}
+                        <FunnelIcon className='ml-2 w-4 h-4 text-gray-500 hidden sm:group-hover:block dark:text-gray-300' />
+                      </td>
+                      <td className='text-right'>
+                        {customsEventsData[ev]}
+                        &nbsp;&nbsp;
+                      </td>
+                      <td className='text-right'>
+                        {uniques === 0 ? 100 : _round((customsEventsData[ev] / uniques) * 100, 2)}
+                        %
+                      </td>
+                    </tr>
+                    {activeEvents[ev] && (
+                      <tr>
+                        <td className='pl-9' colSpan={3}>
+                          <KVTable
+                            data={eventsMetadata[ev]}
+                            t={t}
+                            uniques={uniques}
+                            loading={loadingEvents[ev]}
+                          />
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                ))}
+              </tbody>
+            </table>
+          )}
+          size='large'
+        />
       </PanelContainer>
     )
   }
@@ -683,6 +918,7 @@ const CustomEvents = ({
         activeFragment={activeFragment}
         setActiveFragment={setActiveFragment}
         customTabs={customTabs}
+        onExpandClick={() => { }}
         isCustomContent
       >
         {/* Using this instead of dangerouslySetInnerHTML to support script tags */}
@@ -694,7 +930,14 @@ const CustomEvents = ({
   }
 
   return (
-    <PanelContainer customTabs={customTabs} name={t('project.customEv')} type='ce' setActiveFragment={setActiveFragment} activeFragment={activeFragment}>
+    <PanelContainer
+      customTabs={customTabs}
+      name={t('project.customEv')}
+      type='ce'
+      setActiveFragment={setActiveFragment}
+      activeFragment={activeFragment}
+      onExpandClick={() => setModal(true)}
+    >
       <table className='table-fixed'>
         <thead>
           <tr className='text-gray-900 dark:text-gray-50'>
@@ -807,6 +1050,95 @@ const CustomEvents = ({
           </div>
         </div>
       )}
+      <Modal
+        onClose={onModalClose}
+        isOpened={modal}
+        title={t('project.customEv')}
+        message={(
+          <table className='table-fixed w-full'>
+            <thead>
+              <tr className='text-gray-900 dark:text-gray-50 text-base'>
+                <th className='w-2/5 sm:w-4/6 text-left flex items-center cursor-pointer hover:opacity-90' onClick={() => onSortBy('event')}>
+                  {t('project.event')}
+                  <Sort
+                    className='ml-1'
+                    sortByAscend={sort.label === 'event' && sort.sortByAscend}
+                    sortByDescend={sort.label === 'event' && sort.sortByDescend}
+                  />
+                </th>
+                <th className='w-[30%] sm:w-1/6'>
+                  <p className='flex justify-end items-center cursor-pointer hover:opacity-90' onClick={() => onSortBy('quantity')}>
+                    {t('project.quantity')}
+                    <Sort
+                      className='ml-1'
+                      sortByAscend={sort.label === 'quantity' && sort.sortByAscend}
+                      sortByDescend={sort.label === 'quantity' && sort.sortByDescend}
+                    />
+                    &nbsp;&nbsp;
+                  </p>
+                </th>
+                <th className='w-[30%] sm:w-1/6'>
+                  <p className='flex justify-end items-center cursor-pointer hover:opacity-90' onClick={() => onSortBy('conversion')}>
+                    {t('project.conversion')}
+                    <Sort
+                      className='ml-1'
+                      sortByAscend={sort.label === 'conversion' && sort.sortByAscend}
+                      sortByDescend={sort.label === 'conversion' && sort.sortByDescend}
+                    />
+                  </p>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {_map(keysToDisplay, (ev) => (
+                <Fragment key={ev}>
+                  <tr
+                    className='text-gray-900 dark:text-gray-50 group hover:bg-gray-100 hover:dark:bg-slate-700 cursor-pointer text-base py-1'
+                    onClick={() => onFilter('ev', ev)}
+                  >
+                    <td className='text-left flex items-center'>
+                      {activeEvents[ev] ? (
+                        <ChevronUpIcon
+                          className='w-auto h-5 text-gray-500 dark:text-gray-300 px-2 hover:opacity-80'
+                          onClick={toggleEventMetadata(ev)}
+                        />
+                      ) : (
+                        <ChevronDownIcon
+                          className='w-auto h-5 text-gray-500 dark:text-gray-300 px-2 hover:opacity-80'
+                          onClick={toggleEventMetadata(ev)}
+                        />
+                      )}
+                      {ev}
+                      <FunnelIcon className='ml-2 w-4 h-4 text-gray-500 hidden sm:group-hover:block dark:text-gray-300' />
+                    </td>
+                    <td className='text-right'>
+                      {customsEventsData[ev]}
+                      &nbsp;&nbsp;
+                    </td>
+                    <td className='text-right'>
+                      {uniques === 0 ? 100 : _round((customsEventsData[ev] / uniques) * 100, 2)}
+                      %
+                    </td>
+                  </tr>
+                  {activeEvents[ev] && (
+                    <tr>
+                      <td className='pl-9' colSpan={3}>
+                        <KVTable
+                          data={eventsMetadata[ev]}
+                          t={t}
+                          uniques={uniques}
+                          loading={loadingEvents[ev]}
+                        />
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
+              ))}
+            </tbody>
+          </table>
+        )}
+        size='large'
+      />
     </PanelContainer>
   )
 }
@@ -908,7 +1240,7 @@ const Panel = ({
         type={id}
         activeFragment={activeFragment}
         setActiveFragment={_setActiveFragment}
-        openModal={() => setModal(true)}
+        onExpandClick={() => setModal(true)}
         customTabs={customTabs}
       >
         <InteractiveMap
@@ -942,7 +1274,7 @@ const Panel = ({
         type={id}
         activeFragment={activeFragment}
         setActiveFragment={_setActiveFragment}
-        openModal={() => setModal(true)}
+        onExpandClick={() => setModal(true)}
         customTabs={customTabs}
       >
         {/* @ts-ignore */}
@@ -1071,7 +1403,7 @@ const Panel = ({
         type={id}
         activeFragment={activeFragment}
         setActiveFragment={_setActiveFragment}
-        openModal={() => setModal(true)}
+        onExpandClick={() => setModal(true)}
         customTabs={customTabs}
         activeTab={activeTab}
         isCustomContent
