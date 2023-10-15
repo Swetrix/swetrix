@@ -45,8 +45,7 @@ const getFileNames = async (category?: string): Promise<string[]> => {
     } else {
       files = (await fs.readdir(BLOG_POSTS_PATH)) as string[]
     }
-  } catch (reason) {
-    console.error('[getFileNames]', reason)
+  } catch (_) {
     return []
   }
 
@@ -88,8 +87,7 @@ const getArticlesMetaData = async () => {
 
   try {
     dir = await fs.readdir(BLOG_POSTS_PATH)
-  } catch (reason) {
-    console.error('[getArticlesMetaData]', reason)
+  } catch (_) {
     return null
   }
 
