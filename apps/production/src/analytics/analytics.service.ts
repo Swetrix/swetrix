@@ -1275,7 +1275,7 @@ export class AnalyticsService {
     const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
     const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
-    return `
+    const baseQuery = `
       SELECT
         ${selector},
         count() as count
