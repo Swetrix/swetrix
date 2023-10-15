@@ -180,12 +180,23 @@ export function ErrorBoundary() {
   )
 }
 
+// Let's keep it for a few months to fix the Google Search Console ?lng= issue due to a fucking bug I introduced before
+const removeMultipleLngParams = (url: string): string => {
+  return _replace(url, /%3Flng%3D[^%]*/g, '')
+}
+
 export async function loader({ request }: LoaderArgs) {
   const { url } = request
+  const removedLng = removeMultipleLngParams(url)
+
+  if (removedLng !== url) {
+    return redirect(removedLng, 301)
+  }
+
   const urlObject = new URL(url)
 
   if (!isSelfhosted && isWWW(urlObject)) {
-    const nonWWWLink = _replace(urlObject.href, 'www.', '')
+    const nonWWWLink = _replace(url, 'www.', '')
     const httpToHttps = _replace(nonWWWLink, 'http://', 'https://')
     return redirect(httpToHttps, 301)
   }
