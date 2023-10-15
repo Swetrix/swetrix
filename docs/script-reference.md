@@ -34,7 +34,7 @@ swetrix.init('YOUR_PROJECT_ID', {
 | apiURL | Set a custom URL of the API server (for selfhosted variants of Swetrix). | `'https://api.swetrix.com/log'` |
 
 ## track()
-:::warning
+:::caution
 It is important to ensure that no [Personal Data](https://en.wikipedia.org/wiki/Personal_data) that could identify a specific individual is transmitted in a metadata or custom event name field. Personally identifiable information (PII) is any information that can uniquely identify an individual, including full name, email address, phone number, credit card number, etc.
 All other information is anonymised.
 :::
