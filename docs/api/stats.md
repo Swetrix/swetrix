@@ -53,6 +53,11 @@ Filters are used to aggregate data by specific parameters. For example, you can 
 - **filter** - the value to filter by. For example, if you want to filter by country, the value should be a country code (e.g. `GB` for Great Britain).
 - **isExclusive** - whether to include or exclude the specified value. If `isExclusive` is `true`, the data will be filtered by the specified value. If `isExclusive` is `false`, the data will be filtered by all values except the specified one.
 
+### Mode
+The mode parameter specifies how the data is aggregated. Possible values are:
+- **periodic** - data is aggregated by the specified time bucket (e.g. by day, week, etc.);
+- **cumulative** - data is aggregated cumulatively (e.g. the number of visits for the current day is the sum of the number of visits for all previous days and the current day).
+
 ## Endpoints
 ### GET /v1/log
 This endpoint returns the aggregated traffic data for your project. This is the exact same data you see in the Traffic tab of your Dashboard, but represented as a JSON entity.
