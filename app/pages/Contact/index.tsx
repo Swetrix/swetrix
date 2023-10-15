@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-has-content */
-import React, { useEffect } from 'react'
+import React from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 
 import {
@@ -10,22 +10,6 @@ const Contact = (): JSX.Element => {
   const { t }: {
     t: (key: string) => string
   } = useTranslation('common')
-
-  useEffect(() => {
-    const intergram = document.querySelector('#intergramPlaceholder')
-
-    if (!intergram) {
-      return () => {}
-    }
-
-    intergram.classList.remove('hidden')
-    intergram.classList.add('flex')
-
-    return () => {
-      intergram.classList.remove('flex')
-      intergram.classList.add('hidden')
-    }
-  }, [])
 
   return (
     <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
@@ -39,7 +23,7 @@ const Contact = (): JSX.Element => {
           <ol className='list-decimal ml-5 sm:ml-10'>
             <li className='mt-1'>
               <Trans
-                  // @ts-ignore
+                // @ts-ignore
                 t={t}
                 i18nKey='contact.ways.email'
                 values={{ email: CONTACT_EMAIL }}
@@ -50,7 +34,7 @@ const Contact = (): JSX.Element => {
             </li>
             <li className='mt-1'>
               <Trans
-                  // @ts-ignore
+                // @ts-ignore
                 t={t}
                 i18nKey='contact.ways.twitter'
                 values={{ twitter: TWITTER_USERNAME }}
@@ -61,16 +45,13 @@ const Contact = (): JSX.Element => {
             </li>
             <li className='mt-1'>
               <Trans
-                  // @ts-ignore
+                // @ts-ignore
                 t={t}
                 i18nKey='contact.ways.discord'
                 components={{
                   url: <a href={DISCORD_URL} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' />,
                 }}
               />
-            </li>
-            <li className='mt-1'>
-              {t('contact.ways.chat')}
             </li>
           </ol>
         </div>

@@ -814,8 +814,7 @@
     "ways": {
       "email": "You can drop us an email at <mail>{{email}}</mail>",
       "twitter": "Tweet or message us at <url>{{twitter}}</url>",
-      "discord": "Join our Discord server by following <url>this link</url>",
-      "chat": "Use a chatbox located on the bottom right of this page"
+      "discord": "Join our Discord server by following <url>this link</url>"
     }
   },
   "beta": {
