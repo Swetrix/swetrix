@@ -44,7 +44,7 @@ import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
-import { AnalyticsGET_DTO } from './dto/getData.dto'
+import { AnalyticsGET_DTO, ChartRenderMode } from './dto/getData.dto'
 import { GetFiltersDto } from './dto/get-filters.dto'
 import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
 import { GetUserFlowDTO } from './dto/getUserFlow.dto'
@@ -288,6 +288,7 @@ export class AnalyticsController {
       to,
       filters,
       timezone = DEFAULT_TIMEZONE,
+      mode = ChartRenderMode.PERIODICAL,
     } = data
     this.analyticsService.validatePID(pid)
 
@@ -360,6 +361,7 @@ export class AnalyticsController {
       safeTimezone,
       customEVFilterApplied,
       parsedFilters,
+      mode,
     )
 
     const customs = await this.analyticsService.processCustomEV(
@@ -421,6 +423,7 @@ export class AnalyticsController {
       to,
       filters,
       timezone = DEFAULT_TIMEZONE,
+      mode = ChartRenderMode.PERIODICAL,
     } = data
     this.analyticsService.validatePID(pid)
 
@@ -466,6 +469,7 @@ export class AnalyticsController {
       paramsData,
       safeTimezone,
       customEVFilterApplied,
+      mode,
     )
 
     return {

@@ -10,6 +10,11 @@ export enum TimeBucketType {
   YEAR = 'year',
 }
 
+export enum ChartRenderMode {
+  PERIODICAL = 'periodical',
+  CUMULATIVE = 'cumulative',
+}
+
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class AnalyticsGET_DTO {
   @ApiProperty()
@@ -40,4 +45,11 @@ export class AnalyticsGET_DTO {
     default: DEFAULT_TIMEZONE,
   })
   timezone: string
+
+  @ApiProperty({
+    description:
+      'Mode in which data in chart should be rendered, may be either periodical or cumulative',
+    default: ChartRenderMode.PERIODICAL,
+  })
+  mode?: ChartRenderMode
 }

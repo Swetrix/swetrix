@@ -1268,6 +1268,7 @@ export class AnalyticsService {
     timeBucket: TimeBucketType,
     filtersQuery: string,
     safeTimezone: string,
+    mode: ChartRenderMode,
   ): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
@@ -1289,6 +1290,17 @@ export class AnalyticsService {
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
       `
+
+    if (mode === ChartRenderMode.CUMULATIVE) {
+      return `
+          SELECT
+            *,
+            sum(count) OVER (ORDER BY ${groupBy}) as count
+          FROM (${baseQuery})
+        `
+    }
+
+    return baseQuery
   }
 
   generatePerformanceAggregationQuery(
@@ -1468,6 +1480,7 @@ export class AnalyticsService {
         timeBucket,
         filtersQuery,
         safeTimezone,
+        mode,
       )
 
       const result = <Array<TrafficCEFilterCHResponse>>(
@@ -1501,8 +1514,6 @@ export class AnalyticsService {
     const result = <Array<TrafficCHResponse>>(
       await clickhouse.query(query, paramsData).toPromise()
     )
-
-    console.log(result)
 
     const { visits, uniques, sdur } = this.extractChartData(result, xShifted)
 
