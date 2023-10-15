@@ -56,7 +56,7 @@ import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
 import { ProjectService } from '../project/project.service'
 import { Project } from '../project/entity/project.entity'
-import { TimeBucketType } from './dto/getData.dto'
+import { ChartRenderMode, TimeBucketType } from './dto/getData.dto'
 import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
 import {
   PerformanceCHResponse,
@@ -1225,13 +1225,14 @@ export class AnalyticsService {
     timeBucket: TimeBucketType,
     filtersQuery: string,
     safeTimezone: string,
+    mode: ChartRenderMode,
   ): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
     const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
     const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
-    return `
+    const baseQuery = `
       SELECT
         ${selector},
         avg(sdur) as sdur,
@@ -1248,7 +1249,19 @@ export class AnalyticsService {
       ) as subquery
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
+    `
+
+    if (mode === ChartRenderMode.CUMULATIVE) {
+      return `
+        SELECT
+          *,
+          sum(pageviews) OVER (ORDER BY ${groupBy}) as pageviews,
+          sum(uniques) OVER (ORDER BY ${groupBy}) as uniques
+        FROM (${baseQuery})
       `
+    }
+
+    return baseQuery
   }
 
   generateCustomEventsAggregationQuery(
@@ -1316,13 +1329,14 @@ export class AnalyticsService {
     timeBucket: TimeBucketType,
     filtersQuery: string,
     safeTimezone: string,
+    mode: ChartRenderMode,
   ): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
     const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
     const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
-    return `
+    const baseQuery = `
       SELECT
         ${selector},
         count() as count
@@ -1337,7 +1351,19 @@ export class AnalyticsService {
       ) as subquery
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
+    `
+
+    if (mode === ChartRenderMode.CUMULATIVE) {
+      return `
+        SELECT
+          *,
+          sum(pageviews) OVER (ORDER BY ${groupBy}) as pageviews,
+          sum(uniques) OVER (ORDER BY ${groupBy}) as uniques
+        FROM (${baseQuery})
       `
+    }
+
+    return baseQuery
   }
 
   async groupByTimeBucket(
@@ -1350,6 +1376,7 @@ export class AnalyticsService {
     safeTimezone: string,
     customEVFilterApplied: boolean,
     parsedFilters: Array<{ [key: string]: string }>,
+    mode: ChartRenderMode,
   ): Promise<object | void> {
     let params: unknown = {}
     let chart: unknown = {}
@@ -1383,6 +1410,7 @@ export class AnalyticsService {
           paramsData,
           safeTimezone,
           customEVFilterApplied,
+          mode,
         )
 
         // @ts-ignore
@@ -1427,6 +1455,7 @@ export class AnalyticsService {
     paramsData: any,
     safeTimezone: string,
     customEVFilterApplied: boolean,
+    mode: ChartRenderMode,
   ): Promise<object | void> {
     const avgSdur = customEVFilterApplied
       ? 0
@@ -1466,11 +1495,14 @@ export class AnalyticsService {
       timeBucket,
       filtersQuery,
       safeTimezone,
+      mode,
     )
 
     const result = <Array<TrafficCHResponse>>(
       await clickhouse.query(query, paramsData).toPromise()
     )
+
+    console.log(result)
 
     const { visits, uniques, sdur } = this.extractChartData(result, xShifted)
 
@@ -1511,6 +1543,7 @@ export class AnalyticsService {
     filtersQuery: string,
     paramsData: object,
     safeTimezone: string,
+    mode: ChartRenderMode,
   ): Promise<object | void> {
     let params: unknown = {}
     let chart: unknown = {}
@@ -1547,6 +1580,7 @@ export class AnalyticsService {
           timeBucket,
           filtersQuery,
           safeTimezone,
+          mode,
         )
 
         const result = <Array<TrafficCEFilterCHResponse>>(
