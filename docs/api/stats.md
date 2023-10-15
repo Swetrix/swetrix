@@ -146,6 +146,11 @@ The timezone to use for the time range. The default is `Etc/GMT`. You can use an
 An array of [filter objects](#filters).
 <hr />
 
+**mode**
+
+[Mode](#mode) used to aggregate the data. The default is `periodic`.
+<hr />
+
 ### GET /v1/log/performance
 
 This endpoint accepts the same parameters as the [`/log` endpoint](#get-v1log).
@@ -317,6 +322,41 @@ An array of project IDs to return heartbeat events for.
 
 A single project ID to return heartbeat events for. You can use either `pids` or `pid` parameter, but not both.
 <hr />
+
+### GET /v1/log/meta
+This endpoint returns an array of custom event metadata.
+
+```bash
+curl 'https://api.swetrix.com/v1/log?pid=YOUR_PROJECT_ID&timeBucket=day&period=7d&event=signup'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+```json title="Response"
+[
+  {
+    "key": "Affiliate",
+    "value": "Yes",
+    "count": 1
+  },
+  {
+    "key": "Affiliate",
+    "value": "No",
+    "count": 4
+  },
+  {
+    "key": "OtherMetadata",
+    "value": "AnyString",
+    "count": 12
+  },
+]
+```
+
+#### Parameters
+The parameters are the same as for the [`/log` endpoint](#get-v1log), except additionally you must pass the following the following:
+
+**event**
+
+The name of the custom event to return metadata for.
 
 ## Common request examples
 
