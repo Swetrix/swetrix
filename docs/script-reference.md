@@ -108,3 +108,21 @@ The `trackViews` function returns a `Promise` with an object with some methods a
   stop() {},
 }
 ```
+
+## trackPageview()
+This function is used to manually track a page view event.
+It's useful if your application uses esoteric routing which is not supported by Swetrix by default.
+
+This function takes the following arguments:
+1. `path` - the path of the page you want to track.
+2. (optional) `prev` - the path of the previous page user visited.
+3. (optional) `unique` - if set to `true`, only 1 event with the same ID will be saved per user session.
+
+Here are some examples of how to use this function:
+```javascript
+// Track a page view with a path '/hello' and no previous page.
+swetrix.trackPageview('/hello')
+
+// Track a page view with a path '/hello' and previous page '/world'.
+swetrix.trackPageview('/hello', '/world')
+```
