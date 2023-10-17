@@ -303,6 +303,11 @@ export class Lib {
       prev = this.getPreviousPage()
     }
 
+    this.activePage = pg
+    this.submitPageView(shouldIgnore ? null : pg, prev, unique, perf)
+  }
+
+  submitPageView(pg: null | string, prev: string | null | undefined, unique: boolean, perf: any): void {
     const data = {
       pid: this.projectID,
       lc: getLocale(),
@@ -312,12 +317,11 @@ export class Lib {
       me: getUTMMedium(),
       ca: getUTMCampaign(),
       unique,
-      pg: shouldIgnore ? null : pg,
+      pg,
       perf,
       prev,
     }
 
-    this.activePage = pg
     this.sendRequest('', data)
   }
 
