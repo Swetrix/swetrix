@@ -74,6 +74,18 @@ export interface PageViewsOptions {
 
   /** Disable user-flow */
   noUserFlow?: boolean
+
+  /**
+   * Set to `true` to enable hash-based routing.
+   * For example if you have pages like /#/path or want to track pages like /path#hash
+   */
+  hash?: boolean
+
+  /**
+   * Set to `true` to enable search-based routing.
+   * For example if you have pages like /path?search
+   */
+  search?: boolean
 }
 
 export const defaultPageActions = {
@@ -132,7 +144,10 @@ export class Lib {
       hbInterval = setInterval(this.heartbeat, 28000)
     }
 
-    const path = getPath()
+    const path = getPath({
+      hash: options?.hash,
+      search: options?.search,
+    })
 
     this.pageData = {
       path,
@@ -214,7 +229,10 @@ export class Lib {
   // Tracking path changes. If path changes -> calling this.trackPage method
   private trackPathChange(): void {
     if (!this.pageData) return
-    const newPath = getPath()
+    const newPath = getPath({
+      hash: this.pageViewsOptions?.hash,
+      search: this.pageViewsOptions?.search,
+    })
     const { path } = this.pageData
 
     if (path !== newPath) {
