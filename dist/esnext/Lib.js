@@ -47,7 +47,10 @@ export class Lib {
             setTimeout(this.heartbeat, 3000);
             hbInterval = setInterval(this.heartbeat, 28000);
         }
-        const path = getPath();
+        const path = getPath({
+            hash: options?.hash,
+            search: options?.search,
+        });
         this.pageData = {
             path,
             actions: {
@@ -117,7 +120,10 @@ export class Lib {
     trackPathChange() {
         if (!this.pageData)
             return;
-        const newPath = getPath();
+        const newPath = getPath({
+            hash: this.pageViewsOptions?.hash,
+            search: this.pageViewsOptions?.search,
+        });
         const { path } = this.pageData;
         if (path !== newPath) {
             this.trackPage(newPath, false);
@@ -171,6 +177,10 @@ export class Lib {
         if (!this.pageViewsOptions?.noUserFlow) {
             prev = this.getPreviousPage();
         }
+        this.activePage = pg;
+        this.submitPageView(shouldIgnore ? null : pg, prev, unique, perf);
+    }
+    submitPageView(pg, prev, unique, perf) {
         const data = {
             pid: this.projectID,
             lc: getLocale(),
@@ -180,11 +190,10 @@ export class Lib {
             me: getUTMMedium(),
             ca: getUTMCampaign(),
             unique,
-            pg: shouldIgnore ? null : pg,
+            pg,
             perf,
             prev,
         };
-        this.activePage = pg;
         this.sendRequest('', data);
     }
     debug(message) {

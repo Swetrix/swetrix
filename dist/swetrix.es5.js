@@ -62,9 +62,33 @@ var getReferrer = function () {
 var getUTMSource = function () { return findInSearch(utmSourceRegex); };
 var getUTMMedium = function () { return findInSearch(utmMediumRegex); };
 var getUTMCampaign = function () { return findInSearch(utmCampaignRegex); };
-var getPath = function () {
-    // TODO: Maybe we should also include such data as location.hash or location.search
-    return location.pathname || '';
+/**
+ * Function used to track the current page (path) of the application.
+ * Will work in cases where the path looks like:
+ * - /path
+ * - /#/path
+ * - /path?search
+ * - /path?search#hash
+ * - /path#hash?search
+ *
+ * @param options - Options for the function.
+ * @param options.hash - Whether to trigger on hash change.
+ * @param options.search - Whether to trigger on search change.
+ * @returns The path of the current page.
+ */
+var getPath = function (options) {
+    var result = location.pathname || '';
+    if (options.hash) {
+        var hashIndex = location.hash.indexOf('?');
+        var hashString = hashIndex > -1 ? location.hash.substring(0, hashIndex) : location.hash;
+        result += hashString;
+    }
+    if (options.search) {
+        var hashIndex = location.hash.indexOf('?');
+        var searchString = location.search || (hashIndex > -1 ? location.hash.substring(hashIndex) : '');
+        result += searchString;
+    }
+    return result;
 };
 
 var defaultPageActions = {
@@ -105,7 +129,10 @@ var Lib = /** @class */ (function () {
             setTimeout(this.heartbeat, 3000);
             hbInterval = setInterval(this.heartbeat, 28000);
         }
-        var path = getPath();
+        var path = getPath({
+            hash: options === null || options === void 0 ? void 0 : options.hash,
+            search: options === null || options === void 0 ? void 0 : options.search,
+        });
         this.pageData = {
             path: path,
             actions: {
@@ -176,9 +203,13 @@ var Lib = /** @class */ (function () {
     };
     // Tracking path changes. If path changes -> calling this.trackPage method
     Lib.prototype.trackPathChange = function () {
+        var _a, _b;
         if (!this.pageData)
             return;
-        var newPath = getPath();
+        var newPath = getPath({
+            hash: (_a = this.pageViewsOptions) === null || _a === void 0 ? void 0 : _a.hash,
+            search: (_b = this.pageViewsOptions) === null || _b === void 0 ? void 0 : _b.search,
+        });
         var path = this.pageData.path;
         if (path !== newPath) {
             this.trackPage(newPath, false);
@@ -235,6 +266,10 @@ var Lib = /** @class */ (function () {
         if (!((_b = this.pageViewsOptions) === null || _b === void 0 ? void 0 : _b.noUserFlow)) {
             prev = this.getPreviousPage();
         }
+        this.activePage = pg;
+        this.submitPageView(shouldIgnore ? null : pg, prev, unique, perf);
+    };
+    Lib.prototype.submitPageView = function (pg, prev, unique, perf) {
         var data = {
             pid: this.projectID,
             lc: getLocale(),
@@ -244,11 +279,10 @@ var Lib = /** @class */ (function () {
             me: getUTMMedium(),
             ca: getUTMCampaign(),
             unique: unique,
-            pg: shouldIgnore ? null : pg,
+            pg: pg,
             perf: perf,
             prev: prev,
         };
-        this.activePage = pg;
         this.sendRequest('', data);
     };
     Lib.prototype.debug = function (message) {
@@ -343,5 +377,19 @@ function trackViews(options) {
         }
     });
 }
+/**
+ * This function is used to manually track a page view event.
+ * It's useful if your application uses esoteric routing which is not supported by Swetrix by default.
+ *
+ * @param path Path of the page to track (this will be sent to the Swetrix API and displayed in the dashboard).
+ * @param prev Path of the previous page.
+ * @param unique If set to `true`, only 1 event with the same ID will be saved per user session.
+ * @returns void
+ */
+function trackPageview(path, prev, unique) {
+    if (!LIB_INSTANCE)
+        return;
+    LIB_INSTANCE.submitPageView(path, prev || null, Boolean(unique), {});
+}
 
-export { LIB_INSTANCE, init, track, trackViews };
+export { LIB_INSTANCE, init, track, trackPageview, trackViews };

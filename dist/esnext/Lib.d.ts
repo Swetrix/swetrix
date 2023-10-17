@@ -54,6 +54,16 @@ export interface PageViewsOptions {
     heartbeatOnBackground?: boolean;
     /** Disable user-flow */
     noUserFlow?: boolean;
+    /**
+     * Set to `true` to enable hash-based routing.
+     * For example if you have pages like /#/path or want to track pages like /path#hash
+     */
+    hash?: boolean;
+    /**
+     * Set to `true` to enable search-based routing.
+     * For example if you have pages like /path?search
+     */
+    search?: boolean;
 }
 export declare const defaultPageActions: {
     stop(): void;
@@ -74,6 +84,7 @@ export declare class Lib {
     private trackPathChange;
     private getPreviousPage;
     private trackPage;
+    submitPageView(pg: null | string, prev: string | null | undefined, unique: boolean, perf: any): void;
     private debug;
     private canTrack;
     private sendRequest;
