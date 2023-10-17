@@ -15,6 +15,12 @@ const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 // Date format: YYYY-MM-DD
 const changelog = [
   {
+    date: '2023-10-17',
+    changes: [
+      'Added support for cumulative mode visualisation.',
+    ],
+  },
+  {
     date: '2023-10-14',
     changes: [
       'Added custom events metadata feature.',

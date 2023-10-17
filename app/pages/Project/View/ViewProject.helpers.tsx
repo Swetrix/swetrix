@@ -180,6 +180,7 @@ const CHART_METRICS_MAPPING = {
   trendlines: 'trendlines',
   sessionDuration: 'sessionDuration',
   customEvents: 'customEvents',
+  cumulativeMode: 'cumulativeMode',
 }
 
 const FILTER_CHART_METRICS_MAPPING_FOR_COMPARE = ['bounce', 'viewsPerUnique', 'trendlines', 'customEvents']

@@ -486,6 +486,7 @@
     "invitationFor": "Invitation for {{project}}",
     "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings.",
     "sessionDuration": "Session duration",
+    "cumulativeMode": "Cumulative mode",
     "traffic": "Traffic",
     "performance": "Performance",
     "alerts": "Alerts",

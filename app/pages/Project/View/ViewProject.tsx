@@ -241,6 +241,7 @@ const ViewProject = ({
     [CHART_METRICS_MAPPING.bounce]: false,
     [CHART_METRICS_MAPPING.viewsPerUnique]: false,
     [CHART_METRICS_MAPPING.trendlines]: false,
+    [CHART_METRICS_MAPPING.cumulativeMode]: false,
   })
   // similar activeChartMetrics but using for performance tab
   const [activeChartMetricsPerf, setActiveChartMetricsPerf] = useState<string>(CHART_METRICS_MAPPING_PERF.timing)
@@ -275,6 +276,8 @@ const ViewProject = ({
     // if we do not have activeTab in url, we return activeTab from localStorage or default tab trafic
     return projectTab || PROJECT_TABS.traffic
   })
+
+  const mode = activeChartMetrics[CHART_METRICS_MAPPING.cumulativeMode] ? 'cumulative' : 'periodical'
 
   useEffect(() => {
     // @ts-ignore
@@ -422,6 +425,11 @@ const ViewProject = ({
         id: CHART_METRICS_MAPPING.trendlines,
         label: t('dashboard.trendlines'),
         active: activeChartMetrics[CHART_METRICS_MAPPING.trendlines],
+      },
+      {
+        id: CHART_METRICS_MAPPING.cumulativeMode,
+        label: t('dashboard.cumulativeMode'),
+        active: activeChartMetrics[CHART_METRICS_MAPPING.cumulativeMode],
       },
       {
         id: CHART_METRICS_MAPPING.customEvents,
@@ -704,7 +712,7 @@ const ViewProject = ({
           if (activePeriod?.period === 'custom' ? diffCompare <= diff : diffCompare <= activePeriod?.countDays) {
             fromCompare = getFormatDate(dateRangeCompare[0])
             toCompare = getFormatDate(dateRangeCompare[1])
-            keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket, newFilters || filters)
+            keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket, mode, newFilters || filters)
           } else {
             showError(t('project.compareDateRangeError'))
             compareDisable()
@@ -720,7 +728,7 @@ const ViewProject = ({
           if (date) {
             fromCompare = date.from
             toCompare = date.to
-            keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket, newFilters || filters)
+            keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket, mode, newFilters || filters)
           }
         }
 
@@ -728,7 +736,7 @@ const ViewProject = ({
           if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare])) {
             dataCompare = cache[id][keyCompare]
           } else {
-            dataCompare = await getProjectCompareData(id, timeBucket, '', newFilters || filters, fromCompare, toCompare, timezone, projectPassword)
+            dataCompare = await getProjectCompareData(id, timeBucket, '', newFilters || filters, fromCompare, toCompare, timezone, projectPassword, mode)
           }
         }
 
@@ -743,9 +751,9 @@ const ViewProject = ({
       if (dateRange) {
         from = getFormatDate(dateRange[0])
         to = getFormatDate(dateRange[1])
-        key = getProjectCacheCustomKey(from, to, timeBucket, newFilters || filters)
+        key = getProjectCacheCustomKey(from, to, timeBucket, mode, newFilters || filters)
       } else {
-        key = getProjectCacheKey(period, timeBucket, newFilters || filters)
+        key = getProjectCacheKey(period, timeBucket, mode, newFilters || filters)
       }
 
       // check if we need to load new date or we have data in redux/localstorage
@@ -753,10 +761,10 @@ const ViewProject = ({
         data = cache[id][key]
       } else {
         if (period === 'custom' && dateRange) {
-          data = await getProjectData(id, timeBucket, '', newFilters || filters, from, to, timezone, projectPassword)
+          data = await getProjectData(id, timeBucket, '', newFilters || filters, from, to, timezone, projectPassword, mode)
           customEventsChart = await getProjectDataCustomEvents(id, timeBucket, '', filters, from, to, timezone, activeChartMetricsCustomEvents, projectPassword)
         } else {
-          data = await getProjectData(id, timeBucket, period, newFilters || filters, '', '', timezone, projectPassword)
+          data = await getProjectData(id, timeBucket, period, newFilters || filters, '', '', timezone, projectPassword, mode)
           customEventsChart = await getProjectDataCustomEvents(id, timeBucket, period, filters, '', '', timezone, activeChartMetricsCustomEvents, projectPassword)
         }
 
@@ -936,9 +944,9 @@ const ViewProject = ({
       if (dateRange) {
         from = getFormatDate(dateRange[0])
         to = getFormatDate(dateRange[1])
-        key = getProjectCacheCustomKey(from, to, timeBucket, newFilters || filtersPerf)
+        key = getProjectCacheCustomKey(from, to, timeBucket, mode, newFilters || filtersPerf)
       } else {
-        key = getProjectCacheKey(period, timeBucket, newFilters || filtersPerf)
+        key = getProjectCacheKey(period, timeBucket, mode, newFilters || filtersPerf)
       }
 
       if (!forced && !_isEmpty(cachePerf[id]) && !_isEmpty(cachePerf[id][key])) {
@@ -1287,7 +1295,7 @@ const ViewProject = ({
   useEffect(() => {
     loadAnalytics()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [forecasedChartData])
+  }, [forecasedChartData, mode])
 
   // this useEffect is used for parsing tab from url and set activeTab
   useEffect(() => {
