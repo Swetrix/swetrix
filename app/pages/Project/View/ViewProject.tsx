@@ -48,7 +48,7 @@ import {
   tbPeriodPairs, getProjectCacheKey, LIVE_VISITORS_UPDATE_INTERVAL, DEFAULT_TIMEZONE, CDN_URL, isDevelopment,
   timeBucketToDays, getProjectCacheCustomKey, MAX_MONTHS_IN_PAST, PROJECT_TABS, TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin,
   TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER, isSelfhosted, tbPeriodPairsCompare, PERIOD_PAIRS_COMPARE, filtersPeriodPairs, IS_ACTIVE_COMPARE,
-  PROJECTS_PROTECTED, getProjectCacheCustomKeyPerf, isBrowser, TITLE_SUFFIX, FILTERS_PANELS_ORDER, KEY_FOR_ALL_TIME,
+  PROJECTS_PROTECTED, getProjectCacheCustomKeyPerf, isBrowser, TITLE_SUFFIX, FILTERS_PANELS_ORDER, KEY_FOR_ALL_TIME, MARKETPLACE_URL,
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { IProject, ILiveStats } from 'redux/models/IProject'
@@ -2001,14 +2001,26 @@ const ViewProject = ({
                   </h2>
                   <div className='flex items-center mt-3 md:mt-0 max-w-[420px] flex-wrap sm:flex-nowrap sm:max-w-none justify-center sm:justify-between w-full sm:w-auto mx-auto sm:mx-0 space-x-2 gap-y-1'>
                     <Dropdown
-                      items={[...exportTypes, ...customExportTypes]}
+                      items={[...exportTypes, ...customExportTypes, { label: t('project.lookingForMore'), lookingForMore: true, onClick: () => {} }]}
                       title={[
                         <ArrowDownTrayIcon key='download-icon' className='w-5 h-5 mr-2' />,
                         <Fragment key='export-data'>
                           {t('project.exportData')}
                         </Fragment>,
                       ]}
-                      labelExtractor={item => item.label}
+                      labelExtractor={item => {
+                        const { label, lookingForMore } = item
+
+                        if (lookingForMore) {
+                          return (
+                            <a href={MARKETPLACE_URL} target='_blank' rel='noreferrer'>
+                              {label}
+                            </a>
+                          )
+                        }
+
+                        return label
+                      }}
                       keyExtractor={item => item.label}
                       onSelect={item => item.onClick(panelsData, t)}
                       className={cx('ml-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
