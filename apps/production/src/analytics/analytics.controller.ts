@@ -73,7 +73,12 @@ import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { GetCustomEventsDto } from './dto/get-custom-events.dto'
 import { GetFiltersDto } from './dto/get-filters.dto'
-import { IAggregatedMetadata, IUserFlow } from './interfaces'
+import {
+  IAggregatedMetadata,
+  IFunnel,
+  IGetFunnel,
+  IUserFlow,
+} from './interfaces'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mysql = require('mysql2')
@@ -471,7 +476,7 @@ export class AnalyticsController {
     @Query() data: GetFunnelsDTO,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
-  ): Promise<any> {
+  ): Promise<IGetFunnel> {
     const { pid, period, from, to, timezone = DEFAULT_TIMEZONE, pages } = data
     this.analyticsService.validatePID(pid)
 
@@ -502,7 +507,28 @@ export class AnalyticsController {
       groupTo,
     }
 
-    return this.analyticsService.getFunnel(pagesArr, params)
+    let funnel: IFunnel[] = []
+    let totalPageviews: number = 0
+
+    const promises = [
+      (async () => {
+        funnel = await this.analyticsService.getFunnel(pagesArr, params)
+      })(),
+      (async () => {
+        totalPageviews = await this.analyticsService.getTotalPageviews(
+          pid,
+          groupFrom,
+          groupTo,
+        )
+      })(),
+    ]
+
+    await Promise.all(promises)
+
+    return {
+      funnel,
+      totalPageviews,
+    }
   }
 
   @Get('meta')

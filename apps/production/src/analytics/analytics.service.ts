@@ -76,6 +76,7 @@ import {
   IGenerateXAxis,
   IAggregatedMetadata,
   IFunnelCHResponse,
+  IFunnel,
 } from './interfaces'
 
 dayjs.extend(utc)
@@ -857,7 +858,7 @@ export class AnalyticsService {
     return [!exists, psid]
   }
 
-  formatFunnel(data: any[], pages: string[]) {
+  formatFunnel(data: IFunnelCHResponse[], pages: string[]): IFunnel[] {
     const funnel = _map(data, (row, index) => {
       const value = pages[index]
 
@@ -928,7 +929,18 @@ export class AnalyticsService {
     return filled
   }
 
-  async getFunnel(pages: string[], params: any): Promise<any> {
+  generateEmptyFunnel(pages: string[]): IFunnel[] {
+    return _map(pages, value => ({
+      value,
+      events: 0,
+      eventsPerc: 0,
+      eventsPercStep: 0,
+      dropoff: 0,
+      dropoffPerc: 0,
+    }))
+  }
+
+  async getFunnel(pages: string[], params: any): Promise<IFunnel[]> {
     const pageParams = {}
 
     const pagesStr = _join(
@@ -982,10 +994,35 @@ export class AnalyticsService {
         .toPromise()
     )
 
+    if (_isEmpty(result)) {
+      return this.generateEmptyFunnel(pages)
+    }
+
     return this.formatFunnel(
       _reverse(this.backfillFunnel(result, pages)),
       pages,
     )
+  }
+
+  async getTotalPageviews(
+    pid: string,
+    groupFrom: string,
+    groupTo: string,
+  ): Promise<number> {
+    const query = `
+      SELECT
+        count() as c
+      FROM analytics
+      WHERE pid = {pid:FixedString(12)}
+      AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+    `
+    const result = <{ c: number }[]>(
+      await clickhouse
+        .query(query, { params: { pid, groupFrom, groupTo } })
+        .toPromise()
+    )
+
+    return result[0]?.c || 0
   }
 
   async getSummary(
