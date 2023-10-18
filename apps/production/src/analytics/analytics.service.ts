@@ -1,5 +1,7 @@
+import * as crypto from 'crypto'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _split from 'lodash/split'
+import * as _reverse from 'lodash/reverse'
 import * as _size from 'lodash/size'
 import * as _includes from 'lodash/includes'
 import * as _map from 'lodash/map'
@@ -73,6 +75,8 @@ import {
   IExtractChartData,
   IGenerateXAxis,
   IAggregatedMetadata,
+  IFunnelCHResponse,
+  IFunnel,
 } from './interfaces'
 
 dayjs.extend(utc)
@@ -833,10 +837,192 @@ export class AnalyticsService {
     }
   }
 
-  async isUnique(sessionHash: string) {
-    const session = await redis.get(sessionHash)
-    await redis.set(sessionHash, 1, 'EX', UNIQUE_SESSION_LIFE_TIME)
-    return !session
+  generateUInt64(): string {
+    return crypto.randomBytes(8).readBigUInt64BE(0).toString()
+  }
+
+  /**
+   * Checks if the session is unique and returns the session psid (or creates a new one)
+   * @param sessionHash
+   * @returns [isUnique, psid]
+   */
+  async isUnique(sessionHash: string): Promise<[boolean, string]> {
+    let psid = await redis.get(sessionHash)
+    const exists = Boolean(psid)
+
+    if (!exists) {
+      psid = this.generateUInt64()
+    }
+
+    await redis.set(sessionHash, psid, 'EX', UNIQUE_SESSION_LIFE_TIME)
+    return [!exists, psid]
+  }
+
+  formatFunnel(data: IFunnelCHResponse[], pages: string[]): IFunnel[] {
+    const funnel = _map(data, (row, index) => {
+      const value = pages[index]
+
+      let events = row.c
+      let dropoff = 0
+      let eventsPerc = 100
+      let eventsPercStep = 100
+      let dropoffPerc = 0
+
+      if (index > 0) {
+        const prev = data[index - 1]
+        events = row.c
+        dropoff = prev.c - row.c
+        eventsPerc = _round((row.c / data[0].c) * 100, 2)
+        eventsPercStep = _round((row.c / prev.c) * 100, 2)
+        dropoffPerc = _round((dropoff / prev.c) * 100, 2)
+      }
+
+      return {
+        value,
+        events,
+        eventsPerc,
+        eventsPercStep,
+        dropoff,
+        dropoffPerc,
+      }
+    })
+
+    return funnel
+  }
+
+  /*
+    ClickHouse's windowFunnel() function returns steps that have non-zero counts.
+    I.e. if we have data like [{level: 1, c: 100}, {level: 3, c: 50}],
+    it means that level 2 should be 50 as well (because 50 users got up to level 3).
+
+    This function backfills missing levels with previous count.
+  */
+  backfillFunnel(
+    data: IFunnelCHResponse[],
+    pages: string[],
+  ): IFunnelCHResponse[] {
+    // Get max level
+    const maxLevel = _size(pages)
+
+    // Build map of level -> count
+    const levelCounts = new Map()
+    for (const d of data) {
+      levelCounts.set(d.level, d.c)
+    }
+
+    let prevCount = 0
+
+    // Backfill missing levels with previous count
+    const filled = []
+    for (let level = maxLevel; level >= 1; level--) {
+      const count = levelCounts.get(level)
+      if (count !== undefined) {
+        prevCount += count
+      }
+
+      filled.push({
+        level,
+        c: prevCount,
+      })
+    }
+
+    return filled
+  }
+
+  generateEmptyFunnel(pages: string[]): IFunnel[] {
+    return _map(pages, value => ({
+      value,
+      events: 0,
+      eventsPerc: 0,
+      eventsPercStep: 0,
+      dropoff: 0,
+      dropoffPerc: 0,
+    }))
+  }
+
+  async getFunnel(pages: string[], params: any): Promise<IFunnel[]> {
+    const pageParams = {}
+
+    const pagesStr = _join(
+      _map(pages, (value, index) => {
+        pageParams[`v${index}`] = value
+
+        return `value={v${index}:String}`
+      }),
+      ',',
+    )
+
+    const query = `
+      SELECT
+        level,
+        count() as c
+      FROM (
+        SELECT
+          psid,
+          windowFunnel(86400)(created, ${pagesStr}) AS level
+        FROM (
+          SELECT
+            psid,
+            pg AS value,
+            created
+          FROM analytics
+          WHERE pid = {pid:FixedString(12)}
+          AND psid != 0
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+
+          UNION ALL
+
+          SELECT
+            psid,
+            ev AS value,
+            created
+          FROM customEV
+          WHERE pid = {pid:FixedString(12)}
+          AND psid != 0
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        )
+        GROUP BY psid
+      )
+      WHERE level != 0
+      GROUP BY level
+      ORDER BY level DESC;
+    `
+
+    const result = <Array<IFunnelCHResponse>>(
+      await clickhouse
+        .query(query, { params: { ...params, ...pageParams } })
+        .toPromise()
+    )
+
+    if (_isEmpty(result)) {
+      return this.generateEmptyFunnel(pages)
+    }
+
+    return this.formatFunnel(
+      _reverse(this.backfillFunnel(result, pages)),
+      pages,
+    )
+  }
+
+  async getTotalPageviews(
+    pid: string,
+    groupFrom: string,
+    groupTo: string,
+  ): Promise<number> {
+    const query = `
+      SELECT
+        count() as c
+      FROM analytics
+      WHERE pid = {pid:FixedString(12)}
+      AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+    `
+    const result = <{ c: number }[]>(
+      await clickhouse
+        .query(query, { params: { pid, groupFrom, groupTo } })
+        .toPromise()
+    )
+
+    return result[0]?.c || 0
   }
 
   async getSummary(

@@ -99,3 +99,22 @@ export interface IAggregatedMetadata {
   value: string
   count: number
 }
+
+export interface IFunnelCHResponse {
+  level: number
+  c: number
+}
+
+export interface IFunnel {
+  value: string
+  events: number
+  eventsPerc: number
+  eventsPercStep: number
+  dropoff: number
+  dropoffPerc: number
+}
+
+export interface IGetFunnel {
+  funnel: IFunnel[]
+  totalPageviews: number
+}

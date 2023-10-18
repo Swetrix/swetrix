@@ -70,10 +70,10 @@ const isValidPID = (pid: string) => PID_REGEX.test(pid)
 // redis keys
 const getRedisProjectKey = (pid: string) => `pid_${pid}`
 
-const REDIS_LOG_DATA_CACHE_KEY = 'log_cache'
+const REDIS_LOG_DATA_CACHE_KEY = 'log_cache_v2'
 const REDIS_LOG_CAPTCHA_CACHE_KEY = 'log:captcha'
 const REDIS_LOG_PERF_CACHE_KEY = 'perf_cache'
-const REDIS_LOG_CUSTOM_CACHE_KEY = 'log_custom_cache_v2'
+const REDIS_LOG_CUSTOM_CACHE_KEY = 'log_custom_cache_v3'
 const REDIS_SESSION_SALT_KEY = 'log_salt' // is updated every 24 hours
 const REDIS_USERS_COUNT_KEY = 'stats:users_count'
 const REDIS_PROJECTS_COUNT_KEY = 'stats:projects_count'
@@ -86,6 +86,10 @@ const UNIQUE_SESSION_LIFE_TIME = 1800
 
 // 35 seconds
 const HEARTBEAT_SID_LIFE_TIME = 35
+
+// Funnels
+const MIN_PAGES_IN_FUNNEL = 2
+const MAX_PAGES_IN_FUNNEL = 10
 
 const TRAFFIC_COLUMNS = [
   'cc',
@@ -136,4 +140,6 @@ export {
   TRAFFIC_COLUMNS,
   PERFORMANCE_COLUMNS,
   isProxiedByCloudflare,
+  MIN_PAGES_IN_FUNNEL,
+  MAX_PAGES_IN_FUNNEL,
 }

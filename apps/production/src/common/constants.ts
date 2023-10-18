@@ -111,6 +111,10 @@ const CAPTCHA_COOKIE_KEY = 'swetrix-captcha-token'
 const CAPTCHA_TOKEN_LIFETIME = 300 // seconds (5 minutes).
 const CAPTCHA_SECRET_KEY_LENGTH = 50
 
+// Funnels
+const MIN_PAGES_IN_FUNNEL = 2
+const MAX_PAGES_IN_FUNNEL = 10
+
 const BLOG_POSTS_PATH = isDevelopment
   ? path.join(__dirname, '../../../..', 'blog-posts', 'posts')
   : path.join(__dirname, '../..', 'blog-posts', 'posts')
@@ -216,4 +220,6 @@ export {
   PAYPAL_CLIENT_ID,
   PAYPAL_CLIENT_SECRET,
   BLOG_POSTS_PATH,
+  MIN_PAGES_IN_FUNNEL,
+  MAX_PAGES_IN_FUNNEL,
 }
