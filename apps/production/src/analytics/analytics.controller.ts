@@ -4,6 +4,9 @@ import * as _toNumber from 'lodash/toNumber'
 import * as _pick from 'lodash/pick'
 import * as _includes from 'lodash/includes'
 import * as _keys from 'lodash/keys'
+import * as _size from 'lodash/size'
+import * as _some from 'lodash/some'
+import * as _isString from 'lodash/isString'
 import * as _values from 'lodash/values'
 import * as _map from 'lodash/map'
 import * as _uniqBy from 'lodash/uniqBy'
@@ -49,6 +52,7 @@ import { EventsDTO } from './dto/events.dto'
 import { AnalyticsGET_DTO, ChartRenderMode } from './dto/getData.dto'
 import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
 import { GetUserFlowDTO } from './dto/getUserFlow.dto'
+import { GetFunnelsDTO } from './dto/getFunnels.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import {
   REDIS_LOG_DATA_CACHE_KEY,
@@ -60,6 +64,8 @@ import {
   REDIS_PROJECTS_COUNT_KEY,
   REDIS_EVENTS_COUNT_KEY,
   REDIS_SESSION_SALT_KEY,
+  MIN_PAGES_IN_FUNNEL,
+  MAX_PAGES_IN_FUNNEL,
   clickhouse,
 } from '../common/constants'
 import { getGeoDetails, getIPFromHeaders } from '../common/utils'
@@ -84,6 +90,7 @@ const getSessionKeyCustom = (
 ) => `cses_${hash(`${ua}${ip}${pid}${ev}${salt}`).toString('hex')}`
 
 const analyticsDTO = (
+  psid: string,
   sid: string,
   pid: string,
   pg: string,
@@ -103,6 +110,7 @@ const analyticsDTO = (
   unique: number,
 ): Array<string | number> => {
   return [
+    psid,
     sid,
     pid,
     pg,
@@ -162,6 +170,7 @@ const performanceDTO = (
 }
 
 const customLogDTO = (
+  psid: string,
   pid: string,
   ev: string,
   pg: string,
@@ -180,6 +189,7 @@ const customLogDTO = (
   values: string[],
 ): Array<string | number | string[]> => {
   return [
+    psid,
     pid,
     ev,
     pg,
@@ -262,6 +272,44 @@ const getPIDsArray = (pids, pid) => {
   }
 
   return pids
+}
+
+const getPagesArray = (rawPages: string): string[] => {
+  try {
+    const pages = JSON.parse(rawPages)
+
+    if (!_isArray(pages)) {
+      throw new UnprocessableEntityException(
+        'An array of pages has to be provided as a pages param',
+      )
+    }
+
+    const size = _size(pages)
+
+    if (size < MIN_PAGES_IN_FUNNEL) {
+      throw new UnprocessableEntityException(
+        `A minimum of ${MIN_PAGES_IN_FUNNEL} pages or events has to be provided`,
+      )
+    }
+
+    if (size > MAX_PAGES_IN_FUNNEL) {
+      throw new UnprocessableEntityException(
+        `A maximum of ${MAX_PAGES_IN_FUNNEL} pages or events can be provided`,
+      )
+    }
+
+    if (_some(pages, page => !_isString(page))) {
+      throw new UnprocessableEntityException(
+        'Pages array must contain string values only',
+      )
+    }
+
+    return pages
+  } catch (e) {
+    throw new UnprocessableEntityException(
+      'Cannot process the provided array of pages',
+    )
+  }
 }
 
 // needed for serving 1x1 px GIF
@@ -415,6 +463,46 @@ export class AnalyticsController {
       appliedFilters,
       timeBucket: allowedTumebucketForPeriodAll,
     }
+  }
+
+  @Get('funnel')
+  @Auth([], true, true)
+  async getFunnel(
+    @Query() data: GetFunnelsDTO,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<any> {
+    const { pid, period, from, to, timezone = DEFAULT_TIMEZONE, pages } = data
+    this.analyticsService.validatePID(pid)
+
+    if (!_isEmpty(period)) {
+      this.analyticsService.validatePeriod(period)
+    }
+
+    const pagesArr = getPagesArray(pages)
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      null,
+      period,
+      safeTimezone,
+    )
+
+    const params = {
+      pid,
+      groupFrom,
+      groupTo,
+    }
+
+    return this.analyticsService.getFunnel(pagesArr, params)
   }
 
   @Get('meta')
@@ -918,8 +1006,9 @@ export class AnalyticsController {
     this.analyticsService.validateCustomEVMeta(eventsDTO.meta)
     await this.analyticsService.validate(eventsDTO, origin, 'custom', ip)
 
+    const salt = await redis.get(REDIS_SESSION_SALT_KEY)
+
     if (eventsDTO.unique) {
-      const salt = await redis.get(REDIS_SESSION_SALT_KEY)
       const sessionHash = getSessionKeyCustom(
         ip,
         userAgent,
@@ -927,7 +1016,7 @@ export class AnalyticsController {
         eventsDTO.ev,
         salt,
       )
-      const unique = await this.analyticsService.isUnique(sessionHash)
+      const [unique] = await this.analyticsService.isUnique(sessionHash)
 
       if (!unique) {
         throw new ForbiddenException(
@@ -947,7 +1036,11 @@ export class AnalyticsController {
     const br = ua.browser.name
     const os = ua.os.name
 
+    const sessionHash = getSessionKey(ip, userAgent, eventsDTO.pid, salt)
+    const [, psid] = await this.analyticsService.isUnique(sessionHash)
+
     const dto = customLogDTO(
+      psid,
       eventsDTO.pid,
       eventsDTO.ev,
       eventsDTO.pg,
@@ -1023,7 +1116,7 @@ export class AnalyticsController {
 
     const salt = await redis.get(REDIS_SESSION_SALT_KEY)
     const sessionHash = getSessionKey(ip, userAgent, logDTO.pid, salt)
-    const unique = await this.analyticsService.isUnique(sessionHash)
+    const [unique, psid] = await this.analyticsService.isUnique(sessionHash)
 
     await this.analyticsService.processInteractionSD(sessionHash, logDTO.pid)
 
@@ -1044,6 +1137,7 @@ export class AnalyticsController {
     const os = ua.os.name
 
     const dto = analyticsDTO(
+      psid,
       sessionHash,
       logDTO.pid,
       logDTO.pg,
@@ -1097,11 +1191,12 @@ export class AnalyticsController {
     }
 
     const values = `(${dto.map(getElValue).join(',')})`
-    const perfValues = `(${perfDTO.map(getElValue).join(',')})`
+
     try {
       await redis.rpush(REDIS_LOG_DATA_CACHE_KEY, values)
 
       if (!_isEmpty(perfDTO)) {
+        const perfValues = `(${perfDTO.map(getElValue).join(',')})`
         await redis.rpush(REDIS_LOG_PERF_CACHE_KEY, perfValues)
       }
     } catch (e) {
@@ -1140,7 +1235,7 @@ export class AnalyticsController {
     const ip = getIPFromHeaders(headers) || reqIP || ''
     const salt = await redis.get(REDIS_SESSION_SALT_KEY)
     const sessionHash = getSessionKey(ip, userAgent, logDTO.pid, salt)
-    const unique = await this.analyticsService.isUnique(sessionHash)
+    const [unique, psid] = await this.analyticsService.isUnique(sessionHash)
 
     await this.analyticsService.processInteractionSD(sessionHash, logDTO.pid)
 
@@ -1155,6 +1250,7 @@ export class AnalyticsController {
     const os = ua.os.name
 
     const dto = analyticsDTO(
+      psid,
       sessionHash,
       logDTO.pid,
       'NULL',

@@ -99,3 +99,8 @@ export interface IAggregatedMetadata {
   value: string
   count: number
 }
+
+export interface IFunnelCHResponse {
+  level: number
+  c: number
+}
