@@ -80,7 +80,7 @@ export const meta: V2_MetaFunction = () => [
   { property: 'og:image', content: 'https://swetrix.com/assets/og_image.png' },
 ]
 
-export const headers: HeadersFunction = () => ({
+export const headers: HeadersFunction = (stuff) => ({
   // General headers
   'access-control-allow-origin': '*',
   'Cross-Origin-Embedder-Policy': 'require-corp; report-to="default";',
@@ -291,12 +291,6 @@ export default function App() {
         ))}
         <link rel='alternate' href={lnglessUrl} hrefLang='x-default' />
         <link rel='preload' href={`/locales/${locale}.json`} as='fetch' type='application/json' crossOrigin='anonymous' />
-        <link rel='preload' as='font' href='/fonts/inter-v13-cyrillic_latin-300.woff2' type='font/woff2' crossOrigin='anonymous' />
-        <link rel='preload' as='font' href='/fonts/inter-v13-cyrillic_latin-regular.woff2' type='font/woff2' crossOrigin='anonymous' />
-        <link rel='preload' as='font' href='/fonts/inter-v13-cyrillic_latin-500.woff2' type='font/woff2' crossOrigin='anonymous' />
-        <link rel='preload' as='font' href='/fonts/inter-v13-cyrillic_latin-600.woff2' type='font/woff2' crossOrigin='anonymous' />
-        <link rel='preload' as='font' href='/fonts/inter-v13-cyrillic_latin-700.woff2' type='font/woff2' crossOrigin='anonymous' />
-        <link rel='preload' as='font' href='/fonts/inter-v13-cyrillic_latin-800.woff2' type='font/woff2' crossOrigin='anonymous' />
         <script
           // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{
