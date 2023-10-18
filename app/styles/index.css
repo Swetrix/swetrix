@@ -154,7 +154,7 @@ body {
 }
 
 html {
-  font-family: 'Inter', 'Cantarell', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+  font-family: 'Inter', 'Cantarell', 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Oxygen', 'Ubuntu', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
