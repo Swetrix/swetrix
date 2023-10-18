@@ -87,6 +87,10 @@ const UNIQUE_SESSION_LIFE_TIME = 1800
 // 35 seconds
 const HEARTBEAT_SID_LIFE_TIME = 35
 
+// Funnels
+const MIN_PAGES_IN_FUNNEL = 2
+const MAX_PAGES_IN_FUNNEL = 10
+
 const TRAFFIC_COLUMNS = [
   'cc',
   'rg',
@@ -136,4 +140,6 @@ export {
   TRAFFIC_COLUMNS,
   PERFORMANCE_COLUMNS,
   isProxiedByCloudflare,
+  MIN_PAGES_IN_FUNNEL,
+  MAX_PAGES_IN_FUNNEL,
 }
