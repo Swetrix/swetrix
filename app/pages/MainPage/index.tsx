@@ -319,8 +319,17 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
         <div className='dark:bg-slate-900 bg-white px-4 pb-24'>
           <section id='core-analytics' className='flex pt-16 md:pt-48 flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
             <picture>
-              <source srcSet={theme === 'dark' ? '/assets/CoreFeaturesDark.webp' : '/assets/CoreFeaturesLight.webp'} type='image/webp' />
-              <img src={theme === 'dark' ? '/assets/CoreFeaturesDark.png' : '/assets/CoreFeaturesLight.png'} className='md:max-w-md md:mr-3 mt-3 mb-3 md:mt-0 lg:max-w-full md:relative md:-top-10' alt='Core Analytics Features' />
+              <source
+                srcSet={theme === 'dark' ? '/assets/CoreFeaturesDark.webp' : '/assets/CoreFeaturesLight.webp'}
+                type='image/webp'
+              />
+              <img
+                src={theme === 'dark' ? '/assets/CoreFeaturesDark.png' : '/assets/CoreFeaturesLight.png'}
+                className='md:w-[450px] md:mr-3 mt-3 md:mt-0 lg:w-[640px]'
+                width='450'
+                height='320'
+                alt='Core Analytics Features'
+              />
             </picture>
             <div className='max-w-lg md:ml-5'>
               <h2 className='font-extrabold text-4xl dark:text-white text-slate-900'>
@@ -365,12 +374,24 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                 <ArrowSmallRightIcon className='w-5 h-4 mt-[1px]' />
               </a>
             </div>
-            <img className='md:max-w-[450px] lg:max-w-lg md:ml-5 mt-8 md:mt-0' src='/assets/teardown.svg' alt='Marketplace' />
+            <img
+              className='md:w-[450px] lg:w-[32rem] md:ml-5 mt-8 md:mt-0'
+              width='450'
+              height='253'
+              src='/assets/teardown.svg'
+              alt='Marketplace'
+            />
           </section>
           {/* end section Marketplace & built-in Extensions */}
           {/* section Privacy compliance. */}
           <section className='flex pt-20 md:pt-28 flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
-            <img className='md:max-w-[360px] md:mr-3 mt-3 md:mt-0 lg:max-w-lg' src='/assets/gdpr.svg' alt='GDPR compliant' />
+            <img
+              className='md:w-[360px] md:mr-3 mt-3 md:mt-0 lg:w-[512px]'
+              width='360'
+              height='210'
+              src='/assets/gdpr.svg'
+              alt='GDPR compliant'
+            />
             <div className='max-w-[516px] w-full md:min-w-[370px] pb-16 md:pb-0 md:pt-8'>
               <h2 className='font-extrabold mb-6 text-4xl text-slate-900 dark:text-white'>
                 {t('main.privacy.title')}
@@ -449,7 +470,9 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                   <source srcSet={theme === 'dark' ? '/assets/section-signup-dark.webp' : '/assets/section-signup-light.webp'} type='image/webp' />
                   <img
                     src={theme === 'dark' ? '/assets/section-signup-dark.png' : '/assets/section-signup-light.png'}
-                    className='relative z-50 hidden md:block max-w-[680px]'
+                    className='relative z-50 hidden md:block'
+                    width='680'
+                    height='511'
                     alt='Swetrix Dashboard overview'
                   />
                 </picture>
@@ -754,11 +777,10 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
               </div>
               <div className='max-w-md xl:max-w-lg block h-[450px] md:shadow-[8px_8px_10px_3px] md:rounded-md '>
                 <img
-                  className='rounded-xl ring-1 ring-gray-900/10'
-                  style={{ minHeight: '600px', minWidth: '880px' }}
+                  className='rounded-xl ring-1 ring-gray-900/10 min-h-[600px] min-w-[880px]'
+                  width='1760'
+                  height='880'
                   src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
-                  width='100%'
-                  height='auto'
                   alt='Swetrix Analytics dashboard'
                 />
               </div>
@@ -771,7 +793,9 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
           <picture>
             <source srcSet={theme === 'dark' ? '/assets/opensource_dark.webp' : '/assets/opensource_light.webp'} type='image/webp' />
             <img
-              className='ring-1 md:max-w-xl ring-gray-900/10 dark:ring-white/10 rounded-xl'
+              className='ring-1 ring-gray-900/10 dark:ring-white/10 rounded-xl'
+              width='576'
+              height='406'
               src={theme === 'dark' ? '/assets/opensource_dark.png' : '/assets/opensource_light.png'}
               loading='lazy'
               alt='Swetrix open source'

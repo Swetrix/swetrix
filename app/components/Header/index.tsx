@@ -306,8 +306,9 @@ const AuthedHeader = ({
           <Link to={routesPath.main}>
             <span className='sr-only'>Swetrix</span>
             <img
-              className='h-7 -translate-y-[3px]'
-              height='28'
+              className='-translate-y-[3px]'
+              height='28px'
+              width='126.35px'
               src={theme === 'dark' ? '/assets/logo_white.png' : '/assets/logo_blue.png'}
               alt='Swetrix'
             />
@@ -440,8 +441,9 @@ const NotAuthedHeader = ({
             <span>
               <span className='sr-only'>Swetrix</span>
               <img
-                className='h-7 -translate-y-[3px]'
-                height='28'
+                className='-translate-y-[3px]'
+                height='28px'
+                width='126.35px'
                 src={theme === 'dark' ? '/assets/logo_white.png' : '/assets/logo_blue.png'}
                 alt='Swetrix'
               />
@@ -450,8 +452,9 @@ const NotAuthedHeader = ({
             <Link to={routesPath.main}>
               <span className='sr-only'>Swetrix</span>
               <img
-                className='h-7 -translate-y-[3px]'
-                height='28'
+                className='-translate-y-[3px]'
+                height='28px'
+                width='126.35px'
                 src={theme === 'dark' ? '/assets/logo_white.png' : '/assets/logo_blue.png'}
                 alt='Swetrix'
               />
@@ -685,8 +688,8 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                 <Link to={routesPath.main}>
                   <span className='sr-only'>Swetrix</span>
                   <img
-                    className='h-7'
-                    height='28'
+                    height='28px'
+                    width='126.35px'
                     src={theme === 'dark' ? '/assets/logo_white.png' : '/assets/logo_blue.png'}
                     alt='Swetrix'
                   />

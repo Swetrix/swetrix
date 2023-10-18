@@ -223,7 +223,7 @@ const Footer = ({ minimal, authenticated }: {
         <div className='xl:grid xl:grid-cols-2 xl:gap-8'>
           <div className='space-y-5 xl:col-span-1'>
             <div className='flex gap-5 flex-wrap'>
-              <img className='h-7' height='28px' src='/assets/logo_white.png' loading='lazy' alt='Swetrix Analytics' />
+              <img height='28px' width='126.35px' src='/assets/logo_white.png' loading='lazy' alt='Swetrix Analytics' />
             </div>
             <p className='text-gray-300 text-base'>
               {t('footer.slogan')}
