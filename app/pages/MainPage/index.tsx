@@ -644,7 +644,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                         <table className='w-full min-w-full divide-y divide-slate-500'>
                           <thead className='bg-gray-100 dark:bg-slate-800'>
                             <tr>
-                              <th />
+                              <th className='sr-only'>{t('main.metric')}</th>
                               {_map(SWETRIX_AND_COMPETITORS_LIST, (item, key) => (
                                 <th
                                   scope='col'

@@ -330,7 +330,11 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
               </div>
             </div>
           </div>
+          <label className='sr-only' htmlFor='tier-selector'>
+            {t('pricing.selectPlan')}
+          </label>
           <input
+            id='tier-selector'
             type='range'
             min='0'
             max={PLAN_CODES_ARRAY.length - 1}

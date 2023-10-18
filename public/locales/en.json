@@ -98,6 +98,7 @@
     "lookAtDocs": "Look at the documentation and live demonstration pages.",
     "readyToStart": "Ready to get started?",
     "exploreService": "Explore our service or create an account.",
+    "metric": "Metric",
     "coreFeatures": {
       "title": "Core Analytics Features",
       "desc": "Powerful and easy analytics to display all the metrics you need. Cookieless. No need to be a data scientist to understand our analytics."
@@ -770,6 +771,7 @@
     "perYear": "yr",
     "yourPlan": "Your plan",
     "downgrade": "Downgrade",
+    "selectPlan": "Select plan:",
     "upgrade": "Upgrade",
     "whatIncl": "What's included",
     "monthlyBilling": "Monthly",

@@ -310,7 +310,7 @@ const AuthedHeader = ({
               height='28px'
               width='126.35px'
               src={theme === 'dark' ? '/assets/logo_white.png' : '/assets/logo_blue.png'}
-              alt='Swetrix'
+              alt=''
             />
           </Link>
 
@@ -445,7 +445,7 @@ const NotAuthedHeader = ({
                 height='28px'
                 width='126.35px'
                 src={theme === 'dark' ? '/assets/logo_white.png' : '/assets/logo_blue.png'}
-                alt='Swetrix'
+                alt=''
               />
             </span>
           ) : (
@@ -456,7 +456,7 @@ const NotAuthedHeader = ({
                 height='28px'
                 width='126.35px'
                 src={theme === 'dark' ? '/assets/logo_white.png' : '/assets/logo_blue.png'}
-                alt='Swetrix'
+                alt=''
               />
             </Link>
           )}
@@ -691,7 +691,7 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                     height='28px'
                     width='126.35px'
                     src={theme === 'dark' ? '/assets/logo_white.png' : '/assets/logo_blue.png'}
-                    alt='Swetrix'
+                    alt=''
                   />
                 </Link>
                 <Popover.Button ref={buttonRef} className='bg-white dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-gray-200 rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500'>
