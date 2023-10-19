@@ -13,6 +13,7 @@ import { User } from '../../user/entities/user.entity'
 import { ProjectShare } from './project-share.entity'
 import { ExtensionToProject } from '../../marketplace/extensions/entities/extension-to-project.entity'
 import { ProjectSubscriber } from './project-subscriber.entity'
+import { Funnel } from './funnel.entity'
 import { CAPTCHA_SECRET_KEY_LENGTH } from '../../common/constants'
 
 // In case of modifying some properties here add them to the GDPR data export email template
@@ -95,6 +96,10 @@ export class Project {
     cascade: true,
   })
   subscribers: ProjectSubscriber[]
+
+  @ApiProperty({ type: () => Funnel })
+  @OneToMany(() => Funnel, funnel => funnel.project)
+  funnels: Funnel[]
 
   @Column('varchar', {
     default: null,

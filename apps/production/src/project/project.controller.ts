@@ -66,6 +66,7 @@ import {
   CAPTCHA_SECRET_KEY_LENGTH,
   isDevelopment,
   PRODUCTION_ORIGIN,
+  MAX_FUNNELS,
 } from '../common/constants'
 import { generateRandomString } from '../common/utils'
 import {
@@ -86,6 +87,8 @@ import {
   ProjectDTO,
   ShareDTO,
   ShareUpdateDTO,
+  FunnelCreateDTO,
+  FunnelUpdateDTO,
 } from './dto'
 
 const PROJECTS_MAXIMUM = 50
@@ -445,6 +448,90 @@ export class ProjectController {
       console.error(reason)
       throw new BadRequestException('Failed to create a new project')
     }
+  }
+
+  @Post('/funnel')
+  @ApiResponse({ status: 201 })
+  @Auth([], true)
+  async createFunnel(
+    @Body() funnelDTO: FunnelCreateDTO,
+    @CurrentUserId() userId: string,
+  ): Promise<any> {
+    this.logger.log({ funnelDTO, userId }, 'POST /project/funnel')
+
+    if (!userId) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
+    const user = await this.userService.findOneWithRelations(userId, [
+      'projects',
+    ])
+
+    if (!user.isActive) {
+      throw new ForbiddenException('Please, verify your email address first')
+    }
+
+    if (user.planCode === PlanCode.none) {
+      throw new HttpException(
+        'You cannot create new funnels due to no active subscription. Please upgrade your account plan to continue.',
+        HttpStatus.PAYMENT_REQUIRED,
+      )
+    }
+
+    const project = await this.projectService.getProject(funnelDTO.pid, userId)
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    return this.projectService.createFunnel(project.id, funnelDTO)
+  }
+
+  @Patch('/funnel')
+  @ApiResponse({ status: 200 })
+  @Auth([], true)
+  async updateFunnel(
+    @Body() funnelDTO: FunnelUpdateDTO,
+    @CurrentUserId() userId: string,
+  ): Promise<any> {
+    this.logger.log({ funnelDTO, userId }, 'PATCH /project/funnel')
+
+    if (!userId) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
+    const user = await this.userService.findOneWithRelations(userId, [
+      'projects',
+    ])
+
+    if (!user.isActive) {
+      throw new ForbiddenException('Please, verify your email address first')
+    }
+
+    if (user.planCode === PlanCode.none) {
+      throw new HttpException(
+        'You cannot update funnels due to no active subscription. Please upgrade your account plan to continue.',
+        HttpStatus.PAYMENT_REQUIRED,
+      )
+    }
+
+    return this.projectService.updateFunnel(funnelDTO)
+  }
+
+  @Delete('/funnel/:id')
+  @ApiResponse({ status: 200 })
+  @Auth([], true)
+  async deleteFunnel(
+    @Param('id') id: string,
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
+    this.logger.log({ id, userId }, 'PATCH /project/funnel')
+
+    if (!userId) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
+    await this.projectService.delete(id)
   }
 
   @Delete('/reset/:id')
@@ -1521,7 +1608,7 @@ export class ProjectController {
     }
 
     const project = await this.projectService.findOne(id, {
-      relations: ['admin', 'share', 'share.user'],
+      relations: ['admin', 'share', 'share.user', 'funnels'],
     })
 
     if (_isEmpty(project)) {
