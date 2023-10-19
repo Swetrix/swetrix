@@ -531,7 +531,32 @@ export class ProjectController {
       throw new UnauthorizedException('Please auth first')
     }
 
-    await this.projectService.delete(id)
+    await this.projectService.deleteFunnel(id)
+  }
+
+  @Get('/funnels/:pid')
+  @ApiResponse({ status: 200 })
+  @Auth([], true)
+  async getFunnels(
+    @Param('pid') pid: string,
+    @CurrentUserId() userId: string,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<any> {
+    this.logger.log({ pid, userId }, 'PATCH /project/funnel')
+
+    if (!userId) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
+    const project = await this.projectService.getProject(pid, userId)
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    this.projectService.allowedToView(project, userId, headers['x-password'])
+
+    return this.projectService.getFunnels(project.id)
   }
 
   @Delete('/reset/:id')
