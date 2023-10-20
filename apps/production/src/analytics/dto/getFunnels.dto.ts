@@ -26,5 +26,10 @@ export class GetFunnelsDTO {
   @ApiProperty({
     description: 'A stringified array of pages to generate funnel for',
   })
-  pages: string
+  pages?: string
+
+  @ApiProperty({
+    description: 'Funnel ID',
+  })
+  funnelId?: string
 }

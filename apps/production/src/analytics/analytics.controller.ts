@@ -4,9 +4,6 @@ import * as _toNumber from 'lodash/toNumber'
 import * as _pick from 'lodash/pick'
 import * as _includes from 'lodash/includes'
 import * as _keys from 'lodash/keys'
-import * as _size from 'lodash/size'
-import * as _some from 'lodash/some'
-import * as _isString from 'lodash/isString'
 import * as _values from 'lodash/values'
 import * as _map from 'lodash/map'
 import * as _uniqBy from 'lodash/uniqBy'
@@ -64,8 +61,6 @@ import {
   REDIS_PROJECTS_COUNT_KEY,
   REDIS_EVENTS_COUNT_KEY,
   REDIS_SESSION_SALT_KEY,
-  MIN_PAGES_IN_FUNNEL,
-  MAX_PAGES_IN_FUNNEL,
   clickhouse,
 } from '../common/constants'
 import { getGeoDetails, getIPFromHeaders } from '../common/utils'
@@ -279,44 +274,6 @@ const getPIDsArray = (pids, pid) => {
   return pids
 }
 
-const getPagesArray = (rawPages: string): string[] => {
-  try {
-    const pages = JSON.parse(rawPages)
-
-    if (!_isArray(pages)) {
-      throw new UnprocessableEntityException(
-        'An array of pages has to be provided as a pages param',
-      )
-    }
-
-    const size = _size(pages)
-
-    if (size < MIN_PAGES_IN_FUNNEL) {
-      throw new UnprocessableEntityException(
-        `A minimum of ${MIN_PAGES_IN_FUNNEL} pages or events has to be provided`,
-      )
-    }
-
-    if (size > MAX_PAGES_IN_FUNNEL) {
-      throw new UnprocessableEntityException(
-        `A maximum of ${MAX_PAGES_IN_FUNNEL} pages or events can be provided`,
-      )
-    }
-
-    if (_some(pages, page => !_isString(page))) {
-      throw new UnprocessableEntityException(
-        'Pages array must contain string values only',
-      )
-    }
-
-    return pages
-  } catch (e) {
-    throw new UnprocessableEntityException(
-      'Cannot process the provided array of pages',
-    )
-  }
-}
-
 // needed for serving 1x1 px GIF
 const TRANSPARENT_GIF_BUFFER = Buffer.from(
   'R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=',
@@ -477,19 +434,31 @@ export class AnalyticsController {
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ): Promise<IGetFunnel> {
-    const { pid, period, from, to, timezone = DEFAULT_TIMEZONE, pages } = data
+    const {
+      pid,
+      period,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE,
+      pages,
+      funnelId,
+    } = data
     this.analyticsService.validatePID(pid)
 
     if (!_isEmpty(period)) {
       this.analyticsService.validatePeriod(period)
     }
 
-    const pagesArr = getPagesArray(pages)
-
     await this.analyticsService.checkProjectAccess(
       pid,
       uid,
       headers['x-password'],
+    )
+
+    const pagesArr = await this.analyticsService.getPagesArray(
+      pages,
+      funnelId,
+      pid,
     )
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)

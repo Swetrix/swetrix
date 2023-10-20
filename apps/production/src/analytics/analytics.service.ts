@@ -47,8 +47,11 @@ import {
   clickhouse,
   REDIS_SESSION_SALT_KEY,
   TRAFFIC_COLUMNS,
+  ALL_COLUMNS,
   CAPTCHA_COLUMNS,
   PERFORMANCE_COLUMNS,
+  MIN_PAGES_IN_FUNNEL,
+  MAX_PAGES_IN_FUNNEL,
 } from '../common/constants'
 import {
   calculateRelativePercentage,
@@ -659,6 +662,60 @@ export class AnalyticsService {
     }
   }
 
+  async getPagesArray(
+    rawPages?: string,
+    funnelId?: string,
+    projectId?: string,
+  ): Promise<string[]> {
+    if (funnelId && projectId) {
+      const funnel = await this.projectService.getFunnel(funnelId, projectId)
+
+      if (!funnel || _isEmpty(funnel)) {
+        throw new UnprocessableEntityException(
+          'The provided funnelId is incorrect',
+        )
+      }
+
+      return funnel.steps
+    }
+
+    try {
+      const pages = JSON.parse(rawPages)
+
+      if (!_isArray(pages)) {
+        throw new UnprocessableEntityException(
+          'An array of pages has to be provided as a pages param',
+        )
+      }
+
+      const size = _size(pages)
+
+      if (size < MIN_PAGES_IN_FUNNEL) {
+        throw new UnprocessableEntityException(
+          `A minimum of ${MIN_PAGES_IN_FUNNEL} pages or events has to be provided`,
+        )
+      }
+
+      if (size > MAX_PAGES_IN_FUNNEL) {
+        throw new UnprocessableEntityException(
+          `A maximum of ${MAX_PAGES_IN_FUNNEL} pages or events can be provided`,
+        )
+      }
+
+      if (_some(pages, page => !_isString(page))) {
+        throw new UnprocessableEntityException(
+          'Pages array must contain string values only',
+        )
+      }
+
+      return pages
+    } catch (e) {
+      throw new UnprocessableEntityException(
+        'Cannot process the provided array of pages',
+      )
+    }
+  }
+
   async getTimeBucketForAllTime(
     pid: string,
     period: string,
@@ -866,7 +923,7 @@ export class AnalyticsService {
       let dropoff = 0
       let eventsPerc = 100
       let eventsPercStep = 100
-      let dropoffPerc = 0
+      let dropoffPercStep = 0
 
       if (index > 0) {
         const prev = data[index - 1]
@@ -874,7 +931,7 @@ export class AnalyticsService {
         dropoff = prev.c - row.c
         eventsPerc = _round((row.c / data[0].c) * 100, 2)
         eventsPercStep = _round((row.c / prev.c) * 100, 2)
-        dropoffPerc = _round((dropoff / prev.c) * 100, 2)
+        dropoffPercStep = _round((dropoff / prev.c) * 100, 2)
       }
 
       return {
@@ -883,7 +940,7 @@ export class AnalyticsService {
         eventsPerc,
         eventsPercStep,
         dropoff,
-        dropoffPerc,
+        dropoffPercStep,
       }
     })
 
@@ -1133,13 +1190,18 @@ export class AnalyticsService {
   }
 
   async getFilters(pid: string, type: string): Promise<Array<string>> {
-    if (!_includes(TRAFFIC_COLUMNS, type)) {
+    if (!_includes(ALL_COLUMNS, type)) {
       throw new UnprocessableEntityException(
         `The provided type (${type}) is incorrect`,
       )
     }
 
-    const query = `SELECT ${type} FROM analytics WHERE pid={pid:FixedString(12)} AND ${type} IS NOT NULL GROUP BY ${type}`
+    let query = `SELECT ${type} FROM analytics WHERE pid={pid:FixedString(12)} AND ${type} IS NOT NULL GROUP BY ${type}`
+
+    if (type === 'ev') {
+      query = `SELECT ${type} FROM customEV WHERE pid={pid:FixedString(12)} AND ${type} IS NOT NULL GROUP BY ${type}`
+    }
+
     const results = await clickhouse
       .query(query, { params: { pid } })
       .toPromise()

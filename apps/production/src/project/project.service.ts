@@ -52,13 +52,15 @@ import {
   TRAFFIC_COLUMNS,
 } from '../common/constants'
 import { IUsageInfoRedis } from '../user/interfaces'
-import { ProjectSubscriber } from './entity'
+import { ProjectSubscriber, Funnel } from './entity'
 import { AddSubscriberType } from './types'
 import {
   CreateProjectDTO,
   GetSubscribersQueriesDto,
   UpdateProjectDto,
   UpdateSubscriberBodyDto,
+  FunnelCreateDTO,
+  FunnelUpdateDTO,
 } from './dto'
 import { ReportFrequency } from './enums'
 import { nFormatter } from '../common/utils'
@@ -275,6 +277,8 @@ export class ProjectService {
     private userService: UserService,
     @InjectRepository(ProjectSubscriber)
     private readonly projectSubscriberRepository: Repository<ProjectSubscriber>,
+    @InjectRepository(Funnel)
+    private readonly funnelRepository: Repository<Funnel>,
     private readonly actionTokens: ActionTokensService,
     private readonly mailerService: MailerService,
   ) {}
@@ -342,7 +346,7 @@ export class ProjectService {
       order: {
         name: 'ASC',
       },
-      relations: ['share', 'share.user'],
+      relations: ['share', 'share.user', 'funnels'],
     })
 
     return new Pagination<Project>({
@@ -430,8 +434,11 @@ export class ProjectService {
     return this.projectShareRepository.findOne(id, params)
   }
 
-  findOneWithRelations(id: string): Promise<Project | null> {
-    return this.projectsRepository.findOne(id, { relations: ['admin'] })
+  findOneWithRelations(
+    id: string,
+    relations = ['admin'],
+  ): Promise<Project | null> {
+    return this.projectsRepository.findOne(id, { relations })
   }
 
   findOne(id: string, params: object = {}): Promise<Project | null> {
@@ -867,6 +874,34 @@ export class ProjectService {
         where: { projectId },
       })
     return { subscribers, count }
+  }
+
+  async createFunnel(projectId: string, data: FunnelCreateDTO) {
+    const funnel = await this.funnelRepository.save({
+      ...data,
+      project: { id: projectId },
+    })
+    return funnel
+  }
+
+  async getFunnels(projectId: string) {
+    return this.funnelRepository.find({
+      where: { project: { id: projectId } },
+    })
+  }
+
+  async getFunnel(funnelId: string, projectId: string) {
+    return this.funnelRepository.findOne({
+      where: { id: funnelId, project: { id: projectId } },
+    })
+  }
+
+  async updateFunnel(data: FunnelUpdateDTO) {
+    return this.funnelRepository.update({ id: data.id }, data)
+  }
+
+  async deleteFunnel(id: string) {
+    return this.funnelRepository.delete({ id })
   }
 
   async updateSubscriber(

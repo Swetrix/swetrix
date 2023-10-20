@@ -134,6 +134,8 @@ const TRAFFIC_COLUMNS = [
   'ca',
 ]
 
+const ALL_COLUMNS = [...TRAFFIC_COLUMNS, 'ev']
+
 const CAPTCHA_COLUMNS = ['cc', 'br', 'os', 'dv']
 const PERFORMANCE_COLUMNS = ['cc', 'rg', 'ct', 'pg', 'dv', 'br']
 
@@ -173,6 +175,8 @@ const sentryIgnoreErrors: (string | RegExp)[] = [
 
 const NUMBER_JWT_REFRESH_TOKEN_LIFETIME = Number(JWT_REFRESH_TOKEN_LIFETIME)
 const NUMBER_JWT_ACCESS_TOKEN_LIFETIME = Number(JWT_ACCESS_TOKEN_LIFETIME)
+
+const MAX_FUNNELS = 100
 
 export {
   clickhouse,
@@ -222,4 +226,6 @@ export {
   BLOG_POSTS_PATH,
   MIN_PAGES_IN_FUNNEL,
   MAX_PAGES_IN_FUNNEL,
+  MAX_FUNNELS,
+  ALL_COLUMNS,
 }
