@@ -9,6 +9,7 @@ interface ISelect {
   title?: string,
   label: string,
   className?: string,
+  labelClassName?: string,
   buttonClassName?: string,
   capitalise?: boolean,
   items: any[],
@@ -21,7 +22,7 @@ interface ISelect {
 
 const Select = ({
   title, label, className, items, labelExtractor, keyExtractor, iconExtractor, onSelect, id,
-  buttonClassName, capitalise,
+  buttonClassName, capitalise, labelClassName,
 }: ISelect): JSX.Element => (
   // @ts-ignore
   <Listbox id={id || ''} value={title} onChange={onSelect}>
@@ -71,7 +72,7 @@ const Select = ({
                           'font-semibold': selected,
                           'font-normal': !selected,
                           'first-letter:capitalize': capitalise,
-                        })}
+                        }, labelClassName)}
                       >
                         {labelExtractor ? labelExtractor(item, index) : item}
                       </span>
@@ -113,6 +114,7 @@ Select.propTypes = {
     PropTypes.string, PropTypes.object,
   ])),
   className: PropTypes.string,
+  labelClassName: PropTypes.string,
   buttonClassName: PropTypes.string,
   capitalise: PropTypes.bool,
   labelExtractor: PropTypes.func,
@@ -123,6 +125,7 @@ Select.propTypes = {
 
 Select.defaultProps = {
   className: '',
+  labelClassName: '',
   buttonClassName: '',
   capitalise: false,
   labelExtractor: null,

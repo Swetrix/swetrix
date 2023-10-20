@@ -1,29 +1,20 @@
-import React, { useState, useEffect, useMemo } from 'react'
-
-import _some from 'lodash/some'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import _isEmpty from 'lodash/isEmpty'
-import _find from 'lodash/find'
+import _reduce from 'lodash/reduce'
 import _filter from 'lodash/filter'
 import _map from 'lodash/map'
-import _forEach from 'lodash/forEach'
-import _includes from 'lodash/includes'
-import _toUpper from 'lodash/toUpper'
-import countries from 'utils/isoCountries'
 
 import Modal from 'ui/Modal'
-import MultiSelect from 'ui/MultiSelect'
 import Checkbox from 'ui/Checkbox'
-import Dropdown from 'ui/Dropdown'
+import Select from 'ui/Select'
+import Combobox from 'ui/Combobox'
 import { FILTERS_PANELS_ORDER } from 'redux/constants'
-
+import countries from 'utils/isoCountries'
 import { getFilters } from 'api'
+import { Filter } from './Filters'
 
-import CCRow from './CCRow'
-
-const SearchFilters = ({
-  t, setProjectFilter, pid, showModal, setShowModal, language,
-}: {
-  t: (key: string) => string,
+interface ISearchFilters {
   setProjectFilter: (filter: {
     column: string
     filter: string[]
@@ -31,167 +22,174 @@ const SearchFilters = ({
   pid: string
   showModal: boolean
   setShowModal: (show: boolean) => void
-  language: string
-}) => {
-  const [filterType, setFilterType] = useState<string>('')
-  const [filterList, setFilterList] = useState<string[]>([])
-  const [searchList, setSearchList] = useState<string[]>([])
-  const [activeFilter, setActiveFilter] = useState<{
+  tnMapping: Record<string, string>
+  filters: {
     column: string
-    filter: string[]
-  }[]>([])
-  const [overrideCurrentlyFilters, setOverrideCurrentlyFilters] = useState<boolean>(false)
-  const filters: string[] = useMemo(() => {
-    let filtersArray: string[] = []
-    _forEach(activeFilter, (item) => {
-      filtersArray = [...filtersArray, ...item.filter]
-    })
-    return filtersArray
-  }, [activeFilter])
+    filter: string
+    isExclusive: boolean
+  }[]
+}
 
-  const isCountryIncluded = useMemo(() => {
-    if (_some(activeFilter, (item) => item.column === 'cc')) {
-      return true
+const getLabelToTypeMap = (t: any) => _reduce(FILTERS_PANELS_ORDER, (acc, curr) => ({
+  ...acc,
+  [t(`project.mapping.${curr}`)]: curr,
+}), {})
+
+interface IActiveFilter {
+  column: string
+  filter: string[]
+}
+
+const formatFilters = (filters: any): IActiveFilter[] => {
+  const formatted: IActiveFilter[] = []
+
+  _map(filters, (filter, column) => {
+    formatted.push({ column, filter })
+  })
+
+  return formatted
+}
+
+const SearchFilters = ({
+  setProjectFilter, pid, showModal, setShowModal, tnMapping, filters,
+}: ISearchFilters) => {
+  const { t, i18n: { language } } = useTranslation('common')
+  const [filterType, setFilterType] = useState<string>('')
+  const [searchList, setSearchList] = useState<any[]>([])
+  const [activeFilters, setActiveFilters] = useState<any>({})
+  const [override, setOverride] = useState<boolean>(false)
+
+  const labelToTypeMap = useMemo(() => getLabelToTypeMap(t), [t])
+
+  const getFiltersList = useCallback(async (type: string) => {
+    const res = await getFilters(pid, type)
+    setSearchList(res)
+  }, [pid])
+
+  useEffect(() => {
+    if (!showModal || _isEmpty(filterType)) {
+      return
     }
 
-    return false
-  }, [activeFilter])
+    getFiltersList(filterType)
+  }, [filterType, showModal, getFiltersList])
 
-  const getFiltersList = async () => {
-    if (!_isEmpty(filterType)) {
-      const res = await getFilters(pid, filterType)
-      setFilterList(res)
-      setSearchList(res)
-    }
+  const closeModal = () => {
+    setShowModal(false)
+    setTimeout(() => {
+      setFilterType('')
+      setActiveFilters({})
+      setOverride(false)
+    }, 300)
   }
-
-  useEffect(() => {
-    if (!showModal) {
-      setSearchList(filterList)
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showModal])
-
-  useEffect(() => {
-    getFiltersList()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterType])
 
   return (
     <Modal
-      onClose={() => {
-        setShowModal(false)
-      }}
+      onClose={closeModal}
       onSubmit={() => {
-        setProjectFilter(activeFilter, overrideCurrentlyFilters)
-        setShowModal(false)
+        setProjectFilter(formatFilters(activeFilters), override)
+        closeModal()
       }}
-      size='large'
       submitText={t('project.applyFilters')}
-      closeText={t('common.close')}
       title={t('project.advancedFilters')}
       message={
         (
           <div className='min-h-[410px]'>
-            <Dropdown
-              className='min-w-[160px]'
-              title={!_isEmpty(filterType) ? t(`project.mapping.${filterType}`) : t('project.settings.reseted.selectFilters')}
+            <Select
+              label={t('project.selectCategory')}
               items={FILTERS_PANELS_ORDER}
               labelExtractor={(item) => t(`project.mapping.${item}`)}
-              keyExtractor={(item) => item}
-              onSelect={(item) => setFilterType(item)}
+              // @ts-ignore
+              onSelect={(item: string) => setFilterType(labelToTypeMap[item])}
+              title={_isEmpty(filterType) ? t('project.settings.reseted.selectFilters') : t(`project.mapping.${filterType}`)}
             />
-            <div className='h-2' />
-            {(filterType && !_isEmpty(filterList)) ? (
+            {!_isEmpty(filters) && (
               <>
+                <p className='mt-5 text-sm font-medium text-gray-700 dark:text-gray-200'>
+                  {t('project.currentFilters')}
+                </p>
+                {_map(filters, ({ column, filter, isExclusive }) => (
+                  <Filter
+                    key={`${column}-${filter}`}
+                    t={t}
+                    language={language}
+                    onChangeExclusive={() => { }}
+                    onRemoveFilter={() => { }}
+                    isExclusive={isExclusive}
+                    column={column}
+                    filter={filter}
+                    tnMapping={tnMapping}
+                    removable={false}
+                    canChangeExclusive={false}
+                  />
+                ))}
+              </>
+            )}
+            {(filterType && !_isEmpty(searchList)) && (
+              <>
+                <p className='mt-5 text-sm font-medium text-gray-700 dark:text-gray-200'>
+                  {t('project.newFilters')}
+                </p>
+                <Combobox
+                  items={searchList}
+                  labelExtractor={(item) => {
+                    if (filterType === 'cc') {
+                      return countries.getName(item, language)
+                    }
+
+                    return item
+                  }}
+                  onSelect={(item: any) => {
+                    const processedItem = filterType === 'cc'
+                      ? countries.getAlpha2Code(item, language) as string
+                      : item
+
+                    setActiveFilters((prevFilters: any) => ({
+                      ...prevFilters,
+                      [filterType]: [...(prevFilters[filterType] || []), processedItem],
+                    }))
+                  }}
+                  placeholder={t('project.settings.reseted.filtersPlaceholder')}
+                />
+                {_map(activeFilters, (filter, column) => {
+                  return _map(filter, (item) => (
+                    <Filter
+                      key={`${column}-${item}`}
+                      t={t}
+                      onRemoveFilter={(removeColumn, removeFilter) => {
+                        setActiveFilters((prevFilters: any) => {
+                          const filteredColumn = _filter(prevFilters[removeColumn], (item: string) => item !== removeFilter)
+
+                          if (_isEmpty(filteredColumn)) {
+                            return _filter(prevFilters, (_, key) => key !== removeColumn)
+                          }
+
+                          return {
+                            ...prevFilters,
+                            [removeColumn]: filteredColumn,
+                          }
+                        })
+                      }}
+                      language={language}
+                      onChangeExclusive={() => { }}
+                      isExclusive={false}
+                      canChangeExclusive={false}
+                      column={column}
+                      filter={item}
+                      tnMapping={tnMapping}
+                      removable
+                    />
+                  ))
+                })}
                 <Checkbox
-                  checked={Boolean(overrideCurrentlyFilters)}
-                  onChange={(e) => setOverrideCurrentlyFilters(e.target.checked)}
+                  checked={Boolean(override)}
+                  onChange={(e) => setOverride(e.target.checked)}
                   name='overrideCurrentlyFilters'
                   id='overrideCurrentlyFilters'
                   className='mt-4'
                   label={t('project.overrideCurrentlyFilters')}
                 />
-                <MultiSelect
-                  className='max-w-max'
-                  items={searchList}
-                  // eslint-disable-next-line react/no-unstable-nested-components
-                  itemExtractor={(item) => {
-                    if (filterType === 'cc') {
-                      return <CCRow cc={item} language={language} />
-                    }
-
-                    return item
-                  }}
-                  // eslint-disable-next-line react/no-unstable-nested-components
-                  labelExtractor={(item) => {
-                    if (isCountryIncluded && _some(activeFilter, (i) => i.column === 'cc' && _includes(i.filter, item))) {
-                      return <CCRow cc={item} language={language} />
-                    }
-
-                    return item
-                  }}
-                  keyExtractor={(item) => item}
-                  label={filters}
-                  placholder={t('project.settings.reseted.filtersPlaceholder')}
-                  searchPlaseholder={t('project.search')}
-                  onSearch={(search: string) => {
-                    if (search.length > 0) {
-                      if (filterType === 'cc') {
-                        setSearchList(_filter(filterList, (item) => _includes(_toUpper(countries.getName(item, language)), _toUpper(search))))
-                        return
-                      }
-
-                      setSearchList(_filter(filterList, (item) => _includes(_toUpper(item), _toUpper(search))))
-                    } else {
-                      setSearchList(filterList)
-                    }
-                  }}
-                  onSelect={(item: string) => setActiveFilter((oldItems: {
-                    column: string
-                    filter: string[]
-                  }[]) => {
-                    if (_some(oldItems, (i) => i?.column === filterType)) {
-                      if (_some(oldItems, (i) => i?.column === filterType && _includes(i?.filter, item))) {
-                        return _filter(oldItems, (i) => i.column !== filterType).concat({
-                          column: filterType,
-                          filter: _filter(_find(oldItems, (i) => i.column === filterType)?.filter || [], (i) => i !== item),
-                        })
-                      }
-
-                      return _filter(oldItems, (i) => i?.column !== filterType).concat({
-                        column: filterType,
-                        filter: [..._find(oldItems, (i) => i?.column === filterType)?.filter || [], item],
-                      })
-                    }
-
-                    return oldItems.concat({
-                      column: filterType,
-                      filter: [item],
-                    })
-                  })}
-                  onRemove={(item: string) => setActiveFilter((oldItems: {
-                    column: string
-                    filter: string[]
-                  }[]) => {
-                    const newItems = _map(oldItems, (i) => {
-                      if (_includes(i.filter, item)) {
-                        return {
-                          column: i.column,
-                          filter: _filter(i.filter, (j) => j !== item),
-                        }
-                      }
-                      return i
-                    })
-
-                    return newItems
-                  })}
-                />
               </>
-            ) : (
-              <p className='text-gray-500 dark:text-gray-300 italic mt-4 mb-4 text-sm'>
-                {t('project.settings.reseted.noFilters')}
-              </p>
             )}
           </div>
         )
