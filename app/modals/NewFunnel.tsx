@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 
 import Modal from 'ui/Modal'
 import Input from 'ui/Input'
-import Select from 'ui/Select'
+import Combobox from 'ui/Combobox'
 import { MIN_FUNNEL_STEPS, MAX_FUNNEL_STEPS } from 'redux/constants'
 import { getFilters } from 'api'
 import { IFunnel } from 'redux/models/IProject'
@@ -104,7 +104,7 @@ const NewFunnel = ({
           </p>
           {_map(steps, (step, index) => (
             <div key={index} className='flex items-center space-x-2 mt-1'>
-              <Select
+              <Combobox
                 className='w-full !ml-0'
                 buttonClassName={cx({
                   'h-9': !step,

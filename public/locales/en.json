@@ -87,7 +87,8 @@
     "account": "Account",
     "transferring": "Transferring",
     "link": "Link",
-    "unlink": "Unlink"
+    "unlink": "Unlink",
+    "nothingFound": "Nothing found"
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",

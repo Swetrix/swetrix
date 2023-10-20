@@ -20,7 +20,8 @@ interface ISelect {
 }
 
 const Select = ({
-  title, label, className, items, labelExtractor, keyExtractor, iconExtractor, onSelect, id, buttonClassName, capitalise,
+  title, label, className, items, labelExtractor, keyExtractor, iconExtractor, onSelect, id,
+  buttonClassName, capitalise,
 }: ISelect): JSX.Element => (
   // @ts-ignore
   <Listbox id={id || ''} value={title} onChange={onSelect}>
