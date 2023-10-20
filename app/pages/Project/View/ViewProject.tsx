@@ -12,6 +12,7 @@ import bb from 'billboard.js'
 import {
   ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, ChartBarIcon, BoltIcon, BellIcon,
   PresentationChartBarIcon, PresentationChartLineIcon, NoSymbolIcon, MagnifyingGlassIcon,
+  FunnelIcon, ChevronLeftIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -49,9 +50,10 @@ import {
   timeBucketToDays, getProjectCacheCustomKey, MAX_MONTHS_IN_PAST, PROJECT_TABS, TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin,
   TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER, isSelfhosted, tbPeriodPairsCompare, PERIOD_PAIRS_COMPARE, filtersPeriodPairs, IS_ACTIVE_COMPARE,
   PROJECTS_PROTECTED, getProjectCacheCustomKeyPerf, isBrowser, TITLE_SUFFIX, FILTERS_PANELS_ORDER, KEY_FOR_ALL_TIME, MARKETPLACE_URL,
+  getFunnelsCacheKey, getFunnelsCacheCustomKey,
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
-import { IProject, ILiveStats } from 'redux/models/IProject'
+import { IProject, ILiveStats, IFunnel, IAnalyticsFunnel } from 'redux/models/IProject'
 import { IProjectForShared, ISharedProject } from 'redux/models/ISharedProject'
 import { ICountryEntry } from 'redux/models/IEntry'
 import Loader from 'ui/Loader'
@@ -61,12 +63,14 @@ import Select from 'ui/Select'
 import FlatPicker from 'ui/Flatpicker'
 import Robot from 'ui/icons/Robot'
 import Forecast from 'modals/Forecast'
+import NewFunnel from 'modals/NewFunnel'
 import routes from 'routesPath'
 import Header from 'components/Header'
 import Footer from 'components/Footer'
 import {
   getProjectData, getProject, getOverallStats, getLiveVisitors, getPerfData, getProjectDataCustomEvents,
-  getProjectCompareData, checkPassword, getCustomEventsMetadata,
+  getProjectCompareData, checkPassword, getCustomEventsMetadata, addFunnel, updateFunnel, deleteFunnel,
+  getFunnelData, getFunnels,
 } from 'api'
 import { getChartPrediction } from 'api/ai'
 import {
@@ -76,8 +80,10 @@ import {
   onCSVExportClick, getFormatDate, panelIconMapping, typeNameMapping, validFilters, validPeriods,
   validTimeBacket, noRegionPeriods, getSettings, getColumns, CHART_METRICS_MAPPING,
   CHART_METRICS_MAPPING_PERF, getSettingsPerf, transformAIChartData, FILTER_CHART_METRICS_MAPPING_FOR_COMPARE,
+  getSettingsFunnels,
 } from './ViewProject.helpers'
 import CCRow from './components/CCRow'
+import FunnelsList from './components/FunnelsList'
 import RefRow from './components/RefRow'
 import NoEvents from './components/NoEvents'
 import SearchFilters from './components/SearchFilters'
@@ -129,13 +135,16 @@ interface IViewProject {
   ssrAuthenticated: boolean,
   queryPassword: string | null,
   authLoading: boolean,
+  cacheFunnels: any,
+  setFunnelsCache: (pid: string, data: any, key: string) => void,
+  updateProject: (pid: string, project: Partial<IProject | ISharedProject>) => void,
 }
 
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, cachePerf, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
   setLiveStatsForProject, authenticated: csrAuthenticated, timezone, user, sharedProjects, extensions, generateAlert, setProjectCachePerf,
   projectTab, setProjectTab, setProjects, setProjectForcastCache, customEventsPrefs, setCustomEventsPrefs, liveStats, password, theme,
-  ssrTheme, embedded, ssrAuthenticated, queryPassword, authLoading,
+  ssrTheme, embedded, ssrAuthenticated, queryPassword, authLoading, cacheFunnels, setFunnelsCache, updateProject,
 }: IViewProject) => {
   const authenticated = isBrowser
     ? authLoading
@@ -216,6 +225,7 @@ const ViewProject = ({
   // isPanelsDataEmpty is a true we are display components <NoEvents /> and do not show dropdowns with activeChartMetrics
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState<boolean>(false)
   const [isForecastOpened, setIsForecastOpened] = useState<boolean>(false)
+  const [isNewFunnelOpened, setIsNewFunnelOpened] = useState<boolean>(false)
   // analyticsLoading is a boolean for show loader on chart
   const [analyticsLoading, setAnalyticsLoading] = useState<boolean>(true)
   // period using for logic with update data on chart. Set when user change period in dropdown and when we parse query params from url
@@ -277,7 +287,97 @@ const ViewProject = ({
     return projectTab || PROJECT_TABS.traffic
   })
 
+  const [activeFunnel, setActiveFunnel] = useState<IFunnel | null>(null)
+  const [funnelToEdit, setFunnelToEdit] = useState<IFunnel | undefined>(undefined)
+  const [funnelActionLoading, setFunnelActionLoading] = useState<boolean>(false)
+
   const mode = activeChartMetrics[CHART_METRICS_MAPPING.cumulativeMode] ? 'cumulative' : 'periodical'
+
+  const onFunnelCreate = async (name: string, steps: string[]) => {
+    if (funnelActionLoading) {
+      return
+    }
+
+    setFunnelActionLoading(true)
+
+    try {
+      const funnel = await addFunnel(id, name, steps)
+      console.log(funnel)
+    } catch (reason: any) {
+      console.error('[ERROR] (onFunnelCreate)(addFunnel)', reason)
+      showError(reason)
+    }
+
+    try {
+      const funnels = await getFunnels(id, projectPassword)
+
+      updateProject(id, {
+        funnels,
+      })
+    } catch (reason: any) {
+      console.error('[ERROR] (onFunnelCreate)(getFunnels)', reason)
+    }
+
+    generateAlert(t('apiNotifications.funnelCreated'), 'success')
+    setFunnelActionLoading(false)
+  }
+
+  const onFunnelEdit = async (funnelId: string, name: string, steps: string[]) => {
+    if (funnelActionLoading) {
+      return
+    }
+
+    setFunnelActionLoading(true)
+
+    try {
+      const funnel = await updateFunnel(funnelId, id, name, steps)
+      console.log(funnel)
+    } catch (reason: any) {
+      console.error('[ERROR] (onFunnelEdit)(updateFunnel)', reason)
+      showError(reason)
+    }
+
+    try {
+      const funnels = await getFunnels(id, projectPassword)
+
+      updateProject(id, {
+        funnels,
+      })
+    } catch (reason: any) {
+      console.error('[ERROR] (onFunnelCreate)(getFunnels)', reason)
+    }
+
+    generateAlert(t('apiNotifications.funnelUpdated'), 'success')
+    setFunnelActionLoading(false)
+  }
+
+  const onFunnelDelete = async (funnelId: string) => {
+    if (funnelActionLoading) {
+      return
+    }
+
+    setFunnelActionLoading(true)
+
+    try {
+      await deleteFunnel(funnelId, id)
+    } catch (reason: any) {
+      console.error('[ERROR] (onFunnelDelete)(deleteFunnel)', reason)
+      showError(reason)
+    }
+
+    try {
+      const funnels = await getFunnels(id, projectPassword)
+
+      updateProject(id, {
+        funnels,
+      })
+    } catch (reason: any) {
+      console.error('[ERROR] (onFunnelCreate)(getFunnels)', reason)
+    }
+
+    generateAlert(t('apiNotifications.funnelDeleted'), 'success')
+    setFunnelActionLoading(false)
+  }
 
   useEffect(() => {
     // @ts-ignore
@@ -491,35 +591,36 @@ const ViewProject = ({
   }, [panelsData])
 
   // dataNames is a list of metrics for chart
-  const dataNames = useMemo(() => {
-    return {
-      unique: t('project.unique'),
-      total: t('project.total'),
-      bounce: `${t('dashboard.bounceRate')} (%)`,
-      viewsPerUnique: t('dashboard.viewsPerUnique'),
-      trendlineTotal: t('project.trendlineTotal'),
-      trendlineUnique: t('project.trendlineUnique'),
-      sessionDuration: t('dashboard.sessionDuration'),
-      ...dataNamesCustomEvents,
-    }
-  }, [t, dataNamesCustomEvents])
+  const dataNames = useMemo(() => ({
+    unique: t('project.unique'),
+    total: t('project.total'),
+    bounce: `${t('dashboard.bounceRate')} (%)`,
+    viewsPerUnique: t('dashboard.viewsPerUnique'),
+    trendlineTotal: t('project.trendlineTotal'),
+    trendlineUnique: t('project.trendlineUnique'),
+    sessionDuration: t('dashboard.sessionDuration'),
+    ...dataNamesCustomEvents,
+  }), [t, dataNamesCustomEvents])
 
   // dataNamesPerf is a list of metrics for chart in performance tab
-  const dataNamesPerf = useMemo(() => {
-    return {
-      full: t('dashboard.timing'),
-      network: t('dashboard.network'),
-      frontend: t('dashboard.frontend'),
-      backend: t('dashboard.backend'),
-      dns: t('dashboard.dns'),
-      tls: t('dashboard.tls'),
-      conn: t('dashboard.conn'),
-      response: t('dashboard.response'),
-      render: t('dashboard.render'),
-      dom_load: t('dashboard.domLoad'),
-      ttfb: t('dashboard.ttfb'),
-    }
-  }, [t])
+  const dataNamesPerf = useMemo(() => ({
+    full: t('dashboard.timing'),
+    network: t('dashboard.network'),
+    frontend: t('dashboard.frontend'),
+    backend: t('dashboard.backend'),
+    dns: t('dashboard.dns'),
+    tls: t('dashboard.tls'),
+    conn: t('dashboard.conn'),
+    response: t('dashboard.response'),
+    render: t('dashboard.render'),
+    dom_load: t('dashboard.domLoad'),
+    ttfb: t('dashboard.ttfb'),
+  }), [t])
+
+  const dataNamesFunnel = useMemo(() => ({
+    dropoff: t('project.dropoff'),
+    events: t('project.visitors'),
+  }), [t])
 
   // tabs is a tabs for project
   const tabs: {
@@ -557,6 +658,11 @@ const ViewProject = ({
 
     return [
       ...selfhostedOnly,
+      {
+        id: PROJECT_TABS.funnels,
+        label: t('dashboard.funnels'),
+        icon: FunnelIcon,
+      },
       {
         id: PROJECT_TABS.alerts,
         label: t('dashboard.alerts'),
@@ -645,9 +751,9 @@ const ViewProject = ({
       // set chart data
       setMainChart(() => {
         // @ts-ignore
-        const generete = bb.generate(bbSettings)
-        generete.data.names(dataNames)
-        return generete
+        const generate = bb.generate(bbSettings)
+        generate.data.names(dataNames)
+        return generate
       })
     } catch (e) {
       console.error('[ERROR] FAILED TO LOAD CUSTOM EVENTS', e)
@@ -846,9 +952,9 @@ const ViewProject = ({
         if (activeTab === PROJECT_TABS.traffic) {
           setMainChart(() => {
             // @ts-ignore
-            const generete = bb.generate(bbSettings)
-            generete.data.names(dataNames)
-            return generete
+            const generate = bb.generate(bbSettings)
+            generate.data.names(dataNames)
+            return generate
           })
         }
 
@@ -1016,9 +1122,9 @@ const ViewProject = ({
         if (activeTab === PROJECT_TABS.performance) {
           setMainChart(() => {
             // @ts-ignore
-            const generete = bb.generate(bbSettings)
-            generete.data.names(dataNamesPerf)
-            return generete
+            const generate = bb.generate(bbSettings)
+            generate.data.names(dataNamesPerf)
+            return generate
           })
         }
 
@@ -1035,6 +1141,66 @@ const ViewProject = ({
       console.error(e)
     }
   }
+
+  const loadFunnelsData = useCallback(async (forced = false) => {
+    if (!activeFunnel) {
+      return
+    }
+
+    if (!forced && (isLoading || _isEmpty(project) || dataLoading)) {
+      return
+    }
+
+    setDataLoading(true)
+
+    try {
+      let dataFunnel: { funnel: IAnalyticsFunnel[], totalPageviews: number }
+      let key
+      let from
+      let to
+
+      if (dateRange) {
+        from = getFormatDate(dateRange[0])
+        to = getFormatDate(dateRange[1])
+        key = getFunnelsCacheCustomKey(id, activeFunnel.id, from, to)
+      } else {
+        key = getFunnelsCacheKey(id, activeFunnel.id, period)
+      }
+
+      if (!forced && !_isEmpty(cacheFunnels[id]) && !_isEmpty(cacheFunnels[id][key])) {
+        dataFunnel = cacheFunnels[id][key]
+      } else {
+        if (period === 'custom' && dateRange) {
+          dataFunnel = await getFunnelData(id, '', from, to, timezone, activeFunnel.id, projectPassword)
+        } else {
+          dataFunnel = await getFunnelData(id, period, '', '', timezone, activeFunnel.id, projectPassword)
+        }
+
+        setFunnelsCache(id, dataFunnel || {}, key)
+      }
+
+      const { funnel, totalPageviews } = dataFunnel
+
+      const bbSettings = getSettingsFunnels(funnel, totalPageviews, t)
+
+      if (activeTab === PROJECT_TABS.funnels) {
+        setMainChart(() => {
+          // @ts-ignore
+          const generate = bb.generate(bbSettings)
+          generate.data.names(dataNamesFunnel)
+          return generate
+        })
+      }
+
+      setAnalyticsLoading(false)
+      setDataLoading(false)
+    } catch (e) {
+      setAnalyticsLoading(false)
+      setDataLoading(false)
+      console.error('[ERROR](loadFunnelsData) Loading funnels data failed')
+      console.error(e)
+    }
+  }, [activeFunnel, activeTab, cacheFunnels, dataLoading, dateRange, id, isLoading, period, project, projectPassword, timezone, setFunnelsCache, t, dataNamesFunnel])
 
   // this funtion is used for requesting the data from the API when the filter is changed
   const filterHandler = (column: string, filter: any, isExclusive = false) => {
@@ -1247,9 +1413,15 @@ const ViewProject = ({
     if (!isLoading && !dataLoading) {
       if (activeTab === PROJECT_TABS.performance) {
         loadAnalyticsPerf(true)
-      } else {
-        loadAnalytics(true)
+        return
       }
+
+      if (activeTab === PROJECT_TABS.funnels) {
+        loadFunnelsData(true)
+        return
+      }
+
+      loadAnalytics(true)
     }
   }
 
@@ -1325,9 +1497,9 @@ const ViewProject = ({
 
           setMainChart(() => {
             // @ts-ignore
-            const generete = bb.generate(bbSettings)
-            generete.data.names(dataNames)
-            return generete
+            const generate = bb.generate(bbSettings)
+            generate.data.names(dataNames)
+            return generate
           })
         }
 
@@ -1354,9 +1526,9 @@ const ViewProject = ({
 
       setMainChart(() => {
         // @ts-ignore
-        const generete = bb.generate(bbSettings)
-        generete.data.names(dataNamesPerf)
-        return generete
+        const generate = bb.generate(bbSettings)
+        generate.data.names(dataNamesPerf)
+        return generate
       })
     }
   }, [isLoading, activeChartMetrics, chartData, chartDataPerf, activeChartMetricsPerf, dataChartCompare]) // eslint-disable-line
@@ -1608,15 +1780,11 @@ const ViewProject = ({
       return
     }
 
-    if (areFiltersParsed && areTimeBucketParsed && arePeriodParsed) {
-      if (activeTab === PROJECT_TABS.traffic) {
-        loadAnalytics()
-      }
+    if (areFiltersParsed && areTimeBucketParsed && arePeriodParsed && activeTab === PROJECT_TABS.traffic) {
+      loadAnalytics()
     }
-    if (areFiltersPerfParsed && areTimeBucketParsed && arePeriodParsed) {
-      if (activeTab === PROJECT_TABS.performance) {
-        loadAnalyticsPerf()
-      }
+    if (areFiltersPerfParsed && areTimeBucketParsed && arePeriodParsed && activeTab === PROJECT_TABS.performance) {
+      loadAnalyticsPerf()
     }
   }, [project, period, chartType, filters, forecasedChartData, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t, activeTab, areFiltersPerfParsed]) // eslint-disable-line
 
@@ -1625,18 +1793,22 @@ const ViewProject = ({
       return
     }
 
-    if (areFiltersParsed && areTimeBucketParsed && arePeriodParsed) {
-      if (activeTab === PROJECT_TABS.traffic) {
-        loadAnalytics()
-      }
+    if (areFiltersParsed && areTimeBucketParsed && arePeriodParsed && activeTab === PROJECT_TABS.traffic) {
+      loadAnalytics()
     }
-    if (areFiltersPerfParsed && areTimeBucketParsed && arePeriodParsed) {
-      if (activeTab === PROJECT_TABS.performance) {
-        loadAnalyticsPerf()
-      }
+    if (areFiltersPerfParsed && areTimeBucketParsed && arePeriodParsed && activeTab === PROJECT_TABS.performance) {
+      loadAnalyticsPerf()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project, period, chartType, filters, forecasedChartData, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, activeTab, areFiltersPerfParsed])
+
+  useEffect(() => {
+    if (!project || !activeFunnel) {
+      return
+    }
+
+    loadFunnelsData()
+  }, [project, activeFunnel, loadFunnelsData, period, t])
 
   // using this for fix some bugs with update custom events data for chart
   useEffect(() => {
@@ -1899,7 +2071,9 @@ const ViewProject = ({
     if (isActiveCompare) {
       if (activeTab === PROJECT_TABS.performance) {
         loadAnalyticsPerf()
-      } else {
+      }
+
+      if (activeTab === PROJECT_TABS.traffic) {
         loadAnalytics()
       }
     }
@@ -1950,11 +2124,12 @@ const ViewProject = ({
                     }
                   }}
                   title={activeTabLabel}
+                  capitalise
                 />
               </div>
               <div className='hidden sm:block'>
                 <div>
-                  <nav className='-mb-px flex space-x-4' aria-label='Tabs'>
+                  <nav className='-mb-px flex space-x-4 overflow-x-auto' aria-label='Tabs'>
                     {_map(tabs, tab => {
                       const isCurrent = tab.id === activeTab
                       const isSettings = tab.id === 'settings'
@@ -1993,143 +2168,144 @@ const ViewProject = ({
                 </div>
               </div>
             </div>
-            {activeTab !== PROJECT_TABS.alerts && (
+            {activeTab !== PROJECT_TABS.alerts && (activeFunnel || activeTab !== PROJECT_TABS.funnels) && (
               <>
                 <div className='flex flex-col md:flex-row items-center md:items-start justify-between mt-2'>
                   <h2 className='text-3xl font-bold text-gray-900 dark:text-gray-50 break-words break-all'>
-                    {name}
+                    {/* If tab is funnels - then display a funnel name, otherwise a project name */}
+                    {activeTab === PROJECT_TABS.funnels ? activeFunnel?.name : name}
                   </h2>
                   <div className='flex items-center mt-3 md:mt-0 max-w-[420px] flex-wrap sm:flex-nowrap sm:max-w-none justify-center sm:justify-between w-full sm:w-auto mx-auto sm:mx-0 space-x-2 gap-y-1'>
-                    <Dropdown
-                      items={[...exportTypes, ...customExportTypes, { label: t('project.lookingForMore'), lookingForMore: true, onClick: () => {} }]}
-                      title={[
-                        <ArrowDownTrayIcon key='download-icon' className='w-5 h-5 mr-2' />,
-                        <Fragment key='export-data'>
-                          {t('project.exportData')}
-                        </Fragment>,
-                      ]}
-                      labelExtractor={item => {
-                        const { label, lookingForMore } = item
+                    {activeTab !== PROJECT_TABS.funnels && (
+                      <Dropdown
+                        items={[...exportTypes, ...customExportTypes, { label: t('project.lookingForMore'), lookingForMore: true, onClick: () => { } }]}
+                        title={[
+                          <ArrowDownTrayIcon key='download-icon' className='w-5 h-5 mr-2' />,
+                          <Fragment key='export-data'>
+                            {t('project.exportData')}
+                          </Fragment>,
+                        ]}
+                        labelExtractor={item => {
+                          const { label, lookingForMore } = item
 
-                        if (lookingForMore) {
-                          return (
-                            <a href={MARKETPLACE_URL} target='_blank' rel='noreferrer'>
-                              {label}
-                            </a>
-                          )
-                        }
+                          if (lookingForMore) {
+                            return (
+                              <a href={MARKETPLACE_URL} target='_blank' rel='noreferrer'>
+                                {label}
+                              </a>
+                            )
+                          }
 
-                        return label
-                      }}
-                      keyExtractor={item => item.label}
-                      onSelect={item => item.onClick(panelsData, t)}
-                      className={cx('ml-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
-                    />
-                    {activeTab === PROJECT_TABS.traffic ? (
-                      !isPanelsDataEmpty && (
-                        <Dropdown
-                          items={isActiveCompare ? _filter(chartMetrics, (el) => {
-                            return !_includes(FILTER_CHART_METRICS_MAPPING_FOR_COMPARE, el.id)
-                          }) : chartMetrics}
-                          title={t('project.metricVis')}
-                          labelExtractor={(pair) => {
-                            const {
-                              label, id: pairID, active, conflicts,
-                            } = pair
+                          return label
+                        }}
+                        keyExtractor={item => item.label}
+                        onSelect={item => item.onClick(panelsData, t)}
+                        className={cx('ml-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
+                      />
+                    )}
+                    {activeTab === PROJECT_TABS.traffic && !isPanelsDataEmpty && (
+                      <Dropdown
+                        items={isActiveCompare ? _filter(chartMetrics, (el) => {
+                          return !_includes(FILTER_CHART_METRICS_MAPPING_FOR_COMPARE, el.id)
+                        }) : chartMetrics}
+                        title={t('project.metricVis')}
+                        labelExtractor={(pair) => {
+                          const {
+                            label, id: pairID, active, conflicts,
+                          } = pair
 
-                            const conflicted = isConflicted(conflicts)
+                          const conflicted = isConflicted(conflicts)
 
-                            if (pairID === CHART_METRICS_MAPPING.customEvents) {
-                              if (_isEmpty(panelsData.customs)) {
-                                return (
-                                  <span className='px-4 py-2 flex items-center cursor-not-allowed'>
-                                    <NoSymbolIcon className='w-5 h-5 mr-1' />
-                                    {label}
-                                  </span>
-                                )
-                              }
-
+                          if (pairID === CHART_METRICS_MAPPING.customEvents) {
+                            if (_isEmpty(panelsData.customs)) {
                               return (
-                                <Dropdown
-                                  menuItemsClassName='max-w-[300px] max-h-[300px] overflow-auto'
-                                  items={chartMetricsCustomEvents}
-                                  title={label}
-                                  labelExtractor={(event) => (
-                                    <Checkbox
-                                      className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
-                                      label={_size(event.label) > CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH ? (
-                                        <span title={event.label}>
-                                          {_truncate(event.label, { length: CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH })}
-                                        </span>
-                                      ) : event.label}
-                                      id={event.id}
-                                      onChange={() => { }}
-                                      checked={event.active}
-                                    />
-                                  )}
-                                  buttonClassName='group-hover:bg-gray-200 dark:group-hover:bg-slate-700 px-4 py-2 inline-flex w-full bg-white text-sm font-medium text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800'
-                                  keyExtractor={(event) => event.id}
-                                  onSelect={(event, e) => {
-                                    e?.stopPropagation()
-                                    e?.preventDefault()
-
-                                    setActiveChartMetricsCustomEvents((prev) => {
-                                      const newActiveChartMetricsCustomEvents = [...prev]
-                                      const index = _findIndex(prev, (item) => item === event.id)
-                                      if (index === -1) {
-                                        newActiveChartMetricsCustomEvents.push(event.id)
-                                      } else {
-                                        newActiveChartMetricsCustomEvents.splice(index, 1)
-                                      }
-                                      return newActiveChartMetricsCustomEvents
-                                    })
-                                  }}
-                                />
+                                <span className='px-4 py-2 flex items-center cursor-not-allowed'>
+                                  <NoSymbolIcon className='w-5 h-5 mr-1' />
+                                  {label}
+                                </span>
                               )
                             }
 
                             return (
-                              <Checkbox
-                                className={cx('px-4 py-2', { hidden: isPanelsDataEmpty || analyticsLoading })}
-                                label={label}
-                                disabled={conflicted}
-                                id={pairID}
-                                checked={active}
+                              <Dropdown
+                                menuItemsClassName='max-w-[300px] max-h-[300px] overflow-auto'
+                                items={chartMetricsCustomEvents}
+                                title={label}
+                                labelExtractor={(event) => (
+                                  <Checkbox
+                                    className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
+                                    label={_size(event.label) > CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH ? (
+                                      <span title={event.label}>
+                                        {_truncate(event.label, { length: CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH })}
+                                      </span>
+                                    ) : event.label}
+                                    id={event.id}
+                                    onChange={() => { }}
+                                    checked={event.active}
+                                  />
+                                )}
+                                buttonClassName='group-hover:bg-gray-200 dark:group-hover:bg-slate-700 px-4 py-2 inline-flex w-full bg-white text-sm font-medium text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800'
+                                keyExtractor={(event) => event.id}
+                                onSelect={(event, e) => {
+                                  e?.stopPropagation()
+                                  e?.preventDefault()
+
+                                  setActiveChartMetricsCustomEvents((prev) => {
+                                    const newActiveChartMetricsCustomEvents = [...prev]
+                                    const index = _findIndex(prev, (item) => item === event.id)
+                                    if (index === -1) {
+                                      newActiveChartMetricsCustomEvents.push(event.id)
+                                    } else {
+                                      newActiveChartMetricsCustomEvents.splice(index, 1)
+                                    }
+                                    return newActiveChartMetricsCustomEvents
+                                  })
+                                }}
                               />
                             )
-                          }}
-                          selectItemClassName='group text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 block text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'
-                          keyExtractor={(pair) => pair.id}
-                          onSelect={({ id: pairID, conflicts }) => {
-                            if (isConflicted(conflicts)) {
-                              generateAlert(t('project.conflictMetric'), 'error')
-                              return
-                            }
+                          }
 
-                            if (pairID === CHART_METRICS_MAPPING.customEvents) {
-                              return
-                            }
+                          return (
+                            <Checkbox
+                              className={cx('px-4 py-2', { hidden: isPanelsDataEmpty || analyticsLoading })}
+                              label={label}
+                              disabled={conflicted}
+                              id={pairID}
+                              checked={active}
+                            />
+                          )
+                        }}
+                        selectItemClassName='group text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 block text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'
+                        keyExtractor={(pair) => pair.id}
+                        onSelect={({ id: pairID, conflicts }) => {
+                          if (isConflicted(conflicts)) {
+                            generateAlert(t('project.conflictMetric'), 'error')
+                            return
+                          }
 
-                            switchActiveChartMetric(pairID)
-                          }}
-                        />
-                      )) : (
-                      !isPanelsDataEmptyPerf && (
-                        <Dropdown
-                          items={chartMetricsPerf}
-                          className='min-w-[170px] xs:min-w-0'
-                          title={(
-                            <p>
-                              {_find(chartMetricsPerf, ({ id: chartId }) => chartId === activeChartMetricsPerf)?.label}
-                            </p>
-                          )}
-                          labelExtractor={(pair) => pair.label}
-                          keyExtractor={(pair) => pair.id}
-                          onSelect={({ id: pairID }) => {
-                            switchActiveChartMetric(pairID)
-                          }}
-                        />
-                      )
+                          if (pairID === CHART_METRICS_MAPPING.customEvents) {
+                            return
+                          }
+
+                          switchActiveChartMetric(pairID)
+                        }}
+                      />
+                    )}
+                    {activeTab === PROJECT_TABS.performance && !isPanelsDataEmptyPerf && (
+                      <Dropdown
+                        items={chartMetricsPerf}
+                        className='min-w-[170px] xs:min-w-0'
+                        title={(
+                          <p>
+                            {_find(chartMetricsPerf, ({ id: chartId }) => chartId === activeChartMetricsPerf)?.label}
+                          </p>
+                        )}
+                        labelExtractor={(pair) => pair.label}
+                        keyExtractor={(pair) => pair.id}
+                        onSelect={({ id: pairID }) => {
+                          switchActiveChartMetric(pairID)
+                        }}
+                      />
                     )}
                     <Dropdown
                       items={isActiveCompare ? _filter(periodPairs, (el) => {
@@ -2142,7 +2318,7 @@ const ViewProject = ({
                       keyExtractor={(pair) => pair.label}
                       onSelect={(pair) => {
                         if (pair.period === PERIOD_PAIRS_COMPARE.COMPARE) {
-                          if (activeTab !== PROJECT_TABS.traffic && activeTab !== PROJECT_TABS.performance) {
+                          if (activeTab === PROJECT_TABS.alerts) {
                             return
                           }
 
@@ -2197,6 +2373,18 @@ const ViewProject = ({
                         />
                       </>
                     )}
+                    {activeTab === PROJECT_TABS.funnels && (
+                      <button
+                        type='button'
+                        title={t('project.refreshStats')}
+                        onClick={refreshStats}
+                        className={cx('relative shadow-sm rounded-md px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
+                          'cursor-not-allowed opacity-50': isLoading || dataLoading,
+                        })}
+                      >
+                        <ArrowPathIcon className='w-5 h-5 text-gray-700 dark:text-gray-50' />
+                      </button>
+                    )}
                     <FlatPicker
                       className='!mx-0'
                       ref={refCalendar}
@@ -2219,7 +2407,16 @@ const ViewProject = ({
                     />
                   </div>
                 </div>
-                <div>
+                {activeTab === PROJECT_TABS.funnels && (
+                  <button
+                    onClick={() => setActiveFunnel(null)}
+                    className='flex items-center text-base font-normal underline decoration-dashed hover:decoration-solid mb-4 mx-auto md:mx-0 mt-2 md:mt-0 text-gray-900 dark:text-gray-100'
+                  >
+                    <ChevronLeftIcon className='w-4 h-4' />
+                    {t('project.backToFunnels')}
+                  </button>
+                )}
+                {activeTab !== PROJECT_TABS.funnels && (
                   <div className='flex flex-row flex-wrap items-center justify-center md:justify-end h-10 mt-2 md:mt-5 mb-4 space-x-3 space-y-1 md:space-y-0'>
                     <div>
                       <button
@@ -2265,7 +2462,7 @@ const ViewProject = ({
                         <MagnifyingGlassIcon className='w-5 h-5 text-gray-700 dark:text-gray-50' />
                       </button>
                     </div>
-                    <div className={cx('md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3 space-x-2', {
+                    <div className={cx('border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3 space-x-2 md:border-r', {
                       hidden: isPanelsDataEmpty || analyticsLoading || checkIfAllMetricsAreDisabled,
                     })}
                     >
@@ -2316,7 +2513,7 @@ const ViewProject = ({
                       </span>
                     </div>
                   </div>
-                </div>
+                )}
               </>
             )}
             {(activeTab === PROJECT_TABS.alerts && (isSharedProject || !project?.isOwner || !authenticated)) && (
@@ -2335,10 +2532,53 @@ const ViewProject = ({
                 </Link>
               </div>
             )}
+            {(activeTab === PROJECT_TABS.funnels && !activeFunnel && !_isEmpty(project.funnels) && (
+              <FunnelsList
+                openFunnelSettings={(funnel?: IFunnel) => {
+                  if (funnel) {
+                    setFunnelToEdit(funnel)
+                    setIsNewFunnelOpened(true)
+                    return
+                  }
+
+                  setIsNewFunnelOpened(true)
+                }}
+                openFunnel={setActiveFunnel}
+                funnels={project.funnels}
+                deleteFunnel={onFunnelDelete}
+                loading={funnelActionLoading}
+              />
+            ))}
+            {(activeTab === PROJECT_TABS.funnels && !activeFunnel && _isEmpty(project.funnels) && (
+              <div className='p-5 mt-5 bg-gray-700 rounded-xl'>
+                <div className='flex items-center text-gray-50'>
+                  <FunnelIcon className='w-8 h-8 mr-2' />
+                  <p className='font-bold text-3xl'>
+                    {t('dashboard.funnels')}
+                  </p>
+                </div>
+                <p className='text-lg whitespace-pre-wrap mt-2 text-gray-100'>
+                  {t('dashboard.funnelsDesc')}
+                </p>
+                {authenticated ? (
+                  <button
+                    type='button'
+                    onClick={() => setIsNewFunnelOpened(true)}
+                    className='inline-block select-none mt-6 bg-white py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-gray-700 hover:bg-indigo-50'
+                  >
+                    {t('dashboard.newFunnel')}
+                  </button>
+                ) : (
+                  <Link to={routes.signup} className='inline-block select-none mt-6 bg-white py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-gray-700 hover:bg-indigo-50' aria-label={t('titles.signup')}>
+                    {t('common.getStarted')}
+                  </Link>
+                )}
+              </div>
+            ))}
             {(activeTab === PROJECT_TABS.alerts && !isSharedProject && project?.isOwner && authenticated) && (
               <ProjectAlertsView projectId={id} />
             )}
-            {(analyticsLoading && activeTab !== PROJECT_TABS.alerts) && (
+            {(analyticsLoading && activeTab !== PROJECT_TABS.alerts && activeTab !== PROJECT_TABS.funnels) && (
               <Loader />
             )}
             {(isPanelsDataEmpty && activeTab === PROJECT_TABS.traffic) && (
@@ -2673,6 +2913,21 @@ const ViewProject = ({
                 </div>
               </div>
             )}
+            {activeTab === PROJECT_TABS.funnels && (
+              <div className={cx('pt-4 md:pt-0', { hidden: !activeFunnel || analyticsLoading })}>
+                <div className='h-80'>
+                  <div className='h-80 mt-5 md:mt-0' id='dataChart' />
+                </div>
+                {dataLoading && (
+                  <div className='!bg-transparent static mt-4' id='loader'>
+                    <div className='loader-head dark:!bg-slate-800'>
+                      <div className='first dark:!bg-slate-600' />
+                      <div className='second dark:!bg-slate-600' />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
         {!authenticated && activeTab !== PROJECT_TABS.alerts && !embedded && (
@@ -2708,6 +2963,24 @@ const ViewProject = ({
           onSubmit={onForecastSubmit}
           activeTB={t(`project.${timeBucket}`)}
           tb={timeBucket}
+        />
+        <NewFunnel
+          pid={id}
+          funnel={funnelToEdit}
+          isOpened={isNewFunnelOpened}
+          onClose={() => {
+            setIsNewFunnelOpened(false)
+            setFunnelToEdit(undefined)
+          }}
+          onSubmit={async (name: string, steps: string[]) => {
+            if (funnelToEdit) {
+              await onFunnelEdit(funnelToEdit.id, name, steps)
+              return
+            }
+
+            await onFunnelCreate(name, steps)
+          }}
+          loading={funnelActionLoading}
         />
         <SearchFilters
           t={t}
@@ -2760,6 +3033,7 @@ ViewProject.propTypes = {
   embedded: PropTypes.bool.isRequired,
   ssrAuthenticated: PropTypes.bool.isRequired,
   authLoading: PropTypes.bool.isRequired,
+  updateProject: PropTypes.func.isRequired,
   queryPassword: PropTypes.string,
 }
 

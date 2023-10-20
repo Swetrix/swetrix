@@ -534,6 +534,7 @@ const UserSettings = ({
                 }
               }}
               title={activeTabLabel}
+              capitalise
             />
           </div>
           <div className='hidden sm:block'>
@@ -646,22 +647,6 @@ const UserSettings = ({
                       </Button>
                     </>
                   )}
-                  {/* Theme type switch */}
-                  {/* <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-                <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
-                  {t('profileSettings.theme')}
-                </h3>
-                <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-2 mb-4'>
-                  <div>
-                    <Select
-                      title={themeType}
-                      label={t('profileSettings.selectTheme')}
-                      className='w-full'
-                      items={[THEME_TYPE.classic, THEME_TYPE.christmas]}
-                      onSelect={(f) => setAsyncThemeType(f)}
-                    />
-                  </div>
-                </div> */}
                   {!isSelfhosted && (
                     <>
                       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
@@ -885,6 +870,7 @@ const UserSettings = ({
                             _findIndex(translatedTimeFormat, (freq) => freq === f)
                             ],
                         }))}
+                        capitalise
                       />
                     </div>
                   </div>
@@ -931,6 +917,7 @@ const UserSettings = ({
                             onSelect={(f) => _setReportFrequency(
                               reportFrequencies[_findIndex(translatedFrequencies, (freq) => freq === f)],
                             )}
+                            capitalise
                           />
                         </div>
                       </div>

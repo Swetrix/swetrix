@@ -28,6 +28,7 @@ export const getInitialViewPrefs = (LS_VIEW: string) => {
 interface IInitialState {
   analytics: any
   analyticsPerf: any
+  funnels: any
   captchaAnalytics: any
   captchaProjectsViewPrefs: any
   customEventsPrefs: any
@@ -51,6 +52,7 @@ interface IInitialState {
 const initialState: IInitialState = {
   analytics: {},
   analyticsPerf: {},
+  funnels: {},
   captchaAnalytics: {},
   captchaProjectsViewPrefs: getInitialViewPrefs(LS_CAPTCHA_VIEW_PREFS_SETTING) || {},
   projectViewPrefs: getInitialViewPrefs(LS_VIEW_PREFS_SETTING),
@@ -186,6 +188,15 @@ const cacheSlice = createSlice({
         ...state.analyticsPerf,
         [payload.pid]: {
           ...state.analyticsPerf[payload.pid],
+          [payload.key]: payload.data,
+        },
+      }
+    },
+    setFunnelsCache(state, { payload }: PayloadAction<{ pid: string, key: string, data: any }>) {
+      state.funnels = {
+        ...state.funnels,
+        [payload.pid]: {
+          ...state.funnels[payload.pid],
           [payload.key]: payload.data,
         },
       }

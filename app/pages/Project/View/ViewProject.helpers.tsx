@@ -15,6 +15,7 @@ import _map from 'lodash/map'
 import _split from 'lodash/split'
 import _replace from 'lodash/replace'
 import _isEmpty from 'lodash/isEmpty'
+import _startsWith from 'lodash/startsWith'
 import _keys from 'lodash/keys'
 import _size from 'lodash/size'
 import _round from 'lodash/round'
@@ -35,6 +36,7 @@ import {
   getTimeFromSeconds, getStringFromTime, sumArrays, nFormatter,
 } from 'utils/generic'
 import countries from 'utils/isoCountries'
+import { IAnalyticsFunnel } from 'redux/models/IProject'
 
 const getAvg = (arr: any) => {
   const total = _reduce(arr, (acc, c) => acc + c, 0)
@@ -592,8 +594,8 @@ const getSettings = (
             value: string,
             x: Date,
           }) => {
-    if (el.id === 'sessionDuration') {
-      return `
+            if (el.id === 'sessionDuration') {
+              return `
               <li class='flex justify-between'>
                 <div class='flex justify-items-start'>
                   <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
@@ -602,13 +604,13 @@ const getSettings = (
                 <span class='pl-4'>${getStringFromTime(getTimeFromSeconds(el.value))}</span>
               </li>
               `
-    }
+            }
 
-    if (el.id === 'trendlineUnique' || el.id === 'trendlineTotal') {
-      return ''
-    }
+            if (el.id === 'trendlineUnique' || el.id === 'trendlineTotal') {
+              return ''
+            }
 
-    return `
+            return `
             <li class='flex justify-between'>
               <div class='flex justify-items-start'>
                 <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
@@ -617,7 +619,7 @@ const getSettings = (
               <span class='pl-4'>${el.value}</span>
             </li>
             `
-  }).join('')}`
+          }).join('')}`
         }
 
         return `
@@ -629,20 +631,20 @@ const getSettings = (
           value: string,
           x: Date,
         }) => {
-    const {
-      id, index, name, value, x,
-    } = el
+          const {
+            id, index, name, value, x,
+          } = el
 
-    const xDataValueCompare = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(dayjs(compareChart?.x[index]).toDate()) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())
-    const xDataValue = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x)
-    const valueCompare = id === 'sessionDuration' ? getStringFromTime(getTimeFromSeconds(compareChart?.[typesOptionsToTypesCompare?.[id]]?.[index])) : compareChart?.[typesOptionsToTypesCompare[id]]?.[index]
+          const xDataValueCompare = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(dayjs(compareChart?.x[index]).toDate()) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())
+          const xDataValue = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x)
+          const valueCompare = id === 'sessionDuration' ? getStringFromTime(getTimeFromSeconds(compareChart?.[typesOptionsToTypesCompare?.[id]]?.[index])) : compareChart?.[typesOptionsToTypesCompare[id]]?.[index]
 
-    if (id === 'uniqueCompare' || id === 'totalCompare' || id === 'bounceCompare' || id === 'sessionDurationCompare') {
-      return ''
-    }
+          if (id === 'uniqueCompare' || id === 'totalCompare' || id === 'bounceCompare' || id === 'sessionDurationCompare') {
+            return ''
+          }
 
-    if (id === 'sessionDuration') {
-      return `
+          if (id === 'sessionDuration') {
+            return `
               <div class='flex justify-between'>
               <div class='flex justify-items-start'>
                 <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(id)}></div>
@@ -661,9 +663,9 @@ const getSettings = (
               </p>` : ''}
             </li>
           `
-    }
+          }
 
-    return `
+          return `
             <div class='flex justify-between'>
               <div class='flex justify-items-start'>
                 <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(id)}></div>
@@ -681,7 +683,7 @@ const getSettings = (
             </p>` : ''}
             </li>
           `
-  }).join('')}
+        }).join('')}
         </ul>`
       },
     },
@@ -714,12 +716,151 @@ const getSettings = (
   }
 }
 
+// function to get the settings and data for the funnels chart
+const getSettingsFunnels = (
+  funnel: IAnalyticsFunnel[],
+  totalPageviews: number,
+  t: (key: string, params?: any) => string,
+) => {
+  const values = _map(funnel, (step) => {
+    if (_startsWith(step.value, '/')) {
+      return t('project.visitPage', { page: step.value })
+    }
+
+    return step.value
+  })
+  const events = _map(funnel, (step) => step.events)
+  const dropoff = _map(funnel, (step) => step.dropoff)
+
+  return {
+    data: {
+      x: 'x',
+      columns: [
+        ['x', ...values],
+        ['dropoff', ...dropoff],
+        ['events', ...events],
+      ],
+      types: {
+        events: bar(),
+        dropoff: bar(),
+      },
+      colors: {
+        events: '#2563eb', // blue-600
+        dropoff: 'rgba(37, 99, 235, 0.2)', // blue-600 + opacity
+      },
+      groups: [
+        ['events', 'dropoff'],
+      ],
+      order: (a: any, b: any) => {
+        return a.id < b.id
+      },
+    },
+    transition: {
+      duration: 500,
+    },
+    resize: {
+      auto: true,
+      timer: false,
+    },
+    axis: {
+      x: {
+        type: 'category',
+      },
+      y: {
+        tick: {
+          format: (d: number) => nFormatter(d, 1),
+        },
+      },
+    },
+    tooltip: {
+      contents: (items: any, _: any, __: any, color: any) => {
+        const { index } = items[0]
+        const step = funnel[index]
+        const stepTitle = values[index]
+        const prevStepTitle = values[index - 1]
+
+        const prevStepHtml = prevStepTitle ? `
+          <span>${prevStepTitle}</span>
+        ` : ''
+
+        const title = `
+          <p class='font-semibold flex space-x-2 items-center tracking-tight'>
+            ${prevStepHtml}
+            <svg fill='none' viewBox='0 0 24 24' stroke-width='1.5' class='w-4 h-4'>
+              <path class='stroke-gray-400 dark:stroke-gray-200' stroke-linecap='round' stroke-linejoin='round' d='M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3' />
+            </svg>
+            <span>${stepTitle}</span>
+          </p>
+        `
+
+        const events = `
+          <tr class='tracking-tight'>
+            <td class='pr-7'>
+              <div class='w-3 h-3 rounded-sm mr-1 float-left mt-1.5' style=background-color:${color('events')}></div>
+              <span class='font-semibold'>
+                ${_startsWith(step.value, '/') ? t('project.visitors') : t('project.events')}
+              </span>
+            </td>
+            <td class='pr-3 font-semibold text-right'>
+              ${step.events}
+            </td>
+            <td class='text-right'>
+              ${step.eventsPercStep}%
+            </td>
+          </tr>
+        `
+
+        const dropoff = `
+          <tr class='tracking-tight'>
+            <td class='pr-7'>
+              <div class='w-3 h-3 rounded-sm mr-1 float-left mt-1.5' style="background-color:${color('dropoff')}"}></div>
+              <span class='font-semibold'>
+                ${index === 0 ? t('project.neverEnteredTheFunnel') : t('project.dropoff')}
+              </span>
+            </td>
+            <td class='pr-3 font-semibold text-right'>
+              ${index === 0 ? totalPageviews - step.events : step.dropoff}
+            </td>
+            <td class='text-right'>
+              ${index === 0 ? _round(((totalPageviews - step.events) / totalPageviews) * 100, 2) : step.dropoffPercStep}%
+            </td>
+          </tr>
+        `
+
+        return `
+          <div class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
+            ${title}
+            <hr class='border-gray-200 dark:border-gray-600' />
+            <table class='table-fixed'>
+              <thead>
+                <tr>
+                  <th className='w-3/5'></th>
+                  <th className='w-1/5'></th>
+                  <th className='w-1/5'></th>
+                </tr>
+              </thead>
+              <tbody>
+                ${events}
+                ${dropoff}
+              </tbody>
+            </table>
+          </div>
+        `
+      },
+    },
+    padding: {
+      left: 40,
+    },
+    bindto: '#dataChart',
+  }
+}
+
 const perfomanceChartCompare = ['dnsCompare', 'tlsCompare', 'connCompare', 'responseCompare', 'renderCompare', 'dom_loadCompare', 'ttfbCompare', 'frontendCompare', 'networkCompare', 'backendCompare']
 
 const getSettingsPerf = (
   chart: {
-  [key: string]: string[]
-},
+    [key: string]: string[]
+  },
   timeBucket: string,
   activeChartMetrics: string,
   rotateXAxias: boolean,
@@ -814,16 +955,16 @@ const getSettingsPerf = (
         if (_isEmpty(compareChart)) {
           return `<ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
         <li class='font-semibold'>${timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
-}</li>
+            }</li>
         <hr class='border-gray-200 dark:border-gray-600' />
         ${_map(item, (el: {
-          id: string,
-          index: number,
-          name: string,
-          value: string,
-          x: Date,
-        }) => {
-    return `
+              id: string,
+              index: number,
+              name: string,
+              value: string,
+              x: Date,
+            }) => {
+              return `
           <li class='flex justify-between'>
             <div class='flex justify-items-start'>
               <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
@@ -832,31 +973,31 @@ const getSettingsPerf = (
             <span class='pl-4'>${getStringFromTime(getTimeFromSeconds(el.value), true)}</span>
           </li>
           `
-  }).join('')}`
+            }).join('')}`
         }
 
         return `
       <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
         ${_map(item, (el: {
-        id: string,
-        index: number,
-        name: string,
-        value: string,
-        x: Date,
-      }) => {
-    const {
-      id, index, name, value, x,
-    } = el
+          id: string,
+          index: number,
+          name: string,
+          value: string,
+          x: Date,
+        }) => {
+          const {
+            id, index, name, value, x,
+          } = el
 
-    const xDataValueCompare = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(dayjs(compareChart?.x[index]).toDate()) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())
-    const xDataValue = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x)
-    const valueCompare = getValueForTooltipPerfomance(compareChart, id, index)
+          const xDataValueCompare = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(dayjs(compareChart?.x[index]).toDate()) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())
+          const xDataValue = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x)
+          const valueCompare = getValueForTooltipPerfomance(compareChart, id, index)
 
-    if (_includes(perfomanceChartCompare, id)) {
-      return ''
-    }
+          if (_includes(perfomanceChartCompare, id)) {
+            return ''
+          }
 
-    return `
+          return `
           <div class='flex justify-between'>
             <div class='flex justify-items-start'>
               <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(id)}></div>
@@ -874,7 +1015,7 @@ const getSettingsPerf = (
           </p>` : ''}
           </li>
         `
-  }).join('')}
+        }).join('')}
       </ul>`
       },
     },
@@ -973,4 +1114,5 @@ export {
   validPeriods, validTimeBacket, noRegionPeriods, getSettings,
   getExportFilename, getColumns, onCSVExportClick, CHART_METRICS_MAPPING,
   CHART_METRICS_MAPPING_PERF, getColumnsPerf, getSettingsPerf, transformAIChartData, FILTER_CHART_METRICS_MAPPING_FOR_COMPARE,
+  getSettingsFunnels,
 }

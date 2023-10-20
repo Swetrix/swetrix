@@ -404,6 +404,7 @@ const CaptchaSettings = ({
             labelExtractor={(item) => `${item.name} | ${item.id}`}
             keyExtractor={(item) => item.id}
             onSelect={(item) => setReuseProjectId(item)}
+            capitalise
           />
         )}
         {isSettings ? (

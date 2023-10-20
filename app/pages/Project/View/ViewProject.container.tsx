@@ -17,6 +17,7 @@ const mapStateToProps = (state: StateType) => {
       isLoading: state.ui.projects.isLoadingShared,
       cache: state.ui.cache.analytics,
       cachePerf: state.ui.cache.analyticsPerf,
+      cacheFunnels: state.ui.cache.funnels,
       projectViewPrefs: state.ui.cache.projectViewPrefs,
       authenticated: state.auth.authenticated,
       authLoading: state.auth.loading,
@@ -38,6 +39,7 @@ const mapStateToProps = (state: StateType) => {
     authLoading: state.auth.loading,
     cache: state.ui.cache.analytics,
     cachePerf: state.ui.cache.analyticsPerf,
+    cacheFunnels: state.ui.cache.funnels,
     projectViewPrefs: state.ui.cache.projectViewPrefs,
     authenticated: state.auth.authenticated,
     timezone: state.auth.user.timezone,
@@ -79,6 +81,13 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
       key,
     }))
   },
+  setFunnelsCache: (pid: string, data: any, key: string) => {
+    dispatch(UIActions.setFunnelsCache({
+      pid,
+      data,
+      key,
+    }))
+  },
   setPublicProject: (project: Partial<IProject | ISharedProject>) => {
     dispatch(UIActions.setPublicProject({
       project,
@@ -88,6 +97,12 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
     dispatch(UIActions.setProjects({
       projects: project,
       shared,
+    }))
+  },
+  updateProject: (pid: string, project: Partial<IProject | ISharedProject>) => {
+    dispatch(UIActions.updateProject({
+      pid,
+      project,
     }))
   },
   setLiveStatsForProject: (id: string, count: number) => {

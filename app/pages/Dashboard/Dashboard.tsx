@@ -547,6 +547,7 @@ const Dashboard = ({
                         }
                       }}
                       title={activeTabLabel}
+                      capitalise
                     />
                   </div>
                   <div className='hidden sm:block'>

@@ -273,6 +273,8 @@ export const getProjectForcastCacheKey = (period: string, timeBucket: string, pe
 export const getProjectCacheCustomKey = (from: string, to: string, timeBucket: string, mode: 'periodical' | 'cumulative', filters: any): string => `cst${from}${to}${timeBucket}-${mode}${filters ? JSON.stringify(filters) : ''}}`
 export const getProjectCacheCustomKeyPerf = (from: string, to: string, timeBucket: string, filters: any): string => `${from}-${to}-${timeBucket}perf${filters ? JSON.stringify(filters) : ''}`
 export const getUserFlowCacheKey = (pid: string, period: string, filters: any): string => `${pid}${period}userflow${filters ? JSON.stringify(filters) : ''}`
+export const getFunnelsCacheKey = (pid: string, funnelId: string, period: string): string => `${pid}${funnelId}${period}funnels`
+export const getFunnelsCacheCustomKey = (pid: string, funnelId: string, from: string, to: string): string => `${pid}${funnelId}${from}${to}funnels`
 
 // Cookies
 export const GDPR_REQUEST: string = 'gdpr_request'
@@ -284,8 +286,11 @@ export const REFRESH_TOKEN: string = 'refresh_token'
 // LocalStorage
 export const PAGE_FORCE_REFRESHED = 'page-force-refreshed'
 export const PROJECTS_PROTECTED = 'projects_protected'
-
 export const IS_ACTIVE_COMPARE = 'is-active-compare'
+
+// Funnels
+export const MIN_FUNNEL_STEPS = 2
+export const MAX_FUNNEL_STEPS = 10
 
 // List of languages with translations available
 export const whitelist: string[] = ['en', 'uk', 'pl', 'de', 'sv', 'el', 'ru', 'hi', 'zh']
@@ -382,11 +387,13 @@ export const tabsForDashboard: IDashboardTabs[] = [
 const SELFHOSTED_PROJECT_TABS: IStringObject = {
   traffic: 'traffic',
   performance: 'performance',
+  funnels: 'funnels',
 }
 
 const PRODUCTION_PROJECT_TABS: IStringObject = {
   traffic: 'traffic',
   performance: 'performance',
+  funnels: 'funnels',
   alerts: 'alerts',
 }
 

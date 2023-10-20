@@ -17,11 +17,13 @@ describe('Select', () => {
     keyExtractor?: (item: any, index: number) => string,
     iconExtractor?: (item: any, index: number) => JSX.Element | null,
     onSelect: (item: any) => void,
+    capitalise: boolean,
   } = {
     title: 'Select Title',
     label: 'Select',
     items: [],
     onSelect: () => {},
+    capitalise: true,
   }
 
   afterEach(() => {

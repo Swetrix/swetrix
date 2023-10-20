@@ -9,6 +9,8 @@ interface ISelect {
   title?: string,
   label: string,
   className?: string,
+  buttonClassName?: string,
+  capitalise?: boolean,
   items: any[],
   id?: string,
   labelExtractor?: (item: any, index: number) => string,
@@ -18,16 +20,24 @@ interface ISelect {
 }
 
 const Select = ({
-  title, label, className, items, labelExtractor, keyExtractor, iconExtractor, onSelect, id,
+  title, label, className, items, labelExtractor, keyExtractor, iconExtractor, onSelect, id, buttonClassName, capitalise,
 }: ISelect): JSX.Element => (
   // @ts-ignore
-  <Listbox id={id || ''} className={className} value={title} onChange={onSelect}>
+  <Listbox id={id || ''} value={title} onChange={onSelect}>
     {({ open }) => (
       <>
         <Listbox.Label className='block text-sm whitespace-pre-line font-medium text-gray-700 dark:text-gray-100'>{label}</Listbox.Label>
-        <div className='mt-1 relative'>
-          <Listbox.Button className='relative w-full bg-white border border-gray-300 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'>
-            <span className='block truncate first-letter:capitalize'>{title}</span>
+        <div className={cx('mt-1 relative', className)}>
+          <Listbox.Button
+            className={cx('relative w-full bg-white border border-gray-300 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm', buttonClassName)}
+          >
+            <span
+              className={cx('block truncate', {
+                'first-letter:capitalize': capitalise,
+              })}
+            >
+                {title}
+              </span>
             <span className='absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none'>
               <ChevronUpDownIcon className='h-5 w-5 text-gray-400' aria-hidden='true' />
             </span>
@@ -56,9 +66,10 @@ const Select = ({
                   {({ selected, active }) => (
                     <>
                       <span
-                        className={cx('block truncate first-letter:capitalize', {
+                        className={cx('block truncate', {
                           'font-semibold': selected,
                           'font-normal': !selected,
+                          'first-letter:capitalize': capitalise,
                         })}
                       >
                         {labelExtractor ? labelExtractor(item, index) : item}
@@ -101,6 +112,8 @@ Select.propTypes = {
     PropTypes.string, PropTypes.object,
   ])),
   className: PropTypes.string,
+  buttonClassName: PropTypes.string,
+  capitalise: PropTypes.bool,
   labelExtractor: PropTypes.func,
   iconExtractor: PropTypes.func,
   keyExtractor: PropTypes.func,
@@ -109,6 +122,8 @@ Select.propTypes = {
 
 Select.defaultProps = {
   className: '',
+  buttonClassName: '',
+  capitalise: false,
   labelExtractor: null,
   keyExtractor: null,
   iconExtractor: null,

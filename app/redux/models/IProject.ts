@@ -1,75 +1,92 @@
 export interface IOvervallObject {
-    thisWeek?: number
-    lastWeek?: number
-    thisWeekUnique?: number
-    lastWeekUnique?: number
-    percChange?: number
-    total?: number
-    percChangeUnique?: number
+  thisWeek?: number
+  lastWeek?: number
+  thisWeekUnique?: number
+  lastWeekUnique?: number
+  percChange?: number
+  total?: number
+  percChangeUnique?: number
 }
 
 export interface IOverall {
-    [key: string]: IOvervallObject
+  [key: string]: IOvervallObject
 }
 
 export interface IUserShareProject {
-    email: string
+  email: string
 }
 
 export interface ILiveStats {
-    [key: string]: number
+  [key: string]: number
 }
 
 export interface IShareOwnerProject {
-    id: string
-    confirmed: boolean
-    role: string
-    created: string
-    updated: string
-    user: IUserShareProject
+  id: string
+  confirmed: boolean
+  role: string
+  created: string
+  updated: string
+  user: IUserShareProject
 }
 
 export interface IProjectNames {
-    name: string
-    id: string
-    isCaptchaProject: boolean
+  name: string
+  id: string
+  isCaptchaProject: boolean
+}
+
+export interface IFunnel {
+  id: string
+  name: string
+  steps: string[]
+  created: string
+}
+
+export interface IAnalyticsFunnel {
+  value: string
+  events: number
+  eventsPerc: number
+  eventsPercStep: number
+  dropoff: number
+  dropoffPercStep: number
 }
 
 export interface IProject {
-    id: string
-    name: string
-    origins: string[] | string | null
-    ipBlacklist: string[] | null | string
-    active: boolean
-    public: boolean
-    isAnalyticsProject: boolean
-    isCaptchaProject: boolean
-    isCaptchaEnabled: boolean
-    captchaSecretKey: string | null
-    created: string
-    share?: IShareOwnerProject[]
-    isOwner: boolean
-    overall: IOvervallObject
-    uiHidden: boolean
-    isPublic?: boolean
-    isTransferring?: boolean
-    isPasswordProtected?: boolean
-    password?: string
+  id: string
+  name: string
+  origins: string[] | string | null
+  ipBlacklist: string[] | null | string
+  active: boolean
+  public: boolean
+  isAnalyticsProject: boolean
+  isCaptchaProject: boolean
+  isCaptchaEnabled: boolean
+  captchaSecretKey: string | null
+  created: string
+  share?: IShareOwnerProject[]
+  isOwner: boolean
+  overall: IOvervallObject
+  uiHidden: boolean
+  funnels: IFunnel[]
+  isPublic?: boolean
+  isTransferring?: boolean
+  isPasswordProtected?: boolean
+  password?: string
 }
 
 export interface ICaptchaProject {
-    id: string
-    name: string
-    origins: string[] | string | null
-    ipBlacklist: string[] | null | string
-    active: boolean
-    public: boolean
-    isAnalyticsProject: boolean
-    isCaptchaProject: boolean
-    isCaptchaEnabled: boolean
-    captchaSecretKey: string | null
-    created: string
-    isOwner: boolean
-    overall: IOvervallObject
-    uiHidden: boolean
+  id: string
+  name: string
+  origins: string[] | string | null
+  ipBlacklist: string[] | null | string
+  active: boolean
+  public: boolean
+  isAnalyticsProject: boolean
+  isCaptchaProject: boolean
+  isCaptchaEnabled: boolean
+  captchaSecretKey: string | null
+  created: string
+  isOwner: boolean
+  overall: IOvervallObject
+  uiHidden: boolean
 }

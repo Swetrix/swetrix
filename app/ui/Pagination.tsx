@@ -53,7 +53,7 @@ const Pagination = ({
                 type='button'
                 onClick={() => setPage(item)}
                 className={cx({
-                  'border-indigo-500 text-indigo-600 dark:text-indigo-400 border-t-2 pt-4 px-4 inline-flex items-center text-sm font-medium': item === page,
+                  'border-slate-900 text-slate-900 dark:text-gray-50 dark:border-gray-50 border-t-2 pt-4 px-4 inline-flex items-center text-sm font-medium': item === page,
                   'border-transparent text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-400 hover:border-gray-300 border-t-2 pt-4 px-4 inline-flex items-center text-sm font-medium': item !== page,
                 })}
               >

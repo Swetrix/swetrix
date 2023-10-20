@@ -293,6 +293,7 @@ const ProjectAlertsSettings = ({
                 queryMetric: key,
               }))
             }}
+            capitalise
           />
         </div>
         {form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS && (
@@ -322,6 +323,7 @@ const ProjectAlertsSettings = ({
                 queryCondition: key,
               }))
             }}
+            capitalise
           />
         </div>
         <Input
@@ -349,6 +351,7 @@ const ProjectAlertsSettings = ({
                 queryTime: key,
               }))
             }}
+            capitalise
           />
         </div>
         {isSettings ? (

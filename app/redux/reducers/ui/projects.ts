@@ -9,28 +9,28 @@ import { ISharedProject } from 'redux/models/ISharedProject'
 import { IAlerts } from 'redux/models/IAlerts'
 
 interface IInitialState {
-    projects: IProject[]
-    sharedProjects: ISharedProject[]
-    captchaProjects: ICaptchaProject[]
-    isLoading: boolean
-    isLoadingShared: boolean
-    isLoadingCaptcha: boolean
-    error: null | string
-    totalMonthlyEvents: number | null
-    total: number
-    sharedTotal: number
-    captchaTotal: number
-    dashboardPaginationPage: number
-    dashboardPaginationPageShared: number
-    dashboardPaginationPageCaptcha: number
-    dashboardTabs: string
-    projectTab: string
-    alerts: IAlerts[]
-    subscribers: any[]
-    liveStats: ILiveStats
-    password: {
-      [key: string]: string
-    }
+  projects: IProject[]
+  sharedProjects: ISharedProject[]
+  captchaProjects: ICaptchaProject[]
+  isLoading: boolean
+  isLoadingShared: boolean
+  isLoadingCaptcha: boolean
+  error: null | string
+  totalMonthlyEvents: number | null
+  total: number
+  sharedTotal: number
+  captchaTotal: number
+  dashboardPaginationPage: number
+  dashboardPaginationPageShared: number
+  dashboardPaginationPageCaptcha: number
+  dashboardTabs: string
+  projectTab: string
+  alerts: IAlerts[]
+  subscribers: any[]
+  liveStats: ILiveStats
+  password: {
+    [key: string]: string
+  }
 }
 
 const initialState: IInitialState = {
@@ -72,6 +72,19 @@ const projectsSlice = createSlice({
         state.projects = payload.projects as IProject[]
       }
     },
+    updateProject(state, { payload }: PayloadAction<{ project: Partial<IProject | ISharedProject>, pid: string }>) {
+      const { pid, project } = payload
+
+      state.projects = _map(current(state.projects), (res) => {
+        if (res.id === pid) {
+          return {
+            ...res,
+            ...project,
+          }
+        }
+        return res
+      })
+    },
     setCaptchaProjects(state, { payload }: PayloadAction<ICaptchaProject[]>) {
       state.isLoadingCaptcha = false
       state.captchaProjects = payload
@@ -104,7 +117,7 @@ const projectsSlice = createSlice({
     removeCaptchaProject(state, { payload }: PayloadAction<string>) {
       state.captchaProjects = _filter(state.captchaProjects, (project) => project.id !== payload)
     },
-    setLiveStats(state, { payload }: PayloadAction<{ data: any}>) {
+    setLiveStats(state, { payload }: PayloadAction<{ data: any }>) {
       const { data } = payload
 
       state.liveStats = {

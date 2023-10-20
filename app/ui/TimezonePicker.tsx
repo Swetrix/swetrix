@@ -94,6 +94,7 @@ const TimezoneSelect = ({
       labelExtractor={labelExtractor}
       keyExtractor={keyExtractor}
       onSelect={handleChange}
+      capitalise
     />
   )
 }
