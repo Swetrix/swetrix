@@ -11,6 +11,7 @@ import * as _isArray from 'lodash/isArray'
 import * as _reduce from 'lodash/reduce'
 import * as _keys from 'lodash/keys'
 import * as _last from 'lodash/last'
+import * as _replace from 'lodash/replace'
 import * as _some from 'lodash/some'
 import * as _find from 'lodash/find'
 import * as _now from 'lodash/now'
@@ -832,10 +833,22 @@ export class AnalyticsService {
 
         if (_isArray(filter)) {
           for (const f of filter) {
-            res.push({ filter: f, isExclusive })
+            let encoded = f
+
+            if (column === 'pg' && f !== null) {
+              encoded = _replace(encodeURIComponent(f), /%2F/g, '/')
+            }
+
+            res.push({ filter: encoded, isExclusive })
           }
         } else {
-          res.push({ filter, isExclusive })
+          let encoded = filter
+
+          if (column === 'pg' && filter !== null) {
+            encoded = _replace(encodeURIComponent(filter), /%2F/g, '/')
+          }
+
+          res.push({ filter: encoded, isExclusive })
         }
 
         if (prev[column]) {
