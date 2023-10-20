@@ -923,7 +923,7 @@ export class AnalyticsService {
       let dropoff = 0
       let eventsPerc = 100
       let eventsPercStep = 100
-      let dropoffPerc = 0
+      let dropoffPercStep = 0
 
       if (index > 0) {
         const prev = data[index - 1]
@@ -931,7 +931,7 @@ export class AnalyticsService {
         dropoff = prev.c - row.c
         eventsPerc = _round((row.c / data[0].c) * 100, 2)
         eventsPercStep = _round((row.c / prev.c) * 100, 2)
-        dropoffPerc = _round((dropoff / prev.c) * 100, 2)
+        dropoffPercStep = _round((dropoff / prev.c) * 100, 2)
       }
 
       return {
@@ -940,7 +940,7 @@ export class AnalyticsService {
         eventsPerc,
         eventsPercStep,
         dropoff,
-        dropoffPerc,
+        dropoffPercStep,
       }
     })
 

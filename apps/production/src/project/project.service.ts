@@ -434,8 +434,11 @@ export class ProjectService {
     return this.projectShareRepository.findOne(id, params)
   }
 
-  findOneWithRelations(id: string): Promise<Project | null> {
-    return this.projectsRepository.findOne(id, { relations: ['admin'] })
+  findOneWithRelations(
+    id: string,
+    relations = ['admin'],
+  ): Promise<Project | null> {
+    return this.projectsRepository.findOne(id, { relations })
   }
 
   findOne(id: string, params: object = {}): Promise<Project | null> {

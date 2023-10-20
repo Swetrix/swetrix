@@ -16,6 +16,14 @@ export class FunnelUpdateDTO {
   id: string
 
   @ApiProperty({
+    example: 'aUn1quEid-3',
+    required: true,
+    description: 'Funnel project ID',
+  })
+  @IsNotEmpty()
+  pid: string
+
+  @ApiProperty({
     example: 'User sign up funnel',
     required: true,
     description: 'A display name for your funnel',

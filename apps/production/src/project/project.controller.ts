@@ -478,11 +478,21 @@ export class ProjectController {
       )
     }
 
-    const project = await this.projectService.getProject(funnelDTO.pid, userId)
+    const project = await this.projectService.findOneWhere(
+      {
+        id: funnelDTO.pid,
+        admin: userId,
+      },
+      {
+        relations: ['admin', 'share'],
+      },
+    )
 
     if (!project) {
       throw new NotFoundException('Project not found.')
     }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
 
     return this.projectService.createFunnel(project.id, funnelDTO)
   }
@@ -515,20 +525,78 @@ export class ProjectController {
       )
     }
 
-    return this.projectService.updateFunnel(funnelDTO)
+    const project = await this.projectService.findOneWhere(
+      {
+        id: funnelDTO.pid,
+        admin: userId,
+      },
+      {
+        relations: ['admin', 'share', 'funnels'],
+      },
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
+
+    if (_size(project.funnels) >= MAX_FUNNELS) {
+      throw new ForbiddenException(
+        `You cannot create more than ${MAX_FUNNELS}. Please contact us to increase the limit.`,
+      )
+    }
+
+    const oldFunnel = await this.projectService.getFunnel(
+      funnelDTO.id,
+      project.id,
+    )
+
+    if (!oldFunnel) {
+      throw new NotFoundException('Funnel not found.')
+    }
+
+    return this.projectService.updateFunnel({
+      id: funnelDTO.id,
+      name: funnelDTO.name,
+      steps: funnelDTO.steps,
+    } as FunnelUpdateDTO)
   }
 
-  @Delete('/funnel/:id')
+  @Delete('/funnel/:id/:pid')
   @ApiResponse({ status: 200 })
   @Auth([], true)
   async deleteFunnel(
     @Param('id') id: string,
+    @Param('pid') pid: string,
     @CurrentUserId() userId: string,
   ): Promise<void> {
     this.logger.log({ id, userId }, 'PATCH /project/funnel')
 
     if (!userId) {
       throw new UnauthorizedException('Please auth first')
+    }
+
+    const project = await this.projectService.findOneWhere(
+      {
+        id: pid,
+        admin: userId,
+      },
+      {
+        relations: ['admin', 'share'],
+      },
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId)
+
+    const oldFunnel = await this.projectService.getFunnel(id, project.id)
+
+    if (!oldFunnel) {
+      throw new NotFoundException('Funnel not found.')
     }
 
     await this.projectService.deleteFunnel(id)
