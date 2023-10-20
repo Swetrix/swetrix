@@ -558,6 +558,9 @@
   },
   "project": {
     "search": "Search",
+    "selectCategory": "Select category to filter",
+    "currentFilters": "Currently applied filters",
+    "newFilters": "New filters",
     "advancedFilters": "Advanced filters",
     "applyFilters": "Apply filters",
     "lookingForMore": "Looking for more?",

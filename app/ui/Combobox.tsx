@@ -18,11 +18,12 @@ interface ISelect {
   labelExtractor?: (item: any, index: number) => string,
   keyExtractor?: (item: any, index: number) => string,
   onSelect: (item: any) => void,
+  placeholder?: string,
 }
 
 const Combobox = ({
   title, className, items, labelExtractor, keyExtractor, onSelect,
-  buttonClassName,
+  buttonClassName, placeholder,
 }: ISelect): JSX.Element => {
   const { t } = useTranslation('common')
   const [query, setQuery] = useState('')
@@ -39,12 +40,13 @@ const Combobox = ({
   return (
     <HeadlessCombobox value={title} onChange={onSelect}>
       <div className={cx('relative mt-1', className)}>
-        <div className='relative w-full cursor-default overflow-hidden rounded-lg'>
+        <div className='relative w-full cursor-default rounded-lg'>
           <HeadlessCombobox.Input
             className={cx('relative w-full bg-white border border-gray-300 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm', buttonClassName)}
             // @ts-ignore
             displayValue={(item) => labelExtractor ? labelExtractor(item, 0) : item}
             onChange={(event) => setQuery(event.target.value)}
+            placeholder={placeholder}
           />
           <HeadlessCombobox.Button className='absolute inset-y-0 right-0 flex items-center pr-2'>
             <ChevronUpDownIcon
@@ -106,6 +108,7 @@ const Combobox = ({
 
 Combobox.propTypes = {
   title: PropTypes.string,
+  placeholder: PropTypes.string,
   className: PropTypes.string,
   buttonClassName: PropTypes.string,
   items: PropTypes.array.isRequired,
@@ -116,6 +119,7 @@ Combobox.propTypes = {
 
 Combobox.defaultProps = {
   title: '',
+  placeholder: '',
   className: '',
   buttonClassName: '',
   labelExtractor: null,

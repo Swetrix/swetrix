@@ -2996,12 +2996,12 @@ const ViewProject = ({
           loading={funnelActionLoading}
         />
         <SearchFilters
-          t={t}
           showModal={showFiltersSearch}
           setShowModal={setShowFiltersSearch}
           setProjectFilter={onFilterSearch}
           pid={id}
-          language={language}
+          tnMapping={tnMapping}
+          filters={activeTab === PROJECT_TABS.traffic ? filters : filtersPerf}
         />
         {!embedded && (
           <Footer authenticated={authenticated} minimal />
