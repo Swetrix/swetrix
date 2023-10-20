@@ -23,6 +23,7 @@ import _includes from 'lodash/includes'
 import _last from 'lodash/last'
 import _isEmpty from 'lodash/isEmpty'
 import _replace from 'lodash/replace'
+import _toUpper from 'lodash/toUpper'
 import _find from 'lodash/find'
 import _filter from 'lodash/filter'
 import _uniqBy from 'lodash/uniqBy'
@@ -2738,8 +2739,19 @@ const ViewProject = ({
                           onFragmentChange={setPgActiveFragment}
                           // @ts-ignore
                           rowMapper={({ name: entryName }) => {
-                            // todo: add uppercase
-                            return entryName || t('project.redactedPage')
+                            if (!entryName) {
+                              return _toUpper(t('project.redactedPage'))
+                            }
+
+                            let decodedUri = entryName as string
+
+                            try {
+                              decodedUri = decodeURIComponent(entryName)
+                            } catch (_) {
+                              // do nothing
+                            }
+
+                            return decodedUri
                           }}
                           name={pgPanelNameMapping[pgActiveFragment]}
                           data={panelsData.data[type]}
