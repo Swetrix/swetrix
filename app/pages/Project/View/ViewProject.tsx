@@ -2547,6 +2547,7 @@ const ViewProject = ({
                 funnels={project.funnels}
                 deleteFunnel={onFunnelDelete}
                 loading={funnelActionLoading}
+                authenticated={authenticated}
               />
             ))}
             {(activeTab === PROJECT_TABS.funnels && !activeFunnel && _isEmpty(project.funnels) && (

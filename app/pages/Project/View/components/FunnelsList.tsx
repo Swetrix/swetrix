@@ -13,6 +13,7 @@ interface IFunnelsList {
   openFunnel: (funnel: IFunnel) => void
   deleteFunnel: (id: string) => void
   loading: boolean
+  authenticated: boolean
 }
 
 interface IFunnelCard {
@@ -98,7 +99,9 @@ const AddFunnel = ({ openFunnelSettings }: IAddFunnel): JSX.Element => {
  * @param {string} name - Row name to override country name with.
  * @returns {JSX.Element}
  */
-const FunnelsList = ({ funnels, openFunnelSettings, openFunnel, deleteFunnel, loading }: IFunnelsList): JSX.Element => (
+const FunnelsList = ({
+  funnels, openFunnelSettings, openFunnel, deleteFunnel, loading, authenticated,
+}: IFunnelsList): JSX.Element => (
   <ul className='grid grid-cols-1 gap-x-6 gap-y-3 lg:gap-y-6 lg:grid-cols-3 mt-2'>
     {_map(funnels, (funnel) => (
       <FunnelCard
@@ -110,9 +113,11 @@ const FunnelsList = ({ funnels, openFunnelSettings, openFunnel, deleteFunnel, lo
         loading={loading}
       />
     ))}
-    <AddFunnel
-      openFunnelSettings={openFunnelSettings}
-    />
+    {authenticated && (
+      <AddFunnel
+        openFunnelSettings={openFunnelSettings}
+      />
+    )}
   </ul>
 )
 
