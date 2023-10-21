@@ -1,6 +1,6 @@
-import { IsNumberString } from 'class-validator'
+import { IsUUID } from 'class-validator'
 
 export class DeleteCommentParamDto {
-  @IsNumberString()
+  @IsUUID()
   commentId: string
 }

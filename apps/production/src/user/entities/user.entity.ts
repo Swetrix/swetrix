@@ -13,6 +13,7 @@ import { Extension } from '../../marketplace/extensions/entities/extension.entit
 import { ExtensionToUser } from '../../marketplace/extensions/entities/extension-to-user.entity'
 import { Payout } from '../../payouts/entities/payouts.entity'
 import { Comment } from '../../marketplace/comments/entities/comment.entity'
+import { CommentReply } from '../../marketplace/comments/entities/comment-reply.entity'
 import { Complaint } from '../../marketplace/complaints/entities/complaint.entity'
 import { RefreshToken } from './refresh-token.entity'
 
@@ -359,6 +360,10 @@ export class User {
   @OneToMany(() => Comment, comment => comment.user)
   @JoinTable()
   comments: Comment[]
+
+  @OneToMany(() => CommentReply, comment => comment.user)
+  @JoinTable()
+  commentReplies: CommentReply[]
 
   @OneToMany(() => Complaint, complaint => complaint.user)
   @JoinTable()

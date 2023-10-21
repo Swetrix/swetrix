@@ -4,21 +4,23 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 import { Extension } from '../../extensions/entities/extension.entity'
 import { User } from '../../../user/entities/user.entity'
+import { CommentReply } from './comment-reply.entity'
 
 @Entity()
 export class Comment {
-  @PrimaryGeneratedColumn()
-  id: number
+  @PrimaryGeneratedColumn('uuid')
+  id: string
 
   @Column()
-  extensionId: number
+  extensionId: string
 
   @Column()
-  userId: number
+  userId: string
 
   @Column('text', { nullable: true, default: null })
   text: string | null
@@ -38,4 +40,7 @@ export class Comment {
   @ManyToOne(() => User, user => user.comments, { onDelete: 'CASCADE' })
   @JoinColumn()
   user: User
+
+  @OneToMany(() => CommentReply, reply => reply.parentComment)
+  replies: CommentReply[]
 }

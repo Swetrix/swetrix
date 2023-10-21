@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNumberString } from 'class-validator'
+import { IsUUID } from 'class-validator'
 
 export class CreateCommentQueryDto {
   @ApiProperty()
-  @IsNumberString()
+  @IsUUID()
   userId: string
 }

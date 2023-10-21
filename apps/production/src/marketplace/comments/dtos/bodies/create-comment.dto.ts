@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNumber, IsString, Max, Min } from 'class-validator'
+import { IsNumber, IsString, IsUUID, Max, Min } from 'class-validator'
 
 export class CreateCommentBodyDto {
   @ApiProperty()
-  @IsNumber()
-  extensionId: number
+  @IsUUID()
+  extensionId: string
 
   @ApiProperty()
   @IsString()
