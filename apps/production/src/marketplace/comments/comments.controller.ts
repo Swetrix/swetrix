@@ -126,10 +126,8 @@ export class CommentsController {
 
     const user = await this.userService.findOne(userId)
 
-    if (!user.roles.includes(UserType.ADMIN)) {
-      if (comment.user.id !== userId) {
-        throw new ConflictException('You are not allowed to do this.')
-      }
+    if (!_includes(user.roles, UserType.ADMIN) && comment.user.id !== userId) {
+      throw new ConflictException('You are not allowed to do this.')
     }
 
     await this.commentsService.delete(params.commentId)
