@@ -48,7 +48,6 @@ export class CommentsController {
   @ApiQuery({ name: 'extensionId', required: false, type: String })
   async getComments(
     @Query() queries: GetCommentsQueryDto,
-    // @CurrentUserId() userId: string,
   ): Promise<IGetComments> {
     const [comments, count] = await this.commentsService.getCommentsByExtId(
       queries.extensionId,
@@ -57,10 +56,6 @@ export class CommentsController {
     )
 
     return {
-      // comments: _map(comments, comment => ({
-      //   ...comment,
-      //   isOwner: comment.user.id === userId,
-      // })),
       comments,
       count,
     }
