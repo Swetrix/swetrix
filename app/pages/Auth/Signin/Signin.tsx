@@ -289,7 +289,7 @@ const Signin = ({
             i18nKey='auth.signin.notAMember'
             components={{
               // eslint-disable-next-line jsx-a11y/anchor-has-content
-              url: <Link to={routes.signup} className='font-semibold leading-6 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' aria-label={t('footer.tos')} />,
+              url: <Link to={routes.signup} className='font-semibold leading-6 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' aria-label={t('titles.signup')} />,
             }}
             values={{
               amount: TRIAL_DAYS,
