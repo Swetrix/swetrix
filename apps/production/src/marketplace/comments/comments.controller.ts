@@ -30,6 +30,11 @@ import { CommentReply } from './entities/comment-reply.entity'
 import { CreateReplyCommentBodyDto } from './dtos/bodies/create-reply.dto'
 import { UpdateCommentReplyBodyDto } from './dtos/bodies/update-reply.dto'
 
+interface IGetComments {
+  comments: Comment[] & { isOwner?: boolean }
+  count: number
+}
+
 @ApiTags('comments')
 @Controller('comments')
 export class CommentsController {
@@ -46,57 +51,20 @@ export class CommentsController {
   @ApiQuery({ name: 'extensionId', required: false, type: String })
   async getComments(
     @Query() queries: GetCommentsQueryDto,
-    @CurrentUserId() userId: string,
-  ): Promise<{
-    comments: Comment[] & { isOwner?: boolean }
-    count: number
-  }> {
-    let user
-
-    try {
-      user = await this.userService.findOne(userId)
-    } catch (error) {
-      user = undefined
-    }
-
-    const [comments, count] = await this.commentsService.findAndCount({
-      where: {
-        ...(queries.extensionId && { extensionId: queries.extensionId }),
-      },
-      skip: queries.offset || 0,
-      take: queries.limit || 25,
-      relations: ['replies', 'user', 'replies.user'],
-      select: ['id', 'text', 'addedAt', 'extensionId', 'rating', 'user'],
-    })
-
-    if (!_isEmpty(user)) {
-      return {
-        comments: _map(comments, comment => ({
-          ...comment,
-          isOwner: comment.userId === userId,
-          replies: _map(comment.replies, commentReply => ({
-            ..._omit(commentReply, ['userId']),
-            user: {
-              nickname: commentReply.user.nickname,
-            },
-            isOwner: commentReply.userId === userId,
-          })),
-          user: {
-            nickname: comment.user.nickname,
-          },
-        })),
-        count,
-      }
-    }
+    // @CurrentUserId() userId: string,
+  ): Promise<IGetComments> {
+    const [comments, count] = await this.commentsService.getCommentsByExtId(
+      queries.extensionId,
+      Number(queries.offset) || 0,
+      Number(queries.limit) || 25,
+    )
 
     return {
-      comments: _map(comments, comment => ({
-        ...comment,
-        isOwner: false,
-        user: {
-          nickname: comment.user.nickname,
-        },
-      })),
+      // comments: _map(comments, comment => ({
+      //   ...comment,
+      //   isOwner: comment.user.id === userId,
+      // })),
+      comments,
       count,
     }
   }
@@ -123,7 +91,7 @@ export class CommentsController {
       relations: ['owner'],
     })
 
-    if (!extension) {
+    if (!extension || !extension.owner) {
       throw new NotFoundException('Extension not found.')
     }
 
@@ -133,7 +101,6 @@ export class CommentsController {
 
     const comment = await this.commentsService.findOne({
       where: { extensionId: body.extensionId, userId },
-      relations: ['replies'],
     })
 
     if (comment) {

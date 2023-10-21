@@ -10,7 +10,6 @@ export class GetCommentsQueryDto {
   limit?: number
 
   @IsString()
-  @IsOptional()
   extensionId: string
 
   @IsString()

@@ -21,6 +21,31 @@ export class CommentsService {
     return this.commentsRepository.findAndCount({ ...options })
   }
 
+  async getCommentsByExtId(extensionId: string, skip: number, take: number) {
+    return this.commentsRepository
+      .createQueryBuilder('comment')
+      .where('comment.extensionId = :extensionId', { extensionId })
+      .leftJoinAndSelect('comment.replies', 'reply')
+      .leftJoinAndSelect('reply.user', 'replyUser')
+      .leftJoinAndSelect('comment.user', 'commentUser')
+      .select([
+        'comment.id',
+        'comment.text',
+        'comment.addedAt',
+        'comment.extensionId',
+        'comment.rating',
+        // 'commentUser.id',
+        'commentUser.nickname',
+        'reply.id',
+        'reply.text',
+        'reply.addedAt',
+        'replyUser.nickname',
+      ])
+      .skip(skip)
+      .take(take)
+      .getManyAndCount()
+  }
+
   async findOne(options: FindOneOptions<Comment>): Promise<Comment> {
     return this.commentsRepository.findOne({ ...options })
   }
