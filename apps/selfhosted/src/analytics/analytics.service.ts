@@ -910,7 +910,7 @@ export class AnalyticsService {
       eventsPerc: 0,
       eventsPercStep: 0,
       dropoff: 0,
-      dropoffPerc: 0,
+      dropoffPercStep: 0,
     }))
   }
 
