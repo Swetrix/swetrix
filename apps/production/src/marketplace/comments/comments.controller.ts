@@ -235,9 +235,8 @@ export class CommentsController {
       user = undefined
     }
 
-    const commentReplies = await this.commentsService.findAllCommentReplies(
-      commetId,
-    )
+    const commentReplies =
+      await this.commentsService.findAllCommentReplies(commetId)
 
     if (!_isEmpty(user)) {
       return _map(commentReplies, commentReply => ({
