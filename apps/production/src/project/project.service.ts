@@ -1,3 +1,4 @@
+import * as net from 'net'
 import {
   ForbiddenException,
   Injectable,
@@ -6,7 +7,6 @@ import {
   InternalServerErrorException,
   ConflictException,
 } from '@nestjs/common'
-import net from 'net'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { customAlphabet } from 'nanoid'
@@ -52,9 +52,16 @@ import {
   TRAFFIC_COLUMNS,
 } from '../common/constants'
 import { IUsageInfoRedis } from '../user/interfaces'
-import { ProjectSubscriber } from './entity'
+import { ProjectSubscriber, Funnel } from './entity'
 import { AddSubscriberType } from './types'
-import { GetSubscribersQueriesDto, UpdateSubscriberBodyDto } from './dto'
+import {
+  CreateProjectDTO,
+  GetSubscribersQueriesDto,
+  UpdateProjectDto,
+  UpdateSubscriberBodyDto,
+  FunnelCreateDTO,
+  FunnelUpdateDTO,
+} from './dto'
 import { ReportFrequency } from './enums'
 import { nFormatter } from '../common/utils'
 
@@ -270,6 +277,8 @@ export class ProjectService {
     private userService: UserService,
     @InjectRepository(ProjectSubscriber)
     private readonly projectSubscriberRepository: Repository<ProjectSubscriber>,
+    @InjectRepository(Funnel)
+    private readonly funnelRepository: Repository<Funnel>,
     private readonly actionTokens: ActionTokensService,
     private readonly mailerService: MailerService,
   ) {}
@@ -337,7 +346,7 @@ export class ProjectService {
       order: {
         name: 'ASC',
       },
-      relations: ['share', 'share.user'],
+      relations: ['share', 'share.user', 'funnels'],
     })
 
     return new Pagination<Project>({
@@ -425,8 +434,11 @@ export class ProjectService {
     return this.projectShareRepository.findOne(id, params)
   }
 
-  findOneWithRelations(id: string): Promise<Project | null> {
-    return this.projectsRepository.findOne(id, { relations: ['admin'] })
+  findOneWithRelations(
+    id: string,
+    relations = ['admin'],
+  ): Promise<Project | null> {
+    return this.projectsRepository.findOne(id, { relations })
   }
 
   findOne(id: string, params: object = {}): Promise<Project | null> {
@@ -479,9 +491,7 @@ export class ProjectService {
       return null
     }
 
-    throw new ForbiddenException(
-      `You are not allowed to view '${project?.name}' project`,
-    )
+    throw new ForbiddenException('You are not allowed to view this project')
   }
 
   allowedToManage(
@@ -580,25 +590,12 @@ export class ProjectService {
     ])
   }
 
-  validateProject(projectDTO: ProjectDTO, creatingProject = false) {
-    if (_size(projectDTO.name) > 50)
-      throw new UnprocessableEntityException('The project name is too long')
-
-    if (creatingProject) {
-      return
-    }
-
-    if (!isValidPID(projectDTO.id))
-      throw new UnprocessableEntityException(
-        'The provided Project ID (pid) is incorrect',
-      )
+  validateOrigins(
+    projectDTO: ProjectDTO | UpdateProjectDto | CreateProjectDTO,
+  ) {
     if (_size(_join(projectDTO.origins, ',')) > 300)
       throw new UnprocessableEntityException(
         'The list of allowed origins has to be smaller than 300 symbols',
-      )
-    if (_size(_join(projectDTO.ipBlacklist, ',')) > 300)
-      throw new UnprocessableEntityException(
-        'The list of allowed blacklisted IP addresses must be less than 300 characters.',
       )
 
     _map(projectDTO.origins, host => {
@@ -606,12 +603,41 @@ export class ProjectService {
         throw new ConflictException(`Host ${host} is not correct`)
       }
     })
+  }
 
+  validateIPBlacklist(
+    projectDTO: ProjectDTO | UpdateProjectDto | CreateProjectDTO,
+  ) {
+    if (_size(_join(projectDTO.ipBlacklist, ',')) > 300)
+      throw new UnprocessableEntityException(
+        'The list of allowed blacklisted IP addresses must be less than 300 characters.',
+      )
     _map(projectDTO.ipBlacklist, ip => {
       if (!net.isIP(_trim(ip)) && !IP_REGEX.test(_trim(ip))) {
         throw new ConflictException(`IP address ${ip} is not correct`)
       }
     })
+  }
+
+  validateProject(
+    projectDTO: ProjectDTO | UpdateProjectDto | CreateProjectDTO,
+    creatingProject = false,
+  ) {
+    if (_size(projectDTO.name) > 50)
+      throw new UnprocessableEntityException('The project name is too long')
+
+    if (creatingProject) {
+      return
+    }
+
+    // @ts-ignore
+    if (projectDTO?.id && !isValidPID(projectDTO.id))
+      throw new UnprocessableEntityException(
+        'The provided Project ID (pid) is incorrect',
+      )
+
+    this.validateOrigins(projectDTO)
+    this.validateIPBlacklist(projectDTO)
   }
 
   // Returns amount of existing events starting from month
@@ -718,9 +744,8 @@ export class ProjectService {
         clickhouse.query(countCaptchaQuery).toPromise(),
       ]
 
-      const [rawTraffic, rawCustomEvents, rawCaptcha] = await Promise.all(
-        promises,
-      )
+      const [rawTraffic, rawCustomEvents, rawCaptcha] =
+        await Promise.all(promises)
 
       const traffic = rawTraffic[0]['count()']
       const customEvents = rawCustomEvents[0]['count()']
@@ -849,6 +874,34 @@ export class ProjectService {
         where: { projectId },
       })
     return { subscribers, count }
+  }
+
+  async createFunnel(projectId: string, data: FunnelCreateDTO) {
+    const funnel = await this.funnelRepository.save({
+      ...data,
+      project: { id: projectId },
+    })
+    return funnel
+  }
+
+  async getFunnels(projectId: string) {
+    return this.funnelRepository.find({
+      where: { project: { id: projectId } },
+    })
+  }
+
+  async getFunnel(funnelId: string, projectId: string) {
+    return this.funnelRepository.findOne({
+      where: { id: funnelId, project: { id: projectId } },
+    })
+  }
+
+  async updateFunnel(data: FunnelUpdateDTO) {
+    return this.funnelRepository.update({ id: data.id }, data)
+  }
+
+  async deleteFunnel(id: string) {
+    return this.funnelRepository.delete({ id })
   }
 
   async updateSubscriber(

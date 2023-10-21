@@ -1,5 +1,7 @@
+import * as crypto from 'crypto'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _split from 'lodash/split'
+import * as _reverse from 'lodash/reverse'
 import * as _size from 'lodash/size'
 import * as _includes from 'lodash/includes'
 import * as _map from 'lodash/map'
@@ -9,13 +11,14 @@ import * as _isArray from 'lodash/isArray'
 import * as _reduce from 'lodash/reduce'
 import * as _keys from 'lodash/keys'
 import * as _last from 'lodash/last'
+import * as _replace from 'lodash/replace'
 import * as _some from 'lodash/some'
 import * as _find from 'lodash/find'
 import * as _now from 'lodash/now'
+import * as _isString from 'lodash/isString'
 import * as _values from 'lodash/values'
 import * as _round from 'lodash/round'
 import * as _filter from 'lodash/filter'
-import timezones from 'countries-and-timezones'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as dayjsTimezone from 'dayjs/plugin/timezone'
@@ -27,7 +30,8 @@ import {
   Injectable,
   BadRequestException,
   InternalServerErrorException,
-  ForbiddenException,
+  HttpException,
+  HttpStatus,
   UnprocessableEntityException,
   PreconditionFailedException,
 } from '@nestjs/common'
@@ -44,19 +48,22 @@ import {
   clickhouse,
   REDIS_SESSION_SALT_KEY,
   TRAFFIC_COLUMNS,
+  ALL_COLUMNS,
   CAPTCHA_COLUMNS,
   PERFORMANCE_COLUMNS,
+  MIN_PAGES_IN_FUNNEL,
+  MAX_PAGES_IN_FUNNEL,
 } from '../common/constants'
 import {
   calculateRelativePercentage,
   millisecondsToSeconds,
-  lookup,
 } from '../common/utils'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
 import { ProjectService } from '../project/project.service'
 import { Project } from '../project/entity/project.entity'
-import { TimeBucketType } from './dto/getData.dto'
+import { ChartRenderMode, TimeBucketType } from './dto/getData.dto'
+import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
 import {
   PerformanceCHResponse,
   CustomsCHResponse,
@@ -71,6 +78,9 @@ import {
   IBuildUserFlow,
   IExtractChartData,
   IGenerateXAxis,
+  IAggregatedMetadata,
+  IFunnelCHResponse,
+  IFunnel,
 } from './interfaces'
 
 dayjs.extend(utc)
@@ -92,7 +102,8 @@ const GMT_0_TIMEZONES = [
   // 'Africa/Casablanca',
 ]
 
-const validPeriods = [
+export const validPeriods = [
+  '1h',
   'today',
   'yesterday',
   '1d',
@@ -101,17 +112,24 @@ const validPeriods = [
   '3M',
   '12M',
   '24M',
+  'all',
 ]
 
 const validTimebuckets = [
+  TimeBucketType.MINUTE,
   TimeBucketType.HOUR,
   TimeBucketType.DAY,
   TimeBucketType.MONTH,
+  TimeBucketType.YEAR,
 ]
 
 // mapping of allowed timebuckets per difference between days
 // (e.g. if difference is lower than (lt) (including) -> then the specified timebuckets are allowed to be applied)
 const timeBucketToDays = [
+  {
+    lt: 0,
+    tb: [TimeBucketType.MINUTE, TimeBucketType.HOUR],
+  }, // < 1 day
   {
     lt: 7,
     tb: [TimeBucketType.HOUR, TimeBucketType.DAY, TimeBucketType.MONTH],
@@ -122,6 +140,8 @@ const timeBucketToDays = [
   }, // 4 weeks
   { lt: 366, tb: [TimeBucketType.MONTH] }, // 12 months
   { lt: 732, tb: [TimeBucketType.MONTH] }, // 24 months
+  { lt: 1464, tb: [TimeBucketType.MONTH, TimeBucketType.YEAR] }, // 48 months
+  { lt: 99999, tb: [TimeBucketType.YEAR] },
 ]
 
 // Smaller than 64 characters, must start with an English letter and contain only letters (a-z A-Z), numbers (0-9), underscores (_) and dots (.)
@@ -129,9 +149,11 @@ const timeBucketToDays = [
 const customEVvalidate = /^[a-zA-Z](?:[\w\.]){0,62}$/
 
 const timeBucketConversion = {
+  minute: 'toStartOfMinute',
   hour: 'toStartOfHour',
   day: 'toStartOfDay',
   month: 'toStartOfMonth',
+  year: 'toStartOfYear',
 }
 
 const isValidTimezone = (timezone: string): boolean => {
@@ -198,18 +220,26 @@ const generateParamsQuery = (
   const columnsQuery = columns.join(', ')
 
   if (isPerformance) {
+    if (col === 'pg') {
+      return `SELECT ${columnsQuery}, round(divide(avg(pageLoad), 1000), 2) as count ${subQuery} GROUP BY ${columnsQuery}`
+    }
+
     return `SELECT ${columnsQuery}, round(divide(avg(pageLoad), 1000), 2) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
   }
 
   if (isCaptcha) {
-    return `SELECT ${col}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
   }
 
   if (customEVFilterApplied) {
     return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
   }
 
-  if (col === 'pg' || isPageInclusiveFilterSet) {
+  if (col === 'pg') {
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} GROUP BY ${columnsQuery}`
+  }
+
+  if (isPageInclusiveFilterSet) {
     return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
   }
 
@@ -244,12 +274,6 @@ const isValidOrigin = (origins: string[], origin: string) => {
   }
 
   return false
-}
-
-interface IPGeoDetails {
-  country?: string
-  region?: string
-  city?: string
 }
 
 @Injectable()
@@ -369,8 +393,9 @@ export class AnalyticsService {
     }
 
     if (project.admin.planCode === PlanCode.none) {
-      throw new ForbiddenException(
+      throw new HttpException(
         'You cannot send analytics to this project due to no active subscription. Please upgrade your account plan to continue sending analytics.',
+        HttpStatus.PAYMENT_REQUIRED,
       )
     }
 
@@ -379,8 +404,9 @@ export class AnalyticsService {
       ACCOUNT_PLANS[project.admin.planCode].monthlyUsageLimit || 0
 
     if (count >= maxCount) {
-      throw new ForbiddenException(
+      throw new HttpException(
         'You have exceeded the available monthly request limit for your account. Please upgrade your account plan if you need more requests.',
+        HttpStatus.PAYMENT_REQUIRED,
       )
     }
 
@@ -407,6 +433,7 @@ export class AnalyticsService {
     timeBucket: TimeBucketType | null,
     period: string,
     safeTimezone: string,
+    diff?: number,
   ): IGetGroupFromTo {
     let groupFrom: dayjs.Dayjs
     let groupTo: dayjs.Dayjs
@@ -476,8 +503,14 @@ export class AnalyticsService {
       } else if (period === 'yesterday') {
         groupFrom = djsNow.subtract(1, 'day').startOf('d')
         groupTo = djsNow.subtract(1, 'day').endOf('d')
+      } else if (period === 'all' && (diff === 0 || diff === 1)) {
+        groupFrom = djsNow.subtract(1, 'day').startOf('d')
+        groupTo = djsNow
+      } else if (period === 'all') {
+        groupFrom = djsNow.subtract(diff - 1, 'day').startOf(timeBucket)
+        groupTo = djsNow
       } else {
-        if (period === '1d') {
+        if (period === '1d' || period === '1h') {
           groupFrom = djsNow.subtract(parseInt(period, 10), _last(period))
         } else {
           groupFrom = djsNow.subtract(parseInt(period, 10) - 1, _last(period))
@@ -630,6 +663,105 @@ export class AnalyticsService {
     }
   }
 
+  async getPagesArray(
+    rawPages?: string,
+    funnelId?: string,
+    projectId?: string,
+  ): Promise<string[]> {
+    if (funnelId && projectId) {
+      const funnel = await this.projectService.getFunnel(funnelId, projectId)
+
+      if (!funnel || _isEmpty(funnel)) {
+        throw new UnprocessableEntityException(
+          'The provided funnelId is incorrect',
+        )
+      }
+
+      return funnel.steps
+    }
+
+    try {
+      const pages = JSON.parse(rawPages)
+
+      if (!_isArray(pages)) {
+        throw new UnprocessableEntityException(
+          'An array of pages has to be provided as a pages param',
+        )
+      }
+
+      const size = _size(pages)
+
+      if (size < MIN_PAGES_IN_FUNNEL) {
+        throw new UnprocessableEntityException(
+          `A minimum of ${MIN_PAGES_IN_FUNNEL} pages or events has to be provided`,
+        )
+      }
+
+      if (size > MAX_PAGES_IN_FUNNEL) {
+        throw new UnprocessableEntityException(
+          `A maximum of ${MAX_PAGES_IN_FUNNEL} pages or events can be provided`,
+        )
+      }
+
+      if (_some(pages, page => !_isString(page))) {
+        throw new UnprocessableEntityException(
+          'Pages array must contain string values only',
+        )
+      }
+
+      return pages
+    } catch (e) {
+      throw new UnprocessableEntityException(
+        'Cannot process the provided array of pages',
+      )
+    }
+  }
+
+  async getTimeBucketForAllTime(
+    pid: string,
+    period: string,
+    safeTimezone: string,
+  ): Promise<{
+    timeBucket: TimeBucketType[]
+    diff: number
+  }> {
+    if (period !== 'all') {
+      return null
+    }
+
+    const from: any = await clickhouse
+      .query(
+        'SELECT created as from FROM analytics where pid = {pid:FixedString(12)} ORDER BY created ASC LIMIT 1',
+        { params: { pid } },
+      )
+      .toPromise()
+    const to = _includes(GMT_0_TIMEZONES, safeTimezone)
+      ? dayjs.utc()
+      : dayjs().tz(safeTimezone)
+
+    let newTimeBucket = [TimeBucketType.MONTH]
+    let diff = null
+
+    if (from && to) {
+      diff = dayjs(to).diff(dayjs(from[0].from), 'days')
+
+      const tbMap = _find(timeBucketToDays, ({ lt }) => diff <= lt)
+
+      if (_isEmpty(tbMap)) {
+        throw new PreconditionFailedException(
+          "The difference between 'from' and 'to' is greater than allowed",
+        )
+      }
+
+      newTimeBucket = tbMap.tb
+    }
+
+    return {
+      timeBucket: newTimeBucket,
+      diff,
+    }
+  }
+
   postProcessParsedFilters(parsedFilters: any[]): any[] {
     return _reduce(
       parsedFilters,
@@ -656,20 +788,21 @@ export class AnalyticsService {
     const params = {}
     let parsed = []
     let query = ''
+    let customEVFilterApplied = false
 
     if (_isEmpty(filters)) {
-      return [query, params, parsed]
+      return [query, params, parsed, customEVFilterApplied]
     }
 
     try {
       parsed = JSON.parse(filters)
     } catch (e) {
       console.error(`Cannot parse the filters array: ${filters}`)
-      return [query, params, parsed]
+      return [query, params, parsed, customEVFilterApplied]
     }
 
     if (_isEmpty(parsed)) {
-      return [query, params, parsed]
+      return [query, params, parsed, customEVFilterApplied]
     }
 
     if (!_isArray(parsed)) {
@@ -688,7 +821,9 @@ export class AnalyticsService {
       (prev, curr) => {
         const { column, filter, isExclusive = false } = curr
 
-        if (!_includes(SUPPORTED_COLUMNS, column)) {
+        if (column === 'ev') {
+          customEVFilterApplied = true
+        } else if (!_includes(SUPPORTED_COLUMNS, column)) {
           throw new UnprocessableEntityException(
             `The provided filter (${column}) is not supported`,
           )
@@ -698,10 +833,22 @@ export class AnalyticsService {
 
         if (_isArray(filter)) {
           for (const f of filter) {
-            res.push({ filter: f, isExclusive })
+            let encoded = f
+
+            if (column === 'pg' && f !== null) {
+              encoded = _replace(encodeURIComponent(f), /%2F/g, '/')
+            }
+
+            res.push({ filter: encoded, isExclusive })
           }
         } else {
-          res.push({ filter, isExclusive })
+          let encoded = filter
+
+          if (column === 'pg' && filter !== null) {
+            encoded = _replace(encodeURIComponent(filter), /%2F/g, '/')
+          }
+
+          res.push({ filter: encoded, isExclusive })
         }
 
         if (prev[column]) {
@@ -730,6 +877,12 @@ export class AnalyticsService {
 
         const param = `qf_${col}_${f}`
 
+        if (filter === null) {
+          query += `${column} IS ${isExclusive ? 'NOT' : ''} NULL`
+          params[param] = filter
+          continue
+        }
+
         query += `${isExclusive ? 'NOT ' : ''}${column} = {${param}:String}`
 
         params[param] = filter
@@ -738,7 +891,12 @@ export class AnalyticsService {
       query += ')'
     }
 
-    return [query, params, this.postProcessParsedFilters(parsed)]
+    return [
+      query,
+      params,
+      this.postProcessParsedFilters(parsed),
+      customEVFilterApplied,
+    ]
   }
 
   validateTimebucket(tb: TimeBucketType): void {
@@ -749,10 +907,192 @@ export class AnalyticsService {
     }
   }
 
-  async isUnique(sessionHash: string) {
-    const session = await redis.get(sessionHash)
-    await redis.set(sessionHash, 1, 'EX', UNIQUE_SESSION_LIFE_TIME)
-    return !session
+  generateUInt64(): string {
+    return crypto.randomBytes(8).readBigUInt64BE(0).toString()
+  }
+
+  /**
+   * Checks if the session is unique and returns the session psid (or creates a new one)
+   * @param sessionHash
+   * @returns [isUnique, psid]
+   */
+  async isUnique(sessionHash: string): Promise<[boolean, string]> {
+    let psid = await redis.get(sessionHash)
+    const exists = Boolean(psid)
+
+    if (!exists) {
+      psid = this.generateUInt64()
+    }
+
+    await redis.set(sessionHash, psid, 'EX', UNIQUE_SESSION_LIFE_TIME)
+    return [!exists, psid]
+  }
+
+  formatFunnel(data: IFunnelCHResponse[], pages: string[]): IFunnel[] {
+    const funnel = _map(data, (row, index) => {
+      const value = pages[index]
+
+      let events = row.c
+      let dropoff = 0
+      let eventsPerc = 100
+      let eventsPercStep = 100
+      let dropoffPercStep = 0
+
+      if (index > 0) {
+        const prev = data[index - 1]
+        events = row.c
+        dropoff = prev.c - row.c
+        eventsPerc = Number(_round((row.c / data[0].c) * 100, 2))
+        eventsPercStep = Number(_round((row.c / prev.c) * 100, 2))
+        dropoffPercStep = Number(_round((dropoff / prev.c) * 100, 2))
+      }
+
+      return {
+        value,
+        events,
+        eventsPerc,
+        eventsPercStep,
+        dropoff,
+        dropoffPercStep,
+      }
+    })
+
+    return funnel
+  }
+
+  /*
+    ClickHouse's windowFunnel() function returns steps that have non-zero counts.
+    I.e. if we have data like [{level: 1, c: 100}, {level: 3, c: 50}],
+    it means that level 2 should be 50 as well (because 50 users got up to level 3).
+
+    This function backfills missing levels with previous count.
+  */
+  backfillFunnel(
+    data: IFunnelCHResponse[],
+    pages: string[],
+  ): IFunnelCHResponse[] {
+    // Get max level
+    const maxLevel = _size(pages)
+
+    // Build map of level -> count
+    const levelCounts = new Map()
+    for (const d of data) {
+      levelCounts.set(d.level, d.c)
+    }
+
+    let prevCount = 0
+
+    // Backfill missing levels with previous count
+    const filled = []
+    for (let level = maxLevel; level >= 1; level--) {
+      const count = levelCounts.get(level)
+      if (count !== undefined) {
+        prevCount += count
+      }
+
+      filled.push({
+        level,
+        c: prevCount,
+      })
+    }
+
+    return filled
+  }
+
+  generateEmptyFunnel(pages: string[]): IFunnel[] {
+    return _map(pages, value => ({
+      value,
+      events: 0,
+      eventsPerc: 0,
+      eventsPercStep: 0,
+      dropoff: 0,
+      dropoffPercStep: 0,
+    }))
+  }
+
+  async getFunnel(pages: string[], params: any): Promise<IFunnel[]> {
+    const pageParams = {}
+
+    const pagesStr = _join(
+      _map(pages, (value, index) => {
+        pageParams[`v${index}`] = value
+
+        return `value={v${index}:String}`
+      }),
+      ',',
+    )
+
+    const query = `
+      SELECT
+        level,
+        count() as c
+      FROM (
+        SELECT
+          psid,
+          windowFunnel(86400)(created, ${pagesStr}) AS level
+        FROM (
+          SELECT
+            psid,
+            pg AS value,
+            created
+          FROM analytics
+          WHERE pid = {pid:FixedString(12)}
+          AND psid != 0
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+
+          UNION ALL
+
+          SELECT
+            psid,
+            ev AS value,
+            created
+          FROM customEV
+          WHERE pid = {pid:FixedString(12)}
+          AND psid != 0
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        )
+        GROUP BY psid
+      )
+      WHERE level != 0
+      GROUP BY level
+      ORDER BY level DESC;
+    `
+
+    const result = <Array<IFunnelCHResponse>>(
+      await clickhouse
+        .query(query, { params: { ...params, ...pageParams } })
+        .toPromise()
+    )
+
+    if (_isEmpty(result)) {
+      return this.generateEmptyFunnel(pages)
+    }
+
+    return this.formatFunnel(
+      _reverse(this.backfillFunnel(result, pages)),
+      pages,
+    )
+  }
+
+  async getTotalPageviews(
+    pid: string,
+    groupFrom: string,
+    groupTo: string,
+  ): Promise<number> {
+    const query = `
+      SELECT
+        count() as c
+      FROM analytics
+      WHERE pid = {pid:FixedString(12)}
+      AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+    `
+    const result = <{ c: number }[]>(
+      await clickhouse
+        .query(query, { params: { pid, groupFrom, groupTo } })
+        .toPromise()
+    )
+
+    return result[0]?.c || 0
   }
 
   async getSummary(
@@ -862,41 +1202,19 @@ export class AnalyticsService {
     return result
   }
 
-  getGeoDetails(ip: string, tz?: string): IPGeoDetails {
-    // Stage 1: Using IP address based geo lookup
-    const data = lookup.get(ip)
-
-    const country = data?.country?.iso_code
-    // TODO: Add city overrides, for example, Colinton -> Edinburgh, etc.
-    const city = data?.city?.names?.en
-    const region = data?.subdivisions?.[0]?.names?.en
-
-    if (country) {
-      return {
-        country,
-        city,
-        region,
-      }
-    }
-
-    // Stage 2: Using timezone based geo lookup as a fallback
-    const tzCountry = timezones.getCountryForTimezone(tz)?.id || null
-
-    return {
-      country: tzCountry,
-      city: null,
-      region: null,
-    }
-  }
-
   async getFilters(pid: string, type: string): Promise<Array<string>> {
-    if (!_includes(TRAFFIC_COLUMNS, type)) {
+    if (!_includes(ALL_COLUMNS, type)) {
       throw new UnprocessableEntityException(
         `The provided type (${type}) is incorrect`,
       )
     }
 
-    const query = `SELECT ${type} FROM analytics WHERE pid={pid:FixedString(12)} AND ${type} IS NOT NULL GROUP BY ${type}`
+    let query = `SELECT ${type} FROM analytics WHERE pid={pid:FixedString(12)} AND ${type} IS NOT NULL GROUP BY ${type}`
+
+    if (type === 'ev') {
+      query = `SELECT ${type} FROM customEV WHERE pid={pid:FixedString(12)} AND ${type} IS NOT NULL GROUP BY ${type}`
+    }
+
     const results = await clickhouse
       .query(query, { params: { pid } })
       .toPromise()
@@ -982,6 +1300,7 @@ export class AnalyticsService {
     let format
 
     switch (timeBucket) {
+      case TimeBucketType.MINUTE:
       case TimeBucketType.HOUR:
         format = 'YYYY-MM-DD HH:mm:ss'
         break
@@ -992,6 +1311,10 @@ export class AnalyticsService {
 
       case TimeBucketType.MONTH:
         format = 'YYYY-MM'
+        break
+
+      case TimeBucketType.YEAR:
+        format = 'YYYY'
         break
 
       default:
@@ -1026,9 +1349,17 @@ export class AnalyticsService {
   }
 
   generateDateString(row: { [key: string]: number }): string {
-    const { year, month, day, hour } = row
+    const { year, month, day, hour, minute } = row
 
-    let dateString = `${year}-${month < 10 ? `0${month}` : month}`
+    let dateString = `${year}`
+
+    if (typeof month === 'number') {
+      if (month < 10) {
+        dateString += `-0${month}`
+      } else {
+        dateString += `-${month}`
+      }
+    }
 
     if (typeof day === 'number') {
       if (day < 10) {
@@ -1039,10 +1370,17 @@ export class AnalyticsService {
     }
 
     if (typeof hour === 'number') {
+      const strMinute =
+        typeof minute === 'number'
+          ? minute < 10
+            ? `0${minute}`
+            : minute
+          : '00'
+
       if (hour < 10) {
-        dateString += ` 0${hour}:00:00`
+        dateString += ` 0${hour}:${strMinute}:00`
       } else {
-        dateString += ` ${hour}:00:00`
+        dateString += ` ${hour}:${strMinute}:00`
       }
     }
 
@@ -1103,6 +1441,17 @@ export class AnalyticsService {
   }
 
   getGroupSubquery(timeBucket: TimeBucketType): [string, string] {
+    if (timeBucket === TimeBucketType.MINUTE) {
+      return [
+        `toYear(tz_created) as year,
+        toMonth(tz_created) as month,
+        toDayOfMonth(tz_created) as day,
+        toHour(tz_created) as hour,
+        toMinute(tz_created) as minute`,
+        'year, month, day, hour, minute',
+      ]
+    }
+
     if (timeBucket === TimeBucketType.HOUR) {
       return [
         `toYear(tz_created) as year,
@@ -1121,6 +1470,10 @@ export class AnalyticsService {
       ]
     }
 
+    if (timeBucket === TimeBucketType.YEAR) {
+      return [`toYear(tz_created) as year`, 'year']
+    }
+
     return [
       `toYear(tz_created) as year,
       toMonth(tz_created) as month,
@@ -1133,13 +1486,14 @@ export class AnalyticsService {
     timeBucket: TimeBucketType,
     filtersQuery: string,
     safeTimezone: string,
+    mode: ChartRenderMode,
   ): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
     const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
     const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
-    return `
+    const baseQuery = `
       SELECT
         ${selector},
         avg(sdur) as sdur,
@@ -1156,21 +1510,33 @@ export class AnalyticsService {
       ) as subquery
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
+    `
+
+    if (mode === ChartRenderMode.CUMULATIVE) {
+      return `
+        SELECT
+          *,
+          sum(pageviews) OVER (ORDER BY ${groupBy}) as pageviews,
+          sum(uniques) OVER (ORDER BY ${groupBy}) as uniques
+        FROM (${baseQuery})
       `
+    }
+
+    return baseQuery
   }
 
   generateCustomEventsAggregationQuery(
     timeBucket: TimeBucketType,
     filtersQuery: string,
-    paramsData: any,
     safeTimezone: string,
+    mode: ChartRenderMode,
   ): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
     const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
     const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
-    return `
+    const baseQuery = `
       SELECT
         ${selector},
         count() as count
@@ -1178,14 +1544,24 @@ export class AnalyticsService {
         SELECT *,
         ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
         FROM customEV
-        WHERE ${paramsData.params.ev_exclusive ? 'NOT' : ''} ev = {ev:String}
-          AND pid = {pid:FixedString(12)}
+        WHERE pid = {pid:FixedString(12)}
           AND created BETWEEN ${tzFromDate} AND ${tzToDate}
           ${filtersQuery}
       ) as subquery
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
       `
+
+    if (mode === ChartRenderMode.CUMULATIVE) {
+      return `
+          SELECT
+            *,
+            sum(count) OVER (ORDER BY ${groupBy}) as count
+          FROM (${baseQuery})
+        `
+    }
+
+    return baseQuery
   }
 
   generatePerformanceAggregationQuery(
@@ -1226,13 +1602,14 @@ export class AnalyticsService {
     timeBucket: TimeBucketType,
     filtersQuery: string,
     safeTimezone: string,
+    mode: ChartRenderMode,
   ): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
     const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
     const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
-    return `
+    const baseQuery = `
       SELECT
         ${selector},
         count() as count
@@ -1247,7 +1624,19 @@ export class AnalyticsService {
       ) as subquery
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
+    `
+
+    if (mode === ChartRenderMode.CUMULATIVE) {
+      return `
+        SELECT
+          *,
+          sum(pageviews) OVER (ORDER BY ${groupBy}) as pageviews,
+          sum(uniques) OVER (ORDER BY ${groupBy}) as uniques
+        FROM (${baseQuery})
       `
+    }
+
+    return baseQuery
   }
 
   async groupByTimeBucket(
@@ -1260,6 +1649,7 @@ export class AnalyticsService {
     safeTimezone: string,
     customEVFilterApplied: boolean,
     parsedFilters: Array<{ [key: string]: string }>,
+    mode: ChartRenderMode,
   ): Promise<object | void> {
     let params: unknown = {}
     let chart: unknown = {}
@@ -1293,6 +1683,7 @@ export class AnalyticsService {
           paramsData,
           safeTimezone,
           customEVFilterApplied,
+          mode,
         )
 
         // @ts-ignore
@@ -1337,6 +1728,7 @@ export class AnalyticsService {
     paramsData: any,
     safeTimezone: string,
     customEVFilterApplied: boolean,
+    mode: ChartRenderMode,
   ): Promise<object | void> {
     const avgSdur = customEVFilterApplied
       ? 0
@@ -1348,8 +1740,8 @@ export class AnalyticsService {
       const query = this.generateCustomEventsAggregationQuery(
         timeBucket,
         filtersQuery,
-        paramsData,
         safeTimezone,
+        mode,
       )
 
       const result = <Array<TrafficCEFilterCHResponse>>(
@@ -1377,6 +1769,7 @@ export class AnalyticsService {
       timeBucket,
       filtersQuery,
       safeTimezone,
+      mode,
     )
 
     const result = <Array<TrafficCHResponse>>(
@@ -1422,6 +1815,7 @@ export class AnalyticsService {
     filtersQuery: string,
     paramsData: object,
     safeTimezone: string,
+    mode: ChartRenderMode,
   ): Promise<object | void> {
     let params: unknown = {}
     let chart: unknown = {}
@@ -1458,6 +1852,7 @@ export class AnalyticsService {
           timeBucket,
           filtersQuery,
           safeTimezone,
+          mode,
         )
 
         const result = <Array<TrafficCEFilterCHResponse>>(
@@ -1608,6 +2003,88 @@ export class AnalyticsService {
     }
 
     return result
+  }
+
+  validateCustomEVMeta(meta: any) {
+    if (typeof meta === 'undefined') {
+      return
+    }
+
+    if (_some(_values(meta), val => !_isString(val))) {
+      throw new UnprocessableEntityException(
+        'The provided custom event metadata is incorrect (some values are not strings)',
+      )
+    }
+  }
+
+  async getCustomEventMetadata(
+    data: GetCustomEventMetadata,
+  ): Promise<IAggregatedMetadata[]> {
+    const {
+      pid,
+      period,
+      timeBucket,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE,
+      event,
+    } = data
+
+    let newTimebucket = timeBucket
+
+    let diff
+
+    if (period === 'all') {
+      const res = await this.getTimeBucketForAllTime(pid, period, timezone)
+
+      diff = res.diff
+      // eslint-disable-next-line prefer-destructuring
+      newTimebucket = _includes(res.timeBucket, timeBucket)
+        ? timeBucket
+        : res.timeBucket[0]
+    }
+
+    this.validateTimebucket(newTimebucket)
+
+    const safeTimezone = this.getSafeTimezone(timezone)
+    const { groupFromUTC, groupToUTC } = this.getGroupFromTo(
+      from,
+      to,
+      newTimebucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const query = `SELECT 
+      meta.key AS key, 
+      meta.value AS value,
+      count() AS count
+    FROM customEV
+    ARRAY JOIN meta.key, meta.value
+    WHERE pid = {pid:FixedString(12)}
+      AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+      AND ev = {event:String}
+    GROUP BY key, value`
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+        event,
+      },
+    }
+
+    try {
+      const result = await clickhouse.query(query, paramsData).toPromise()
+      return result as IAggregatedMetadata[]
+    } catch (reason) {
+      console.error(`[ERROR](getCustomEventMetadata): ${reason}`)
+      throw new InternalServerErrorException(
+        'Something went wrong. Please, try again later.',
+      )
+    }
   }
 
   async getOnlineUserCount(pid: string): Promise<number> {

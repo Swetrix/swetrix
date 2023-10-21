@@ -1,16 +1,18 @@
-import { Reader, CityResponse } from 'maxmind'
 import * as path from 'path'
 import * as fs from 'fs'
+import { Reader, CityResponse } from 'maxmind'
 import { HttpException } from '@nestjs/common'
 import { hash } from 'blake3'
+import timezones from 'countries-and-timezones'
 import * as randomstring from 'randomstring'
 import * as _sample from 'lodash/sample'
 import * as _toNumber from 'lodash/toNumber'
 import * as _replace from 'lodash/replace'
 import * as _find from 'lodash/find'
 import * as _round from 'lodash/round'
+import * as _split from 'lodash/split'
 
-import { redis, isDevelopment } from './constants'
+import { redis, isDevelopment, isProxiedByCloudflare } from './constants'
 
 const marketingTips = {
   en: [
@@ -128,6 +130,13 @@ const generateRecoveryCode = () =>
     capitalization: 'uppercase',
   })
 
+const generateRefCode = () =>
+  randomstring.generate({
+    length: 8,
+    charset: 'alphanumeric',
+    capitalization: 'uppercase',
+  })
+
 const millisecondsToSeconds = (milliseconds: number) => milliseconds / 1000
 
 const generateRandomString = (length: number): string =>
@@ -174,6 +183,64 @@ if (fs.existsSync(PRODUCTION_GEOIP_DB_PATH)) {
   lookup = new Reader<CityResponse>(buffer)
 }
 
+interface IPGeoDetails {
+  country?: string
+  region?: string
+  city?: string
+}
+
+const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
+  // Stage 1: Using IP address based geo lookup
+  const data = lookup.get(ip)
+
+  const country = data?.country?.iso_code
+  // TODO: Add city overrides, for example, Colinton -> Edinburgh, etc.
+  const city = data?.city?.names?.en
+  const region = data?.subdivisions?.[0]?.names?.en
+
+  if (country) {
+    return {
+      country,
+      city,
+      region,
+    }
+  }
+
+  // Stage 2: Using timezone based geo lookup as a fallback
+  const tzCountry = timezones.getCountryForTimezone(tz)?.id || null
+
+  return {
+    country: tzCountry,
+    city: null,
+    region: null,
+  }
+}
+
+const getIPFromHeaders = (headers: any, tryXClientIPAddress?: boolean) => {
+  if (tryXClientIPAddress && headers['x-client-ip-address']) {
+    return headers['x-client-ip-address']
+  }
+
+  if (isProxiedByCloudflare && headers['cf-connecting-ip']) {
+    return headers['cf-connecting-ip']
+  }
+
+  // Get IP based on the NGINX configuration
+  let ip = headers['x-real-ip']
+
+  if (ip) {
+    return ip
+  }
+
+  ip = headers['x-forwarded-for'] || null
+
+  if (!ip) {
+    return null
+  }
+
+  return _split(ip, ',')[0]
+}
+
 export {
   getRandomTip,
   checkRateLimit,
@@ -183,4 +250,7 @@ export {
   generateRandomString,
   nFormatter,
   lookup,
+  getGeoDetails,
+  getIPFromHeaders,
+  generateRefCode,
 }

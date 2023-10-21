@@ -13,6 +13,8 @@ import {
   SELFHOSTED_EMAIL,
   SELFHOSTED_PASSWORD,
   JWT_ACCESS_TOKEN_SECRET,
+  JWT_ACCESS_TOKEN_LIFETIME,
+  JWT_REFRESH_TOKEN_LIFETIME,
 } from '../common/constants'
 import { getSelfhostedUser, SelfhostedUser } from '../user/entities/user.entity'
 
@@ -39,7 +41,7 @@ export class AuthService {
       },
       {
         algorithm: 'HS256',
-        expiresIn: 60 * 30,
+        expiresIn: JWT_ACCESS_TOKEN_LIFETIME,
         secret: JWT_ACCESS_TOKEN_SECRET,
       },
     )
@@ -67,7 +69,7 @@ export class AuthService {
       },
       {
         algorithm: 'HS256',
-        expiresIn: 60 * 60 * 24 * 30,
+        expiresIn: JWT_REFRESH_TOKEN_LIFETIME,
         secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
       },
     )

@@ -23,6 +23,7 @@ import {
   CAPTCHA_COOKIE_KEY,
   CAPTCHA_TOKEN_LIFETIME,
 } from '../common/constants'
+import { getGeoDetails } from '../common/utils'
 import { getElValue } from '../analytics/analytics.controller'
 import { GeneratedCaptcha } from './interfaces/generated-captcha'
 import { TokenCaptcha } from './interfaces/token-captcha'
@@ -135,19 +136,17 @@ export class CaptchaService {
   async logCaptchaPass(
     pid: string,
     userAgent: string,
-    headers: any,
     timestamp: number,
     isManual: boolean,
+    ip: string,
   ): Promise<void> {
     const ua = UAParser(userAgent)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
     const os = ua.os.name
-    const cc =
-      headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry']
 
-    const dto = captchaDTO(pid, dv, br, os, cc, isManual, timestamp)
-
+    const { country = 'NULL' } = getGeoDetails(ip)
+    const dto = captchaDTO(pid, dv, br, os, country, isManual, timestamp)
     const values = `(${_map(dto, getElValue).join(',')})`
 
     try {
@@ -339,9 +338,8 @@ export class CaptchaService {
       throw new Error('No JWT captcha cookie')
     }
 
-    const tokenCaptcha: TokenCaptcha = await this.decryptTokenCaptcha(
-      tokenCookie,
-    )
+    const tokenCaptcha: TokenCaptcha =
+      await this.decryptTokenCaptcha(tokenCookie)
 
     return this.canPassWithoutVerification(tokenCaptcha)
   }

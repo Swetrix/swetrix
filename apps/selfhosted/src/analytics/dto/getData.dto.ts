@@ -3,9 +3,16 @@ import { IsNotEmpty } from 'class-validator'
 import { DEFAULT_TIMEZONE } from '../../user/entities/user.entity'
 
 export enum TimeBucketType {
+  MINUTE = 'minute',
   HOUR = 'hour',
   DAY = 'day',
   MONTH = 'month',
+  YEAR = 'year',
+}
+
+export enum ChartRenderMode {
+  PERIODICAL = 'periodical',
+  CUMULATIVE = 'cumulative',
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -38,4 +45,11 @@ export class AnalyticsGET_DTO {
     default: DEFAULT_TIMEZONE,
   })
   timezone: string
+
+  @ApiProperty({
+    description:
+      'Mode in which data in chart should be rendered, may be either periodical or cumulative',
+    default: ChartRenderMode.PERIODICAL,
+  })
+  mode?: ChartRenderMode
 }

@@ -1,3 +1,4 @@
+import { createHash } from 'crypto'
 import {
   Injectable,
   InternalServerErrorException,
@@ -10,7 +11,6 @@ import axios from 'axios'
 import { genSalt, hash, compare } from 'bcrypt'
 import { getCountry } from 'countries-and-timezones'
 import { Auth } from 'googleapis'
-import { createHash } from 'crypto'
 import * as dayjs from 'dayjs'
 import { UAParser } from 'ua-parser-js'
 import * as _pick from 'lodash/pick'
@@ -39,7 +39,10 @@ import {
   PRODUCTION_ORIGIN,
   isDevelopment,
   JWT_ACCESS_TOKEN_SECRET,
+  JWT_ACCESS_TOKEN_LIFETIME,
+  JWT_REFRESH_TOKEN_LIFETIME,
 } from '../common/constants'
+import { getGeoDetails } from '../common/utils'
 import { TelegramService } from '../integrations/telegram/telegram.service'
 import { SSOProviders } from './dtos'
 import { UserGoogleDTO } from '../user/dto/user-google.dto'
@@ -145,12 +148,14 @@ export class AuthService {
   public async createUnverifiedUser(
     email: string,
     password: string,
+    referrerID?: string,
   ): Promise<User> {
     const hashedPassword = await this.hashPassword(password)
 
     const user = await this.userService.createUser({
       email,
       password: hashedPassword, // Using the password field is incorrect.
+      referrerID,
     })
 
     await this.sendVerificationEmail(user.id, user.email)
@@ -169,7 +174,7 @@ export class AuthService {
       },
       {
         algorithm: 'HS256',
-        expiresIn: 60 * 30,
+        expiresIn: JWT_ACCESS_TOKEN_LIFETIME,
         secret: JWT_ACCESS_TOKEN_SECRET,
       },
     )
@@ -186,8 +191,8 @@ export class AuthService {
     }
 
     if (user && user.isTelegramChatIdConfirmed) {
-      await this.telegramService.sendMessage(
-        Number(user.telegramChatId),
+      await this.telegramService.addMessage(
+        user.telegramChatId,
         '⚠️ *Someone has tried to login to their account with an incorrect password.*',
         { parse_mode: 'Markdown' },
       )
@@ -227,7 +232,7 @@ export class AuthService {
       return
     }
 
-    const headersInfo = await this.getHeadersInfo(headers)
+    const headersInfo = await this.getHeadersInfo(headers, ip)
     const loginDate = dayjs().utc().format('YYYY-MM-DD HH:mm:ss')
     const message =
       '🚨 *Someone has logged into your account!*\n\n' +
@@ -239,30 +244,23 @@ export class AuthService {
       `*Date:* ${loginDate} (UTC)\n\n` +
       'If it was not you, please change your password immediately.'
     if (user && user.isTelegramChatIdConfirmed) {
-      await this.telegramService.sendMessage(
-        Number(user.telegramChatId),
-        message,
-        {
-          parse_mode: 'Markdown',
-        },
-      )
+      await this.telegramService.addMessage(user.telegramChatId, message, {
+        parse_mode: 'Markdown',
+      })
     }
   }
 
-  private async getHeadersInfo(headers: unknown) {
+  private async getHeadersInfo(headers: unknown, ip: string) {
     const ua = UAParser(headers['user-agent'])
     const browser = ua.browser.name || 'Unknown'
     const device = ua.device.type || 'Desktop'
     const os = ua.os.name || 'Unknown'
-    let country = 'Unknown'
-    const cfCountry = headers['cf-ipcountry']
+    let { country } = getGeoDetails(ip)
 
-    if (cfCountry === 'T1') {
-      country = 'Unknown (Tor)'
-    }
-
-    if (cfCountry) {
-      country = getCountry(cfCountry)?.name
+    if (country) {
+      country = getCountry(country)?.name
+    } else {
+      country = 'Unknown'
     }
 
     return {
@@ -332,10 +330,16 @@ export class AuthService {
   ): Promise<void> {
     const hashedPassword = await this.hashPassword(password)
 
+    // Update user password
     await this.userService.updateUser(actionToken.user.id, {
       password: hashedPassword,
     })
+
+    // Delete current 'reset password' action token
     await this.actionTokensService.deleteActionToken(actionToken.id)
+
+    // Delete all user refresh tokens
+    await this.logoutAll(actionToken.user.id)
   }
 
   public async changePassword(userId: string, password: string): Promise<void> {
@@ -420,7 +424,7 @@ export class AuthService {
       },
       {
         algorithm: 'HS256',
-        expiresIn: 60 * 60 * 24 * 30,
+        expiresIn: JWT_REFRESH_TOKEN_LIFETIME,
         secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
       },
     )
@@ -500,7 +504,7 @@ export class AuthService {
     }
   }
 
-  async registerUserGoogle(sub: string, email: string) {
+  async registerUserGoogle(sub: string, email: string, referrerId?: string) {
     const query: UserGoogleDTO = {
       googleId: sub,
       trialEndDate: dayjs
@@ -511,6 +515,7 @@ export class AuthService {
       isActive: true,
       emailRequests: 0,
       email,
+      referrerId,
     }
 
     const userWithSameEmail = await this.userService.findOneWhere({
@@ -576,24 +581,57 @@ export class AuthService {
     return payload
   }
 
+  async getReferrerId(refCode?: string): Promise<string | undefined> {
+    if (!refCode) {
+      return undefined
+    }
+
+    try {
+      let referrerID
+
+      if (refCode) {
+        const referrer = await this.userService.findOneWhere({
+          refCode,
+        })
+
+        if (referrer) {
+          referrerID = referrer.id
+        }
+      }
+
+      return referrerID
+    } catch (reason) {
+      console.error(
+        `[ERROR][AuthService -> getReferrerId]: ${reason} - ${refCode}`,
+      )
+      return undefined
+    }
+  }
+
   async authenticateSSO(
     ssoHash: string,
     headers: unknown,
     ip: string,
     provider: SSOProviders,
+    refCode?: string,
   ) {
     if (provider === SSOProviders.GOOGLE) {
-      return this.authenticateGoogle(ssoHash, headers, ip)
+      return this.authenticateGoogle(ssoHash, headers, ip, refCode)
     }
 
     if (provider === SSOProviders.GITHUB) {
-      return this.authenticateGithub(ssoHash, headers, ip)
+      return this.authenticateGithub(ssoHash, headers, ip, refCode)
     }
 
     throw new BadRequestException('Unknown SSO provider supplied')
   }
 
-  async authenticateGoogle(ssoHash: string, headers: unknown, ip: string) {
+  async authenticateGoogle(
+    ssoHash: string,
+    headers: unknown,
+    ip: string,
+    refCode?: string,
+  ) {
     const { sub, email } = await this.processHash(ssoHash)
 
     try {
@@ -602,12 +640,19 @@ export class AuthService {
       })
 
       if (!user) {
-        return await this.registerUserGoogle(sub, email)
+        const referrerId = await this.getReferrerId(refCode)
+
+        return await this.registerUserGoogle(sub, email, referrerId)
       }
 
       return await this.handleExistingUserGoogle(user, headers, ip)
     } catch (error) {
       console.error(`[ERROR][AuthService -> authenticateGoogle]: ${error}`)
+
+      if (error === 'invalid_token') {
+        throw new BadRequestException('Google token is expired')
+      }
+
       throw new InternalServerErrorException(
         'Something went wrong while authenticating user with Google',
       )
@@ -851,7 +896,7 @@ export class AuthService {
     )
   }
 
-  async registerUserGithub(id: number, email: string) {
+  async registerUserGithub(id: number, email: string, referrerId?: string) {
     const query: UserGithubDTO = {
       githubId: id,
       trialEndDate: dayjs
@@ -862,6 +907,7 @@ export class AuthService {
       isActive: true,
       emailRequests: 0,
       email,
+      referrerId,
     }
 
     const userWithSameEmail = await this.userService.findOneWhere({
@@ -959,7 +1005,12 @@ export class AuthService {
     })
   }
 
-  async authenticateGithub(ssoHash: string, headers: unknown, ip: string) {
+  async authenticateGithub(
+    ssoHash: string,
+    headers: unknown,
+    ip: string,
+    refCode?: string,
+  ) {
     const { id, email } = await this.processHash(ssoHash)
 
     try {
@@ -968,7 +1019,9 @@ export class AuthService {
       })
 
       if (!user) {
-        return await this.registerUserGithub(id, email)
+        const referrerId = await this.getReferrerId(refCode)
+
+        return await this.registerUserGithub(id, email, referrerId)
       }
 
       return await this.handleExistingUserGithub(user, headers, ip)

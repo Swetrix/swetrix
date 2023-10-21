@@ -1,6 +1,6 @@
+import { join } from 'path'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { AcceptLanguageResolver, I18nAsyncOptions } from 'nestjs-i18n'
-import { join } from 'path'
 
 export const getI18nConfig = (): I18nAsyncOptions => ({
   imports: [ConfigModule],

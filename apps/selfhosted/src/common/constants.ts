@@ -43,7 +43,14 @@ const clickhouse = new ClickHouse({
   },
 })
 
-const { JWT_ACCESS_TOKEN_SECRET } = process.env
+const {
+  JWT_ACCESS_TOKEN_SECRET,
+  // 30 days
+  JWT_REFRESH_TOKEN_LIFETIME = 60 * 60 * 24 * 30,
+  // 30 minutes
+  JWT_ACCESS_TOKEN_LIFETIME = 60 * 30,
+} = process.env
+const isProxiedByCloudflare = process.env.CLOUDFLARE_PROXY_ENABLED === 'true'
 const isDevelopment = process.env.NODE_ENV === 'development'
 
 const SELFHOSTED_EMAIL = process.env.EMAIL
@@ -63,10 +70,10 @@ const isValidPID = (pid: string) => PID_REGEX.test(pid)
 // redis keys
 const getRedisProjectKey = (pid: string) => `pid_${pid}`
 
-const REDIS_LOG_DATA_CACHE_KEY = 'log_cache'
+const REDIS_LOG_DATA_CACHE_KEY = 'log_cache_v2'
 const REDIS_LOG_CAPTCHA_CACHE_KEY = 'log:captcha'
 const REDIS_LOG_PERF_CACHE_KEY = 'perf_cache'
-const REDIS_LOG_CUSTOM_CACHE_KEY = 'log_custom_cache_v2'
+const REDIS_LOG_CUSTOM_CACHE_KEY = 'log_custom_cache_v3'
 const REDIS_SESSION_SALT_KEY = 'log_salt' // is updated every 24 hours
 const REDIS_USERS_COUNT_KEY = 'stats:users_count'
 const REDIS_PROJECTS_COUNT_KEY = 'stats:projects_count'
@@ -79,6 +86,30 @@ const UNIQUE_SESSION_LIFE_TIME = 1800
 
 // 35 seconds
 const HEARTBEAT_SID_LIFE_TIME = 35
+
+// Funnels
+const MIN_PAGES_IN_FUNNEL = 2
+const MAX_PAGES_IN_FUNNEL = 10
+
+const TRAFFIC_COLUMNS = [
+  'cc',
+  'rg',
+  'ct',
+  'pg',
+  'lc',
+  'br',
+  'os',
+  'dv',
+  'ref',
+  'so',
+  'me',
+  'ca',
+]
+
+const PERFORMANCE_COLUMNS = ['cc', 'rg', 'ct', 'pg', 'dv', 'br']
+
+const NUMBER_JWT_REFRESH_TOKEN_LIFETIME = Number(JWT_REFRESH_TOKEN_LIFETIME)
+const NUMBER_JWT_ACCESS_TOKEN_LIFETIME = Number(JWT_ACCESS_TOKEN_LIFETIME)
 
 export {
   clickhouse,
@@ -104,4 +135,11 @@ export {
   isDevelopment,
   DEFAULT_SELFHOSTED_UUID,
   JWT_ACCESS_TOKEN_SECRET,
+  NUMBER_JWT_REFRESH_TOKEN_LIFETIME as JWT_REFRESH_TOKEN_LIFETIME,
+  NUMBER_JWT_ACCESS_TOKEN_LIFETIME as JWT_ACCESS_TOKEN_LIFETIME,
+  TRAFFIC_COLUMNS,
+  PERFORMANCE_COLUMNS,
+  isProxiedByCloudflare,
+  MIN_PAGES_IN_FUNNEL,
+  MAX_PAGES_IN_FUNNEL,
 }

@@ -10,6 +10,7 @@ import {
   Req,
   Response,
   Res,
+  Ip,
   HttpCode,
 } from '@nestjs/common'
 import * as dayjs from 'dayjs'
@@ -17,6 +18,7 @@ import * as utc from 'dayjs/plugin/utc'
 
 import { AppLoggerService } from '../logger/logger.service'
 import { CAPTCHA_COOKIE_KEY } from '../common/constants'
+import { getIPFromHeaders } from '../common/utils'
 import { CaptchaService, DUMMY_PIDS, isDummyPID } from './captcha.service'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
@@ -60,6 +62,7 @@ export class CaptchaController {
     @Req() request: Request,
     @Headers() headers,
     @Res({ passthrough: true }) response: Response,
+    @Ip() reqIP,
   ): Promise<any> {
     this.logger.log({ manualDTO }, 'POST /captcha/verify-manual')
 
@@ -120,12 +123,14 @@ export class CaptchaController {
     )
     this.captchaService.setTokenCookie(response, newTokenCookie)
 
+    const ip = getIPFromHeaders(headers) || reqIP || ''
+
     await this.captchaService.logCaptchaPass(
       pid,
       userAgent,
-      headers,
       timestamp,
       true,
+      ip,
     )
 
     return {
@@ -146,6 +151,7 @@ export class CaptchaController {
     @Req() request: Request,
     @Headers() headers,
     @Res({ passthrough: true }) response: Response,
+    @Ip() reqIP,
   ): Promise<any> {
     this.logger.log(automaticDTO, 'POST /captcha/verify')
 
@@ -228,12 +234,14 @@ export class CaptchaController {
 
     this.captchaService.setTokenCookie(response, newTokenCookie)
 
+    const ip = getIPFromHeaders(headers) || reqIP || ''
+
     await this.captchaService.logCaptchaPass(
       pid,
       userAgent,
-      headers,
       timestamp,
       false,
+      ip,
     )
 
     return {

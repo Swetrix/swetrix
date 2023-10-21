@@ -110,7 +110,7 @@ export class ProjectController {
 
     const project = new Project()
     project.id = pid
-    projectDTO.name = _trim(projectDTO.name)
+    project.name = _trim(projectDTO.name)
 
     await createProjectClickhouse(project)
 

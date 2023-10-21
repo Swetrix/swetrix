@@ -14,5 +14,35 @@ export class CreateProjectDTO {
   @ApiProperty({
     required: false,
   })
-  isCaptcha: boolean
+  isCaptcha?: boolean
+
+  @ApiProperty({
+    required: false,
+  })
+  public?: boolean
+
+  @ApiProperty({
+    required: false,
+  })
+  active?: boolean
+
+  @ApiProperty({
+    required: false,
+  })
+  isPasswordProtected?: boolean
+
+  @ApiProperty({
+    required: false,
+  })
+  password?: string
+
+  @ApiProperty({
+    required: false,
+  })
+  origins?: string[]
+
+  @ApiProperty({
+    required: false,
+  })
+  ipBlacklist?: string[]
 }

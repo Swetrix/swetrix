@@ -9,6 +9,7 @@ const CLICKHOUSE_INIT_QUERIES = [
   // The traffic data table
   `CREATE TABLE IF NOT EXISTS ${dbName}.analytics
   (
+    psid Nullable(UInt64),
     sid Nullable(String),
     pid FixedString(12),
     pg Nullable(String),
@@ -35,6 +36,7 @@ const CLICKHOUSE_INIT_QUERIES = [
   // Custom events table
   `CREATE TABLE IF NOT EXISTS ${dbName}.customEV
   (
+    psid Nullable(UInt64),
     pid FixedString(12),
     ev String,
     pg Nullable(String),
@@ -49,6 +51,11 @@ const CLICKHOUSE_INIT_QUERIES = [
     cc Nullable(FixedString(2)),
     rg LowCardinality(Nullable(String)),
     ct Nullable(String),
+    meta Nested
+    (
+      key String,
+      value String
+    ),
     created DateTime('UTC')
   )
   ENGINE = MergeTree()

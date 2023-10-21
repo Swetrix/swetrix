@@ -1,8 +1,8 @@
 import { Entity, Column, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
 import { ApiProperty } from '@nestjs/swagger'
 
-import { Project } from 'src/project/entity/project.entity'
-import { QueryCondition, QueryMetric, QueryTime } from 'src/alert/dto/alert.dto'
+import { Project } from '../../project/entity/project.entity'
+import { QueryCondition, QueryMetric, QueryTime } from '../dto/alert.dto'
 
 @Entity()
 export class Alert {
@@ -67,4 +67,12 @@ export class Alert {
     default: null,
   })
   queryTime: QueryTime
+
+  @ApiProperty()
+  @Column({
+    type: 'varchar',
+    nullable: true,
+    default: null,
+  })
+  queryCustomEvent: string
 }

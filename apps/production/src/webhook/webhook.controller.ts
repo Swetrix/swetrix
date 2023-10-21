@@ -12,6 +12,7 @@ import { ApiTags } from '@nestjs/swagger'
 import * as _find from 'lodash/find'
 
 import { ProjectService } from '../project/project.service'
+import { getIPFromHeaders } from '../common/utils'
 import {
   PlanCode,
   ACCOUNT_PLANS,
@@ -40,8 +41,7 @@ export class WebhookController {
     @Headers() headers,
     @Ip() reqIP,
   ): Promise<any> {
-    const ip =
-      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+    const ip = getIPFromHeaders(headers) || reqIP || ''
 
     this.webhookService.verifyIP(ip)
     this.webhookService.validateWebhook(body)
@@ -136,6 +136,57 @@ export class WebhookController {
 
       //   break
       // }
+
+      case 'subscription_payment_succeeded': {
+        const {
+          subscription_id: subID,
+          balance_earnings: balanceEarnings,
+          balance_currency: balanceCurrency,
+        } = body
+
+        const subscriber = await this.userService.findOneWhere({ subID })
+
+        if (!subscriber) {
+          this.logger.error(
+            `[subscription_payment_succeeded] Cannot find the subscriber with subID: ${subID}\nBody: ${JSON.stringify(
+              body,
+              null,
+              2,
+            )}`,
+          )
+          return
+        }
+
+        // That user was not referred by anyone
+        if (!subscriber.referrerID) {
+          return
+        }
+
+        const referrer = await this.userService.findOneWhere({
+          id: subscriber.referrerID,
+        })
+
+        if (!referrer) {
+          this.logger.error(
+            `[subscription_payment_succeeded] Cannot find the referrer with ID: ${subscriber.referrerID}`,
+          )
+          return
+        }
+
+        await this.webhookService.setReferralPayoutsToProcessing(
+          subscriber.id,
+          referrer,
+        )
+
+        await this.webhookService.addPayoutForUser(
+          referrer,
+          subscriber.id,
+          Number(balanceEarnings),
+          balanceCurrency,
+        )
+
+        break
+      }
 
       case 'subscription_payment_failed': {
         const { subscription_id: subID, attempt_number: attemptNumber } = body

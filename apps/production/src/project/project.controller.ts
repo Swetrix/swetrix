@@ -12,20 +12,24 @@ import {
   HttpCode,
   NotFoundException,
   ForbiddenException,
+  HttpException,
+  HttpStatus,
   Headers,
   Header,
   Patch,
-  HttpStatus,
   ConflictException,
   Res,
+  UnauthorizedException,
 } from '@nestjs/common'
 import { Response } from 'express'
 import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
+import { ILike } from 'typeorm'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _map from 'lodash/map'
 import * as _trim from 'lodash/trim'
 import * as _size from 'lodash/size'
 import * as _includes from 'lodash/includes'
+import * as _isBoolean from 'lodash/isBoolean'
 import * as _omit from 'lodash/omit'
 import * as _split from 'lodash/split'
 import * as _head from 'lodash/head'
@@ -42,7 +46,7 @@ import {
   deleteProjectRedis,
   generateProjectId,
 } from './project.service'
-import { UserType, ACCOUNT_PLANS, PlanCode } from '../user/entities/user.entity'
+import { UserType, PlanCode } from '../user/entities/user.entity'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
 import { MailerService } from '../mailer/mailer.service'
@@ -62,6 +66,7 @@ import {
   CAPTCHA_SECRET_KEY_LENGTH,
   isDevelopment,
   PRODUCTION_ORIGIN,
+  MAX_FUNNELS,
 } from '../common/constants'
 import { generateRandomString } from '../common/utils'
 import {
@@ -82,9 +87,11 @@ import {
   ProjectDTO,
   ShareDTO,
   ShareUpdateDTO,
+  FunnelCreateDTO,
+  FunnelUpdateDTO,
 } from './dto'
 
-const PROJECTS_MAXIMUM = ACCOUNT_PLANS[PlanCode.free].maxProjects
+const PROJECTS_MAXIMUM = 50
 
 const isValidShareDTO = (share: ShareDTO): boolean => {
   return !_isEmpty(_trim(share.email)) && _includes(roles, share.role)
@@ -95,7 +102,7 @@ const isValidUpdateShareDTO = (share: ShareUpdateDTO): boolean => {
 }
 
 @ApiTags('Project')
-@Controller('project')
+@Controller(['project', 'v1/project'])
 export class ProjectController {
   constructor(
     private readonly projectService: ProjectService,
@@ -110,6 +117,7 @@ export class ProjectController {
   @ApiQuery({ name: 'skip', required: false })
   @ApiQuery({ name: 'isCaptcha', required: false, type: Boolean })
   @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
+  @ApiQuery({ name: 'search', required: false, type: String })
   @ApiResponse({ status: 200, type: [Project] })
   @Auth([UserType.CUSTOMER, UserType.ADMIN], true)
   async get(
@@ -117,17 +125,40 @@ export class ProjectController {
     @Query('take') take: number | undefined,
     @Query('skip') skip: number | undefined,
     @Query('isCaptcha') isCaptchaStr: string | undefined,
+    @Query('search') search: string | undefined,
   ): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /project')
     const isCaptcha = isCaptchaStr === 'true'
 
-    const where = Object()
-    where.admin = userId
+    let where: any
 
-    if (isCaptcha) {
-      where.isCaptchaProject = true
+    if (search) {
+      where = [
+        {
+          admin: userId,
+          isCaptchaProject: isCaptcha,
+          isAnalyticsProject: !isCaptcha,
+          name: ILike(`%${search}%`),
+          // name: ILike(`%${mysql.escape(search).slice(1, 0).slice(0, -1)}%`),
+        },
+        {
+          admin: userId,
+          isCaptchaProject: isCaptcha,
+          isAnalyticsProject: !isCaptcha,
+          id: ILike(`%${search}%`),
+          // id: ILike(`%${mysql.escape(search).slice(1, 0).slice(0, -1)}%`),
+        },
+      ]
     } else {
-      where.isAnalyticsProject = true
+      where = {
+        admin: userId,
+      }
+
+      if (isCaptcha) {
+        where.isCaptchaProject = true
+      } else {
+        where.isAnalyticsProject = true
+      }
     }
 
     const paginated = await this.projectService.paginate({ take, skip }, where)
@@ -167,17 +198,37 @@ export class ProjectController {
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
   @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
+  @ApiQuery({ name: 'search', required: false, type: String })
   @ApiResponse({ status: 200, type: [Project] })
   @Auth([UserType.CUSTOMER, UserType.ADMIN], true)
   async getShared(
     @CurrentUserId() userId: string,
     @Query('take') take: number | undefined,
     @Query('skip') skip: number | undefined,
+    @Query('search') search: string | undefined,
   ): Promise<Pagination<ProjectShare> | ProjectShare[] | object> {
-    this.logger.log({ userId, take, skip }, 'GET /project/shared')
+    this.logger.log({ userId, take, skip, search }, 'GET /project/shared')
 
-    const where = Object()
-    where.user = userId
+    let where = Object()
+
+    if (search) {
+      where = [
+        {
+          user: userId,
+          project: {
+            name: ILike(`%${search}%`),
+          },
+        },
+        {
+          user: userId,
+          project: {
+            id: ILike(`%${search}%`),
+          },
+        },
+      ]
+    } else {
+      where.user = userId
+    }
 
     const paginated = await this.projectService.paginateShared(
       { take, skip },
@@ -242,7 +293,7 @@ export class ProjectController {
     const user = await this.userService.findOneWithRelations(userId, [
       'projects',
     ])
-    const maxProjects = ACCOUNT_PLANS[user.planCode]?.maxProjects
+    const { maxProjects = PROJECTS_MAXIMUM } = user
 
     if (!user.isActive) {
       throw new ForbiddenException(
@@ -250,7 +301,7 @@ export class ProjectController {
       )
     }
 
-    if (_size(user.projects) >= (maxProjects || PROJECTS_MAXIMUM)) {
+    if (_size(user.projects) >= maxProjects) {
       throw new ForbiddenException(
         `The user's plan supports maximum of ${maxProjects} projects`,
       )
@@ -285,26 +336,30 @@ export class ProjectController {
 
   @Post('/')
   @ApiResponse({ status: 201, type: Project })
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth([], true)
   async create(
     @Body() projectDTO: CreateProjectDTO,
     @CurrentUserId() userId: string,
   ): Promise<Project> {
     this.logger.log({ projectDTO, userId }, 'POST /project')
 
+    if (!userId) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
     const user = await this.userService.findOneWithRelations(userId, [
       'projects',
     ])
-    const maxProjects = ACCOUNT_PLANS[user.planCode]?.maxProjects
+    const { maxProjects = PROJECTS_MAXIMUM } = user
 
     if (!user.isActive) {
       throw new ForbiddenException('Please, verify your email address first')
     }
 
     if (user.planCode === PlanCode.none) {
-      throw new ForbiddenException(
+      throw new HttpException(
         'You cannot create new projects due to no active subscription. Please upgrade your account plan to continue.',
+        HttpStatus.PAYMENT_REQUIRED,
       )
     }
 
@@ -314,11 +369,12 @@ export class ProjectController {
           _filter(
             user.projects,
             (project: Project) => project.isCaptchaProject,
-          ) >= (maxProjects || PROJECTS_MAXIMUM),
+          ) >= maxProjects,
         )
       ) {
-        throw new ForbiddenException(
+        throw new HttpException(
           `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
+          HttpStatus.PAYMENT_REQUIRED,
         )
       }
     } else if (
@@ -326,7 +382,7 @@ export class ProjectController {
         _filter(
           user.projects,
           (project: Project) => project.isAnalyticsProject,
-        ) >= (maxProjects || PROJECTS_MAXIMUM),
+        ) >= maxProjects,
       )
     ) {
       throw new ForbiddenException(
@@ -358,17 +414,217 @@ export class ProjectController {
         )
       }
 
+      if (projectDTO.isPasswordProtected && projectDTO.password) {
+        project.isPasswordProtected = true
+        project.passwordHash = await hash(projectDTO.password, 10)
+      }
+
+      if (projectDTO.public) {
+        project.public = Boolean(projectDTO.public)
+      }
+
+      if (projectDTO.active) {
+        project.active = Boolean(projectDTO.active)
+      }
+
+      if (projectDTO.origins) {
+        this.projectService.validateOrigins(projectDTO)
+        project.origins = projectDTO.origins
+      }
+
+      if (projectDTO.ipBlacklist) {
+        this.projectService.validateIPBlacklist(projectDTO)
+        project.ipBlacklist = projectDTO.ipBlacklist
+      }
+
       const newProject = await this.projectService.create(project)
       user.projects.push(project)
 
       await this.userService.create(user)
 
-      return newProject
+      return _omit(newProject, ['passwordHash'])
     } catch (reason) {
       console.error('[ERROR] Failed to create a new project:')
       console.error(reason)
       throw new BadRequestException('Failed to create a new project')
     }
+  }
+
+  @Post('/funnel')
+  @ApiResponse({ status: 201 })
+  @Auth([], true)
+  async createFunnel(
+    @Body() funnelDTO: FunnelCreateDTO,
+    @CurrentUserId() userId: string,
+  ): Promise<any> {
+    this.logger.log({ funnelDTO, userId }, 'POST /project/funnel')
+
+    if (!userId) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
+    const user = await this.userService.findOneWithRelations(userId, [
+      'projects',
+    ])
+
+    if (!user.isActive) {
+      throw new ForbiddenException('Please, verify your email address first')
+    }
+
+    if (user.planCode === PlanCode.none) {
+      throw new HttpException(
+        'You cannot create new funnels due to no active subscription. Please upgrade your account plan to continue.',
+        HttpStatus.PAYMENT_REQUIRED,
+      )
+    }
+
+    const project = await this.projectService.findOneWhere(
+      {
+        id: funnelDTO.pid,
+        admin: userId,
+      },
+      {
+        relations: ['admin', 'share'],
+      },
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
+
+    return this.projectService.createFunnel(project.id, funnelDTO)
+  }
+
+  @Patch('/funnel')
+  @ApiResponse({ status: 200 })
+  @Auth([], true)
+  async updateFunnel(
+    @Body() funnelDTO: FunnelUpdateDTO,
+    @CurrentUserId() userId: string,
+  ): Promise<any> {
+    this.logger.log({ funnelDTO, userId }, 'PATCH /project/funnel')
+
+    if (!userId) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
+    const user = await this.userService.findOneWithRelations(userId, [
+      'projects',
+    ])
+
+    if (!user.isActive) {
+      throw new ForbiddenException('Please, verify your email address first')
+    }
+
+    if (user.planCode === PlanCode.none) {
+      throw new HttpException(
+        'You cannot update funnels due to no active subscription. Please upgrade your account plan to continue.',
+        HttpStatus.PAYMENT_REQUIRED,
+      )
+    }
+
+    const project = await this.projectService.findOneWhere(
+      {
+        id: funnelDTO.pid,
+        admin: userId,
+      },
+      {
+        relations: ['admin', 'share', 'funnels'],
+      },
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
+
+    if (_size(project.funnels) >= MAX_FUNNELS) {
+      throw new ForbiddenException(
+        `You cannot create more than ${MAX_FUNNELS}. Please contact us to increase the limit.`,
+      )
+    }
+
+    const oldFunnel = await this.projectService.getFunnel(
+      funnelDTO.id,
+      project.id,
+    )
+
+    if (!oldFunnel) {
+      throw new NotFoundException('Funnel not found.')
+    }
+
+    return this.projectService.updateFunnel({
+      id: funnelDTO.id,
+      name: funnelDTO.name,
+      steps: funnelDTO.steps,
+    } as FunnelUpdateDTO)
+  }
+
+  @Delete('/funnel/:id/:pid')
+  @ApiResponse({ status: 200 })
+  @Auth([], true)
+  async deleteFunnel(
+    @Param('id') id: string,
+    @Param('pid') pid: string,
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
+    this.logger.log({ id, userId }, 'PATCH /project/funnel')
+
+    if (!userId) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
+    const project = await this.projectService.findOneWhere(
+      {
+        id: pid,
+        admin: userId,
+      },
+      {
+        relations: ['admin', 'share'],
+      },
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId)
+
+    const oldFunnel = await this.projectService.getFunnel(id, project.id)
+
+    if (!oldFunnel) {
+      throw new NotFoundException('Funnel not found.')
+    }
+
+    await this.projectService.deleteFunnel(id)
+  }
+
+  @Get('/funnels/:pid')
+  @ApiResponse({ status: 200 })
+  @Auth([], true)
+  async getFunnels(
+    @Param('pid') pid: string,
+    @CurrentUserId() userId: string,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<any> {
+    this.logger.log({ pid, userId }, 'PATCH /project/funnel')
+
+    if (!userId) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
+    const project = await this.projectService.getProject(pid, userId)
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    this.projectService.allowedToView(project, userId, headers['x-password'])
+
+    return this.projectService.getFunnels(project.id)
   }
 
   @Delete('/reset/:id')
@@ -1139,14 +1395,18 @@ export class ProjectController {
 
   @Delete('/:id')
   @HttpCode(204)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth([], true)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async delete(
     @Param('id') id: string,
     @CurrentUserId() uid: string,
   ): Promise<any> {
     this.logger.log({ uid, id }, 'DELETE /project/:id')
+
+    if (!uid) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
     if (!isValidPID(id)) {
       throw new BadRequestException(
         'The provided Project ID (pid) is incorrect',
@@ -1233,9 +1493,9 @@ export class ProjectController {
         user.projects,
         (fProject: Project) => fProject.isCaptchaProject,
       )
-      const maxProjects = ACCOUNT_PLANS[user.planCode]?.maxProjects
+      const { maxProjects = PROJECTS_MAXIMUM } = user
 
-      if (_size(captchaProjects >= (maxProjects || PROJECTS_MAXIMUM))) {
+      if (_size(captchaProjects >= maxProjects)) {
         throw new ForbiddenException(
           `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
         )
@@ -1318,8 +1578,7 @@ export class ProjectController {
 
   @Put('/:id')
   @HttpCode(200)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth([], true)
   @ApiResponse({ status: 200, type: Project })
   async update(
     @Param('id') id: string,
@@ -1330,6 +1589,11 @@ export class ProjectController {
       { ..._omit(projectDTO, ['password']), uid, id },
       'PUT /project/:id',
     )
+
+    if (!uid) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
     this.projectService.validateProject(projectDTO)
     const project = await this.projectService.findOne(id, {
       relations: ['admin', 'share', 'share.user'],
@@ -1342,20 +1606,36 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, uid, user.roles)
 
-    project.active = projectDTO.active
-    project.origins = _map(projectDTO.origins, _trim)
-    project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim)
-    project.name = _trim(projectDTO.name)
-    project.public = projectDTO.public
+    if (projectDTO.public) {
+      project.public = Boolean(projectDTO.public)
+    }
 
-    if (projectDTO.isPasswordProtected) {
-      if (projectDTO.password) {
-        project.isPasswordProtected = true
-        project.passwordHash = await hash(projectDTO.password, 10)
+    if (projectDTO.active) {
+      project.active = Boolean(projectDTO.active)
+    }
+
+    if (projectDTO.origins) {
+      project.origins = _map(projectDTO.origins, _trim)
+    }
+
+    if (projectDTO.ipBlacklist) {
+      project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim)
+    }
+
+    if (projectDTO.name) {
+      project.name = _trim(projectDTO.name)
+    }
+
+    if (_isBoolean(projectDTO.isPasswordProtected)) {
+      if (projectDTO.isPasswordProtected) {
+        if (projectDTO.password) {
+          project.isPasswordProtected = true
+          project.passwordHash = await hash(projectDTO.password, 10)
+        }
+      } else {
+        project.isPasswordProtected = false
+        project.passwordHash = null
       }
-    } else {
-      project.isPasswordProtected = false
-      project.passwordHash = null
     }
 
     await this.projectService.update(id, _omit(project, ['share', 'admin']))
@@ -1363,7 +1643,7 @@ export class ProjectController {
     // await updateProjectRedis(id, project)
     await deleteProjectRedis(id)
 
-    return project
+    return _omit(project, ['admin', 'passwordHash', 'share'])
   }
 
   // The routes related to sharing projects feature
@@ -1421,7 +1701,7 @@ export class ProjectController {
     }
 
     const project = await this.projectService.findOne(id, {
-      relations: ['admin'],
+      relations: ['admin', 'share', 'share.user', 'funnels'],
     })
 
     if (_isEmpty(project)) {
@@ -1438,7 +1718,7 @@ export class ProjectController {
     this.projectService.allowedToView(project, uid, headers['x-password'])
 
     return {
-      ..._omit(project, ['admin', 'passwordHash']),
+      ..._omit(project, ['admin', 'passwordHash', 'share']),
       isOwner: uid === project.admin?.id,
     }
   }

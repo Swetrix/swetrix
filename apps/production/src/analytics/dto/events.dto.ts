@@ -1,5 +1,41 @@
+import * as _keys from 'lodash/keys'
+import * as _values from 'lodash/values'
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty } from 'class-validator'
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsObject,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+  Validate,
+} from 'class-validator'
+
+const MAX_METADATA_KEYS = 20
+const MAX_METADATA_VALUE_LENGTH = 1000
+
+@ValidatorConstraint()
+class MetadataSizeLimit implements ValidatorConstraintInterface {
+  validate(metadata: Record<string, string>) {
+    const values = _values(metadata)
+    let totalSize = 0
+
+    for (const value of values) {
+      totalSize += value.length
+      if (totalSize > MAX_METADATA_VALUE_LENGTH) {
+        return false
+      }
+    }
+
+    return true
+  }
+}
+
+@ValidatorConstraint()
+class MetadataKeysQuantity implements ValidatorConstraintInterface {
+  validate(metadata: Record<string, string>) {
+    return _keys(metadata).length <= MAX_METADATA_KEYS
+  }
+}
 
 export class EventsDTO {
   @ApiProperty({
@@ -22,7 +58,7 @@ export class EventsDTO {
     description:
       'If true, only 1 event with the same ID will be saved per user session',
   })
-  unique: object
+  unique: boolean
 
   // Tracking metrics
   @ApiProperty({
@@ -66,4 +102,21 @@ export class EventsDTO {
     description: 'utm_campaign URL parameter',
   })
   ca?: string
+
+  @ApiProperty({
+    example: {
+      affiliate: 'Yes',
+      protocol: 'HTTPS',
+    },
+    description: 'Event-related metadata object with string values',
+  })
+  @IsOptional()
+  @IsObject()
+  @Validate(MetadataKeysQuantity, {
+    message: `Metadata object can't have more than ${MAX_METADATA_KEYS} keys`,
+  })
+  @Validate(MetadataSizeLimit, {
+    message: `Metadata object can't have values with total length more than ${MAX_METADATA_VALUE_LENGTH} characters`,
+  })
+  meta?: Record<string, string>
 }

@@ -2,6 +2,9 @@ import * as _isEmpty from 'lodash/isEmpty'
 import * as _isArray from 'lodash/isArray'
 import * as _toNumber from 'lodash/toNumber'
 import * as _pick from 'lodash/pick'
+import * as _includes from 'lodash/includes'
+import * as _keys from 'lodash/keys'
+import * as _values from 'lodash/values'
 import * as _map from 'lodash/map'
 import * as _uniqBy from 'lodash/uniqBy'
 import * as _round from 'lodash/round'
@@ -35,6 +38,7 @@ import {
   getSessionKey,
   getHeartbeatKey,
   DataType,
+  validPeriods,
 } from './analytics.service'
 import { TaskManagerService } from '../task-manager/task-manager.service'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
@@ -42,8 +46,10 @@ import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
-import { AnalyticsGET_DTO } from './dto/getData.dto'
+import { AnalyticsGET_DTO, ChartRenderMode } from './dto/getData.dto'
+import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
 import { GetUserFlowDTO } from './dto/getUserFlow.dto'
+import { GetFunnelsDTO } from './dto/getFunnels.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import {
   REDIS_LOG_DATA_CACHE_KEY,
@@ -57,11 +63,17 @@ import {
   REDIS_SESSION_SALT_KEY,
   clickhouse,
 } from '../common/constants'
+import { getGeoDetails, getIPFromHeaders } from '../common/utils'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { GetCustomEventsDto } from './dto/get-custom-events.dto'
 import { GetFiltersDto } from './dto/get-filters.dto'
-import { IUserFlow } from './interfaces'
+import {
+  IAggregatedMetadata,
+  IFunnel,
+  IGetFunnel,
+  IUserFlow,
+} from './interfaces'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mysql = require('mysql2')
@@ -78,6 +90,7 @@ const getSessionKeyCustom = (
 ) => `cses_${hash(`${ua}${ip}${pid}${ev}${salt}`).toString('hex')}`
 
 const analyticsDTO = (
+  psid: string,
   sid: string,
   pid: string,
   pg: string,
@@ -97,6 +110,7 @@ const analyticsDTO = (
   unique: number,
 ): Array<string | number> => {
   return [
+    psid,
     sid,
     pid,
     pg,
@@ -156,6 +170,7 @@ const performanceDTO = (
 }
 
 const customLogDTO = (
+  psid: string,
   pid: string,
   ev: string,
   pg: string,
@@ -170,8 +185,11 @@ const customLogDTO = (
   cc: string,
   rg: string,
   ct: string,
-): Array<string | number> => {
+  keys: string[],
+  values: string[],
+): Array<string | number | string[]> => {
   return [
+    psid,
     pid,
     ev,
     pg,
@@ -186,11 +204,17 @@ const customLogDTO = (
     cc,
     rg,
     ct,
+    keys,
+    values,
     dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
   ]
 }
 
 export const getElValue = el => {
+  if (_isArray(el)) {
+    return `[${_map(el, getElValue).join(',')}]`
+  }
+
   if (el === undefined || el === null || el === 'NULL') return 'NULL'
   return mysql.escape(el)
 }
@@ -282,6 +306,7 @@ export class AnalyticsController {
       to,
       filters,
       timezone = DEFAULT_TIMEZONE,
+      mode = ChartRenderMode.PERIODICAL,
     } = data
     this.analyticsService.validatePID(pid)
 
@@ -289,8 +314,34 @@ export class AnalyticsController {
       this.analyticsService.validatePeriod(period)
     }
 
-    this.analyticsService.validateTimebucket(timeBucket)
-    const [filtersQuery, filtersParams, appliedFilters] =
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    let newTimebucket = timeBucket
+    let allowedTumebucketForPeriodAll
+
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.getTimeBucketForAllTime(
+        pid,
+        period,
+        timezone,
+      )
+
+      diff = res.diff
+      // eslint-disable-next-line prefer-destructuring
+      newTimebucket = _includes(res.timeBucket, timeBucket)
+        ? timeBucket
+        : res.timeBucket[0]
+      allowedTumebucketForPeriodAll = res.timeBucket
+    }
+
+    this.analyticsService.validateTimebucket(newTimebucket)
+    const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
       this.analyticsService.getFiltersQuery(
         filters,
         isCaptcha ? DataType.CAPTCHA : DataType.ANALYTICS,
@@ -301,31 +352,21 @@ export class AnalyticsController {
       this.analyticsService.getGroupFromTo(
         from,
         to,
-        timeBucket,
+        newTimebucket,
         period,
         safeTimezone,
+        diff,
       )
-    await this.analyticsService.checkProjectAccess(
-      pid,
-      uid,
-      headers['x-password'],
-    )
 
     let queryCustoms = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
     let subQuery = `FROM ${
       isCaptcha ? 'captcha' : 'analytics'
     } WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
-    let customEVFilterApplied = false
 
-    if (filtersParams?.ev && !isCaptcha) {
-      customEVFilterApplied = true
-      queryCustoms = `SELECT ev, count() FROM customEV WHERE ${
-        filtersParams.ev_exclusive ? 'NOT' : ''
-      } ev = {ev:String} AND pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
+    if (customEVFilterApplied && !isCaptcha) {
+      queryCustoms = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
 
-      subQuery = `FROM customEV WHERE ${
-        filtersParams.ev_exclusive ? 'NOT' : ''
-      } ev = {ev:String} AND pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+      subQuery = `FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
     }
 
     const paramsData = {
@@ -341,17 +382,18 @@ export class AnalyticsController {
 
     if (isCaptcha) {
       result = await this.analyticsService.groupCaptchaByTimeBucket(
-        timeBucket,
+        newTimebucket,
         groupFrom,
         groupTo,
         subQuery,
         filtersQuery,
         paramsData,
         safeTimezone,
+        mode,
       )
     } else {
       result = await this.analyticsService.groupByTimeBucket(
-        timeBucket,
+        newTimebucket,
         groupFrom,
         groupTo,
         subQuery,
@@ -360,6 +402,7 @@ export class AnalyticsController {
         safeTimezone,
         customEVFilterApplied,
         appliedFilters,
+        mode,
       )
     }
 
@@ -367,6 +410,7 @@ export class AnalyticsController {
       return {
         ...result,
         appliedFilters,
+        timeBucket: allowedTumebucketForPeriodAll,
       }
     }
 
@@ -379,7 +423,104 @@ export class AnalyticsController {
       ...result,
       customs,
       appliedFilters,
+      timeBucket: allowedTumebucketForPeriodAll,
     }
+  }
+
+  @Get('funnel')
+  @Auth([], true, true)
+  async getFunnel(
+    @Query() data: GetFunnelsDTO,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<IGetFunnel> {
+    const {
+      pid,
+      period,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE,
+      pages,
+      funnelId,
+    } = data
+    this.analyticsService.validatePID(pid)
+
+    if (!_isEmpty(period)) {
+      this.analyticsService.validatePeriod(period)
+    }
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    const pagesArr = await this.analyticsService.getPagesArray(
+      pages,
+      funnelId,
+      pid,
+    )
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      null,
+      period,
+      safeTimezone,
+    )
+
+    const params = {
+      pid,
+      groupFrom,
+      groupTo,
+    }
+
+    let funnel: IFunnel[] = []
+    let totalPageviews: number = 0
+
+    const promises = [
+      (async () => {
+        funnel = await this.analyticsService.getFunnel(pagesArr, params)
+      })(),
+      (async () => {
+        totalPageviews = await this.analyticsService.getTotalPageviews(
+          pid,
+          groupFrom,
+          groupTo,
+        )
+      })(),
+    ]
+
+    await Promise.all(promises)
+
+    return {
+      funnel,
+      totalPageviews,
+    }
+  }
+
+  @Get('meta')
+  @Auth([], true, true)
+  async getCustomEventMetadata(
+    @Query() data: GetCustomEventMetadata,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<IAggregatedMetadata[]> {
+    const { pid, period } = data
+    this.analyticsService.validatePID(pid)
+
+    if (!_isEmpty(period)) {
+      this.analyticsService.validatePeriod(period)
+    }
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    return this.analyticsService.getCustomEventMetadata(data)
   }
 
   @Get('filters')
@@ -416,6 +557,7 @@ export class AnalyticsController {
       to,
       filters,
       timezone = DEFAULT_TIMEZONE,
+      mode = ChartRenderMode.PERIODICAL,
     } = data
     this.analyticsService.validatePID(pid)
 
@@ -424,7 +566,7 @@ export class AnalyticsController {
     }
 
     this.analyticsService.validateTimebucket(timeBucket)
-    const [filtersQuery, filtersParams, appliedFilters] =
+    const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
@@ -442,13 +584,9 @@ export class AnalyticsController {
     )
 
     let subQuery = `FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
-    let customEVFilterApplied = false
 
-    if (filtersParams?.ev) {
-      customEVFilterApplied = true
-      subQuery = `FROM customEV WHERE ${
-        filtersParams.ev_exclusive ? 'NOT' : ''
-      } ev = {ev:String} AND pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
+    if (customEVFilterApplied) {
+      subQuery = `FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
     }
 
     const paramsData = {
@@ -469,6 +607,7 @@ export class AnalyticsController {
       paramsData,
       safeTimezone,
       customEVFilterApplied,
+      mode,
     )
 
     return {
@@ -499,7 +638,32 @@ export class AnalyticsController {
       this.analyticsService.validatePeriod(period)
     }
 
-    this.analyticsService.validateTimebucket(timeBucket)
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    let newTimeBucket = timeBucket
+    let allowedTumebucketForPeriodAll
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.getTimeBucketForAllTime(
+        pid,
+        period,
+        timezone,
+      )
+
+      diff = res.diff
+      // eslint-disable-next-line prefer-destructuring
+      newTimeBucket = _includes(res.timeBucket, timeBucket)
+        ? timeBucket
+        : res.timeBucket[0]
+      allowedTumebucketForPeriodAll = res.timeBucket
+    }
+
+    this.analyticsService.validateTimebucket(newTimeBucket)
     const [filtersQuery, filtersParams, appliedFilters] =
       this.analyticsService.getFiltersQuery(filters, DataType.PERFORMANCE)
 
@@ -507,14 +671,10 @@ export class AnalyticsController {
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
       from,
       to,
-      timeBucket,
+      newTimeBucket,
       period,
       safeTimezone,
-    )
-    await this.analyticsService.checkProjectAccess(
-      pid,
-      uid,
-      headers['x-password'],
+      diff,
     )
 
     const subQuery = `FROM performance WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
@@ -529,7 +689,7 @@ export class AnalyticsController {
     }
 
     const result = await this.analyticsService.groupPerfByTimeBucket(
-      timeBucket,
+      newTimeBucket,
       groupFrom,
       groupTo,
       subQuery,
@@ -541,6 +701,7 @@ export class AnalyticsController {
     return {
       ...result,
       appliedFilters,
+      timeBucket: allowedTumebucketForPeriodAll,
     }
   }
 
@@ -637,6 +798,18 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.getTimeBucketForAllTime(
+        pid,
+        period,
+        timezone,
+      )
+
+      diff = res.diff
+    }
+
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
       from,
@@ -644,6 +817,7 @@ export class AnalyticsController {
       null,
       period,
       safeTimezone,
+      diff,
     )
 
     const [filtersQuery, filtersParams, appliedFilters] =
@@ -761,9 +935,8 @@ export class AnalyticsController {
     const result = {}
 
     const keyCountPromises = _map(pidsArray, async currentPID => {
-      result[currentPID] = await this.analyticsService.getOnlineUserCount(
-        currentPID,
-      )
+      result[currentPID] =
+        await this.analyticsService.getOnlineUserCount(currentPID)
     })
 
     await Promise.all(keyCountPromises).catch(reason => {
@@ -823,13 +996,14 @@ export class AnalyticsController {
   ): Promise<any> {
     const { 'user-agent': userAgent, origin } = headers
 
-    const ip =
-      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+    const ip = getIPFromHeaders(headers, true) || reqIP || ''
 
+    this.analyticsService.validateCustomEVMeta(eventsDTO.meta)
     await this.analyticsService.validate(eventsDTO, origin, 'custom', ip)
 
+    const salt = await redis.get(REDIS_SESSION_SALT_KEY)
+
     if (eventsDTO.unique) {
-      const salt = await redis.get(REDIS_SESSION_SALT_KEY)
       const sessionHash = getSessionKeyCustom(
         ip,
         userAgent,
@@ -837,7 +1011,7 @@ export class AnalyticsController {
         eventsDTO.ev,
         salt,
       )
-      const unique = await this.analyticsService.isUnique(sessionHash)
+      const [unique] = await this.analyticsService.isUnique(sessionHash)
 
       if (!unique) {
         throw new ForbiddenException(
@@ -850,19 +1024,18 @@ export class AnalyticsController {
       city = 'NULL',
       region = 'NULL',
       country = 'NULL',
-    } = this.analyticsService.getGeoDetails(ip, eventsDTO.tz)
+    } = getGeoDetails(ip, eventsDTO.tz)
 
     const ua = UAParser(userAgent)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
     const os = ua.os.name
 
-    // Using cf-ipcountry as a fallback. This is temporary until we stop using Cloudflare
-    const cc =
-      country ||
-      (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
+    const sessionHash = getSessionKey(ip, userAgent, eventsDTO.pid, salt)
+    const [, psid] = await this.analyticsService.isUnique(sessionHash)
 
     const dto = customLogDTO(
+      psid,
       eventsDTO.pid,
       eventsDTO.ev,
       eventsDTO.pg,
@@ -874,9 +1047,11 @@ export class AnalyticsController {
       eventsDTO.so,
       eventsDTO.me,
       eventsDTO.ca,
-      cc,
+      country,
       region,
       city,
+      _keys(eventsDTO.meta),
+      _values(eventsDTO.meta),
     )
 
     try {
@@ -901,8 +1076,7 @@ export class AnalyticsController {
   ): Promise<any> {
     const { 'user-agent': userAgent } = headers
     const { pid } = logDTO
-    const ip =
-      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+    const ip = getIPFromHeaders(headers, true) || reqIP || ''
 
     const sessionID = await this.analyticsService.getSessionHash(
       pid,
@@ -931,18 +1105,17 @@ export class AnalyticsController {
   ): Promise<any> {
     const { 'user-agent': userAgent, origin } = headers
 
-    const ip =
-      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+    const ip = getIPFromHeaders(headers, true) || reqIP || ''
 
     await this.analyticsService.validate(logDTO, origin, 'log', ip)
 
     const salt = await redis.get(REDIS_SESSION_SALT_KEY)
     const sessionHash = getSessionKey(ip, userAgent, logDTO.pid, salt)
-    const unique = await this.analyticsService.isUnique(sessionHash)
+    const [unique, psid] = await this.analyticsService.isUnique(sessionHash)
 
     await this.analyticsService.processInteractionSD(sessionHash, logDTO.pid)
 
-    if (unique && logDTO.unique) {
+    if (!unique && logDTO.unique) {
       throw new ForbiddenException(
         'The event was not saved because it was not unique while unique only param is provided',
       )
@@ -952,17 +1125,14 @@ export class AnalyticsController {
       city = 'NULL',
       region = 'NULL',
       country = 'NULL',
-    } = this.analyticsService.getGeoDetails(ip, logDTO.tz)
+    } = getGeoDetails(ip, logDTO.tz)
     const ua = UAParser(userAgent)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
     const os = ua.os.name
-    // Using cf-ipcountry as a fallback. This is temporary until we stop using Cloudflare
-    const cc =
-      country ||
-      (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
 
     const dto = analyticsDTO(
+      psid,
       sessionHash,
       logDTO.pid,
       logDTO.pg,
@@ -975,7 +1145,7 @@ export class AnalyticsController {
       logDTO.so,
       logDTO.me,
       logDTO.ca,
-      cc,
+      country,
       region,
       city,
       0,
@@ -1001,7 +1171,7 @@ export class AnalyticsController {
         logDTO.pg,
         dv,
         br,
-        cc,
+        country,
         region,
         city,
         dns,
@@ -1016,11 +1186,12 @@ export class AnalyticsController {
     }
 
     const values = `(${dto.map(getElValue).join(',')})`
-    const perfValues = `(${perfDTO.map(getElValue).join(',')})`
+
     try {
       await redis.rpush(REDIS_LOG_DATA_CACHE_KEY, values)
 
       if (!_isEmpty(perfDTO)) {
+        const perfValues = `(${perfDTO.map(getElValue).join(',')})`
         await redis.rpush(REDIS_LOG_PERF_CACHE_KEY, perfValues)
       }
     } catch (e) {
@@ -1056,11 +1227,10 @@ export class AnalyticsController {
 
     await this.analyticsService.validate(logDTO, origin)
 
-    const ip =
-      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+    const ip = getIPFromHeaders(headers) || reqIP || ''
     const salt = await redis.get(REDIS_SESSION_SALT_KEY)
     const sessionHash = getSessionKey(ip, userAgent, logDTO.pid, salt)
-    const unique = await this.analyticsService.isUnique(sessionHash)
+    const [unique, psid] = await this.analyticsService.isUnique(sessionHash)
 
     await this.analyticsService.processInteractionSD(sessionHash, logDTO.pid)
 
@@ -1068,18 +1238,14 @@ export class AnalyticsController {
       city = 'NULL',
       region = 'NULL',
       country = 'NULL',
-    } = this.analyticsService.getGeoDetails(ip)
+    } = getGeoDetails(ip)
     const ua = UAParser(userAgent)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
     const os = ua.os.name
 
-    // Using cf-ipcountry as a fallback. This is temporary until we stop using Cloudflare
-    const cc =
-      country ||
-      (headers['cf-ipcountry'] === 'XX' ? 'NULL' : headers['cf-ipcountry'])
-
     const dto = analyticsDTO(
+      psid,
       sessionHash,
       logDTO.pid,
       'NULL',
@@ -1092,7 +1258,7 @@ export class AnalyticsController {
       'NULL',
       'NULL',
       'NULL',
-      cc,
+      country,
       region,
       city,
       0,
@@ -1133,22 +1299,43 @@ export class AnalyticsController {
       this.analyticsService.validatePeriod(period)
     }
 
-    this.analyticsService.validateTimebucket(timeBucket)
-    const [filtersQuery, filtersParams, appliedFilters] =
-      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
     await this.analyticsService.checkProjectAccess(
       pid,
       uid,
       headers['x-password'],
     )
 
+    let newTimeBucket = timeBucket
+    let diff
+    let timeBucketForAllTime
+
+    if (period === validPeriods[validPeriods.length - 1]) {
+      const res = await this.analyticsService.getTimeBucketForAllTime(
+        pid,
+        period,
+        timezone,
+      )
+
+      // eslint-disable-next-line prefer-destructuring
+      newTimeBucket = _includes(res.timeBucket, timeBucket)
+        ? timeBucket
+        : res.timeBucket[0]
+      diff = res.diff
+      timeBucketForAllTime = res.timeBucket
+    }
+
+    this.analyticsService.validateTimebucket(newTimeBucket)
+    const [filtersQuery, filtersParams, appliedFilters] =
+      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
+
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
       from,
       to,
-      timeBucket,
+      newTimeBucket,
       period,
       safeTimezone,
+      diff,
     )
 
     const paramsData = {
@@ -1161,7 +1348,7 @@ export class AnalyticsController {
     }
 
     const result: any = await this.analyticsService.groupCustomEVByTimeBucket(
-      timeBucket,
+      newTimeBucket,
       groupFrom,
       groupTo,
       filtersQuery,
@@ -1191,6 +1378,7 @@ export class AnalyticsController {
     return {
       ...result,
       appliedFilters,
+      timeBucket: timeBucketForAllTime,
     }
   }
 }

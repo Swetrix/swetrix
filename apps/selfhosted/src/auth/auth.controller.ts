@@ -16,7 +16,7 @@ import {
 import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger'
 import { I18nValidationExceptionFilter, I18n, I18nContext } from 'nestjs-i18n'
 
-import { checkRateLimit } from '../common/utils'
+import { checkRateLimit, getIPFromHeaders } from '../common/utils'
 import { generateSelfhostedUser } from '../user/entities/user.entity'
 import { AuthService } from './auth.service'
 import { Public, CurrentUserId, CurrentUser } from './decorators'
@@ -50,10 +50,9 @@ export class AuthController {
     @Body() body: LoginRequestDto,
     @I18n() i18n: I18nContext,
     @Headers() headers: unknown,
-    @Ip() requestIp: string,
+    @Ip() reqIP: string,
   ): Promise<LoginResponseDto> {
-    const ip =
-      headers['x-forwarded-for'] || headers['cf-connecting-ip'] || requestIp
+    const ip = getIPFromHeaders(headers) || reqIP || ''
 
     await checkRateLimit(ip, 'login', 10, 1800)
 

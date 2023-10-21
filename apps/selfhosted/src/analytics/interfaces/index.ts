@@ -52,13 +52,15 @@ export interface IGetGroupFromTo {
   groupToUTC: string
 }
 
-export interface GetFiltersQuery extends Array<string | object> {
+export interface GetFiltersQuery extends Array<string | object | boolean> {
   // SQL query
   0: string
   // an object that has structure like { cf_pg: '/signup', ev_exclusive: false }
   1: { [key: string]: string | boolean }
   // an array of objects like [{ "column":"pg", "filter":"/signup", "isExclusive":true }]
   2: Array<{ [key: string]: string }> | []
+  // flag that indicates if there is an 'ev' filter for custom events
+  3: boolean
 }
 
 export interface IUserFlowNode {
@@ -90,4 +92,29 @@ export interface IExtractChartData {
   visits: number[]
   uniques: number[]
   sdur: number[]
+}
+
+export interface IAggregatedMetadata {
+  key: string
+  value: string
+  count: number
+}
+
+export interface IFunnelCHResponse {
+  level: number
+  c: number
+}
+
+export interface IFunnel {
+  value: string
+  events: number
+  eventsPerc: number
+  eventsPercStep: number
+  dropoff: number
+  dropoffPerc: number
+}
+
+export interface IGetFunnel {
+  funnel: IFunnel[]
+  totalPageviews: number
 }

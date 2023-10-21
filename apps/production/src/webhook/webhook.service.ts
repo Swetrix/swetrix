@@ -1,15 +1,18 @@
 /* eslint-disable no-param-reassign, no-prototype-builtins */
+import * as crypto from 'crypto'
 import {
   Injectable,
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common'
-import * as crypto from 'crypto'
 import * as Serialize from 'php-serialize'
 import * as _includes from 'lodash/includes'
 import * as _keys from 'lodash/keys'
 import * as _isArray from 'lodash/isArray'
 import { AppLoggerService } from '../logger/logger.service'
+import { PayoutsService } from '../payouts/payouts.service'
+import { PayoutStatus } from '../payouts/entities/payouts.entity'
+import { User } from '../user/entities/user.entity'
 
 const PADDLE_PUB_KEY = `-----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAqFcHslKkXcJlTYg4FL6j
@@ -39,7 +42,10 @@ const paddleWhitelistIPs = [
 
 @Injectable()
 export class WebhookService {
-  constructor(private readonly logger: AppLoggerService) {}
+  constructor(
+    private readonly logger: AppLoggerService,
+    private readonly payoutsService: PayoutsService,
+  ) {}
 
   public ksort(obj: Record<string, unknown>): Record<string, unknown> {
     const keys = _keys(obj).sort()
@@ -89,5 +95,34 @@ export class WebhookService {
     if (!_includes(paddleWhitelistIPs, reqIP)) {
       throw new ForbiddenException('You have no access to this endpoint')
     }
+  }
+
+  async addPayoutForUser(
+    referrer: User,
+    referralId: string,
+    amount: number,
+    currency: string,
+  ): Promise<any> {
+    return this.payoutsService.create({
+      amount,
+      currency,
+      referralId,
+      user: referrer,
+    })
+  }
+
+  async setReferralPayoutsToProcessing(
+    referralId: string,
+    referrer: User,
+  ): Promise<any> {
+    return this.payoutsService.update(
+      {
+        referralId,
+        user: referrer,
+      },
+      {
+        status: PayoutStatus.processing,
+      },
+    )
   }
 }

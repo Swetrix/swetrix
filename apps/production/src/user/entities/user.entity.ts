@@ -11,6 +11,7 @@ import { Project } from '../../project/entity/project.entity'
 import { ProjectShare } from '../../project/entity/project-share.entity'
 import { Extension } from '../../marketplace/extensions/entities/extension.entity'
 import { ExtensionToUser } from '../../marketplace/extensions/entities/extension-to-user.entity'
+import { Payout } from '../../payouts/entities/payouts.entity'
 import { Comment } from '../../marketplace/comments/entities/comment.entity'
 import { CommentReply } from '../../marketplace/comments/entities/comment-reply.entity'
 import { Complaint } from '../../marketplace/complaints/entities/complaint.entity'
@@ -22,80 +23,95 @@ export enum PlanCode {
   trial = 'trial',
   hobby = 'hobby',
   freelancer = 'freelancer',
+  '200k' = '200k',
+  '500k' = '500k',
   startup = 'startup',
+  '2m' = '2m',
   enterprise = 'enterprise',
+  '10m' = '10m',
 }
 
 export const ACCOUNT_PLANS = {
   [PlanCode.none]: {
     id: PlanCode.none,
-    displayName: 'No plan',
     monthlyUsageLimit: 0,
-    maxProjects: 0,
     maxAlerts: 0,
-    maxApiKeyRequestsPerHour: 0,
     legacy: false,
   },
   [PlanCode.free]: {
     id: PlanCode.free,
-    displayName: 'Free plan',
     monthlyUsageLimit: 5000,
-    maxProjects: 10,
     maxAlerts: 1,
-    maxApiKeyRequestsPerHour: 600,
     legacy: true,
   },
   [PlanCode.trial]: {
     id: PlanCode.trial,
-    displayName: 'Free trial',
     monthlyUsageLimit: 100000,
-    maxProjects: 20,
-    maxAlerts: 20,
-    maxApiKeyRequestsPerHour: 600,
+    maxAlerts: 50,
     legacy: false,
   },
   [PlanCode.hobby]: {
     id: PlanCode.hobby,
-    displayName: 'Hobby plan',
     monthlyUsageLimit: 10000,
-    maxProjects: 20,
     pid: '813694', // Plan ID
     ypid: '813695', // Plan ID - Yearly billing
-    maxAlerts: 10,
-    maxApiKeyRequestsPerHour: 600,
+    maxAlerts: 50,
     legacy: false,
   },
   [PlanCode.freelancer]: {
     id: PlanCode.freelancer,
-    displayName: 'Freelancer plan',
     monthlyUsageLimit: 100000,
-    maxProjects: 20,
     pid: '752316', // Plan ID
     ypid: '776469', // Plan ID - Yearly billing
-    maxAlerts: 20,
-    maxApiKeyRequestsPerHour: 600,
+    maxAlerts: 50,
+    legacy: false,
+  },
+  [PlanCode['200k']]: {
+    id: PlanCode['200k'],
+    monthlyUsageLimit: 200000,
+    pid: '854654', // Plan ID
+    ypid: '854655', // Plan ID - Yearly billing
+    maxAlerts: 50,
+    legacy: false,
+  },
+  [PlanCode['500k']]: {
+    id: PlanCode['500k'],
+    monthlyUsageLimit: 500000,
+    pid: '854656', // Plan ID
+    ypid: '854657', // Plan ID - Yearly billing
+    maxAlerts: 50,
     legacy: false,
   },
   [PlanCode.startup]: {
     id: PlanCode.startup,
-    displayName: 'Startup plan',
     monthlyUsageLimit: 1000000,
-    maxProjects: 30,
     pid: '752317',
     ypid: '776470',
     maxAlerts: 50,
-    maxApiKeyRequestsPerHour: 600,
+    legacy: false,
+  },
+  [PlanCode['2m']]: {
+    id: PlanCode['2m'],
+    monthlyUsageLimit: 2000000,
+    pid: '854663', // Plan ID
+    ypid: '854664', // Plan ID - Yearly billing
+    maxAlerts: 50,
     legacy: false,
   },
   [PlanCode.enterprise]: {
     id: PlanCode.enterprise,
-    displayName: 'Enterprise plan',
     monthlyUsageLimit: 5000000,
-    maxProjects: 50,
     pid: '752318',
     ypid: '776471',
-    maxAlerts: 100,
-    maxApiKeyRequestsPerHour: 600,
+    maxAlerts: 50,
+    legacy: false,
+  },
+  [PlanCode['10m']]: {
+    id: PlanCode['10m'],
+    monthlyUsageLimit: 10000000,
+    pid: '854665', // Plan ID
+    ypid: '854666', // Plan ID - Yearly billing
+    maxAlerts: 50,
     legacy: false,
   },
 }
@@ -211,6 +227,12 @@ export class User {
   @Column('varchar', { length: 50, default: Theme.classic })
   theme: Theme
 
+  @Column('int', { default: 50 })
+  maxProjects: number
+
+  @Column('int', { default: 600 })
+  maxApiKeyRequestsPerHour: number
+
   @Column({ default: false })
   isTwoFactorAuthenticationEnabled: boolean
 
@@ -220,6 +242,20 @@ export class User {
   @Column({ default: false })
   showLiveVisitorsInTitle: boolean
 
+  @Column('varchar', { length: 8, default: null })
+  refCode: string | null
+
+  @Column('varchar', { default: null })
+  referrerID: string | null
+
+  @Column('varchar', {
+    length: 254,
+    unique: true,
+    default: null,
+    nullable: true,
+  })
+  paypalPaymentsEmail: string | null
+
   @BeforeUpdate()
   updateTimestamp() {
     this.updated = new Date()
@@ -227,6 +263,9 @@ export class User {
 
   @OneToMany(() => Project, project => project.admin)
   projects: Project[]
+
+  @OneToMany(() => Payout, payout => payout.user)
+  payouts: Payout[]
 
   @OneToMany(() => ProjectShare, sharedProjects => sharedProjects.user)
   sharedProjects: ProjectShare[]

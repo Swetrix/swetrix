@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { IsNull, LessThan, In, Not, Between, MoreThan, Like } from 'typeorm'
+import * as Paypal from '@paypal/payouts-sdk'
 import * as bcrypt from 'bcrypt'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
@@ -11,6 +12,8 @@ import * as _size from 'lodash/size'
 import * as _map from 'lodash/map'
 import * as _now from 'lodash/now'
 import * as _find from 'lodash/find'
+import * as _toNumber from 'lodash/toNumber'
+import * as _reduce from 'lodash/reduce'
 
 import { AlertService } from '../alert/alert.service'
 import { QueryCondition, QueryMetric, QueryTime } from '../alert/dto/alert.dto'
@@ -25,6 +28,8 @@ import { ActionTokensService } from '../action-tokens/action-tokens.service'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
 import { LetterTemplate } from '../mailer/letter'
 import { AnalyticsService } from '../analytics/analytics.service'
+import { PayoutsService } from '../payouts/payouts.service'
+import { PayoutStatus } from '../payouts/entities/payouts.entity'
 import {
   ACCOUNT_PLANS,
   PlanCode,
@@ -44,11 +49,25 @@ import {
   SEND_WARNING_AT_PERC,
   PROJECT_INVITE_EXPIRE,
   REDIS_LOG_CAPTCHA_CACHE_KEY,
+  JWT_REFRESH_TOKEN_LIFETIME,
+  PAYPAL_CLIENT_ID,
+  PAYPAL_CLIENT_SECRET,
+  isDevelopment,
 } from '../common/constants'
 import { getRandomTip } from '../common/utils'
 import { AppLoggerService } from '../logger/logger.service'
 
 dayjs.extend(utc)
+
+let paypalClient
+
+if (PAYPAL_CLIENT_ID && PAYPAL_CLIENT_SECRET) {
+  const environment = new Paypal.core.SandboxEnvironment(
+    PAYPAL_CLIENT_ID,
+    PAYPAL_CLIENT_SECRET,
+  )
+  paypalClient = new Paypal.core.PayPalHttpClient(environment)
+}
 
 const getQueryTime = (time: QueryTime): number => {
   if (time === QueryTime.LAST_15_MINUTES) return 15 * 60
@@ -90,6 +109,7 @@ export class TaskManagerService {
     private readonly extensionsService: ExtensionsService,
     private readonly logger: AppLoggerService,
     private readonly telegramService: TelegramService,
+    private readonly payoutsService: PayoutsService,
   ) {}
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -763,8 +783,8 @@ export class TaskManagerService {
           lastTriggered: new Date(),
         })
         if (project.admin && project.admin.isTelegramChatIdConfirmed) {
-          this.telegramService.sendMessage(
-            Number(project.admin.telegramChatId),
+          this.telegramService.addMessage(
+            project.admin.telegramChatId,
             `🔔 Alert *${alert.name}* got triggered!\nYour project *${project.name}* has *${online}* online users right now!`,
             {
               parse_mode: 'Markdown',
@@ -820,8 +840,15 @@ export class TaskManagerService {
       )
       const time = getQueryTime(alert.queryTime)
       const createdCondition = getQueryCondition(alert.queryCondition)
-      const query = `SELECT count() FROM analytics WHERE pid = '${project.id}' AND unique = '${isUnique}' AND created ${createdCondition} now() - ${time}`
-      const queryResult = await clickhouse.query(query).toPromise()
+      const query =
+        alert.queryMetric === QueryMetric.CUSTOM_EVENTS
+          ? `SELECT count() FROM customEV WHERE pid='${project.id}' AND ev={ev:String} AND created ${createdCondition} now() - ${time}`
+          : `SELECT count() FROM analytics WHERE pid='${project.id}' AND unique = '${isUnique}' AND created ${createdCondition} now() - ${time}`
+
+      const params = {
+        ev: alert.queryCustomEvent,
+      }
+      const queryResult = await clickhouse.query(query, { params }).toPromise()
 
       const count = Number(queryResult[0]['count()'])
 
@@ -832,23 +859,23 @@ export class TaskManagerService {
         })
 
         const queryMetric =
-          alert.queryMetric === QueryMetric.UNIQUE_PAGE_VIEWS
+          alert.queryMetric === QueryMetric.CUSTOM_EVENTS
+            ? 'custom events'
+            : alert.queryMetric === QueryMetric.UNIQUE_PAGE_VIEWS
             ? 'unique page views'
             : 'page views'
         const text = `🔔 Alert *${alert.name}* got triggered!\nYour project *${
           project.name
-        }* has had *${count}* ${queryMetric} in the last ${getQueryTimeString(
-          alert.queryTime,
-        )}!`
+        }* has had *${count}*${
+          alert.queryMetric === QueryMetric.CUSTOM_EVENTS
+            ? ` "${alert.queryCustomEvent}"`
+            : ''
+        } ${queryMetric} in the last ${getQueryTimeString(alert.queryTime)}!`
 
         if (project.admin && project.admin.isTelegramChatIdConfirmed) {
-          this.telegramService.sendMessage(
-            Number(project.admin.telegramChatId),
-            text,
-            {
-              parse_mode: 'Markdown',
-            },
-          )
+          this.telegramService.addMessage(project.admin.telegramChatId, text, {
+            parse_mode: 'Markdown',
+          })
         }
       }
     })
@@ -982,5 +1009,223 @@ export class TaskManagerService {
     })
 
     return totalInstalls / extensions.length
+  }
+
+  @Cron(CronExpression.EVERY_5_SECONDS)
+  async sendTelegramMessages() {
+    try {
+      const messages = await this.telegramService.getMessages()
+
+      messages.forEach(async message => {
+        try {
+          await this.telegramService.sendMessage(
+            message.id,
+            message.chatId,
+            message.text,
+            message.extra,
+          )
+        } catch (e) {
+          this.logger.error(
+            `[CRON WORKER](sendTelegramMessages) Error occured while sending message: ${e}`,
+          )
+          await this.telegramService.deleteMessage(message.id)
+        }
+      })
+    } catch (error) {
+      this.logger.error(
+        `[CRON WORKER](sendTelegramMessages) Error occured: ${error}`,
+      )
+    }
+  }
+
+  // Disable reports for inactive users
+  // Some people stop using Swetrix but keep the account (and don't disable the email reports in settings), so why keep spamming them?
+  // EVERY SUNDAY AT 2:00 AM (right before we send weekly reports)
+  @Cron('0 02 * * 0')
+  async disableReportsForInactiveUsers(): Promise<void> {
+    const users = await this.userService.find({
+      where: {
+        reportFrequency: Not(ReportFrequency.NEVER),
+      },
+      relations: ['projects'],
+      select: ['id'],
+    })
+    const now = dayjs.utc().format('YYYY-MM-DD')
+    // a bit more than 2 months ago
+    const nineWeeksAgo = dayjs.utc().subtract(9, 'w').format('YYYY-MM-DD')
+
+    const promises = _map(users, async user => {
+      const { id, projects } = user
+
+      if (_isEmpty(projects) || _isNull(projects)) {
+        return
+      }
+
+      const pidsStringified = _map(projects, p => `'${p.id}'`).join(',')
+      // No need to check for performance activity because it's not tracked without tracking analytics
+      const queryAnalytics = `SELECT count() FROM analytics WHERE pid IN (${pidsStringified}) AND created BETWEEN '${nineWeeksAgo}' AND '${now}'`
+      const queryCaptcha = `SELECT count() FROM captcha WHERE pid IN (${pidsStringified}) AND created BETWEEN '${nineWeeksAgo}' AND '${now}'`
+      const queryCustomEvents = `SELECT count() FROM customEV WHERE pid IN (${pidsStringified}) AND created BETWEEN '${nineWeeksAgo}' AND '${now}'`
+
+      const hasAnalyticsActivity =
+        Number(
+          (await clickhouse.query(queryAnalytics).toPromise())[0]['count()'],
+        ) > 0
+
+      if (hasAnalyticsActivity) {
+        return
+      }
+
+      const hasCaptchaActivity =
+        Number(
+          (await clickhouse.query(queryCaptcha).toPromise())[0]['count()'],
+        ) > 0
+
+      if (hasCaptchaActivity) {
+        return
+      }
+
+      const hasCustomEventsActivity =
+        Number(
+          (await clickhouse.query(queryCustomEvents).toPromise())[0]['count()'],
+        ) > 0
+
+      if (hasCustomEventsActivity) {
+        return
+      }
+
+      await this.userService.update(id, {
+        reportFrequency: ReportFrequency.NEVER,
+      })
+    })
+
+    await Promise.allSettled(promises).catch(reason => {
+      this.logger.error(
+        '[CRON WORKER](disableReportsForInactiveUsers) Error occured:',
+        reason,
+      )
+    })
+  }
+
+  // Delete old refresh tokens
+  @Cron(CronExpression.EVERY_DAY_AT_1AM)
+  async deleteOldRefreshTokens(): Promise<void> {
+    const minDate = dayjs
+      .utc()
+      .subtract(JWT_REFRESH_TOKEN_LIFETIME, 's')
+      .format('YYYY-MM-DD HH:mm:ss')
+
+    const where: Record<string, unknown> = {
+      created: LessThan(minDate),
+    }
+
+    await this.userService.deleteRefreshTokensWhere(where)
+  }
+
+  @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON)
+  async payReferrers(): Promise<void> {
+    if (isDevelopment || !paypalClient) {
+      return
+    }
+
+    const payoutsToProcess = await this.payoutsService.find({
+      where: {
+        status: PayoutStatus.processing,
+      },
+      relations: ['user'],
+    })
+
+    if (_isEmpty(payoutsToProcess)) {
+      return
+    }
+
+    // A map of emails to pay and their amounts
+    const payouts = {}
+
+    for (let i = 0; i < _size(payoutsToProcess); ++i) {
+      const key = payoutsToProcess[i].user.paypalPaymentsEmail
+
+      if (!key) {
+        continue
+      }
+
+      if (!payouts[key]) {
+        payouts[key] = {
+          amount: 0,
+          payoutsIds: [],
+        }
+      }
+
+      payouts[key].amount += _toNumber(payoutsToProcess[i].amount)
+      payouts[key].payoutsIds.push(payoutsToProcess[i].id)
+    }
+
+    const requestBody = {
+      sender_batch_header: {
+        recipient_type: 'EMAIL',
+        email_message: 'Swetrix referral program payout.',
+        note: 'Swetrix referral program payout.',
+      },
+      items: _reduce(
+        payouts,
+        (acc, value, key) => {
+          acc.push({
+            recipient_type: 'EMAIL',
+            amount: {
+              value: value.amount.toFixed(2),
+              currency: 'USD',
+            },
+            receiver: key,
+            note: `Your Swetrix $${value.amount.toFixed(2)} payout.`,
+          })
+
+          return acc
+        },
+        [],
+      ),
+    }
+
+    // Send the request to PayPal
+    const request = new Paypal.payouts.PayoutsPostRequest()
+    request.requestBody(requestBody)
+
+    const response = await paypalClient.execute(request)
+
+    if (response.statusCode !== 201) {
+      console.error(
+        `[CRON](payReferrers) An error occured while executing a request to pay referrers: ${JSON.stringify(
+          response,
+          null,
+          2,
+        )}`,
+      )
+      console.error(`Payouts: ${JSON.stringify(payouts, null, 2)}`)
+
+      // Update the payouts in the DB
+      await this.payoutsService.update(
+        {
+          where: {
+            id: In(_map(payoutsToProcess, 'id')),
+          },
+        },
+        {
+          status: PayoutStatus.suspended,
+        },
+      )
+      return
+    }
+
+    // Update the payouts in the DB
+    await this.payoutsService.update(
+      {
+        where: {
+          id: In(_map(payoutsToProcess, 'id')),
+        },
+      },
+      {
+        status: PayoutStatus.paid,
+        transactionId: response.result?.batch_header?.payout_batch_id,
+      },
+    )
   }
 }

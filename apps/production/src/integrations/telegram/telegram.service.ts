@@ -1,16 +1,21 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, Optional } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { InjectBot } from 'nestjs-telegraf'
 import { Markup, Telegraf } from 'telegraf'
 import { UserService } from 'src/user/user.service'
+import { InjectRepository } from '@nestjs/typeorm'
+import { Repository } from 'typeorm'
 import { Context } from './interface/context.interface'
+import { Message } from './entities/message.entity'
 
 @Injectable()
 export class TelegramService {
   constructor(
-    @InjectBot() private readonly bot: Telegraf<Context>,
+    @Optional() @InjectBot() private readonly bot: Telegraf<Context>,
     private readonly userService: UserService,
     private readonly configService: ConfigService,
+    @InjectRepository(Message)
+    private readonly messageRepository: Repository<Message>,
   ) {}
 
   async getStartMessage(telgramId: number) {
@@ -49,19 +54,6 @@ export class TelegramService {
     return { text, extra }
   }
 
-  async sendMessage(chatId: number, text: string, extra?: unknown) {
-    if (
-      this.configService.get<string>('ENABLE_INTEGRATIONS') !== 'true' &&
-      this.configService.get<string>('ENABLE_TELEGRAM_INTEGRATION') !== 'true'
-    ) {
-      return
-    }
-
-    const chat = await this.bot.telegram.getChat(chatId)
-    if (!chat) return
-    await this.bot.telegram.sendMessage(chatId, text, extra)
-  }
-
   async confirmLinkAccount(userId: string, chatId: number) {
     if (
       this.configService.get<string>('ENABLE_INTEGRATIONS') !== 'true' &&
@@ -94,5 +86,45 @@ export class TelegramService {
 
     const user = await this.userService.getUserByTelegramId(chatId)
     await this.userService.updateUserTelegramId(user.id, null)
+  }
+
+  async addMessage(chatId: string, text: string, extra?: unknown) {
+    await this.messageRepository.save({ chatId, text, extra })
+  }
+
+  async getMessages() {
+    const messagesCount = 25
+    return this.messageRepository.find({
+      take: messagesCount,
+      order: { createdAt: 'DESC' },
+    })
+  }
+
+  async sendMessage(
+    messageId: string,
+    chatId: string,
+    text: string,
+    extra?: unknown,
+  ) {
+    if (
+      this.configService.get<string>('ENABLE_INTEGRATIONS') !== 'true' &&
+      this.configService.get<string>('ENABLE_TELEGRAM_INTEGRATION') !== 'true'
+    ) {
+      return
+    }
+
+    const chat = await this.bot.telegram.getChat(chatId)
+
+    if (!chat) {
+      await this.deleteMessage(messageId)
+      return
+    }
+
+    await this.bot.telegram.sendMessage(chatId, text, extra)
+    await this.deleteMessage(messageId)
+  }
+
+  async deleteMessage(messageId: string) {
+    await this.messageRepository.delete(messageId)
   }
 }

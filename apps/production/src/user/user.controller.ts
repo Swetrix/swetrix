@@ -15,6 +15,7 @@ import {
   ConflictException,
   Headers,
   Ip,
+  Patch,
 } from '@nestjs/common'
 import { Request } from 'express'
 import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
@@ -53,6 +54,7 @@ import {
 } from '../common/constants'
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { UpdateUserProfileDTO } from './dto/update-user.dto'
+import { IChangePlanDTO } from './dto/change-plan.dto'
 import { AdminUpdateUserProfileDTO } from './dto/admin-update-user.dto'
 import { SetShowLiveVisitorsDTO } from './dto/set-show-live-visitors.dto'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
@@ -62,7 +64,13 @@ import { AuthService } from '../auth/auth.service'
 import { LetterTemplate } from '../mailer/letter'
 import { AppLoggerService } from '../logger/logger.service'
 import { UserProfileDTO } from './dto/user.dto'
-import { checkRateLimit } from '../common/utils'
+import { DeleteSelfDTO } from './dto/delete-self.dto'
+import {
+  checkRateLimit,
+  getGeoDetails,
+  getIPFromHeaders,
+  generateRefCode,
+} from '../common/utils'
 import { IUsageInfo, IMetaInfo } from './interfaces'
 
 dayjs.extend(utc)
@@ -191,6 +199,40 @@ export class UserController {
     return this.userService.update(userId, { receiveLoginNotifications })
   }
 
+  @Patch('/set-paypal-email')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async setPaypalEmail(
+    @CurrentUserId() userId: string,
+    @Body('paypalPaymentsEmail') paypalPaymentsEmail: string,
+    @Headers() headers,
+    @Ip() reqIP,
+  ): Promise<User> {
+    this.logger.log(
+      { userId, paypalPaymentsEmail },
+      'PATCH /user/set-paypal-email',
+    )
+
+    const ip = getIPFromHeaders(headers) || reqIP || ''
+
+    await checkRateLimit(ip, 'set-paypal-email', 10, 3600)
+
+    const user = await this.userService.findOne(userId)
+
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
+    await this.mailerService.sendEmail(
+      user.email,
+      LetterTemplate.PayPalEmailUpdate,
+    )
+
+    return this.userService.update(userId, {
+      paypalPaymentsEmail: paypalPaymentsEmail || null,
+    })
+  }
+
   @Post('/api-key')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
@@ -203,8 +245,7 @@ export class UserController {
   }> {
     this.logger.log({ userId }, 'POST /user/api-key')
 
-    const ip =
-      headers['cf-connecting-ip'] || headers['x-forwarded-for'] || reqIP || ''
+    const ip = getIPFromHeaders(headers) || reqIP || ''
 
     await checkRateLimit(ip, 'generate-api-key', 5, 3600)
 
@@ -283,7 +324,10 @@ export class UserController {
   @HttpCode(204)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async deleteSelf(@CurrentUserId() id: string): Promise<any> {
+  async deleteSelf(
+    @CurrentUserId() id: string,
+    @Body() deleteSelfDTO: DeleteSelfDTO,
+  ): Promise<any> {
     this.logger.log({ id }, 'DELETE /user')
 
     const user = await this.userService.findOne(id, {
@@ -309,12 +353,24 @@ export class UserController {
       }
       await this.actionTokensService.deleteMultiple(`userId="${id}"`)
       await this.userService.delete(id)
-
-      return 'accountDeleted'
     } catch (e) {
       this.logger.error(e)
       throw new BadRequestException('accountDeleteError')
     }
+
+    try {
+      if (deleteSelfDTO.feedback) {
+        await this.userService.saveDeleteFeedback(deleteSelfDTO.feedback)
+      }
+    } catch (reason) {
+      this.logger.error(
+        '[ERROR] Failed to save account deletion feedback:',
+        reason,
+      )
+      this.logger.error('DeleteSelfDTO: ', deleteSelfDTO)
+    }
+
+    return 'accountDeleted'
   }
 
   @Delete('/share/:shareId')
@@ -478,13 +534,15 @@ export class UserController {
     this.logger.log({ userDTO, id }, 'PUT /user')
     const user = await this.userService.findOneWhere({ id })
 
-    if (!_isEmpty(userDTO.password) && _isString(userDTO.password)) {
+    const shouldUpdatePassword =
+      !_isEmpty(userDTO.password) && _isString(userDTO.password)
+
+    if (shouldUpdatePassword) {
+      // Validate new password
       this.userService.validatePassword(userDTO.password)
+
+      // Hash new password
       userDTO.password = await this.authService.hashPassword(userDTO.password)
-      await this.mailerService.sendEmail(
-        userDTO.email,
-        LetterTemplate.PasswordChanged,
-      )
     }
 
     try {
@@ -530,8 +588,8 @@ export class UserController {
           isTelegramChatIdConfirmed: false,
         })
 
-        this.telegramService.sendMessage(
-          Number(userDTO.telegramChatId),
+        this.telegramService.addMessage(
+          userDTO.telegramChatId,
           'Please confirm your Telegram chat ID',
           Markup.inlineKeyboard([
             [
@@ -581,13 +639,111 @@ export class UserController {
         'registeredWithGoogle',
         'githubId',
         'registeredWithGithub',
+        'apiKey',
+        'emailRequests',
+        'refCode',
+        'referrerID',
+        'maxProjects',
       ])
       await this.userService.update(id, userToUpdate)
+
+      // If password should have been updated and there were no issues doing so, then...
+      if (shouldUpdatePassword) {
+        // Send 'Password changed' email notification
+        await this.mailerService.sendEmail(
+          userDTO.email,
+          LetterTemplate.PasswordChanged,
+        )
+
+        // Log out all user sessions
+        await this.authService.logoutAll(id)
+      }
 
       const updatedUser = await this.userService.findOneWhere({ id })
       return this.userService.omitSensitiveData(updatedUser)
     } catch (e) {
       throw new BadRequestException(e.message)
+    }
+  }
+
+  // @Get('payouts/list')
+  // @ApiQuery({ name: 'take', required: false })
+  // @ApiQuery({ name: 'skip', required: false })
+  // @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  // @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  // async getPayoutsList(
+  //   @CurrentUserId() id: string,
+  //   @Query('take') take: number | undefined,
+  //   @Query('skip') skip: number | undefined,
+  // ): Promise<Pagination<Payout> | Payout[]> {
+  //   this.logger.log({ id, take, skip }, 'GET /user/payouts/list')
+
+  //   const user = await this.userService.findOneWhere({ id })
+
+  //   if (!user) {
+  //     throw new BadRequestException('User not found')
+  //   }
+
+  //   return this.userService.getPayoutsList(user)
+  // }
+
+  @Get('referrals')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async getReferralsList(@CurrentUserId() id: string): Promise<any> {
+    this.logger.log({ id }, 'GET /user/referrals')
+
+    const user = await this.userService.findOneWhere({ id })
+
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
+    return this.userService.getReferralsList(user)
+  }
+
+  @Get('payouts/info')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async getPayoutsInfo(@CurrentUserId() id: string): Promise<any> {
+    this.logger.log({ id }, 'GET /user/payouts/info')
+
+    const user = await this.userService.findOneWhere({ id })
+
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
+    return this.userService.getPayoutsInfo(user)
+  }
+
+  @Post('generate-ref-code')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async generateRefCode(@CurrentUserId() id: string): Promise<any> {
+    this.logger.log({ id }, 'POST /user/generate-ref-code')
+
+    const user = await this.userService.findOneWhere({ id })
+
+    if (!user) {
+      throw new BadRequestException('User not found')
+    }
+
+    if (user.refCode) {
+      throw new BadRequestException('Referral code already exists')
+    }
+
+    let refCode = generateRefCode()
+
+    // eslint-disable-next-line no-await-in-loop
+    while (!(await this.userService.isRefCodeUnique(refCode))) {
+      refCode = generateRefCode()
+    }
+
+    await this.userService.update(id, { refCode })
+
+    return {
+      refCode,
     }
   }
 
@@ -651,11 +807,15 @@ export class UserController {
 
   @Get('metainfo')
   @Public()
-  async getMetaInfo(@Headers() headers): Promise<IMetaInfo> {
-    const country = headers['cf-ipcountry'] || 'XX'
+  async getMetaInfo(
+    @Headers() headers,
+    @Ip() reqIP: string,
+  ): Promise<IMetaInfo> {
+    const ip = getIPFromHeaders(headers) || reqIP || ''
+    const { country } = getGeoDetails(ip)
 
     return {
-      country: country === 'XX' || country === 'T1' ? null : country,
+      country,
       ...this.userService.getCurrencyByCountry(country),
     }
   }
@@ -672,5 +832,32 @@ export class UserController {
     }
 
     return info
+  }
+
+  @Post('change-plan')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async changePlan(
+    @CurrentUserId() id: string,
+    @Body() body: IChangePlanDTO,
+  ): Promise<void> {
+    this.logger.log({ body, id }, 'POST /change-plan')
+    const { planId } = body
+
+    await this.userService.updateSubscription(id, planId)
+    await this.projectService.clearProjectsRedisCache(id)
+  }
+
+  @Post('preview-plan')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async previewPlan(
+    @CurrentUserId() id: string,
+    @Body() body: IChangePlanDTO,
+  ): Promise<any> {
+    this.logger.log({ body, id }, 'POST /preview-plan')
+    const { planId } = body
+
+    return this.userService.previewSubscription(id, planId)
   }
 }

@@ -1,4 +1,3 @@
-import { UserModule } from 'src/user/user.module'
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { CategoriesModule } from '../categories/categories.module'
@@ -9,6 +8,8 @@ import { Extension } from './entities/extension.entity'
 import { ExtensionToProject } from './entities/extension-to-project.entity'
 import { ExtensionToUser } from './entities/extension-to-user.entity'
 import { ProjectModule } from '../../project/project.module'
+import { UserModule } from '../../user/user.module'
+import { AppLoggerModule } from '../../logger/logger.module'
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ProjectModule } from '../../project/project.module'
     CdnModule,
     UserModule,
     ProjectModule,
+    AppLoggerModule,
   ],
   controllers: [ExtensionsController],
   providers: [ExtensionsService],
