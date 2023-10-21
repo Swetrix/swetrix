@@ -16,9 +16,3 @@ export class CreateCommentBodyDto {
   @Max(5)
   rating: number | null
 }
-
-export class ReplyCommentBodyDto {
-  @ApiProperty()
-  @IsString()
-  reply: string | null
-}
