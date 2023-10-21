@@ -213,7 +213,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
           <Header ssrTheme={ssrTheme} authenticated={authenticated} transparent />
           <div className='flex justify-center items-center py-2 px-2'>
             <a
-              href='https://bank.gov.ua/en/news/all/natsionalniy-bank-vidkriv-spetsrahunok-dlya-zboru-koshtiv-na-potrebi-armiyi'
+              href='https://u24.gov.ua/'
               target='_blank'
               rel='noreferrer noopener'
               className='text-slate-900 dark:text-white border-transparent border-b-2 hover:border-slate-900 dark:hover:border-white text-center'
