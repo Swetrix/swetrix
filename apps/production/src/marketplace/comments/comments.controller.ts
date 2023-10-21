@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   ConflictException,
-  ForbiddenException,
   Delete,
   Get,
   NotFoundException,
@@ -13,8 +12,6 @@ import {
   BadRequestException,
 } from '@nestjs/common'
 import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
-import * as _isEmpty from 'lodash/isEmpty'
-import * as _map from 'lodash/map'
 import * as _includes from 'lodash/includes'
 import * as _omit from 'lodash/omit'
 import { UserService } from '../../user/user.service'
@@ -31,7 +28,7 @@ import { CreateReplyCommentBodyDto } from './dtos/bodies/create-reply.dto'
 import { UpdateCommentReplyBodyDto } from './dtos/bodies/update-reply.dto'
 
 interface IGetComments {
-  comments: Comment[] & { isOwner?: boolean }
+  comments: Comment[]
   count: number
 }
 
@@ -136,7 +133,7 @@ export class CommentsController {
 
     if (!user.roles.includes(UserType.ADMIN)) {
       if (comment.user.id !== userId) {
-        throw new ForbiddenException('You are not allowed to do this.')
+        throw new ConflictException('You are not allowed to do this.')
       }
     }
 
@@ -167,11 +164,12 @@ export class CommentsController {
       throw new NotFoundException('Comment not found')
     }
 
-    const commentsReplies = await this.commentsService.findAllCommentReplies(
+    const hasUserReplied = await this.commentsService.haveUserRepliedToComment(
       comment.id,
+      userId,
     )
 
-    if (_includes(_map(commentsReplies, 'userId'), userId)) {
+    if (hasUserReplied) {
       throw new BadRequestException('You have already replied to this comment')
     }
 
@@ -184,46 +182,8 @@ export class CommentsController {
     return {
       ...replyComment,
       parentComment: _omit(replyComment.parentComment, ['userId']),
-      isOwner: replyComment.userId === userId,
+      isOwner: true,
     }
-  }
-
-  @Auth([], true, true)
-  @Get('reply')
-  async findAllCommentReplies(
-    @Param('id') commetId: string,
-    @CurrentUserId() userId: string,
-  ): Promise<(CommentReply & { isOwner: boolean })[]> {
-    let user
-
-    try {
-      user = await this.userService.findOne(userId)
-    } catch (error) {
-      user = undefined
-    }
-
-    const commentReplies =
-      await this.commentsService.findAllCommentReplies(commetId)
-
-    if (!_isEmpty(user)) {
-      return _map(commentReplies, commentReply => ({
-        ...commentReply,
-        parentComment: _omit(commentReply.parentComment, ['userId']),
-        user: {
-          nickname: commentReply.user.nickname,
-        },
-        isOwner: commentReply.userId === userId,
-      }))
-    }
-
-    return _map(commentReplies, commentReply => ({
-      ...commentReply,
-      parentComment: _omit(commentReply.parentComment, ['userId']),
-      user: {
-        nickname: commentReply.user.nickname,
-      },
-      isOwner: false,
-    }))
   }
 
   @Auth([UserType.ADMIN, UserType.CUSTOMER])
@@ -239,7 +199,7 @@ export class CommentsController {
       throw new NotFoundException('Comment reply not found')
     }
 
-    if (commentReply.userId !== userId) {
+    if (commentReply.user.id !== userId) {
       throw new BadRequestException(
         'You are not the owner of this comment reply',
       )
@@ -252,8 +212,7 @@ export class CommentsController {
 
     return {
       ...updatedReplyComment,
-      parentComment: _omit(updatedReplyComment.parentComment, ['userId']),
-      isOwner: updatedReplyComment.userId === userId,
+      isOwner: updatedReplyComment.user.id === userId,
     }
   }
 
@@ -272,9 +231,11 @@ export class CommentsController {
     const user = await this.userService.findOne(userId)
 
     if (
-      !(commentReply.userId === userId || _includes(user.roles, UserType.ADMIN))
+      !(
+        commentReply.user.id === userId || _includes(user.roles, UserType.ADMIN)
+      )
     ) {
-      throw new ForbiddenException('You are not allowed to do this.')
+      throw new ConflictException('You are not allowed to do this.')
     }
 
     await this.commentsService.deleteCommentReply(id)

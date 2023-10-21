@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm'
+import * as _isEmpty from 'lodash/isEmpty'
 import { Comment } from './entities/comment.entity'
 import { CreateReplyCommentBodyDto } from './dtos/bodies/create-reply.dto'
 import { UpdateCommentReplyBodyDto } from './dtos/bodies/update-reply.dto'
@@ -76,18 +77,35 @@ export class CommentsService {
     return this.commentReplyRepository.save(commentReply)
   }
 
-  async findAllCommentReplies(commetId: string): Promise<CommentReply[]> {
-    return this.commentReplyRepository.find({
-      where: { parentComment: { id: commetId } },
-      relations: ['parentComment', 'user'],
-      select: ['id', 'text', 'addedAt', 'parentComment', 'user'],
-    })
+  async haveUserRepliedToComment(
+    commentId: string,
+    userId: string,
+  ): Promise<boolean> {
+    return !_isEmpty(
+      await this.commentReplyRepository
+        .createQueryBuilder('reply')
+        .where('reply.parentCommentId = :id', { id: commentId })
+        .andWhere('reply.userId = :userId', { userId })
+        // .leftJoinAndSelect('reply.parentComment', 'parentComment')
+        // .leftJoinAndSelect('reply.user', 'user')
+        .select(['reply.id'])
+        .getOne(),
+    )
   }
 
-  async findCommentReplyById(id: string): Promise<CommentReply | undefined> {
-    return this.commentReplyRepository.findOne(id, {
-      relations: ['parentComment', 'user'],
-    })
+  async findCommentReplyById(id: string) {
+    return this.commentReplyRepository
+      .createQueryBuilder('reply')
+      .where('reply.id = :id', { id })
+      .leftJoinAndSelect('reply.user', 'user')
+      .select([
+        'reply.id',
+        'reply.text',
+        'reply.addedAt',
+        'user.nickname',
+        'user.id',
+      ])
+      .getOne()
   }
 
   async updateCommentReply(
