@@ -154,7 +154,7 @@ const getSettings = (chart: any, timeBucket: string, activeChartMetrics: {
         ...chart,
       }, activeChartMetrics),
       types: {
-        results: chartType === chartTypes.line ? area() : bar()
+        results: chartType === chartTypes.line ? area() : bar(),
       },
       colors: {
         results: '#2563EB',

@@ -208,7 +208,7 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated, ssrTheme }): JSX.Elemen
             {t('billing.nextBillDateIs', {
               date: language === 'en'
                 ? dayjs(nextBillDate).locale(language).format('MMMM D, YYYY')
-                : dayjs(nextBillDate).locale(language).format('D MMMM, YYYY')
+                : dayjs(nextBillDate).locale(language).format('D MMMM, YYYY'),
             })}
           </p>
         )}
@@ -323,7 +323,7 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated, ssrTheme }): JSX.Elemen
                         value: usageinfo.captcha === 0 ? 0 : (usageinfo.captcha/ maxEventsCount) * 100,
                         lightColour: '#65a30d',
                         darkColour: '#4d7c0f',
-                      }
+                      },
                     ]}
                   />
                 )}

@@ -87,64 +87,17 @@
       "react-hooks"
     ],
     "rules": {
-      "arrow-body-style": "off",
-      "arrow-parens": "off",
-      "import/no-cycle": "off",
-      "import/no-named-as-default": "off",
-      "import/no-named-as-default-member": "off",
-      "import/prefer-default-export": "off",
-      "import/no-unresolved": "off",
-      "no-param-reassign": "off",
-      "@typescript-eslint/camelcase": "off",
-      "camelcase": "off",
-      "import/extensions": "off",
-      "jsx-a11y/click-events-have-key-events": "off",
-      "jsx-a11y/control-has-associated-label": "off",
-      "jsx-a11y/label-has-for": "off",
-      "jsx-a11y/no-noninteractive-element-interactions": "off",
       "testing-library/prefer-user-event": "off",
-      "jsx-a11y/no-static-element-interactions": "off",
       "jsx-quotes": [
         "error",
         "prefer-single"
       ],
-      "linebreak-style": "off",
-      "lines-between-class-members": "off",
       "lodash/prefer-lodash-method": "warn",
-      "import/newline-after-import": "off",
+      "comma-dangle": ["warn", "always-multiline"],
       "@typescript-eslint/consistent-type-imports": "off",
       "jsx-a11y/anchor-has-content": "off",
-      "consistent-return": "off",
-      "max-len": "off",
-      "no-console": "off",
-      "no-bitwise": "off",
-      "no-continue": "off",
-      "no-empty-function": "off",
-      "no-nested-ternary": "off",
-      "no-plusplus": "off",
-      "no-underscore-dangle": "off",
       "no-unused-vars": "off",
-      "react/display-name": "warn",
-      "react/jsx-filename-extension": [
-        "warn",
-        {
-          "extensions": [
-            ".js",
-            ".jsx",
-            ".tsx",
-            ".ts"
-          ]
-        }
-      ],
-      "react/jsx-props-no-spreading": "off",
-      "react/prefer-stateless-function": "off",
-      "react/prop-types": "off",
-      "react/state-in-constructor": "off",
-      "react/static-property-placement": "off",
       "react-hooks/rules-of-hooks": "error",
-      "react/react-in-jsx-scope": "off",
-      "react-hooks/exhaustive-deps": "warn",
-      "react/function-component-definition": "off",
       "semi": [
         "error",
         "never"

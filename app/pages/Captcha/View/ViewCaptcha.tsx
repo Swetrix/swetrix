@@ -50,7 +50,7 @@ import {
 } from './Panels'
 import {
   onCSVExportClick, getFormatDate, panelIconMapping, typeNameMapping, validFilters, validPeriods,
-  validTimeBacket, noRegionPeriods, getSettings, CHART_METRICS_MAPPING, getColumns
+  validTimeBacket, noRegionPeriods, getSettings, CHART_METRICS_MAPPING, getColumns,
 } from './ViewCaptcha.helpers'
 import CCRow from './components/CCRow'
 import RefRow from './components/RefRow'

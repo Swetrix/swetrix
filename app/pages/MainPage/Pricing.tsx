@@ -304,7 +304,7 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
                     className={({ checked }) =>
                       cx(
                         checked ? 'bg-slate-900 dark:bg-indigo-700 text-gray-50' : 'text-gray-500 dark:text-gray-200',
-                        'cursor-pointer rounded-md px-2.5 flex justify-center items-center'
+                        'cursor-pointer rounded-md px-2.5 flex justify-center items-center',
                       )
                     }
                   >
@@ -318,7 +318,7 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
                     className={({ checked }) =>
                       cx(
                         checked ? 'bg-slate-900 dark:bg-indigo-700 text-gray-50' : 'text-gray-500 dark:text-gray-200',
-                        'cursor-pointer rounded-md px-2.5 flex justify-center items-center'
+                        'cursor-pointer rounded-md px-2.5 flex justify-center items-center',
                       )
                     }
                   >
