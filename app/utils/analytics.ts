@@ -8,7 +8,16 @@ Swetrix.init(SWETRIX_PID)
 const trackViews = () => {
   if (!isSelfhosted) {
     Swetrix.trackViews({
-      ignore: [/^\/projects\/(?!new$)[^/]+$/i, /^\/verify/i, /^\/password-reset/i, /^\/change-email/i, /^\/share/i, /^\/captchas/i],
+      ignore: [
+        /^\/projects\/(?!new$)[^/]+$/i,
+        /^\/projects\/settings/i,
+        /^\/verify/i,
+        /^\/password-reset/i,
+        /^\/change-email/i,
+        /^\/share/i,
+        /^\/captchas\/(?!new$)[^/]+$/i,
+        /^\/captchas\/settings/i,
+      ],
       heartbeatOnBackground: true,
     })
   }
