@@ -1845,55 +1845,57 @@ const ViewProject = ({
 
   // loadProject if project is empty so more often it is need for public projects
   useEffect(() => {
-    if (!isLoading && _isEmpty(project)) {
-      getProject(id, false, projectPassword)
-        .then(projectRes => {
-          if (!_isEmpty(projectRes)) {
-            if (projectRes.isPasswordProtected && !projectRes.isOwner && _isEmpty(projectPassword)) {
-              navigate(_replace(routes.project_protected_password, ':id', id))
-              return
-            }
-
-            if ((projectRes.isPublic || projectRes?.isPasswordProtected) && !projectRes.isOwner) {
-              getOverallStats([id], projectPassword)
-                .then(res => {
-                  setPublicProject({
-                    ...projectRes,
-                    overall: res[id],
-                  })
-                })
-                .catch(e => {
-                  console.error(e)
-                  onErrorLoading()
-                })
-            } else {
-              getOverallStats([id])
-                .then(res => {
-                  setProjects([...(projects as any[]), {
-                    ...projectRes,
-                    overall: res[id],
-                  }])
-                })
-                .then(() => {
-                  return getLiveVisitors([id], projectPassword)
-                })
-                .then(res => {
-                  setLiveStatsForProject(id, res[id])
-                })
-                .catch(e => {
-                  console.error(e)
-                  onErrorLoading()
-                })
-            }
-          } else {
-            onErrorLoading()
-          }
-        })
-        .catch(e => {
-          console.error(e)
-          onErrorLoading()
-        })
+    if (isLoading || !_isEmpty(project)) {
+      return
     }
+
+    getProject(id, false, projectPassword)
+      .then(projectRes => {
+        if (_isEmpty(projectRes)) {
+          onErrorLoading()
+        }
+
+        if (projectRes.isPasswordProtected && !projectRes.isOwner && _isEmpty(projectPassword)) {
+          navigate(_replace(routes.project_protected_password, ':id', id))
+          return
+        }
+
+        if ((projectRes.isPublic || projectRes?.isPasswordProtected) && !projectRes.isOwner) {
+          getOverallStats([id], projectPassword)
+            .then(res => {
+              setPublicProject({
+                ...projectRes,
+                overall: res[id],
+              })
+            })
+            .catch(e => {
+              console.error('[ERROR] (getProject -> getOverallStats public)', e)
+              onErrorLoading()
+            })
+        } else {
+          getOverallStats([id])
+            .then(res => {
+              setProjects([...(projects as any[]), {
+                ...projectRes,
+                overall: res[id],
+              }])
+            })
+            .then(() => {
+              return getLiveVisitors([id], projectPassword)
+            })
+            .then(res => {
+              setLiveStatsForProject(id, res[id])
+            })
+            .catch(e => {
+              console.error('[ERROR] (getProject -> getOverallStats)', e)
+              onErrorLoading()
+            })
+        }
+      })
+      .catch(e => {
+        console.error('[ERROR] (getProject)', e)
+        onErrorLoading()
+      })
   }, [isLoading, project, id, setPublicProject]) // eslint-disable-line
 
   // updatePeriod using for update period and timeBucket also update url
@@ -2978,6 +2980,7 @@ const ViewProject = ({
           tb={timeBucket}
         />
         <NewFunnel
+          project={project}
           pid={id}
           funnel={funnelToEdit}
           isOpened={isNewFunnelOpened}

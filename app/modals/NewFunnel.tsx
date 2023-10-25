@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import _map from 'lodash/map'
 import _every from 'lodash/every'
+import _isUndefined from 'lodash/isUndefined'
 import cx from 'clsx'
 import { TrashIcon } from '@heroicons/react/24/outline'
 import { useTranslation } from 'react-i18next'
@@ -11,8 +12,10 @@ import Combobox from 'ui/Combobox'
 import { MIN_FUNNEL_STEPS, MAX_FUNNEL_STEPS } from 'redux/constants'
 import { getFilters } from 'api'
 import { IFunnel } from 'redux/models/IProject'
+import { IProjectForShared } from 'redux/models/ISharedProject'
 
 interface INewFunnel {
+  project: IProjectForShared,
   onClose: () => void,
   onSubmit: (name: string, steps: string[]) => Promise<void>,
   isOpened: boolean,
@@ -24,7 +27,7 @@ interface INewFunnel {
 const INITIAL_FUNNEL_STEPS = [null, null]
 
 const NewFunnel = ({
-  onClose, onSubmit, isOpened, pid, funnel, loading,
+  onClose, onSubmit, isOpened, pid, funnel, loading, project,
 }: INewFunnel): JSX.Element => {
   const { t } = useTranslation('common')
   const [name, setName] = useState<string>(funnel?.name || '')
@@ -42,6 +45,12 @@ const NewFunnel = ({
   }, [isOpened, funnel])
 
   useEffect(() => {
+    // if project.name is underfined - that means that project is not loaded yet
+    // (it may be password protected, hence making a filters list request will fail with 403)
+    if (_isUndefined(project.name)) {
+      return
+    }
+
     const getFiltersData = async () => {
       let pgFilters: string[] = []
       let ceFilters: string[] = []
@@ -65,7 +74,7 @@ const NewFunnel = ({
     }
 
     getFiltersData()
-  }, [pid])
+  }, [pid, project])
 
   const _onClose = () => {
     setTimeout(() => {

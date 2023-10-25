@@ -2,6 +2,7 @@ import { put, call } from 'redux-saga/effects'
 import _map from 'lodash/map'
 import _isString from 'lodash/isString'
 import Debug from 'debug'
+import { getAccessToken } from 'utils/accessToken'
 
 import UIActions from 'redux/reducers/ui'
 
@@ -14,6 +15,12 @@ const {
 const debug = Debug('swetrix:rx:s:load-projects')
 
 export default function* loadProjects({ payload: { take = ENTRIES_PER_PAGE_DASHBOARD, skip = 0, isCaptcha = false, search = '' } }) {
+  const token = getAccessToken()
+
+  if (!token) {
+    return
+  }
+
   try {
     if (isCaptcha) {
       yield put(UIActions.setCaptchaLoading(true))
