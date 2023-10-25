@@ -47,7 +47,7 @@ const NewFunnel = ({
   useEffect(() => {
     // if project.name is underfined - that means that project is not loaded yet
     // (it may be password protected, hence making a filters list request will fail with 403)
-    if (_isUndefined(project.name)) {
+    if (_isUndefined(project.name) || !isOpened) {
       return
     }
 
@@ -74,7 +74,7 @@ const NewFunnel = ({
     }
 
     getFiltersData()
-  }, [pid, project])
+  }, [pid, project, isOpened])
 
   const _onClose = () => {
     setTimeout(() => {
