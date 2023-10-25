@@ -31,6 +31,7 @@ module.exports = {
     'internmap',
     'robust-predicates',
     'marked',
+    'billboard.js',
   ],
   serverMinify: process.env.NODE_ENV === 'production',
   routes(defineRoutes) {
