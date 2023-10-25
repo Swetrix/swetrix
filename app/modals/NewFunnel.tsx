@@ -22,12 +22,13 @@ interface INewFunnel {
   pid: string,
   loading: boolean,
   funnel?: IFunnel,
+  projectPassword?: string,
 }
 
 const INITIAL_FUNNEL_STEPS = [null, null]
 
 const NewFunnel = ({
-  onClose, onSubmit, isOpened, pid, funnel, loading, project,
+  onClose, onSubmit, isOpened, pid, funnel, loading, project, projectPassword,
 }: INewFunnel): JSX.Element => {
   const { t } = useTranslation('common')
   const [name, setName] = useState<string>(funnel?.name || '')
@@ -57,10 +58,10 @@ const NewFunnel = ({
 
       const promises = [
         (async () => {
-          pgFilters = await getFilters(pid, 'pg')
+          pgFilters = await getFilters(pid, 'pg', projectPassword)
         })(),
         (async () => {
-          ceFilters = await getFilters(pid, 'ev')
+          ceFilters = await getFilters(pid, 'ev', projectPassword)
         })(),
       ]
 
@@ -74,7 +75,7 @@ const NewFunnel = ({
     }
 
     getFiltersData()
-  }, [pid, project, isOpened])
+  }, [pid, project, isOpened, projectPassword])
 
   const _onClose = () => {
     setTimeout(() => {

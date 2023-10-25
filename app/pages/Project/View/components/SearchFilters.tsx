@@ -15,6 +15,7 @@ import { getFilters } from 'api'
 import { Filter } from './Filters'
 
 interface ISearchFilters {
+  projectPassword?: string
   setProjectFilter: (filter: {
     column: string
     filter: string[]
@@ -51,7 +52,7 @@ const formatFilters = (filters: any): IActiveFilter[] => {
 }
 
 const SearchFilters = ({
-  setProjectFilter, pid, showModal, setShowModal, tnMapping, filters,
+  setProjectFilter, pid, showModal, setShowModal, tnMapping, filters, projectPassword,
 }: ISearchFilters) => {
   const { t, i18n: { language } } = useTranslation('common')
   const [filterType, setFilterType] = useState<string>('')
@@ -62,9 +63,9 @@ const SearchFilters = ({
   const labelToTypeMap = useMemo(() => getLabelToTypeMap(t), [t])
 
   const getFiltersList = useCallback(async (type: string) => {
-    const res = await getFilters(pid, type)
+    const res = await getFilters(pid, type, projectPassword)
     setSearchList(res)
-  }, [pid])
+  }, [pid, projectPassword])
 
   useEffect(() => {
     if (!showModal || _isEmpty(filterType)) {

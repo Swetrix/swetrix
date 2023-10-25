@@ -2981,6 +2981,7 @@ const ViewProject = ({
         />
         <NewFunnel
           project={project}
+          projectPassword={projectPassword}
           pid={id}
           funnel={funnelToEdit}
           isOpened={isNewFunnelOpened}
@@ -2999,6 +3000,7 @@ const ViewProject = ({
           loading={funnelActionLoading}
         />
         <SearchFilters
+          projectPassword={projectPassword}
           showModal={showFiltersSearch}
           setShowModal={setShowFiltersSearch}
           setProjectFilter={onFilterSearch}
