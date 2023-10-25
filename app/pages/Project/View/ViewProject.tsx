@@ -199,7 +199,7 @@ const ViewProject = ({
   // find project by id from url from state in redux projects and sharedProjects. projects and sharedProjects loading from api in Saga on page load
   const project: IProjectForShared = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => ({ ...item.project, role: item.role }))], p => p.id === id) || {} as IProjectForShared, [projects, id, sharedProjects])
 
-  const projectPassword: string = useMemo(() => password[id] || getItem(PROJECTS_PROTECTED)?.[id] || queryPassword || '', [id, password, queryPassword])
+  const projectPassword: string = useMemo(() => password[id] || (getItem(PROJECTS_PROTECTED)?.[id] as string) || queryPassword || '', [id, password, queryPassword])
 
   /* isSharedProject is a boolean check if project is shared. If isSharedProject is true,
   we used role and other colummn from sharedProjects.
