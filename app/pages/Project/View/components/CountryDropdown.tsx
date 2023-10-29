@@ -55,7 +55,7 @@ const CountryDropdown = ({ onSelect, title }: ICountryDropdown): JSX.Element => 
               <div
                 key={label}
                 onClick={() => _onSelect(value)}
-                className='flex flex-row items-center justify-between cursor-pointer w-full px-1 py-2 text-sm text-gray-700 dark:text-gray-200 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700'
+                className='flex flex-row items-center justify-between cursor-pointer w-full px-1 py-2 text-sm text-gray-700 dark:text-gray-200 dark:bg-slate-900 hover:bg-gray-200 dark:hover:bg-slate-800'
               >
                 <p>{t(label)}</p>
               </div>
