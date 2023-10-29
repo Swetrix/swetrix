@@ -525,7 +525,7 @@ const Dashboard = ({
                         type='text'
                         onChange={onSearch}
                         value={search}
-                        className='bg-gray-50 border h-7 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-indigo-500 dark:focus:border-indigo-500'
+                        className='bg-gray-50 border-none h-7 ring-1 ring-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 block w-full sm:pl-10 p-2.5 dark:bg-slate-900 dark:ring-slate-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-200'
                         placeholder={t('project.search')}
                       />
                     </div>
@@ -553,7 +553,7 @@ const Dashboard = ({
                     type='text'
                     onChange={onSearch}
                     value={search}
-                    className='bg-gray-50 border h-7 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 p-2.5 py-5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-indigo-500 dark:focus:border-indigo-500'
+                    className='bg-gray-50 border-none h-7 ring-1 ring-gray-300 text-gray-900 text-sm rounded-lg focus:ring-gray-500 block w-full pl-10 p-2.5 py-5 dark:bg-slate-900 dark:ring-slate-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-slate-200'
                     placeholder={t('project.search')}
                   />
                 </div>
