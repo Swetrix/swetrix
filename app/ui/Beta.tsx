@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 
 import Tooltip from './Tooltip'
-import { WarningPin } from './Pin'
+import { Badge } from './Badge'
 
 // Define the prop types for the component
 interface IBeta {
@@ -20,7 +20,7 @@ const Beta = ({
     <Tooltip
       className='max-w-content !w-full'
       tooltipNode={(
-        <WarningPin className={className} label={t('beta.title')} />
+        <Badge className={className} label={t('beta.title')} colour='yellow' />
       )}
       text={t('beta.description')}
     />

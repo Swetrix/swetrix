@@ -25,9 +25,7 @@ import Modal from 'ui/Modal'
 import Select from 'ui/Select'
 import { withAuthentication, auth } from 'hoc/protected'
 import Loader from 'ui/Loader'
-import {
-  ActivePin, InactivePin, WarningPin, CustomPin,
-} from 'ui/Pin'
+import { Badge } from 'ui/Badge'
 import routes from 'routesPath'
 import { nFormatter } from 'utils/generic'
 import {
@@ -206,36 +204,53 @@ const ProjectCard = ({
               </a>
             </div>
           </div>
-          <div className='mt-1 flex-shrink-0 flex gap-2'>
+          <div className='mt-1 flex-shrink-0 flex gap-2 flex-wrap'>
             {active ? (
-              <ActivePin label={t('dashboard.active')} />
+              <Badge
+                colour='green'
+                label={t('dashboard.active')}
+              />
             ) : (
-              <InactivePin label={t('dashboard.disabled')} />
+              <Badge
+                colour='red'
+                label={t('dashboard.disabled')}
+              />
             )}
             {shared && (
               confirmed ? (
-                <ActivePin label={t('dashboard.shared')} />
+                <Badge
+                  colour='green'
+                  label={t('dashboard.shared')}
+                />
               ) : (
-                <WarningPin label={t('common.pending')} />
+                <Badge
+                  colour='yellow'
+                  label={t('common.pending')}
+                />
               )
             )}
             {isTransferring && (
-              <CustomPin
-                className='!bg-indigo-500 dark:!bg-indigo-600 !text-gray-50'
+              <Badge
+                colour='indigo'
                 label={t('common.transferring')}
               />
             )}
             {isPublic && (
-              <ActivePin label={t('dashboard.public')} />
+              <Badge
+                colour='green'
+                label={t('dashboard.public')}
+              />
             )}
-            <CustomPin
-              className='bg-slate-200 dark:bg-slate-600 text-gray-800 dark:text-gray-300'
-              label={members === 1
-                ? t('common.oneMember')
-                : t('common.xMembers', {
-                  number: members,
-                })}
-            />
+            {_isNumber(members) && (
+              <Badge
+                colour='slate'
+                label={members === 1
+                  ? t('common.oneMember')
+                  : t('common.xMembers', {
+                    number: members,
+                  })}
+              />
+            )}
           </div>
           <div className='mt-4 flex-shrink-0 flex gap-5'>
             {overall && (
@@ -688,7 +703,6 @@ const Dashboard = ({
                                 return (
                                   <ProjectCard
                                     t={t}
-                                    members={1 + _size(project.share)}
                                     key={`${project?.id}-confirmed`}
                                     type='analytics'
                                     id={project?.id}

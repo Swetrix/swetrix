@@ -27,7 +27,7 @@ import Modal from 'ui/Modal'
 import Loader from 'ui/Loader'
 import Beta from 'ui/Beta'
 import cx from 'clsx'
-import { WarningPin } from 'ui/Pin'
+import { Badge } from 'ui/Badge'
 import { ISubscribers } from 'redux/models/ISubscribers'
 
 const ModalMessage = ({
@@ -212,9 +212,10 @@ const EmailList = ({
           </div>
         ) : (
           <div className='flex items-center justify-end'>
-            <WarningPin
+            <Badge
+              colour='yellow'
+              className='mr-3'
               label={t('common.pending')}
-              className='inline-flex items-center shadow-sm px-2.5 py-0.5 mr-3'
             />
             <Button
               type='button'

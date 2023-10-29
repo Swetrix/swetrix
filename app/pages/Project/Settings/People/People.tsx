@@ -13,7 +13,7 @@ import _map from 'lodash/map'
 import { deleteShareProjectUsers, shareProject, changeShareRole } from 'api'
 import { isValidEmail } from 'utils/validator'
 import Input from 'ui/Input'
-import { WarningPin } from 'ui/Pin'
+import { Badge } from 'ui/Badge'
 import Button from 'ui/Button'
 import Modal from 'ui/Modal'
 import PaidFeature from 'modals/PaidFeature'
@@ -132,9 +132,10 @@ const UsersList = ({
           </div>
         ) : (
           <div className='flex items-center justify-end'>
-            <WarningPin
+            <Badge
+              colour='yellow'
+              className='mr-3'
               label={t('common.pending')}
-              className='inline-flex items-center shadow-sm px-2.5 py-0.5 mr-3'
             />
             <Button
               type='button'
