@@ -88,7 +88,9 @@
     "transferring": "Transferring",
     "link": "Link",
     "unlink": "Unlink",
-    "nothingFound": "Nothing found"
+    "nothingFound": "Nothing found",
+    "oneMember": "1 Member",
+    "xMembers": "{{number}} Members"
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",

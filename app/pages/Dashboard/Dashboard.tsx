@@ -7,6 +7,7 @@ import { ClientOnly } from 'remix-utils'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
 import _isEmpty from 'lodash/isEmpty'
+import _size from 'lodash/size'
 import _isNumber from 'lodash/isNumber'
 import _replace from 'lodash/replace'
 import _map from 'lodash/map'
@@ -67,6 +68,7 @@ interface IProjectCard {
   captcha?: boolean
   isTransferring?: boolean
   getRole?: (id: string) => string | null
+  members?: number
 }
 
 interface IMiniCard {
@@ -132,7 +134,7 @@ MiniCard.defaultProps = {
 const ProjectCard = ({
   name, active, overall, t, live, isPublic, confirmed, id, deleteProjectFailed,
   sharedProjects, setProjectsShareData, setUserShareData, shared, userSharedUpdate, sharedProjectError,
-  captcha, isTransferring, type, getRole,
+  captcha, isTransferring, type, getRole, members,
 }: IProjectCard): JSX.Element => {
   const [showInviteModal, setShowInviteModal] = useState(false)
   const role = useMemo(() => getRole && getRole(id), [getRole, id])
@@ -205,24 +207,35 @@ const ProjectCard = ({
             </div>
           </div>
           <div className='mt-1 flex-shrink-0 flex gap-2'>
+            {active ? (
+              <ActivePin label={t('dashboard.active')} />
+            ) : (
+              <InactivePin label={t('dashboard.disabled')} />
+            )}
             {shared && (
               confirmed ? (
-                <ActivePin className='dark:!text-gray-300 dark:!bg-slate-600' label={t('dashboard.shared')} />
+                <ActivePin label={t('dashboard.shared')} />
               ) : (
-                <WarningPin className='dark:!text-gray-300 dark:!bg-slate-600' label={t('common.pending')} />
+                <WarningPin label={t('common.pending')} />
               )
             )}
             {isTransferring && (
-              <CustomPin className='!bg-indigo-500 dark:!bg-indigo-600 !text-gray-300 dark:!text-gray-300' label={t('common.transferring')} />
-            )}
-            {active ? (
-              <ActivePin className='dark:!text-gray-300 dark:!bg-slate-600' label={t('dashboard.active')} />
-            ) : (
-              <InactivePin className='dark:!text-gray-300 dark:!bg-slate-600' label={t('dashboard.disabled')} />
+              <CustomPin
+                className='!bg-indigo-500 dark:!bg-indigo-600 !text-gray-50'
+                label={t('common.transferring')}
+              />
             )}
             {isPublic && (
-              <ActivePin className='dark:!text-gray-300 dark:!bg-slate-600' label={t('dashboard.public')} />
+              <ActivePin label={t('dashboard.public')} />
             )}
+            <CustomPin
+              className='bg-slate-200 dark:bg-slate-600 text-gray-800 dark:text-gray-300'
+              label={members === 1
+                ? t('common.oneMember')
+                : t('common.xMembers', {
+                  number: members,
+                })}
+            />
           </div>
           <div className='mt-4 flex-shrink-0 flex gap-5'>
             {overall && (
@@ -598,10 +611,11 @@ const Dashboard = ({
                         ) : (
                           <ul className='grid grid-cols-1 gap-x-6 gap-y-3 lg:gap-y-6 lg:grid-cols-3'>
                             {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({
-                              name, id, active, overall, public: isPublic, isTransferring,
+                              name, id, active, overall, public: isPublic, isTransferring, share,
                             }) => (
                               <ProjectCard
                                 key={id}
+                                members={1 + _size(share)}
                                 id={id}
                                 type='analytics'
                                 t={t}
@@ -674,7 +688,8 @@ const Dashboard = ({
                                 return (
                                   <ProjectCard
                                     t={t}
-                                    key={confirmed ? `${project?.id}-confirmed` : project?.id}
+                                    members={1 + _size(project.share)}
+                                    key={`${project?.id}-confirmed`}
                                     type='analytics'
                                     id={project?.id}
                                     name={project?.name}
@@ -698,7 +713,7 @@ const Dashboard = ({
                               return (
                                 <ProjectCard
                                   t={t}
-                                  key={confirmed ? `${project?.id}-confirmed` : project?.id}
+                                  key={project?.id}
                                   id={project?.id}
                                   type='analytics'
                                   name={project?.name}
