@@ -57,6 +57,8 @@
     "confirm": "Confirm",
     "amount": "Amount",
     "date": "Date",
+    "success": "Success",
+    "info": "Info",
     "error": "Error",
     "close": "Close",
     "cancel": "Cancel",
