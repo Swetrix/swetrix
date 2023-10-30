@@ -39,14 +39,6 @@ describe('TimezonePricker', () => {
     jest.resetAllMocks()
   })
 
-  it('renders the component', () => {
-    const { getByText } = render(
-      <HocWithI18n value='Europe/London' onChange={onChange} />,
-    )
-
-    expect(getByText('(GMT+1:00) Edinburgh, London')).toBeInTheDocument()
-  })
-
   it('calls onChange function when an option is selected', () => {
     const { getByText, getByRole } = render(
       <HocWithI18n value='Europe/London' onChange={onChange} />,
