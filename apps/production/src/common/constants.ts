@@ -115,6 +115,8 @@ const CAPTCHA_SECRET_KEY_LENGTH = 50
 const MIN_PAGES_IN_FUNNEL = 2
 const MAX_PAGES_IN_FUNNEL = 10
 
+const BLOG_POSTS_ROOT = 'blog-posts/posts'
+
 const BLOG_POSTS_PATH = isDevelopment
   ? path.join(__dirname, '../../../..', 'blog-posts', 'posts')
   : path.join(__dirname, '../..', 'blog-posts', 'posts')
@@ -228,4 +230,5 @@ export {
   MAX_PAGES_IN_FUNNEL,
   MAX_FUNNELS,
   ALL_COLUMNS,
+  BLOG_POSTS_ROOT,
 }

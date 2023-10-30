@@ -11,7 +11,7 @@ import * as _size from 'lodash/size'
 import * as path from 'path'
 import * as fs from 'fs/promises'
 import { AppLoggerService } from '../logger/logger.service'
-import { BLOG_POSTS_PATH, redis } from '../common/constants'
+import { BLOG_POSTS_PATH, BLOG_POSTS_ROOT, redis } from '../common/constants'
 
 // eslint-disable-next-line
 const parseFrontMatter = require('front-matter')
@@ -34,14 +34,22 @@ interface IParseFontMatter {
   body: string
 }
 
+const validatePath = (input: string) => {
+  if (!_includes(path.normalize(input), BLOG_POSTS_ROOT)) {
+    throw new Error('You are not allowed to access this file')
+  }
+}
+
 const getFileNames = async (category?: string): Promise<string[]> => {
   let files
 
   try {
     if (category) {
-      files = (await fs.readdir(
-        path.join(BLOG_POSTS_PATH, category),
-      )) as string[]
+      const pathToRead = path.join(BLOG_POSTS_PATH, category)
+
+      validatePath(pathToRead)
+
+      files = (await fs.readdir(pathToRead)) as string[]
     } else {
       files = (await fs.readdir(BLOG_POSTS_PATH)) as string[]
     }
