@@ -48,7 +48,6 @@
     "pricing": "Ціни",
     "faqs": "FAQ",
     "accountSettings": "Обліковий запис",
-    "explore": "Вивчати",
     "liveDemo": "Демонстрація",
     "dashboard": "Панель",
     "logout": "Вийти",
@@ -105,7 +104,6 @@
     "techDetails": "Хочете дізнатись більше технічних деталей?",
     "lookAtDocs": "Детальніше на сторінках документації та функціоналу.",
     "readyToStart": "Готові почати?",
-    "exploreService": "Вивчіть наші послуги або створіть обліковий запис.",
     "metric": "Metric",
     "coreFeatures": {
       "title": "Основні функції аналітики",
@@ -570,7 +568,6 @@
     "applyFilters": "Застосувати фільтри",
     "lookingForMore": "Looking for more?",
     "overrideCurrentlyFilters": "Перевизначити застосовані фільтри",
-    "ad": "Хочете цю статистику на вашому сайті?",
     "noExist": "Обраний проєкт не існує",
     "geo": "Геолокація",
     "exportData": "Експорт даних",

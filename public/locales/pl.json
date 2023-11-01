@@ -48,7 +48,6 @@
     "pricing": "Cennik",
     "faqs": "FAQ",
     "accountSettings": "Ustawienia konta",
-    "explore": "Przeglądaj",
     "liveDemo": "Zobacz demo",
     "dashboard": "Panel",
     "logout": "Wyloguj",
@@ -105,7 +104,6 @@
     "techDetails": "Chcesz poznać więcej szczegółów technicznych?",
     "lookAtDocs": "Zajrzyj na stronę z dokumentacją i demo na żywo.",
     "readyToStart": "Gotowy, aby rozpocząć?",
-    "exploreService": "Poznaj naszą usługę lub załóż konto.",
     "metric": "Metric",
     "coreFeatures": {
       "title": "Główne funkcje analityczne",
@@ -570,7 +568,6 @@
     "applyFilters": "Apply filters",
     "lookingForMore": "Looking for more?",
     "overrideCurrentlyFilters": "Override currently applied filters",
-    "ad": "Chcesz te statystyki dla swojej witryny?",
     "noExist": "Wybrany projekt nie istnieje",
     "geo": "Geolocation",
     "exportData": "Eksportuj dane",

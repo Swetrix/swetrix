@@ -3,7 +3,7 @@ import React, {
   useState, useEffect, useMemo, memo, Fragment, useRef,
 } from 'react'
 import useSize from 'hooks/useSize'
-import { useNavigate, useParams, Link } from '@remix-run/react'
+import { useNavigate, useParams } from '@remix-run/react'
 // @ts-ignore
 import domToImage from 'dom-to-image'
 // @ts-ignore
@@ -187,7 +187,7 @@ const ViewProject = ({
       if (dateRange) {
         from = getFormatDate(dateRange[0])
         to = getFormatDate(dateRange[1])
-        key = getProjectCacheCustomKey(from, to, timeBucket, newFilters || filters)
+        key = getProjectCacheCustomKey(from, to, timeBucket, 'periodical', newFilters || filters)
       } else {
         key = getProjectCaptchaCacheKey(period, timeBucket, newFilters || filters)
       }
@@ -893,6 +893,7 @@ const ViewProject = ({
                         onFilter={filterHandler}
                         name={panelName}
                         data={panelsData.data[type]}
+                        // @ts-ignore
                         rowMapper={({ name: entryName }) => (
                           <RefRow rowName={entryName} showIcons={showIcons} />
                         )}
@@ -924,33 +925,6 @@ const ViewProject = ({
             </div>
           </div>
         </div>
-        {!authenticated && (
-          <div className='bg-indigo-600'>
-            <div className='w-11/12 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 lg:flex lg:items-center lg:justify-between'>
-              <h2 className='text-3xl sm:text-4xl font-bold tracking-tight text-gray-900'>
-                <span className='block text-white'>{t('project.ad')}</span>
-                <span className='block text-gray-300'>
-                  {t('main.exploreService')}
-                </span>
-              </h2>
-              <div className='mt-6 space-y-4 sm:space-y-0 sm:flex sm:space-x-5'>
-                <Link
-                  to={routes.signup}
-                  className='flex items-center justify-center px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100'
-                  aria-label={t('titles.signup')}
-                >
-                  {t('common.getStarted')}
-                </Link>
-                <Link
-                  to={routes.main}
-                  className='flex items-center justify-center px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100'
-                >
-                  {t('common.explore')}
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
       </>
     )
   }

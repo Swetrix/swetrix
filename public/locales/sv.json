@@ -48,7 +48,6 @@
     "pricing": "Prissättning",
     "faqs": "Vanliga frågor",
     "accountSettings": "Account settings",
-    "explore": "Utforska",
     "liveDemo": "Live-demo",
     "dashboard": "Översikt",
     "logout": "Logga ut",
@@ -105,7 +104,6 @@
     "techDetails": "Vill du veta mer tekniska detaljer?",
     "lookAtDocs": "Titta på dokumentationen och live demonstrationssidor.",
     "readyToStart": "Redo att komma igång?",
-    "exploreService": "Utforska vår tjänst eller skapa ett konto.",
     "metric": "Metric",
     "coreFeatures": {
       "title": "Core Analytics Features",
@@ -570,7 +568,6 @@
     "applyFilters": "Apply filters",
     "lookingForMore": "Looking for more?",
     "overrideCurrentlyFilters": "Override currently applied filters",
-    "ad": "Vill du ha denna statistik för din webbplats?",
     "noExist": "Det valda projektet finns inte",
     "geo": "Geolocation",
     "exportData": "Exportera",

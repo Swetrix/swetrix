@@ -48,7 +48,6 @@
     "pricing": "Τιμολογηση",
     "faqs": "Συχνές Ερωτήσεις",
     "accountSettings": "Account settings",
-    "explore": "Εξερευνήστε",
     "liveDemo": "Ζωντανή επίδειξη",
     "dashboard": "Πίνακας ελέγχου",
     "logout": "Αποσύνδεση",
@@ -105,7 +104,6 @@
     "techDetails": "Θέλετε να μάθετε περισσότερες τεχνικές λεπτομέρειες;",
     "lookAtDocs": "Κοιτάξτε τις σελίδες τεκμηρίωσης και ζωντανής επίδειξης.",
     "readyToStart": "Έτοιμοι να ξεκινήσετε;",
-    "exploreService": "Εξερευνήστε την υπηρεσία μας ή δημιουργήστε έναν λογαριασμό.",
     "metric": "Metric",
     "coreFeatures": {
       "title": "Core Analytics Features",
@@ -570,7 +568,6 @@
     "applyFilters": "Apply filters",
     "lookingForMore": "Looking for more?",
     "overrideCurrentlyFilters": "Override currently applied filters",
-    "ad": "Θέλετε αυτά τα στατιστικά στοιχεία για την ιστοσελίδα σας;",
     "noExist": "Το επιλεγμένο έργο δεν υπάρχει",
     "geo": "Geolocation",
     "exportData": "Εξαγωγή δεδομένων",

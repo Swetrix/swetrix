@@ -48,7 +48,6 @@
     "pricing": "Preise",
     "faqs": "FAQ",
     "accountSettings": "Konto-Einstellungen",
-    "explore": "Entdecken",
     "liveDemo": "Live Demo",
     "dashboard": "Dashboard",
     "logout": "Abmelden",
@@ -105,7 +104,6 @@
     "techDetails": "Möchten Sie weitere technische Details erfahren?",
     "lookAtDocs": "Sehen Sie sich doch mal die Dokumentation und die Live Demo an.",
     "readyToStart": "Sind Sie bereit los zu legen?",
-    "exploreService": "Erkundigen Sie sich über unseren Dienst oder registrieren Sie sich.",
     "metric": "Metric",
     "coreFeatures": {
       "title": "Kern-Analysefunktionen",
@@ -570,7 +568,6 @@
     "applyFilters": "Filter anwenden",
     "lookingForMore": "Looking for more?",
     "overrideCurrentlyFilters": "Aktuell angewendete Filter überschreiben",
-    "ad": "Sie möchten diese Statistiken für Ihre eigene Webseite?",
     "noExist": "Das ausgewählte Projekt existiert nicht",
     "geo": "Standortbestimmung",
     "exportData": "Daten exportieren",

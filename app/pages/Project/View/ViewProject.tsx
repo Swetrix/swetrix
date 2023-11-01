@@ -2945,33 +2945,6 @@ const ViewProject = ({
             )}
           </div>
         </div>
-        {!authenticated && activeTab !== PROJECT_TABS.alerts && !embedded && (
-          <div className='bg-indigo-600'>
-            <div className='w-11/12 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 lg:flex lg:items-center lg:justify-between'>
-              <h2 className='text-3xl sm:text-4xl font-bold tracking-tight text-gray-900'>
-                <span className='block text-white'>{t('project.ad')}</span>
-                <span className='block text-gray-300'>
-                  {t('main.exploreService')}
-                </span>
-              </h2>
-              <div className='mt-6 space-y-4 sm:space-y-0 sm:flex sm:space-x-5'>
-                <Link
-                  to={routes.signup}
-                  className='flex items-center justify-center px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100'
-                  aria-label={t('titles.signup')}
-                >
-                  {t('common.getStarted')}
-                </Link>
-                <Link
-                  to={routes.main}
-                  className='flex items-center justify-center px-3 py-2 border border-transparent text-lg font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100'
-                >
-                  {t('common.explore')}
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
         <Forecast
           isOpened={isForecastOpened}
           onClose={() => setIsForecastOpened(false)}

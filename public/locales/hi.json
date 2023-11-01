@@ -48,7 +48,6 @@
     "pricing": "मूल्य निर्धारण",
     "faqs": "सामान्य प्रश्न/एफ ए क्यू",
     "accountSettings": "Account settings",
-    "explore": "Explore",
     "liveDemo": "Live demo",
     "dashboard": "डैशबोर्ड",
     "logout": "लॉगआउट",
@@ -105,7 +104,6 @@
     "techDetails": "क्या आप और अधिक तकनीकी विवरण जानना चाहते हैं?",
     "lookAtDocs": "दस्तावेज़ीकरण और विशेषताएं पृष्ठ को देखें।",
     "readyToStart": "शुरू करने के लिए तैयार हैं?",
-    "exploreService": "हमारी सेवाओं के बारे मे जानें या अकाउंट बनाएं।",
     "metric": "Metric",
     "coreFeatures": {
       "title": "Core Analytics Features",
@@ -570,7 +568,6 @@
     "applyFilters": "Apply filters",
     "lookingForMore": "Looking for more?",
     "overrideCurrentlyFilters": "Override currently applied filters",
-    "ad": "Want these stats for your website?",
     "noExist": "चयनित प्रोजेक्ट मौजूद नहीं है",
     "geo": "Geolocation",
     "exportData": "Export data",

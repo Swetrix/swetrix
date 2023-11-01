@@ -48,7 +48,6 @@
     "pricing": "定价",
     "faqs": "常见问题",
     "accountSettings": "Account settings",
-    "explore": "使用",
     "liveDemo": "Demo演示",
     "dashboard": "管理板面",
     "logout": "登出",
@@ -105,7 +104,6 @@
     "techDetails": "想了解更多技术细节？",
     "lookAtDocs": "查看文档和功能页面。",
     "readyToStart": "准备好了吗？",
-    "exploreService": "探索我们的服务或创建一个帐户。",
     "metric": "Metric",
     "coreFeatures": {
       "title": "Core Analytics Features",
@@ -570,7 +568,6 @@
     "applyFilters": "Apply filters",
     "lookingForMore": "Looking for more?",
     "overrideCurrentlyFilters": "Override currently applied filters",
-    "ad": "你的网站需要这些数据吗？",
     "noExist": "所选项目不存在",
     "geo": "Geolocation",
     "exportData": "导出数据",

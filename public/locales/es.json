@@ -48,7 +48,6 @@
     "pricing": "Precios",
     "faqs": "FAQs",
     "accountSettings": "Ajustes de cuenta",
-    "explore": "Explorar",
     "liveDemo": "Demostración en vivo",
     "dashboard": "Panel principal",
     "logout": "Cerrar sesión",
@@ -105,7 +104,6 @@
     "techDetails": "Want to know more technical details?",
     "lookAtDocs": "Look at the documentation and live demonstration pages.",
     "readyToStart": "Ready to get started?",
-    "exploreService": "Explore our service or create an account.",
     "metric": "Metric",
     "coreFeatures": {
       "title": "Core Analytics Features",
@@ -570,7 +568,6 @@
     "applyFilters": "Apply filters",
     "lookingForMore": "Looking for more?",
     "overrideCurrentlyFilters": "Override currently applied filters",
-    "ad": "Want these stats for your website?",
     "noExist": "The selected project does not exist",
     "geo": "Geolocation",
     "exportData": "Export data",
