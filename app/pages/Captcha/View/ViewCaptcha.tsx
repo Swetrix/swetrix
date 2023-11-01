@@ -633,13 +633,7 @@ const ViewProject = ({
         <EventsRunningOutBanner />
         <div ref={ref} className='bg-gray-50 dark:bg-slate-900'>
           <div
-            className={cx(
-              'max-w-[1584px] w-full mx-auto py-6 px-2 sm:px-4 lg:px-8',
-              {
-                'min-h-min-footer': authenticated,
-                'min-h-min-footer-ad': !authenticated,
-              },
-            )}
+            className='max-w-[1584px] w-full mx-auto py-6 px-2 sm:px-4 lg:px-8 min-h-min-footer'
             ref={dashboardRef}
           >
             <div className='flex flex-col md:flex-row items-center md:items-start justify-between mt-2'>

@@ -10,7 +10,7 @@ export default function Posts() {
 
   if (_filter(posts, post => !post.hidden).length === 0) {
     return (
-      <div className='flex justify-center items-center min-h-min-footer-ad'>
+      <div className='flex justify-center items-center min-h-min-footer'>
         <h1 className='text-3xl font-bold text-slate-900 dark:text-slate-200'>No posts found</h1>
       </div>
     )

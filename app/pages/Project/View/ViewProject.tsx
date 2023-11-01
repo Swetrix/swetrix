@@ -2100,8 +2100,7 @@ const ViewProject = ({
             className={cx(
               'max-w-[1584px] w-full mx-auto py-6 px-2 sm:px-4 lg:px-8',
               {
-                'min-h-min-footer': (authenticated || activeTab === PROJECT_TABS.alerts) && !embedded,
-                'min-h-min-footer-ad': (!authenticated && activeTab !== PROJECT_TABS.alerts) && !embedded,
+                'min-h-min-footer': !embedded,
                 'min-h-[100vh]': embedded,
               },
             )}
