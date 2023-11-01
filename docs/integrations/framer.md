@@ -17,7 +17,7 @@ After you sign up on Swetrix and create a new project, the only thing left is to
 <img alt="Framer Website page" src={useBaseUrl('img/framer-2.png')} />
 
 4. Scroll down to the `Custom Code` section:
-<img alt="Framer Website page" src={useBaseUrl('img/framer-2.png')} />
+<img alt="Framer Website page" src={useBaseUrl('img/framer-3.png')} />
 
 5. Add the following code to the `End of <body> tag` section:
 ```html
