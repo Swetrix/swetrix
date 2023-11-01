@@ -35,7 +35,10 @@
     "socialAccountLinked": "The Swetrix account has been linked with your selected provider",
     "socialAccountUninked": "The Swetrix account has been unlinked from the selected provider",
     "enterPassword": "Please enter the password",
-    "incorrectPassword": "Incorrect password, please try again."
+    "incorrectPassword": "Incorrect password, please try again.",
+    "funnelCreated": "The funnel has been created",
+    "funnelUpdated": "The funnel has been updated",
+    "funnelDeleted": "The funnel has been deleted"
   },
   "common": {
     "features": "Χαρακτηριστικά",
@@ -54,6 +57,8 @@
     "confirm": "Confirm",
     "amount": "Amount",
     "date": "Date",
+    "success": "Success",
+    "info": "Info",
     "error": "Σφάλμα",
     "close": "Κλείσιμο",
     "cancel": "Ακύρωση",
@@ -84,7 +89,10 @@
     "account": "Account",
     "transferring": "Transferring",
     "link": "Link",
-    "unlink": "Unlink"
+    "unlink": "Unlink",
+    "nothingFound": "Nothing found",
+    "oneMember": "1 Member",
+    "xMembers": "{{number}} Members"
   },
   "main": {
     "ukrSupport": "Υποστηρίξτε τον ουκρανικό στρατό για να πολεμήσει τη ρωσική εισβολή.",
@@ -98,6 +106,7 @@
     "lookAtDocs": "Κοιτάξτε τις σελίδες τεκμηρίωσης και ζωντανής επίδειξης.",
     "readyToStart": "Έτοιμοι να ξεκινήσετε;",
     "exploreService": "Εξερευνήστε την υπηρεσία μας ή δημιουργήστε έναν λογαριασμό.",
+    "metric": "Metric",
     "coreFeatures": {
       "title": "Core Analytics Features",
       "desc": "Powerful and easy analytics to display all the metrics you need. Cookieless. No need to be a data scientist to understand our analytics."
@@ -255,6 +264,7 @@
       "ext": "Custom extensions",
       "gdpr": "GDPR-compatible",
       "usfl": "User flow",
+      "funnels": "Funnels",
       "alrt": "Custom alerts",
       "pbld": "Public dashboards",
       "shad": "Dashboard sharing",
@@ -461,6 +471,7 @@
   },
   "dashboard": {
     "newProject": "Νέο έργο",
+    "newFunnel": "New funnel",
     "newCaptchaProject": "New CAPTCHA project",
     "verifyEmailTitle": "Παρακαλώ, επαληθεύστε πρώτα τη διεύθυνση email",
     "verifyEmailDesc": "Για να αρχίσετε να χρησιμοποιείτε την υπηρεσία μας και να δημιουργείτε τα έργα σας, πρέπει πρώτα να επιβεβαιώσετε τη διεύθυνση ηλεκτρονικού ταχυδρομείου σας.\n\nΈνας σύνδεσμος για την επιβεβαίωση του λογαριασμού σας εστάλη στη διεύθυνση ηλεκτρονικού ταχυδρομείου που δηλώσατε κατά την εγγραφή σας, εάν δεν παραδόθηκε - μπορείτε να ζητήσετε ξανά τον σύνδεσμο στις ρυθμίσεις του λογαριασμού σας.",
@@ -486,10 +497,13 @@
     "invitationFor": "Invitation for {{project}}",
     "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings.",
     "sessionDuration": "Session duration",
+    "cumulativeMode": "Cumulative mode",
     "traffic": "Traffic",
     "performance": "Performance",
+    "funnels": "Funnels",
     "alerts": "Alerts",
     "alertsDesc": "Automated alerts are a powerful tool that allow you to run automated tasks when specific events occur.\nWe can automatically monitor your project for traffic spikes and notify you via Telegram.",
+    "funnelsDesc": "Funnels are a powerful tool that allow you to track the conversion rate of your users through a series of steps.\nThe analysis provided by the marketing funnel gives you the ability to discover potential problems, improve your website, and boost your conversion rate.",
     "frontend": "Frontend",
     "backend": "Backend",
     "network": "Network",
@@ -549,8 +563,12 @@
   },
   "project": {
     "search": "Search",
+    "selectCategory": "Select category to filter",
+    "currentFilters": "Currently applied filters",
+    "newFilters": "New filters",
     "advancedFilters": "Advanced filters",
     "applyFilters": "Apply filters",
+    "lookingForMore": "Looking for more?",
     "overrideCurrentlyFilters": "Override currently applied filters",
     "ad": "Θέλετε αυτά τα στατιστικά στοιχεία για την ιστοσελίδα σας;",
     "noExist": "Το επιλεγμένο έργο δεν υπάρχει",
@@ -561,6 +579,12 @@
     "noEvTitle": "Δεν υπάρχουν συμβάντα ακόμα",
     "showAll": "Εμφάνιση όλων των προβολών",
     "trendlineUnique": "Unique visitors trendline",
+    "backToFunnels": "Back to funnels list",
+    "visitPage": "Visit {{page}}",
+    "visitors": "Visitors",
+    "events": "Events",
+    "dropoff": "Dropoff",
+    "neverEnteredTheFunnel": "Never entered the funnel",
     "trendlineTotal": "Pageviews trendline",
     "noEvContent": "Δεν έχουν καταγραφεί συμβάντα για το καθορισμένο χρονικό διάστημα.\nΑν δεν έχετε ακόμη παρακολουθήσει συμβάντα, μπορείτε να δείτε τα <url>Docs</url> για να ενσωματώσετε εύκολα την παρακολούθηση στην εφαρμογή σας.",
     "noCaptchaEv": "No events have been captured for the specified timeframe.\nIf you haven't set up CAPTCHA yet, you can check out our <url>Docs</url> to easily integrate it into your app.",
@@ -576,10 +600,12 @@
       "os": "Όνομα Λειτουργικού Συστήματος"
     },
     "redactedPage": "Redacted page",
+    "noData": "No data to display",
     "overview": "Επισκόπηση",
     "weeklyStats": "Εβδομαδιαία στατιστικά",
     "statsFor": "Στατιστικά για",
     "event": "Συμβάν",
+    "value": "Value",
     "quantity": "Ποσότητα",
     "conversion": "Μετατροπή",
     "ratio": "Ratio",
@@ -755,6 +781,13 @@
       "title": "Traffic forecast",
       "desc": "This is a rough estimate of how much traffic you can expect to get on your website, based on Swetrix AI models.",
       "input": "The quantity of '{{frequency}}' you want to forecast"
+    },
+    "funnels": {
+      "addTitle": "Add funnel",
+      "editTitle": "Edit funnel",
+      "name": "Funnel name",
+      "steps": "Funnel steps",
+      "addStep": "Add one more step"
     }
   },
   "pricing": {
@@ -767,6 +800,7 @@
     "perYear": "έτος",
     "yourPlan": "Το πλάνο σας",
     "downgrade": "Υποβάθμιση",
+    "selectPlan": "Select plan:",
     "upgrade": "Αναβάθμιση",
     "whatIncl": "Τι περιλαμβάνεται",
     "monthlyBilling": "Monthly",
@@ -812,8 +846,7 @@
     "ways": {
       "email": "You can drop us an email at <mail>{{email}}</mail>",
       "twitter": "Tweet or message us at <url>{{twitter}}</url>",
-      "discord": "Join our Discord server by following <url>this link</url>",
-      "chat": "Use a chatbox located on the bottom right of this page"
+      "discord": "Join our Discord server by following <url>this link</url>"
     }
   },
   "beta": {

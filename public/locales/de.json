@@ -35,7 +35,10 @@
     "socialAccountLinked": "Das Swetrix-Konto wurde mit dem ausgewählten Anbieter verknüpft",
     "socialAccountUninked": "Das Swetrix-Konto wurde vom gewählten Anbieter getrennt",
     "enterPassword": "Bitte geben Sie das Passwort ein",
-    "incorrectPassword": "Falsches Passwort, bitte versuchen Sie es erneut."
+    "incorrectPassword": "Falsches Passwort, bitte versuchen Sie es erneut.",
+    "funnelCreated": "The funnel has been created",
+    "funnelUpdated": "The funnel has been updated",
+    "funnelDeleted": "The funnel has been deleted"
   },
   "common": {
     "features": "Funktionen",
@@ -54,6 +57,8 @@
     "confirm": "Bestätigen",
     "amount": "Anzahl",
     "date": "Datum",
+    "success": "Success",
+    "info": "Info",
     "error": "Fehler",
     "close": "Schließen",
     "cancel": "Abbrechen",
@@ -84,7 +89,10 @@
     "account": "Konto",
     "transferring": "Übertragung",
     "link": "Verknüpfung",
-    "unlink": "Verknüpfung aufheben"
+    "unlink": "Verknüpfung aufheben",
+    "nothingFound": "Nothing found",
+    "oneMember": "1 Member",
+    "xMembers": "{{number}} Members"
   },
   "main": {
     "ukrSupport": "Unterstützen Sie die ukrainische Armee im Kampf gegen die russische Invasion.",
@@ -98,6 +106,7 @@
     "lookAtDocs": "Sehen Sie sich doch mal die Dokumentation und die Live Demo an.",
     "readyToStart": "Sind Sie bereit los zu legen?",
     "exploreService": "Erkundigen Sie sich über unseren Dienst oder registrieren Sie sich.",
+    "metric": "Metric",
     "coreFeatures": {
       "title": "Kern-Analysefunktionen",
       "desc": "Leistungsfähige und einfache Analytics um alle benötigten Kennzahlen anzuzeigen. Frei von Cookies. Man muss kein Datenwissenschaftler sein, um unsere Analytics zu verstehen."
@@ -255,6 +264,7 @@
       "ext": "Individuelle Erweiterungen",
       "gdpr": "GDPR-kompatibel",
       "usfl": "Benutzerfluss",
+      "funnels": "Funnels",
       "alrt": "Eigene Alarme",
       "pbld": "Öffentliche Dashboards",
       "shad": "Dashboard-Freigabe",
@@ -461,6 +471,7 @@
   },
   "dashboard": {
     "newProject": "Neues Projekt",
+    "newFunnel": "New funnel",
     "newCaptchaProject": "Neues CAPTCHA Projekt",
     "verifyEmailTitle": "Bitte bestätigen Sie zuerst die E-Mail-Adresse.",
     "verifyEmailDesc": "Um unseren Dienst nutzen und Ihre Projekte erstellen zu können, müssen Sie zunächst Ihre E-Mail-Adresse bestätigen.\n\nEin Link zur Bestätigung Ihres Kontos wurde an die E-Mail-Adresse geschickt, die Sie bei der Registrierung angegeben haben. Wenn er nicht zugestellt wurde, können Sie den Link in Ihren Kontoeinstellungen erneut anfordern.",
@@ -486,10 +497,13 @@
     "invitationFor": "Einladung zu {{project}}",
     "invitationDesc": "Sie wurden eingeladen, dem Projekt {{project}} beizutreten.\nSie können die Einladung entweder annehmen oder in Ihren Kontoeinstellungen ablehnen.",
     "sessionDuration": "Dauer der Sitzung",
+    "cumulativeMode": "Cumulative mode",
     "traffic": "Verkehr",
     "performance": "Leistung",
+    "funnels": "Funnels",
     "alerts": "Alarme",
     "alertsDesc": "Automatisierte Benachrichtigungen sind ein leistungsstarkes Tool, mit dem Sie automatisierte Aufgaben ausführen können, wenn bestimmte Ereignisse eintreten.\nWir können Ihr Projekt automatisch auf Datenverkehrsspitzen überwachen und Sie über Telegram benachrichtigen.",
+    "funnelsDesc": "Funnels are a powerful tool that allow you to track the conversion rate of your users through a series of steps.\nThe analysis provided by the marketing funnel gives you the ability to discover potential problems, improve your website, and boost your conversion rate.",
     "frontend": "Frontend",
     "backend": "Backend",
     "network": "Netzwerk",
@@ -549,8 +563,12 @@
   },
   "project": {
     "search": "Suche",
+    "selectCategory": "Select category to filter",
+    "currentFilters": "Currently applied filters",
+    "newFilters": "New filters",
     "advancedFilters": "Erweiterte Filter",
     "applyFilters": "Filter anwenden",
+    "lookingForMore": "Looking for more?",
     "overrideCurrentlyFilters": "Aktuell angewendete Filter überschreiben",
     "ad": "Sie möchten diese Statistiken für Ihre eigene Webseite?",
     "noExist": "Das ausgewählte Projekt existiert nicht",
@@ -561,6 +579,12 @@
     "noEvTitle": "Noch keine Tracking-Events",
     "showAll": "Alle Ansichten anzeigen",
     "trendlineUnique": "Einzigartige Besucher Trendlinie",
+    "backToFunnels": "Back to funnels list",
+    "visitPage": "Visit {{page}}",
+    "visitors": "Visitors",
+    "events": "Events",
+    "dropoff": "Dropoff",
+    "neverEnteredTheFunnel": "Never entered the funnel",
     "trendlineTotal": "Seitenansichten Trendlinie",
     "noEvContent": "Für den angegebenen Zeitraum wurden keine Tracking-Events aufgezeichnet.\nWenn Sie noch keine Tracking-Events erfassen, können Sie sich unsere <url>Doku</url> ansehen, um die Erfassung einfach in Ihre App zu integrieren.",
     "noCaptchaEv": "Für den angegebenen Zeitraum wurden keine Ereignisse erfasst.\nWenn Sie CAPTCHA noch nicht eingerichtet haben, können Sie sich unsere <url>Docs</url> anschauen, um es einfach in Ihre App zu integrieren.",
@@ -576,10 +600,12 @@
       "os": "Betriebssystem"
     },
     "redactedPage": "Redacted page",
+    "noData": "No data to display",
     "overview": "Übersicht",
     "weeklyStats": "Wöchentliche Statistik",
     "statsFor": "Statistik für",
     "event": "Ereignis",
+    "value": "Value",
     "quantity": "Anzahl",
     "conversion": "Konversionsrate",
     "ratio": "Verhältnis",
@@ -755,6 +781,13 @@
       "title": "Traffic-Prognose",
       "desc": "Dies ist eine grobe Schätzung, wie viel Traffic Sie auf Ihrer Website erwarten können, basierend auf den KI-Modellen von Swetrix.",
       "input": "Die Menge von '{{frequency}}' die Sie vorhersagen möchten"
+    },
+    "funnels": {
+      "addTitle": "Add funnel",
+      "editTitle": "Edit funnel",
+      "name": "Funnel name",
+      "steps": "Funnel steps",
+      "addStep": "Add one more step"
     }
   },
   "pricing": {
@@ -767,6 +800,7 @@
     "perYear": "Jahr",
     "yourPlan": "Ihr Abonnement",
     "downgrade": "Herabstufen",
+    "selectPlan": "Select plan:",
     "upgrade": "Aufstufen",
     "whatIncl": "Was ist enthalten?",
     "monthlyBilling": "Monthly",
@@ -812,8 +846,7 @@
     "ways": {
       "email": "Sie können uns eine E-Mail an <mail>{{email}}</mail> schicken",
       "twitter": "Twittern oder schreiben Sie uns auf<url>{{twitter}}</url>",
-      "discord": "Treten Sie unserem <url>Discord-Server</url> bei",
-      "chat": "Verwenden Sie die Chat-Box, die sich unten rechts auf dieser Seite befindet"
+      "discord": "Treten Sie unserem <url>Discord-Server</url> bei"
     }
   },
   "beta": {

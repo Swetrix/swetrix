@@ -35,7 +35,10 @@
     "socialAccountLinked": "Konto Swetrix zostało połączone z wybranym dostawcą",
     "socialAccountUninked": "Konto Swetrix zostało odłączone od wybranego dostawcy",
     "enterPassword": "Please enter the password",
-    "incorrectPassword": "Incorrect password, please try again."
+    "incorrectPassword": "Incorrect password, please try again.",
+    "funnelCreated": "The funnel has been created",
+    "funnelUpdated": "The funnel has been updated",
+    "funnelDeleted": "The funnel has been deleted"
   },
   "common": {
     "features": "Funkcje",
@@ -54,6 +57,8 @@
     "confirm": "Confirm",
     "amount": "Amount",
     "date": "Date",
+    "success": "Success",
+    "info": "Info",
     "error": "Błąd",
     "close": "Zamknij",
     "cancel": "Anuluj",
@@ -84,7 +89,10 @@
     "account": "Konto",
     "transferring": "Przekazanie",
     "link": "Link",
-    "unlink": "Odłącz"
+    "unlink": "Odłącz",
+    "nothingFound": "Nothing found",
+    "oneMember": "1 Member",
+    "xMembers": "{{number}} Members"
   },
   "main": {
     "ukrSupport": "Wspieraj ukraińską armię w walce z rosyjską inwazją.",
@@ -98,6 +106,7 @@
     "lookAtDocs": "Zajrzyj na stronę z dokumentacją i demo na żywo.",
     "readyToStart": "Gotowy, aby rozpocząć?",
     "exploreService": "Poznaj naszą usługę lub załóż konto.",
+    "metric": "Metric",
     "coreFeatures": {
       "title": "Główne funkcje analityczne",
       "desc": "Potężna i łatwa analityka, aby wyświetlić wszystkie metryki, których potrzebujesz. Bez plików cookies. Nie trzeba być naukowcem od danych, aby zrozumieć naszą analitykę."
@@ -255,6 +264,7 @@
       "ext": "Niestandardowe rozszerzenia",
       "gdpr": "Zgodne z RODO",
       "usfl": "Przepływ użytkowników",
+      "funnels": "Funnels",
       "alrt": "Niestandardowe alerty",
       "pbld": "Publiczne panele",
       "shad": "Udostępnianie panelu",
@@ -461,6 +471,7 @@
   },
   "dashboard": {
     "newProject": "Nowy projekt",
+    "newFunnel": "New funnel",
     "newCaptchaProject": "Nowy projekt CAPTCHA",
     "verifyEmailTitle": "Proszę najpierw zweryfikować adres e-mail",
     "verifyEmailDesc": "Aby zacząć korzystać z naszego serwisu i tworzyć swoje projekty, musisz najpierw potwierdzić swój adres e-mail.\n\nNa podany podczas rejestracji adres e-mail został wysłany link do potwierdzenia konta, jeśli nie został dostarczony - możesz poprosić o ponowne przesłanie linku w ustawieniach konta.",
@@ -486,10 +497,13 @@
     "invitationFor": "Zaproszenie do {{project}}",
     "invitationDesc": "Zostałeś zaproszony do projektu {{project}}.\nMożesz zaakceptować zaproszenie tutaj lub odrzucić je w ustawieniach konta.",
     "sessionDuration": "Czas trwania sesji",
+    "cumulativeMode": "Cumulative mode",
     "traffic": "Ruch",
     "performance": "Wydajność",
+    "funnels": "Funnels",
     "alerts": "Alerty",
     "alertsDesc": "Zautomatyzowane alerty to potężne narzędzie, które pozwala uruchomić automatyczne zadania, gdy wystąpią określone zdarzenia.\nMożemy automatycznie monitorować Twój projekt pod kątem skoków ruchu i powiadamiać Cię za pośrednictwem Telegrama.",
+    "funnelsDesc": "Funnels are a powerful tool that allow you to track the conversion rate of your users through a series of steps.\nThe analysis provided by the marketing funnel gives you the ability to discover potential problems, improve your website, and boost your conversion rate.",
     "frontend": "Frontend",
     "backend": "Backend",
     "network": "Sieć",
@@ -549,8 +563,12 @@
   },
   "project": {
     "search": "Search",
+    "selectCategory": "Select category to filter",
+    "currentFilters": "Currently applied filters",
+    "newFilters": "New filters",
     "advancedFilters": "Advanced filters",
     "applyFilters": "Apply filters",
+    "lookingForMore": "Looking for more?",
     "overrideCurrentlyFilters": "Override currently applied filters",
     "ad": "Chcesz te statystyki dla swojej witryny?",
     "noExist": "Wybrany projekt nie istnieje",
@@ -561,6 +579,12 @@
     "noEvTitle": "Brak zdarzeń",
     "showAll": "Pokaż wszystkie wyświetlenia",
     "trendlineUnique": "Linia trendu unikalnych odwiedzających",
+    "backToFunnels": "Back to funnels list",
+    "visitPage": "Visit {{page}}",
+    "visitors": "Visitors",
+    "events": "Events",
+    "dropoff": "Dropoff",
+    "neverEnteredTheFunnel": "Never entered the funnel",
     "trendlineTotal": "Linia trendu odsłon witryny",
     "noEvContent": "Nie przechwycono żadnych zdarzeń dla określonego przedziału czasowego.\nJeśli nie śledziłeś jeszcze żadnych zdarzeń, możesz sprawdzić naszą <url>Dokumentację</url>, aby łatwo zintegrować śledzenie w swojej aplikacji.",
     "noCaptchaEv": "Nie przechwycono żadnych zdarzeń dla określonych ram czasowych.\nJeśli jeszcze nie skonfigurowałeś CAPTCHA, możesz sprawdzić nasze <url>Docs</url>, aby łatwo zintegrować go z aplikacją.",
@@ -576,10 +600,12 @@
       "os": "System operacyjny"
     },
     "redactedPage": "Redacted page",
+    "noData": "No data to display",
     "overview": "Przegląd",
     "weeklyStats": "Statystyki tygodniowe",
     "statsFor": "Statystyki dla",
     "event": "Zdarzenie",
+    "value": "Value",
     "quantity": "Liczba",
     "conversion": "Konwersja",
     "ratio": "Współczynnik",
@@ -755,6 +781,13 @@
       "title": "Prognoza ruchu",
       "desc": "To jest przybliżone oszacowanie, ile ruchu możesz spodziewać się na swojej stronie internetowej na podstawie modelu Swetrix AI.",
       "input": "Liczba '{{frequency}}' którą chcesz prognozować"
+    },
+    "funnels": {
+      "addTitle": "Add funnel",
+      "editTitle": "Edit funnel",
+      "name": "Funnel name",
+      "steps": "Funnel steps",
+      "addStep": "Add one more step"
     }
   },
   "pricing": {
@@ -767,6 +800,7 @@
     "perYear": "rocznie",
     "yourPlan": "Twój plan",
     "downgrade": "Obniżenie wersji",
+    "selectPlan": "Select plan:",
     "upgrade": "Ulepsz",
     "whatIncl": "Co zawiera",
     "monthlyBilling": "Monthly",
@@ -812,8 +846,7 @@
     "ways": {
       "email": "Możesz wysłać nam e-mail na adres <mail>{{email}}</mail>",
       "twitter": "Tweetuj lub napisz do nas na <url>{{twitter}}</url>",
-      "discord": "Dołącz do naszego serwera Discord, obserwując <url>ten link</url>",
-      "chat": "Użyj skrzynki czatu znajdującej się w prawym dolnym rogu tej strony"
+      "discord": "Dołącz do naszego serwera Discord, obserwując <url>ten link</url>"
     }
   },
   "beta": {

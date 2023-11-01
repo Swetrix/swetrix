@@ -35,7 +35,10 @@
     "socialAccountLinked": "The Swetrix account has been linked with your selected provider",
     "socialAccountUninked": "The Swetrix account has been unlinked from the selected provider",
     "enterPassword": "Please enter the password",
-    "incorrectPassword": "Incorrect password, please try again."
+    "incorrectPassword": "Incorrect password, please try again.",
+    "funnelCreated": "The funnel has been created",
+    "funnelUpdated": "The funnel has been updated",
+    "funnelDeleted": "The funnel has been deleted"
   },
   "common": {
     "features": "Funktioner",
@@ -54,6 +57,8 @@
     "confirm": "Confirm",
     "amount": "Amount",
     "date": "Date",
+    "success": "Success",
+    "info": "Info",
     "error": "Fel",
     "close": "Stänga",
     "cancel": "Avbryta",
@@ -84,7 +89,10 @@
     "account": "Account",
     "transferring": "Transferring",
     "link": "Link",
-    "unlink": "Unlink"
+    "unlink": "Unlink",
+    "nothingFound": "Nothing found",
+    "oneMember": "1 Member",
+    "xMembers": "{{number}} Members"
   },
   "main": {
     "ukrSupport": "Stöd den ukrainska armén att bekämpa den ryska invasionen.",
@@ -98,6 +106,7 @@
     "lookAtDocs": "Titta på dokumentationen och live demonstrationssidor.",
     "readyToStart": "Redo att komma igång?",
     "exploreService": "Utforska vår tjänst eller skapa ett konto.",
+    "metric": "Metric",
     "coreFeatures": {
       "title": "Core Analytics Features",
       "desc": "Powerful and easy analytics to display all the metrics you need. Cookieless. No need to be a data scientist to understand our analytics."
@@ -255,6 +264,7 @@
       "ext": "Custom extensions",
       "gdpr": "GDPR-compatible",
       "usfl": "User flow",
+      "funnels": "Funnels",
       "alrt": "Custom alerts",
       "pbld": "Public dashboards",
       "shad": "Dashboard sharing",
@@ -461,6 +471,7 @@
   },
   "dashboard": {
     "newProject": "Nytt projekt",
+    "newFunnel": "New funnel",
     "newCaptchaProject": "New CAPTCHA project",
     "verifyEmailTitle": "Vänligen verifiera e-postadressen först",
     "verifyEmailDesc": "För att börja använda vår tjänst och skapa dina projekt måste du först bekräfta din e-postadress.\n\nEn länk för att bekräfta ditt konto har skickats till den e-postadress som du angav vid din registrering. Om länken inte levererades kan du begära den igen i dina kontoinställningar.",
@@ -486,10 +497,13 @@
     "invitationFor": "Invitation for {{project}}",
     "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings.",
     "sessionDuration": "Session duration",
+    "cumulativeMode": "Cumulative mode",
     "traffic": "Trafik",
     "performance": "Performance",
+    "funnels": "Funnels",
     "alerts": "Alerts",
     "alertsDesc": "Automated alerts are a powerful tool that allow you to run automated tasks when specific events occur.\nWe can automatically monitor your project for traffic spikes and notify you via Telegram.",
+    "funnelsDesc": "Funnels are a powerful tool that allow you to track the conversion rate of your users through a series of steps.\nThe analysis provided by the marketing funnel gives you the ability to discover potential problems, improve your website, and boost your conversion rate.",
     "frontend": "Frontend",
     "backend": "Backend",
     "network": "Network",
@@ -549,8 +563,12 @@
   },
   "project": {
     "search": "Search",
+    "selectCategory": "Select category to filter",
+    "currentFilters": "Currently applied filters",
+    "newFilters": "New filters",
     "advancedFilters": "Advanced filters",
     "applyFilters": "Apply filters",
+    "lookingForMore": "Looking for more?",
     "overrideCurrentlyFilters": "Override currently applied filters",
     "ad": "Vill du ha denna statistik för din webbplats?",
     "noExist": "Det valda projektet finns inte",
@@ -561,6 +579,12 @@
     "noEvTitle": "Inga händelser ännu",
     "showAll": "Visa alla händelser",
     "trendlineUnique": "Unique visitors trendline",
+    "backToFunnels": "Back to funnels list",
+    "visitPage": "Visit {{page}}",
+    "visitors": "Visitors",
+    "events": "Events",
+    "dropoff": "Dropoff",
+    "neverEnteredTheFunnel": "Never entered the funnel",
     "trendlineTotal": "Pageviews trendline",
     "noEvContent": "Inga händelser har registrerats under den angivna tidsramen.\nOm du inte har spårat några händelser ännu kan du kolla in våra <url>Docs</url> för att enkelt integrera spårning i din app.",
     "noCaptchaEv": "No events have been captured for the specified timeframe.\nIf you haven't set up CAPTCHA yet, you can check out our <url>Docs</url> to easily integrate it into your app.",
@@ -576,10 +600,12 @@
       "os": "OS-namn"
     },
     "redactedPage": "Redacted page",
+    "noData": "No data to display",
     "overview": "Översikt",
     "weeklyStats": "Veckovis statistik",
     "statsFor": "Statistik för",
     "event": "Händelse",
+    "value": "Value",
     "quantity": "Kvantitet",
     "conversion": "Konversion",
     "ratio": "Förhållande",
@@ -755,6 +781,13 @@
       "title": "Traffic forecast",
       "desc": "This is a rough estimate of how much traffic you can expect to get on your website, based on Swetrix AI models.",
       "input": "The quantity of '{{frequency}}' you want to forecast"
+    },
+    "funnels": {
+      "addTitle": "Add funnel",
+      "editTitle": "Edit funnel",
+      "name": "Funnel name",
+      "steps": "Funnel steps",
+      "addStep": "Add one more step"
     }
   },
   "pricing": {
@@ -767,6 +800,7 @@
     "perYear": "yr",
     "yourPlan": "Din plan",
     "downgrade": "Nedgradera",
+    "selectPlan": "Select plan:",
     "upgrade": "Uppgradera",
     "whatIncl": "Vad ingår",
     "monthlyBilling": "Monthly",
@@ -812,8 +846,7 @@
     "ways": {
       "email": "You can drop us an email at <mail>{{email}}</mail>",
       "twitter": "Tweet or message us at <url>{{twitter}}</url>",
-      "discord": "Join our Discord server by following <url>this link</url>",
-      "chat": "Use a chatbox located on the bottom right of this page"
+      "discord": "Join our Discord server by following <url>this link</url>"
     }
   },
   "beta": {
