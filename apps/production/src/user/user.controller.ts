@@ -103,13 +103,13 @@ export class UserController {
       },
       relations: ['project'],
     })
-    const user = this.userService.processUser(
+    const user = this.userService.omitSensitiveData(
       await this.userService.findOneWhere({ id: user_id }),
     )
 
     user.sharedProjects = sharedProjects
 
-    return this.userService.omitSensitiveData(user)
+    return user
   }
 
   @Get('/')

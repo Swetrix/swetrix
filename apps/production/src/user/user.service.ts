@@ -144,7 +144,14 @@ export class UserService {
   }
 
   omitSensitiveData(user: Partial<User>): Partial<User> {
-    return _omit(user, [
+    const maxEventsCount = ACCOUNT_PLANS[user?.planCode]?.monthlyUsageLimit || 0
+
+    const enhancedUser = {
+      ...user,
+      maxEventsCount,
+    }
+
+    return _omit(enhancedUser, [
       'password',
       'twoFactorRecoveryCode',
       'twoFactorAuthenticationSecret',
@@ -211,21 +218,6 @@ export class UserService {
     if (!_isEmpty(err)) {
       throw new BadRequestException(err)
     }
-  }
-
-  processUser(user: User): Partial<User> {
-    // @ts-ignore
-    const maxEventsCount = ACCOUNT_PLANS[user?.planCode]?.monthlyUsageLimit || 0
-    const userData = {
-      // @ts-ignore
-      ...user,
-      password: undefined,
-      twoFactorRecoveryCode: undefined,
-      twoFactorAuthenticationSecret: undefined,
-      maxEventsCount,
-    }
-
-    return userData
   }
 
   search(query: string): Promise<User[]> {
