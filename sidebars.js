@@ -8,7 +8,7 @@ module.exports = {
       {
         type: 'category',
         label: 'Integrations',
-        items: ['integrations/wordpress', 'integrations/webflow', 'integrations/wix', 'integrations/ghost', 'integrations/django', 'integrations/sveltekit'],
+        items: ['integrations/wordpress', 'integrations/webflow', 'integrations/framer', 'integrations/wix', 'integrations/ghost', 'integrations/django', 'integrations/sveltekit'],
       }
     ],
     'Affiliate program': [
