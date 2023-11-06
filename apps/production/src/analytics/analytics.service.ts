@@ -40,6 +40,7 @@ import {
   ACCOUNT_PLANS,
   DEFAULT_TIMEZONE,
   PlanCode,
+  EXTRA_EVENTS_MULTIPLIER,
 } from '../user/entities/user.entity'
 import {
   redis,
@@ -401,7 +402,8 @@ export class AnalyticsService {
 
     const count = await this.projectService.getRedisCount(project.admin.id)
     const maxCount =
-      ACCOUNT_PLANS[project.admin.planCode].monthlyUsageLimit || 0
+      ACCOUNT_PLANS[project.admin.planCode].monthlyUsageLimit *
+        EXTRA_EVENTS_MULTIPLIER || 0
 
     if (count >= maxCount) {
       throw new HttpException(

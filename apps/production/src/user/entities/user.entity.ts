@@ -116,6 +116,9 @@ export const ACCOUNT_PLANS = {
   },
 }
 
+// +extra 5% events
+export const EXTRA_EVENTS_MULTIPLIER = 1.05
+
 export enum UserType {
   CUSTOMER = 'customer',
   ADMIN = 'admin',
