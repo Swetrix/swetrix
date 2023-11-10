@@ -16,6 +16,11 @@ export interface TrafficCHResponse {
   pageviews: number
 }
 
+export interface BirdseyeCHResponse {
+  all: number
+  unique: number
+}
+
 export interface PerformanceCHResponse {
   year: number
   month: number

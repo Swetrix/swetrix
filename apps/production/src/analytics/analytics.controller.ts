@@ -846,16 +846,11 @@ export class AnalyticsController {
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ): Promise<any> {
-    const { pids, pid } = data
+    const { pids, pid, period } = data
     const pidsArray = getPIDsArray(pids, pid)
 
     const validationPromises = _map(pidsArray, async currentPID => {
       this.analyticsService.validatePID(currentPID)
-      // fix needed
-      // fix needed
-      // fix needed
-      // fix needed
-      // passwords and for projects protected []
       await this.analyticsService.checkProjectAccess(
         currentPID,
         uid,
@@ -865,7 +860,7 @@ export class AnalyticsController {
 
     await Promise.all(validationPromises)
 
-    return this.analyticsService.getSummary(pidsArray, 'w')
+    return this.analyticsService.getAnalyticsSummary(pidsArray, period)
   }
 
   @Get('captcha/birdseye')
@@ -875,7 +870,7 @@ export class AnalyticsController {
     @Query() data,
     @CurrentUserId() uid: string,
   ): Promise<any> {
-    const { pids, pid } = data
+    const { pids, pid, period } = data
     const pidsArray = getPIDsArray(pids, pid)
 
     const validationPromises = _map(pidsArray, async currentPID => {
@@ -885,7 +880,7 @@ export class AnalyticsController {
 
     await Promise.all(validationPromises)
 
-    return this.analyticsService.getCaptchaSummary(pidsArray, 'w')
+    return this.analyticsService.getCaptchaSummary(pidsArray, period)
   }
 
   @Public()

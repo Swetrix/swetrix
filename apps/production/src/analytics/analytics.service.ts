@@ -69,6 +69,7 @@ import {
   CustomsCHResponse,
   CustomsCHAggregatedResponse,
   TrafficCEFilterCHResponse,
+  BirdseyeCHResponse,
   TrafficCHResponse,
   IGetGroupFromTo,
   GetFiltersQuery,
@@ -1103,8 +1104,91 @@ export class AnalyticsService {
     return this.getSummaryStats(pids, 'analytics', period, amountToSubtract)
   }
 
-  async getCaptchaSummary(pids: string[], period: 'w' | 'M' = 'w') {
-    return this.getSummaryStats(pids, 'captcha', period)
+  async getCaptchaSummary(pids: string[], period: string) {
+    this.validatePeriod(period)
+
+    const result = {}
+
+    const promises = pids.map(async pid => {
+      if (!isValidPID(pid)) {
+        throw new BadRequestException(
+          `The provided Project ID (${pid}) is incorrect`,
+        )
+      }
+
+      try {
+        if (period === 'all') {
+          const queryAll = `SELECT count(*) AS all AS unique FROM captcha WHERE pid = {pid:FixedString(12)}`
+          const rawResult = <Array<Partial<BirdseyeCHResponse>>>await clickhouse
+            .query(queryAll, {
+              params: { pid },
+            })
+            .toPromise()
+
+          result[pid] = {
+            current: {
+              all: rawResult[0].all,
+            },
+            previous: {
+              all: 0,
+            },
+            percChange: 100,
+            percChangeUnique: 100,
+          }
+          return
+        }
+
+        const amountToSubtract = parseInt(period, 10)
+        const unit = _replace(period, /[0-9]/g, '')
+
+        const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+        const periodRaw = dayjs.utc().subtract(amountToSubtract, unit)
+        const periodFormatted = periodRaw.format('YYYY-MM-DD HH:mm:ss')
+        const periodSubtracted = periodRaw
+          .subtract(amountToSubtract, unit)
+          .format('YYYY-MM-DD HH:mm:ss')
+
+        const queryCurrent = `SELECT count(*) AS all AS unique FROM captcha WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodFormatted:String} AND {now:String}`
+        const queryPrevious = `SELECT count(*) AS all AS unique FROM captcha WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}`
+
+        const query = `${queryCurrent} UNION ALL ${queryPrevious}`
+
+        const rawResult = <Array<Partial<BirdseyeCHResponse>>>await clickhouse
+          .query(query, {
+            params: {
+              pid,
+              periodFormatted,
+              periodSubtracted,
+              now,
+            },
+          })
+          .toPromise()
+
+        const currentPeriod = rawResult[0]
+        const previousPeriod = rawResult[1]
+
+        result[pid] = {
+          current: {
+            all: currentPeriod.all,
+          },
+          previous: {
+            all: previousPeriod.all,
+          },
+          percChange: calculateRelativePercentage(
+            previousPeriod.all,
+            currentPeriod.all,
+          ),
+        }
+      } catch {
+        throw new InternalServerErrorException(
+          "Can't process the provided PID. Please, try again later.",
+        )
+      }
+    })
+
+    await Promise.all(promises)
+
+    return result
   }
 
   async getSummaryStats(
@@ -1189,6 +1273,121 @@ export class AnalyticsService {
             lastWeek,
             percChange: calculateRelativePercentage(lastWeek, thisWeek),
           }
+        }
+      } catch {
+        throw new InternalServerErrorException(
+          "Can't process the provided PID. Please, try again later.",
+        )
+      }
+    })
+
+    await Promise.all(promises)
+
+    return result
+  }
+
+  async getAnalyticsSummary(pids: string[], period: string) {
+    this.validatePeriod(period)
+
+    const result = {}
+
+    const promises = pids.map(async pid => {
+      if (!isValidPID(pid)) {
+        throw new BadRequestException(
+          `The provided Project ID (${pid}) is incorrect`,
+        )
+      }
+
+      try {
+        if (period === 'all') {
+          const queryAll = `SELECT count(*) AS all, countIf(unique=1) AS unique FROM analytics WHERE pid = {pid:FixedString(12)}`
+          const rawResult = <Array<BirdseyeCHResponse>>await clickhouse
+            .query(queryAll, {
+              params: { pid },
+            })
+            .toPromise()
+
+          let bounceRate = 0
+
+          if (rawResult[0].all > 0) {
+            bounceRate = _round(
+              (rawResult[0].unique * 100) / rawResult[0].all,
+              1,
+            )
+          }
+
+          result[pid] = {
+            current: {
+              all: rawResult[0].all,
+              unique: rawResult[0].unique,
+              bounceRate,
+            },
+            previous: {
+              all: 0,
+              unique: 0,
+            },
+            percChange: 100,
+            percChangeUnique: 100,
+          }
+          return
+        }
+
+        const amountToSubtract = parseInt(period, 10)
+        const unit = _replace(period, /[0-9]/g, '')
+
+        const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+        const periodRaw = dayjs.utc().subtract(amountToSubtract, unit)
+        const periodFormatted = periodRaw.format('YYYY-MM-DD HH:mm:ss')
+        const periodSubtracted = periodRaw
+          .subtract(amountToSubtract, unit)
+          .format('YYYY-MM-DD HH:mm:ss')
+
+        const queryCurrent = `SELECT count(*) AS all, countIf(unique=1) AS unique FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodFormatted:String} AND {now:String}`
+        const queryPrevious = `SELECT count(*) AS all, countIf(unique=1) AS unique FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}`
+
+        const query = `${queryCurrent} UNION ALL ${queryPrevious}`
+
+        const rawResult = <Array<BirdseyeCHResponse>>await clickhouse
+          .query(query, {
+            params: {
+              pid,
+              periodFormatted,
+              periodSubtracted,
+              now,
+            },
+          })
+          .toPromise()
+
+        const currentPeriod = rawResult[0]
+        const previousPeriod = rawResult[1]
+
+        let bounceRate = 0
+
+        if (currentPeriod.all > 0) {
+          bounceRate = _round(
+            (currentPeriod.unique * 100) / currentPeriod.all,
+            1,
+          )
+        }
+
+        result[pid] = {
+          current: {
+            all: currentPeriod.all,
+            unique: currentPeriod.unique,
+            bounceRate,
+          },
+          previous: {
+            all: previousPeriod.all,
+            unique: previousPeriod.unique,
+          },
+          percChange: calculateRelativePercentage(
+            previousPeriod.all,
+            currentPeriod.all,
+          ),
+          percChangeUnique: calculateRelativePercentage(
+            previousPeriod.unique,
+            currentPeriod.unique,
+          ),
         }
       } catch {
         throw new InternalServerErrorException(
