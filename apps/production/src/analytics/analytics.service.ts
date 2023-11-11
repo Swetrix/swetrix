@@ -1300,7 +1300,7 @@ export class AnalyticsService {
 
       try {
         if (period === 'all') {
-          const queryAll = `SELECT count(*) AS all, countIf(unique=1) AS unique FROM analytics WHERE pid = {pid:FixedString(12)}`
+          const queryAll = `SELECT count(*) AS all, countIf(unique=1) AS unique, avgIf(sdur, sdur IS NOT NULL AND analytics.unique=1) AS sdur FROM analytics WHERE pid = {pid:FixedString(12)}`
           const rawResult = <Array<BirdseyeCHResponse>>await clickhouse
             .query(queryAll, {
               params: { pid },
@@ -1321,10 +1321,13 @@ export class AnalyticsService {
               all: rawResult[0].all,
               unique: rawResult[0].unique,
               bounceRate,
+              sdur: rawResult[0].sdur,
             },
             previous: {
               all: 0,
               unique: 0,
+              bounceRate: 0,
+              sdur: 0,
             },
             percChange: 100,
             percChangeUnique: 100,
@@ -1342,8 +1345,8 @@ export class AnalyticsService {
           .subtract(amountToSubtract, unit)
           .format('YYYY-MM-DD HH:mm:ss')
 
-        const queryCurrent = `SELECT count(*) AS all, countIf(unique=1) AS unique FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodFormatted:String} AND {now:String}`
-        const queryPrevious = `SELECT count(*) AS all, countIf(unique=1) AS unique FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}`
+        const queryCurrent = `SELECT count(*) AS all, countIf(unique=1) AS unique, avgIf(sdur, sdur IS NOT NULL AND analytics.unique=1) AS sdur FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodFormatted:String} AND {now:String}`
+        const queryPrevious = `SELECT count(*) AS all, countIf(unique=1) AS unique, avgIf(sdur, sdur IS NOT NULL AND analytics.unique=1) AS sdur FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}`
 
         const query = `${queryCurrent} UNION ALL ${queryPrevious}`
 
@@ -1362,6 +1365,7 @@ export class AnalyticsService {
         const previousPeriod = rawResult[1]
 
         let bounceRate = 0
+        let prevBounceRate = 0
 
         if (currentPeriod.all > 0) {
           bounceRate = _round(
@@ -1370,15 +1374,25 @@ export class AnalyticsService {
           )
         }
 
+        if (previousPeriod.all > 0) {
+          prevBounceRate = _round(
+            (previousPeriod.unique * 100) / previousPeriod.all,
+            1,
+          )
+        }
+
         result[pid] = {
           current: {
             all: currentPeriod.all,
             unique: currentPeriod.unique,
+            sdur: currentPeriod.sdur || 0,
             bounceRate,
           },
           previous: {
             all: previousPeriod.all,
             unique: previousPeriod.unique,
+            sdur: previousPeriod.sdur || 0,
+            bounceRate: prevBounceRate,
           },
           percChange: calculateRelativePercentage(
             previousPeriod.all,
@@ -1388,8 +1402,16 @@ export class AnalyticsService {
             previousPeriod.unique,
             currentPeriod.unique,
           ),
+          bounceRateChange: calculateRelativePercentage(
+            prevBounceRate,
+            bounceRate,
+          ),
         }
-      } catch {
+      } catch (reason) {
+        console.error(
+          `[ERROR] (getAnalyticsSummary) Error occurred for PID ${pid}`,
+        )
+        console.error(reason)
         throw new InternalServerErrorException(
           "Can't process the provided PID. Please, try again later.",
         )
@@ -1697,7 +1719,7 @@ export class AnalyticsService {
         ${selector},
         avg(sdur) as sdur,
         count() as pageviews,
-        sumIf(1, unique = 1) as uniques
+        countIf(unique=1) as uniques
       FROM (
         SELECT *,
           ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created

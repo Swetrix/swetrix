@@ -19,6 +19,7 @@ export interface TrafficCHResponse {
 export interface BirdseyeCHResponse {
   all: number
   unique: number
+  sdur: number
 }
 
 export interface PerformanceCHResponse {
