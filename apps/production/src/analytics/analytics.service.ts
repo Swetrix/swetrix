@@ -1329,8 +1329,10 @@ export class AnalyticsService {
               bounceRate: 0,
               sdur: 0,
             },
-            percChange: 100,
-            percChangeUnique: 100,
+            change: rawResult[0].all,
+            uniqueChange: rawResult[0].unique,
+            bounceRateChange: bounceRate,
+            sdurChange: rawResult[0].sdur,
           }
           return
         }
@@ -1394,18 +1396,10 @@ export class AnalyticsService {
             sdur: previousPeriod.sdur || 0,
             bounceRate: prevBounceRate,
           },
-          percChange: calculateRelativePercentage(
-            previousPeriod.all,
-            currentPeriod.all,
-          ),
-          percChangeUnique: calculateRelativePercentage(
-            previousPeriod.unique,
-            currentPeriod.unique,
-          ),
-          bounceRateChange: calculateRelativePercentage(
-            prevBounceRate,
-            bounceRate,
-          ),
+          change: currentPeriod.all - previousPeriod.all,
+          uniqueChange: currentPeriod.unique - previousPeriod.unique,
+          bounceRateChange: (bounceRate - prevBounceRate) * -1,
+          sdurChange: currentPeriod.sdur - previousPeriod.sdur,
         }
       } catch (reason) {
         console.error(
