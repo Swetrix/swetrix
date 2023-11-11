@@ -1493,18 +1493,6 @@ export class AnalyticsService {
     return params
   }
 
-  async calculateAverageSessionDuration(
-    subQuery: string,
-    paramsData: any,
-  ): Promise<number> {
-    const avgSdurQuery = `SELECT avg(sdur) ${subQuery} AND sdur IS NOT NULL AND unique='1'`
-    const avgSdurObject = await clickhouse
-      .query(avgSdurQuery, paramsData)
-      .toPromise()
-
-    return _round(avgSdurObject[0]['avg(sdur)'])
-  }
-
   generateXAxis(
     timeBucket: TimeBucketType,
     from: string, // timezone is already applied to the from and to parameters
@@ -1874,7 +1862,6 @@ export class AnalyticsService {
   ): Promise<object | void> {
     let params: unknown = {}
     let chart: unknown = {}
-    let avgSdur = 0
 
     const promises = [
       // Getting params
@@ -1899,7 +1886,6 @@ export class AnalyticsService {
           timeBucket,
           from,
           to,
-          subQuery,
           filtersQuery,
           paramsData,
           safeTimezone,
@@ -1909,9 +1895,6 @@ export class AnalyticsService {
 
         // @ts-ignore
         chart = groupedData.chart
-
-        // @ts-ignore
-        avgSdur = groupedData.avgSdur
       })(),
     ]
 
@@ -1920,7 +1903,6 @@ export class AnalyticsService {
     return {
       params,
       chart,
-      avgSdur,
     }
   }
 
@@ -1944,17 +1926,12 @@ export class AnalyticsService {
     timeBucket: TimeBucketType,
     from: string,
     to: string,
-    subQuery: string,
     filtersQuery: string,
     paramsData: any,
     safeTimezone: string,
     customEVFilterApplied: boolean,
     mode: ChartRenderMode,
   ): Promise<object | void> {
-    const avgSdur = customEVFilterApplied
-      ? 0
-      : await this.calculateAverageSessionDuration(subQuery, paramsData)
-
     const { xShifted } = this.generateXAxis(timeBucket, from, to, safeTimezone)
 
     if (customEVFilterApplied) {
@@ -1982,7 +1959,6 @@ export class AnalyticsService {
           uniques,
           sdur,
         },
-        avgSdur,
       })
     }
 
@@ -2006,7 +1982,6 @@ export class AnalyticsService {
         uniques,
         sdur,
       },
-      avgSdur,
     })
   }
 
