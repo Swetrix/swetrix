@@ -1104,8 +1104,34 @@ export class AnalyticsService {
     return this.getSummaryStats(pids, 'analytics', period, amountToSubtract)
   }
 
-  async getCaptchaSummary(pids: string[], period: string) {
-    this.validatePeriod(period)
+  async getCaptchaSummary(
+    pids: string[],
+    period?: string,
+    from?: string,
+    to?: string,
+    timezone?: string,
+  ) {
+    // eslint-disable-next-line
+    let _from: string
+    // eslint-disable-next-line
+    let _to: string
+
+    if (_isEmpty(period) || period === 'custom') {
+      const safeTimezone = this.getSafeTimezone(timezone)
+
+      const { groupFrom, groupTo } = this.getGroupFromTo(
+        from,
+        to,
+        null,
+        period,
+        safeTimezone,
+      )
+
+      _from = groupFrom
+      _to = groupTo
+    } else {
+      this.validatePeriod(period)
+    }
 
     const result = {}
 
@@ -1138,15 +1164,30 @@ export class AnalyticsService {
           return
         }
 
-        const amountToSubtract = parseInt(period, 10)
-        const unit = _replace(period, /[0-9]/g, '')
+        let now: string
+        let periodFormatted: string
+        let periodSubtracted: string
 
-        const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-        const periodRaw = dayjs.utc().subtract(amountToSubtract, unit)
-        const periodFormatted = periodRaw.format('YYYY-MM-DD HH:mm:ss')
-        const periodSubtracted = periodRaw
-          .subtract(amountToSubtract, unit)
-          .format('YYYY-MM-DD HH:mm:ss')
+        if (_from && _to) {
+          // diff may be 0 (when selecting data for 1 day), so let's make it 1 to grab some data for the prev day as well
+          const diff = dayjs(_to).diff(dayjs(_from), 'days') || 1
+
+          now = _to
+          periodFormatted = _from
+          periodSubtracted = dayjs(_from)
+            .subtract(diff, 'days')
+            .format('YYYY-MM-DD HH:mm:ss')
+        } else {
+          const amountToSubtract = parseInt(period, 10)
+          const unit = _replace(period, /[0-9]/g, '')
+
+          now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+          const periodRaw = dayjs.utc().subtract(amountToSubtract, unit)
+          periodFormatted = periodRaw.format('YYYY-MM-DD HH:mm:ss')
+          periodSubtracted = periodRaw
+            .subtract(amountToSubtract, unit)
+            .format('YYYY-MM-DD HH:mm:ss')
+        }
 
         const queryCurrent = `SELECT count(*) AS all AS unique FROM captcha WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodFormatted:String} AND {now:String}`
         const queryPrevious = `SELECT count(*) AS all AS unique FROM captcha WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}`
@@ -1286,8 +1327,34 @@ export class AnalyticsService {
     return result
   }
 
-  async getAnalyticsSummary(pids: string[], period: string) {
-    this.validatePeriod(period)
+  async getAnalyticsSummary(
+    pids: string[],
+    period?: string,
+    from?: string,
+    to?: string,
+    timezone?: string,
+  ) {
+    // eslint-disable-next-line
+    let _from: string
+    // eslint-disable-next-line
+    let _to: string
+
+    if (_isEmpty(period) || period === 'custom') {
+      const safeTimezone = this.getSafeTimezone(timezone)
+
+      const { groupFrom, groupTo } = this.getGroupFromTo(
+        from,
+        to,
+        null,
+        period,
+        safeTimezone,
+      )
+
+      _from = groupFrom
+      _to = groupTo
+    } else {
+      this.validatePeriod(period)
+    }
 
     const result = {}
 
@@ -1337,15 +1404,30 @@ export class AnalyticsService {
           return
         }
 
-        const amountToSubtract = parseInt(period, 10)
-        const unit = _replace(period, /[0-9]/g, '')
+        let now: string
+        let periodFormatted: string
+        let periodSubtracted: string
 
-        const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-        const periodRaw = dayjs.utc().subtract(amountToSubtract, unit)
-        const periodFormatted = periodRaw.format('YYYY-MM-DD HH:mm:ss')
-        const periodSubtracted = periodRaw
-          .subtract(amountToSubtract, unit)
-          .format('YYYY-MM-DD HH:mm:ss')
+        if (_from && _to) {
+          // diff may be 0 (when selecting data for 1 day), so let's make it 1 to grab some data for the prev day as well
+          const diff = dayjs(_to).diff(dayjs(_from), 'days') || 1
+
+          now = _to
+          periodFormatted = _from
+          periodSubtracted = dayjs(_from)
+            .subtract(diff, 'days')
+            .format('YYYY-MM-DD HH:mm:ss')
+        } else {
+          const amountToSubtract = parseInt(period, 10)
+          const unit = _replace(period, /[0-9]/g, '')
+
+          now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+          const periodRaw = dayjs.utc().subtract(amountToSubtract, unit)
+          periodFormatted = periodRaw.format('YYYY-MM-DD HH:mm:ss')
+          periodSubtracted = periodRaw
+            .subtract(amountToSubtract, unit)
+            .format('YYYY-MM-DD HH:mm:ss')
+        }
 
         const queryCurrent = `SELECT count(*) AS all, countIf(unique=1) AS unique, avgIf(sdur, sdur IS NOT NULL AND analytics.unique=1) AS sdur FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodFormatted:String} AND {now:String}`
         const queryPrevious = `SELECT count(*) AS all, countIf(unique=1) AS unique, avgIf(sdur, sdur IS NOT NULL AND analytics.unique=1) AS sdur FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}`

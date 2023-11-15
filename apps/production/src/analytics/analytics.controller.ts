@@ -839,7 +839,7 @@ export class AnalyticsController {
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ): Promise<any> {
-    const { pids, pid, period } = data
+    const { pids, pid, period, from, to, timezone = DEFAULT_TIMEZONE } = data
     const pidsArray = getPIDsArray(pids, pid)
 
     const validationPromises = _map(pidsArray, async currentPID => {
@@ -853,7 +853,13 @@ export class AnalyticsController {
 
     await Promise.all(validationPromises)
 
-    return this.analyticsService.getAnalyticsSummary(pidsArray, period)
+    return this.analyticsService.getAnalyticsSummary(
+      pidsArray,
+      period,
+      from,
+      to,
+      timezone,
+    )
   }
 
   @Get('captcha/birdseye')
@@ -863,7 +869,7 @@ export class AnalyticsController {
     @Query() data,
     @CurrentUserId() uid: string,
   ): Promise<any> {
-    const { pids, pid, period } = data
+    const { pids, pid, period, from, to, timezone = DEFAULT_TIMEZONE } = data
     const pidsArray = getPIDsArray(pids, pid)
 
     const validationPromises = _map(pidsArray, async currentPID => {
@@ -873,7 +879,13 @@ export class AnalyticsController {
 
     await Promise.all(validationPromises)
 
-    return this.analyticsService.getCaptchaSummary(pidsArray, period)
+    return this.analyticsService.getCaptchaSummary(
+      pidsArray,
+      period,
+      from,
+      to,
+      timezone,
+    )
   }
 
   @Public()
