@@ -8,6 +8,7 @@ import * as _map from 'lodash/map'
 import * as _toUpper from 'lodash/toUpper'
 import * as _join from 'lodash/join'
 import * as _isArray from 'lodash/isArray'
+import * as _sortBy from 'lodash/sortBy'
 import * as _reduce from 'lodash/reduce'
 import * as _keys from 'lodash/keys'
 import * as _last from 'lodash/last'
@@ -1189,12 +1190,12 @@ export class AnalyticsService {
             .format('YYYY-MM-DD HH:mm:ss')
         }
 
-        const queryCurrent = `SELECT count(*) AS all AS unique FROM captcha WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodFormatted:String} AND {now:String}`
-        const queryPrevious = `SELECT count(*) AS all AS unique FROM captcha WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}`
+        const queryCurrent = `SELECT 1 AS sortOrder, count(*) AS all AS unique FROM captcha WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodFormatted:String} AND {now:String}`
+        const queryPrevious = `SELECT 2 AS sortOrder, count(*) AS all AS unique FROM captcha WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}`
 
         const query = `${queryCurrent} UNION ALL ${queryPrevious}`
 
-        const rawResult = <Array<Partial<BirdseyeCHResponse>>>await clickhouse
+        let rawResult = <Array<Partial<BirdseyeCHResponse>>>await clickhouse
           .query(query, {
             params: {
               pid,
@@ -1204,6 +1205,8 @@ export class AnalyticsService {
             },
           })
           .toPromise()
+
+        rawResult = _sortBy(rawResult, 'sortOrder')
 
         const currentPeriod = rawResult[0]
         const previousPeriod = rawResult[1]
@@ -1429,12 +1432,12 @@ export class AnalyticsService {
             .format('YYYY-MM-DD HH:mm:ss')
         }
 
-        const queryCurrent = `SELECT count(*) AS all, countIf(unique=1) AS unique, avgIf(sdur, sdur IS NOT NULL AND analytics.unique=1) AS sdur FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodFormatted:String} AND {now:String}`
-        const queryPrevious = `SELECT count(*) AS all, countIf(unique=1) AS unique, avgIf(sdur, sdur IS NOT NULL AND analytics.unique=1) AS sdur FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}`
+        const queryCurrent = `SELECT 1 AS sortOrder, count(*) AS all, countIf(unique=1) AS unique, avgIf(sdur, sdur IS NOT NULL AND analytics.unique=1) AS sdur FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodFormatted:String} AND {now:String}`
+        const queryPrevious = `SELECT 2 AS sortOrder, count(*) AS all, countIf(unique=1) AS unique, avgIf(sdur, sdur IS NOT NULL AND analytics.unique=1) AS sdur FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}`
 
         const query = `${queryCurrent} UNION ALL ${queryPrevious}`
 
-        const rawResult = <Array<BirdseyeCHResponse>>await clickhouse
+        let rawResult = <Array<BirdseyeCHResponse>>await clickhouse
           .query(query, {
             params: {
               pid,
@@ -1444,6 +1447,8 @@ export class AnalyticsService {
             },
           })
           .toPromise()
+
+        rawResult = _sortBy(rawResult, 'sortOrder')
 
         const currentPeriod = rawResult[0]
         const previousPeriod = rawResult[1]
