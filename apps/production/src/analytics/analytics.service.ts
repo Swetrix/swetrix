@@ -1100,14 +1100,6 @@ export class AnalyticsService {
     return result[0]?.c || 0
   }
 
-  async getSummary(
-    pids: string[],
-    period: 'w' | 'M' = 'w',
-    amountToSubtract = 1,
-  ) {
-    return this.getSummaryStats(pids, 'analytics', period, amountToSubtract)
-  }
-
   async getCaptchaSummary(
     pids: string[],
     period?: string,
@@ -1241,97 +1233,24 @@ export class AnalyticsService {
     return result
   }
 
-  async getSummaryStats(
-    pids: string[],
-    tableName: 'analytics' | 'captcha',
-    period: 'w' | 'M' = 'w',
-    amountToSubtract = 1,
-  ) {
+  convertSummaryToObsoleteFormat(summary: IOverall): any {
     const result = {}
 
-    const promises = pids.map(async pid => {
-      if (!isValidPID(pid)) {
-        throw new BadRequestException(
-          `The provided Project ID (${pid}) is incorrect`,
-        )
+    for (const pid of _keys(summary)) {
+      const { current, previous } = summary[pid]
+
+      result[pid] = {
+        thisWeek: current.all,
+        lastWeek: previous.all,
+        thisWeekUnique: current.unique,
+        lastWeekUnique: previous.unique,
+        percChange: calculateRelativePercentage(previous.all, current.all),
+        percChangeUnique: calculateRelativePercentage(
+          previous.unique,
+          current.unique,
+        ),
       }
-
-      const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-      const periodRaw = dayjs.utc().subtract(amountToSubtract, period)
-      const periodFormatted = periodRaw.format('YYYY-MM-DD HH:mm:ss')
-      const periodSubtracted = periodRaw
-        .subtract(amountToSubtract, period)
-        .format('YYYY-MM-DD HH:mm:ss')
-
-      const queryThisWeek = `SELECT ${
-        tableName === 'analytics' ? 'unique,' : ''
-      } count() FROM ${tableName} WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodFormatted:String} AND {now:String}${
-        tableName === 'analytics' ? ' GROUP BY unique' : ''
-      }`
-      const queryLastWeek = `SELECT ${
-        tableName === 'analytics' ? 'unique,' : ''
-      } count() FROM ${tableName} WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}${
-        tableName === 'analytics' ? ' GROUP BY unique' : ''
-      }`
-
-      const paramsData = {
-        params: {
-          pid,
-          periodFormatted,
-          periodSubtracted,
-          now,
-        },
-      }
-
-      try {
-        const thisWeekResult = await clickhouse
-          .query(queryThisWeek, paramsData)
-          .toPromise()
-        const lastWeekResult = await clickhouse
-          .query(queryLastWeek, paramsData)
-          .toPromise()
-
-        if (tableName === 'analytics') {
-          const thisWeekUnique =
-            _find(thisWeekResult, ({ unique }) => unique)?.['count()'] || 0
-          const thisWeekPV =
-            (_find(thisWeekResult, ({ unique }) => !unique)?.['count()'] || 0) +
-            thisWeekUnique
-          const lastWeekUnique =
-            _find(lastWeekResult, ({ unique }) => unique)?.['count()'] || 0
-          const lastWeekPV =
-            (_find(lastWeekResult, ({ unique }) => !unique)?.['count()'] || 0) +
-            lastWeekUnique
-
-          result[pid] = {
-            thisWeek: thisWeekPV,
-            lastWeek: lastWeekPV,
-            thisWeekUnique,
-            lastWeekUnique,
-            percChange: calculateRelativePercentage(lastWeekPV, thisWeekPV),
-            percChangeUnique: calculateRelativePercentage(
-              lastWeekUnique,
-              thisWeekUnique,
-            ),
-          }
-        } else {
-          const thisWeek = thisWeekResult?.['count()'] || 0
-          const lastWeek = lastWeekResult?.['count()'] || 0
-
-          result[pid] = {
-            thisWeek,
-            lastWeek,
-            percChange: calculateRelativePercentage(lastWeek, thisWeek),
-          }
-        }
-      } catch {
-        throw new InternalServerErrorException(
-          "Can't process the provided PID. Please, try again later.",
-        )
-      }
-    })
-
-    await Promise.all(promises)
+    }
 
     return result
   }
