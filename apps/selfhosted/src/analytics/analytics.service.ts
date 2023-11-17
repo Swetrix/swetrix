@@ -1893,8 +1893,4 @@ export class AnalyticsService {
     // @ts-ignore
     return redis.countKeysByPattern(`hb:${projectId}:*`)
   }
-
-  async getStatsByProjectId(projectId: string) {
-    return this.getSummaryStats([projectId], 'analytics', 'w', 1)
-  }
 }

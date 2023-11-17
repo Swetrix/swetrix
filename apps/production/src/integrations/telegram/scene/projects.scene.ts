@@ -3,9 +3,9 @@ import { Markup } from 'telegraf'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as timezone from 'dayjs/plugin/timezone'
-import { ProjectService } from 'src/project/project.service'
-import { UserService } from 'src/user/user.service'
-import { AnalyticsService } from 'src/analytics/analytics.service'
+import { ProjectService } from '../../../project/project.service'
+import { UserService } from '../../../user/user.service'
+import { AnalyticsService } from '../../../analytics/analytics.service'
 import { Context } from '../interface/context.interface'
 import { START_SCENE_ID } from './start.scene'
 
@@ -78,7 +78,10 @@ export class ProjectsScene {
     const onlineCount = await this.analyticsService.getOnlineCountByProjectId(
       project.id,
     )
-    const stats = await this.analyticsService.getStatsByProjectId(project.id)
+    const stats = await this.analyticsService.getAnalyticsSummary(
+      [project.id],
+      '7d',
+    )
 
     const text =
       `📊 *${project.name}*` +
@@ -100,9 +103,9 @@ export class ProjectsScene {
       `\n` +
       `Online users: \`${onlineCount}\`` +
       `\n` +
-      `Page views: \`${stats[project.id].thisWeek}\`` +
+      `Page views: \`${stats[project.id].current.all}\`` +
       `\n` +
-      `Unique page views: \`${stats[project.id].thisWeekUnique}\``
+      `Unique page views: \`${stats[project.id].current.unique}\``
 
     await context.replyWithMarkdown(text)
   }
