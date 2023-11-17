@@ -50,7 +50,7 @@ import {
   timeBucketToDays, getProjectCacheCustomKey, MAX_MONTHS_IN_PAST, PROJECT_TABS, TimeFormat, getProjectForcastCacheKey, chartTypes, roleAdmin,
   TRAFFIC_PANELS_ORDER, PERFORMANCE_PANELS_ORDER, isSelfhosted, tbPeriodPairsCompare, PERIOD_PAIRS_COMPARE, filtersPeriodPairs, IS_ACTIVE_COMPARE,
   PROJECTS_PROTECTED, getProjectCacheCustomKeyPerf, isBrowser, TITLE_SUFFIX, FILTERS_PANELS_ORDER, KEY_FOR_ALL_TIME, MARKETPLACE_URL,
-  getFunnelsCacheKey, getFunnelsCacheCustomKey, MAIN_URL, BROWSER_CDN_LOGO_MAP, BROWSER_HOSTED_LOGO_MAP, OS_LOGO_MAP, OS_LOGO_MAP_DARK, ITBPeriodPairs,
+  getFunnelsCacheKey, getFunnelsCacheCustomKey, BROWSER_LOGO_MAP, OS_LOGO_MAP, OS_LOGO_MAP_DARK, ITBPeriodPairs,
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { IProject, ILiveStats, IFunnel, IAnalyticsFunnel, IOverallObject, IOverallPerformanceObject } from 'redux/models/IProject'
@@ -2659,11 +2659,9 @@ const ViewProject = ({
                       const rowMapper = (entry: any) => {
                         const { name: entryName } = entry
                         // @ts-ignore
-                        const logoExists = !!BROWSER_CDN_LOGO_MAP[entryName]
-                        // @ts-ignore
-                        const logoHosted = BROWSER_HOSTED_LOGO_MAP[entryName]
+                        const logoUrl = BROWSER_LOGO_MAP[entryName]
 
-                        if (!logoExists && !logoHosted) {
+                        if (!logoUrl) {
                           return (
                             <>
                               <GlobeAltIcon className='w-5 h-5' />
@@ -2672,20 +2670,6 @@ const ViewProject = ({
                             </>
                           )
                         }
-
-                        if (logoHosted) {
-                          const logoUrl = `/${logoHosted}`
-
-                          return (
-                            <>
-                              <img src={logoUrl} className='w-5 h-5' alt='' />
-                              &nbsp;
-                              {entryName}
-                            </>
-                          )
-                        }
-
-                        const logoUrl = `${MAIN_URL}/browser-logo/${entryName}`
 
                         return (
                           <>
@@ -3003,17 +2987,14 @@ const ViewProject = ({
                         />
                       )
                     }
-
-
+                    
                     if (type === 'br') {
                       const rowMapper = (entry: any) => {
                         const { name: entryName } = entry
                         // @ts-ignore
-                        const logoExists = !!BROWSER_CDN_LOGO_MAP[entryName]
-                        // @ts-ignore
-                        const logoHosted = BROWSER_HOSTED_LOGO_MAP[entryName]
+                        const logoUrl = BROWSER_LOGO_MAP[entryName]
 
-                        if (!logoExists && !logoHosted) {
+                        if (!logoUrl) {
                           return (
                             <>
                               <GlobeAltIcon className='w-5 h-5' />
@@ -3022,20 +3003,6 @@ const ViewProject = ({
                             </>
                           )
                         }
-
-                        if (logoHosted) {
-                          const logoUrl = `/${logoHosted}`
-
-                          return (
-                            <>
-                              <img src={logoUrl} className='w-5 h-5' alt='' />
-                              &nbsp;
-                              {entryName}
-                            </>
-                          )
-                        }
-
-                        const logoUrl = `${MAIN_URL}/browser-logo/${entryName}`
 
                         return (
                           <>
