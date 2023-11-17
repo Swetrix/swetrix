@@ -18,6 +18,7 @@ If you have special needs for more requests, please contact us to request more c
 
 ## Concepts
 ### Time buckets
+- **minute** - 1 minute;
 - **hour** - 1 hour;
 - **day** - 1 day;
 - **week** - 1 week;
@@ -32,6 +33,7 @@ If you have special needs for more requests, please contact us to request more c
 - **3M** - last 3 months;
 - **12M** - last 12 months;
 - **24M** - last 24 months.
+- **all** - all time (i.e. the time starting from the project creation date).
 
 :::info
 `Time buckets` and `periods` are predefined values that you can use in your API requests. The API won't accept any other values. If you want to specify a custom time range, use `from` and `to` parameters in your aggregation requests.
@@ -222,27 +224,51 @@ curl 'https://api.swetrix.com/v1/log/performance?pid=YOUR_PROJECT_ID&timeBucket=
 
 ### GET /v1/log/birdseye
 This endpoint returns a summary of the log data for the specified projects. The response is an object with project IDs as keys and objects with the following properties as values:
-- `thisWeek` - the number of pageviews for the current week;
-- `lastWeek` - the number of pageviews for the previous week;
-- `thisWeekUnique` - the number of unique visitors for the current week;
-- `lastWeekUnique` - the number of unique visitors for the previous week;
-- `percChange` - the percentage change in the number of visits between the current and previous weeks;
-- `percChangeUnique` - the percentage change in the number of unique visitors between the current and previous weeks.
+```typescript
+{
+  current: { // data for the selected period
+    all: number // pageviews
+    unique: number // unique visitors
+    bounceRate: number // bounce rate
+    sdur: number // average session duration
+  },
+  previous: { // data for the previous period
+    all: number
+    unique: number
+    bounceRate: number
+    sdur: number
+  },
+  change: number, // change in the number of pageviews
+  uniqueChange: number, // change in the number of unique visitors
+  bounceRateChange: number, // change in the bounce rate
+  sdurChange: number, // change in the average session duration
+}
+```
 
 ```bash
-curl 'https://api.swetrix.com/v1/log/birdseye?pids=["YOUR_PROJECT_ID"]'\
+curl 'https://api.swetrix.com/v1/log/birdseye?pids=["YOUR_PROJECT_ID"]&period=7d'\
   -H "X-Api-Key: ${SWETRIX_API_KEY}"
 ```
 
 ```json title="Response"
 {
   "YOUR_PROJECT_ID": {
-    "thisWeek": 2461,
-    "lastWeek": 1910,
-    "thisWeekUnique": 1458,
-    "lastWeekUnique": 1030,
-    "percChange": 128.85,
-    "percChangeUnique": 141.55
+    "current": {
+      "all": 1633,
+      "unique": 650,
+      "sdur": 1722.293846153846,
+      "bounceRate": 39.8
+    },
+    "previous": {
+      "all": 1785,
+      "unique": 653,
+      "sdur": 1618.4303215926493,
+      "bounceRate": 36.6
+    },
+    "change": -152,
+    "uniqueChange": -3,
+    "bounceRateChange": -3.1999999999999957,
+    "sdurChange": 103.86352456119675
   }
 }
 ```
@@ -260,6 +286,110 @@ An array of project IDs to return summary data for.
 A single project ID to return summary data for. You can use either `pids` or `pid` parameter, but not both.
 
 <hr />
+
+**period** (required)
+
+See [periods](#periods).
+<hr />
+
+**from** / **to**
+
+Instead of specifying a fixed period, you can specify a custom time range using `from` and `to` parameters. Both parameters are optional, but if you specify `from`, you must also specify `to`. The format is `YYYY-MM-DD`.
+<hr />
+
+**timezone**
+
+The timezone to use for the time range. The default is `Etc/GMT`. You can use any timezone supported by [day.js](https://day.js.org/docs/en/timezone/timezone/) library.
+<hr />
+
+**filters**
+
+An array of [filter objects](#filters).
+<hr />
+
+### GET /v1/log/performance/birdseye
+This endpoint returns a summary of the performance data for the specified projects. The response is an object with project IDs as keys and objects with the following properties as values:
+```typescript
+{
+  current: { // data for the selected period
+    frontend: number // a sum of such metrics as browser render time and DOM Content Load time
+    backend: number // TTFB
+    network: number // a sum of such metrics as DNS Resolution time, TLS Setup time, Connection time and Response time
+  },
+  previous: { // data for the previous period
+    frontend: number
+    backend: number
+    network: number
+  },
+  frontendChange: number, // change in the number of frontend metrics
+  networkChange: number, // change in the number of network metrics
+  backendChange: number, // change in the number of backend metrics
+}
+```
+
+```bash
+curl 'https://api.swetrix.com/v1/log/performance/birdseye?pids=["YOUR_PROJECT_ID"]&period=7d'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+```json title="Response"
+{
+  "YOUR_PROJECT_ID": {
+    "current": {
+      "frontend": 1.3297172264355364,
+      "network": 0.4225330444203684,
+      "backend": 0.14972047670639219
+    },
+    "previous": {
+      "frontend": 1.1174158607350095,
+      "network": 0.1695841392649903,
+      "backend": 0.11855705996131527
+    },
+    "frontendChange": 0.21230136570052663,
+    "networkChange": 0.25294890515537805,
+    "backendChange": 0.031163416745076916
+  }
+}
+```
+
+#### Parameters
+Accepts the same parameters as the [`/log/birdseye` endpoint](#get-v1logbirdseye).
+
+### GET /v1/log/captcha/birdseye
+This endpoint returns a summary of the CAPTCHA data for the specified projects. The response is an object with project IDs as keys and objects with the following properties as values:
+```typescript
+{
+  current: { // data for the selected period
+    all: number // number of CAPTCHA completions
+  },
+  previous: { // data for the previous period
+    all: number
+  },
+  change: number, // change in the number of CAPTCHA completions
+}
+```
+
+```bash
+curl 'https://api.swetrix.com/v1/log/captcha/birdseye?pids=["YOUR_PROJECT_ID"]&period=7d'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+```json title="Response"
+{
+  "YOUR_PROJECT_ID": {
+    "current": {
+      "all": 75
+    },
+    "previous": {
+      "all": 60
+    },
+    "change": 15
+  }
+}
+```
+
+#### Parameters
+Accepts the same parameters as the [`/log/birdseye` endpoint](#get-v1logbirdseye).
 
 ### GET /v1/log/liveVisitors
 
