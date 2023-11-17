@@ -911,6 +911,7 @@ export class AnalyticsController {
   async getPerformanceOverallStats(
     @Query() data,
     @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
   ): Promise<any> {
     const {
       pids,
@@ -925,7 +926,11 @@ export class AnalyticsController {
 
     const validationPromises = _map(pidsArray, async currentPID => {
       this.analyticsService.validatePID(currentPID)
-      await this.analyticsService.checkProjectAccess(currentPID, uid)
+      await this.analyticsService.checkProjectAccess(
+        currentPID,
+        uid,
+        headers['x-password'],
+      )
     })
 
     await Promise.all(validationPromises)

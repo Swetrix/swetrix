@@ -792,7 +792,15 @@ export class AnalyticsController {
     @Query() data,
     @CurrentUserId() uid: string,
   ): Promise<any> {
-    const { pids, pid } = data
+    const {
+      pids,
+      pid,
+      period,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE,
+      filters,
+    } = data
     const pidsArray = getPIDsArray(pids, pid)
 
     const validationPromises = _map(pidsArray, async currentPID => {
@@ -802,7 +810,48 @@ export class AnalyticsController {
 
     await Promise.all(validationPromises)
 
-    return this.analyticsService.getSummary(pidsArray, 'w')
+    return this.analyticsService.getAnalyticsSummary(
+      pidsArray,
+      period,
+      from,
+      to,
+      timezone,
+      filters,
+    )
+  }
+
+  @Get('performance/birdseye')
+  @Auth([], true, true)
+  async getPerformanceOverallStats(
+    @Query() data,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    const {
+      pids,
+      pid,
+      period,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE,
+      filters,
+    } = data
+    const pidsArray = getPIDsArray(pids, pid)
+
+    const validationPromises = _map(pidsArray, async currentPID => {
+      this.analyticsService.validatePID(currentPID)
+      await this.analyticsService.checkProjectAccess(currentPID, uid)
+    })
+
+    await Promise.all(validationPromises)
+
+    return this.analyticsService.getPerformanceSummary(
+      pidsArray,
+      period,
+      from,
+      to,
+      timezone,
+      filters,
+    )
   }
 
   @Get('hb')

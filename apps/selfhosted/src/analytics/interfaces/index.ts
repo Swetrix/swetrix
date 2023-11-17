@@ -118,3 +118,49 @@ export interface IGetFunnel {
   funnel: IFunnel[]
   totalPageviews: number
 }
+
+export interface BirdseyeCHResponse {
+  all: number
+  unique: number
+  sdur: number
+}
+
+interface IOverallPeriodStats {
+  all: number
+  unique: number
+  bounceRate: number
+  sdur: number
+}
+
+export interface IPerformanceObject {
+  current: {
+    frontend: number
+    backend: number
+    network: number
+  }
+  previous: {
+    frontend: number
+    backend: number
+    network: number
+  }
+  frontendChange: number
+  backendChange: number
+  networkChange: number
+}
+
+export interface IOverallObject {
+  current: IOverallPeriodStats
+  previous: IOverallPeriodStats
+  change: number
+  uniqueChange?: number
+  bounceRateChange?: number
+  sdurChange?: number
+}
+
+export interface IOverall {
+  [key: string]: IOverallObject
+}
+
+export interface IOverallPerformance {
+  [key: string]: IPerformanceObject
+}
