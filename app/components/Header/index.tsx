@@ -507,6 +507,7 @@ const NotAuthedHeader = ({
               </div>
             )}
             onSelect={onLanguageChange}
+            headless
           />
           <ThemeMenu
             theme={theme}
@@ -724,6 +725,7 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                     </div>
                   )}
                   onSelect={onLanguageChange}
+                  headless
                 />
                 {authenticated ? (
                   <>

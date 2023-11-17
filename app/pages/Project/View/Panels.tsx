@@ -34,7 +34,6 @@ import _reverse from 'lodash/reverse'
 
 import { nFormatter } from 'utils/generic'
 import Progress from 'ui/Progress'
-import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import Sort from 'ui/icons/Sort'
 import Modal from 'ui/Modal'
 import Button from 'ui/Button'
@@ -42,7 +41,6 @@ import Chart from 'ui/Chart'
 import Loader from 'ui/Loader'
 import { PROJECT_TABS } from 'redux/constants'
 import { IEntry } from 'redux/models/IEntry'
-import LiveVisitorsDropdown from './components/LiveVisitorsDropdown'
 import InteractiveMap from './components/InteractiveMap'
 import UserFlow from './components/UserFlow'
 import { iconClassName } from './ViewProject.helpers'
@@ -262,229 +260,6 @@ PanelContainer.defaultProps = {
   isCustomContent: false,
 }
 
-// First tab with stats
-const Overview = ({
-  overall, chartData, activePeriod, t, live, sessionDurationAVG, projectId, sessionDurationAVGCompare, isActiveCompare, dataChartCompare, activeDropdownLabelCompare, projectPassword,
-}: {
-  overall: any
-  chartData: any
-  activePeriod: any
-  t: (arg: string) => string
-  live: number | string
-  sessionDurationAVG: number
-  sessionDurationAVGCompare: number
-  isActiveCompare: boolean
-  activeDropdownLabelCompare: string | undefined
-  dataChartCompare: any
-  projectId: string
-  projectPassword: string | undefined
-}) => {
-  const pageviewsDidGrowUp = overall.percChange >= 0
-  const uniqueDidGrowUp = overall.percChangeUnique >= 0
-  const pageviews = _sum(chartData?.visits) || 0
-  const pageViewsCompare = _sum(dataChartCompare?.visits) || 0
-  const uniques = _sum(chartData?.uniques) || 0
-  const uniquesCompare = _sum(dataChartCompare?.uniques) || 0
-  let bounceRate = 0
-  let bounceRateCompare = 0
-
-  if (pageviews > 0) {
-    bounceRate = _round((uniques * 100) / pageviews, 1)
-  }
-
-  if (pageViewsCompare > 0) {
-    bounceRateCompare = _round((uniquesCompare * 100) / pageViewsCompare, 1)
-  }
-
-  return (
-    <PanelContainer name={t('project.overview')} type='overview' noSwitch>
-      <div className='flex text-lg justify-between'>
-        <div className='flex items-center dark:text-gray-50'>
-          <PulsatingCircle className='mr-1.5' type='big' />
-          {t('dashboard.liveVisitors')}
-          :
-        </div>
-        <LiveVisitorsDropdown projectId={projectId} live={live} projectPassword={projectPassword} />
-      </div>
-      {!_isEmpty(chartData) && (
-        <>
-          <p className='text-lg font-semibold dark:text-gray-50'>
-            {t('project.statsFor')}
-            <span className='lowercase'>
-              &nbsp;
-              {activePeriod.label}
-            </span>
-            {isActiveCompare && (
-              // return vs activeDropdownLabelCompare
-              <span className='text-sm text-gray-500 dark:text-gray-400'>
-                &nbsp;(
-                {activeDropdownLabelCompare}
-                )
-              </span>
-            )}
-          </p>
-
-          <div className='flex justify-between'>
-            <p className='text-lg dark:text-gray-50'>
-              {t('dashboard.pageviews')}
-              :
-            </p>
-            <p title={String(pageviews)} className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
-              {nFormatter(pageviews, 1)}
-              {isActiveCompare && (
-                <span
-                  title={`${pageViewsCompare > pageviews ? '+' : ''}${pageViewsCompare - pageviews}`}
-                  className={cx('ml-1.5 text-sm', {
-                    'text-green-500': pageViewsCompare > pageviews,
-                    'text-red-500': pageViewsCompare < pageviews,
-                  })}
-                >
-                  {pageViewsCompare > pageviews ? '+' : ''}
-                  {nFormatter(pageViewsCompare - pageviews, 1)}
-                </span>
-              )}
-            </p>
-          </div>
-
-          <div className='flex justify-between'>
-            <p className='text-lg dark:text-gray-50'>
-              {t('dashboard.unique')}
-              :
-            </p>
-            <p title={String(uniques)} className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
-              {nFormatter(uniques, 1)}
-              {isActiveCompare && (
-                <span
-                  title={`${uniquesCompare > uniques ? '+' : ''}${uniquesCompare - uniques}`}
-                  className={cx('ml-1.5 text-sm', {
-                    'text-green-500': uniquesCompare > uniques,
-                    'text-red-500': uniquesCompare < uniques,
-                  })}
-                >
-                  {uniquesCompare > uniques ? '+' : ''}
-                  {nFormatter(uniquesCompare - uniques, 1)}
-                </span>
-              )}
-            </p>
-          </div>
-
-          <div className='flex justify-between'>
-            <p className='text-lg dark:text-gray-50'>
-              {t('dashboard.bounceRate')}
-              :
-            </p>
-            <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
-              {bounceRate}
-              %
-              {isActiveCompare && (
-                <span className={cx('ml-1.5 text-sm', {
-                  'text-green-500': bounceRateCompare > bounceRate,
-                  'text-red-500': bounceRateCompare < bounceRate,
-                })}
-                >
-                  {bounceRateCompare > bounceRate ? '+' : ''}
-                  {_round(bounceRateCompare - bounceRate, 1)}
-                  %
-                </span>
-              )}
-            </p>
-          </div>
-          <div className='flex justify-between'>
-            <p className='text-lg dark:text-gray-50'>
-              {t('dashboard.sessionDuration')}
-              :
-            </p>
-            <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
-              {sessionDurationAVG}
-              {isActiveCompare && (
-                <span className='text-sm text-gray-500 dark:text-gray-400'>
-                  &nbsp;(
-                  {sessionDurationAVGCompare}
-                  )
-                </span>
-              )}
-            </p>
-          </div>
-          <hr className='my-2 border-gray-200 dark:border-gray-600' />
-        </>
-      )}
-      <p className='text-lg font-semibold dark:text-gray-50'>
-        {t('project.weeklyStats')}
-      </p>
-      <dl className='flex justify-between'>
-        <dt className='text-lg dark:text-gray-50'>
-          {t('dashboard.pageviews')}
-          :
-        </dt>
-        <dd className='flex items-baseline'>
-          <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-lg'>
-            {overall.thisWeek}
-          </p>
-          <p
-            className={cx('flex text-sm -ml-1 items-baseline', {
-              'text-green-600': pageviewsDidGrowUp,
-              'text-red-600': !pageviewsDidGrowUp,
-            })}
-          >
-            {pageviewsDidGrowUp ? (
-              <>
-                <ChevronUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
-                <span className='sr-only'>
-                  {t('dashboard.inc')}
-                </span>
-              </>
-            ) : (
-              <>
-                <ChevronDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
-                <span className='sr-only'>
-                  {t('dashboard.dec')}
-                </span>
-              </>
-            )}
-            {overall.percChange}
-            %
-          </p>
-        </dd>
-      </dl>
-      <dl className='flex justify-between'>
-        <dt className='text-lg dark:text-gray-50'>
-          {t('dashboard.unique')}
-          :
-        </dt>
-        <dd className='flex items-baseline'>
-          <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-lg'>
-            {overall.thisWeekUnique}
-          </p>
-          <p
-            className={cx('flex text-sm -ml-1 items-baseline', {
-              'text-green-600': uniqueDidGrowUp,
-              'text-red-600': !uniqueDidGrowUp,
-            })}
-          >
-            {uniqueDidGrowUp ? (
-              <>
-                <ChevronUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
-                <span className='sr-only'>
-                  {t('dashboard.inc')}
-                </span>
-              </>
-            ) : (
-              <>
-                <ChevronDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
-                <span className='sr-only'>
-                  {t('dashboard.dec')}
-                </span>
-              </>
-            )}
-            {overall.percChangeUnique}
-            %
-          </p>
-        </dd>
-      </dl>
-    </PanelContainer>
-  )
-}
-
 // Options for circle chart showing the stats of data
 const getPieOptions = (customs: any, uniques: number, t: any) => {
   const tQuantity = t('project.quantity')
@@ -552,7 +327,8 @@ interface IKVTable {
 const KVTable = ({
   data, t, uniques, loading,
 }: IKVTable) => {
-  const processed = useMemo(() => {
+  // @ts-ignore
+  const processed: any[] = useMemo(() => {
     return _reduce(data, (acc: any, curr: any) => {
       if (!acc[curr.key]) {
         acc[curr.key] = []
@@ -1567,11 +1343,9 @@ Panel.defaultProps = {
 }
 
 const PanelMemo = memo(Panel)
-const OverviewMemo = memo(Overview)
 const CustomEventsMemo = memo(CustomEvents)
 
 export {
   PanelMemo as Panel,
-  OverviewMemo as Overview,
   CustomEventsMemo as CustomEvents,
 }

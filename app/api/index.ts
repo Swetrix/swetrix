@@ -584,10 +584,10 @@ export const getCaptchaData = (
         : error.response.data.message
     })
 
-export const getOverallStats = (pids: string[], password?: string) =>
+export const getOverallStats = (pids: string[], period: string, from = '', to = '', timezone = 'Etc/GMT', filters: any = '', password?: string) =>
   api
     .get(
-      `log/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`,
+      `log/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]&period=${period}&from=${from}&to=${to}&timezone=${timezone}&filters=${JSON.stringify(filters)}`,
       {
         headers: {
           'x-password': password,
@@ -602,9 +602,27 @@ export const getOverallStats = (pids: string[], password?: string) =>
         : error.response.data.message
     })
 
-export const getOverallStatsCaptcha = (pids: string[]) =>
+export const getPerformanceOverallStats = (pids: string[], period: string, from = '', to = '', timezone = 'Etc/GMT', filters: any = '', password?: string) =>
   api
-    .get(`log/captcha/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`)
+    .get(
+      `log/performance/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]&period=${period}&from=${from}&to=${to}&timezone=${timezone}&filters=${JSON.stringify(filters)}`,
+      {
+        headers: {
+          'x-password': password,
+        },
+      },
+    )
+    .then((response): IOverall => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const getOverallStatsCaptcha = (pids: string[], period: string, from = '', to = '', timezone = 'Etc/GMT', filters: any = '') =>
+  api
+    .get(`log/captcha/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]&period=${period}&from=${from}&to=${to}&timezone=${timezone}&filters=${JSON.stringify(filters)}`)
     .then((response): IOverall => response.data)
     .catch((error) => {
       debug('%s', error)

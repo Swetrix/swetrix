@@ -49,26 +49,28 @@ export const convertMsToSeconds = (ms: any) => {
 
 // Returns an object like { h: 0, m: 0, s: 0 } based on the seconds parameter provided
 export const getTimeFromSeconds = (seconds: any) => {
-  const h = 0 | seconds / 3600
-  const m = 0 | (seconds % 3600) / 60
-  const s = 0 | seconds % 60
-  const ms = 0 | (seconds % 1) * 1000
+  const negative = seconds < 0
+  const _seconds = Math.abs(seconds)
+  const h = 0 | _seconds / 3600
+  const m = 0 | (_seconds % 3600) / 60
+  const s = 0 | _seconds % 60
+  const ms = 0 | (_seconds % 1) * 1000
 
   return {
-    h, m, s, ms,
+    h, m, s, ms, negative,
   }
 }
 
 export const getStringFromTime = (time: any, showMS?: boolean) => {
   const {
-    h, m, s, ms,
+    h, m, s, ms, negative,
   } = time
 
   if (h === 0 && m === 0 && s === 0 && (!showMS || ms === 0)) {
     return '0s'
   }
 
-  return `${h ? `${h}h ` : ''}${m ? `${m}m ` : ''}${s || (showMS && ms > 0) ? `${showMS ? _round(s + ms / 1000, 2) : s}s` : ''}`
+  return `${negative ? '-' : ''}${h ? `${h}h ` : ''}${m ? `${m}m ` : ''}${s || (showMS && ms > 0) ? `${showMS ? _round(s + ms / 1000, 2) : s}s` : ''}`
 }
 
 export const sumArrays = (...arrays: any): number[] => {
@@ -90,4 +92,27 @@ export const loadScript = (url: string) => {
   script.src = url
   script.async = true
   document.body.appendChild(script)
+}
+
+/**
+ * Returns the % change of one number relative to the other
+ * 
+ * @param oldVal The initial value
+ * @param newVal The value that changed
+ * @param round Numbers after floating point
+ */
+export const calculateRelativePercentage = (
+ oldVal: number,
+ newVal: number,
+ round = 2,
+) => {
+ if (oldVal === newVal) return 0
+ if (oldVal === 0) return 100
+ if (newVal === 0) return -100
+
+ if (newVal > oldVal) {
+   return _round((newVal / oldVal) * 100, round)
+ }
+
+ return _round((1 - newVal / oldVal) * -100, round)
 }

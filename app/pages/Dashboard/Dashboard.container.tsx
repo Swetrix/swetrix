@@ -24,6 +24,7 @@ const mapStateToProps = (state: StateType) => ({
   dashboardPaginationPageCaptcha: state.ui.projects.dashboardPaginationPageCaptcha,
   dashboardTabs: state.ui.projects.dashboardTabs,
   liveStats: state.ui.projects.liveStats,
+  birdseye: state.ui.projects.birdseye,
 })
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({

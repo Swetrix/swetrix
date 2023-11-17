@@ -562,6 +562,8 @@ const getSettings = (
         tick: {
           format: (d: number) => nFormatter(d, 1),
         },
+        show: true,
+        inner: true,
       },
       y2: {
         show: activeChartMetrics.bounce || activeChartMetrics.sessionDuration,
@@ -710,7 +712,6 @@ const getSettings = (
     },
     padding: {
       right: (rotateXAxias && !(activeChartMetrics.bounce || activeChartMetrics.sessionDuration)) && 35,
-      left: 40,
     },
     bindto: '#dataChart',
   }
@@ -1081,9 +1082,9 @@ const typeNameMapping = (t: (str: string) => string) => ({
   dv: t('project.mapping.dv'),
   br: t('project.mapping.br'),
   os: t('project.mapping.os'),
-  so: 'utm_source',
-  me: 'utm_medium',
-  ca: 'utm_campaign',
+  so: t('project.mapping.so'),
+  me: t('project.mapping.me'),
+  ca: t('project.mapping.ca'),
   ev: t('project.event'),
   userFlow: t('main.competitiveFeatures.usfl'),
 })

@@ -38,26 +38,23 @@ export default function* loadProjects({ payload: { take = ENTRIES_PER_PAGE_DASHB
 
     const pids = _map(results, result => result.id)
 
-    let overall: IOverall
+    let overall: IOverall = {}
 
     if (isCaptcha) {
       try {
-        overall = yield call(getOverallStatsCaptcha, pids)
+        overall = yield call(getOverallStatsCaptcha, pids, '7d')
       } catch (e) {
         debug('failed to overall stats: %s', e)
       }
     } else {
       try {
-        overall = yield call(getOverallStats, pids)
+        overall = yield call(getOverallStats, pids, '7d')
       } catch (e) {
         debug('failed to overall stats: %s', e)
       }
     }
 
-    results = _map(results, res => ({
-      ...res,
-      overall: overall?.[res.id],
-    }))
+    yield put(UIActions.setBirdsEyeBulk(overall))
 
     if (isCaptcha) {
       yield put(UIActions.setCaptchaProjects(results))

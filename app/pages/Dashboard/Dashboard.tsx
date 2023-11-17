@@ -27,7 +27,7 @@ import { withAuthentication, auth } from 'hoc/protected'
 import Loader from 'ui/Loader'
 import { Badge } from 'ui/Badge'
 import routes from 'routesPath'
-import { nFormatter } from 'utils/generic'
+import { nFormatter, calculateRelativePercentage } from 'utils/generic'
 import {
   isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD, tabForOwnedProject, tabForSharedProject,
   tabForCaptchaProject, DASHBOARD_TABS, tabsForDashboard, roleViewer,
@@ -40,14 +40,14 @@ import { acceptShareProject } from 'api'
 import Pagination from 'ui/Pagination'
 import { ISharedProject } from 'redux/models/ISharedProject'
 import {
-  IProject, IOvervallObject, ICaptchaProject, ILiveStats,
+  IProject, ICaptchaProject, ILiveStats, IOverall,
 } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 
 interface IProjectCard {
   name?: string
   active?: boolean
-  overall?: IOvervallObject
+  birdseye: IOverall
   type: 'analytics' | 'captcha'
   t: (key: string, options?: {
     [key: string]: string | number | null | undefined
@@ -130,7 +130,7 @@ MiniCard.defaultProps = {
 }
 
 const ProjectCard = ({
-  name, active, overall, t, live, isPublic, confirmed, id, deleteProjectFailed,
+  name, active, birdseye, t, live, isPublic, confirmed, id, deleteProjectFailed,
   sharedProjects, setProjectsShareData, setUserShareData, shared, userSharedUpdate, sharedProjectError,
   captcha, isTransferring, type, getRole, members,
 }: IProjectCard): JSX.Element => {
@@ -253,12 +253,12 @@ const ProjectCard = ({
             )}
           </div>
           <div className='mt-4 flex-shrink-0 flex gap-5'>
-            {overall && (
+            {birdseye[id] && (
               <MiniCard
-                labelTKey='dashboard.pageviews'
+                labelTKey={captcha ? 'dashboard.captchaEvents' : 'dashboard.pageviews'}
                 t={t}
-                total={overall?.thisWeek}
-                percChange={overall?.percChange}
+                total={birdseye[id].current.all}
+                percChange={calculateRelativePercentage(birdseye[id].previous.all, birdseye[id].current.all)}
               />
             )}
             {!captcha && (
@@ -289,11 +289,6 @@ const ProjectCard = ({
 
 ProjectCard.defaultProps = {
   isPublic: false,
-  overall: {
-    percChange: 0,
-    total: 0,
-    thisWeek: 0,
-  },
   active: false,
   shared: false,
   captcha: false,
@@ -323,7 +318,7 @@ const NoProjects = ({ t, onClick }: INoProjects): JSX.Element => (
 )
 
 const AddProject = ({ t, onClick }: INoProjects): JSX.Element => (
-  <li onClick={onClick} className='flex cursor-pointer justify-center items-center rounded-lg border-2 border-dashed h-auto min-h-[149.1px] group border-gray-300 hover:border-gray-400'>
+  <li onClick={onClick} className='flex cursor-pointer justify-center items-center rounded-lg border-2 border-dashed h-auto min-h-[149.1px] lg:min-h-[auto] group border-gray-300 hover:border-gray-400'>
     <div>
       <FolderPlusIcon className='mx-auto h-12 w-12 text-gray-400 dark:text-gray-200 group-hover:text-gray-500 group-hover:dark:text-gray-400' />
       <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
@@ -360,6 +355,7 @@ interface DashboardProps {
   setDashboardPaginationPageCaptcha: (page: number) => void
   loadProjectsCaptcha: (take: number, skip: number, search: string) => void
   liveStats: ILiveStats
+  birdseye: IOverall
 }
 
 const Dashboard = ({
@@ -367,7 +363,7 @@ const Dashboard = ({
   setUserShareData, userSharedUpdate, sharedProjectError, loadProjects, loadSharedProjects,
   total, setDashboardPaginationPage, dashboardPaginationPage, sharedProjects, dashboardTabs,
   setDashboardTabs, sharedTotal, setDashboardPaginationPageShared, dashboardPaginationPageShared, captchaProjects, captchaTotal, dashboardPaginationPageCaptcha, setDashboardPaginationPageCaptcha,
-  loadProjectsCaptcha, liveStats,
+  loadProjectsCaptcha, liveStats, birdseye,
 }: DashboardProps): JSX.Element => {
   const { t }: {
     t: (key: string, options?: {
@@ -626,7 +622,7 @@ const Dashboard = ({
                         ) : (
                           <ul className='grid grid-cols-1 gap-x-6 gap-y-3 lg:gap-y-6 lg:grid-cols-3'>
                             {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({
-                              name, id, active, overall, public: isPublic, isTransferring, share,
+                              name, id, active, public: isPublic, isTransferring, share,
                             }) => (
                               <ProjectCard
                                 key={id}
@@ -637,7 +633,7 @@ const Dashboard = ({
                                 name={name}
                                 active={active}
                                 isPublic={isPublic}
-                                overall={overall}
+                                birdseye={birdseye}
                                 live={_isNumber(liveStats[id]) ? liveStats[id] : 'N/A'}
                                 setUserShareData={() => { }}
                                 deleteProjectFailed={() => { }}
@@ -662,7 +658,7 @@ const Dashboard = ({
                         ) : (
                           <ul className='grid grid-cols-1 gap-x-6 gap-y-3 lg:gap-y-6 lg:grid-cols-3'>
                             {_map(_filter(captchaProjects, ({ uiHidden }) => !uiHidden), ({
-                              name, id, active, overall, public: isPublic,
+                              name, id, active, public: isPublic,
                             }) => (
                               <ProjectCard
                                 t={t}
@@ -673,7 +669,7 @@ const Dashboard = ({
                                 captcha
                                 active={active}
                                 isPublic={isPublic}
-                                overall={overall}
+                                birdseye={birdseye}
                                 live={_isNumber(liveStats[id]) ? liveStats[id] : 'N/A'}
                                 deleteProjectFailed={() => { }}
                                 sharedProjects={[]}
@@ -712,7 +708,7 @@ const Dashboard = ({
                                     active={project?.active}
                                     isPublic={project?.public}
                                     confirmed={confirmed}
-                                    overall={project?.overall}
+                                    birdseye={birdseye}
                                     live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
                                     setUserShareData={() => { }}
                                     deleteProjectFailed={() => { }}
@@ -735,7 +731,7 @@ const Dashboard = ({
                                   getRole={getRole}
                                   active={project?.active}
                                   isPublic={project?.public}
-                                  overall={project?.overall}
+                                  birdseye={birdseye}
                                   confirmed={confirmed}
                                   sharedProjects={user.sharedProjects}
                                   setProjectsShareData={setProjectsShareData}
@@ -800,6 +796,7 @@ Dashboard.propTypes = {
   dashboardTabs: PropTypes.string.isRequired,
   setDashboardTabs: PropTypes.func.isRequired,
   sharedTotal: PropTypes.number.isRequired,
+  birdseye: PropTypes.object.isRequired,
 }
 
 Dashboard.defaultProps = {

@@ -1,6 +1,6 @@
 /* eslint-disable react/forbid-prop-types, react/no-unstable-nested-components, react/display-name */
 import React, {
-  useState, useEffect, useMemo, memo, Fragment, useRef,
+  useState, useEffect, useMemo, memo, useRef,
 } from 'react'
 import useSize from 'hooks/useSize'
 import { useNavigate, useParams } from '@remix-run/react'
@@ -10,7 +10,7 @@ import domToImage from 'dom-to-image'
 import { saveAs } from 'file-saver'
 import bb from 'billboard.js'
 import {
-  ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, PresentationChartBarIcon, PresentationChartLineIcon,
+  ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -28,30 +28,32 @@ import _debounce from 'lodash/debounce'
 import _some from 'lodash/some'
 import PropTypes from 'prop-types'
 
+import LineChart from 'ui/icons/LineChart'
+import BarChart from 'ui/icons/BarChart'
 import { getItem, setItem } from 'utils/localstorage'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
-  tbPeriodPairs, getProjectCaptchaCacheKey, timeBucketToDays, getProjectCacheCustomKey, roleAdmin,
+  captchaTbPeriodPairs, getProjectCaptchaCacheKey, timeBucketToDays, getProjectCacheCustomKey, roleAdmin,
   MAX_MONTHS_IN_PAST, TimeFormat, chartTypes, TITLE_SUFFIX, KEY_FOR_ALL_TIME,
 } from 'redux/constants'
 import { ICaptchaProject, IProject, ILiveStats } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
-import Button from 'ui/Button'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
 import FlatPicker from 'ui/Flatpicker'
 import routes from 'routesPath'
 import {
-  getProject, getOverallStats, getLiveVisitors, getCaptchaData,
+  getProject, getCaptchaData,
 } from 'api'
 import {
-  Panel, CustomEvents, // Overview,
+  Panel, CustomEvents,
 } from './Panels'
 import {
   onCSVExportClick, getFormatDate, panelIconMapping, typeNameMapping, validFilters, validPeriods,
   validTimeBacket, noRegionPeriods, getSettings, CHART_METRICS_MAPPING, getColumns,
 } from './ViewCaptcha.helpers'
+import TBPeriodSelector from 'pages/Project/View/components/TBPeriodSelector'
 import CCRow from './components/CCRow'
 import RefRow from './components/RefRow'
 import NoEvents from './components/NoEvents'
@@ -79,7 +81,7 @@ const ViewProject = ({
     }) => string,
     i18n: { language: string },
   } = useTranslation('common')
-  const [periodPairs, setPeriodPairs] = useState(tbPeriodPairs(t))
+  const [periodPairs, setPeriodPairs] = useState(captchaTbPeriodPairs(t, undefined, undefined, language))
   const dashboardRef = useRef(null)
   // @ts-ignore
   const { id }: {
@@ -434,7 +436,7 @@ const ViewProject = ({
         const { pathname, search } = url
         navigate(`${pathname}${search}`)
 
-        setPeriodPairs(tbPeriodPairs(t, timeBucketToDays[index].tb, dates))
+        setPeriodPairs(captchaTbPeriodPairs(t, timeBucketToDays[index].tb, dates, language))
         setPeriod('custom')
         setProjectViewPrefs(id, 'custom', timeBucketToDays[4].tb[0], dates)
 
@@ -451,7 +453,7 @@ const ViewProject = ({
     if (areFiltersParsed && areTimeBucketParsed && arePeriodParsed) {
       loadAnalytics()
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project, period, chartType, filters, arePeriodParsed])
 
   useEffect(() => {
@@ -475,21 +477,10 @@ const ViewProject = ({
       getProject(id, true)
         .then(projectRes => {
           if (!_isEmpty(projectRes)) {
-            getOverallStats([id])
-              .then(res => {
-                setProjects([...(projects as any[]), {
-                  ...projectRes,
-                  overall: res[id],
-                  live: 'N/A',
-                }])
-              })
-              .then(() => {
-                return getLiveVisitors([id])
-              })
-              .catch(e => {
-                console.error(e)
-                onErrorLoading()
-              })
+            setProjects([...(projects as any[]), {
+              ...projectRes,
+              live: 'N/A',
+            }])
           } else {
             onErrorLoading()
           }
@@ -579,7 +570,7 @@ const ViewProject = ({
         return
       }
 
-      setPeriodPairs(tbPeriodPairs(t))
+      setPeriodPairs(captchaTbPeriodPairs(t, undefined, undefined, language))
       setDateRange(null)
       updatePeriod({ period: intialPeriod })
     } finally {
@@ -636,51 +627,99 @@ const ViewProject = ({
             className='max-w-[1584px] w-full mx-auto py-6 px-2 sm:px-4 lg:px-8 min-h-min-footer'
             ref={dashboardRef}
           >
-            <div className='flex flex-col md:flex-row items-center md:items-start justify-between mt-2'>
-              <h2 className='text-3xl font-bold text-gray-900 dark:text-gray-50 break-words break-all'>
+            <div className='flex flex-col lg:flex-row items-center lg:items-start justify-between mt-2'>
+              <h2 className='text-xl font-bold text-gray-900 dark:text-gray-50 break-words break-all'>
                 {name}
               </h2>
-              <div className='flex mt-3 md:mt-0 max-w-[420px] flex-wrap items-center sm:max-w-none justify-between w-full sm:w-auto mx-auto sm:mx-0'>
-                <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3'>
+              <div className='flex mt-3 lg:mt-0 max-w-[420px] flex-wrap items-center sm:max-w-none justify-between w-full sm:w-auto mx-auto sm:mx-0'>
+                <button
+                  type='button'
+                  title={t('project.refreshStats')}
+                  onClick={refreshStats}
+                  className={cx('mr-3 relative rounded-md p-2 bg-gray-50 text-sm font-medium hover:bg-white hover:shadow-sm dark:bg-slate-900 dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
+                    'cursor-not-allowed opacity-50': isLoading || dataLoading,
+                  })}
+                >
+                  <ArrowPathIcon className='w-5 h-5 text-gray-700 dark:text-gray-50' />
+                </button>
+                <Dropdown
+                  header={t('project.exportData')}
+                  items={exportTypes}
+                  title={[
+                    <ArrowDownTrayIcon key='download-icon' className='w-5 h-5' />,
+                  ]}
+                  labelExtractor={item => item.label}
+                  keyExtractor={item => item.label}
+                  onSelect={item => item.onClick(panelsData, t)}
+                  className={cx('mr-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
+                  chevron='mini'
+                  buttonClassName='!p-2 rounded-md hover:bg-white hover:shadow-sm dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200'
+                  headless
+                />
+                <div
+                  className={cx('border-gray-200 dark:border-gray-600 lg:px-3 sm:mr-3 space-x-2 lg:border-x', {
+                    hidden: isPanelsDataEmpty || analyticsLoading || checkIfAllMetricsAreDisabled,
+                  })}
+                >
                   <button
                     type='button'
-                    title={t('project.refreshStats')}
-                    onClick={refreshStats}
-                    className={cx('relative shadow-sm rounded-md mt-[1px] px-3 md:px-4 py-2 bg-white text-sm font-medium hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
-                      'cursor-not-allowed opacity-50': isLoading || dataLoading,
+                    title={t('project.barChart')}
+                    onClick={() => setChartTypeOnClick(chartTypes.bar)}
+                    className={cx('relative fill-gray-700 dark:fill-gray-50 rounded-md p-2 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
+                      'bg-white dark:bg-slate-800 stroke-white dark:stroke-slate-800 shadow-sm': chartType === chartTypes.bar,
+                      'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200': chartType !== chartTypes.bar,
                     })}
                   >
-                    <ArrowPathIcon className='w-5 h-5 text-gray-700 dark:text-gray-50' />
+                    <BarChart className='w-5 h-5 [&_path]:stroke-[3.5%]' />
+                  </button>
+                  <button
+                    type='button'
+                    title={t('project.lineChart')}
+                    onClick={() => setChartTypeOnClick(chartTypes.line)}
+                    className={cx('relative fill-gray-700 dark:fill-gray-50 rounded-md p-2 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
+                      'bg-white dark:bg-slate-800 stroke-white dark:stroke-slate-800 shadow-sm': chartType === chartTypes.line,
+                      'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200': chartType !== chartTypes.line,
+                    })}
+                  >
+                    <LineChart className='w-5 h-5 [&_path]:stroke-[3.5%]' />
                   </button>
                 </div>
-                <div className='md:border-r border-gray-200 dark:border-gray-600 md:pr-3 sm:mr-3'>
-                  <span className='relative z-0 inline-flex shadow-sm rounded-md'>
-                    {_map(activePeriod.tbs, (tb, index, { length }) => (
-                      <button
-                        key={tb}
-                        type='button'
-                        onClick={() => updateTimebucket(tb)}
-                        className={cx(
-                          'relative capitalize inline-flex items-center px-3 md:px-4 py-2 border bg-white text-sm font-medium hover:bg-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
-                          {
-                            '-ml-px': index > 0,
-                            'rounded-l-md': index === 0,
-                            'rounded-r-md': 1 + index === length,
-                            'z-10 border-indigo-500 text-indigo-600 dark:border-gray-200 dark:text-gray-50': timeBucket === tb,
-                            'text-gray-700 dark:text-gray-50 border-gray-300 dark:border-gray-800 ': timeBucket !== tb,
-                          },
-                        )}
-                      >
-                        {t(`project.${tb}`)}
-                      </button>
-                    ))}
-                  </span>
-                </div>
-                <Dropdown
+                {!isPanelsDataEmpty && (
+                  <Dropdown
+                    items={chartMetrics}
+                    title={t('project.metricVis')}
+                    className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
+                    labelExtractor={(pair) => {
+                      const {
+                        label, id: pairID, active,
+                      } = pair
+
+                      return (
+                        <Checkbox
+                          className={cx('px-4 py-2', { hidden: isPanelsDataEmpty || analyticsLoading })}
+                          label={label}
+                          id={pairID}
+                          checked={active}
+                          onChange={() => { }}
+                        />
+                      )
+                    }}
+                    keyExtractor={(pair) => pair.id}
+                    onSelect={({ id: pairID }) => {
+                      switchActiveChartMetric(pairID)
+                    }}
+                    buttonClassName='!px-3'
+                    selectItemClassName='group text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 block text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'
+                    chevron='mini'
+                    headless
+                  />
+                )}
+                <TBPeriodSelector
+                  activePeriod={activePeriod}
+                  updateTimebucket={updateTimebucket}
+                  timeBucket={timeBucket}
                   items={_filter(periodPairs, (item) => !_includes(['all', '1h'], item.period))}
-                  title={activePeriod.label}
-                  labelExtractor={(pair) => pair.dropdownLabel || pair.label}
-                  keyExtractor={(pair) => pair.label}
+                  title={activePeriod?.label}
                   onSelect={(pair) => {
                     if (pair.isCustomDate) {
                       setTimeout(() => {
@@ -688,12 +727,24 @@ const ViewProject = ({
                         refCalendar.current.openCalendar()
                       }, 100)
                     } else {
-                      setPeriodPairs(tbPeriodPairs(t))
+                      setPeriodPairs(captchaTbPeriodPairs(t, undefined, undefined, language))
                       setDateRange(null)
                       updatePeriod(pair)
                     }
                   }}
                 />
+                {(project?.isOwner || sharedRoles === roleAdmin.role) && (
+                  <button
+                    type='button'
+                    onClick={openSettingsHandler}
+                    className='flex px-3 text-gray-700 dark:text-gray-50 hover:text-gray-600 dark:hover:text-gray-200 text-sm font-medium'
+                  >
+                    <>
+                      <Cog8ToothIcon className='w-5 h-5 mr-1' />
+                      {t('common.settings')}
+                    </>
+                  </button>
+                )}
                 <FlatPicker
                   ref={refCalendar}
                   onChange={(date) => setDateRange(date)}
@@ -702,105 +753,19 @@ const ViewProject = ({
                 />
               </div>
             </div>
-            <div>
-              <div className='flex flex-row flex-wrap items-center justify-center md:justify-end h-10 mt-2 md:mt-5 mb-4'>
-                {!isPanelsDataEmpty && (
-                <Dropdown
-                  items={chartMetrics}
-                  title={t('project.metricVis')}
-                  labelExtractor={(pair) => {
-                    const {
-                      label, id: pairID, active,
-                    } = pair
-
-                    return (
-                      <Checkbox
-                        className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
-                        label={label}
-                        id={pairID}
-                        checked={active}
-                      />
-                    )
-                  }}
-                  keyExtractor={(pair) => pair.id}
-                  onSelect={({ id: pairID }) => {
-                    switchActiveChartMetric(pairID)
-                  }}
-                />
-                )}
-                <Dropdown
-                  items={exportTypes}
-                  title={[
-                    <ArrowDownTrayIcon key='download-icon' className='w-5 h-5 mr-2' />,
-                    <Fragment key='export-data'>
-                      {t('project.exportData')}
-                    </Fragment>,
-                  ]}
-                  labelExtractor={item => item.label}
-                  keyExtractor={item => item.label}
-                  onSelect={item => item.onClick(panelsData, t)}
-                  className={cx('ml-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
-                />
-                {(project?.isOwner || sharedRoles === roleAdmin.role) && (
-                  <Button
-                    onClick={openSettingsHandler}
-                    className='relative flex justify-center items-center !pr-3 pl-2 py-2 md:pr-4 ml-3 text-sm dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 dark:hover:bg-slate-700'
-                    secondary
-                  >
-                    <>
-                      <Cog8ToothIcon className='w-5 h-5 mr-1' />
-                      {t('common.settings')}
-                    </>
-                  </Button>
-                )}
-              </div>
-            </div>
-            <div
-              className={cx({
-                hidden: isPanelsDataEmpty || analyticsLoading,
-              })}
-            >
-              <div className='mt-14 xs:mt-0' />
-              <div className='relative'>
-                <div className='absolute right-0 z-10 -top-2'>
-                  <button
-                    type='button'
-                    title={t('project.barChart')}
-                    onClick={() => setChartTypeOnClick(chartTypes.bar)}
-                    className={cx('px-2.5 py-1.5 text-xs rounded-md text-gray-700 bg-white hover:bg-gray-50 border-transparent !border-0 dark:text-gray-50 dark:bg-slate-900 dark:hover:bg-gray-700 focus:outline-none focus:!ring-0 focus:!ring-offset-0 focus:!ring-transparent', {
-                      'text-indigo-600 dark:text-indigo-500 shadow-md': chartType === chartTypes.bar,
-                      'text-gray-400 dark:text-gray-500': chartType !== chartTypes.bar,
-                    })}
-                  >
-                    <PresentationChartBarIcon className='w-6 h-6' />
-                  </button>
-                  <button
-                    type='button'
-                    title={t('project.lineChart')}
-                    onClick={() => setChartTypeOnClick(chartTypes.line)}
-                    className={cx('px-2.5 py-1.5 text-xs rounded-md text-gray-700 bg-white hover:bg-gray-50 border-transparent !border-0 dark:text-gray-50 dark:bg-slate-900 dark:hover:bg-gray-700 focus:!outline-0 focus:!ring-0 focus:!ring-offset-0 focus:!ring-transparent', {
-                      'text-indigo-600 dark:text-indigo-500 shadow-md': chartType === chartTypes.line,
-                      'text-gray-400 dark:text-gray-500': chartType !== chartTypes.line,
-                    })}
-                  >
-                    <PresentationChartLineIcon className='w-6 h-6' />
-                  </button>
-                </div>
-              </div>
-            </div>
             {(analyticsLoading) && (
               <Loader />
             )}
             {(isPanelsDataEmpty) && (
               <NoEvents filters={filters} resetFilters={resetFilters} />
             )}
-            <div className={cx('pt-4 md:pt-0', { hidden: isPanelsDataEmpty || analyticsLoading })}>
+            <div className={cx('pt-4', { hidden: isPanelsDataEmpty || analyticsLoading })}>
               <div
                 className={cx('h-80', {
                   hidden: checkIfAllMetricsAreDisabled,
                 })}
               >
-                <div className='h-80' id='dataChart' />
+                <div className='h-80 [&_svg]:!overflow-visible' id='dataChart' />
               </div>
               <Filters
                 filters={filters}
@@ -817,17 +782,6 @@ const ViewProject = ({
                 </div>
               )}
               <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
-                {/* {!_isEmpty(project.overall) && (
-                  <Overview
-                    t={t}
-                    overall={project.overall}
-                    chartData={chartData}
-                    activePeriod={activePeriod}
-                    sessionDurationAVG={sessionDurationAVG}
-                    live={liveStats[id] || 'N/A'}
-                    projectId={id}
-                  />
-                )} */}
                 {_map(panelsData.types, (type: keyof typeof tnMapping) => {
                   const panelName = tnMapping[type]
                   // @ts-ignore
@@ -908,12 +862,12 @@ const ViewProject = ({
                   )
                 })}
                 {!_isEmpty(panelsData.customs) && (
-                <CustomEvents
-                  t={t}
-                  customs={panelsData.customs}
-                  onFilter={filterHandler}
-                  chartData={chartData}
-                />
+                  <CustomEvents
+                    t={t}
+                    customs={panelsData.customs}
+                    onFilter={filterHandler}
+                    chartData={chartData}
+                  />
                 )}
               </div>
             </div>

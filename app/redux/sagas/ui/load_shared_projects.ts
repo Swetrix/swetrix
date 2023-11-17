@@ -47,21 +47,14 @@ export default function* loadSharedProjects({ payload: { take = ENTRIES_PER_PAGE
     let overall: IOverall
 
     try {
-      overall = yield call(getOverallStats, pids)
+      overall = yield call(getOverallStats, pids, '7d')
+      yield put(UIActions.setBirdsEyeBulk(overall))
     } catch (e) {
       debug('failed to overall stats: %s', e)
     }
 
-    results = _map(projectsWithShared, res => ({
-      ...res,
-      project: {
-        ...res.project,
-        overall: overall?.[res.project.id],
-      },
-    }))
-
     yield put(UIActions.setProjects({
-      projects: results,
+      projects: projectsWithShared,
       shared: true,
     }))
     yield put(UIActions.setTotal({

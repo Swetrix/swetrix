@@ -25,7 +25,7 @@ const CCRow = ({ cc, name, language }: ICCRow): JSX.Element => (
       alt=''
       aria-hidden='true'
     />
-    &nbsp;&nbsp;
+    &nbsp;
     {name || countries.getName(cc, language)}
   </>
 )

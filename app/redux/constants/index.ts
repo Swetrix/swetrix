@@ -1,7 +1,21 @@
-const getCustomLabel = (dates: Date[], t: Function): string => {
+const displayDateOptions: Intl.DateTimeFormatOptions = {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+}
+
+const getCustomLabel = (dates: Date[], t: Function, language?: string): string => {
   if (dates) {
-    const from = dates[0].toLocaleDateString()
-    const to = dates[1].toLocaleDateString()
+    let from: string
+    let to: string
+
+    if (language) {
+      from = dates[0].toLocaleDateString(language, displayDateOptions)
+      to = dates[1].toLocaleDateString(language, displayDateOptions)
+    } else {
+      from = dates[0].toLocaleDateString()
+      to = dates[1].toLocaleDateString()
+    }
 
     if (from === to) {
       return from
@@ -23,14 +37,24 @@ export const FORECAST_MAX_MAPPING: {
 
 export const KEY_FOR_ALL_TIME = 'all'
 
-export const tbPeriodPairs = (t: Function, tbs?: string[] | null, dates?: Date[]): {
+export const ALL_PERIODS = [
+  'minute',
+  'hour',
+  'day',
+  'month',
+  'year',
+]
+
+export interface ITBPeriodPairs {
   label: string
   period: string
   tbs: string[]
   countDays?: number
   dropdownLabel?: string
   isCustomDate?: boolean
-}[] => [{
+}
+
+export const tbPeriodPairs = (t: Function, tbs?: string[] | null, dates?: Date[], language?: string):ITBPeriodPairs[] => [{
   label: t('project.thisHour'),
   period: '1h',
   tbs: ['minute'],
@@ -76,7 +100,7 @@ export const tbPeriodPairs = (t: Function, tbs?: string[] | null, dates?: Date[]
   period: KEY_FOR_ALL_TIME,
   tbs: ['month', 'year'],
 }, {
-  label: dates ? getCustomLabel(dates, t) : t('project.custom'),
+  label: dates ? getCustomLabel(dates, t, language) : t('project.custom'),
   dropdownLabel: t('project.custom'),
   isCustomDate: true,
   period: 'custom',
@@ -87,16 +111,69 @@ export const tbPeriodPairs = (t: Function, tbs?: string[] | null, dates?: Date[]
   tbs: tbs || ['custom'],
 }]
 
+export const captchaTbPeriodPairs = (t: Function, tbs?: string[] | null, dates?: Date[], language?: string):ITBPeriodPairs[] => [{
+  label: t('project.thisHour'),
+  period: '1h',
+  tbs: ['minute'],
+}, {
+  label: t('project.today'),
+  period: 'today',
+  tbs: ['hour'],
+}, {
+  label: t('project.yesterday'),
+  period: 'yesterday',
+  tbs: ['hour'],
+}, {
+  label: t('project.last24h'),
+  period: '1d',
+  countDays: 1,
+  tbs: ['hour'],
+}, {
+  label: t('project.lastXDays', { amount: 7 }),
+  period: '7d',
+  tbs: ['hour', 'day'],
+  countDays: 7,
+}, {
+  label: t('project.lastXWeeks', { amount: 4 }),
+  period: '4w',
+  tbs: ['day'],
+  countDays: 28,
+}, {
+  label: t('project.lastXMonths', { amount: 3 }),
+  period: '3M',
+  tbs: ['month'],
+  countDays: 90,
+}, {
+  label: t('project.lastXMonths', { amount: 12 }),
+  period: '12M',
+  tbs: ['month'],
+  countDays: 365,
+}, {
+  label: t('project.lastXMonths', { amount: 24 }),
+  period: '24M',
+  tbs: ['month'],
+}, {
+  label: t('project.all'),
+  period: KEY_FOR_ALL_TIME,
+  tbs: ['month', 'year'],
+}, {
+  label: dates ? getCustomLabel(dates, t, language) : t('project.custom'),
+  dropdownLabel: t('project.custom'),
+  isCustomDate: true,
+  period: 'custom',
+  tbs: tbs || ['custom'],
+}]
+
 export const filtersPeriodPairs = ['1h', '1d', '7d', '4w', '3M', '12M', 'custom', 'compare']
 
-export const tbPeriodPairsCompare = (t: Function, dates?: Date[]): {
+export const tbPeriodPairsCompare = (t: Function, dates?: Date[], language?: string): {
   label: string
   period: string
 }[] => [{
   label: t('project.previousPeriod'),
   period: 'previous',
 }, {
-  label: dates ? getCustomLabel(dates, t) : t('project.custom'),
+  label: dates ? getCustomLabel(dates, t, language) : t('project.custom'),
   period: 'custom',
 }, {
   label: t('project.disableCompare'),
@@ -120,7 +197,7 @@ interface IStringObject {
 }
 
 // the order of panels in the project view
-export const TRAFFIC_PANELS_ORDER: string[] = ['cc', 'pg', 'lc', 'br', 'os', 'dv', 'ref', 'so', 'me', 'ca']
+export const TRAFFIC_PANELS_ORDER: string[] = ['cc', 'pg', 'lc', 'br', 'os', 'dv', 'ref', 'so']
 export const FILTERS_PANELS_ORDER: string[] = ['cc', 'pg', 'lc', 'br', 'os', 'dv', 'ref']
 export const PERFORMANCE_PANELS_ORDER: string[] = ['cc', 'pg', 'br', 'dv']
 
@@ -217,7 +294,8 @@ export const TWITTER_URL: string = 'https://twitter.com/intent/user?screen_name=
 export const TWITTER_USERNAME: string = '@swetrix'
 export const DISCORD_URL: string = 'https://discord.gg/ZVK8Tw2E8j'
 export const STATUSPAGE_URL: string = 'https://stats.uptimerobot.com/33rvmiXXEz'
-export const MAIN_URL: string = 'https://swetrix.com'
+// TODO: CHANGE IT BACK TO SWETRIX.COM
+export const MAIN_URL: string = 'http://localhost:3000' // 'https://swetrix.com'
 export const REF_URL_PREFIX: string = `${MAIN_URL}/ref/`
 export const UTM_GENERATOR_URL: string = 'https://url.swetrix.com'
 export const LIVE_DEMO_URL: string = '/projects/STEzHcB1rALV'
@@ -741,3 +819,75 @@ export const SSO_PROVIDERS = Object.freeze({
   GOOGLE: 'google',
   GITHUB: 'github',
 })
+
+export const BROWSER_CDN_LOGO_MAP = {
+  Chrome: 'chrome/chrome_48x48.png',
+  Firefox: 'firefox/firefox_48x48.png',
+  Safari: 'safari/safari_48x48.png',
+  'Mobile Safari': 'safari-ios/safari-ios_48x48.png',
+  Edge: 'edge/edge_48x48.png',
+  'Samsung Browser': 'samsung-internet/samsung-internet_48x48.png',
+  'Chrome WebView': 'android-webview/android-webview_48x48.png',
+  Opera: 'opera/opera_48x48.png',
+  GSA: 'chrome/chrome_48x48.png',
+  WebKit: 'safari/safari_48x48.png',
+  Yandex: 'yandex/yandex_48x48.png',
+  'Android Browser': 'android-webview/android-webview_48x48.png',
+  Silk: 'silk/silk_48x48.png',
+  'Opera Touch': 'opera-touch/opera-touch_48x48.png',
+  Electron: 'electron/electron_48x48.png',
+  'Coc Coc': 'cốc-cốc/cốc-cốc_48x48.png',
+  SeaMonkey: 'seamonkey/seamonkey_48x48.png',
+  PaleMoon: 'pale-moon/pale-moon_48x48.png',
+  Falkon: 'falkon/falkon_48x48.png',
+  Chromium: 'chromium/chromium_48x48.png',
+  Vivaldi: 'vivaldi/vivaldi_48x48.png',
+  Puffin: 'puffin/puffin_48x48.png',
+  'Opera Mini': 'opera-mini/opera-mini_48x48.png',
+  Mozilla: 'firefox/firefox_48x48.png',
+  Midori: 'midori/midori_48x48.png',
+  Maxthon: 'maxthon/maxthon_48x48.png',
+  Konqueror: 'konqueror/konqueror_48x48.png',
+  Epiphany: 'web/web_48x48.png',
+  Fennec: 'firefox/firefox_48x48.png',
+  Basilisk: 'basilisk/basilisk_48x48.png',
+}
+
+export const BROWSER_HOSTED_LOGO_MAP = {
+  DuckDuckGo: 'assets/duckduckgo.png',
+  Facebook: 'assets/facebook.svg',
+  MetaSr: 'assets/facebook.svg',
+  Instagram: 'assets/instagram.svg',
+  LinkedIn: 'assets/linkedin.svg',
+}
+
+export const OS_LOGO_MAP = {
+  Windows: 'assets/os/WIN.png',
+  Android: 'assets/os/AND.png',
+  iOS: 'assets/os/apple.svg',
+  'Mac OS': 'assets/os/apple.svg',
+  Mac: 'assets/os/apple.svg',
+  Linux: 'assets/os/LIN.png',
+  Ubuntu: 'assets/os/UBT.png',
+  'Chromium OS': 'assets/os/COS.png',
+  Fedora: 'assets/os/FED.png',
+  HarmonyOS: 'assets/os/HAR.png',
+  PlayStation: 'assets/os/PS3.png',
+  FreeBSD: 'assets/os/BSD.png',
+  Tizen: 'assets/os/TIZ.png',
+  OpenBSD: 'assets/os/OBS.png',
+  Chromecast: 'assets/os/COS.png',
+  Kubuntu: 'assets/os/KBT.png',
+  Xbox: 'assets/os/XBX.png',
+  NetBSD: 'assets/os/NBS.png',
+  Nintendo: 'assets/os/WII.png',
+  KAIOS: 'assets/os/KOS.png',
+  BSD: 'assets/os/BSD.png',
+  'Windows Phone': 'assets/os/WIN.png',
+}
+
+export const OS_LOGO_MAP_DARK = {
+  iOS: 'assets/os/apple-dark.svg',
+  'Mac OS': 'assets/os/apple-dark.svg',
+  Mac: 'assets/os/apple-dark.svg',
+}

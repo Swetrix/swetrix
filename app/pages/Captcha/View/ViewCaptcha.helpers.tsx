@@ -183,6 +183,8 @@ const getSettings = (chart: any, timeBucket: string, activeChartMetrics: {
         tick: {
           format: (d: number) => nFormatter(d, 1),
         },
+        show: true,
+        inner: true,
       },
     },
     tooltip: {
@@ -249,9 +251,9 @@ const typeNameMapping = (t: (key: string) => string) => ({
   dv: t('project.mapping.dv'),
   br: t('project.mapping.br'),
   os: t('project.mapping.os'),
-  so: 'utm_source',
-  me: 'utm_medium',
-  ca: 'utm_campaign',
+  so: t('project.mapping.so'),
+  me: t('project.mapping.me'),
+  ca: t('project.mapping.ca'),
   lt: t('project.mapping.lt'),
   ev: t('project.event'),
 })

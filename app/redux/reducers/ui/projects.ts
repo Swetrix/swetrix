@@ -4,7 +4,7 @@ import _findIndex from 'lodash/findIndex'
 import _map from 'lodash/map'
 import { tabForOwnedProject, PROJECT_TABS, PROJECTS_PROTECTED } from 'redux/constants'
 import { setItem, getItem } from 'utils/localstorage'
-import { IProject, ICaptchaProject, ILiveStats } from 'redux/models/IProject'
+import { IProject, ICaptchaProject, ILiveStats, IOverall, IOverallObject } from 'redux/models/IProject'
 import { ISharedProject } from 'redux/models/ISharedProject'
 import { IAlerts } from 'redux/models/IAlerts'
 
@@ -12,6 +12,9 @@ interface IInitialState {
   projects: IProject[]
   sharedProjects: ISharedProject[]
   captchaProjects: ICaptchaProject[]
+  birdseye: {
+    [key: string]: IOverallObject
+  }
   isLoading: boolean
   isLoadingShared: boolean
   isLoadingCaptcha: boolean
@@ -37,6 +40,7 @@ const initialState: IInitialState = {
   projects: [],
   sharedProjects: [],
   captchaProjects: [],
+  birdseye: {},
   isLoading: true,
   isLoadingShared: true,
   isLoadingCaptcha: true,
@@ -231,6 +235,12 @@ const projectsSlice = createSlice({
       state.captchaTotal = 0
       state.alerts = []
       state.subscribers = []
+    },
+    setBirdsEyeBulk(state, { payload }: PayloadAction<IOverall>) {
+      state.birdseye = {
+        ...state.birdseye,
+        ...payload,
+      }
     },
   },
 })

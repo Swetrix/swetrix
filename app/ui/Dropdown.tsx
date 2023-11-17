@@ -1,6 +1,7 @@
 import React, { memo, Fragment } from 'react'
 import { Menu, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/24/solid'
+import { ChevronDownIcon as ChevronDownIconMini } from '@heroicons/react/20/solid'
 import cx from 'clsx'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
@@ -23,10 +24,14 @@ interface IDropdown {
   buttonClassName?: string,
   selectItemClassName?: string,
   menuItemsClassName?: string,
+  header?: string | JSX.Element,
+  chevron?: 'regular' | 'mini',
+  headless?: boolean,
 }
 
 const Dropdown = ({
-  title, desc, className, items, labelExtractor, keyExtractor, onSelect, aside, buttonClassName, selectItemClassName, menuItemsClassName,
+  title, desc, className, items, labelExtractor, keyExtractor, onSelect, aside, buttonClassName,
+  selectItemClassName, menuItemsClassName, header, chevron, headless,
 }: IDropdown): JSX.Element => (
   <Menu as='div' className={cx('relative inline-block text-left', className)}>
     {({ open }) => (
@@ -36,13 +41,30 @@ const Dropdown = ({
         )}
         <div>
           <Menu.Button
-            className={cx(buttonClassName || 'inline-flex w-full rounded-md border border-gray-300 shadow-sm px-3 md:px-4 py-2 bg-white text-sm font-medium text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500', {
+            className={cx(buttonClassName, {
               'justify-between': aside,
               'justify-center': !aside,
+              'inline-flex w-full rounded-md border border-gray-300 shadow-sm px-3 md:px-4 py-2 bg-white text-sm font-medium text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500': !headless,
+              'inline-flex w-full px-3 md:px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-50 outline-none group': headless,
             })}
           >
             {title}
-            <ChevronDownIcon className='-mr-1 ml-2 h-5 w-5' aria-hidden='true' />
+            {chevron === 'regular' && (
+              <ChevronDownIcon
+                className={cx('-mr-1 ml-2 h-5 w-5', {
+                  'group-hover:text-gray-500': headless,
+                })}
+                aria-hidden='true'
+              />
+            )}
+            {chevron === 'mini' && (
+              <ChevronDownIconMini
+                className={cx('-mr-1 ml-1 h-5 w-5', {
+                  'group-hover:text-gray-500': headless,
+                })}
+                aria-hidden='true'
+              />
+            )}
           </Menu.Button>
         </div>
 
@@ -56,7 +78,14 @@ const Dropdown = ({
           leaveFrom='transform opacity-100 scale-100'
           leaveTo='transform opacity-0 scale-95'
         >
-          <Menu.Items static className={cx('z-50 py-1 origin-top-right absolute right-0 mt-2 w-40 min-w-max rounded-md shadow-lg bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 focus:outline-none', menuItemsClassName)}>
+          <Menu.Items static className={cx('z-50 py-1 origin-top-right absolute right-0 mt-2 w-40 min-w-max rounded-md shadow-lg bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 focus:outline-none', menuItemsClassName, {
+            'divide-y divide-gray-100': header,
+          })}>
+            {header && (
+              <p className='text-gray-700 dark:text-gray-50 px-4 py-2 text-sm font-medium'>
+                {header}
+              </p>
+            )}
             {_map(items, item => (
               <Menu.Item key={keyExtractor ? keyExtractor(item) : item}>
                 <span
@@ -92,6 +121,8 @@ Dropdown.propTypes = {
   aside: PropTypes.bool,
   desc: PropTypes.string,
   menuItemsClassName: PropTypes.string,
+  chevron: PropTypes.oneOf(['regular', 'mini']),
+  headless: PropTypes.bool,
 }
 
 Dropdown.defaultProps = {
@@ -104,6 +135,8 @@ Dropdown.defaultProps = {
   desc: '',
   items: [],
   menuItemsClassName: '',
+  chevron: 'regular',
+  headless: false,
 }
 
 export default memo(Dropdown)
