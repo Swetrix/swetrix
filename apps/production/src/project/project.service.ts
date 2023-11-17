@@ -468,6 +468,14 @@ export class ProjectService {
     uid: string | null,
     password?: string | null,
   ): void {
+    if (
+      project.public ||
+      uid === project.admin?.id ||
+      _findIndex(project.share, ({ user }) => user?.id === uid) !== -1
+    ) {
+      return null
+    }
+
     if (project.isPasswordProtected && password) {
       if (
         _size(password) <= MAX_PROJECT_PASSWORD_LENGTH &&
@@ -481,14 +489,6 @@ export class ProjectService {
 
     if (project.isPasswordProtected && uid !== project.admin?.id) {
       throw new ForbiddenException('This project is password protected')
-    }
-
-    if (
-      project.public ||
-      uid === project.admin?.id ||
-      _findIndex(project.share, ({ user }) => user?.id === uid) !== -1
-    ) {
-      return null
     }
 
     throw new ForbiddenException('You are not allowed to view this project')

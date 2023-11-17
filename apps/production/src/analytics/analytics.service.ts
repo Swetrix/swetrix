@@ -8,6 +8,7 @@ import * as _map from 'lodash/map'
 import * as _toUpper from 'lodash/toUpper'
 import * as _join from 'lodash/join'
 import * as _isArray from 'lodash/isArray'
+import * as _sortBy from 'lodash/sortBy'
 import * as _reduce from 'lodash/reduce'
 import * as _keys from 'lodash/keys'
 import * as _last from 'lodash/last'
@@ -69,6 +70,7 @@ import {
   CustomsCHResponse,
   CustomsCHAggregatedResponse,
   TrafficCEFilterCHResponse,
+  BirdseyeCHResponse,
   TrafficCHResponse,
   IGetGroupFromTo,
   GetFiltersQuery,
@@ -81,6 +83,9 @@ import {
   IAggregatedMetadata,
   IFunnelCHResponse,
   IFunnel,
+  IOverall,
+  IOverallCaptcha,
+  IOverallPerformance,
 } from './interfaces'
 
 dayjs.extend(utc)
@@ -790,7 +795,7 @@ export class AnalyticsService {
     let query = ''
     let customEVFilterApplied = false
 
-    if (_isEmpty(filters)) {
+    if (filters === '""' || _isEmpty(filters)) {
       return [query, params, parsed, customEVFilterApplied]
     }
 
@@ -1095,25 +1100,42 @@ export class AnalyticsService {
     return result[0]?.c || 0
   }
 
-  async getSummary(
+  async getCaptchaSummary(
     pids: string[],
-    period: 'w' | 'M' = 'w',
-    amountToSubtract = 1,
-  ) {
-    return this.getSummaryStats(pids, 'analytics', period, amountToSubtract)
-  }
+    period?: string,
+    from?: string,
+    to?: string,
+    timezone?: string,
+    filters?: string,
+  ): Promise<IOverallCaptcha> {
+    // eslint-disable-next-line
+    let _from: string
+    // eslint-disable-next-line
+    let _to: string
 
-  async getCaptchaSummary(pids: string[], period: 'w' | 'M' = 'w') {
-    return this.getSummaryStats(pids, 'captcha', period)
-  }
+    if (_isEmpty(period) || period === 'custom') {
+      const safeTimezone = this.getSafeTimezone(timezone)
 
-  async getSummaryStats(
-    pids: string[],
-    tableName: 'analytics' | 'captcha',
-    period: 'w' | 'M' = 'w',
-    amountToSubtract = 1,
-  ) {
+      const { groupFrom, groupTo } = this.getGroupFromTo(
+        from,
+        to,
+        null,
+        period,
+        safeTimezone,
+      )
+
+      _from = groupFrom
+      _to = groupTo
+    } else {
+      this.validatePeriod(period)
+    }
+
     const result = {}
+
+    const [filtersQuery, filtersParams] = this.getFiltersQuery(
+      filters,
+      DataType.CAPTCHA,
+    )
 
     const promises = pids.map(async pid => {
       if (!isValidPID(pid)) {
@@ -1122,75 +1144,482 @@ export class AnalyticsService {
         )
       }
 
-      const now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-      const periodRaw = dayjs.utc().subtract(amountToSubtract, period)
-      const periodFormatted = periodRaw.format('YYYY-MM-DD HH:mm:ss')
-      const periodSubtracted = periodRaw
-        .subtract(amountToSubtract, period)
-        .format('YYYY-MM-DD HH:mm:ss')
+      try {
+        if (period === 'all') {
+          const queryAll = `SELECT count(*) AS all FROM captcha WHERE pid = {pid:FixedString(12)} ${filtersQuery}`
+          const rawResult = <Array<Partial<BirdseyeCHResponse>>>await clickhouse
+            .query(queryAll, {
+              params: { pid, ...filtersParams },
+            })
+            .toPromise()
 
-      const queryThisWeek = `SELECT ${
-        tableName === 'analytics' ? 'unique,' : ''
-      } count() FROM ${tableName} WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodFormatted:String} AND {now:String}${
-        tableName === 'analytics' ? ' GROUP BY unique' : ''
-      }`
-      const queryLastWeek = `SELECT ${
-        tableName === 'analytics' ? 'unique,' : ''
-      } count() FROM ${tableName} WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}${
-        tableName === 'analytics' ? ' GROUP BY unique' : ''
-      }`
+          result[pid] = {
+            current: {
+              all: rawResult[0].all,
+            },
+            previous: {
+              all: 0,
+            },
+            change: rawResult[0].all,
+          }
+          return
+        }
 
-      const paramsData = {
-        params: {
-          pid,
-          periodFormatted,
-          periodSubtracted,
-          now,
-        },
+        let now: string
+        let periodFormatted: string
+        let periodSubtracted: string
+
+        if (_from && _to) {
+          // diff may be 0 (when selecting data for 1 day), so let's make it 1 to grab some data for the prev day as well
+          const diff = dayjs(_to).diff(dayjs(_from), 'days') || 1
+
+          now = _to
+          periodFormatted = _from
+          periodSubtracted = dayjs(_from)
+            .subtract(diff, 'days')
+            .format('YYYY-MM-DD HH:mm:ss')
+        } else {
+          const amountToSubtract = parseInt(period, 10)
+          const unit = _replace(period, /[0-9]/g, '')
+
+          now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+          const periodRaw = dayjs.utc().subtract(amountToSubtract, unit)
+          periodFormatted = periodRaw.format('YYYY-MM-DD HH:mm:ss')
+          periodSubtracted = periodRaw
+            .subtract(amountToSubtract, unit)
+            .format('YYYY-MM-DD HH:mm:ss')
+        }
+
+        const queryCurrent = `SELECT 1 AS sortOrder, count(*) AS all FROM captcha WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodFormatted:String} AND {now:String} ${filtersQuery}`
+        const queryPrevious = `SELECT 2 AS sortOrder, count(*) AS all FROM captcha WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String} ${filtersQuery}`
+
+        const query = `${queryCurrent} UNION ALL ${queryPrevious}`
+
+        let rawResult = <Array<Partial<BirdseyeCHResponse>>>await clickhouse
+          .query(query, {
+            params: {
+              pid,
+              periodFormatted,
+              periodSubtracted,
+              now,
+              ...filtersParams,
+            },
+          })
+          .toPromise()
+
+        rawResult = _sortBy(rawResult, 'sortOrder')
+
+        const currentPeriod = rawResult[0]
+        const previousPeriod = rawResult[1]
+
+        result[pid] = {
+          current: {
+            all: currentPeriod.all,
+          },
+          previous: {
+            all: previousPeriod.all,
+          },
+          change: currentPeriod.all - previousPeriod.all,
+        }
+      } catch {
+        throw new InternalServerErrorException(
+          "Can't process the provided PID. Please, try again later.",
+        )
+      }
+    })
+
+    await Promise.all(promises)
+
+    return result
+  }
+
+  convertSummaryToObsoleteFormat(summary: IOverall): any {
+    const result = {}
+
+    for (const pid of _keys(summary)) {
+      const { current, previous } = summary[pid]
+
+      result[pid] = {
+        thisWeek: current.all,
+        lastWeek: previous.all,
+        thisWeekUnique: current.unique,
+        lastWeekUnique: previous.unique,
+        percChange: calculateRelativePercentage(previous.all, current.all),
+        percChangeUnique: calculateRelativePercentage(
+          previous.unique,
+          current.unique,
+        ),
+      }
+    }
+
+    return result
+  }
+
+  async getAnalyticsSummary(
+    pids: string[],
+    period?: string,
+    from?: string,
+    to?: string,
+    timezone?: string,
+    filters?: string,
+  ): Promise<IOverall> {
+    // eslint-disable-next-line
+    let _from: string
+    // eslint-disable-next-line
+    let _to: string
+
+    if (_isEmpty(period) || period === 'custom') {
+      const safeTimezone = this.getSafeTimezone(timezone)
+
+      const { groupFrom, groupTo } = this.getGroupFromTo(
+        from,
+        to,
+        null,
+        period,
+        safeTimezone,
+      )
+
+      _from = groupFrom
+      _to = groupTo
+    } else {
+      this.validatePeriod(period)
+    }
+
+    const result = {}
+
+    const [filtersQuery, filtersParams] = this.getFiltersQuery(
+      filters,
+      DataType.ANALYTICS,
+    )
+
+    const promises = pids.map(async pid => {
+      if (!isValidPID(pid)) {
+        throw new BadRequestException(
+          `The provided Project ID (${pid}) is incorrect`,
+        )
       }
 
       try {
-        const thisWeekResult = await clickhouse
-          .query(queryThisWeek, paramsData)
-          .toPromise()
-        const lastWeekResult = await clickhouse
-          .query(queryLastWeek, paramsData)
-          .toPromise()
+        if (period === 'all') {
+          const queryAll = `SELECT count(*) AS all, countIf(unique=1) AS unique, avgIf(sdur, sdur IS NOT NULL AND analytics.unique=1) AS sdur FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery}`
+          const rawResult = <Array<BirdseyeCHResponse>>await clickhouse
+            .query(queryAll, {
+              params: { pid, ...filtersParams },
+            })
+            .toPromise()
 
-        if (tableName === 'analytics') {
-          const thisWeekUnique =
-            _find(thisWeekResult, ({ unique }) => unique)?.['count()'] || 0
-          const thisWeekPV =
-            (_find(thisWeekResult, ({ unique }) => !unique)?.['count()'] || 0) +
-            thisWeekUnique
-          const lastWeekUnique =
-            _find(lastWeekResult, ({ unique }) => unique)?.['count()'] || 0
-          const lastWeekPV =
-            (_find(lastWeekResult, ({ unique }) => !unique)?.['count()'] || 0) +
-            lastWeekUnique
+          let bounceRate = 0
+
+          if (rawResult[0].all > 0) {
+            bounceRate = _round(
+              (rawResult[0].unique * 100) / rawResult[0].all,
+              1,
+            )
+          }
 
           result[pid] = {
-            thisWeek: thisWeekPV,
-            lastWeek: lastWeekPV,
-            thisWeekUnique,
-            lastWeekUnique,
-            percChange: calculateRelativePercentage(lastWeekPV, thisWeekPV),
-            percChangeUnique: calculateRelativePercentage(
-              lastWeekUnique,
-              thisWeekUnique,
-            ),
+            current: {
+              all: rawResult[0].all,
+              unique: rawResult[0].unique,
+              bounceRate,
+              sdur: rawResult[0].sdur,
+            },
+            previous: {
+              all: 0,
+              unique: 0,
+              bounceRate: 0,
+              sdur: 0,
+            },
+            change: rawResult[0].all,
+            uniqueChange: rawResult[0].unique,
+            bounceRateChange: bounceRate,
+            sdurChange: rawResult[0].sdur,
           }
-        } else {
-          const thisWeek = thisWeekResult?.['count()'] || 0
-          const lastWeek = lastWeekResult?.['count()'] || 0
-
-          result[pid] = {
-            thisWeek,
-            lastWeek,
-            percChange: calculateRelativePercentage(lastWeek, thisWeek),
-          }
+          return
         }
-      } catch {
+
+        let now: string
+        let periodFormatted: string
+        let periodSubtracted: string
+
+        if (_from && _to) {
+          // diff may be 0 (when selecting data for 1 day), so let's make it 1 to grab some data for the prev day as well
+          const diff = dayjs(_to).diff(dayjs(_from), 'days') || 1
+
+          now = _to
+          periodFormatted = _from
+          periodSubtracted = dayjs(_from)
+            .subtract(diff, 'days')
+            .format('YYYY-MM-DD HH:mm:ss')
+        } else {
+          const amountToSubtract = parseInt(period, 10)
+          const unit = _replace(period, /[0-9]/g, '')
+
+          now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+          const periodRaw = dayjs.utc().subtract(amountToSubtract, unit)
+          periodFormatted = periodRaw.format('YYYY-MM-DD HH:mm:ss')
+          periodSubtracted = periodRaw
+            .subtract(amountToSubtract, unit)
+            .format('YYYY-MM-DD HH:mm:ss')
+        }
+
+        const queryCurrent = `SELECT 1 AS sortOrder, count(*) AS all, countIf(unique=1) AS unique, avgIf(sdur, sdur IS NOT NULL AND analytics.unique=1) AS sdur FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodFormatted:String} AND {now:String} ${filtersQuery}`
+        const queryPrevious = `SELECT 2 AS sortOrder, count(*) AS all, countIf(unique=1) AS unique, avgIf(sdur, sdur IS NOT NULL AND analytics.unique=1) AS sdur FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String} ${filtersQuery}`
+
+        const query = `${queryCurrent} UNION ALL ${queryPrevious}`
+
+        let rawResult = <Array<BirdseyeCHResponse>>await clickhouse
+          .query(query, {
+            params: {
+              pid,
+              periodFormatted,
+              periodSubtracted,
+              now,
+              ...filtersParams,
+            },
+          })
+          .toPromise()
+
+        rawResult = _sortBy(rawResult, 'sortOrder')
+
+        const currentPeriod = rawResult[0]
+        const previousPeriod = rawResult[1]
+
+        let bounceRate = 0
+        let prevBounceRate = 0
+
+        if (currentPeriod.all > 0) {
+          bounceRate = _round(
+            (currentPeriod.unique * 100) / currentPeriod.all,
+            1,
+          )
+        }
+
+        if (previousPeriod.all > 0) {
+          prevBounceRate = _round(
+            (previousPeriod.unique * 100) / previousPeriod.all,
+            1,
+          )
+        }
+
+        result[pid] = {
+          current: {
+            all: currentPeriod.all,
+            unique: currentPeriod.unique,
+            sdur: currentPeriod.sdur || 0,
+            bounceRate,
+          },
+          previous: {
+            all: previousPeriod.all,
+            unique: previousPeriod.unique,
+            sdur: previousPeriod.sdur || 0,
+            bounceRate: prevBounceRate,
+          },
+          change: currentPeriod.all - previousPeriod.all,
+          uniqueChange: currentPeriod.unique - previousPeriod.unique,
+          bounceRateChange: (bounceRate - prevBounceRate) * -1,
+          sdurChange: currentPeriod.sdur - previousPeriod.sdur,
+        }
+      } catch (reason) {
+        console.error(
+          `[ERROR] (getAnalyticsSummary) Error occurred for PID ${pid}`,
+        )
+        console.error(reason)
+        throw new InternalServerErrorException(
+          "Can't process the provided PID. Please, try again later.",
+        )
+      }
+    })
+
+    await Promise.all(promises)
+
+    return result
+  }
+
+  async getPerformanceSummary(
+    pids: string[],
+    period?: string,
+    from?: string,
+    to?: string,
+    timezone?: string,
+    filters?: string,
+  ): Promise<IOverallPerformance> {
+    // eslint-disable-next-line
+    let _from: string
+    // eslint-disable-next-line
+    let _to: string
+
+    if (_isEmpty(period) || period === 'custom') {
+      const safeTimezone = this.getSafeTimezone(timezone)
+
+      const { groupFrom, groupTo } = this.getGroupFromTo(
+        from,
+        to,
+        null,
+        period,
+        safeTimezone,
+      )
+
+      _from = groupFrom
+      _to = groupTo
+    } else {
+      this.validatePeriod(period)
+    }
+
+    const result = {}
+
+    const [filtersQuery, filtersParams] = this.getFiltersQuery(
+      filters,
+      DataType.PERFORMANCE,
+    )
+
+    const promises = pids.map(async pid => {
+      if (!isValidPID(pid)) {
+        throw new BadRequestException(
+          `The provided Project ID (${pid}) is incorrect`,
+        )
+      }
+
+      try {
+        if (period === 'all') {
+          const queryAll = `SELECT avg(dns) AS dns, avg(tls) as tls, avg(conn) as conn, avg(response) as response, avg(render) as render, avg(domLoad) as domLoad, avg(ttfb) as ttfb FROM performance WHERE pid = {pid:FixedString(12)} ${filtersQuery}`
+          const rawResult = <Array<Partial<PerformanceCHResponse>>>(
+            await clickhouse
+              .query(queryAll, {
+                params: { pid, ...filtersParams },
+              })
+              .toPromise()
+          )
+
+          result[pid] = {
+            current: {
+              frontend: millisecondsToSeconds(
+                rawResult[0].render + rawResult[0].domLoad,
+              ),
+              network: millisecondsToSeconds(
+                rawResult[0].dns +
+                  rawResult[0].tls +
+                  rawResult[0].conn +
+                  rawResult[0].response,
+              ),
+              backend: millisecondsToSeconds(rawResult[0].ttfb),
+            },
+            previous: {
+              frontend: 0,
+              network: 0,
+              backend: 0,
+            },
+            frontendChange: millisecondsToSeconds(
+              rawResult[0].render + rawResult[0].domLoad,
+            ),
+            networkChange: millisecondsToSeconds(
+              rawResult[0].dns +
+                rawResult[0].tls +
+                rawResult[0].conn +
+                rawResult[0].response,
+            ),
+            backendChange: millisecondsToSeconds(rawResult[0].ttfb),
+          }
+          return
+        }
+
+        let now: string
+        let periodFormatted: string
+        let periodSubtracted: string
+
+        if (_from && _to) {
+          // diff may be 0 (when selecting data for 1 day), so let's make it 1 to grab some data for the prev day as well
+          const diff = dayjs(_to).diff(dayjs(_from), 'days') || 1
+
+          now = _to
+          periodFormatted = _from
+          periodSubtracted = dayjs(_from)
+            .subtract(diff, 'days')
+            .format('YYYY-MM-DD HH:mm:ss')
+        } else {
+          const amountToSubtract = parseInt(period, 10)
+          const unit = _replace(period, /[0-9]/g, '')
+
+          now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+          const periodRaw = dayjs.utc().subtract(amountToSubtract, unit)
+          periodFormatted = periodRaw.format('YYYY-MM-DD HH:mm:ss')
+          periodSubtracted = periodRaw
+            .subtract(amountToSubtract, unit)
+            .format('YYYY-MM-DD HH:mm:ss')
+        }
+
+        const queryCurrent = `SELECT 1 AS sortOrder, avg(dns) AS dns, avg(tls) as tls, avg(conn) as conn, avg(response) as response, avg(render) as render, avg(domLoad) as domLoad, avg(ttfb) as ttfb FROM performance WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodFormatted:String} AND {now:String} ${filtersQuery}`
+        const queryPrevious = `SELECT 2 AS sortOrder, avg(dns) AS dns, avg(tls) as tls, avg(conn) as conn, avg(response) as response, avg(render) as render, avg(domLoad) as domLoad, avg(ttfb) as ttfb FROM performance WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String} ${filtersQuery}`
+
+        const query = `${queryCurrent} UNION ALL ${queryPrevious}`
+
+        let rawResult = <Array<Partial<PerformanceCHResponse>>>await clickhouse
+          .query(query, {
+            params: {
+              pid,
+              periodFormatted,
+              periodSubtracted,
+              now,
+              ...filtersParams,
+            },
+          })
+          .toPromise()
+
+        rawResult = _sortBy(rawResult, 'sortOrder')
+
+        const currentPeriod = rawResult[0]
+        const previousPeriod = rawResult[1]
+
+        result[pid] = {
+          current: {
+            frontend: millisecondsToSeconds(
+              currentPeriod.render + currentPeriod.domLoad,
+            ),
+            network: millisecondsToSeconds(
+              currentPeriod.dns +
+                currentPeriod.tls +
+                currentPeriod.conn +
+                currentPeriod.response,
+            ),
+            backend: millisecondsToSeconds(currentPeriod.ttfb),
+          },
+          previous: {
+            frontend: millisecondsToSeconds(
+              previousPeriod.render + previousPeriod.domLoad,
+            ),
+            network: millisecondsToSeconds(
+              previousPeriod.dns +
+                previousPeriod.tls +
+                previousPeriod.conn +
+                previousPeriod.response,
+            ),
+            backend: millisecondsToSeconds(previousPeriod.ttfb),
+          },
+          frontendChange: millisecondsToSeconds(
+            currentPeriod.render +
+              currentPeriod.domLoad -
+              previousPeriod.render -
+              previousPeriod.domLoad,
+          ),
+          networkChange: millisecondsToSeconds(
+            currentPeriod.dns +
+              currentPeriod.tls +
+              currentPeriod.conn +
+              currentPeriod.response -
+              previousPeriod.dns -
+              previousPeriod.tls -
+              previousPeriod.conn -
+              previousPeriod.response,
+          ),
+          backendChange: millisecondsToSeconds(
+            currentPeriod.ttfb - previousPeriod.ttfb,
+          ),
+        }
+      } catch (reason) {
+        console.error(
+          `[ERROR] (getAnalyticsSummary) Error occurred for PID ${pid}`,
+        )
+        console.error(reason)
         throw new InternalServerErrorException(
           "Can't process the provided PID. Please, try again later.",
         )
@@ -1270,18 +1699,6 @@ export class AnalyticsService {
     await Promise.all(paramsPromises)
 
     return params
-  }
-
-  async calculateAverageSessionDuration(
-    subQuery: string,
-    paramsData: any,
-  ): Promise<number> {
-    const avgSdurQuery = `SELECT avg(sdur) ${subQuery} AND sdur IS NOT NULL AND unique='1'`
-    const avgSdurObject = await clickhouse
-      .query(avgSdurQuery, paramsData)
-      .toPromise()
-
-    return _round(avgSdurObject[0]['avg(sdur)'])
   }
 
   generateXAxis(
@@ -1498,7 +1915,7 @@ export class AnalyticsService {
         ${selector},
         avg(sdur) as sdur,
         count() as pageviews,
-        sumIf(1, unique = 1) as uniques
+        countIf(unique=1) as uniques
       FROM (
         SELECT *,
           ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
@@ -1653,7 +2070,6 @@ export class AnalyticsService {
   ): Promise<object | void> {
     let params: unknown = {}
     let chart: unknown = {}
-    let avgSdur = 0
 
     const promises = [
       // Getting params
@@ -1678,7 +2094,6 @@ export class AnalyticsService {
           timeBucket,
           from,
           to,
-          subQuery,
           filtersQuery,
           paramsData,
           safeTimezone,
@@ -1688,9 +2103,6 @@ export class AnalyticsService {
 
         // @ts-ignore
         chart = groupedData.chart
-
-        // @ts-ignore
-        avgSdur = groupedData.avgSdur
       })(),
     ]
 
@@ -1699,7 +2111,6 @@ export class AnalyticsService {
     return {
       params,
       chart,
-      avgSdur,
     }
   }
 
@@ -1723,17 +2134,12 @@ export class AnalyticsService {
     timeBucket: TimeBucketType,
     from: string,
     to: string,
-    subQuery: string,
     filtersQuery: string,
     paramsData: any,
     safeTimezone: string,
     customEVFilterApplied: boolean,
     mode: ChartRenderMode,
   ): Promise<object | void> {
-    const avgSdur = customEVFilterApplied
-      ? 0
-      : await this.calculateAverageSessionDuration(subQuery, paramsData)
-
     const { xShifted } = this.generateXAxis(timeBucket, from, to, safeTimezone)
 
     if (customEVFilterApplied) {
@@ -1761,7 +2167,6 @@ export class AnalyticsService {
           uniques,
           sdur,
         },
-        avgSdur,
       })
     }
 
@@ -1785,7 +2190,6 @@ export class AnalyticsService {
         uniques,
         sdur,
       },
-      avgSdur,
     })
   }
 
@@ -2142,9 +2546,5 @@ export class AnalyticsService {
   async getOnlineCountByProjectId(projectId: string) {
     // @ts-ignore
     return redis.countKeysByPattern(`hb:${projectId}:*`)
-  }
-
-  async getStatsByProjectId(projectId: string) {
-    return this.getSummaryStats([projectId], 'analytics', 'w', 1)
   }
 }

@@ -583,12 +583,6 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
-    let subQuery = `FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
-
-    if (customEVFilterApplied) {
-      subQuery = `FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
-    }
-
     const paramsData = {
       params: {
         pid,
@@ -602,7 +596,6 @@ export class AnalyticsController {
       timeBucket,
       groupFrom,
       groupTo,
-      subQuery,
       filtersQuery,
       paramsData,
       safeTimezone,
@@ -846,16 +839,19 @@ export class AnalyticsController {
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ): Promise<any> {
-    const { pids, pid } = data
+    const {
+      pids,
+      pid,
+      period,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE,
+      filters,
+    } = data
     const pidsArray = getPIDsArray(pids, pid)
 
     const validationPromises = _map(pidsArray, async currentPID => {
       this.analyticsService.validatePID(currentPID)
-      // fix needed
-      // fix needed
-      // fix needed
-      // fix needed
-      // passwords and for projects protected []
       await this.analyticsService.checkProjectAccess(
         currentPID,
         uid,
@@ -865,7 +861,14 @@ export class AnalyticsController {
 
     await Promise.all(validationPromises)
 
-    return this.analyticsService.getSummary(pidsArray, 'w')
+    return this.analyticsService.getAnalyticsSummary(
+      pidsArray,
+      period,
+      from,
+      to,
+      timezone,
+      filters,
+    )
   }
 
   @Get('captcha/birdseye')
@@ -875,7 +878,15 @@ export class AnalyticsController {
     @Query() data,
     @CurrentUserId() uid: string,
   ): Promise<any> {
-    const { pids, pid } = data
+    const {
+      pids,
+      pid,
+      period,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE,
+      filters,
+    } = data
     const pidsArray = getPIDsArray(pids, pid)
 
     const validationPromises = _map(pidsArray, async currentPID => {
@@ -885,7 +896,53 @@ export class AnalyticsController {
 
     await Promise.all(validationPromises)
 
-    return this.analyticsService.getCaptchaSummary(pidsArray, 'w')
+    return this.analyticsService.getCaptchaSummary(
+      pidsArray,
+      period,
+      from,
+      to,
+      timezone,
+      filters,
+    )
+  }
+
+  @Get('performance/birdseye')
+  @Auth([], true, true)
+  async getPerformanceOverallStats(
+    @Query() data,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<any> {
+    const {
+      pids,
+      pid,
+      period,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE,
+      filters,
+    } = data
+    const pidsArray = getPIDsArray(pids, pid)
+
+    const validationPromises = _map(pidsArray, async currentPID => {
+      this.analyticsService.validatePID(currentPID)
+      await this.analyticsService.checkProjectAccess(
+        currentPID,
+        uid,
+        headers['x-password'],
+      )
+    })
+
+    await Promise.all(validationPromises)
+
+    return this.analyticsService.getPerformanceSummary(
+      pidsArray,
+      period,
+      from,
+      to,
+      timezone,
+      filters,
+    )
   }
 
   @Public()

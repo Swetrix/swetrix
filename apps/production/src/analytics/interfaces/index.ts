@@ -16,6 +16,12 @@ export interface TrafficCHResponse {
   pageviews: number
 }
 
+export interface BirdseyeCHResponse {
+  all: number
+  unique: number
+  sdur: number
+}
+
 export interface PerformanceCHResponse {
   year: number
   month: number
@@ -117,4 +123,58 @@ export interface IFunnel {
 export interface IGetFunnel {
   funnel: IFunnel[]
   totalPageviews: number
+}
+
+interface IOverallPeriodStats {
+  all: number
+  unique: number
+  bounceRate: number
+  sdur: number
+}
+
+export interface ICaptchaObject {
+  current: {
+    all: number
+  }
+  previous: {
+    all: number
+  }
+  change: number
+}
+
+export interface IPerformanceObject {
+  current: {
+    frontend: number
+    backend: number
+    network: number
+  }
+  previous: {
+    frontend: number
+    backend: number
+    network: number
+  }
+  frontendChange: number
+  backendChange: number
+  networkChange: number
+}
+
+export interface IOverallObject {
+  current: IOverallPeriodStats
+  previous: IOverallPeriodStats
+  change: number
+  uniqueChange?: number
+  bounceRateChange?: number
+  sdurChange?: number
+}
+
+export interface IOverall {
+  [key: string]: IOverallObject
+}
+
+export interface IOverallCaptcha {
+  [key: string]: ICaptchaObject
+}
+
+export interface IOverallPerformance {
+  [key: string]: IPerformanceObject
 }
