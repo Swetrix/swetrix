@@ -12,6 +12,7 @@ export interface IOverallObject {
   uniqueChange?: number
   bounceRateChange?: number
   sdurChange?: number
+  customEVFilterApplied?: boolean
 }
 
 export interface IOverall {

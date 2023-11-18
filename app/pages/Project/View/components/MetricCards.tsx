@@ -124,6 +124,22 @@ const MetricCards = ({ overall, overallCompare, activePeriodCompare }: IMetricCa
     sdurChange = (overall.current?.sdur as number) - (overallCompare?.current?.sdur as number)
   }
 
+  if (overall.customEVFilterApplied) {
+    return (
+      <div className='flex justify-center lg:justify-start gap-5 mb-5 flex-wrap'>
+        <MetricCard
+          label={t('project.events')}
+          value={overall.current?.all}
+          change={allChange}
+          type='percent'
+          goodChangeDirection='down'
+          valueMapper={(value, type) => `${type === 'badge' && value > 0 ? '+' : ''}${nFormatter(value, 1)}`}
+        />
+      </div>
+
+    )
+  }
+
   return (
     <div className='flex justify-center lg:justify-start gap-5 mb-5 flex-wrap'>
       <MetricCard
