@@ -689,7 +689,11 @@ export class AnalyticsService {
   }
 
   // returns SQL filters query in a format like 'AND col=value AND ...'
-  getFiltersQuery(filters: string, dataType: DataType): GetFiltersQuery {
+  getFiltersQuery(
+    filters: string,
+    dataType: DataType,
+    ignoreEV?: boolean,
+  ): GetFiltersQuery {
     const params = {}
     let parsed = []
     let query = ''
@@ -725,6 +729,10 @@ export class AnalyticsService {
       parsed,
       (prev, curr) => {
         const { column, filter, isExclusive = false } = curr
+
+        if (column === 'ev' && ignoreEV) {
+          return prev
+        }
 
         if (column === 'ev') {
           customEVFilterApplied = true
@@ -1032,10 +1040,8 @@ export class AnalyticsService {
 
     const result = {}
 
-    const [filtersQuery, filtersParams] = this.getFiltersQuery(
-      filters,
-      DataType.ANALYTICS,
-    )
+    const [filtersQuery, filtersParams, , customEVFilterApplied] =
+      this.getFiltersQuery(filters, DataType.ANALYTICS)
 
     const promises = pids.map(async pid => {
       if (!isValidPID(pid)) {
@@ -1046,7 +1052,12 @@ export class AnalyticsService {
 
       try {
         if (period === 'all') {
-          const queryAll = `SELECT count(*) AS all, countIf(unique=1) AS unique, avgIf(sdur, sdur IS NOT NULL AND analytics.unique=1) AS sdur FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery}`
+          let queryAll = `SELECT count(*) AS all, countIf(unique=1) AS unique, avgIf(sdur, sdur IS NOT NULL AND analytics.unique=1) AS sdur FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery}`
+
+          if (customEVFilterApplied) {
+            queryAll = `SELECT count(*) AS all FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery}`
+          }
+
           const rawResult = <Array<BirdseyeCHResponse>>await clickhouse
             .query(queryAll, {
               params: { pid, ...filtersParams },
@@ -1055,7 +1066,7 @@ export class AnalyticsService {
 
           let bounceRate = 0
 
-          if (rawResult[0].all > 0) {
+          if (rawResult[0].all > 0 && !customEVFilterApplied) {
             bounceRate = _round(
               (rawResult[0].unique * 100) / rawResult[0].all,
               1,
@@ -1079,6 +1090,7 @@ export class AnalyticsService {
             uniqueChange: rawResult[0].unique,
             bounceRateChange: bounceRate,
             sdurChange: rawResult[0].sdur,
+            customEVFilterApplied,
           }
           return
         }
@@ -1108,8 +1120,13 @@ export class AnalyticsService {
             .format('YYYY-MM-DD HH:mm:ss')
         }
 
-        const queryCurrent = `SELECT 1 AS sortOrder, count(*) AS all, countIf(unique=1) AS unique, avgIf(sdur, sdur IS NOT NULL AND analytics.unique=1) AS sdur FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodFormatted:String} AND {now:String} ${filtersQuery}`
-        const queryPrevious = `SELECT 2 AS sortOrder, count(*) AS all, countIf(unique=1) AS unique, avgIf(sdur, sdur IS NOT NULL AND analytics.unique=1) AS sdur FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String} ${filtersQuery}`
+        let queryCurrent = `SELECT 1 AS sortOrder, count(*) AS all, countIf(unique=1) AS unique, avgIf(sdur, sdur IS NOT NULL AND analytics.unique=1) AS sdur FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodFormatted:String} AND {now:String} ${filtersQuery}`
+        let queryPrevious = `SELECT 2 AS sortOrder, count(*) AS all, countIf(unique=1) AS unique, avgIf(sdur, sdur IS NOT NULL AND analytics.unique=1) AS sdur FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String} ${filtersQuery}`
+
+        if (customEVFilterApplied) {
+          queryCurrent = `SELECT 1 AS sortOrder, count(*) AS all FROM customEV WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodFormatted:String} AND {now:String} ${filtersQuery}`
+          queryPrevious = `SELECT 2 AS sortOrder, count(*) AS all FROM customEV WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String} ${filtersQuery}`
+        }
 
         const query = `${queryCurrent} UNION ALL ${queryPrevious}`
 
@@ -1133,14 +1150,14 @@ export class AnalyticsService {
         let bounceRate = 0
         let prevBounceRate = 0
 
-        if (currentPeriod.all > 0) {
+        if (currentPeriod.all > 0 && !customEVFilterApplied) {
           bounceRate = _round(
             (currentPeriod.unique * 100) / currentPeriod.all,
             1,
           )
         }
 
-        if (previousPeriod.all > 0) {
+        if (previousPeriod.all > 0 && !customEVFilterApplied) {
           prevBounceRate = _round(
             (previousPeriod.unique * 100) / previousPeriod.all,
             1,
@@ -1164,6 +1181,7 @@ export class AnalyticsService {
           uniqueChange: currentPeriod.unique - previousPeriod.unique,
           bounceRateChange: (bounceRate - prevBounceRate) * -1,
           sdurChange: currentPeriod.sdur - previousPeriod.sdur,
+          customEVFilterApplied,
         }
       } catch (reason) {
         console.error(
@@ -1216,6 +1234,7 @@ export class AnalyticsService {
     const [filtersQuery, filtersParams] = this.getFiltersQuery(
       filters,
       DataType.PERFORMANCE,
+      true,
     )
 
     const promises = pids.map(async pid => {
