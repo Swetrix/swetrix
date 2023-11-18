@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import * as _find from 'lodash/find'
+import * as _sortBy from 'lodash/sortBy'
 import * as _includes from 'lodash/includes'
 import * as _endsWith from 'lodash/endsWith'
 import * as _filter from 'lodash/filter'
@@ -24,6 +25,8 @@ const REDIS_LAST_POST_LIFETIME = 900
 
 // Removes first 10 characters from the string (i.e. 2023-10-07-)
 const getSlugFromFilename = (filename: string) => filename.substring(11)
+
+const getDateFromFilename = (filename: string) => filename.substring(0, 10)
 
 const findFilenameBySlug = (list: string[], handle: string) => {
   return _find(list, item => _includes(item, handle))
@@ -100,8 +103,7 @@ const getArticlesMetaData = async () => {
   }
 
   const filtered = _filter(dir, (file: string) => _endsWith(file, '.md'))
-
-  return Promise.all(
+  const articles = await Promise.all(
     _map(filtered, async filename => {
       const file = await fs.readFile(path.join(BLOG_POSTS_PATH, filename))
       const { attributes }: IParseFontMatter = parseFrontMatter(file.toString())
@@ -111,11 +113,14 @@ const getArticlesMetaData = async () => {
         hidden: attributes.hidden,
         intro: attributes.intro,
         date: attributes.date,
+        _date: getDateFromFilename(filename),
         author: attributes.author,
         nickname: attributes.nickname,
       }
     }),
   )
+
+  return _sortBy(articles, ['_date']).reverse()
 }
 
 @Injectable()
