@@ -1,9 +1,23 @@
+import type { V2_MetaFunction } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
 import { blogLoader } from 'utils/getPosts'
 import _map from 'lodash/map'
 import _filter from 'lodash/filter'
+import { TITLE_SUFFIX } from 'redux/constants'
 
 export const loader = blogLoader
+
+export const meta: V2_MetaFunction = () => {
+  return [
+    {
+      title: `Blog ${TITLE_SUFFIX}`,
+    },
+    {
+      property: "og:title",
+      content: `Blog ${TITLE_SUFFIX}`,
+    },
+  ]
+}
 
 export default function Posts() {
   const posts: any[] = useLoaderData()

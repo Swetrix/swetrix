@@ -35,7 +35,7 @@ interface IApp {
 }
 
 const TITLE_BLACKLIST = [
-  '/projects/', '/captchas/',
+  '/projects/', '/captchas/', '/blog',
 ]
 
 const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
@@ -92,7 +92,7 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
   }, [message, type]) // eslint-disable-line
 
   useEffect(() => {
-    if (_some(TITLE_BLACKLIST, (page) => _includes(pathname, page))) {
+    if (_some(TITLE_BLACKLIST, (page) => _startsWith(pathname, page))) {
       return
     }
 

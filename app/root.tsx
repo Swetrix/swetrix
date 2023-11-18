@@ -1,5 +1,5 @@
 import type {
-  LinksFunction, LoaderArgs, V2_MetaFunction, HeadersFunction,
+  LinksFunction, LoaderArgs, HeadersFunction,
 } from '@remix-run/node'
 import { json, redirect } from '@remix-run/node'
 import { useState } from 'react'
@@ -25,6 +25,7 @@ import { Provider } from 'react-redux'
 import clsx from 'clsx'
 import _map from 'lodash/map'
 import _replace from 'lodash/replace'
+import _startsWith from 'lodash/startsWith'
 // @ts-ignore
 import { transitions, positions, Provider as AlertProvider } from '@blaumaus/react-alert'
 import BillboardCss from 'billboard.js/dist/billboard.min.css'
@@ -73,11 +74,6 @@ export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: BillboardCss },
   { rel: 'stylesheet', href: FlatpickerCss },
   { rel: 'stylesheet', href: FontsCss },
-]
-
-export const meta: V2_MetaFunction = () => [
-  { property: 'twitter:image', content: 'https://swetrix.com/assets/og_image.png' },
-  { property: 'og:image', content: 'https://swetrix.com/assets/og_image.png' },
 ]
 
 export const headers: HeadersFunction = (stuff) => ({
@@ -220,7 +216,7 @@ export async function loader({ request }: LoaderArgs) {
   } : undefined
 
   return json({
-    locale, url, theme, REMIX_ENV, isAuthed,
+    locale, url, theme, REMIX_ENV, isAuthed, pathname: urlObject.pathname,
   }, init)
 }
 
@@ -230,7 +226,7 @@ export const handle = {
 
 export default function App() {
   const {
-    locale, url, theme, REMIX_ENV, isAuthed,
+    locale, url, theme, REMIX_ENV, isAuthed, pathname,
   } = useLoaderData<typeof loader>()
   const { i18n, t } = useTranslation('common')
   const { title } = getPageMeta(t, url)
@@ -261,19 +257,27 @@ export default function App() {
 
   useChangeLanguage(locale)
 
+  const isBlogPage = _startsWith(pathname, '/blog')
+
   return (
     <html className={theme} lang={locale} dir={i18n.dir()}>
       <head>
         <meta charSet='utf-8' />
-        <title>{title}</title>
+        {!isBlogPage && (
+          <>
+            <title>{title}</title>
+            <meta property='og:title' content='Swetrix' />
+            <meta name='description' content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative' />
+            <meta name='twitter:description' content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative' />
+            <meta property='og:description' content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative' />
+          </>
+        )}
         <meta name='theme-color' content='#818cf8' />
-        <meta name='description' content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative' />
         <meta name='twitter:title' content='Swetrix | Ultimate open-source web analytics to satisfy all your needs' />
         <meta name='twitter:site' content='@swetrix' />
-        <meta name='twitter:description' content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative' />
         <meta name='twitter:card' content='summary_large_image' />
-        <meta property='og:title' content='Swetrix' />
-        <meta property='og:description' content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative' />
+        <meta name='twitter:image' content='https://swetrix.com/assets/og_image.png' />
+        <meta property='og:image' content='https://swetrix.com/assets/og_image.png' />
         <meta property='og:site_name' content='Swetrix' />
         <meta property='og:url' content='https://swetrix.com' />
         <meta property='og:type' content='website' />

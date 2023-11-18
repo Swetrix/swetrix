@@ -16,8 +16,6 @@ import i18n, { detectLanguage } from './i18n'
 
 const ABORT_DELAY = 5_000
 
-
-
 const { isSitemapUrl, sitemap } = createSitemapGenerator({
   siteUrl: MAIN_URL,
   autoLastmod: false,
