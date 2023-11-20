@@ -164,14 +164,14 @@ const MetricCards = ({ overall, overallCompare, activePeriodCompare }: IMetricCa
         change={_round(bounceRateChange as number, 1)}
         type='percent'
         goodChangeDirection='up'
-        valueMapper={(value) => `${value}%`}
+        valueMapper={(value, type) => `${type === 'badge' && value > 0 ? '+' : ''}${value}%`}
       />
       <MetricCard
         label={t('dashboard.sessionDuration')}
         value={overall.current?.sdur}
         change={sdurChange}
         goodChangeDirection='down'
-        valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value))}
+        valueMapper={(value, type) => `${type === 'badge' && value > 0 ? '+' : ''}${getStringFromTime(getTimeFromSeconds(value))}`}
       />
     </div>
   )
