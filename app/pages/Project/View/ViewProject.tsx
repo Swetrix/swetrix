@@ -2,6 +2,7 @@
 import React, {
   useState, useEffect, useMemo, memo, useRef, useCallback,
 } from 'react'
+import { ClientOnly } from 'remix-utils'
 import useSize from 'hooks/useSize'
 import { useNavigate, useParams, Link } from '@remix-run/react'
 // @ts-ignore
@@ -2410,43 +2411,51 @@ const ViewProject = ({
                         headless
                       />
                     )}
-                    <TBPeriodSelector
-                      activePeriod={activePeriod}
-                      updateTimebucket={updateTimebucket}
-                      timeBucket={timeBucket}
-                      items={isActiveCompare ? _filter(periodPairs, (el) => {
-                        return _includes(filtersPeriodPairs, el.period)
-                      }) : _includes(filtersPeriodPairs, period) ? periodPairs : _filter(periodPairs, (el) => {
-                        return el.period !== PERIOD_PAIRS_COMPARE.COMPARE
-                      })}
-                      title={activePeriod?.label}
-                      onSelect={(pair) => {
-                        if (pair.period === PERIOD_PAIRS_COMPARE.COMPARE) {
-                          if (activeTab === PROJECT_TABS.alerts) {
-                            return
-                          }
-
-                          if (isActiveCompare) {
-                            compareDisable()
-                          } else {
-                            setIsActiveCompare(true)
-                          }
-
-                          return
-                        }
-
-                        if (pair.isCustomDate) {
-                          setTimeout(() => {
-                            // @ts-ignore
-                            refCalendar.current.openCalendar()
-                          }, 100)
-                        } else {
-                          setPeriodPairs(tbPeriodPairs(t, undefined, undefined, language))
-                          setDateRange(null)
-                          updatePeriod(pair)
-                        }
-                      }}
-                    />
+                    <ClientOnly
+                      fallback={(
+                        <div className='w-44' />
+                      )}
+                    >
+                      {() => (
+                        <TBPeriodSelector
+                          activePeriod={activePeriod}
+                          updateTimebucket={updateTimebucket}
+                          timeBucket={timeBucket}
+                          items={isActiveCompare ? _filter(periodPairs, (el) => {
+                            return _includes(filtersPeriodPairs, el.period)
+                          }) : _includes(filtersPeriodPairs, period) ? periodPairs : _filter(periodPairs, (el) => {
+                            return el.period !== PERIOD_PAIRS_COMPARE.COMPARE
+                          })}
+                          title={activePeriod?.label}
+                          onSelect={(pair) => {
+                            if (pair.period === PERIOD_PAIRS_COMPARE.COMPARE) {
+                              if (activeTab === PROJECT_TABS.alerts) {
+                                return
+                              }
+    
+                              if (isActiveCompare) {
+                                compareDisable()
+                              } else {
+                                setIsActiveCompare(true)
+                              }
+    
+                              return
+                            }
+    
+                            if (pair.isCustomDate) {
+                              setTimeout(() => {
+                                // @ts-ignore
+                                refCalendar.current.openCalendar()
+                              }, 100)
+                            } else {
+                              setPeriodPairs(tbPeriodPairs(t, undefined, undefined, language))
+                              setDateRange(null)
+                              updatePeriod(pair)
+                            }
+                          }}
+                        />
+                      )}
+                    </ClientOnly>
                     {isActiveCompare && (
                       <>
                         <div className='mx-2 text-md font-medium text-gray-600 whitespace-pre-line dark:text-gray-200'>

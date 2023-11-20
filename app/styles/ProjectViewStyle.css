@@ -10,6 +10,79 @@ html.dark .bb-axis .domain {
   stroke: #334155;
 }
 
+.bb-bar {
+  fill-opacity: 0.3;
+  stroke-width: 1 !important;
+}
+
+.bb-target-unique .bb-bar {
+  stroke: #2563EB !important;
+}
+
+.bb-target-total .bb-bar {
+  stroke: #D97706 !important;
+}
+
+.bb-target-sessionDuration .bb-bar {
+  stroke: #c945ed !important;
+}
+
+.bb-target-bounce .bb-bar {
+  stroke: #2AC4B3 !important;
+}
+
+.bb-target-viewsPerUnique .bb-bar {
+  stroke: #F87171 !important;
+}
+
+.bb-target-dns .bb-bar {
+  stroke: #EC4319 !important;
+}
+
+.bb-target-tls .bb-bar {
+  stroke: #F27059 !important;
+}
+
+.bb-target-conn .bb-bar {
+  stroke: #F7A265 !important;
+}
+
+.bb-target-response .bb-bar {
+  stroke: #F5D376 !important;
+}
+
+.bb-target-render .bb-bar {
+  stroke: #709775 !important;
+}
+
+.bb-target-dom_load .bb-bar {
+  stroke: #A5E6AB !important;
+}
+
+.bb-target-ttfb .bb-bar {
+  stroke: #00A8E8 !important;
+}
+
+.bb-target-frontend .bb-bar {
+  stroke: #709775 !important;
+}
+
+.bb-target-network .bb-bar {
+  stroke: #F7A265 !important;
+}
+
+.bb-target-backend .bb-bar {
+  stroke: #00A8E8 !important;
+}
+
+.bb-target-events .bb-bar {
+  stroke: #2563eb !important;
+}
+
+.bb-target-dropoff .bb-bar {
+  stroke: rgba(37, 99, 235, 0.4) !important;
+}
+
 html.dark .bb-axis .tick line {
   stroke: #334155;
 }

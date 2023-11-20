@@ -410,7 +410,7 @@ const getSettings = (
   forecasedChartData: {
     [key: string]: string[],
   },
-  rotateXAxias: boolean,
+  rotateXAxis: boolean,
   chartType: string,
   customEvents?: {
     [key: string]: string[],
@@ -552,7 +552,7 @@ const getSettings = (
         clipPath: false,
         tick: {
           fit: true,
-          rotate: rotateXAxias ? 45 : 0,
+          rotate: rotateXAxis ? 45 : 0,
           format: timeFormat === TimeFormat['24-hour'] ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
         },
         localtime: timeFormat === TimeFormat['24-hour'],
@@ -710,8 +710,8 @@ const getSettings = (
     area: {
       linearGradient: true,
     },
-    padding: {
-      right: (rotateXAxias && !(activeChartMetrics.bounce || activeChartMetrics.sessionDuration)) && 35,
+    bar: {
+      linearGradient: true,
     },
     bindto: '#dataChart',
   }
@@ -852,6 +852,9 @@ const getSettingsFunnels = (
     padding: {
       left: 40,
     },
+    bar: {
+      linearGradient: true,
+    },
     bindto: '#dataChart',
   }
 }
@@ -864,7 +867,7 @@ const getSettingsPerf = (
   },
   timeBucket: string,
   activeChartMetrics: string,
-  rotateXAxias: boolean,
+  rotateXAxis: boolean,
   chartType: string,
   timeFormat: string,
   compareChart?: {
@@ -932,7 +935,7 @@ const getSettingsPerf = (
         clipPath: false,
         tick: {
           fit: true,
-          rotate: rotateXAxias ? 45 : 0,
+          rotate: rotateXAxis ? 45 : 0,
           format: timeFormat === TimeFormat['24-hour'] ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
         },
         localtime: timeFormat === TimeFormat['24-hour'],
@@ -1041,8 +1044,8 @@ const getSettingsPerf = (
     area: {
       linearGradient: true,
     },
-    padding: {
-      right: rotateXAxias && 35,
+    bar: {
+      linearGradient: true,
     },
     bindto: '#dataChart',
   }
