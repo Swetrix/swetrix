@@ -866,6 +866,8 @@ const ViewProject = ({
       // check if we need to load new data or we have data in redux/localstorage
       if ((!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key]))) {
         data = cache[id][key]
+        // @ts-ignore
+        setOverall(data.overall)
       } else {
         if (period === 'custom' && dateRange) {
           data = await getProjectData(id, timeBucket, '', newFilters || filters, from, to, timezone, projectPassword, mode)
@@ -880,6 +882,8 @@ const ViewProject = ({
         customEventsChart = customEventsChart?.chart ? customEventsChart.chart.events : customEventsChartData
 
         setCustomEventsPrefs(id, customEventsChart)
+
+        data.overall = rawOverall[id]
 
         setProjectCache(id, data, key)
         setOverall(rawOverall[id])
@@ -896,7 +900,8 @@ const ViewProject = ({
         to,
       }
 
-      if (_isEmpty(data)) {
+      // empty or has overall only
+      if (_keys(data).length < 2) {
         setAnalyticsLoading(false)
         setDataLoading(false)
         setIsPanelsDataEmpty(true)
@@ -1067,6 +1072,8 @@ const ViewProject = ({
 
       if (!forced && !_isEmpty(cachePerf[id]) && !_isEmpty(cachePerf[id][key])) {
         dataPerf = cachePerf[id][key]
+        // @ts-ignore
+        setOverallPerformance(dataPerf.overall)
       } else {
         if (period === 'custom' && dateRange) {
           dataPerf = await getPerfData(id, timeBucket, '', newFilters || filtersPerf, from, to, timezone, projectPassword)
@@ -1075,6 +1082,9 @@ const ViewProject = ({
           dataPerf = await getPerfData(id, timeBucket, period, newFilters || filtersPerf, '', '', timezone, projectPassword)
           rawOverall = await getPerformanceOverallStats([id], period, '', '', timezone, newFilters || filters, projectPassword)
         }
+
+        // @ts-ignore
+        dataPerf.overall = rawOverall[id]
 
         setProjectCachePerf(id, dataPerf || {}, key)
         setOverallPerformance(rawOverall[id])
@@ -1088,7 +1098,8 @@ const ViewProject = ({
         setFiltersPerf(appliedFilters)
       }
 
-      if (_isEmpty(dataPerf)) {
+      // empty or has overall only
+      if (_keys(dataPerf).length < 2) {
         setIsPanelsDataEmptyPerf(true)
         setDataLoading(false)
         setAnalyticsLoading(false)
