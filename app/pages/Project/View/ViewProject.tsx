@@ -2360,6 +2360,7 @@ const ViewProject = ({
                                     return newActiveChartMetricsCustomEvents
                                   })
                                 }}
+                                headless
                               />
                             )
                           }
