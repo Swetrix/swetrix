@@ -305,9 +305,9 @@ export const DOCS_CAPTCHA_URL: string = `${DOCS_URL}/captcha/introduction`
 export const DOCS_REFERRAL_PROGRAM_URL: string = `${DOCS_URL}/affiliate/about`
 
 // Swetrix vs ...
-export const SWETRIX_VS_GOOGLE: string = 'https://blog.swetrix.com/post/vs-google-analytics/'
-export const SWETRIX_VS_CLOUDFLARE: string = 'https://blog.swetrix.com/post/vs-cloudflare-analytics/'
-export const SWETRIX_VS_SIMPLE_ANALYTICS: string = 'https://blog.swetrix.com/post/vs-simple-analytics/'
+export const SWETRIX_VS_GOOGLE: string = 'https://swetrix.com/blog/vs-google-analytics/'
+export const SWETRIX_VS_CLOUDFLARE: string = 'https://swetrix.com/blog/vs-cloudflare-analytics/'
+export const SWETRIX_VS_SIMPLE_ANALYTICS: string = 'https://swetrix.com/blog/vs-simple-analytics/'
 
 // Referral program
 export const REFERRAL_COOKIE = 'affiliate'

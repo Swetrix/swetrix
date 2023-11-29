@@ -26,7 +26,7 @@ import { getPageMeta } from 'utils/server'
 import { authMe } from './api'
 
 const minimalFooterPages = [
-  '/projects', '/dashboard', '/settings', '/contact',
+  '/projects', '/dashboard', '/contact',
 ]
 
 interface IApp {
