@@ -107,7 +107,6 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
     && !_endsWith(pathname, '/new')
     && !_endsWith(pathname, '/subscribers/invite')
     && !_endsWith(pathname, '/subscribers/invite')
-    && !_endsWith(pathname, '/password')
     && !_includes(pathname, '/alerts/')
     && !_includes(pathname, '/settings/')
 

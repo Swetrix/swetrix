@@ -690,12 +690,18 @@ const ViewProject = ({
     if (projectPassword) {
       checkPassword(id, projectPassword).then((res) => {
         if (res) {
-          navigate(_replace(routes.project, ':id', id))
+          navigate({
+            pathname: _replace(routes.project, ':id', id),
+            search: `?theme=${ssrTheme}&embedded=${embedded}`,
+          })
           return
         }
 
         showError(t('apiNotifications.incorrectPassword'))
-        navigate(_replace(routes.project_protected_password, ':id', id))
+        navigate({
+          pathname: _replace(routes.project_protected_password, ':id', id),
+          search: `?theme=${ssrTheme}&embedded=${embedded}`,
+        })
         removeItem(PROJECTS_PROTECTED)
       })
       return
@@ -1886,7 +1892,10 @@ const ViewProject = ({
         }
 
         if (projectRes.isPasswordProtected && !projectRes.isOwner && _isEmpty(projectPassword)) {
-          navigate(_replace(routes.project_protected_password, ':id', id))
+          navigate({
+            pathname: _replace(routes.project_protected_password, ':id', id),
+            search: `?theme=${ssrTheme}&embedded=${embedded}`,
+          })
           return
         }
 

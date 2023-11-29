@@ -12,6 +12,8 @@ import Button from 'ui/Button'
 import { checkPassword } from 'api'
 import { useDispatch } from 'react-redux'
 import UIActions from 'redux/reducers/ui'
+import Header from 'components/Header'
+import Footer from 'components/Footer'
 
 interface IProjectProtectedPasswordForm {
   password: string,
@@ -19,7 +21,13 @@ interface IProjectProtectedPasswordForm {
 
 const MAX_PASSWORD_LENGTH = 80
 
-const ProjectProtectedPassword = (): JSX.Element => {
+const ProjectProtectedPassword = ({
+  ssrTheme, embedded, isAuth,
+}: {
+  ssrTheme: "light" | "dark",
+  embedded: boolean,
+  isAuth: boolean
+}): JSX.Element => {
   const { t }: {
     t: (key: string, optinions?: {
       [key: string]: string | number,
@@ -33,7 +41,7 @@ const ProjectProtectedPassword = (): JSX.Element => {
     password?: string,
   }>({})
   const { id }: {
-    id: string
+    id: string,
   } = useParams()
   const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -73,7 +81,10 @@ const ProjectProtectedPassword = (): JSX.Element => {
               id,
               password: data.password,
             }))
-            navigate(_replace(routes.project, ':id', id))
+            navigate({
+              pathname: _replace(routes.project, ':id', id),
+              search: `?embedded=${embedded}&theme=${ssrTheme}`,
+            })
           }
           setErrors({
             password: t('apiNotifications.incorrectPassword'),
@@ -114,32 +125,40 @@ const ProjectProtectedPassword = (): JSX.Element => {
   }
 
   return (
-    <div className='min-h-page bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
-      <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
-        <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
-          {t('titles.passwordProtected')}
-        </h2>
-        <Input
-          name='password'
-          id='password'
-          type='password'
-          label={t('auth.common.password')}
-          value={form.password}
-          placeholder={t('auth.common.password')}
-          className='mt-4'
-          onChange={handleInput}
-          error={beenSubmitted && errors.password}
-        />
-        <div className='mt-5'>
-          <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700' onClick={onCancel} secondary regular>
-            {t('common.cancel')}
-          </Button>
-          <Button type='submit' loading={isLoading} primary regular>
-            {t('common.continue')}
-          </Button>
-        </div>
-      </form>
-    </div>
+    <>
+      {!embedded && (
+        <Header ssrTheme={ssrTheme} authenticated={isAuth} />
+      )}
+      <div className='min-h-page bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+        <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
+          <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
+            {t('titles.passwordProtected')}
+          </h2>
+          <Input
+            name='password'
+            id='password'
+            type='password'
+            label={t('auth.common.password')}
+            value={form.password}
+            placeholder={t('auth.common.password')}
+            className='mt-4'
+            onChange={handleInput}
+            error={beenSubmitted && errors.password}
+          />
+          <div className='mt-5'>
+            <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700' onClick={onCancel} secondary regular>
+              {t('common.cancel')}
+            </Button>
+            <Button type='submit' loading={isLoading} primary regular>
+              {t('common.continue')}
+            </Button>
+          </div>
+        </form>
+      </div>
+      {!embedded && (
+        <Footer authenticated={isAuth} minimal />
+      )}
+    </>
   )
 }
 
