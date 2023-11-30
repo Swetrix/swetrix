@@ -345,6 +345,7 @@ export class ProjectService {
       where,
       order: {
         name: 'ASC',
+        isPinned: 'ASC',
       },
       relations: ['share', 'share.user', 'funnels'],
     })
