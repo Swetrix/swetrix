@@ -178,6 +178,12 @@ const financeData = {
     'MRR': 68,
     'Revenue': 47,
   },
+  '2023-11-01': {
+    'Technical Expences': -23,
+    'Business Expences': 0,
+    'MRR': 77,
+    'Revenue': 100,
+  },
 }
 
 const financeDataToColumns = (financeData: any) => {

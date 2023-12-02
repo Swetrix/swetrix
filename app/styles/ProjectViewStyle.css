@@ -83,6 +83,18 @@ html.dark .bb-axis .domain {
   stroke: rgba(37, 99, 235, 0.4) !important;
 }
 
+.bb-target-Technical-Expences .bb-bar {
+  stroke: #EC4319 !important;
+}
+
+.bb-target-Business-Expences .bb-bar {
+  stroke: #F27059 !important;
+}
+
+.bb-target-MRR .bb-bar {
+  stroke: #709775 !important;
+}
+
 html.dark .bb-axis .tick line {
   stroke: #334155;
 }
