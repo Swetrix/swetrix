@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { ResponsiveSankey } from '@nivo/sankey'
 import { connect } from 'react-redux'
 import { StateType, AppDispatch } from 'redux/store'
@@ -6,9 +6,8 @@ import UIActions from 'redux/reducers/ui'
 import { errorsActions } from 'redux/reducers/errors'
 import { IUserFlow } from 'redux/models/IUserFlow'
 import _isEmpty from 'lodash/isEmpty'
-import { getUserFlowCacheKey, PROJECTS_PROTECTED } from 'redux/constants'
+import { getUserFlowCacheKey } from 'redux/constants'
 import { getUserFlow } from 'api'
-import { getItem } from 'utils/localstorage'
 import Loader from 'ui/Loader'
 
 const mapStateToProps = (state: StateType) => ({
@@ -41,12 +40,7 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
   },
 })
 
-const UserFlow = ({
-  disableLegend, pid, period, timeBucket, from, to, timezone, userFlowAscendingCache,
-  userFlowDescendingCache, filters, setReversed,
-  isReversed, setUserFlowAscending, setUserFlowDescending, generateError, t,
-  password,
-}: {
+interface IJSXUserFlow {
   disableLegend?: boolean
   pid: string
   userFlowAscendingCache: {
@@ -67,15 +61,19 @@ const UserFlow = ({
   t: (key: string) => string
   filters: string[]
   setReversed: () => void
-  password: {
-    [key: string]: string
-  }
-}) => {
+  projectPassword?: string
+}
+
+const UserFlow = ({
+  disableLegend, pid, period, timeBucket, from, to, timezone, userFlowAscendingCache,
+  userFlowDescendingCache, filters, setReversed,
+  isReversed, setUserFlowAscending, setUserFlowDescending, generateError, t,
+  projectPassword,
+}: IJSXUserFlow) => {
   const key = getUserFlowCacheKey(pid, period, filters)
   const userFlowAscending = userFlowAscendingCache[key]
   const userFlowDescending = userFlowDescendingCache[key]
   const [isLoading, setIsLoading] = useState<boolean>(true)
-  const projectPassword: string = useMemo(() => password[pid] || getItem(PROJECTS_PROTECTED)?.[pid] || '', [pid, password])
 
   const fetchUserFlow = async () => {
     setIsLoading(true)

@@ -955,11 +955,13 @@ interface IPanel {
   activeTab?: string
   onFragmentChange?: (arg: number) => void
   filters?: string[]
+  projectPassword?: string
 }
 
 const Panel = ({
   name, data, rowMapper, valueMapper, capitalize, linkContent, t, icon, id, hideFilters,
   onFilter, customTabs, pid, period, timeBucket, from, to, timezone, activeTab, onFragmentChange, filters,
+  projectPassword,
 }: IPanel): JSX.Element => {
   const [page, setPage] = useState(0)
   const currentIndex = page * ENTRIES_PER_PANEL
@@ -1055,6 +1057,7 @@ const Panel = ({
       >
         {/* @ts-ignore */}
         <UserFlow
+          projectPassword={projectPassword}
           disableLegend
           pid={pid || ''}
           period={period || ''}
@@ -1084,6 +1087,7 @@ const Panel = ({
             <div className='h-[500px] dark:text-gray-800'>
               {/* @ts-ignore */}
               <UserFlow
+                projectPassword={projectPassword}
                 pid={pid || ''}
                 period={period || ''}
                 timeBucket={timeBucket || ''}

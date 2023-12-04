@@ -2453,16 +2453,16 @@ const ViewProject = ({
                               if (activeTab === PROJECT_TABS.alerts) {
                                 return
                               }
-    
+
                               if (isActiveCompare) {
                                 compareDisable()
                               } else {
                                 setIsActiveCompare(true)
                               }
-    
+
                               return
                             }
-    
+
                             if (pair.isCustomDate) {
                               setTimeout(() => {
                                 // @ts-ignore
@@ -2666,6 +2666,7 @@ const ViewProject = ({
 
                       return (
                         <Panel
+                          projectPassword={projectPassword}
                           t={t}
                           key={countryActiveTab}
                           icon={panelIcon}
@@ -2712,6 +2713,7 @@ const ViewProject = ({
 
                       return (
                         <Panel
+                          projectPassword={projectPassword}
                           t={t}
                           key={type}
                           icon={panelIcon}
@@ -2760,6 +2762,7 @@ const ViewProject = ({
 
                       return (
                         <Panel
+                          projectPassword={projectPassword}
                           t={t}
                           key={type}
                           icon={panelIcon}
@@ -2777,6 +2780,7 @@ const ViewProject = ({
                     if (type === 'dv') {
                       return (
                         <Panel
+                          projectPassword={projectPassword}
                           t={t}
                           key={type}
                           activeTab={activeTab}
@@ -2794,6 +2798,7 @@ const ViewProject = ({
                     if (type === 'ref') {
                       return (
                         <Panel
+                          projectPassword={projectPassword}
                           t={t}
                           key={type}
                           icon={panelIcon}
@@ -2816,6 +2821,7 @@ const ViewProject = ({
 
                       return (
                         <Panel
+                          projectPassword={projectPassword}
                           t={t}
                           key={utmActiveTab}
                           icon={panelIcon}
@@ -2839,6 +2845,7 @@ const ViewProject = ({
                     if (type === 'pg') {
                       return (
                         <Panel
+                          projectPassword={projectPassword}
                           t={t}
                           key={type}
                           icon={panelIcon}
@@ -2878,6 +2885,7 @@ const ViewProject = ({
 
                     return (
                       <Panel
+                        projectPassword={projectPassword}
                         t={t}
                         key={type}
                         icon={panelIcon}
@@ -2955,6 +2963,7 @@ const ViewProject = ({
 
                       return (
                         <Panel
+                          projectPassword={projectPassword}
                           t={t}
                           key={countryActiveTab}
                           icon={panelIcon}
@@ -2979,6 +2988,7 @@ const ViewProject = ({
                     if (type === 'dv') {
                       return (
                         <Panel
+                          projectPassword={projectPassword}
                           t={t}
                           key={type}
                           icon={panelIcon}
@@ -2998,6 +3008,7 @@ const ViewProject = ({
                     if (type === 'pg') {
                       return (
                         <Panel
+                          projectPassword={projectPassword}
                           t={t}
                           key={type}
                           icon={panelIcon}
@@ -3017,7 +3028,7 @@ const ViewProject = ({
                         />
                       )
                     }
-                    
+
                     if (type === 'br') {
                       const rowMapper = (entry: any) => {
                         const { name: entryName } = entry
@@ -3045,6 +3056,7 @@ const ViewProject = ({
 
                       return (
                         <Panel
+                          projectPassword={projectPassword}
                           t={t}
                           key={type}
                           icon={panelIcon}
@@ -3063,6 +3075,7 @@ const ViewProject = ({
 
                     return (
                       <Panel
+                        projectPassword={projectPassword}
                         t={t}
                         key={type}
                         icon={panelIcon}
