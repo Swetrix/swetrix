@@ -144,13 +144,14 @@ interface IViewProject {
   cacheFunnels: any,
   setFunnelsCache: (pid: string, data: any, key: string) => void,
   updateProject: (pid: string, project: Partial<IProject | ISharedProject>) => void,
+  projectQueryTabs: string[],
 }
 
 const ViewProject = ({
   projects, isLoading: _isLoading, showError, cache, cachePerf, setProjectCache, projectViewPrefs, setProjectViewPrefs, setPublicProject,
   setLiveStatsForProject, authenticated: csrAuthenticated, timezone, user, sharedProjects, extensions, generateAlert, setProjectCachePerf,
   projectTab, setProjectTab, setProjects, setProjectForcastCache, customEventsPrefs, setCustomEventsPrefs, liveStats, password, theme,
-  ssrTheme, embedded, ssrAuthenticated, queryPassword, authLoading, cacheFunnels, setFunnelsCache, updateProject,
+  ssrTheme, embedded, ssrAuthenticated, queryPassword, authLoading, cacheFunnels, setFunnelsCache, updateProject, projectQueryTabs,
 }: IViewProject) => {
   const authenticated = isBrowser
     ? authLoading
@@ -656,7 +657,7 @@ const ViewProject = ({
       ]
     }
 
-    return [
+    const newTabs = [
       ...selfhostedOnly,
       {
         id: PROJECT_TABS.funnels,
@@ -670,7 +671,13 @@ const ViewProject = ({
       },
       ...adminTabs,
     ]
-  }, [t, sharedRoles, project])
+
+    if (projectQueryTabs && projectQueryTabs.length) {
+      return _filter(newTabs, (tab) => _includes(projectQueryTabs, tab.id))
+    }
+
+    return newTabs
+  }, [t, sharedRoles, project, projectQueryTabs])
 
   // activeTabLabel is a label for active tab. Using for title in dropdown
   const activeTabLabel = useMemo(() => _find(tabs, tab => tab.id === activeTab)?.label, [tabs, activeTab])

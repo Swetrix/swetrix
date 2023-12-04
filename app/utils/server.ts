@@ -1,5 +1,6 @@
 import routes from 'routesPath'
 import _includes from 'lodash/includes'
+import _split from 'lodash/split'
 import _startsWith from 'lodash/startsWith'
 import { TITLE_SUFFIX, SUPPORTED_THEMES, ThemeType } from 'redux/constants'
 
@@ -53,6 +54,22 @@ export function detectTheme(request: Request): [ThemeType, boolean] {
  */
 export function isEmbedded(request: Request): boolean {
   return new URL(request.url).searchParams.get('embedded') === 'true'
+}
+
+/**
+ * Function returns project tabs from query
+ * 
+ * @param request
+ * @returns string[]
+ */
+export function getProjectTabs(request: Request): string[] {
+  const tabs = new URL(request.url).searchParams.get('tabs')
+
+  if (!tabs) {
+    return []
+  }
+
+  return _split(tabs, ',')
 }
 
 /**
