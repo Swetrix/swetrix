@@ -20,6 +20,7 @@ import { AlertModule } from './alert/alert.module'
 import { getI18nConfig } from './configs'
 import { AuthModule } from './auth/auth.module'
 import { CaptchaModule } from './captcha/captcha.module'
+import { OgImageModule } from './og-image/og-image.module'
 // import { isDevelopment } from './common/constants'
 import { IntegrationsModule } from './integrations/integrations.module'
 
@@ -57,6 +58,7 @@ const modules = [
   AlertModule,
   AuthModule,
   CaptchaModule,
+  OgImageModule,
 ]
 
 @Module({

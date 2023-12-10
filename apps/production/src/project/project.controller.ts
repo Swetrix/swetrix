@@ -1512,7 +1512,7 @@ export class ProjectController {
 
   @Get('/ogimage/:id')
   @HttpCode(200)
-  @Header('Content-Type', 'image/png')
+  @Header('Content-Type', 'image/jpeg')
   // 1 day cache
   @Header(
     'Cache-Control',

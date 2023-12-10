@@ -64,6 +64,7 @@ import {
 } from './dto'
 import { ReportFrequency } from './enums'
 import { nFormatter } from '../common/utils'
+import { browserArgs } from '../og-image/og-image.service'
 
 dayjs.extend(utc)
 
@@ -1046,7 +1047,7 @@ export class ProjectService {
 
     const browser = await puppeteer.launch({
       headless: 'new',
-      args: ['--no-sandbox'],
+      args: browserArgs,
       defaultViewport: {
         width: 1200,
         height: 630,
@@ -1081,7 +1082,10 @@ export class ProjectService {
     })
 
     const element = await page.$('#body')
-    const image = await element.screenshot({ omitBackground: true })
+    const image = await element.screenshot({
+      omitBackground: true,
+      type: 'jpeg',
+    })
     await browser.close()
 
     return image
