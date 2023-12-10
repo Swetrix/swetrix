@@ -15,7 +15,7 @@ import {
 } from '@remix-run/react'
 import { store } from 'redux/store'
 import {
-  whitelist, isBrowser, CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted, whitelistWithCC,
+  isBrowser, CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted,
 } from 'redux/constants'
 import {
   getCookie, generateCookieString,
@@ -23,9 +23,7 @@ import {
 import { ExclamationTriangleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 import { Provider } from 'react-redux'
 import clsx from 'clsx'
-import _map from 'lodash/map'
 import _replace from 'lodash/replace'
-import _startsWith from 'lodash/startsWith'
 // @ts-ignore
 import { transitions, positions, Provider as AlertProvider } from '@blaumaus/react-alert'
 import BillboardCss from 'billboard.js/dist/billboard.min.css'
@@ -37,8 +35,10 @@ import { useTranslation } from 'react-i18next'
 import AppWrapper from 'App'
 import { detectLanguage } from 'i18n'
 import {
-  detectTheme, getPageMeta, isAuthenticated, isWWW,
+  detectTheme, isAuthenticated, isWWW,
 } from 'utils/server'
+import { LocaleLinks } from 'components/LocaleLinks'
+import { SEO } from 'components/SEO'
 
 import mainCss from 'styles/index.css'
 import tailwindCss from 'styles/tailwind.css'
@@ -226,61 +226,20 @@ export const handle = {
 
 export default function App() {
   const {
-    locale, url, theme, REMIX_ENV, isAuthed, pathname,
+    locale, url, theme, REMIX_ENV, isAuthed,
   } = useLoaderData<typeof loader>()
-  const { i18n, t } = useTranslation('common')
-  const { title } = getPageMeta(t, url)
+  const { i18n } = useTranslation('common')
 
   const urlObject = new URL(url)
   urlObject.searchParams.delete('lng')
 
-  const lnglessUrl = urlObject.toString()
-
-  const alternateLinks = _map(whitelist, (lc) => {
-    urlObject.searchParams.set('lng', lc)
-
-    return {
-      rel: 'alternate',
-      hrefLang: lc,
-      href: urlObject.toString(),
-    }
-  })
-  const alternateLinksWithCountryCodes = _map(whitelistWithCC, (value, key) => {
-    urlObject.searchParams.set('lng', key)
-
-    return {
-      rel: 'alternate',
-      hrefLang: value,
-      href: urlObject.toString(),
-    }
-  })
-
   useChangeLanguage(locale)
-
-  const isBlogPage = _startsWith(pathname, '/blog')
 
   return (
     <html className={theme} lang={locale} dir={i18n.dir()}>
       <head>
         <meta charSet='utf-8' />
-        {!isBlogPage && (
-          <>
-            <title>{title}</title>
-            <meta property='og:title' content='Swetrix' />
-            <meta name='description' content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative' />
-            <meta name='twitter:description' content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative' />
-            <meta property='og:description' content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative' />
-          </>
-        )}
-        <meta name='theme-color' content='#818cf8' />
-        <meta name='twitter:title' content='Swetrix | Ultimate open-source web analytics to satisfy all your needs' />
-        <meta name='twitter:site' content='@swetrix' />
-        <meta name='twitter:card' content='summary_large_image' />
-        <meta name='twitter:image' content='https://swetrix.com/assets/og_image.png' />
-        <meta property='og:image' content='https://swetrix.com/assets/og_image.png' />
-        <meta property='og:site_name' content='Swetrix' />
-        <meta property='og:url' content='https://swetrix.com' />
-        <meta property='og:type' content='website' />
+        <SEO />
         <meta name='google' content='notranslate' />
         <link rel='icon' type='image/x-icon' href='/favicon.ico' />
         {/* <meta name='apple-mobile-web-app-title' content='Swetrix' /> */}
@@ -290,10 +249,7 @@ export default function App() {
         <Links />
         {theme === 'dark' && <link rel='stylesheet' href={FlatpickrDarkCss} />}
         {theme === 'light' && <link rel='stylesheet' href={FlatpickrLightCss} />}
-        {_map([...alternateLinks, ...alternateLinksWithCountryCodes], (link) => (
-          <link key={link.hrefLang} {...link} />
-        ))}
-        <link rel='alternate' href={lnglessUrl} hrefLang='x-default' />
+        <LocaleLinks />
         <link rel='preload' href={`/locales/${locale}.json`} as='fetch' type='application/json' crossOrigin='anonymous' />
         <script
           // eslint-disable-next-line react/no-danger

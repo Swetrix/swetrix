@@ -16,6 +16,10 @@ export const meta: V2_MetaFunction = () => {
       property: "og:title",
       content: `Blog ${TITLE_SUFFIX}`,
     },
+    {
+      property: "twitter:title",
+      content: `Blog ${TITLE_SUFFIX}`,
+    },
   ]
 }
 

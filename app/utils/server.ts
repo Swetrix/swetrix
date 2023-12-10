@@ -99,6 +99,7 @@ export function isWWW(url: URL): boolean {
 
 interface IPageMeta {
   title: string
+  prefixLessTitle: string
 }
 
 export const getPageMeta = (
@@ -108,10 +109,13 @@ export const getPageMeta = (
 ): IPageMeta => {
   const DEFAULT_RESULT = {
     title: t('titles.main'),
-  }
+  } as Partial<IPageMeta>
 
   if (!url && !_pathname) {
-    return DEFAULT_RESULT
+    return {
+      title: DEFAULT_RESULT.title as string,
+      prefixLessTitle: DEFAULT_RESULT.title as string,
+    }
   }
 
   const pathname = _pathname || new URL(url as string).pathname
@@ -241,7 +245,8 @@ export const getPageMeta = (
 
   // todo: create_alert, alert_settings, project_protected_password,
 
+  result.prefixLessTitle = result.title
   result.title += ` ${TITLE_SUFFIX}`
 
-  return result
+  return result as IPageMeta
 }

@@ -1,3 +1,5 @@
+import _endsWith from 'lodash/endsWith'
+
 const displayDateOptions: Intl.DateTimeFormatOptions = {
   year: 'numeric',
   month: 'short',
@@ -342,6 +344,12 @@ export const isDevelopment = !NODE_ENV || NODE_ENV === 'development'
 export const isSelfhosted = Boolean(
   isBrowser ? window.REMIX_ENV?.SELFHOSTED : process.env.SELFHOSTED,
 )
+
+export const getOgImageUrl = (title: string) => {
+  const apiUrl = _endsWith(API_URL, '/') ? API_URL.slice(0, -1) : API_URL
+
+  return `${apiUrl}/v1/og-image?title=${title}`
+}
 
 // Functions
 export const getProjectCacheKey = (period: string, timeBucket: string, mode: 'periodical' | 'cumulative', filters?: any): string => `${period}${timeBucket}${mode}${filters ? JSON.stringify(filters) : ''}}`

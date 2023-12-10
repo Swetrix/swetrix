@@ -2,7 +2,7 @@ import type { LoaderFunction, LinksFunction, V2_MetaFunction } from '@remix-run/
 import { redirect, json } from '@remix-run/node'
 import singlePostCss from 'css/mdfile.css'
 import { getPost } from 'utils/getPosts'
-import { isSelfhosted, TITLE_SUFFIX } from 'redux/constants'
+import { isSelfhosted, TITLE_SUFFIX, getOgImageUrl } from 'redux/constants'
 import Post from 'pages/Blog/Post'
 
 export const links: LinksFunction = () => {
@@ -10,12 +10,18 @@ export const links: LinksFunction = () => {
 }
 
 export const meta: V2_MetaFunction = (loaderData: any) => {
+  const ogImageUrl = getOgImageUrl(loaderData?.data?.title)
+
   return [
     {
       title: `${loaderData?.data?.title || 'Blog'} ${TITLE_SUFFIX}`,
     },
     {
       property: "og:title",
+      content: `${loaderData?.data?.title || 'Blog'} ${TITLE_SUFFIX}`,
+    },
+    {
+      property: "twitter:title",
       content: `${loaderData?.data?.title || 'Blog'} ${TITLE_SUFFIX}`,
     },
     {
@@ -29,6 +35,14 @@ export const meta: V2_MetaFunction = (loaderData: any) => {
     {
       property: "description",
       content: loaderData?.data?.intro || '',
+    },
+    {
+      property: "og:image",
+      content: ogImageUrl,
+    },
+    {
+      property: "twitter:image",
+      content: ogImageUrl,
     },
   ]
 }
