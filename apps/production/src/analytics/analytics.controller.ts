@@ -74,6 +74,8 @@ import {
   IGetFunnel,
   IUserFlow,
 } from './interfaces'
+import { GetSessionsDto } from './dto/get-sessions.dto'
+import { GetSessionDto } from './dto/get-session.dto'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mysql = require('mysql2')
@@ -1331,6 +1333,125 @@ export class AnalyticsController {
 
     res.writeHead(200, { 'Content-Type': 'image/gif' })
     return res.end(TRANSPARENT_GIF_BUFFER, 'binary')
+  }
+
+  @Get('sessions')
+  @Auth([], true, true)
+  async getSessions(
+    @Query() data: GetSessionsDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<any> {
+    const {
+      pid,
+      period,
+      timeBucket,
+      from,
+      to,
+      filters,
+      timezone = DEFAULT_TIMEZONE,
+    } = data
+    this.analyticsService.validatePID(pid)
+
+    if (!_isEmpty(period)) {
+      this.analyticsService.validatePeriod(period)
+    }
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    const take = this.analyticsService.getSafeNumber(data.take, 30)
+    const skip = this.analyticsService.getSafeNumber(data.skip, 0)
+
+    let newTimeBucket = timeBucket
+    let diff
+    let timeBucketForAllTime
+
+    if (period === 'all') {
+      const res = await this.analyticsService.getTimeBucketForAllTime(
+        pid,
+        period,
+        timezone,
+      )
+
+      // eslint-disable-next-line prefer-destructuring
+      newTimeBucket = _includes(res.timeBucket, timeBucket)
+        ? timeBucket
+        : res.timeBucket[0]
+      diff = res.diff
+      timeBucketForAllTime = res.timeBucket
+    }
+
+    this.analyticsService.validateTimebucket(newTimeBucket)
+    const [filtersQuery, filtersParams, appliedFilters] =
+      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      newTimeBucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom,
+        groupTo,
+        ...filtersParams,
+      },
+    }
+
+    const result = await this.analyticsService.getSessionsList(
+      filtersQuery,
+      paramsData,
+      safeTimezone,
+      take,
+      skip,
+    )
+
+    return {
+      ...result,
+      appliedFilters,
+      timeBucket: timeBucketForAllTime,
+    }
+  }
+
+  @Get('session')
+  @Auth([], true, true)
+  async getSession(
+    @Query() data: GetSessionDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<any> {
+    const {
+      pid,
+      psid,
+      timezone = DEFAULT_TIMEZONE,
+      //
+    } = data
+    this.analyticsService.validatePID(pid)
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+
+    const result = await this.analyticsService.getSessionDetails(
+      pid,
+      psid,
+      safeTimezone,
+    )
+
+    return result
   }
 
   @Get('custom-events')

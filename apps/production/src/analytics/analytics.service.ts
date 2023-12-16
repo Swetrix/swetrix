@@ -2563,6 +2563,106 @@ export class AnalyticsService {
     })
   }
 
+  getSafeNumber(value: any, defaultValue: number): number {
+    if (typeof value === 'undefined') {
+      return defaultValue
+    }
+
+    const parsed = parseInt(value, 10)
+
+    if (Number.isNaN(parsed)) {
+      return defaultValue
+    }
+
+    return parsed
+  }
+
+  async getSessionDetails(
+    pid: string,
+    psid: number,
+    safeTimezone: string,
+  ): Promise<any> {
+    const query = `
+      SELECT
+        *
+      FROM (
+        SELECT
+          pg AS value,
+          created
+        FROM analytics
+        WHERE pid = {pid:FixedString(12)}
+        AND psid = {psid:String}
+
+        UNION ALL
+
+        SELECT
+          ev AS value,
+          created
+        FROM customEV
+        WHERE pid = {pid:FixedString(12)}
+        AND psid = {psid:String}
+      )
+      ORDER BY created ASC;
+    `
+
+    const paramsData = {
+      params: {
+        pid,
+        psid,
+      },
+    }
+
+    const result = await clickhouse.query(query, paramsData).toPromise()
+
+    console.log(result)
+
+    return result
+  }
+
+  async getSessionsList(
+    filtersQuery: string,
+    paramsData: object,
+    safeTimezone: string,
+    take = 30,
+    skip = 0,
+  ): Promise<object | void> {
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+
+    // TODO: return total rows or pages for frontend pagination
+    const query = `
+      SELECT
+        psid,
+        any(cc) AS cc,
+        any(os) AS os,
+        any(br) AS br,
+        count() AS pageviews,
+        min(created) AS created
+      FROM
+      (
+        SELECT
+          CAST(psid, 'String') as psid,
+          cc,
+          os,
+          br,
+          created
+        FROM analytics
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND created BETWEEN ${tzFromDate} AND ${tzToDate}
+          ${filtersQuery}
+      )
+      GROUP BY psid
+      ORDER BY created DESC
+      LIMIT ${take}
+      OFFSET ${skip}
+    `
+
+    const result = await clickhouse.query(query, paramsData).toPromise()
+
+    return result
+  }
+
   async getOnlineCountByProjectId(projectId: string) {
     // @ts-ignore
     return redis.countKeysByPattern(`hb:${projectId}:*`)
