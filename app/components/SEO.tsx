@@ -45,7 +45,7 @@ export const SEO = () => {
       <meta property='og:url' content='https://swetrix.com' />
       <meta property='og:type' content='website' />
       <meta name='language' content={_toUpper(language)} />
-      <meta http-equiv='content-language' content={_toUpper(language)} />
+      <meta httpEquiv='content-language' content={_toUpper(language)} />
     </>
   )
 }
