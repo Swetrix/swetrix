@@ -2579,7 +2579,7 @@ export class AnalyticsService {
 
   async getSessionDetails(
     pid: string,
-    psid: number,
+    psid: string,
     safeTimezone: string,
   ): Promise<any> {
     const query = `
