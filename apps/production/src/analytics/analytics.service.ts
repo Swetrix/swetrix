@@ -2626,9 +2626,9 @@ export class AnalyticsService {
     }
 
     const pages = await clickhouse.query(queryPages, paramsData).toPromise()
-    const details = await clickhouse
-      .query(querySessionDetails, paramsData)
-      .toPromise()
+    const details = (
+      await clickhouse.query(querySessionDetails, paramsData).toPromise()
+    )[0]
 
     return { pages, details }
   }
