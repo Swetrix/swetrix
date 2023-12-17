@@ -2612,11 +2612,9 @@ export class AnalyticsService {
       },
     }
 
-    const result = await clickhouse.query(query, paramsData).toPromise()
+    const pages = await clickhouse.query(query, paramsData).toPromise()
 
-    console.log(result)
-
-    return result
+    return { pages }
   }
 
   async getSessionsList(

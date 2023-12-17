@@ -1408,7 +1408,7 @@ export class AnalyticsController {
       },
     }
 
-    const result = await this.analyticsService.getSessionsList(
+    const sessions = await this.analyticsService.getSessionsList(
       filtersQuery,
       paramsData,
       safeTimezone,
@@ -1417,8 +1417,10 @@ export class AnalyticsController {
     )
 
     return {
-      ...result,
+      sessions,
       appliedFilters,
+      take,
+      skip,
       timeBucket: timeBucketForAllTime,
     }
   }
