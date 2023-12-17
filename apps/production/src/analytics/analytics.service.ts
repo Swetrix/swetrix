@@ -2582,7 +2582,7 @@ export class AnalyticsService {
     psid: string,
     safeTimezone: string,
   ): Promise<any> {
-    const query = `
+    const queryPages = `
       SELECT
         *
       FROM (
@@ -2590,8 +2590,9 @@ export class AnalyticsService {
           pg AS value,
           created
         FROM analytics
-        WHERE pid = {pid:FixedString(12)}
-        AND psid = {psid:String}
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND psid = {psid:String}
 
         UNION ALL
 
@@ -2599,10 +2600,22 @@ export class AnalyticsService {
           ev AS value,
           created
         FROM customEV
-        WHERE pid = {pid:FixedString(12)}
-        AND psid = {psid:String}
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND psid = {psid:String}
       )
       ORDER BY created ASC;
+    `
+
+    const querySessionDetails = `
+      SELECT
+        dv, br, os, lc, ref, so, me, ca, cc, rg, ct, sdur
+      FROM analytics
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND psid = {psid:String}
+        AND unique = 1
+      LIMIT 1;
     `
 
     const paramsData = {
@@ -2612,9 +2625,12 @@ export class AnalyticsService {
       },
     }
 
-    const pages = await clickhouse.query(query, paramsData).toPromise()
+    const pages = await clickhouse.query(queryPages, paramsData).toPromise()
+    const details = await clickhouse
+      .query(querySessionDetails, paramsData)
+      .toPromise()
 
-    return { pages }
+    return { pages, details }
   }
 
   async getSessionsList(
