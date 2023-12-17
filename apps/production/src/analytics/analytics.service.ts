@@ -2630,7 +2630,7 @@ export class AnalyticsService {
       await clickhouse.query(querySessionDetails, paramsData).toPromise()
     )[0]
 
-    return { pages, details }
+    return { pages, details, psid }
   }
 
   async getSessionsList(
