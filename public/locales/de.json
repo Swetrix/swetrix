@@ -56,7 +56,7 @@
     "confirm": "Bestätigen",
     "amount": "Anzahl",
     "date": "Datum",
-    "success": "Success",
+    "success": "Erfolg",
     "info": "Info",
     "error": "Fehler",
     "close": "Schließen",
@@ -89,28 +89,28 @@
     "transferring": "Übertragung",
     "link": "Verknüpfung",
     "unlink": "Verknüpfung aufheben",
-    "nothingFound": "Nothing found",
-    "oneMember": "1 Member",
-    "xMembers": "{{number}} Members"
+    "nothingFound": "Nichts gefunden",
+    "oneMember": "1 Mitglied",
+    "xMembers": "{{number}} Mitglieder"
   },
   "main": {
     "ukrSupport": "Unterstützen Sie die ukrainische Armee im Kampf gegen die russische Invasion.",
-    "slogan": "<span>Ultimate open-source web analytics</span> to satisfy all your needs.",
-    "trackEveryMetric": "This is the way analytics should be: GDPR compliant, lightweight and easy to use.",
-    "description": "Swetrix is a cookieless Google Analytics alternative that does not invade your users' privacy.",
+    "slogan": "<span>Ultimative Open-Source-Web-Analytics</span> um alle Ihre Wünsche zu befriedigen.",
+    "trackEveryMetric": "Analytik sollte so sein: GDPR-konform, leicht und einfach zu bedienen.",
+    "description": "Swetrix ist eine Cookieless Alternative von Google Analytics, die die Privatsphäre Ihrer Nutzer nicht verletzt.",
     "start": "Kostenlos beginnen",
     "signup": "Jetzt gratis registrieren!",
     "signupTerms": "Mit der Anmeldung akzeptieren Sie unsere <tos>Allgemeinen Geschäftsbedingungen</tos> und unsere <pp>Datenschutzerklärung</pp>.",
     "techDetails": "Möchten Sie weitere technische Details erfahren?",
     "lookAtDocs": "Sehen Sie sich doch mal die Dokumentation und die Live Demo an.",
     "readyToStart": "Sind Sie bereit los zu legen?",
-    "metric": "Metric",
+    "metric": "Metrisch",
     "coreFeatures": {
       "title": "Kern-Analysefunktionen",
       "desc": "Leistungsfähige und einfache Analytics um alle benötigten Kennzahlen anzuzeigen. Frei von Cookies. Man muss kein Datenwissenschaftler sein, um unsere Analytics zu verstehen."
     },
     "marketplace": {
-      "title": "Marketplace & built-in Extensions",
+      "title": "Marktplatz & integrierte Erweiterungen",
       "desc1": "Benötigen Sie zusätzliche Funktionen? Verwenden Sie Erweiterungen oder programmieren Sie Ihre eigenen! Ab jetzt brauchen Sie nicht mehr viele Datenquellen aus verschiedenen Systemen zu nutzen - erweitern und ergänzen Sie alles in einem!",
       "desc2": "Installieren Sie Erweiterungen und verkaufen Sie Ihre eigenen. Sie haben eine tolle Erweiterung für Ihr Unternehmen entwickelt? Großartig! Veröffentlichen Sie es auf dem Markt und teilen Sie Ihre Einblicke mit der ganzen Community."
     },
@@ -212,12 +212,12 @@
       }
     ],
     "supports": "Unterstützt alle beliebten Plattformen",
-    "peopleLoveSwetrix": "People 🥰 Swetrix",
-    "whyPeopleLoveSwetrix": "Swetrix is an ethical and powerful service. Hundreds of people have already made the switch from Google Analytics and other alternatives.",
+    "peopleLoveSwetrix": "Leute 🥰 Swetrix",
+    "whyPeopleLoveSwetrix": "Swetrix ist ein ethischer und leistungsstarker Dienst. Hunderte von Menschen haben bereits den Wechsel von Google Analytics und anderen Alternativen gemacht.",
     "marketplaceBlock": "Marktplatz- und Erweiterungsfunktionen",
     "coreFeaturesBlock": "Kernfunktionen",
     "testimonials": "Kundenmeinungen",
-    "peopleUseSwetrix": "Hundreds of people already use Swetrix as their web analytics solution",
+    "peopleUseSwetrix": "Hunderte von Menschen verwenden Swetrix bereits als Webanalyselösung",
     "lTestimonials": [
       {
         "name": "Alex",
@@ -247,8 +247,8 @@
         "desc": "Ihre Daten sind geschützt, alle Funktionen und Verbesserungen werden in wenigen Tagen von unseren Entwicklern implementiert."
       }
     ],
-    "timeToDitchGoogleAnalytics": "It's time <colour>to ditch</colour> Google Analytics.",
-    "whyDitch": "Tired of the frustration, complexity and privacy issues of Google Analytics? We were too. That's why we built Swetrix - the ethical, open source and fully cookieless alternative.",
+    "timeToDitchGoogleAnalytics": "Es ist Zeit Google Analytics <colour>aufzugeben</colour>.",
+    "whyDitch": "Wir waren von der Frustration, der Komplexität und dem Datenschutz von Google Analytics müde und waren auch dabei. Deshalb haben wir Swetrix gebaut - die ethische, quelloffene und voll Cookieless Alternative.",
     "custSupport": "Ist ihre Frage hier nicht aufgelistet? Wenden Sie sich gerne an unseren <mail>Kundendienst</mail>.",
     "whyUs": "Warum uns",
     "ourStats": "Unsere Statistiken",
@@ -262,7 +262,7 @@
       "ext": "Individuelle Erweiterungen",
       "gdpr": "GDPR-kompatibel",
       "usfl": "Benutzerfluss",
-      "funnels": "Funnels",
+      "funnels": "Trichter",
       "alrt": "Eigene Alarme",
       "pbld": "Öffentliche Dashboards",
       "shad": "Dashboard-Freigabe",
@@ -273,9 +273,9 @@
     }
   },
   "referral": {
-    "desc": "Swetrix is an ethical, open source and completely cookie-less alternative to Google Analytics. It allows you to understand your users' behaviour, monitor your website performance, track your marketing campaigns and much more. All without invading your users' privacy!",
-    "cookieDetails": "If you click on the buttons above, a cookie will be stored for {{days}} days to reward the person who referred you and give you {{discount}}% off your first bill.",
-    "buttons": "Click on these buttons to receive {{discount}}% off your first bill!"
+    "desc": "Swetrix ist eine ethische, quelloffene und komplett Cookieless Alternative zu Google Analytics. Es ermöglicht Ihnen, das Verhalten Ihrer Nutzer zu verstehen, die Leistung Ihrer Website zu überwachen, Ihre Marketing-Kampagnen zu verfolgen und vieles mehr. Alles ohne die Privatsphäre Ihrer Nutzer zu verletzen!",
+    "cookieDetails": "Wenn Sie auf die Schaltflächen oben klicken, ein Cookie wird für {{days}} Tage gespeichert, um die Person, die Sie verwiesen hat, zu belohnen und Ihnen {{discount}}% Rabatt auf Ihre erste Rechnung zu geben.",
+    "buttons": "Klicken Sie auf diese Schaltflächen, um {{discount}}% auf Ihre erste Rechnung zu erhalten!"
   },
   "auth": {
     "recovery": {
@@ -296,7 +296,7 @@
       "2faDesc": "Öffnen Sie die Zwei-Faktor-Authentifizierungs-App auf Ihrem Gerät, um Ihren Authentifizierungscode anzuzeigen und Ihre Identität zu bestätigen.\nSie können auch Ihren Wiederherstellungs-Code verwenden.",
       "2faUnavailable": "Sie haben keinen Zugriff auf 2FA?\n<ctl>Kontaktieren Sie den Support</ctl>.",
       "6digitCode": "6-stelliger Authentifizierungscode",
-      "notAMember": "Not a member? <url>Start a {{amount}} day free trial</url>"
+      "notAMember": "Kein Mitglied? <url>Starten Sie einen {{amount}} Tag kostenlose Testversion</url>"
     },
     "signup": {
       "button": "Registrieren",
@@ -305,7 +305,7 @@
       "create": "Erstellen Sie ihr Konto",
       "trial": "Starten Sie Ihre kostenlose {{amount}}-Tage Testversion",
       "noCC": "Keine Kreditkarte erforderlich.",
-      "alreadyAMember": "Already a member? <url>Sign in</url>"
+      "alreadyAMember": "Bereits Mitglied? <url>Anmelden</url>"
     },
     "verification": {
       "success": "Deine E-Mail wurde erfolgreich verifiziert!"
@@ -336,12 +336,12 @@
       "continueWithGithub": "Weiter mit Github",
       "google": "Google",
       "github": "Github",
-      "orContinueWith": "Or continue with"
+      "orContinueWith": "Oder weiter mit"
     }
   },
   "profileSettings": {
     "logoutAll": "Von allen Geräten abmelden",
-    "account": "Account",
+    "account": "Konto",
     "general": "Allgemeine Einstellungen",
     "update": "Konto aktualisieren",
     "email": "E-Mail Berichte",
@@ -351,8 +351,8 @@
     "requestExport": "Datenexport anfordern",
     "delete": "Konto löschen",
     "deactivateConfirmation": "Sind Sie sicher, dass Sie Ihr Konto deaktivieren möchten?\nAlle Ihre Daten werden dauerhaft und unwiderruflich von unseren Servern entfernt.\nDiese Aktion kann nicht rückgängig gemacht werden.",
-    "deletionFeedbackLabel": "Why are you leaving? (optional)",
-    "deletionFeedback": "We're sad to see you go, could you please tell us why you're leaving so we could improve our service?",
+    "deletionFeedbackLabel": "Warum gehen Sie ab? (optional)",
+    "deletionFeedback": "Wir sind traurig, Sie gehen zu sehen, bitte sagen Sie uns, warum Sie verlassen, damit wir unseren Service verbessern könnten?",
     "exportConfirmation": "Gemäß Art. 20 der General Data Protection Regulation (GDPR) haben Sie das Recht, Ihre bei uns gespeicherten persönlichen Daten einzusehen. Dieser Bericht enthält keine projektbezogenen Eventdaten.\nDer Datenbericht wird an Ihre E-Mail-Adresse gesendet.\nHinweis: Sie können den Datenexport nur einmal alle zwei Wochen anfordern.",
     "dataExport": "Datenexport",
     "aDelete": "Mein Konto Löschen",
@@ -429,25 +429,25 @@
     "showVisitorsInTitle": "Live-Besucher im Seitentitel anzeigen",
     "uiSettings": "UI Einstellungen",
     "passwordChangeWarningModal": {
-      "title": "You're about to change your password",
-      "body": "You're about to change your password, this will log you out from all devices (including this one) and you will need to log in again with your new password."
+      "title": "Sie sind dabei, Ihr Passwort zu ändern",
+      "body": "Sie sind dabei, Ihr Passwort zu ändern, dies wird Sie von allen Geräten (einschließlich diesem) abmelden und Sie müssen sich erneut mit Ihrem neuen Passwort anmelden."
     },
     "referral": {
-      "title": "Referral program",
-      "desc": "Referral program allows you to earn money by inviting new users to Swetrix.\nYou will receive a part of the subscription fee paid by the invited user and will be able to withdraw it to your PayPal account. Learn more about the referral program at <url>Swetrix Referral Program</url> documentation page.",
-      "referralLink": "Referral link",
-      "payoutEmail": "Referral payout email address",
-      "payoutEmailDesc": "We will send your referral payouts via PayPal to this email address each month. Double check that it is correct.",
-      "payoutEmailUpdated": "Payout email address has been updated",
-      "yourReferralLink": "Your referral link",
-      "referralLinkDesc": "This is your referral link, you can share it with your friends and earn money for each user that signs up and buys a paid plan using it.",
-      "generateRefLink": "Generate referral link",
-      "referralStats": "Referral statistics",
-      "activeReferrals": "Active referrals",
-      "trial": "Trial referrals",
-      "trialDesc": "Trial users referred by you",
-      "active": "Active referrals",
-      "activeDesc": "Paid subsribers referred by you",
+      "title": "Referral-Programm",
+      "desc": "Referral-Programm ermöglicht Ihnen Geld zu verdienen, indem Sie neue Benutzer zu Swetrix einladen.\nSie erhalten einen Teil der Abonnementgebühr, die vom eingeladenen Nutzer bezahlt wird, und können diese dann auf Ihr PayPal-Konto abheben. Erfahren Sie mehr über das Referral-Programm auf der Seite <url>Swetrix Referral Program</url> Dokumentation.",
+      "referralLink": "Referral-Link",
+      "payoutEmail": "Referral-Programm-E-Mail-Adresse",
+      "payoutEmailDesc": "Wir senden Ihnen Ihre Referral-Programmauszahlungen per PayPal jeden Monat an diese E-Mail-Adresse zu. Überprüfen Sie doppelt, ob sie korrekt ist.",
+      "payoutEmailUpdated": "Die Auszahlungs-E-Mail-Adresse wurde aktualisiert",
+      "yourReferralLink": "Ihr Empfehlungslink",
+      "referralLinkDesc": "Dies ist Ihr Empfehlungslink, Sie können es mit Ihren Freunden teilen und Geld verdienen für jeden Benutzer, der sich anmeldet und ein bezahltes Paket mit diesem kauft.",
+      "generateRefLink": "Empfehlungslink generieren",
+      "referralStats": "Empfehlungsstatistik",
+      "activeReferrals": "Aktive Empfehlungen",
+      "trial": "Testempfehlungen",
+      "trialDesc": "Testnutzer von Ihnen empfohlen",
+      "active": "Aktive Empfehlungen",
+      "activeDesc": "Bezahlte Subsriber von dir verwiesen",
       "paid": "Paid",
       "paidDesc": "Total amount paid to you",
       "nextPayout": "Next payout",
@@ -703,11 +703,11 @@
         "viaFilters": "Reset via filters",
         "viaFiltersHint": "The 'Reset via filters' function allows you to reset the data of a specific project within a given date range and with specific filters.",
         "filtersPlaceholder": "Select filters",
-        "noFilters": "No filters selected or no data for the selected filter type"
+        "noFilters": "Keine Filter ausgewählt oder keine Daten für den ausgewählten Filtertyp"
       },
-      "protected": "Password protected Dashboard",
-      "protectedHint": "You can make your Dashboard public & password protected. This way, only people who know the password will be able to access it.",
-      "password": "Dashboard password"
+      "protected": "Passwortgeschütztes Dashboard",
+      "protectedHint": "Sie können Ihr Dashboard öffentlich und passwortgeschützt machen. Auf diese Weise können nur Personen, die das Passwort kennen, darauf zugreifen.",
+      "password": "Dashboard-Passwort"
     },
     "captcha": {
       "settings": {
@@ -730,44 +730,44 @@
     "userFlow": {
       "noData": "Benutzerfluss ist aufgrund fehlender Daten noch nicht verfügbar, oder Sie haben diese Funktion in den Tracking-Skriptparametern deaktiviert"
     },
-    "noDateRange": "Please select a date range",
-    "compareDateRangeError": "This date range cannot be compared, please select a other date range",
-    "previousPeriod": "Previous period",
-    "disableCompare": "Disable comparison",
-    "compare": "Compare"
+    "noDateRange": "Bitte geben Sie eine Datumsspanne ein",
+    "compareDateRangeError": "Dieser Zeitraum kann nicht verglichen werden, bitte wählen Sie einen anderen Zeitraum",
+    "previousPeriod": "Vorherige Periode",
+    "disableCompare": "Vergleich deaktivieren",
+    "compare": "Vergleichen"
   },
   "billing": {
     "title": "Rechnung & Abonnement",
     "desc": "Der Einstieg und die Nutzung unserer Dienste ist gratis.\nWenn Sie mehr Datenverkehr bewältigen müssen, empfiehlt sich wahrscheinlich ein Upgrade Ihres Abonnements.\nNachstehend finden Sie eine Liste der verfügbaren Abomodelle. Keine versteckten Gebühren oder sonstiger Blödsinn, alles ist klar und transparent!",
-    "contact": "Do you have more than {{amount}} million events per month? <url>Get in touch</url> to discuss your needs!",
+    "contact": "Haben Sie mehr als {{amount}} Millionen Events pro Monat? <url>Kontaktieren Sie</url> um Ihre Bedürfnisse zu besprechen!",
     "update": "Zahlungsmethode aktualisieren",
     "nextBillDate": "Nächstes Abrechnungsdatum:",
-    "nextBillDateIs": "Your next bill date is {{date}}",
+    "nextBillDateIs": "Ihr nächstes Rechnungsdatum ist {{date}}",
     "trialEnds": "Testphase endet am {{date}}",
     "cancelSub": "Abonnement kündigen",
     "noSubWarning": "Sie haben kein aktives Abonnement.\nEs werden keine neuen Analysedaten in unserer Datenbank gespeichert. Sie können die Daten, die vor der Kündigung des Abonnements gesammelt wurden, weiterhin einsehen.",
     "inactive": "Inaktiv",
     "cancelledSubMessage": "Sie haben Ihr Abonnement gekündigt.\nDas Abonnement ist noch bis {{date}} aktiv.\nDanach werden keine neuen Analysedaten mehr in unserer Datenbank gespeichert. Sie können die Daten, die vor der Kündigung des Abonnements gesammelt wurden, weiterhin einsehen.",
-    "planUsage": "Plan usage",
-    "usageOverview": "This month you have tracked {{tracked}} events ({{trackedPerc}}%) of the {{maxEvents}} events in your plan.",
-    "breakdown": "Breakdown by the event type:",
-    "pageviews": "Pageview events: {{quantity}} ({{percentage}}%)",
-    "customEvents": "Custom events: {{quantity}} ({{percentage}}%)",
-    "captcha": "CAPTCHA events: {{quantity}} ({{percentage}}%)",
-    "gotoUsage": "Go to plan usage",
-    "confirmNewPlan": "Confirm your new subscription plan",
-    "previewLoadingError": "An error occured while loading the pricing preview, please try again later.\nIf the problem persists, please contact us at <mail>{{email}}</mail>.\nYou can still change your plan, but you won't be able to see the pricing preview at the moment, sorry for that.",
-    "dueNow": "Due now",
-    "dueNowDescription": "You will be charged pro-rated amount for the remaining days of the current billing period.",
-    "negativePayment": "Negative 'Amount' means that you will have a credit balance of {{currency}}{{dueNowAmount}}. You will be billed {{currency}}0.00 on {{dueNowDate}}. Once the credit balance is used up, your recurring billing amount will be {{currency}}{{nextPaymentAmount}} every billing cycle of your subscription plan.",
-    "nextPayment": "Next payment",
-    "subscription": "Subscription",
-    "planUsageDesc": "The plan usage shows the number of events (page views, custom events, CAPTCHA completions) that you have used for the current month.",
-    "xofy": "{{x}} of {{y}}",
-    "resetDate": "The plan usage resets on the first day of each month.",
-    "selectPlan": "Select a subscription plan to unveil full Swetrix potential.",
-    "changePlan": "You can change or cancel your subscription plan at any time here.",
-    "membersNotification": "Pageviews, custom events and CAPTCHA completions are counted towards the limit of the subscription of the account owner. People you invite into your projects don't need a subscription."
+    "planUsage": "Plan-Nutzung",
+    "usageOverview": "Diesen Monat haben Sie {{tracked}} Events ({{trackedPerc}}%) der {{maxEvents}} Events in Ihrem Paket verfolgt.",
+    "breakdown": "Aufschlüsselung nach Ereignistyp:",
+    "pageviews": "Seitenansicht-Ereignisse: {{quantity}} ({{percentage}}%)",
+    "customEvents": "Eigene Ereignisse: {{quantity}} ({{percentage}}%)",
+    "captcha": "CAPTCHA Ereignisse: {{quantity}} ({{percentage}}%)",
+    "gotoUsage": "Zur Nutzung des Plans gehen",
+    "confirmNewPlan": "Bestätigen Sie Ihr neues Abonnement",
+    "previewLoadingError": "Beim Laden der Preisvorschau ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.\nWenn das Problem weiterhin besteht, kontaktieren Sie uns bitte unter <mail>{{email}}</mail>.\nSie können Ihren Plan noch ändern, aber Sie werden die Preisliste im Moment nicht sehen können, entschuldigen Sie das.",
+    "dueNow": "Jetzt fällig",
+    "dueNowDescription": "Für die verbleibenden Tage des aktuellen Abrechnungszeitraums wird Ihnen ein gutbewerteter Betrag berechnet.",
+    "negativePayment": "Negativer 'Betrag' bedeutet, dass Sie ein Guthaben von {{currency}}{{dueNowAmount}} haben werden. Am {{dueNowDate}} werden Ihnen {{currency}}0,00 in Rechnung gestellt. Sobald das Guthaben aufgebraucht ist, beträgt Ihr wiederkehrender Rechnungsbetrag {{currency}}{{nextPaymentAmount}} in jedem Abrechnungszyklus Ihres Abonnementplans.",
+    "nextPayment": "Nächste Zahlung",
+    "subscription": "Abonnement",
+    "planUsageDesc": "Die Nutzung des Plans zeigt die Anzahl der Ereignisse (Seitenansichten, benutzerdefinierte Ereignisse, CAPTCHA Fertigstellungen), die Sie für den aktuellen Monat verwendet haben.",
+    "xofy": "{{x}} von {{y}}",
+    "resetDate": "Die Nutzung des Plans wird am ersten Tag jedes Monats zurückgesetzt.",
+    "selectPlan": "Wählen Sie einen Abonnementplan aus, um das volle Swetrix Potenzial zu enthüllen.",
+    "changePlan": "Sie können Ihr Abonnement hier jederzeit ändern oder kündigen.",
+    "membersNotification": "Seitenansichten, benutzerdefinierte Ereignisse und CAPTCHA-Vervollständigung werden gegen die Grenze des Abonnements des Kontoinhabers gezählt. Personen, die Sie in Ihre Projekte einladen benötigen kein Abonnement."
   },
   "modals": {
     "paidFeature": {
@@ -780,16 +780,16 @@
       "input": "Die Menge von '{{frequency}}' die Sie vorhersagen möchten"
     },
     "funnels": {
-      "addTitle": "Add funnel",
-      "editTitle": "Edit funnel",
-      "name": "Funnel name",
-      "steps": "Funnel steps",
-      "addStep": "Add one more step"
+      "addTitle": "Trichter hinzufügen",
+      "editTitle": "Trichter bearbeiten",
+      "name": "Trichtername",
+      "steps": "Trichterschritte",
+      "addStep": "Noch einen Schritt hinzufügen"
     }
   },
   "pricing": {
-    "title": "Simple, traffic-based pricing",
-    "adv": "Try Swetrix on your website for {{amount}} days - completely free of charge.\nNo credit card required. No strings attached.",
+    "title": "Einfache, verkehrsbasierte Preisgestaltung",
+    "adv": "Probieren Sie Swetrix für {{amount}} Tage auf Ihrer Website aus - völlig kostenlos.\nKeine Kreditkarte erforderlich. Unverbindlich.",
     "currentPlan": "Derzeitiges Abo",
     "free": "Gratis",
     "legacy": "Legacy",
@@ -797,14 +797,14 @@
     "perYear": "Jahr",
     "yourPlan": "Ihr Abonnement",
     "downgrade": "Herabstufen",
-    "selectPlan": "Select plan:",
+    "selectPlan": "Tarif auswählen:",
     "upgrade": "Aufstufen",
     "whatIncl": "Was ist enthalten?",
-    "monthlyBilling": "Monthly",
-    "yearlyBilling": "Yearly",
+    "monthlyBilling": "Monatlich",
+    "yearlyBilling": "Jährlich",
     "switchToMonthly": "Zu monatlicher Abrechnung wechseln",
-    "frequency": "Payment frequency",
-    "eventPerMonth": "Events per month",
+    "frequency": "Zahlungsfrequenz",
+    "eventPerMonth": "Ereignisse pro Monat",
     "switchToYearly": "Zu jährlicher Abrechnung wechseln",
     "xTrialDaysLeft": "{{amount}} Testtage verbleibend",
     "trialEnded": "Testversion abgelaufen",
@@ -862,16 +862,16 @@
     }
   },
   "open": {
-    "desc": "Swetrix is an Open Startup, we share our metrics, such as revenue, losses, amount of users, etc. with the public.",
-    "updated": "This page is updated regularly.",
+    "desc": "Swetrix ist ein Open Startup, wir teilen unsere Metriken wie Einnahmen, Verlust, Menge der Benutzer usw. mit der Öffentlichkeit.",
+    "updated": "Diese Seite wird regelmäßig aktualisiert.",
     "finance": {
-      "title": "Finance metrics",
-      "desc": "Our financial metrics, such as revenue, losses, etc."
+      "title": "Finanzmetriken",
+      "desc": "Unsere finanziellen Kennzahlen wie Einnahmen, Verluste usw."
     },
     "usage": {
-      "title": "Usage metrics",
-      "desc": "Our user metrics, such as amount of active users, connected websites.",
-      "live": "You can see our live metrics on our <livedemo>public dashboard</livedemo>. You can also make your own Swetrix Dashboards public and adjust them to your needs."
+      "title": "Verwendungsmetriken",
+      "desc": "Unsere Benutzermetriken, wie die Anzahl der aktiven Benutzer, verbundene Webseiten.",
+      "live": "Sie können unsere Live-Metriken auf unserem <livedemo>öffentlichen Dashboard</livedemo>sehen. Sie können auch Ihre eigenen Swetrix Dashboards öffentlich machen und sie an Ihre Bedürfnisse anpassen."
     }
   },
   "titles": {
@@ -886,11 +886,11 @@
     "billing": "Rechnung",
     "contact": "Kontakt",
     "changelog": "Neuerungen",
-    "main": "Ultimate open-source web analytics to satisfy all your needs",
+    "main": "Ultimative Open-Source-Web-Analytics um alle Ihre Wünsche zu befriedigen",
     "press": "Medien & Presse",
     "socialisation": "Social-Login",
     "open": "Open startup",
-    "passwordProtected": "This project is password protected"
+    "passwordProtected": "Dieses Projekt ist passwortgeschützt"
   },
   "header": {
     "switchTheme": "Design wechseln",
@@ -907,7 +907,7 @@
     "eu": "Europäischen Union",
     "support": "Kundendienst",
     "company": "Unternehmen",
-    "legal": "Support & Legal",
+    "legal": "Support & Juristische",
     "copy": "Swetrix Analytics. Alle Rechte vorbehalten.",
     "contact": "Kontakt",
     "pp": "Datenschutzerklärung",
@@ -928,6 +928,6 @@
     "press": "Medien & Presse",
     "open": "Open startup",
     "about": "Über uns",
-    "features": "Features"
+    "features": "Funktionen"
   }
 }
