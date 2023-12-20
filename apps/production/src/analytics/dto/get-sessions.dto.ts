@@ -4,7 +4,6 @@ import { AnalyticsGET_DTO } from './getData.dto'
 export class GetSessionsDto extends PickType(AnalyticsGET_DTO, [
   'pid',
   'period',
-  'timeBucket',
   'from',
   'to',
   'filters',

@@ -6,6 +6,7 @@ import * as _size from 'lodash/size'
 import * as _includes from 'lodash/includes'
 import * as _map from 'lodash/map'
 import * as _toUpper from 'lodash/toUpper'
+import * as _head from 'lodash/head'
 import * as _join from 'lodash/join'
 import * as _isArray from 'lodash/isArray'
 import * as _sortBy from 'lodash/sortBy'
@@ -205,6 +206,53 @@ const checkIfTBAllowed = (
       "The specified 'timeBucket' parameter cannot be applied to the date range",
     )
   }
+}
+
+export const getLowestPossibleTimeBucket = (
+  period?: string,
+  from?: string,
+  to?: string,
+): TimeBucketType => {
+  if (!from && !to) {
+    if (!_includes(validPeriods, period)) {
+      throw new UnprocessableEntityException('The provided period is incorrect')
+    }
+
+    if (period === '1h') {
+      return TimeBucketType.MINUTE
+    }
+
+    if (
+      period === 'today' ||
+      period === 'yesterday' ||
+      period === '1d' ||
+      period === '7d'
+    ) {
+      return TimeBucketType.HOUR
+    }
+
+    if (period === '4w') {
+      return TimeBucketType.DAY
+    }
+
+    if (period === '3M' || period === '12M' || period === '24M') {
+      return TimeBucketType.MONTH
+    }
+
+    return TimeBucketType.YEAR
+  }
+
+  const diff = dayjs(to).diff(dayjs(from), 'days')
+
+  const tbMap = _find(timeBucketToDays, ({ lt }) => diff <= lt)
+
+  if (_isEmpty(tbMap)) {
+    throw new PreconditionFailedException(
+      "The difference between 'from' and 'to' is greater than allowed",
+    )
+  }
+
+  return _head(tbMap.tb)
 }
 
 const generateParamsQuery = (

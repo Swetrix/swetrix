@@ -39,6 +39,7 @@ import {
   getHeartbeatKey,
   DataType,
   validPeriods,
+  getLowestPossibleTimeBucket,
 } from './analytics.service'
 import { TaskManagerService } from '../task-manager/task-manager.service'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
@@ -1342,15 +1343,7 @@ export class AnalyticsController {
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ): Promise<any> {
-    const {
-      pid,
-      period,
-      timeBucket,
-      from,
-      to,
-      filters,
-      timezone = DEFAULT_TIMEZONE,
-    } = data
+    const { pid, period, from, to, filters, timezone = DEFAULT_TIMEZONE } = data
     this.analyticsService.validatePID(pid)
 
     if (!_isEmpty(period)) {
@@ -1366,9 +1359,8 @@ export class AnalyticsController {
     const take = this.analyticsService.getSafeNumber(data.take, 30)
     const skip = this.analyticsService.getSafeNumber(data.skip, 0)
 
-    let newTimeBucket = timeBucket
+    let timeBucket
     let diff
-    let timeBucketForAllTime
 
     if (period === 'all') {
       const res = await this.analyticsService.getTimeBucketForAllTime(
@@ -1378,14 +1370,13 @@ export class AnalyticsController {
       )
 
       // eslint-disable-next-line prefer-destructuring
-      newTimeBucket = _includes(res.timeBucket, timeBucket)
-        ? timeBucket
-        : res.timeBucket[0]
+      timeBucket = res.timeBucket[0]
       diff = res.diff
-      timeBucketForAllTime = res.timeBucket
+    } else {
+      timeBucket = getLowestPossibleTimeBucket(period, from, to)
     }
 
-    this.analyticsService.validateTimebucket(newTimeBucket)
+    this.analyticsService.validateTimebucket(timeBucket)
     const [filtersQuery, filtersParams, appliedFilters] =
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
 
@@ -1393,7 +1384,7 @@ export class AnalyticsController {
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
       from,
       to,
-      newTimeBucket,
+      timeBucket,
       period,
       safeTimezone,
       diff,
@@ -1421,7 +1412,6 @@ export class AnalyticsController {
       appliedFilters,
       take,
       skip,
-      timeBucket: timeBucketForAllTime,
     }
   }
 
