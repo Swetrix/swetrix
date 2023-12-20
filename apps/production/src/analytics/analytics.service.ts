@@ -2686,6 +2686,7 @@ export class AnalyticsService {
     const query = `
       SELECT
         psid,
+        any(active) AS active,
         any(cc) AS cc,
         any(os) AS os,
         any(br) AS br,
@@ -2694,7 +2695,8 @@ export class AnalyticsService {
       FROM
       (
         SELECT
-          CAST(psid, 'String') as psid,
+          isNotNull(sid) AS active,
+          CAST(psid, 'String') AS psid,
           cc,
           os,
           br,
