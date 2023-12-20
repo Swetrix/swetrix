@@ -2635,6 +2635,7 @@ export class AnalyticsService {
       await clickhouse.query(querySessionDetails, paramsData).toPromise()
     )[0]
     let chartData = {}
+    let timeBucket = null
 
     if (!_isEmpty(pages)) {
       const from = dayjs(pages[0].created)
@@ -2645,13 +2646,13 @@ export class AnalyticsService {
         .format('YYYY-MM-DD HH:mm:ss')
 
       // eslint-disable-next-line
-      const bucket = dayjs(to).diff(dayjs(from), 'hour') > 1 ? TimeBucketType.HOUR : TimeBucketType.MINUTE
+      timeBucket = dayjs(to).diff(dayjs(from), 'hour') > 1 ? TimeBucketType.HOUR : TimeBucketType.MINUTE
 
       const groupedChart = await this.groupChartByTimeBucket(
-        bucket,
+        timeBucket,
         from,
         to,
-        '',
+        'AND psid = {psid:String}',
         {
           params: {
             ...paramsData.params,
@@ -2668,7 +2669,7 @@ export class AnalyticsService {
       chartData = groupedChart.chart
     }
 
-    return { pages, details, psid, chart: chartData }
+    return { pages, details, psid, chart: chartData, timeBucket }
   }
 
   async getSessionsList(
