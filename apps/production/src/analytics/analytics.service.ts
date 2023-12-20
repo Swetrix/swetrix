@@ -86,6 +86,7 @@ import {
   IOverall,
   IOverallCaptcha,
   IOverallPerformance,
+  IPageflow,
 } from './interfaces'
 
 dayjs.extend(utc)
@@ -2587,6 +2588,7 @@ export class AnalyticsService {
         *
       FROM (
         SELECT
+          'pageview' AS type,
           pg AS value,
           created
         FROM analytics
@@ -2597,6 +2599,7 @@ export class AnalyticsService {
         UNION ALL
 
         SELECT
+          'event' AS type,
           ev AS value,
           created
         FROM customEV
@@ -2625,12 +2628,47 @@ export class AnalyticsService {
       },
     }
 
-    const pages = await clickhouse.query(queryPages, paramsData).toPromise()
+    const pages = <IPageflow[]>(
+      await clickhouse.query(queryPages, paramsData).toPromise()
+    )
     const details = (
       await clickhouse.query(querySessionDetails, paramsData).toPromise()
     )[0]
+    let chartData = {}
 
-    return { pages, details, psid }
+    if (!_isEmpty(pages)) {
+      const from = dayjs(pages[0].created)
+        .startOf('minute')
+        .format('YYYY-MM-DD HH:mm:ss')
+      const to = dayjs(pages[_size(pages) - 1].created)
+        .endOf('minute')
+        .format('YYYY-MM-DD HH:mm:ss')
+
+      // eslint-disable-next-line
+      const bucket = dayjs(to).diff(dayjs(from), 'hour') > 1 ? TimeBucketType.HOUR : TimeBucketType.MINUTE
+
+      const groupedChart = await this.groupChartByTimeBucket(
+        bucket,
+        from,
+        to,
+        '',
+        {
+          params: {
+            ...paramsData.params,
+            groupFrom: from,
+            groupTo: to,
+          },
+        },
+        safeTimezone,
+        false,
+        ChartRenderMode.PERIODICAL,
+      )
+
+      // @ts-ignore
+      chartData = groupedChart.chart
+    }
+
+    return { pages, details, psid, chart: chartData }
   }
 
   async getSessionsList(
