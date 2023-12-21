@@ -1359,6 +1359,12 @@ export class AnalyticsController {
     const take = this.analyticsService.getSafeNumber(data.take, 30)
     const skip = this.analyticsService.getSafeNumber(data.skip, 0)
 
+    if (take > 150) {
+      throw new BadRequestException(
+        'The maximum number of sessions to return is 150',
+      )
+    }
+
     let timeBucket
     let diff
 

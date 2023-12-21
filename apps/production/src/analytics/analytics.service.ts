@@ -785,7 +785,7 @@ export class AnalyticsService {
 
     const from: any = await clickhouse
       .query(
-        'SELECT created as from FROM analytics where pid = {pid:FixedString(12)} ORDER BY created ASC LIMIT 1',
+        'SELECT created FROM analytics where pid = {pid:FixedString(12)} ORDER BY created ASC LIMIT 1',
         { params: { pid } },
       )
       .toPromise()
@@ -797,7 +797,7 @@ export class AnalyticsService {
     let diff = null
 
     if (from && to) {
-      diff = dayjs(to).diff(dayjs(from[0].from), 'days')
+      diff = dayjs(to).diff(dayjs(from?.[0].created || to), 'days')
 
       const tbMap = _find(timeBucketToDays, ({ lt }) => diff <= lt)
 
@@ -807,7 +807,7 @@ export class AnalyticsService {
         )
       }
 
-      newTimeBucket = tbMap.tb
+      newTimeBucket = tbMap?.tb
     }
 
     return {
@@ -2730,10 +2730,9 @@ export class AnalyticsService {
     const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
     const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
-    // TODO: return total rows or pages for frontend pagination
     const query = `
       SELECT
-        psid,
+        psidCasted AS psid,
         any(active) AS active,
         any(cc) AS cc,
         any(os) AS os,
@@ -2744,7 +2743,7 @@ export class AnalyticsService {
       (
         SELECT
           isNotNull(sid) AS active,
-          CAST(psid, 'String') AS psid,
+          CAST(psid, 'String') AS psidCasted,
           cc,
           os,
           br,
@@ -2752,6 +2751,7 @@ export class AnalyticsService {
         FROM analytics
         WHERE
           pid = {pid:FixedString(12)}
+          AND psid IS NOT NULL
           AND created BETWEEN ${tzFromDate} AND ${tzToDate}
           ${filtersQuery}
       )
