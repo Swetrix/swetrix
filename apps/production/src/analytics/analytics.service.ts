@@ -2679,9 +2679,29 @@ export class AnalyticsService {
     const pages = <IPageflow[]>(
       await clickhouse.query(queryPages, paramsData).toPromise()
     )
-    const details = (
+    let details = (
       await clickhouse.query(querySessionDetails, paramsData).toPromise()
     )[0]
+
+    if (!details) {
+      const querySessionDetailsBackup = `
+        SELECT
+          dv, br, os, lc, ref, so, me, ca, cc, rg, ct, sdur
+        FROM analytics
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND psid = {psid:String}
+        LIMIT 1;
+      `
+
+      // eslint-disable-next-line prefer-destructuring
+      details = (
+        await clickhouse
+          .query(querySessionDetailsBackup, paramsData)
+          .toPromise()
+      )[0]
+    }
+
     let chartData = {}
     let timeBucket = null
 
