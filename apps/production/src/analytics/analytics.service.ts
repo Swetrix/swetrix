@@ -2746,9 +2746,42 @@ export class AnalyticsService {
     safeTimezone: string,
     take = 30,
     skip = 0,
+    customEVFilterApplied = false,
   ): Promise<object | void> {
     const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
     const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+
+    const analyticsSubquery = `
+      SELECT
+        isNotNull(sid) AS active,
+        CAST(psid, 'String') AS psidCasted,
+        cc,
+        os,
+        br,
+        created
+      FROM analytics
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND psid IS NOT NULL
+        AND created BETWEEN ${tzFromDate} AND ${tzToDate}
+        ${filtersQuery}
+    `
+
+    const customEVSubquery = `
+      SELECT
+        0 AS active,
+        CAST(psid, 'String') AS psidCasted,
+        cc,
+        os,
+        br,
+        created
+      FROM customEV
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND psid IS NOT NULL
+        AND created BETWEEN ${tzFromDate} AND ${tzToDate}
+        ${filtersQuery}
+    `
 
     const query = `
       SELECT
@@ -2761,19 +2794,7 @@ export class AnalyticsService {
         min(created) AS created
       FROM
       (
-        SELECT
-          isNotNull(sid) AS active,
-          CAST(psid, 'String') AS psidCasted,
-          cc,
-          os,
-          br,
-          created
-        FROM analytics
-        WHERE
-          pid = {pid:FixedString(12)}
-          AND psid IS NOT NULL
-          AND created BETWEEN ${tzFromDate} AND ${tzToDate}
-          ${filtersQuery}
+        ${customEVFilterApplied ? customEVSubquery : analyticsSubquery}
       )
       GROUP BY psid
       ORDER BY created DESC

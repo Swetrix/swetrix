@@ -1383,7 +1383,7 @@ export class AnalyticsController {
     }
 
     this.analyticsService.validateTimebucket(timeBucket)
-    const [filtersQuery, filtersParams, appliedFilters] =
+    const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
@@ -1411,6 +1411,7 @@ export class AnalyticsController {
       safeTimezone,
       take,
       skip,
+      customEVFilterApplied,
     )
 
     return {
