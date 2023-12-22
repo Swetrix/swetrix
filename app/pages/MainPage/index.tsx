@@ -62,6 +62,7 @@ const COMPETITOR_FEATURE_TABLE: {
     'main.competitiveFeatures.perf': true, // Performance
     'main.competitiveFeatures.usfl': true, // User Flow
     'main.competitiveFeatures.funnels': true, // Funnels
+    'main.competitiveFeatures.sessionAnalysis': true, // Session analysis
     'main.competitiveFeatures.ext': true, // Custom extensions
     'main.competitiveFeatures.alrt': true, // Custom alerts
     'main.competitiveFeatures.pbld': true, // Public dashboards
@@ -76,6 +77,7 @@ const COMPETITOR_FEATURE_TABLE: {
     'main.competitiveFeatures.perf': false,
     'main.competitiveFeatures.usfl': true,
     'main.competitiveFeatures.funnels': true,
+    'main.competitiveFeatures.sessionAnalysis': false,
     'main.competitiveFeatures.ext': false,
     'main.competitiveFeatures.alrt': false,
     'main.competitiveFeatures.pbld': false,
@@ -90,6 +92,7 @@ const COMPETITOR_FEATURE_TABLE: {
     'main.competitiveFeatures.perf': false,
     'main.competitiveFeatures.usfl': false,
     'main.competitiveFeatures.funnels': false,
+    'main.competitiveFeatures.sessionAnalysis': false,
     'main.competitiveFeatures.ext': false,
     'main.competitiveFeatures.alrt': true,
     'main.competitiveFeatures.pbld': true,
@@ -104,6 +107,7 @@ const COMPETITOR_FEATURE_TABLE: {
     'main.competitiveFeatures.perf': false,
     'main.competitiveFeatures.usfl': false,
     'main.competitiveFeatures.funnels': true,
+    'main.competitiveFeatures.sessionAnalysis': false,
     'main.competitiveFeatures.ext': false,
     'main.competitiveFeatures.alrt': false,
     'main.competitiveFeatures.pbld': true,
@@ -118,6 +122,7 @@ const COMPETITOR_FEATURE_TABLE: {
     'main.competitiveFeatures.perf': false,
     'main.competitiveFeatures.usfl': false,
     'main.competitiveFeatures.funnels': false,
+    'main.competitiveFeatures.sessionAnalysis': false,
     'main.competitiveFeatures.ext': false,
     'main.competitiveFeatures.alrt': false,
     'main.competitiveFeatures.pbld': true,

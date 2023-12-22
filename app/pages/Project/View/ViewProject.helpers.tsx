@@ -717,6 +717,134 @@ const getSettings = (
   }
 }
 
+
+// function to get the settings and data for the session inspector chart
+const getSettingsSession = (
+  chart: any,
+  timeBucket: string,
+  timeFormat: string,
+  rotateXAxis: boolean,
+  chartType: string,
+) => {
+  const xAxisSize = _size(chart.x)
+
+  const columns = getColumns(chart, { views: true }, {})
+
+  return {
+    data: {
+      x: 'x',
+      columns,
+      types: {
+        total: chartType === chartTypes.line ? area() : bar(),
+      },
+      colors: {
+        total: '#D97706',
+        totalCompare: 'rgba(217, 119, 6, 0.4)',
+      },
+      axes: {
+        bounce: 'y2',
+        sessionDuration: 'y2',
+      },
+    },
+    // grid: {
+    //   x: {
+    //     lines,
+    //   },
+    // },
+    transition: {
+      duration: 500,
+    },
+    resize: {
+      auto: true,
+      timer: false,
+    },
+    axis: {
+      x: {
+        clipPath: false,
+        tick: {
+          fit: true,
+          rotate: rotateXAxis ? 45 : 0,
+          format: timeFormat === TimeFormat['24-hour'] ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
+        },
+        localtime: timeFormat === TimeFormat['24-hour'],
+        type: 'timeseries',
+      },
+      y: {
+        tick: {
+          format: (d: number) => nFormatter(d, 1),
+        },
+        show: true,
+        inner: true,
+      },
+    },
+    tooltip: {
+      contents: (item: any, _: any, __: any, color: any) => {
+        return `<ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
+          <li class='font-semibold'>${timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)}</li>
+          <hr class='border-gray-200 dark:border-gray-600' />
+          ${_map(item, (el: {
+          id: string,
+          index: number,
+          name: string,
+          value: string,
+          x: Date,
+        }) => {
+          if (el.id === 'sessionDuration') {
+            return `
+              <li class='flex justify-between'>
+                <div class='flex justify-items-start'>
+                  <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                  <span>${el.name}</span>
+                </div>
+                <span class='pl-4'>${getStringFromTime(getTimeFromSeconds(el.value))}</span>
+              </li>
+              `
+          }
+
+          if (el.id === 'trendlineUnique' || el.id === 'trendlineTotal') {
+            return ''
+          }
+
+          return `
+            <li class='flex justify-between'>
+              <div class='flex justify-items-start'>
+                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                <span>${el.name}</span>
+              </div>
+              <span class='pl-4'>${el.value}</span>
+            </li>
+            `
+        }).join('')}`
+      },
+    },
+    point: {
+      focus: {
+        only: xAxisSize > 1,
+      },
+      pattern: [
+        'circle',
+      ],
+      r: 3,
+    },
+    legend: {
+      usePoint: true,
+      item: {
+        tile: {
+          width: 10,
+        },
+      },
+      hide: ['uniqueCompare', 'totalCompare', 'bounceCompare', 'sessionDurationCompare'],
+    },
+    area: {
+      linearGradient: true,
+    },
+    bar: {
+      linearGradient: true,
+    },
+    bindto: '#sessionChart',
+  }
+}
+
 // function to get the settings and data for the funnels chart
 const getSettingsFunnels = (
   funnel: IAnalyticsFunnel[],
@@ -1113,10 +1241,44 @@ const getFormatDate = (date: Date) => {
   return `${yyyy}-${mm}-${dd}`
 }
 
+/*
+  Converts an array of filters like:
+  [
+    {
+      "column": "cc",
+      "filter": [
+        "NL", "PL"
+      ]
+    }
+  ]
+  to
+  [
+    {
+      "column": "cc",
+      "filter": "NL"
+    },
+    {
+      "column": "cc",
+      "filter": "PL"
+    }
+  ]
+*/
+const convertFilters = (filters: any) => {
+  return _reduce(filters, (prev: any, curr: any) => {
+    const { column, filter } = curr
+    const converted = _map(filter, (el: any) => ({
+      column,
+      filter: el,
+    }))
+
+    return [...prev, ...converted]
+  }, [])
+}
+
 export {
   iconClassName, getFormatDate, panelIconMapping, typeNameMapping, validFilters,
   validPeriods, validTimeBacket, noRegionPeriods, getSettings,
   getExportFilename, getColumns, onCSVExportClick, CHART_METRICS_MAPPING,
   CHART_METRICS_MAPPING_PERF, getColumnsPerf, getSettingsPerf, transformAIChartData, FILTER_CHART_METRICS_MAPPING_FOR_COMPARE,
-  getSettingsFunnels,
+  getSettingsFunnels, getSettingsSession, convertFilters,
 }

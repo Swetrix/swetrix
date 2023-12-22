@@ -517,6 +517,57 @@ export const getPerfData = (
         : error.response.data.message
     })
 
+export const getSessions = (
+  pid: string,
+  period: string = '3d',
+  filters: string[] = [],
+  from: string = '',
+  to: string = '',
+  take: number = 30,
+  skip: number = 0,
+  timezone: string = '',
+  password: string | undefined = '',
+) =>
+  api
+    .get(
+      `log/sessions?pid=${pid}&take=${take}&skip=${skip}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}`,
+      {
+        headers: {
+          'x-password': password,
+        },
+      },
+    )
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
+export const getSession = (
+  pid: string,
+  psid: string,
+  timezone: string = '',
+  password: string | undefined = '',
+) =>
+  api
+    .get(
+      `log/session?pid=${pid}&psid=${psid}&timezone=${timezone}`,
+      {
+        headers: {
+          'x-password': password,
+        },
+      },
+    )
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message)
+        ? error.response.data
+        : error.response.data.message
+    })
+
 export const getFunnelData = (
   pid: string,
   period: string = '3d',

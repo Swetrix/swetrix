@@ -12,7 +12,7 @@ import { saveAs } from 'file-saver'
 import bb from 'billboard.js'
 import {
   ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, ChartBarIcon, BoltIcon, BellIcon,
-  NoSymbolIcon, MagnifyingGlassIcon, FunnelIcon, ChevronLeftIcon, GlobeAltIcon,
+  NoSymbolIcon, MagnifyingGlassIcon, FunnelIcon, ChevronLeftIcon, GlobeAltIcon, UsersIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -73,7 +73,7 @@ import Footer from 'components/Footer'
 import {
   getProjectData, getProject, getOverallStats, getLiveVisitors, getPerfData, getProjectDataCustomEvents,
   getProjectCompareData, checkPassword, getCustomEventsMetadata, addFunnel, updateFunnel, deleteFunnel,
-  getFunnelData, getFunnels, getPerformanceOverallStats,
+  getFunnelData, getFunnels, getPerformanceOverallStats, getSessions, getSession,
 } from 'api'
 import { getChartPrediction } from 'api/ai'
 import { Panel, CustomEvents } from './Panels'
@@ -82,6 +82,7 @@ import {
   validTimeBacket, noRegionPeriods, getSettings, getColumns, CHART_METRICS_MAPPING,
   CHART_METRICS_MAPPING_PERF, getSettingsPerf, transformAIChartData, FILTER_CHART_METRICS_MAPPING_FOR_COMPARE,
   getSettingsFunnels,
+  convertFilters,
 } from './ViewProject.helpers'
 import CCRow from './components/CCRow'
 import FunnelsList from './components/FunnelsList'
@@ -96,9 +97,15 @@ import PerformanceMetricCards from './components/PerformanceMetricCards'
 import ProjectAlertsView from '../Alerts/View'
 import UTMDropdown from './components/UTMDropdown'
 import TBPeriodSelector from './components/TBPeriodSelector'
+import { ISession } from './interfaces/session'
+import { Sessions } from './components/Sessions'
+import { Pageflow } from './components/Pageflow'
+import { SessionDetails } from './components/SessionDetails'
+import { SessionChart } from './components/SessionChart'
 const SwetrixSDK = require('@swetrix/sdk')
 
 const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
+const SESSIONS_TAKE = 30
 
 interface IViewProject {
   projects: IProject[],
@@ -263,6 +270,9 @@ const ViewProject = ({
   const [filters, setFilters] = useState<any[]>([])
   // similar filters but using for performance tab
   const [filtersPerf, setFiltersPerf] = useState<any[]>([])
+  // similar filters but using for the sessions tab
+  const [filtersSessions, setFiltersSessions] = useState<any[]>([])
+  const [areFiltersSessionsParsed, setAreFiltersSessionsParsed] = useState<boolean>(false)
   // That is needed when using 'Export as image' feature,
   // Because headless browser cannot do a request to the DDG API due to absense of The Same Origin Policy header
   const [showIcons, setShowIcons] = useState<boolean>(true)
@@ -286,6 +296,14 @@ const ViewProject = ({
     // if we do not have activeTab in url, we return activeTab from localStorage or default tab trafic
     return projectTab || PROJECT_TABS.traffic
   })
+
+  // sessions
+  const [sessionsSkip, setSessionsSkip] = useState<number>(0)
+  const [canLoadMoreSessions, setCanLoadMoreSessions] = useState<boolean>(false)
+  const [sessions, setSessions] = useState<any[]>([])
+  const [sessionsLoading, setSessionsLoading] = useState<boolean | null>(null) // null - not loaded, true - loading, false - loaded
+  const [activeSession, setActiveSession] = useState<any>(null)
+  const [sessionLoading, setSessionLoading] = useState<boolean>(false)
 
   const [activeFunnel, setActiveFunnel] = useState<IFunnel | null>(null)
   const [funnelToEdit, setFunnelToEdit] = useState<IFunnel | undefined>(undefined)
@@ -376,17 +394,6 @@ const ViewProject = ({
     generateAlert(t('apiNotifications.funnelDeleted'), 'success')
     setFunnelActionLoading(false)
   }
-
-  useEffect(() => {
-    // @ts-ignore
-    const url = new URL(window.location)
-    const { searchParams } = url
-    const tab = searchParams.get('tab') as string
-
-    if (PROJECT_TABS[tab]) {
-      setActiveTab(tab)
-    }
-  }, [])
   // pgActiveFragment is a active fragment for pagination
   const [pgActiveFragment, setPgActiveFragment] = useState<number>(0)
 
@@ -412,7 +419,7 @@ const ViewProject = ({
   // ref, size using for logic with responsive chart
   const [ref, size] = useSize() as any
   // rotateXAxias using for logic with responsive chart
-  const rotateXAxias = useMemo(() => (size.width > 0 && size.width < 500), [size])
+  const rotateXAxis = useMemo(() => (size.width > 0 && size.width < 500), [size])
   // customEventsChartData is a data for custom events on a chart
   const customEventsChartData = useMemo(() => _pickBy(customEventsPrefs[id], (value, keyCustomEvents) => _includes(activeChartMetricsCustomEvents, keyCustomEvents)), [customEventsPrefs, id, activeChartMetricsCustomEvents])
   // chartType is a type of chart, bar or line
@@ -660,6 +667,11 @@ const ViewProject = ({
     const newTabs = [
       ...selfhostedOnly,
       {
+        id: PROJECT_TABS.sessions,
+        label: t('dashboard.sessions'),
+        icon: UsersIcon,
+      },
+      {
         id: PROJECT_TABS.funnels,
         label: t('dashboard.funnels'),
         icon: FunnelIcon,
@@ -760,7 +772,7 @@ const ViewProject = ({
 
       const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
       // render new settings for chart
-      const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, events)
+      const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxis, chartType, events)
       // set chart data
       setMainChart(() => {
         // @ts-ignore
@@ -965,7 +977,7 @@ const ViewProject = ({
         setIsPanelsDataEmpty(true)
       } else {
         const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
-        const bbSettings = getSettings(chart, newTimebucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, customEventsChart, dataCompare?.chart)
+        const bbSettings = getSettings(chart, newTimebucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxis, chartType, customEventsChart, dataCompare?.chart)
         setChartData(chart)
 
         setPanelsData({
@@ -1003,6 +1015,80 @@ const ViewProject = ({
     }
 
     return getCustomEventsMetadata(id, event, timeBucket, period, '', '', timezone, projectPassword)
+  }
+
+  const loadSession = async (psid: string) => {
+    if (sessionLoading) {
+      return
+    }
+
+    setSessionLoading(true)
+
+    try {
+      const session = await getSession(id, psid, timezone, projectPassword)
+
+      setActiveSession(session)
+    } catch (reason: any) {
+      console.error('[ERROR] (loadSession)(getSession)', reason)
+      showError(reason) // todo: error message i18n
+    }
+
+    setSessionLoading(false)
+  }
+
+  useEffect(() => {
+    // @ts-ignore
+    const url = new URL(window.location)
+    const { searchParams } = url
+    const psid = searchParams.get('psid') as string
+    const tab = searchParams.get('tab') as string
+
+    if (psid && tab === PROJECT_TABS.sessions) {
+      loadSession(psid)
+    }
+
+    if (PROJECT_TABS[tab]) {
+      setActiveTab(tab)
+    }
+  }, [])
+
+  const loadSessions = async () => {
+    if (sessionsLoading) {
+      return
+    }
+
+    setSessionsLoading(true)
+
+    try {
+      let dataSessions: { sessions: ISession[], appliedFilters: any[] }
+      let from
+      let to
+
+      if (dateRange) {
+        from = getFormatDate(dateRange[0])
+        to = getFormatDate(dateRange[1])
+      }
+
+      if (period === 'custom' && dateRange) {
+        dataSessions = await getSessions(id, '', filtersSessions, from, to, SESSIONS_TAKE, sessionsSkip, timezone, projectPassword)
+      } else {
+        dataSessions = await getSessions(id, period, filtersSessions, '', '', SESSIONS_TAKE, sessionsSkip, timezone, projectPassword)
+      }
+
+      setSessions((prev) => [...prev, ...(dataSessions?.sessions || [])])
+      setSessionsSkip((prev) => SESSIONS_TAKE + prev)
+
+      if (dataSessions?.sessions?.length < SESSIONS_TAKE) {
+        setCanLoadMoreSessions(false)
+      } else {
+        setCanLoadMoreSessions(true)
+      }
+    } catch (e) {
+      console.error('[ERROR](loadAnalytics) Loading analytics data failed')
+      console.error(e)
+    } finally {
+      setSessionsLoading(false)
+    }
   }
 
   // similar to loadAnalytics but using for performance tab
@@ -1155,7 +1241,7 @@ const ViewProject = ({
         setIsPanelsDataEmptyPerf(true)
       } else {
         const { chart: chartPerf } = dataPerf
-        const bbSettings = getSettingsPerf(chartPerf, timeBucket, activeChartMetricsPerf, rotateXAxias, chartType, timeFormat, dataCompare?.chart)
+        const bbSettings = getSettingsPerf(chartPerf, timeBucket, activeChartMetricsPerf, rotateXAxis, chartType, timeFormat, dataCompare?.chart)
         setChartDataPerf(chartPerf)
 
         setPanelsDataPerf({
@@ -1250,7 +1336,9 @@ const ViewProject = ({
   const filterHandler = (column: string, filter: any, isExclusive = false) => {
     let newFilters
     let newFiltersPerf
+    let newFiltersSessions
     const columnPerf = `${column}_perf`
+    const columnSessions = `${column}_sess`
 
     if (activeTab === PROJECT_TABS.performance) {
       if (_find(filtersPerf, (f) => f.filter === filter)) {
@@ -1275,7 +1363,34 @@ const ViewProject = ({
         navigate(`${pathname}${search}`)
         setFiltersPerf(newFiltersPerf)
       }
-    } else {
+    }
+
+    if (activeTab === PROJECT_TABS.sessions) {
+      if (_find(filtersSessions, (f) => f.filter === filter)) {
+        newFiltersSessions = _filter(filtersSessions, (f) => f.filter !== filter)
+
+        // @ts-ignore
+        const url = new URL(window.location)
+        url.searchParams.delete(columnSessions)
+        const { pathname, search } = url
+        navigate(`${pathname}${search}`)
+        setFiltersSessions(newFiltersSessions)
+      } else {
+        newFiltersSessions = [
+          ...filtersSessions,
+          { column, filter, isExclusive },
+        ]
+
+        // @ts-ignore
+        const url = new URL(window.location)
+        url.searchParams.append(columnSessions, filter)
+        const { pathname, search } = url
+        navigate(`${pathname}${search}`)
+        setFiltersSessions(newFiltersSessions)
+      }
+    }
+
+    if (activeTab === PROJECT_TABS.traffic) {
       // eslint-disable-next-line no-lonely-if
       if (_find(filters, (f) => f.filter === filter) /* && f.filter === filter) */) {
         // selected filter is already included into the filters array -> removing it
@@ -1284,7 +1399,6 @@ const ViewProject = ({
         setFilters(newFilters)
 
         // removing filter from the page URL
-
         // @ts-ignore
         const url = new URL(window.location)
         url.searchParams.delete(column)
@@ -1309,6 +1423,8 @@ const ViewProject = ({
       }
     }
 
+    resetSessions()
+
     sdkInstance?._emitEvent('filtersupdate', newFilters)
     if (activeTab === PROJECT_TABS.performance) {
       loadAnalyticsPerf(true, newFiltersPerf)
@@ -1324,10 +1440,10 @@ const ViewProject = ({
     const newFilters = _filter(items, (item) => {
       return !_isEmpty(item.filter)
     })
-    if (activeTab === PROJECT_TABS.performance) {
-      // @ts-ignore
-      const url = new URL(window.location)
+    // @ts-ignore
+    const url = new URL(window.location)
 
+    if (activeTab === PROJECT_TABS.performance) {
       if (override) {
         _forEach(FILTERS_PANELS_ORDER, (value) => {
           if (url.searchParams.has(`${value}_perf`)) {
@@ -1362,10 +1478,40 @@ const ViewProject = ({
 
       setFiltersPerf(newFilters)
       loadAnalyticsPerf(true, newFilters)
-    } else {
-      // @ts-ignore
-      const url = new URL(window.location)
+    } else if (activeTab === PROJECT_TABS.sessions) {
+      if (override) {
+        _forEach(FILTERS_PANELS_ORDER, (value) => {
+          if (url.searchParams.has(`${value}_sess`)) {
+            url.searchParams.delete(`${value}_sess`)
+          }
+        })
+      }
 
+      _forEach(items, (item) => {
+        if (url.searchParams.has(`${item.column}_sess`)) {
+          url.searchParams.delete(`${item.column}_sess`)
+        }
+        _forEach(item.filter, (filter) => {
+          url.searchParams.append(`${item.column}_sess`, filter)
+        })
+      })
+
+      const { pathname, search } = url
+      navigate(`${pathname}${search}`)
+
+      const converted = convertFilters(newFilters)
+      resetSessions()
+
+      if (!override) {
+        setFiltersSessions([
+          ...filters,
+          ...converted,
+        ])
+        return
+      }
+
+      setFiltersSessions(converted)
+    } else {
       if (override) {
         _forEach(FILTERS_PANELS_ORDER, (value) => {
           if (url.searchParams.has(value)) {
@@ -1401,6 +1547,8 @@ const ViewProject = ({
       setFilters(newFilters)
       loadAnalytics(true, newFilters)
     }
+
+    resetSessions()
   }
 
   // this function is used for requesting the data from the API when the exclusive filter is changed
@@ -1419,6 +1567,18 @@ const ViewProject = ({
       })
       setFiltersPerf(newFilters)
       loadAnalyticsPerf(true, newFilters)
+    } else if (activeTab === PROJECT_TABS.sessions) {
+      newFilters = _map(filtersSessions, (f) => {
+        if (f.column === column && f.filter === filter) {
+          return {
+            ...f,
+            isExclusive,
+          }
+        }
+
+        return f
+      })
+      setFiltersSessions(newFilters)
     } else {
       newFilters = _map(filters, (f) => {
         if (f.column === column && f.filter === filter) {
@@ -1462,6 +1622,12 @@ const ViewProject = ({
 
       if (activeTab === PROJECT_TABS.funnels) {
         loadFunnelsData(true)
+        return
+      }
+
+      if (activeTab === PROJECT_TABS.sessions) {
+        resetSessions()
+        loadSessions()
         return
       }
 
@@ -1537,7 +1703,7 @@ const ViewProject = ({
 
         if (activeChartMetrics.bounce || activeChartMetrics.sessionDuration || activeChartMetrics.views || activeChartMetrics.unique || !activeChartMetrics.bounce || !activeChartMetrics.sessionDuration) {
           const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
-          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxias, chartType, customEventsChartData, dataChartCompare)
+          const bbSettings = getSettings(chartData, timeBucket, activeChartMetrics, applyRegions, timeFormat, forecasedChartData, rotateXAxis, chartType, customEventsChartData, dataChartCompare)
 
           setMainChart(() => {
             // @ts-ignore
@@ -1566,7 +1732,7 @@ const ViewProject = ({
         }
       }
     } else if (!isLoading && !_isEmpty(chartDataPerf) && !_isEmpty(mainChart)) {
-      const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf, rotateXAxias, chartType, timeFormat, dataChartPerfCompare)
+      const bbSettings = getSettingsPerf(chartDataPerf, timeBucket, activeChartMetricsPerf, rotateXAxis, chartType, timeFormat, dataChartPerfCompare)
 
       setMainChart(() => {
         // @ts-ignore
@@ -1746,6 +1912,40 @@ const ViewProject = ({
     }
   }, [activeTab])
 
+  useEffect(() => {
+    try {
+      // @ts-ignore
+      const url = new URL(window.location)
+      const { searchParams } = url
+      const initialFilters: any[] = []
+      // eslint-disable-next-line lodash/prefer-lodash-method
+      searchParams.forEach((value, key) => {
+        if (!_includes(key, '_sess')) {
+          return
+        }
+
+        const keySess = _replace(key, '_sess', '')
+
+        if (!_includes(validFilters, keySess)) {
+          return
+        }
+
+        const isExclusive = _startsWith(value, '!')
+        initialFilters.push({
+          column: keySess,
+          filter: isExclusive ? value.substring(1) : value,
+          isExclusive,
+        })
+      })
+
+      setFiltersSessions(initialFilters)
+    } catch (reason) {
+      console.error(`[ERROR] useEffect - Parsing initial filters from url also using for sessions tab: ${reason}`)
+    } finally {
+      setAreFiltersSessionsParsed(true)
+    }
+  }, [])
+
   // Parsing timeBucket from url
   useEffect(() => {
     if (arePeriodParsed) {
@@ -1769,6 +1969,12 @@ const ViewProject = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [arePeriodParsed])
+
+  const resetSessions = () => {
+    setSessionsSkip(0)
+    setSessions([])
+    setSessionsLoading(null)
+  }
 
   // onRangeDateChange if is activeChartMetrics custom and we select custom date range
   // we update url and state
@@ -1807,6 +2013,9 @@ const ViewProject = ({
         setPeriod('custom')
         setProjectViewPrefs(id, 'custom', timeBucketToDays[index].tb[0], dates)
 
+        setCanLoadMoreSessions(false)
+        resetSessions()
+
         sdkInstance?._emitEvent('timeupdate', {
           period: 'custom',
           timeBucket: eventEmitTimeBucket,
@@ -1818,7 +2027,6 @@ const ViewProject = ({
     }
   }
 
-  // useEffect using for call loadAnalytics or loadAnalyticsPerf when smth dependencies changed
   useEffect(() => {
     if (period === KEY_FOR_ALL_TIME) {
       return
@@ -1831,6 +2039,13 @@ const ViewProject = ({
       loadAnalyticsPerf()
     }
   }, [project, period, chartType, filters, forecasedChartData, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t, activeTab, areFiltersPerfParsed]) // eslint-disable-line
+
+  useEffect(() => {
+    if (activeTab === PROJECT_TABS.sessions && areFiltersSessionsParsed) {
+      loadSessions()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, dateRange, filtersSessions, id, period, projectPassword, timezone, areFiltersSessionsParsed])
 
   useEffect(() => {
     if (period !== KEY_FOR_ALL_TIME) {
@@ -1951,6 +2166,10 @@ const ViewProject = ({
       url.searchParams.append('period', newPeriod.period)
       setProjectViewPrefs(id, newPeriod.period, tb)
       setPeriod(newPeriod.period)
+
+      setCanLoadMoreSessions(false)
+      resetSessions()
+
       setDateRange(null)
     }
     const { pathname, search } = url
@@ -2066,9 +2285,10 @@ const ViewProject = ({
     navigate(`${pathname}${search}`)
     setFilters([])
     setFiltersPerf([])
+    setFiltersSessions([])
     if (activeTab === PROJECT_TABS.performance) {
       loadAnalyticsPerf(true, [])
-    } else {
+    } else if (activeTab === PROJECT_TABS.traffic) {
       loadAnalytics(true, [])
     }
   }
@@ -2198,7 +2418,7 @@ const ViewProject = ({
                 </div>
               </div>
             </div>
-            {activeTab !== PROJECT_TABS.alerts && (activeFunnel || activeTab !== PROJECT_TABS.funnels) && (
+            {activeTab !== PROJECT_TABS.alerts && (activeTab !== PROJECT_TABS.sessions || !activeSession) && (activeFunnel || activeTab !== PROJECT_TABS.funnels) && (
               <>
                 <div className='flex flex-col lg:flex-row items-center lg:items-start justify-between mt-2'>
                   <div className='flex items-center space-x-5 flex-wrap'>
@@ -2261,7 +2481,7 @@ const ViewProject = ({
                             <MagnifyingGlassIcon className='w-5 h-5 stroke-2 text-gray-700 dark:text-gray-50' />
                           </button>
                         </div>
-                        {activeTab !== PROJECT_TABS.funnels && (
+                        {activeTab !== PROJECT_TABS.funnels && activeTab !== PROJECT_TABS.sessions && (
                           <Dropdown
                             header={t('project.exportData')}
                             items={[...exportTypes, ...customExportTypes, { label: t('project.lookingForMore'), lookingForMore: true, onClick: () => { } }]}
@@ -2290,7 +2510,7 @@ const ViewProject = ({
                         )}
                         <div
                           className={cx('border-gray-200 dark:border-gray-600 lg:px-3 sm:mr-3 space-x-2 lg:border-x', {
-                            hidden: isPanelsDataEmpty || analyticsLoading || checkIfAllMetricsAreDisabled,
+                            hidden: isPanelsDataEmpty || analyticsLoading || checkIfAllMetricsAreDisabled || activeTab === PROJECT_TABS.sessions,
                           })}
                         >
                           <button
@@ -2609,10 +2829,70 @@ const ViewProject = ({
                 )}
               </div>
             ))}
+            {activeTab === PROJECT_TABS.sessions && !activeSession && (
+              <>
+                <Filters
+                  filters={filtersSessions}
+                  onRemoveFilter={filterHandler}
+                  onChangeExclusive={onChangeExclusive}
+                  tnMapping={tnMapping}
+                />
+                {!sessionsLoading && _isEmpty(sessions) && (
+                  <NoEvents filters={filters} resetFilters={resetFilters} />
+                )}
+                <Sessions sessions={sessions} onClick={loadSession} />
+                {canLoadMoreSessions && (
+                  <button
+                    type='button'
+                    title={t('project.refreshStats')}
+                    onClick={() => loadSessions()}
+                    className={cx('flex items-center mx-auto mt-2 text-gray-700 dark:text-gray-50 relative rounded-md p-2 bg-gray-50 text-sm font-medium hover:bg-white hover:shadow-sm dark:bg-slate-900 dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
+                      'cursor-not-allowed opacity-50': sessionsLoading,
+                    })}
+                  >
+                    <ArrowDownTrayIcon className='w-5 h-5 mr-2' />
+                    {t('project.loadMore')}
+                  </button>
+                )}
+              </>
+            )}
+            {activeTab === PROJECT_TABS.sessions && activeSession && (
+              <>
+                <div className='flex items-baseline space-x-2 mt-2'>
+                  <h2 className='text-xl font-bold text-gray-900 dark:text-gray-50 break-words break-all'>
+                    {activeSession?.psid}
+                  </h2>
+                  <button
+                    onClick={() => {
+                      setActiveSession(null)
+                      const url = new URL(window.location.href)
+                      url.searchParams.delete('psid')
+                      window.history.pushState({}, '', url.toString())
+                    }}
+                    className='flex items-center text-base font-normal underline decoration-dashed hover:decoration-solid mb-4 mx-auto lg:mx-0 mt-2 lg:mt-0 text-gray-900 dark:text-gray-100'
+                  >
+                    <ChevronLeftIcon className='w-4 h-4' />
+                    {t('project.backToSessions')}
+                  </button>
+                </div>
+                {activeSession?.details && (
+                  <SessionDetails details={activeSession?.details} psid={activeSession?.psid} />
+                )}
+                <SessionChart
+                  chart={activeSession?.chart}
+                  timeBucket={activeSession?.timeBucket}
+                  timeFormat={timeFormat}
+                  rotateXAxis={rotateXAxis}
+                  chartType={chartType}
+                  dataNames={dataNames}
+                />
+                <Pageflow pages={activeSession?.pages} />
+              </>
+            )}
             {(activeTab === PROJECT_TABS.alerts && !isSharedProject && project?.isOwner && authenticated) && (
               <ProjectAlertsView projectId={id} />
             )}
-            {(analyticsLoading && activeTab !== PROJECT_TABS.alerts && activeTab !== PROJECT_TABS.funnels) && (
+            {analyticsLoading && (activeTab === PROJECT_TABS.traffic || activeTab === PROJECT_TABS.performance) && (
               <Loader />
             )}
             {(isPanelsDataEmpty && activeTab === PROJECT_TABS.traffic) && (
@@ -3151,7 +3431,12 @@ const ViewProject = ({
           setProjectFilter={onFilterSearch}
           pid={id}
           tnMapping={tnMapping}
-          filters={activeTab === PROJECT_TABS.traffic ? filters : filtersPerf}
+          filters={activeTab === PROJECT_TABS.performance
+            ? filtersPerf
+            : activeTab === PROJECT_TABS.sessions
+              ? filtersSessions
+              : filters
+          }
         />
         {!embedded && (
           <Footer authenticated={authenticated} minimal />

@@ -1,11 +1,14 @@
 import React, { memo } from 'react'
 import Flag from 'react-flagkit'
+import _fill from 'lodash/fill'
 import countries from 'utils/isoCountries'
 
 interface ICCRow {
   cc: string
   name?: string
   language: string
+  size?: number
+  spaces?: number
 }
 
 /**
@@ -16,16 +19,20 @@ interface ICCRow {
  * @param {string} language - Language to use for country name.
  * @returns {JSX.Element}
  */
-const CCRow = ({ cc, name, language }: ICCRow): JSX.Element => (
+const CCRow = ({ cc, name, language, size = 21, spaces = 2 }: ICCRow): JSX.Element => (
   <>
     <Flag
       className='rounded-sm'
       country={cc}
-      size={21}
+      size={size}
       alt=''
       aria-hidden='true'
     />
-    &nbsp;
+    <span
+      dangerouslySetInnerHTML={{
+        __html: _fill(Array(spaces), '&nbsp;').join(''),
+      }}
+    />
     {name || countries.getName(cc, language)}
   </>
 )

@@ -473,12 +473,14 @@ const SELFHOSTED_PROJECT_TABS: IStringObject = {
   traffic: 'traffic',
   performance: 'performance',
   funnels: 'funnels',
+  sessions: 'sessions',
 }
 
 const PRODUCTION_PROJECT_TABS: IStringObject = {
   traffic: 'traffic',
   performance: 'performance',
   funnels: 'funnels',
+  sessions: 'sessions',
   alerts: 'alerts',
 }
 

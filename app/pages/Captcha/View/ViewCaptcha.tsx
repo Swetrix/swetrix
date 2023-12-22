@@ -54,7 +54,7 @@ import {
   validTimeBacket, noRegionPeriods, getSettings, CHART_METRICS_MAPPING, getColumns,
 } from './ViewCaptcha.helpers'
 import TBPeriodSelector from 'pages/Project/View/components/TBPeriodSelector'
-import CCRow from './components/CCRow'
+import CCRow from '../../Project/View/components/CCRow'
 import RefRow from './components/RefRow'
 import NoEvents from './components/NoEvents'
 import Filters from './components/Filters'
