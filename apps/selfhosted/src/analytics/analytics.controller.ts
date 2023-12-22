@@ -557,12 +557,6 @@ export class AnalyticsController {
     )
     await this.analyticsService.checkProjectAccess(pid, uid)
 
-    let subQuery = `FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
-
-    if (customEVFilterApplied) {
-      subQuery = `FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
-    }
-
     const paramsData = {
       params: {
         pid,
@@ -576,7 +570,6 @@ export class AnalyticsController {
       timeBucket,
       groupFrom,
       groupTo,
-      subQuery,
       filtersQuery,
       paramsData,
       safeTimezone,
