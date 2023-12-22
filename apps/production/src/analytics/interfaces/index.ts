@@ -178,3 +178,9 @@ export interface IOverallCaptcha {
 export interface IOverallPerformance {
   [key: string]: IPerformanceObject
 }
+
+export interface IPageflow {
+  type: 'pageview' | 'event'
+  value: string
+  created: string
+}

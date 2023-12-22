@@ -874,8 +874,8 @@ export class TaskManagerService {
           alert.queryMetric === QueryMetric.CUSTOM_EVENTS
             ? 'custom events'
             : alert.queryMetric === QueryMetric.UNIQUE_PAGE_VIEWS
-            ? 'unique page views'
-            : 'page views'
+              ? 'unique page views'
+              : 'page views'
         const text = `🔔 Alert *${alert.name}* got triggered!\nYour project *${
           project.name
         }* has had *${count}*${

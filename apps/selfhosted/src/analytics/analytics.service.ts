@@ -5,6 +5,7 @@ import * as _reverse from 'lodash/reverse'
 import * as _size from 'lodash/size'
 import * as _includes from 'lodash/includes'
 import * as _map from 'lodash/map'
+import * as _head from 'lodash/head'
 import * as _toUpper from 'lodash/toUpper'
 import * as _sortBy from 'lodash/sortBy'
 import * as _join from 'lodash/join'
@@ -72,6 +73,7 @@ import {
   IFunnel,
   IOverall,
   IOverallPerformance,
+  IPageflow,
 } from './interfaces'
 
 dayjs.extend(utc)
@@ -166,6 +168,53 @@ export const isValidDate = (date: string, format = 'YYYY-MM-DD'): boolean => {
   }
 
   return dayjs(date, format).format(format) === date
+}
+
+export const getLowestPossibleTimeBucket = (
+  period?: string,
+  from?: string,
+  to?: string,
+): TimeBucketType => {
+  if (!from && !to) {
+    if (!_includes(validPeriods, period)) {
+      throw new UnprocessableEntityException('The provided period is incorrect')
+    }
+
+    if (period === '1h') {
+      return TimeBucketType.MINUTE
+    }
+
+    if (
+      period === 'today' ||
+      period === 'yesterday' ||
+      period === '1d' ||
+      period === '7d'
+    ) {
+      return TimeBucketType.HOUR
+    }
+
+    if (period === '4w') {
+      return TimeBucketType.DAY
+    }
+
+    if (period === '3M' || period === '12M' || period === '24M') {
+      return TimeBucketType.MONTH
+    }
+
+    return TimeBucketType.YEAR
+  }
+
+  const diff = dayjs(to).diff(dayjs(from), 'days')
+
+  const tbMap = _find(timeBucketToDays, ({ lt }) => diff <= lt)
+
+  if (_isEmpty(tbMap)) {
+    throw new PreconditionFailedException(
+      "The difference between 'from' and 'to' is greater than allowed",
+    )
+  }
+
+  return _head(tbMap.tb)
 }
 
 const checkIfTBAllowed = (
@@ -636,7 +685,7 @@ export class AnalyticsService {
 
     const from: any = await clickhouse
       .query(
-        'SELECT created as from FROM analytics where pid = {pid:FixedString(12)} ORDER BY created ASC LIMIT 1',
+        'SELECT created FROM analytics where pid = {pid:FixedString(12)} ORDER BY created ASC LIMIT 1',
         { params: { pid } },
       )
       .toPromise()
@@ -648,7 +697,7 @@ export class AnalyticsService {
     let diff = null
 
     if (from && to) {
-      diff = dayjs(to).diff(dayjs(from[0].from), 'days')
+      diff = dayjs(to).diff(dayjs(from?.[0].created || to), 'days')
 
       const tbMap = _find(timeBucketToDays, ({ lt }) => diff <= lt)
 
@@ -658,7 +707,7 @@ export class AnalyticsService {
         )
       }
 
-      newTimeBucket = tbMap.tb
+      newTimeBucket = tbMap?.tb
     }
 
     return {
@@ -1785,7 +1834,6 @@ export class AnalyticsService {
   ): Promise<object | void> {
     let params: unknown = {}
     let chart: unknown = {}
-    let avgSdur = 0
 
     const promises = [
       // Getting params
@@ -1810,7 +1858,6 @@ export class AnalyticsService {
           timeBucket,
           from,
           to,
-          subQuery,
           filtersQuery,
           paramsData,
           safeTimezone,
@@ -1820,9 +1867,6 @@ export class AnalyticsService {
 
         // @ts-ignore
         chart = groupedData.chart
-
-        // @ts-ignore
-        avgSdur = groupedData.avgSdur
       })(),
     ]
 
@@ -1831,7 +1875,6 @@ export class AnalyticsService {
     return {
       params,
       chart,
-      avgSdur,
     }
   }
 
@@ -1854,17 +1897,12 @@ export class AnalyticsService {
     timeBucket: TimeBucketType,
     from: string,
     to: string,
-    subQuery: string,
     filtersQuery: string,
     paramsData: any,
     safeTimezone: string,
     customEVFilterApplied: boolean,
     mode: ChartRenderMode,
   ): Promise<object | void> {
-    const avgSdur = customEVFilterApplied
-      ? 0
-      : await this.calculateAverageSessionDuration(subQuery, paramsData)
-
     const { xShifted } = this.generateXAxis(timeBucket, from, to, safeTimezone)
 
     if (customEVFilterApplied) {
@@ -1892,9 +1930,9 @@ export class AnalyticsService {
           uniques,
           sdur,
         },
-        avgSdur,
       })
     }
+
     const query = this.generateAnalyticsAggregationQuery(
       timeBucket,
       filtersQuery,
@@ -1915,7 +1953,6 @@ export class AnalyticsService {
         uniques,
         sdur,
       },
-      avgSdur,
     })
   }
 
@@ -2180,6 +2217,201 @@ export class AnalyticsService {
         events,
       },
     })
+  }
+
+  getSafeNumber(value: any, defaultValue: number): number {
+    if (typeof value === 'undefined') {
+      return defaultValue
+    }
+
+    const parsed = parseInt(value, 10)
+
+    if (Number.isNaN(parsed)) {
+      return defaultValue
+    }
+
+    return parsed
+  }
+
+  async getSessionDetails(
+    pid: string,
+    psid: string,
+    safeTimezone: string,
+  ): Promise<any> {
+    const queryPages = `
+      SELECT
+        *
+      FROM (
+        SELECT
+          'pageview' AS type,
+          pg AS value,
+          created
+        FROM analytics
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND psid = {psid:String}
+
+        UNION ALL
+
+        SELECT
+          'event' AS type,
+          ev AS value,
+          created
+        FROM customEV
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND psid = {psid:String}
+      )
+      ORDER BY created ASC;
+    `
+
+    const querySessionDetails = `
+      SELECT
+        dv, br, os, lc, ref, so, me, ca, cc, rg, ct, sdur
+      FROM analytics
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND psid = {psid:String}
+        AND unique = 1
+      LIMIT 1;
+    `
+
+    const paramsData = {
+      params: {
+        pid,
+        psid,
+      },
+    }
+
+    const pages = <IPageflow[]>(
+      await clickhouse.query(queryPages, paramsData).toPromise()
+    )
+    let details = (
+      await clickhouse.query(querySessionDetails, paramsData).toPromise()
+    )[0]
+
+    if (!details) {
+      const querySessionDetailsBackup = `
+        SELECT
+          dv, br, os, lc, ref, so, me, ca, cc, rg, ct, sdur
+        FROM analytics
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND psid = {psid:String}
+        LIMIT 1;
+      `
+
+      // eslint-disable-next-line prefer-destructuring
+      details = (
+        await clickhouse
+          .query(querySessionDetailsBackup, paramsData)
+          .toPromise()
+      )[0]
+    }
+
+    let chartData = {}
+    let timeBucket = null
+
+    if (!_isEmpty(pages)) {
+      const from = dayjs(pages[0].created)
+        .startOf('minute')
+        .format('YYYY-MM-DD HH:mm:ss')
+      const to = dayjs(pages[_size(pages) - 1].created)
+        .endOf('minute')
+        .format('YYYY-MM-DD HH:mm:ss')
+
+      // eslint-disable-next-line
+      timeBucket = dayjs(to).diff(dayjs(from), 'hour') > 1 ? TimeBucketType.HOUR : TimeBucketType.MINUTE
+
+      const groupedChart = await this.groupChartByTimeBucket(
+        timeBucket,
+        from,
+        to,
+        'AND psid = {psid:String}',
+        {
+          params: {
+            ...paramsData.params,
+            groupFrom: from,
+            groupTo: to,
+          },
+        },
+        safeTimezone,
+        false,
+        ChartRenderMode.PERIODICAL,
+      )
+
+      // @ts-ignore
+      chartData = groupedChart.chart
+    }
+
+    return { pages, details, psid, chart: chartData, timeBucket }
+  }
+
+  async getSessionsList(
+    filtersQuery: string,
+    paramsData: object,
+    safeTimezone: string,
+    take = 30,
+    skip = 0,
+    customEVFilterApplied = false,
+  ): Promise<object | void> {
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+
+    const analyticsSubquery = `
+      SELECT
+        isNotNull(sid) AS active,
+        CAST(psid, 'String') AS psidCasted,
+        cc,
+        os,
+        br,
+        created
+      FROM analytics
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND psid IS NOT NULL
+        AND created BETWEEN ${tzFromDate} AND ${tzToDate}
+        ${filtersQuery}
+    `
+
+    const customEVSubquery = `
+      SELECT
+        0 AS active,
+        CAST(psid, 'String') AS psidCasted,
+        cc,
+        os,
+        br,
+        created
+      FROM customEV
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND psid IS NOT NULL
+        AND created BETWEEN ${tzFromDate} AND ${tzToDate}
+        ${filtersQuery}
+    `
+
+    const query = `
+      SELECT
+        psidCasted AS psid,
+        any(active) AS active,
+        any(cc) AS cc,
+        any(os) AS os,
+        any(br) AS br,
+        count() AS pageviews,
+        min(created) AS created
+      FROM
+      (
+        ${customEVFilterApplied ? customEVSubquery : analyticsSubquery}
+      )
+      GROUP BY psid
+      ORDER BY created DESC
+      LIMIT ${take}
+      OFFSET ${skip}
+    `
+
+    const result = await clickhouse.query(query, paramsData).toPromise()
+
+    return result
   }
 
   async getOnlineCountByProjectId(projectId: string) {
