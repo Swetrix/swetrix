@@ -41,6 +41,7 @@ import {
   getHeartbeatKey,
   validPeriods,
   DataType,
+  getLowestPossibleTimeBucket,
 } from './analytics.service'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
@@ -74,6 +75,8 @@ import {
   IGetFunnel,
   IUserFlow,
 } from './interfaces'
+import { GetSessionsDto } from './dto/get-sessions.dto'
+import { GetSessionDto } from './dto/get-session.dto'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mysql = require('mysql2')
@@ -1207,6 +1210,113 @@ export class AnalyticsController {
 
     res.writeHead(200, { 'Content-Type': 'image/gif' })
     return res.end(TRANSPARENT_GIF_BUFFER, 'binary')
+  }
+
+  @Get('sessions')
+  @Auth([], true, true)
+  async getSessions(
+    @Query() data: GetSessionsDto,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    const { pid, period, from, to, filters, timezone = DEFAULT_TIMEZONE } = data
+    this.analyticsService.validatePID(pid)
+
+    if (!_isEmpty(period)) {
+      this.analyticsService.validatePeriod(period)
+    }
+
+    await this.analyticsService.checkProjectAccess(pid, uid)
+
+    const take = this.analyticsService.getSafeNumber(data.take, 30)
+    const skip = this.analyticsService.getSafeNumber(data.skip, 0)
+
+    if (take > 150) {
+      throw new BadRequestException(
+        'The maximum number of sessions to return is 150',
+      )
+    }
+
+    let timeBucket
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.getTimeBucketForAllTime(
+        pid,
+        period,
+        timezone,
+      )
+
+      // eslint-disable-next-line prefer-destructuring
+      timeBucket = res.timeBucket[0]
+      diff = res.diff
+    } else {
+      timeBucket = getLowestPossibleTimeBucket(period, from, to)
+    }
+
+    this.analyticsService.validateTimebucket(timeBucket)
+    const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
+      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom,
+        groupTo,
+        ...filtersParams,
+      },
+    }
+
+    const sessions = await this.analyticsService.getSessionsList(
+      filtersQuery,
+      paramsData,
+      safeTimezone,
+      take,
+      skip,
+      customEVFilterApplied,
+    )
+
+    return {
+      sessions,
+      appliedFilters,
+      take,
+      skip,
+    }
+  }
+
+  @Get('session')
+  @Auth([], true, true)
+  async getSession(
+    @Query() data: GetSessionDto,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    const {
+      pid,
+      psid,
+      timezone = DEFAULT_TIMEZONE,
+      //
+    } = data
+    this.analyticsService.validatePID(pid)
+
+    await this.analyticsService.checkProjectAccess(pid, uid)
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+
+    const result = await this.analyticsService.getSessionDetails(
+      pid,
+      psid,
+      safeTimezone,
+    )
+
+    return result
   }
 
   @Get('custom-events')
