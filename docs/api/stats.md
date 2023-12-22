@@ -457,7 +457,7 @@ A single project ID to return heartbeat events for. You can use either `pids` or
 This endpoint returns an array of custom event metadata.
 
 ```bash
-curl 'https://api.swetrix.com/v1/log?pid=YOUR_PROJECT_ID&timeBucket=day&period=7d&event=signup'\
+curl 'https://api.swetrix.com/v1/log/meta?pid=YOUR_PROJECT_ID&timeBucket=day&period=7d&event=signup'\
   -H "X-Api-Key: ${SWETRIX_API_KEY}"
 ```
 
@@ -477,16 +477,203 @@ curl 'https://api.swetrix.com/v1/log?pid=YOUR_PROJECT_ID&timeBucket=day&period=7
     "key": "OtherMetadata",
     "value": "AnyString",
     "count": 12
-  },
+  }
 ]
 ```
 
 #### Parameters
-The parameters are the same as for the [`/log` endpoint](#get-v1log), except additionally you must pass the following the following:
+The parameters are the same as for the [`/log` endpoint](#get-v1log), except additionally you must pass the following:
 
 **event**
 
 The name of the custom event to return metadata for.
+
+### GET /v1/log/sessions
+This endpoint returns an array of individual sessions.
+
+```bash
+curl 'https://api.swetrix.com/v1/log/sessions?pid=YOUR_PROJECT_ID&period=7d&take=30&skip=0'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+```json title="Response"
+{
+  "sessions": [
+    {
+      "psid": "14287087333426119778",
+      "active": 1,
+      "cc": null,
+      "os": "Windows",
+      "br": "Firefox",
+      "pageviews": 4,
+      "created": "2023-12-20 16:53:59"
+    },
+    {
+      "psid": "3653378394154006361",
+      "active": 0,
+      "cc": "GB",
+      "os": "Mac OS",
+      "br": "Safari",
+      "pageviews": 1,
+      "created": "2023-12-16 19:53:27"
+    },
+    {
+      "psid": "1777747620282809424",
+      "active": 0,
+      "cc": "GB",
+      "os": "Mac OS",
+      "br": "Chrome",
+      "pageviews": 3,
+      "created": "2023-12-16 19:53:21"
+    }
+  ],
+  "appliedFilters": [],
+  "take": 30,
+  "skip": 0
+}
+```
+
+#### Parameters
+
+<hr />
+
+**pid** (required)
+
+The project ID.
+<hr />
+
+**period** (required)
+
+See [periods](#periods).
+<hr />
+
+**from** / **to**
+
+Instead of specifying a fixed period, you can specify a custom time range using `from` and `to` parameters. Both parameters are optional, but if you specify `from`, you must also specify `to`. The format is `YYYY-MM-DD`.
+<hr />
+
+**timezone**
+
+The timezone to use for the time range. The default is `Etc/GMT`. You can use any timezone supported by [day.js](https://day.js.org/docs/en/timezone/timezone/) library.
+<hr />
+
+**filters**
+
+An array of [filter objects](#filters).
+<hr />
+
+**take**
+
+The number of sessions to return. The default is `30`, max is `150`.
+
+<hr />
+
+**skip**
+
+The number of sessions to skip. The default is `0`.
+
+<hr />
+
+
+### GET /v1/log/session
+This endpoint returns information about a single session.
+
+```bash
+curl 'https://api.swetrix.com/v1/log/session?pid=YOUR_PROJECT_ID&psid=SESSION_IDENTIFIER'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+```json title="Response"
+{
+  "pages": [
+    {
+      "type": "pageview",
+      "value": "/",
+      "created": "2023-12-20 16:53:59"
+    },
+    {
+      "type": "pageview",
+      "value": "/signup",
+      "created": "2023-12-20 16:55:03"
+    },
+    {
+      "type": "event",
+      "value": "SIGNUP",
+      "created": "2023-12-20 16:56:11"
+    },
+    {
+      "type": "pageview",
+      "value": "/dashboard",
+      "created": "2023-12-20 16:56:13"
+    },
+    {
+      "type": "pageview",
+      "value": "/settings",
+      "created": "2023-12-20 16:57:32"
+    },
+    {
+      "type": "event",
+      "value": "SOME_EVENT",
+      "created": "2023-12-20 16:58:01"
+    }
+  ],
+  "details": {
+    "dv": "desktop",
+    "br": "Firefox",
+    "os": "Windows",
+    "lc": "en-GB",
+    "ref": "https://example.com",
+    "so": null,
+    "me": null,
+    "ca": null,
+    "cc": "GB",
+    "rg": "England",
+    "ct": "Liverpool",
+    "sdur": 242
+  },
+  "psid": "14287087333426119778",
+  "chart": {
+    "x": [
+      "2023-12-20 16:53:00",
+      "2023-12-20 16:54:00",
+      "2023-12-20 16:55:00",
+      "2023-12-20 16:56:00",
+      "2023-12-20 16:57:00",
+      "2023-12-20 16:58:00"
+    ],
+    "visits": [
+      1,
+      0,
+      1,
+      1,
+      1,
+      0
+    ]
+  },
+  "timeBucket": "minute"
+}
+```
+
+#### Parameters
+
+<hr />
+
+**pid** (required)
+
+The project ID.
+<hr />
+
+**psid** (required)
+
+The session identifier.
+
+<hr />
+
+**timezone**
+
+The timezone to use for the time range. The default is `Etc/GMT`. You can use any timezone supported by [day.js](https://day.js.org/docs/en/timezone/timezone/) library.
+<hr />
+
 
 ## Common request examples
 
