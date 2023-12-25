@@ -1,6 +1,6 @@
 node_modules
 build
 dist
-piblic
+public
 .cache
 deployment
