@@ -19,27 +19,33 @@ const mapStateToProps = (state: StateType) => ({
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
   showError: (message: string) => {
-    dispatch(errorsActions.genericError({
-      message,
-    }))
+    dispatch(
+      errorsActions.genericError({
+        message,
+      }),
+    )
   },
   setProjectCache: (pid: string, data: any, key: string) => {
-    dispatch(UIActions.setCaptchaProjectCache({
-      pid,
-      data,
-      key,
-    }))
+    dispatch(
+      UIActions.setCaptchaProjectCache({
+        pid,
+        data,
+        key,
+      }),
+    )
   },
   setProjects: (project: ICaptchaProject[]) => {
     dispatch(UIActions.setCaptchaProjects(project))
   },
   setProjectViewPrefs: (pid: string, period: string, timeBucket: string, rangeDate?: Date[] | null) => {
-    dispatch(UIActions.setCaptchaProjectViewPrefs({
-      pid,
-      period,
-      timeBucket,
-      rangeDate,
-    }))
+    dispatch(
+      UIActions.setCaptchaProjectViewPrefs({
+        pid,
+        period,
+        timeBucket,
+        rangeDate,
+      }),
+    )
   },
 })
 

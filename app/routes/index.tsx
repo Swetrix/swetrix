@@ -24,9 +24,7 @@ export async function loader({ request }: LoaderArgs) {
 }
 
 export default function Index() {
-  const {
-    theme, isAuth,
-  } = useLoaderData<typeof loader>()
+  const { theme, isAuth } = useLoaderData<typeof loader>()
 
   return <MainPage ssrTheme={theme} ssrAuthenticated={isAuth} />
 }

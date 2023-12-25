@@ -3,9 +3,7 @@ import Debug from 'debug'
 
 import UIActions from 'redux/reducers/ui'
 import { isSelfhosted } from 'redux/constants'
-const {
-  getInstalledExtensions,
-} = require('api')
+const { getInstalledExtensions } = require('api')
 
 const debug = Debug('swetrix:rx:s:load-extensions')
 

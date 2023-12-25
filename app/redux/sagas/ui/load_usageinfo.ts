@@ -4,9 +4,7 @@ import Debug from 'debug'
 import UIActions from 'redux/reducers/ui'
 import { isSelfhosted } from 'redux/constants'
 import { IUsageInfo } from 'redux/models/IUsageinfo'
-const {
-  getUsageInfo,
-} = require('api')
+const { getUsageInfo } = require('api')
 
 const debug = Debug('swetrix:rx:s:usageinfo')
 
@@ -15,7 +13,7 @@ export default function* loadUsageinfo() {
     return
   }
 
-  const isUsageinfoLoaded: boolean = yield select(state => state.ui.misc.usageinfoLoaded)
+  const isUsageinfoLoaded: boolean = yield select((state) => state.ui.misc.usageinfoLoaded)
 
   if (isUsageinfoLoaded) {
     return

@@ -3,11 +3,11 @@ body {
   margin: 0;
   padding: 0;
   width: 100%;
-  -webkit-font-smoothing: antialiased
+  -webkit-font-smoothing: antialiased;
 }
 
 .loader.available {
-  opacity: 0
+  opacity: 0;
 }
 
 .loader {
@@ -17,10 +17,10 @@ body {
   position: fixed;
   opacity: 1;
   pointer-events: none;
-  -webkit-transition: opacity cubic-bezier(.4, 0, .2, 1) 436ms;
-  -moz-transition: opacity cubic-bezier(.4, 0, .2, 1) 436ms;
-  transition: opacity cubic-bezier(.4, 0, .2, 1) 436ms;
-  z-index: 9999
+  -webkit-transition: opacity cubic-bezier(0.4, 0, 0.2, 1) 436ms;
+  -moz-transition: opacity cubic-bezier(0.4, 0, 0.2, 1) 436ms;
+  transition: opacity cubic-bezier(0.4, 0, 0.2, 1) 436ms;
+  z-index: 9999;
 }
 
 .logo-frame {
@@ -36,7 +36,7 @@ body {
   -webkit-animation: fadein 436ms;
   -moz-animation: fadein 436ms;
   animation: fadein 436ms;
-  height: 98%
+  height: 98%;
 }
 
 .logo-frame-img {
@@ -45,14 +45,14 @@ body {
   padding-right: 10px;
   -webkit-align-self: center;
   -moz-align-self: center;
-  align-self: center
+  align-self: center;
 }
 
 .loader-head {
   background-color: #c6dafc;
   height: 4px;
   overflow: hidden;
-  position: relative
+  position: relative;
 }
 
 .loader-head .first,
@@ -68,93 +68,103 @@ body {
   transform-origin: left center;
   -webkit-transform: scaleX(0);
   -moz-transform: scaleX(0);
-  transform: scaleX(0)
+  transform: scaleX(0);
 }
 
 .loader-head .first {
   -webkit-animation: first 2s linear infinite;
   -moz-animation: first 2s linear infinite;
-  animation: first 2s linear infinite
+  animation: first 2s linear infinite;
 }
 
 .loader-head .second {
   -webkit-animation: second 2s linear infinite;
   -moz-animation: second 2s linear infinite;
-  animation: second 2s linear infinite
+  animation: second 2s linear infinite;
 }
 
 @-webkit-keyframes fadein {
   from {
-    opacity: 0
+    opacity: 0;
   }
 
   to {
-    opacity: 1
+    opacity: 1;
   }
 }
 
 @-moz-keyframes fadein {
   from {
-    opacity: 0
+    opacity: 0;
   }
 
   to {
-    opacity: 1
+    opacity: 1;
   }
 }
 
 @keyframes fadein {
   from {
-    opacity: 0
+    opacity: 0;
   }
 
   to {
-    opacity: 1
+    opacity: 1;
   }
 }
 
 @keyframes first {
   0% {
-    transform: translate(0) scaleX(0)
+    transform: translate(0) scaleX(0);
   }
 
   25% {
-    transform: translate(0) scaleX(.5)
+    transform: translate(0) scaleX(0.5);
   }
 
   50% {
-    transform: translate(25%) scaleX(.75)
+    transform: translate(25%) scaleX(0.75);
   }
 
   75% {
-    transform: translate(100%) scaleX(0)
+    transform: translate(100%) scaleX(0);
   }
 
   100% {
-    transform: translate(100%) scaleX(0)
+    transform: translate(100%) scaleX(0);
   }
 }
 
 @keyframes second {
   0% {
-    transform: translate(0) scaleX(0)
+    transform: translate(0) scaleX(0);
   }
 
   60% {
-    transform: translate(0) scaleX(0)
+    transform: translate(0) scaleX(0);
   }
 
   80% {
-    transform: translate(0) scaleX(.6)
+    transform: translate(0) scaleX(0.6);
   }
 
   100% {
-    transform: translate(100%) scaleX(.1)
+    transform: translate(100%) scaleX(0.1);
   }
 }
 
 html {
-  font-family: 'Inter', 'Cantarell', 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Oxygen', 'Ubuntu', sans-serif;
+  font-family:
+    'Inter',
+    'Cantarell',
+    'Roboto',
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Helvetica Neue',
+    'Oxygen',
+    'Ubuntu',
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
@@ -242,7 +252,7 @@ code {
   border: 0;
   border-radius: 50%;
   background-color: #6366f1;
-  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2212%22%20height%3D%228%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M8%20.5v7L12%204zM0%204l4%203.5v-7z%22%20fill%3D%22%23FFFFFF%22%20fill-rule%3D%22nonzero%22%2F%3E%3C%2Fsvg%3E");
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2212%22%20height%3D%228%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M8%20.5v7L12%204zM0%204l4%203.5v-7z%22%20fill%3D%22%23FFFFFF%22%20fill-rule%3D%22nonzero%22%2F%3E%3C%2Fsvg%3E');
   background-position: center;
   background-repeat: no-repeat;
   cursor: grab;
@@ -254,7 +264,7 @@ code {
   border: 0;
   border-radius: 50%;
   background-color: #6366f1;
-  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2212%22%20height%3D%228%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M8%20.5v7L12%204zM0%204l4%203.5v-7z%22%20fill%3D%22%23FFFFFF%22%20fill-rule%3D%22nonzero%22%2F%3E%3C%2Fsvg%3E");
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2212%22%20height%3D%228%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M8%20.5v7L12%204zM0%204l4%203.5v-7z%22%20fill%3D%22%23FFFFFF%22%20fill-rule%3D%22nonzero%22%2F%3E%3C%2Fsvg%3E');
   background-position: center;
   background-repeat: no-repeat;
   cursor: grab;

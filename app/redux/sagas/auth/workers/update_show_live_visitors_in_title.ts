@@ -10,9 +10,7 @@ interface IPayload {
   callback: (isSuccess: boolean) => void
 }
 
-export default function* updateShowLiveVisitorsInTitle({ payload: { show, callback } }: {
-  payload: IPayload
-}) {
+export default function* updateShowLiveVisitorsInTitle({ payload: { show, callback } }: { payload: IPayload }) {
   let isSuccess = false
 
   try {
@@ -22,10 +20,12 @@ export default function* updateShowLiveVisitorsInTitle({ payload: { show, callba
     isSuccess = true
   } catch (e: unknown) {
     const error = e as { message: string } | string[] | string
-    yield put(errorsActions.updateUserProfileFailed({
-      // @ts-ignore
-      message: error?.message || (typeof error === 'string' ? error : error[0]),
-    }))
+    yield put(
+      errorsActions.updateUserProfileFailed({
+        // @ts-ignore
+        message: error?.message || (typeof error === 'string' ? error : error[0]),
+      }),
+    )
   } finally {
     callback(isSuccess)
   }

@@ -28,9 +28,7 @@ export const sitemap: SitemapFunction = () => ({
 })
 
 export default function Index() {
-  const {
-    theme,
-  } = useLoaderData<typeof loader>()
+  const { theme } = useLoaderData<typeof loader>()
 
   return <Singup ssrTheme={theme} />
 }

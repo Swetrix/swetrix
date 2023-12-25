@@ -13,9 +13,7 @@ import routes from 'routesPath'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
 import Checkbox from 'ui/Checkbox'
-import {
-  isValidEmail, isValidPassword, MIN_PASSWORD_CHARS,
-} from 'utils/validator'
+import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS } from 'utils/validator'
 import { isSelfhosted, TRIAL_DAYS } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { submit2FA } from 'api'
@@ -23,31 +21,36 @@ import { setAccessToken, removeAccessToken } from 'utils/accessToken'
 import { setRefreshToken, removeRefreshToken } from 'utils/refreshToken'
 
 interface ISigninForm {
-  email: string,
-  password: string,
-  dontRemember: boolean,
+  email: string
+  password: string
+  dontRemember: boolean
 }
 
 interface ISignin {
-  login: (data: {
-    email: string,
-    password: string,
-    dontRemember: boolean
-  },
-    callback: (result: boolean, twoFARequired: boolean) => void) => void,
-  loginSuccess: (user: IUser) => void,
-  loginFailed: (error: string) => void,
+  login: (
+    data: {
+      email: string
+      password: string
+      dontRemember: boolean
+    },
+    callback: (result: boolean, twoFARequired: boolean) => void,
+  ) => void
+  loginSuccess: (user: IUser) => void
+  loginFailed: (error: string) => void
   authSSO: (provider: string, dontRemember: boolean, t: (key: string) => string, callback: (res: any) => void) => void
-  ssrTheme: string,
+  ssrTheme: string
 }
 
-const Signin = ({
-  login, loginSuccess, loginFailed, authSSO, ssrTheme,
-}: ISignin): JSX.Element => {
-  const { t }: {
-    t: (key: string, optinions?: {
-      [key: string]: string | number,
-    }) => string,
+const Signin = ({ login, loginSuccess, loginFailed, authSSO, ssrTheme }: ISignin): JSX.Element => {
+  const {
+    t,
+  }: {
+    t: (
+      key: string,
+      optinions?: {
+        [key: string]: string | number
+      },
+    ) => string
   } = useTranslation('common')
   const [form, setForm] = useState<ISigninForm>({
     email: '',
@@ -56,8 +59,8 @@ const Signin = ({
   })
   const [validated, setValidated] = useState<boolean>(false)
   const [errors, setErrors] = useState<{
-    email?: string,
-    password?: string,
+    email?: string
+    password?: string
   }>({})
   const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -67,8 +70,8 @@ const Signin = ({
 
   const validate = () => {
     const allErrors = {} as {
-      email?: string,
-      password?: string,
+      email?: string
+      password?: string
     }
 
     if (!isValidEmail(form.email)) {
@@ -90,7 +93,9 @@ const Signin = ({
   }, [form]) // eslint-disable-line
 
   const handle2FAInput = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { target: { value } } = event
+    const {
+      target: { value },
+    } = event
     setTwoFACode(value)
     setTwoFACodeError(null)
   }
@@ -136,12 +141,10 @@ const Signin = ({
     }
   }
 
-  const handleInput = ({ target }: {
-    target: HTMLInputElement,
-  }) => {
+  const handleInput = ({ target }: { target: HTMLInputElement }) => {
     const value = target.type === 'checkbox' ? target.checked : target.value
 
-    setForm(oldForm => ({
+    setForm((oldForm) => ({
       ...oldForm,
       [target.name]: value,
     }))
@@ -161,9 +164,7 @@ const Signin = ({
     return (
       <div className='min-h-page bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
         <form className='max-w-prose mx-auto' onSubmit={_submit2FA}>
-          <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
-            {t('auth.signin.2fa')}
-          </h2>
+          <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{t('auth.signin.2fa')}</h2>
           <p className='mt-4 text-base whitespace-pre-line text-gray-900 dark:text-gray-50'>
             {t('auth.signin.2faDesc')}
           </p>
@@ -186,7 +187,9 @@ const Signin = ({
                   i18nKey='auth.signin.2faUnavailable'
                   components={{
                     // eslint-disable-next-line jsx-a11y/anchor-has-content
-                    ctl: <Link to={routes.contact} className='underline hover:text-gray-900 dark:hover:text-gray-200' />,
+                    ctl: (
+                      <Link to={routes.contact} className='underline hover:text-gray-900 dark:hover:text-gray-200' />
+                    ),
                   }}
                 />
               )}
@@ -240,7 +243,10 @@ const Signin = ({
                 label={t('auth.common.noRemember')}
               />
               <div className='text-sm leading-6'>
-                <Link to={routes.reset_password} className='font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'>
+                <Link
+                  to={routes.reset_password}
+                  className='font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                >
                   {t('auth.signin.forgot')}
                 </Link>
               </div>
@@ -289,7 +295,13 @@ const Signin = ({
             i18nKey='auth.signin.notAMember'
             components={{
               // eslint-disable-next-line jsx-a11y/anchor-has-content
-              url: <Link to={routes.signup} className='font-semibold leading-6 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' aria-label={t('titles.signup')} />,
+              url: (
+                <Link
+                  to={routes.signup}
+                  className='font-semibold leading-6 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                  aria-label={t('titles.signup')}
+                />
+              ),
             }}
             values={{
               amount: TRIAL_DAYS,

@@ -17,31 +17,31 @@ export const meta: V2_MetaFunction = (loaderData: any) => {
       title: `${loaderData?.data?.title || 'Blog'} ${TITLE_SUFFIX}`,
     },
     {
-      property: "og:title",
+      property: 'og:title',
       content: `${loaderData?.data?.title || 'Blog'} ${TITLE_SUFFIX}`,
     },
     {
-      property: "twitter:title",
+      property: 'twitter:title',
       content: `${loaderData?.data?.title || 'Blog'} ${TITLE_SUFFIX}`,
     },
     {
-      property: "og:description",
+      property: 'og:description',
       content: loaderData?.data?.intro || '',
     },
     {
-      property: "twitter:description",
+      property: 'twitter:description',
       content: loaderData?.data?.intro || '',
     },
     {
-      property: "description",
+      property: 'description',
       content: loaderData?.data?.intro || '',
     },
     {
-      property: "og:image",
+      property: 'og:image',
       content: ogImageUrl,
     },
     {
-      property: "twitter:image",
+      property: 'twitter:image',
       content: ogImageUrl,
     },
   ]

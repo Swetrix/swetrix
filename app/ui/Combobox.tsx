@@ -11,27 +11,32 @@ import _toLower from 'lodash/toLower'
 import _includes from 'lodash/includes'
 
 interface ISelect {
-  title?: string,
-  className?: string,
-  buttonClassName?: string,
-  items: any[],
-  labelExtractor?: (item: any, index: number) => string,
-  keyExtractor?: (item: any, index: number) => string,
-  onSelect: (item: any) => void,
-  placeholder?: string,
+  title?: string
+  className?: string
+  buttonClassName?: string
+  items: any[]
+  labelExtractor?: (item: any, index: number) => string
+  keyExtractor?: (item: any, index: number) => string
+  onSelect: (item: any) => void
+  placeholder?: string
 }
 
 const Combobox = ({
-  title, className, items, labelExtractor, keyExtractor, onSelect,
-  buttonClassName, placeholder,
+  title,
+  className,
+  items,
+  labelExtractor,
+  keyExtractor,
+  onSelect,
+  buttonClassName,
+  placeholder,
 }: ISelect): JSX.Element => {
   const { t } = useTranslation('common')
   const [query, setQuery] = useState('')
 
-  const filteredItems =
-    _isEmpty(items)
-      ? items
-      : _filter(items, (item, index) => {
+  const filteredItems = _isEmpty(items)
+    ? items
+    : _filter(items, (item, index) => {
         const label = labelExtractor ? labelExtractor(item, index) : item
 
         return _includes(_toLower(label), _toLower(query))
@@ -42,17 +47,17 @@ const Combobox = ({
       <div className={cx('relative mt-1', className)}>
         <div className='relative w-full cursor-default rounded-lg'>
           <HeadlessCombobox.Input
-            className={cx('relative w-full bg-white border border-gray-300 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm', buttonClassName)}
+            className={cx(
+              'relative w-full bg-white border border-gray-300 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 rounded-md shadow-sm pl-3 pr-10 py-2 text-left cursor-default focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm',
+              buttonClassName,
+            )}
             // @ts-ignore
-            displayValue={(item) => labelExtractor ? labelExtractor(item, 0) : item}
+            displayValue={(item) => (labelExtractor ? labelExtractor(item, 0) : item)}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={placeholder}
           />
           <HeadlessCombobox.Button className='absolute inset-y-0 right-0 flex items-center pr-2'>
-            <ChevronUpDownIcon
-              className='h-5 w-5 text-gray-400'
-              aria-hidden='true'
-            />
+            <ChevronUpDownIcon className='h-5 w-5 text-gray-400' aria-hidden='true' />
           </HeadlessCombobox.Button>
         </div>
         <Transition
@@ -71,17 +76,17 @@ const Combobox = ({
               _map(filteredItems, (item, index) => (
                 <HeadlessCombobox.Option
                   key={keyExtractor ? keyExtractor(item, index) : item}
-                  className={({ active }) => cx('dark:text-white cursor-default select-none relative py-2 pl-8 pr-4', {
-                    'text-white bg-indigo-600': active,
-                    'text-gray-900': !active,
-                  })}
+                  className={({ active }) =>
+                    cx('dark:text-white cursor-default select-none relative py-2 pl-8 pr-4', {
+                      'text-white bg-indigo-600': active,
+                      'text-gray-900': !active,
+                    })
+                  }
                   value={labelExtractor ? labelExtractor(item, index) : item}
                 >
                   {({ selected, active }) => (
                     <>
-                      <span
-                        className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}
-                      >
+                      <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
                         {labelExtractor ? labelExtractor(item, index) : item}
                       </span>
                       {selected ? (

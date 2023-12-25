@@ -30,13 +30,8 @@ export const withAuthentication = <P extends PropsType>(WrappedComponent: any, a
   const accessToken = getAccessToken()
 
   const WithAuthentication = (props: P) => {
-    const {
-      shouldBeAuthenticated, redirectPath,
-    } = authParam
-    const {
-      authenticated: reduxAuthenticated,
-      loading,
-    } = useSelector((state: StateType) => state.auth)
+    const { shouldBeAuthenticated, redirectPath } = authParam
+    const { authenticated: reduxAuthenticated, loading } = useSelector((state: StateType) => state.auth)
     const navigate = useNavigate()
     const authenticated = loading ? !!accessToken : reduxAuthenticated
 
@@ -44,8 +39,8 @@ export const withAuthentication = <P extends PropsType>(WrappedComponent: any, a
       if (shouldBeAuthenticated !== authenticated) {
         navigate(redirectPath)
       }
-    // TODO: Investigate this later. https://github.com/remix-run/react-router/discussions/8465
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      // TODO: Investigate this later. https://github.com/remix-run/react-router/discussions/8465
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [authenticated, shouldBeAuthenticated])
 
     // if (!selector) {

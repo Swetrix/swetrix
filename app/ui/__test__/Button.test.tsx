@@ -12,7 +12,11 @@ describe('Button component', () => {
   })
 
   it('renders with children', () => {
-    const { getByText } = render(<Button><span>Click me</span></Button>)
+    const { getByText } = render(
+      <Button>
+        <span>Click me</span>
+      </Button>,
+    )
     expect(getByText('Click me')).toBeInTheDocument()
   })
 

@@ -2,14 +2,17 @@ import React from 'react'
 // @ts-ignore
 import { saveAs } from 'file-saver'
 import {
-  GlobeEuropeAfricaIcon, LanguageIcon, DocumentTextIcon, DeviceTabletIcon,
-  ArrowRightCircleIcon, MagnifyingGlassIcon, ServerIcon,
+  GlobeEuropeAfricaIcon,
+  LanguageIcon,
+  DocumentTextIcon,
+  DeviceTabletIcon,
+  ArrowRightCircleIcon,
+  MagnifyingGlassIcon,
+  ServerIcon,
 } from '@heroicons/react/24/outline'
 // @ts-ignore
 import dayjs from 'dayjs'
-import {
-  area, areaSpline, spline, bar, line,
-} from 'billboard.js'
+import { area, areaSpline, spline, bar, line } from 'billboard.js'
 import _forEach from 'lodash/forEach'
 import _map from 'lodash/map'
 import _split from 'lodash/split'
@@ -30,11 +33,14 @@ import JSZip from 'jszip'
 import * as d3 from 'd3'
 
 import {
-  TimeFormat, chartTypes, tbsFormatMapper, tbsFormatMapper24h, tbsFormatMapperTooltip, tbsFormatMapperTooltip24h,
+  TimeFormat,
+  chartTypes,
+  tbsFormatMapper,
+  tbsFormatMapper24h,
+  tbsFormatMapperTooltip,
+  tbsFormatMapperTooltip24h,
 } from 'redux/constants'
-import {
-  getTimeFromSeconds, getStringFromTime, sumArrays, nFormatter,
-} from 'utils/generic'
+import { getTimeFromSeconds, getStringFromTime, sumArrays, nFormatter } from 'utils/generic'
 import countries from 'utils/isoCountries'
 import { IAnalyticsFunnel } from 'redux/models/IProject'
 
@@ -47,9 +53,7 @@ const getSum = (arr: any) => {
   return _reduce(arr, (acc, c) => acc + c, 0)
 }
 
-const transformAIChartData = (data: {
-  [key: string]: any,
-}) => {
+const transformAIChartData = (data: { [key: string]: any }) => {
   const transformedData = {
     x: [],
     sdur: [],
@@ -134,12 +138,17 @@ const convertToCSV = (array: any[]) => {
   return str
 }
 
-const onCSVExportClick = (data: {
-  data: any,
-  types: any,
-}, pid: string, tnMapping: {
-  [key: string]: string,
-}, language: string) => {
+const onCSVExportClick = (
+  data: {
+    data: any
+    types: any
+  },
+  pid: string,
+  tnMapping: {
+    [key: string]: string
+  },
+  language: string,
+) => {
   const { data: rowData, types } = data
   const zip = new JSZip()
 
@@ -156,7 +165,7 @@ const onCSVExportClick = (data: {
     })
 
     const csvData = _map(rowKeys, (e) => {
-      const perc = _round(((rowData[item][e] / total) * 100) || 0, 2)
+      const perc = _round((rowData[item][e] / total) * 100 || 0, 2)
 
       if (item === 'cc') {
         const name = countries.getName(e, language)
@@ -196,20 +205,20 @@ const CHART_METRICS_MAPPING_PERF = {
 }
 
 // function to filter the data for the chart
-const getColumns = (chart: {
-  [key: string]: string[],
-}, activeChartMetrics: {
-  [key: string]: boolean,
-}, compareChart?: {
-  [key: string]: string[],
-}) => {
-  const {
-    views, bounce, viewsPerUnique, unique, trendlines, sessionDuration,
-  } = activeChartMetrics
+const getColumns = (
+  chart: {
+    [key: string]: string[]
+  },
+  activeChartMetrics: {
+    [key: string]: boolean
+  },
+  compareChart?: {
+    [key: string]: string[]
+  },
+) => {
+  const { views, bounce, viewsPerUnique, unique, trendlines, sessionDuration } = activeChartMetrics
 
-  const columns: any[] = [
-    ['x', ..._map(chart.x, el => dayjs(el).toDate())],
-  ]
+  const columns: any[] = [['x', ..._map(chart.x, (el) => dayjs(el).toDate())]]
 
   if (unique) {
     columns.push(['unique', ...chart.uniques])
@@ -237,9 +246,7 @@ const getColumns = (chart: {
     const bounceArray = _map(chart.uniques, (el, i) => {
       return _round((_toNumber(el) * 100) / _toNumber(chart.visits[i]), 1) || 0
     })
-    columns.push(
-      ['bounce', ...bounceArray],
-    )
+    columns.push(['bounce', ...bounceArray])
   }
 
   if (viewsPerUnique) {
@@ -263,14 +270,16 @@ const getColumns = (chart: {
   return columns
 }
 
-const getColumnsPerf = (chart: {
-  [key: string]: string[],
-}, activeChartMetrics: string, compareChart?: {
-  [key: string]: string[],
-}) => {
-  const columns: any[] = [
-    ['x', ..._map(chart.x, el => dayjs(el).toDate())],
-  ]
+const getColumnsPerf = (
+  chart: {
+    [key: string]: string[]
+  },
+  activeChartMetrics: string,
+  compareChart?: {
+    [key: string]: string[]
+  },
+) => {
+  const columns: any[] = [['x', ..._map(chart.x, (el) => dayjs(el).toDate())]]
 
   if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.full) {
     columns.push(['dns', ...chart.dns])
@@ -281,7 +290,15 @@ const getColumnsPerf = (chart: {
     columns.push(['dom_load', ...chart.domLoad])
     columns.push(['ttfb', ...chart.ttfb])
 
-    if (compareChart?.dns && compareChart?.tls && compareChart?.conn && compareChart?.response && compareChart?.render && compareChart?.domLoad && compareChart?.ttfb) {
+    if (
+      compareChart?.dns &&
+      compareChart?.tls &&
+      compareChart?.conn &&
+      compareChart?.response &&
+      compareChart?.render &&
+      compareChart?.domLoad &&
+      compareChart?.ttfb
+    ) {
       columns.push(['dnsCompare', ...compareChart.dns])
       columns.push(['tlsCompare', ...compareChart.tls])
       columns.push(['connCompare', ...compareChart.conn])
@@ -297,9 +314,20 @@ const getColumnsPerf = (chart: {
     columns.push(['network', ...sumArrays(chart.dns, chart.tls, chart.conn, chart.response)])
     columns.push(['backend', ...chart.ttfb])
 
-    if (compareChart?.dns && compareChart?.tls && compareChart?.conn && compareChart?.response && compareChart?.render && compareChart?.domLoad && compareChart?.ttfb) {
+    if (
+      compareChart?.dns &&
+      compareChart?.tls &&
+      compareChart?.conn &&
+      compareChart?.response &&
+      compareChart?.render &&
+      compareChart?.domLoad &&
+      compareChart?.ttfb
+    ) {
       columns.push(['frontendCompare', ...sumArrays(compareChart.render, compareChart.domLoad)])
-      columns.push(['networkCompare', ...sumArrays(compareChart.dns, compareChart.tls, compareChart.conn, compareChart.response)])
+      columns.push([
+        'networkCompare',
+        ...sumArrays(compareChart.dns, compareChart.tls, compareChart.conn, compareChart.response),
+      ])
       columns.push(['backendCompare', ...compareChart.ttfb])
     }
   }
@@ -339,9 +367,13 @@ const getColumnsPerf = (chart: {
   return columns
 }
 
-const getValueForTooltipPerfomance = (chart: {
-  [key: string]: string[],
-}, id: string, index: number) => {
+const getValueForTooltipPerfomance = (
+  chart: {
+    [key: string]: string[]
+  },
+  id: string,
+  index: number,
+) => {
   if (id === 'dns' || id === 'tls' || id === 'conn' || id === 'response' || id === 'render' || id === 'ttfb') {
     return chart[id] ? chart[id][index] : 0
   }
@@ -384,9 +416,9 @@ const stringToColour = (str: string) => {
   // Generate 3-byte color code (RRGGBB)
   for (let i = 0; i < 3; i++) {
     // Get the next 8 bits of the hash value
-    const value = (hash >> (i * 8)) & 0xFF
+    const value = (hash >> (i * 8)) & 0xff
     // Convert the value to a 2-digit hex string
-    const hexString = (`00${value.toString(16)}`).substr(-2)
+    const hexString = `00${value.toString(16)}`.substr(-2)
     // Append the hex string to the color value
     colour += hexString
   }
@@ -403,32 +435,34 @@ const getSettings = (
   chart: any,
   timeBucket: string,
   activeChartMetrics: {
-    [key: string]: boolean,
+    [key: string]: boolean
   },
   applyRegions: boolean,
   timeFormat: string,
   forecasedChartData: {
-    [key: string]: string[],
+    [key: string]: string[]
   },
   rotateXAxis: boolean,
   chartType: string,
   customEvents?: {
-    [key: string]: string[],
+    [key: string]: string[]
   },
   compareChart?: {
-    [key: string]: string[],
+    [key: string]: string[]
   },
 ) => {
   const xAxisSize = _size(chart.x)
   const lines = []
   const modifiedChart = { ...chart }
   let regions
-  const customEventsToArray = customEvents ? _map(_keys(customEvents), (el) => {
-    return [el, ...customEvents[el]]
-  }) : []
+  const customEventsToArray = customEvents
+    ? _map(_keys(customEvents), (el) => {
+        return [el, ...customEvents[el]]
+      })
+    : []
 
   let customEventsColors: {
-    [key: string]: string,
+    [key: string]: string
   } = {}
 
   if (_isEmpty(compareChart)) {
@@ -553,7 +587,10 @@ const getSettings = (
         tick: {
           fit: true,
           rotate: rotateXAxis ? 45 : 0,
-          format: timeFormat === TimeFormat['24-hour'] ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
+          format:
+            timeFormat === TimeFormat['24-hour']
+              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x)
+              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
@@ -568,7 +605,9 @@ const getSettings = (
       y2: {
         show: activeChartMetrics.bounce || activeChartMetrics.sessionDuration,
         tick: {
-          format: activeChartMetrics.bounce ? (d: string) => `${d}%` : (d: string) => getStringFromTime(getTimeFromSeconds(d)),
+          format: activeChartMetrics.bounce
+            ? (d: string) => `${d}%`
+            : (d: string) => getStringFromTime(getTimeFromSeconds(d)),
         },
         min: activeChartMetrics.bounce ? 10 : null,
         max: activeChartMetrics.bounce ? 100 : null,
@@ -578,7 +617,7 @@ const getSettings = (
     tooltip: {
       contents: (item: any, _: any, __: any, color: any) => {
         const typesOptionsToTypesCompare: {
-          [key: string]: string,
+          [key: string]: string
         } = {
           unique: 'uniques',
           total: 'visits',
@@ -587,15 +626,13 @@ const getSettings = (
 
         if (_isEmpty(compareChart)) {
           return `<ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
-          <li class='font-semibold'>${timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)}</li>
+          <li class='font-semibold'>${
+            timeFormat === TimeFormat['24-hour']
+              ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
+              : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
+          }</li>
           <hr class='border-gray-200 dark:border-gray-600' />
-          ${_map(item, (el: {
-            id: string,
-            index: number,
-            name: string,
-            value: string,
-            x: Date,
-          }) => {
+          ${_map(item, (el: { id: string; index: number; name: string; value: string; x: Date }) => {
             if (el.id === 'sessionDuration') {
               return `
               <li class='flex justify-between'>
@@ -626,27 +663,33 @@ const getSettings = (
 
         return `
         <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
-          ${_map(item, (el: {
-          id: string,
-          index: number,
-          name: string,
-          value: string,
-          x: Date,
-        }) => {
-          const {
-            id, index, name, value, x,
-          } = el
+          ${_map(item, (el: { id: string; index: number; name: string; value: string; x: Date }) => {
+            const { id, index, name, value, x } = el
 
-          const xDataValueCompare = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(dayjs(compareChart?.x[index]).toDate()) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())
-          const xDataValue = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x)
-          const valueCompare = id === 'sessionDuration' ? getStringFromTime(getTimeFromSeconds(compareChart?.[typesOptionsToTypesCompare?.[id]]?.[index])) : compareChart?.[typesOptionsToTypesCompare[id]]?.[index]
+            const xDataValueCompare =
+              timeFormat === TimeFormat['24-hour']
+                ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(dayjs(compareChart?.x[index]).toDate())
+                : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())
+            const xDataValue =
+              timeFormat === TimeFormat['24-hour']
+                ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x)
+                : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x)
+            const valueCompare =
+              id === 'sessionDuration'
+                ? getStringFromTime(getTimeFromSeconds(compareChart?.[typesOptionsToTypesCompare?.[id]]?.[index]))
+                : compareChart?.[typesOptionsToTypesCompare[id]]?.[index]
 
-          if (id === 'uniqueCompare' || id === 'totalCompare' || id === 'bounceCompare' || id === 'sessionDurationCompare') {
-            return ''
-          }
+            if (
+              id === 'uniqueCompare' ||
+              id === 'totalCompare' ||
+              id === 'bounceCompare' ||
+              id === 'sessionDurationCompare'
+            ) {
+              return ''
+            }
 
-          if (id === 'sessionDuration') {
-            return `
+            if (id === 'sessionDuration') {
+              return `
               <div class='flex justify-between'>
               <div class='flex justify-items-start'>
                 <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(id)}></div>
@@ -659,15 +702,19 @@ const getSettings = (
                 <span>${xDataValue}</span> -
                 <span>${getStringFromTime(getTimeFromSeconds(value))}</span>
               </p>
-              ${(valueCompare && Number(compareChart?.[typesOptionsToTypesCompare?.[id]]?.[index]) > 0) ? `<p>
+              ${
+                valueCompare && Number(compareChart?.[typesOptionsToTypesCompare?.[id]]?.[index]) > 0
+                  ? `<p>
                 <span>${xDataValueCompare}</span> -
                 <span>${valueCompare}</span>
-              </p>` : ''}
+              </p>`
+                  : ''
+              }
             </li>
           `
-          }
+            }
 
-          return `
+            return `
             <div class='flex justify-between'>
               <div class='flex justify-items-start'>
                 <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(id)}></div>
@@ -679,13 +726,17 @@ const getSettings = (
             <p>
               <span>${xDataValue}</span> - <span>${value}</span>
             </p>
-            ${valueCompare ? `<p>
+            ${
+              valueCompare
+                ? `<p>
               <span>${xDataValueCompare}</span> -
               <span>${valueCompare}</span>
-            </p>` : ''}
+            </p>`
+                : ''
+            }
             </li>
           `
-        }).join('')}
+          }).join('')}
         </ul>`
       },
     },
@@ -693,9 +744,7 @@ const getSettings = (
       focus: {
         only: xAxisSize > 1,
       },
-      pattern: [
-        'circle',
-      ],
+      pattern: ['circle'],
       r: 3,
     },
     legend: {
@@ -716,7 +765,6 @@ const getSettings = (
     bindto: '#dataChart',
   }
 }
-
 
 // function to get the settings and data for the session inspector chart
 const getSettingsSession = (
@@ -764,7 +812,10 @@ const getSettingsSession = (
         tick: {
           fit: true,
           rotate: rotateXAxis ? 45 : 0,
-          format: timeFormat === TimeFormat['24-hour'] ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
+          format:
+            timeFormat === TimeFormat['24-hour']
+              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x)
+              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
@@ -780,17 +831,15 @@ const getSettingsSession = (
     tooltip: {
       contents: (item: any, _: any, __: any, color: any) => {
         return `<ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
-          <li class='font-semibold'>${timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)}</li>
+          <li class='font-semibold'>${
+            timeFormat === TimeFormat['24-hour']
+              ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
+              : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
+          }</li>
           <hr class='border-gray-200 dark:border-gray-600' />
-          ${_map(item, (el: {
-          id: string,
-          index: number,
-          name: string,
-          value: string,
-          x: Date,
-        }) => {
-          if (el.id === 'sessionDuration') {
-            return `
+          ${_map(item, (el: { id: string; index: number; name: string; value: string; x: Date }) => {
+            if (el.id === 'sessionDuration') {
+              return `
               <li class='flex justify-between'>
                 <div class='flex justify-items-start'>
                   <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
@@ -799,13 +848,13 @@ const getSettingsSession = (
                 <span class='pl-4'>${getStringFromTime(getTimeFromSeconds(el.value))}</span>
               </li>
               `
-          }
+            }
 
-          if (el.id === 'trendlineUnique' || el.id === 'trendlineTotal') {
-            return ''
-          }
+            if (el.id === 'trendlineUnique' || el.id === 'trendlineTotal') {
+              return ''
+            }
 
-          return `
+            return `
             <li class='flex justify-between'>
               <div class='flex justify-items-start'>
                 <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
@@ -814,16 +863,14 @@ const getSettingsSession = (
               <span class='pl-4'>${el.value}</span>
             </li>
             `
-        }).join('')}`
+          }).join('')}`
       },
     },
     point: {
       focus: {
         only: xAxisSize > 1,
       },
-      pattern: [
-        'circle',
-      ],
+      pattern: ['circle'],
       r: 3,
     },
     legend: {
@@ -877,9 +924,7 @@ const getSettingsFunnels = (
         events: '#2563eb', // blue-600
         dropoff: 'rgba(37, 99, 235, 0.2)', // blue-600 + opacity
       },
-      groups: [
-        ['events', 'dropoff'],
-      ],
+      groups: [['events', 'dropoff']],
       order: (a: any, b: any) => {
         return a.id < b.id
       },
@@ -908,9 +953,11 @@ const getSettingsFunnels = (
         const stepTitle = values[index]
         const prevStepTitle = values[index - 1]
 
-        const prevStepHtml = prevStepTitle ? `
+        const prevStepHtml = prevStepTitle
+          ? `
           <span>${prevStepTitle}</span>
-        ` : ''
+        `
+          : ''
 
         const title = `
           <p class='font-semibold flex space-x-2 items-center tracking-tight'>
@@ -942,7 +989,9 @@ const getSettingsFunnels = (
         const dropoff = `
           <tr class='tracking-tight'>
             <td class='pr-7'>
-              <div class='w-3 h-3 rounded-sm mr-1 float-left mt-1.5' style="background-color:${color('dropoff')}"}></div>
+              <div class='w-3 h-3 rounded-sm mr-1 float-left mt-1.5' style="background-color:${color(
+                'dropoff',
+              )}"}></div>
               <span class='font-semibold'>
                 ${index === 0 ? t('project.neverEnteredTheFunnel') : t('project.dropoff')}
               </span>
@@ -951,7 +1000,9 @@ const getSettingsFunnels = (
               ${index === 0 ? totalPageviews - step.events : step.dropoff}
             </td>
             <td class='text-right'>
-              ${index === 0 ? _round(((totalPageviews - step.events) / totalPageviews) * 100, 2) : step.dropoffPercStep}%
+              ${
+                index === 0 ? _round(((totalPageviews - step.events) / totalPageviews) * 100, 2) : step.dropoffPercStep
+              }%
             </td>
           </tr>
         `
@@ -987,7 +1038,18 @@ const getSettingsFunnels = (
   }
 }
 
-const perfomanceChartCompare = ['dnsCompare', 'tlsCompare', 'connCompare', 'responseCompare', 'renderCompare', 'dom_loadCompare', 'ttfbCompare', 'frontendCompare', 'networkCompare', 'backendCompare']
+const perfomanceChartCompare = [
+  'dnsCompare',
+  'tlsCompare',
+  'connCompare',
+  'responseCompare',
+  'renderCompare',
+  'dom_loadCompare',
+  'ttfbCompare',
+  'frontendCompare',
+  'networkCompare',
+  'backendCompare',
+]
 
 const getSettingsPerf = (
   chart: {
@@ -999,7 +1061,7 @@ const getSettingsPerf = (
   chartType: string,
   timeFormat: string,
   compareChart?: {
-    [key: string]: string[],
+    [key: string]: string[]
   },
 ) => {
   const xAxisSize = _size(chart.x)
@@ -1055,7 +1117,18 @@ const getSettingsPerf = (
       },
       groups: [
         ['dns', 'tls', 'conn', 'response', 'render', 'dom_load', 'ttfb', 'frontend', 'network', 'backend'],
-        ['dnsCompare', 'tlsCompare', 'connCompare', 'responseCompare', 'renderCompare', 'dom_loadCompare', 'ttfbCompare', 'frontendCompare', 'networkCompare', 'backendCompare'],
+        [
+          'dnsCompare',
+          'tlsCompare',
+          'connCompare',
+          'responseCompare',
+          'renderCompare',
+          'dom_loadCompare',
+          'ttfbCompare',
+          'frontendCompare',
+          'networkCompare',
+          'backendCompare',
+        ],
       ],
     },
     axis: {
@@ -1064,7 +1137,10 @@ const getSettingsPerf = (
         tick: {
           fit: true,
           rotate: rotateXAxis ? 45 : 0,
-          format: timeFormat === TimeFormat['24-hour'] ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
+          format:
+            timeFormat === TimeFormat['24-hour']
+              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x)
+              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
@@ -1086,17 +1162,14 @@ const getSettingsPerf = (
       contents: (item: any, _: any, __: any, color: any) => {
         if (_isEmpty(compareChart)) {
           return `<ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
-        <li class='font-semibold'>${timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
-            }</li>
+        <li class='font-semibold'>${
+          timeFormat === TimeFormat['24-hour']
+            ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
+            : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
+        }</li>
         <hr class='border-gray-200 dark:border-gray-600' />
-        ${_map(item, (el: {
-              id: string,
-              index: number,
-              name: string,
-              value: string,
-              x: Date,
-            }) => {
-              return `
+        ${_map(item, (el: { id: string; index: number; name: string; value: string; x: Date }) => {
+          return `
           <li class='flex justify-between'>
             <div class='flex justify-items-start'>
               <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
@@ -1105,24 +1178,22 @@ const getSettingsPerf = (
             <span class='pl-4'>${getStringFromTime(getTimeFromSeconds(el.value), true)}</span>
           </li>
           `
-            }).join('')}`
+        }).join('')}`
         }
 
         return `
       <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
-        ${_map(item, (el: {
-          id: string,
-          index: number,
-          name: string,
-          value: string,
-          x: Date,
-        }) => {
-          const {
-            id, index, name, value, x,
-          } = el
+        ${_map(item, (el: { id: string; index: number; name: string; value: string; x: Date }) => {
+          const { id, index, name, value, x } = el
 
-          const xDataValueCompare = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(dayjs(compareChart?.x[index]).toDate()) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())
-          const xDataValue = timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x)
+          const xDataValueCompare =
+            timeFormat === TimeFormat['24-hour']
+              ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(dayjs(compareChart?.x[index]).toDate())
+              : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())
+          const xDataValue =
+            timeFormat === TimeFormat['24-hour']
+              ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x)
+              : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x)
           const valueCompare = getValueForTooltipPerfomance(compareChart, id, index)
 
           if (_includes(perfomanceChartCompare, id)) {
@@ -1141,10 +1212,14 @@ const getSettingsPerf = (
           <p>
             <span>${xDataValue}</span> - <span>${getStringFromTime(getTimeFromSeconds(value), true)}</span>
           </p>
-          ${valueCompare ? `<p>
+          ${
+            valueCompare
+              ? `<p>
             <span>${xDataValueCompare}</span> -
             <span>${getStringFromTime(getTimeFromSeconds(valueCompare), true)}</span>
-          </p>` : ''}
+          </p>`
+              : ''
+          }
           </li>
         `
         }).join('')}
@@ -1155,9 +1230,7 @@ const getSettingsPerf = (
       focus: {
         only: xAxisSize > 1,
       },
-      pattern: [
-        'circle',
-      ],
+      pattern: ['circle'],
       r: 3,
     },
     legend: {
@@ -1185,22 +1258,30 @@ const validFilters = ['cc', 'rg', 'ct', 'pg', 'lc', 'ref', 'dv', 'br', 'os', 'so
 
 export const filterInvalidViewPrefs = (prefs: any): any => {
   const pids = _keys(prefs)
-  const filtered = _reduce(pids, (prev: string[], curr: string) => {
-    const { period, timeBucket } = prefs[curr]
+  const filtered = _reduce(
+    pids,
+    (prev: string[], curr: string) => {
+      const { period, timeBucket } = prefs[curr]
 
-    if (!_includes(validPeriods, period) || !_includes(validTimeBacket, timeBucket)) {
-      return prev
-    }
+      if (!_includes(validPeriods, period) || !_includes(validTimeBacket, timeBucket)) {
+        return prev
+      }
 
-    return [...prev, curr]
-  }, [])
+      return [...prev, curr]
+    },
+    [],
+  )
 
-  return _reduce(filtered, (prev: any, curr: string) => {
-    return {
-      ...prev,
-      [curr]: prefs[curr],
-    }
-  }, {})
+  return _reduce(
+    filtered,
+    (prev: any, curr: string) => {
+      return {
+        ...prev,
+        [curr]: prefs[curr],
+      }
+    },
+    {},
+  )
 }
 
 const typeNameMapping = (t: (str: string) => string) => ({
@@ -1264,21 +1345,41 @@ const getFormatDate = (date: Date) => {
   ]
 */
 const convertFilters = (filters: any) => {
-  return _reduce(filters, (prev: any, curr: any) => {
-    const { column, filter } = curr
-    const converted = _map(filter, (el: any) => ({
-      column,
-      filter: el,
-    }))
+  return _reduce(
+    filters,
+    (prev: any, curr: any) => {
+      const { column, filter } = curr
+      const converted = _map(filter, (el: any) => ({
+        column,
+        filter: el,
+      }))
 
-    return [...prev, ...converted]
-  }, [])
+      return [...prev, ...converted]
+    },
+    [],
+  )
 }
 
 export {
-  iconClassName, getFormatDate, panelIconMapping, typeNameMapping, validFilters,
-  validPeriods, validTimeBacket, noRegionPeriods, getSettings,
-  getExportFilename, getColumns, onCSVExportClick, CHART_METRICS_MAPPING,
-  CHART_METRICS_MAPPING_PERF, getColumnsPerf, getSettingsPerf, transformAIChartData, FILTER_CHART_METRICS_MAPPING_FOR_COMPARE,
-  getSettingsFunnels, getSettingsSession, convertFilters,
+  iconClassName,
+  getFormatDate,
+  panelIconMapping,
+  typeNameMapping,
+  validFilters,
+  validPeriods,
+  validTimeBacket,
+  noRegionPeriods,
+  getSettings,
+  getExportFilename,
+  getColumns,
+  onCSVExportClick,
+  CHART_METRICS_MAPPING,
+  CHART_METRICS_MAPPING_PERF,
+  getColumnsPerf,
+  getSettingsPerf,
+  transformAIChartData,
+  FILTER_CHART_METRICS_MAPPING_FOR_COMPARE,
+  getSettingsFunnels,
+  getSettingsSession,
+  convertFilters,
 }

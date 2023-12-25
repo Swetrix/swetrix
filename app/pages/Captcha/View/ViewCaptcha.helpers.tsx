@@ -2,13 +2,16 @@ import React from 'react'
 // @ts-ignore
 import { saveAs } from 'file-saver'
 import {
-  GlobeEuropeAfricaIcon, LanguageIcon, DocumentTextIcon, DeviceTabletIcon,
-  ArrowRightCircleIcon, MagnifyingGlassIcon, ServerIcon,
+  GlobeEuropeAfricaIcon,
+  LanguageIcon,
+  DocumentTextIcon,
+  DeviceTabletIcon,
+  ArrowRightCircleIcon,
+  MagnifyingGlassIcon,
+  ServerIcon,
 } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
-import {
-  area, bar,
-} from 'billboard.js'
+import { area, bar } from 'billboard.js'
 import _forEach from 'lodash/forEach'
 import _map from 'lodash/map'
 import _split from 'lodash/split'
@@ -20,7 +23,12 @@ import _round from 'lodash/round'
 import JSZip from 'jszip'
 
 import {
-  TimeFormat, chartTypes, tbsFormatMapper, tbsFormatMapper24h, tbsFormatMapperTooltip, tbsFormatMapperTooltip24h,
+  TimeFormat,
+  chartTypes,
+  tbsFormatMapper,
+  tbsFormatMapper24h,
+  tbsFormatMapperTooltip,
+  tbsFormatMapperTooltip24h,
 } from 'redux/constants'
 import countries from 'utils/isoCountries'
 // @ts-ignore
@@ -50,12 +58,17 @@ const convertToCSV = (array: any[]) => {
   return str
 }
 
-const onCSVExportClick = (data: {
-  data: any,
-  types: any,
-}, pid: string, tnMapping: {
-  [key: string]: string,
-}, language: string) => {
+const onCSVExportClick = (
+  data: {
+    data: any
+    types: any
+  },
+  pid: string,
+  tnMapping: {
+    [key: string]: string
+  },
+  language: string,
+) => {
   const { data: rowData, types } = data
   const zip = new JSZip()
 
@@ -72,7 +85,7 @@ const onCSVExportClick = (data: {
     })
 
     const csvData = _map(rowKeys, (e) => {
-      const perc = _round(((rowData[item][e] / total) * 100) || 0, 2)
+      const perc = _round((rowData[item][e] / total) * 100 || 0, 2)
 
       if (item === 'cc') {
         const name = countries.getName(e, language)
@@ -95,19 +108,18 @@ const CHART_METRICS_MAPPING = {
 }
 
 // function to filter the data for the chart
-const getColumns = (chart: {
-  x: string[],
-  results: string[],
-}, activeChartMetrics: {
-  [key: string]: boolean,
-}) => {
-  const {
-    results,
-  } = activeChartMetrics
+const getColumns = (
+  chart: {
+    x: string[]
+    results: string[]
+  },
+  activeChartMetrics: {
+    [key: string]: boolean
+  },
+) => {
+  const { results } = activeChartMetrics
 
-  const columns = [
-    ['x', ..._map(chart.x, el => dayjs(el).toDate())],
-  ]
+  const columns = [['x', ..._map(chart.x, (el) => dayjs(el).toDate())]]
 
   if (results) {
     columns.push(['results', ...chart.results])
@@ -120,9 +132,17 @@ const getColumns = (chart: {
 const noRegionPeriods = ['custom', 'yesterday']
 
 // function to get the settings and data for the chart(main diagram)
-const getSettings = (chart: any, timeBucket: string, activeChartMetrics: {
-  [key: string]: boolean,
-}, applyRegions: boolean, timeFormat: string, rotateXAxias: boolean, chartType: string) => {
+const getSettings = (
+  chart: any,
+  timeBucket: string,
+  activeChartMetrics: {
+    [key: string]: boolean
+  },
+  applyRegions: boolean,
+  timeFormat: string,
+  rotateXAxias: boolean,
+  chartType: string,
+) => {
   const xAxisSize = _size(chart.x)
   let regions
 
@@ -150,9 +170,12 @@ const getSettings = (chart: any, timeBucket: string, activeChartMetrics: {
   return {
     data: {
       x: 'x',
-      columns: getColumns({
-        ...chart,
-      }, activeChartMetrics),
+      columns: getColumns(
+        {
+          ...chart,
+        },
+        activeChartMetrics,
+      ),
       types: {
         results: chartType === chartTypes.line ? area() : bar(),
       },
@@ -174,7 +197,10 @@ const getSettings = (chart: any, timeBucket: string, activeChartMetrics: {
         tick: {
           fit: true,
           rotate: rotateXAxias ? 45 : 0,
-          format: timeFormat === TimeFormat['24-hour'] ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x) : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
+          format:
+            timeFormat === TimeFormat['24-hour']
+              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x)
+              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
@@ -190,17 +216,14 @@ const getSettings = (chart: any, timeBucket: string, activeChartMetrics: {
     tooltip: {
       contents: (item: any, _: any, __: any, color: any) => {
         return `<ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
-          <li class='font-semibold'>${timeFormat === TimeFormat['24-hour'] ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x) : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)}</li>
+          <li class='font-semibold'>${
+            timeFormat === TimeFormat['24-hour']
+              ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
+              : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
+          }</li>
           <hr class='border-gray-200 dark:border-gray-600' />
-          ${_map(item, (el: {
-          id: string,
-          index: number,
-          name: string,
-          value: string,
-          x: Date,
-        }) => {
-
-          return `
+          ${_map(item, (el: { id: string; index: number; name: string; value: string; x: Date }) => {
+            return `
             <li class='flex justify-between'>
               <div class='flex justify-items-start'>
                 <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
@@ -209,16 +232,14 @@ const getSettings = (chart: any, timeBucket: string, activeChartMetrics: {
               <span class='pl-4'>${el.value}</span>
             </li>
             `
-        }).join('')}`
+          }).join('')}`
       },
     },
     point: {
       focus: {
         only: xAxisSize > 1,
       },
-      pattern: [
-        'circle',
-      ],
+      pattern: ['circle'],
       r: 3,
     },
     legend: {
@@ -280,7 +301,17 @@ const getFormatDate = (date: Date) => {
 }
 
 export {
-  iconClassName, getFormatDate, panelIconMapping, typeNameMapping, validFilters,
-  validPeriods, validTimeBacket, noRegionPeriods, getSettings,
-  getExportFilename, getColumns, onCSVExportClick, CHART_METRICS_MAPPING,
+  iconClassName,
+  getFormatDate,
+  panelIconMapping,
+  typeNameMapping,
+  validFilters,
+  validPeriods,
+  validTimeBacket,
+  noRegionPeriods,
+  getSettings,
+  getExportFilename,
+  getColumns,
+  onCSVExportClick,
+  CHART_METRICS_MAPPING,
 }

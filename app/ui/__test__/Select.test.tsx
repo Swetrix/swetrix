@@ -8,16 +8,16 @@ import Select from '../Select'
 
 describe('Select', () => {
   const defaultProps: {
-    title: string,
-    label: string,
-    className?: string,
-    items: any[],
-    id?: string,
-    labelExtractor?: (item: any, index: number) => string,
-    keyExtractor?: (item: any, index: number) => string,
-    iconExtractor?: (item: any, index: number) => JSX.Element | null,
-    onSelect: (item: any) => void,
-    capitalise: boolean,
+    title: string
+    label: string
+    className?: string
+    items: any[]
+    id?: string
+    labelExtractor?: (item: any, index: number) => string
+    keyExtractor?: (item: any, index: number) => string
+    iconExtractor?: (item: any, index: number) => JSX.Element | null
+    onSelect: (item: any) => void
+    capitalise: boolean
   } = {
     title: 'Select Title',
     label: 'Select',

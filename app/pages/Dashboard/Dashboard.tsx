@@ -1,7 +1,5 @@
 /* eslint-disable react/forbid-prop-types */
-import React, {
-  memo, useState, useEffect, useMemo,
-} from 'react'
+import React, { memo, useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate } from '@remix-run/react'
 import { ClientOnly } from 'remix-utils'
 import cx from 'clsx'
@@ -16,7 +14,11 @@ import _filter from 'lodash/filter'
 import _find from 'lodash/find'
 import { useTranslation } from 'react-i18next'
 import {
-  FolderPlusIcon, AdjustmentsVerticalIcon, ArrowTopRightOnSquareIcon, MagnifyingGlassIcon, XMarkIcon,
+  FolderPlusIcon,
+  AdjustmentsVerticalIcon,
+  ArrowTopRightOnSquareIcon,
+  MagnifyingGlassIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline'
 import { XCircleIcon } from '@heroicons/react/24/solid'
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
@@ -29,8 +31,14 @@ import { Badge } from 'ui/Badge'
 import routes from 'routesPath'
 import { nFormatter, calculateRelativePercentage } from 'utils/generic'
 import {
-  isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD, tabForOwnedProject, tabForSharedProject,
-  tabForCaptchaProject, DASHBOARD_TABS, tabsForDashboard, roleViewer,
+  isSelfhosted,
+  ENTRIES_PER_PAGE_DASHBOARD,
+  tabForOwnedProject,
+  tabForSharedProject,
+  tabForCaptchaProject,
+  DASHBOARD_TABS,
+  tabsForDashboard,
+  roleViewer,
 } from 'redux/constants'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import useDebounce from 'hooks/useDebounce'
@@ -39,9 +47,7 @@ import { acceptShareProject } from 'api'
 
 import Pagination from 'ui/Pagination'
 import { ISharedProject } from 'redux/models/ISharedProject'
-import {
-  IProject, ICaptchaProject, ILiveStats, IOverall,
-} from 'redux/models/IProject'
+import { IProject, ICaptchaProject, ILiveStats, IOverall } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 
 interface IProjectCard {
@@ -49,9 +55,12 @@ interface IProjectCard {
   active?: boolean
   birdseye: IOverall
   type: 'analytics' | 'captcha'
-  t: (key: string, options?: {
-    [key: string]: string | number | null | undefined
-  }) => string
+  t: (
+    key: string,
+    options?: {
+      [key: string]: string | number | null | undefined
+    },
+  ) => string
   live?: string | number
   isPublic?: boolean
   confirmed?: boolean
@@ -71,28 +80,25 @@ interface IProjectCard {
 
 interface IMiniCard {
   labelTKey: string
-  t: (key: string, options?: {
-    [key: string]: string | number | null | undefined
-  }) => string
+  t: (
+    key: string,
+    options?: {
+      [key: string]: string | number | null | undefined
+    },
+  ) => string
   total?: number | string
   percChange?: number
 }
 
-const MiniCard = ({
-  labelTKey, t, total, percChange,
-}: IMiniCard): JSX.Element => {
+const MiniCard = ({ labelTKey, t, total, percChange }: IMiniCard): JSX.Element => {
   const statsDidGrowUp = percChange ? percChange >= 0 : false
 
   return (
     <div>
-      <p className='text-sm text-gray-500 dark:text-gray-300'>
-        {t(labelTKey)}
-      </p>
+      <p className='text-sm text-gray-500 dark:text-gray-300'>{t(labelTKey)}</p>
 
       <div className='flex font-bold'>
-        <p className='text-xl text-gray-700 dark:text-gray-100'>
-          {_isNumber(total) ? nFormatter(total) : total}
-        </p>
+        <p className='text-xl text-gray-700 dark:text-gray-100'>{_isNumber(total) ? nFormatter(total) : total}</p>
         {_isNumber(percChange) && (
           <p
             className={cx('flex text-xs items-center', {
@@ -103,20 +109,15 @@ const MiniCard = ({
             {statsDidGrowUp ? (
               <>
                 <ChevronUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
-                <span className='sr-only'>
-                  {t('dashboard.inc')}
-                </span>
+                <span className='sr-only'>{t('dashboard.inc')}</span>
               </>
             ) : (
               <>
                 <ChevronDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
-                <span className='sr-only'>
-                  {t('dashboard.dec')}
-                </span>
+                <span className='sr-only'>{t('dashboard.dec')}</span>
               </>
             )}
-            {nFormatter(percChange)}
-            %
+            {nFormatter(percChange)}%
           </p>
         )}
       </div>
@@ -130,9 +131,26 @@ MiniCard.defaultProps = {
 }
 
 const ProjectCard = ({
-  name, active, birdseye, t, live, isPublic, confirmed, id, deleteProjectFailed,
-  sharedProjects, setProjectsShareData, setUserShareData, shared, userSharedUpdate, sharedProjectError,
-  captcha, isTransferring, type, getRole, members,
+  name,
+  active,
+  birdseye,
+  t,
+  live,
+  isPublic,
+  confirmed,
+  id,
+  deleteProjectFailed,
+  sharedProjects,
+  setProjectsShareData,
+  setUserShareData,
+  shared,
+  userSharedUpdate,
+  sharedProjectError,
+  captcha,
+  isTransferring,
+  type,
+  getRole,
+  members,
 }: IProjectCard): JSX.Element => {
   const [showInviteModal, setShowInviteModal] = useState(false)
   const role = useMemo(() => getRole && getRole(id), [getRole, id])
@@ -168,9 +186,10 @@ const ProjectCard = ({
   }
 
   return (
-    <div onClick={() => {
-      navigate(_replace(type === 'analytics' ? routes.project : routes.captcha, ':id', id))
-    }}
+    <div
+      onClick={() => {
+        navigate(_replace(type === 'analytics' ? routes.project : routes.captcha, ':id', id))
+      }}
     >
       <li
         onClick={onElementClick}
@@ -178,14 +197,9 @@ const ProjectCard = ({
       >
         <div className='py-4 px-4'>
           <div className='flex justify-between items-center'>
-            <p className='text-lg font-semibold text-slate-900 dark:text-gray-50 truncate'>
-              {name}
-            </p>
+            <p className='text-lg font-semibold text-slate-900 dark:text-gray-50 truncate'>{name}</p>
 
-            <div
-              className='flex items-center gap-2'
-              onClick={(e) => e.stopPropagation()}
-            >
+            <div className='flex items-center gap-2' onClick={(e) => e.stopPropagation()}>
               {role !== roleViewer.role && (
                 <Link
                   to={_replace(type === 'analytics' ? routes.project_settings : routes.captcha_settings, ':id', id)}
@@ -206,49 +220,28 @@ const ProjectCard = ({
           </div>
           <div className='mt-1 flex-shrink-0 flex gap-2 flex-wrap'>
             {active ? (
-              <Badge
-                colour='green'
-                label={t('dashboard.active')}
-              />
+              <Badge colour='green' label={t('dashboard.active')} />
             ) : (
-              <Badge
-                colour='red'
-                label={t('dashboard.disabled')}
-              />
+              <Badge colour='red' label={t('dashboard.disabled')} />
             )}
-            {shared && (
-              confirmed ? (
-                <Badge
-                  colour='green'
-                  label={t('dashboard.shared')}
-                />
+            {shared &&
+              (confirmed ? (
+                <Badge colour='green' label={t('dashboard.shared')} />
               ) : (
-                <Badge
-                  colour='yellow'
-                  label={t('common.pending')}
-                />
-              )
-            )}
-            {isTransferring && (
-              <Badge
-                colour='indigo'
-                label={t('common.transferring')}
-              />
-            )}
-            {isPublic && (
-              <Badge
-                colour='green'
-                label={t('dashboard.public')}
-              />
-            )}
+                <Badge colour='yellow' label={t('common.pending')} />
+              ))}
+            {isTransferring && <Badge colour='indigo' label={t('common.transferring')} />}
+            {isPublic && <Badge colour='green' label={t('dashboard.public')} />}
             {_isNumber(members) && (
               <Badge
                 colour='slate'
-                label={members === 1
-                  ? t('common.oneMember')
-                  : t('common.xMembers', {
-                    number: members,
-                  })}
+                label={
+                  members === 1
+                    ? t('common.oneMember')
+                    : t('common.xMembers', {
+                        number: members,
+                      })
+                }
               />
             )}
           </div>
@@ -261,19 +254,18 @@ const ProjectCard = ({
                 percChange={calculateRelativePercentage(birdseye[id].previous.all, birdseye[id].current.all)}
               />
             )}
-            {!captcha && (
-              <MiniCard
-                labelTKey='dashboard.liveVisitors'
-                t={t}
-                total={live}
-              />
-            )}
+            {!captcha && <MiniCard labelTKey='dashboard.liveVisitors' t={t} total={live} />}
           </div>
         </div>
         {!confirmed && (
           <Modal
-            onClose={() => { setShowInviteModal(false) }}
-            onSubmit={() => { setShowInviteModal(false); onAccept() }}
+            onClose={() => {
+              setShowInviteModal(false)
+            }}
+            onSubmit={() => {
+              setShowInviteModal(false)
+              onAccept()
+            }}
             submitText={t('common.accept')}
             type='confirmed'
             closeText={t('common.cancel')}
@@ -318,7 +310,10 @@ const NoProjects = ({ t, onClick }: INoProjects): JSX.Element => (
 )
 
 const AddProject = ({ t, onClick }: INoProjects): JSX.Element => (
-  <li onClick={onClick} className='flex cursor-pointer justify-center items-center rounded-lg border-2 border-dashed h-auto min-h-[149.1px] lg:min-h-[auto] group border-gray-300 hover:border-gray-400'>
+  <li
+    onClick={onClick}
+    className='flex cursor-pointer justify-center items-center rounded-lg border-2 border-dashed h-auto min-h-[149.1px] lg:min-h-[auto] group border-gray-300 hover:border-gray-400'
+  >
     <div>
       <FolderPlusIcon className='mx-auto h-12 w-12 text-gray-400 dark:text-gray-200 group-hover:text-gray-500 group-hover:dark:text-gray-400' />
       <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
@@ -359,16 +354,43 @@ interface DashboardProps {
 }
 
 const Dashboard = ({
-  projects, isLoading, error, user, deleteProjectFailed, setProjectsShareData,
-  setUserShareData, userSharedUpdate, sharedProjectError, loadProjects, loadSharedProjects,
-  total, setDashboardPaginationPage, dashboardPaginationPage, sharedProjects, dashboardTabs,
-  setDashboardTabs, sharedTotal, setDashboardPaginationPageShared, dashboardPaginationPageShared, captchaProjects, captchaTotal, dashboardPaginationPageCaptcha, setDashboardPaginationPageCaptcha,
-  loadProjectsCaptcha, liveStats, birdseye,
+  projects,
+  isLoading,
+  error,
+  user,
+  deleteProjectFailed,
+  setProjectsShareData,
+  setUserShareData,
+  userSharedUpdate,
+  sharedProjectError,
+  loadProjects,
+  loadSharedProjects,
+  total,
+  setDashboardPaginationPage,
+  dashboardPaginationPage,
+  sharedProjects,
+  dashboardTabs,
+  setDashboardTabs,
+  sharedTotal,
+  setDashboardPaginationPageShared,
+  dashboardPaginationPageShared,
+  captchaProjects,
+  captchaTotal,
+  dashboardPaginationPageCaptcha,
+  setDashboardPaginationPageCaptcha,
+  loadProjectsCaptcha,
+  liveStats,
+  birdseye,
 }: DashboardProps): JSX.Element => {
-  const { t }: {
-    t: (key: string, options?: {
-      [key: string]: string | number | null | undefined
-    }) => string
+  const {
+    t,
+  }: {
+    t: (
+      key: string,
+      options?: {
+        [key: string]: string | number | null | undefined
+      },
+    ) => string
   } = useTranslation('common')
   const [isSearchActive, setIsSearchActive] = useState<boolean>(false)
   const [showActivateEmailModal, setShowActivateEmailModal] = useState<boolean>(false)
@@ -377,7 +399,9 @@ const Dashboard = ({
   const pageAmountShared: number = Math.ceil(sharedTotal / ENTRIES_PER_PAGE_DASHBOARD)
   const pageAmount: number = Math.ceil(total / ENTRIES_PER_PAGE_DASHBOARD)
   const pageAmountCaptcha: number = Math.ceil(captchaTotal / ENTRIES_PER_PAGE_DASHBOARD)
-  const getRole = (pid: string): string | null => (_find([..._map(sharedProjects, (item) => ({ ...item.project, role: item.role }))], p => p.id === pid)?.role || null)
+  const getRole = (pid: string): string | null =>
+    _find([..._map(sharedProjects, (item) => ({ ...item.project, role: item.role }))], (p) => p.id === pid)?.role ||
+    null
   // This search represents what's inside the search input
   const [search, setSearch] = useState<string>('')
   const debouncedSearch = useDebounce<string>(search, 500)
@@ -409,13 +433,25 @@ const Dashboard = ({
 
   useEffect(() => {
     if (tabProjects === tabForOwnedProject) {
-      loadProjects(ENTRIES_PER_PAGE_DASHBOARD, (dashboardPaginationPage - 1) * ENTRIES_PER_PAGE_DASHBOARD, debouncedSearch)
+      loadProjects(
+        ENTRIES_PER_PAGE_DASHBOARD,
+        (dashboardPaginationPage - 1) * ENTRIES_PER_PAGE_DASHBOARD,
+        debouncedSearch,
+      )
     }
     if (tabProjects === tabForSharedProject) {
-      loadSharedProjects(ENTRIES_PER_PAGE_DASHBOARD, (dashboardPaginationPageShared - 1) * ENTRIES_PER_PAGE_DASHBOARD, debouncedSearch)
+      loadSharedProjects(
+        ENTRIES_PER_PAGE_DASHBOARD,
+        (dashboardPaginationPageShared - 1) * ENTRIES_PER_PAGE_DASHBOARD,
+        debouncedSearch,
+      )
     }
     if (tabProjects === tabForCaptchaProject) {
-      loadProjectsCaptcha(ENTRIES_PER_PAGE_DASHBOARD, (dashboardPaginationPageCaptcha - 1) * ENTRIES_PER_PAGE_DASHBOARD, debouncedSearch)
+      loadProjectsCaptcha(
+        ENTRIES_PER_PAGE_DASHBOARD,
+        (dashboardPaginationPageCaptcha - 1) * ENTRIES_PER_PAGE_DASHBOARD,
+        debouncedSearch,
+      )
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dashboardPaginationPage, dashboardPaginationPageShared, debouncedSearch])
@@ -435,7 +471,6 @@ const Dashboard = ({
         },
       ]
     }
-
 
     return [
       {
@@ -510,12 +545,12 @@ const Dashboard = ({
                 </h2>
                 {isSearchActive && (
                   <div className='hidden sm:flex items-center pb-1 w-full max-w-md px-2 sm:ml-5'>
-                    <label htmlFor='simple-search' className='sr-only'>Search</label>
+                    <label htmlFor='simple-search' className='sr-only'>
+                      Search
+                    </label>
                     <div className='relative w-full'>
                       <div className='absolute sm:flex hidden inset-y-0 left-0 items-center pointer-events-none'>
-                        <MagnifyingGlassIcon
-                          className='ml-2 w-5 h-5 text-gray-900 dark:text-gray-50 cursor-pointer hover:opacity-80'
-                        />
+                        <MagnifyingGlassIcon className='ml-2 w-5 h-5 text-gray-900 dark:text-gray-50 cursor-pointer hover:opacity-80' />
                       </div>
                       <input
                         type='text'
@@ -538,12 +573,12 @@ const Dashboard = ({
             </div>
             {isSearchActive && (
               <div className='flex sm:hidden items-center mb-2 w-full'>
-                <label htmlFor='simple-search' className='sr-only'>Search</label>
+                <label htmlFor='simple-search' className='sr-only'>
+                  Search
+                </label>
                 <div className='relative w-full'>
                   <div className='absolute flex inset-y-0 left-0 items-center pointer-events-none'>
-                    <MagnifyingGlassIcon
-                      className='ml-2 w-5 h-5 text-gray-900 dark:text-gray-50 cursor-pointer hover:opacity-80'
-                    />
+                    <MagnifyingGlassIcon className='ml-2 w-5 h-5 text-gray-900 dark:text-gray-50 cursor-pointer hover:opacity-80' />
                   </div>
                   <input
                     type='text'
@@ -587,8 +622,10 @@ const Dashboard = ({
                             type='button'
                             onClick={() => setTabProjects(tab.name)}
                             className={cx('whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-md', {
-                              'border-slate-900 text-slate-900 dark:text-gray-50 dark:border-gray-50': tabProjects === tab.name,
-                              'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300': tabProjects !== tab.name,
+                              'border-slate-900 text-slate-900 dark:text-gray-50 dark:border-gray-50':
+                                tabProjects === tab.name,
+                              'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300':
+                                tabProjects !== tab.name,
                             })}
                             aria-current={tab.name === tabProjects ? 'page' : undefined}
                           >
@@ -607,11 +644,11 @@ const Dashboard = ({
               </div>
             ) : (
               <ClientOnly
-                fallback={(
+                fallback={
                   <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
                     <Loader />
                   </div>
-                )}
+                }
               >
                 {() => (
                   <>
@@ -621,30 +658,31 @@ const Dashboard = ({
                           <NoProjects t={t} onClick={onNewProject} />
                         ) : (
                           <ul className='grid grid-cols-1 gap-x-6 gap-y-3 lg:gap-y-6 lg:grid-cols-3'>
-                            {_map(_filter(projects, ({ uiHidden }) => !uiHidden), ({
-                              name, id, active, public: isPublic, isTransferring, share,
-                            }) => (
-                              <ProjectCard
-                                key={id}
-                                members={1 + _size(share)}
-                                id={id}
-                                type='analytics'
-                                t={t}
-                                name={name}
-                                active={active}
-                                isPublic={isPublic}
-                                birdseye={birdseye}
-                                live={_isNumber(liveStats[id]) ? liveStats[id] : 'N/A'}
-                                setUserShareData={() => { }}
-                                deleteProjectFailed={() => { }}
-                                userSharedUpdate={() => { }}
-                                sharedProjects={[]}
-                                setProjectsShareData={() => { }}
-                                sharedProjectError={() => { }}
-                                isTransferring={isTransferring}
-                                confirmed
-                              />
-                            ))}
+                            {_map(
+                              _filter(projects, ({ uiHidden }) => !uiHidden),
+                              ({ name, id, active, public: isPublic, isTransferring, share }) => (
+                                <ProjectCard
+                                  key={id}
+                                  members={1 + _size(share)}
+                                  id={id}
+                                  type='analytics'
+                                  t={t}
+                                  name={name}
+                                  active={active}
+                                  isPublic={isPublic}
+                                  birdseye={birdseye}
+                                  live={_isNumber(liveStats[id]) ? liveStats[id] : 'N/A'}
+                                  setUserShareData={() => {}}
+                                  deleteProjectFailed={() => {}}
+                                  userSharedUpdate={() => {}}
+                                  sharedProjects={[]}
+                                  setProjectsShareData={() => {}}
+                                  sharedProjectError={() => {}}
+                                  isTransferring={isTransferring}
+                                  confirmed
+                                />
+                              ),
+                            )}
                             <AddProject t={t} onClick={onNewProject} />
                           </ul>
                         )}
@@ -657,29 +695,30 @@ const Dashboard = ({
                           <NoProjects t={t} onClick={onNewProject} />
                         ) : (
                           <ul className='grid grid-cols-1 gap-x-6 gap-y-3 lg:gap-y-6 lg:grid-cols-3'>
-                            {_map(_filter(captchaProjects, ({ uiHidden }) => !uiHidden), ({
-                              name, id, active, public: isPublic,
-                            }) => (
-                              <ProjectCard
-                                t={t}
-                                key={id}
-                                id={id}
-                                type='captcha'
-                                name={name}
-                                captcha
-                                active={active}
-                                isPublic={isPublic}
-                                birdseye={birdseye}
-                                live={_isNumber(liveStats[id]) ? liveStats[id] : 'N/A'}
-                                deleteProjectFailed={() => { }}
-                                sharedProjects={[]}
-                                setProjectsShareData={() => { }}
-                                setUserShareData={() => { }}
-                                userSharedUpdate={() => { }}
-                                sharedProjectError={() => { }}
-                                confirmed
-                              />
-                            ))}
+                            {_map(
+                              _filter(captchaProjects, ({ uiHidden }) => !uiHidden),
+                              ({ name, id, active, public: isPublic }) => (
+                                <ProjectCard
+                                  t={t}
+                                  key={id}
+                                  id={id}
+                                  type='captcha'
+                                  name={name}
+                                  captcha
+                                  active={active}
+                                  isPublic={isPublic}
+                                  birdseye={birdseye}
+                                  live={_isNumber(liveStats[id]) ? liveStats[id] : 'N/A'}
+                                  deleteProjectFailed={() => {}}
+                                  sharedProjects={[]}
+                                  setProjectsShareData={() => {}}
+                                  setUserShareData={() => {}}
+                                  userSharedUpdate={() => {}}
+                                  sharedProjectError={() => {}}
+                                  confirmed
+                                />
+                              ),
+                            )}
                             <AddProject t={t} onClick={onNewProject} />
                           </ul>
                         )}
@@ -692,57 +731,58 @@ const Dashboard = ({
                           <NoProjects t={t} onClick={onNewProject} />
                         ) : (
                           <ul className='grid grid-cols-1 gap-x-6 gap-y-3 lg:gap-y-6 lg:grid-cols-3'>
-                            {_map(_filter(sharedProjects, ({ uiHidden }) => !uiHidden), ({
-                              project, confirmed,
-                            }) => {
-                              if (_isUndefined(confirmed) || confirmed) {
+                            {_map(
+                              _filter(sharedProjects, ({ uiHidden }) => !uiHidden),
+                              ({ project, confirmed }) => {
+                                if (_isUndefined(confirmed) || confirmed) {
+                                  return (
+                                    <ProjectCard
+                                      t={t}
+                                      key={`${project?.id}-confirmed`}
+                                      type='analytics'
+                                      id={project?.id}
+                                      name={project?.name}
+                                      shared
+                                      getRole={getRole}
+                                      active={project?.active}
+                                      isPublic={project?.public}
+                                      confirmed={confirmed}
+                                      birdseye={birdseye}
+                                      live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
+                                      setUserShareData={() => {}}
+                                      deleteProjectFailed={() => {}}
+                                      sharedProjects={[]}
+                                      setProjectsShareData={() => {}}
+                                      userSharedUpdate={() => {}}
+                                      sharedProjectError={() => {}}
+                                    />
+                                  )
+                                }
+
                                 return (
                                   <ProjectCard
                                     t={t}
-                                    key={`${project?.id}-confirmed`}
-                                    type='analytics'
+                                    key={project?.id}
                                     id={project?.id}
+                                    type='analytics'
                                     name={project?.name}
                                     shared
                                     getRole={getRole}
                                     active={project?.active}
                                     isPublic={project?.public}
-                                    confirmed={confirmed}
                                     birdseye={birdseye}
+                                    confirmed={confirmed}
+                                    sharedProjects={user.sharedProjects}
+                                    setProjectsShareData={setProjectsShareData}
+                                    setUserShareData={setUserShareData}
                                     live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
-                                    setUserShareData={() => { }}
-                                    deleteProjectFailed={() => { }}
-                                    sharedProjects={[]}
-                                    setProjectsShareData={() => { }}
-                                    userSharedUpdate={() => { }}
-                                    sharedProjectError={() => { }}
+                                    userSharedUpdate={userSharedUpdate}
+                                    sharedProjectError={sharedProjectError}
+                                    deleteProjectFailed={deleteProjectFailed}
                                   />
                                 )
-                              }
-
-                              return (
-                                <ProjectCard
-                                  t={t}
-                                  key={project?.id}
-                                  id={project?.id}
-                                  type='analytics'
-                                  name={project?.name}
-                                  shared
-                                  getRole={getRole}
-                                  active={project?.active}
-                                  isPublic={project?.public}
-                                  birdseye={birdseye}
-                                  confirmed={confirmed}
-                                  sharedProjects={user.sharedProjects}
-                                  setProjectsShareData={setProjectsShareData}
-                                  setUserShareData={setUserShareData}
-                                  live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
-                                  userSharedUpdate={userSharedUpdate}
-                                  sharedProjectError={sharedProjectError}
-                                  deleteProjectFailed={deleteProjectFailed}
-                                />
-                              )
-                            })}
+                              },
+                            )}
                           </ul>
                         )}
                       </div>
@@ -751,14 +791,32 @@ const Dashboard = ({
                 )}
               </ClientOnly>
             )}
-            {(tabProjects === tabForOwnedProject && pageAmount > 1) && (
-              <Pagination className='mt-2' page={dashboardPaginationPage} pageAmount={pageAmount} setPage={setDashboardPaginationPage} total={total} />
+            {tabProjects === tabForOwnedProject && pageAmount > 1 && (
+              <Pagination
+                className='mt-2'
+                page={dashboardPaginationPage}
+                pageAmount={pageAmount}
+                setPage={setDashboardPaginationPage}
+                total={total}
+              />
             )}
-            {(tabProjects === tabForSharedProject && pageAmountShared > 1) && (
-              <Pagination className='mt-2' page={dashboardPaginationPageShared} pageAmount={pageAmountShared} setPage={setDashboardPaginationPageShared} total={sharedTotal} />
+            {tabProjects === tabForSharedProject && pageAmountShared > 1 && (
+              <Pagination
+                className='mt-2'
+                page={dashboardPaginationPageShared}
+                pageAmount={pageAmountShared}
+                setPage={setDashboardPaginationPageShared}
+                total={sharedTotal}
+              />
             )}
-            {(tabProjects === tabForCaptchaProject && pageAmountCaptcha > 1) && (
-              <Pagination className='mt-2' page={dashboardPaginationPageCaptcha} pageAmount={pageAmountCaptcha} setPage={setDashboardPaginationPageCaptcha} total={captchaTotal} />
+            {tabProjects === tabForCaptchaProject && pageAmountCaptcha > 1 && (
+              <Pagination
+                className='mt-2'
+                page={dashboardPaginationPageCaptcha}
+                pageAmount={pageAmountCaptcha}
+                setPage={setDashboardPaginationPageCaptcha}
+                total={captchaTotal}
+              />
             )}
           </div>
         </div>

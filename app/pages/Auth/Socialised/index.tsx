@@ -1,6 +1,4 @@
-import React, {
-  useEffect, useState, memo,
-} from 'react'
+import React, { useEffect, useState, memo } from 'react'
 import { Link } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
@@ -13,10 +11,15 @@ import Loader from 'ui/Loader'
 import routes from 'routesPath'
 
 const Socialised = (): JSX.Element => {
-  const { t }: {
-    t: (key: string, optinions?: {
-      [key: string]: string | number,
-    }) => string,
+  const {
+    t,
+  }: {
+    t: (
+      key: string,
+      optinions?: {
+        [key: string]: string | number
+      },
+    ) => string
   } = useTranslation('common')
   const [loading, setLoading] = useState<boolean>(true)
   const [isError, setIsError] = useState<boolean>(false)

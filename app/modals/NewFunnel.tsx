@@ -15,20 +15,27 @@ import { IFunnel } from 'redux/models/IProject'
 import { IProjectForShared } from 'redux/models/ISharedProject'
 
 interface INewFunnel {
-  project: IProjectForShared,
-  onClose: () => void,
-  onSubmit: (name: string, steps: string[]) => Promise<void>,
-  isOpened: boolean,
-  pid: string,
-  loading: boolean,
-  funnel?: IFunnel,
-  projectPassword?: string,
+  project: IProjectForShared
+  onClose: () => void
+  onSubmit: (name: string, steps: string[]) => Promise<void>
+  isOpened: boolean
+  pid: string
+  loading: boolean
+  funnel?: IFunnel
+  projectPassword?: string
 }
 
 const INITIAL_FUNNEL_STEPS = [null, null]
 
 const NewFunnel = ({
-  onClose, onSubmit, isOpened, pid, funnel, loading, project, projectPassword,
+  onClose,
+  onSubmit,
+  isOpened,
+  pid,
+  funnel,
+  loading,
+  project,
+  projectPassword,
 }: INewFunnel): JSX.Element => {
   const { t } = useTranslation('common')
   const [name, setName] = useState<string>(funnel?.name || '')
@@ -100,7 +107,7 @@ const NewFunnel = ({
       onClose={_onClose}
       onSubmit={_onSubmit}
       submitText={t('common.continue')}
-      message={(
+      message={
         <div>
           <Input
             name='funnel-name-input'
@@ -109,9 +116,7 @@ const NewFunnel = ({
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
-          <p className='mt-5 text-sm font-medium text-gray-700 dark:text-gray-200'>
-            {t('modals.funnels.steps')}
-          </p>
+          <p className='mt-5 text-sm font-medium text-gray-700 dark:text-gray-200'>{t('modals.funnels.steps')}</p>
           {_map(steps, (step, index) => (
             <div key={index} className='flex items-center space-x-2 mt-1'>
               <Combobox
@@ -155,7 +160,7 @@ const NewFunnel = ({
             </p>
           )}
         </div>
-      )}
+      }
       title={funnel ? t('modals.funnels.editTitle') : t('modals.funnels.addTitle')}
       isOpened={isOpened}
       submitDisabled={!name || !allStepsFulfilled}

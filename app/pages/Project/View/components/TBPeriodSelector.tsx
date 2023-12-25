@@ -9,16 +9,23 @@ import cx from 'clsx'
 import { ALL_PERIODS } from 'redux/constants'
 
 interface ITBPeriodSelector {
-  title: string | number | React.ReactNode,
-  items: any[],
+  title: string | number | React.ReactNode
+  items: any[]
   /* (function): A function that is called when an item is selected. */
-  onSelect: (item: any, e?: React.MouseEvent<HTMLElement>) => void | null,
-  activePeriod: any,
-  updateTimebucket: (tb: string) => void,
-  timeBucket: string,
+  onSelect: (item: any, e?: React.MouseEvent<HTMLElement>) => void | null
+  activePeriod: any
+  updateTimebucket: (tb: string) => void
+  timeBucket: string
 }
 
-const TBPeriodSelector = ({ items, title, onSelect, activePeriod, updateTimebucket, timeBucket }: ITBPeriodSelector): JSX.Element => {
+const TBPeriodSelector = ({
+  items,
+  title,
+  onSelect,
+  activePeriod,
+  updateTimebucket,
+  timeBucket,
+}: ITBPeriodSelector): JSX.Element => {
   const { t } = useTranslation('common')
 
   const periods = useMemo(() => {
@@ -31,9 +38,7 @@ const TBPeriodSelector = ({ items, title, onSelect, activePeriod, updateTimebuck
 
   return (
     <Popover className='relative'>
-      <Popover.Button
-        className='inline-flex w-full px-3 md:px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-50 outline-none group'
-      >
+      <Popover.Button className='inline-flex w-full px-3 md:px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-50 outline-none group'>
         <CalendarDaysIcon className='w-5 h-5 mr-1' />
         <span>{title}</span>
         <ChevronDownIcon
@@ -65,24 +70,26 @@ const TBPeriodSelector = ({ items, title, onSelect, activePeriod, updateTimebuck
 
                     updateTimebucket(value)
                   }}
-                  className={cx(
-                    'relative capitalize inline-flex items-center text-sm font-medium',
-                    {
-                      'text-gray-900 dark:text-gray-50': timeBucket === value,
-                      'text-gray-700 dark:text-gray-300': (available && timeBucket !== value),
-                      'text-gray-400 dark:text-gray-500': (!available && timeBucket !== value),
-                      'cursor-pointer': available,
-                      'cursor-default': !available,
-                    },
-                  )}
+                  className={cx('relative capitalize inline-flex items-center text-sm font-medium', {
+                    'text-gray-900 dark:text-gray-50': timeBucket === value,
+                    'text-gray-700 dark:text-gray-300': available && timeBucket !== value,
+                    'text-gray-400 dark:text-gray-500': !available && timeBucket !== value,
+                    'cursor-pointer': available,
+                    'cursor-default': !available,
+                  })}
                 >
                   {label}
                 </Popover.Button>
               ))}
             </div>
             <ul className='text-left w-full'>
-              {_map(items, item => (
-                <Popover.Button as='li' key={item.label} onClick={(e: React.MouseEvent<HTMLElement>) => onSelect(item, e)} className='text-gray-700 dark:text-gray-50 rounded-md block px-4 py-2 text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'>
+              {_map(items, (item) => (
+                <Popover.Button
+                  as='li'
+                  key={item.label}
+                  onClick={(e: React.MouseEvent<HTMLElement>) => onSelect(item, e)}
+                  className='text-gray-700 dark:text-gray-50 rounded-md block px-4 py-2 text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'
+                >
                   {item.dropdownLabel || item.label}
                 </Popover.Button>
               ))}

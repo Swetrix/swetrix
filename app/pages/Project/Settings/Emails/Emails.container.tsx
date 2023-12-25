@@ -10,27 +10,35 @@ const mapStateToProps = (state: StateType) => ({
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
   emailFailed: (message: string) => {
-    dispatch(errorsActions.genericError({
-      message,
-    }))
+    dispatch(
+      errorsActions.genericError({
+        message,
+      }),
+    )
   },
   addEmail: (message: string, type = 'success') => {
-    dispatch(alertsActions.generateAlerts({
-      message,
-      type,
-    }))
+    dispatch(
+      alertsActions.generateAlerts({
+        message,
+        type,
+      }),
+    )
   },
   removeEmail: (message: string, type = 'success') => {
-    dispatch(alertsActions.generateAlerts({
-      message,
-      type,
-    }))
+    dispatch(
+      alertsActions.generateAlerts({
+        message,
+        type,
+      }),
+    )
   },
   reportTypeNotifiction: (message: string, type = 'success') => {
-    dispatch(alertsActions.generateAlerts({
-      message,
-      type,
-    }))
+    dispatch(
+      alertsActions.generateAlerts({
+        message,
+        type,
+      }),
+    )
   },
 })
 

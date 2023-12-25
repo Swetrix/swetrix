@@ -14,14 +14,18 @@ interface ISessionChart {
   dataNames: any
 }
 
-export const SessionChart = ({
-  chart, timeBucket, timeFormat, rotateXAxis, chartType, dataNames,
-}: ISessionChart) => {
+export const SessionChart = ({ chart, timeBucket, timeFormat, rotateXAxis, chartType, dataNames }: ISessionChart) => {
   // const [bbChart, setBBChart] = useState<bb.Chart | null>(null)
 
   useEffect(() => {
     // @ts-ignore
-    const bbSettings: bb.ChartOptions = getSettingsSession(chart, timeBucket as string, timeFormat, rotateXAxis, chartType)
+    const bbSettings: bb.ChartOptions = getSettingsSession(
+      chart,
+      timeBucket as string,
+      timeFormat,
+      rotateXAxis,
+      chartType,
+    )
 
     const generate = bb.generate(bbSettings)
     generate.data.names(dataNames)
@@ -33,7 +37,5 @@ export const SessionChart = ({
     // })
   }, [chart, timeBucket, timeFormat, rotateXAxis, chartType, dataNames])
 
-  return (
-    <div className='h-80 mt-5 md:mt-0 [&_svg]:!overflow-visible' id='sessionChart' />
-  )
+  return <div className='h-80 mt-5 md:mt-0 [&_svg]:!overflow-visible' id='sessionChart' />
 }

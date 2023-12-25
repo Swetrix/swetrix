@@ -1,9 +1,13 @@
-import React, {
-  memo, useState, useEffect, useMemo, Fragment,
-} from 'react'
+import React, { memo, useState, useEffect, useMemo, Fragment } from 'react'
 import { ArrowSmallUpIcon, ArrowSmallDownIcon } from '@heroicons/react/24/solid'
 import {
-  FunnelIcon, MapIcon, Bars4Icon, ArrowsPointingOutIcon, ChartPieIcon, ArrowLongRightIcon, ArrowLongLeftIcon,
+  FunnelIcon,
+  MapIcon,
+  Bars4Icon,
+  ArrowsPointingOutIcon,
+  ChartPieIcon,
+  ArrowLongRightIcon,
+  ArrowLongLeftIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
@@ -44,22 +48,32 @@ const checkIfBarsNeeded = (panelID: string) => {
 
 // noSwitch - 'previous' and 'next' buttons
 const PanelContainer = ({
-  name, children, noSwitch, icon, type, openModal, activeFragment, setActiveFragment,
+  name,
+  children,
+  noSwitch,
+  icon,
+  type,
+  openModal,
+  activeFragment,
+  setActiveFragment,
 }: {
-  name: string,
-  children?: React.ReactNode,
-  noSwitch?: boolean,
-  icon?: React.ReactNode,
-  type: string,
-  openModal?: () => void,
-  activeFragment: number | string,
-  setActiveFragment: (arg: number) => void,
+  name: string
+  children?: React.ReactNode
+  noSwitch?: boolean
+  icon?: React.ReactNode
+  type: string
+  openModal?: () => void
+  activeFragment: number | string
+  setActiveFragment: (arg: number) => void
 }): JSX.Element => (
   <div
-    className={cx('relative bg-white dark:bg-slate-800/25 pt-5 px-4 min-h-72 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden', {
-      'pb-12': !noSwitch,
-      'pb-5': noSwitch,
-    })}
+    className={cx(
+      'relative bg-white dark:bg-slate-800/25 pt-5 px-4 min-h-72 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden',
+      {
+        'pb-12': !noSwitch,
+        'pb-5': noSwitch,
+      },
+    )}
   >
     <div className='flex items-center justify-between mb-2'>
       <h3 className='flex items-center text-lg leading-6 font-semibold text-gray-900 dark:text-gray-50'>
@@ -72,7 +86,7 @@ const PanelContainer = ({
         {name}
       </h3>
       <div className='flex'>
-        {(checkIfBarsNeeded(type)) && (
+        {checkIfBarsNeeded(type) && (
           <Bars4Icon
             className={cx(iconClassName, 'cursor-pointer', {
               'text-blue-500': activeFragment === 0,
@@ -113,9 +127,7 @@ const PanelContainer = ({
       </div>
     </div>
     {/* for other tabs */}
-    <div className='flex flex-col h-full scroll-auto overflow-auto'>
-      {children}
-    </div>
+    <div className='flex flex-col h-full scroll-auto overflow-auto'>{children}</div>
   </div>
 )
 
@@ -133,13 +145,19 @@ PanelContainer.defaultProps = {
   icon: null,
   noSwitch: false,
   activeFragment: 0,
-  setActiveFragment: () => { },
-  openModal: () => { },
+  setActiveFragment: () => {},
+  openModal: () => {},
 }
 
 // First tab with stats
 const Overview = ({
-  overall, chartData, activePeriod, t, live, sessionDurationAVG, projectId,
+  overall,
+  chartData,
+  activePeriod,
+  t,
+  live,
+  sessionDurationAVG,
+  projectId,
 }: {
   overall: any
   chartData: any
@@ -164,8 +182,7 @@ const Overview = ({
       <div className='flex text-lg justify-between'>
         <div className='flex items-center dark:text-gray-50'>
           <PulsatingCircle className='mr-1.5' type='big' />
-          {t('dashboard.liveVisitors')}
-          :
+          {t('dashboard.liveVisitors')}:
         </div>
         <LiveVisitorsDropdown projectId={projectId} live={live} />
       </div>
@@ -180,59 +197,31 @@ const Overview = ({
           </p>
 
           <div className='flex justify-between'>
-            <p className='text-lg dark:text-gray-50'>
-              {t('dashboard.pageviews')}
-              :
-            </p>
-            <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
-              {pageviews}
-            </p>
+            <p className='text-lg dark:text-gray-50'>{t('dashboard.pageviews')}:</p>
+            <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>{pageviews}</p>
           </div>
 
           <div className='flex justify-between'>
-            <p className='text-lg dark:text-gray-50'>
-              {t('dashboard.unique')}
-              :
-            </p>
-            <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
-              {uniques}
-            </p>
+            <p className='text-lg dark:text-gray-50'>{t('dashboard.unique')}:</p>
+            <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>{uniques}</p>
           </div>
 
           <div className='flex justify-between'>
-            <p className='text-lg dark:text-gray-50'>
-              {t('dashboard.bounceRate')}
-              :
-            </p>
-            <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
-              {bounceRate}
-              %
-            </p>
+            <p className='text-lg dark:text-gray-50'>{t('dashboard.bounceRate')}:</p>
+            <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>{bounceRate}%</p>
           </div>
           <div className='flex justify-between'>
-            <p className='text-lg dark:text-gray-50'>
-              {t('dashboard.sessionDuration')}
-              :
-            </p>
-            <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>
-              {sessionDurationAVG}
-            </p>
+            <p className='text-lg dark:text-gray-50'>{t('dashboard.sessionDuration')}:</p>
+            <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>{sessionDurationAVG}</p>
           </div>
           <hr className='my-2 border-gray-200 dark:border-gray-600' />
         </>
       )}
-      <p className='text-lg font-semibold dark:text-gray-50'>
-        {t('project.weeklyStats')}
-      </p>
+      <p className='text-lg font-semibold dark:text-gray-50'>{t('project.weeklyStats')}</p>
       <div className='flex justify-between'>
-        <p className='text-lg dark:text-gray-50'>
-          {t('dashboard.pageviews')}
-          :
-        </p>
+        <p className='text-lg dark:text-gray-50'>{t('dashboard.pageviews')}:</p>
         <dd className='flex items-baseline'>
-          <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-lg'>
-            {overall.thisWeek}
-          </p>
+          <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-lg'>{overall.thisWeek}</p>
           <p
             className={cx('flex text-sm -ml-1 items-baseline', {
               'text-green-600': pageviewsDidGrowUp,
@@ -242,32 +231,22 @@ const Overview = ({
             {pageviewsDidGrowUp ? (
               <>
                 <ArrowSmallUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
-                <span className='sr-only'>
-                  {t('dashboard.inc')}
-                </span>
+                <span className='sr-only'>{t('dashboard.inc')}</span>
               </>
             ) : (
               <>
                 <ArrowSmallDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
-                <span className='sr-only'>
-                  {t('dashboard.dec')}
-                </span>
+                <span className='sr-only'>{t('dashboard.dec')}</span>
               </>
             )}
-            {overall.percChange}
-            %
+            {overall.percChange}%
           </p>
         </dd>
       </div>
       <div className='flex justify-between'>
-        <p className='text-lg dark:text-gray-50'>
-          {t('dashboard.unique')}
-          :
-        </p>
+        <p className='text-lg dark:text-gray-50'>{t('dashboard.unique')}:</p>
         <dd className='flex items-baseline'>
-          <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-lg'>
-            {overall.thisWeekUnique}
-          </p>
+          <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-lg'>{overall.thisWeekUnique}</p>
           <p
             className={cx('flex text-sm -ml-1 items-baseline', {
               'text-green-600': uniqueDidGrowUp,
@@ -277,20 +256,15 @@ const Overview = ({
             {uniqueDidGrowUp ? (
               <>
                 <ArrowSmallUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
-                <span className='sr-only'>
-                  {t('dashboard.inc')}
-                </span>
+                <span className='sr-only'>{t('dashboard.inc')}</span>
               </>
             ) : (
               <>
                 <ArrowSmallDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
-                <span className='sr-only'>
-                  {t('dashboard.dec')}
-                </span>
+                <span className='sr-only'>{t('dashboard.dec')}</span>
               </>
             )}
-            {overall.percChangeUnique}
-            %
+            {overall.percChangeUnique}%
           </p>
         </dd>
       </div>
@@ -342,7 +316,10 @@ const getPieOptions = (customs: any, uniques: number, t: any) => {
 
 // Tabs with custom events like submit form, press button, go to the link rate etc.
 const CustomEvents = ({
-  customs, chartData, onFilter, t,
+  customs,
+  chartData,
+  onFilter,
+  t,
 }: {
   customs: any
   chartData: any
@@ -377,21 +354,21 @@ const CustomEvents = ({
         activeFragment={activeFragment}
       >
         {_isEmpty(chartData) ? (
-          <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>
-            {t('project.noParamData')}
-          </p>
+          <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
         ) : (
-          <Chart
-            options={chartOptions}
-            current='panels-ce'
-          />
+          <Chart options={chartOptions} current='panels-ce' />
         )}
       </PanelContainer>
     )
   }
 
   return (
-    <PanelContainer name={t('project.customEv')} type='ce' setActiveFragment={setActiveFragment} activeFragment={activeFragment}>
+    <PanelContainer
+      name={t('project.customEv')}
+      type='ce'
+      setActiveFragment={setActiveFragment}
+      activeFragment={activeFragment}
+    >
       <table className='table-fixed'>
         <thead>
           <tr className='text-gray-900 dark:text-gray-50'>
@@ -418,10 +395,7 @@ const CustomEvents = ({
                 {customs[ev]}
                 &nbsp;&nbsp;
               </td>
-              <td className='text-right'>
-                {_round((customs[ev] / uniques) * 100, 2)}
-                %
-              </td>
+              <td className='text-right'>{_round((customs[ev] / uniques) * 100, 2)}%</td>
             </tr>
           ))}
         </tbody>
@@ -439,7 +413,16 @@ CustomEvents.propTypes = {
 }
 
 const Panel = ({
-  name, data, rowMapper, capitalize, linkContent, t, icon, id, hideFilters, onFilter,
+  name,
+  data,
+  rowMapper,
+  capitalize,
+  linkContent,
+  t,
+  icon,
+  id,
+  hideFilters,
+  onFilter,
 }: {
   name: string
   data: IEntry[]
@@ -463,7 +446,7 @@ const Panel = ({
   const canGoPrev = () => page > 0
   const canGoNext = () => page < _floor((_size(entries) - 1) / ENTRIES_PER_PANEL)
 
-  const _onFilter = hideFilters ? () => { } : onFilter
+  const _onFilter = hideFilters ? () => {} : onFilter
 
   useEffect(() => {
     const sizeKeys = _size(entries)
@@ -499,22 +482,12 @@ const Panel = ({
         setActiveFragment={setActiveFragment}
         openModal={() => setModal(true)}
       >
-        <InteractiveMap
-          data={data}
-          total={total}
-          onClickCountry={(key) => _onFilter(id, key)}
-        />
+        <InteractiveMap data={data} total={total} onClickCountry={(key) => _onFilter(id, key)} />
         <Modal
           onClose={() => setModal(false)}
           closeText={t('common.close')}
           isOpened={modal}
-          message={(
-            <InteractiveMap
-              data={data}
-              total={total}
-              onClickCountry={(key) => _onFilter(id, key)}
-            />
-          )}
+          message={<InteractiveMap data={data} total={total} onClickCountry={(key) => _onFilter(id, key)} />}
           size='large'
         />
       </PanelContainer>
@@ -569,104 +542,97 @@ const Panel = ({
         activeFragment={activeFragment}
       >
         {_isEmpty(data) ? (
-          <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>
-            {t('project.noParamData')}
-          </p>
+          <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
         ) : (
-          <Chart
-            options={options}
-            current={`Panels-${id}`}
-          />
+          <Chart options={options} current={`Panels-${id}`} />
         )}
       </PanelContainer>
     )
   }
 
   return (
-    <PanelContainer name={name} icon={icon} type={id} activeFragment={activeFragment} setActiveFragment={setActiveFragment}>
+    <PanelContainer
+      name={name}
+      icon={icon}
+      type={id}
+      activeFragment={activeFragment}
+      setActiveFragment={setActiveFragment}
+    >
       {_isEmpty(data) ? (
-        <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>
-          {t('project.noParamData')}
-        </p>
-      ) : _map(entriesToDisplay, entry => {
-        const {
-          count, name: entryName,
-        } = entry
-        const perc = _round((count / total) * 100, 2)
-        const rowData = rowMapper(entry)
-        const valueData = count
+        <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
+      ) : (
+        _map(entriesToDisplay, (entry) => {
+          const { count, name: entryName } = entry
+          const perc = _round((count / total) * 100, 2)
+          const rowData = rowMapper(entry)
+          const valueData = count
 
-        return (
-          <Fragment key={entryName}>
-            <div
-              className={cx('flex justify-between mt-[0.32rem] first:mt-0 dark:text-gray-50 rounded', {
-                'group hover:bg-gray-100 hover:dark:bg-slate-800 cursor-pointer': !hideFilters,
-              })}
-              onClick={() => _onFilter(id, entryName)}
-            >
-              {linkContent ? (
-                <a
-                  className={cx('flex items-center label hover:underline text-blue-600 dark:text-blue-500', { capitalize })}
-                  href={rowData}
-                  target='_blank'
-                  rel='noopener noreferrer nofollow'
-                  aria-label={`${rowData} (opens in a new tab)`}
-                >
-                  {rowData}
-                  {!hideFilters && (
-                    <FunnelIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
-                  )}
-                </a>
-              ) : (
-                <span className={cx('flex items-center label', { capitalize })}>
-                  {rowData}
-                  {!hideFilters && (
-                    <FunnelIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
-                  )}
+          return (
+            <Fragment key={entryName}>
+              <div
+                className={cx('flex justify-between mt-[0.32rem] first:mt-0 dark:text-gray-50 rounded', {
+                  'group hover:bg-gray-100 hover:dark:bg-slate-800 cursor-pointer': !hideFilters,
+                })}
+                onClick={() => _onFilter(id, entryName)}
+              >
+                {linkContent ? (
+                  <a
+                    className={cx('flex items-center label hover:underline text-blue-600 dark:text-blue-500', {
+                      capitalize,
+                    })}
+                    href={rowData}
+                    target='_blank'
+                    rel='noopener noreferrer nofollow'
+                    aria-label={`${rowData} (opens in a new tab)`}
+                  >
+                    {rowData}
+                    {!hideFilters && (
+                      <FunnelIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
+                    )}
+                  </a>
+                ) : (
+                  <span className={cx('flex items-center label', { capitalize })}>
+                    {rowData}
+                    {!hideFilters && (
+                      <FunnelIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
+                    )}
+                  </span>
+                )}
+                <span className='ml-3 dark:text-gray-50'>
+                  {valueData}
+                  &nbsp;
+                  <span className='text-gray-500 dark:text-gray-200 font-light'>
+                    ({perc}
+                    %)
+                  </span>
                 </span>
-              )}
-              <span className='ml-3 dark:text-gray-50'>
-                {valueData}
-                &nbsp;
-                <span className='text-gray-500 dark:text-gray-200 font-light'>
-                  (
-                  {perc}
-                  %)
-                </span>
-              </span>
-            </div>
-            <Progress now={perc} />
-          </Fragment>
-        )
-      })}
+              </div>
+              <Progress now={perc} />
+            </Fragment>
+          )
+        })
+      )}
       {/* for pagination in tabs */}
       {_size(entries) > ENTRIES_PER_PANEL && (
         <div className='absolute bottom-0 w-card-toggle-sm sm:!w-card-toggle'>
           <div className='flex justify-between select-none mb-2'>
             <div>
               <span className='text-gray-500 dark:text-gray-200 font-light lowercase text-xs'>
-                {_size(entries)}
-                {' '}
-                {t('project.results')}
+                {_size(entries)} {t('project.results')}
               </span>
               <span className='text-gray-500 dark:text-gray-200 font-light text-xs'>
-                .
-                {' '}
-                {t('project.page')}
-                {' '}
-                {page + 1}
-                {' '}
-                /
-                {' '}
-                {totalPages}
+                . {t('project.page')} {page + 1} / {totalPages}
               </span>
             </div>
             <div className='flex justify-between w-[4.5rem]'>
               <Button
-                className={cx('text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-slate-800 border-none px-1.5 py-0.5', {
-                  'opacity-50 cursor-not-allowed': !canGoPrev(),
-                  'hover:bg-gray-200 hover:dark:bg-slate-700': canGoPrev(),
-                })}
+                className={cx(
+                  'text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-slate-800 border-none px-1.5 py-0.5',
+                  {
+                    'opacity-50 cursor-not-allowed': !canGoPrev(),
+                    'hover:bg-gray-200 hover:dark:bg-slate-700': canGoPrev(),
+                  },
+                )}
                 type='button'
                 onClick={onPrevious}
                 disabled={!canGoPrev()}
@@ -675,10 +641,13 @@ const Panel = ({
                 <ArrowLongLeftIcon className='w-5 h-5' />
               </Button>
               <Button
-                className={cx('text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-slate-800 border-none px-1.5 py-0.5', {
-                  'opacity-50 cursor-not-allowed': !canGoNext(),
-                  'hover:bg-gray-200 hover:dark:bg-slate-700': canGoNext(),
-                })}
+                className={cx(
+                  'text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-slate-800 border-none px-1.5 py-0.5',
+                  {
+                    'opacity-50 cursor-not-allowed': !canGoNext(),
+                    'hover:bg-gray-200 hover:dark:bg-slate-700': canGoNext(),
+                  },
+                )}
                 onClick={onNext}
                 disabled={!canGoNext()}
                 type='button'
@@ -711,7 +680,7 @@ Panel.defaultProps = {
   rowMapper: (row: IEntry): string => row.name,
   capitalize: false,
   linkContent: false,
-  onFilter: () => { },
+  onFilter: () => {},
   hideFilters: false,
   icon: null,
 }
@@ -720,8 +689,4 @@ const PanelMemo = memo(Panel)
 const OverviewMemo = memo(Overview)
 const CustomEventsMemo = memo(CustomEvents)
 
-export {
-  PanelMemo as Panel,
-  OverviewMemo as Overview,
-  CustomEventsMemo as CustomEvents,
-}
+export { PanelMemo as Panel, OverviewMemo as Overview, CustomEventsMemo as CustomEvents }

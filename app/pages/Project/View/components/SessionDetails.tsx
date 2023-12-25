@@ -14,29 +14,40 @@ interface ISessionDetailsComponent {
 }
 
 export const SessionDetails = ({ details, psid }: ISessionDetailsComponent) => {
-  const { t, i18n: { language } } = useTranslation('common')
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
 
-  const geo = [{
-    label: t('project.mapping.cc'),
-    value: details.cc,
-  }, {
-    label: t('project.mapping.rg'),
-    value: details.rg,
-  }, {
-    label: t('project.mapping.ct'),
-    value: details.ct,
-  }]
+  const geo = [
+    {
+      label: t('project.mapping.cc'),
+      value: details.cc,
+    },
+    {
+      label: t('project.mapping.rg'),
+      value: details.rg,
+    },
+    {
+      label: t('project.mapping.ct'),
+      value: details.ct,
+    },
+  ]
 
-  const utm = [{
-    label: t('project.mapping.so'),
-    value: details.so || 'N/A',
-  }, {
-    label: t('project.mapping.me'),
-    value: details.me || 'N/A',
-  }, {
-    label: t('project.mapping.ca'),
-    value: details.ca || 'N/A',
-  }]
+  const utm = [
+    {
+      label: t('project.mapping.so'),
+      value: details.so || 'N/A',
+    },
+    {
+      label: t('project.mapping.me'),
+      value: details.me || 'N/A',
+    },
+    {
+      label: t('project.mapping.ca'),
+      value: details.ca || 'N/A',
+    },
+  ]
 
   return (
     <div className='flex justify-center lg:justify-start gap-5 mb-5 flex-wrap'>
@@ -59,23 +70,14 @@ export const SessionDetails = ({ details, psid }: ISessionDetailsComponent) => {
           )
         }}
       />
-      <MetricCard
-        label={t('project.mapping.os')}
-        value={details.os || 'N/A'}
-      />
+      <MetricCard label={t('project.mapping.os')} value={details.os || 'N/A'} />
       <MetricCard
         label={t('project.mapping.dv')}
         value={details.dv || 'N/A'}
         valueMapper={(value) => _capitalize(value)}
       />
-      <MetricCard
-        label={t('project.mapping.br')}
-        value={details.br || 'N/A'}
-      />
-      <MetricCard
-        label={t('project.mapping.lc')}
-        value={details.lc || 'N/A'}
-      />
+      <MetricCard label={t('project.mapping.br')} value={details.br || 'N/A'} />
+      <MetricCard label={t('project.mapping.lc')} value={details.lc || 'N/A'} />
       <MetricCard
         label={t('project.mapping.ref')}
         value={details.ref || 'N/A'}
@@ -93,10 +95,7 @@ export const SessionDetails = ({ details, psid }: ISessionDetailsComponent) => {
           )
         }}
       />
-      <MetricCardSelect
-        values={utm}
-        selectLabel={t('project.campaigns')}
-      />
+      <MetricCardSelect values={utm} selectLabel={t('project.campaigns')} />
       <MetricCard
         label={t('dashboard.sessionDuration')}
         value={details.sdur as number}

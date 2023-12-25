@@ -17,9 +17,7 @@ export async function loader({ request }: LoaderArgs) {
 }
 
 export default function Index() {
-  const {
-    theme,
-  } = useLoaderData<typeof loader>()
+  const { theme } = useLoaderData<typeof loader>()
 
   return <Signin ssrTheme={theme} />
 }

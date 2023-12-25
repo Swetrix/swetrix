@@ -52,7 +52,7 @@ const initialState: IInitialState = {
   dashboardPaginationPage: 1,
   dashboardPaginationPageShared: 1,
   dashboardPaginationPageCaptcha: 1,
-  dashboardTabs: getItem('dashboardTabs') as string || tabForOwnedProject,
+  dashboardTabs: (getItem('dashboardTabs') as string) || tabForOwnedProject,
   projectTab: PROJECT_TABS.traffic,
   alerts: [],
   subscribers: [],
@@ -64,10 +64,15 @@ const projectsSlice = createSlice({
   name: 'projects',
   initialState,
   reducers: {
-    setProjects(state, { payload }: PayloadAction<{
-      projects: Partial<IProject | ISharedProject>[]
-      shared?: boolean
-    }>) {
+    setProjects(
+      state,
+      {
+        payload,
+      }: PayloadAction<{
+        projects: Partial<IProject | ISharedProject>[]
+        shared?: boolean
+      }>,
+    ) {
       if (payload.shared) {
         state.isLoadingShared = false
         state.sharedProjects = payload.projects as ISharedProject[]
@@ -76,7 +81,7 @@ const projectsSlice = createSlice({
         state.projects = payload.projects as IProject[]
       }
     },
-    updateProject(state, { payload }: PayloadAction<{ project: Partial<IProject | ISharedProject>, pid: string }>) {
+    updateProject(state, { payload }: PayloadAction<{ project: Partial<IProject | ISharedProject>; pid: string }>) {
       const { pid, project } = payload
 
       state.projects = _map(current(state.projects), (res) => {
@@ -105,7 +110,7 @@ const projectsSlice = createSlice({
     setTotalMonthlyEvents(state, { payload }: PayloadAction<number>) {
       state.totalMonthlyEvents = payload
     },
-    setTotal(state, { payload }: PayloadAction<{ total: number, shared?: boolean }>) {
+    setTotal(state, { payload }: PayloadAction<{ total: number; shared?: boolean }>) {
       if (payload.shared) {
         state.sharedTotal = payload.total
       } else {
@@ -129,7 +134,7 @@ const projectsSlice = createSlice({
         ...data,
       }
     },
-    setLiveStatsProject(state, { payload }: PayloadAction<{ id: string, count: number }>) {
+    setLiveStatsProject(state, { payload }: PayloadAction<{ id: string; count: number }>) {
       const { id, count } = payload
 
       state.liveStats = {
@@ -137,32 +142,40 @@ const projectsSlice = createSlice({
         [id]: count,
       }
     },
-    setPublicProject(state, { payload }: PayloadAction<{ project: Partial<IProject | ISharedProject>, shared?: boolean }>) {
+    setPublicProject(
+      state,
+      { payload }: PayloadAction<{ project: Partial<IProject | ISharedProject>; shared?: boolean }>,
+    ) {
       const { project, shared = false } = payload
 
       if (shared) {
-        state.sharedProjects = _findIndex(current(state.sharedProjects), (el) => el.id === project.id) >= 0
-          ? state.sharedProjects
-          : [
-            ...state.sharedProjects,
-            {
-              ...project as ISharedProject,
-              uiHidden: true,
-            },
-          ]
+        state.sharedProjects =
+          _findIndex(current(state.sharedProjects), (el) => el.id === project.id) >= 0
+            ? state.sharedProjects
+            : [
+                ...state.sharedProjects,
+                {
+                  ...(project as ISharedProject),
+                  uiHidden: true,
+                },
+              ]
       } else {
-        state.projects = _findIndex(current(state.projects), (el) => el.id === project.id) >= 0
-          ? state.projects
-          : [
-            ...state.projects,
-            {
-              ...project as IProject,
-              uiHidden: true,
-            },
-          ]
+        state.projects =
+          _findIndex(current(state.projects), (el) => el.id === project.id) >= 0
+            ? state.projects
+            : [
+                ...state.projects,
+                {
+                  ...(project as IProject),
+                  uiHidden: true,
+                },
+              ]
       }
     },
-    setProjectsShareData(state, { payload }: PayloadAction<{ data: Partial<IProject> | Partial<ISharedProject>, id: string, shared?: boolean }>) {
+    setProjectsShareData(
+      state,
+      { payload }: PayloadAction<{ data: Partial<IProject> | Partial<ISharedProject>; id: string; shared?: boolean }>,
+    ) {
       const { data, id, shared = false } = payload
 
       if (shared) {
@@ -190,7 +203,7 @@ const projectsSlice = createSlice({
     setProjectsError(state, { payload }: PayloadAction<string>) {
       state.error = payload
     },
-    removeProject(state, { payload }: PayloadAction<{ pid: string, shared: boolean }>) {
+    removeProject(state, { payload }: PayloadAction<{ pid: string; shared: boolean }>) {
       const { pid, shared = false } = payload
 
       if (shared) {
@@ -201,7 +214,7 @@ const projectsSlice = createSlice({
         state.total -= 1
       }
     },
-    setProjectsLoading(state, { payload }: PayloadAction<{ isLoading: boolean, shared?: boolean }>) {
+    setProjectsLoading(state, { payload }: PayloadAction<{ isLoading: boolean; shared?: boolean }>) {
       const { isLoading, shared = false } = payload
 
       if (shared) {
@@ -217,7 +230,7 @@ const projectsSlice = createSlice({
     setProjectTab(state, { payload }: PayloadAction<string>) {
       state.projectTab = payload
     },
-    setProjectProtectedPassword: (state, { payload }: PayloadAction<{ id: string, password: string }>) => {
+    setProjectProtectedPassword: (state, { payload }: PayloadAction<{ id: string; password: string }>) => {
       const { id, password } = payload
 
       state.password = {

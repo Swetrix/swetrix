@@ -18,16 +18,20 @@ export default function* loadProjectAlerts({ payload: { take = DEFAULT_ALERTS_TA
     const { results, total, page_total: pageTotal } = yield call(getAlerts, take, skip)
 
     yield put(UIActions.setProjectAlerts(results))
-    yield put(UIActions.setProjectAlertsTotal({
-      total,
-      pageTotal,
-    }))
+    yield put(
+      UIActions.setProjectAlertsTotal({
+        total,
+        pageTotal,
+      }),
+    )
   } catch (e: unknown) {
     const { message } = e as { message: string }
     if (_isString(message)) {
-      yield put(errorsActions.setError({
-        message,
-      }))
+      yield put(
+        errorsActions.setError({
+          message,
+        }),
+      )
     }
     debug('failed to load extensions: %s', message)
   } finally {

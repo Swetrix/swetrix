@@ -7,7 +7,7 @@ const renderer = new marked.Renderer()
 
 renderer.link = (href: string, title: string | null | undefined, text: string) => {
   const url = new URL(href)
-  
+
   if (url.hostname !== 'swetrix.com') {
     url.searchParams.set('utm_source', 'swetrix.com')
   }

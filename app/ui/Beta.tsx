@@ -7,7 +7,7 @@ import { Badge } from './Badge'
 
 // Define the prop types for the component
 interface IBeta {
-  className?: string,
+  className?: string
 }
 
 const Beta = ({
@@ -19,9 +19,7 @@ const Beta = ({
   return (
     <Tooltip
       className='max-w-content !w-full'
-      tooltipNode={(
-        <Badge className={className} label={t('beta.title')} colour='yellow' />
-      )}
+      tooltipNode={<Badge className={className} label={t('beta.title')} colour='yellow' />}
       text={t('beta.description')}
     />
   )

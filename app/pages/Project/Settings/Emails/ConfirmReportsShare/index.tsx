@@ -9,10 +9,14 @@ import { confirmSubscriberInvite } from 'api'
 import routes from 'routesPath'
 
 const ConfirmReportsShare = (): JSX.Element => {
-  const { t }: {
+  const {
+    t,
+  }: {
     t: (key: string) => string
   } = useTranslation('common')
-  const { id }: {
+  const {
+    id,
+  }: {
     id: string
   } = useParams()
   const [loading, setLoading] = useState<boolean>(true)

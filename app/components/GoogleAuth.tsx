@@ -7,34 +7,37 @@ import GoogleGSVG from 'ui/icons/GoogleG'
 import { SSO_PROVIDERS } from 'redux/constants'
 
 interface IGoogleAuth {
-  setIsLoading: (isLoading: boolean) => void,
+  setIsLoading: (isLoading: boolean) => void
   authSSO: (provider: string, dontRemember: boolean, t: (key: string) => string, callback: (res: any) => void) => void
-  callback?: any,
-  dontRemember?: boolean,
-  isMiniButton?: boolean,
+  callback?: any
+  dontRemember?: boolean
+  isMiniButton?: boolean
   className?: string
 }
 
 const GoogleAuth: React.FC<IGoogleAuth> = ({
-  setIsLoading, authSSO, dontRemember, callback, isMiniButton, className,
+  setIsLoading,
+  authSSO,
+  dontRemember,
+  callback,
+  isMiniButton,
+  className,
 }) => {
   const { t } = useTranslation()
 
   const googleLogin = async () => {
     setIsLoading(true)
-    authSSO(
-      SSO_PROVIDERS.GOOGLE,
-      dontRemember as boolean,
-      t,
-      callback,
-    )
+    authSSO(SSO_PROVIDERS.GOOGLE, dontRemember as boolean, t, callback)
   }
 
   if (isMiniButton) {
     return (
       <Button
         title={t('auth.common.continueWithGoogle')}
-        className={cx(className, 'ring-1 ring-slate-300 bg-transparent hover:bg-slate-100 dark:ring-slate-700 dark:hover:bg-slate-800/60')}
+        className={cx(
+          className,
+          'ring-1 ring-slate-300 bg-transparent hover:bg-slate-100 dark:ring-slate-700 dark:hover:bg-slate-800/60',
+        )}
         onClick={googleLogin}
         secondary
         regular
@@ -46,7 +49,10 @@ const GoogleAuth: React.FC<IGoogleAuth> = ({
 
   return (
     <Button
-      className={cx(className, 'flex items-center justify-center border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700')}
+      className={cx(
+        className,
+        'flex items-center justify-center border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700',
+      )}
       onClick={googleLogin}
       secondary
       regular
@@ -62,7 +68,7 @@ const GoogleAuth: React.FC<IGoogleAuth> = ({
 GoogleAuth.defaultProps = {
   dontRemember: false,
   isMiniButton: false,
-  callback: () => { },
+  callback: () => {},
   className: '',
 }
 

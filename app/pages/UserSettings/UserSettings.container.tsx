@@ -36,16 +36,17 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
     t: (key: string) => string,
     deletionFeedback: string,
     onSuccess: {
-      (): void;
+      (): void
     },
   ) => {
     dispatch(
       sagaActions.deleteAccountAsync(
-        (error: string) => dispatch(
-          errorsActions.deleteAccountFailed({
-            message: error,
-          }),
-        ),
+        (error: string) =>
+          dispatch(
+            errorsActions.deleteAccountFailed({
+              message: error,
+            }),
+          ),
         () => {
           trackCustom('ACCOUNT_DELETED')
           onSuccess()
@@ -70,10 +71,12 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
     )
   },
   setCache: (key: string, value: any) => {
-    dispatch(UIActions.setCache({
-      key,
-      value,
-    }))
+    dispatch(
+      UIActions.setCache({
+        key,
+        value,
+      }),
+    )
   },
   sharedProjectError: (message: string) => {
     dispatch(
@@ -135,7 +138,7 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
   updateUserProfileAsync: (
     data: Partial<IUser>,
     successMessage: string,
-    callback: (isSuccess: boolean) => void = () => { },
+    callback: (isSuccess: boolean) => void = () => {},
   ) => {
     dispatch(
       sagaActions.updateUserProfileAsync(data, (res: any) => {
@@ -157,24 +160,13 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
   // setThemeType: (theme) => {
   //   dispatch(UIActions.setThemeType(theme))
   // },
-  linkSSO: (
-    t: (key: string) => string,
-    callback: (e: any) => void,
-    provider: string,
-  ) => {
+  linkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => {
     dispatch(sagaActions.linkSSO(t, callback, provider))
   },
-  unlinkSSO: (
-    t: (key: string) => string,
-    callback: (e: any) => void,
-    provider: string,
-  ) => {
+  unlinkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => {
     dispatch(sagaActions.unlinkSSO(t, callback, provider))
   },
-  updateShowLiveVisitorsInTitle: (
-    show: boolean,
-    callback: (isSuccess: boolean) => void,
-  ) => {
+  updateShowLiveVisitorsInTitle: (show: boolean, callback: (isSuccess: boolean) => void) => {
     dispatch(sagaActions.updateShowLiveVisitorsInTitle(show, callback))
   },
   // Reset the user in the regex store and remove tokens

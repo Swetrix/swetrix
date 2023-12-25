@@ -12,17 +12,13 @@ describe('Checkbox', () => {
   })
 
   test('renders a checkbox with a custom id', () => {
-    const { getByRole } = render(
-      <Checkbox id='custom-id' label='Checkbox' checked />,
-    )
+    const { getByRole } = render(<Checkbox id='custom-id' label='Checkbox' checked />)
     expect(getByRole('checkbox')).toHaveAttribute('id', 'custom-id')
   })
 
   test('clicking the checkbox calls the onChange handler', () => {
     const onChange = jest.fn()
-    const { getByRole } = render(
-      <Checkbox label='Checkbox' checked onChange={onChange} />,
-    )
+    const { getByRole } = render(<Checkbox label='Checkbox' checked onChange={onChange} />)
     fireEvent.click(getByRole('checkbox'))
     expect(onChange).toHaveBeenCalled()
   })

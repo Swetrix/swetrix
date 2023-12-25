@@ -37,7 +37,7 @@ const authSlice = createSlice({
     loginSuccessful: (state, { payload }: PayloadAction<IUser>) => {
       state.user = payload
       state.authenticated = true
-      state.isPaidTierUsed = isSelfhosted || (payload?.planCode && payload.planCode !== FREE_TIER_KEY) as boolean
+      state.isPaidTierUsed = isSelfhosted || ((payload?.planCode && payload.planCode !== FREE_TIER_KEY) as boolean)
     },
     emailVerifySuccessful: (state) => {
       state.user = { ...state.user, isActive: true }
@@ -45,7 +45,7 @@ const authSlice = createSlice({
     signupUpSuccessful: (state, { payload }: PayloadAction<IUser>) => {
       state.user = payload
       state.authenticated = true
-      state.isPaidTierUsed = isSelfhosted || (payload?.planCode && payload.planCode !== FREE_TIER_KEY) as boolean
+      state.isPaidTierUsed = isSelfhosted || ((payload?.planCode && payload.planCode !== FREE_TIER_KEY) as boolean)
     },
     updateUserProfileSuccess: (state, { payload }: PayloadAction<IUser>) => {
       state.user = payload
@@ -70,7 +70,7 @@ const authSlice = createSlice({
       const projects = _filter(state.user?.sharedProjects, (item) => item.id !== payload)
       state.user = { ...state.user, sharedProjects: projects }
     },
-    setUserShareData: (state, { payload }: PayloadAction<{ data: Partial<ISharedProject>, id: string }>) => {
+    setUserShareData: (state, { payload }: PayloadAction<{ data: Partial<ISharedProject>; id: string }>) => {
       const projects = _map(current(state.user?.sharedProjects), (item) => {
         if (item.id === payload.id) {
           return { ...item, ...payload.data }

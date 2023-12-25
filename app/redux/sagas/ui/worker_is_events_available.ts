@@ -23,14 +23,14 @@ export default function* checkEventsAvailable() {
       return
     }
 
-    const isAuthenticated: boolean = yield select(state => state.auth.authenticated)
+    const isAuthenticated: boolean = yield select((state) => state.auth.authenticated)
 
     if (!isAuthenticated) {
       yield delay(NOT_AUTHED_INTERVAL)
       continue
     }
 
-    const totalMonthlyEvents: number | null = yield select(state => state.ui.projects.totalMonthlyEvents)
+    const totalMonthlyEvents: number | null = yield select((state) => state.ui.projects.totalMonthlyEvents)
 
     if (_isNull(totalMonthlyEvents)) {
       dataRequests++
@@ -38,7 +38,7 @@ export default function* checkEventsAvailable() {
       continue
     }
 
-    const maxEventsCount: number = yield select(state => state.auth.user.maxEventsCount)
+    const maxEventsCount: number = yield select((state) => state.auth.user.maxEventsCount)
 
     const eventsUsedPercentage = (totalMonthlyEvents * 100) / maxEventsCount
 

@@ -15,41 +15,50 @@ import Input from 'ui/Input'
 import Checkbox from 'ui/Checkbox'
 import Tooltip from 'ui/Tooltip'
 import Button from 'ui/Button'
-import {
-  isValidEmail, isValidPassword, MIN_PASSWORD_CHARS, MAX_PASSWORD_CHARS,
-} from 'utils/validator'
+import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS, MAX_PASSWORD_CHARS } from 'utils/validator'
 import { HAVE_I_BEEN_PWNED_URL, TRIAL_DAYS } from 'redux/constants'
 import { trackCustom } from 'utils/analytics'
 
 interface ISignupForm {
-  email: string,
-  password: string,
-  repeat: string,
-  tos: boolean,
-  dontRemember: boolean,
-  checkIfLeaked: boolean,
+  email: string
+  password: string
+  repeat: string
+  tos: boolean
+  dontRemember: boolean
+  checkIfLeaked: boolean
 }
 
 interface ISignup {
-  signup: (data: {
-    email: string,
-    password: string,
-    repeat: string,
-    dontRemember: boolean,
-    checkIfLeaked: boolean,
-  },
-    t: (key: string, options?: {
-      [key: string]: string | number,
-    }) => string, callback: (res: any) => void) => void,
+  signup: (
+    data: {
+      email: string
+      password: string
+      repeat: string
+      dontRemember: boolean
+      checkIfLeaked: boolean
+    },
+    t: (
+      key: string,
+      options?: {
+        [key: string]: string | number
+      },
+    ) => string,
+    callback: (res: any) => void,
+  ) => void
   authSSO: (provider: string, dontRemember: boolean, t: (key: string) => string, callback: (res: any) => void) => void
-  ssrTheme: string,
+  ssrTheme: string
 }
 
 const Signup = ({ signup, authSSO, ssrTheme }: ISignup): JSX.Element => {
-  const { t }: {
-    t: (key: string, options?: {
-      [key: string]: string | number,
-    }) => string,
+  const {
+    t,
+  }: {
+    t: (
+      key: string,
+      options?: {
+        [key: string]: string | number
+      },
+    ) => string
   } = useTranslation('common')
   const [form, setForm] = useState<ISignupForm>({
     email: '',
@@ -61,20 +70,20 @@ const Signup = ({ signup, authSSO, ssrTheme }: ISignup): JSX.Element => {
   })
   const [validated, setValidated] = useState<boolean>(false)
   const [errors, setErrors] = useState<{
-    email?: string,
-    password?: string,
-    repeat?: string,
-    tos?: string,
+    email?: string
+    password?: string
+    repeat?: string
+    tos?: string
   }>({})
   const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const validate = () => {
     const allErrors = {} as {
-      email?: string,
-      password?: string,
-      repeat?: string,
-      tos?: string,
+      email?: string
+      password?: string
+      repeat?: string
+      tos?: string
     }
 
     if (!isValidEmail(form.email)) {
@@ -126,7 +135,7 @@ const Signup = ({ signup, authSSO, ssrTheme }: ISignup): JSX.Element => {
     const { target } = event
     const value = target.type === 'checkbox' ? target.checked : target.value
 
-    setForm(oldForm => ({
+    setForm((oldForm) => ({
       ...oldForm,
       [target.name]: value,
     }))
@@ -152,9 +161,7 @@ const Signup = ({ signup, authSSO, ssrTheme }: ISignup): JSX.Element => {
                 amount: TRIAL_DAYS,
               })}
             </h2>
-            <p className='text-center text-base text-gray-900 dark:text-gray-50'>
-              {t('auth.signup.noCC')}
-            </p>
+            <p className='text-center text-base text-gray-900 dark:text-gray-50'>{t('auth.signup.noCC')}</p>
           </div>
           <div className='mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]'>
             <div className='bg-white dark:bg-slate-800/20 dark:ring-1 dark:ring-slate-800 px-6 py-12 shadow sm:rounded-lg sm:px-12'>
@@ -192,7 +199,7 @@ const Signup = ({ signup, authSSO, ssrTheme }: ISignup): JSX.Element => {
                   onChange={handleInput}
                   name='tos'
                   id='tos'
-                  label={(
+                  label={
                     <span>
                       <Trans
                         // @ts-ignore
@@ -200,13 +207,25 @@ const Signup = ({ signup, authSSO, ssrTheme }: ISignup): JSX.Element => {
                         i18nKey='auth.signup.tos'
                         components={{
                           // eslint-disable-next-line jsx-a11y/anchor-has-content
-                          tos: <Link to={routes.terms} className='font-medium text-gray-900 dark:text-gray-300 underline decoration-dashed hover:decoration-solid' aria-label={t('footer.tos')} />,
+                          tos: (
+                            <Link
+                              to={routes.terms}
+                              className='font-medium text-gray-900 dark:text-gray-300 underline decoration-dashed hover:decoration-solid'
+                              aria-label={t('footer.tos')}
+                            />
+                          ),
                           // eslint-disable-next-line jsx-a11y/anchor-has-content
-                          pp: <Link to={routes.privacy} className='font-medium text-gray-900 dark:text-gray-300 underline decoration-dashed hover:decoration-solid' aria-label={t('footer.pp')} />,
+                          pp: (
+                            <Link
+                              to={routes.privacy}
+                              className='font-medium text-gray-900 dark:text-gray-300 underline decoration-dashed hover:decoration-solid'
+                              aria-label={t('footer.pp')}
+                            />
+                          ),
                         }}
                       />
                     </span>
-                  )}
+                  }
                   hintClassName='!text-red-600 dark:!text-red-500'
                   hint={beenSubmitted ? errors.tos : ''}
                 />
@@ -220,20 +239,27 @@ const Signup = ({ signup, authSSO, ssrTheme }: ISignup): JSX.Element => {
                   />
                   <Tooltip
                     className='ml-2'
-                    text={(
+                    text={
                       <Trans
                         // @ts-ignore
                         t={t}
                         i18nKey='auth.common.checkLeakedPasswordDesc'
                         components={{
                           // eslint-disable-next-line jsx-a11y/anchor-has-content
-                          db: <a href={HAVE_I_BEEN_PWNED_URL} className='font-medium text-indigo-400 hover:underline hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' target='_blank' rel='noreferrer noopener' />,
+                          db: (
+                            <a
+                              href={HAVE_I_BEEN_PWNED_URL}
+                              className='font-medium text-indigo-400 hover:underline hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                              target='_blank'
+                              rel='noreferrer noopener'
+                            />
+                          ),
                         }}
                         values={{
                           database: 'haveibeenpwned.com',
                         }}
                       />
-                    )}
+                    }
                   />
                 </div>
                 <Button className='w-full justify-center' type='submit' loading={isLoading} primary giant>
@@ -277,7 +303,13 @@ const Signup = ({ signup, authSSO, ssrTheme }: ISignup): JSX.Element => {
                 i18nKey='auth.signup.alreadyAMember'
                 components={{
                   // eslint-disable-next-line jsx-a11y/anchor-has-content
-                  url: <Link to={routes.signin} className='font-semibold leading-6 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' aria-label={t('titles.signin')} />,
+                  url: (
+                    <Link
+                      to={routes.signin}
+                      className='font-semibold leading-6 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                      aria-label={t('titles.signin')}
+                    />
+                  ),
                 }}
               />
             </p>

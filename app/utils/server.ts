@@ -14,13 +14,13 @@ export const hasAuthCookies = (request: Request) => {
 
 /**
  * Function detects theme based on user's browser hints and cookies
- * 
+ *
  * @param request
  * @returns [theme, storeToCookie]
  */
 export function detectTheme(request: Request): [ThemeType, boolean] {
   // Stage 1: Check if theme is set via `theme` query param
-  const queryTheme = new URL(request.url).searchParams.get('theme') as (ThemeType | null)
+  const queryTheme = new URL(request.url).searchParams.get('theme') as ThemeType | null
 
   if (queryTheme && _includes(SUPPORTED_THEMES, queryTheme)) {
     return [queryTheme, false]
@@ -48,7 +48,7 @@ export function detectTheme(request: Request): [ThemeType, boolean] {
 
 /**
  * Function detects theme based on the query
- * 
+ *
  * @param request
  * @returns boolean
  */
@@ -58,7 +58,7 @@ export function isEmbedded(request: Request): boolean {
 
 /**
  * Function returns project tabs from query
- * 
+ *
  * @param request
  * @returns string[]
  */
@@ -74,7 +74,7 @@ export function getProjectTabs(request: Request): string[] {
 
 /**
  * Function returns password from query
- * 
+ *
  * @param request
  * @returns boolean
  */
@@ -102,11 +102,7 @@ interface IPageMeta {
   prefixLessTitle: string
 }
 
-export const getPageMeta = (
-  t: (key: string) => string,
-  url?: string,
-  _pathname?: string,
-): IPageMeta => {
+export const getPageMeta = (t: (key: string) => string, url?: string, _pathname?: string): IPageMeta => {
   const DEFAULT_RESULT = {
     title: t('titles.main'),
   } as Partial<IPageMeta>

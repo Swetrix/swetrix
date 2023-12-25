@@ -1,9 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import _includes from 'lodash/includes'
 import { setCookie, getCookie } from 'utils/cookie'
-import {
-  isBrowser, LS_THEME_SETTING, SUPPORTED_THEMES, THEME_TYPE, ThemeType,
-} from 'redux/constants'
+import { isBrowser, LS_THEME_SETTING, SUPPORTED_THEMES, THEME_TYPE, ThemeType } from 'redux/constants'
 
 const setThemeToDOM = (theme: string) => {
   if (!isBrowser) {
@@ -32,7 +30,7 @@ const getInitialTheme = (): ThemeType => {
     return 'light'
   }
 
-  const queryTheme = new URLSearchParams(window.location.search).get('theme') as (ThemeType | null)
+  const queryTheme = new URLSearchParams(window.location.search).get('theme') as ThemeType | null
 
   if (queryTheme && _includes(SUPPORTED_THEMES, queryTheme)) {
     setThemeToDOM(queryTheme)

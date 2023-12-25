@@ -13,30 +13,33 @@ import { TRIAL_DAYS } from 'redux/constants'
 import { isValidEmail } from 'utils/validator'
 
 const ForgotPassword = ({
-  createNewPasswordFailed, newPassword,
+  createNewPasswordFailed,
+  newPassword,
 }: {
-  createNewPasswordFailed: (e: string) => void,
-  newPassword: (message: string) => void,
+  createNewPasswordFailed: (e: string) => void
+  newPassword: (message: string) => void
 }): JSX.Element => {
-  const { t }: {
-    t: (key: string) => string,
+  const {
+    t,
+  }: {
+    t: (key: string) => string
   } = useTranslation('common')
   const navigate = useNavigate()
   const [form, setForm] = useState<{
-    email: string,
+    email: string
   }>({
     email: '',
   })
   const [validated, setValidated] = useState<boolean>(false)
   const [errors, setErrors] = useState<{
-    email?: string,
+    email?: string
   }>({})
   const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const validate = () => {
     const allErrors = {} as {
-      email?: string,
+      email?: string
     }
 
     if (!isValidEmail(form.email)) {
@@ -53,9 +56,7 @@ const ForgotPassword = ({
     validate()
   }, [form]) // eslint-disable-line
 
-  const onSubmit = async (data: {
-    email: string,
-  }) => {
+  const onSubmit = async (data: { email: string }) => {
     if (!isLoading) {
       setIsLoading(true)
 
@@ -72,12 +73,10 @@ const ForgotPassword = ({
     }
   }
 
-  const handleInput = ({ target }: {
-    target: HTMLInputElement,
-  }) => {
+  const handleInput = ({ target }: { target: HTMLInputElement }) => {
     const value = target.type === 'checkbox' ? target.checked : target.value
 
-    setForm(oldForm => ({
+    setForm((oldForm) => ({
       ...oldForm,
       [target.name]: value,
     }))
@@ -125,7 +124,13 @@ const ForgotPassword = ({
               i18nKey='auth.signin.notAMember'
               components={{
                 // eslint-disable-next-line jsx-a11y/anchor-has-content
-                url: <Link to={routes.signup} className='font-semibold leading-6 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' aria-label={t('footer.tos')} />,
+                url: (
+                  <Link
+                    to={routes.signup}
+                    className='font-semibold leading-6 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                    aria-label={t('footer.tos')}
+                  />
+                ),
               }}
               values={{
                 amount: TRIAL_DAYS,

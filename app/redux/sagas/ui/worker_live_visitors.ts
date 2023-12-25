@@ -1,6 +1,4 @@
-import {
-  put, call, delay, select,
-} from 'redux-saga/effects'
+import { put, call, delay, select } from 'redux-saga/effects'
 import _map from 'lodash/map'
 import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
@@ -14,16 +12,19 @@ const { getLiveVisitors } = require('api')
 export default function* liveVisitors() {
   while (true) {
     yield delay(LIVE_VISITORS_UPDATE_INTERVAL)
-    const tab: string = yield select(state => state.ui.projects.dashboardTabs)
+    const tab: string = yield select((state) => state.ui.projects.dashboardTabs)
 
     if (tabForSharedProject === tab) {
-      const sharedProjects: ISharedProject[] = yield select(state => state.ui.projects.sharedProjects)
+      const sharedProjects: ISharedProject[] = yield select((state) => state.ui.projects.sharedProjects)
 
       if (_isEmpty(sharedProjects)) {
         continue
       }
 
-      const pids = _map(_filter(sharedProjects, ({ project }) => !project?.uiHidden), item => (item?.project?.id ? item.project.id : ''))
+      const pids = _map(
+        _filter(sharedProjects, ({ project }) => !project?.uiHidden),
+        (item) => (item?.project?.id ? item.project.id : ''),
+      )
 
       if (_isEmpty(pids)) {
         continue
@@ -31,16 +32,21 @@ export default function* liveVisitors() {
 
       const liveStats: any[] = yield call(getLiveVisitors, pids)
 
-      yield put(UIActions.setLiveStats({
-        data: liveStats,
-      }))
+      yield put(
+        UIActions.setLiveStats({
+          data: liveStats,
+        }),
+      )
     } else {
-      const projects: IProject[] = yield select(state => state.ui.projects.projects)
+      const projects: IProject[] = yield select((state) => state.ui.projects.projects)
       if (_isEmpty(projects)) {
         continue
       }
 
-      const pids = _map(_filter(projects, ({ uiHidden }) => !uiHidden), project => project.id)
+      const pids = _map(
+        _filter(projects, ({ uiHidden }) => !uiHidden),
+        (project) => project.id,
+      )
 
       if (_isEmpty(pids)) {
         continue
@@ -48,9 +54,11 @@ export default function* liveVisitors() {
 
       const liveStats: any[] = yield call(getLiveVisitors, pids)
 
-      yield put(UIActions.setLiveStats({
-        data: liveStats,
-      }))
+      yield put(
+        UIActions.setLiveStats({
+          data: liveStats,
+        }),
+      )
     }
   }
 }

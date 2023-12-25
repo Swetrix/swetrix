@@ -1,7 +1,5 @@
 /* eslint-disable no-param-reassign, react/forbid-prop-types */
-import React, {
-  useState, useEffect, memo, useRef, useMemo,
-} from 'react'
+import React, { useState, useEffect, memo, useRef, useMemo } from 'react'
 import { useNavigate } from '@remix-run/react'
 import { ClientOnly } from 'remix-utils'
 import { useTranslation } from 'react-i18next'
@@ -52,11 +50,7 @@ import PaidFeature from 'modals/PaidFeature'
 import TimezonePicker from 'ui/TimezonePicker'
 import Textarea from 'ui/Textarea'
 import Loader from 'ui/Loader'
-import {
-  isValidEmail,
-  isValidPassword,
-  MIN_PASSWORD_CHARS,
-} from 'utils/validator'
+import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS } from 'utils/validator'
 import routes from 'routesPath'
 import { trackCustom } from 'utils/analytics'
 import { getCookie, setCookie } from 'utils/cookie'
@@ -85,7 +79,7 @@ const TAB_MAPPING = {
   COMMUNICATIONS: 'communications',
 }
 
-const getTabs = (t: (key: string) => string) => ([
+const getTabs = (t: (key: string) => string) => [
   {
     id: TAB_MAPPING.ACCOUNT,
     label: t('profileSettings.account'),
@@ -106,52 +100,74 @@ const getTabs = (t: (key: string) => string) => ([
     label: t('profileSettings.referral.title'),
     icon: CursorArrowRaysIcon,
   },
-])
+]
 
 interface IProps {
-  onDelete: (t: (key: string) => string, deletionFeedback: string, callback: () => void) => void,
-  onDeleteProjectCache: () => void,
-  removeProject: (id: string) => void,
-  removeShareProject: (id: string) => void,
-  setUserShareData: (data: Partial<ISharedProject>, id: string) => void,
-  setProjectsShareData: (data: Partial<ISharedProject>, id: string) => void,
-  userSharedUpdate: (message: string) => void,
-  sharedProjectError: (message: string) => void,
-  updateUserData: (data: Partial<IUser>) => void,
-  genericError: (message: string) => void,
-  onGDPRExportFailed: (message: string) => void,
-  updateProfileFailed: (message: string) => void,
-  updateUserProfileAsync: (data: IUser, successMessage: string, callback?: (isSuccess: boolean) => void) => void,
-  accountUpdated: (t: string) => void,
-  setAPIKey: (key: string | null) => void,
-  user: IUser,
-  dontRemember: boolean,
-  isPaidTierUsed: boolean,
-  linkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => void,
-  unlinkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => void,
-  theme: string,
-  updateShowLiveVisitorsInTitle: (show: boolean, callback: (isSuccess: boolean) => void) => void,
-  logoutLocal: () => void,
-  logoutAll: () => void,
-  loading: boolean,
-  setCache: (key: string, value: any) => void,
-  activeReferrals: any[],
-  referralStatistics: any,
+  onDelete: (t: (key: string) => string, deletionFeedback: string, callback: () => void) => void
+  onDeleteProjectCache: () => void
+  removeProject: (id: string) => void
+  removeShareProject: (id: string) => void
+  setUserShareData: (data: Partial<ISharedProject>, id: string) => void
+  setProjectsShareData: (data: Partial<ISharedProject>, id: string) => void
+  userSharedUpdate: (message: string) => void
+  sharedProjectError: (message: string) => void
+  updateUserData: (data: Partial<IUser>) => void
+  genericError: (message: string) => void
+  onGDPRExportFailed: (message: string) => void
+  updateProfileFailed: (message: string) => void
+  updateUserProfileAsync: (data: IUser, successMessage: string, callback?: (isSuccess: boolean) => void) => void
+  accountUpdated: (t: string) => void
+  setAPIKey: (key: string | null) => void
+  user: IUser
+  dontRemember: boolean
+  isPaidTierUsed: boolean
+  linkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => void
+  unlinkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => void
+  theme: string
+  updateShowLiveVisitorsInTitle: (show: boolean, callback: (isSuccess: boolean) => void) => void
+  logoutLocal: () => void
+  logoutAll: () => void
+  loading: boolean
+  setCache: (key: string, value: any) => void
+  activeReferrals: any[]
+  referralStatistics: any
 }
 
 interface IForm extends Partial<IUser> {
-  repeat: string;
-  password: string;
-  email: string;
+  repeat: string
+  password: string
+  email: string
 }
 
 const UserSettings = ({
-  onDelete, onDeleteProjectCache, removeProject, removeShareProject, setUserShareData,
-  setProjectsShareData, userSharedUpdate, sharedProjectError, updateUserData,
-  genericError, onGDPRExportFailed, updateProfileFailed, updateUserProfileAsync,
-  accountUpdated, setAPIKey, user, dontRemember, isPaidTierUsed, // setThemeType, themeType,
-  linkSSO, unlinkSSO, theme, updateShowLiveVisitorsInTitle, logoutAll, loading, logoutLocal,
-  referralStatistics, activeReferrals, setCache,
+  onDelete,
+  onDeleteProjectCache,
+  removeProject,
+  removeShareProject,
+  setUserShareData,
+  setProjectsShareData,
+  userSharedUpdate,
+  sharedProjectError,
+  updateUserData,
+  genericError,
+  onGDPRExportFailed,
+  updateProfileFailed,
+  updateUserProfileAsync,
+  accountUpdated,
+  setAPIKey,
+  user,
+  dontRemember,
+  isPaidTierUsed, // setThemeType, themeType,
+  linkSSO,
+  unlinkSSO,
+  theme,
+  updateShowLiveVisitorsInTitle,
+  logoutAll,
+  loading,
+  logoutLocal,
+  referralStatistics,
+  activeReferrals,
+  setCache,
 }: IProps): JSX.Element => {
   const navigate = useNavigate()
   const {
@@ -160,9 +176,9 @@ const UserSettings = ({
     t: (
       key: string,
       options?: {
-        [key: string]: string | number | null;
-      }
-    ) => string;
+        [key: string]: string | number | null
+      },
+    ) => string
   } = useTranslation('common')
   const [activeTab, setActiveTab] = useState<string>(TAB_MAPPING.ACCOUNT)
   const [form, setForm] = useState<IForm>({
@@ -172,19 +188,15 @@ const UserSettings = ({
     timeFormat: user.timeFormat || TimeFormat['12-hour'],
   })
   const [showPasswordFields, setShowPasswordFields] = useState<boolean>(false)
-  const [timezone, setTimezone] = useState<string>(
-    user.timezone || DEFAULT_TIMEZONE,
-  )
+  const [timezone, setTimezone] = useState<string>(user.timezone || DEFAULT_TIMEZONE)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState<boolean>(false)
   const [isPasswordChangeModalOpened, setIsPasswordChangeModalOpened] = useState<boolean>(false)
   const [timezoneChanged, setTimezoneChanged] = useState<boolean>(false)
-  const [reportFrequency, setReportFrequency] = useState<string>(
-    user.reportFrequency,
-  )
+  const [reportFrequency, setReportFrequency] = useState<string>(user.reportFrequency)
   const [formPresetted, setFormPresetted] = useState<boolean>(false)
   const [validated, setValidated] = useState<boolean>(false)
   const [errors, setErrors] = useState<{
-    [key: string]: string;
+    [key: string]: string
   }>({})
   const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
   const [showModal, setShowModal] = useState<boolean>(false)
@@ -200,11 +212,11 @@ const UserSettings = ({
   const copyTimerRef = useRef(null)
 
   const tabs = getTabs(t)
-  const activeTabLabel = useMemo(() => _find(tabs, tab => tab.id === activeTab)?.label, [tabs, activeTab])
+  const activeTabLabel = useMemo(() => _find(tabs, (tab) => tab.id === activeTab)?.label, [tabs, activeTab])
 
   const validate = () => {
     const allErrors = {} as {
-      [key: string]: string;
+      [key: string]: string
     }
 
     if (!isValidEmail(form.email)) {
@@ -227,7 +239,7 @@ const UserSettings = ({
     setValidated(valid)
   }
 
-  const onSubmit = (data: any, callback: (isSuccess: boolean) => void = () => { }) => {
+  const onSubmit = (data: any, callback: (isSuccess: boolean) => void = () => {}) => {
     delete data.repeat
 
     // eslint-disable-next-line no-restricted-syntax
@@ -242,7 +254,7 @@ const UserSettings = ({
 
   useEffect(() => {
     validate()
-  }, [form]); // eslint-disable-line
+  }, [form]) // eslint-disable-line
 
   useEffect(() => {
     return () => {
@@ -253,7 +265,7 @@ const UserSettings = ({
 
   useEffect(() => {
     if (!loading && !formPresetted) {
-      setForm(prev => ({
+      setForm((prev) => ({
         ...prev,
         email: user.email || '',
         timeFormat: user.timeFormat || TimeFormat['12-hour'],
@@ -279,7 +291,11 @@ const UserSettings = ({
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement> | null, force?: boolean, callback: (isSuccess: boolean) => void = () => { }) => {
+  const handleSubmit = (
+    e: React.FormEvent<HTMLFormElement> | null,
+    force?: boolean,
+    callback: (isSuccess: boolean) => void = () => {},
+  ) => {
     if (e) {
       e.preventDefault()
       e.stopPropagation()
@@ -287,7 +303,7 @@ const UserSettings = ({
     setBeenSubmitted(true)
 
     if (validated) {
-      // User is about to change their password, let's warn him if 
+      // User is about to change their password, let's warn him if
       if (form.password && !force) {
         setIsPasswordChangeModalOpened(true)
         return
@@ -313,9 +329,7 @@ const UserSettings = ({
     }
   }
 
-  const handleShowLiveVisitorsSave = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleShowLiveVisitorsSave = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (settingUpdating) {
       return
     }
@@ -335,9 +349,7 @@ const UserSettings = ({
     })
   }
 
-  const handleReceiveLoginNotifications = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleReceiveLoginNotifications = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (settingUpdating) {
       return
     }
@@ -359,7 +371,7 @@ const UserSettings = ({
     }
   }
 
-  const handleIntegrationSave = (data: any, callback = () => { }) => {
+  const handleIntegrationSave = (data: any, callback = () => {}) => {
     setBeenSubmitted(true)
 
     if (validated) {
@@ -394,10 +406,7 @@ const UserSettings = ({
   }
 
   const reportIconExtractor = (_: any, index: number) => {
-    if (
-      !isPaidTierUsed
-      && reportFrequencies[index] === WEEKLY_REPORT_FREQUENCY
-    ) {
+    if (!isPaidTierUsed && reportFrequencies[index] === WEEKLY_REPORT_FREQUENCY) {
       return <CurrencyDollarIcon className='w-5 h-5 mr-1' />
     }
 
@@ -424,12 +433,8 @@ const UserSettings = ({
   const onExport = async (exportedAt: string) => {
     try {
       if (
-        getCookie(GDPR_REQUEST)
-        || (!_isNull(exportedAt)
-          && !dayjs().isAfter(
-            dayjs.utc(exportedAt).add(GDPR_EXPORT_TIMEFRAME, 'day'),
-            'day',
-          ))
+        getCookie(GDPR_REQUEST) ||
+        (!_isNull(exportedAt) && !dayjs().isAfter(dayjs.utc(exportedAt).add(GDPR_EXPORT_TIMEFRAME, 'day'), 'day'))
       ) {
         onGDPRExportFailed(
           t('profileSettings.tryAgainInXDays', {
@@ -517,9 +522,7 @@ const UserSettings = ({
   return (
     <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
       <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
-        <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
-          {t('titles.profileSettings')}
-        </h2>
+        <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{t('titles.profileSettings')}</h2>
         {/* Tabs selector */}
         <div className='mt-2'>
           <div className='sm:hidden'>
@@ -540,7 +543,7 @@ const UserSettings = ({
           <div className='hidden sm:block'>
             <div>
               <nav className='-mb-px flex space-x-4' aria-label='Tabs'>
-                {_map(tabs, tab => {
+                {_map(tabs, (tab) => {
                   const isCurrent = tab.id === activeTab
 
                   const onClick = () => {
@@ -551,22 +554,26 @@ const UserSettings = ({
                     <div
                       key={tab.id}
                       onClick={onClick}
-                      className={cx('group inline-flex items-center whitespace-nowrap py-2 px-1 border-b-2 font-bold text-md cursor-pointer', {
-                        'border-slate-900 text-slate-900 dark:text-gray-50 dark:border-gray-50': isCurrent,
-                        'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300': !isCurrent,
-                      })}
+                      className={cx(
+                        'group inline-flex items-center whitespace-nowrap py-2 px-1 border-b-2 font-bold text-md cursor-pointer',
+                        {
+                          'border-slate-900 text-slate-900 dark:text-gray-50 dark:border-gray-50': isCurrent,
+                          'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
+                            !isCurrent,
+                        },
+                      )}
                       aria-current={isCurrent ? 'page' : undefined}
                     >
                       <tab.icon
                         className={cx(
-                          isCurrent ? 'text-slate-900 dark:text-gray-50' : 'text-gray-500 group-hover:text-gray-500 dark:text-gray-400 dark:group-hover:text-gray-300',
+                          isCurrent
+                            ? 'text-slate-900 dark:text-gray-50'
+                            : 'text-gray-500 group-hover:text-gray-500 dark:text-gray-400 dark:group-hover:text-gray-300',
                           '-ml-0.5 mr-2 h-5 w-5',
                         )}
                         aria-hidden='true'
                       />
-                      <span>
-                        {tab.label}
-                      </span>
+                      <span>{tab.label}</span>
                     </div>
                   )
                 })}
@@ -574,11 +581,7 @@ const UserSettings = ({
             </div>
           </div>
         </div>
-        <ClientOnly
-          fallback={(
-            <Loader />
-          )}
-        >
+        <ClientOnly fallback={<Loader />}>
           {() => {
             if (loading) {
               return <Loader />
@@ -725,7 +728,10 @@ const UserSettings = ({
 
                       {/* Socialisations setup */}
                       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-                      <h3 id='socialisations' className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+                      <h3
+                        id='socialisations'
+                        className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'
+                      >
                         {t('profileSettings.socialisations')}
                       </h3>
                       <Socialisations
@@ -863,13 +869,12 @@ const UserSettings = ({
                         label={t('profileSettings.selectTimeFormat')}
                         className='w-full'
                         items={translatedTimeFormat}
-                        onSelect={(f) => setForm((prev) => ({
-                          ...prev,
-                          timeFormat:
-                            timeFormatArray[
-                            _findIndex(translatedTimeFormat, (freq) => freq === f)
-                            ],
-                        }))}
+                        onSelect={(f) =>
+                          setForm((prev) => ({
+                            ...prev,
+                            timeFormat: timeFormatArray[_findIndex(translatedTimeFormat, (freq) => freq === f)],
+                          }))
+                        }
                         capitalise
                       />
                     </div>
@@ -899,7 +904,6 @@ const UserSettings = ({
             if (activeTab === TAB_MAPPING.COMMUNICATIONS) {
               return (
                 <>
-
                   {!isSelfhosted && (
                     <>
                       {/* Email reports frequency selector (e.g. monthly, weekly, etc.) */}
@@ -914,9 +918,11 @@ const UserSettings = ({
                             className='w-full'
                             items={translatedFrequencies}
                             iconExtractor={reportIconExtractor}
-                            onSelect={(f) => _setReportFrequency(
-                              reportFrequencies[_findIndex(translatedFrequencies, (freq) => freq === f)],
-                            )}
+                            onSelect={(f) =>
+                              _setReportFrequency(
+                                reportFrequencies[_findIndex(translatedFrequencies, (freq) => freq === f)],
+                              )
+                            }
                             capitalise
                           />
                         </div>
@@ -927,7 +933,10 @@ const UserSettings = ({
 
                       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
                       {/* Integrations setup */}
-                      <h3 id='integrations' className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+                      <h3
+                        id='integrations'
+                        className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'
+                      >
                         {t('profileSettings.integrations')}
                       </h3>
                       <Integrations
@@ -956,7 +965,10 @@ const UserSettings = ({
             if (activeTab === TAB_MAPPING.REFERRALS) {
               return (
                 <>
-                  <h3 id='socialisations' className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+                  <h3
+                    id='socialisations'
+                    className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'
+                  >
                     {t('profileSettings.referral.title')}
                   </h3>
                   <Referral
@@ -977,10 +989,7 @@ const UserSettings = ({
         </ClientOnly>
       </form>
 
-      <PaidFeature
-        isOpened={isPaidFeatureOpened}
-        onClose={() => setIsPaidFeatureOpened(false)}
-      />
+      <PaidFeature isOpened={isPaidFeatureOpened} onClose={() => setIsPaidFeatureOpened(false)} />
       <Modal
         onClose={() => setShowExportModal(false)}
         onSubmit={() => {
@@ -1008,7 +1017,7 @@ const UserSettings = ({
         title={t('profileSettings.qDelete')}
         submitType='danger'
         type='error'
-        message={(
+        message={
           <>
             {t('profileSettings.deactivateConfirmation')}
             <Textarea
@@ -1020,7 +1029,7 @@ const UserSettings = ({
               label={t('profileSettings.deletionFeedbackLabel')}
             />
           </>
-        )}
+        }
         isOpened={showModal}
       />
       <Modal

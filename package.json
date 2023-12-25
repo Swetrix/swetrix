@@ -14,7 +14,9 @@
     "typecheck": "tsc",
     "lint": "eslint app",
     "lint:fix": "eslint app --fix",
-    "lint:tsc": "tsc --noEmit"
+    "lint:tsc": "tsc --noEmit",
+    "format": "prettier --check --ignore-unknown ./app ./public",
+    "format:fix": "prettier --write --ignore-unknown ./app ./public"
   },
   "dependencies": {
     "@blaumaus/react-alert": "^7.0.5",
@@ -51,6 +53,7 @@
     "jszip": "^3.10.1",
     "lodash": "^4.17.21",
     "marked": "^9.1.2",
+    "prettier": "^3.1.1",
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

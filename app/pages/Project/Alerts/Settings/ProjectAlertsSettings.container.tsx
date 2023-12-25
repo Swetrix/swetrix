@@ -15,23 +15,29 @@ const mapStateToProps = (state: StateType) => ({
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
   showError: (message: string) => {
-    dispatch(errorsActions.genericError({
-      message,
-    }))
+    dispatch(
+      errorsActions.genericError({
+        message,
+      }),
+    )
   },
   generateAlerts: (message: string) => {
-    dispatch(alertsActions.generateAlerts({
-      message,
-      type: 'success',
-    }))
+    dispatch(
+      alertsActions.generateAlerts({
+        message,
+        type: 'success',
+      }),
+    )
   },
   setProjectAlerts: (alerts: IAlerts[]) => {
     dispatch(UIActions.setProjectAlerts(alerts))
   },
   setProjectAlertsTotal: (total: number) => {
-    dispatch(UIActions.setProjectAlertsTotal({
-      total,
-    }))
+    dispatch(
+      UIActions.setProjectAlertsTotal({
+        total,
+      }),
+    )
   },
 })
 

@@ -34,21 +34,27 @@ const PerformanceMetricCards = ({ overall, overallCompare, activePeriodCompare }
         value={overall.current?.frontend}
         change={frontendChange}
         goodChangeDirection='up'
-        valueMapper={(value, type) => `${type === 'badge' && value > 0 ? '+' : ''}${getStringFromTime(getTimeFromSeconds(value), true)}`}
+        valueMapper={(value, type) =>
+          `${type === 'badge' && value > 0 ? '+' : ''}${getStringFromTime(getTimeFromSeconds(value), true)}`
+        }
       />
       <MetricCard
         label={t('dashboard.backend')}
         value={overall.current?.backend}
         change={backendChange}
         goodChangeDirection='up'
-        valueMapper={(value, type) => `${type === 'badge' && value > 0 ? '+' : ''}${getStringFromTime(getTimeFromSeconds(value), true)}`}
+        valueMapper={(value, type) =>
+          `${type === 'badge' && value > 0 ? '+' : ''}${getStringFromTime(getTimeFromSeconds(value), true)}`
+        }
       />
       <MetricCard
         label={t('dashboard.network')}
         value={overall.current?.network}
         change={networkChange}
         goodChangeDirection='up'
-        valueMapper={(value, type) => `${type === 'badge' && value > 0 ? '+' : ''}${getStringFromTime(getTimeFromSeconds(value), true)}`}
+        valueMapper={(value, type) =>
+          `${type === 'badge' && value > 0 ? '+' : ''}${getStringFromTime(getTimeFromSeconds(value), true)}`
+        }
       />
     </div>
   )

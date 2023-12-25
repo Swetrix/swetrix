@@ -9,10 +9,10 @@ import Pagination from '../Pagination'
 
 describe('Pagination', () => {
   let defaultProps: {
-    page: number,
-    setPage: (item: number) => void,
-    pageAmount: number,
-    total: number,
+    page: number
+    setPage: (item: number) => void
+    pageAmount: number
+    total: number
   } = {
     page: 1,
     setPage: () => {
@@ -57,9 +57,7 @@ describe('Pagination', () => {
   })
 
   it('renders with default props', () => {
-    const { getByText } = render(
-      <HocWithI18n {...defaultProps} />,
-    )
+    const { getByText } = render(<HocWithI18n {...defaultProps} />)
     expect(getByText('1')).toBeInTheDocument()
     expect(getByText('10')).toBeInTheDocument()
     expect(getByText('project.next')).toBeInTheDocument()
@@ -67,9 +65,7 @@ describe('Pagination', () => {
 
   it('renders on page > 1', () => {
     defaultProps.page = 2
-    const { getByText } = render(
-      <HocWithI18n {...defaultProps} />,
-    )
+    const { getByText } = render(<HocWithI18n {...defaultProps} />)
     expect(getByText('1')).toBeInTheDocument()
     expect(getByText('10')).toBeInTheDocument()
     expect(getByText('project.prev')).toBeInTheDocument()
@@ -78,9 +74,7 @@ describe('Pagination', () => {
 
   it('renders on page > 1 and page < pageAmount', () => {
     defaultProps.page = 5
-    const { getByText } = render(
-      <HocWithI18n {...defaultProps} />,
-    )
+    const { getByText } = render(<HocWithI18n {...defaultProps} />)
     expect(getByText('1')).toBeInTheDocument()
     expect(getByText('10')).toBeInTheDocument()
     expect(getByText('project.prev')).toBeInTheDocument()
@@ -89,9 +83,7 @@ describe('Pagination', () => {
 
   it('renders on page = pageAmount', () => {
     defaultProps.page = 10
-    const { getByText } = render(
-      <HocWithI18n {...defaultProps} />,
-    )
+    const { getByText } = render(<HocWithI18n {...defaultProps} />)
     expect(getByText('1')).toBeInTheDocument()
     expect(getByText('10')).toBeInTheDocument()
     expect(getByText('project.prev')).toBeInTheDocument()
@@ -100,9 +92,7 @@ describe('Pagination', () => {
   it('renders on page = pageAmount and pageAmount < total', () => {
     defaultProps.page = 10
     defaultProps.total = 101
-    const { getByText } = render(
-      <HocWithI18n {...defaultProps} />,
-    )
+    const { getByText } = render(<HocWithI18n {...defaultProps} />)
     expect(getByText('1')).toBeInTheDocument()
     expect(getByText('9')).toBeInTheDocument()
     expect(getByText('project.prev')).toBeInTheDocument()

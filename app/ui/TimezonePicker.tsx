@@ -36,50 +36,51 @@ const options = _reduce(
     return selectOptions
   },
   [],
-)
-  .sort((a, b) => a.offset - b.offset)
+).sort((a, b) => a.offset - b.offset)
 
 interface ITimezoneSelect {
-  value: string | {
-    value: string,
-    label: string,
-  },
-  onChange: (item: string) => void,
+  value:
+    | string
+    | {
+        value: string
+        label: string
+      }
+  onChange: (item: string) => void
 }
 
-const TimezoneSelect = ({
-  value, onChange,
-}: ITimezoneSelect): JSX.Element => {
-  const { t }: {
-    t: (key: string) => string,
+const TimezoneSelect = ({ value, onChange }: ITimezoneSelect): JSX.Element => {
+  const {
+    t,
+  }: {
+    t: (key: string) => string
   } = useTranslation('common')
-  const labelExtractor = (option: {
-    label: string,
-  }) => option?.label
-  const keyExtractor = (option: {
-    value: string,
-  }) => option?.value
+  const labelExtractor = (option: { label: string }) => option?.label
+  const keyExtractor = (option: { value: string }) => option?.value
 
   const handleChange = (label: string) => {
-    const tz = _find(options, timezone => labelExtractor(timezone) === label)
+    const tz = _find(options, (timezone) => labelExtractor(timezone) === label)
     const key = keyExtractor(tz)
     onChange(key)
   }
 
-  const parseTimezone = (zone: string | {
-    value: string,
-    label: string,
-  }) => {
+  const parseTimezone = (
+    zone:
+      | string
+      | {
+          value: string
+          label: string
+        },
+  ) => {
     if (typeof zone === 'object' && zone.value && zone.label) {
       return zone
     }
 
     if (typeof zone === 'string') {
-      return _find(options, tz => tz.value === zone)
+      return _find(options, (tz) => tz.value === zone)
     }
 
     if (zone.value && !zone.label) {
-      return _find(options, tz => tz.value === zone.value)
+      return _find(options, (tz) => tz.value === zone.value)
     }
 
     return null
@@ -100,14 +101,12 @@ const TimezoneSelect = ({
 }
 
 TimezoneSelect.propTypes = {
-  value: PropTypes.oneOfType([
-    PropTypes.string, PropTypes.object,
-  ]).isRequired,
+  value: PropTypes.oneOfType([PropTypes.string, PropTypes.object]).isRequired,
   onChange: PropTypes.func,
 }
 
 TimezoneSelect.defaultProps = {
-  onChange: () => { },
+  onChange: () => {},
 }
 
 export default TimezoneSelect

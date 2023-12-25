@@ -6,9 +6,7 @@ export default function PostSlug() {
   const post = useLoaderData()
 
   if (!post) {
-    return (
-      <NotFound />
-    )
+    return <NotFound />
   }
 
   return (
@@ -57,11 +55,7 @@ export default function PostSlug() {
                     <ul className='flex flex-wrap text-sm leading-6 -mt-6 -mx-5'>
                       <li className='flex items-center font-medium whitespace-nowrap px-5 mt-6'>
                         <div className='text-sm leading-4'>
-                          {post?.author && (
-                            <div className='text-slate-900 dark:text-slate-200'>
-                              {post.author}
-                            </div>
-                          )}
+                          {post?.author && <div className='text-slate-900 dark:text-slate-200'>{post.author}</div>}
                           {post?.nickname && (
                             <div className='mt-1'>
                               <a

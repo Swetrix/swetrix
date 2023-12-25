@@ -28,7 +28,5 @@ export const getChartPrediction = (chart: any, periodToForecast: any, frequency:
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })

@@ -1,40 +1,52 @@
-import React, {
-  memo, useState, useRef, useEffect,
-} from 'react'
+import React, { memo, useState, useRef, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { ClipboardDocumentIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 
-import {
-  generateRefCode, getPayoutsInfo, getReferrals, setPaypalEmail,
-} from 'api'
+import { generateRefCode, getPayoutsInfo, getReferrals, setPaypalEmail } from 'api'
 import Tooltip from 'ui/Tooltip'
 import Highlighted from 'ui/Highlighted'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
 import { IUser } from 'redux/models/IUser'
 import {
-  REF_URL_PREFIX, DOCS_REFERRAL_PROGRAM_URL, REFERRAL_PENDING_PAYOUT_DAYS, calculateReferralCut,
-  PLAN_LIMITS, CURRENCIES, BillingFrequency, MERCHANT_FEE, REFERRAL_CUT,
+  REF_URL_PREFIX,
+  DOCS_REFERRAL_PROGRAM_URL,
+  REFERRAL_PENDING_PAYOUT_DAYS,
+  calculateReferralCut,
+  PLAN_LIMITS,
+  CURRENCIES,
+  BillingFrequency,
+  MERCHANT_FEE,
+  REFERRAL_CUT,
 } from 'redux/constants'
 import { isValidEmail } from 'utils/validator'
 
 interface IReferral {
-  user: IUser,
-  genericError: (message: string) => void,
-  updateUserData: (data: Partial<IUser>) => void,
-  setCache: (key: string, value: any) => void,
-  activeReferrals: any[],
-  referralStatistics: any,
-  accountUpdated: (t: string) => void,
+  user: IUser
+  genericError: (message: string) => void
+  updateUserData: (data: Partial<IUser>) => void
+  setCache: (key: string, value: any) => void
+  activeReferrals: any[]
+  referralStatistics: any
+  accountUpdated: (t: string) => void
 }
 
 const Referral = ({
-  user, genericError, updateUserData, referralStatistics, activeReferrals, setCache, accountUpdated,
+  user,
+  genericError,
+  updateUserData,
+  referralStatistics,
+  activeReferrals,
+  setCache,
+  accountUpdated,
 }: IReferral) => {
-  const { t, i18n: { language } } = useTranslation('common')
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
   const [copied, setCopied] = useState(false)
   const [refCodeGenerating, setRefCodeGenerating] = useState(false)
   const [referralStatsRequested, setReferralStatsRequested] = useState(false)
@@ -154,12 +166,14 @@ const Referral = ({
           t={t}
           i18nKey='profileSettings.referral.desc'
           components={{
-            url: <a
-              href={DOCS_REFERRAL_PROGRAM_URL}
-              className='font-medium hover:underline text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
-              target='_blank'
-              rel='noreferrer noopener'
-            />,
+            url: (
+              <a
+                href={DOCS_REFERRAL_PROGRAM_URL}
+                className='font-medium hover:underline text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                target='_blank'
+                rel='noreferrer noopener'
+              />
+            ),
           }}
         />
       </p>
@@ -178,14 +192,7 @@ const Referral = ({
           onChange={handlePaypalInput}
           error={paypalInputError}
         />
-        <Button
-          type='button'
-          className='h-9'
-          loading={isPaypalEmailLoading}
-          onClick={updatePaypalEmail}
-          primary
-          large
-        >
+        <Button type='button' className='h-9' loading={isPaypalEmailLoading} onClick={updatePaypalEmail} primary large>
           {t('common.save')}
         </Button>
       </div>
@@ -203,14 +210,7 @@ const Referral = ({
       {user.refCode ? (
         <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2'>
           <div className='relative group'>
-            <Input
-              name='refCode'
-              id='refCode'
-              type='text'
-              className='pr-9'
-              value={refUrl}
-              disabled
-            />
+            <Input name='refCode' id='refCode' type='text' className='pr-9' value={refUrl} disabled />
             <div className='absolute right-2 top-3'>
               <div className='group relative'>
                 <Button
@@ -233,13 +233,7 @@ const Referral = ({
           </div>
         </div>
       ) : (
-        <Button
-          className='mt-2'
-          onClick={onRefCodeGenerate}
-          loading={refCodeGenerating}
-          primary
-          large
-        >
+        <Button className='mt-2' onClick={onRefCodeGenerate} loading={refCodeGenerating} primary large>
           {t('profileSettings.referral.generateRefLink')}
         </Button>
       )}
@@ -251,39 +245,50 @@ const Referral = ({
           <div>
             <Tooltip
               text={t('profileSettings.referral.trialDesc')}
-              tooltipNode={(
-                <span className='text-gray-900 dark:text-gray-50'>{t('profileSettings.referral.trial')}: <Highlighted>{referralStatistics.trials}</Highlighted></span>
-              )}
+              tooltipNode={
+                <span className='text-gray-900 dark:text-gray-50'>
+                  {t('profileSettings.referral.trial')}: <Highlighted>{referralStatistics.trials}</Highlighted>
+                </span>
+              }
               className='max-w-max !w-auto !h-auto'
             />
             <Tooltip
               text={t('profileSettings.referral.activeDesc')}
-              tooltipNode={(
-                <span className='text-gray-900 dark:text-gray-50'>{t('profileSettings.referral.active')}: <Highlighted>{referralStatistics.subscribers}</Highlighted></span>
-              )}
+              tooltipNode={
+                <span className='text-gray-900 dark:text-gray-50'>
+                  {t('profileSettings.referral.active')}: <Highlighted>{referralStatistics.subscribers}</Highlighted>
+                </span>
+              }
               className='max-w-max !w-auto !h-auto'
             />
             <Tooltip
               text={t('profileSettings.referral.paidDesc')}
-              tooltipNode={(
-                <span className='text-gray-900 dark:text-gray-50'>{t('profileSettings.referral.paid')}: <Highlighted>US$ {referralStatistics.paid}</Highlighted></span>
-              )}
+              tooltipNode={
+                <span className='text-gray-900 dark:text-gray-50'>
+                  {t('profileSettings.referral.paid')}: <Highlighted>US$ {referralStatistics.paid}</Highlighted>
+                </span>
+              }
               className='max-w-max !w-auto !h-auto'
             />
             <Tooltip
               text={t('profileSettings.referral.nextPayoutDesc')}
-              tooltipNode={(
-                <span className='text-gray-900 dark:text-gray-50'>{t('profileSettings.referral.nextPayout')}: <Highlighted>US$ {referralStatistics.nextPayout}</Highlighted></span>
-              )}
+              tooltipNode={
+                <span className='text-gray-900 dark:text-gray-50'>
+                  {t('profileSettings.referral.nextPayout')}:{' '}
+                  <Highlighted>US$ {referralStatistics.nextPayout}</Highlighted>
+                </span>
+              }
               className='max-w-max !w-auto !h-auto'
             />
             <Tooltip
               text={t('profileSettings.referral.pendingDesc', {
                 days: REFERRAL_PENDING_PAYOUT_DAYS,
               })}
-              tooltipNode={(
-                <span className='text-gray-900 dark:text-gray-50'>{t('profileSettings.referral.pending')}: <Highlighted>US$ {referralStatistics.pending}</Highlighted></span>
-              )}
+              tooltipNode={
+                <span className='text-gray-900 dark:text-gray-50'>
+                  {t('profileSettings.referral.pending')}: <Highlighted>US$ {referralStatistics.pending}</Highlighted>
+                </span>
+              }
               className='max-w-max !w-auto !h-auto'
             />
           </div>
@@ -297,7 +302,10 @@ const Referral = ({
           <table className='mt-2 min-w-full shadow ring-1 ring-black ring-opacity-5 md:rounded-lg divide-y divide-gray-300 200 dark:divide-gray-500'>
             <thead className='bg-gray-50 dark:bg-slate-800'>
               <tr>
-                <th scope='col' className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-50'>
+                <th
+                  scope='col'
+                  className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-50'
+                >
                   {t('profileSettings.referral.activeReferralsTable.plan')}
                 </th>
                 <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-50'>
@@ -316,22 +324,24 @@ const Referral = ({
               </tr>
             </thead>
             <tbody className='divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-slate-800'>
-              {_map(activeReferrals, ({
-                billingFrequency, created, planCode, tierCurrency,
-              }, index) => {
+              {_map(activeReferrals, ({ billingFrequency, created, planCode, tierCurrency }, index) => {
                 // @ts-ignore
                 const planPrice = PLAN_LIMITS[planCode].price[tierCurrency][billingFrequency]
                 const referrerCut = calculateReferralCut(planPrice)
                 const currencySymbol = CURRENCIES[tierCurrency as 'EUR' | 'USD' | 'GBP'].symbol
-                const tBillingFrequency = t(billingFrequency === BillingFrequency.monthly ? 'pricing.perMonth' : 'pricing.perYear')
+                const tBillingFrequency = t(
+                  billingFrequency === BillingFrequency.monthly ? 'pricing.perMonth' : 'pricing.perYear',
+                )
 
                 return (
                   <tr key={index}>
                     <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50 sm:pl-6'>
-                      {currencySymbol}{planPrice}/{tBillingFrequency}
+                      {currencySymbol}
+                      {planPrice}/{tBillingFrequency}
                     </td>
                     <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50'>
-                      {currencySymbol}{referrerCut}/{tBillingFrequency}
+                      {currencySymbol}
+                      {referrerCut}/{tBillingFrequency}
                     </td>
                     <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50'>
                       {language === 'en'

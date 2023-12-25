@@ -27,7 +27,16 @@ interface IFilter {
  * @returns {JSX.Element}
  */
 export const Filter = ({
-  column, filter, isExclusive, onRemoveFilter, onChangeExclusive, tnMapping, language, t, canChangeExclusive, removable,
+  column,
+  filter,
+  isExclusive,
+  onRemoveFilter,
+  onChangeExclusive,
+  tnMapping,
+  language,
+  t,
+  canChangeExclusive,
+  removable,
 }: IFilter): JSX.Element => {
   const displayColumn = tnMapping[column]
   let displayFilter = filter
@@ -45,23 +54,26 @@ export const Filter = ({
   return (
     <span
       title={truncatedFilter === displayFilter ? undefined : displayFilter}
-      className={cx('inline-flex rounded-md items-center py-0.5 pl-2.5 pr-1 mr-2 mt-2 text-sm font-medium bg-gray-200 text-gray-800 dark:text-gray-50 dark:bg-slate-800', {
-        'pr-2': !removable,
-      })}
+      className={cx(
+        'inline-flex rounded-md items-center py-0.5 pl-2.5 pr-1 mr-2 mt-2 text-sm font-medium bg-gray-200 text-gray-800 dark:text-gray-50 dark:bg-slate-800',
+        {
+          'pr-2': !removable,
+        },
+      )}
     >
       {displayColumn}
       &nbsp;
       {canChangeExclusive ? (
-        <span className='text-blue-400 border-blue-400 border-b-2 border-dotted cursor-pointer' onClick={() => onChangeExclusive(column, filter, !isExclusive)}>
+        <span
+          className='text-blue-400 border-blue-400 border-b-2 border-dotted cursor-pointer'
+          onClick={() => onChangeExclusive(column, filter, !isExclusive)}
+        >
           {t(`common.${isExclusive ? 'isNot' : 'is'}`)}
         </span>
       ) : (
-        <span>
-          {t(`common.${isExclusive ? 'isNot' : 'is'}`)}
-        </span>
+        <span>{t(`common.${isExclusive ? 'isNot' : 'is'}`)}</span>
       )}
-      &nbsp;
-      &quot;
+      &nbsp; &quot;
       {truncatedFilter}
       &quot;
       {removable && (
@@ -102,10 +114,11 @@ interface IFilters {
  * @param {object} tnMapping - Mapping of column names to translated names.
  * @returns {JSX.Element}
  */
-export const Filters = ({
-  filters, onRemoveFilter, onChangeExclusive, tnMapping,
-}: IFilters) => {
-  const { t, i18n: { language } } = useTranslation('common')
+export const Filters = ({ filters, onRemoveFilter, onChangeExclusive, tnMapping }: IFilters) => {
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
 
   return (
     <div className='flex justify-center md:justify-start flex-wrap -mt-2'>
@@ -132,11 +145,13 @@ export const Filters = ({
 }
 
 Filters.propTypes = {
-  filters: PropTypes.arrayOf(PropTypes.shape({
-    column: PropTypes.string,
-    filter: PropTypes.string,
-    isExclusive: PropTypes.bool,
-  })),
+  filters: PropTypes.arrayOf(
+    PropTypes.shape({
+      column: PropTypes.string,
+      filter: PropTypes.string,
+      isExclusive: PropTypes.bool,
+    }),
+  ),
   onRemoveFilter: PropTypes.func.isRequired,
   onChangeExclusive: PropTypes.func.isRequired,
   tnMapping: PropTypes.objectOf(PropTypes.string).isRequired,

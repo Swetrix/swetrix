@@ -5,7 +5,9 @@ import { errorsActions } from 'redux/reducers/errors'
 import { IUser } from '../../../models/IUser'
 const { changeUserDetails } = require('api')
 
-export default function* updateUserProfileWorker({ payload: { data, callback } }: {
+export default function* updateUserProfileWorker({
+  payload: { data, callback },
+}: {
   payload: {
     data: IUser
     callback: (isSuccess: boolean) => void
@@ -19,10 +21,12 @@ export default function* updateUserProfileWorker({ payload: { data, callback } }
     isSuccess = true
   } catch (e: unknown) {
     const error = e as { message: string } | string[] | string
-    yield put(errorsActions.updateUserProfileFailed({
-      // @ts-ignore
-      message: error?.message || (typeof error === 'string' ? error : error[0]),
-    }))
+    yield put(
+      errorsActions.updateUserProfileFailed({
+        // @ts-ignore
+        message: error?.message || (typeof error === 'string' ? error : error[0]),
+      }),
+    )
   } finally {
     yield put(authActions.finishLoading())
     callback(isSuccess)

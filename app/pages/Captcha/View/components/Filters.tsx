@@ -11,7 +11,14 @@ import countries from 'utils/isoCountries'
  * @returns {JSX.Element}
  */
 const Filter = ({
-  column, filter, isExclusive, onRemoveFilter, onChangeExclusive, tnMapping, language, t,
+  column,
+  filter,
+  isExclusive,
+  onRemoveFilter,
+  onChangeExclusive,
+  tnMapping,
+  language,
+  t,
 }: {
   column: string
   filter: string
@@ -41,11 +48,13 @@ const Filter = ({
     <span className='inline-flex rounded-md items-center py-0.5 pl-2.5 pr-1 mr-2 mt-2 text-sm font-medium bg-gray-200 text-gray-800 dark:text-gray-50 dark:bg-slate-800'>
       {displayColumn}
       &nbsp;
-      <span className='text-blue-400 border-blue-400 border-b-2 border-dotted cursor-pointer' onClick={() => onChangeExclusive(column, filter, !isExclusive)}>
+      <span
+        className='text-blue-400 border-blue-400 border-b-2 border-dotted cursor-pointer'
+        onClick={() => onChangeExclusive(column, filter, !isExclusive)}
+      >
         {t(`common.${isExclusive ? 'isNot' : 'is'}`)}
       </span>
-      &nbsp;
-      &quot;
+      &nbsp; &quot;
       {displayFilter}
       &quot;
       <button
@@ -72,7 +81,10 @@ const Filter = ({
  * @returns {JSX.Element}
  */
 const Filters = ({
-  filters, onRemoveFilter, onChangeExclusive, tnMapping,
+  filters,
+  onRemoveFilter,
+  onChangeExclusive,
+  tnMapping,
 }: {
   filters: {
     column: string
@@ -85,7 +97,10 @@ const Filters = ({
   onChangeExclusive: (column: string, filter: string, isExclusive: boolean) => void
   tnMapping: Record<string, string>
 }) => {
-  const { t, i18n: { language } } = useTranslation('common')
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
 
   return (
     <div className='flex justify-center md:justify-start flex-wrap -mt-2'>
@@ -94,7 +109,15 @@ const Filters = ({
         const key = `${column}${filter}`
 
         return (
-          <Filter key={key} onRemoveFilter={onRemoveFilter} onChangeExclusive={onChangeExclusive} language={language} t={t} tnMapping={tnMapping} {...props} />
+          <Filter
+            key={key}
+            onRemoveFilter={onRemoveFilter}
+            onChangeExclusive={onChangeExclusive}
+            language={language}
+            t={t}
+            tnMapping={tnMapping}
+            {...props}
+          />
         )
       })}
     </div>
@@ -102,11 +125,13 @@ const Filters = ({
 }
 
 Filters.propTypes = {
-  filters: PropTypes.arrayOf(PropTypes.shape({
-    column: PropTypes.string,
-    filter: PropTypes.string,
-    isExclusive: PropTypes.bool,
-  })),
+  filters: PropTypes.arrayOf(
+    PropTypes.shape({
+      column: PropTypes.string,
+      filter: PropTypes.string,
+      isExclusive: PropTypes.bool,
+    }),
+  ),
   onRemoveFilter: PropTypes.func.isRequired,
   onChangeExclusive: PropTypes.func.isRequired,
   tnMapping: PropTypes.objectOf(PropTypes.string).isRequired,

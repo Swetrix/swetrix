@@ -73,9 +73,7 @@ export const authMe = () =>
     .then((response): IUser => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const logoutApi = (refreshToken: string | null) =>
@@ -92,9 +90,7 @@ export const logoutApi = (refreshToken: string | null) =>
     })
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const logoutAllApi = () =>
@@ -109,36 +105,29 @@ export const logoutAllApi = () =>
 export const refreshToken = () =>
   api
     .post('v1/auth/refresh-token')
-    .then((response): {
-      access_token: string
-      refreshToken: string
-    } => response.data)
+    .then(
+      (
+        response,
+      ): {
+        access_token: string
+        refreshToken: string
+      } => response.data,
+    )
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const login = (credentials: {
-  email: string
-  password: string
-}) =>
+export const login = (credentials: { email: string; password: string }) =>
   api
     .post('v1/auth/login', credentials)
     .then((response): IAuth => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const signup = (data: {
-  email: string,
-  password: string,
-  refCode?: string,
-}) =>
+export const signup = (data: { email: string; password: string; refCode?: string }) =>
   api
     .post('v1/auth/register', data)
     .then((response): IAuth => response.data)
@@ -222,17 +211,13 @@ export const getReferrals = () =>
       throw new Error(errorsArray)
     })
 
-export const forgotPassword = (email: {
-  email: string
-}) =>
+export const forgotPassword = (email: { email: string }) =>
   api
     .post('v1/auth/reset-password', email)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const confirmEmail = () =>
@@ -241,9 +226,7 @@ export const confirmEmail = () =>
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const exportUserData = () =>
@@ -252,9 +235,7 @@ export const exportUserData = () =>
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const createNewPassword = (id: string, password: string) =>
@@ -275,51 +256,51 @@ export const verifyEmail = ({ id }: { id: string }) =>
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const verifyShare = ({ path, id }: { path: string, id: string }) =>
+export const verifyShare = ({ path, id }: { path: string; id: string }) =>
   api
     .get(`/project/${path}/${id}`)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const getProjects = (take: number = 0, skip: number = 0, isCaptcha: boolean = false, search?: string) =>
   api
     .get(`/project?take=${take}&skip=${skip}&isCaptcha=${isCaptcha}&search=${search}`)
-    .then((response): {
-      results: IProject[]
-      total: number
-      page_total: number
-      totalMonthlyEvents: number
-    } => response.data)
+    .then(
+      (
+        response,
+      ): {
+        results: IProject[]
+        total: number
+        page_total: number
+        totalMonthlyEvents: number
+      } => response.data,
+    )
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const getSharedProjects = (take: number = 0, skip: number = 0, search?: string) =>
   api
     .get(`/project/shared?take=${take}&skip=${skip}&search=${search}`)
-    .then((response): {
-      results: ISharedProject[]
-      total: number
-      page_total: number
-    } => response.data)
+    .then(
+      (
+        response,
+      ): {
+        results: ISharedProject[]
+        total: number
+        page_total: number
+      } => response.data,
+    )
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 // eslint-disable-next-line default-param-last
@@ -333,23 +314,16 @@ export const getProject = (pid: string, isCaptcha: boolean = false, password?: s
     .then((response): IProject => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const createProject = (data: {
-  name: string
-  isCaptcha?: boolean
-}) =>
+export const createProject = (data: { name: string; isCaptcha?: boolean }) =>
   api
     .post('/project', data)
     .then((response): IProject => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const updateProject = (id: string, data: Partial<IProject>) =>
@@ -358,9 +332,7 @@ export const updateProject = (id: string, data: Partial<IProject>) =>
     .then((response): IProject => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const deleteProject = (id: string) =>
@@ -369,9 +341,7 @@ export const deleteProject = (id: string) =>
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const deleteCaptchaProject = (id: string) =>
@@ -380,9 +350,7 @@ export const deleteCaptchaProject = (id: string) =>
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const resetProject = (id: string) =>
@@ -391,9 +359,7 @@ export const resetProject = (id: string) =>
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const resetCaptchaProject = (id: string) =>
@@ -402,9 +368,7 @@ export const resetCaptchaProject = (id: string) =>
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const getProjectData = (
@@ -420,7 +384,9 @@ export const getProjectData = (
 ) =>
   api
     .get(
-      `log?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}&mode=${mode}`,
+      `log?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(
+        filters,
+      )}&from=${from}&to=${to}&timezone=${timezone}&mode=${mode}`,
       {
         headers: {
           'x-password': password,
@@ -430,9 +396,7 @@ export const getProjectData = (
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const getCustomEventsMetadata = (
@@ -457,9 +421,7 @@ export const getCustomEventsMetadata = (
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const getProjectCompareData = (
@@ -475,7 +437,9 @@ export const getProjectCompareData = (
 ) =>
   api
     .get(
-      `log/chart?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}&mode=${mode}`,
+      `log/chart?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(
+        filters,
+      )}&from=${from}&to=${to}&timezone=${timezone}&mode=${mode}`,
       {
         headers: {
           'x-password': password,
@@ -485,9 +449,7 @@ export const getProjectCompareData = (
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const getPerfData = (
@@ -502,7 +464,9 @@ export const getPerfData = (
 ) =>
   api
     .get(
-      `log/performance?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}`,
+      `log/performance?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(
+        filters,
+      )}&from=${from}&to=${to}&timezone=${timezone}`,
       {
         headers: {
           'x-password': password,
@@ -512,9 +476,7 @@ export const getPerfData = (
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const getSessions = (
@@ -530,7 +492,9 @@ export const getSessions = (
 ) =>
   api
     .get(
-      `log/sessions?pid=${pid}&take=${take}&skip=${skip}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}`,
+      `log/sessions?pid=${pid}&take=${take}&skip=${skip}&period=${period}&filters=${JSON.stringify(
+        filters,
+      )}&from=${from}&to=${to}&timezone=${timezone}`,
       {
         headers: {
           'x-password': password,
@@ -540,32 +504,20 @@ export const getSessions = (
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getSession = (
-  pid: string,
-  psid: string,
-  timezone: string = '',
-  password: string | undefined = '',
-) =>
+export const getSession = (pid: string, psid: string, timezone: string = '', password: string | undefined = '') =>
   api
-    .get(
-      `log/session?pid=${pid}&psid=${psid}&timezone=${timezone}`,
-      {
-        headers: {
-          'x-password': password,
-        },
+    .get(`log/session?pid=${pid}&psid=${psid}&timezone=${timezone}`, {
+      headers: {
+        'x-password': password,
       },
-    )
+    })
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const getFunnelData = (
@@ -578,41 +530,28 @@ export const getFunnelData = (
   password: string | undefined = '',
 ) =>
   api
-    .get(
-      `log/funnel?pid=${pid}&period=${period}&from=${from}&to=${to}&timezone=${timezone}&funnelId=${funnelId}`,
-      {
-        headers: {
-          'x-password': password,
-        },
+    .get(`log/funnel?pid=${pid}&period=${period}&from=${from}&to=${to}&timezone=${timezone}&funnelId=${funnelId}`, {
+      headers: {
+        'x-password': password,
       },
-    )
+    })
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getFunnels = (
-  pid: string,
-  password: string | undefined = '',
-) =>
+export const getFunnels = (pid: string, password: string | undefined = '') =>
   api
-    .get(
-      `project/funnels/${pid}`,
-      {
-        headers: {
-          'x-password': password,
-        },
+    .get(`project/funnels/${pid}`, {
+      headers: {
+        'x-password': password,
       },
-    )
+    })
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const getCaptchaData = (
@@ -625,20 +564,30 @@ export const getCaptchaData = (
 ) =>
   api
     .get(
-      `log/captcha?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}`,
+      `log/captcha?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(
+        filters,
+      )}&from=${from}&to=${to}`,
     )
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getOverallStats = (pids: string[], period: string, from = '', to = '', timezone = 'Etc/GMT', filters: any = '', password?: string) =>
+export const getOverallStats = (
+  pids: string[],
+  period: string,
+  from = '',
+  to = '',
+  timezone = 'Etc/GMT',
+  filters: any = '',
+  password?: string,
+) =>
   api
     .get(
-      `log/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]&period=${period}&from=${from}&to=${to}&timezone=${timezone}&filters=${JSON.stringify(filters)}`,
+      `log/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(
+        ',',
+      )}]&period=${period}&from=${from}&to=${to}&timezone=${timezone}&filters=${JSON.stringify(filters)}`,
       {
         headers: {
           'x-password': password,
@@ -648,15 +597,23 @@ export const getOverallStats = (pids: string[], period: string, from = '', to = 
     .then((response): IOverall => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getPerformanceOverallStats = (pids: string[], period: string, from = '', to = '', timezone = 'Etc/GMT', filters: any = '', password?: string) =>
+export const getPerformanceOverallStats = (
+  pids: string[],
+  period: string,
+  from = '',
+  to = '',
+  timezone = 'Etc/GMT',
+  filters: any = '',
+  password?: string,
+) =>
   api
     .get(
-      `log/performance/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]&period=${period}&from=${from}&to=${to}&timezone=${timezone}&filters=${JSON.stringify(filters)}`,
+      `log/performance/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(
+        ',',
+      )}]&period=${period}&from=${from}&to=${to}&timezone=${timezone}&filters=${JSON.stringify(filters)}`,
       {
         headers: {
           'x-password': password,
@@ -666,20 +623,27 @@ export const getPerformanceOverallStats = (pids: string[], period: string, from 
     .then((response): IOverall => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getOverallStatsCaptcha = (pids: string[], period: string, from = '', to = '', timezone = 'Etc/GMT', filters: any = '') =>
+export const getOverallStatsCaptcha = (
+  pids: string[],
+  period: string,
+  from = '',
+  to = '',
+  timezone = 'Etc/GMT',
+  filters: any = '',
+) =>
   api
-    .get(`log/captcha/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]&period=${period}&from=${from}&to=${to}&timezone=${timezone}&filters=${JSON.stringify(filters)}`)
+    .get(
+      `log/captcha/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(
+        ',',
+      )}]&period=${period}&from=${from}&to=${to}&timezone=${timezone}&filters=${JSON.stringify(filters)}`,
+    )
     .then((response): IOverall => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const getLiveVisitors = (pids: string[], password?: string) =>
@@ -692,9 +656,7 @@ export const getLiveVisitors = (pids: string[], password?: string) =>
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const getGeneralStats = () =>
@@ -703,23 +665,22 @@ export const getGeneralStats = () =>
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const shareProject = (pid: string, data: {
-  email: string
-  role: string
-}) =>
+export const shareProject = (
+  pid: string,
+  data: {
+    email: string
+    role: string
+  },
+) =>
   api
     .post(`/project/${pid}/share`, data)
     .then((response): IProject => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const deleteShareProjectUsers = (pid: string, userId: string) =>
@@ -728,9 +689,7 @@ export const deleteShareProjectUsers = (pid: string, userId: string) =>
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const deleteShareProject = (pid: string) =>
@@ -739,9 +698,7 @@ export const deleteShareProject = (pid: string) =>
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const acceptShareProject = (id: string) =>
@@ -750,22 +707,21 @@ export const acceptShareProject = (id: string) =>
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const changeShareRole = (id: string, data: {
-  role: string
-}) =>
+export const changeShareRole = (
+  id: string,
+  data: {
+    role: string
+  },
+) =>
   api
     .put(`project/share/${id}`, data)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const generate2FA = () =>
@@ -774,9 +730,7 @@ export const generate2FA = () =>
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const enable2FA = (twoFactorAuthenticationCode: string) =>
@@ -785,9 +739,7 @@ export const enable2FA = (twoFactorAuthenticationCode: string) =>
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const disable2FA = (twoFactorAuthenticationCode: string) =>
@@ -796,9 +748,7 @@ export const disable2FA = (twoFactorAuthenticationCode: string) =>
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const submit2FA = (twoFactorAuthenticationCode: string) =>
@@ -807,22 +757,22 @@ export const submit2FA = (twoFactorAuthenticationCode: string) =>
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const generateApiKey = () =>
   api
     .post('user/api-key')
-    .then((response): {
-      apiKey: string
-    } => response.data)
+    .then(
+      (
+        response,
+      ): {
+        apiKey: string
+      } => response.data,
+    )
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const deleteApiKey = () =>
@@ -831,9 +781,7 @@ export const deleteApiKey = () =>
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const getInstalledExtensions = (limit = 100, offset = 0) =>
@@ -842,9 +790,7 @@ export const getInstalledExtensions = (limit = 100, offset = 0) =>
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const setTheme = (theme: string) =>
@@ -853,9 +799,7 @@ export const setTheme = (theme: string) =>
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export interface IGetLiveVisitorsInfo {
@@ -875,9 +819,7 @@ export const getLiveVisitorsInfo = (pid: string, password?: string) =>
     .then((response): IGetLiveVisitorsInfo[] => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const removeTgIntegration = (tgID: string) =>
@@ -886,27 +828,27 @@ export const removeTgIntegration = (tgID: string) =>
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const getAlerts = (take: number = DEFAULT_ALERTS_TAKE, skip: number = 0) =>
   api
     .get(`alert?take=${take}&skip=${skip}`)
-    .then((response): {
-      results: IAlerts[]
-      total: number
-      page_total: number
-    } => response.data)
+    .then(
+      (
+        response,
+      ): {
+        results: IAlerts[]
+        total: number
+        page_total: number
+      } => response.data,
+    )
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export interface ICreateAlert extends Omit<IAlerts, 'id' | 'lastTrigger' | 'lastTriggered' | 'created'> { }
+export interface ICreateAlert extends Omit<IAlerts, 'id' | 'lastTrigger' | 'lastTriggered' | 'created'> {}
 
 export const createAlert = (data: ICreateAlert) =>
   api
@@ -914,9 +856,7 @@ export const createAlert = (data: ICreateAlert) =>
     .then((response): IAlerts => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const updateAlert = (id: string, data: Partial<IAlerts>) =>
@@ -925,9 +865,7 @@ export const updateAlert = (id: string, data: Partial<IAlerts>) =>
     .then((response): IAlerts => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const deleteAlert = (id: string) =>
@@ -936,9 +874,7 @@ export const deleteAlert = (id: string) =>
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const reGenerateCaptchaSecretKey = (pid: string) =>
@@ -947,23 +883,22 @@ export const reGenerateCaptchaSecretKey = (pid: string) =>
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const addSubscriber = (id: string, data: {
-  email: string
-  reportFrequency: string
-}) =>
+export const addSubscriber = (
+  id: string,
+  data: {
+    email: string
+    reportFrequency: string
+  },
+) =>
   api
     .post(`project/${id}/subscribers`, data)
     .then((response): ISubscribers => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const addFunnel = (pid: string, name: string, steps: string[]) =>
@@ -972,9 +907,7 @@ export const addFunnel = (pid: string, name: string, steps: string[]) =>
     .then((response): any => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const updateFunnel = (id: string, pid: string, name: string, steps: string[]) =>
@@ -983,9 +916,7 @@ export const updateFunnel = (id: string, pid: string, name: string, steps: strin
     .then((response): any => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const deleteFunnel = (id: string, pid: string) =>
@@ -994,36 +925,38 @@ export const deleteFunnel = (id: string, pid: string) =>
     .then((response): any => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const getSubscribers = (id: string, offset: number, limit: number) =>
   api
     .get(`project/${id}/subscribers?offset=${offset}&limit=${limit}`)
-    .then((response): {
-      subscribers: ISubscribers[]
-      count: number
-    } => response.data)
+    .then(
+      (
+        response,
+      ): {
+        subscribers: ISubscribers[]
+        count: number
+      } => response.data,
+    )
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const updateSubscriber = (id: string, subscriberId: string, data: {
-  reportFrequency: string
-}) =>
+export const updateSubscriber = (
+  id: string,
+  subscriberId: string,
+  data: {
+    reportFrequency: string
+  },
+) =>
   api
     .patch(`project/${id}/subscribers/${subscriberId}`, data)
     .then((response): ISubscribers => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const removeSubscriber = (id: string, subscriberId: string) =>
@@ -1032,9 +965,7 @@ export const removeSubscriber = (id: string, subscriberId: string) =>
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const confirmSubscriberInvite = (id: string, token: string) =>
@@ -1043,9 +974,7 @@ export const confirmSubscriberInvite = (id: string, token: string) =>
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const getProjectDataCustomEvents = (
@@ -1061,7 +990,9 @@ export const getProjectDataCustomEvents = (
 ) =>
   api
     .get(
-      `log/custom-events?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}&customEvents=${JSON.stringify(customEvents)}`,
+      `log/custom-events?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(
+        filters,
+      )}&from=${from}&to=${to}&timezone=${timezone}&customEvents=${JSON.stringify(customEvents)}`,
       {
         headers: {
           'x-password': password,
@@ -1071,9 +1002,7 @@ export const getProjectDataCustomEvents = (
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const transferProject = (uuid: string, email: string) =>
@@ -1085,9 +1014,7 @@ export const transferProject = (uuid: string, email: string) =>
     .then((response): unknown => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const rejectTransferProject = (uuid: string) =>
@@ -1096,9 +1023,7 @@ export const rejectTransferProject = (uuid: string) =>
     .then((response): unknown => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const confirmTransferProject = (uuid: string) =>
@@ -1107,9 +1032,7 @@ export const confirmTransferProject = (uuid: string) =>
     .then((response): unknown => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const generateSSOAuthURL = (provider: string) =>
@@ -1120,9 +1043,7 @@ export const generateSSOAuthURL = (provider: string) =>
     .then((response): unknown => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const getJWTBySSOHash = (hash: string, provider: string, refCode?: string) =>
@@ -1131,9 +1052,7 @@ export const getJWTBySSOHash = (hash: string, provider: string, refCode?: string
     .then((response): unknown => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const linkBySSOHash = (hash: string, provider: string) =>
@@ -1142,9 +1061,7 @@ export const linkBySSOHash = (hash: string, provider: string) =>
     .then((response): unknown => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const unlinkSSO = (provider: string) =>
@@ -1153,9 +1070,7 @@ export const unlinkSSO = (provider: string) =>
     .then((response): unknown => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const processSSOToken = (token: string, hash: string) =>
@@ -1164,9 +1079,7 @@ export const processSSOToken = (token: string, hash: string) =>
     .then((response): unknown => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const getProjectsNames = () =>
@@ -1175,9 +1088,7 @@ export const getProjectsNames = () =>
     .then((response): IProjectNames[] => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const createCaptchaInherited = (id: string) =>
@@ -1186,23 +1097,22 @@ export const createCaptchaInherited = (id: string) =>
     .then((response): IProject => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const deletePartially = (id: string, data: {
-  from: string
-  to: string
-}) =>
+export const deletePartially = (
+  id: string,
+  data: {
+    from: string
+    to: string
+  },
+) =>
   api
     .delete(`project/partially/${id}?from=${data.from}&to=${data.to}`)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const getUserFlow = (
@@ -1217,7 +1127,9 @@ export const getUserFlow = (
 ) =>
   api
     .get(
-      `log/user-flow?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}`,
+      `log/user-flow?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(
+        filters,
+      )}&from=${from}&to=${to}&timezone=${timezone}`,
       {
         headers: {
           'x-password': password,
@@ -1227,9 +1139,7 @@ export const getUserFlow = (
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const checkPassword = (pid: string, password: string) =>
@@ -1242,9 +1152,7 @@ export const checkPassword = (pid: string, password: string) =>
     .then((response): Boolean => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const getPaymentMetainfo = () =>
@@ -1253,9 +1161,7 @@ export const getPaymentMetainfo = () =>
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const getUsageInfo = () =>
@@ -1264,9 +1170,7 @@ export const getUsageInfo = () =>
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
 export const getFilters = (pid: string, type: string, password = '') =>
@@ -1366,13 +1270,15 @@ export const getBlogPostWithCategory = (category: string, slug: string) =>
 export const getLastPost = () =>
   api
     .get('v1/blog/last-post')
-    .then((response): {
-      title: string
-      handle: string
-    } => response.data)
+    .then(
+      (
+        response,
+      ): {
+        title: string
+        handle: string
+      } => response.data,
+    )
     .catch((error) => {
       debug('%s', error)
-      throw _isEmpty(error.response.data?.message)
-        ? error.response.data
-        : error.response.data.message
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })

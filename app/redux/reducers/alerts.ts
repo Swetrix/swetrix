@@ -11,7 +11,7 @@ const initialState: IInitialState = {
   type: 'info',
 }
 
-const alertsCreate = (state: IInitialState, { payload }: PayloadAction<{ message: string, type?: string }>) => {
+const alertsCreate = (state: IInitialState, { payload }: PayloadAction<{ message: string; type?: string }>) => {
   state.message = payload.message
   state.type = payload.type || 'info'
 }

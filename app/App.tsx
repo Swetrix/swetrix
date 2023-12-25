@@ -25,35 +25,28 @@ import routesPath from 'routesPath'
 import { getPageMeta } from 'utils/server'
 import { authMe } from './api'
 
-const minimalFooterPages = [
-  '/projects', '/dashboard', '/contact',
-]
+const minimalFooterPages = ['/projects', '/dashboard', '/contact']
 
 interface IApp {
   ssrTheme: 'dark' | 'light'
   ssrAuthenticated: boolean
 }
 
-const TITLE_BLACKLIST = [
-  '/projects/', '/captchas/', '/blog',
-]
+const TITLE_BLACKLIST = ['/projects/', '/captchas/', '/blog']
 
 const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
   const dispatch = useAppDispatch()
   const { pathname } = useLocation()
   const { t } = useTranslation('common')
   const alert = useAlert()
-  const {
-    loading,
-  } = useSelector((state: StateType) => state.auth)
+  const { loading } = useSelector((state: StateType) => state.auth)
   const reduxAuthenticated = useSelector((state: StateType) => state.auth.authenticated)
   const { error } = useSelector((state: StateType) => state.errors)
   const { message, type } = useSelector((state: StateType) => state.alerts)
   const accessToken = getAccessToken()
-  const authenticated = isBrowser
-    ? (loading ? !!accessToken : reduxAuthenticated)
-    : ssrAuthenticated
+  const authenticated = isBrowser ? (loading ? !!accessToken : reduxAuthenticated) : ssrAuthenticated
 
+  // prettier-ignore
   useEffect(() => {
     (async () => {
       if (accessToken && !reduxAuthenticated) {
@@ -103,12 +96,13 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
   const isMinimalFooter = _some(minimalFooterPages, (page) => _includes(pathname, page))
 
   const isReferralPage = _startsWith(pathname, '/ref/')
-  const isProjectViewPage = _startsWith(pathname, '/projects/')
-    && !_endsWith(pathname, '/new')
-    && !_endsWith(pathname, '/subscribers/invite')
-    && !_endsWith(pathname, '/subscribers/invite')
-    && !_includes(pathname, '/alerts/')
-    && !_includes(pathname, '/settings/')
+  const isProjectViewPage =
+    _startsWith(pathname, '/projects/') &&
+    !_endsWith(pathname, '/new') &&
+    !_endsWith(pathname, '/subscribers/invite') &&
+    !_endsWith(pathname, '/subscribers/invite') &&
+    !_includes(pathname, '/alerts/') &&
+    !_includes(pathname, '/settings/')
 
   return (
     // eslint-disable-next-line react/jsx-no-useless-fragment
@@ -117,9 +111,7 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
         <Header ssrTheme={ssrTheme} authenticated={authenticated} />
       )}
       <Outlet />
-      {!isReferralPage && !isProjectViewPage && (
-        <Footer minimal={isMinimalFooter} authenticated={authenticated} />
-      )}
+      {!isReferralPage && !isProjectViewPage && <Footer minimal={isMinimalFooter} authenticated={authenticated} />}
     </>
   )
 }

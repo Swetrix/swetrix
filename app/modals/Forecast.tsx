@@ -11,16 +11,22 @@ import _toString from 'lodash/toString'
 const DEFAULT_PERIOD = '3'
 
 const Forecast = ({
-  onClose, onSubmit, isOpened, activeTB, tb,
+  onClose,
+  onSubmit,
+  isOpened,
+  activeTB,
+  tb,
 }: {
-  onClose: () => void,
-  onSubmit: (period: string) => void,
-  isOpened: boolean,
-  activeTB: string,
-  tb: string,
+  onClose: () => void
+  onSubmit: (period: string) => void
+  isOpened: boolean
+  activeTB: string
+  tb: string
 }): JSX.Element => {
-  const { t }: {
-    t: (key: string, options?: { [key: string]: string | number }) => string,
+  const {
+    t,
+  }: {
+    t: (key: string, options?: { [key: string]: string | number }) => string
   } = useTranslation('common')
   const [period, setPeriod] = useState<string>(DEFAULT_PERIOD)
   const [error, setError] = useState<string | null>(null)
@@ -46,9 +52,11 @@ const Forecast = ({
     }
 
     if (processedPeriod > FORECAST_MAX_MAPPING[tb]) {
-      setError(t('apiNotifications.forecastNumberCantBeBigger', {
-        max: FORECAST_MAX_MAPPING[tb],
-      }))
+      setError(
+        t('apiNotifications.forecastNumberCantBeBigger', {
+          max: FORECAST_MAX_MAPPING[tb],
+        }),
+      )
       return
     }
 
@@ -67,7 +75,7 @@ const Forecast = ({
       onSubmit={_onSubmit}
       submitText={t('common.continue')}
       closeText={t('common.cancel')}
-      message={(
+      message={
         <div>
           {t('modals.forecast.desc')}
 
@@ -85,7 +93,7 @@ const Forecast = ({
             error={error}
           />
         </div>
-      )}
+      }
       title={t('modals.forecast.title')}
       isOpened={isOpened}
     />

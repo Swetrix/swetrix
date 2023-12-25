@@ -9,15 +9,17 @@ import { REFERRAL_COOKIE } from 'redux/constants'
 import sagaActions from '../../actions'
 const { signup } = require('api')
 
-export default function* signupWorder({ payload: { data: rawData, callback } }: {
+export default function* signupWorder({
+  payload: { data: rawData, callback },
+}: {
   payload: {
     data: {
-      email: string,
+      email: string
       password: string
       repeat: string
       dontRemember: boolean
       checkIfLeaked: boolean
-    },
+    }
     callback: (isSuccess: boolean) => void
   }
 }) {
@@ -25,7 +27,9 @@ export default function* signupWorder({ payload: { data: rawData, callback } }: 
     const { dontRemember } = rawData
     const refCode = getCookie(REFERRAL_COOKIE)
     const {
-      user, accessToken, refreshToken, // theme,
+      user,
+      accessToken,
+      refreshToken, // theme,
       // @ts-ignore
     } = yield call(signup, {
       email: rawData.email,

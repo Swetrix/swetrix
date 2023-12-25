@@ -4,7 +4,8 @@ import _get from 'lodash/get'
 
 export default () => {
   const [size, setSize] = useState({
-    width: 0, height: 0,
+    width: 0,
+    height: 0,
   })
   const ref = useRef(null)
 

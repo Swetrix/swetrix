@@ -7,9 +7,7 @@ import UIActions from 'redux/reducers/ui'
 
 import { ENTRIES_PER_PAGE_DASHBOARD, isSelfhosted } from 'redux/constants'
 import { IOverall } from 'redux/models/IProject'
-const {
-  getSharedProjects, getOverallStats, getLiveVisitors,
-} = require('api')
+const { getSharedProjects, getOverallStats, getLiveVisitors } = require('api')
 
 const debug = Debug('swetrix:rx:s:load-projects')
 
@@ -19,14 +17,17 @@ export default function* loadSharedProjects({ payload: { take = ENTRIES_PER_PAGE
   }
 
   try {
-    yield put(UIActions.setProjectsLoading({
-      isLoading: true,
-      shared: true,
-    }))
+    yield put(
+      UIActions.setProjectsLoading({
+        isLoading: true,
+        shared: true,
+      }),
+    )
 
     let {
       // eslint-disable-next-line prefer-const
-      results, total,
+      results,
+      total,
     } = yield call(getSharedProjects, take, skip, search)
 
     if (total === 0) {
@@ -53,19 +54,25 @@ export default function* loadSharedProjects({ payload: { take = ENTRIES_PER_PAGE
       debug('failed to overall stats: %s', e)
     }
 
-    yield put(UIActions.setProjects({
-      projects: projectsWithShared,
-      shared: true,
-    }))
-    yield put(UIActions.setTotal({
-      total,
-      shared: true,
-    }))
+    yield put(
+      UIActions.setProjects({
+        projects: projectsWithShared,
+        shared: true,
+      }),
+    )
+    yield put(
+      UIActions.setTotal({
+        total,
+        shared: true,
+      }),
+    )
 
     const liveStats: any[] = yield call(getLiveVisitors, pids)
-    yield put(UIActions.setLiveStats({
-      data: liveStats,
-    }))
+    yield put(
+      UIActions.setLiveStats({
+        data: liveStats,
+      }),
+    )
   } catch (e: unknown) {
     const { message } = e as { message: string }
     if (_isString(message)) {

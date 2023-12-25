@@ -11,9 +11,7 @@ import Input from 'ui/Input'
 import Button from 'ui/Button'
 import Checkbox from 'ui/Checkbox'
 import Tooltip from 'ui/Tooltip'
-import {
-  isValidEmail, isValidPassword, MIN_PASSWORD_CHARS, MAX_PASSWORD_CHARS,
-} from 'utils/validator'
+import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS, MAX_PASSWORD_CHARS } from 'utils/validator'
 import { HAVE_I_BEEN_PWNED_URL } from 'redux/constants'
 import { trackCustom } from 'utils/analytics'
 import { useAppDispatch } from 'redux/store'
@@ -22,23 +20,28 @@ import GithubAuth from 'components/GithubAuth'
 import routes from 'routesPath'
 
 interface ISignUpForm {
-  email: string,
-  password: string,
-  repeat: string,
-  tos: boolean,
-  dontRemember: boolean,
-  checkIfLeaked: boolean,
+  email: string
+  password: string
+  repeat: string
+  tos: boolean
+  dontRemember: boolean
+  checkIfLeaked: boolean
 }
 
 interface IBasicSignup {
-  ssrTheme: string,
+  ssrTheme: string
 }
 
 const BasicSignup: React.FC<IBasicSignup> = ({ ssrTheme }): JSX.Element => {
-  const { t }: {
-    t: (key: string, optinions?: {
-      [key: string]: string | number,
-    }) => string,
+  const {
+    t,
+  }: {
+    t: (
+      key: string,
+      optinions?: {
+        [key: string]: string | number
+      },
+    ) => string
   } = useTranslation('common')
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
@@ -52,10 +55,10 @@ const BasicSignup: React.FC<IBasicSignup> = ({ ssrTheme }): JSX.Element => {
   })
   const [validated, setValidated] = useState<boolean>(false)
   const [errors, setErrors] = useState<{
-    email?: string,
-    password?: string,
-    repeat?: string,
-    tos?: string,
+    email?: string
+    password?: string
+    repeat?: string
+    tos?: string
   }>({})
   const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -82,9 +85,9 @@ const BasicSignup: React.FC<IBasicSignup> = ({ ssrTheme }): JSX.Element => {
 
   const validate = () => {
     const allErrors = {} as {
-      email?: string,
-      password?: string,
-      repeat?: string,
+      email?: string
+      password?: string
+      repeat?: string
     }
 
     if (!isValidEmail(form.email)) {
@@ -117,7 +120,7 @@ const BasicSignup: React.FC<IBasicSignup> = ({ ssrTheme }): JSX.Element => {
     const { target } = event
     const value = target.type === 'checkbox' ? target.checked : target.value
 
-    setForm(oldForm => ({
+    setForm((oldForm) => ({
       ...oldForm,
       [target.name]: value,
     }))
@@ -174,20 +177,27 @@ const BasicSignup: React.FC<IBasicSignup> = ({ ssrTheme }): JSX.Element => {
         />
         <Tooltip
           className='ml-2'
-          text={(
+          text={
             <Trans
               // @ts-ignore
               t={t}
               i18nKey='auth.common.checkLeakedPasswordDesc'
               components={{
                 // eslint-disable-next-line jsx-a11y/anchor-has-content
-                db: <a href={HAVE_I_BEEN_PWNED_URL} className='font-medium text-indigo-400 hover:underline hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' target='_blank' rel='noreferrer noopener' />,
+                db: (
+                  <a
+                    href={HAVE_I_BEEN_PWNED_URL}
+                    className='font-medium text-indigo-400 hover:underline hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                    target='_blank'
+                    rel='noreferrer noopener'
+                  />
+                ),
               }}
               values={{
                 database: 'haveibeenpwned.com',
               }}
             />
-          )}
+          }
         />
       </div>
       <Button className='w-full flex justify-center' type='submit' loading={isLoading} primary giant>

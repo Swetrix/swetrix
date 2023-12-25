@@ -16,11 +16,11 @@ html.dark .bb-axis .domain {
 }
 
 .bb-target-unique .bb-bar {
-  stroke: #2563EB !important;
+  stroke: #2563eb !important;
 }
 
 .bb-target-total .bb-bar {
-  stroke: #D97706 !important;
+  stroke: #d97706 !important;
 }
 
 .bb-target-sessionDuration .bb-bar {
@@ -28,27 +28,27 @@ html.dark .bb-axis .domain {
 }
 
 .bb-target-bounce .bb-bar {
-  stroke: #2AC4B3 !important;
+  stroke: #2ac4b3 !important;
 }
 
 .bb-target-viewsPerUnique .bb-bar {
-  stroke: #F87171 !important;
+  stroke: #f87171 !important;
 }
 
 .bb-target-dns .bb-bar {
-  stroke: #EC4319 !important;
+  stroke: #ec4319 !important;
 }
 
 .bb-target-tls .bb-bar {
-  stroke: #F27059 !important;
+  stroke: #f27059 !important;
 }
 
 .bb-target-conn .bb-bar {
-  stroke: #F7A265 !important;
+  stroke: #f7a265 !important;
 }
 
 .bb-target-response .bb-bar {
-  stroke: #F5D376 !important;
+  stroke: #f5d376 !important;
 }
 
 .bb-target-render .bb-bar {
@@ -56,11 +56,11 @@ html.dark .bb-axis .domain {
 }
 
 .bb-target-dom_load .bb-bar {
-  stroke: #A5E6AB !important;
+  stroke: #a5e6ab !important;
 }
 
 .bb-target-ttfb .bb-bar {
-  stroke: #00A8E8 !important;
+  stroke: #00a8e8 !important;
 }
 
 .bb-target-frontend .bb-bar {
@@ -68,11 +68,11 @@ html.dark .bb-axis .domain {
 }
 
 .bb-target-network .bb-bar {
-  stroke: #F7A265 !important;
+  stroke: #f7a265 !important;
 }
 
 .bb-target-backend .bb-bar {
-  stroke: #00A8E8 !important;
+  stroke: #00a8e8 !important;
 }
 
 .bb-target-events .bb-bar {
@@ -84,11 +84,11 @@ html.dark .bb-axis .domain {
 }
 
 .bb-target-Technical-Expences .bb-bar {
-  stroke: #EC4319 !important;
+  stroke: #ec4319 !important;
 }
 
 .bb-target-Business-Expences .bb-bar {
-  stroke: #F27059 !important;
+  stroke: #f27059 !important;
 }
 
 .bb-target-MRR .bb-bar {

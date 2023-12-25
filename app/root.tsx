@@ -1,6 +1,4 @@
-import type {
-  LinksFunction, LoaderArgs, HeadersFunction,
-} from '@remix-run/node'
+import type { LinksFunction, LoaderArgs, HeadersFunction } from '@remix-run/node'
 import { json, redirect } from '@remix-run/node'
 import { useState } from 'react'
 import {
@@ -14,12 +12,8 @@ import {
   useRouteError,
 } from '@remix-run/react'
 import { store } from 'redux/store'
-import {
-  isBrowser, CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted,
-} from 'redux/constants'
-import {
-  getCookie, generateCookieString,
-} from 'utils/cookie'
+import { isBrowser, CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted } from 'redux/constants'
+import { getCookie, generateCookieString } from 'utils/cookie'
 import { ExclamationTriangleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 import { Provider } from 'react-redux'
 import clsx from 'clsx'
@@ -34,9 +28,7 @@ import { useChangeLanguage } from 'remix-i18next'
 import { useTranslation } from 'react-i18next'
 import AppWrapper from 'App'
 import { detectLanguage } from 'i18n'
-import {
-  detectTheme, isAuthenticated, isWWW,
-} from 'utils/server'
+import { detectTheme, isAuthenticated, isWWW } from 'utils/server'
 import { LocaleLinks } from 'components/LocaleLinks'
 import { SEO } from 'components/SEO'
 
@@ -112,31 +104,30 @@ export function ErrorBoundary() {
             </div>
             <div className='py-8'>
               <div className='text-center'>
-                <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight sm:text-5xl'>Uh-oh..</h1>
+                <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight sm:text-5xl'>
+                  Uh-oh..
+                </h1>
                 <p className='mt-2 text-base font-medium text-gray-800 dark:text-gray-300'>
                   The app has crashed. We are sorry about that :(
                   <br />
-                  Please, tell us about it at
-                  {' '}
-                  {CONTACT_EMAIL}
+                  Please, tell us about it at {CONTACT_EMAIL}
                 </p>
                 <p className='mt-6 text-base font-medium text-gray-800 dark:text-gray-300'>
                   {isRouteErrorResponse(error) ? (
                     <>
                       <span>
-                        {error.status}
-                        {' '}
-                        {error.statusText}
+                        {error.status} {error.statusText}
                       </span>
-                      <span>
-                        {error.data}
-                      </span>
+                      <span>{error.data}</span>
                     </>
                   ) : error instanceof Error ? (
                     <>
                       {error.message}
                       <br />
-                      <span onClick={() => setCrashStackShown(prev => !prev)} className='flex justify-center items-center text-base text-gray-800 dark:text-gray-300 cursor-pointer hover:underline'>
+                      <span
+                        onClick={() => setCrashStackShown((prev) => !prev)}
+                        className='flex justify-center items-center text-base text-gray-800 dark:text-gray-300 cursor-pointer hover:underline'
+                      >
                         {crashStackShown ? (
                           <>
                             Hide crash stack
@@ -156,9 +147,7 @@ export function ErrorBoundary() {
                       )}
                     </>
                   ) : (
-                    <>
-                      Unknown error
-                    </>
+                    <>Unknown error</>
                   )}
                 </p>
               </div>
@@ -208,16 +197,26 @@ export async function loader({ request }: LoaderArgs) {
     STAGING: process.env.STAGING,
   }
 
-  const init = storeThemeToCookie ? {
-    headers: {
-      // 21600 seconds = 6 hours
-      'Set-Cookie': generateCookieString(LS_THEME_SETTING, theme, 21600),
-    },
-  } : undefined
+  const init = storeThemeToCookie
+    ? {
+        headers: {
+          // 21600 seconds = 6 hours
+          'Set-Cookie': generateCookieString(LS_THEME_SETTING, theme, 21600),
+        },
+      }
+    : undefined
 
-  return json({
-    locale, url, theme, REMIX_ENV, isAuthed, pathname: urlObject.pathname,
-  }, init)
+  return json(
+    {
+      locale,
+      url,
+      theme,
+      REMIX_ENV,
+      isAuthed,
+      pathname: urlObject.pathname,
+    },
+    init,
+  )
 }
 
 export const handle = {
@@ -225,9 +224,7 @@ export const handle = {
 }
 
 export default function App() {
-  const {
-    locale, url, theme, REMIX_ENV, isAuthed,
-  } = useLoaderData<typeof loader>()
+  const { locale, url, theme, REMIX_ENV, isAuthed } = useLoaderData<typeof loader>()
   const { i18n } = useTranslation('common')
 
   const urlObject = new URL(url)
@@ -250,13 +247,17 @@ export default function App() {
         {theme === 'dark' && <link rel='stylesheet' href={FlatpickrDarkCss} />}
         {theme === 'light' && <link rel='stylesheet' href={FlatpickrLightCss} />}
         <LocaleLinks />
-        <link rel='preload' href={`/locales/${locale}.json`} as='fetch' type='application/json' crossOrigin='anonymous' />
+        <link
+          rel='preload'
+          href={`/locales/${locale}.json`}
+          as='fetch'
+          type='application/json'
+          crossOrigin='anonymous'
+        />
         <script
           // eslint-disable-next-line react/no-danger
           dangerouslySetInnerHTML={{
-            __html: `window.REMIX_ENV = ${JSON.stringify(
-              REMIX_ENV,
-            )}`,
+            __html: `window.REMIX_ENV = ${JSON.stringify(REMIX_ENV)}`,
           }}
         />
         <script src='/env.js' />
@@ -269,10 +270,7 @@ export default function App() {
       >
         <Provider store={store}>
           <AlertProvider template={AlertTemplate} {...options}>
-            <AppWrapper
-              ssrTheme={theme}
-              ssrAuthenticated={isAuthed}
-            />
+            <AppWrapper ssrTheme={theme} ssrAuthenticated={isAuthed} />
           </AlertProvider>
         </Provider>
         <ScrollRestoration />

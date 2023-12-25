@@ -37,76 +37,122 @@ const loadProjectAlerts = (take?: number, skip?: number) => ({
   payload: { take, skip },
 })
 
-const loginAsync = (credentials: {
-  email: string,
-  password: string,
-  dontRemember: boolean,
-}, callback = () => { }) => ({
+const loginAsync = (
+  credentials: {
+    email: string
+    password: string
+    dontRemember: boolean
+  },
+  callback = () => {},
+) => ({
   type: types.LOGIN_ASYNC,
   payload: {
-    credentials, callback,
+    credentials,
+    callback,
   },
 })
 
 // currently only google is supported, in future we should provide a variable specifying the provider
-const authSSO = (provider: string, dontRemember: boolean, t: (key: string) => string = () => '', callback: (res: any) => void = () => { }) => ({
+const authSSO = (
+  provider: string,
+  dontRemember: boolean,
+  t: (key: string) => string = () => '',
+  callback: (res: any) => void = () => {},
+) => ({
   type: types.AUTH_SSO,
   payload: {
-    dontRemember, callback, t, provider,
+    dontRemember,
+    callback,
+    t,
+    provider,
   },
 })
 
 // currently only google is supported, in future we should provide a variable specifying the provider
-const linkSSO = (t: (key: string) => string = () => '', callback: (res: any) => void = () => { }, provider = 'google') => ({
+const linkSSO = (
+  t: (key: string) => string = () => '',
+  callback: (res: any) => void = () => {},
+  provider = 'google',
+) => ({
   type: types.LINK_SSO,
   payload: {
-    callback, t, provider,
+    callback,
+    t,
+    provider,
   },
 })
 
 // currently only google is supported, in future we should provide a variable specifying the provider
-const unlinkSSO = (t: (key: string) => string = () => '', callback: (res: any) => void = () => { }, provider = 'google') => ({
+const unlinkSSO = (
+  t: (key: string) => string = () => '',
+  callback: (res: any) => void = () => {},
+  provider = 'google',
+) => ({
   type: types.UNLINK_SSO,
   payload: {
-    callback, t, provider,
+    callback,
+    t,
+    provider,
   },
 })
 
-const signupAsync = (data: {
-  email: string,
-  password: string,
-}, t?: (string: string) => {}, callback = (res: any) => { }) => ({
+const signupAsync = (
+  data: {
+    email: string
+    password: string
+  },
+  t?: (string: string) => {},
+  callback = (res: any) => {},
+) => ({
   type: types.SIGNUP_ASYNC,
   payload: {
-    data, callback, t,
+    data,
+    callback,
+    t,
   },
 })
 
-const emailVerifyAsync = (data: {
-  id: string,
-}, successfulCallback?: () => void, errorCallback?: (e: string) => void) => ({
+const emailVerifyAsync = (
+  data: {
+    id: string
+  },
+  successfulCallback?: () => void,
+  errorCallback?: (e: string) => void,
+) => ({
   type: types.EMAIL_VERIFY_ASYNC,
   payload: { data, successfulCallback, errorCallback },
 })
 
-const updateUserProfileAsync = (data: Partial<IUser>, callback = (item: any) => { }) => ({
+const updateUserProfileAsync = (data: Partial<IUser>, callback = (item: any) => {}) => ({
   type: types.UPDATE_USER_PROFILE_ASYNC,
   payload: { data, callback },
 })
 
-const deleteAccountAsync = (errorCallback?: (e: string) => {}, successCallback?: (str?: string) => void, deletionFeedback?: string, t?: (str: string) => {}) => {
+const deleteAccountAsync = (
+  errorCallback?: (e: string) => {},
+  successCallback?: (str?: string) => void,
+  deletionFeedback?: string,
+  t?: (str: string) => {},
+) => {
   return {
     type: types.DELETE_ACCOUNT_ASYNC,
     payload: {
-      errorCallback, successCallback, t, deletionFeedback,
+      errorCallback,
+      successCallback,
+      t,
+      deletionFeedback,
     },
   }
 }
 
-const shareVerifyAsync = (data: {
-  id: string,
-  path: string
-}, successfulCallback?: () => void, errorCallback?: (error: string) => void) => ({
+const shareVerifyAsync = (
+  data: {
+    id: string
+    path: string
+  },
+  successfulCallback?: () => void,
+  errorCallback?: (error: string) => void,
+) => ({
   type: types.SHARE_VERIFY_ASYNC,
   payload: { data, successfulCallback, errorCallback },
 })
@@ -125,7 +171,8 @@ const logout = (basedOn401Error: boolean, isLogoutAll: boolean) => {
 const updateShowLiveVisitorsInTitle = (show: boolean, callback: (isSuccess: boolean) => void) => ({
   type: types.UPDATE_SHOW_LIVE_VISITORS_IN_TITLE,
   payload: {
-    show, callback,
+    show,
+    callback,
   },
 })
 

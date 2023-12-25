@@ -48,12 +48,7 @@ function flyImport(secrets) {
     console.log(`Set .env variable ${key}`)
   }
 
-  const command = [
-    'flyctl',
-    'secrets',
-    'import',
-    ...buildSecrets,
-  ]
+  const command = ['flyctl', 'secrets', 'import', ...buildSecrets]
 
   console.log(`Running command: ${command.join(' ')}`)
   // execSync(command.join(' '), { stdio: 'inherit' })

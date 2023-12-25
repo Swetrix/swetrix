@@ -8,11 +8,14 @@ import { IUser } from 'redux/models/IUser'
 import Signin from './Signin'
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
-  login: (data: {
-    email: string,
-    password: string,
-    dontRemember: boolean
-  }, callback: () => void) => {
+  login: (
+    data: {
+      email: string
+      password: string
+      dontRemember: boolean
+    },
+    callback: () => void,
+  ) => {
     dispatch(sagaActions.loginAsync(data, callback))
   },
   loginSuccess: (user: IUser) => {
@@ -21,9 +24,11 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
     dispatch(sagaActions.loadSharedProjects())
   },
   loginFailed: (error: string) => {
-    dispatch(errorsActions.loginFailed({
-      message: error,
-    }))
+    dispatch(
+      errorsActions.loginFailed({
+        message: error,
+      }),
+    )
   },
   authSSO: (provider: string, dontRemember: boolean, t: (key: string) => string, callback: (res: any) => void) => {
     dispatch(sagaActions.authSSO(provider, dontRemember, t, callback))

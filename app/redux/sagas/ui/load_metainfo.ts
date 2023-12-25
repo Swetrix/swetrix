@@ -4,9 +4,7 @@ import Debug from 'debug'
 import UIActions from 'redux/reducers/ui'
 import { isSelfhosted } from 'redux/constants'
 import { IMetainfo } from 'redux/models/IMetainfo'
-const {
-  getPaymentMetainfo,
-} = require('api')
+const { getPaymentMetainfo } = require('api')
 
 const debug = Debug('swetrix:rx:s:metainfo')
 

@@ -2,7 +2,7 @@ import { isDevelopment, isSelfhosted, isBrowser } from 'redux/constants'
 
 const COOKIE_DOMAIN = 'swetrix.com'
 
-const COOKIE_SUFFIX = (isDevelopment || isSelfhosted) ? '' : `; domain=${COOKIE_DOMAIN}; secure`
+const COOKIE_SUFFIX = isDevelopment || isSelfhosted ? '' : `; domain=${COOKIE_DOMAIN}; secure`
 
 export const getCookie = (key: string) => {
   if (!isBrowser) {
@@ -18,7 +18,12 @@ export const getCookie = (key: string) => {
   return null
 }
 
-export const generateCookieString = (key: string, value: string | number | boolean, maxAge = 3600, sameSite = 'strict') => {
+export const generateCookieString = (
+  key: string,
+  value: string | number | boolean,
+  maxAge = 3600,
+  sameSite = 'strict',
+) => {
   return `${key}=${value}; max-age=${maxAge}; path=/; SameSite=${sameSite}${COOKIE_SUFFIX}`
 }
 

@@ -6,12 +6,11 @@ import PropTypes from 'prop-types'
 import Modal from 'ui/Modal'
 import routes from 'routesPath'
 
-const PaidFeature = ({ onClose, isOpened }: {
-  onClose: () => void,
-  isOpened: boolean,
-}): JSX.Element => {
-  const { t }: {
-    t: (key: string, options?: { [key: string]: string | number }) => string,
+const PaidFeature = ({ onClose, isOpened }: { onClose: () => void; isOpened: boolean }): JSX.Element => {
+  const {
+    t,
+  }: {
+    t: (key: string, options?: { [key: string]: string | number }) => string
   } = useTranslation('common')
   const navigate = useNavigate()
 

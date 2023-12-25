@@ -1,7 +1,5 @@
 /* eslint-disable react/forbid-prop-types */
-import React, {
-  useState, useEffect, useMemo, memo, useRef,
-} from 'react'
+import React, { useState, useEffect, useMemo, memo, useRef } from 'react'
 import { useNavigate, useParams } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
@@ -22,7 +20,13 @@ import { ExclamationTriangleIcon, TrashIcon, ClipboardDocumentIcon } from '@hero
 import { withAuthentication, auth } from 'hoc/protected'
 import { isSelfhosted, TITLE_SUFFIX } from 'redux/constants'
 import {
-  createProject, updateProject, deleteCaptchaProject, resetCaptchaProject, reGenerateCaptchaSecretKey, getProjectsNames, createCaptchaInherited,
+  createProject,
+  updateProject,
+  deleteCaptchaProject,
+  resetCaptchaProject,
+  reGenerateCaptchaSecretKey,
+  getProjectsNames,
+  createCaptchaInherited,
 } from 'api'
 import Input from 'ui/Input'
 import Loader from 'ui/Loader'
@@ -39,13 +43,16 @@ const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
 const MAX_IPBLACKLIST_LENGTH = 300
 
-const tabForCreateCaptcha = [{
-  name: 'new',
-  label: 'project.captcha.settings.general',
-}, {
-  name: 'inheritance',
-  label: 'project.captcha.settings.inheritance',
-}]
+const tabForCreateCaptcha = [
+  {
+    name: 'new',
+    label: 'project.captcha.settings.general',
+  },
+  {
+    name: 'inheritance',
+    label: 'project.captcha.settings.inheritance',
+  },
+]
 
 const tabForNew = 'new'
 const tabForInheritance = 'inheritance'
@@ -60,38 +67,60 @@ interface IForm extends Partial<ICaptchaProject> {
 }
 
 interface ICaptchaSettings {
-  updateProjectFailed: (error: string) => void,
-  createNewProjectFailed: (error: string) => void,
-  newProject: (message: string) => void,
-  projectDeleted: (message: string) => void,
-  deleteProjectFailed: (error: string) => void,
-  loadProjects: () => void,
-  isLoading: boolean,
-  projects: ICaptchaProject[],
-  showError: (error: string) => void,
-  removeProject: (pid: string) => void,
-  user: IUser,
-  deleteProjectCache: (pid: string) => void,
-  analyticsProjects: IProject[],
-  loading: boolean,
-  isSettings: boolean,
+  updateProjectFailed: (error: string) => void
+  createNewProjectFailed: (error: string) => void
+  newProject: (message: string) => void
+  projectDeleted: (message: string) => void
+  deleteProjectFailed: (error: string) => void
+  loadProjects: () => void
+  isLoading: boolean
+  projects: ICaptchaProject[]
+  showError: (error: string) => void
+  removeProject: (pid: string) => void
+  user: IUser
+  deleteProjectCache: (pid: string) => void
+  analyticsProjects: IProject[]
+  loading: boolean
+  isSettings: boolean
 }
 
 const CaptchaSettings = ({
-  updateProjectFailed, createNewProjectFailed, newProject, projectDeleted, deleteProjectFailed,
-  loadProjects, isLoading, projects, showError, removeProject, user,
-  deleteProjectCache, analyticsProjects, loading, isSettings,
+  updateProjectFailed,
+  createNewProjectFailed,
+  newProject,
+  projectDeleted,
+  deleteProjectFailed,
+  loadProjects,
+  isLoading,
+  projects,
+  showError,
+  removeProject,
+  user,
+  deleteProjectCache,
+  analyticsProjects,
+  loading,
+  isSettings,
 }: ICaptchaSettings): JSX.Element => {
-  const { t }: {
-    t: (key: string, options?: {
-      [key: string]: string | number | boolean | undefined
-    }) => string,
+  const {
+    t,
+  }: {
+    t: (
+      key: string,
+      options?: {
+        [key: string]: string | number | boolean | undefined
+      },
+    ) => string
   } = useTranslation('common')
   // @ts-ignore
-  const { id }: {
-    id: string,
+  const {
+    id,
+  }: {
+    id: string
   } = useParams()
-  const project: ICaptchaProject | IProject = useMemo(() => _find([...projects, ...analyticsProjects], p => p.id === id) || {} as IProject | ICaptchaProject, [projects, analyticsProjects, id])
+  const project: ICaptchaProject | IProject = useMemo(
+    () => _find([...projects, ...analyticsProjects], (p) => p.id === id) || ({} as IProject | ICaptchaProject),
+    [projects, analyticsProjects, id],
+  )
   const navigate = useNavigate()
   const [form, setForm] = useState<IForm>({
     name: '',
@@ -101,9 +130,9 @@ const CaptchaSettings = ({
   })
   const [validated, setValidated] = useState<boolean>(false)
   const [errors, setErrors] = useState<{
-    name?: string,
-    id?: string,
-    origins?: string,
+    name?: string
+    id?: string
+    origins?: string
     ipBlacklist?: string
   }>({})
   const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
@@ -150,16 +179,18 @@ const CaptchaSettings = ({
       try {
         const formalisedData: IForm = {
           ...data,
-          origins: _isEmpty(data.origins) ? null : _map(_split(data.origins as string, ','), (origin) => {
-            try {
-              if (_includes(origin, 'localhost')) {
-                return origin
-              }
-              return new URL(origin).host
-            } catch (e) {
-              return origin
-            }
-          }),
+          origins: _isEmpty(data.origins)
+            ? null
+            : _map(_split(data.origins as string, ','), (origin) => {
+                try {
+                  if (_includes(origin, 'localhost')) {
+                    return origin
+                  }
+                  return new URL(origin).host
+                } catch (e) {
+                  return origin
+                }
+              }),
           ipBlacklist: _isEmpty(data.ipBlacklist) ? null : _split(data.ipBlacklist as string, ','),
         }
         if (isSettings) {
@@ -232,8 +263,8 @@ const CaptchaSettings = ({
 
   const validate = () => {
     const allErrors = {} as {
-      name?: string,
-      origins?: string,
+      name?: string
+      origins?: string
       ipBlacklist?: string
     }
 
@@ -266,7 +297,7 @@ const CaptchaSettings = ({
     const { target } = event
     const value = target.type === 'checkbox' ? target.checked : target.value
 
-    setForm(oldForm => ({
+    setForm((oldForm) => ({
       ...oldForm,
       [target.name]: value,
     }))
@@ -278,13 +309,16 @@ const CaptchaSettings = ({
     setBeenSubmitted(true)
 
     if (tab === tabForInheritance) {
-      const data = _find(allProjectsNames || analyticsProjects, (item) => `${item.name} | ${item.id}` === reuseProjectId)
+      const data = _find(
+        allProjectsNames || analyticsProjects,
+        (item) => `${item.name} | ${item.id}` === reuseProjectId,
+      )
 
       if (_isEmpty(data)) {
         showError('Select project or select corect project')
       }
 
-      onSubmit({ ...data as IForm, isCaptcha: true })
+      onSubmit({ ...(data as IForm), isCaptcha: true })
       return
     }
 
@@ -330,7 +364,8 @@ const CaptchaSettings = ({
     await getProjectsNames()
       .then((res) => {
         setAllProjectsNames(res)
-      }).catch((e) => {
+      })
+      .catch((e) => {
         console.log(e)
       })
   }
@@ -357,30 +392,28 @@ const CaptchaSettings = ({
       })}
     >
       <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
-        <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
-          {title}
-        </h2>
-        <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
-          {t('profileSettings.general')}
-        </h3>
+        <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{title}</h2>
+        <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('profileSettings.general')}</h3>
         <div className='mt-6'>
-          {(!isSettings && _filter(allProjectsNames || analyticsProjects, (item) => !item?.isCaptchaProject).length > 0) && (
-            <nav className='-mb-px flex space-x-8'>
-              {_map(tabForCreateCaptcha, (tabCaptcha) => (
-                <button
-                  key={tabCaptcha.name}
-                  type='button'
-                  onClick={() => setTab(tabCaptcha.name)}
-                  className={cx('whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-md', {
-                    'border-indigo-500 text-indigo-600 dark:text-indigo-500': tab === tabCaptcha.name,
-                    'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300': tab !== tabCaptcha.name,
-                  })}
-                >
-                  {t(tabCaptcha.label)}
-                </button>
-              ))}
-            </nav>
-          )}
+          {!isSettings &&
+            _filter(allProjectsNames || analyticsProjects, (item) => !item?.isCaptchaProject).length > 0 && (
+              <nav className='-mb-px flex space-x-8'>
+                {_map(tabForCreateCaptcha, (tabCaptcha) => (
+                  <button
+                    key={tabCaptcha.name}
+                    type='button'
+                    onClick={() => setTab(tabCaptcha.name)}
+                    className={cx('whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-md', {
+                      'border-indigo-500 text-indigo-600 dark:text-indigo-500': tab === tabCaptcha.name,
+                      'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300':
+                        tab !== tabCaptcha.name,
+                    })}
+                  >
+                    {t(tabCaptcha.label)}
+                  </button>
+                ))}
+              </nav>
+            )}
         </div>
         {tab === tabForNew && (
           <Input
@@ -426,7 +459,7 @@ const CaptchaSettings = ({
               type='text'
               label={t('project.settings.origins')}
               hint={t('project.settings.originsHint')}
-              value={form.origins as string || ''}
+              value={(form.origins as string) || ''}
               className='mt-4'
               onChange={handleInput}
               error={beenSubmitted ? errors.origins : null}
@@ -437,7 +470,7 @@ const CaptchaSettings = ({
               type='text'
               label={t('project.settings.ipBlacklist')}
               hint={t('project.settings.ipBlacklistHint')}
-              value={form.ipBlacklist as string || ''}
+              value={(form.ipBlacklist as string) || ''}
               className='mt-4'
               onChange={handleInput}
               error={beenSubmitted ? errors.ipBlacklist : null}
@@ -489,9 +522,7 @@ const CaptchaSettings = ({
                 </div>
               </>
             ) : (
-              <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
-                {t('profileSettings.noApiKey')}
-              </p>
+              <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>{t('profileSettings.noApiKey')}</p>
             )}
             {captchaSecretKey ? (
               <Button className='mt-4' onClick={() => setShowRegenerateSecret(true)} danger large>
@@ -523,7 +554,12 @@ const CaptchaSettings = ({
             />
             <div className='flex flex-wrap justify-center gap-2 sm:justify-between mt-8'>
               <div className='flex flex-wrap items-center justify-center gap-2'>
-                <Button className='border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700' onClick={onCancel} secondary regular>
+                <Button
+                  className='border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700'
+                  onClick={onCancel}
+                  secondary
+                  regular
+                >
                   {t('common.cancel')}
                 </Button>
                 <Button type='submit' loading={projectSaving} primary regular>
@@ -531,13 +567,23 @@ const CaptchaSettings = ({
                 </Button>
               </div>
               <div className='flex flex-wrap items-center justify-center gap-2'>
-                <Button onClick={() => !projectResetting && setShowReset(true)} loading={projectDeleting} semiDanger semiSmall>
+                <Button
+                  onClick={() => !projectResetting && setShowReset(true)}
+                  loading={projectDeleting}
+                  semiDanger
+                  semiSmall
+                >
                   <>
                     <TrashIcon className='w-5 h-5 mr-1' />
                     {t('project.settings.reset')}
                   </>
                 </Button>
-                <Button onClick={() => !projectDeleting && setShowDelete(true)} loading={projectDeleting} danger semiSmall>
+                <Button
+                  onClick={() => !projectDeleting && setShowDelete(true)}
+                  loading={projectDeleting}
+                  danger
+                  semiSmall
+                >
                   <>
                     <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
                     {t('project.settings.delete')}
@@ -555,7 +601,12 @@ const CaptchaSettings = ({
 
         {!isSettings && (
           <div>
-            <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700' onClick={onCancel} secondary regular>
+            <Button
+              className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700'
+              onClick={onCancel}
+              secondary
+              regular
+            >
               {t('common.cancel')}
             </Button>
             <Button type='submit' loading={projectSaving} primary regular>

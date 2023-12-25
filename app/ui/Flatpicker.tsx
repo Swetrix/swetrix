@@ -9,18 +9,21 @@ import cx from 'clsx'
 import { MAX_MONTHS_IN_PAST } from 'redux/constants'
 
 interface FlatPickerProps {
-  onChange?: (dates: Date[]) => void,
-  value?: Date[],
-  maxDateMonths?: number,
-  options?: any,
-  maxRange?: number,
-  className?: string,
+  onChange?: (dates: Date[]) => void
+  value?: Date[]
+  maxDateMonths?: number
+  options?: any
+  maxRange?: number
+  className?: string
 }
 
-class FlatPicker extends React.Component<FlatPickerProps, {
-  maxDate: string,
-  minDate: Date | string,
-}> {
+class FlatPicker extends React.Component<
+  FlatPickerProps,
+  {
+    maxDate: string
+    minDate: Date | string
+  }
+> {
   private calendar = createRef<Flatpickr>()
 
   constructor(props: FlatPickerProps) {
@@ -73,9 +76,7 @@ class FlatPicker extends React.Component<FlatPickerProps, {
   }
 
   public render() {
-    const {
-      value = [], maxDateMonths = MAX_MONTHS_IN_PAST, options, className,
-    } = this.props
+    const { value = [], maxDateMonths = MAX_MONTHS_IN_PAST, options, className } = this.props
     const { maxDate, minDate } = this.state
 
     if (options) {
@@ -137,7 +138,7 @@ FlatPicker.propTypes = {
 
 // @ts-ignore
 FlatPicker.defaultProps = {
-  onChange: () => { },
+  onChange: () => {},
   value: [],
   maxDateMonths: MAX_MONTHS_IN_PAST,
   options: null,

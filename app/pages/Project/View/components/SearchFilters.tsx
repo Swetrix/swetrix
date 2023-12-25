@@ -16,10 +16,13 @@ import { Filter } from './Filters'
 
 interface ISearchFilters {
   projectPassword?: string
-  setProjectFilter: (filter: {
-    column: string
-    filter: string[]
-  }[], override: boolean) => void
+  setProjectFilter: (
+    filter: {
+      column: string
+      filter: string[]
+    }[],
+    override: boolean,
+  ) => void
   pid: string
   showModal: boolean
   setShowModal: (show: boolean) => void
@@ -31,10 +34,15 @@ interface ISearchFilters {
   }[]
 }
 
-const getLabelToTypeMap = (t: any) => _reduce(FILTERS_PANELS_ORDER, (acc, curr) => ({
-  ...acc,
-  [t(`project.mapping.${curr}`)]: curr,
-}), {})
+const getLabelToTypeMap = (t: any) =>
+  _reduce(
+    FILTERS_PANELS_ORDER,
+    (acc, curr) => ({
+      ...acc,
+      [t(`project.mapping.${curr}`)]: curr,
+    }),
+    {},
+  )
 
 interface IActiveFilter {
   column: string
@@ -52,9 +60,18 @@ const formatFilters = (filters: any): IActiveFilter[] => {
 }
 
 const SearchFilters = ({
-  setProjectFilter, pid, showModal, setShowModal, tnMapping, filters, projectPassword,
+  setProjectFilter,
+  pid,
+  showModal,
+  setShowModal,
+  tnMapping,
+  filters,
+  projectPassword,
 }: ISearchFilters) => {
-  const { t, i18n: { language } } = useTranslation('common')
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
   const [filterType, setFilterType] = useState<string>('')
   const [searchList, setSearchList] = useState<any[]>([])
   const [activeFilters, setActiveFilters] = useState<any>({})
@@ -62,10 +79,13 @@ const SearchFilters = ({
 
   const labelToTypeMap = useMemo(() => getLabelToTypeMap(t), [t])
 
-  const getFiltersList = useCallback(async (type: string) => {
-    const res = await getFilters(pid, type, projectPassword)
-    setSearchList(res)
-  }, [pid, projectPassword])
+  const getFiltersList = useCallback(
+    async (type: string) => {
+      const res = await getFilters(pid, type, projectPassword)
+      setSearchList(res)
+    },
+    [pid, projectPassword],
+  )
 
   useEffect(() => {
     if (!showModal || _isEmpty(filterType)) {
@@ -94,106 +114,103 @@ const SearchFilters = ({
       submitText={t('project.applyFilters')}
       title={t('project.advancedFilters')}
       message={
-        (
-          <div className='min-h-[410px]'>
-            <Select
-              label={t('project.selectCategory')}
-              items={FILTERS_PANELS_ORDER}
-              labelExtractor={(item) => t(`project.mapping.${item}`)}
-              // @ts-ignore
-              onSelect={(item: string) => setFilterType(labelToTypeMap[item])}
-              title={_isEmpty(filterType) ? t('project.settings.reseted.selectFilters') : t(`project.mapping.${filterType}`)}
-            />
-            {!_isEmpty(filters) && (
-              <>
-                <p className='mt-5 text-sm font-medium text-gray-700 dark:text-gray-200'>
-                  {t('project.currentFilters')}
-                </p>
-                {_map(filters, ({ column, filter, isExclusive }) => (
+        <div className='min-h-[410px]'>
+          <Select
+            label={t('project.selectCategory')}
+            items={FILTERS_PANELS_ORDER}
+            labelExtractor={(item) => t(`project.mapping.${item}`)}
+            // @ts-ignore
+            onSelect={(item: string) => setFilterType(labelToTypeMap[item])}
+            title={
+              _isEmpty(filterType) ? t('project.settings.reseted.selectFilters') : t(`project.mapping.${filterType}`)
+            }
+          />
+          {!_isEmpty(filters) && (
+            <>
+              <p className='mt-5 text-sm font-medium text-gray-700 dark:text-gray-200'>{t('project.currentFilters')}</p>
+              {_map(filters, ({ column, filter, isExclusive }) => (
+                <Filter
+                  key={`${column}-${filter}`}
+                  t={t}
+                  language={language}
+                  onChangeExclusive={() => {}}
+                  onRemoveFilter={() => {}}
+                  isExclusive={isExclusive}
+                  column={column}
+                  filter={filter}
+                  tnMapping={tnMapping}
+                  removable={false}
+                  canChangeExclusive={false}
+                />
+              ))}
+            </>
+          )}
+          {filterType && !_isEmpty(searchList) && (
+            <>
+              <p className='mt-5 text-sm font-medium text-gray-700 dark:text-gray-200'>{t('project.newFilters')}</p>
+              <Combobox
+                items={searchList}
+                labelExtractor={(item) => {
+                  if (filterType === 'cc') {
+                    return countries.getName(item, language)
+                  }
+
+                  return item
+                }}
+                onSelect={(item: any) => {
+                  const processedItem = filterType === 'cc' ? (countries.getAlpha2Code(item, language) as string) : item
+
+                  setActiveFilters((prevFilters: any) => ({
+                    ...prevFilters,
+                    [filterType]: [...(prevFilters[filterType] || []), processedItem],
+                  }))
+                }}
+                placeholder={t('project.settings.reseted.filtersPlaceholder')}
+              />
+              {_map(activeFilters, (filter, column) => {
+                return _map(filter, (item) => (
                   <Filter
-                    key={`${column}-${filter}`}
+                    key={`${column}-${item}`}
                     t={t}
+                    onRemoveFilter={(removeColumn, removeFilter) => {
+                      setActiveFilters((prevFilters: any) => {
+                        const filteredColumn = _filter(
+                          prevFilters[removeColumn],
+                          (item: string) => item !== removeFilter,
+                        )
+
+                        if (_isEmpty(filteredColumn)) {
+                          return _filter(prevFilters, (_, key) => key !== removeColumn)
+                        }
+
+                        return {
+                          ...prevFilters,
+                          [removeColumn]: filteredColumn,
+                        }
+                      })
+                    }}
                     language={language}
-                    onChangeExclusive={() => { }}
-                    onRemoveFilter={() => { }}
-                    isExclusive={isExclusive}
-                    column={column}
-                    filter={filter}
-                    tnMapping={tnMapping}
-                    removable={false}
+                    onChangeExclusive={() => {}}
+                    isExclusive={false}
                     canChangeExclusive={false}
+                    column={column}
+                    filter={item}
+                    tnMapping={tnMapping}
+                    removable
                   />
-                ))}
-              </>
-            )}
-            {(filterType && !_isEmpty(searchList)) && (
-              <>
-                <p className='mt-5 text-sm font-medium text-gray-700 dark:text-gray-200'>
-                  {t('project.newFilters')}
-                </p>
-                <Combobox
-                  items={searchList}
-                  labelExtractor={(item) => {
-                    if (filterType === 'cc') {
-                      return countries.getName(item, language)
-                    }
-
-                    return item
-                  }}
-                  onSelect={(item: any) => {
-                    const processedItem = filterType === 'cc'
-                      ? countries.getAlpha2Code(item, language) as string
-                      : item
-
-                    setActiveFilters((prevFilters: any) => ({
-                      ...prevFilters,
-                      [filterType]: [...(prevFilters[filterType] || []), processedItem],
-                    }))
-                  }}
-                  placeholder={t('project.settings.reseted.filtersPlaceholder')}
-                />
-                {_map(activeFilters, (filter, column) => {
-                  return _map(filter, (item) => (
-                    <Filter
-                      key={`${column}-${item}`}
-                      t={t}
-                      onRemoveFilter={(removeColumn, removeFilter) => {
-                        setActiveFilters((prevFilters: any) => {
-                          const filteredColumn = _filter(prevFilters[removeColumn], (item: string) => item !== removeFilter)
-
-                          if (_isEmpty(filteredColumn)) {
-                            return _filter(prevFilters, (_, key) => key !== removeColumn)
-                          }
-
-                          return {
-                            ...prevFilters,
-                            [removeColumn]: filteredColumn,
-                          }
-                        })
-                      }}
-                      language={language}
-                      onChangeExclusive={() => { }}
-                      isExclusive={false}
-                      canChangeExclusive={false}
-                      column={column}
-                      filter={item}
-                      tnMapping={tnMapping}
-                      removable
-                    />
-                  ))
-                })}
-                <Checkbox
-                  checked={Boolean(override)}
-                  onChange={(e) => setOverride(e.target.checked)}
-                  name='overrideCurrentlyFilters'
-                  id='overrideCurrentlyFilters'
-                  className='mt-4'
-                  label={t('project.overrideCurrentlyFilters')}
-                />
-              </>
-            )}
-          </div>
-        )
+                ))
+              })}
+              <Checkbox
+                checked={Boolean(override)}
+                onChange={(e) => setOverride(e.target.checked)}
+                name='overrideCurrentlyFilters'
+                id='overrideCurrentlyFilters'
+                className='mt-4'
+                label={t('project.overrideCurrentlyFilters')}
+              />
+            </>
+          )}
+        </div>
       }
       submitType='regular'
       isOpened={showModal}

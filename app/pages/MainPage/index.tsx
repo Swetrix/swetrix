@@ -5,10 +5,20 @@ import cx from 'clsx'
 import { useSelector } from 'react-redux'
 import { ClientOnly } from 'remix-utils'
 import {
-  ArrowTopRightOnSquareIcon, ArrowSmallRightIcon, CheckCircleIcon, CheckIcon, XMarkIcon, ChevronRightIcon,
+  ArrowTopRightOnSquareIcon,
+  ArrowSmallRightIcon,
+  CheckCircleIcon,
+  CheckIcon,
+  XMarkIcon,
+  ChevronRightIcon,
 } from '@heroicons/react/24/solid'
 import {
-  CodeBracketIcon, PuzzlePieceIcon, ShareIcon, ArrowsPointingOutIcon, LightBulbIcon, ArrowTrendingUpIcon,
+  CodeBracketIcon,
+  PuzzlePieceIcon,
+  ShareIcon,
+  ArrowsPointingOutIcon,
+  LightBulbIcon,
+  ArrowTrendingUpIcon,
 } from '@heroicons/react/20/solid'
 import { TypeAnimation } from 'react-type-animation'
 import _map from 'lodash/map'
@@ -18,9 +28,7 @@ import _isEmpty from 'lodash/isEmpty'
 import routesPath from 'routesPath'
 import { getAccessToken } from 'utils/accessToken'
 import { nFormatterSeparated } from 'utils/generic'
-import {
-  GITHUB_URL, MARKETPLACE_URL, LIVE_DEMO_URL, isBrowser,
-} from 'redux/constants'
+import { GITHUB_URL, MARKETPLACE_URL, LIVE_DEMO_URL, isBrowser } from 'redux/constants'
 import { StateType } from 'redux/store/index'
 import BackgroundSvg from 'ui/icons/BackgroundSvg'
 import Webflow from 'ui/icons/Webflow'
@@ -44,11 +52,15 @@ import Pricing from './Pricing'
 const COMPETITORS_LIST = ['Google Analytics', 'Fathom', 'Plausible', 'Simple Analytics']
 const SWETRIX_AND_COMPETITORS_LIST = ['Swetrix', ...COMPETITORS_LIST]
 const COMPETITOR_SEQUENCE_DELAY = 5000 // in milliseconds
-const processedList = _reduce(COMPETITORS_LIST, (acc: any[], curr: any) => {
-  acc.push(curr)
-  acc.push(COMPETITOR_SEQUENCE_DELAY)
-  return acc
-}, [])
+const processedList = _reduce(
+  COMPETITORS_LIST,
+  (acc: any[], curr: any) => {
+    acc.push(curr)
+    acc.push(COMPETITOR_SEQUENCE_DELAY)
+    return acc
+  },
+  [],
+)
 
 // The order in the table is defined by the Swetrix object
 const COMPETITOR_FEATURE_TABLE: {
@@ -155,25 +167,26 @@ interface IMain {
 }
 
 const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
-  const { t, i18n: { language } }: {
-    t: (key: string, options?: {
-      [key: string]: any
-    }) => string,
+  const {
+    t,
+    i18n: { language },
+  }: {
+    t: (
+      key: string,
+      options?: {
+        [key: string]: any
+      },
+    ) => string
     i18n: {
       language: string
-    },
+    }
   } = useTranslation('common')
   const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
-  const {
-    authenticated: reduxAuthenticated,
-    loading,
-  } = useSelector((state: StateType) => state.auth)
+  const { authenticated: reduxAuthenticated, loading } = useSelector((state: StateType) => state.auth)
   const { stats, lastBlogPost } = useSelector((state: StateType) => state.ui.misc)
   const theme = isBrowser ? reduxTheme : ssrTheme
   const accessToken = getAccessToken()
-  const authenticated = isBrowser
-    ? (loading ? !!accessToken : reduxAuthenticated)
-    : ssrAuthenticated
+  const authenticated = isBrowser ? (loading ? !!accessToken : reduxAuthenticated) : ssrAuthenticated
 
   const events = nFormatterSeparated(Number(stats.events))
   const users = nFormatterSeparated(Number(stats.users))
@@ -189,14 +202,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
             aria-hidden='true'
           >
             <defs>
-              <pattern
-                id='rect-pattern'
-                width={200}
-                height={200}
-                x='50%'
-                y={-1}
-                patternUnits='userSpaceOnUse'
-              >
+              <pattern id='rect-pattern' width={200} height={200} x='50%' y={-1} patternUnits='userSpaceOnUse'>
                 <path d='M.5 200V.5H200' fill='none' />
               </pattern>
             </defs>
@@ -232,9 +238,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
             </a>
             <ArrowTopRightOnSquareIcon className='h-4 w-4 text-slate-800 dark:text-white ml-1 hidden md:block' />
           </div>
-          <div
-            className='relative pt-10 lg:pt-24 pb-5 xl:px-8 lg:px-6 sm:px-3 mx-auto min-h-[740px]'
-          >
+          <div className='relative pt-10 lg:pt-24 pb-5 xl:px-8 lg:px-6 sm:px-3 mx-auto min-h-[740px]'>
             <div className='relative z-20 flex flex-row content-between 2xl:mr-[14vw] 2xl:justify-center justify-center lg:justify-start'>
               <div className='lg:mt-0 text-left relative lg:mr-14 px-4'>
                 <h1 className='max-w-2xl text-3xl sm:text-5xl md:text-5xl font-extrabold text-slate-900 dark:text-white sm:leading-none lg:text-5xl xl:text-6xl xl:leading-[110%]'>
@@ -243,7 +247,9 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                     t={t}
                     i18nKey='main.slogan'
                     components={{
-                      span: <span className='from-indigo-700 to-indigo-700 dark:from-indigo-600 dark:to-indigo-400 text-transparent bg-clip-text bg-gradient-to-r' />,
+                      span: (
+                        <span className='from-indigo-700 to-indigo-700 dark:from-indigo-600 dark:to-indigo-400 text-transparent bg-clip-text bg-gradient-to-r' />
+                      ),
                     }}
                   />
                 </h1>
@@ -254,15 +260,17 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                   {_isEmpty(lastBlogPost) ? (
                     <div className='h-6 ml-1 bg-slate-300 dark:bg-slate-700 w-full max-w-xs rounded-md animate-pulse' />
                   ) : (
-                    <ClientOnly fallback={<div className='h-6 ml-1 bg-slate-300 dark:bg-slate-700 w-full max-w-xs rounded-md animate-pulse' />}>
+                    <ClientOnly
+                      fallback={
+                        <div className='h-6 ml-1 bg-slate-300 dark:bg-slate-700 w-full max-w-xs rounded-md animate-pulse' />
+                      }
+                    >
                       {() => (
                         <Link
                           className='inline-flex ml-1 items-center space-x-1 text-sm font-semibold leading-6 text-slate-700 dark:text-slate-300 hover:underline'
                           to={`blog/${lastBlogPost.handle}`}
                         >
-                          <small className='text-sm'>
-                            {lastBlogPost.title}
-                          </small>
+                          <small className='text-sm'>{lastBlogPost.title}</small>
                           <ChevronRightIcon className='h-4 w-4 text-slate-500' aria-hidden='true' />
                         </Link>
                       )}
@@ -280,9 +288,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                     className='rounded-md !duration-300 transition-all w-full sm:max-w-[210px] h-12 flex items-center justify-center sm:mr-6 shadow-sm ring-1 text-white bg-slate-900 ring-slate-900 hover:bg-slate-700 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600'
                     aria-label={t('titles.signup')}
                   >
-                    <span className='text-base font-semibold mr-1'>
-                      {t('common.getStarted')}
-                    </span>
+                    <span className='text-base font-semibold mr-1'>{t('common.getStarted')}</span>
                     <ArrowSmallRightIcon className='h-4 w-5 mt-[1px]' />
                   </Link>
                   <a
@@ -299,7 +305,10 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
               <div className='max-w-md xl:max-w-lg hidden lg:block'>
                 <Lines />
                 <picture>
-                  <source srcSet={theme === 'dark' ? '/assets/screenshot_dark.webp' : '/assets/screenshot_light.webp'} type='image/webp' />
+                  <source
+                    srcSet={theme === 'dark' ? '/assets/screenshot_dark.webp' : '/assets/screenshot_light.webp'}
+                    type='image/webp'
+                  />
                   <img
                     src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
                     className='h-full min-w-[880px] rounded-xl relative shadow-2xl ring-1 ring-gray-900/10 dark:ring-white/10'
@@ -312,7 +321,10 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
             </div>
             <div className='my-10 block lg:hidden relative z-20 px-4 md:px-0'>
               <picture>
-                <source srcSet={theme === 'dark' ? '/assets/screenshot_dark.webp' : '/assets/screenshot_light.webp'} type='image/webp' />
+                <source
+                  srcSet={theme === 'dark' ? '/assets/screenshot_dark.webp' : '/assets/screenshot_light.webp'}
+                  type='image/webp'
+                />
                 <img
                   src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
                   className='rounded-xl relative shadow-2xl w-full ring-1 ring-gray-900/10 dark:ring-white/10'
@@ -327,7 +339,10 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
         {/* end first block with live demo */}
         {/* section Core Analytics Features */}
         <div className='dark:bg-slate-900 bg-white px-4 pb-24'>
-          <section id='core-analytics' className='flex pt-16 md:pt-48 flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'>
+          <section
+            id='core-analytics'
+            className='flex pt-16 md:pt-48 flex-col-reverse md:flex-row items-center md:items-start md:justify-between max-w-7xl m-auto'
+          >
             <picture>
               <source
                 srcSet={theme === 'dark' ? '/assets/CoreFeaturesDark.webp' : '/assets/CoreFeaturesLight.webp'}
@@ -342,12 +357,8 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
               />
             </picture>
             <div className='max-w-lg md:ml-5'>
-              <h2 className='font-extrabold text-4xl dark:text-white text-slate-900'>
-                {t('main.coreFeatures.title')}
-              </h2>
-              <p className='mt-6 dark:text-gray-400 text-gray-600 mb-6'>
-                {t('main.coreFeatures.desc')}
-              </p>
+              <h2 className='font-extrabold text-4xl dark:text-white text-slate-900'>{t('main.coreFeatures.title')}</h2>
+              <p className='mt-6 dark:text-gray-400 text-gray-600 mb-6'>{t('main.coreFeatures.desc')}</p>
               <a
                 href={LIVE_DEMO_URL}
                 className='dark:text-indigo-400 text-indigo-700 hover:underline font-bold border-0 flex items-center'
@@ -364,15 +375,9 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
           {/* section Marketplace & built-in Extensions */}
           <section className='flex flex-col md:flex-row items-center md:justify-between max-w-7xl m-auto'>
             <div className='max-w-[516px]'>
-              <h2 className='font-extrabold text-4xl text-slate-900 dark:text-white'>
-                {t('main.marketplace.title')}
-              </h2>
-              <p className='mt-6 text-gray-600 dark:text-gray-400 mb-3'>
-                {t('main.marketplace.desc1')}
-              </p>
-              <p className='text-gray-600 dark:text-gray-400 mb-6'>
-                {t('main.marketplace.desc2')}
-              </p>
+              <h2 className='font-extrabold text-4xl text-slate-900 dark:text-white'>{t('main.marketplace.title')}</h2>
+              <p className='mt-6 text-gray-600 dark:text-gray-400 mb-3'>{t('main.marketplace.desc1')}</p>
+              <p className='text-gray-600 dark:text-gray-400 mb-6'>{t('main.marketplace.desc2')}</p>
               <a
                 href={MARKETPLACE_URL}
                 className='dark:text-indigo-400 text-indigo-700 hover:underline font-bold border-0 flex items-center'
@@ -403,13 +408,8 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
               alt='GDPR compliant'
             />
             <div className='max-w-[516px] w-full md:min-w-[370px] pb-16 md:pb-0 md:pt-8'>
-              <h2 className='font-extrabold mb-6 text-4xl text-slate-900 dark:text-white'>
-                {t('main.privacy.title')}
-              </h2>
-              {_map(t('main.privacy.list', { returnObjects: true }), (item: {
-                label: string
-                desc: string
-              }) => (
+              <h2 className='font-extrabold mb-6 text-4xl text-slate-900 dark:text-white'>{t('main.privacy.title')}</h2>
+              {_map(t('main.privacy.list', { returnObjects: true }), (item: { label: string; desc: string }) => (
                 <div key={item.label} className='mb-4 flex items-center'>
                   <div className='mr-3'>
                     <CheckCircleIcon className='fill-indigo-500 w-[24px] h-[24px]' />
@@ -422,7 +422,11 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                 </div>
               ))}
               {/* mt-7 because mb-4 in upper component + mt-7 = 11. mb-11 is used for spacing the links in other sections. */}
-              <Link to={routesPath.privacy} className='mt-7 dark:text-indigo-400 text-indigo-700 hover:underline font-bold border-0 flex items-center' aria-label={t('footer.pp')}>
+              <Link
+                to={routesPath.privacy}
+                className='mt-7 dark:text-indigo-400 text-indigo-700 hover:underline font-bold border-0 flex items-center'
+                aria-label={t('footer.pp')}
+              >
                 {t('main.dataProtection')}
                 <ArrowSmallRightIcon className='w-5 h-4 mt-[1px]' />
               </Link>
@@ -465,9 +469,21 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                           i18nKey='main.signupTerms'
                           components={{
                             // eslint-disable-next-line jsx-a11y/anchor-has-content
-                            tos: <Link to={routesPath.terms} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' aria-label={t('footer.tos')} />,
+                            tos: (
+                              <Link
+                                to={routesPath.terms}
+                                className='font-medium text-gray-900 dark:text-gray-300 hover:underline'
+                                aria-label={t('footer.tos')}
+                              />
+                            ),
                             // eslint-disable-next-line jsx-a11y/anchor-has-content
-                            pp: <Link to={routesPath.privacy} className='font-medium text-gray-900 dark:text-gray-300 hover:underline' aria-label={t('footer.pp')} />,
+                            pp: (
+                              <Link
+                                to={routesPath.privacy}
+                                className='font-medium text-gray-900 dark:text-gray-300 hover:underline'
+                                aria-label={t('footer.pp')}
+                              />
+                            ),
                           }}
                         />
                       </p>
@@ -477,7 +493,10 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
               </div>
               <div className='relative'>
                 <picture>
-                  <source srcSet={theme === 'dark' ? '/assets/section-signup-dark.webp' : '/assets/section-signup-light.webp'} type='image/webp' />
+                  <source
+                    srcSet={theme === 'dark' ? '/assets/section-signup-dark.webp' : '/assets/section-signup-light.webp'}
+                    type='image/webp'
+                  />
                   <img
                     src={theme === 'dark' ? '/assets/section-signup-dark.png' : '/assets/section-signup-light.png'}
                     className='relative z-50 hidden md:block'
@@ -495,24 +514,34 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
         <section className='bg-white dark:bg-slate-900 pt-14 relative pb-14'>
           <BackgroundSvg theme={theme} className='absolute -left-8' type='shapes' />
           <div className='mx-auto text-slate-900 font-extrabold text-3xl sm:text-5xl w-fit relative'>
-            <h2 className='relative z-20 dark:text-white'>
-              {t('main.coreFeaturesBlock')}
-            </h2>
-            <BackgroundSvg theme={theme} className='absolute right-0 sm:-right-16 top-9 z-10 opacity-30' type='semicircle' />
+            <h2 className='relative z-20 dark:text-white'>{t('main.coreFeaturesBlock')}</h2>
+            <BackgroundSvg
+              theme={theme}
+              className='absolute right-0 sm:-right-16 top-9 z-10 opacity-30'
+              type='semicircle'
+            />
           </div>
           <div className='mt-[60px] flex items-center max-w-7xl w-full mx-auto flex-wrap justify-center xl:justify-between'>
-            {_map(t('main.features', { returnObjects: true }), (item: {
-              name: string
-              desc: string
-            }, index: number) => (
-              <div key={item.name} className='w-[416px] h-64 px-7 py-11 text-center'>
-                <span className='text-indigo-500 text-3xl font-semibold'>{1 + index}</span>
-                <div className='mt-2'>
-                  <h2 className='text-slate-900 dark:text-white text-xl font-semibold max-w-[300px] mx-auto mb-3 whitespace-pre-line'>{item.name}</h2>
-                  <p className='text-gray-600 max-w-xs mx-auto dark:text-gray-400'>{item.desc}</p>
+            {_map(
+              t('main.features', { returnObjects: true }),
+              (
+                item: {
+                  name: string
+                  desc: string
+                },
+                index: number,
+              ) => (
+                <div key={item.name} className='w-[416px] h-64 px-7 py-11 text-center'>
+                  <span className='text-indigo-500 text-3xl font-semibold'>{1 + index}</span>
+                  <div className='mt-2'>
+                    <h2 className='text-slate-900 dark:text-white text-xl font-semibold max-w-[300px] mx-auto mb-3 whitespace-pre-line'>
+                      {item.name}
+                    </h2>
+                    <p className='text-gray-600 max-w-xs mx-auto dark:text-gray-400'>{item.desc}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ),
+            )}
           </div>
           <BackgroundSvg theme={theme} className='absolute right-0 bottom-0 z-10' type='twolinecircle' />
         </section>
@@ -546,14 +575,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
               aria-hidden='true'
             >
               <defs>
-                <pattern
-                  id='rect-pattern-2'
-                  width={200}
-                  height={200}
-                  x='50%'
-                  y={0}
-                  patternUnits='userSpaceOnUse'
-                >
+                <pattern id='rect-pattern-2' width={200} height={200} x='50%' y={0} patternUnits='userSpaceOnUse'>
                   <path d='M.5 200V.5H200' fill='none' />
                 </pattern>
               </defs>
@@ -570,22 +592,26 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                 {t('main.marketplaceBlock')}
               </h2>
               <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-10 sm:gap-y-24 justify-between justify-items-center text-slate-900 dark:text-white pt-20 pb-36'>
-                {_map(t('main.mFeatures', { returnObjects: true }), (item: {
-                  name: string
-                  desc: string
-                }, index: number) => (
-                  <div key={item.name} className='max-w-[310px] w-full'>
-                    <div className='flex items-center'>
-                      <span className='text-slate-900 dark:text-gray-200 text-xl mr-4'>
-                        {M_FEATURES_ICONS[index]}
-                      </span>
-                      <h2 className='font-semibold text-xl'>
-                        {item.name}
-                      </h2>
+                {_map(
+                  t('main.mFeatures', { returnObjects: true }),
+                  (
+                    item: {
+                      name: string
+                      desc: string
+                    },
+                    index: number,
+                  ) => (
+                    <div key={item.name} className='max-w-[310px] w-full'>
+                      <div className='flex items-center'>
+                        <span className='text-slate-900 dark:text-gray-200 text-xl mr-4'>
+                          {M_FEATURES_ICONS[index]}
+                        </span>
+                        <h2 className='font-semibold text-xl'>{item.name}</h2>
+                      </div>
+                      <p className='pl-9 text-slate-700 dark:text-gray-300'>{item.desc}</p>
                     </div>
-                    <p className='pl-9 text-slate-700 dark:text-gray-300'>{item.desc}</p>
-                  </div>
-                ))}
+                  ),
+                )}
               </div>
             </section>
           </div>
@@ -593,9 +619,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
         {/* end Marketplace and extension features */}
 
         {/* For now let's hide Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
-        {!authenticated && (
-          <Pricing authenticated={false} t={t} language={language} />
-        )}
+        {!authenticated && <Pricing authenticated={false} t={t} language={language} />}
 
         {/* section: Why use Swetrix when there is .... */}
         <div className='overflow-hidden'>
@@ -678,15 +702,19 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                                     className='w-1/6 px-3 py-4 text-sm text-gray-50 sm:pl-6'
                                   >
                                     {COMPETITOR_FEATURE_TABLE[service][key] && (
-                                      <CheckIcon className='flex-shrink-0 h-5 w-5 text-green-600 dark:text-green-500' aria-label={t('common.yes')} />
+                                      <CheckIcon
+                                        className='flex-shrink-0 h-5 w-5 text-green-600 dark:text-green-500'
+                                        aria-label={t('common.yes')}
+                                      />
                                     )}
                                     {COMPETITOR_FEATURE_TABLE[service][key] === false && (
-                                      <XMarkIcon className='flex-shrink-0 h-5 w-5 text-red-600 dark:text-red-500' aria-label={t('common.no')} />
+                                      <XMarkIcon
+                                        className='flex-shrink-0 h-5 w-5 text-red-600 dark:text-red-500'
+                                        aria-label={t('common.no')}
+                                      />
                                     )}
                                     {COMPETITOR_FEATURE_TABLE[service][key] === null && (
-                                      <p className='text-slate-700 dark:text-gray-50 h-5 w-5 text-center'>
-                                        -
-                                      </p>
+                                      <p className='text-slate-700 dark:text-gray-50 h-5 w-5 text-center'>-</p>
                                     )}
                                   </td>
                                 ))}
@@ -719,41 +747,51 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
               {t('main.peopleUseSwetrix')}
             </p>
             <div className='flex items-center flex-col md:flex-row justify-between mt-16'>
-              {_map(t('main.lTestimonials', { returnObjects: true }), (item: {
-                name: string;
-                role: string;
-                desc: string;
-              }, index: number) => (
-                <div
-                  key={item.name}
-                  className={cx('max-w-xs w-full dark:bg-slate-900', {
-                    'mt-5 md:mt-0': index > 0,
-                  })}
-                  style={{
-                    boxShadow: '-22px -11px 40px rgba(0, 0, 0, 0.02), 3px -5px 16px rgba(0, 0, 0, 0.02), 17px 24px 20px rgba(0, 0, 0, 0.02)',
-                    borderRadius: '100px 30px 30px 30px',
-                  }}
-                >
-                  <Quote theme={theme} color={index === 1 ? 'indigo' : 'black'} className='mx-auto relative -top-4' />
-                  <div className='px-10 mb-10 max-h-80 overflow-auto'>
-                    <p className='text-gray-600 text-sm mt-8 dark:text-gray-400'>
-                      {item.name}
-                      <br />
-                      {item.role}
-                    </p>
-                    <cite className='text-slate-900 dark:text-white text-md text mt-2 leading-9 whitespace-pre-line not-italic'>
-                      {item.desc}
-                    </cite>
+              {_map(
+                t('main.lTestimonials', { returnObjects: true }),
+                (
+                  item: {
+                    name: string
+                    role: string
+                    desc: string
+                  },
+                  index: number,
+                ) => (
+                  <div
+                    key={item.name}
+                    className={cx('max-w-xs w-full dark:bg-slate-900', {
+                      'mt-5 md:mt-0': index > 0,
+                    })}
+                    style={{
+                      boxShadow:
+                        '-22px -11px 40px rgba(0, 0, 0, 0.02), 3px -5px 16px rgba(0, 0, 0, 0.02), 17px 24px 20px rgba(0, 0, 0, 0.02)',
+                      borderRadius: '100px 30px 30px 30px',
+                    }}
+                  >
+                    <Quote theme={theme} color={index === 1 ? 'indigo' : 'black'} className='mx-auto relative -top-4' />
+                    <div className='px-10 mb-10 max-h-80 overflow-auto'>
+                      <p className='text-gray-600 text-sm mt-8 dark:text-gray-400'>
+                        {item.name}
+                        <br />
+                        {item.role}
+                      </p>
+                      <cite className='text-slate-900 dark:text-white text-md text mt-2 leading-9 whitespace-pre-line not-italic'>
+                        {item.desc}
+                      </cite>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ),
+              )}
             </div>
           </div>
         </section>
         {/* end section Testimonials */}
 
         <div className='bg-white dark:bg-slate-900 px-4 md:px-8 pb-12'>
-          <section className='relative isolate max-w-7xl w-full mx-auto bg-slate-800 overflow-hidden lg:h-[450px]' style={{ borderRadius: '100px 30px 30px 30px' }}>
+          <section
+            className='relative isolate max-w-7xl w-full mx-auto bg-slate-800 overflow-hidden lg:h-[450px]'
+            style={{ borderRadius: '100px 30px 30px 30px' }}
+          >
             <div className='absolute -z-10 inset-0 overflow-hidden' aria-hidden='true'>
               <div className='absolute left-[calc(20%-19rem)] top-[calc(50%-36rem)] transform-gpu blur-3xl'>
                 <div
@@ -777,10 +815,12 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                     }}
                   />
                 </h2>
-                <p className='text-gray-300 mb-9 font-medium text-base sm:text-lg'>
-                  {t('main.whyDitch')}
-                </p>
-                <Link to={routesPath.signup} className='rounded-md border !duration-300 transition-all w-full max-w-[210px] h-[50px] flex items-center justify-center sm:mr-6 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 border-transparent' aria-label={t('titles.signup')}>
+                <p className='text-gray-300 mb-9 font-medium text-base sm:text-lg'>{t('main.whyDitch')}</p>
+                <Link
+                  to={routesPath.signup}
+                  className='rounded-md border !duration-300 transition-all w-full max-w-[210px] h-[50px] flex items-center justify-center sm:mr-6 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 border-transparent'
+                  aria-label={t('titles.signup')}
+                >
                   <span className='text-base font-semibold mr-1'>{t('main.start')}</span>
                   <ArrowSmallRightIcon className='w-5 h-4 mt-[1px]' />
                 </Link>
@@ -801,7 +841,10 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
         {/* Advantages of using open source */}
         <section className='flex items-center lg:flex-row flex-col-reverse justify-between max-w-7xl w-full mx-auto py-20 lg:py-32 px-5'>
           <picture>
-            <source srcSet={theme === 'dark' ? '/assets/opensource_dark.webp' : '/assets/opensource_light.webp'} type='image/webp' />
+            <source
+              srcSet={theme === 'dark' ? '/assets/opensource_dark.webp' : '/assets/opensource_light.webp'}
+              type='image/webp'
+            />
             <img
               className='ring-1 ring-gray-900/10 dark:ring-white/10 rounded-xl'
               width='576'
@@ -819,16 +862,25 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                 i18nKey='main.opensourceAdv'
                 components={{
                   // eslint-disable-next-line jsx-a11y/anchor-has-content
-                  url: <a href={GITHUB_URL} className='hover:underline' target='_blank' rel='noopener noreferrer' aria-label='Source code (opens in a new tab)' />,
+                  url: (
+                    <a
+                      href={GITHUB_URL}
+                      className='hover:underline'
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      aria-label='Source code (opens in a new tab)'
+                    />
+                  ),
                 }}
               />
             </h2>
             <hr className='border-slate-300 dark:border-slate-700 border-1 max-w-[346px] my-6' />
             <div className='max-w-md w-full lg:mb-0 mb-9'>
-              {_map(t('main.opensource', { returnObjects: true }), (item: {
-                desc: string
-              }) => (
-                <p key={item.desc} className='text-slate-700 dark:text-gray-300 text-sm leading-6 flex items-center mb-3'>
+              {_map(t('main.opensource', { returnObjects: true }), (item: { desc: string }) => (
+                <p
+                  key={item.desc}
+                  className='text-slate-700 dark:text-gray-300 text-sm leading-6 flex items-center mb-3'
+                >
                   <span>
                     <CheckCircleIcon className='w-6 h-6 text-indigo-500 mr-4' />
                   </span>
@@ -862,18 +914,11 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                   {() => (
                     <p className='text-indigo-700 text-5xl font-extrabold text-center'>
                       {users[0]}
-                      {users[1] && (
-                        <span className='text-gray-900 dark:text-indigo-200'>
-                          {users[1]}
-                          +
-                        </span>
-                      )}
+                      {users[1] && <span className='text-gray-900 dark:text-indigo-200'>{users[1]}+</span>}
                     </p>
                   )}
                 </ClientOnly>
-                <p className='text-gray-600 text-lg dark:text-gray-200'>
-                  {t('main.users')}
-                </p>
+                <p className='text-gray-600 text-lg dark:text-gray-200'>{t('main.users')}</p>
               </div>
               <div className='bg-gray-800 dark:bg-gray-200 w-2 h-2 rounded-full mx-5 mb-14 mt-16 md:mb-0 md:mt-0' />
               <div className='text-center'>
@@ -881,18 +926,11 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                   {() => (
                     <p className='text-indigo-700 text-5xl font-extrabold text-center'>
                       {websites[0]}
-                      {websites[1] && (
-                        <span className='text-gray-900 dark:text-indigo-200'>
-                          {websites[1]}
-                          +
-                        </span>
-                      )}
+                      {websites[1] && <span className='text-gray-900 dark:text-indigo-200'>{websites[1]}+</span>}
                     </p>
                   )}
                 </ClientOnly>
-                <p className='text-gray-600 text-lg dark:text-gray-200'>
-                  {t('main.websites')}
-                </p>
+                <p className='text-gray-600 text-lg dark:text-gray-200'>{t('main.websites')}</p>
               </div>
               <div className='bg-gray-800 dark:bg-gray-200 w-2 h-2 rounded-full mx-5 mb-14 mt-16 md:mb-0 md:mt-0' />
               <div className='text-center'>
@@ -900,18 +938,11 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                   {() => (
                     <p className='text-indigo-700 text-5xl font-extrabold text-center'>
                       {events[0]}
-                      {events[1] && (
-                        <span className='text-gray-900 dark:text-indigo-200'>
-                          {events[1]}
-                          +
-                        </span>
-                      )}
+                      {events[1] && <span className='text-gray-900 dark:text-indigo-200'>{events[1]}+</span>}
                     </p>
                   )}
                 </ClientOnly>
-                <p className='text-gray-600 text-lg dark:text-gray-200'>
-                  {t('main.pageviews')}
-                </p>
+                <p className='text-gray-600 text-lg dark:text-gray-200'>{t('main.pageviews')}</p>
               </div>
             </div>
           </div>

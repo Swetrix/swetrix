@@ -6,14 +6,18 @@ import CreateNewPassword from './CreateNewPassword'
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
   createNewPasswordFailed: (e: string) => {
-    dispatch(errorsActions.createNewPasswordFailed({
-      message: e,
-    }))
+    dispatch(
+      errorsActions.createNewPasswordFailed({
+        message: e,
+      }),
+    )
   },
   newPassword: (message: string) => {
-    dispatch(alertsActions.newPassword({
-      message,
-    }))
+    dispatch(
+      alertsActions.newPassword({
+        message,
+      }),
+    )
   },
 })
 

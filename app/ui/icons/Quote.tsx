@@ -2,10 +2,14 @@ import React from 'react'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
 
-const Quote = ({ theme, className, color }: {
-  theme: 'light' | 'dark',
-  className?: string,
-  color: 'black' | 'indigo',
+const Quote = ({
+  theme,
+  className,
+  color,
+}: {
+  theme: 'light' | 'dark'
+  className?: string
+  color: 'black' | 'indigo'
 }): JSX.Element => (
   <svg
     className={cx(className, {

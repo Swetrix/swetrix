@@ -5,14 +5,10 @@ import { json } from '@remix-run/node'
 import _split from 'lodash/split'
 
 import { API_URL } from 'redux/constants'
-import {
-  detectTheme, isEmbedded, isAuthenticated, getProjectPassword, getProjectTabs,
-} from 'utils/server'
+import { detectTheme, isEmbedded, isAuthenticated, getProjectPassword, getProjectTabs } from 'utils/server'
 import ProjectViewStyle from 'styles/ProjectViewStyle.css'
 
-export const links: LinksFunction = () => [
-  { rel: 'stylesheet', href: ProjectViewStyle },
-]
+export const links: LinksFunction = () => [{ rel: 'stylesheet', href: ProjectViewStyle }]
 
 export const meta: V2_MetaFunction = ({ location }) => {
   const { pathname } = location
@@ -33,14 +29,24 @@ export async function loader({ request }: LoaderArgs) {
   const tabs = getProjectTabs(request)
 
   return json({
-    theme, embedded, isAuth, queryPassword, tabs,
+    theme,
+    embedded,
+    isAuth,
+    queryPassword,
+    tabs,
   })
 }
 
 export default function Index() {
-  const {
-    theme, embedded, isAuth, queryPassword, tabs,
-  } = useLoaderData<typeof loader>()
+  const { theme, embedded, isAuth, queryPassword, tabs } = useLoaderData<typeof loader>()
 
-  return <ViewProject ssrTheme={theme} ssrAuthenticated={isAuth} embedded={embedded} queryPassword={queryPassword} projectQueryTabs={tabs} />
+  return (
+    <ViewProject
+      ssrTheme={theme}
+      ssrAuthenticated={isAuth}
+      embedded={embedded}
+      queryPassword={queryPassword}
+      projectQueryTabs={tabs}
+    />
+  )
 }

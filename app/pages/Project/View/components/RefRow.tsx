@@ -9,10 +9,7 @@ import PropTypes from 'prop-types'
  * @param {boolean} showIcons - Whether to show favicon icons near links or not.
  * @returns {JSX.Element}
  */
-const RefRow = ({ rowName, showIcons }: {
-  rowName: string
-  showIcons: boolean
-}): JSX.Element => {
+const RefRow = ({ rowName, showIcons }: { rowName: string; showIcons: boolean }): JSX.Element => {
   let isUrl: boolean = true
   let url: URL | null = null
 
@@ -44,9 +41,7 @@ const RefRow = ({ rowName, showIcons }: {
           {rowName}
         </a>
       ) : (
-        <span className='flex label hover:underline text-blue-600 dark:text-blue-500'>
-          {rowName}
-        </span>
+        <span className='flex label hover:underline text-blue-600 dark:text-blue-500'>{rowName}</span>
       )}
     </div>
   )

@@ -11,11 +11,11 @@ global.ResizeObserver = require('resize-observer-polyfill')
 
 describe('Modal component', () => {
   const defaultProps: {
-    type: 'error' | 'success' | 'info' | 'warning' | 'confirmed',
-    title: string,
-    message: string,
-    isOpened: boolean,
-    onClose: () => void,
+    type: 'error' | 'success' | 'info' | 'warning' | 'confirmed'
+    title: string
+    message: string
+    isOpened: boolean
+    onClose: () => void
   } = {
     type: 'success',
     title: 'Success',
@@ -50,17 +50,13 @@ describe('Modal component', () => {
   })
 
   it('renders with default props', () => {
-    const { getByText } = render(
-      <HocWithI18n {...defaultProps} />,
-    )
+    const { getByText } = render(<HocWithI18n {...defaultProps} />)
     expect(getByText('Success')).toBeInTheDocument()
     expect(getByText('Action completed successfully')).toBeInTheDocument()
   })
 
   it('calls onClose when close button is clicked', () => {
-    const { getByText } = render(
-      <HocWithI18n {...defaultProps} closeText='Close' />,
-    )
+    const { getByText } = render(<HocWithI18n {...defaultProps} closeText='Close' />)
     const closeButton = getByText('Close')
     fireEvent.click(closeButton)
     expect(defaultProps.onClose).toHaveBeenCalled()
@@ -68,9 +64,7 @@ describe('Modal component', () => {
 
   it('calls onSubmit when submit button is clicked', () => {
     const onSubmit = jest.fn()
-    const { getByText } = render(
-      <HocWithI18n {...defaultProps} onSubmit={onSubmit} submitText='Submit' />,
-    )
+    const { getByText } = render(<HocWithI18n {...defaultProps} onSubmit={onSubmit} submitText='Submit' />)
     const submitButton = getByText('Submit')
     fireEvent.click(submitButton)
     expect(onSubmit).toHaveBeenCalled()
@@ -78,16 +72,12 @@ describe('Modal component', () => {
 
   it('renders custom buttons', () => {
     const customButtons = <button type='button'>Custom Button</button>
-    const { getByText } = render(
-      <HocWithI18n {...defaultProps} customButtons={customButtons} />,
-    )
+    const { getByText } = render(<HocWithI18n {...defaultProps} customButtons={customButtons} />)
     expect(getByText('Custom Button')).toBeInTheDocument()
   })
 
   it('renders beta badge when isBeta prop is true', () => {
-    const { getByText } = render(
-      <HocWithI18n {...defaultProps} isBeta />,
-    )
+    const { getByText } = render(<HocWithI18n {...defaultProps} isBeta />)
     expect(getByText('beta.title')).toBeInTheDocument()
   })
 })

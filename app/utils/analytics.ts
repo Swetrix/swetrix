@@ -26,11 +26,10 @@ const trackViews = () => {
 const trackCustom = (ev: string, unique = false) => {
   if (!isSelfhosted) {
     Swetrix.track({
-      ev, unique,
+      ev,
+      unique,
     })
   }
 }
 
-export {
-  trackViews, trackCustom, SWETRIX_PID,
-}
+export { trackViews, trackCustom, SWETRIX_PID }

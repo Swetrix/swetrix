@@ -40,9 +40,7 @@ describe('TimezonePricker', () => {
   })
 
   it('calls onChange function when an option is selected', () => {
-    const { getByText, getByRole } = render(
-      <HocWithI18n value='Europe/London' onChange={onChange} />,
-    )
+    const { getByText, getByRole } = render(<HocWithI18n value='Europe/London' onChange={onChange} />)
 
     fireEvent.click(getByRole('button'))
 

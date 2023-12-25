@@ -1,13 +1,15 @@
-import React, {
-  memo, useState, useEffect, useMemo, Fragment,
-} from 'react'
+import React, { memo, useState, useEffect, useMemo, Fragment } from 'react'
 import InnerHTML from 'dangerously-set-html-content'
-import {
-  ArrowLongRightIcon, ArrowLongLeftIcon,
-} from '@heroicons/react/24/solid'
+import { ArrowLongRightIcon, ArrowLongLeftIcon } from '@heroicons/react/24/solid'
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
 import {
-  FunnelIcon, MapIcon, Bars4Icon, ArrowsPointingOutIcon, ChartPieIcon, PuzzlePieceIcon, RectangleGroupIcon,
+  FunnelIcon,
+  MapIcon,
+  Bars4Icon,
+  ArrowsPointingOutIcon,
+  ChartPieIcon,
+  PuzzlePieceIcon,
+  RectangleGroupIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
@@ -94,29 +96,41 @@ const removeDuplicates = (arr: any[], keys: string[]) => {
 }
 
 interface IPanelContainer {
-  name: string | JSX.Element,
-  children?: React.ReactNode,
-  noSwitch?: boolean,
-  icon?: React.ReactNode,
-  type: string,
-  onExpandClick?: () => void,
-  activeFragment: number | string,
-  setActiveFragment: (arg: number) => void,
-  customTabs?: any,
-  activeTab?: string,
+  name: string | JSX.Element
+  children?: React.ReactNode
+  noSwitch?: boolean
+  icon?: React.ReactNode
+  type: string
+  onExpandClick?: () => void
+  activeFragment: number | string
+  setActiveFragment: (arg: number) => void
+  customTabs?: any
+  activeTab?: string
   isCustomContent?: boolean
 }
 
 // noSwitch - 'previous' and 'next' buttons
 const PanelContainer = ({
-  name, children, noSwitch, icon, type, activeFragment, setActiveFragment,
-  customTabs, activeTab, isCustomContent, onExpandClick,
+  name,
+  children,
+  noSwitch,
+  icon,
+  type,
+  activeFragment,
+  setActiveFragment,
+  customTabs,
+  activeTab,
+  isCustomContent,
+  onExpandClick,
 }: IPanelContainer): JSX.Element => (
   <div
-    className={cx('relative bg-white dark:bg-slate-800/25 dark:border dark:border-slate-800/50 pt-5 px-4 min-h-72 max-h-96 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden', {
-      'pb-12': !noSwitch,
-      'pb-5': noSwitch,
-    })}
+    className={cx(
+      'relative bg-white dark:bg-slate-800/25 dark:border dark:border-slate-800/50 pt-5 px-4 min-h-72 max-h-96 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden',
+      {
+        'pb-12': !noSwitch,
+        'pb-5': noSwitch,
+      },
+    )}
   >
     <div className='flex items-center justify-between mb-2'>
       <h3 className='flex items-center text-lg leading-6 font-semibold text-gray-900 dark:text-gray-50'>
@@ -158,7 +172,7 @@ const PanelContainer = ({
           </>
         )}
 
-        {(type === 'pg' && activeTab !== PROJECT_TABS.performance) && (
+        {type === 'pg' && activeTab !== PROJECT_TABS.performance && (
           <>
             <RectangleGroupIcon
               className={cx(iconClassName, 'ml-2 cursor-pointer', {
@@ -227,10 +241,11 @@ const PanelContainer = ({
       </div>
     </div>
     {/* for other tabs */}
-    <div className={cx('flex flex-col h-full scroll-auto', {
-      'overflow-auto': !(type === 'pg' && activeTab !== PROJECT_TABS.performance && activeFragment === 1),
-      relative: isCustomContent,
-    })}
+    <div
+      className={cx('flex flex-col h-full scroll-auto', {
+        'overflow-auto': !(type === 'pg' && activeTab !== PROJECT_TABS.performance && activeFragment === 1),
+        relative: isCustomContent,
+      })}
     >
       {children}
     </div>
@@ -238,9 +253,7 @@ const PanelContainer = ({
 )
 
 PanelContainer.propTypes = {
-  name: PropTypes.oneOfType([
-    PropTypes.string, PropTypes.node,
-  ]).isRequired,
+  name: PropTypes.oneOfType([PropTypes.string, PropTypes.node]).isRequired,
   children: PropTypes.node.isRequired,
   noSwitch: PropTypes.bool,
   activeFragment: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
@@ -253,8 +266,8 @@ PanelContainer.defaultProps = {
   icon: null,
   noSwitch: false,
   activeFragment: 0,
-  setActiveFragment: () => { },
-  onExpandClick: () => { },
+  setActiveFragment: () => {},
+  onExpandClick: () => {},
   customTabs: [],
   activeTab: '',
   isCustomContent: false,
@@ -324,23 +337,25 @@ interface IKVTable {
   loading: boolean
 }
 
-const KVTable = ({
-  data, t, uniques, loading,
-}: IKVTable) => {
+const KVTable = ({ data, t, uniques, loading }: IKVTable) => {
   // @ts-ignore
   const processed: any[] = useMemo(() => {
-    return _reduce(data, (acc: any, curr: any) => {
-      if (!acc[curr.key]) {
-        acc[curr.key] = []
-      }
+    return _reduce(
+      data,
+      (acc: any, curr: any) => {
+        if (!acc[curr.key]) {
+          acc[curr.key] = []
+        }
 
-      acc[curr.key].push({
-        value: curr.value,
-        count: curr.count,
-      })
+        acc[curr.key].push({
+          value: curr.value,
+          count: curr.count,
+        })
 
-      return acc
-    }, {})
+        return acc
+      },
+      {},
+    )
   }, [data])
 
   if (loading) {
@@ -352,11 +367,7 @@ const KVTable = ({
   }
 
   if (_isEmpty(data)) {
-    return (
-      <p className='text-gray-600 dark:text-gray-200 mb-2'>
-        {t('project.noData')}
-      </p>
-    )
+    return <p className='text-gray-600 dark:text-gray-200 mb-2'>{t('project.noData')}</p>
   }
 
   return _map(processed, (value, key) => {
@@ -364,18 +375,12 @@ const KVTable = ({
       <table key={key} className='table-fixed w-full mb-2'>
         <thead>
           <tr className='text-gray-600 dark:text-gray-200'>
-            <th className='w-2/5 sm:w-4/6 text-left flex items-center'>
-              {key}
+            <th className='w-2/5 sm:w-4/6 text-left flex items-center'>{key}</th>
+            <th className='w-[30%] sm:w-1/6'>
+              <p className='flex justify-end items-center'>{t('project.quantity')}</p>
             </th>
             <th className='w-[30%] sm:w-1/6'>
-              <p className='flex justify-end items-center'>
-                {t('project.quantity')}
-              </p>
-            </th>
-            <th className='w-[30%] sm:w-1/6'>
-              <p className='flex justify-end items-center'>
-                {t('project.conversion')}
-              </p>
+              <p className='flex justify-end items-center'>{t('project.conversion')}</p>
             </th>
           </tr>
         </thead>
@@ -385,17 +390,12 @@ const KVTable = ({
               key={nestedValue}
               className='text-gray-900 dark:text-gray-50 group hover:bg-gray-100 hover:dark:bg-slate-700 py-3'
             >
-              <td className='text-left flex items-center'>
-                {nestedValue}
-              </td>
+              <td className='text-left flex items-center'>{nestedValue}</td>
               <td className='text-right'>
                 {count}
                 &nbsp;&nbsp;
               </td>
-              <td className='text-right'>
-                {uniques === 0 ? 100 : _round((count / uniques) * 100, 2)}
-                %
-              </td>
+              <td className='text-right'>{uniques === 0 ? 100 : _round((count / uniques) * 100, 2)}%</td>
             </tr>
           ))}
         </tbody>
@@ -405,9 +405,7 @@ const KVTable = ({
 }
 
 // Tabs with custom events like submit form, press button, go to the link rate etc.
-const CustomEvents = ({
-  customs, chartData, onFilter, t, customTabs, getCustomEventMetadata,
-}: ICustomEvents) => {
+const CustomEvents = ({ customs, chartData, onFilter, t, customTabs, getCustomEventMetadata }: ICustomEvents) => {
   const [page, setPage] = useState(0)
   const [modal, setModal] = useState(false)
   const [activeEvents, setActiveEvents] = useState<any>({})
@@ -416,7 +414,10 @@ const CustomEvents = ({
   const [customsEventsData, setCustomsEventsData] = useState<any>(customs)
   const currentIndex = page * ENTRIES_PER_CUSTOM_EVENTS_PANEL
   const keys = _keys(customsEventsData)
-  const keysToDisplay = useMemo(() => _slice(keys, currentIndex, currentIndex + ENTRIES_PER_CUSTOM_EVENTS_PANEL), [keys, currentIndex])
+  const keysToDisplay = useMemo(
+    () => _slice(keys, currentIndex, currentIndex + ENTRIES_PER_CUSTOM_EVENTS_PANEL),
+    [keys, currentIndex],
+  )
   const uniques = _sum(chartData.uniques)
   const [chartOptions, setChartOptions] = useState<any>({})
   const [activeFragment, setActiveFragment] = useState<number>(0)
@@ -467,9 +468,11 @@ const CustomEvents = ({
       return _fromPairs(_sortBy(_toPairs(obj), (pair) => pair[0]))
     }
 
-    return _fromPairs(_toPairs(obj).sort((a: any, b: any) => {
-      return b[1] - a[1]
-    }))
+    return _fromPairs(
+      _toPairs(obj).sort((a: any, b: any) => {
+        return b[1] - a[1]
+      }),
+    )
   }
 
   const sortedDesc = (obj: any, sortByKeys?: boolean) => {
@@ -477,9 +480,11 @@ const CustomEvents = ({
       return _fromPairs(_reverse(_sortBy(_toPairs(obj), (pair) => pair[0])))
     }
 
-    return _fromPairs(_toPairs(obj).sort((a: any, b: any) => {
-      return a[1] - b[1]
-    }))
+    return _fromPairs(
+      _toPairs(obj).sort((a: any, b: any) => {
+        return a[1] - b[1]
+      }),
+    )
   }
 
   const toggleEventMetadata = (ev: string) => async (e: any) => {
@@ -578,24 +583,22 @@ const CustomEvents = ({
         onExpandClick={() => setModal(true)}
       >
         {_isEmpty(chartData) ? (
-          <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>
-            {t('project.noParamData')}
-          </p>
+          <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
         ) : (
-          <Chart
-            options={chartOptions}
-            current='panels-ce'
-          />
+          <Chart options={chartOptions} current='panels-ce' />
         )}
         <Modal
           onClose={onModalClose}
           isOpened={modal}
           title={t('project.customEv')}
-          message={(
+          message={
             <table className='table-fixed w-full'>
               <thead>
                 <tr className='text-gray-900 dark:text-gray-50 text-base'>
-                  <th className='w-2/5 sm:w-4/6 text-left flex items-center cursor-pointer hover:opacity-90' onClick={() => onSortBy('event')}>
+                  <th
+                    className='w-2/5 sm:w-4/6 text-left flex items-center cursor-pointer hover:opacity-90'
+                    onClick={() => onSortBy('event')}
+                  >
                     {t('project.event')}
                     <Sort
                       className='ml-1'
@@ -604,7 +607,10 @@ const CustomEvents = ({
                     />
                   </th>
                   <th className='w-[30%] sm:w-1/6'>
-                    <p className='flex justify-end items-center cursor-pointer hover:opacity-90' onClick={() => onSortBy('quantity')}>
+                    <p
+                      className='flex justify-end items-center cursor-pointer hover:opacity-90'
+                      onClick={() => onSortBy('quantity')}
+                    >
                       {t('project.quantity')}
                       <Sort
                         className='ml-1'
@@ -615,7 +621,10 @@ const CustomEvents = ({
                     </p>
                   </th>
                   <th className='w-[30%] sm:w-1/6'>
-                    <p className='flex justify-end items-center cursor-pointer hover:opacity-90' onClick={() => onSortBy('conversion')}>
+                    <p
+                      className='flex justify-end items-center cursor-pointer hover:opacity-90'
+                      onClick={() => onSortBy('conversion')}
+                    >
                       {t('project.conversion')}
                       <Sort
                         className='ml-1'
@@ -653,19 +662,13 @@ const CustomEvents = ({
                         &nbsp;&nbsp;
                       </td>
                       <td className='text-right'>
-                        {uniques === 0 ? 100 : _round((customsEventsData[ev] / uniques) * 100, 2)}
-                        %
+                        {uniques === 0 ? 100 : _round((customsEventsData[ev] / uniques) * 100, 2)}%
                       </td>
                     </tr>
                     {activeEvents[ev] && (
                       <tr>
                         <td className='pl-9' colSpan={3}>
-                          <KVTable
-                            data={eventsMetadata[ev]}
-                            t={t}
-                            uniques={uniques}
-                            loading={loadingEvents[ev]}
-                          />
+                          <KVTable data={eventsMetadata[ev]} t={t} uniques={uniques} loading={loadingEvents[ev]} />
                         </td>
                       </tr>
                     )}
@@ -673,7 +676,7 @@ const CustomEvents = ({
                 ))}
               </tbody>
             </table>
-          )}
+          }
           size='large'
         />
       </PanelContainer>
@@ -683,9 +686,7 @@ const CustomEvents = ({
   // Showing custom tabs (Extensions Marketplace)
   // todo: check activeFragment for being equal to customTabs -> extensionID + panelID
   if (!_isEmpty(customTabs) && typeof activeFragment === 'string') {
-    const {
-      tabContent,
-    } = _find(customTabs, (tab) => tab.extensionID === activeFragment)
+    const { tabContent } = _find(customTabs, (tab) => tab.extensionID === activeFragment)
 
     return (
       <PanelContainer
@@ -694,13 +695,11 @@ const CustomEvents = ({
         activeFragment={activeFragment}
         setActiveFragment={setActiveFragment}
         customTabs={customTabs}
-        onExpandClick={() => { }}
+        onExpandClick={() => {}}
         isCustomContent
       >
         {/* Using this instead of dangerouslySetInnerHTML to support script tags */}
-        {tabContent && (
-          <InnerHTML className='absolute overflow-auto' html={tabContent} />
-        )}
+        {tabContent && <InnerHTML className='absolute overflow-auto' html={tabContent} />}
       </PanelContainer>
     )
   }
@@ -717,7 +716,10 @@ const CustomEvents = ({
       <table className='table-fixed'>
         <thead>
           <tr className='text-gray-900 dark:text-gray-50'>
-            <th className='w-4/6 text-left flex items-center cursor-pointer hover:opacity-90' onClick={() => onSortBy('event')}>
+            <th
+              className='w-4/6 text-left flex items-center cursor-pointer hover:opacity-90'
+              onClick={() => onSortBy('event')}
+            >
               {t('project.event')}
               <Sort
                 className='ml-1'
@@ -768,8 +770,7 @@ const CustomEvents = ({
                   Added a uniques === 0 check because uniques value may be zero and dividing by zero will cause an
                   Infinity% value to be displayed.
                 */}
-                {uniques === 0 ? 100 : _round((customsEventsData[ev] / uniques) * 100, 2)}
-                %
+                {uniques === 0 ? 100 : _round((customsEventsData[ev] / uniques) * 100, 2)}%
               </td>
             </tr>
           ))}
@@ -781,28 +782,21 @@ const CustomEvents = ({
           <div className='flex justify-between select-none mb-2'>
             <div>
               <span className='text-gray-500 dark:text-gray-200 font-light lowercase text-xs'>
-                {_size(keys)}
-                {' '}
-                {t('project.results')}
+                {_size(keys)} {t('project.results')}
               </span>
               <span className='text-gray-500 dark:text-gray-200 font-light text-xs'>
-                .
-                {' '}
-                {t('project.page')}
-                {' '}
-                {page + 1}
-                {' '}
-                /
-                {' '}
-                {totalPages}
+                . {t('project.page')} {page + 1} / {totalPages}
               </span>
             </div>
             <div className='flex justify-between w-[4.5rem]'>
               <Button
-                className={cx('text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-slate-800 border-none px-1.5 py-0.5', {
-                  'opacity-50 cursor-not-allowed': !canGoPrev(),
-                  'hover:bg-gray-200 hover:dark:bg-slate-700': canGoPrev(),
-                })}
+                className={cx(
+                  'text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-slate-800 border-none px-1.5 py-0.5',
+                  {
+                    'opacity-50 cursor-not-allowed': !canGoPrev(),
+                    'hover:bg-gray-200 hover:dark:bg-slate-700': canGoPrev(),
+                  },
+                )}
                 type='button'
                 onClick={onPrevious}
                 disabled={!canGoPrev()}
@@ -811,10 +805,13 @@ const CustomEvents = ({
                 <ArrowLongLeftIcon className='w-5 h-5' />
               </Button>
               <Button
-                className={cx('text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-slate-800 border-none px-1.5 py-0.5', {
-                  'opacity-50 cursor-not-allowed': !canGoNext(),
-                  'hover:bg-gray-200 hover:dark:bg-slate-700': canGoNext(),
-                })}
+                className={cx(
+                  'text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-slate-800 border-none px-1.5 py-0.5',
+                  {
+                    'opacity-50 cursor-not-allowed': !canGoNext(),
+                    'hover:bg-gray-200 hover:dark:bg-slate-700': canGoNext(),
+                  },
+                )}
                 onClick={onNext}
                 disabled={!canGoNext()}
                 type='button'
@@ -830,11 +827,14 @@ const CustomEvents = ({
         onClose={onModalClose}
         isOpened={modal}
         title={t('project.customEv')}
-        message={(
+        message={
           <table className='table-fixed w-full'>
             <thead>
               <tr className='text-gray-900 dark:text-gray-50 text-base'>
-                <th className='w-2/5 sm:w-4/6 text-left flex items-center cursor-pointer hover:opacity-90' onClick={() => onSortBy('event')}>
+                <th
+                  className='w-2/5 sm:w-4/6 text-left flex items-center cursor-pointer hover:opacity-90'
+                  onClick={() => onSortBy('event')}
+                >
                   {t('project.event')}
                   <Sort
                     className='ml-1'
@@ -843,7 +843,10 @@ const CustomEvents = ({
                   />
                 </th>
                 <th className='w-[30%] sm:w-1/6'>
-                  <p className='flex justify-end items-center cursor-pointer hover:opacity-90' onClick={() => onSortBy('quantity')}>
+                  <p
+                    className='flex justify-end items-center cursor-pointer hover:opacity-90'
+                    onClick={() => onSortBy('quantity')}
+                  >
                     {t('project.quantity')}
                     <Sort
                       className='ml-1'
@@ -854,7 +857,10 @@ const CustomEvents = ({
                   </p>
                 </th>
                 <th className='w-[30%] sm:w-1/6'>
-                  <p className='flex justify-end items-center cursor-pointer hover:opacity-90' onClick={() => onSortBy('conversion')}>
+                  <p
+                    className='flex justify-end items-center cursor-pointer hover:opacity-90'
+                    onClick={() => onSortBy('conversion')}
+                  >
                     {t('project.conversion')}
                     <Sort
                       className='ml-1'
@@ -892,19 +898,13 @@ const CustomEvents = ({
                       &nbsp;&nbsp;
                     </td>
                     <td className='text-right'>
-                      {uniques === 0 ? 100 : _round((customsEventsData[ev] / uniques) * 100, 2)}
-                      %
+                      {uniques === 0 ? 100 : _round((customsEventsData[ev] / uniques) * 100, 2)}%
                     </td>
                   </tr>
                   {activeEvents[ev] && (
                     <tr>
                       <td className='pl-9' colSpan={3}>
-                        <KVTable
-                          data={eventsMetadata[ev]}
-                          t={t}
-                          uniques={uniques}
-                          loading={loadingEvents[ev]}
-                        />
+                        <KVTable data={eventsMetadata[ev]} t={t} uniques={uniques} loading={loadingEvents[ev]} />
                       </td>
                     </tr>
                   )}
@@ -912,7 +912,7 @@ const CustomEvents = ({
               ))}
             </tbody>
           </table>
-        )}
+        }
         size='large'
       />
     </PanelContainer>
@@ -959,8 +959,27 @@ interface IPanel {
 }
 
 const Panel = ({
-  name, data, rowMapper, valueMapper, capitalize, linkContent, t, icon, id, hideFilters,
-  onFilter, customTabs, pid, period, timeBucket, from, to, timezone, activeTab, onFragmentChange, filters,
+  name,
+  data,
+  rowMapper,
+  valueMapper,
+  capitalize,
+  linkContent,
+  t,
+  icon,
+  id,
+  hideFilters,
+  onFilter,
+  customTabs,
+  pid,
+  period,
+  timeBucket,
+  from,
+  to,
+  timezone,
+  activeTab,
+  onFragmentChange,
+  filters,
   projectPassword,
 }: IPanel): JSX.Element => {
   const [page, setPage] = useState(0)
@@ -975,7 +994,7 @@ const Panel = ({
   const canGoPrev = () => page > 0
   const canGoNext = () => page < _floor((_size(entries) - 1) / ENTRIES_PER_PANEL)
 
-  const _onFilter = hideFilters ? () => { } : onFilter
+  const _onFilter = hideFilters ? () => {} : onFilter
 
   useEffect(() => {
     const sizeKeys = _size(entries)
@@ -1021,22 +1040,12 @@ const Panel = ({
         onExpandClick={() => setModal(true)}
         customTabs={customTabs}
       >
-        <InteractiveMap
-          data={data}
-          total={total}
-          onClickCountry={(key) => _onFilter(id, key)}
-        />
+        <InteractiveMap data={data} total={total} onClickCountry={(key) => _onFilter(id, key)} />
         <Modal
           onClose={() => setModal(false)}
           closeText={t('common.close')}
           isOpened={modal}
-          message={(
-            <InteractiveMap
-              data={data}
-              total={total}
-              onClickCountry={(key) => _onFilter(id, key)}
-            />
-          )}
+          message={<InteractiveMap data={data} total={total} onClickCountry={(key) => _onFilter(id, key)} />}
           size='large'
         />
       </PanelContainer>
@@ -1074,7 +1083,7 @@ const Panel = ({
           onClose={() => setModal(false)}
           closeText={t('common.close')}
           isOpened={modal}
-          customButtons={(
+          customButtons={
             <button
               type='button'
               onClick={() => setIsReversedUserFlow(!isReversedUserFlow)}
@@ -1082,8 +1091,8 @@ const Panel = ({
             >
               {t('project.reverse')}
             </button>
-          )}
-          message={(
+          }
+          message={
             <div className='h-[500px] dark:text-gray-800'>
               {/* @ts-ignore */}
               <UserFlow
@@ -1099,7 +1108,7 @@ const Panel = ({
                 t={t}
               />
             </div>
-          )}
+          }
           size='large'
         />
       </PanelContainer>
@@ -1156,14 +1165,9 @@ const Panel = ({
         activeTab={activeTab}
       >
         {_isEmpty(data) ? (
-          <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>
-            {t('project.noParamData')}
-          </p>
+          <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
         ) : (
-          <Chart
-            options={options}
-            current={`Panels-${id}`}
-          />
+          <Chart options={options} current={`Panels-${id}`} />
         )}
       </PanelContainer>
     )
@@ -1172,9 +1176,7 @@ const Panel = ({
   // Showing custom tabs (Extensions Marketplace)
   // todo: check activeFragment for being equal to customTabs -> extensionID + panelID
   if (!_isEmpty(customTabs) && typeof activeFragment === 'string' && !_isEmpty(data)) {
-    const {
-      tabContent,
-    } = _find(customTabs, (tab) => tab.extensionID === activeFragment)
+    const { tabContent } = _find(customTabs, (tab) => tab.extensionID === activeFragment)
 
     return (
       <PanelContainer
@@ -1195,90 +1197,90 @@ const Panel = ({
   }
 
   return (
-    <PanelContainer name={name} icon={icon} type={id} activeFragment={activeFragment} setActiveFragment={_setActiveFragment} customTabs={customTabs} activeTab={activeTab}>
+    <PanelContainer
+      name={name}
+      icon={icon}
+      type={id}
+      activeFragment={activeFragment}
+      setActiveFragment={_setActiveFragment}
+      customTabs={customTabs}
+      activeTab={activeTab}
+    >
       {_isEmpty(data) ? (
-        <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>
-          {t('project.noParamData')}
-        </p>
-      ) : _map(entriesToDisplay, entry => {
-        const {
-          count, name: entryName, cc,
-        } = entry
-        const perc = _round((count / total) * 100, 2)
-        const rowData = rowMapper(entry)
-        const valueData = valueMapper(count)
+        <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
+      ) : (
+        _map(entriesToDisplay, (entry) => {
+          const { count, name: entryName, cc } = entry
+          const perc = _round((count / total) * 100, 2)
+          const rowData = rowMapper(entry)
+          const valueData = valueMapper(count)
 
-        return (
-          <Fragment key={`${id}-${entryName}-${cc}`}>
-            <div
-              className={cx('flex justify-between mt-[0.32rem] first:mt-0 dark:text-gray-50 rounded', {
-                'group hover:bg-gray-100 hover:dark:bg-slate-700 cursor-pointer': !hideFilters,
-              })}
-              onClick={() => _onFilter(id, entryName)}
-            >
-              {linkContent ? (
-                <a
-                  className={cx('flex items-center label hover:underline text-blue-600 dark:text-blue-500', { capitalize })}
-                  href={rowData}
-                  target='_blank'
-                  rel='noopener noreferrer nofollow'
-                  aria-label={`${rowData} (opens in a new tab)`}
-                >
-                  {rowData}
-                  {!hideFilters && (
-                    <FunnelIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
-                  )}
-                </a>
-              ) : (
-                <span className={cx('flex items-center label', { capitalize })}>
-                  {rowData}
-                  {!hideFilters && (
-                    <FunnelIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
-                  )}
+          return (
+            <Fragment key={`${id}-${entryName}-${cc}`}>
+              <div
+                className={cx('flex justify-between mt-[0.32rem] first:mt-0 dark:text-gray-50 rounded', {
+                  'group hover:bg-gray-100 hover:dark:bg-slate-700 cursor-pointer': !hideFilters,
+                })}
+                onClick={() => _onFilter(id, entryName)}
+              >
+                {linkContent ? (
+                  <a
+                    className={cx('flex items-center label hover:underline text-blue-600 dark:text-blue-500', {
+                      capitalize,
+                    })}
+                    href={rowData}
+                    target='_blank'
+                    rel='noopener noreferrer nofollow'
+                    aria-label={`${rowData} (opens in a new tab)`}
+                  >
+                    {rowData}
+                    {!hideFilters && (
+                      <FunnelIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
+                    )}
+                  </a>
+                ) : (
+                  <span className={cx('flex items-center label', { capitalize })}>
+                    {rowData}
+                    {!hideFilters && (
+                      <FunnelIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
+                    )}
+                  </span>
+                )}
+                <span className='ml-3 dark:text-gray-50'>
+                  {activeTab === PROJECT_TABS.traffic ? nFormatter(valueData, 1) : valueData}
+                  &nbsp;
+                  <span className='text-gray-500 dark:text-gray-200 font-light'>
+                    ({perc}
+                    %)
+                  </span>
                 </span>
-              )}
-              <span className='ml-3 dark:text-gray-50'>
-                {activeTab === PROJECT_TABS.traffic ? nFormatter(valueData, 1) : valueData}
-                &nbsp;
-                <span className='text-gray-500 dark:text-gray-200 font-light'>
-                  (
-                  {perc}
-                  %)
-                </span>
-              </span>
-            </div>
-            <Progress now={perc} />
-          </Fragment>
-        )
-      })}
+              </div>
+              <Progress now={perc} />
+            </Fragment>
+          )
+        })
+      )}
       {/* for pagination in tabs */}
       {_size(entries) > ENTRIES_PER_PANEL && (
         <div className='absolute bottom-0 w-card-toggle-sm sm:!w-card-toggle'>
           <div className='flex justify-between select-none mb-2'>
             <div>
               <span className='text-gray-500 dark:text-gray-200 font-light lowercase text-xs'>
-                {_size(entries)}
-                {' '}
-                {t('project.results')}
+                {_size(entries)} {t('project.results')}
               </span>
               <span className='text-gray-500 dark:text-gray-200 font-light text-xs'>
-                .
-                {' '}
-                {t('project.page')}
-                {' '}
-                {page + 1}
-                {' '}
-                /
-                {' '}
-                {totalPages}
+                . {t('project.page')} {page + 1} / {totalPages}
               </span>
             </div>
             <div className='flex justify-between w-[4.5rem]'>
               <Button
-                className={cx('text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-slate-800 border-none px-1.5 py-0.5', {
-                  'opacity-50 cursor-not-allowed': !canGoPrev(),
-                  'hover:bg-gray-200 hover:dark:bg-slate-700': canGoPrev(),
-                })}
+                className={cx(
+                  'text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-slate-800 border-none px-1.5 py-0.5',
+                  {
+                    'opacity-50 cursor-not-allowed': !canGoPrev(),
+                    'hover:bg-gray-200 hover:dark:bg-slate-700': canGoPrev(),
+                  },
+                )}
                 type='button'
                 onClick={onPrevious}
                 disabled={!canGoPrev()}
@@ -1287,10 +1289,13 @@ const Panel = ({
                 <ArrowLongLeftIcon className='w-5 h-5' />
               </Button>
               <Button
-                className={cx('text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-slate-800 border-none px-1.5 py-0.5', {
-                  'opacity-50 cursor-not-allowed': !canGoNext(),
-                  'hover:bg-gray-200 hover:dark:bg-slate-700': canGoNext(),
-                })}
+                className={cx(
+                  'text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-slate-800 border-none px-1.5 py-0.5',
+                  {
+                    'opacity-50 cursor-not-allowed': !canGoNext(),
+                    'hover:bg-gray-200 hover:dark:bg-slate-700': canGoNext(),
+                  },
+                )}
                 onClick={onNext}
                 disabled={!canGoNext()}
                 type='button'
@@ -1307,13 +1312,13 @@ const Panel = ({
 }
 
 Panel.propTypes = {
-  name: PropTypes.oneOfType([
-    PropTypes.string.isRequired, PropTypes.node,
-  ]).isRequired,
-  data: PropTypes.arrayOf(PropTypes.shape({
-    name: PropTypes.string,
-    count: PropTypes.number,
-  })).isRequired,
+  name: PropTypes.oneOfType([PropTypes.string.isRequired, PropTypes.node]).isRequired,
+  data: PropTypes.arrayOf(
+    PropTypes.shape({
+      name: PropTypes.string,
+      count: PropTypes.number,
+    }),
+  ).isRequired,
   id: PropTypes.string,
   rowMapper: PropTypes.func,
   valueMapper: PropTypes.func,
@@ -1331,7 +1336,7 @@ Panel.defaultProps = {
   valueMapper: (value: number): number => value,
   capitalize: false,
   linkContent: false,
-  onFilter: () => { },
+  onFilter: () => {},
   hideFilters: false,
   icon: null,
   customTabs: [],
@@ -1342,14 +1347,11 @@ Panel.defaultProps = {
   period: null,
   pid: null,
   activeTab: null,
-  onFragmentChange: () => { },
+  onFragmentChange: () => {},
   filters: [],
 }
 
 const PanelMemo = memo(Panel)
 const CustomEventsMemo = memo(CustomEvents)
 
-export {
-  PanelMemo as Panel,
-  CustomEventsMemo as CustomEvents,
-}
+export { PanelMemo as Panel, CustomEventsMemo as CustomEvents }

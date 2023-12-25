@@ -10,21 +10,21 @@ import { setRefreshToken } from 'utils/refreshToken'
 import sagaActions from '../../actions/index'
 const { login } = require('api')
 
-export default function* singinWorker({ payload: { credentials, callback } }: {
+export default function* singinWorker({
+  payload: { credentials, callback },
+}: {
   payload: {
     credentials: {
-      email: string,
-      password: string,
-      dontRemember: boolean,
-    },
-    callback: (isSuccess: boolean, isTwoFactorAuthenticationEnabled: boolean) => void,
-  },
+      email: string
+      password: string
+      dontRemember: boolean
+    }
+    callback: (isSuccess: boolean, isTwoFactorAuthenticationEnabled: boolean) => void
+  }
 }) {
   try {
     const { dontRemember } = credentials
-    const {
-      user, accessToken, refreshToken,
-    } = yield call(login, _omit(credentials, ['dontRemember']))
+    const { user, accessToken, refreshToken } = yield call(login, _omit(credentials, ['dontRemember']))
 
     yield put(authActions.setDontRemember(dontRemember))
 
@@ -47,9 +47,11 @@ export default function* singinWorker({ payload: { credentials, callback } }: {
   } catch (error) {
     // @ts-ignore
     const err = _isObject(error) ? error.message : error
-    yield put(errorsActions.loginFailed({
-      message: err || 'apiNotifications.somethingWentWrong',
-    }))
+    yield put(
+      errorsActions.loginFailed({
+        message: err || 'apiNotifications.somethingWentWrong',
+      }),
+    )
     callback(false, false)
   } finally {
     yield put(authActions.finishLoading())

@@ -4,9 +4,7 @@ import { authActions } from 'redux/reducers/auth'
 import { errorsActions } from 'redux/reducers/errors'
 import { alertsActions } from 'redux/reducers/alerts'
 import { openBrowserWindow } from 'utils/generic'
-const {
-  linkBySSOHash, generateSSOAuthURL, authMe,
-} = require('api')
+const { linkBySSOHash, generateSSOAuthURL, authMe } = require('api')
 
 const AUTH_WINDOW_WIDTH = 600
 const AUTH_WINDOW_HEIGHT = 800
@@ -25,17 +23,17 @@ export default function* ssoLink({ payload: { callback, t, provider } }: ISSOLin
   const authWindow = openBrowserWindow('', AUTH_WINDOW_WIDTH, AUTH_WINDOW_HEIGHT)
 
   if (!authWindow) {
-    yield put(errorsActions.loginFailed({
-      message: t('apiNotifications.socialisationGenericError'),
-    }))
+    yield put(
+      errorsActions.loginFailed({
+        message: t('apiNotifications.socialisationGenericError'),
+      }),
+    )
     callback(false)
     return
   }
 
   try {
-    const {
-      uuid, auth_url: authUrl, expires_in: expiresIn,
-    } = yield call(generateSSOAuthURL, provider)
+    const { uuid, auth_url: authUrl, expires_in: expiresIn } = yield call(generateSSOAuthURL, provider)
 
     // Set the URL of the authentification browser window
     authWindow.location = authUrl
@@ -54,10 +52,12 @@ export default function* ssoLink({ payload: { callback, t, provider } }: ISSOLin
         const user = yield call(authMe)
         yield put(authActions.loginSuccessful(user))
 
-        yield put(alertsActions.generateAlerts({
-          message: t('apiNotifications.socialAccountLinked'),
-          type: 'success',
-        }))
+        yield put(
+          alertsActions.generateAlerts({
+            message: t('apiNotifications.socialAccountLinked'),
+            type: 'success',
+          }),
+        )
 
         callback(true)
         return
@@ -70,9 +70,11 @@ export default function* ssoLink({ payload: { callback, t, provider } }: ISSOLin
       }
     }
   } catch (reason) {
-    yield put(errorsActions.loginFailed({
-      message: t('apiNotifications.socialisationGenericError'),
-    }))
+    yield put(
+      errorsActions.loginFailed({
+        message: t('apiNotifications.socialisationGenericError'),
+      }),
+    )
     callback(false)
   }
 }

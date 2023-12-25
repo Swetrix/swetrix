@@ -5,9 +5,7 @@ const config = {
     '^.+\\.tsx?$': 'ts-jest',
   },
   transformIgnorePatterns: ['node_modules/(?!axios)'],
-  testPathIgnorePatterns: [
-    '<rootDir>/app/api/*',
-  ],
+  testPathIgnorePatterns: ['<rootDir>/app/api/*'],
   globals: {
     'ts-jest': {
       tsconfig: '<rootDir>/tsconfig.json',

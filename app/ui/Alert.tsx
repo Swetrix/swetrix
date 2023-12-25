@@ -2,25 +2,21 @@
 import React, { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
-import {
-  CheckCircleIcon, InformationCircleIcon, XCircleIcon, XMarkIcon,
-} from '@heroicons/react/24/solid'
+import { CheckCircleIcon, InformationCircleIcon, XCircleIcon, XMarkIcon } from '@heroicons/react/24/solid'
 
 interface IAlert {
   /* (string): The message to be displayed in the alert. */
-  message: string,
+  message: string
   //  (object): An object containing the options for the alert, including the type property, which can have the values 'info', 'success', or 'error'.
   options: {
-    type: 'info' | 'success' | 'error',
-  },
+    type: 'info' | 'success' | 'error'
+  }
   // (function): A callback function to be called when the alert is closed.
-  close: () => void,
+  close: () => void
 }
 
 // AlertTemplate component
-const AlertTemplate = ({
-  message, options, close,
-}: IAlert): JSX.Element => {
+const AlertTemplate = ({ message, options, close }: IAlert): JSX.Element => {
   const { t } = useTranslation('common')
   const { type } = options
   const isInfo = type === 'info'
@@ -42,9 +38,7 @@ const AlertTemplate = ({
               {isSuccess && t('common.success')}
               {isError && t('common.error')}
             </p>
-            <p className='mt-1 text-sm text-gray-500 dark:text-gray-300'>
-              {message}
-            </p>
+            <p className='mt-1 text-sm text-gray-500 dark:text-gray-300'>{message}</p>
           </div>
           <div className='ml-4 flex flex-shrink-0'>
             <button
@@ -52,9 +46,7 @@ const AlertTemplate = ({
               className='inline-flex rounded-md bg-white dark:bg-slate-900 text-gray-400 hover:text-gray-500 dark:text-gray-200 dark:hover:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
               onClick={close}
             >
-              <span className='sr-only'>
-                {t('common.close')}
-              </span>
+              <span className='sr-only'>{t('common.close')}</span>
               <XMarkIcon className='h-5 w-5' aria-hidden='true' />
             </button>
           </div>
@@ -79,7 +71,7 @@ AlertTemplate.defaultProps = {
   message: '',
   className: '',
   options: {},
-  close: () => { },
+  close: () => {},
 }
 
 export default memo(AlertTemplate)

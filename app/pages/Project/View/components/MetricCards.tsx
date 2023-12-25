@@ -9,9 +9,7 @@ import _isNumber from 'lodash/isNumber'
 import _map from 'lodash/map'
 import { nFormatter, getStringFromTime, getTimeFromSeconds } from 'utils/generic'
 import { IOverallObject } from 'redux/models/IProject'
-import {
-  ChevronDownIcon, ChevronUpIcon, XMarkIcon,
-} from '@heroicons/react/24/outline'
+import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { Badge } from 'ui/Badge'
 
 interface IMetricCard {
@@ -23,9 +21,7 @@ interface IMetricCard {
   valueMapper?: (value: any, type: 'main' | 'badge') => any
 }
 
-const ChangeBadge = ({
-  change, type, goodChangeDirection, valueMapper,
-}: Partial<IMetricCard>) => {
+const ChangeBadge = ({ change, type, goodChangeDirection, valueMapper }: Partial<IMetricCard>) => {
   if (!_isNumber(change)) {
     return null
   }
@@ -33,56 +29,31 @@ const ChangeBadge = ({
   if (change === 0) {
     const label = valueMapper ? valueMapper(change, 'badge') : `0${type === 'percent' ? '%' : ''}`
 
-    return (
-      <Badge
-        colour='slate'
-        label={label}
-      />
-    )
+    return <Badge colour='slate' label={label} />
   }
 
   if (change < 0 && goodChangeDirection === 'up') {
     const label = valueMapper ? valueMapper(change, 'badge') : `${change}${type === 'percent' ? '%' : ''}`
 
-    return (
-      <Badge
-        colour='green'
-        label={label}
-      />
-    )
+    return <Badge colour='green' label={label} />
   }
 
   if (change < 0 && goodChangeDirection === 'down') {
     const label = valueMapper ? valueMapper(change, 'badge') : `${change}${type === 'percent' ? '%' : ''}`
 
-    return (
-      <Badge
-        colour='red'
-        label={label}
-      />
-    )
+    return <Badge colour='red' label={label} />
   }
 
   if (change > 0 && goodChangeDirection === 'up') {
     const label = valueMapper ? valueMapper(change, 'badge') : `${change}${type === 'percent' ? '%' : ''}`
 
-    return (
-      <Badge
-        colour='red'
-        label={label}
-      />
-    )
+    return <Badge colour='red' label={label} />
   }
 
   if (change > 0 && goodChangeDirection === 'down') {
     const label = valueMapper ? valueMapper(change, 'badge') : `${change}${type === 'percent' ? '%' : ''}`
 
-    return (
-      <Badge
-        colour='green'
-        label={label}
-      />
-    )
+    return <Badge colour='green' label={label} />
   }
 }
 
@@ -96,15 +67,8 @@ export const MetricCard: React.FC<IMetricCard> = ({ label, value, change, type, 
         'space-x-2': _isNumber(change),
       })}
     >
-      <span className='text-slate-900 dark:text-gray-50'>
-        {label}
-      </span>
-      <ChangeBadge
-        change={change}
-        type={type}
-        goodChangeDirection={goodChangeDirection}
-        valueMapper={valueMapper}
-      />
+      <span className='text-slate-900 dark:text-gray-50'>{label}</span>
+      <ChangeBadge change={change} type={type} goodChangeDirection={goodChangeDirection} valueMapper={valueMapper} />
     </div>
   </div>
 )
@@ -133,23 +97,15 @@ export const MetricCardSelect: React.FC<IMetricCardSelect> = ({ values, valueMap
         {valueMapper ? valueMapper(values[selected], selected) : values[selected].value}
       </div>
       <div className='flex items-center font-bold whitespace-nowrap text-sm relative'>
-        <OutsideClickHandler
-          onOutsideClick={() => setShow(false)}
-        >
-          <span
-            className='text-slate-900 dark:text-gray-50 cursor-pointer'
-            onClick={() => setShow(!show)}
-          >
-            {values[selected].label}
-            {' '}
+        <OutsideClickHandler onOutsideClick={() => setShow(false)}>
+          <span className='text-slate-900 dark:text-gray-50 cursor-pointer' onClick={() => setShow(!show)}>
+            {values[selected].label}{' '}
             {show ? <ChevronUpIcon className='inline w-4 h-4' /> : <ChevronDownIcon className='inline w-4 h-4' />}
           </span>
           {show && (
             <div className='absolute z-10 mt-2 top-15 text-gray-900 bg-white border border-gray-200 rounded-md shadow-lg dark:bg-slate-900 dark:border-slate-700/50 min-w-[250px] max-h-[200px] overflow-auto'>
               <div className='flex flex-col w-full p-2'>
-                <p className='text-sm font-semibold text-gray-900 dark:text-gray-50 px-1'>
-                  {selectLabel}
-                </p>
+                <p className='text-sm font-semibold text-gray-900 dark:text-gray-50 px-1'>{selectLabel}</p>
                 {_map(values, ({ label }, index) => (
                   <div
                     key={label}
@@ -160,7 +116,10 @@ export const MetricCardSelect: React.FC<IMetricCardSelect> = ({ values, valueMap
                   </div>
                 ))}
               </div>
-              <XMarkIcon className='absolute top-2 right-2 w-5 h-5 text-gray-900 cursor-pointer dark:text-gray-50' onClick={() => setShow(!show)} />
+              <XMarkIcon
+                className='absolute top-2 right-2 w-5 h-5 text-gray-900 cursor-pointer dark:text-gray-50'
+                onClick={() => setShow(!show)}
+              />
             </div>
           )}
         </OutsideClickHandler>
@@ -202,7 +161,6 @@ const MetricCards = ({ overall, overallCompare, activePeriodCompare }: IMetricCa
           valueMapper={(value, type) => `${type === 'badge' && value > 0 ? '+' : ''}${nFormatter(value, 1)}`}
         />
       </div>
-
     )
   }
 
@@ -237,7 +195,9 @@ const MetricCards = ({ overall, overallCompare, activePeriodCompare }: IMetricCa
         value={overall.current?.sdur}
         change={sdurChange}
         goodChangeDirection='down'
-        valueMapper={(value, type) => `${type === 'badge' && value > 0 ? '+' : ''}${getStringFromTime(getTimeFromSeconds(value))}`}
+        valueMapper={(value, type) =>
+          `${type === 'badge' && value > 0 ? '+' : ''}${getStringFromTime(getTimeFromSeconds(value))}`
+        }
       />
     </div>
   )

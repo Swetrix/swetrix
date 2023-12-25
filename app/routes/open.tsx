@@ -6,9 +6,7 @@ import { isSelfhosted } from 'redux/constants'
 import Style from 'styles/ProjectViewStyle.css'
 
 export const links: LinksFunction = () => {
-  return [
-    { rel: 'stylesheet', href: Style },
-  ]
+  return [{ rel: 'stylesheet', href: Style }]
 }
 
 export async function loader() {

@@ -6,9 +6,9 @@ import 'billboard.js/dist/billboard.css'
 // Define the prop types for the component
 interface IChart {
   // (string): The ID of the chart container.
-  current: string,
+  current: string
   // (object): The chart options.
-  options: any,
+  options: any
 }
 
 const Chart = ({ current, options }: IChart): JSX.Element => {

@@ -1,6 +1,4 @@
-import {
-  put, call, delay,
-} from 'redux-saga/effects'
+import { put, call, delay } from 'redux-saga/effects'
 import Debug from 'debug'
 
 import UIActions from 'redux/reducers/ui'

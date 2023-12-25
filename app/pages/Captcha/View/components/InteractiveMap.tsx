@@ -11,7 +11,7 @@ import { IEntry } from 'redux/models/IEntry'
 import countriesList from 'utils/countries'
 
 interface IInteractiveMap {
-  data: IEntry[],
+  data: IEntry[]
   onClickCountry: (country: string) => void
   total: number
 }
@@ -31,11 +31,17 @@ interface ICountryMap {
 }
 
 const InteractiveMap = ({ data, onClickCountry, total }: IInteractiveMap) => {
-  const { t, i18n: { language } } = useTranslation('common')
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
   const [hoverShow, setHoverShow] = useState<boolean>(false)
   const [dataHover, setDataHover] = useState<IDataHover>({} as IDataHover)
   const [cursorPosition, setCursorPosition] = useState<ICursorPosition>({} as ICursorPosition)
-  const countryMap: ICountryMap = useMemo(() => _reduce(data, (prev, curr) => ({ ...prev, [curr.cc || curr.name]: curr.count }), {}), [data])
+  const countryMap: ICountryMap = useMemo(
+    () => _reduce(data, (prev, curr) => ({ ...prev, [curr.cc || curr.name]: curr.count }), {}),
+    [data],
+  )
 
   const onMouseMove = (e: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
     const rect = e.currentTarget.getBoundingClientRect()
@@ -50,21 +56,21 @@ const InteractiveMap = ({ data, onClickCountry, total }: IInteractiveMap) => {
         <g>
           {_map(countriesList, (key, value) => {
             const ccData = countryMap[value] || 0
-            const perc = ((ccData / total) * 100) || 0
+            const perc = (ccData / total) * 100 || 0
 
             return (
               <path
                 key={value}
                 id={value}
                 className={cx({
-                    'hover:opacity-90': perc > 0,
-                    'fill-[#cfd1d4] dark:fill-[#465d7e46]': perc === 0,
-                    'fill-[#92b2e7] dark:fill-[#292d77]': perc > 0 && perc < 3,
-                    'fill-[#6f9be3] dark:fill-[#363391]': perc >= 3 && perc < 10,
-                    'fill-[#5689db] dark:fill-[#4842be]': perc >= 10 && perc < 20,
-                    'fill-[#3b82f6] dark:fill-[#6357ff]': perc >= 20,
-                    'cursor-pointer': Boolean(ccData),
-                  })}
+                  'hover:opacity-90': perc > 0,
+                  'fill-[#cfd1d4] dark:fill-[#465d7e46]': perc === 0,
+                  'fill-[#92b2e7] dark:fill-[#292d77]': perc > 0 && perc < 3,
+                  'fill-[#6f9be3] dark:fill-[#363391]': perc >= 3 && perc < 10,
+                  'fill-[#5689db] dark:fill-[#4842be]': perc >= 10 && perc < 20,
+                  'fill-[#3b82f6] dark:fill-[#6357ff]': perc >= 20,
+                  'cursor-pointer': Boolean(ccData),
+                })}
                 d={key.d}
                 onClick={() => perc !== 0 && onClickCountry(value)}
                 onMouseEnter={() => {
@@ -95,9 +101,7 @@ const InteractiveMap = ({ data, onClickCountry, total }: IInteractiveMap) => {
           >
             <strong>{dataHover.countries}</strong>
             <br />
-            {t('project.unique')}
-            :
-            &nbsp;
+            {t('project.unique')}: &nbsp;
             <strong
               className={cx({
                 'dark:text-indigo-400': dataHover.data < 5,
@@ -114,15 +118,17 @@ const InteractiveMap = ({ data, onClickCountry, total }: IInteractiveMap) => {
 
 InteractiveMap.propTypes = {
   onClickCountry: PropTypes.func,
-  data: PropTypes.arrayOf(PropTypes.shape({
-    name: PropTypes.string,
-    count: PropTypes.number,
-  })),
+  data: PropTypes.arrayOf(
+    PropTypes.shape({
+      name: PropTypes.string,
+      count: PropTypes.number,
+    }),
+  ),
   total: PropTypes.number,
 }
 
 InteractiveMap.defaultProps = {
-  onClickCountry: () => { },
+  onClickCountry: () => {},
   data: [],
   total: 0,
 }

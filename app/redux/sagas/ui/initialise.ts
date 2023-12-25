@@ -27,8 +27,8 @@ export default function* initialise() {
       yield put(sagaActions.loadMetainfo())
 
       const lastBlogPost: {
-        title: string,
-        handle: string,
+        title: string
+        handle: string
       } = yield call(getLastPost)
       yield put(UIActions.setLastBlogPost(lastBlogPost))
     }

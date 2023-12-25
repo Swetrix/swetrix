@@ -11,7 +11,9 @@ import routes from 'routesPath'
 import { AppDispatch } from 'redux/store'
 
 const ConfirmShare = () => {
-  const { t }: {
+  const {
+    t,
+  }: {
     t: (key: string) => string
   } = useTranslation('common')
   const dispatch: AppDispatch = useDispatch()

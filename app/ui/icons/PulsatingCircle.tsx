@@ -13,10 +13,7 @@ const types = {
   },
 }
 
-const PulsatingCircle = ({ className, type }: {
-  className?: string,
-  type: 'small' | 'big',
-}): JSX.Element => (
+const PulsatingCircle = ({ className, type }: { className?: string; type: 'small' | 'big' }): JSX.Element => (
   <span className={cx('flex justify-center items-center', types[type]?.pulse, className)}>
     <span className={cx('animate-ping-slow absolute inline-flex rounded-full bg-green-400', types[type]?.pulse)} />
     <span className={cx('relative inline-flex rounded-full bg-green-500', types[type]?.base)} />

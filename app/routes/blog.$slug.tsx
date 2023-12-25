@@ -6,9 +6,7 @@ import _last from 'lodash/last'
 import _join from 'lodash/join'
 import _isString from 'lodash/isString'
 import singlePostCss from 'css/mdfile.css'
-import {
-  getPost, getSlugFromFilename, getDateFromFilename,
-} from 'utils/getPosts'
+import { getPost, getSlugFromFilename, getDateFromFilename } from 'utils/getPosts'
 import { getSitemap } from 'api'
 import { isSelfhosted, TITLE_SUFFIX, getOgImageUrl } from 'redux/constants'
 import Post from 'pages/Blog/Post'
@@ -25,31 +23,31 @@ export const meta: V2_MetaFunction = (loaderData: any) => {
       title: `${loaderData?.data?.title || 'Blog'} ${TITLE_SUFFIX}`,
     },
     {
-      property: "og:title",
+      property: 'og:title',
       content: `${loaderData?.data?.title || 'Blog'} ${TITLE_SUFFIX}`,
     },
     {
-      property: "twitter:title",
+      property: 'twitter:title',
       content: `${loaderData?.data?.title || 'Blog'} ${TITLE_SUFFIX}`,
     },
     {
-      property: "og:description",
+      property: 'og:description',
       content: loaderData?.data?.intro || '',
     },
     {
-      property: "twitter:description",
+      property: 'twitter:description',
       content: loaderData?.data?.intro || '',
     },
     {
-      property: "description",
+      property: 'description',
       content: loaderData?.data?.intro || '',
     },
     {
-      property: "og:image",
+      property: 'og:image',
       content: ogImageUrl,
     },
     {
-      property: "twitter:image",
+      property: 'twitter:image',
       content: ogImageUrl,
     },
   ]
@@ -58,7 +56,7 @@ export const meta: V2_MetaFunction = (loaderData: any) => {
 export const sitemap: SitemapFunction = async () => {
   const files = await getSitemap()
 
-  return _map(files, file => {
+  return _map(files, (file) => {
     let handle: string
     let date: string
 
@@ -72,7 +70,7 @@ export const sitemap: SitemapFunction = async () => {
     }
 
     return {
-      loc: `/blog/${handle}`, 
+      loc: `/blog/${handle}`,
       lastmod: date,
       changefreq: 'weekly',
     }

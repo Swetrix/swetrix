@@ -3,21 +3,29 @@ import cx from 'clsx'
 import PropTypes from 'prop-types'
 
 interface IRobot {
-  className?: string,
-  containerClassName?: string,
+  className?: string
+  containerClassName?: string
   theme: 'dark' | 'light'
 }
 
-const Robot: React.FC<IRobot> = ({
-  className, containerClassName, theme,
-}): JSX.Element => {
+const Robot: React.FC<IRobot> = ({ className, containerClassName, theme }): JSX.Element => {
   const cn = cx(className, {
     'fill-text-gray-700': theme === 'dark',
     'fill-white': theme === 'light',
   })
 
   return (
-    <svg className={containerClassName} width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+    <svg
+      className={containerClassName}
+      width='24'
+      height='24'
+      viewBox='0 0 24 24'
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+    >
       <rect x='3' y='11' width='18' height='10' rx='2' className={cn} />
       <circle cx='12' cy='5' r='2' className={cn} />
       <path d='M12 7v4' className={cn} />

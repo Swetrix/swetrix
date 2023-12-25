@@ -7,7 +7,10 @@ import { getPageMeta } from 'utils/server'
 import { getOgImageUrl } from 'redux/constants'
 
 export const SEO = () => {
-  const { t, i18n: { language } } = useTranslation('common')
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
   const { pathname } = useLocation()
   const { title, prefixLessTitle } = getPageMeta(t, undefined, pathname)
 
@@ -22,9 +25,18 @@ export const SEO = () => {
           <title>{title}</title>
           <meta property='og:title' content='Swetrix' />
           <meta name='twitter:title' content='Swetrix | Ultimate open-source web analytics to satisfy all your needs' />
-          <meta name='description' content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative' />
-          <meta name='twitter:description' content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative' />
-          <meta property='og:description' content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative' />
+          <meta
+            name='description'
+            content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative'
+          />
+          <meta
+            name='twitter:description'
+            content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative'
+          />
+          <meta
+            property='og:description'
+            content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative'
+          />
           {isMainPage ? (
             <>
               <meta name='twitter:image' content='https://swetrix.com/assets/og_image.png' />

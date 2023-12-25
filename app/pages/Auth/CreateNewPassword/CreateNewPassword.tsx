@@ -13,18 +13,21 @@ import Button from 'ui/Button'
 import { isValidPassword, MIN_PASSWORD_CHARS, MAX_PASSWORD_CHARS } from 'utils/validator'
 
 interface FormSubmitData {
-  password: string,
-  repeat: string,
+  password: string
+  repeat: string
 }
 
 const CreateNewPassword = ({
-  createNewPasswordFailed, newPassword,
+  createNewPasswordFailed,
+  newPassword,
 }: {
-  createNewPasswordFailed: (e: string) => void,
-  newPassword: (message: string) => void,
+  createNewPasswordFailed: (e: string) => void
+  newPassword: (message: string) => void
 }): JSX.Element => {
-  const { t }: {
-    t: (key: string, options?: { [key: string]: string | number }) => string,
+  const {
+    t,
+  }: {
+    t: (key: string, options?: { [key: string]: string | number }) => string
   } = useTranslation('common')
   const navigate = useNavigate()
   const { id } = useParams()
@@ -34,16 +37,16 @@ const CreateNewPassword = ({
   })
   const [validated, setValidated] = useState<boolean>(false)
   const [errors, setErrors] = useState<{
-    password?: string,
-    repeat?: string,
+    password?: string
+    repeat?: string
   }>({})
   const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const validate = () => {
     const allErrors = {} as {
-      password?: string,
-      repeat?: string,
+      password?: string
+      repeat?: string
     }
 
     if (!isValidPassword(form.password)) {
@@ -85,12 +88,10 @@ const CreateNewPassword = ({
     }
   }
 
-  const handleInput = ({ target }: {
-    target: HTMLInputElement,
-  }) => {
+  const handleInput = ({ target }: { target: HTMLInputElement }) => {
     const value = target.type === 'checkbox' ? target.checked : target.value
 
-    setForm(oldForm => ({
+    setForm((oldForm) => ({
       ...oldForm,
       [target.name]: value,
     }))
@@ -148,7 +149,13 @@ const CreateNewPassword = ({
               i18nKey='auth.signup.alreadyAMember'
               components={{
                 // eslint-disable-next-line jsx-a11y/anchor-has-content
-                url: <Link to={routes.signin} className='font-semibold leading-6 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' aria-label={t('footer.tos')} />,
+                url: (
+                  <Link
+                    to={routes.signin}
+                    className='font-semibold leading-6 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                    aria-label={t('footer.tos')}
+                  />
+                ),
               }}
             />
           </p>

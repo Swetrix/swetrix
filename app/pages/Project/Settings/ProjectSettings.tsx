@@ -1,7 +1,5 @@
 /* eslint-disable react/forbid-prop-types */
-import React, {
-  useState, useEffect, useMemo, memo,
-} from 'react'
+import React, { useState, useEffect, useMemo, memo } from 'react'
 import { useNavigate, useParams } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
@@ -21,14 +19,19 @@ import PropTypes from 'prop-types'
 import { ExclamationTriangleIcon, TrashIcon, RocketLaunchIcon } from '@heroicons/react/24/outline'
 
 import { withAuthentication, auth } from 'hoc/protected'
-import {
-  isSelfhosted, TITLE_SUFFIX, ENTRIES_PER_PAGE_DASHBOARD, FILTERS_PANELS_ORDER,
-} from 'redux/constants'
+import { isSelfhosted, TITLE_SUFFIX, ENTRIES_PER_PAGE_DASHBOARD, FILTERS_PANELS_ORDER } from 'redux/constants'
 import { IProject } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 import { IProjectForShared, ISharedProject } from 'redux/models/ISharedProject'
 import {
-  createProject, updateProject, deleteProject, resetProject, transferProject, deletePartially, getFilters, resetFilters,
+  createProject,
+  updateProject,
+  deleteProject,
+  resetProject,
+  transferProject,
+  deletePartially,
+  getFilters,
+  resetFilters,
 } from 'api'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -67,21 +70,34 @@ const tabDeleteDataModal = [
 ]
 
 const ModalMessage = ({
-  dateRange, setDateRange, setTab, t, tab, pid, activeFilter, setActiveFilter, filterType, setFilterType, language,
+  dateRange,
+  setDateRange,
+  setTab,
+  t,
+  tab,
+  pid,
+  activeFilter,
+  setActiveFilter,
+  filterType,
+  setFilterType,
+  language,
 }: {
-  dateRange: Date[],
-  setDateRange: (a: Date[]) => void,
-  setTab: (i: string) => void,
-  t: (key: string, options?: {
-    [key: string]: string | number | null
-  }) => string,
-  tab: string,
-  pid: string,
+  dateRange: Date[]
+  setDateRange: (a: Date[]) => void
+  setTab: (i: string) => void
+  t: (
+    key: string,
+    options?: {
+      [key: string]: string | number | null
+    },
+  ) => string
+  tab: string
+  pid: string
   activeFilter: string[]
-  setActiveFilter: any,
-  filterType: string,
-  setFilterType: (a: string) => void,
-  language: string,
+  setActiveFilter: any
+  filterType: string
+  setFilterType: (a: string) => void
+  language: string
 }): JSX.Element => {
   const [filterList, setFilterList] = useState<string[]>([])
   const [searchList, setSearchList] = useState<string[]>([])
@@ -104,9 +120,7 @@ const ModalMessage = ({
 
   return (
     <>
-      <p className='text-gray-500 dark:text-gray-300 italic mt-1 mb-4 text-sm'>
-        {t('project.settings.resetHint')}
-      </p>
+      <p className='text-gray-500 dark:text-gray-300 italic mt-1 mb-4 text-sm'>{t('project.settings.resetHint')}</p>
       <div className='mt-6'>
         <nav className='-mb-px flex space-x-6'>
           {_map(tabDeleteDataModal, (tabDelete) => (
@@ -116,7 +130,8 @@ const ModalMessage = ({
               onClick={() => setTab(tabDelete.name)}
               className={cx('whitespace-nowrap pb-2 px-1 border-b-2 font-medium text-md', {
                 'border-indigo-500 text-indigo-600 dark:text-gray-50 dark:border-gray-50': tabDelete.name === tab,
-                'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300': tab !== tabDelete.name,
+                'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300':
+                  tab !== tabDelete.name,
               })}
             >
               {t(tabDelete.title)}
@@ -132,11 +147,15 @@ const ModalMessage = ({
           <p className='text-gray-500 dark:text-gray-300 italic mt-1 mb-2 text-sm'>
             {t('project.settings.reseted.partiallyHint')}
           </p>
-          <input type='text' className='h-0 w-0 border-0 p-0 m-0 focus:text-transparent focus:border-transparent focus:shadow-none focus:ring-transparent' />
+          <input
+            type='text'
+            className='h-0 w-0 border-0 p-0 m-0 focus:text-transparent focus:border-transparent focus:shadow-none focus:ring-transparent'
+          />
           <FlatPicker
             onChange={(date) => setDateRange(date)}
             options={{
-              altInputClass: 'shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:text-gray-50 dark:placeholder-gray-400 dark:border-gray-800 dark:bg-slate-800 rounded-md',
+              altInputClass:
+                'shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:text-gray-50 dark:placeholder-gray-400 dark:border-gray-800 dark:bg-slate-800 rounded-md',
             }}
             value={dateRange}
           />
@@ -155,14 +174,16 @@ const ModalMessage = ({
           <div>
             <Dropdown
               className='min-w-[160px]'
-              title={!_isEmpty(filterType) ? t(`project.mapping.${filterType}`) : t('project.settings.reseted.selectFilters')}
+              title={
+                !_isEmpty(filterType) ? t(`project.mapping.${filterType}`) : t('project.settings.reseted.selectFilters')
+              }
               items={FILTERS_PANELS_ORDER}
               labelExtractor={(item) => t(`project.mapping.${item}`)}
               keyExtractor={(item) => item}
               onSelect={(item) => setFilterType(item)}
             />
             <div className='h-2' />
-            {(filterType && !_isEmpty(filterList)) ? (
+            {filterType && !_isEmpty(filterList) ? (
               <MultiSelect
                 className='max-w-max'
                 items={searchList}
@@ -188,7 +209,11 @@ const ModalMessage = ({
                 onSearch={(search: string) => {
                   if (search.length > 0) {
                     if (filterType === 'cc') {
-                      setSearchList(_filter(filterList, (item) => _includes(_toUpper(countries.getName(item, language)), _toUpper(search))))
+                      setSearchList(
+                        _filter(filterList, (item) =>
+                          _includes(_toUpper(countries.getName(item, language)), _toUpper(search)),
+                        ),
+                      )
                       return
                     }
 
@@ -198,13 +223,17 @@ const ModalMessage = ({
                   }
                 }}
                 placholder={t('project.settings.reseted.filtersPlaceholder')}
-                onSelect={(item: string) => setActiveFilter((oldItems: string[]) => {
-                  if (_includes(oldItems, item)) {
-                    return _filter(oldItems, (i) => i !== item)
-                  }
-                  return [...oldItems, item]
-                })}
-                onRemove={(item: string) => setActiveFilter((oldItems: string[]) => _filter(oldItems, (i) => i !== item))}
+                onSelect={(item: string) =>
+                  setActiveFilter((oldItems: string[]) => {
+                    if (_includes(oldItems, item)) {
+                      return _filter(oldItems, (i) => i !== item)
+                    }
+                    return [...oldItems, item]
+                  })
+                }
+                onRemove={(item: string) =>
+                  setActiveFilter((oldItems: string[]) => _filter(oldItems, (i) => i !== item))
+                }
               />
             ) : (
               <p className='text-gray-500 dark:text-gray-300 italic mt-4 mb-4 text-sm'>
@@ -219,53 +248,81 @@ const ModalMessage = ({
 }
 
 interface IForm extends Partial<IProject> {
-  origins: string | null,
-  ipBlacklist: string | null,
+  origins: string | null
+  ipBlacklist: string | null
 }
 
 const DEFAULT_PROJECT_NAME = 'Untitled Project'
 
 interface IProjectSettings {
-  updateProjectFailed: (message: string) => void,
-  createNewProjectFailed: (message: string) => void,
-  generateAlerts: (message: string) => void,
-  projectDeleted: (message: string) => void,
-  deleteProjectFailed: (message: string) => void,
-  loadProjects: (shared: boolean, skip: number) => void,
-  isLoading: boolean,
-  projects: IProject[],
-  showError: (message: string) => void,
-  removeProject: (pid: string, shared: boolean) => void,
-  user: IUser,
-  isSharedProject: boolean,
-  sharedProjects: ISharedProject[],
-  deleteProjectCache: (pid: string) => void,
-  setProjectProtectedPassword: (pid: string, password: string) => void,
-  dashboardPaginationPage: number,
-  dashboardPaginationPageShared: number,
-  loading: boolean,
-  isSettings: boolean,
+  updateProjectFailed: (message: string) => void
+  createNewProjectFailed: (message: string) => void
+  generateAlerts: (message: string) => void
+  projectDeleted: (message: string) => void
+  deleteProjectFailed: (message: string) => void
+  loadProjects: (shared: boolean, skip: number) => void
+  isLoading: boolean
+  projects: IProject[]
+  showError: (message: string) => void
+  removeProject: (pid: string, shared: boolean) => void
+  user: IUser
+  isSharedProject: boolean
+  sharedProjects: ISharedProject[]
+  deleteProjectCache: (pid: string) => void
+  setProjectProtectedPassword: (pid: string, password: string) => void
+  dashboardPaginationPage: number
+  dashboardPaginationPageShared: number
+  loading: boolean
+  isSettings: boolean
 }
 
 const ProjectSettings = ({
-  updateProjectFailed, createNewProjectFailed, generateAlerts, projectDeleted, deleteProjectFailed,
-  loadProjects, isLoading, projects, showError, removeProject, user, isSharedProject, sharedProjects,
-  deleteProjectCache, setProjectProtectedPassword, dashboardPaginationPage, dashboardPaginationPageShared,
-  loading, isSettings,
+  updateProjectFailed,
+  createNewProjectFailed,
+  generateAlerts,
+  projectDeleted,
+  deleteProjectFailed,
+  loadProjects,
+  isLoading,
+  projects,
+  showError,
+  removeProject,
+  user,
+  isSharedProject,
+  sharedProjects,
+  deleteProjectCache,
+  setProjectProtectedPassword,
+  dashboardPaginationPage,
+  dashboardPaginationPageShared,
+  loading,
+  isSettings,
 }: IProjectSettings) => {
-  const { t, i18n: { language } }: {
-    t: (key: string, options?: {
-      [key: string]: string | number | null
-    }) => string,
+  const {
+    t,
+    i18n: { language },
+  }: {
+    t: (
+      key: string,
+      options?: {
+        [key: string]: string | number | null
+      },
+    ) => string
     i18n: {
-      language: string,
-    },
+      language: string
+    }
   } = useTranslation('common')
   // @ts-ignore
-  const { id }: {
-    id: string,
+  const {
+    id,
+  }: {
+    id: string
   } = useParams()
-  const project: IProjectForShared = useMemo(() => _find([...projects, ..._map(sharedProjects, (item) => item.project)], p => p.id === id) || {} as IProjectForShared, [projects, id, sharedProjects])
+  const project: IProjectForShared = useMemo(
+    () =>
+      _find([...projects, ..._map(sharedProjects, (item) => item.project)], (p) => p.id === id) ||
+      ({} as IProjectForShared),
+    [projects, id, sharedProjects],
+  )
   const navigate = useNavigate()
 
   const [form, setForm] = useState<IForm>({
@@ -277,10 +334,10 @@ const ProjectSettings = ({
   })
   const [validated, setValidated] = useState<boolean>(false)
   const [errors, setErrors] = useState<{
-    name?: string,
-    origins?: string,
-    ipBlacklist?: string,
-    password?: string,
+    name?: string
+    origins?: string
+    ipBlacklist?: string
+    password?: string
   }>({})
   const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
   const [showDelete, setShowDelete] = useState<boolean>(false)
@@ -298,7 +355,9 @@ const ProjectSettings = ({
   const [activeFilter, setActiveFilter] = useState<string[]>([])
   const [filterType, setFilterType] = useState<string>('')
 
-  const paginationSkip: number = isSharedProject ? dashboardPaginationPageShared * ENTRIES_PER_PAGE_DASHBOARD : dashboardPaginationPage * ENTRIES_PER_PAGE_DASHBOARD
+  const paginationSkip: number = isSharedProject
+    ? dashboardPaginationPageShared * ENTRIES_PER_PAGE_DASHBOARD
+    : dashboardPaginationPage * ENTRIES_PER_PAGE_DASHBOARD
 
   useEffect(() => {
     if (loading) {
@@ -330,16 +389,18 @@ const ProjectSettings = ({
       try {
         const formalisedData = {
           ...data,
-          origins: _isEmpty(data.origins) ? null : _map(_split(data.origins, ','), (origin) => {
-            try {
-              if (_includes(origin, 'localhost')) {
-                return origin
-              }
-              return new URL(origin).host
-            } catch (e) {
-              return origin
-            }
-          }),
+          origins: _isEmpty(data.origins)
+            ? null
+            : _map(_split(data.origins, ','), (origin) => {
+                try {
+                  if (_includes(origin, 'localhost')) {
+                    return origin
+                  }
+                  return new URL(origin).host
+                } catch (e) {
+                  return origin
+                }
+              }),
           ipBlacklist: _isEmpty(data.ipBlacklist) ? null : _split(data.ipBlacklist, ','),
         }
         if (isSettings) {
@@ -423,10 +484,10 @@ const ProjectSettings = ({
 
   const validate = () => {
     const allErrors: {
-      name?: string,
-      origins?: string,
-      ipBlacklist?: string,
-      password?: string,
+      name?: string
+      origins?: string
+      ipBlacklist?: string
+      password?: string
     } = {}
 
     if (_isEmpty(form.name)) {
@@ -459,7 +520,7 @@ const ProjectSettings = ({
     const { target } = event
     const value = target.type === 'checkbox' ? target.checked : target.value
 
-    setForm(oldForm => ({
+    setForm((oldForm) => ({
       ...oldForm,
       [target.name]: value,
     }))
@@ -535,12 +596,8 @@ const ProjectSettings = ({
       })}
     >
       <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
-        <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>
-          {title}
-        </h2>
-        <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
-          {t('profileSettings.general')}
-        </h3>
+        <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{title}</h2>
+        <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('profileSettings.general')}</h3>
         <Input
           name='name'
           id='name'
@@ -636,7 +693,12 @@ const ProjectSettings = ({
             )}
             <div className='flex flex-wrap justify-center sm:justify-between gap-2 mt-8'>
               <div className='flex flex-wrap items-center gap-2'>
-                <Button className='border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700' onClick={onCancel} secondary regular>
+                <Button
+                  className='border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700'
+                  onClick={onCancel}
+                  secondary
+                  regular
+                >
                   {t('common.cancel')}
                 </Button>
                 <Button type='submit' loading={projectSaving} primary regular>
@@ -653,13 +715,23 @@ const ProjectSettings = ({
                       </>
                     </Button>
                   )}
-                  <Button onClick={() => !projectResetting && setShowReset(true)} loading={projectDeleting} semiDanger semiSmall>
+                  <Button
+                    onClick={() => !projectResetting && setShowReset(true)}
+                    loading={projectDeleting}
+                    semiDanger
+                    semiSmall
+                  >
                     <>
                       <TrashIcon className='w-5 h-5 mr-1' />
                       {t('project.settings.reset')}
                     </>
                   </Button>
-                  <Button onClick={() => !projectDeleting && setShowDelete(true)} loading={projectDeleting} danger semiSmall>
+                  <Button
+                    onClick={() => !projectDeleting && setShowDelete(true)}
+                    loading={projectDeleting}
+                    danger
+                    semiSmall
+                  >
                     <>
                       <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
                       {t('project.settings.delete')}
@@ -689,7 +761,12 @@ const ProjectSettings = ({
 
         {!isSettings && (
           <div>
-            <Button className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700' onClick={onCancel} secondary regular>
+            <Button
+              className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700'
+              onClick={onCancel}
+              secondary
+              regular
+            >
               {t('common.cancel')}
             </Button>
             <Button type='submit' loading={projectSaving} primary regular>
@@ -716,7 +793,21 @@ const ProjectSettings = ({
         submitText={t('project.settings.reset')}
         closeText={t('common.close')}
         title={t('project.settings.qReset')}
-        message={<ModalMessage setDateRange={setDateRange} dateRange={dateRange} setTab={setTab} tab={tab} t={t} pid={id} activeFilter={activeFilter} setActiveFilter={setActiveFilter} filterType={filterType} setFilterType={setFilterType} language={language} />}
+        message={
+          <ModalMessage
+            setDateRange={setDateRange}
+            dateRange={dateRange}
+            setTab={setTab}
+            tab={tab}
+            t={t}
+            pid={id}
+            activeFilter={activeFilter}
+            setActiveFilter={setActiveFilter}
+            filterType={filterType}
+            setFilterType={setFilterType}
+            language={language}
+          />
+        }
         submitType='danger'
         type='error'
         isOpened={showReset}
@@ -727,11 +818,9 @@ const ProjectSettings = ({
         submitText={t('common.save')}
         closeText={t('common.cancel')}
         title={t('project.settings.protected')}
-        message={(
+        message={
           <div>
-            <p className='text-gray-500 dark:text-gray-300 mt-1 mb-4 text-sm'>
-              {t('project.settings.protectedHint')}
-            </p>
+            <p className='text-gray-500 dark:text-gray-300 mt-1 mb-4 text-sm'>{t('project.settings.protectedHint')}</p>
             <Input
               name='password'
               id='password'
@@ -743,7 +832,7 @@ const ProjectSettings = ({
               error={beenSubmitted ? errors.password : null}
             />
           </div>
-        )}
+        }
         isOpened={showProtected}
       />
       <Modal
@@ -752,11 +841,9 @@ const ProjectSettings = ({
         }}
         submitText={t('project.settings.transfer')}
         closeText={t('common.cancel')}
-        message={(
+        message={
           <div>
-            <h2 className='text-xl font-bold text-gray-700 dark:text-gray-200'>
-              {t('project.settings.transferTo')}
-            </h2>
+            <h2 className='text-xl font-bold text-gray-700 dark:text-gray-200'>{t('project.settings.transferTo')}</h2>
             <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
               {t('project.settings.transferHint', {
                 name: form.name || DEFAULT_PROJECT_NAME,
@@ -773,7 +860,7 @@ const ProjectSettings = ({
               onChange={(e) => setTransferEmail(e.target.value)}
             />
           </div>
-        )}
+        }
         isOpened={showTransfer}
         onSubmit={onTransfer}
       />

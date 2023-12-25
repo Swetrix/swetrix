@@ -13,11 +13,11 @@ export const meta: V2_MetaFunction = () => {
       title: `Blog ${TITLE_SUFFIX}`,
     },
     {
-      property: "og:title",
+      property: 'og:title',
       content: `Blog ${TITLE_SUFFIX}`,
     },
     {
-      property: "twitter:title",
+      property: 'twitter:title',
       content: `Blog ${TITLE_SUFFIX}`,
     },
   ]
@@ -26,7 +26,7 @@ export const meta: V2_MetaFunction = () => {
 export default function Posts() {
   const posts: any[] = useLoaderData()
 
-  if (_filter(posts, post => !post.hidden).length === 0) {
+  if (_filter(posts, (post) => !post.hidden).length === 0) {
     return (
       <div className='flex justify-center items-center min-h-min-footer'>
         <h1 className='text-3xl font-bold text-slate-900 dark:text-slate-200'>No posts found</h1>
@@ -41,7 +41,7 @@ export default function Posts() {
           <div className='hidden absolute top-3 bottom-0 right-full mr-7 md:mr-[3.25rem] w-px bg-slate-200 dark:bg-slate-700 sm:block'></div>
 
           <div className='space-y-16'>
-            {_map(posts, post => {
+            {_map(posts, (post) => {
               if (post.hidden) {
                 return null
               }
@@ -83,9 +83,7 @@ export default function Posts() {
                     to={post.slug}
                   >
                     <span className='absolute -inset-y-2.5 -inset-x-4 md:-inset-y-4 md:-inset-x-6 sm:rounded-2xl'></span>
-                    <span className='relative'>
-                      Read more
-                    </span>
+                    <span className='relative'>Read more</span>
                     <svg
                       className='relative mt-px overflow-visible ml-2.5 text-indigo-600 dark:text-gray-50'
                       width='3'

@@ -13,34 +13,44 @@ const mapStateToProps = (state: StateType) => ({
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
   updateProjectFailed: (message: string) => {
-    dispatch(errorsActions.updateProjectFailed({
-      message,
-    }))
+    dispatch(
+      errorsActions.updateProjectFailed({
+        message,
+      }),
+    )
   },
   setProjectShareData: (data: Partial<IProject>, projectId: string, shared = false) => {
-    dispatch(UIActions.setProjectsShareData({
-      data,
-      id: projectId,
-      shared,
-    }))
+    dispatch(
+      UIActions.setProjectsShareData({
+        data,
+        id: projectId,
+        shared,
+      }),
+    )
   },
   roleUpdatedNotification: (message: string, type = 'success') => {
-    dispatch(alertsActions.roleUpdated({
-      message,
-      type,
-    }))
+    dispatch(
+      alertsActions.roleUpdated({
+        message,
+        type,
+      }),
+    )
   },
   inviteUserNotification: (message: string, type = 'success') => {
-    dispatch(alertsActions.inviteUser({
-      message,
-      type,
-    }))
+    dispatch(
+      alertsActions.inviteUser({
+        message,
+        type,
+      }),
+    )
   },
   removeUserNotification: (message: string, type = 'success') => {
-    dispatch(alertsActions.removeUser({
-      message,
-      type,
-    }))
+    dispatch(
+      alertsActions.removeUser({
+        message,
+        type,
+      }),
+    )
   },
 })
 

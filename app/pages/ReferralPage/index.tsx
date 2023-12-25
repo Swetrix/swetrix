@@ -9,19 +9,22 @@ import Header from 'components/Header'
 import routes from 'routesPath'
 import { Lines } from 'pages/MainPage'
 
-import {
-  isBrowser, REFERRAL_COOKIE_DAYS, REFERRAL_DISCOUNT,
-} from 'redux/constants'
+import { isBrowser, REFERRAL_COOKIE_DAYS, REFERRAL_DISCOUNT } from 'redux/constants'
 
 interface IReferralPage {
   ssrTheme: 'dark' | 'light'
 }
 
 const ReferralPage = ({ ssrTheme }: IReferralPage): JSX.Element => {
-  const { t }: {
-    t: (key: string, options?: {
-      [key: string]: string | number,
-    }) => string,
+  const {
+    t,
+  }: {
+    t: (
+      key: string,
+      options?: {
+        [key: string]: string | number
+      },
+    ) => string
   } = useTranslation('common')
   const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
   const theme = isBrowser ? reduxTheme : ssrTheme
@@ -38,14 +41,7 @@ const ReferralPage = ({ ssrTheme }: IReferralPage): JSX.Element => {
             aria-hidden='true'
           >
             <defs>
-              <pattern
-                id='rect-pattern'
-                width={200}
-                height={200}
-                x='50%'
-                y={-1}
-                patternUnits='userSpaceOnUse'
-              >
+              <pattern id='rect-pattern' width={200} height={200} x='50%' y={-1} patternUnits='userSpaceOnUse'>
                 <path d='M.5 200V.5H200' fill='none' />
               </pattern>
             </defs>
@@ -70,9 +66,7 @@ const ReferralPage = ({ ssrTheme }: IReferralPage): JSX.Element => {
             />
           </div>
           <Header ssrTheme={ssrTheme} authenticated={false} refPage transparent />
-          <div
-            className='relative pt-10 lg:pt-24 pb-5 xl:px-8 lg:px-6 sm:px-3 mx-auto min-h-[740px]'
-          >
+          <div className='relative pt-10 lg:pt-24 pb-5 xl:px-8 lg:px-6 sm:px-3 mx-auto min-h-[740px]'>
             <div className='relative z-20 flex flex-row content-between 2xl:mr-[14vw] 2xl:justify-center justify-center lg:justify-start'>
               <div className='lg:mt-0 text-left relative lg:mr-14 px-4'>
                 <h1 className='max-w-2xl text-2xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white sm:leading-none xl:leading-[110%]'>
@@ -81,7 +75,9 @@ const ReferralPage = ({ ssrTheme }: IReferralPage): JSX.Element => {
                     t={t}
                     i18nKey='main.slogan'
                     components={{
-                      span: <span className='from-indigo-700 to-indigo-700 dark:from-indigo-600 dark:to-indigo-400 text-transparent bg-clip-text bg-gradient-to-r' />,
+                      span: (
+                        <span className='from-indigo-700 to-indigo-700 dark:from-indigo-600 dark:to-indigo-400 text-transparent bg-clip-text bg-gradient-to-r' />
+                      ),
                     }}
                   />
                 </h1>
@@ -99,9 +95,7 @@ const ReferralPage = ({ ssrTheme }: IReferralPage): JSX.Element => {
                     className='rounded-md !duration-300 transition-all w-full sm:max-w-[210px] h-12 flex items-center justify-center sm:mr-6 shadow-sm ring-1 text-white bg-slate-900 ring-slate-900 hover:bg-slate-700 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600'
                     aria-label={t('titles.signup')}
                   >
-                    <span className='text-base font-semibold mr-1'>
-                      {t('common.getStarted')}
-                    </span>
+                    <span className='text-base font-semibold mr-1'>{t('common.getStarted')}</span>
                     <ArrowSmallRightIcon className='h-4 w-5 mt-[1px]' />
                   </Link>
                   <Link
@@ -109,9 +103,7 @@ const ReferralPage = ({ ssrTheme }: IReferralPage): JSX.Element => {
                     className='rounded-md !duration-300 transition-all sm:mt-0 mt-2 ring-1 ring-slate-900 dark:ring-white/20 w-full sm:max-w-[210px] h-12 flex items-center justify-center shadow-sm text-slate-900 dark:text-white bg-transparent hover:bg-slate-200 dark:hover:bg-gray-800'
                     aria-label={t('titles.signup')}
                   >
-                    <span className='text-base font-semibold'>
-                      {t('common.learnMore')}
-                    </span>
+                    <span className='text-base font-semibold'>{t('common.learnMore')}</span>
                   </Link>
                 </div>
                 <p className='text-base tracking-tighter font-medium text-slate-500 dark:text-slate-500 mt-5'>
@@ -124,7 +116,10 @@ const ReferralPage = ({ ssrTheme }: IReferralPage): JSX.Element => {
               <div className='max-w-md xl:max-w-lg hidden lg:block'>
                 <Lines />
                 <picture>
-                  <source srcSet={theme === 'dark' ? '/assets/screenshot_dark.webp' : '/assets/screenshot_light.webp'} type='image/webp' />
+                  <source
+                    srcSet={theme === 'dark' ? '/assets/screenshot_dark.webp' : '/assets/screenshot_light.webp'}
+                    type='image/webp'
+                  />
                   <img
                     src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
                     className='h-full min-w-[880px] rounded-xl relative shadow-2xl ring-1 ring-gray-900/10 dark:ring-white/10'
@@ -137,7 +132,10 @@ const ReferralPage = ({ ssrTheme }: IReferralPage): JSX.Element => {
             </div>
             <div className='my-10 block lg:hidden relative z-20 px-4 md:px-0'>
               <picture>
-                <source srcSet={theme === 'dark' ? '/assets/screenshot_dark.webp' : '/assets/screenshot_light.webp'} type='image/webp' />
+                <source
+                  srcSet={theme === 'dark' ? '/assets/screenshot_dark.webp' : '/assets/screenshot_light.webp'}
+                  type='image/webp'
+                />
                 <img
                   src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
                   className='rounded-xl relative shadow-2xl w-full ring-1 ring-gray-900/10 dark:ring-white/10'

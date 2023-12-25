@@ -40,6 +40,7 @@ Swetrix is open to pull-requests. Feel free to propose new features or submit bu
 For severe security issues, please contact us at security@swetrix.com
 
 ## Contributions
+
 Contributions are welcome! You can find and pick any task on our [public roadmap](https://github.com/orgs/Swetrix/projects/2) page.\
 Feel free to also offer any feature or improvement proposal, all of it is highly appreciated!\
 You can also contribute translations on your [Crowdin](https://crowdin.com/project/swetrix) page.
@@ -49,5 +50,6 @@ You can also contribute translations on your [Crowdin](https://crowdin.com/proje
 You can contact us via email at contact@swetrix.com
 
 ## Donate
+
 You can support the project by donating us at https://ko-fi.com/andriir \
 We can only run our services by once again asking for your financial support!

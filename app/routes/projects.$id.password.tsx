@@ -3,10 +3,7 @@ import type { LoaderArgs } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
 import { json } from '@remix-run/node'
 
-import {
-  detectTheme, isEmbedded, getProjectPassword, isAuthenticated,
-} from 'utils/server'
-
+import { detectTheme, isEmbedded, getProjectPassword, isAuthenticated } from 'utils/server'
 
 export async function loader({ request }: LoaderArgs) {
   const embedded = isEmbedded(request)
@@ -15,14 +12,15 @@ export async function loader({ request }: LoaderArgs) {
   const isAuth = isAuthenticated(request)
 
   return json({
-    theme, embedded, queryPassword, isAuth,
+    theme,
+    embedded,
+    queryPassword,
+    isAuth,
   })
 }
 
 export default function Index() {
-  const {
-    theme, embedded, isAuth,
-  } = useLoaderData<typeof loader>()
+  const { theme, embedded, isAuth } = useLoaderData<typeof loader>()
 
   return <ProjectProtectedPassword ssrTheme={theme} embedded={embedded} isAuth={isAuth} />
 }

@@ -15,16 +15,20 @@ import cx from 'clsx'
 import Modal from 'ui/Modal'
 import Button from 'ui/Button'
 import {
-  CONTACT_EMAIL, paddleLanguageMapping, PLAN_LIMITS, CURRENCIES, BillingFrequency,
-  REFERRAL_DISCOUNT_CODE, STANDARD_PLANS, TRIAL_DAYS,
+  CONTACT_EMAIL,
+  paddleLanguageMapping,
+  PLAN_LIMITS,
+  CURRENCIES,
+  BillingFrequency,
+  REFERRAL_DISCOUNT_CODE,
+  STANDARD_PLANS,
+  TRIAL_DAYS,
 } from 'redux/constants'
 import { errorsActions } from 'redux/reducers/errors'
 import { alertsActions } from 'redux/reducers/alerts'
 import { authActions } from 'redux/reducers/auth'
 import sagaActions from 'redux/sagas/actions'
-import {
-  authMe, previewSubscriptionUpdate, changeSubscriptionPlan,
-} from 'api'
+import { authMe, previewSubscriptionUpdate, changeSubscriptionPlan } from 'api'
 import routes from 'routesPath'
 import { AppDispatch, StateType } from 'redux/store'
 import Loader from 'ui/Loader'
@@ -44,12 +48,15 @@ const getPaidFeatures = (t: any, tier: any) => {
 }
 
 interface IPricing {
-  t: (key: string, options?: {
-    [key: string]: string | number,
-  }) => string,
-  language: string,
-  authenticated: boolean,
-  isBillingPage?: boolean,
+  t: (
+    key: string,
+    options?: {
+      [key: string]: string | number
+    },
+  ) => string
+  language: string
+  authenticated: boolean
+  isBillingPage?: boolean
 }
 
 const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
@@ -66,10 +73,10 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
   const [newPlanId, setNewPlanId] = useState<number | null>(null)
   const [isSubUpdating, setIsSubUpdating] = useState<boolean>(false)
   const [downgradeTo, setDowngradeTo] = useState<{
-    planCode: string,
-    name: string,
-    pid: string,
-    ypid: string,
+    planCode: string
+    name: string
+    pid: string
+    ypid: string
   } | null>(null)
   const [showDowngradeModal, setShowDowngradeModal] = useState<boolean>(false)
   const [billingFrequency, setBillingFrequency] = useState(user?.billingFrequency || BillingFrequency.monthly)
@@ -94,9 +101,7 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
   }
 
   useEffect(() => {
-    const lastEventHandler = async (data: {
-      event: string,
-    }) => {
+    const lastEventHandler = async (data: { event: string }) => {
       if (_isNil(data)) {
         return
       }
@@ -114,9 +119,11 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
             dispatch(sagaActions.logout(false, false))
           }
 
-          dispatch(alertsActions.accountUpdated({
-            message: t('apiNotifications.subscriptionUpdated'),
-          }))
+          dispatch(
+            alertsActions.accountUpdated({
+              message: t('apiNotifications.subscriptionUpdated'),
+            }),
+          )
         }, 3000)
         setPlanCodeLoading(null)
         setDowngradeTo(null)
@@ -136,20 +143,21 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
       setSubUpdatePreview(preview)
     } catch (reason) {
       console.error('[ERROR] An error occured while loading subscription update pricing preview:', reason)
-      dispatch(errorsActions.genericError({
-        message: 'An error occured while loading subscription update pricing preview',
-      }))
+      dispatch(
+        errorsActions.genericError({
+          message: 'An error occured while loading subscription update pricing preview',
+        }),
+      )
       setSubUpdatePreview(false)
     }
   }
 
-  const onPlanChange = async (tier: {
-    planCode: string,
-    name: string,
-    pid: string,
-    ypid: string,
-  }) => {
-    if (planCodeLoading === null && (user.planCode !== tier.planCode || (user.billingFrequency !== billingFrequency && user.planCode !== 'free' && user.planCode !== 'trial'))) {
+  const onPlanChange = async (tier: { planCode: string; name: string; pid: string; ypid: string }) => {
+    if (
+      planCodeLoading === null &&
+      (user.planCode !== tier.planCode ||
+        (user.billingFrequency !== billingFrequency && user.planCode !== 'free' && user.planCode !== 'trial'))
+    ) {
       if (user.subID && user.planCode !== 'none') {
         const planId = Number(billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid)
         setNewPlanId(planId)
@@ -161,14 +169,17 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
 
       // @ts-ignore
       if (!window.Paddle) {
-        dispatch(errorsActions.genericError({
-          message: 'Payment script has not yet loaded! Please, try again.',
-        }))
+        dispatch(
+          errorsActions.genericError({
+            message: 'Payment script has not yet loaded! Please, try again.',
+          }),
+        )
         setPlanCodeLoading(null)
         return
       }
 
-      const discountMayBeApplied = user.referrerID && (user.planCode === 'trial' || user.planCode === 'none') && !user.cancellationEffectiveDate
+      const discountMayBeApplied =
+        user.referrerID && (user.planCode === 'trial' || user.planCode === 'none') && !user.cancellationEffectiveDate
       const coupon = discountMayBeApplied ? REFERRAL_DISCOUNT_CODE : undefined
 
       // @ts-ignore
@@ -214,25 +225,24 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
         dispatch(sagaActions.logout(false, false))
       }
 
-      dispatch(alertsActions.accountUpdated({
-        message: t('apiNotifications.subscriptionUpdated'),
-      }))
+      dispatch(
+        alertsActions.accountUpdated({
+          message: t('apiNotifications.subscriptionUpdated'),
+        }),
+      )
       closeUpdateModal(true)
     } catch (reason) {
       console.error('[ERROR] An error occured while updating subscription:', reason)
-      dispatch(errorsActions.genericError({
-        message: 'An error occured while updating subscription',
-      }))
+      dispatch(
+        errorsActions.genericError({
+          message: 'An error occured while updating subscription',
+        }),
+      )
       closeUpdateModal(true)
     }
   }
 
-  const downgradeHandler = (tier: {
-    planCode: string,
-    name: string,
-    pid: string,
-    ypid: string,
-  }) => {
+  const downgradeHandler = (tier: { planCode: string; name: string; pid: string; ypid: string }) => {
     if (planCodeLoading === null && user.planCode !== tier.planCode) {
       setDowngradeTo(tier)
       setShowDowngradeModal(true)
@@ -250,7 +260,12 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
     action = t('pricing.upgrade')
   } else if (downgrade) {
     action = t('pricing.downgrade')
-  } else if (user.billingFrequency === billingFrequency || user.planCode === 'free' || user.planCode === 'trial' || user.planCode === 'none') {
+  } else if (
+    user.billingFrequency === billingFrequency ||
+    user.planCode === 'free' ||
+    user.planCode === 'trial' ||
+    user.planCode === 'none'
+  ) {
     action = t('pricing.yourPlan')
   } else if (billingFrequency === BillingFrequency.monthly) {
     action = t('pricing.switchToMonthly')
@@ -266,7 +281,7 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
             'px-4 sm:px-6 lg:px-8 py-24': !authenticated,
             'mx-auto': !isBillingPage,
           })}
-          >
+        >
           <div className='sm:flex sm:flex-col sm:align-center'>
             {!authenticated && (
               <>
@@ -285,9 +300,7 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
                 <h3 className='text-lg font-medium text-gray-900 dark:text-gray-50 tracking-tight'>
                   {selectedTier.monthlyUsageLimit.toLocaleString('en-US')}
                 </h3>
-                <p className='text-gray-700 dark:text-gray-200'>
-                  {t('pricing.eventPerMonth')}
-                </p>
+                <p className='text-gray-700 dark:text-gray-200'>{t('pricing.eventPerMonth')}</p>
               </div>
               <div className='flex justify-center'>
                 <RadioGroup
@@ -295,9 +308,7 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
                   onChange={setBillingFrequency}
                   className='grid grid-cols-2 gap-x-1 rounded-md p-1 text-center text-xs font-semibold leading-5 ring-1 ring-inset ring-gray-200 dark:ring-slate-700'
                 >
-                  <RadioGroup.Label className='sr-only'>
-                    {t('pricing.frequency')}
-                  </RadioGroup.Label>
+                  <RadioGroup.Label className='sr-only'>{t('pricing.frequency')}</RadioGroup.Label>
                   <RadioGroup.Option
                     key={BillingFrequency.monthly}
                     value={BillingFrequency.monthly}
@@ -308,9 +319,7 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
                       )
                     }
                   >
-                    <span>
-                      {t('pricing.monthlyBilling')}
-                    </span>
+                    <span>{t('pricing.monthlyBilling')}</span>
                   </RadioGroup.Option>
                   <RadioGroup.Option
                     key={BillingFrequency.yearly}
@@ -322,9 +331,7 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
                       )
                     }
                   >
-                    <span>
-                      {t('pricing.yearlyBilling')}
-                    </span>
+                    <span>{t('pricing.yearlyBilling')}</span>
                   </RadioGroup.Option>
                 </RadioGroup>
               </div>
@@ -368,22 +375,30 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
                     <p className='mt-2 sm:mt-0'>
                       <span className='text-4xl font-bold text-[#4D4D4D] dark:text-gray-50'>
                         {currency.symbol}
-                        {billingFrequency === BillingFrequency.monthly ? selectedTier.price[currencyCode]?.monthly : selectedTier.price[currencyCode]?.yearly}
+                        {billingFrequency === BillingFrequency.monthly
+                          ? selectedTier.price[currencyCode]?.monthly
+                          : selectedTier.price[currencyCode]?.yearly}
                       </span>
                       &nbsp;
                       <span className='text-base font-medium text-gray-500 dark:text-gray-400'>
-                        /
-                        {t(billingFrequency === BillingFrequency.monthly ? 'pricing.perMonth' : 'pricing.perYear')}
+                        /{t(billingFrequency === BillingFrequency.monthly ? 'pricing.perMonth' : 'pricing.perYear')}
                       </span>
                     </p>
 
                     {authenticated ? (
                       <Button
-                        onClick={() => downgrade ? downgradeHandler(selectedTier) : onPlanChange(selectedTier)}
+                        onClick={() => (downgrade ? downgradeHandler(selectedTier) : onPlanChange(selectedTier))}
                         type='button'
                         className='mt-2 sm:mt-0'
                         loading={planCodeLoading === selectedTier.planCode}
-                        disabled={planCodeLoading !== null || (selectedTier.planCode === user.planCode && (user.billingFrequency === billingFrequency || user.planCode === 'free' || user.planCode === 'trial' || user.planCode === 'none'))}
+                        disabled={
+                          planCodeLoading !== null ||
+                          (selectedTier.planCode === user.planCode &&
+                            (user.billingFrequency === billingFrequency ||
+                              user.planCode === 'free' ||
+                              user.planCode === 'trial' ||
+                              user.planCode === 'none'))
+                        }
                         primary
                         large
                       >
@@ -430,7 +445,13 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
               }}
               // @ts-ignore
               components={{
-                url: <Link to={routes.contact} className='font-semibold leading-6 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500' aria-label={t('footer.tos')} />,
+                url: (
+                  <Link
+                    to={routes.contact}
+                    className='font-semibold leading-6 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                    aria-label={t('footer.tos')}
+                  />
+                ),
               }}
             />
           </p>
@@ -452,7 +473,7 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
         closeText={t('common.no')}
         title={t('pricing.downgradeTitle')}
         type='warning'
-        message={(
+        message={
           <Trans
             // @ts-ignore
             t={t}
@@ -461,7 +482,7 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
               email: CONTACT_EMAIL,
             }}
           />
-        )}
+        }
         isOpened={showDowngradeModal}
       />
       <Modal
@@ -473,11 +494,9 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
         submitType='regular'
         type='info'
         isLoading={isSubUpdating}
-        message={(
+        message={
           <>
-            {subUpdatePreview === null && (
-              <Loader />
-            )}
+            {subUpdatePreview === null && <Loader />}
             {subUpdatePreview === false && (
               <p className='whitespace-pre-line'>
                 <Trans
@@ -488,27 +507,35 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
                     email: CONTACT_EMAIL,
                   }}
                   components={{
-                    mail: <a title={`Email us at ${CONTACT_EMAIL}`} href={`mailto:${CONTACT_EMAIL}`} className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400' />,
+                    mail: (
+                      <a
+                        title={`Email us at ${CONTACT_EMAIL}`}
+                        href={`mailto:${CONTACT_EMAIL}`}
+                        className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400'
+                      />
+                    ),
                   }}
                 />
               </p>
             )}
             {subUpdatePreview && (
               <div>
-                <h2 className='text-base font-bold'>
-                  {t('billing.dueNow')}
-                </h2>
-                <p className='text-sm'>
-                  {t('billing.dueNowDescription')}
-                </p>
+                <h2 className='text-base font-bold'>{t('billing.dueNow')}</h2>
+                <p className='text-sm'>{t('billing.dueNowDescription')}</p>
                 <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg mt-2'>
                   <table className='min-w-full divide-y divide-gray-300 200 dark:divide-gray-500'>
                     <thead className='bg-gray-50 dark:bg-slate-800'>
                       <tr>
-                        <th scope='col' className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-50 sm:pl-6'>
+                        <th
+                          scope='col'
+                          className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-50 sm:pl-6'
+                        >
                           {t('common.amount')}
                         </th>
-                        <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-50'>
+                        <th
+                          scope='col'
+                          className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-50'
+                        >
                           {t('common.date')}
                         </th>
                       </tr>
@@ -532,22 +559,29 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
                     {t('billing.negativePayment', {
                       currency: subUpdatePreview.immediatePayment.symbol,
                       dueNowAmount: -subUpdatePreview.immediatePayment.amount,
-                      dueNowDate: language === 'en' ? dayjs(subUpdatePreview.immediatePayment.date).locale(language).format('MMMM D, YYYY') : dayjs(subUpdatePreview.immediatePayment.date).locale(language).format('D MMMM, YYYY'),
+                      dueNowDate:
+                        language === 'en'
+                          ? dayjs(subUpdatePreview.immediatePayment.date).locale(language).format('MMMM D, YYYY')
+                          : dayjs(subUpdatePreview.immediatePayment.date).locale(language).format('D MMMM, YYYY'),
                       nextPaymentAmount: subUpdatePreview.nextPayment.amount,
                     })}
                   </p>
                 )}
-                <h2 className='text-base font-bold mt-5'>
-                  {t('billing.nextPayment')}
-                </h2>
+                <h2 className='text-base font-bold mt-5'>{t('billing.nextPayment')}</h2>
                 <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg mt-2'>
                   <table className='min-w-full divide-y divide-gray-300 200 dark:divide-gray-500'>
                     <thead className='bg-gray-50 dark:bg-slate-800'>
                       <tr>
-                        <th scope='col' className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-50 sm:pl-6'>
+                        <th
+                          scope='col'
+                          className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-50 sm:pl-6'
+                        >
                           {t('common.amount')}
                         </th>
-                        <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-50'>
+                        <th
+                          scope='col'
+                          className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-50'
+                        >
                           {t('common.date')}
                         </th>
                       </tr>
@@ -569,7 +603,7 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
               </div>
             )}
           </>
-        )}
+        }
         isOpened={isNewPlanConfirmationModalOpened}
       />
     </>

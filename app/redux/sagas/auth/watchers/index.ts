@@ -63,9 +63,15 @@ function* watchUpdateShowLiveVisitorsInTitle() {
 
 export default function* watchAuth() {
   yield all([
-    call(watchLogin), call(watchSignup), call(watchVerifyEmail),
-    call(watchUpdateUserProfile), call(watchDeleteUserProfile),
-    call(watchLogout), call(watchAuthSSO), call(watchLinkSSO),
-    call(watchUnlinkSSO), call(watchUpdateShowLiveVisitorsInTitle),
+    call(watchLogin),
+    call(watchSignup),
+    call(watchVerifyEmail),
+    call(watchUpdateUserProfile),
+    call(watchDeleteUserProfile),
+    call(watchLogout),
+    call(watchAuthSSO),
+    call(watchLinkSSO),
+    call(watchUnlinkSSO),
+    call(watchUpdateShowLiveVisitorsInTitle),
   ])
 }

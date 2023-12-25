@@ -10,10 +10,15 @@ import Loader from 'ui/Loader'
 import routes from 'routesPath'
 
 const VerifyEmail = (): JSX.Element => {
-  const { t }: {
-    t: (key: string, optinions?: {
-      [key: string]: string | number,
-    }) => string,
+  const {
+    t,
+  }: {
+    t: (
+      key: string,
+      optinions?: {
+        [key: string]: string | number
+      },
+    ) => string
   } = useTranslation('common')
   const dispatch = useDispatch()
   const { id } = useParams()

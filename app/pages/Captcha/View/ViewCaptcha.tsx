@@ -1,7 +1,5 @@
 /* eslint-disable react/forbid-prop-types, react/no-unstable-nested-components, react/display-name */
-import React, {
-  useState, useEffect, useMemo, memo, useRef,
-} from 'react'
+import React, { useState, useEffect, useMemo, memo, useRef } from 'react'
 import useSize from 'hooks/useSize'
 import { useNavigate, useParams } from '@remix-run/react'
 // @ts-ignore
@@ -9,9 +7,7 @@ import domToImage from 'dom-to-image'
 // @ts-ignore
 import { saveAs } from 'file-saver'
 import bb from 'billboard.js'
-import {
-  ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon,
-} from '@heroicons/react/24/outline'
+import { ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
@@ -33,8 +29,16 @@ import BarChart from 'ui/icons/BarChart'
 import { getItem, setItem } from 'utils/localstorage'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
-  captchaTbPeriodPairs, getProjectCaptchaCacheKey, timeBucketToDays, getProjectCacheCustomKey, roleAdmin,
-  MAX_MONTHS_IN_PAST, TimeFormat, chartTypes, TITLE_SUFFIX, KEY_FOR_ALL_TIME,
+  captchaTbPeriodPairs,
+  getProjectCaptchaCacheKey,
+  timeBucketToDays,
+  getProjectCacheCustomKey,
+  roleAdmin,
+  MAX_MONTHS_IN_PAST,
+  TimeFormat,
+  chartTypes,
+  TITLE_SUFFIX,
+  KEY_FOR_ALL_TIME,
 } from 'redux/constants'
 import { ICaptchaProject, IProject, ILiveStats } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
@@ -43,15 +47,20 @@ import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
 import FlatPicker from 'ui/Flatpicker'
 import routes from 'routesPath'
+import { getProject, getCaptchaData } from 'api'
+import { Panel, CustomEvents } from './Panels'
 import {
-  getProject, getCaptchaData,
-} from 'api'
-import {
-  Panel, CustomEvents,
-} from './Panels'
-import {
-  onCSVExportClick, getFormatDate, panelIconMapping, typeNameMapping, validFilters, validPeriods,
-  validTimeBacket, noRegionPeriods, getSettings, CHART_METRICS_MAPPING, getColumns,
+  onCSVExportClick,
+  getFormatDate,
+  panelIconMapping,
+  typeNameMapping,
+  validFilters,
+  validPeriods,
+  validTimeBacket,
+  noRegionPeriods,
+  getSettings,
+  CHART_METRICS_MAPPING,
+  getColumns,
 } from './ViewCaptcha.helpers'
 import TBPeriodSelector from 'pages/Project/View/components/TBPeriodSelector'
 import CCRow from '../../Project/View/components/CCRow'
@@ -60,56 +69,85 @@ import NoEvents from './components/NoEvents'
 import Filters from './components/Filters'
 
 const ViewProject = ({
-  projects, isLoading: _isLoading, showError, cache, setProjectCache, projectViewPrefs, setProjectViewPrefs, authenticated, user, setProjects, liveStats,
+  projects,
+  isLoading: _isLoading,
+  showError,
+  cache,
+  setProjectCache,
+  projectViewPrefs,
+  setProjectViewPrefs,
+  authenticated,
+  user,
+  setProjects,
+  liveStats,
 }: {
-  projects: ICaptchaProject[],
-  isLoading: boolean,
-  showError: (message: string) => void,
-  cache: any,
-  setProjectCache: (pid: string, data: any, key: string) => void,
-  projectViewPrefs: any,
-  setProjectViewPrefs: (pid: string, period: string, timeBucket: string, rangeDate?: Date[] | null) => void,
-  authenticated: boolean,
-  user: IUser,
+  projects: ICaptchaProject[]
+  isLoading: boolean
+  showError: (message: string) => void
+  cache: any
+  setProjectCache: (pid: string, data: any, key: string) => void
+  projectViewPrefs: any
+  setProjectViewPrefs: (pid: string, period: string, timeBucket: string, rangeDate?: Date[] | null) => void
+  authenticated: boolean
+  user: IUser
   // eslint-disable-next-line no-unused-vars, no-shadow
-  setProjects: (projects: ICaptchaProject[]) => void,
-  liveStats: ILiveStats,
+  setProjects: (projects: ICaptchaProject[]) => void
+  liveStats: ILiveStats
 }): JSX.Element => {
-  const { t, i18n: { language } }: {
-    t: (key: string, options?: {
-      [key: string]: string | number | boolean | undefined | null,
-    }) => string,
-    i18n: { language: string },
+  const {
+    t,
+    i18n: { language },
+  }: {
+    t: (
+      key: string,
+      options?: {
+        [key: string]: string | number | boolean | undefined | null
+      },
+    ) => string
+    i18n: { language: string }
   } = useTranslation('common')
   const [periodPairs, setPeriodPairs] = useState(captchaTbPeriodPairs(t, undefined, undefined, language))
   const dashboardRef = useRef(null)
   // @ts-ignore
-  const { id }: {
-    id: string,
+  const {
+    id,
+  }: {
+    id: string
   } = useParams()
   const navigate = useNavigate()
-  const project: ICaptchaProject = useMemo(() => _find(projects, p => p.id === id) || {} as ICaptchaProject, [projects, id])
+  const project: ICaptchaProject = useMemo(
+    () => _find(projects, (p) => p.id === id) || ({} as ICaptchaProject),
+    [projects, id],
+  )
   const [areFiltersParsed, setAreFiltersParsed] = useState<boolean>(false)
   const [areTimeBucketParsed, setAreTimeBucketParsed] = useState<boolean>(false)
   const [arePeriodParsed, setArePeriodParsed] = useState<boolean>(false)
   const [panelsData, setPanelsData] = useState<any>({})
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState<boolean>(false)
   const [analyticsLoading, setAnalyticsLoading] = useState<boolean>(true)
-  const [period, setPeriod] = useState<string>(projectViewPrefs ? projectViewPrefs[id]?.period || periodPairs[3].period : periodPairs[3].period)
-  const [timeBucket, setTimebucket] = useState<string>(projectViewPrefs ? projectViewPrefs[id]?.timeBucket || periodPairs[3].tbs[1] : periodPairs[3].tbs[1])
+  const [period, setPeriod] = useState<string>(
+    projectViewPrefs ? projectViewPrefs[id]?.period || periodPairs[3].period : periodPairs[3].period,
+  )
+  const [timeBucket, setTimebucket] = useState<string>(
+    projectViewPrefs ? projectViewPrefs[id]?.timeBucket || periodPairs[3].tbs[1] : periodPairs[3].tbs[1],
+  )
   const activePeriod: {
-    period: string,
-    label: string,
-    tbs: string[],
-  } = useMemo(() => _find(periodPairs, p => p.period === period) || {
-    period: periodPairs[3].period,
-    tbs: periodPairs[3].tbs,
-    label: periodPairs[3].label,
-  }, [period, periodPairs])
+    period: string
+    label: string
+    tbs: string[]
+  } = useMemo(
+    () =>
+      _find(periodPairs, (p) => p.period === period) || {
+        period: periodPairs[3].period,
+        tbs: periodPairs[3].tbs,
+        label: periodPairs[3].label,
+      },
+    [period, periodPairs],
+  )
   const [chartData, setChartData] = useState<any>({})
   const [dataLoading, setDataLoading] = useState<boolean>(false)
   const [activeChartMetrics, setActiveChartMetrics] = useState<{
-    [key: string]: boolean,
+    [key: string]: boolean
   }>({
     [CHART_METRICS_MAPPING.results]: true,
   })
@@ -122,12 +160,14 @@ const ViewProject = ({
   const tnMapping = typeNameMapping(t)
   const refCalendar = useRef(null)
   const localStorageDateRange = projectViewPrefs ? projectViewPrefs[id]?.rangeDate : null
-  const [dateRange, setDateRange] = useState<Date[] | null>(localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null)
+  const [dateRange, setDateRange] = useState<Date[] | null>(
+    localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null,
+  )
 
   const timeFormat = useMemo(() => user.timeFormat || TimeFormat['12-hour'], [user])
   const [ref, size] = useSize() as any
-  const rotateXAxias = useMemo(() => (size.width > 0 && size.width < 500), [size])
-  const [chartType, setChartType] = useState<string>(getItem('chartType') as string || chartTypes.line)
+  const rotateXAxias = useMemo(() => size.width > 0 && size.width < 500, [size])
+  const [chartType, setChartType] = useState<string>((getItem('chartType') as string) || chartTypes.line)
   const [mainChart, setMainChart] = useState<any>(null)
 
   const { name } = project as IProject
@@ -145,7 +185,7 @@ const ViewProject = ({
   }, [name, t])
 
   // @ts-ignore
-  const sharedRoles = useMemo(() => _find(user.sharedProjects, p => p.project.id === id)?.role || {}, [user, id])
+  const sharedRoles = useMemo(() => _find(user.sharedProjects, (p) => p.project.id === id)?.role || {}, [user, id])
 
   const chartMetrics = useMemo(() => {
     return [
@@ -165,7 +205,7 @@ const ViewProject = ({
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const switchActiveChartMetric = _debounce((pairID) => {
-    setActiveChartMetrics(prev => ({ ...prev, [pairID]: !prev[pairID] }))
+    setActiveChartMetrics((prev) => ({ ...prev, [pairID]: !prev[pairID] }))
   })
 
   const onErrorLoading = () => {
@@ -213,9 +253,7 @@ const ViewProject = ({
         return
       }
 
-      const {
-        chart, params, customs, appliedFilters, timeBucket: timeBucketFromResponse,
-      } = data
+      const { chart, params, customs, appliedFilters, timeBucket: timeBucketFromResponse } = data
 
       let newTimebucket = timeBucket
 
@@ -232,7 +270,10 @@ const ViewProject = ({
             if (item.period === KEY_FOR_ALL_TIME) {
               return {
                 ...item,
-                tbs: timeBucketFromResponse.length > 2 ? [timeBucketFromResponse[0], timeBucketFromResponse[1]] : timeBucketFromResponse,
+                tbs:
+                  timeBucketFromResponse.length > 2
+                    ? [timeBucketFromResponse[0], timeBucketFromResponse[1]]
+                    : timeBucketFromResponse,
               }
             }
             return item
@@ -246,7 +287,15 @@ const ViewProject = ({
         setIsPanelsDataEmpty(true)
       } else {
         const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
-        const bbSettings: any = getSettings(chart, newTimebucket, activeChartMetrics, applyRegions, timeFormat, rotateXAxias, chartType)
+        const bbSettings: any = getSettings(
+          chart,
+          newTimebucket,
+          activeChartMetrics,
+          applyRegions,
+          timeFormat,
+          rotateXAxias,
+          chartType,
+        )
         setChartData(chart)
 
         setPanelsData({
@@ -302,10 +351,7 @@ const ViewProject = ({
     } else {
       // selected filter is not present in the filters array -> applying it
       // sroting filter in the state
-      newFilters = [
-        ...filters,
-        { column, filter, isExclusive },
-      ]
+      newFilters = [...filters, { column, filter, isExclusive }]
       setFilters(newFilters)
 
       // storing filter in the page URL
@@ -475,17 +521,20 @@ const ViewProject = ({
   useEffect(() => {
     if (!isLoading && _isEmpty(project)) {
       getProject(id, true)
-        .then(projectRes => {
+        .then((projectRes) => {
           if (!_isEmpty(projectRes)) {
-            setProjects([...(projects as any[]), {
-              ...projectRes,
-              live: 'N/A',
-            }])
+            setProjects([
+              ...(projects as any[]),
+              {
+                ...projectRes,
+                live: 'N/A',
+              },
+            ])
           } else {
             onErrorLoading()
           }
         })
-        .catch(e => {
+        .catch((e) => {
           console.error(e)
           onErrorLoading()
         })
@@ -553,7 +602,9 @@ const ViewProject = ({
       // @ts-ignore
       const url = new URL(window.location)
       const { searchParams } = url
-      const intialPeriod = projectViewPrefs ? searchParams.get('period') || projectViewPrefs[id]?.period : searchParams.get('period') || '7d'
+      const intialPeriod = projectViewPrefs
+        ? searchParams.get('period') || projectViewPrefs[id]?.period
+        : searchParams.get('period') || '7d'
       if (!_includes(validPeriods, intialPeriod)) {
         return
       }
@@ -623,34 +674,30 @@ const ViewProject = ({
       <>
         <EventsRunningOutBanner />
         <div ref={ref} className='bg-gray-50 dark:bg-slate-900'>
-          <div
-            className='max-w-[1584px] w-full mx-auto py-6 px-2 sm:px-4 lg:px-8 min-h-min-footer'
-            ref={dashboardRef}
-          >
+          <div className='max-w-[1584px] w-full mx-auto py-6 px-2 sm:px-4 lg:px-8 min-h-min-footer' ref={dashboardRef}>
             <div className='flex flex-col lg:flex-row items-center lg:items-start justify-between mt-2'>
-              <h2 className='text-xl font-bold text-gray-900 dark:text-gray-50 break-words break-all'>
-                {name}
-              </h2>
+              <h2 className='text-xl font-bold text-gray-900 dark:text-gray-50 break-words break-all'>{name}</h2>
               <div className='flex mt-3 lg:mt-0 max-w-[420px] flex-wrap items-center sm:max-w-none justify-between w-full sm:w-auto mx-auto sm:mx-0'>
                 <button
                   type='button'
                   title={t('project.refreshStats')}
                   onClick={refreshStats}
-                  className={cx('mr-3 relative rounded-md p-2 bg-gray-50 text-sm font-medium hover:bg-white hover:shadow-sm dark:bg-slate-900 dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
-                    'cursor-not-allowed opacity-50': isLoading || dataLoading,
-                  })}
+                  className={cx(
+                    'mr-3 relative rounded-md p-2 bg-gray-50 text-sm font-medium hover:bg-white hover:shadow-sm dark:bg-slate-900 dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
+                    {
+                      'cursor-not-allowed opacity-50': isLoading || dataLoading,
+                    },
+                  )}
                 >
                   <ArrowPathIcon className='w-5 h-5 text-gray-700 dark:text-gray-50' />
                 </button>
                 <Dropdown
                   header={t('project.exportData')}
                   items={exportTypes}
-                  title={[
-                    <ArrowDownTrayIcon key='download-icon' className='w-5 h-5' />,
-                  ]}
-                  labelExtractor={item => item.label}
-                  keyExtractor={item => item.label}
-                  onSelect={item => item.onClick(panelsData, t)}
+                  title={[<ArrowDownTrayIcon key='download-icon' className='w-5 h-5' />]}
+                  labelExtractor={(item) => item.label}
+                  keyExtractor={(item) => item.label}
+                  onSelect={(item) => item.onClick(panelsData, t)}
                   className={cx('mr-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
                   chevron='mini'
                   buttonClassName='!p-2 rounded-md hover:bg-white hover:shadow-sm dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200'
@@ -665,10 +712,15 @@ const ViewProject = ({
                     type='button'
                     title={t('project.barChart')}
                     onClick={() => setChartTypeOnClick(chartTypes.bar)}
-                    className={cx('relative fill-gray-700 dark:fill-gray-50 rounded-md p-2 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
-                      'bg-white dark:bg-slate-800 stroke-white dark:stroke-slate-800 shadow-sm': chartType === chartTypes.bar,
-                      'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200': chartType !== chartTypes.bar,
-                    })}
+                    className={cx(
+                      'relative fill-gray-700 dark:fill-gray-50 rounded-md p-2 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
+                      {
+                        'bg-white dark:bg-slate-800 stroke-white dark:stroke-slate-800 shadow-sm':
+                          chartType === chartTypes.bar,
+                        'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200':
+                          chartType !== chartTypes.bar,
+                      },
+                    )}
                   >
                     <BarChart className='w-5 h-5 [&_path]:stroke-[3.5%]' />
                   </button>
@@ -676,10 +728,15 @@ const ViewProject = ({
                     type='button'
                     title={t('project.lineChart')}
                     onClick={() => setChartTypeOnClick(chartTypes.line)}
-                    className={cx('relative fill-gray-700 dark:fill-gray-50 rounded-md p-2 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200', {
-                      'bg-white dark:bg-slate-800 stroke-white dark:stroke-slate-800 shadow-sm': chartType === chartTypes.line,
-                      'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200': chartType !== chartTypes.line,
-                    })}
+                    className={cx(
+                      'relative fill-gray-700 dark:fill-gray-50 rounded-md p-2 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
+                      {
+                        'bg-white dark:bg-slate-800 stroke-white dark:stroke-slate-800 shadow-sm':
+                          chartType === chartTypes.line,
+                        'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200':
+                          chartType !== chartTypes.line,
+                      },
+                    )}
                   >
                     <LineChart className='w-5 h-5 [&_path]:stroke-[3.5%]' />
                   </button>
@@ -690,9 +747,7 @@ const ViewProject = ({
                     title={t('project.metricVis')}
                     className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
                     labelExtractor={(pair) => {
-                      const {
-                        label, id: pairID, active,
-                      } = pair
+                      const { label, id: pairID, active } = pair
 
                       return (
                         <Checkbox
@@ -700,7 +755,7 @@ const ViewProject = ({
                           label={label}
                           id={pairID}
                           checked={active}
-                          onChange={() => { }}
+                          onChange={() => {}}
                         />
                       )
                     }}
@@ -753,12 +808,8 @@ const ViewProject = ({
                 />
               </div>
             </div>
-            {(analyticsLoading) && (
-              <Loader />
-            )}
-            {(isPanelsDataEmpty) && (
-              <NoEvents filters={filters} resetFilters={resetFilters} />
-            )}
+            {analyticsLoading && <Loader />}
+            {isPanelsDataEmpty && <NoEvents filters={filters} resetFilters={resetFilters} />}
             <div className={cx('pt-4', { hidden: isPanelsDataEmpty || analyticsLoading })}>
               <div
                 className={cx('h-80', {
@@ -792,14 +843,10 @@ const ViewProject = ({
                       const { name: entryName, cc } = entry
 
                       if (cc) {
-                        return (
-                          <CCRow cc={cc} name={entryName} language={language} />
-                        )
+                        return <CCRow cc={cc} name={entryName} language={language} />
                       }
 
-                      return (
-                        <CCRow cc={entryName} language={language} />
-                      )
+                      return <CCRow cc={entryName} language={language} />
                     }
 
                     return (
@@ -842,9 +889,7 @@ const ViewProject = ({
                         name={panelName}
                         data={panelsData.data[type]}
                         // @ts-ignore
-                        rowMapper={({ name: entryName }) => (
-                          <RefRow rowName={entryName} showIcons={showIcons} />
-                        )}
+                        rowMapper={({ name: entryName }) => <RefRow rowName={entryName} showIcons={showIcons} />}
                       />
                     )
                   }
@@ -862,12 +907,7 @@ const ViewProject = ({
                   )
                 })}
                 {!_isEmpty(panelsData.customs) && (
-                  <CustomEvents
-                    t={t}
-                    customs={panelsData.customs}
-                    onFilter={filterHandler}
-                    chartData={chartData}
-                  />
+                  <CustomEvents t={t} customs={panelsData.customs} onFilter={filterHandler} chartData={chartData} />
                 )}
               </div>
             </div>

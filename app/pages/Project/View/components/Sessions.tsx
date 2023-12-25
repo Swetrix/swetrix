@@ -19,7 +19,10 @@ interface ISessionComponent {
 }
 
 const Session = ({ session, onClick, className }: ISessionComponent) => {
-  const { t, i18n: { language } } = useTranslation('common')
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
   const date = new Date(session.created).toLocaleDateString(language, {
     day: 'numeric',
     month: 'short',
@@ -30,12 +33,15 @@ const Session = ({ session, onClick, className }: ISessionComponent) => {
 
   return (
     <li
-      className={cx('relative flex justify-between gap-x-6 py-5 bg-gray-50 hover:bg-gray-200 dark:bg-slate-900 dark:hover:bg-slate-800 cursor-pointer px-4 sm:px-6 lg:px-8', className)}
+      className={cx(
+        'relative flex justify-between gap-x-6 py-5 bg-gray-50 hover:bg-gray-200 dark:bg-slate-900 dark:hover:bg-slate-800 cursor-pointer px-4 sm:px-6 lg:px-8',
+        className,
+      )}
       onClick={() => {
         const url = new URL(window.location.href)
         url.searchParams.set('psid', session.psid)
         window.history.pushState({}, '', url.toString())
-        
+
         onClick(session.psid)
       }}
     >
@@ -43,31 +49,21 @@ const Session = ({ session, onClick, className }: ISessionComponent) => {
         <div className='min-w-0 flex-auto'>
           <p className='text-sm font-semibold leading-6 text-gray-900 dark:text-gray-50'>
             {session.psid}
-            <span className='text-gray-400 mx-1'>
-              |
-            </span>
+            <span className='text-gray-400 mx-1'>|</span>
             {date}
           </p>
           <p className='mt-1 flex text-xs leading-5 text-gray-500 dark:text-gray-300'>
-            {session.cc ? (
-              <CCRow size={18} cc={session.cc} language={language} />
-            ) : t('project.unknownCountry')}
-            <span className='text-gray-400 mx-1'>
-              |
-            </span>
+            {session.cc ? <CCRow size={18} cc={session.cc} language={language} /> : t('project.unknownCountry')}
+            <span className='text-gray-400 mx-1'>|</span>
             {session.os}
-            <span className='text-gray-400 mx-1'>
-              |
-            </span>
+            <span className='text-gray-400 mx-1'>|</span>
             {session.br}
           </p>
         </div>
       </div>
       <div className='flex shrink-0 items-center gap-x-4'>
         <div className='hidden sm:flex sm:flex-col sm:items-end'>
-          <p className='text-sm leading-6 text-gray-900  dark:text-gray-50'>
-            {`${session.pageviews} pageviews`}
-          </p>
+          <p className='text-sm leading-6 text-gray-900  dark:text-gray-50'>{`${session.pageviews} pageviews`}</p>
           {session.active ? (
             <Badge label={t('dashboard.active')} colour='green' />
           ) : (

@@ -29,32 +29,42 @@ const mapStateToProps = (state: StateType) => ({
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
   deleteProjectFailed: (message: string) => {
-    dispatch(errorsActions.deleteProjectFailed({
-      message,
-    }))
+    dispatch(
+      errorsActions.deleteProjectFailed({
+        message,
+      }),
+    )
   },
   setProjectsShareData: (data: IProject | ISharedProject, id: string, shared?: boolean) => {
-    dispatch(UIActions.setProjectsShareData({
-      data,
-      id,
-      shared,
-    }))
+    dispatch(
+      UIActions.setProjectsShareData({
+        data,
+        id,
+        shared,
+      }),
+    )
   },
   setUserShareData: (data: ISharedProject, id: string) => {
-    dispatch(authActions.setUserShareData({
-      data,
-      id,
-    }))
+    dispatch(
+      authActions.setUserShareData({
+        data,
+        id,
+      }),
+    )
   },
   userSharedUpdate: (message: string) => {
-    dispatch(alertsActions.userSharedUpdate({
-      message,
-    }))
+    dispatch(
+      alertsActions.userSharedUpdate({
+        message,
+      }),
+    )
   },
   sharedProjectError: (message: string) => {
-    dispatch(errorsActions.sharedProjectFailed({
-      message,
-    }))
+    dispatch(
+      errorsActions.sharedProjectFailed({
+        message,
+      }),
+    )
   },
   loadProjects: (take: number, skip: number, search: string) => {
     dispatch(sagaActions.loadProjects(take, skip, search))

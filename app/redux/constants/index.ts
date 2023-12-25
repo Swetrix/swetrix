@@ -39,13 +39,7 @@ export const FORECAST_MAX_MAPPING: {
 
 export const KEY_FOR_ALL_TIME = 'all'
 
-export const ALL_PERIODS = [
-  'minute',
-  'hour',
-  'day',
-  'month',
-  'year',
-]
+export const ALL_PERIODS = ['minute', 'hour', 'day', 'month', 'year']
 
 export interface ITBPeriodPairs {
   label: string
@@ -56,131 +50,174 @@ export interface ITBPeriodPairs {
   isCustomDate?: boolean
 }
 
-export const tbPeriodPairs = (t: Function, tbs?: string[] | null, dates?: Date[], language?: string):ITBPeriodPairs[] => [{
-  label: t('project.thisHour'),
-  period: '1h',
-  tbs: ['minute'],
-}, {
-  label: t('project.today'),
-  period: 'today',
-  tbs: ['hour'],
-}, {
-  label: t('project.yesterday'),
-  period: 'yesterday',
-  tbs: ['hour'],
-}, {
-  label: t('project.last24h'),
-  period: '1d',
-  countDays: 1,
-  tbs: ['hour'],
-}, {
-  label: t('project.lastXDays', { amount: 7 }),
-  period: '7d',
-  tbs: ['hour', 'day'],
-  countDays: 7,
-}, {
-  label: t('project.lastXWeeks', { amount: 4 }),
-  period: '4w',
-  tbs: ['day'],
-  countDays: 28,
-}, {
-  label: t('project.lastXMonths', { amount: 3 }),
-  period: '3M',
-  tbs: ['month'],
-  countDays: 90,
-}, {
-  label: t('project.lastXMonths', { amount: 12 }),
-  period: '12M',
-  tbs: ['month'],
-  countDays: 365,
-}, {
-  label: t('project.lastXMonths', { amount: 24 }),
-  period: '24M',
-  tbs: ['month'],
-}, {
-  label: t('project.all'),
-  period: KEY_FOR_ALL_TIME,
-  tbs: ['month', 'year'],
-}, {
-  label: dates ? getCustomLabel(dates, t, language) : t('project.custom'),
-  dropdownLabel: t('project.custom'),
-  isCustomDate: true,
-  period: 'custom',
-  tbs: tbs || ['custom'],
-}, {
-  label: t('project.compare'),
-  period: 'compare',
-  tbs: tbs || ['custom'],
-}]
+export const tbPeriodPairs = (
+  t: Function,
+  tbs?: string[] | null,
+  dates?: Date[],
+  language?: string,
+): ITBPeriodPairs[] => [
+  {
+    label: t('project.thisHour'),
+    period: '1h',
+    tbs: ['minute'],
+  },
+  {
+    label: t('project.today'),
+    period: 'today',
+    tbs: ['hour'],
+  },
+  {
+    label: t('project.yesterday'),
+    period: 'yesterday',
+    tbs: ['hour'],
+  },
+  {
+    label: t('project.last24h'),
+    period: '1d',
+    countDays: 1,
+    tbs: ['hour'],
+  },
+  {
+    label: t('project.lastXDays', { amount: 7 }),
+    period: '7d',
+    tbs: ['hour', 'day'],
+    countDays: 7,
+  },
+  {
+    label: t('project.lastXWeeks', { amount: 4 }),
+    period: '4w',
+    tbs: ['day'],
+    countDays: 28,
+  },
+  {
+    label: t('project.lastXMonths', { amount: 3 }),
+    period: '3M',
+    tbs: ['month'],
+    countDays: 90,
+  },
+  {
+    label: t('project.lastXMonths', { amount: 12 }),
+    period: '12M',
+    tbs: ['month'],
+    countDays: 365,
+  },
+  {
+    label: t('project.lastXMonths', { amount: 24 }),
+    period: '24M',
+    tbs: ['month'],
+  },
+  {
+    label: t('project.all'),
+    period: KEY_FOR_ALL_TIME,
+    tbs: ['month', 'year'],
+  },
+  {
+    label: dates ? getCustomLabel(dates, t, language) : t('project.custom'),
+    dropdownLabel: t('project.custom'),
+    isCustomDate: true,
+    period: 'custom',
+    tbs: tbs || ['custom'],
+  },
+  {
+    label: t('project.compare'),
+    period: 'compare',
+    tbs: tbs || ['custom'],
+  },
+]
 
-export const captchaTbPeriodPairs = (t: Function, tbs?: string[] | null, dates?: Date[], language?: string):ITBPeriodPairs[] => [{
-  label: t('project.thisHour'),
-  period: '1h',
-  tbs: ['minute'],
-}, {
-  label: t('project.today'),
-  period: 'today',
-  tbs: ['hour'],
-}, {
-  label: t('project.yesterday'),
-  period: 'yesterday',
-  tbs: ['hour'],
-}, {
-  label: t('project.last24h'),
-  period: '1d',
-  countDays: 1,
-  tbs: ['hour'],
-}, {
-  label: t('project.lastXDays', { amount: 7 }),
-  period: '7d',
-  tbs: ['hour', 'day'],
-  countDays: 7,
-}, {
-  label: t('project.lastXWeeks', { amount: 4 }),
-  period: '4w',
-  tbs: ['day'],
-  countDays: 28,
-}, {
-  label: t('project.lastXMonths', { amount: 3 }),
-  period: '3M',
-  tbs: ['month'],
-  countDays: 90,
-}, {
-  label: t('project.lastXMonths', { amount: 12 }),
-  period: '12M',
-  tbs: ['month'],
-  countDays: 365,
-}, {
-  label: t('project.lastXMonths', { amount: 24 }),
-  period: '24M',
-  tbs: ['month'],
-}, {
-  label: t('project.all'),
-  period: KEY_FOR_ALL_TIME,
-  tbs: ['month', 'year'],
-}, {
-  label: dates ? getCustomLabel(dates, t, language) : t('project.custom'),
-  dropdownLabel: t('project.custom'),
-  isCustomDate: true,
-  period: 'custom',
-  tbs: tbs || ['custom'],
-}]
+export const captchaTbPeriodPairs = (
+  t: Function,
+  tbs?: string[] | null,
+  dates?: Date[],
+  language?: string,
+): ITBPeriodPairs[] => [
+  {
+    label: t('project.thisHour'),
+    period: '1h',
+    tbs: ['minute'],
+  },
+  {
+    label: t('project.today'),
+    period: 'today',
+    tbs: ['hour'],
+  },
+  {
+    label: t('project.yesterday'),
+    period: 'yesterday',
+    tbs: ['hour'],
+  },
+  {
+    label: t('project.last24h'),
+    period: '1d',
+    countDays: 1,
+    tbs: ['hour'],
+  },
+  {
+    label: t('project.lastXDays', { amount: 7 }),
+    period: '7d',
+    tbs: ['hour', 'day'],
+    countDays: 7,
+  },
+  {
+    label: t('project.lastXWeeks', { amount: 4 }),
+    period: '4w',
+    tbs: ['day'],
+    countDays: 28,
+  },
+  {
+    label: t('project.lastXMonths', { amount: 3 }),
+    period: '3M',
+    tbs: ['month'],
+    countDays: 90,
+  },
+  {
+    label: t('project.lastXMonths', { amount: 12 }),
+    period: '12M',
+    tbs: ['month'],
+    countDays: 365,
+  },
+  {
+    label: t('project.lastXMonths', { amount: 24 }),
+    period: '24M',
+    tbs: ['month'],
+  },
+  {
+    label: t('project.all'),
+    period: KEY_FOR_ALL_TIME,
+    tbs: ['month', 'year'],
+  },
+  {
+    label: dates ? getCustomLabel(dates, t, language) : t('project.custom'),
+    dropdownLabel: t('project.custom'),
+    isCustomDate: true,
+    period: 'custom',
+    tbs: tbs || ['custom'],
+  },
+]
 
 export const filtersPeriodPairs = ['1h', '1d', '7d', '4w', '3M', '12M', 'custom', 'compare']
 
-export const tbPeriodPairsCompare = (t: Function, dates?: Date[], language?: string): {
+export const tbPeriodPairsCompare = (
+  t: Function,
+  dates?: Date[],
+  language?: string,
+): {
   label: string
   period: string
-}[] => [{
-  label: t('project.previousPeriod'),
-  period: 'previous',
-}, {
-  label: dates ? getCustomLabel(dates, t, language) : t('project.custom'),
-  period: 'custom',
-}, {
-  label: t('project.disableCompare'),
-  period: 'disable',
-}]
+}[] => [
+  {
+    label: t('project.previousPeriod'),
+    period: 'previous',
+  },
+  {
+    label: dates ? getCustomLabel(dates, t, language) : t('project.custom'),
+    period: 'custom',
+  },
+  {
+    label: t('project.disableCompare'),
+    period: 'disable',
+  },
+]
 
 export const PERIOD_PAIRS_COMPARE: {
   COMPARE: string
@@ -288,7 +325,8 @@ export const DEFAULT_TIMEZONE: string = 'Etc/GMT'
 
 export const DONATE_URL: string = 'https://ko-fi.com/andriir'
 export const FIREFOX_ADDON_URL: string = 'https://addons.mozilla.org/en-US/firefox/addon/swetrix/'
-export const CHROME_EXTENSION_URL: string = 'https://chrome.google.com/webstore/detail/swetrix/glbeclfdldjldjonfnpnembfkhphmeld'
+export const CHROME_EXTENSION_URL: string =
+  'https://chrome.google.com/webstore/detail/swetrix/glbeclfdldjldjonfnpnembfkhphmeld'
 export const HAVE_I_BEEN_PWNED_URL: string = 'https://haveibeenpwned.com/passwords'
 export const LINKEDIN_URL: string = 'https://www.linkedin.com/company/swetrix/'
 export const GITHUB_URL: string = 'https://github.com/Swetrix'
@@ -341,9 +379,7 @@ export const CDN_URL = isBrowser ? window.REMIX_ENV?.CDN_URL : process.env.CDN_U
 export const NODE_ENV = isBrowser ? window.REMIX_ENV?.NODE_ENV : process.env.NODE_ENV
 
 export const isDevelopment = !NODE_ENV || NODE_ENV === 'development'
-export const isSelfhosted = Boolean(
-  isBrowser ? window.REMIX_ENV?.SELFHOSTED : process.env.SELFHOSTED,
-)
+export const isSelfhosted = Boolean(isBrowser ? window.REMIX_ENV?.SELFHOSTED : process.env.SELFHOSTED)
 
 export const getOgImageUrl = (title: string) => {
   const apiUrl = _endsWith(API_URL, '/') ? API_URL.slice(0, -1) : API_URL
@@ -352,14 +388,35 @@ export const getOgImageUrl = (title: string) => {
 }
 
 // Functions
-export const getProjectCacheKey = (period: string, timeBucket: string, mode: 'periodical' | 'cumulative', filters?: any): string => `${period}${timeBucket}${mode}${filters ? JSON.stringify(filters) : ''}}`
-export const getProjectCaptchaCacheKey = (period: string, timeBucket: string, filters?: any): string => `${period}${timeBucket}captcha${filters ? JSON.stringify(filters) : ''}}`
-export const getProjectForcastCacheKey = (period: string, timeBucket: string, periodToForecast: string, filters: any): string => `${period}${timeBucket}${periodToForecast}forecast${filters ? JSON.stringify(filters) : ''}`
-export const getProjectCacheCustomKey = (from: string, to: string, timeBucket: string, mode: 'periodical' | 'cumulative', filters: any): string => `cst${from}${to}${timeBucket}-${mode}${filters ? JSON.stringify(filters) : ''}}`
-export const getProjectCacheCustomKeyPerf = (from: string, to: string, timeBucket: string, filters: any): string => `${from}-${to}-${timeBucket}perf${filters ? JSON.stringify(filters) : ''}`
-export const getUserFlowCacheKey = (pid: string, period: string, filters: any): string => `${pid}${period}userflow${filters ? JSON.stringify(filters) : ''}`
-export const getFunnelsCacheKey = (pid: string, funnelId: string, period: string): string => `${pid}${funnelId}${period}funnels`
-export const getFunnelsCacheCustomKey = (pid: string, funnelId: string, from: string, to: string): string => `${pid}${funnelId}${from}${to}funnels`
+export const getProjectCacheKey = (
+  period: string,
+  timeBucket: string,
+  mode: 'periodical' | 'cumulative',
+  filters?: any,
+): string => `${period}${timeBucket}${mode}${filters ? JSON.stringify(filters) : ''}}`
+export const getProjectCaptchaCacheKey = (period: string, timeBucket: string, filters?: any): string =>
+  `${period}${timeBucket}captcha${filters ? JSON.stringify(filters) : ''}}`
+export const getProjectForcastCacheKey = (
+  period: string,
+  timeBucket: string,
+  periodToForecast: string,
+  filters: any,
+): string => `${period}${timeBucket}${periodToForecast}forecast${filters ? JSON.stringify(filters) : ''}`
+export const getProjectCacheCustomKey = (
+  from: string,
+  to: string,
+  timeBucket: string,
+  mode: 'periodical' | 'cumulative',
+  filters: any,
+): string => `cst${from}${to}${timeBucket}-${mode}${filters ? JSON.stringify(filters) : ''}}`
+export const getProjectCacheCustomKeyPerf = (from: string, to: string, timeBucket: string, filters: any): string =>
+  `${from}-${to}-${timeBucket}perf${filters ? JSON.stringify(filters) : ''}`
+export const getUserFlowCacheKey = (pid: string, period: string, filters: any): string =>
+  `${pid}${period}userflow${filters ? JSON.stringify(filters) : ''}`
+export const getFunnelsCacheKey = (pid: string, funnelId: string, period: string): string =>
+  `${pid}${funnelId}${period}funnels`
+export const getFunnelsCacheCustomKey = (pid: string, funnelId: string, from: string, to: string): string =>
+  `${pid}${funnelId}${from}${to}funnels`
 
 // Cookies
 export const GDPR_REQUEST: string = 'gdpr_request'
@@ -548,7 +605,9 @@ type ICurrencies = {
 }
 
 export const CURRENCIES: ICurrencies = {
-  EUR, USD, GBP,
+  EUR,
+  USD,
+  GBP,
 }
 
 export const MERCHANT_FEE = '5% + 50¢'

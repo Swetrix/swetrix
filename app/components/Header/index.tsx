@@ -1,19 +1,13 @@
 /* eslint-disable jsx-a11y/anchor-is-valid, react/no-unstable-nested-components */
-import React, {
-  memo, Fragment, useRef, useMemo, MutableRefObject,
-} from 'react'
+import React, { memo, Fragment, useRef, useMemo, MutableRefObject } from 'react'
 
 import { Link } from '@remix-run/react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import Flag from 'react-flagkit'
 import i18next from 'i18next'
-import {
-  Popover, Transition, Menu,
-} from '@headlessui/react'
-import {
-  Bars3Icon, XMarkIcon, ChevronDownIcon, ArrowSmallRightIcon,
-} from '@heroicons/react/24/outline'
+import { Popover, Transition, Menu } from '@headlessui/react'
+import { Bars3Icon, XMarkIcon, ChevronDownIcon, ArrowSmallRightIcon } from '@heroicons/react/24/outline'
 import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
@@ -27,7 +21,13 @@ import { authActions } from 'redux/reducers/auth'
 import sagaActions from 'redux/sagas/actions'
 import UIActions from 'redux/reducers/ui'
 import {
-  whitelist, languages, languageFlag, isSelfhosted, DOCS_URL, SUPPORTED_THEMES, isBrowser,
+  whitelist,
+  languages,
+  languageFlag,
+  isSelfhosted,
+  DOCS_URL,
+  SUPPORTED_THEMES,
+  isBrowser,
 } from 'redux/constants'
 import Dropdown from 'ui/Dropdown'
 import { IUser } from 'redux/models/IUser'
@@ -44,20 +44,23 @@ const TRIAL_STATUS_MAPPING = {
 }
 
 const ThemeMenu = ({
-  theme, t, switchTheme,
+  theme,
+  t,
+  switchTheme,
 }: {
-  theme: string,
-  t: (key: string, options?: {
-    [key: string]: string | number | null,
-  }) => string,
-  switchTheme: (i: string) => void,
+  theme: string
+  t: (
+    key: string,
+    options?: {
+      [key: string]: string | number | null
+    },
+  ) => string
+  switchTheme: (i: string) => void
 }) => (
   <Menu as='div' className='relative ml-3'>
     <div>
       <Menu.Button className='flex justify-center items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
-        <span className='sr-only'>
-          {t('header.switchTheme')}
-        </span>
+        <span className='sr-only'>{t('header.switchTheme')}</span>
         {theme === 'dark' ? (
           <SunIcon className='h-6 w-6 text-gray-200 hover:text-gray-300 cursor-pointer' aria-hidden='true' />
         ) : (
@@ -78,9 +81,12 @@ const ThemeMenu = ({
         <Menu.Item>
           {({ active }) => (
             <div
-              className={cx('flex w-full font-semibold cursor-pointer px-4 py-2 text-sm text-indigo-600 dark:text-gray-50 hover:bg-gray-100 hover:dark:bg-slate-800', {
-                'bg-gray-100 dark:bg-slate-800': active,
-              })}
+              className={cx(
+                'flex w-full font-semibold cursor-pointer px-4 py-2 text-sm text-indigo-600 dark:text-gray-50 hover:bg-gray-100 hover:dark:bg-slate-800',
+                {
+                  'bg-gray-100 dark:bg-slate-800': active,
+                },
+              )}
               onClick={() => switchTheme('light')}
             >
               <SunIcon className='h-5 w-5 mr-2 text-indigo-600 dark:text-gray-200' aria-hidden='true' />
@@ -91,9 +97,12 @@ const ThemeMenu = ({
         <Menu.Item>
           {({ active }) => (
             <div
-              className={cx('flex w-full font-semibold cursor-pointer px-4 py-2 text-sm text-gray-700 dark:text-indigo-400 hover:bg-gray-100 hover:dark:bg-slate-800', {
-                'bg-gray-100 dark:bg-slate-800': active,
-              })}
+              className={cx(
+                'flex w-full font-semibold cursor-pointer px-4 py-2 text-sm text-gray-700 dark:text-indigo-400 hover:bg-gray-100 hover:dark:bg-slate-800',
+                {
+                  'bg-gray-100 dark:bg-slate-800': active,
+                },
+              )}
               onClick={() => switchTheme('dark')}
             >
               <MoonIcon className='h-5 w-5 mr-2 text-gray-200 dark:text-indigo-400' aria-hidden='true' />
@@ -107,22 +116,27 @@ const ThemeMenu = ({
 )
 
 const ProfileMenu = ({
-  user, logoutHandler, t, onLanguageChange, language,
+  user,
+  logoutHandler,
+  t,
+  onLanguageChange,
+  language,
 }: {
-  user: IUser,
-  logoutHandler: () => void,
-  t: (key: string, options?: {
-    [key: string]: string | number | null,
-  }) => string,
-  onLanguageChange: (l: string) => void,
-  language: string,
+  user: IUser
+  logoutHandler: () => void
+  t: (
+    key: string,
+    options?: {
+      [key: string]: string | number | null
+    },
+  ) => string
+  onLanguageChange: (l: string) => void
+  language: string
 }) => (
   <Menu as='div' className='relative ml-3'>
     <div>
       <Menu.Button className='flex justify-center items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
-        <span>
-          {t('common.account')}
-        </span>
+        <span>{t('common.account')}</span>
         <ChevronDownIcon className='h-4 w-4 ml-1 stroke-2' aria-hidden='true' />
       </Menu.Button>
     </div>
@@ -139,16 +153,10 @@ const ProfileMenu = ({
         <div className='border-gray-200 dark:border-slate-700/50 border-b-[1px]'>
           <Menu.Item>
             <p className='truncate py-2 px-4' role='none'>
-              <span
-                className='block text-xs text-gray-500 dark:text-gray-300'
-                role='none'
-              >
+              <span className='block text-xs text-gray-500 dark:text-gray-300' role='none'>
                 {t('header.signedInAs')}
               </span>
-              <span
-                className='mt-0.5 text-sm font-semibold text-gray-700 dark:text-gray-50'
-                role='none'
-              >
+              <span className='mt-0.5 text-sm font-semibold text-gray-700 dark:text-gray-50' role='none'>
                 {user?.email}
               </span>
             </p>
@@ -161,11 +169,15 @@ const ProfileMenu = ({
             {({ open }) => (
               <>
                 <div>
-                  <Menu.Button
-                    className='flex justify-between w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-50 hover:bg-gray-100 hover:dark:bg-slate-800'
-                  >
+                  <Menu.Button className='flex justify-between w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-50 hover:bg-gray-100 hover:dark:bg-slate-800'>
                     <div className='flex'>
-                      <Flag className='rounded-sm mr-1.5' country={languageFlag[language]} size={20} alt='' aria-hidden='true' />
+                      <Flag
+                        className='rounded-sm mr-1.5'
+                        country={languageFlag[language]}
+                        size={20}
+                        alt=''
+                        aria-hidden='true'
+                      />
                       {languages[language]}
                     </div>
                     <ChevronDownIcon className='-mr-1 ml-2 h-5 w-5 stroke-2' aria-hidden='true' />
@@ -186,7 +198,7 @@ const ProfileMenu = ({
                     className='z-50 py-1 origin-top-right absolute right-0 mt-1 w-full min-w-max rounded-md shadow-lg bg-white dark:bg-slate-800 ring-1 ring-slate-200 dark:ring-slate-800 focus:outline-none'
                     static
                   >
-                    {_map(whitelist, lng => (
+                    {_map(whitelist, (lng) => (
                       <Menu.Item key={lng}>
                         <span
                           className='text-gray-700 dark:text-gray-50 dark:bg-slate-800 block px-4 py-2 text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -196,7 +208,12 @@ const ProfileMenu = ({
                         >
                           <div className='flex'>
                             <div className='pt-1'>
-                              <Flag className='rounded-sm mr-1.5' country={languageFlag[lng]} size={20} alt={languageFlag[lng]} />
+                              <Flag
+                                className='rounded-sm mr-1.5'
+                                country={languageFlag[lng]}
+                                size={20}
+                                alt={languageFlag[lng]}
+                              />
                             </div>
                             {languages[lng]}
                           </div>
@@ -279,7 +296,16 @@ const ProfileMenu = ({
 )
 
 const AuthedHeader = ({
-  user, switchTheme, theme, onLanguageChange, rawStatus, status, t, language, logoutHandler, colourBackground,
+  user,
+  switchTheme,
+  theme,
+  onLanguageChange,
+  rawStatus,
+  status,
+  t,
+  language,
+  logoutHandler,
+  colourBackground,
 }: {
   user: IUser
   switchTheme: (thm?: string) => void
@@ -287,9 +313,12 @@ const AuthedHeader = ({
   onLanguageChange: (lng: string) => void
   rawStatus: string | number
   status: string
-  t: (key: string, options?: {
-    [key: string]: string | number | null
-  }) => string
+  t: (
+    key: string,
+    options?: {
+      [key: string]: string | number | null
+    },
+  ) => string
   language: string
   logoutHandler: () => void
   colourBackground: boolean
@@ -320,7 +349,10 @@ const AuthedHeader = ({
                 to={routesPath.billing}
                 className={cx('font-semibold leading-6 text-base', {
                   'text-amber-600 hover:text-amber-500': rawStatus === TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS,
-                  'text-rose-600 hover:text-rose-500': rawStatus === TRIAL_STATUS_MAPPING.ENDS_TODAY || rawStatus === TRIAL_STATUS_MAPPING.ENDS_TOMORROW || rawStatus === TRIAL_STATUS_MAPPING.ENDED,
+                  'text-rose-600 hover:text-rose-500':
+                    rawStatus === TRIAL_STATUS_MAPPING.ENDS_TODAY ||
+                    rawStatus === TRIAL_STATUS_MAPPING.ENDS_TOMORROW ||
+                    rawStatus === TRIAL_STATUS_MAPPING.ENDED,
                 })}
                 key='TrialNotification'
               >
@@ -359,11 +391,7 @@ const AuthedHeader = ({
           </div>
         </div>
         <div className='hidden md:flex justify-center items-center flex-wrap ml-1 md:ml-10 space-y-1 sm:space-y-0 space-x-2 md:space-x-4'>
-          <ThemeMenu
-            theme={theme}
-            switchTheme={switchTheme}
-            t={t}
-          />
+          <ThemeMenu theme={theme} switchTheme={switchTheme} t={t} />
           <ProfileMenu
             user={user}
             logoutHandler={logoutHandler}
@@ -376,17 +404,21 @@ const AuthedHeader = ({
           {/* Theme switch */}
           {theme === 'dark' ? (
             <div className='transition-all duration-1000 ease-in-out rotate-180'>
-              <SunIcon onClick={() => switchTheme()} className='h-10 w-10 text-gray-200 hover:text-gray-300 cursor-pointer' />
+              <SunIcon
+                onClick={() => switchTheme()}
+                className='h-10 w-10 text-gray-200 hover:text-gray-300 cursor-pointer'
+              />
             </div>
           ) : (
             <div className='transition-all duration-1000 ease-in-out'>
-              <MoonIcon onClick={() => switchTheme()} className='h-10 w-10 text-slate-700 hover:text-slate-600 cursor-pointer' />
+              <MoonIcon
+                onClick={() => switchTheme()}
+                className='h-10 w-10 text-slate-700 hover:text-slate-600 cursor-pointer'
+              />
             </div>
           )}
           <Popover.Button className='bg-white dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-gray-200 rounded-md p-2 ml-3 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500'>
-            <span className='sr-only'>
-              {t('common.openMenu')}
-            </span>
+            <span className='sr-only'>{t('common.openMenu')}</span>
             <Bars3Icon className='h-6 w-6' aria-hidden='true' />
           </Popover.Button>
         </div>
@@ -418,15 +450,21 @@ const AuthedHeader = ({
 )
 
 const NotAuthedHeader = ({
-  switchTheme, theme, onLanguageChange, t, language, colourBackground, refPage,
+  switchTheme,
+  theme,
+  onLanguageChange,
+  t,
+  language,
+  colourBackground,
+  refPage,
 }: {
-  switchTheme: (a?: string) => void,
-  theme: string,
-  onLanguageChange: (lang: string) => void,
-  t: (key: string) => string,
-  language: string,
-  colourBackground: boolean,
-  refPage?: boolean,
+  switchTheme: (a?: string) => void
+  theme: string
+  onLanguageChange: (lang: string) => void
+  t: (key: string) => string
+  language: string
+  colourBackground: boolean
+  refPage?: boolean
 }) => (
   <header
     className={cx('relative overflow-x-clip', {
@@ -463,7 +501,6 @@ const NotAuthedHeader = ({
 
           {!refPage && (
             <div className='hidden ml-10 space-x-1 lg:flex gap-4 items-center'>
-
               <Link
                 to={routesPath.blog}
                 className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
@@ -479,7 +516,12 @@ const NotAuthedHeader = ({
                   {t('common.pricing')}
                 </Link>
               )}
-              <a href={DOCS_URL} className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white' target='_blank' rel='noreferrer noopener'>
+              <a
+                href={DOCS_URL}
+                className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                target='_blank'
+                rel='noreferrer noopener'
+              >
                 {/* <DocumentTextIcon className='w-5 h-5 mr-1' /> */}
                 {t('common.docs')}
               </a>
@@ -492,12 +534,18 @@ const NotAuthedHeader = ({
             items={whitelist}
             buttonClassName='!py-0 inline-flex items-center [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 text-sm font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
             selectItemClassName='text-gray-700 block px-4 py-2 text-base cursor-pointer hover:bg-gray-200 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700'
-            title={(
+            title={
               <>
-                <Flag className='rounded-sm mr-1.5' country={languageFlag[language]} size={18} alt='' aria-hidden='true' />
+                <Flag
+                  className='rounded-sm mr-1.5'
+                  country={languageFlag[language]}
+                  size={18}
+                  alt=''
+                  aria-hidden='true'
+                />
                 {languages[language]}
               </>
-            )}
+            }
             labelExtractor={(lng: string) => (
               <div className='flex'>
                 <div className='pt-1'>
@@ -509,17 +557,14 @@ const NotAuthedHeader = ({
             onSelect={onLanguageChange}
             headless
           />
-          <ThemeMenu
-            theme={theme}
-            switchTheme={switchTheme}
-            t={t}
-          />
+          <ThemeMenu theme={theme} switchTheme={switchTheme} t={t} />
           {!refPage && (
             <>
-              <span className='text-slate-700'>
-                |
-              </span>
-              <Link to={routesPath.signin} className='flex items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
+              <span className='text-slate-700'>|</span>
+              <Link
+                to={routesPath.signin}
+                className='flex items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+              >
                 {t('auth.common.signin')}
                 <ArrowSmallRightIcon className='ml-1 stroke-2 h-4 w-4 mt-[1px]' />
               </Link>
@@ -530,17 +575,21 @@ const NotAuthedHeader = ({
           {/* Theme switch */}
           {theme === 'dark' ? (
             <div className='transition-all duration-1000 ease-in-out rotate-180'>
-              <SunIcon onClick={() => switchTheme()} className='h-10 w-10 text-gray-200 hover:text-gray-300 cursor-pointer' />
+              <SunIcon
+                onClick={() => switchTheme()}
+                className='h-10 w-10 text-gray-200 hover:text-gray-300 cursor-pointer'
+              />
             </div>
           ) : (
             <div className='transition-all duration-1000 ease-in-out'>
-              <MoonIcon onClick={() => switchTheme()} className='h-10 w-10 text-slate-700 hover:text-slate-600 cursor-pointer' />
+              <MoonIcon
+                onClick={() => switchTheme()}
+                className='h-10 w-10 text-slate-700 hover:text-slate-600 cursor-pointer'
+              />
             </div>
           )}
           <Popover.Button className='bg-white dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-gray-200 rounded-md p-2 ml-3 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500'>
-            <span className='sr-only'>
-              {t('common.openMenu')}
-            </span>
+            <span className='sr-only'>{t('common.openMenu')}</span>
             <Bars3Icon className='h-6 w-6' aria-hidden='true' />
           </Popover.Button>
         </div>
@@ -582,11 +631,17 @@ interface IHeader {
 }
 
 const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transparent }): JSX.Element => {
-  const { t, i18n: { language } }: {
-    t: (key: string, options?: {
-      [key: string]: string | number | null
-    }) => string,
-    i18n: { language: string },
+  const {
+    t,
+    i18n: { language },
+  }: {
+    t: (
+      key: string,
+      options?: {
+        [key: string]: string | number | null
+      },
+    ) => string
+    i18n: { language: string }
   } = useTranslation('common')
   const dispatch = useAppDispatch()
   const _dispatch = useDispatch()
@@ -597,7 +652,7 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
   const theme = isBrowser ? reduxTheme : ssrTheme
 
   const [rawStatus, status] = useMemo(() => {
-    const { trialEndDate } = (user || {})
+    const { trialEndDate } = user || {}
 
     if (!trialEndDate) {
       return [null, null]
@@ -682,7 +737,10 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
         leaveFrom='opacity-100 scale-100'
         leaveTo='opacity-0 scale-95'
       >
-        <Popover.Panel focus className='absolute top-0 z-50 inset-x-0 p-2 transition transform origin-top-right md:hidden'>
+        <Popover.Panel
+          focus
+          className='absolute top-0 z-50 inset-x-0 p-2 transition transform origin-top-right md:hidden'
+        >
           <div className='rounded-lg shadow-lg ring-1 ring-slate-200 dark:ring-slate-800 bg-white dark:bg-gray-750 divide-y-2 divide-gray-50 dark:divide-gray-800'>
             <div className='pt-5 pb-6 px-5'>
               <div className='flex items-center justify-between'>
@@ -695,10 +753,11 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                     alt=''
                   />
                 </Link>
-                <Popover.Button ref={buttonRef} className='bg-white dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-gray-200 rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500'>
-                  <span className='sr-only'>
-                    {t('common.closeMenu')}
-                  </span>
+                <Popover.Button
+                  ref={buttonRef}
+                  className='bg-white dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-gray-200 rounded-md p-2 inline-flex items-center justify-center text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500'
+                >
+                  <span className='sr-only'>{t('common.closeMenu')}</span>
                   <XMarkIcon className='h-6 w-6' aria-hidden='true' />
                 </Popover.Button>
               </div>
@@ -710,16 +769,27 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                   items={whitelist}
                   buttonClassName='flex items-center w-full rounded-md border border-gray-300 shadow-sm px-3 md:px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 dark:hover:bg-slate-700'
                   selectItemClassName='text-gray-700 block px-4 py-2 text-base cursor-pointer hover:bg-gray-200 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700'
-                  title={(
+                  title={
                     <>
-                      <Flag className='rounded-sm mr-1.5' country={languageFlag[language]} size={21} alt='' aria-hidden='true' />
+                      <Flag
+                        className='rounded-sm mr-1.5'
+                        country={languageFlag[language]}
+                        size={21}
+                        alt=''
+                        aria-hidden='true'
+                      />
                       {languages[language]}
                     </>
-                  )}
+                  }
                   labelExtractor={(lng: string) => (
                     <div className='flex'>
                       <div className='pt-1'>
-                        <Flag className='rounded-sm mr-1.5' country={languageFlag[lng]} size={21} alt={languageFlag[lng]} />
+                        <Flag
+                          className='rounded-sm mr-1.5'
+                          country={languageFlag[lng]}
+                          size={21}
+                          alt={languageFlag[lng]}
+                        />
                       </div>
                       {languages[lng]}
                     </div>
@@ -733,7 +803,10 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                         to={routesPath.billing}
                         className={cx('font-semibold leading-6 text-base text-center', {
                           'text-amber-600 hover:text-amber-500': rawStatus === TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS,
-                          'text-rose-600 hover:text-rose-500': rawStatus === TRIAL_STATUS_MAPPING.ENDS_TODAY || rawStatus === TRIAL_STATUS_MAPPING.ENDS_TOMORROW || rawStatus === TRIAL_STATUS_MAPPING.ENDED,
+                          'text-rose-600 hover:text-rose-500':
+                            rawStatus === TRIAL_STATUS_MAPPING.ENDS_TODAY ||
+                            rawStatus === TRIAL_STATUS_MAPPING.ENDS_TOMORROW ||
+                            rawStatus === TRIAL_STATUS_MAPPING.ENDED,
                         })}
                         key='TrialNotification'
                       >
@@ -760,12 +833,19 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                       </Link>
                     )}
                     <div onClick={() => buttonRef.current?.click()}>
-                      <Link to={routesPath.user_settings} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700'>
+                      <Link
+                        to={routesPath.user_settings}
+                        className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700'
+                      >
                         {t('common.accountSettings')}
                       </Link>
                     </div>
                     <div onClick={() => buttonRef.current?.click()}>
-                      <Link to='#' className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-indigo-600 bg-gray-50 hover:bg-indigo-50 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700' onClick={logoutHandler}>
+                      <Link
+                        to='#'
+                        className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-indigo-600 bg-gray-50 hover:bg-indigo-50 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700'
+                        onClick={logoutHandler}
+                      >
                         {t('common.logout')}
                       </Link>
                     </div>
@@ -773,12 +853,19 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                 ) : (
                   <>
                     <div onClick={() => buttonRef.current?.click()}>
-                      <Link to={routesPath.signin} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-indigo-600 bg-gray-50 hover:bg-indigo-50'>
+                      <Link
+                        to={routesPath.signin}
+                        className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-indigo-600 bg-gray-50 hover:bg-indigo-50'
+                      >
                         {t('auth.common.signin')}
                       </Link>
                     </div>
                     <div onClick={() => buttonRef.current?.click()}>
-                      <Link to={routesPath.signup} className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700' aria-label={t('titles.signup')}>
+                      <Link
+                        to={routesPath.signup}
+                        className='w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700'
+                        aria-label={t('titles.signup')}
+                      >
                         {t('common.getStarted')}
                       </Link>
                     </div>

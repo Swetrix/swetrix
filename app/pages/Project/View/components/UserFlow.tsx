@@ -18,25 +18,31 @@ const mapStateToProps = (state: StateType) => ({
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
   setUserFlowAscending: (data: IUserFlow, pid: string, period: string, filters: any) => {
-    dispatch(UIActions.setUserFlowAscending({
-      data,
-      pid,
-      period,
-      filters,
-    }))
+    dispatch(
+      UIActions.setUserFlowAscending({
+        data,
+        pid,
+        period,
+        filters,
+      }),
+    )
   },
   setUserFlowDescending: (data: IUserFlow, pid: string, period: string, filters: any) => {
-    dispatch(UIActions.setUserFlowDescending({
-      data,
-      pid,
-      period,
-      filters,
-    }))
+    dispatch(
+      UIActions.setUserFlowDescending({
+        data,
+        pid,
+        period,
+        filters,
+      }),
+    )
   },
   generateError: (message: string) => {
-    dispatch(errorsActions.genericError({
-      message,
-    }))
+    dispatch(
+      errorsActions.genericError({
+        message,
+      }),
+    )
   },
 })
 
@@ -65,9 +71,22 @@ interface IJSXUserFlow {
 }
 
 const UserFlow = ({
-  disableLegend, pid, period, timeBucket, from, to, timezone, userFlowAscendingCache,
-  userFlowDescendingCache, filters, setReversed,
-  isReversed, setUserFlowAscending, setUserFlowDescending, generateError, t,
+  disableLegend,
+  pid,
+  period,
+  timeBucket,
+  from,
+  to,
+  timezone,
+  userFlowAscendingCache,
+  userFlowDescendingCache,
+  filters,
+  setReversed,
+  isReversed,
+  setUserFlowAscending,
+  setUserFlowDescending,
+  generateError,
+  t,
   projectPassword,
 }: IJSXUserFlow) => {
   const key = getUserFlowCacheKey(pid, period, filters)
@@ -78,10 +97,7 @@ const UserFlow = ({
   const fetchUserFlow = async () => {
     setIsLoading(true)
     await getUserFlow(pid, timeBucket, period, filters, from, to, timezone, projectPassword)
-      .then((res: {
-        ascending: IUserFlow
-        descending: IUserFlow
-      }) => {
+      .then((res: { ascending: IUserFlow; descending: IUserFlow }) => {
         const { ascending, descending } = res
 
         setUserFlowAscending(ascending, pid, period, filters)
@@ -101,19 +117,23 @@ const UserFlow = ({
     } else if (isLoading) {
       setIsLoading(false)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period, timeBucket, from, to, timezone, pid])
 
   useEffect(() => {
     fetchUserFlow()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters])
 
   if (isLoading) {
     return <Loader />
   }
 
-  if (!isReversed ? (_isEmpty(userFlowAscending) || _isEmpty(userFlowAscending?.nodes) || _isEmpty(userFlowAscending?.links)) : (_isEmpty(userFlowDescending) || _isEmpty(userFlowDescending?.links) || _isEmpty(userFlowDescending?.nodes))) {
+  if (
+    !isReversed
+      ? _isEmpty(userFlowAscending) || _isEmpty(userFlowAscending?.nodes) || _isEmpty(userFlowAscending?.links)
+      : _isEmpty(userFlowDescending) || _isEmpty(userFlowDescending?.links) || _isEmpty(userFlowDescending?.nodes)
+  ) {
     return (
       <>
         <p className='flex mt-4 items-center justify-center text-md text-gray-900 dark:text-gray-50'>
@@ -128,7 +148,6 @@ const UserFlow = ({
         >
           {t('project.reverse')}
         </button>
-
       </>
     )
   }
@@ -153,12 +172,7 @@ const UserFlow = ({
       nodeBorderWidth={0}
       nodeBorderColor={{
         from: 'color',
-        modifiers: [
-          [
-            'darker',
-            0.8,
-          ],
-        ],
+        modifiers: [['darker', 0.8]],
       }}
       nodeBorderRadius={3}
       linkOpacity={0.5}
@@ -170,12 +184,7 @@ const UserFlow = ({
       labelPadding={16}
       labelTextColor={{
         from: 'color',
-        modifiers: [
-          [
-            'darker',
-            1,
-          ],
-        ],
+        modifiers: [['darker', 1]],
       }}
       // legends={!disableLegend ? [
       //   {
@@ -207,7 +216,11 @@ UserFlow.defaultProps = {
   isReversed: false,
 }
 
-const mergeProps = (stateProps: ReturnType<typeof mapStateToProps>, dispatchProps: ReturnType<typeof mapDispatchToProps>, ownProps: ReturnType<typeof UserFlow>) => ({
+const mergeProps = (
+  stateProps: ReturnType<typeof mapStateToProps>,
+  dispatchProps: ReturnType<typeof mapDispatchToProps>,
+  ownProps: ReturnType<typeof UserFlow>,
+) => ({
   ...ownProps,
   ...stateProps,
   ...dispatchProps,

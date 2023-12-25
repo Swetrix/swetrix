@@ -16,31 +16,41 @@ const mapStateToProps = (state: StateType) => ({
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
   updateProjectFailed: (message: string) => {
-    dispatch(errorsActions.updateProjectFailed({
-      message,
-    }))
+    dispatch(
+      errorsActions.updateProjectFailed({
+        message,
+      }),
+    )
   },
   createNewProjectFailed: (message: string) => {
-    dispatch(errorsActions.createNewProjectFailed({
-      message,
-    }))
+    dispatch(
+      errorsActions.createNewProjectFailed({
+        message,
+      }),
+    )
   },
   newProject: (message: string) => {
-    dispatch(alertsActions.generateAlerts({
-      message,
-      type: 'success',
-    }))
+    dispatch(
+      alertsActions.generateAlerts({
+        message,
+        type: 'success',
+      }),
+    )
   },
   projectDeleted: (message: string) => {
-    dispatch(alertsActions.generateAlerts({
-      message,
-      type: 'success',
-    }))
+    dispatch(
+      alertsActions.generateAlerts({
+        message,
+        type: 'success',
+      }),
+    )
   },
   deleteProjectFailed: (message: string) => {
-    dispatch(errorsActions.deleteProjectFailed({
-      message,
-    }))
+    dispatch(
+      errorsActions.deleteProjectFailed({
+        message,
+      }),
+    )
   },
   loadProjects: () => {
     sagaActions.loadProjectsCaptcha()
@@ -49,14 +59,18 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
     dispatch(UIActions.removeCaptchaProject(pid))
   },
   deleteProjectCache: (pid: string, filters: any) => {
-    dispatch(UIActions.deleteCaptchaProjectCache({
-      pid,
-    }))
+    dispatch(
+      UIActions.deleteCaptchaProjectCache({
+        pid,
+      }),
+    )
   },
   showError: (message: string) => {
-    dispatch(errorsActions.genericError({
-      message,
-    }))
+    dispatch(
+      errorsActions.genericError({
+        message,
+      }),
+    )
   },
 })
 

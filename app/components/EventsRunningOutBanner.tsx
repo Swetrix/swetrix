@@ -9,10 +9,15 @@ import UIActions from 'redux/reducers/ui'
 import { SHOW_BANNER_AT_PERC } from 'redux/constants'
 
 const EventsRunningOutBanner = () => {
-  const { t }: {
-    t: (key: string, item?: {
-      [key: string]: string | number
-    }) => string
+  const {
+    t,
+  }: {
+    t: (
+      key: string,
+      item?: {
+        [key: string]: string | number
+      },
+    ) => string
   } = useTranslation('common')
   const dispatch = useAppDispatch()
   const showNoEventsLeftBanner = useSelector((state: StateType) => state.ui.misc.showNoEventsLeftBanner)
@@ -36,9 +41,7 @@ const EventsRunningOutBanner = () => {
                 <ExclamationTriangleIcon className='h-6 w-6 text-white' aria-hidden='true' />
               </span>
               <p className='ml-3 font-medium text-black truncate'>
-                <span className='md:hidden'>
-                  {t('dashboard.lowEventsTitle')}
-                </span>
+                <span className='md:hidden'>{t('dashboard.lowEventsTitle')}</span>
                 <span className='hidden md:inline'>
                   {t('dashboard.eventsXPercUsed', {
                     amount: SHOW_BANNER_AT_PERC,
@@ -60,9 +63,7 @@ const EventsRunningOutBanner = () => {
                 onClick={closeHandler}
                 className='-mr-1 flex p-2 rounded-md hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-white sm:-mr-2'
               >
-                <span className='sr-only'>
-                  {t('common.close')}
-                </span>
+                <span className='sr-only'>{t('common.close')}</span>
                 <XMarkIcon className='h-6 w-6 text-black' aria-hidden='true' />
               </button>
             </div>
