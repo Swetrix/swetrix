@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import _capitalize from 'lodash/capitalize'
 import _size from 'lodash/size'
 import _truncate from 'lodash/truncate'
-import { getStringFromTime, getTimeFromSeconds } from 'utils/generic'
+import { displayNamesPolyfill, getStringFromTime, getTimeFromSeconds } from 'utils/generic'
 import { ISessionDetails } from '../interfaces/session'
 import { MetricCard, MetricCardSelect } from './MetricCards'
 import CCRow from './CCRow'
@@ -77,7 +77,17 @@ export const SessionDetails = ({ details, psid }: ISessionDetailsComponent) => {
         valueMapper={(value) => _capitalize(value)}
       />
       <MetricCard label={t('project.mapping.br')} value={details.br || 'N/A'} />
-      <MetricCard label={t('project.mapping.lc')} value={details.lc || 'N/A'} />
+      <MetricCard
+        label={t('project.mapping.lc')}
+        value={details.lc || 'N/A'}
+        valueMapper={(value) => {
+          const languageNames = Intl.DisplayNames
+            ? new Intl.DisplayNames([language], { type: 'language' })
+            : displayNamesPolyfill
+
+          return languageNames.of(value)
+        }}
+      />
       <MetricCard
         label={t('project.mapping.ref')}
         value={details.ref || 'N/A'}

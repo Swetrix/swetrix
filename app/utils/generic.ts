@@ -120,3 +120,7 @@ export const calculateRelativePercentage = (oldVal: number, newVal: number, roun
 
   return _round((1 - newVal / oldVal) * -100, round)
 }
+
+export const displayNamesPolyfill = {
+  of: (name: string) => name,
+}

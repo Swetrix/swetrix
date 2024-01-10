@@ -51,7 +51,7 @@ import { withProjectProtected } from 'hoc/projectProtected'
 
 import { periodToCompareDate } from 'utils/compareConvertDate'
 
-import { getTimeFromSeconds, getStringFromTime } from 'utils/generic'
+import { getTimeFromSeconds, getStringFromTime, displayNamesPolyfill } from 'utils/generic'
 import { getItem, setItem, removeItem } from 'utils/localstorage'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
@@ -3609,6 +3609,28 @@ const ViewProject = ({
                             from={dateRange ? getFormatDate(dateRange[0]) : null}
                             to={dateRange ? getFormatDate(dateRange[1]) : null}
                             timezone={timezone}
+                          />
+                        )
+                      }
+
+                      if (type === 'lc') {
+                        const languageNames = Intl.DisplayNames
+                          ? new Intl.DisplayNames([language], { type: 'language' })
+                          : displayNamesPolyfill
+
+                        return (
+                          <Panel
+                            projectPassword={projectPassword}
+                            t={t}
+                            key={type}
+                            icon={panelIcon}
+                            id={type}
+                            activeTab={activeTab}
+                            onFilter={filterHandler}
+                            name={panelName}
+                            data={panelsData.data[type]}
+                            rowMapper={({ name: entryName }) => languageNames.of(entryName)}
+                            customTabs={customTabs}
                           />
                         )
                       }
