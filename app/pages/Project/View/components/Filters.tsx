@@ -6,6 +6,7 @@ import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 
 import countries from 'utils/isoCountries'
+import { displayNamesPolyfill } from 'utils/generic'
 
 interface IFilter {
   column: string
@@ -47,6 +48,14 @@ export const Filter = ({
 
   if (column === 'pg') {
     displayFilter = filter || t('project.redactedPage')
+  }
+
+  if (column === 'lc') {
+    const languageNames = Intl.DisplayNames
+      ? new Intl.DisplayNames([language], { type: 'language' })
+      : displayNamesPolyfill
+
+    displayFilter = languageNames.of(filter) || filter
   }
 
   const truncatedFilter = _truncate(displayFilter)

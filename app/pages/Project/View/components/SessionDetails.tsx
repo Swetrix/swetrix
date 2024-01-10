@@ -81,9 +81,10 @@ export const SessionDetails = ({ details, psid }: ISessionDetailsComponent) => {
         label={t('project.mapping.lc')}
         value={details.lc || 'N/A'}
         valueMapper={(value) => {
-          const languageNames = Intl.DisplayNames
-            ? new Intl.DisplayNames([language], { type: 'language' })
-            : displayNamesPolyfill
+          const languageNames =
+            Intl.DisplayNames && language !== 'N/A'
+              ? new Intl.DisplayNames([language], { type: 'language' })
+              : displayNamesPolyfill
 
           return languageNames.of(value)
         }}
