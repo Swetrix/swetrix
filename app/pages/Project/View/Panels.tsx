@@ -1249,10 +1249,12 @@ const Panel = ({
                 <span className='ml-3 dark:text-gray-50'>
                   {activeTab === PROJECT_TABS.traffic ? nFormatter(valueData, 1) : valueData}
                   &nbsp;
-                  <span className='text-gray-500 dark:text-gray-200 font-light'>
-                    ({perc}
-                    %)
-                  </span>
+                  {activeTab !== PROJECT_TABS.performance && (
+                    <span className='text-gray-500 dark:text-gray-200 font-light'>
+                      ({perc}
+                      %)
+                    </span>
+                  )}
                 </span>
               </div>
               <Progress now={perc} />
