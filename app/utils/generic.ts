@@ -124,3 +124,15 @@ export const calculateRelativePercentage = (oldVal: number, newVal: number, roun
 export const displayNamesPolyfill = {
   of: (name: string) => name,
 }
+
+export const getLocaleDisplayName = (locale: string, language: string): string => {
+  const languageNames = Intl.DisplayNames
+    ? new Intl.DisplayNames([language], { type: 'language' })
+    : displayNamesPolyfill
+
+  try {
+    return languageNames.of(locale) || locale
+  } catch (reason) {
+    return locale
+  }
+}

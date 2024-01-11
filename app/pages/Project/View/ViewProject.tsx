@@ -51,7 +51,7 @@ import { withProjectProtected } from 'hoc/projectProtected'
 
 import { periodToCompareDate } from 'utils/compareConvertDate'
 
-import { getTimeFromSeconds, getStringFromTime, displayNamesPolyfill } from 'utils/generic'
+import { getTimeFromSeconds, getStringFromTime, getLocaleDisplayName } from 'utils/generic'
 import { getItem, setItem, removeItem } from 'utils/localstorage'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
@@ -3614,10 +3614,6 @@ const ViewProject = ({
                       }
 
                       if (type === 'lc') {
-                        const languageNames = Intl.DisplayNames
-                          ? new Intl.DisplayNames([language], { type: 'language' })
-                          : displayNamesPolyfill
-
                         return (
                           <Panel
                             projectPassword={projectPassword}
@@ -3629,7 +3625,7 @@ const ViewProject = ({
                             onFilter={filterHandler}
                             name={panelName}
                             data={panelsData.data[type]}
-                            rowMapper={({ name: entryName }) => languageNames.of(entryName)}
+                            rowMapper={({ name: entryName }) => getLocaleDisplayName(entryName, language)}
                             customTabs={customTabs}
                           />
                         )
