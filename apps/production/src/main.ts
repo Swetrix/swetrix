@@ -42,6 +42,7 @@ async function bootstrap() {
       .setTitle('Swetrix API')
       .setDescription('Swetrix Analytics & Marketplace API')
       .setVersion(process.env.npm_package_version)
+      .addBearerAuth()
       .build()
     const document = SwaggerModule.createDocument(app, config)
     SwaggerModule.setup('api', app, document)

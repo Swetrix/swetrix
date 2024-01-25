@@ -13,7 +13,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common'
-import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { JwtAccessTokenGuard } from 'src/auth/guards'
 import { Roles } from '../../auth/decorators/roles.decorator'
 import { RolesGuard } from '../../auth/guards/roles.guard'
@@ -91,6 +91,7 @@ export class CategoriesController {
     return category
   }
 
+  @ApiBearerAuth()
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN)
   @Post()
@@ -108,6 +109,7 @@ export class CategoriesController {
     return this.categoriesService.save(categoryInstance)
   }
 
+  @ApiBearerAuth()
   @ApiParam({
     name: 'categoryId',
     description: 'Category ID',
@@ -140,6 +142,7 @@ export class CategoriesController {
     return body
   }
 
+  @ApiBearerAuth()
   @ApiParam({
     name: 'categoryId',
     description: 'Category ID',

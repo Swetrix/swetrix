@@ -22,7 +22,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common'
 import { Response } from 'express'
-import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
+import { ApiTags, ApiQuery, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
 import { ILike } from 'typeorm'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _map from 'lodash/map'
@@ -254,6 +254,7 @@ export class ProjectController {
     return this.projectService.paginate({ take, skip }, where)
   }
 
+  @ApiBearerAuth()
   @Get('/user/:id')
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
@@ -280,6 +281,7 @@ export class ProjectController {
     }
   }
 
+  @ApiBearerAuth()
   @Post('/admin/:id')
   @ApiResponse({ status: 201, type: Project })
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
@@ -627,6 +629,7 @@ export class ProjectController {
     return this.projectService.getFunnels(project.id)
   }
 
+  @ApiBearerAuth()
   @Delete('/reset/:id')
   @HttpCode(204)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
@@ -671,6 +674,7 @@ export class ProjectController {
     }
   }
 
+  @ApiBearerAuth()
   @Delete('/captcha/reset/:id')
   @HttpCode(204)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
@@ -713,6 +717,7 @@ export class ProjectController {
     }
   }
 
+  @ApiBearerAuth()
   @Post('/secret-gen/:pid')
   @HttpCode(200)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
@@ -751,6 +756,7 @@ export class ProjectController {
     return secret
   }
 
+  @ApiBearerAuth()
   @Delete('/captcha/:id')
   @HttpCode(204)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
@@ -893,6 +899,7 @@ export class ProjectController {
     await this.projectService.deleteByFilters(pid, type, filters)
   }
 
+  @ApiBearerAuth()
   @Post('/:pid/share')
   @HttpCode(200)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
@@ -1015,6 +1022,7 @@ export class ProjectController {
     }
   }
 
+  @ApiBearerAuth()
   @Put('/share/:shareId')
   @HttpCode(200)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
@@ -1055,6 +1063,7 @@ export class ProjectController {
     return this.projectService.findOneShare(shareId)
   }
 
+  @ApiBearerAuth()
   @HttpCode(204)
   // @UseGuards(JwtAccessTokenGuard, RolesGuard)
   // @Roles(UserType.CUSTOMER, UserType.ADMIN)
@@ -1456,6 +1465,7 @@ export class ProjectController {
     return 'Project deleted successfully'
   }
 
+  @ApiBearerAuth()
   @Put('captcha/inherited/:id')
   @HttpCode(200)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
@@ -1647,6 +1657,7 @@ export class ProjectController {
   }
 
   // The routes related to sharing projects feature
+  @ApiBearerAuth()
   @Delete('/:pid/:shareId')
   @HttpCode(204)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)

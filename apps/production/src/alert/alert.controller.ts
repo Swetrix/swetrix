@@ -15,7 +15,7 @@ import {
   HttpStatus,
 } from '@nestjs/common'
 import { In } from 'typeorm'
-import { ApiTags, ApiResponse } from '@nestjs/swagger'
+import { ApiTags, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _map from 'lodash/map'
 import * as _omit from 'lodash/omit'
@@ -45,6 +45,7 @@ export class AlertController {
     private readonly userService: UserService,
   ) {}
 
+  @ApiBearerAuth()
   @Get('/')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN, UserType.CUSTOMER)
@@ -78,6 +79,7 @@ export class AlertController {
     return result
   }
 
+  @ApiBearerAuth()
   @Post('/')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN, UserType.CUSTOMER)
@@ -154,6 +156,7 @@ export class AlertController {
     }
   }
 
+  @ApiBearerAuth()
   @Put('/:id')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN, UserType.CUSTOMER)
@@ -203,7 +206,8 @@ export class AlertController {
       pid: alert.project.id,
     }
   }
-
+  
+  @ApiBearerAuth()
   @Delete('/:id')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN, UserType.CUSTOMER)

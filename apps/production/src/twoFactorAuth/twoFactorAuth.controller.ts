@@ -8,7 +8,7 @@ import {
   Headers,
   Ip,
 } from '@nestjs/common'
-import { ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 
 import { JwtAccessTokenGuard } from '../auth/guards'
 import { TwoFactorAuthService } from './twoFactorAuth.service'
@@ -38,6 +38,7 @@ export class TwoFactorAuthController {
     private readonly mailerService: MailerService,
   ) {}
 
+  @ApiBearerAuth()
   @Post('generate')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
@@ -48,6 +49,7 @@ export class TwoFactorAuthController {
     return this.twoFactorAuthService.generateTwoFactorAuthenticationSecret(user)
   }
 
+  @ApiBearerAuth()
   @Post('enable')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
@@ -95,6 +97,7 @@ export class TwoFactorAuthController {
     }
   }
 
+  @ApiBearerAuth()
   @Post('disable')
   @HttpCode(200)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
@@ -133,6 +136,7 @@ export class TwoFactorAuthController {
     })
   }
 
+  @ApiBearerAuth()
   @Post('authenticate')
   @HttpCode(200)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)

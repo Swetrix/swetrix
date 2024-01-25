@@ -22,6 +22,7 @@ import {
   ApiOperation,
   ApiCreatedResponse,
   ApiOkResponse,
+  ApiBearerAuth,
 } from '@nestjs/swagger'
 import { I18nValidationExceptionFilter, I18n, I18nContext } from 'nestjs-i18n'
 import * as _pick from 'lodash/pick'
@@ -236,6 +237,7 @@ export class AuthController {
     await this.authService.resetPassword(actionToken, body.newPassword)
   }
 
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Change a password' })
   @ApiOkResponse({
     description: 'Password changed',
@@ -266,6 +268,7 @@ export class AuthController {
     await this.authService.changePassword(user.id, body.newPassword)
   }
 
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Request a resend of the verification email' })
   @ApiOkResponse({
     description: 'Resend of the verification email requested',
@@ -297,6 +300,7 @@ export class AuthController {
     await this.authService.sendVerificationEmail(user.id, user.email)
   }
 
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Change a user email' })
   @ApiOkResponse({
     description: 'User email changed',
@@ -503,6 +507,7 @@ export class AuthController {
     )
   }
 
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Link SSO provider to an existing account' })
   @ApiOkResponse({
     description: 'SSO provider linked to an existing account',
@@ -519,6 +524,7 @@ export class AuthController {
     await this.authService.linkSSOAccount(userId, hash, provider)
   }
 
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Unlink SSO provider from an existing account' })
   @ApiOkResponse({
     description: 'SSO provider unlinked from an existing account',

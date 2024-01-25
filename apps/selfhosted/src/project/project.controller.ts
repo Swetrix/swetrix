@@ -12,7 +12,7 @@ import {
   HttpCode,
   NotFoundException,
 } from '@nestjs/common'
-import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
+import { ApiTags, ApiQuery, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _map from 'lodash/map'
 import * as _trim from 'lodash/trim'
@@ -88,6 +88,7 @@ export class ProjectController {
     return formatted
   }
 
+  @ApiBearerAuth()
   @Post('/')
   @ApiResponse({ status: 201, type: Project })
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
@@ -117,6 +118,7 @@ export class ProjectController {
     return project
   }
 
+  @ApiBearerAuth()
   @Delete('/reset/:id')
   @HttpCode(204)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
@@ -197,6 +199,7 @@ export class ProjectController {
     await this.projectService.removeDataFromClickhouse(pid, from, to)
   }
 
+  @ApiBearerAuth()
   @Delete('/:id')
   @HttpCode(204)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
@@ -228,6 +231,7 @@ export class ProjectController {
     }
   }
 
+  @ApiBearerAuth()
   @Put('/:id')
   @HttpCode(200)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
