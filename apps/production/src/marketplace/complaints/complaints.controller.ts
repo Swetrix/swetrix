@@ -8,7 +8,7 @@ import {
   UseGuards,
   Query,
 } from '@nestjs/common'
-import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { UserType } from 'src/user/entities/user.entity'
 import { RolesGuard } from 'src/auth/guards/roles.guard'
 import { Roles } from 'src/auth/decorators/roles.decorator'
@@ -33,6 +33,7 @@ export class ComplaintsController {
     private readonly extensionsService: ExtensionsService,
   ) {}
 
+  @ApiBearerAuth()
   @Get()
   @ApiQuery({ name: 'offset', required: false, type: String })
   @ApiQuery({ name: 'limit', required: false, type: String })
@@ -56,6 +57,7 @@ export class ComplaintsController {
     return { complaints, count }
   }
 
+  @ApiBearerAuth()
   @Get(':complaintId')
   @ApiParam({ name: 'complaintId', required: true, type: String })
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
@@ -101,6 +103,7 @@ export class ComplaintsController {
     })
   }
 
+  @ApiBearerAuth()
   @Post(':complaintId/resolve')
   @ApiParam({ name: 'complaintId', required: true, type: String })
   @UseGuards(JwtAccessTokenGuard, RolesGuard)

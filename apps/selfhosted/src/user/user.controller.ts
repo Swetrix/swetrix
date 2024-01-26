@@ -6,7 +6,7 @@ import {
   Body,
   BadRequestException,
 } from '@nestjs/common'
-import { ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import * as _omit from 'lodash/omit'
 
 import { JwtAccessTokenGuard } from '../auth/guards'
@@ -30,6 +30,7 @@ import { updateUserClickhouse, getUserClickhouse } from '../common/utils'
 export class UserController {
   constructor(private readonly logger: AppLoggerService) {}
 
+  @ApiBearerAuth()
   @Get('/me')
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
@@ -39,6 +40,7 @@ export class UserController {
     return getSelfhostedUser()
   }
 
+  @ApiBearerAuth()
   @Put('/live-visitors')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
@@ -66,6 +68,7 @@ export class UserController {
     }
   }
 
+  @ApiBearerAuth()
   @Put('/')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)

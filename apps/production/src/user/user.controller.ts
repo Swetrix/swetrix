@@ -18,7 +18,7 @@ import {
   Patch,
 } from '@nestjs/common'
 import { Request } from 'express'
-import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
+import { ApiTags, ApiQuery, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as _map from 'lodash/map'
@@ -91,6 +91,7 @@ export class UserController {
     private readonly telegramService: TelegramService,
   ) {}
 
+  @ApiBearerAuth()
   @Get('/me')
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
@@ -112,6 +113,7 @@ export class UserController {
     return user
   }
 
+  @ApiBearerAuth()
   @Get('/')
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
@@ -125,6 +127,7 @@ export class UserController {
     return this.userService.paginate({ take, skip })
   }
 
+  @ApiBearerAuth()
   @Put('/theme')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
@@ -135,6 +138,7 @@ export class UserController {
     return this.userService.update(userId, { theme })
   }
 
+  @ApiBearerAuth()
   @Put('/live-visitors')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
@@ -151,6 +155,7 @@ export class UserController {
     }
   }
 
+  @ApiBearerAuth()
   @Get('/search')
   @ApiQuery({ name: 'query', required: false })
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
@@ -162,6 +167,7 @@ export class UserController {
     return this.userService.search(query)
   }
 
+  @ApiBearerAuth()
   @Post('/')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN)
@@ -184,6 +190,7 @@ export class UserController {
     return null
   }
 
+  @ApiBearerAuth()
   @Post('/recieve-login-notifications')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
@@ -199,6 +206,7 @@ export class UserController {
     return this.userService.update(userId, { receiveLoginNotifications })
   }
 
+  @ApiBearerAuth()
   @Patch('/set-paypal-email')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
@@ -233,6 +241,7 @@ export class UserController {
     })
   }
 
+  @ApiBearerAuth()
   @Post('/api-key')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
@@ -262,6 +271,7 @@ export class UserController {
     return { apiKey }
   }
 
+  @ApiBearerAuth()
   @Delete('/api-key')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
@@ -277,6 +287,7 @@ export class UserController {
     await this.userService.update(userId, { apiKey: null })
   }
 
+  @ApiBearerAuth()
   @Delete('/:id')
   @HttpCode(204)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
@@ -320,6 +331,7 @@ export class UserController {
     }
   }
 
+  @ApiBearerAuth()
   @Delete('/')
   @HttpCode(204)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
@@ -373,6 +385,7 @@ export class UserController {
     return 'accountDeleted'
   }
 
+  @ApiBearerAuth()
   @Delete('/share/:shareId')
   @HttpCode(204)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
@@ -402,6 +415,7 @@ export class UserController {
     return 'shareDeleted'
   }
 
+  @ApiBearerAuth()
   @Get('/share/:shareId')
   @HttpCode(204)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
@@ -433,6 +447,7 @@ export class UserController {
     return 'shareAccepted'
   }
 
+  @ApiBearerAuth()
   @Post('/confirm_email')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
@@ -468,6 +483,7 @@ export class UserController {
     return true
   }
 
+  @ApiBearerAuth()
   @Put('/:id')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN)
@@ -503,6 +519,7 @@ export class UserController {
     }
   }
 
+  @ApiBearerAuth()
   @Delete('/tg/:id')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
@@ -523,6 +540,7 @@ export class UserController {
     }
   }
 
+  @ApiBearerAuth()
   @Put('/')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
@@ -666,6 +684,7 @@ export class UserController {
     }
   }
 
+  // @ApiBearerAuth()
   // @Get('payouts/list')
   // @ApiQuery({ name: 'take', required: false })
   // @ApiQuery({ name: 'skip', required: false })
@@ -687,6 +706,7 @@ export class UserController {
   //   return this.userService.getPayoutsList(user)
   // }
 
+  @ApiBearerAuth()
   @Get('referrals')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
@@ -702,6 +722,7 @@ export class UserController {
     return this.userService.getReferralsList(user)
   }
 
+  @ApiBearerAuth()
   @Get('payouts/info')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
@@ -717,6 +738,7 @@ export class UserController {
     return this.userService.getPayoutsInfo(user)
   }
 
+  @ApiBearerAuth()
   @Post('generate-ref-code')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
@@ -747,6 +769,7 @@ export class UserController {
     }
   }
 
+  @ApiBearerAuth()
   @Get('/export')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
@@ -834,6 +857,7 @@ export class UserController {
     return info
   }
 
+  @ApiBearerAuth()
   @Post('change-plan')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
@@ -848,6 +872,7 @@ export class UserController {
     await this.projectService.clearProjectsRedisCache(id)
   }
 
+  @ApiBearerAuth()
   @Post('preview-plan')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)

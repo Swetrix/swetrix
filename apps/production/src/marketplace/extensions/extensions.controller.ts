@@ -15,7 +15,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common'
-import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { FormDataRequest } from 'nestjs-form-data'
 import { Like } from 'typeorm'
 import * as _map from 'lodash/map'
@@ -339,6 +339,8 @@ export class ExtensionsController {
     required: false,
     type: String,
   })
+
+  @ApiBearerAuth()
   @Roles(UserType.ADMIN)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Get('admin/search')
@@ -461,6 +463,7 @@ export class ExtensionsController {
     )
   }
 
+  @ApiBearerAuth()
   @ApiParam({
     name: 'extensionId',
     description: 'Extension ID',
@@ -488,6 +491,7 @@ export class ExtensionsController {
     return this.extensionsService.save(extension)
   }
 
+  @ApiBearerAuth()
   @ApiParam({
     name: 'extensionId',
     description: 'Extension ID',
