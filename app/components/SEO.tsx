@@ -16,6 +16,7 @@ export const SEO = () => {
 
   const isBlogPage = _startsWith(pathname, '/blog')
   const isMainPage = pathname === '/'
+  const isProjectViewPage = _startsWith(pathname, '/projects/')
   const ogImageUrl = getOgImageUrl(prefixLessTitle)
 
   return (
@@ -37,12 +38,13 @@ export const SEO = () => {
             property='og:description'
             content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative'
           />
-          {isMainPage ? (
+          {isMainPage && (
             <>
               <meta name='twitter:image' content='https://swetrix.com/assets/og_image.png' />
               <meta property='og:image' content='https://swetrix.com/assets/og_image.png' />
             </>
-          ) : (
+          )}
+          {!isProjectViewPage && (
             <>
               <meta name='twitter:image' content={ogImageUrl} />
               <meta property='og:image' content={ogImageUrl} />
