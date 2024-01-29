@@ -1,8 +1,8 @@
 export interface LibOptions {
     /**
-     * When set to `true`, all tracking logs will be printed to console and localhost events will be sent to server.
+     * When set to `true`, localhost events will be sent to server.
      */
-    debug?: boolean;
+    devMode?: boolean;
     /**
      * When set to `true`, the tracking library won't send any data to server.
      * Useful for development purposes when this value is set based on `.env` var.
@@ -25,6 +25,26 @@ export interface TrackEventOptions {
         [key: string]: string;
     };
 }
+export interface IPageViewPayload {
+    lc: string | undefined;
+    tz: string | undefined;
+    ref: string | undefined;
+    so: string | undefined;
+    me: string | undefined;
+    ca: string | undefined;
+    pg: string;
+    prev: string | null | undefined;
+}
+interface IPerfPayload {
+    dns: number;
+    tls: number;
+    conn: number;
+    response: number;
+    render: number;
+    dom_load: number;
+    page_load: number;
+    ttfb: number;
+}
 /**
  * The object returned by `trackPageViews()`, used to stop tracking pages.
  */
@@ -44,16 +64,8 @@ export interface PageViewsOptions {
      * This param is useful when tracking single-page landing websites.
      */
     unique?: boolean;
-    /** A list of Regular Expressions or string pathes to ignore. */
-    ignore?: Array<string | RegExp>;
-    /** Do not send paths from ignore list to API. If set to `false`, the page view information will be sent to the Swetrix API, but the page will be displayed as a 'Redacted page' in the dashboard. */
-    doNotAnonymise?: boolean;
-    /** Do not send Heartbeat requests to the server. */
-    noHeartbeat?: boolean;
     /** Send Heartbeat requests when the website tab is not active in the browser. */
     heartbeatOnBackground?: boolean;
-    /** Disable user-flow */
-    noUserFlow?: boolean;
     /**
      * Set to `true` to enable hash-based routing.
      * For example if you have pages like /#/path or want to track pages like /path#hash
@@ -64,6 +76,13 @@ export interface PageViewsOptions {
      * For example if you have pages like /path?search
      */
     search?: boolean;
+    /**
+     * Callback to edit / prevent sending pageviews.
+     *
+     * @param payload - The pageview payload.
+     * @returns The edited payload or `false` to prevent sending the pageview. If `true` is returned, the payload will be sent as-is.
+     */
+    callback?: (payload: IPageViewPayload) => IPageViewPayload | boolean;
 }
 export declare const defaultPageActions: {
     stop(): void;
@@ -78,14 +97,13 @@ export declare class Lib {
     constructor(projectID: string, options?: LibOptions | undefined);
     track(event: TrackEventOptions): void;
     trackPageViews(options?: PageViewsOptions): PageActions;
-    getPerformanceStats(): object;
+    getPerformanceStats(): IPerfPayload | {};
     private heartbeat;
-    private checkIgnore;
     private trackPathChange;
     private getPreviousPage;
     private trackPage;
-    submitPageView(pg: null | string, prev: string | null | undefined, unique: boolean, perf: any): void;
-    private debug;
+    submitPageView(pg: string, prev: string | null | undefined, unique: boolean, perf: IPerfPayload | {}, evokeCallback?: boolean): void;
     private canTrack;
     private sendRequest;
 }
+export {};

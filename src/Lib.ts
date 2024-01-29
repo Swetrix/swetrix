@@ -1,13 +1,21 @@
 import {
-  isInBrowser, isLocalhost, isAutomated, getLocale, getTimezone, getReferrer,
-  getUTMCampaign, getUTMMedium, getUTMSource, getPath,
+  isInBrowser,
+  isLocalhost,
+  isAutomated,
+  getLocale,
+  getTimezone,
+  getReferrer,
+  getUTMCampaign,
+  getUTMMedium,
+  getUTMSource,
+  getPath,
 } from './utils'
 
 export interface LibOptions {
   /**
-   * When set to `true`, all tracking logs will be printed to console and localhost events will be sent to server.
+   * When set to `true`, localhost events will be sent to server.
    */
-  debug?: boolean
+  devMode?: boolean
 
   /**
    * When set to `true`, the tracking library won't send any data to server.
@@ -37,6 +45,29 @@ export interface TrackEventOptions {
   }
 }
 
+// Partial user-editable pageview payload
+export interface IPageViewPayload {
+  lc: string | undefined
+  tz: string | undefined
+  ref: string | undefined
+  so: string | undefined
+  me: string | undefined
+  ca: string | undefined
+  pg: string
+  prev: string | null | undefined
+}
+
+interface IPerfPayload {
+  dns: number
+  tls: number
+  conn: number
+  response: number
+  render: number
+  dom_load: number
+  page_load: number
+  ttfb: number
+}
+
 /**
  * The object returned by `trackPageViews()`, used to stop tracking pages.
  */
@@ -60,20 +91,8 @@ export interface PageViewsOptions {
    */
   unique?: boolean
 
-  /** A list of Regular Expressions or string pathes to ignore. */
-  ignore?: Array<string | RegExp>
-
-  /** Do not send paths from ignore list to API. If set to `false`, the page view information will be sent to the Swetrix API, but the page will be displayed as a 'Redacted page' in the dashboard. */
-  doNotAnonymise?: boolean
-
-  /** Do not send Heartbeat requests to the server. */
-  noHeartbeat?: boolean
-
   /** Send Heartbeat requests when the website tab is not active in the browser. */
   heartbeatOnBackground?: boolean
-
-  /** Disable user-flow */
-  noUserFlow?: boolean
 
   /**
    * Set to `true` to enable hash-based routing.
@@ -86,6 +105,14 @@ export interface PageViewsOptions {
    * For example if you have pages like /path?search
    */
   search?: boolean
+
+  /**
+   * Callback to edit / prevent sending pageviews.
+   *
+   * @param payload - The pageview payload.
+   * @returns The edited payload or `false` to prevent sending the pageview. If `true` is returned, the payload will be sent as-is.
+   */
+  callback?: (payload: IPageViewPayload) => IPageViewPayload | boolean
 }
 
 export const defaultPageActions = {
@@ -111,6 +138,7 @@ export class Lib {
     }
 
     const data = {
+      ...event,
       pid: this.projectID,
       pg: this.activePage,
       lc: getLocale(),
@@ -119,7 +147,6 @@ export class Lib {
       so: getUTMSource(),
       me: getUTMMedium(),
       ca: getUTMCampaign(),
-      ...event,
     }
     this.sendRequest('custom', data)
   }
@@ -134,15 +161,14 @@ export class Lib {
     }
 
     this.pageViewsOptions = options
-    let hbInterval: NodeJS.Timeout, interval: NodeJS.Timeout
+    let interval: NodeJS.Timeout
+
     if (!options?.unique) {
       interval = setInterval(this.trackPathChange, 2000)
     }
 
-    if (!options?.noHeartbeat) {
-      setTimeout(this.heartbeat, 3000)
-      hbInterval = setInterval(this.heartbeat, 28000)
-    }
+    setTimeout(this.heartbeat, 3000)
+    const hbInterval = setInterval(this.heartbeat, 28000)
 
     const path = getPath({
       hash: options?.hash,
@@ -163,12 +189,12 @@ export class Lib {
     return this.pageData.actions
   }
 
-  getPerformanceStats(): object {
+  getPerformanceStats(): IPerfPayload | {} {
     if (!this.canTrack() || this.perfStatsCollected || !window.performance?.getEntriesByType) {
       return {}
     }
 
-    const perf = window.performance.getEntriesByType('navigation')[0]
+    const perf = window.performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
 
     if (!perf) {
       return {}
@@ -178,25 +204,19 @@ export class Lib {
 
     return {
       // Network
-      // @ts-ignore
       dns: perf.domainLookupEnd - perf.domainLookupStart, // DNS Resolution
-      // @ts-ignore
       tls: perf.secureConnectionStart ? perf.requestStart - perf.secureConnectionStart : 0, // TLS Setup; checking if secureConnectionStart is not 0 (it's 0 for non-https websites)
-      // @ts-ignore
-      conn: perf.secureConnectionStart ? perf.secureConnectionStart - perf.connectStart : perf.connectEnd - perf.connectStart, // Connection time
-      // @ts-ignore
+      conn: perf.secureConnectionStart
+        ? perf.secureConnectionStart - perf.connectStart
+        : perf.connectEnd - perf.connectStart, // Connection time
       response: perf.responseEnd - perf.responseStart, // Response Time (Download)
 
       // Frontend
-      // @ts-ignore
       render: perf.domComplete - perf.domContentLoadedEventEnd, // Browser rendering the HTML time
-      // @ts-ignore
       dom_load: perf.domContentLoadedEventEnd - perf.responseEnd, // DOM loading timing
-      // @ts-ignore
       page_load: perf.loadEventStart, // Page load time
 
       // Backend
-      // @ts-ignore
       ttfb: perf.responseStart - perf.requestStart,
     }
   }
@@ -211,19 +231,6 @@ export class Lib {
     }
 
     this.sendRequest('hb', data)
-  }
-
-  private checkIgnore(path: string): boolean {
-    const ignore = this.pageViewsOptions?.ignore
-
-    if (Array.isArray(ignore)) {
-      for (let i = 0; i < ignore.length; ++i) {
-        if (ignore[i] === path) return true
-        // @ts-ignore
-        if (ignore[i] instanceof RegExp && ignore[i].test(path)) return true
-      }
-    }
-    return false
   }
 
   // Tracking path changes. If path changes -> calling this.trackPage method
@@ -244,13 +251,7 @@ export class Lib {
     // Assuming that this function is called in trackPage and this.activePage is not overwritten by new value yet
     // That method of getting previous page works for SPA websites
     if (this.activePage) {
-      const shouldIgnore = this.checkIgnore(this.activePage)
-
-      if (shouldIgnore && this.pageViewsOptions?.doNotAnonymise) {
-        return null
-      }
-
-      return shouldIgnore ? null : this.activePage
+      return this.activePage
     }
 
     // Checking if URL is supported by the browser (for example, IE11 does not support it)
@@ -272,13 +273,7 @@ export class Lib {
           return null
         }
 
-        const shouldIgnore = this.checkIgnore(pathname)
-
-        if (shouldIgnore && this.pageViewsOptions?.doNotAnonymise) {
-          return null
-        }
-
-        return shouldIgnore ? null : pathname
+        return pathname
       } catch {
         return null
       }
@@ -291,68 +286,62 @@ export class Lib {
     if (!this.pageData) return
     this.pageData.path = pg
 
-    const shouldIgnore = this.checkIgnore(pg)
-
-    if (shouldIgnore && this.pageViewsOptions?.doNotAnonymise) return
-
     const perf = this.getPerformanceStats()
 
-    let prev
-
-    if (!this.pageViewsOptions?.noUserFlow) {
-      prev = this.getPreviousPage()
-    }
+    const prev = this.getPreviousPage()
 
     this.activePage = pg
-    this.submitPageView(shouldIgnore ? null : pg, prev, unique, perf)
+    this.submitPageView(pg, prev, unique, perf, true)
   }
 
-  submitPageView(pg: null | string, prev: string | null | undefined, unique: boolean, perf: any): void {
-    const data = {
+  submitPageView(
+    pg: string,
+    prev: string | null | undefined,
+    unique: boolean,
+    perf: IPerfPayload | {},
+    evokeCallback?: boolean,
+  ): void {
+    const privateData = {
       pid: this.projectID,
+      perf,
+      unique,
+    }
+    const pvPayload = {
       lc: getLocale(),
       tz: getTimezone(),
       ref: getReferrer(),
       so: getUTMSource(),
       me: getUTMMedium(),
       ca: getUTMCampaign(),
-      unique,
       pg,
-      perf,
       prev,
     }
 
-    this.sendRequest('', data)
-  }
+    if (evokeCallback && this.pageViewsOptions?.callback) {
+      const callbackResult = this.pageViewsOptions.callback(pvPayload)
 
-  private debug(message: string): void {
-    if (this.options?.debug) {
-      console.log('[Swetrix]', message)
+      if (callbackResult === false) {
+        return
+      }
+
+      if (callbackResult && typeof callbackResult === 'object') {
+        Object.assign(pvPayload, callbackResult)
+      }
     }
+
+    Object.assign(pvPayload, privateData)
+
+    this.sendRequest('', pvPayload)
   }
 
   private canTrack(): boolean {
-    if (this.options?.disabled) {
-      this.debug('Tracking disabled: the \'disabled\' setting is set to true.')
-      return false
-    }
-
-    if (!isInBrowser()) {
-      this.debug('Tracking disabled: script does not run in browser environment.')
-      return false
-    }
-
-    if (this.options?.respectDNT && window.navigator?.doNotTrack === '1') {
-      this.debug('Tracking disabled: respecting user\'s \'Do Not Track\' preference.')
-      return false
-    }
-
-    if (!this.options?.debug && isLocalhost()) {
-      return false
-    }
-
-    if (isAutomated()) {
-      this.debug('Tracking disabled: navigation is automated by WebDriver.')
+    if (
+      this.options?.disabled ||
+      !isInBrowser() ||
+      (this.options?.respectDNT && window.navigator?.doNotTrack === '1') ||
+      (!this.options?.devMode && isLocalhost()) ||
+      isAutomated()
+    ) {
       return false
     }
 

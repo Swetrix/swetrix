@@ -19,6 +19,7 @@ export class Lib {
             return;
         }
         const data = {
+            ...event,
             pid: this.projectID,
             pg: this.activePage,
             lc: getLocale(),
@@ -27,7 +28,6 @@ export class Lib {
             so: getUTMSource(),
             me: getUTMMedium(),
             ca: getUTMCampaign(),
-            ...event,
         };
         this.sendRequest('custom', data);
     }
@@ -39,14 +39,12 @@ export class Lib {
             return this.pageData.actions;
         }
         this.pageViewsOptions = options;
-        let hbInterval, interval;
+        let interval;
         if (!options?.unique) {
             interval = setInterval(this.trackPathChange, 2000);
         }
-        if (!options?.noHeartbeat) {
-            setTimeout(this.heartbeat, 3000);
-            hbInterval = setInterval(this.heartbeat, 28000);
-        }
+        setTimeout(this.heartbeat, 3000);
+        const hbInterval = setInterval(this.heartbeat, 28000);
         const path = getPath({
             hash: options?.hash,
             search: options?.search,
@@ -74,23 +72,17 @@ export class Lib {
         this.perfStatsCollected = true;
         return {
             // Network
-            // @ts-ignore
-            dns: perf.domainLookupEnd - perf.domainLookupStart,
-            // @ts-ignore
-            tls: perf.secureConnectionStart ? perf.requestStart - perf.secureConnectionStart : 0,
-            // @ts-ignore
-            conn: perf.secureConnectionStart ? perf.secureConnectionStart - perf.connectStart : perf.connectEnd - perf.connectStart,
-            // @ts-ignore
-            response: perf.responseEnd - perf.responseStart,
+            dns: perf.domainLookupEnd - perf.domainLookupStart, // DNS Resolution
+            tls: perf.secureConnectionStart ? perf.requestStart - perf.secureConnectionStart : 0, // TLS Setup; checking if secureConnectionStart is not 0 (it's 0 for non-https websites)
+            conn: perf.secureConnectionStart
+                ? perf.secureConnectionStart - perf.connectStart
+                : perf.connectEnd - perf.connectStart, // Connection time
+            response: perf.responseEnd - perf.responseStart, // Response Time (Download)
             // Frontend
-            // @ts-ignore
-            render: perf.domComplete - perf.domContentLoadedEventEnd,
-            // @ts-ignore
-            dom_load: perf.domContentLoadedEventEnd - perf.responseEnd,
-            // @ts-ignore
-            page_load: perf.loadEventStart,
+            render: perf.domComplete - perf.domContentLoadedEventEnd, // Browser rendering the HTML time
+            dom_load: perf.domContentLoadedEventEnd - perf.responseEnd, // DOM loading timing
+            page_load: perf.loadEventStart, // Page load time
             // Backend
-            // @ts-ignore
             ttfb: perf.responseStart - perf.requestStart,
         };
     }
@@ -102,19 +94,6 @@ export class Lib {
             pid: this.projectID,
         };
         this.sendRequest('hb', data);
-    }
-    checkIgnore(path) {
-        const ignore = this.pageViewsOptions?.ignore;
-        if (Array.isArray(ignore)) {
-            for (let i = 0; i < ignore.length; ++i) {
-                if (ignore[i] === path)
-                    return true;
-                // @ts-ignore
-                if (ignore[i] instanceof RegExp && ignore[i].test(path))
-                    return true;
-            }
-        }
-        return false;
     }
     // Tracking path changes. If path changes -> calling this.trackPage method
     trackPathChange() {
@@ -133,11 +112,7 @@ export class Lib {
         // Assuming that this function is called in trackPage and this.activePage is not overwritten by new value yet
         // That method of getting previous page works for SPA websites
         if (this.activePage) {
-            const shouldIgnore = this.checkIgnore(this.activePage);
-            if (shouldIgnore && this.pageViewsOptions?.doNotAnonymise) {
-                return null;
-            }
-            return shouldIgnore ? null : this.activePage;
+            return this.activePage;
         }
         // Checking if URL is supported by the browser (for example, IE11 does not support it)
         if (typeof URL === 'function') {
@@ -153,11 +128,7 @@ export class Lib {
                 if (host !== refHost) {
                     return null;
                 }
-                const shouldIgnore = this.checkIgnore(pathname);
-                if (shouldIgnore && this.pageViewsOptions?.doNotAnonymise) {
-                    return null;
-                }
-                return shouldIgnore ? null : pathname;
+                return pathname;
             }
             catch {
                 return null;
@@ -169,56 +140,45 @@ export class Lib {
         if (!this.pageData)
             return;
         this.pageData.path = pg;
-        const shouldIgnore = this.checkIgnore(pg);
-        if (shouldIgnore && this.pageViewsOptions?.doNotAnonymise)
-            return;
         const perf = this.getPerformanceStats();
-        let prev;
-        if (!this.pageViewsOptions?.noUserFlow) {
-            prev = this.getPreviousPage();
-        }
+        const prev = this.getPreviousPage();
         this.activePage = pg;
-        this.submitPageView(shouldIgnore ? null : pg, prev, unique, perf);
+        this.submitPageView(pg, prev, unique, perf, true);
     }
-    submitPageView(pg, prev, unique, perf) {
-        const data = {
+    submitPageView(pg, prev, unique, perf, evokeCallback) {
+        const privateData = {
             pid: this.projectID,
+            perf,
+            unique,
+        };
+        const pvPayload = {
             lc: getLocale(),
             tz: getTimezone(),
             ref: getReferrer(),
             so: getUTMSource(),
             me: getUTMMedium(),
             ca: getUTMCampaign(),
-            unique,
             pg,
-            perf,
             prev,
         };
-        this.sendRequest('', data);
-    }
-    debug(message) {
-        if (this.options?.debug) {
-            console.log('[Swetrix]', message);
+        if (evokeCallback && this.pageViewsOptions?.callback) {
+            const callbackResult = this.pageViewsOptions.callback(pvPayload);
+            if (callbackResult === false) {
+                return;
+            }
+            if (callbackResult && typeof callbackResult === 'object') {
+                Object.assign(pvPayload, callbackResult);
+            }
         }
+        Object.assign(pvPayload, privateData);
+        this.sendRequest('', pvPayload);
     }
     canTrack() {
-        if (this.options?.disabled) {
-            this.debug('Tracking disabled: the \'disabled\' setting is set to true.');
-            return false;
-        }
-        if (!isInBrowser()) {
-            this.debug('Tracking disabled: script does not run in browser environment.');
-            return false;
-        }
-        if (this.options?.respectDNT && window.navigator?.doNotTrack === '1') {
-            this.debug('Tracking disabled: respecting user\'s \'Do Not Track\' preference.');
-            return false;
-        }
-        if (!this.options?.debug && isLocalhost()) {
-            return false;
-        }
-        if (isAutomated()) {
-            this.debug('Tracking disabled: navigation is automated by WebDriver.');
+        if (this.options?.disabled ||
+            !isInBrowser() ||
+            (this.options?.respectDNT && window.navigator?.doNotTrack === '1') ||
+            (!this.options?.devMode && isLocalhost()) ||
+            isAutomated()) {
             return false;
         }
         return true;

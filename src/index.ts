@@ -1,6 +1,4 @@
-import {
-  Lib, LibOptions, TrackEventOptions, PageViewsOptions, PageActions, defaultPageActions,
-} from './Lib'
+import { Lib, LibOptions, TrackEventOptions, PageViewsOptions, PageActions, defaultPageActions } from './Lib'
 
 export let LIB_INSTANCE: Lib | null = null
 
@@ -62,7 +60,7 @@ export function trackViews(options?: PageViewsOptions): Promise<PageActions> {
 /**
  * This function is used to manually track a page view event.
  * It's useful if your application uses esoteric routing which is not supported by Swetrix by default.
- * 
+ *
  * @param path Path of the page to track (this will be sent to the Swetrix API and displayed in the dashboard).
  * @param prev Path of the previous page.
  * @param unique If set to `true`, only 1 event with the same ID will be saved per user session.

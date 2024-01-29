@@ -114,7 +114,7 @@ var Lib = /** @class */ (function () {
         if (!this.canTrack()) {
             return;
         }
-        var data = __assign({ pid: this.projectID, pg: this.activePage, lc: getLocale(), tz: getTimezone(), ref: getReferrer(), so: getUTMSource(), me: getUTMMedium(), ca: getUTMCampaign() }, event);
+        var data = __assign(__assign({}, event), { pid: this.projectID, pg: this.activePage, lc: getLocale(), tz: getTimezone(), ref: getReferrer(), so: getUTMSource(), me: getUTMMedium(), ca: getUTMCampaign() });
         this.sendRequest('custom', data);
     };
     Lib.prototype.trackPageViews = function (options) {
@@ -125,14 +125,12 @@ var Lib = /** @class */ (function () {
             return this.pageData.actions;
         }
         this.pageViewsOptions = options;
-        var hbInterval, interval;
+        var interval;
         if (!(options === null || options === void 0 ? void 0 : options.unique)) {
             interval = setInterval(this.trackPathChange, 2000);
         }
-        if (!(options === null || options === void 0 ? void 0 : options.noHeartbeat)) {
-            setTimeout(this.heartbeat, 3000);
-            hbInterval = setInterval(this.heartbeat, 28000);
-        }
+        setTimeout(this.heartbeat, 3000);
+        var hbInterval = setInterval(this.heartbeat, 28000);
         var path = getPath({
             hash: options === null || options === void 0 ? void 0 : options.hash,
             search: options === null || options === void 0 ? void 0 : options.search,
@@ -161,23 +159,17 @@ var Lib = /** @class */ (function () {
         this.perfStatsCollected = true;
         return {
             // Network
-            // @ts-ignore
-            dns: perf.domainLookupEnd - perf.domainLookupStart,
-            // @ts-ignore
-            tls: perf.secureConnectionStart ? perf.requestStart - perf.secureConnectionStart : 0,
-            // @ts-ignore
-            conn: perf.secureConnectionStart ? perf.secureConnectionStart - perf.connectStart : perf.connectEnd - perf.connectStart,
-            // @ts-ignore
-            response: perf.responseEnd - perf.responseStart,
+            dns: perf.domainLookupEnd - perf.domainLookupStart, // DNS Resolution
+            tls: perf.secureConnectionStart ? perf.requestStart - perf.secureConnectionStart : 0, // TLS Setup; checking if secureConnectionStart is not 0 (it's 0 for non-https websites)
+            conn: perf.secureConnectionStart
+                ? perf.secureConnectionStart - perf.connectStart
+                : perf.connectEnd - perf.connectStart, // Connection time
+            response: perf.responseEnd - perf.responseStart, // Response Time (Download)
             // Frontend
-            // @ts-ignore
-            render: perf.domComplete - perf.domContentLoadedEventEnd,
-            // @ts-ignore
-            dom_load: perf.domContentLoadedEventEnd - perf.responseEnd,
-            // @ts-ignore
-            page_load: perf.loadEventStart,
+            render: perf.domComplete - perf.domContentLoadedEventEnd, // Browser rendering the HTML time
+            dom_load: perf.domContentLoadedEventEnd - perf.responseEnd, // DOM loading timing
+            page_load: perf.loadEventStart, // Page load time
             // Backend
-            // @ts-ignore
             ttfb: perf.responseStart - perf.requestStart,
         };
     };
@@ -190,20 +182,6 @@ var Lib = /** @class */ (function () {
             pid: this.projectID,
         };
         this.sendRequest('hb', data);
-    };
-    Lib.prototype.checkIgnore = function (path) {
-        var _a;
-        var ignore = (_a = this.pageViewsOptions) === null || _a === void 0 ? void 0 : _a.ignore;
-        if (Array.isArray(ignore)) {
-            for (var i = 0; i < ignore.length; ++i) {
-                if (ignore[i] === path)
-                    return true;
-                // @ts-ignore
-                if (ignore[i] instanceof RegExp && ignore[i].test(path))
-                    return true;
-            }
-        }
-        return false;
     };
     // Tracking path changes. If path changes -> calling this.trackPage method
     Lib.prototype.trackPathChange = function () {
@@ -220,15 +198,10 @@ var Lib = /** @class */ (function () {
         }
     };
     Lib.prototype.getPreviousPage = function () {
-        var _a, _b;
         // Assuming that this function is called in trackPage and this.activePage is not overwritten by new value yet
         // That method of getting previous page works for SPA websites
         if (this.activePage) {
-            var shouldIgnore = this.checkIgnore(this.activePage);
-            if (shouldIgnore && ((_a = this.pageViewsOptions) === null || _a === void 0 ? void 0 : _a.doNotAnonymise)) {
-                return null;
-            }
-            return shouldIgnore ? null : this.activePage;
+            return this.activePage;
         }
         // Checking if URL is supported by the browser (for example, IE11 does not support it)
         if (typeof URL === 'function') {
@@ -244,76 +217,60 @@ var Lib = /** @class */ (function () {
                 if (host !== refHost) {
                     return null;
                 }
-                var shouldIgnore = this.checkIgnore(pathname);
-                if (shouldIgnore && ((_b = this.pageViewsOptions) === null || _b === void 0 ? void 0 : _b.doNotAnonymise)) {
-                    return null;
-                }
-                return shouldIgnore ? null : pathname;
+                return pathname;
             }
-            catch (_c) {
+            catch (_a) {
                 return null;
             }
         }
         return null;
     };
     Lib.prototype.trackPage = function (pg, unique) {
-        var _a, _b;
         if (unique === void 0) { unique = false; }
         if (!this.pageData)
             return;
         this.pageData.path = pg;
-        var shouldIgnore = this.checkIgnore(pg);
-        if (shouldIgnore && ((_a = this.pageViewsOptions) === null || _a === void 0 ? void 0 : _a.doNotAnonymise))
-            return;
         var perf = this.getPerformanceStats();
-        var prev;
-        if (!((_b = this.pageViewsOptions) === null || _b === void 0 ? void 0 : _b.noUserFlow)) {
-            prev = this.getPreviousPage();
-        }
+        var prev = this.getPreviousPage();
         this.activePage = pg;
-        this.submitPageView(shouldIgnore ? null : pg, prev, unique, perf);
+        this.submitPageView(pg, prev, unique, perf, true);
     };
-    Lib.prototype.submitPageView = function (pg, prev, unique, perf) {
-        var data = {
+    Lib.prototype.submitPageView = function (pg, prev, unique, perf, evokeCallback) {
+        var _a;
+        var privateData = {
             pid: this.projectID,
+            perf: perf,
+            unique: unique,
+        };
+        var pvPayload = {
             lc: getLocale(),
             tz: getTimezone(),
             ref: getReferrer(),
             so: getUTMSource(),
             me: getUTMMedium(),
             ca: getUTMCampaign(),
-            unique: unique,
             pg: pg,
-            perf: perf,
             prev: prev,
         };
-        this.sendRequest('', data);
-    };
-    Lib.prototype.debug = function (message) {
-        var _a;
-        if ((_a = this.options) === null || _a === void 0 ? void 0 : _a.debug) {
-            console.log('[Swetrix]', message);
+        if (evokeCallback && ((_a = this.pageViewsOptions) === null || _a === void 0 ? void 0 : _a.callback)) {
+            var callbackResult = this.pageViewsOptions.callback(pvPayload);
+            if (callbackResult === false) {
+                return;
+            }
+            if (callbackResult && typeof callbackResult === 'object') {
+                Object.assign(pvPayload, callbackResult);
+            }
         }
+        Object.assign(pvPayload, privateData);
+        this.sendRequest('', pvPayload);
     };
     Lib.prototype.canTrack = function () {
         var _a, _b, _c, _d;
-        if ((_a = this.options) === null || _a === void 0 ? void 0 : _a.disabled) {
-            this.debug('Tracking disabled: the \'disabled\' setting is set to true.');
-            return false;
-        }
-        if (!isInBrowser()) {
-            this.debug('Tracking disabled: script does not run in browser environment.');
-            return false;
-        }
-        if (((_b = this.options) === null || _b === void 0 ? void 0 : _b.respectDNT) && ((_c = window.navigator) === null || _c === void 0 ? void 0 : _c.doNotTrack) === '1') {
-            this.debug('Tracking disabled: respecting user\'s \'Do Not Track\' preference.');
-            return false;
-        }
-        if (!((_d = this.options) === null || _d === void 0 ? void 0 : _d.debug) && isLocalhost()) {
-            return false;
-        }
-        if (isAutomated()) {
-            this.debug('Tracking disabled: navigation is automated by WebDriver.');
+        if (((_a = this.options) === null || _a === void 0 ? void 0 : _a.disabled) ||
+            !isInBrowser() ||
+            (((_b = this.options) === null || _b === void 0 ? void 0 : _b.respectDNT) && ((_c = window.navigator) === null || _c === void 0 ? void 0 : _c.doNotTrack) === '1') ||
+            (!((_d = this.options) === null || _d === void 0 ? void 0 : _d.devMode) && isLocalhost()) ||
+            isAutomated()) {
             return false;
         }
         return true;
