@@ -19,7 +19,7 @@ Here's an example of how to use this function with all the available options:
 
 ```javascript
 swetrix.init('YOUR_PROJECT_ID', {
-  debug: false,
+  devMode: false,
   disabled: false,
   respectDNT: false,
   apiURL: 'https://api.swetrix.com/log',
@@ -28,7 +28,7 @@ swetrix.init('YOUR_PROJECT_ID', {
 
 | Name | Description | Default value |
 | --- | --- | --- |
-| debug | When set to true, all tracking logs will be printed to console and localhost events will be sent to server. | `false` |
+| devMode | When set to `true`, localhost events will be sent to server. | `false` |
 | disabled | When set to true, the tracking library won't send any data to server.<br />Useful for development purposes when this value is set based on '.env' var. | `false` |
 | respectDNT | By setting this flag to true, we will not collect ANY kind of data about the user with the DNT setting. <br />This setting is not true by default because our service anonymises all incoming data and does not pass it on to any third parties under any circumstances. | `false` |
 | apiURL | Set a custom URL of the API server (for selfhosted variants of Swetrix). | `'https://api.swetrix.com/log'` |
@@ -80,13 +80,10 @@ Here's an example of how to use this function with all the available options:
 ```javascript
 swetrix.trackViews({
   unique: false,
-  ignore: [],
-  noHeartbeat: false,
   heartbeatOnBackground: false,
-  noUserFlow: false,
-  doNotAnonymise: false,
   hash: false,
   search: false,
+  callback: undefined,
 })
 ```
 
@@ -94,10 +91,8 @@ swetrix.trackViews({
 | --- | --- | --- |
 | unique | If true, only unique events will be saved. This param is useful when tracking single-page landing websites. | `false` |
 | ignore | A list of regular expressions or string pathes to ignore.<br />For example: `['/dashboard', /^/projects/i]` setting will force script to ignore all pathes which start with `/projects` or equal to `/dashboard`.<br />Please pay attention, that the pathes always start with `/`. | `[]` |
-| noHeartbeat | Do not send Heartbeat requests to the server.<br />By setting this to `true` you will not be able to see the realtime amount of users on your website. | `false` |
+| callback | A callback used to edit / prevent sending pageviews.<br />It accepts an object with pageview event data as a parameter which has the following structure: <br />lc: string \| undefined<br />tz: string \| undefined<br />ref: string \| undefined<br />so: string \| undefined<br />me: string \| undefined<br />ca: string \| undefined<br />pg: string<br />prev: string \| null \| undefined<br /><br />The callback is supposed to return the edited payload or `false` to prevent sending the pageview. If `true` is returned, the payload will be sent as-is. | `undefined` |
 | heartbeatOnBackground | Send Heartbeat requests when the website tab is not active in the browser.<br />Setting this to `true` means that users who opened your website in inactive browser tab or window will not be counted into users realtime statistics.<br />Setting this to true is usually useful for services like Spotify or Youtube. | `false` |
-| noUserFlow | Send previous page user visited to the server, only the pages on your website will be sent. Setting this to `true` means that no user flow analytics will be sent and as a consequence it won't be available to you later in Dashboard. | `false` |
-| doNotAnonymise | Do not send paths from ignore list to API. If set to `false`, the page view information will be sent to the Swetrix API, but the page will be displayed as a 'Redacted page' in the dashboard. | `false` |
 | hash | Set to `true` to enable hash-based routing. For example if you have pages like `/#/path` or want to track pages like `/path#hash`. | `false` |
 | search | Set to `true` to enable search-based routing. For example if you have pages like `/path?search`. Although it's not recommended in most cases, you can set both `hash` and `search` to `true` at the same time, in which case the pageview event will be fired when either the hash or the search part of the URL changes (again, both the hash and the search are sent to the server). | `false` |
 
