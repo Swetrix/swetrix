@@ -1,6 +1,6 @@
 {
   "name": "swetrix",
-  "version": "2.4.0",
+  "version": "3.0.0",
   "description": "The JavaScript analytics client for Swetrix Analytics",
   "main": "dist/swetrix.cjs.js",
   "module": "dist/swetrix.es5.js",
@@ -32,7 +32,7 @@
   "bugs": {
     "url": "https://github.com/Swetrix/swetrix-js/issues"
   },
-  "homepage": "https://swetrix.com/docs",
+  "homepage": "https://docs.swetrix.com",
   "dependencies": {
     "@types/node": "^20.11.8",
     "tslib": "^2.6.2"
