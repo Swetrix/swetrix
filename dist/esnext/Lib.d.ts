@@ -32,7 +32,7 @@ export interface IPageViewPayload {
     so: string | undefined;
     me: string | undefined;
     ca: string | undefined;
-    pg: string;
+    pg: string | null | undefined;
     prev: string | null | undefined;
 }
 interface IPerfPayload {

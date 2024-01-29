@@ -1,6 +1,6 @@
 {
   "name": "swetrix",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "The JavaScript analytics client for Swetrix Analytics",
   "main": "dist/swetrix.cjs.js",
   "module": "dist/swetrix.es5.js",
