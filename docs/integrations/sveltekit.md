@@ -17,7 +17,7 @@ After you sign up on Swetrix and create a new project, the only thing left is to
   import * as Swetrix from "swetrix";
 
   onMount(() => {
-    Swetrix.init("YOUR_PROJECT_ID", { debug: dev, disabled: dev });
+    Swetrix.init("YOUR_PROJECT_ID", { devMode: dev, disabled: dev });
     Swetrix.trackViews();
   });
 

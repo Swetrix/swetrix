@@ -9,7 +9,8 @@ module.exports = {
         type: 'category',
         label: 'Integrations',
         items: ['integrations/wordpress', 'integrations/webflow', 'integrations/framer', 'integrations/wix', 'integrations/ghost', 'integrations/django', 'integrations/sveltekit'],
-      }
+      },
+      'troubleshooting',
     ],
     'Affiliate program': [
       'affiliate/about',
