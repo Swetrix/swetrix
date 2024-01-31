@@ -112,7 +112,7 @@ export interface PageViewsOptions {
    * @param payload - The pageview payload.
    * @returns The edited payload or `false` to prevent sending the pageview. If `true` is returned, the payload will be sent as-is.
    */
-  callback?: (payload: IPageViewPayload) => IPageViewPayload | boolean
+  callback?: (payload: IPageViewPayload) => Partial<IPageViewPayload> | boolean
 }
 
 export const defaultPageActions = {
