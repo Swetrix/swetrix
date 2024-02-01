@@ -659,6 +659,8 @@
       "create": "Create a new project",
       "settings": "Settings of",
       "name": "Project name",
+      "sharableLink": "Sharable link",
+      "sharableDesc": "Used to share your dashboard with others, only available if you make your dashboard public or password protected.",
       "pid": "Project ID",
       "origins": "Allowed origins",
       "originsHint": "A list of origins (domains) which are allowed to use script with your ProjectID, separated by commas.\nLeave it empty to allow all origins (default setting).\nExample: cornell.edu, app.example.com, *.gov.ua",

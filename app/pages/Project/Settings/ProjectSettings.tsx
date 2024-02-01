@@ -623,6 +623,18 @@ const ProjectSettings = ({
               disabled
             />
             <Input
+              name='sharableLink'
+              id='sharableLink'
+              type='text'
+              label={t('project.settings.sharableLink')}
+              hint={t('project.settings.sharableDesc')}
+              value={`https://swetrix.com/projects/${form.id}`}
+              className='mt-4'
+              onChange={handleInput}
+              error={null}
+              disabled
+            />
+            <Input
               name='origins'
               id='origins'
               type='text'
