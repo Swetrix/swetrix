@@ -197,6 +197,12 @@ export const getPageMeta = (t: (key: string) => string, url?: string, _pathname?
       }
       break
 
+    case routes.imprint:
+      result = {
+        title: t('footer.imprint'),
+      }
+      break
+
     case routes.contact:
       result = {
         title: t('titles.contact'),
