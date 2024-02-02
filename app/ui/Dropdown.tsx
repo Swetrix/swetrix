@@ -93,7 +93,7 @@ const Dropdown = ({
           <Menu.Items
             static
             className={cx(
-              'z-50 py-1 origin-top-right absolute right-0 mt-2 w-40 min-w-max rounded-md shadow-lg bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 focus:outline-none',
+              'z-50 origin-top-right absolute right-0 mt-2 w-40 min-w-max rounded-md shadow-lg bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 focus:outline-none',
               menuItemsClassName,
               {
                 'divide-y divide-gray-100': header,
