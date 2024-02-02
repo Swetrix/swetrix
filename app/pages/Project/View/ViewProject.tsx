@@ -2914,20 +2914,21 @@ const ViewProject = ({
                               ]}
                               title={[<ArrowDownTrayIcon key='download-icon' className='w-5 h-5' />]}
                               labelExtractor={(item) => {
-                                const { label, lookingForMore } = item
-
-                                if (lookingForMore) {
-                                  return (
-                                    <a href={MARKETPLACE_URL} target='_blank' rel='noreferrer'>
-                                      {label}
-                                    </a>
-                                  )
-                                }
+                                const { label } = item
 
                                 return label
                               }}
                               keyExtractor={(item) => item.label}
-                              onSelect={(item) => item.onClick(panelsData, t)}
+                              onSelect={(item, e) => {
+                                if (item.lookingForMore) {
+                                  e?.stopPropagation()
+                                  window.open(MARKETPLACE_URL, '_blank')
+
+                                  return
+                                }
+
+                                item.onClick(panelsData, t)
+                              }}
                               chevron='mini'
                               buttonClassName='!p-2 rounded-md hover:bg-white hover:shadow-sm dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200'
                               headless
