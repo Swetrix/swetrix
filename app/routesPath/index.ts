@@ -33,6 +33,7 @@ const routes = Object.freeze({
   open: '/open',
   ref: '/ref/:id',
   blog: '/blog',
+  imprint: '/imprint',
 })
 
 export default routes

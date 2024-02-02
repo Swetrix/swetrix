@@ -3,7 +3,7 @@ import React from 'react'
 
 import { CONTACT_EMAIL } from 'redux/constants'
 
-const Features = (): JSX.Element => {
+const Terms = (): JSX.Element => {
   return (
     <div className='bg-gray-50 dark:bg-slate-900'>
       <div className='w-11/12 md:w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8'>
@@ -12,7 +12,17 @@ const Features = (): JSX.Element => {
         </h1>
         <p className='mt-4 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
           These Swetrix Terms and Conditions ("Terms", "Terms and Conditions") govern your relationship with swetrix.com
-          ("Service") operated by Andrii Romasiun ("Swetrix", "Swetrix Analytics", "Company", "us", "we", or "our").
+          ("Service") operated by Swetrix Ltd ("Swetrix", "Swetrix Analytics", "Company", "us", "we", or "our"), located
+          in Edinburgh, the United Kingdom, company number{' '}
+          <a
+            href='https://find-and-update.company-information.service.gov.uk/company/SC797389'
+            className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+            target='_blank'
+            rel='noreferrer'
+          >
+            SC797389
+          </a>
+          .
           <br />
           Please read these Terms and Conditions carefully before using the Service.
         </p>
@@ -205,26 +215,9 @@ const Features = (): JSX.Element => {
           team and at our sole discretion we may issue a refund on a case-by-case basis.
         </p>
 
-        {/* <h3 className='text-2xl font-bold text-gray-900 tracking-tight mt-4'>Service Level Agreement (SLA)</h3>
-          <p className='text-lg text-gray-900 tracking-tight'>
-            If you purchased a Subscription with a SLA, we aim to provide Service availability of 99.5% or better. If downtime in any one month exceeds 0.5% of that month, we will credit your account. Service credits are applied at your request and will apply toward the balance due at the end of the next Billing Cycle (either monthly or yearly).<br />
-            We will apply any service credits only against future payments for the services otherwise due from you. Service credits will not entitle you to any refund or other payment from us. A service credit will be applicable and issued only if the credit amount for the applicable billing cycle is greater than one euro (€1). Service credits may not be transferred or applied to any other account.<br />
-            Service credits are calculated as a percentage of the total charges paid by you (excluding one-time payments such as upfront payments) for the month in which the downtime occurred in accordance with the schedule below. For yearly billing, the total charge paid by the user is divided into 12 equal parts, each corresponding to a month unit for the purpose of the service credits calculation.<br />
-            We calculate service credits the following way:<br />
-              - If the monthly uptime is less than 99.5% but equal to or greater than 98.5%, the service credit is equal to 10% of the Service’s monthly cost.<br />
-              - If the monthly uptime is less than 98.5%, the service credit is equal to 30% of the Service’s monthly cost.<br />
-
-            Some performance issues are excluded from downtime calculations, such as:<br />
-              - Issues caused by factors outside of our reasonable control.<br />
-              - Issues that resulted from any actions or inaction by a user or a third-party.<br />
-              - Issues that resulted from the user’s equipment and/or third-party equipment (not within our primary control). For the avoidance of any doubt, we do not provide any Internet or network services and any performance issues related to that type of services shall be deemed not in the primary control of the Company.<br />
-              - Issues that arise from the Company’s suspension or termination of rights to use the Service in accordance with these Terms.<br />
-              - Downtime caused by reasonable scheduled maintenance that is announced in advance.
-          </p> */}
-
         <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Governing Law</h3>
         <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-          These Terms shall be governed and construed in accordance with the laws of Ukraine, without regard to its
+          These Terms shall be governed and construed in accordance with the laws of Scotland, without regard to its
           conflict of law provisions.
           <br />
           Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights.
@@ -305,11 +298,11 @@ const Features = (): JSX.Element => {
 
         <hr className='mt-10 mb-4 border-gray-200 dark:border-gray-600' />
         <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-          <i>Last updated: August 14, 2022.</i>
+          <i>Last updated: February 2, 2024.</i>
         </p>
       </div>
     </div>
   )
 }
 
-export default Features
+export default Terms

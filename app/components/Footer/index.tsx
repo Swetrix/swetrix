@@ -71,6 +71,11 @@ const navigation = {
       href: string
       internal: boolean
     } => ({ key: 'cookie', href: routesPath.cookiePolicy, internal: true }),
+    (): {
+      key: string
+      href: string
+      internal: boolean
+    } => ({ key: 'imprint', href: routesPath.imprint, internal: true }),
   ],
   features: [
     { value: 'vs Google Analytics', href: SWETRIX_VS_GOOGLE },
