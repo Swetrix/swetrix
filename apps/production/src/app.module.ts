@@ -38,7 +38,7 @@ const modules = [
     username: process.env.MYSQL_USER,
     password: process.env.MYSQL_ROOT_PASSWORD,
     database: process.env.MYSQL_DATABASE,
-    synchronize: false, // isDevelopment,
+    synchronize: true, // isDevelopment,
     entities: [`${__dirname}/**/*.entity{.ts,.js}`],
   }),
   I18nModule.forRootAsync(getI18nConfig()),
