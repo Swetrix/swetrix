@@ -46,7 +46,6 @@ import {
   REDIS_PROJECTS_COUNT_KEY,
   REDIS_EVENTS_COUNT_KEY,
   REDIS_LOG_PERF_CACHE_KEY,
-  SEND_WARNING_AT_PERC,
   PROJECT_INVITE_EXPIRE,
   REDIS_LOG_CAPTCHA_CACHE_KEY,
   JWT_REFRESH_TOKEN_LIFETIME,
@@ -187,12 +186,12 @@ export class TaskManagerService {
       ],
       relations: ['projects'],
       select: [
-        'id', 
-        'email', 
+        'id',
+        'email',
         'planCode',
         'planLimitNotificationPercentage',
         'isTelegramChatIdConfirmed',
-        'telegramChatId'
+        'telegramChatId',
       ],
     })
 
@@ -204,7 +203,7 @@ export class TaskManagerService {
         projects,
         planLimitNotificationPercentage,
         isTelegramChatIdConfirmed,
-        telegramChatId
+        telegramChatId,
       } = user
 
       if (_isEmpty(projects) || _isNull(projects)) {
@@ -229,7 +228,7 @@ export class TaskManagerService {
         if (isTelegramChatIdConfirmed && telegramChatId) {
           await this.telegramService.addMessage(
             telegramChatId,
-            `You've reached ${planLimitNotificationPercentage}% of your monthly event limit.`
+            `You've reached ${planLimitNotificationPercentage}% of your monthly event limit.`,
           )
         }
         await this.userService.update(id, {
