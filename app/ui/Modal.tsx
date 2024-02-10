@@ -136,7 +136,11 @@ const Modal = ({
                     {!closeText && (
                       <XMarkIcon
                         className='h-6 w-6 cursor-pointer text-gray-700 dark:text-gray-200 hover:text-gray-500 dark:hover:text-gray-300'
-                        onClick={onClose}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          onClose?.()
+                        }}
                       />
                     )}
                   </Dialog.Title>
@@ -169,7 +173,11 @@ const Modal = ({
                 <button
                   type='button'
                   className='mt-3 w-full inline-flex justify-center rounded-md dark:border-none border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:border-gray-600 dark:bg-slate-800 dark:hover:border-gray-600 dark:hover:bg-gray-700 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm'
-                  onClick={onClose}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    onClose?.()
+                  }}
                 >
                   {closeText}
                 </button>
