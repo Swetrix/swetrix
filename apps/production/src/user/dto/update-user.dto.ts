@@ -22,6 +22,6 @@ export class UpdateUserProfileDTO {
   @ApiProperty({ example: '24-hour', enum: TimeFormat })
   timeFormat: string
 
-  @ApiProperty({ example: '85' })
+  @ApiProperty({ example: '80' })
   planLimitNotificationPercentage: number
 }
