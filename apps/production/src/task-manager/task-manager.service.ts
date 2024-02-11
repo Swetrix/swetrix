@@ -228,7 +228,10 @@ export class TaskManagerService {
         if (isTelegramChatIdConfirmed && telegramChatId) {
           await this.telegramService.addMessage(
             telegramChatId,
-            `You've reached ${planLimitNotificationPercentage}% of your monthly event limit.`,
+            `You've reached ${planLimitNotificationPercentage}% of your monthly event limit.\nThat's a lot of traffic, congratulations!\nThat means that in case you use 100% of the available events until the end of the month, all the subsequent traffic will not be saved.\nTo avoid this we recommend that you upgrade your tier on the [Billing](https://swetrix.com/billing) page.`,
+            {
+              parse_mode: 'Markdown',
+            },
           )
         }
         await this.userService.update(id, {
