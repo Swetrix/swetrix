@@ -16,4 +16,5 @@ export enum LetterTemplate {
   ProjectSubscriberInvitation = 'project-subscriber-invitation',
   ProjectTransfer = 'project-transfer',
   PayPalEmailUpdate = 'paypal-email-update',
+  UsageOverLimit = 'usage-over-limit',
 }

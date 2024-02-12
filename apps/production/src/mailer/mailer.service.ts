@@ -53,12 +53,12 @@ const metaInfoJson = {
   [LetterTemplate.TierWarning]: {
     subject: {
       en: () =>
-        `You have used more than ${SEND_WARNING_AT_PERC}% of the available events per your tier for this month.`,
+        `You have used more than ${SEND_WARNING_AT_PERC}% of the available events per your tier for this month`,
     },
   },
   [LetterTemplate.ProjectInvitation]: {
     subject: {
-      en: () => 'You have been invited to join the project.',
+      en: () => 'You have been invited to join the project',
     },
   },
   [LetterTemplate.TwoFAOn]: {
@@ -83,18 +83,23 @@ const metaInfoJson = {
   },
   [LetterTemplate.ProjectSubscriberInvitation]: {
     subject: {
-      en: () => 'You have been invited to join the project.',
+      en: () => 'You have been invited to join the project',
     },
   },
   [LetterTemplate.ProjectTransfer]: {
     subject: {
       en: (p: Params) =>
-        `A Swetrix user offers to transfer ${p.name} project to your account.`,
+        `A Swetrix user offers to transfer ${p.name} project to your account`,
     },
   },
   [LetterTemplate.PayPalEmailUpdate]: {
     subject: {
       en: () => 'Your PayPal email has been updated',
+    },
+  },
+  [LetterTemplate.UsageOverLimit]: {
+    subject: {
+      en: () => 'You have exceeded your Swetrix subscription plan',
     },
   },
 }
@@ -107,6 +112,14 @@ handlebars.registerHelper('ifEquals', function ifEquals(arg1, arg2, options) {
   // eslint-disable-next-line eqeqeq
   return arg1 == arg2 ? options.fn(this) : options.inverse(this)
 })
+
+handlebars.registerHelper(
+  'ifNotEquals',
+  function ifNotEquals(arg1, arg2, options) {
+    // eslint-disable-next-line eqeqeq
+    return arg1 != arg2 ? options.fn(this) : options.inverse(this)
+  },
+)
 
 handlebars.registerHelper('greater', function greater(v1, v2, options) {
   if (v1 > v2) {

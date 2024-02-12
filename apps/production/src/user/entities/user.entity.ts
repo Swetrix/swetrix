@@ -31,6 +31,12 @@ export enum PlanCode {
   '10m' = '10m',
 }
 
+export enum DashboardBlockReason {
+  'exceeding_plan_limits' = 'exceeding_plan_limits',
+  'trial_ended' = 'trial_ended',
+  'payment_failed' = 'payment_failed',
+}
+
 export const ACCOUNT_PLANS = {
   [PlanCode.none]: {
     id: PlanCode.none,
@@ -114,6 +120,23 @@ export const ACCOUNT_PLANS = {
     maxAlerts: 50,
     legacy: false,
   },
+}
+
+export const getNextPlan = (planCode: PlanCode) => {
+  const currentLimit = ACCOUNT_PLANS[planCode].monthlyUsageLimit
+
+  let nextPlan
+
+  Object.values(ACCOUNT_PLANS).some(plan => {
+    if (plan.monthlyUsageLimit > currentLimit) {
+      nextPlan = plan
+      return true
+    }
+
+    return false
+  })
+
+  return nextPlan
 }
 
 export enum UserType {
@@ -247,6 +270,15 @@ export class User {
   @Column({ type: 'timestamp', nullable: true })
   planExceedContactedAt: Date
 
+  // dashboard block reason
+  @Column({
+    type: 'enum',
+    enum: DashboardBlockReason,
+    nullable: true,
+  })
+  dashboardBlockReason: DashboardBlockReason
+
+  // if we should stop counting user events
   @Column({ default: false })
   isAccountBillingSuspended: boolean
 
