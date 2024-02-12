@@ -242,6 +242,15 @@ export class User {
   @Column({ default: false })
   showLiveVisitorsInTitle: boolean
 
+  /* Plan usage related fields */
+  // the date when user was last contacted about exceeding the plan limits for X consecutive months
+  @Column({ type: 'timestamp', nullable: true })
+  planExceedContactedAt: Date
+
+  @Column({ default: false })
+  isAccountBillingSuspended: boolean
+
+  /* Affiliate system related fields */
   @Column('varchar', { length: 8, default: null })
   refCode: string | null
 
@@ -260,6 +269,8 @@ export class User {
   updateTimestamp() {
     this.updated = new Date()
   }
+
+  /* Relations */
 
   @OneToMany(() => Project, project => project.admin)
   projects: Project[]
