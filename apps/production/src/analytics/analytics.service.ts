@@ -453,13 +453,9 @@ export class AnalyticsService {
       )
     }
 
-    const count = await this.projectService.getRedisCount(project.admin.id)
-    const maxCount =
-      ACCOUNT_PLANS[project.admin.planCode].monthlyUsageLimit || 0
-
-    if (count >= maxCount) {
+    if (project.admin.isAccountBillingSuspended) {
       throw new HttpException(
-        'You have exceeded the available monthly request limit for your account. Please upgrade your account plan if you need more requests.',
+        'The account that owns this site is currently suspended, this is because of a billing issue. This, and all other events, are NOT being tracked and saved on our side. Please log in to your account on Swetrix or contact our support to resolve the issue.',
         HttpStatus.PAYMENT_REQUIRED,
       )
     }
@@ -2714,7 +2710,10 @@ export class AnalyticsService {
         .format('YYYY-MM-DD HH:mm:ss')
 
       // eslint-disable-next-line
-      timeBucket = dayjs(to).diff(dayjs(from), 'hour') > 1 ? TimeBucketType.HOUR : TimeBucketType.MINUTE
+      timeBucket =
+        dayjs(to).diff(dayjs(from), 'hour') > 1
+          ? TimeBucketType.HOUR
+          : TimeBucketType.MINUTE
 
       const groupedChart = await this.groupChartByTimeBucket(
         timeBucket,
