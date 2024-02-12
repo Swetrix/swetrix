@@ -206,7 +206,7 @@ export class AlertController {
       pid: alert.project.id,
     }
   }
-  
+
   @ApiBearerAuth()
   @Delete('/:id')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)

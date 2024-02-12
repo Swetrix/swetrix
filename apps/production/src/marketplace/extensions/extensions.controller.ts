@@ -339,7 +339,6 @@ export class ExtensionsController {
     required: false,
     type: String,
   })
-
   @ApiBearerAuth()
   @Roles(UserType.ADMIN)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
