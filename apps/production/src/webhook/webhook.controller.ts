@@ -17,6 +17,7 @@ import {
   PlanCode,
   ACCOUNT_PLANS,
   BillingFrequency,
+  isNextPlan,
 } from '../user/entities/user.entity'
 import { UserService } from '../user/user.service'
 import { AppLoggerService } from '../logger/logger.service'
@@ -85,6 +86,19 @@ export class WebhookController {
           )
         }
 
+        const currentUser = uid
+          ? await this.userService.findOne(uid)
+          : await this.userService.findOneWhere({ email })
+        const unlockDashboardParams =
+          body.alert_name === 'subscription_created' ||
+          isNextPlan(currentUser.planCode, plan.id)
+            ? {
+                dashboardBlockReason: null,
+                planExceedContactedAt: null,
+                isAccountBillingSuspended: false,
+              }
+            : {}
+
         const updateParams = {
           planCode: plan.id,
           subID,
@@ -95,6 +109,7 @@ export class WebhookController {
             ? BillingFrequency.Monthly
             : BillingFrequency.Yearly,
           tierCurrency: currency,
+          ...unlockDashboardParams,
         }
 
         if (uid) {
@@ -189,6 +204,7 @@ export class WebhookController {
       }
 
       case 'subscription_payment_failed': {
+        // todo: lock dashboard, not set plancode to none
         const { subscription_id: subID, attempt_number: attemptNumber } = body
 
         if (parseInt(attemptNumber, 10) >= MAX_PAYMENT_ATTEMPTS) {

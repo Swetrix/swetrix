@@ -139,6 +139,16 @@ export const getNextPlan = (planCode: PlanCode) => {
   return nextPlan
 }
 
+export const isNextPlan = (
+  currentPlanCode: PlanCode,
+  potentialNextPlanCode: PlanCode,
+): boolean => {
+  const currentPlanLimit = ACCOUNT_PLANS[currentPlanCode].monthlyUsageLimit
+  const nextPlanLimit = ACCOUNT_PLANS[potentialNextPlanCode].monthlyUsageLimit
+
+  return nextPlanLimit > currentPlanLimit
+}
+
 export enum UserType {
   CUSTOMER = 'customer',
   ADMIN = 'admin',
