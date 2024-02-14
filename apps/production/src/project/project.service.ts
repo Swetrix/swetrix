@@ -803,6 +803,16 @@ export class ProjectService {
     await this.clearProjectsRedisCache(user.id)
   }
 
+  async clearProjectsRedisCacheBySubId(subID: string): Promise<void> {
+    const user = await this.userService.findOneWhere({ subID })
+
+    if (!user) {
+      return
+    }
+
+    await this.clearProjectsRedisCache(user.id)
+  }
+
   async getProject(projectId: string, userId: string) {
     return this.projectsRepository.findOne({
       where: {

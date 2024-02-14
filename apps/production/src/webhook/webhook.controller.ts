@@ -183,6 +183,7 @@ export class WebhookController {
           await this.userService.updateBySubID(subID, {
             dashboardBlockReason: null,
           })
+          await this.projectService.clearProjectsRedisCacheBySubId(subID)
         }
 
         // That user was not referred by anyone
