@@ -339,6 +339,17 @@ export class AnalyticsService {
     this.projectService.allowedToView(project, uid, password)
   }
 
+  async checkBillingAccess(pid: string) {
+    const project = await this.projectService.getRedisProject(pid)
+
+    if (project.admin.dashboardBlockReason) {
+      throw new HttpException(
+        'The account that owns this site is currently suspended, this is because of a billing issue. Please resolve the issue to continue.',
+        HttpStatus.PAYMENT_REQUIRED,
+      )
+    }
+  }
+
   checkOrigin(project: Project, origin: string): void {
     // For some reasons the project.origins sometimes may look like [''], let's filter it out
     // TODO: Properly validate the origins on project update

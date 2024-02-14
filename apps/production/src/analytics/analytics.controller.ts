@@ -323,6 +323,8 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
+    await this.analyticsService.checkBillingAccess(pid)
+
     let newTimebucket = timeBucket
     let allowedTumebucketForPeriodAll
 
@@ -458,6 +460,8 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
+    await this.analyticsService.checkBillingAccess(pid)
+
     const pagesArr = await this.analyticsService.getPagesArray(
       pages,
       funnelId,
@@ -523,6 +527,8 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
+    await this.analyticsService.checkBillingAccess(pid)
+
     return this.analyticsService.getCustomEventMetadata(data)
   }
 
@@ -541,6 +547,8 @@ export class AnalyticsController {
       uid,
       headers['x-password'],
     )
+
+    await this.analyticsService.checkBillingAccess(pid)
 
     return this.analyticsService.getFilters(pid, type)
   }
@@ -585,6 +593,8 @@ export class AnalyticsController {
       uid,
       headers['x-password'],
     )
+
+    await this.analyticsService.checkBillingAccess(pid)
 
     const paramsData = {
       params: {
@@ -639,6 +649,8 @@ export class AnalyticsController {
       uid,
       headers['x-password'],
     )
+
+    await this.analyticsService.checkBillingAccess(pid)
 
     let newTimeBucket = timeBucket
     let allowedTumebucketForPeriodAll
@@ -741,6 +753,8 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
+    await this.analyticsService.checkBillingAccess(pid)
+
     const paramsData = {
       params: {
         pid,
@@ -793,6 +807,8 @@ export class AnalyticsController {
       uid,
       headers['x-password'],
     )
+
+    await this.analyticsService.checkBillingAccess(pid)
 
     let diff
 
@@ -860,6 +876,8 @@ export class AnalyticsController {
         uid,
         headers['x-password'],
       )
+
+      await this.analyticsService.checkBillingAccess(currentPID)
     })
 
     await Promise.all(validationPromises)
@@ -895,6 +913,8 @@ export class AnalyticsController {
     const validationPromises = _map(pidsArray, async currentPID => {
       this.analyticsService.validatePID(currentPID)
       await this.analyticsService.checkProjectAccess(currentPID, uid)
+
+      await this.analyticsService.checkBillingAccess(currentPID)
     })
 
     await Promise.all(validationPromises)
@@ -934,6 +954,8 @@ export class AnalyticsController {
         uid,
         headers['x-password'],
       )
+
+      await this.analyticsService.checkBillingAccess(currentPID)
     })
 
     await Promise.all(validationPromises)
@@ -988,6 +1010,8 @@ export class AnalyticsController {
         uid,
         headers['x-password'],
       )
+
+      await this.analyticsService.checkBillingAccess(currentPID)
     })
 
     await Promise.all(validationPromises)
@@ -1024,6 +1048,8 @@ export class AnalyticsController {
       uid,
       headers['x-password'],
     )
+
+    await this.analyticsService.checkBillingAccess(pid)
 
     const keys = await redis.keys(`sd:*:${pid}`)
 
@@ -1356,6 +1382,8 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
+    await this.analyticsService.checkBillingAccess(pid)
+
     const take = this.analyticsService.getSafeNumber(data.take, 30)
     const skip = this.analyticsService.getSafeNumber(data.skip, 0)
 
@@ -1442,6 +1470,9 @@ export class AnalyticsController {
       uid,
       headers['x-password'],
     )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
 
     const result = await this.analyticsService.getSessionDetails(
@@ -1481,6 +1512,8 @@ export class AnalyticsController {
       uid,
       headers['x-password'],
     )
+
+    await this.analyticsService.checkBillingAccess(pid)
 
     let newTimeBucket = timeBucket
     let diff
