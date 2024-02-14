@@ -102,6 +102,16 @@ const metaInfoJson = {
       en: () => 'You have exceeded your Swetrix subscription plan',
     },
   },
+  [LetterTemplate.DashboardLockedExceedingLimits]: {
+    subject: {
+      en: () => 'Your Swetrix dashboard has been locked',
+    },
+  },
+  [LetterTemplate.DashboardLockedPaymentFailure]: {
+    subject: {
+      en: () => 'Your Swetrix dashboard has been locked due to a payment issue',
+    },
+  },
 }
 
 interface Params {

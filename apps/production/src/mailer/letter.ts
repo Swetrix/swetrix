@@ -17,4 +17,6 @@ export enum LetterTemplate {
   ProjectTransfer = 'project-transfer',
   PayPalEmailUpdate = 'paypal-email-update',
   UsageOverLimit = 'usage-over-limit',
+  DashboardLockedExceedingLimits = 'dashboard-locked-exceeding-limits',
+  DashboardLockedPaymentFailure = 'dashboard-locked-payment-failure',
 }

@@ -1,0 +1,14 @@
+Hi! A week ago we contacted you regarding your website traffic exceeding your Swetrix subscription{{#if hitPercentageLimit}} by over {{percentageLimit}}% this month{{else}} for two consecutive months{{/if}}.
+<br /><br />
+Your subscription is still active, we're still counting your stats and we haven't deleted any of your data, but as you've outgrown your subscription tier, we'd like to ask you to upgrade to a tier that reflects your new traffic volumes. Once you have upgraded to an appropriate tier, your dashboard access will be restored immediately. A detailed usage report can be found on the <a href="{{billingUrl}}" target="_blank">billing page</a>.
+<br /><br />
+{{#ifEquals user.planCode "10m"}}
+Your usage exceeds our standard plans, so please reply to this email to receive a tailored offering and resolve this issue.
+<br /><br />
+Thank you again for using Swetrix.
+{{/ifEquals}}
+{{#ifNotEquals user.planCode "10m"}}
+We recommend that you upgrade to the {{suggestedPlanLimit}} events per month plan to keep up with your usage. The cost of the plan will be prorated to reflect the amount you have already paid for your current subscription plan.
+<br /><br />
+Thank you for using Swetrix, please reply to this email if you have any questions or need help with anything.
+{{/ifNotEquals}}

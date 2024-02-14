@@ -100,6 +100,8 @@ const UNIQUE_SESSION_LIFE_TIME = 1800
 // 35 seconds
 const HEARTBEAT_SID_LIFE_TIME = 35
 
+const AFFILIATE_CUT = 0.2
+
 // how often can user request a fresh GDPR export of their data; in days.
 const GDPR_EXPORT_TIMEFRAME = 14
 
@@ -235,4 +237,5 @@ export {
   ALL_COLUMNS,
   BLOG_POSTS_ROOT,
   TRAFFIC_SPIKE_ALLOWED_PERCENTAGE,
+  AFFILIATE_CUT,
 }
