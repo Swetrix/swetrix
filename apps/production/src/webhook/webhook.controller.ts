@@ -113,6 +113,7 @@ export class WebhookController {
             ? BillingFrequency.Monthly
             : BillingFrequency.Yearly,
           tierCurrency: currency,
+          cancellationEffectiveDate: null,
           ...unlockDashboardParams,
         }
 
@@ -134,10 +135,8 @@ export class WebhookController {
         } = body
 
         await this.userService.updateBySubID(subID, {
-          billingFrequency: BillingFrequency.Monthly,
           nextBillDate: null,
           cancellationEffectiveDate,
-          tierCurrency: null,
         })
 
         break

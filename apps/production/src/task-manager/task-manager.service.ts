@@ -972,8 +972,11 @@ export class TaskManagerService {
       if (now > cancellationEffectiveDate) {
         await this.userService.update(user.id, {
           cancellationEffectiveDate: null,
-          planCode: PlanCode.none,
+          dashboardBlockReason: DashboardBlockReason.subscription_cancelled,
           nextBillDate: null,
+          subID: null,
+          subUpdateURL: null,
+          subCancelURL: null,
           billingFrequency: BillingFrequency.Monthly,
         })
         await this.projectService.clearProjectsRedisCache(user.id)
