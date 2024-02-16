@@ -19,6 +19,12 @@ module.exports = {
       'sitesettings/get-analytics-email-reports',
       'sitesettings/reset-sites-data',
     ],
+    'Billing & Subscription': [
+      'billing/exceeding-plan-limits',
+      'billing/update-subscription',
+      'billing/cancel-subscription',
+      'billing/faq',
+    ],
     'Affiliate program': [
       'affiliate/about',
       'affiliate/terms',
