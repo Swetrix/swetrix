@@ -799,6 +799,12 @@ export class UserController {
         ...user,
         created: dayjs(user.created).format('YYYY/MM/DD HH:mm:ss'),
         updated: dayjs(user.updated).format('YYYY/MM/DD HH:mm:ss'),
+        cancellationEffectiveDate: _isNull(user.cancellationEffectiveDate)
+          ? '-'
+          : dayjs(user.cancellationEffectiveDate).format('YYYY/MM/DD HH:mm:ss'),
+        planExceedContactedAt: _isNull(user.planExceedContactedAt)
+          ? '-'
+          : dayjs(user.planExceedContactedAt).format('YYYY/MM/DD HH:mm:ss'),
         exportedAt: _isNull(user.exportedAt)
           ? '-'
           : dayjs(user.exportedAt).format('YYYY/MM/DD HH:mm:ss'),
@@ -809,6 +815,11 @@ export class UserController {
         subUpdateURL: user.subUpdateURL || '-',
         subCancelURL: user.subCancelURL || '-',
         telegramChatId: user.telegramChatId || '-',
+        dashboardBlockReason: user.dashboardBlockReason || '-',
+        refCode: user.refCode || '-',
+        referrerID: user.referrerID || '-',
+        paypalPaymentsEmail: user.paypalPaymentsEmail || '-',
+        tierCurrency: user.tierCurrency || '-',
         nickname: user.nickname || '-',
       },
       projects: _map(projects, project => ({

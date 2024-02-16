@@ -1,56 +1,141 @@
 Swetrix GDPR Account Data Export.
-<br/>
-<i>Note: All times are Greenwich Mean Time unless specified otherwise.</i><br />
+<br />
+<i>Note: All times are Greenwich Mean Time unless specified otherwise.</i>
+<br /><br />
 
 Below is the list of your Swetrix account information and settings (including your created projects) that you can request at any time.
 <br/>
 Our <a href="https://swetrix.com/privacy" target="_blank">Privacy Policy</a> has more information about what data we collect and how we use it.
-<br/>
+<br />
+<br />
 
 <h3>Account Information:</h3>
-Account ID: {{user.id}}<br />
-Email address: {{user.email}}<br />
-Email confirmed: {{#if user.isActive}} Yes {{else}} No {{/if}}<br />
-Verification emails sent: {{user.emailRequests}}<br />
-Summary report frequency: {{user.reportFrequency}}<br />
-Is 2FA Enabled: {{#if user.isTwoFactorAuthenticationEnabled}} Yes {{else}} No {{/if}}<br />
-Account created at: {{user.created}}<br />
-Account updated at: {{user.updated}}<br />
-Last report generation time: {{user.exportedAt}}<br />
-Last tier warning email sent on: {{user.evWarningSentOn}}<br />
-Timezone: {{user.timezone}}<br />
-API Key: {{#if user.apiKey}}{{user.apiKey}}{{else}}-{{/if}}<br />
-Billing frequency: {{#if user.billingFrequency}}{{user.billingFrequency}}{{else}}-{{/if}}<br />
-Next billing date: {{#if user.nextBillDate}}{{user.nextBillDate}}{{else}}-{{/if}}<br />
-Paddle: Subscription ID: {{user.subID}}<br />
-Paddle: Update subscription URL: {{user.subUpdateURL}}<br />
-Paddle: Cancel subscription URL: {{user.subCancelURL}}<br />
-Is Telegram Chat ID confirmed: {{#if user.isTelegramChatIdConfirmed}} Yes {{else}} No {{/if}}<br />
-Telegram Chat ID: {{user.telegramChatId}}<br />
-Theme: {{user.theme}}<br />
-Nickname: {{user.nickname}}<br />
+<br />
+Account ID: {{user.id}}
+<br />
+Email address: {{user.email}}
+<br />
+Email confirmed: {{#if user.isActive}} Yes {{else}} No {{/if}}
+<br />
+Is registered with Google: {{user.registeredWithGoogle}}
+<br />
+Is registered with Github: {{user.registeredWithGithub}}
+<br />
+PayPal payouts email address: {{user.paypalPaymentsEmail}}
+<br />
+Verification emails sent: {{user.emailRequests}}
+<br />
+Summary report frequency: {{user.reportFrequency}}
+<br />
+Is 2FA Enabled: {{#if user.isTwoFactorAuthenticationEnabled}} Yes {{else}} No {{/if}}
+<br />
+Account created at: {{user.created}}
+<br />
+Account updated at: {{user.updated}}
+<br />
+Last report generation time: {{user.exportedAt}}
+<br />
+Last tier warning email sent on: {{user.evWarningSentOn}}
+<br />
+Timezone: {{user.timezone}}
+<br />
+API Key: {{#if user.apiKey}}{{user.apiKey}}{{else}}-{{/if}}
+<br />
+Max Projects: {{user.maxProjects}}
+<br />
+Max API requests per hour: {{user.maxApiKeyRequestsPerHour}}
+<br />
+Trial reminder sent: {{user.trialReminderSent}}
+<br />
+Show live visitors in title: {{user.showLiveVisitorsInTitle}}
+<br />
+Receive login notifications: {{user.receiveLoginNotifications}}
+<br />
+Time format: {{user.timeFormat}}
+<br />
+Plan exceed contacted at: {{user.planExceedContactedAt}}
+<br />
+Dashboard block reason: {{user.dashboardBlockReason}}
+<br />
+Account suspended (billing): {{user.isAccountBillingSuspended}}
+<br />
+Referral code: {{user.refCode}}
+<br />
+Referrer ID: {{user.referrerID}}
+<br />
+Subscription plan currency: {{user.tierCurrency}}
+<br />
+Billing cancellation effective date: {{user.cancellationEffectiveDate}}
+<br />
+Billing frequency: {{#if user.billingFrequency}}{{user.billingFrequency}}{{else}}-{{/if}}
+<br />
+Next billing date: {{#if user.nextBillDate}}{{user.nextBillDate}}{{else}}-{{/if}}
+<br />
+Paddle: Subscription ID: {{user.subID}}
+<br />
+Paddle: Update subscription URL: {{user.subUpdateURL}}
+<br />
+Paddle: Cancel subscription URL: {{user.subCancelURL}}
+<br />
+Is Telegram Chat ID confirmed: {{#if user.isTelegramChatIdConfirmed}} Yes {{else}} No {{/if}}
+<br />
+Telegram Chat ID: {{user.telegramChatId}}
+<br />
+Theme: {{user.theme}}
+<br />
+Nickname: {{user.nickname}}
+<br />
 
 <h3>Projects Information:</h3>
+<br />
 {{#each projects}}
-  Project Identifier: {{id}}<br />
-  Name: {{name}}<br />
-  Active: {{#if active}} Yes {{else}} No {{/if}}<br />
-  Public: {{#if public}} Yes {{else}} No {{/if}}<br />
-  Allowed origins: {{#if origins}}{{origins}}{{else}}*{{/if}}<br />
-  Blacklisted IPs: {{#if ipBlacklist}}{{ipBlacklist}}{{else}}-{{/if}}<br />
-  Created at: {{created}}<br />
+  Project Identifier: {{id}}
+  <br />
+  Name: {{name}}
+  <br />
+  Active: {{#if active}} Yes {{else}} No {{/if}}
+  <br />
+  Public: {{#if public}} Yes {{else}} No {{/if}}
+  <br />
+  Allowed origins: {{#if origins}}{{origins}}{{else}}*{{/if}}
+  <br />
+  Blacklisted IPs: {{#if ipBlacklist}}{{ipBlacklist}}{{else}}-{{/if}}
+  <br />
+  Is transferring: {{#if isTransferring}} Yes {{else}} No {{/if}}
+  <br />
+  Is password protected: {{#if isPasswordProtected}} Yes {{else}} No {{/if}}
+  <br />
+  Is analytics project:{{#if isAnalyticsProject}} Yes {{else}} No {{/if}}
+  <br />
+  Is CAPTCHA project: {{#if isCaptchaProject}} Yes {{else}} No {{/if}}
+  <br />
+  Is CAPTCHA enabled: {{#if isCaptchaEnabled}} Yes {{else}} No {{/if}}
+  <br />
+  CAPTCHA secret key: {{captchaSecretKey}}
+  <br />
+  Created at: {{created}}
+  <br />
   Automated alerts:
   {{#each alerts}}
       <br />
-      Alert ID: {{id}}<br />
-      Alert name: {{name}}<br />
-      Alert active: {{#if active}} Yes {{else}} No {{/if}}<br />
-      Alert last triggered: {{lastTriggered}}<br />
-      Alert query metric: {{queryMetric}}<br />
-      Alert query condition: {{queryCondition}}<br />
-      Alert query value: {{queryValue}}<br />
-      Alert query time: {{queryTime}}<br />
-      Alert created at: {{created}}<br />
+      Alert ID: {{id}}
+      <br />
+      Alert name: {{name}}
+      <br />
+      Alert active: {{#if active}} Yes {{else}} No {{/if}}
+      <br />
+      Alert last triggered: {{lastTriggered}}
+      <br />
+      Alert query metric: {{queryMetric}}
+      <br />
+      Alert query condition: {{queryCondition}}
+      <br />
+      Alert query value: {{queryValue}}
+      <br />
+      Alert query time: {{queryTime}}
+      <br />
+      Alert created at: {{created}}
+      <br />
    {{else}}
       -
       <br />

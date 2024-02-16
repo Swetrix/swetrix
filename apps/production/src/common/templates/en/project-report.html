@@ -1,12 +1,123 @@
-Your {{#ifEquals type "w"}}Weekly{{/ifEquals}}{{#ifEquals type "M"}}Monthly{{/ifEquals}}{{#ifEquals type "Q"}}Quarterly{{/ifEquals}} Report
-<br/>
-For {{date}} period
-{{#each projects}}
-{{name}}
-Unique visitors: {{data.thisWeekUnique}} ({{#greater data.percChangeUnique 0}}+{{data.percChangeUnique}}%{{else}}{{data.percChangeUnique}}%{{/greater}})
-<br/>
-Pageviews: {{data.thisWeek}} ({{#greater data.percChange 0}}+{{data.percChange}}%{{else}}{{data.percChange}}%{{/greater}}
-<br/>
-{{/each}}
-{{tip}}
-You can manage email reports preferences in your <a href="https://swetrix.com/settings" target="_blank">account settings</a>.
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Swetrix {{#ifEquals type "w"}}Weekly{{/ifEquals}}{{#ifEquals type "M"}}Monthly{{/ifEquals}}{{#ifEquals type
+    "Q"}}Quarterly{{/ifEquals}} Project Report</title>
+</head>
+
+<body style="margin: 0; padding: 0; background-color: #f0f4f7;">
+  <table cellpadding="0" cellspacing="0" border="0" width="100%"
+    style="background: #f0f4f7; min-width: 340px; font-size: 1px; line-height: normal;">
+    <tr>
+      <td align="center" valign="top" bgcolor="#f0f4f7">
+        <!--[if (gte mso 9)|(IE)]>
+         <table border="0" cellspacing="0" cellpadding="0">
+         <tr><td align="center" valign="top" width="750"><![endif]-->
+        <table cellpadding="0" cellspacing="0" border="0" width="750"
+          style="width: 100%; max-width: 750px; min-width: 340px; background: #f0f4f7;">
+          <tr>
+            <td width="25" style="width: 25px; max-width: 25px; min-width: 25px;">&nbsp;</td>
+            <td align="center" valign="top" style="background: #ffffff;">
+              <table cellpadding="0" cellspacing="0" border="0" width="100%"
+                style="width: 100% !important; min-width: 100%; max-width: 100%; background: #f0f4f7;">
+                <tr>
+                  <td align="right" valign="top">
+                    <div style="height: 25px; line-height: 25px; font-size: 23px;">&nbsp;</div>
+                  </td>
+                </tr>
+              </table>
+              <table cellpadding="0" cellspacing="0" border="0" width="88%"
+                style="width: 88% !important; min-width: 88%; max-width: 88%;">
+                <tr>
+                  <td align="center" valign="top">
+                    <div style="height: 40px; line-height: 40px; font-size: 38px;">&nbsp;</div>
+                    <a href="https://swetrix.com" target="_blank"
+                      style="display: block; max-width: 173px;text-decoration: none;">
+                      <img src="https://swetrix.com/assets/logo_blue.png" alt="Swetrix" width="175" border="0"
+                        style="display: block; width: 175px; font-size: 32px;" />
+                    </a>
+                    <div style="height: 40px; line-height: 40px; font-size: 40px;">&nbsp;</div>
+                  </td>
+                </tr>
+              </table>
+              <table cellpadding="0" cellspacing="0" border="0" width="88%"
+                style="width: 88% !important; min-width: 88%; max-width: 88%;">
+                <tr>
+                  <td align="center" valign="top">
+                    <font align="center"
+                      style="font-size: 52px; line-height: 55px; font-weight: 300; letter-spacing: -1.5px;">
+                      <span align="center"
+                        style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif; font-size: 44px; color: #1a1a1a;">
+                        Your {{#ifEquals type "w"}}Weekly{{/ifEquals}}{{#ifEquals type
+                        "M"}}Monthly{{/ifEquals}}{{#ifEquals type "Q"}}Quarterly{{/ifEquals}} Report
+                      </span>
+                    </font>
+                    <div style="height: 10px; line-height: 10px; font-size: 9px;">&nbsp;</div>
+                    <font style="font-size: 36px; line-height: 45px; font-weight: 300; letter-spacing: -1px;">
+                      <span style="
+                                          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+                                          color: #5e5e5e;
+                                          font-size: 30px;
+                                          line-height: 45px;
+                                          font-weight: 300;
+                                          letter-spacing: -1px;
+                                       ">
+                        For the {{date}} period
+                      </span>
+                    </font>
+                    <div style="height: 38px; line-height: 38px; font-size: 36px;">&nbsp;</div>
+                    <table cellpadding="0" cellspacing="0" border="0" width="88%"
+                      style="width: 88% !important; min-width: 88%; max-width: 88%;">
+                      <tr>
+                        <td align="left" valign="top">
+                          <font face="'Source Sans Pro', sans-serif" color="#6d6d6d"
+                            style="font-size: 17px; line-height: 23px;">
+                            <span style="
+                                                   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+                                                   color: #6d6d6d;
+                                                   font-size: 17px;
+                                                   line-height: 23px;
+                                                ">
+                              {{#each projects}}
+                              <h3 style="margin-bottom: 5px;">{{name}}</h3>
+                              <b>Unique visitors:</b> {{data.thisWeekUnique}} ({{#greater data.percChangeUnique 0}}<span
+                                style="color: #059669;">+{{data.percChangeUnique}}%</span>{{else}}<span
+                                style="color: #DC2626;">{{data.percChangeUnique}}%</span>{{/greater}})<br />
+                              <b>Pageviews:</b> {{data.thisWeek}} ({{#greater data.percChange 0}}<span
+                                style="color: #059669;">+{{data.percChange}}%</span>{{else}}<span
+                                style="color: #DC2626;">{{data.percChange}}%</span>{{/greater}})<br /><br />
+                              {{/each}}
+
+                              <i style="white-space: pre-line;">
+                                <span style="font-style: normal;">&#128161;</span>
+                                {{tip}}
+                              </i>
+
+                              <br /><br />
+
+                              You can manage email reports preferences in your <a href="https://swetrix.com/settings"
+                                target="_blank">account settings</a>.
+                            </span>
+                          </font>
+                          <div style="height: 30px; line-height: 30px; font-size: 28px;">&nbsp;</div>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+            <td width="25" style="width: 25px; max-width: 25px; min-width: 25px;">&nbsp;</td>
+          </tr>
+        </table>
+        <!--[if (gte mso 9)|(IE)]>
+         </td></tr>
+         </table><![endif]-->
+      </td>
+    </tr>
+  </table>
+</body>
+
+</html>
