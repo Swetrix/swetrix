@@ -105,7 +105,7 @@ export class UserController {
       relations: ['project'],
     })
     const user = this.userService.omitSensitiveData(
-      await this.userService.findOneWhere({ id: user_id }),
+      await this.userService.findOne(user_id),
     )
 
     user.sharedProjects = sharedProjects
@@ -662,6 +662,9 @@ export class UserController {
         'refCode',
         'referrerID',
         'maxProjects',
+        'planExceedContactedAt',
+        'dashboardBlockReason',
+        'isAccountBillingSuspended',
       ])
       await this.userService.update(id, userToUpdate)
 

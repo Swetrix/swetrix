@@ -204,21 +204,24 @@ const getUsersThatExceedContinuously = (
   const exceedingUsers = []
 
   for (let i = 0; i < _size(users); ++i) {
+    let exceedingTimes = 0
     const user = users[i]
     const allowedEvents = ACCOUNT_PLANS[user.planCode].monthlyUsageLimit
     const userUsage = []
 
     for (let x = 0; x < _size(transformedUsage); ++x) {
       userUsage.push(transformedUsage[x][user.id])
-      if (transformedUsage[x][user.id] < allowedEvents) {
-        continue
+      if (transformedUsage[x][user.id] > allowedEvents) {
+        exceedingTimes++
       }
     }
 
-    exceedingUsers.push({
-      ...user,
-      usage: userUsage,
-    })
+    if (exceedingTimes === _size(usage)) {
+      exceedingUsers.push({
+        ...user,
+        usage: userUsage,
+      })
+    }
   }
 
   return exceedingUsers as User & { usage: any[] }[]
@@ -417,7 +420,7 @@ export class TaskManagerService {
 
       await Promise.allSettled(percExceedingUsagePromises).catch(reason => {
         this.logger.error(
-          `[CRON WORKER](checkPlanUsage) Error occured: ${reason}`,
+          `[CRON WORKER](checkPlanUsage - percExceedingUsagePromises) Error occured: ${reason}`,
         )
       })
     }
@@ -450,7 +453,7 @@ export class TaskManagerService {
 
     // if there are exceeding users, contact them and let them know that their usage more then what their tier allows for two consequetive months
     if (!_isEmpty(continuousExceedingUsers)) {
-      const percExceedingUsagePromises = _map(
+      const continuousExceedingUsagePromises = _map(
         continuousExceedingUsers,
         async user => {
           const { id, email, usage, planCode } = user
@@ -461,7 +464,7 @@ export class TaskManagerService {
 
           const data = {
             user,
-            hitPercentageLimit: true,
+            hitPercentageLimit: false,
             upgradePeriodDays: 7,
             thisMonthUsage: userThisMonthUsage,
             lastMonthUsage: userLastMonthUsage,
@@ -481,15 +484,14 @@ export class TaskManagerService {
         },
       )
 
-      await Promise.allSettled(percExceedingUsagePromises).catch(reason => {
-        this.logger.error(
-          `[CRON WORKER](checkPlanUsage) Error occured: ${reason}`,
-        )
-      })
+      await Promise.allSettled(continuousExceedingUsagePromises).catch(
+        reason => {
+          this.logger.error(
+            `[CRON WORKER](checkPlanUsage - continuousExceedingUsagePromises) Error occured: ${reason}`,
+          )
+        },
+      )
     }
-
-    console.log('thisMonthUsage:', thisMonthUsage)
-    console.log('lastMonthUsage:', lastMonthUsage)
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_9AM)
@@ -973,6 +975,7 @@ export class TaskManagerService {
         await this.userService.update(user.id, {
           cancellationEffectiveDate: null,
           dashboardBlockReason: DashboardBlockReason.subscription_cancelled,
+          planExceedContactedAt: user.cancellationEffectiveDate,
           nextBillDate: null,
           subID: null,
           subUpdateURL: null,
