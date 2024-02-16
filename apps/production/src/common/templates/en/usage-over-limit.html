@@ -1,0 +1,23 @@
+Hi! First of all, thanks a lot for {{#ifEquals user.planCode "trial"}}giving Swetrix a try!{{/ifEquals}}{{#ifNotEquals user.planCode "trial"}}being a Swetrix subscriber.{{/ifNotEquals}}
+<br /><br />
+We'd like to inform you that your traffic has exceeded your subscription plan{{#if hitPercentageLimit}} by over {{percentageLimit}}% this month{{else}} for two consecutive months{{/if}}.
+<br /><br />
+In order to continue using Swetrix and have access to your stats, we kindly ask you to upgrade your subscription plan to reflect your usage. If you don't take action to upgrade your account to a new plan within the next {{upgradePeriodDays}} days, access to your stats will be temporarily blocked (please note that we will not stop collecting data, just block your account until the issue is resolved).
+<br /><br />
+{{#if hitPercentageLimit}}
+This month you have used {{thisMonthUsage}} billable events, which exceeds your plan limit by more than {{percentageLimit}}%.
+{{else}}
+This month you have used {{thisMonthUsage}} billable events, the month before that you used {{lastMonthUsage}} events.
+{{/if}}
+Billable events include pageviews, custom events and CAPTCHA events. A detailed usage report can be found on the <a href="{{billingUrl}}" target="_blank">billing page</a>.
+<br /><br />
+{{#ifEquals user.planCode "10m"}}
+Your usage exceeds our standard plans, so please reply to this email to receive a tailored offering and resolve this issue.
+<br /><br />
+Thank you again for using Swetrix and sorry for the inconvenience.
+{{/ifEquals}}
+{{#ifNotEquals user.planCode "10m"}}
+We recommend that you upgrade to the {{suggestedPlanLimit}} events per month plan to keep up with your usage. The cost of the plan will be prorated to reflect the amount you have already paid for your current subscription plan.
+<br /><br />
+Thank you again for using Swetrix and sorry for the inconvenience, please reply to this email if you have any questions or need help with anything.
+{{/ifNotEquals}}

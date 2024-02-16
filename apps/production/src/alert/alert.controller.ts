@@ -128,6 +128,13 @@ export class AlertController {
       )
     }
 
+    if (user.isAccountBillingSuspended) {
+      throw new HttpException(
+        'The account that owns this site is currently suspended, this is because of a billing issue. Please resolve the issue to continue.',
+        HttpStatus.PAYMENT_REQUIRED,
+      )
+    }
+
     if (alertsCount >= (maxAlerts || ALERTS_MAXIMUM)) {
       throw new HttpException(
         `You cannot create more than ${maxAlerts} alerts on your account plan. Please upgrade to be able to create more alerts.`,
@@ -206,7 +213,7 @@ export class AlertController {
       pid: alert.project.id,
     }
   }
-  
+
   @ApiBearerAuth()
   @Delete('/:id')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)

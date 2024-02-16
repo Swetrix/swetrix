@@ -161,13 +161,22 @@ export class ProjectController {
       }
     }
 
-    const paginated = await this.projectService.paginate({ take, skip }, where)
-
-    const totalMonthlyEvents = await this.projectService.getRedisCount(userId)
+    const [paginated, totalMonthlyEvents, user] = await Promise.all([
+      this.projectService.paginate({ take, skip }, where),
+      this.projectService.getRedisCount(userId),
+      this.userService.findOneWhere(
+        {
+          id: userId,
+        },
+        [],
+        ['dashboardBlockReason'],
+      ),
+    ])
 
     paginated.results = _map(paginated.results, p => ({
       ...p,
       isOwner: true,
+      isLocked: !!user.dashboardBlockReason,
     }))
 
     return {
@@ -365,6 +374,13 @@ export class ProjectController {
       )
     }
 
+    if (user.isAccountBillingSuspended) {
+      throw new HttpException(
+        'This account is currently suspended, this is because of a billing issue. Please resolve the issue to continue.',
+        HttpStatus.PAYMENT_REQUIRED,
+      )
+    }
+
     if (projectDTO.isCaptcha) {
       if (
         _size(
@@ -480,6 +496,13 @@ export class ProjectController {
       )
     }
 
+    if (user.isAccountBillingSuspended) {
+      throw new HttpException(
+        'This account is currently suspended, this is because of a billing issue. Please resolve the issue to continue.',
+        HttpStatus.PAYMENT_REQUIRED,
+      )
+    }
+
     const project = await this.projectService.findOneWhere(
       {
         id: funnelDTO.pid,
@@ -523,6 +546,13 @@ export class ProjectController {
     if (user.planCode === PlanCode.none) {
       throw new HttpException(
         'You cannot update funnels due to no active subscription. Please upgrade your account plan to continue.',
+        HttpStatus.PAYMENT_REQUIRED,
+      )
+    }
+
+    if (user.isAccountBillingSuspended) {
+      throw new HttpException(
+        'This account is currently suspended, this is because of a billing issue. Please resolve the issue to continue.',
         HttpStatus.PAYMENT_REQUIRED,
       )
     }
@@ -1731,6 +1761,7 @@ export class ProjectController {
     return {
       ..._omit(project, ['admin', 'passwordHash', 'share']),
       isOwner: uid === project.admin?.id,
+      isLocked: !!project.admin?.dashboardBlockReason,
     }
   }
 }

@@ -38,11 +38,7 @@ import {
   PreconditionFailedException,
 } from '@nestjs/common'
 
-import {
-  ACCOUNT_PLANS,
-  DEFAULT_TIMEZONE,
-  PlanCode,
-} from '../user/entities/user.entity'
+import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
 import {
   redis,
   isValidPID,
@@ -343,6 +339,17 @@ export class AnalyticsService {
     this.projectService.allowedToView(project, uid, password)
   }
 
+  async checkBillingAccess(pid: string) {
+    const project = await this.projectService.getRedisProject(pid)
+
+    if (project.admin.dashboardBlockReason) {
+      throw new HttpException(
+        'The account that owns this site is currently suspended, this is because of a billing issue. Please resolve the issue to continue.',
+        HttpStatus.PAYMENT_REQUIRED,
+      )
+    }
+  }
+
   checkOrigin(project: Project, origin: string): void {
     // For some reasons the project.origins sometimes may look like [''], let's filter it out
     // TODO: Properly validate the origins on project update
@@ -446,20 +453,9 @@ export class AnalyticsService {
       )
     }
 
-    if (project.admin.planCode === PlanCode.none) {
+    if (project.admin.isAccountBillingSuspended) {
       throw new HttpException(
-        'You cannot send analytics to this project due to no active subscription. Please upgrade your account plan to continue sending analytics.',
-        HttpStatus.PAYMENT_REQUIRED,
-      )
-    }
-
-    const count = await this.projectService.getRedisCount(project.admin.id)
-    const maxCount =
-      ACCOUNT_PLANS[project.admin.planCode].monthlyUsageLimit || 0
-
-    if (count >= maxCount) {
-      throw new HttpException(
-        'You have exceeded the available monthly request limit for your account. Please upgrade your account plan if you need more requests.',
+        'The account that owns this site is currently suspended, this is because of a billing issue. This, and all other events, are NOT being tracked and saved on our side. Please log in to your account on Swetrix or contact our support to resolve the issue.',
         HttpStatus.PAYMENT_REQUIRED,
       )
     }
@@ -2714,7 +2710,10 @@ export class AnalyticsService {
         .format('YYYY-MM-DD HH:mm:ss')
 
       // eslint-disable-next-line
-      timeBucket = dayjs(to).diff(dayjs(from), 'hour') > 1 ? TimeBucketType.HOUR : TimeBucketType.MINUTE
+      timeBucket =
+        dayjs(to).diff(dayjs(from), 'hour') > 1
+          ? TimeBucketType.HOUR
+          : TimeBucketType.MINUTE
 
       const groupedChart = await this.groupChartByTimeBucket(
         timeBucket,

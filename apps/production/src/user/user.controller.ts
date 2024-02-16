@@ -105,7 +105,7 @@ export class UserController {
       relations: ['project'],
     })
     const user = this.userService.omitSensitiveData(
-      await this.userService.findOneWhere({ id: user_id }),
+      await this.userService.findOne(user_id),
     )
 
     user.sharedProjects = sharedProjects
@@ -662,6 +662,9 @@ export class UserController {
         'refCode',
         'referrerID',
         'maxProjects',
+        'planExceedContactedAt',
+        'dashboardBlockReason',
+        'isAccountBillingSuspended',
       ])
       await this.userService.update(id, userToUpdate)
 
@@ -796,6 +799,12 @@ export class UserController {
         ...user,
         created: dayjs(user.created).format('YYYY/MM/DD HH:mm:ss'),
         updated: dayjs(user.updated).format('YYYY/MM/DD HH:mm:ss'),
+        cancellationEffectiveDate: _isNull(user.cancellationEffectiveDate)
+          ? '-'
+          : dayjs(user.cancellationEffectiveDate).format('YYYY/MM/DD HH:mm:ss'),
+        planExceedContactedAt: _isNull(user.planExceedContactedAt)
+          ? '-'
+          : dayjs(user.planExceedContactedAt).format('YYYY/MM/DD HH:mm:ss'),
         exportedAt: _isNull(user.exportedAt)
           ? '-'
           : dayjs(user.exportedAt).format('YYYY/MM/DD HH:mm:ss'),
@@ -806,6 +815,11 @@ export class UserController {
         subUpdateURL: user.subUpdateURL || '-',
         subCancelURL: user.subCancelURL || '-',
         telegramChatId: user.telegramChatId || '-',
+        dashboardBlockReason: user.dashboardBlockReason || '-',
+        refCode: user.refCode || '-',
+        referrerID: user.referrerID || '-',
+        paypalPaymentsEmail: user.paypalPaymentsEmail || '-',
+        tierCurrency: user.tierCurrency || '-',
         nickname: user.nickname || '-',
       },
       projects: _map(projects, project => ({

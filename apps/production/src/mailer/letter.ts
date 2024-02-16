@@ -8,6 +8,7 @@ export enum LetterTemplate {
   GDPRDataExport = 'gdpr_data_export',
   ProjectReport = 'project-report',
   TierWarning = 'tier-warning',
+  SubscriptionCancelled = 'subscription-cancelled',
   ProjectInvitation = 'customer_project-invitation',
   TwoFAOn = '2fa-turned-on',
   TwoFAOff = '2fa-turned-off',
@@ -16,4 +17,7 @@ export enum LetterTemplate {
   ProjectSubscriberInvitation = 'project-subscriber-invitation',
   ProjectTransfer = 'project-transfer',
   PayPalEmailUpdate = 'paypal-email-update',
+  UsageOverLimit = 'usage-over-limit',
+  DashboardLockedExceedingLimits = 'dashboard-locked-exceeding-limits',
+  DashboardLockedPaymentFailure = 'dashboard-locked-payment-failure',
 }

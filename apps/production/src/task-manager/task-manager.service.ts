@@ -12,8 +12,10 @@ import * as _size from 'lodash/size'
 import * as _map from 'lodash/map'
 import * as _now from 'lodash/now'
 import * as _find from 'lodash/find'
+import * as _includes from 'lodash/includes'
 import * as _toNumber from 'lodash/toNumber'
 import * as _reduce from 'lodash/reduce'
+import * as _filter from 'lodash/filter'
 
 import { AlertService } from '../alert/alert.service'
 import { QueryCondition, QueryMetric, QueryTime } from '../alert/dto/alert.dto'
@@ -35,6 +37,9 @@ import {
   PlanCode,
   BillingFrequency,
   TRIAL_DURATION,
+  User,
+  getNextPlan,
+  DashboardBlockReason,
 } from '../user/entities/user.entity'
 import {
   clickhouse,
@@ -52,8 +57,10 @@ import {
   JWT_REFRESH_TOKEN_LIFETIME,
   PAYPAL_CLIENT_ID,
   PAYPAL_CLIENT_SECRET,
+  TRAFFIC_SPIKE_ALLOWED_PERCENTAGE,
   isDevelopment,
 } from '../common/constants'
+import { CHPlanUsage } from './interfaces'
 import { getRandomTip } from '../common/utils'
 import { AppLoggerService } from '../logger/logger.service'
 
@@ -95,6 +102,129 @@ const getQueryCondition = (condition: QueryCondition): string => {
   if (condition === QueryCondition.GREATER_THAN) return '>'
   if (condition === QueryCondition.GREATER_EQUAL_THAN) return '>='
   return ''
+}
+
+// TODO: Check custom events & CAPTCHA events as well
+const generatePlanUsageQuery = (
+  users: User[],
+  getDate: (user?: User) => string,
+): string => {
+  let query = ''
+
+  for (let i = 0; i < _size(users); ++i) {
+    const user = users[i]
+    const pidsStringified = _map(user.projects, p => `'${p.id}'`).join(',')
+
+    query += `SELECT '${
+      user.id
+    }' AS id, count(*) AS "count" FROM analytics WHERE pid IN (${pidsStringified}) and created > '${getDate(
+      user,
+    )}'`
+
+    if (_size(users) - 1 !== i) {
+      query += ' UNION ALL '
+    }
+  }
+
+  return query
+}
+
+const getUsersThatExceedPlanUsage = (
+  users: User[],
+  usage: CHPlanUsage[],
+  allowedExceed = TRAFFIC_SPIKE_ALLOWED_PERCENTAGE,
+): User & { usage: number }[] => {
+  const usageMap = _reduce(
+    usage,
+    (acc, value: CHPlanUsage) => ({
+      ...acc,
+      [value.id]: value.count,
+    }),
+    {},
+  )
+  const exceedingUsers = []
+
+  for (let i = 0; i < _size(users); ++i) {
+    const user = users[i]
+    const allowedEvents = ACCOUNT_PLANS[user.planCode].monthlyUsageLimit
+
+    if (usageMap[user.id] > allowedEvents + allowedEvents * allowedExceed) {
+      exceedingUsers.push({
+        ...user,
+        usage: usageMap[user.id],
+      })
+    }
+  }
+
+  return exceedingUsers as User & { usage: number }[]
+}
+
+const getUserIDsThatExceedPlanUsage = (
+  users: User[],
+  usage: CHPlanUsage[],
+  allowedExceed = TRAFFIC_SPIKE_ALLOWED_PERCENTAGE,
+): string[] => {
+  const usageMap = _reduce(
+    usage,
+    (acc, value: CHPlanUsage) => ({
+      ...acc,
+      [value.id]: value.count,
+    }),
+    {},
+  )
+  const exceedingUsers = []
+
+  for (let i = 0; i < _size(users); ++i) {
+    const user = users[i]
+    const allowedEvents = ACCOUNT_PLANS[user.planCode].monthlyUsageLimit
+
+    if (usageMap[user.id] > allowedEvents + allowedEvents * allowedExceed) {
+      exceedingUsers.push(user.id)
+    }
+  }
+
+  return exceedingUsers
+}
+
+const getUsersThatExceedContinuously = (
+  users: User[],
+  usage: CHPlanUsage[][],
+): User & { usage: any[] }[] => {
+  const transformedUsage = _map(usage, (el: CHPlanUsage[]) => {
+    return _reduce(
+      el,
+      (acc, value: CHPlanUsage) => ({
+        ...acc,
+        [value.id]: value.count,
+      }),
+      {},
+    )
+  })
+
+  const exceedingUsers = []
+
+  for (let i = 0; i < _size(users); ++i) {
+    let exceedingTimes = 0
+    const user = users[i]
+    const allowedEvents = ACCOUNT_PLANS[user.planCode].monthlyUsageLimit
+    const userUsage = []
+
+    for (let x = 0; x < _size(transformedUsage); ++x) {
+      userUsage.push(transformedUsage[x][user.id])
+      if (transformedUsage[x][user.id] > allowedEvents) {
+        exceedingTimes++
+      }
+    }
+
+    if (exceedingTimes === _size(usage)) {
+      exceedingUsers.push({
+        ...user,
+        usage: userUsage,
+      })
+    }
+  }
+
+  return exceedingUsers as User & { usage: any[] }[]
 }
 
 @Injectable()
@@ -169,6 +299,201 @@ export class TaskManagerService {
     }
   }
 
+  @Cron(CronExpression.EVERY_DAY_AT_5PM)
+  async lockDashboards(): Promise<void> {
+    const sevenDaysAgo = dayjs
+      .utc()
+      .subtract(7, 'days')
+      .format('YYYY-MM-DD HH:mm:ss')
+
+    const users = await this.userService.find({
+      where: {
+        isActive: true,
+        planCode: Not(PlanCode.none),
+        planExceedContactedAt: MoreThan(sevenDaysAgo),
+        dashboardBlockReason: IsNull(),
+        isAccountBillingSuspended: false,
+      },
+      relations: ['projects'],
+      select: ['id', 'email', 'planCode'],
+    })
+
+    if (_isEmpty(users)) {
+      return
+    }
+
+    const monthlyUsageQuery = generatePlanUsageQuery(users, (user: User) =>
+      dayjs.utc(user.planExceedContactedAt).format('YYYY-MM-01'),
+    )
+
+    const monthlyUsage = <CHPlanUsage[]>(
+      await clickhouse.query(monthlyUsageQuery).toPromise()
+    )
+
+    const exceedingUserIds = getUserIDsThatExceedPlanUsage(users, monthlyUsage)
+
+    await Promise.allSettled(
+      _map(users, async (user: User) => {
+        const { id, email, planCode } = user
+
+        const suggestedPlanLimit = getNextPlan(planCode)
+
+        const data = {
+          user,
+          hitPercentageLimit: _includes(exceedingUserIds, user.id),
+          percentageLimit: TRAFFIC_SPIKE_ALLOWED_PERCENTAGE * 100,
+          billingUrl: 'https://swetrix.com/billing',
+          suggestedPlanLimit,
+        }
+
+        await this.mailerService.sendEmail(
+          email,
+          LetterTemplate.DashboardLockedExceedingLimits,
+          data,
+        )
+        await this.userService.update(id, {
+          dashboardBlockReason: DashboardBlockReason.exceeding_plan_limits,
+        })
+      }),
+    ).catch(reason => {
+      this.logger.error(
+        `[CRON WORKER](lockDashboards) Error occured: ${reason}`,
+      )
+    })
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_4PM)
+  async checkPlanUsage(): Promise<void> {
+    const users = await this.userService.find({
+      where: {
+        isActive: true,
+        planCode: Not(PlanCode.none),
+        planExceedContactedAt: IsNull(),
+        dashboardBlockReason: IsNull(),
+        isAccountBillingSuspended: false,
+      },
+      relations: ['projects'],
+      select: ['id', 'email', 'planCode'],
+    })
+
+    if (_isEmpty(users)) {
+      return
+    }
+
+    const planExceedContactedAt = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+
+    const thisMonthDate = dayjs.utc().format('YYYY-MM-01')
+    const thisMonthQuery = generatePlanUsageQuery(users, () => thisMonthDate)
+
+    const thisMonthUsage = <CHPlanUsage[]>(
+      await clickhouse.query(thisMonthQuery).toPromise()
+    )
+
+    const exceedingUsers = getUsersThatExceedPlanUsage(users, thisMonthUsage)
+
+    // if there are exceeding users, contact them and let them know that their usage is > than 30% their tier allows
+    if (!_isEmpty(exceedingUsers)) {
+      const percExceedingUsagePromises = _map(exceedingUsers, async user => {
+        const { id, email, usage, planCode } = user
+
+        const suggestedPlanLimit = getNextPlan(planCode)
+
+        const data = {
+          user,
+          hitPercentageLimit: true,
+          upgradePeriodDays: 7,
+          thisMonthUsage: usage,
+          percentageLimit: TRAFFIC_SPIKE_ALLOWED_PERCENTAGE * 100,
+          billingUrl: 'https://swetrix.com/billing',
+          suggestedPlanLimit,
+        }
+
+        await this.mailerService.sendEmail(
+          email,
+          LetterTemplate.UsageOverLimit,
+          data,
+        )
+        await this.userService.update(id, {
+          planExceedContactedAt,
+        })
+      })
+
+      await Promise.allSettled(percExceedingUsagePromises).catch(reason => {
+        this.logger.error(
+          `[CRON WORKER](checkPlanUsage - percExceedingUsagePromises) Error occured: ${reason}`,
+        )
+      })
+    }
+
+    const filteredUsers = _filter(
+      users,
+      user =>
+        !_find(exceedingUsers, exceedingUser => exceedingUser.id === user.id),
+    )
+
+    if (_isEmpty(filteredUsers)) {
+      return
+    }
+
+    const lastMonthDate = dayjs.utc().subtract(1, 'M').format('YYYY-MM-01')
+    const lastMonthQuery = generatePlanUsageQuery(
+      filteredUsers,
+      () => lastMonthDate,
+    )
+
+    const lastMonthUsage = <CHPlanUsage[]>(
+      await clickhouse.query(lastMonthQuery).toPromise()
+    )
+
+    const continuousExceedingUsers = getUsersThatExceedContinuously(users, [
+      // the order should be kept like this
+      thisMonthUsage,
+      lastMonthUsage,
+    ])
+
+    // if there are exceeding users, contact them and let them know that their usage more then what their tier allows for two consequetive months
+    if (!_isEmpty(continuousExceedingUsers)) {
+      const continuousExceedingUsagePromises = _map(
+        continuousExceedingUsers,
+        async user => {
+          const { id, email, usage, planCode } = user
+
+          const [userThisMonthUsage, userLastMonthUsage] = usage || []
+
+          const suggestedPlanLimit = getNextPlan(planCode)
+
+          const data = {
+            user,
+            hitPercentageLimit: false,
+            upgradePeriodDays: 7,
+            thisMonthUsage: userThisMonthUsage,
+            lastMonthUsage: userLastMonthUsage,
+            percentageLimit: TRAFFIC_SPIKE_ALLOWED_PERCENTAGE * 100,
+            billingUrl: 'https://swetrix.com/billing',
+            suggestedPlanLimit,
+          }
+
+          await this.mailerService.sendEmail(
+            email,
+            LetterTemplate.UsageOverLimit,
+            data,
+          )
+          await this.userService.update(id, {
+            planExceedContactedAt,
+          })
+        },
+      )
+
+      await Promise.allSettled(continuousExceedingUsagePromises).catch(
+        reason => {
+          this.logger.error(
+            `[CRON WORKER](checkPlanUsage - continuousExceedingUsagePromises) Error occured: ${reason}`,
+          )
+        },
+      )
+    }
+  }
+
   @Cron(CronExpression.EVERY_DAY_AT_9AM)
   async checkLeftEvents(): Promise<void> {
     const thisMonth = dayjs.utc().format('YYYY-MM-01')
@@ -178,11 +503,13 @@ export class TaskManagerService {
           evWarningSentOn: IsNull(),
           isActive: true,
           planCode: Not(PlanCode.none),
+          dashboardBlockReason: IsNull(),
         },
         {
           evWarningSentOn: LessThan(thisMonth),
           isActive: true,
           planCode: Not(PlanCode.none),
+          dashboardBlockReason: IsNull(),
         },
       ],
       relations: ['projects'],
@@ -261,6 +588,8 @@ export class TaskManagerService {
     const users = await this.userService.find({
       where: {
         reportFrequency: ReportFrequency.WEEKLY,
+        planCode: Not(PlanCode.none),
+        dashboardBlockReason: IsNull(),
       },
       relations: ['projects'],
       select: ['email'],
@@ -313,6 +642,8 @@ export class TaskManagerService {
     const users = await this.userService.find({
       where: {
         reportFrequency: ReportFrequency.MONTHLY,
+        planCode: Not(PlanCode.none),
+        dashboardBlockReason: IsNull(),
       },
       relations: ['projects'],
       select: ['email'],
@@ -364,6 +695,8 @@ export class TaskManagerService {
     const users = await this.userService.find({
       where: {
         reportFrequency: ReportFrequency.QUARTERLY,
+        planCode: Not(PlanCode.none),
+        dashboardBlockReason: IsNull(),
       },
       relations: ['projects'],
       select: ['email'],
@@ -650,7 +983,12 @@ export class TaskManagerService {
         await this.userService.update(user.id, {
           cancellationEffectiveDate: null,
           planCode: PlanCode.none,
+          dashboardBlockReason: DashboardBlockReason.subscription_cancelled,
+          planExceedContactedAt: user.cancellationEffectiveDate,
           nextBillDate: null,
+          subID: null,
+          subUpdateURL: null,
+          subCancelURL: null,
           billingFrequency: BillingFrequency.Monthly,
         })
         await this.projectService.clearProjectsRedisCache(user.id)
@@ -742,6 +1080,7 @@ export class TaskManagerService {
 
       await this.userService.update(id, {
         planCode: PlanCode.none,
+        dashboardBlockReason: DashboardBlockReason.trial_ended,
         // trialEndDate: null,
       })
       await this.mailerService.sendEmail(email, LetterTemplate.TrialExpired)
@@ -754,13 +1093,13 @@ export class TaskManagerService {
   }
 
   @Cron(CronExpression.EVERY_5_MINUTES)
-  // @Cron(CronExpression.EVERY_5_SECONDS)
   async checkOnlineUsersAlerts(): Promise<void> {
     const projects = await this.projectService.findWhere(
       {
         admin: {
           isTelegramChatIdConfirmed: true,
           planCode: Not(PlanCode.none),
+          dashboardBlockReason: IsNull(),
         },
       },
       ['admin'],
@@ -814,13 +1153,13 @@ export class TaskManagerService {
   }
 
   @Cron(CronExpression.EVERY_5_MINUTES)
-  // @Cron(CronExpression.EVERY_5_SECONDS)
   async checkMetricAlerts(): Promise<void> {
     const projects = await this.projectService.findWhere(
       {
         admin: {
           isTelegramChatIdConfirmed: true,
           planCode: Not(PlanCode.none),
+          dashboardBlockReason: IsNull(),
         },
       },
       ['admin'],

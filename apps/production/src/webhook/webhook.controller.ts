@@ -13,14 +13,18 @@ import * as _find from 'lodash/find'
 
 import { ProjectService } from '../project/project.service'
 import { getIPFromHeaders } from '../common/utils'
+import { AFFILIATE_CUT } from '../common/constants'
 import {
-  PlanCode,
   ACCOUNT_PLANS,
   BillingFrequency,
+  DashboardBlockReason,
+  isNextPlan,
 } from '../user/entities/user.entity'
 import { UserService } from '../user/user.service'
 import { AppLoggerService } from '../logger/logger.service'
 import { WebhookService } from './webhook.service'
+import { LetterTemplate } from '../mailer/letter'
+import { MailerService } from '../mailer/mailer.service'
 
 const MAX_PAYMENT_ATTEMPTS = 5
 
@@ -32,6 +36,7 @@ export class WebhookController {
     private readonly userService: UserService,
     private readonly webhookService: WebhookService,
     private readonly projectService: ProjectService,
+    private readonly mailerService: MailerService,
   ) {}
 
   @Post('/paddle')
@@ -85,6 +90,19 @@ export class WebhookController {
           )
         }
 
+        const currentUser = uid
+          ? await this.userService.findOne(uid)
+          : await this.userService.findOneWhere({ email })
+        const unlockDashboardParams =
+          body.alert_name === 'subscription_created' ||
+          isNextPlan(currentUser.planCode, plan.id)
+            ? {
+                dashboardBlockReason: null,
+                planExceedContactedAt: null,
+                isAccountBillingSuspended: false,
+              }
+            : {}
+
         const updateParams = {
           planCode: plan.id,
           subID,
@@ -95,6 +113,8 @@ export class WebhookController {
             ? BillingFrequency.Monthly
             : BillingFrequency.Yearly,
           tierCurrency: currency,
+          cancellationEffectiveDate: null,
+          ...unlockDashboardParams,
         }
 
         if (uid) {
@@ -115,11 +135,21 @@ export class WebhookController {
         } = body
 
         await this.userService.updateBySubID(subID, {
-          billingFrequency: BillingFrequency.Monthly,
           nextBillDate: null,
           cancellationEffectiveDate,
-          tierCurrency: null,
         })
+
+        const { email } =
+          (await this.userService.findOneWhere({
+            subID,
+          })) || {}
+
+        if (email) {
+          await this.mailerService.sendEmail(
+            email,
+            LetterTemplate.SubscriptionCancelled,
+          )
+        }
 
         break
       }
@@ -157,6 +187,16 @@ export class WebhookController {
           return
         }
 
+        if (
+          subscriber.dashboardBlockReason ===
+          DashboardBlockReason.payment_failed
+        ) {
+          await this.userService.updateBySubID(subID, {
+            dashboardBlockReason: null,
+          })
+          await this.projectService.clearProjectsRedisCacheBySubId(subID)
+        }
+
         // That user was not referred by anyone
         if (!subscriber.referrerID) {
           return
@@ -181,7 +221,7 @@ export class WebhookController {
         await this.webhookService.addPayoutForUser(
           referrer,
           subscriber.id,
-          Number(balanceEarnings),
+          Number(balanceEarnings) * AFFILIATE_CUT,
           balanceCurrency,
         )
 
@@ -192,12 +232,33 @@ export class WebhookController {
         const { subscription_id: subID, attempt_number: attemptNumber } = body
 
         if (parseInt(attemptNumber, 10) >= MAX_PAYMENT_ATTEMPTS) {
+          const { email } =
+            (await this.userService.findOneWhere({
+              subID,
+            })) || {}
+
+          if (!email) {
+            this.logger.error(
+              `[subscription_payment_failed] Cannot find the subscriber with subID: ${subID}\nBody: ${JSON.stringify(
+                body,
+                null,
+                2,
+              )}`,
+            )
+            return
+          }
+
           await this.userService.updateBySubID(subID, {
-            planCode: PlanCode.none,
-            billingFrequency: BillingFrequency.Monthly,
-            nextBillDate: null,
-            tierCurrency: null,
+            dashboardBlockReason: DashboardBlockReason.payment_failed,
           })
+
+          await this.mailerService.sendEmail(
+            email,
+            LetterTemplate.DashboardLockedPaymentFailure,
+            {
+              billingUrl: 'https://swetrix.com/billing',
+            },
+          )
         }
 
         break

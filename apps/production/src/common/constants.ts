@@ -100,6 +100,8 @@ const UNIQUE_SESSION_LIFE_TIME = 1800
 // 35 seconds
 const HEARTBEAT_SID_LIFE_TIME = 35
 
+const AFFILIATE_CUT = 0.2
+
 // how often can user request a fresh GDPR export of their data; in days.
 const GDPR_EXPORT_TIMEFRAME = 14
 
@@ -115,6 +117,8 @@ const CAPTCHA_SECRET_KEY_LENGTH = 50
 // Funnels
 const MIN_PAGES_IN_FUNNEL = 2
 const MAX_PAGES_IN_FUNNEL = 10
+
+const TRAFFIC_SPIKE_ALLOWED_PERCENTAGE = 0.3
 
 const BLOG_POSTS_ROOT = 'blog-posts/posts'
 
@@ -232,4 +236,6 @@ export {
   MAX_FUNNELS,
   ALL_COLUMNS,
   BLOG_POSTS_ROOT,
+  TRAFFIC_SPIKE_ALLOWED_PERCENTAGE,
+  AFFILIATE_CUT,
 }
