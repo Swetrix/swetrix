@@ -1,5 +1,12 @@
 import { ISharedProject } from './ISharedProject'
 
+export enum DashboardBlockReason {
+  'exceeding_plan_limits' = 'exceeding_plan_limits',
+  'trial_ended' = 'trial_ended',
+  'payment_failed' = 'payment_failed',
+  'subscription_cancelled' = 'subscription_cancelled',
+}
+
 export interface IUser {
   id: string
   roles: string[]
@@ -40,4 +47,7 @@ export interface IUser {
   refCode: string | null
   referrerID: string | null
   paypalPaymentsEmail: string | null
+  planExceedContactedAt: Date
+  dashboardBlockReason: DashboardBlockReason
+  isAccountBillingSuspended: boolean
 }

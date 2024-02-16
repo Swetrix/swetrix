@@ -99,6 +99,7 @@ export interface IProject {
   isTransferring?: boolean
   isPasswordProtected?: boolean
   password?: string
+  isLocked: boolean
 }
 
 export interface ICaptchaProject {

@@ -41,6 +41,7 @@ import {
   roleViewer,
 } from 'redux/constants'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
+import DashboardLockedBanner from 'components/DashboardLockedBanner'
 import useDebounce from 'hooks/useDebounce'
 
 import { acceptShareProject } from 'api'
@@ -520,6 +521,7 @@ const Dashboard = ({
     <>
       <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
         <EventsRunningOutBanner />
+        <DashboardLockedBanner />
         <div className='flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
           <div className='max-w-7xl w-full mx-auto'>
             <div className='flex justify-between mb-6'>

@@ -1,8 +1,7 @@
 import React, { memo } from 'react'
-import { Link, useLocation } from '@remix-run/react'
+import { Link } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import _map from 'lodash/map'
-import _startsWith from 'lodash/startsWith'
 import Flag from 'react-flagkit'
 import PropTypes from 'prop-types'
 
@@ -205,13 +204,20 @@ const SelfHostedFooter = () => {
   )
 }
 
-const Footer = ({ minimal, authenticated }: { minimal?: boolean; authenticated?: boolean }): JSX.Element => {
+const Footer = ({
+  minimal,
+  authenticated,
+  showDBIPMessage,
+}: {
+  minimal?: boolean
+  authenticated?: boolean
+  showDBIPMessage?: boolean
+}): JSX.Element => {
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
   const year = new Date().getFullYear()
-  const location = useLocation()
 
   if (isSelfhosted) {
     return <SelfHostedFooter />
@@ -265,7 +271,7 @@ const Footer = ({ minimal, authenticated }: { minimal?: boolean; authenticated?:
                 {t('footer.status')}
               </a>
             </div>
-            {_startsWith(location.pathname, '/projects/') && (
+            {showDBIPMessage && (
               <a
                 className='absolute -bottom-5 leading-6 text-slate-900 dark:text-gray-300 hover:text-slate-700 dark:hover:text-white'
                 target='_blank'
