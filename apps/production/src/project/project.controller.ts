@@ -164,13 +164,7 @@ export class ProjectController {
     const [paginated, totalMonthlyEvents, user] = await Promise.all([
       this.projectService.paginate({ take, skip }, where),
       this.projectService.getRedisCount(userId),
-      this.userService.findOneWhere(
-        {
-          id: userId,
-        },
-        [],
-        ['dashboardBlockReason'],
-      ),
+      this.userService.findOne(userId),
     ])
 
     paginated.results = _map(paginated.results, p => ({
