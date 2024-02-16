@@ -176,7 +176,7 @@ export class ProjectController {
     paginated.results = _map(paginated.results, p => ({
       ...p,
       isOwner: true,
-      isLocked: !!user.dashboardBlockReason,
+      isLocked: !!user?.dashboardBlockReason,
     }))
 
     return {
