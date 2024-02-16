@@ -503,11 +503,13 @@ export class TaskManagerService {
           evWarningSentOn: IsNull(),
           isActive: true,
           planCode: Not(PlanCode.none),
+          dashboardBlockReason: IsNull(),
         },
         {
           evWarningSentOn: LessThan(thisMonth),
           isActive: true,
           planCode: Not(PlanCode.none),
+          dashboardBlockReason: IsNull(),
         },
       ],
       relations: ['projects'],
@@ -586,6 +588,8 @@ export class TaskManagerService {
     const users = await this.userService.find({
       where: {
         reportFrequency: ReportFrequency.WEEKLY,
+        planCode: Not(PlanCode.none),
+        dashboardBlockReason: IsNull(),
       },
       relations: ['projects'],
       select: ['email'],
@@ -638,6 +642,8 @@ export class TaskManagerService {
     const users = await this.userService.find({
       where: {
         reportFrequency: ReportFrequency.MONTHLY,
+        planCode: Not(PlanCode.none),
+        dashboardBlockReason: IsNull(),
       },
       relations: ['projects'],
       select: ['email'],
@@ -689,6 +695,8 @@ export class TaskManagerService {
     const users = await this.userService.find({
       where: {
         reportFrequency: ReportFrequency.QUARTERLY,
+        planCode: Not(PlanCode.none),
+        dashboardBlockReason: IsNull(),
       },
       relations: ['projects'],
       select: ['email'],
@@ -974,6 +982,7 @@ export class TaskManagerService {
       if (now > cancellationEffectiveDate) {
         await this.userService.update(user.id, {
           cancellationEffectiveDate: null,
+          planCode: PlanCode.none,
           dashboardBlockReason: DashboardBlockReason.subscription_cancelled,
           planExceedContactedAt: user.cancellationEffectiveDate,
           nextBillDate: null,
@@ -1071,6 +1080,7 @@ export class TaskManagerService {
 
       await this.userService.update(id, {
         planCode: PlanCode.none,
+        dashboardBlockReason: DashboardBlockReason.trial_ended,
         // trialEndDate: null,
       })
       await this.mailerService.sendEmail(email, LetterTemplate.TrialExpired)
@@ -1083,13 +1093,13 @@ export class TaskManagerService {
   }
 
   @Cron(CronExpression.EVERY_5_MINUTES)
-  // @Cron(CronExpression.EVERY_5_SECONDS)
   async checkOnlineUsersAlerts(): Promise<void> {
     const projects = await this.projectService.findWhere(
       {
         admin: {
           isTelegramChatIdConfirmed: true,
           planCode: Not(PlanCode.none),
+          dashboardBlockReason: IsNull(),
         },
       },
       ['admin'],
@@ -1143,13 +1153,13 @@ export class TaskManagerService {
   }
 
   @Cron(CronExpression.EVERY_5_MINUTES)
-  // @Cron(CronExpression.EVERY_5_SECONDS)
   async checkMetricAlerts(): Promise<void> {
     const projects = await this.projectService.findWhere(
       {
         admin: {
           isTelegramChatIdConfirmed: true,
           planCode: Not(PlanCode.none),
+          dashboardBlockReason: IsNull(),
         },
       },
       ['admin'],
