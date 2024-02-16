@@ -38,7 +38,7 @@ import {
   PreconditionFailedException,
 } from '@nestjs/common'
 
-import { DEFAULT_TIMEZONE, PlanCode } from '../user/entities/user.entity'
+import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
 import {
   redis,
   isValidPID,
