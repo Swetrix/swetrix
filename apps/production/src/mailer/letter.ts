@@ -8,6 +8,7 @@ export enum LetterTemplate {
   GDPRDataExport = 'gdpr_data_export',
   ProjectReport = 'project-report',
   TierWarning = 'tier-warning',
+  SubscriptionCancelled = 'subscription-cancelled',
   ProjectInvitation = 'customer_project-invitation',
   TwoFAOn = '2fa-turned-on',
   TwoFAOff = '2fa-turned-off',

@@ -56,6 +56,11 @@ const metaInfoJson = {
         `You have used more than ${SEND_WARNING_AT_PERC}% of the available events per your tier for this month`,
     },
   },
+  [LetterTemplate.SubscriptionCancelled]: {
+    subject: {
+      en: () => 'Your feedback on Swetrix',
+    },
+  },
   [LetterTemplate.ProjectInvitation]: {
     subject: {
       en: () => 'You have been invited to join the project',

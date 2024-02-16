@@ -139,6 +139,18 @@ export class WebhookController {
           cancellationEffectiveDate,
         })
 
+        const { email } =
+          (await this.userService.findOneWhere({
+            subID,
+          })) || {}
+
+        if (email) {
+          await this.mailerService.sendEmail(
+            email,
+            LetterTemplate.SubscriptionCancelled,
+          )
+        }
+
         break
       }
 
