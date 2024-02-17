@@ -44,7 +44,7 @@ export const SEO = () => {
               <meta property='og:image' content='https://swetrix.com/assets/og_image.png' />
             </>
           )}
-          {!isProjectViewPage && (
+          {!isProjectViewPage && !isMainPage && (
             <>
               <meta name='twitter:image' content={ogImageUrl} />
               <meta property='og:image' content={ogImageUrl} />
