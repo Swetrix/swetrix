@@ -653,9 +653,7 @@ export class AuthService {
         throw new BadRequestException('Google token is expired')
       }
 
-      throw new InternalServerErrorException(
-        'Something went wrong while authenticating user with Google',
-      )
+      throw new InternalServerErrorException(error)
     }
   }
 
@@ -1027,9 +1025,7 @@ export class AuthService {
       return await this.handleExistingUserGithub(user, headers, ip)
     } catch (error) {
       console.error(`[ERROR][AuthService -> authenticateGithub]: ${error}`)
-      throw new InternalServerErrorException(
-        'Something went wrong while authenticating user with Github',
-      )
+      throw new InternalServerErrorException(error)
     }
   }
 }
