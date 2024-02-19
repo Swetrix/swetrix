@@ -25,6 +25,7 @@ import {
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
+import { useHotkeys } from 'react-hotkeys-hook'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _includes from 'lodash/includes'
@@ -111,6 +112,7 @@ import LineChart from 'ui/icons/LineChart'
 import BarChart from 'ui/icons/BarChart'
 import Forecast from 'modals/Forecast'
 import NewFunnel from 'modals/NewFunnel'
+import ViewProjectHotkeys from 'modals/ViewProjectHotkeys'
 import routes from 'routesPath'
 import Header from 'components/Header'
 import Footer from 'components/Footer'
@@ -153,6 +155,10 @@ import {
   FILTER_CHART_METRICS_MAPPING_FOR_COMPARE,
   getSettingsFunnels,
   convertFilters,
+  SHORTCUTS_TABS_LISTENERS,
+  SHORTCUTS_TABS_MAP,
+  SHORTCUTS_GENERAL_LISTENERS,
+  SHORTCUTS_TIMEBUCKETS_LISTENERS,
 } from './ViewProject.helpers'
 import CCRow from './components/CCRow'
 import FunnelsList from './components/FunnelsList'
@@ -421,6 +427,8 @@ const ViewProject = ({
     // if we do not have activeTab in url, we return activeTab from localStorage or default tab trafic
     return projectTab || PROJECT_TABS.traffic
   })
+
+  const [isHotkeysHelpOpened, setIsHotkeysHelpOpened] = useState(false)
 
   // sessions
   const [sessionsSkip, setSessionsSkip] = useState<number>(0)
@@ -2736,6 +2744,97 @@ const ViewProject = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActiveCompare, activePeriodCompare, dateRangeCompare])
 
+  /* KEYBOARD SHORTCUTS */
+  const generalShortcutsActions = {
+    B: () => setChartTypeOnClick(chartTypes.bar),
+    '∫': () => setChartTypeOnClick(chartTypes.bar),
+    L: () => setChartTypeOnClick(chartTypes.line),
+    '¬': () => setChartTypeOnClick(chartTypes.line),
+    S: () => setShowFiltersSearch(true),
+    ß: () => setShowFiltersSearch(true),
+    F: onForecastOpen,
+    ƒ: onForecastOpen,
+    r: refreshStats,
+  }
+
+  const timebucketShortcutsMap = {
+    h: '1h',
+    t: 'today',
+    y: 'yesterday',
+    d: '1d',
+    w: '7d',
+    m: '4w',
+    q: '3M',
+    l: '12M',
+    z: '24M',
+    a: KEY_FOR_ALL_TIME,
+    u: 'custom',
+    c: 'compare',
+  }
+
+  // 'Keyboard shortcuts' help modal
+  useHotkeys('shift+?', () => {
+    setIsHotkeysHelpOpened((val) => !val)
+  })
+
+  // 'Tabs switching' shortcuts
+  useHotkeys(SHORTCUTS_TABS_LISTENERS, ({ key }) => {
+    if (key === 'E') {
+      openSettingsHandler()
+      return
+    }
+
+    // @ts-ignore
+    const tab = SHORTCUTS_TABS_MAP[key]
+
+    if (!tab) {
+      return
+    }
+
+    setProjectTab(tab)
+    setActiveTab(tab)
+  })
+
+  // 'General' shortcuts
+  useHotkeys(SHORTCUTS_GENERAL_LISTENERS, ({ key }) => {
+    // @ts-ignore
+    generalShortcutsActions[key]?.()
+  })
+
+  // 'Timebuckets selection' shortcuts
+  useHotkeys(SHORTCUTS_TIMEBUCKETS_LISTENERS, ({ key }) => {
+    const pairs = tbPeriodPairs(t, undefined, undefined, language)
+    // @ts-ignore
+    const pair = _find(pairs, ({ period }) => period === timebucketShortcutsMap[key])
+
+    if (!pair) {
+      return
+    }
+
+    if (pair.isCustomDate) {
+      // @ts-ignore
+      refCalendar.current?.openCalendar?.()
+      return
+    }
+
+    if (pair.period === 'compare') {
+      if (activeTab === PROJECT_TABS.alerts) {
+        return
+      }
+
+      if (isActiveCompare) {
+        compareDisable()
+      } else {
+        setIsActiveCompare(true)
+      }
+
+      return
+    }
+
+    setDateRange(null)
+    updatePeriod(pair)
+  })
+
   const TabsSelector = () => (
     <div>
       <div className='sm:hidden'>
@@ -3907,6 +4006,7 @@ const ViewProject = ({
             activeTB={t(`project.${timeBucket}`)}
             tb={timeBucket}
           />
+          <ViewProjectHotkeys isOpened={isHotkeysHelpOpened} onClose={() => setIsHotkeysHelpOpened(false)} />
           <NewFunnel
             project={project}
             projectPassword={projectPassword}

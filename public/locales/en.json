@@ -91,7 +91,8 @@
     "unlink": "Unlink",
     "nothingFound": "Nothing found",
     "oneMember": "1 Member",
-    "xMembers": "{{number}} Members"
+    "xMembers": "{{number}} Members",
+    "general": "General"
   },
   "main": {
     "ukrSupport": "Support the Ukrainian army to fight Russian invasion.",
@@ -813,6 +814,11 @@
       "name": "Funnel name",
       "steps": "Funnel steps",
       "addStep": "Add one more step"
+    },
+    "shortcuts": {
+      "title": "Keyboard shortcuts",
+      "timebuckets": "Timebuckets selection",
+      "tabs": "Tabs switching"
     }
   },
   "pricing": {

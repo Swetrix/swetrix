@@ -39,6 +39,8 @@ import {
   tbsFormatMapper24h,
   tbsFormatMapperTooltip,
   tbsFormatMapperTooltip24h,
+  PROJECT_TABS,
+  isSelfhosted,
 } from 'redux/constants'
 import { getTimeFromSeconds, getStringFromTime, sumArrays, nFormatter } from 'utils/generic'
 import countries from 'utils/isoCountries'
@@ -1360,6 +1362,24 @@ const convertFilters = (filters: any) => {
   )
 }
 
+const SHORTCUTS_TABS_MAP = {
+  T: PROJECT_TABS.traffic,
+  P: PROJECT_TABS.performance,
+  F: PROJECT_TABS.funnels,
+  S: PROJECT_TABS.sessions,
+  A: PROJECT_TABS.alerts,
+}
+
+const _SHORTCUTS_TABS_LISTENERS = 'shift+t, shift+p, shift+s, shift+f, shift+e'
+const SHORTCUTS_TABS_LISTENERS = isSelfhosted ? _SHORTCUTS_TABS_LISTENERS : _SHORTCUTS_TABS_LISTENERS + ', shift+a'
+
+const _SHORTCUTS_GENERAL_LISTENERS = 'alt+s,alt+ß, alt+b,alt+∫, alt+l,alt+¬, r'
+const SHORTCUTS_GENERAL_LISTENERS = isSelfhosted
+  ? _SHORTCUTS_GENERAL_LISTENERS
+  : _SHORTCUTS_GENERAL_LISTENERS + ',alt+f,alt+ƒ'
+
+const SHORTCUTS_TIMEBUCKETS_LISTENERS = 'h, t, y, d, w, m, q, l, z, a, u, c'
+
 export {
   iconClassName,
   getFormatDate,
@@ -1382,4 +1402,8 @@ export {
   getSettingsFunnels,
   getSettingsSession,
   convertFilters,
+  SHORTCUTS_TABS_MAP,
+  SHORTCUTS_TABS_LISTENERS,
+  SHORTCUTS_GENERAL_LISTENERS,
+  SHORTCUTS_TIMEBUCKETS_LISTENERS,
 }
