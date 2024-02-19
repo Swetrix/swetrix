@@ -26,6 +26,7 @@ import {
   Ip,
   ForbiddenException,
   Response,
+  Header,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import * as UAParser from 'ua-parser-js'
@@ -1291,6 +1292,7 @@ export class AnalyticsController {
   // Fallback for logging pageviews for users with JavaScript disabled
   // Returns 1x1 transparent gif
   @Get('noscript')
+  @Header('Cross-Origin-Resource-Policy', 'cross-origin')
   @Public()
   async noscript(
     @Query() data,
