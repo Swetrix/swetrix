@@ -160,8 +160,8 @@ export class UserService {
 
   findOneWhere(
     where: Record<string, unknown>,
-    relations: string[] = [],
-    select: any = [],
+    relations?: string[],
+    select?: any,
   ): Promise<User> {
     return this.usersRepository.findOne({ where, relations, select })
   }
