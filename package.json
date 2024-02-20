@@ -41,7 +41,6 @@
     "dangerously-set-html-content": "^1.0.13",
     "dayjs": "^1.11.10",
     "debug": "^4.3.4",
-    "dom-to-image": "^2.6.0",
     "file-saver": "^2.0.5",
     "flatpickr": "^4.6.13",
     "i18n-iso-countries": "^7.7.0",

@@ -6,10 +6,9 @@ import PropTypes from 'prop-types'
  * Component that renders a link row in the 'Referrer' panel.
  *
  * @param {string} rowName - A link itself (e.g. https://google.com) to render in the row.
- * @param {boolean} showIcons - Whether to show favicon icons near links or not.
  * @returns {JSX.Element}
  */
-const RefRow = ({ rowName, showIcons }: { rowName: string; showIcons: boolean }): JSX.Element => {
+const RefRow = ({ rowName }: { rowName: string }): JSX.Element => {
   let isUrl: boolean = true
   let url: URL | null = null
 
@@ -21,7 +20,7 @@ const RefRow = ({ rowName, showIcons }: { rowName: string; showIcons: boolean })
 
   return (
     <div className='overflow-auto'>
-      {showIcons && isUrl && !_isEmpty(url?.hostname) && (
+      {isUrl && !_isEmpty(url?.hostname) && (
         <img
           className='w-5 h-5 mr-1.5 float-left'
           src={`https://icons.duckduckgo.com/ip3/${url?.hostname}.ico`}
@@ -49,7 +48,6 @@ const RefRow = ({ rowName, showIcons }: { rowName: string; showIcons: boolean })
 
 RefRow.propTypes = {
   rowName: PropTypes.string.isRequired,
-  showIcons: PropTypes.bool.isRequired,
 }
 
 export default memo(RefRow)

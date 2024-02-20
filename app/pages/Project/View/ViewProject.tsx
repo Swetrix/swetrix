@@ -3,10 +3,6 @@ import React, { useState, useEffect, useMemo, memo, useRef, useCallback } from '
 import { ClientOnly } from 'remix-utils'
 import useSize from 'hooks/useSize'
 import { useNavigate, useParams, Link } from '@remix-run/react'
-// @ts-ignore
-import domToImage from 'dom-to-image'
-// @ts-ignore
-import { saveAs } from 'file-saver'
 import bb from 'billboard.js'
 import {
   ArrowDownTrayIcon,
@@ -402,9 +398,6 @@ const ViewProject = ({
   // similar filters but using for the sessions tab
   const [filtersSessions, setFiltersSessions] = useState<any[]>([])
   const [areFiltersSessionsParsed, setAreFiltersSessionsParsed] = useState<boolean>(false)
-  // That is needed when using 'Export as image' feature,
-  // Because headless browser cannot do a request to the DDG API due to absense of The Same Origin Policy header
-  const [showIcons, setShowIcons] = useState<boolean>(true)
 
   // isLoading is a true when we loading data from api
   const isLoading = authenticated ? _isLoading : false
@@ -2613,21 +2606,6 @@ const ViewProject = ({
     navigate(_replace(routes.project_settings, ':id', id))
   }
 
-  // exportAsImageHandler using for export dashboard as image
-  const exportAsImageHandler = async () => {
-    setShowIcons(false)
-    try {
-      const blob = await domToImage.toBlob(dashboardRef.current)
-      saveAs(blob, `swetrix-${dayjs().format('YYYY-MM-DD-HH-mm-ss')}.png`)
-    } catch (e) {
-      showError(t('project.exportImgError'))
-      console.error('[ERROR] Error while generating export image.')
-      console.error(e)
-    } finally {
-      setShowIcons(true)
-    }
-  }
-
   // parse period from url when page is loaded
   useEffect(() => {
     try {
@@ -2707,7 +2685,6 @@ const ViewProject = ({
   }
 
   const exportTypes = [
-    { label: t('project.asImage'), onClick: exportAsImageHandler },
     {
       label: t('project.asCSV'),
       onClick: () => {
@@ -3691,7 +3668,7 @@ const ViewProject = ({
                               data={panelsData.data[type]}
                               customTabs={customTabs}
                               // @ts-ignore
-                              rowMapper={({ name: entryName }) => <RefRow rowName={entryName} showIcons={showIcons} />}
+                              rowMapper={({ name: entryName }) => <RefRow rowName={entryName} />}
                             />
                           )
                         }

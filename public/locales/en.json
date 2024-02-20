@@ -583,7 +583,6 @@
     "pageviewX": "Pageview <value>{{x}}</value>",
     "eventX": "Event <value>{{x}}</value>",
     "exportData": "Export data",
-    "asImage": "As image",
     "asCSV": "As CSV",
     "noEvTitle": "No events yet",
     "showAll": "Show all views",

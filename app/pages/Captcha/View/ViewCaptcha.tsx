@@ -2,14 +2,9 @@
 import React, { useState, useEffect, useMemo, memo, useRef } from 'react'
 import useSize from 'hooks/useSize'
 import { useNavigate, useParams } from '@remix-run/react'
-// @ts-ignore
-import domToImage from 'dom-to-image'
-// @ts-ignore
-import { saveAs } from 'file-saver'
 import bb from 'billboard.js'
 import { ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
-import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
@@ -64,7 +59,6 @@ import {
 import { onCSVExportClick } from 'pages/Project/View/ViewProject.helpers'
 import TBPeriodSelector from 'pages/Project/View/components/TBPeriodSelector'
 import CCRow from '../../Project/View/components/CCRow'
-import RefRow from './components/RefRow'
 import NoEvents from './components/NoEvents'
 import Filters from './components/Filters'
 
@@ -153,9 +147,6 @@ const ViewProject = ({
   })
   const checkIfAllMetricsAreDisabled = useMemo(() => !_some(activeChartMetrics, (value) => value), [activeChartMetrics])
   const [filters, setFilters] = useState<any[]>([])
-  // That is needed when using 'Export as image' feature,
-  // Because headless browser cannot do a request to the DDG API due to absense of The Same Origin Policy header
-  const [showIcons, setShowIcons] = useState<boolean>(true)
   const isLoading = authenticated ? _isLoading : false
   const tnMapping = typeNameMapping(t)
   const refCalendar = useRef(null)
@@ -583,20 +574,6 @@ const ViewProject = ({
     navigate(_replace(routes.captcha_settings, ':id', id))
   }
 
-  const exportAsImageHandler = async () => {
-    setShowIcons(false)
-    try {
-      const blob = await domToImage.toBlob(dashboardRef.current)
-      saveAs(blob, `swetrix-${dayjs().format('YYYY-MM-DD-HH-mm-ss')}.png`)
-    } catch (e) {
-      showError(t('project.exportImgError'))
-      console.error('[ERROR] Error while generating export image.')
-      console.error(e)
-    } finally {
-      setShowIcons(true)
-    }
-  }
-
   useEffect(() => {
     try {
       // @ts-ignore
@@ -648,7 +625,6 @@ const ViewProject = ({
   }
 
   const exportTypes = [
-    { label: t('project.asImage'), onClick: exportAsImageHandler },
     {
       label: t('project.asCSV'),
       onClick: () => {
@@ -874,22 +850,6 @@ const ViewProject = ({
                         name={panelName}
                         data={panelsData.data[type]}
                         capitalize
-                      />
-                    )
-                  }
-
-                  if (type === 'ref') {
-                    return (
-                      <Panel
-                        t={t}
-                        key={type}
-                        icon={panelIcon}
-                        id={type}
-                        onFilter={filterHandler}
-                        name={panelName}
-                        data={panelsData.data[type]}
-                        // @ts-ignore
-                        rowMapper={({ name: entryName }) => <RefRow rowName={entryName} showIcons={showIcons} />}
                       />
                     )
                   }
