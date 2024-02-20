@@ -50,7 +50,6 @@ import routes from 'routesPath'
 import { getProject, getCaptchaData } from 'api'
 import { Panel, CustomEvents } from './Panels'
 import {
-  onCSVExportClick,
   getFormatDate,
   panelIconMapping,
   typeNameMapping,
@@ -62,6 +61,7 @@ import {
   CHART_METRICS_MAPPING,
   getColumns,
 } from './ViewCaptcha.helpers'
+import { onCSVExportClick } from 'pages/Project/View/ViewProject.helpers'
 import TBPeriodSelector from 'pages/Project/View/components/TBPeriodSelector'
 import CCRow from '../../Project/View/components/CCRow'
 import RefRow from './components/RefRow'

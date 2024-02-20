@@ -42,6 +42,7 @@ import {
   PROJECT_TABS,
   isSelfhosted,
 } from 'redux/constants'
+import { IEntry } from 'redux/models/IEntry'
 import { getTimeFromSeconds, getStringFromTime, sumArrays, nFormatter } from 'utils/generic'
 import countries from 'utils/isoCountries'
 import { IAnalyticsFunnel } from 'redux/models/IProject'
@@ -124,7 +125,7 @@ const getExportFilename = (prefix: string) => {
 }
 
 const convertToCSV = (array: any[]) => {
-  let str = 'name,value,perc\r\n'
+  let str = 'name,value,percentage\r\n'
 
   for (let i = 0; i < _size(array); ++i) {
     let lines = ''
@@ -156,25 +157,20 @@ const onCSVExportClick = (
 
   _forEach(types, (item) => {
     if (_isEmpty(rowData[item])) {
-      return
+      return null
     }
 
-    const rowKeys = _keys(rowData[item])
-    let total = 0
+    const total = _reduce(rowData[item], (acc, { count }) => acc + count, 0)
 
-    _forEach(rowKeys, (e) => {
-      total += rowData[item][e]
-    })
-
-    const csvData = _map(rowKeys, (e) => {
-      const perc = _round((rowData[item][e] / total) * 100 || 0, 2)
+    const csvData = _map(rowData[item], (entry: IEntry) => {
+      const perc = _round((entry.count / total) * 100 || 0, 2)
 
       if (item === 'cc') {
-        const name = countries.getName(e, language)
-        return [name, rowData[item][e], `${perc}%`]
+        const name = countries.getName(entry.name, language)
+        return [`"${name}"`, entry.count, `${perc}%`]
       }
 
-      return [e, rowData[item][e], `${perc}%`]
+      return [`"${entry.name}"`, entry.count, `${perc}%`]
     })
 
     zip.file(`${tnMapping[item]}.csv`, convertToCSV(csvData))
