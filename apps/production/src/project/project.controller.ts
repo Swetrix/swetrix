@@ -167,16 +167,10 @@ export class ProjectController {
       this.userService.findOne(userId),
     ])
 
-    const pidsWithData =
-      await this.projectService.getPIDsWhereAnalyticsDataExists(
-        _map(paginated.results, ({ id }) => id),
-      )
-
     paginated.results = _map(paginated.results, p => ({
       ...p,
       isOwner: true,
       isLocked: !!user?.dashboardBlockReason,
-      isDataExists: _includes(pidsWithData, p?.id),
     }))
 
     return {
