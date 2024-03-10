@@ -19,6 +19,7 @@ import * as _trim from 'lodash/trim'
 import * as _size from 'lodash/size'
 import * as _split from 'lodash/split'
 import * as _head from 'lodash/head'
+import * as _includes from 'lodash/includes'
 import * as dayjs from 'dayjs'
 
 import { JwtAccessTokenGuard } from '../auth/guards'
@@ -67,10 +68,23 @@ export class ProjectController {
   ): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /project')
 
-    const results = await getProjectsClickhouse()
-    const formatted = _map(results, this.projectService.formatFromClickhouse)
+    const chResults = await getProjectsClickhouse()
+    const formatted = _map(chResults, this.projectService.formatFromClickhouse)
+
+    const pidsWithData =
+      await this.projectService.getPIDsWhereAnalyticsDataExists(
+        _map(formatted, ({ id }) => id),
+      )
+
+    const results = _map(formatted, p => ({
+      ...p,
+      isOwner: true,
+      isLocked: false,
+      isDataExists: _includes(pidsWithData, p?.id),
+    }))
+
     return {
-      results: formatted,
+      results,
       page_total: _size(formatted),
       total: _size(formatted),
       totalMonthlyEvents: 0, // not needed as it's selfhosed
