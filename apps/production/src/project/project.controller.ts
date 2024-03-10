@@ -167,16 +167,16 @@ export class ProjectController {
       this.userService.findOne(userId),
     ])
 
-    const pidsWithData =
-      await this.projectService.getPIDsWhereAnalyticsDataExists(
-        _map(paginated.results, ({ id }) => id),
-      )
+    // const pidsWithData =
+    //   await this.projectService.getPIDsWhereAnalyticsDataExists(
+    //     _map(paginated.results, ({ id }) => id),
+    //   )
 
     paginated.results = _map(paginated.results, p => ({
       ...p,
       isOwner: true,
       isLocked: !!user?.dashboardBlockReason,
-      isDataExists: _includes(pidsWithData, p?.id),
+      isDataExists: true, // _includes(pidsWithData, p?.id),
     }))
 
     return {
@@ -1758,15 +1758,15 @@ export class ProjectController {
 
     this.projectService.allowedToView(project, uid, headers['x-password'])
 
-    const isDataExists = !_isEmpty(
-      await this.projectService.getPIDsWhereAnalyticsDataExists([id]),
-    )
+    // const isDataExists = !_isEmpty(
+    //   await this.projectService.getPIDsWhereAnalyticsDataExists([id]),
+    // )
 
     return {
       ..._omit(project, ['admin', 'passwordHash', 'share']),
       isOwner: uid === project.admin?.id,
       isLocked: !!project.admin?.dashboardBlockReason,
-      isDataExists,
+      isDataExists: true,
     }
   }
 }
