@@ -17,6 +17,7 @@ import * as _map from 'lodash/map'
 import * as _isNull from 'lodash/isNull'
 import * as _split from 'lodash/split'
 import * as _trim from 'lodash/trim'
+import * as _reduce from 'lodash/reduce'
 
 import { Project } from './entity/project.entity'
 import { ProjectDTO } from './dto/project.dto'
@@ -96,6 +97,34 @@ export class ProjectService {
     if (!isUnique) {
       throw new BadRequestException('Selected project ID is already in use')
     }
+  }
+
+  async getPIDsWhereAnalyticsDataExists(projectIds: string[]) {
+    const params = _reduce(
+      projectIds,
+      (acc, curr, index) => ({
+        ...acc,
+        [`pid_${index}`]: curr,
+      }),
+      {},
+    )
+
+    const query = `
+      SELECT
+        COALESCE(a.pid, c.pid) AS pid,
+        COUNT(COALESCE(a.pid, c.pid)) AS rowCount
+      FROM analytics a
+      FULL OUTER JOIN customEV c ON a.pid = c.pid
+      WHERE COALESCE(a.pid, c.pid) IN (${_join(
+        _map(params, (val, key) => `{${key}:FixedString(12)}`),
+        ',',
+      )})
+      GROUP BY COALESCE(a.pid, c.pid);
+    `
+
+    const result: any = await clickhouse.query(query, { params }).toPromise()
+
+    return _map(result, ({ pid }) => pid)
   }
 
   async removeDataFromClickhouse(

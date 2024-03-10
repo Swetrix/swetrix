@@ -20,6 +20,7 @@ import * as _pick from 'lodash/pick'
 import * as _trim from 'lodash/trim'
 import * as _findIndex from 'lodash/findIndex'
 import * as _includes from 'lodash/includes'
+import * as _reduce from 'lodash/reduce'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import { compareSync } from 'bcrypt'
@@ -820,6 +821,34 @@ export class ProjectService {
         admin: { id: userId },
       },
     })
+  }
+
+  async getPIDsWhereAnalyticsDataExists(projectIds: string[]) {
+    const params = _reduce(
+      projectIds,
+      (acc, curr, index) => ({
+        ...acc,
+        [`pid_${index}`]: curr,
+      }),
+      {},
+    )
+
+    const query = `
+      SELECT
+        COALESCE(a.pid, c.pid) AS pid,
+        COUNT(COALESCE(a.pid, c.pid)) AS rowCount
+      FROM analytics a
+      FULL OUTER JOIN customEV c ON a.pid = c.pid
+      WHERE COALESCE(a.pid, c.pid) IN (${_join(
+        _map(params, (val, key) => `{${key}:FixedString(12)}`),
+        ',',
+      )})
+      GROUP BY COALESCE(a.pid, c.pid);
+    `
+
+    const result: any = await clickhouse.query(query, { params }).toPromise()
+
+    return _map(result, ({ pid }) => pid)
   }
 
   async getSubscriberByEmail(projectId: string, email: string) {

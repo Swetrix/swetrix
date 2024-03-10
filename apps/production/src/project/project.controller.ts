@@ -1752,10 +1752,15 @@ export class ProjectController {
 
     this.projectService.allowedToView(project, uid, headers['x-password'])
 
+    const isDataExists = !_isEmpty(
+      await this.projectService.getPIDsWhereAnalyticsDataExists([id]),
+    )
+
     return {
       ..._omit(project, ['admin', 'passwordHash', 'share']),
       isOwner: uid === project.admin?.id,
       isLocked: !!project.admin?.dashboardBlockReason,
+      isDataExists,
     }
   }
 }
