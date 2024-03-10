@@ -824,6 +824,10 @@ export class ProjectService {
   }
 
   async getPIDsWhereAnalyticsDataExists(projectIds: string[]) {
+    if (_isEmpty(projectIds)) {
+      return {}
+    }
+
     const params = _reduce(
       projectIds,
       (acc, curr, index) => ({
@@ -833,17 +837,42 @@ export class ProjectService {
       {},
     )
 
+    const pids = _join(
+      _map(params, (val, key) => `{${key}:FixedString(12)}`),
+      ',',
+    )
+
     const query = `
       SELECT
-        COALESCE(a.pid, c.pid) AS pid,
-        COUNT(COALESCE(a.pid, c.pid)) AS rowCount
-      FROM analytics a
-      FULL OUTER JOIN customEV c ON a.pid = c.pid
-      WHERE COALESCE(a.pid, c.pid) IN (${_join(
-        _map(params, (val, key) => `{${key}:FixedString(12)}`),
-        ',',
-      )})
-      GROUP BY COALESCE(a.pid, c.pid);
+        pid,
+        CASE
+          WHEN EXISTS (
+            SELECT 1
+            FROM analytics
+            WHERE pid IN (${pids})
+          )
+          OR EXISTS (
+            SELECT 1
+            FROM customEV
+            WHERE pid IN (${pids})
+          )
+          THEN 1
+          ELSE 0
+        END AS exists
+      FROM
+      (
+        SELECT DISTINCT pid
+        FROM
+        (
+          SELECT pid
+          FROM analytics
+          WHERE pid IN (${pids})
+          UNION ALL
+          SELECT pid
+          FROM customEV
+          WHERE pid IN (${pids})
+        ) AS t
+      );
     `
 
     const result: any = await clickhouse.query(query, { params }).toPromise()
