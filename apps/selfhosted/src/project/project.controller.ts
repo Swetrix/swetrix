@@ -288,6 +288,13 @@ export class ProjectController {
 
     this.projectService.allowedToView(project, uid)
 
-    return this.projectService.formatFromClickhouse(project)
+    const isDataExists = !_isEmpty(
+      await this.projectService.getPIDsWhereAnalyticsDataExists([id]),
+    )
+
+    return this.projectService.formatFromClickhouse({
+      ...project,
+      isDataExists,
+    })
   }
 }
