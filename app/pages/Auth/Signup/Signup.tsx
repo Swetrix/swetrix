@@ -1,5 +1,5 @@
-import React, { useState, useEffect, memo } from 'react'
-import { Link } from '@remix-run/react'
+import React, { useState, useEffect } from 'react'
+import { Link, useNavigate } from '@remix-run/react'
 import PropTypes from 'prop-types'
 import { useTranslation, Trans } from 'react-i18next'
 import _size from 'lodash/size'
@@ -7,9 +7,9 @@ import _keys from 'lodash/keys'
 import _omit from 'lodash/omit'
 import _isEmpty from 'lodash/isEmpty'
 
+import { getAccessToken } from 'utils/accessToken'
 import GoogleAuth from 'components/GoogleAuth'
 import GithubAuth from 'components/GithubAuth'
-import { withAuthentication, auth } from 'hoc/protected'
 import routes from 'routesPath'
 import Input from 'ui/Input'
 import Checkbox from 'ui/Checkbox'
@@ -47,19 +47,12 @@ interface ISignup {
   ) => void
   authSSO: (provider: string, dontRemember: boolean, t: (key: string) => string, callback: (res: any) => void) => void
   ssrTheme: string
+  authenticated: boolean
+  loading: boolean
 }
 
-const Signup = ({ signup, authSSO, ssrTheme }: ISignup): JSX.Element => {
-  const {
-    t,
-  }: {
-    t: (
-      key: string,
-      options?: {
-        [key: string]: string | number
-      },
-    ) => string
-  } = useTranslation('common')
+const Signup = ({ signup, authSSO, ssrTheme, authenticated: reduxAuthenticated, loading }: ISignup): JSX.Element => {
+  const { t } = useTranslation('common')
   const [form, setForm] = useState<ISignupForm>({
     email: '',
     password: '',
@@ -77,6 +70,9 @@ const Signup = ({ signup, authSSO, ssrTheme }: ISignup): JSX.Element => {
   }>({})
   const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const navigate = useNavigate()
+  const accessToken = getAccessToken()
+  const authenticated = loading ? !!accessToken : reduxAuthenticated
 
   const validate = () => {
     const allErrors = {} as {
@@ -116,9 +112,19 @@ const Signup = ({ signup, authSSO, ssrTheme }: ISignup): JSX.Element => {
     validate()
   }, [form]) // eslint-disable-line
 
+  useEffect(() => {
+    if (authenticated && !beenSubmitted) {
+      navigate(routes.dashboard)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authenticated, beenSubmitted])
+
   const signUpCallback = (result: any) => {
     if (result) {
-      trackCustom('SIGNUP')
+      trackCustom('SIGNUP', {
+        from: 'Signup page',
+      })
+      navigate(routes.confirm_email)
     } else {
       setIsLoading(false)
     }
@@ -326,4 +332,4 @@ Signup.propTypes = {
   ssrTheme: PropTypes.string.isRequired,
 }
 
-export default memo(withAuthentication(Signup, auth.notAuthenticated))
+export default Signup

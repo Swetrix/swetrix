@@ -138,6 +138,12 @@ export const getPageMeta = (t: (key: string) => string, url?: string, _pathname?
       }
       break
 
+    case routes.confirm_email:
+      result = {
+        title: t('titles.confirm'),
+      }
+      break
+
     case routes.confirm_share:
     case routes.confirm_subcription:
     case routes.transfer_confirm:

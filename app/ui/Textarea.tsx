@@ -18,6 +18,8 @@ interface ITextarea {
   name?: string
   disabled?: boolean
   isBeta?: boolean
+  readOnly?: boolean
+  rows?: number
 }
 
 const Textarea = ({
@@ -33,6 +35,8 @@ const Textarea = ({
   value,
   disabled,
   isBeta,
+  readOnly,
+  rows,
 }: ITextarea) => {
   const identifier = `textarea-${id || name || type}`
   const isError = !_isEmpty(error)
@@ -51,7 +55,7 @@ const Textarea = ({
       )}
       <div className='mt-1 relative'>
         <textarea
-          rows={4}
+          rows={rows}
           name={identifier}
           id={identifier}
           className={cx(
@@ -65,6 +69,7 @@ const Textarea = ({
           onChange={onChange}
           placeholder={placeholder}
           disabled={disabled}
+          readOnly={readOnly}
         />
         {isError && (
           <div className='absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none'>
@@ -97,6 +102,8 @@ Textarea.propTypes = {
   name: PropTypes.string,
   disabled: PropTypes.bool,
   isBeta: PropTypes.bool,
+  readOnly: PropTypes.bool,
+  rows: PropTypes.number,
 }
 
 Textarea.defaultProps = {
@@ -111,6 +118,8 @@ Textarea.defaultProps = {
   name: '',
   disabled: false,
   isBeta: false,
+  readOnly: false,
+  rows: 4,
 }
 
 export default memo(Textarea)

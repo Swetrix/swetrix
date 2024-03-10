@@ -65,8 +65,10 @@ const BasicSignup: React.FC<IBasicSignup> = ({ ssrTheme }): JSX.Element => {
 
   const signUpCallback = (result: boolean) => {
     if (result) {
-      trackCustom('SIGNUP_BASIC')
-      navigate(routes.dashboard)
+      trackCustom('SIGNUP', {
+        from: 'Landing page',
+      })
+      navigate(routes.confirm_email)
     } else {
       setIsLoading(false)
     }

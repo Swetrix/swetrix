@@ -72,11 +72,11 @@ const trackViews = () => {
   }
 }
 
-const trackCustom = (ev: string, unique = false) => {
+const trackCustom = (ev: string, meta?: any) => {
   if (!isSelfhosted) {
     Swetrix.track({
       ev,
-      unique,
+      meta,
     })
   }
 }

@@ -32,6 +32,7 @@ import { authMe, previewSubscriptionUpdate, changeSubscriptionPlan } from 'api'
 import routes from 'routesPath'
 import { AppDispatch, StateType } from 'redux/store'
 import Loader from 'ui/Loader'
+import { Badge } from 'ui/Badge'
 
 const getPaidFeatures = (t: any, tier: any) => {
   return [
@@ -327,10 +328,15 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
                     className={({ checked }) =>
                       cx(
                         checked ? 'bg-slate-900 dark:bg-indigo-700 text-gray-50' : 'text-gray-500 dark:text-gray-200',
-                        'cursor-pointer rounded-md px-2.5 flex justify-center items-center',
+                        'relative cursor-pointer rounded-md px-2.5 flex justify-center items-center',
                       )
                     }
                   >
+                    <Badge
+                      label={t('billing.xMonthsFree', { amount: 2 })}
+                      className='absolute w-max -top-5 -left-1 max-w-[200px]'
+                      colour='yellow'
+                    />
                     <span>{t('pricing.yearlyBilling')}</span>
                   </RadioGroup.Option>
                 </RadioGroup>

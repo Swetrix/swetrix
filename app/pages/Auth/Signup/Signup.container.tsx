@@ -1,7 +1,14 @@
 import { connect } from 'react-redux'
-import { AppDispatch } from 'redux/store'
+import { AppDispatch, StateType } from 'redux/store'
 import sagaActions from 'redux/sagas/actions'
 import Signup from './Signup'
+
+const mapStateToProps = (state: StateType) => {
+  return {
+    authenticated: state.auth.authenticated,
+    loading: state.auth.loading,
+  }
+}
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
   signup: (
@@ -27,4 +34,4 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
   },
 })
 
-export default connect(null, mapDispatchToProps)(Signup)
+export default connect(mapStateToProps, mapDispatchToProps)(Signup)

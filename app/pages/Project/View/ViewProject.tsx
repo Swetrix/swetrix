@@ -175,6 +175,7 @@ import { Pageflow } from './components/Pageflow'
 import { SessionDetails } from './components/SessionDetails'
 import { SessionChart } from './components/SessionChart'
 import LockedDashboard from './components/LockedDashboard'
+import WaitingForAnEvent from './components/WaitingForAnEvent'
 const SwetrixSDK = require('@swetrix/sdk')
 
 const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
@@ -2914,6 +2915,27 @@ const ViewProject = ({
             {name}
           </h2>
           <LockedDashboard user={user} project={project} isSharedProject={isSharedProject} />
+        </div>
+        {!embedded && <Footer authenticated={authenticated} minimal />}
+      </>
+    )
+  }
+
+  if (!project.isDataExists) {
+    return (
+      <>
+        {!embedded && <Header ssrTheme={ssrTheme} authenticated={authenticated} />}
+        <div
+          className={cx('max-w-[1584px] bg-gray-50 dark:bg-slate-900 w-full mx-auto py-6 px-2 sm:px-4 lg:px-8', {
+            'min-h-min-footer': !embedded,
+            'min-h-[100vh]': embedded,
+          })}
+        >
+          <TabsSelector />
+          <h2 className='text-xl mt-2 font-bold text-gray-900 dark:text-gray-50 break-words break-all text-center sm:text-left'>
+            {name}
+          </h2>
+          <WaitingForAnEvent project={project} />
         </div>
         {!embedded && <Footer authenticated={authenticated} minimal />}
       </>

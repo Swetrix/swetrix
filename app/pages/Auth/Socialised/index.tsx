@@ -86,8 +86,11 @@ const Socialised = (): JSX.Element => {
             <div className='sm:ml-6'>
               <div className='sm:border-l max-w-prose sm:border-gray-200 sm:pl-6'>
                 <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight sm:text-5xl'>
-                  {t('apiNotifications.socialisationGenericError')}
+                  {t('auth.socialisation.failed')}
                 </h1>
+                <p className='mt-1 max-w-prose whitespace-pre-line text-base text-gray-700 dark:text-gray-300'>
+                  {t('auth.socialisation.failedDesc')}
+                </p>
               </div>
               <div className='mt-8 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>
                 <Link
@@ -112,8 +115,11 @@ const Socialised = (): JSX.Element => {
           <div className='sm:ml-6'>
             <div className='sm:border-l max-w-prose sm:border-gray-200 sm:pl-6'>
               <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight sm:text-5xl'>
-                {t('auth.socialisation.success')}
+                {t('auth.socialisation.authSuccess')}
               </h1>
+              <p className='mt-1 max-w-prose whitespace-pre-line text-base text-gray-700 dark:text-gray-300'>
+                {t('auth.socialisation.successDesc')}
+              </p>
             </div>
           </div>
         </main>
