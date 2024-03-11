@@ -453,7 +453,7 @@ export class AnalyticsService {
       )
     }
 
-    if (project.admin.isAccountBillingSuspended) {
+    if (project.admin?.isAccountBillingSuspended) {
       throw new HttpException(
         'The account that owns this site is currently suspended, this is because of a billing issue. This, and all other events, are NOT being tracked and saved on our side. Please log in to your account on Swetrix or contact our support to resolve the issue.',
         HttpStatus.PAYMENT_REQUIRED,
