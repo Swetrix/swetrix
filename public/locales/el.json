@@ -91,7 +91,8 @@
     "unlink": "Unlink",
     "nothingFound": "Nothing found",
     "oneMember": "1 Member",
-    "xMembers": "{{number}} Members"
+    "xMembers": "{{number}} Members",
+    "general": "General"
   },
   "main": {
     "ukrSupport": "Υποστηρίξτε τον ουκρανικό στρατό για να πολεμήσει τη ρωσική εισβολή.",
@@ -263,13 +264,14 @@
       "gdpr": "GDPR-compatible",
       "usfl": "User flow",
       "funnels": "Funnels",
+      "sessionAnalysis": "Session analysis",
       "alrt": "Custom alerts",
       "pbld": "Public dashboards",
       "shad": "Dashboard sharing",
-      "open": "Open source",
+      "open": "Ανοιχτού Κώδικα",
       "ckfree": "Cookie free analytics",
-      "api": "Developer API",
-      "2fa": "Two-factor authentication"
+      "api": "API προγραμματιστών",
+      "2fa": "Επαλήθευση δύο βημάτων"
     }
   },
   "referral": {
@@ -307,11 +309,20 @@
       "noCC": "No credit card required.",
       "alreadyAMember": "Already a member? <url>Sign in</url>"
     },
+    "confirm": {
+      "title": "Check your inbox",
+      "linkSent": "We've sent an account confirmation link to {{email}}, please click the link to confirm your email address.",
+      "spam": "Can't see the email? Please check your spam folder.",
+      "wrongEmail": "Wrong email? <url>Create a new account.</url>"
+    },
     "verification": {
       "success": "Το email σας επαληθεύτηκε επιτυχώς!"
     },
     "socialisation": {
-      "success": "Socialisation successful",
+      "authSuccess": "Authentication successful",
+      "failed": "Authentication failed",
+      "failedDesc": "An error has occurred while authenticating through a third party service, please try again or contact support.",
+      "successDesc": "You are now authenticated through a 3rd party service and can safely close this page if it didn't close automatically.",
       "orSingUpWith": "or sign up with"
     },
     "common": {
@@ -452,7 +463,7 @@
       "paidDesc": "Total amount paid to you",
       "nextPayout": "Next payout",
       "nextPayoutDesc": "How much you will get paid next time",
-      "pending": "Pending",
+      "pending": "Εκκρεμεί",
       "pendingDesc": "Amount of money pending to be paid to you. It takes {{days}} days for the funds to become available.",
       "activeReferralsTable": {
         "plan": "Referral tier",
@@ -475,6 +486,8 @@
     "verifyEmailDesc": "Για να αρχίσετε να χρησιμοποιείτε την υπηρεσία μας και να δημιουργείτε τα έργα σας, πρέπει πρώτα να επιβεβαιώσετε τη διεύθυνση ηλεκτρονικού ταχυδρομείου σας.\n\nΈνας σύνδεσμος για την επιβεβαίωση του λογαριασμού σας εστάλη στη διεύθυνση ηλεκτρονικού ταχυδρομείου που δηλώσατε κατά την εγγραφή σας, εάν δεν παραδόθηκε - μπορείτε να ζητήσετε ξανά τον σύνδεσμο στις ρυθμίσεις του λογαριασμού σας.",
     "lowEventsTitle": "You are running out of events!",
     "lowEventsDesc": "You have used more than 85% of the available events per your tier for this month.\nThat means that in case you use 100% of the available events until the end of the month, all the subsequent traffic will not be saved.\nTo avoid this we recommend that you update your tier on the Billing page.",
+    "accountLocked": "Your account has been temporarily suspended due to a billing issue.",
+    "accountLockedTitle": "Account temporarily suspended",
     "eventsXPercUsed": "You have used more than {{amount}}% of the available events per your tier for this month.",
     "noProjects": "Δεν έχετε δημιουργήσει ακόμα έργα",
     "createProject": "Δημιουργήστε ένα νέο έργο εδώ για να αρχίσετε να χρησιμοποιείτε την υπηρεσία μας",
@@ -529,7 +542,7 @@
     "noIntegration": "You have not configured an integration yet. Create one in your <url>account settings</url>.",
     "noNotification": "No notification channels set",
     "lastTriggered": "Last Triggered",
-    "never": "Never",
+    "never": "Ποτέ",
     "qDelete": "Delete the alert?",
     "settingsOf": "Settings of {{name}}",
     "deleteHint": "This action is irreversible.\nThe alert and all the data related to it will be deleted from our servers.",
@@ -553,7 +566,7 @@
       "page_views": "Page views",
       "unique_page_views": "Unique sessions",
       "online_users": "Online users",
-      "custom_events": "Custom events"
+      "custom_events": "Προσαρμοσμένες εκδηλώσεις"
     }
   },
   "notFoundPage": {
@@ -579,7 +592,6 @@
     "pageviewX": "Pageview <value>{{x}}</value>",
     "eventX": "Event <value>{{x}}</value>",
     "exportData": "Εξαγωγή δεδομένων",
-    "asImage": "Ως εικόνα",
     "asCSV": "Ως CSV",
     "noEvTitle": "Δεν υπάρχουν συμβάντα ακόμα",
     "showAll": "Εμφάνιση όλων των προβολών",
@@ -591,8 +603,23 @@
     "events": "Events",
     "dropoff": "Dropoff",
     "neverEnteredTheFunnel": "Never entered the funnel",
+    "locked": {
+      "title": "Dashboard locked",
+      "descExceedingTier": "This dashboard is locked because your traffic has exceeded your subscription plan.\nIn order to continue using Swetrix and have access to your stats, you need to upgrade your subscription plan to reflect your usage.",
+      "descTialEnded": "This dashboard is locked because your trial ended.\nIn order to continue using Swetrix and have access to your stats, you need to subscribe to one of our tiers.",
+      "descPaymentFailed": "This dashboard is locked because there was a problem with your last Swetrix subscription payment.\nIn order to continue using Swetrix and have access to your stats, you need to update / confirm your payment details.",
+      "descSharedProject": "This dashboard is locked due to a billing issue of the project owner.\nIn order to continue using Swetrix and have access to the stats, the billing issue must be resolved first.",
+      "descGenericIssue": "This dashboard has been locked and is currently unavailable, please come back later or contact the project owner to resolve the issue.",
+      "descSubCancelled": "This dashboard has been locked because you've cancelled your subscription.\nIn order to continue using Swetrix and have access to your stats, you need to have an active subscription.",
+      "resolve": "We're still counting your stats and we haven't deleted any of your data. Once you have updated your payment information, your dashboard access will be restored immediately.",
+      "manageSubscription": "Manage subscription"
+    },
+    "waiting": {
+      "title": "Waiting for your first pageview",
+      "desc": "We're waiting for your first pageview! If your integration is set up correctly, you should see it within 1 minute.\n<snippet>Click here</snippet> to view your JavaScript tracking code.\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
+    },
     "trendlineTotal": "Pageviews trendline",
-    "noEvContent": "Δεν έχουν καταγραφεί συμβάντα για το καθορισμένο χρονικό διάστημα.\nΑν δεν έχετε ακόμη παρακολουθήσει συμβάντα, μπορείτε να δείτε τα <url>Docs</url> για να ενσωματώσετε εύκολα την παρακολούθηση στην εφαρμογή σας.",
+    "noEvContent": "No events have been recorded for the specified period, please try a different period.",
     "noCaptchaEv": "No events have been captured for the specified timeframe.\nIf you haven't set up CAPTCHA yet, you can check out our <url>Docs</url> to easily integrate it into your app.",
     "mapping": {
       "cc": "Χώρα",
@@ -658,6 +685,8 @@
       "create": "Δημιουργήστε ένα νέο έργο",
       "settings": "Ρυθμίσεις του",
       "name": "Όνομα έργου",
+      "sharableLink": "Sharable link",
+      "sharableDesc": "Used to share your dashboard with others, only available if you make your dashboard public or password protected.",
       "pid": "ID έργου",
       "origins": "Επιτρεπόμενη προέλευση",
       "originsHint": "Ένας κατάλογος των προελεύσεων (τομέων) που επιτρέπεται να χρησιμοποιούν δέσμη ενεργειών με το ProjectID σας, χωρισμένος με κόμμα.\nΑφήστε το κενό για να επιτρέψετε όλες τις προελεύσεις (προεπιλεγμένη ρύθμιση).\nΠαράδειγμα: cornell.edu, app.example.com, *.gov.ua",
@@ -723,7 +752,7 @@
     },
     "captcha": {
       "settings": {
-        "general": "General settings",
+        "general": "Γενικές ρυθμίσεις",
         "inheritance": "Inheritance",
         "name": "CAPTCHA project name",
         "pid": "CAPTCHA project ID",
@@ -732,12 +761,12 @@
       }
     },
     "emails": {
-      "title": "Email reports",
+      "title": "Αναφορές email",
       "description": "Send regular email reports to as many recipients as you want",
       "add": "Add a recipient",
       "reportFrequency": "Report frequency"
     },
-    "page": "Page",
+    "page": "Σελίδα",
     "reverse": "Reverse",
     "userFlow": {
       "noData": "User flow is not available yet due to lack of data, or you disabled this feature in the tracking script parameters"
@@ -779,12 +808,18 @@
     "resetDate": "The plan usage resets on the first day of each month.",
     "selectPlan": "Select a subscription plan to unveil full Swetrix potential.",
     "changePlan": "You can change or cancel your subscription plan at any time here.",
-    "membersNotification": "Pageviews, custom events and CAPTCHA completions are counted towards the limit of the subscription of the account owner. People you invite into your projects don't need a subscription."
+    "membersNotification": "Pageviews, custom events and CAPTCHA completions are counted towards the limit of the subscription of the account owner. People you invite into your projects don't need a subscription.",
+    "xMonthsFree": "{{amount}} months free"
   },
   "modals": {
     "paidFeature": {
       "title": "Upgrade your plan to use this feature",
       "desc": "We apologise for the inconvenience, but you must subscribe to a paid plan to use this feature.\n\nWe realise that you might not be ready to buy a paid subscription yet, but buying it will give you not only access to this feature, but also many other great perks, such as access to all the other paid features, higher limits on visits per month and number of websites available, and you will support the growth of a small business :)"
+    },
+    "trackingSnippet": {
+      "title": "Add a Swetrix tracking code to your website",
+      "add": "Add the following snippet into the <bsect></bsect> section of your site.",
+      "docs": "Check our <pdocs>our documentation</pdocs> for details and more integration guides."
     },
     "forecast": {
       "title": "Traffic forecast",
@@ -797,6 +832,11 @@
       "name": "Funnel name",
       "steps": "Funnel steps",
       "addStep": "Add one more step"
+    },
+    "shortcuts": {
+      "title": "Keyboard shortcuts",
+      "timebuckets": "Timebuckets selection",
+      "tabs": "Tabs switching"
     }
   },
   "pricing": {
@@ -812,7 +852,7 @@
     "selectPlan": "Select plan:",
     "upgrade": "Αναβάθμιση",
     "whatIncl": "Τι περιλαμβάνεται",
-    "monthlyBilling": "Monthly",
+    "monthlyBilling": "Μηνιαία",
     "yearlyBilling": "Yearly",
     "switchToMonthly": "Αλλαγή σε μηνιαία χρέωση",
     "frequency": "Payment frequency",
@@ -828,21 +868,21 @@
       "startup": "Εκκίνηση",
       "enterprise": "Επιχειρηση",
       "trial": "Free trial",
-      "upToXEVMo": "Up to {{amount}} events per month",
-      "xEvMo": "{{amount}} events per month",
+      "upToXEVMo": "Μέχρι {{amount}} εκδηλώσεις ανά μήνα",
+      "xEvMo": "{{amount}} εκδηλώσεις ανά μήνα",
       "upToXVMo": "Up to {{amount}} visits per month",
       "xVMo": "{{amount}} visits per month",
       "xAlertsSingular": "{{amount}} alerting rule",
       "xAlertsPlural": "{{amount}} alerting rules",
-      "upToXProjects": "Create up to {{amount}} projects",
+      "upToXProjects": "Δημιουργήστε έως και {{amount}} έργα",
       "upToXWebsites": "Add up to {{amount}} websites",
-      "xMoDataRetention": "{{amount}} months of data retention",
-      "evXPlanIncl": "Everything {{plan}} plan includes",
+      "xMoDataRetention": "{{amount}} μήνες διατήρησης δεδομένων",
+      "evXPlanIncl": "Το σχέδιο {{plan}} περιλαμβάνει",
       "smallBusiSupport": "By buying this you are supporting a small business",
       "dataExports": "Unlimited data exports",
       "dataOwnership": "100% data ownership",
       "dashboards": "Shared & Public Dashboards",
-      "reports": "Email reports",
+      "reports": "Αναφορές email",
       "userFlowAnalysis": "User flow analysis"
     },
     "downgradeTitle": "Είστε σίγουροι ότι θέλετε να υποβαθμίσετε;",
@@ -902,7 +942,8 @@
     "press": "Media & Press",
     "socialisation": "Socialisation",
     "open": "Open startup",
-    "passwordProtected": "This project is password protected"
+    "passwordProtected": "This project is password protected",
+    "confirm": "Check your inbox"
   },
   "header": {
     "switchTheme": "Switch theme",
@@ -940,6 +981,7 @@
     "press": "Media & Press",
     "open": "Open startup",
     "about": "Σχετικά με εμάς",
-    "features": "Features"
+    "features": "Χαρακτηριστικά",
+    "imprint": "Imprint"
   }
 }

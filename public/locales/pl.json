@@ -91,7 +91,8 @@
     "unlink": "Odłącz",
     "nothingFound": "Nothing found",
     "oneMember": "1 Member",
-    "xMembers": "{{number}} Members"
+    "xMembers": "{{number}} Members",
+    "general": "General"
   },
   "main": {
     "ukrSupport": "Wspieraj ukraińską armię w walce z rosyjską inwazją.",
@@ -263,6 +264,7 @@
       "gdpr": "Zgodne z RODO",
       "usfl": "Przepływ użytkowników",
       "funnels": "Funnels",
+      "sessionAnalysis": "Session analysis",
       "alrt": "Niestandardowe alerty",
       "pbld": "Publiczne panele",
       "shad": "Udostępnianie panelu",
@@ -307,11 +309,20 @@
       "noCC": "Karta kredytowa nie jest wymagana.",
       "alreadyAMember": "Already a member? <url>Sign in</url>"
     },
+    "confirm": {
+      "title": "Check your inbox",
+      "linkSent": "We've sent an account confirmation link to {{email}}, please click the link to confirm your email address.",
+      "spam": "Can't see the email? Please check your spam folder.",
+      "wrongEmail": "Wrong email? <url>Create a new account.</url>"
+    },
     "verification": {
       "success": "Twój adres e-mail został pomyślnie zweryfikowany!"
     },
     "socialisation": {
-      "success": "Socjalizacja zakończona sukcesem",
+      "authSuccess": "Authentication successful",
+      "failed": "Authentication failed",
+      "failedDesc": "An error has occurred while authenticating through a third party service, please try again or contact support.",
+      "successDesc": "You are now authenticated through a 3rd party service and can safely close this page if it didn't close automatically.",
       "orSingUpWith": "lub zapisać się do"
     },
     "common": {
@@ -475,6 +486,8 @@
     "verifyEmailDesc": "Aby zacząć korzystać z naszego serwisu i tworzyć swoje projekty, musisz najpierw potwierdzić swój adres e-mail.\n\nNa podany podczas rejestracji adres e-mail został wysłany link do potwierdzenia konta, jeśli nie został dostarczony - możesz poprosić o ponowne przesłanie linku w ustawieniach konta.",
     "lowEventsTitle": "Kończą Ci się zdarzenia!",
     "lowEventsDesc": "Wykorzystałeś więcej niż 85% dostępnych zdarzeń na Twoim planie na ten miesiąc.\nOznacza to, że w przypadku wykorzystania 100% dostępnych wydarzeń do końca miesiąca, cały kolejny ruch nie zostanie zapisany.\nAby tego uniknąć, zalecamy aktualizację swojego planu na stronie rozliczeniowej.",
+    "accountLocked": "Your account has been temporarily suspended due to a billing issue.",
+    "accountLockedTitle": "Account temporarily suspended",
     "eventsXPercUsed": "Wykorzystałeś więcej niż {{amount}}% dostępnych zdarzeń w Twoim planie w tym miesiącu.",
     "noProjects": "Nie utworzyłeś jeszcze żadnego projektu",
     "createProject": "Utwórz nowy projekt tutaj, aby zacząć korzystać z naszych usług",
@@ -579,7 +592,6 @@
     "pageviewX": "Pageview <value>{{x}}</value>",
     "eventX": "Event <value>{{x}}</value>",
     "exportData": "Eksportuj dane",
-    "asImage": "Jako zdjęcie",
     "asCSV": "Jako CSV",
     "noEvTitle": "Brak zdarzeń",
     "showAll": "Pokaż wszystkie wyświetlenia",
@@ -591,8 +603,23 @@
     "events": "Events",
     "dropoff": "Dropoff",
     "neverEnteredTheFunnel": "Never entered the funnel",
+    "locked": {
+      "title": "Dashboard locked",
+      "descExceedingTier": "This dashboard is locked because your traffic has exceeded your subscription plan.\nIn order to continue using Swetrix and have access to your stats, you need to upgrade your subscription plan to reflect your usage.",
+      "descTialEnded": "This dashboard is locked because your trial ended.\nIn order to continue using Swetrix and have access to your stats, you need to subscribe to one of our tiers.",
+      "descPaymentFailed": "This dashboard is locked because there was a problem with your last Swetrix subscription payment.\nIn order to continue using Swetrix and have access to your stats, you need to update / confirm your payment details.",
+      "descSharedProject": "This dashboard is locked due to a billing issue of the project owner.\nIn order to continue using Swetrix and have access to the stats, the billing issue must be resolved first.",
+      "descGenericIssue": "This dashboard has been locked and is currently unavailable, please come back later or contact the project owner to resolve the issue.",
+      "descSubCancelled": "This dashboard has been locked because you've cancelled your subscription.\nIn order to continue using Swetrix and have access to your stats, you need to have an active subscription.",
+      "resolve": "We're still counting your stats and we haven't deleted any of your data. Once you have updated your payment information, your dashboard access will be restored immediately.",
+      "manageSubscription": "Manage subscription"
+    },
+    "waiting": {
+      "title": "Waiting for your first pageview",
+      "desc": "We're waiting for your first pageview! If your integration is set up correctly, you should see it within 1 minute.\n<snippet>Click here</snippet> to view your JavaScript tracking code.\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
+    },
     "trendlineTotal": "Linia trendu odsłon witryny",
-    "noEvContent": "Nie przechwycono żadnych zdarzeń dla określonego przedziału czasowego.\nJeśli nie śledziłeś jeszcze żadnych zdarzeń, możesz sprawdzić naszą <url>Dokumentację</url>, aby łatwo zintegrować śledzenie w swojej aplikacji.",
+    "noEvContent": "No events have been recorded for the specified period, please try a different period.",
     "noCaptchaEv": "Nie przechwycono żadnych zdarzeń dla określonych ram czasowych.\nJeśli jeszcze nie skonfigurowałeś CAPTCHA, możesz sprawdzić nasze <url>Docs</url>, aby łatwo zintegrować go z aplikacją.",
     "mapping": {
       "cc": "Kraj",
@@ -658,6 +685,8 @@
       "create": "Utwórz nowy projekt",
       "settings": "Ustawienia",
       "name": "Nazwa projektu",
+      "sharableLink": "Sharable link",
+      "sharableDesc": "Used to share your dashboard with others, only available if you make your dashboard public or password protected.",
       "pid": "ID projektu",
       "origins": "Dozwolone źródła",
       "originsHint": "Lista źródeł (domen), które mogą używać skryptu z twoim identyfikatorem projektu, oddzielonych przecinkami.\nPozostaw puste, aby zezwolić na wszystkie źródła (ustawienie domyślne).\nPrzykład: cornell.edu, app.example.com, *.gov.ua",
@@ -779,12 +808,18 @@
     "resetDate": "The plan usage resets on the first day of each month.",
     "selectPlan": "Select a subscription plan to unveil full Swetrix potential.",
     "changePlan": "You can change or cancel your subscription plan at any time here.",
-    "membersNotification": "Pageviews, custom events and CAPTCHA completions are counted towards the limit of the subscription of the account owner. People you invite into your projects don't need a subscription."
+    "membersNotification": "Pageviews, custom events and CAPTCHA completions are counted towards the limit of the subscription of the account owner. People you invite into your projects don't need a subscription.",
+    "xMonthsFree": "{{amount}} months free"
   },
   "modals": {
     "paidFeature": {
       "title": "Ulepsz swój plan, aby korzystać z tej funkcji",
       "desc": "Przepraszamy za niedogodności, ale aby korzystać z tej funkcji, musisz wykupić płatny plan.\n\nZdajemy sobie sprawę, że możesz nie być jeszcze gotowy na zakup płatnej subskrypcji, ale jej zakup da Ci nie tylko dostęp do tej funkcji, ale także wiele innych wspaniałych korzyści, takich jak dostęp do wszystkich innych płatnych funkcji, wyższe limity wizyt w miesiącu i liczba dostępnych stron internetowych, a także będziesz wspierać rozwój małego biznesu :)"
+    },
+    "trackingSnippet": {
+      "title": "Add a Swetrix tracking code to your website",
+      "add": "Add the following snippet into the <bsect></bsect> section of your site.",
+      "docs": "Check our <pdocs>our documentation</pdocs> for details and more integration guides."
     },
     "forecast": {
       "title": "Prognoza ruchu",
@@ -797,6 +832,11 @@
       "name": "Funnel name",
       "steps": "Funnel steps",
       "addStep": "Add one more step"
+    },
+    "shortcuts": {
+      "title": "Keyboard shortcuts",
+      "timebuckets": "Timebuckets selection",
+      "tabs": "Tabs switching"
     }
   },
   "pricing": {
@@ -902,7 +942,8 @@
     "press": "Media i prasa",
     "socialisation": "Socjalizacja",
     "open": "Open startup",
-    "passwordProtected": "This project is password protected"
+    "passwordProtected": "This project is password protected",
+    "confirm": "Check your inbox"
   },
   "header": {
     "switchTheme": "Motyw przełącznika",
@@ -940,6 +981,7 @@
     "press": "Media i prasa",
     "open": "Open startup",
     "about": "O nas",
-    "features": "Features"
+    "features": "Features",
+    "imprint": "Imprint"
   }
 }

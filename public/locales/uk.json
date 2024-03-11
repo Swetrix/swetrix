@@ -91,7 +91,8 @@
     "unlink": "Відвʼязати",
     "nothingFound": "Nothing found",
     "oneMember": "1 Member",
-    "xMembers": "{{number}} Members"
+    "xMembers": "{{number}} Members",
+    "general": "General"
   },
   "main": {
     "ukrSupport": "Підтримайте українську армію в боротьбі з російським вторгненням.",
@@ -263,6 +264,7 @@
       "gdpr": "GDPR-сумісний",
       "usfl": "Потік користувача",
       "funnels": "Воронки",
+      "sessionAnalysis": "Session analysis",
       "alrt": "Користувацькі сповіщення",
       "pbld": "Публічні проєкти",
       "shad": "Спільні проєкти",
@@ -307,11 +309,20 @@
       "noCC": "Не потрібна кредитна картка.",
       "alreadyAMember": "Already a member? <url>Sign in</url>"
     },
+    "confirm": {
+      "title": "Check your inbox",
+      "linkSent": "We've sent an account confirmation link to {{email}}, please click the link to confirm your email address.",
+      "spam": "Can't see the email? Please check your spam folder.",
+      "wrongEmail": "Wrong email? <url>Create a new account.</url>"
+    },
     "verification": {
       "success": "Ваша електронна адреса була підтверджена!"
     },
     "socialisation": {
-      "success": "Соціалізація пройшла успішно",
+      "authSuccess": "Authentication successful",
+      "failed": "Authentication failed",
+      "failedDesc": "An error has occurred while authenticating through a third party service, please try again or contact support.",
+      "successDesc": "You are now authenticated through a 3rd party service and can safely close this page if it didn't close automatically.",
       "orSingUpWith": "або увійти через"
     },
     "common": {
@@ -475,6 +486,8 @@
     "verifyEmailDesc": "Щоб почати користуватися нашим сервісом і створювати свої проєкти, вам спочатку потрібно підтвердити свою адресу електронної пошти.\n\nНа адресу електронної пошти, вказану вами при реєстрації, було відправлене посилання для підтвердження акаунту, якщо воно не була доставлене - ви можете запросити посилання повторно в налаштуваннях вашого облікового запису.",
     "lowEventsTitle": "У вас закінчуються події!",
     "lowEventsDesc": "Ви використали понад 85% доступних подій в вашому тарифному плані за цей місяць.\nЦе означає, що якщо ви використаєте 100% доступних подій до кінця місяця, весь наступний трафік не буде збережений.\nЩоб уникнути цього, рекомендуємо підвищити тариф на сторінці Тарифи.",
+    "accountLocked": "Your account has been temporarily suspended due to a billing issue.",
+    "accountLockedTitle": "Account temporarily suspended",
     "eventsXPercUsed": "Ви використали понад {{amount}}% доступних подій вашого тарифу за цей місяць.",
     "noProjects": "Ви не створили жодного проєкту",
     "createProject": "Створіть новий проєкт тут, щоб почати користуватися нашим сервісом",
@@ -579,7 +592,6 @@
     "pageviewX": "Pageview <value>{{x}}</value>",
     "eventX": "Event <value>{{x}}</value>",
     "exportData": "Експорт даних",
-    "asImage": "Як зображення",
     "asCSV": "Як CSV",
     "noEvTitle": "Поки що подій немає",
     "showAll": "Показати всі перегляди",
@@ -591,8 +603,23 @@
     "events": "Events",
     "dropoff": "Dropoff",
     "neverEnteredTheFunnel": "Never entered the funnel",
+    "locked": {
+      "title": "Dashboard locked",
+      "descExceedingTier": "This dashboard is locked because your traffic has exceeded your subscription plan.\nIn order to continue using Swetrix and have access to your stats, you need to upgrade your subscription plan to reflect your usage.",
+      "descTialEnded": "This dashboard is locked because your trial ended.\nIn order to continue using Swetrix and have access to your stats, you need to subscribe to one of our tiers.",
+      "descPaymentFailed": "This dashboard is locked because there was a problem with your last Swetrix subscription payment.\nIn order to continue using Swetrix and have access to your stats, you need to update / confirm your payment details.",
+      "descSharedProject": "This dashboard is locked due to a billing issue of the project owner.\nIn order to continue using Swetrix and have access to the stats, the billing issue must be resolved first.",
+      "descGenericIssue": "This dashboard has been locked and is currently unavailable, please come back later or contact the project owner to resolve the issue.",
+      "descSubCancelled": "This dashboard has been locked because you've cancelled your subscription.\nIn order to continue using Swetrix and have access to your stats, you need to have an active subscription.",
+      "resolve": "We're still counting your stats and we haven't deleted any of your data. Once you have updated your payment information, your dashboard access will be restored immediately.",
+      "manageSubscription": "Manage subscription"
+    },
+    "waiting": {
+      "title": "Waiting for your first pageview",
+      "desc": "We're waiting for your first pageview! If your integration is set up correctly, you should see it within 1 minute.\n<snippet>Click here</snippet> to view your JavaScript tracking code.\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
+    },
     "trendlineTotal": "Тренд кількості переглядів",
-    "noEvContent": "За вказаний період часу не було зафіксовано жодної події.\nЯкщо ви ще не почали користуватись нашим сервісом, ви можете ознайомитися з <url>документацією</url>, щоб легко інтегрувати аналітику в ваш додаток.",
+    "noEvContent": "No events have been recorded for the specified period, please try a different period.",
     "noCaptchaEv": "За вказаний період часу не було зафіксовано жодної події.\nЯкщо ви ще не інтегрували віджет CAPTCHA в ваш вебсайт, ви можете ознайомитися з <url>документацією</url>, щоб легко це зробити.",
     "mapping": {
       "cc": "Країна",
@@ -658,6 +685,8 @@
       "create": "Створити новий проєкт",
       "settings": "Налаштування",
       "name": "Назва проєкту",
+      "sharableLink": "Sharable link",
+      "sharableDesc": "Used to share your dashboard with others, only available if you make your dashboard public or password protected.",
       "pid": "Ідентифікатор",
       "origins": "Дозволені джерела",
       "originsHint": "Розділений комами список дозволених джерел (доменів), яким дозволено використовувати ідентифікатора вашого проєкту.\nЗалиште порожнім, щоб дозволити всі джерела (іншими словами - вебсайти; налаштування за замовчуванням).\nНаприклад: cornell.edu, app.example.com, *.gov.ua",
@@ -779,12 +808,18 @@
     "resetDate": "The plan usage resets on the first day of each month.",
     "selectPlan": "Select a subscription plan to unveil full Swetrix potential.",
     "changePlan": "You can change or cancel your subscription plan at any time here.",
-    "membersNotification": "Pageviews, custom events and CAPTCHA completions are counted towards the limit of the subscription of the account owner. People you invite into your projects don't need a subscription."
+    "membersNotification": "Pageviews, custom events and CAPTCHA completions are counted towards the limit of the subscription of the account owner. People you invite into your projects don't need a subscription.",
+    "xMonthsFree": "{{amount}} months free"
   },
   "modals": {
     "paidFeature": {
       "title": "Перейдіть на вищий тарифний план щоб скористатися цим функціоналом",
       "desc": "Ми вибачаємося за незручності, але ви повинні підписатися на платний план, щоб використовувати цю функцію.\n\nМи розуміємо, що ви можете бути ще не готові купити платну підписку, але, купуючи її, ви отримаєте не тільки доступ до цього функціоналу, а й багато інших бонусів, наприклад, доступ до всіх інших платних функцій, вищі обмеження за відвідуваннями на місяць і кількістю доступних вебсайтів, а також підтримаєте зростання малого бізнесу :)"
+    },
+    "trackingSnippet": {
+      "title": "Add a Swetrix tracking code to your website",
+      "add": "Add the following snippet into the <bsect></bsect> section of your site.",
+      "docs": "Check our <pdocs>our documentation</pdocs> for details and more integration guides."
     },
     "forecast": {
       "title": "Прогноз трафіку",
@@ -797,6 +832,11 @@
       "name": "Назва воронки",
       "steps": "Кроки воронки",
       "addStep": "Додати ще один крок"
+    },
+    "shortcuts": {
+      "title": "Keyboard shortcuts",
+      "timebuckets": "Timebuckets selection",
+      "tabs": "Tabs switching"
     }
   },
   "pricing": {
@@ -902,7 +942,8 @@
     "press": "Медіа та преса",
     "socialisation": "Соціалізація",
     "open": "Open startup",
-    "passwordProtected": "Цей проект захищений паролем"
+    "passwordProtected": "Цей проект захищений паролем",
+    "confirm": "Check your inbox"
   },
   "header": {
     "switchTheme": "Змінити тему",
@@ -940,6 +981,7 @@
     "press": "Медіа та преса",
     "open": "Open startup",
     "about": "Про нас",
-    "features": "Можливості"
+    "features": "Можливості",
+    "imprint": "Imprint"
   }
 }

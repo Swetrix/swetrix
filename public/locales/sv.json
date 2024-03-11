@@ -91,7 +91,8 @@
     "unlink": "Unlink",
     "nothingFound": "Nothing found",
     "oneMember": "1 medlem",
-    "xMembers": "{{number}} Medlemmar"
+    "xMembers": "{{number}} Medlemmar",
+    "general": "General"
   },
   "main": {
     "ukrSupport": "Stöd den ukrainska armén att bekämpa den ryska invasionen.",
@@ -263,12 +264,13 @@
       "gdpr": "GDPR-compatible",
       "usfl": "User flow",
       "funnels": "Funnels",
+      "sessionAnalysis": "Session analysis",
       "alrt": "Custom alerts",
       "pbld": "Public dashboards",
       "shad": "Dashboard sharing",
-      "open": "Open source",
+      "open": "Öppen källkod",
       "ckfree": "Cookie free analytics",
-      "api": "Developer API",
+      "api": "API för utvecklare",
       "2fa": "Two-factor authentication"
     }
   },
@@ -307,11 +309,20 @@
       "noCC": "No credit card required.",
       "alreadyAMember": "Already a member? <url>Sign in</url>"
     },
+    "confirm": {
+      "title": "Check your inbox",
+      "linkSent": "We've sent an account confirmation link to {{email}}, please click the link to confirm your email address.",
+      "spam": "Can't see the email? Please check your spam folder.",
+      "wrongEmail": "Wrong email? <url>Create a new account.</url>"
+    },
     "verification": {
       "success": "Din e-postadress har verifierats framgångsrikt!"
     },
     "socialisation": {
-      "success": "Socialisation successful",
+      "authSuccess": "Authentication successful",
+      "failed": "Authentication failed",
+      "failedDesc": "An error has occurred while authenticating through a third party service, please try again or contact support.",
+      "successDesc": "You are now authenticated through a 3rd party service and can safely close this page if it didn't close automatically.",
       "orSingUpWith": "or sign up with"
     },
     "common": {
@@ -341,7 +352,7 @@
   },
   "profileSettings": {
     "logoutAll": "Log out from all devices",
-    "account": "Account",
+    "account": "Konto",
     "general": "Allmänna inställningar",
     "update": "Uppdatera profil",
     "email": "E-postrapporter",
@@ -402,7 +413,7 @@
     "apiKeyDeleteConf": "Are you sure you want to delete your API key?\nAll API access via this key will be disabled.",
     "theme": "Theme",
     "selectTheme": "Select theme",
-    "integrations": "Integrations",
+    "integrations": "Integrationer",
     "integrationsDesc": "Integrations can be used to connect your favourite messengers to Swetrix and receive updates such as notifications, reports or alerts directly.",
     "integrationsList": {
       "telegram": "Receive notifications directly into a Telegram bot.",
@@ -452,7 +463,7 @@
       "paidDesc": "Total amount paid to you",
       "nextPayout": "Next payout",
       "nextPayoutDesc": "How much you will get paid next time",
-      "pending": "Pending",
+      "pending": "Väntande",
       "pendingDesc": "Amount of money pending to be paid to you. It takes {{days}} days for the funds to become available.",
       "activeReferralsTable": {
         "plan": "Referral tier",
@@ -475,6 +486,8 @@
     "verifyEmailDesc": "För att börja använda vår tjänst och skapa dina projekt måste du först bekräfta din e-postadress.\n\nEn länk för att bekräfta ditt konto har skickats till den e-postadress som du angav vid din registrering. Om länken inte levererades kan du begära den igen i dina kontoinställningar.",
     "lowEventsTitle": "Du håller på att få slut på händelser!",
     "lowEventsDesc": "You have used more than 85% of the available events per your tier for this month.\nThat means that in case you use 100% of the available events until the end of the month, all the subsequent traffic will not be saved.\nTo avoid this we recommend that you update your tier on the Billing page.",
+    "accountLocked": "Your account has been temporarily suspended due to a billing issue.",
+    "accountLockedTitle": "Account temporarily suspended",
     "eventsXPercUsed": "Du har använt mer än {{amount}}% av de tillgängliga evenemangen per din nivå för denna månad.",
     "noProjects": "Du har ännu inte skapat några projekt",
     "createProject": "Skapa ett nytt projekt här för att börja använda vår tjänst",
@@ -529,7 +542,7 @@
     "noIntegration": "You have not configured an integration yet. Create one in your <url>account settings</url>.",
     "noNotification": "No notification channels set",
     "lastTriggered": "Last Triggered",
-    "never": "Never",
+    "never": "Aldrig",
     "qDelete": "Delete the alert?",
     "settingsOf": "Settings of {{name}}",
     "deleteHint": "This action is irreversible.\nThe alert and all the data related to it will be deleted from our servers.",
@@ -553,7 +566,7 @@
       "page_views": "Page views",
       "unique_page_views": "Unique sessions",
       "online_users": "Online users",
-      "custom_events": "Custom events"
+      "custom_events": "Anpassade händelser"
     }
   },
   "notFoundPage": {
@@ -579,7 +592,6 @@
     "pageviewX": "Pageview <value>{{x}}</value>",
     "eventX": "Event <value>{{x}}</value>",
     "exportData": "Exportera",
-    "asImage": "Som bild",
     "asCSV": "Som CSV",
     "noEvTitle": "Inga händelser ännu",
     "showAll": "Visa alla händelser",
@@ -591,8 +603,23 @@
     "events": "Events",
     "dropoff": "Dropoff",
     "neverEnteredTheFunnel": "Never entered the funnel",
+    "locked": {
+      "title": "Dashboard locked",
+      "descExceedingTier": "This dashboard is locked because your traffic has exceeded your subscription plan.\nIn order to continue using Swetrix and have access to your stats, you need to upgrade your subscription plan to reflect your usage.",
+      "descTialEnded": "This dashboard is locked because your trial ended.\nIn order to continue using Swetrix and have access to your stats, you need to subscribe to one of our tiers.",
+      "descPaymentFailed": "This dashboard is locked because there was a problem with your last Swetrix subscription payment.\nIn order to continue using Swetrix and have access to your stats, you need to update / confirm your payment details.",
+      "descSharedProject": "This dashboard is locked due to a billing issue of the project owner.\nIn order to continue using Swetrix and have access to the stats, the billing issue must be resolved first.",
+      "descGenericIssue": "This dashboard has been locked and is currently unavailable, please come back later or contact the project owner to resolve the issue.",
+      "descSubCancelled": "This dashboard has been locked because you've cancelled your subscription.\nIn order to continue using Swetrix and have access to your stats, you need to have an active subscription.",
+      "resolve": "We're still counting your stats and we haven't deleted any of your data. Once you have updated your payment information, your dashboard access will be restored immediately.",
+      "manageSubscription": "Manage subscription"
+    },
+    "waiting": {
+      "title": "Waiting for your first pageview",
+      "desc": "We're waiting for your first pageview! If your integration is set up correctly, you should see it within 1 minute.\n<snippet>Click here</snippet> to view your JavaScript tracking code.\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
+    },
     "trendlineTotal": "Pageviews trendline",
-    "noEvContent": "Inga händelser har registrerats under den angivna tidsramen.\nOm du inte har spårat några händelser ännu kan du kolla in våra <url>Docs</url> för att enkelt integrera spårning i din app.",
+    "noEvContent": "No events have been recorded for the specified period, please try a different period.",
     "noCaptchaEv": "No events have been captured for the specified timeframe.\nIf you haven't set up CAPTCHA yet, you can check out our <url>Docs</url> to easily integrate it into your app.",
     "mapping": {
       "cc": "Land",
@@ -658,6 +685,8 @@
       "create": "Skapa ett nytt projekt",
       "settings": "Inställningar av",
       "name": "Projektnamn",
+      "sharableLink": "Sharable link",
+      "sharableDesc": "Used to share your dashboard with others, only available if you make your dashboard public or password protected.",
       "pid": "Projekt Id",
       "origins": "Tillåtna ursprung",
       "originsHint": "En lista över ursprung (domäner) som får använda skript med ditt ProjectID, separerade med kommatecken.\nLämna den tom om du vill tillåta alla ursprung (standardinställning).\nExempel: cornell.edu, app.example.com, *.gov.ua",
@@ -685,7 +714,7 @@
       "inviteTo": "Invite a user to {{project}}",
       "inviteDesc": "Enter an email address and a role of the person you want to share your project with.\nWe shall contact them over email to offer the access to the project.",
       "inviteExpity": "The invitation will expire in {{amount}} hours.",
-      "role": "Role",
+      "role": "Roll",
       "roles": {
         "admin": {
           "name": "Administrator",
@@ -723,7 +752,7 @@
     },
     "captcha": {
       "settings": {
-        "general": "General settings",
+        "general": "Allmänna inställningar",
         "inheritance": "Inheritance",
         "name": "CAPTCHA project name",
         "pid": "CAPTCHA project ID",
@@ -732,12 +761,12 @@
       }
     },
     "emails": {
-      "title": "Email reports",
+      "title": "E-postrapporter",
       "description": "Send regular email reports to as many recipients as you want",
       "add": "Add a recipient",
       "reportFrequency": "Report frequency"
     },
-    "page": "Page",
+    "page": "Sida",
     "reverse": "Reverse",
     "userFlow": {
       "noData": "User flow is not available yet due to lack of data, or you disabled this feature in the tracking script parameters"
@@ -779,12 +808,18 @@
     "resetDate": "The plan usage resets on the first day of each month.",
     "selectPlan": "Select a subscription plan to unveil full Swetrix potential.",
     "changePlan": "You can change or cancel your subscription plan at any time here.",
-    "membersNotification": "Pageviews, custom events and CAPTCHA completions are counted towards the limit of the subscription of the account owner. People you invite into your projects don't need a subscription."
+    "membersNotification": "Pageviews, custom events and CAPTCHA completions are counted towards the limit of the subscription of the account owner. People you invite into your projects don't need a subscription.",
+    "xMonthsFree": "{{amount}} months free"
   },
   "modals": {
     "paidFeature": {
       "title": "Upgrade your plan to use this feature",
       "desc": "We apologise for the inconvenience, but you must subscribe to a paid plan to use this feature.\n\nWe realise that you might not be ready to buy a paid subscription yet, but buying it will give you not only access to this feature, but also many other great perks, such as access to all the other paid features, higher limits on visits per month and number of websites available, and you will support the growth of a small business :)"
+    },
+    "trackingSnippet": {
+      "title": "Add a Swetrix tracking code to your website",
+      "add": "Add the following snippet into the <bsect></bsect> section of your site.",
+      "docs": "Check our <pdocs>our documentation</pdocs> for details and more integration guides."
     },
     "forecast": {
       "title": "Traffic forecast",
@@ -797,6 +832,11 @@
       "name": "Funnel name",
       "steps": "Funnel steps",
       "addStep": "Add one more step"
+    },
+    "shortcuts": {
+      "title": "Keyboard shortcuts",
+      "timebuckets": "Timebuckets selection",
+      "tabs": "Tabs switching"
     }
   },
   "pricing": {
@@ -812,7 +852,7 @@
     "selectPlan": "Select plan:",
     "upgrade": "Uppgradera",
     "whatIncl": "Vad ingår",
-    "monthlyBilling": "Monthly",
+    "monthlyBilling": "Månadsvis",
     "yearlyBilling": "Yearly",
     "switchToMonthly": "Switch to monthly billing",
     "frequency": "Payment frequency",
@@ -828,21 +868,21 @@
       "startup": "Startup",
       "enterprise": "Företag",
       "trial": "Free trial",
-      "upToXEVMo": "Up to {{amount}} events per month",
-      "xEvMo": "{{amount}} events per month",
+      "upToXEVMo": "Upp till {{amount}} händelser per månad",
+      "xEvMo": "{{amount}} händelser per månad",
       "upToXVMo": "Up to {{amount}} visits per month",
       "xVMo": "{{amount}} visits per month",
       "xAlertsSingular": "{{amount}} alerting rule",
       "xAlertsPlural": "{{amount}} alerting rules",
-      "upToXProjects": "Create up to {{amount}} projects",
+      "upToXProjects": "Skapa upp till {{amount}} projekt",
       "upToXWebsites": "Add up to {{amount}} websites",
-      "xMoDataRetention": "{{amount}} months of data retention",
-      "evXPlanIncl": "Everything {{plan}} plan includes",
+      "xMoDataRetention": "{{amount}} månaders lagring av data",
+      "evXPlanIncl": "Allt {{plan}} plan inkluderar",
       "smallBusiSupport": "By buying this you are supporting a small business",
       "dataExports": "Unlimited data exports",
       "dataOwnership": "100% data ownership",
       "dashboards": "Shared & Public Dashboards",
-      "reports": "Email reports",
+      "reports": "E-postrapporter",
       "userFlowAnalysis": "User flow analysis"
     },
     "downgradeTitle": "Är du säker på att du vill nedgradera?",
@@ -902,7 +942,8 @@
     "press": "Media & Press",
     "socialisation": "Socialisation",
     "open": "Open startup",
-    "passwordProtected": "This project is password protected"
+    "passwordProtected": "This project is password protected",
+    "confirm": "Check your inbox"
   },
   "header": {
     "switchTheme": "Switch theme",
@@ -940,6 +981,7 @@
     "press": "Media & Press",
     "open": "Open startup",
     "about": "About us",
-    "features": "Features"
+    "features": "Funktioner",
+    "imprint": "Imprint"
   }
 }
