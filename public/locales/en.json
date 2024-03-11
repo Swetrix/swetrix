@@ -619,7 +619,7 @@
       "desc": "We're waiting for your first pageview! If your integration is set up correctly, you should see it within 1 minute.\n<snippet>Click here</snippet> to view your JavaScript tracking code.\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
     },
     "trendlineTotal": "Pageviews trendline",
-    "noEvContent": "No events have been captured for the specified timeframe.\nIf you haven't tracked any events yet, you can check out our <url>Docs</url> to easily integrate tracking into your app.",
+    "noEvContent": "No events have been recorded for the specified period, please try a different period.",
     "noCaptchaEv": "No events have been captured for the specified timeframe.\nIf you haven't set up CAPTCHA yet, you can check out our <url>Docs</url> to easily integrate it into your app.",
     "mapping": {
       "cc": "Country",
