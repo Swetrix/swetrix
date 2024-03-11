@@ -65,7 +65,7 @@ const CheckYourInbox = (): JSX.Element => {
                     url: (
                       <span
                         role='button'
-                        className='cursor-pointer font-medium text-indigo-500 hover:underline hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-500'
+                        className='cursor-pointer font-medium text-indigo-600 dark:text-indigo-400 hover:underline'
                         onClick={() => {
                           dispatch(authActions.logout())
                           _dispatch(sagaActions.logout(false, false))

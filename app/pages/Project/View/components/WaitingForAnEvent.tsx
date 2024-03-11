@@ -38,7 +38,7 @@ const WaitingForAnEvent = ({ project }: IWaitingForAnEvent) => {
                     turl: (
                       <a
                         href={TROUBLESHOOTING_URL}
-                        className='font-medium text-indigo-400 hover:underline hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                        className='font-medium text-indigo-600 dark:text-indigo-400 hover:underline'
                         target='_blank'
                         rel='noreferrer noopener'
                       />
@@ -46,13 +46,13 @@ const WaitingForAnEvent = ({ project }: IWaitingForAnEvent) => {
                     curl: (
                       <Link
                         to={routes.contact}
-                        className='font-medium text-indigo-400 hover:underline hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                        className='font-medium text-indigo-600 dark:text-indigo-400 hover:underline'
                       />
                     ),
                     snippet: (
                       <span
                         role='button'
-                        className='cursor-pointer font-medium text-indigo-400 hover:underline hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                        className='cursor-pointer font-medium text-indigo-600 dark:text-indigo-400 hover:underline'
                         onClick={() => setIsModalOpened(true)}
                       />
                     ),
