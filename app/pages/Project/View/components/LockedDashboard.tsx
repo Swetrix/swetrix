@@ -48,7 +48,7 @@ const LockedDashboard = ({ user, project, isSharedProject }: ILockedDashboard) =
               <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight sm:text-5xl'>
                 {t('project.locked.title')}
               </h1>
-              <p className='mt-1 max-w-prose whitespace-pre-line text-base text-gray-500 dark:text-gray-300'>
+              <p className='mt-1 max-w-prose whitespace-pre-line text-base text-gray-700 dark:text-gray-300'>
                 {message}
                 {project?.isOwner && (
                   <>
