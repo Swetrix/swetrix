@@ -2921,7 +2921,7 @@ const ViewProject = ({
     )
   }
 
-  if (!project.isDataExists) {
+  if (!project.isDataExists && !analyticsLoading) {
     return (
       <>
         {!embedded && <Header ssrTheme={ssrTheme} authenticated={authenticated} />}
