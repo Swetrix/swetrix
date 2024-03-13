@@ -640,22 +640,15 @@ const CustomEvents = ({ customs, chartData, onFilter, t, customTabs, getCustomEv
                   <Fragment key={ev}>
                     <tr
                       className='text-gray-900 dark:text-gray-50 group hover:bg-gray-100 hover:dark:bg-slate-700 cursor-pointer text-base py-1'
-                      onClick={() => onFilter('ev', ev)}
+                      onClick={toggleEventMetadata(ev)}
                     >
                       <td className='text-left flex items-center'>
                         {activeEvents[ev] ? (
-                          <ChevronUpIcon
-                            className='w-auto h-5 text-gray-500 dark:text-gray-300 px-2 hover:opacity-80'
-                            onClick={toggleEventMetadata(ev)}
-                          />
+                          <ChevronUpIcon className='w-auto h-5 text-gray-500 dark:text-gray-300 px-2 hover:opacity-80' />
                         ) : (
-                          <ChevronDownIcon
-                            className='w-auto h-5 text-gray-500 dark:text-gray-300 px-2 hover:opacity-80'
-                            onClick={toggleEventMetadata(ev)}
-                          />
+                          <ChevronDownIcon className='w-auto h-5 text-gray-500 dark:text-gray-300 px-2 hover:opacity-80' />
                         )}
                         {ev}
-                        <FunnelIcon className='ml-2 w-4 h-4 text-gray-500 hidden sm:group-hover:block dark:text-gray-300' />
                       </td>
                       <td className='text-right'>
                         {customsEventsData[ev]}
@@ -876,22 +869,15 @@ const CustomEvents = ({ customs, chartData, onFilter, t, customTabs, getCustomEv
                 <Fragment key={ev}>
                   <tr
                     className='text-gray-900 dark:text-gray-50 group hover:bg-gray-100 hover:dark:bg-slate-700 cursor-pointer text-base py-1'
-                    onClick={() => onFilter('ev', ev)}
+                    onClick={toggleEventMetadata(ev)}
                   >
                     <td className='text-left flex items-center'>
                       {activeEvents[ev] ? (
-                        <ChevronUpIcon
-                          className='w-auto h-5 text-gray-500 dark:text-gray-300 px-2 hover:opacity-80'
-                          onClick={toggleEventMetadata(ev)}
-                        />
+                        <ChevronUpIcon className='w-auto h-5 text-gray-500 dark:text-gray-300 px-2 hover:opacity-80' />
                       ) : (
-                        <ChevronDownIcon
-                          className='w-auto h-5 text-gray-500 dark:text-gray-300 px-2 hover:opacity-80'
-                          onClick={toggleEventMetadata(ev)}
-                        />
+                        <ChevronDownIcon className='w-auto h-5 text-gray-500 dark:text-gray-300 px-2 hover:opacity-80' />
                       )}
                       {ev}
-                      <FunnelIcon className='ml-2 w-4 h-4 text-gray-500 hidden sm:group-hover:block dark:text-gray-300' />
                     </td>
                     <td className='text-right'>
                       {customsEventsData[ev]}
