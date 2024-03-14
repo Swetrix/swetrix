@@ -57,7 +57,7 @@ curl -i -X POST https://api.swetrix.com/v1/project \
 ```
 
 ### PUT /v1/project/:id
-This endpoint allows you to create a new project.
+This endpoint allows you to edit an existing project.
 
 ```bash title="Request"
 curl -i -X PUT https://api.swetrix.com/v1/project/WvZCYTrOPzSK \
@@ -88,7 +88,7 @@ curl -i -X PUT https://api.swetrix.com/v1/project/WvZCYTrOPzSK \
 ```
 
 ### DELETE /v1/project/:id
-This endpoint allows you to create a new project.
+This endpoint allows you to delete a project.
 
 ```bash title="Request"
 curl -i -X DELETE https://api.swetrix.com/v1/project/WvZCYTrOPzSK \
