@@ -22,7 +22,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common'
 import { Response } from 'express'
-import { ApiTags, ApiQuery, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
+import {
+  ApiTags,
+  ApiQuery,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiOperation,
+} from '@nestjs/swagger'
 import { ILike } from 'typeorm'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _map from 'lodash/map'
@@ -39,7 +45,7 @@ import * as dayjs from 'dayjs'
 import { hash } from 'bcrypt'
 import { JwtAccessTokenGuard } from '../auth/guards'
 import { Auth, Public } from '../auth/decorators'
-import { isValidDate } from '../analytics/analytics.service'
+import { AnalyticsService, isValidDate } from '../analytics/analytics.service'
 import {
   ProjectService,
   processProjectUser,
@@ -90,6 +96,7 @@ import {
   FunnelCreateDTO,
   FunnelUpdateDTO,
 } from './dto'
+import { DeleteBulkProjectsDto } from './dto/delete-bulk-projects.dto'
 
 const PROJECTS_MAXIMUM = 50
 
@@ -110,6 +117,7 @@ export class ProjectController {
     private readonly logger: AppLoggerService,
     private readonly actionTokensService: ActionTokensService,
     private readonly mailerService: MailerService,
+    private readonly analyticsService: AnalyticsService,
   ) {}
 
   @Get('/')
@@ -1768,5 +1776,28 @@ export class ProjectController {
       isLocked: !!project.admin?.dashboardBlockReason,
       isDataExists,
     }
+  }
+
+  @ApiOperation({ summary: 'Bulk deletion of projects' })
+  @Delete()
+  @Auth([UserType.ADMIN], true)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteBulkProjects(@Body() body: DeleteBulkProjectsDto): Promise<void> {
+    const projectIds = await Promise.all(
+      body.projectIds.map(async projectId => {
+        const project = await this.projectService.findProject(projectId, ['id'])
+
+        if (!project) {
+          throw new NotFoundException(
+            `Project with ID "${projectId}" not found.`,
+          )
+        }
+
+        return projectId
+      }),
+    )
+
+    await this.analyticsService.deleteProjectsData(projectIds)
+    this.projectService.deleteProjects(projectIds)
   }
 }

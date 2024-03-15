@@ -1181,4 +1181,15 @@ export class ProjectService {
 
     return count
   }
+
+  findProject(
+    id: string,
+    select: (keyof Project)[],
+  ): Promise<Project | undefined> {
+    return this.projectsRepository.findOne({ id }, { select })
+  }
+
+  deleteProjects(ids: string[]): void {
+    this.projectsRepository.delete(ids)
+  }
 }
