@@ -1779,18 +1779,35 @@ export class ProjectController {
 
   @ApiOperation({ summary: 'Bulk deletion of projects' })
   @Delete()
-  @Auth([UserType.ADMIN], true)
+  @Auth([], true, true)
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deleteBulkProjects(@Body() body: DeleteBulkProjectsDto): Promise<void> {
+  async deleteBulkProjects(
+    @CurrentUserId() uid: string,
+    @Body() body: DeleteBulkProjectsDto,
+  ): Promise<void> {
     const projectIds = await Promise.all(
       body.projectIds.map(async projectId => {
-        const project = await this.projectService.findProject(projectId, ['id'])
+        const project = await this.projectService.findOneWhere(
+          {
+            id: projectId,
+          },
+          {
+            relations: ['alerts', 'admin'],
+          },
+        )
 
         if (!project) {
           throw new NotFoundException(
             `Project with ID "${projectId}" not found.`,
           )
         }
+
+        this.projectService.allowedToManage(
+          project,
+          uid,
+          [],
+          `You are not allowed to delete project with ID "${projectId}"`,
+        )
 
         return projectId
       }),
