@@ -8,7 +8,6 @@ import { ActionTokensModule } from '../action-tokens/action-tokens.module'
 import { MailerModule } from '../mailer/mailer.module'
 import { AppLoggerModule } from '../logger/logger.module'
 import { Project, ProjectSubscriber, Funnel, ProjectShare } from './entity'
-import { AnalyticsModule } from '../analytics/analytics.module'
 
 @Module({
   imports: [
@@ -22,7 +21,6 @@ import { AnalyticsModule } from '../analytics/analytics.module'
     AppLoggerModule,
     ActionTokensModule,
     MailerModule,
-    AnalyticsModule,
   ],
   providers: [ProjectService],
   exports: [ProjectService],

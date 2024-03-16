@@ -2810,24 +2810,4 @@ export class AnalyticsService {
     // @ts-ignore
     return redis.countKeysByPattern(`hb:${projectId}:*`)
   }
-
-  async deleteProjectsData(projectIds: string[]): Promise<void> {
-    const projectIdStrings = projectIds.map(id => `'${id}'`).join(', ')
-
-    const query = `
-      DELETE FROM analytics
-      WHERE pid IN (${projectIdStrings});
-
-      DELETE FROM captcha
-      WHERE pid IN (${projectIdStrings});
-
-      DELETE FROM customEV
-      WHERE pid IN (${projectIdStrings});
-
-      DELETE FROM performance
-      WHERE pid IN (${projectIdStrings});
-    `
-
-    await clickhouse.query(query).toPromise()
-  }
 }

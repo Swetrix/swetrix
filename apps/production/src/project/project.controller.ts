@@ -45,7 +45,7 @@ import * as dayjs from 'dayjs'
 import { hash } from 'bcrypt'
 import { JwtAccessTokenGuard } from '../auth/guards'
 import { Auth, Public } from '../auth/decorators'
-import { AnalyticsService, isValidDate } from '../analytics/analytics.service'
+import { isValidDate } from '../analytics/analytics.service'
 import {
   ProjectService,
   processProjectUser,
@@ -117,7 +117,6 @@ export class ProjectController {
     private readonly logger: AppLoggerService,
     private readonly actionTokensService: ActionTokensService,
     private readonly mailerService: MailerService,
-    private readonly analyticsService: AnalyticsService,
   ) {}
 
   @Get('/')
@@ -1797,7 +1796,7 @@ export class ProjectController {
       }),
     )
 
-    await this.analyticsService.deleteProjectsData(projectIds)
+    await this.projectService.deleteProjectsData(projectIds)
     this.projectService.deleteProjects(projectIds)
   }
 }
