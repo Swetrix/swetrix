@@ -1792,7 +1792,7 @@ export class ProjectController {
             id: projectId,
           },
           {
-            relations: ['alerts', 'admin'],
+            relations: ['share', 'admin'],
           },
         )
 
