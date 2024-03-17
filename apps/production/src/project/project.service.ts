@@ -368,7 +368,7 @@ export class ProjectService {
       order: {
         project: 'ASC',
       },
-      relations: ['project', 'project.admin'],
+      relations: ['project', 'project.admin', 'project.funnels'],
     })
 
     return new Pagination<ProjectShare>({

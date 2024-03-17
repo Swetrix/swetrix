@@ -1255,14 +1255,20 @@ export class ProjectController {
       'DELETE /project/:projectId/subscribers/:subscriberId',
     )
 
-    const project = await this.projectService.getProject(
-      params.projectId,
-      userId,
-    )
+    const project = await this.projectService.findOne(params.projectId, {
+      relations: ['share', 'share.user', 'admin'],
+    })
 
     if (!project) {
       throw new NotFoundException('Project not found.')
     }
+
+    this.projectService.allowedToManage(
+      project,
+      userId,
+      [],
+      "You are not allowed to manage this project's subscribers",
+    )
 
     const subscriber = await this.projectService.getSubscriber(
       params.projectId,
@@ -1288,14 +1294,21 @@ export class ProjectController {
     @CurrentUserId() userId: string,
   ) {
     this.logger.log({ params, body }, 'POST /project/:projectId/subscribers')
-    const project = await this.projectService.getProject(
-      params.projectId,
-      userId,
-    )
+
+    const project = await this.projectService.findOne(params.projectId, {
+      relations: ['share', 'share.user', 'admin'],
+    })
 
     if (!project) {
       throw new NotFoundException('Project not found.')
     }
+
+    this.projectService.allowedToManage(
+      project,
+      userId,
+      [],
+      "You are not allowed to manage this project's subscribers",
+    )
 
     const user = await this.userService.getUser(userId)
 
@@ -1399,14 +1412,16 @@ export class ProjectController {
     @CurrentUserId() userId: string,
   ) {
     this.logger.log({ params, queries }, 'GET /project/:projectId/subscribers')
-    const project = await this.projectService.getProject(
-      params.projectId,
-      userId,
-    )
+
+    const project = await this.projectService.findOne(params.projectId, {
+      relations: ['share', 'share.user', 'admin'],
+    })
 
     if (!project) {
       throw new NotFoundException('Project not found.')
     }
+
+    this.projectService.allowedToView(project, userId)
 
     return this.projectService.getSubscribers(params.projectId, queries)
   }
@@ -1423,14 +1438,20 @@ export class ProjectController {
       'PATCH /project/:projectId/subscribers/:subscriberId',
     )
 
-    const project = await this.projectService.getProject(
-      params.projectId,
-      userId,
-    )
+    const project = await this.projectService.findOne(params.projectId, {
+      relations: ['share', 'share.user', 'admin'],
+    })
 
     if (!project) {
       throw new NotFoundException('Project not found.')
     }
+
+    this.projectService.allowedToManage(
+      project,
+      userId,
+      [],
+      "You are not allowed to manage this project's subscribers",
+    )
 
     const subscriber = await this.projectService.getSubscriber(
       params.projectId,
