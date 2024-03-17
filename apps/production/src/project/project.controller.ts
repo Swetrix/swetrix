@@ -34,6 +34,7 @@ import * as _omit from 'lodash/omit'
 import * as _split from 'lodash/split'
 import * as _head from 'lodash/head'
 import * as _filter from 'lodash/filter'
+import * as _find from 'lodash/find'
 import * as dayjs from 'dayjs'
 
 import { hash } from 'bcrypt'
@@ -249,16 +250,20 @@ export class ProjectController {
         _map(paginated.results, ({ project }) => project.id),
       )
 
-    paginated.results = _map(paginated.results, share => ({
-      ...share,
-      project: {
-        ...share.project,
-        admin: undefined,
-        passwordHash: undefined,
-        isLocked: !!share?.project?.admin?.dashboardBlockReason,
-        isDataExists: _includes(pidsWithData, share?.project?.id),
-      },
-    }))
+    paginated.results = _map(paginated.results, share => {
+      const project = processProjectUser(share.project)
+
+      return {
+        ...share,
+        project: {
+          ...project,
+          admin: undefined,
+          passwordHash: undefined,
+          isLocked: !!share?.project?.admin?.dashboardBlockReason,
+          isDataExists: _includes(pidsWithData, share?.project?.id),
+        },
+      }
+    })
 
     return paginated
   }
@@ -973,7 +978,7 @@ export class ProjectController {
     const project = await this.projectService.findOneWhere(
       { id: pid },
       {
-        relations: ['admin', 'share'],
+        relations: ['admin', 'share', 'share.user'],
         select: ['id', 'admin', 'share'],
       },
     )
@@ -1087,18 +1092,28 @@ export class ProjectController {
 
     const user = await this.userService.findOne(uid)
     const share = await this.projectService.findOneShare(shareId, {
-      relations: ['project', 'project.admin'],
+      relations: [
+        'project',
+        'project.admin',
+        'project.share',
+        'project.share.user',
+      ],
     })
 
     if (_isEmpty(share)) {
       throw new NotFoundException(`Share with ID ${shareId} does not exist`)
     }
 
-    if (share.project?.admin?.id !== uid) {
-      throw new NotFoundException(`You are not allowed to edit this share`)
-    }
-
     this.projectService.allowedToManage(share.project, uid, user.roles)
+
+    const adminShare = _find(
+      share.project.share,
+      (_share: ProjectShare) => _share.user?.id === uid,
+    )
+
+    if (adminShare?.id === shareId) {
+      throw new NotFoundException('You cannot edit your own role')
+    }
 
     const { role } = shareDTO
     await this.projectService.updateShare(shareId, {
@@ -1255,14 +1270,20 @@ export class ProjectController {
       'DELETE /project/:projectId/subscribers/:subscriberId',
     )
 
-    const project = await this.projectService.getProject(
-      params.projectId,
-      userId,
-    )
+    const project = await this.projectService.findOne(params.projectId, {
+      relations: ['share', 'share.user', 'admin'],
+    })
 
     if (!project) {
       throw new NotFoundException('Project not found.')
     }
+
+    this.projectService.allowedToManage(
+      project,
+      userId,
+      [],
+      "You are not allowed to manage this project's subscribers",
+    )
 
     const subscriber = await this.projectService.getSubscriber(
       params.projectId,
@@ -1288,14 +1309,21 @@ export class ProjectController {
     @CurrentUserId() userId: string,
   ) {
     this.logger.log({ params, body }, 'POST /project/:projectId/subscribers')
-    const project = await this.projectService.getProject(
-      params.projectId,
-      userId,
-    )
+
+    const project = await this.projectService.findOne(params.projectId, {
+      relations: ['share', 'share.user', 'admin'],
+    })
 
     if (!project) {
       throw new NotFoundException('Project not found.')
     }
+
+    this.projectService.allowedToManage(
+      project,
+      userId,
+      [],
+      "You are not allowed to manage this project's subscribers",
+    )
 
     const user = await this.userService.getUser(userId)
 
@@ -1399,14 +1427,16 @@ export class ProjectController {
     @CurrentUserId() userId: string,
   ) {
     this.logger.log({ params, queries }, 'GET /project/:projectId/subscribers')
-    const project = await this.projectService.getProject(
-      params.projectId,
-      userId,
-    )
+
+    const project = await this.projectService.findOne(params.projectId, {
+      relations: ['share', 'share.user', 'admin'],
+    })
 
     if (!project) {
       throw new NotFoundException('Project not found.')
     }
+
+    this.projectService.allowedToView(project, userId)
 
     return this.projectService.getSubscribers(params.projectId, queries)
   }
@@ -1423,14 +1453,20 @@ export class ProjectController {
       'PATCH /project/:projectId/subscribers/:subscriberId',
     )
 
-    const project = await this.projectService.getProject(
-      params.projectId,
-      userId,
-    )
+    const project = await this.projectService.findOne(params.projectId, {
+      relations: ['share', 'share.user', 'admin'],
+    })
 
     if (!project) {
       throw new NotFoundException('Project not found.')
     }
+
+    this.projectService.allowedToManage(
+      project,
+      userId,
+      [],
+      "You are not allowed to manage this project's subscribers",
+    )
 
     const subscriber = await this.projectService.getSubscriber(
       params.projectId,
@@ -1725,8 +1761,8 @@ export class ProjectController {
     const project = await this.projectService.findOneWhere(
       { id: pid },
       {
-        relations: ['admin'],
-        select: ['id', 'admin'],
+        relations: ['admin', 'share', 'share.user'],
+        select: ['id', 'admin', 'share'],
       },
     )
 
