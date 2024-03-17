@@ -244,6 +244,22 @@ export class ProjectController {
       where,
     )
 
+    const pidsWithData =
+      await this.projectService.getPIDsWhereAnalyticsDataExists(
+        _map(paginated.results, ({ project }) => project.id),
+      )
+
+    paginated.results = _map(paginated.results, share => ({
+      ...share,
+      project: {
+        ...share.project,
+        admin: undefined,
+        passwordHash: undefined,
+        isLocked: !!share?.project?.admin?.dashboardBlockReason,
+        isDataExists: _includes(pidsWithData, share?.project?.id),
+      },
+    }))
+
     return paginated
   }
 
