@@ -368,11 +368,10 @@ export class ProjectService {
       order: {
         project: 'ASC',
       },
-      relations: ['project'],
+      relations: ['project', 'project.admin'],
     })
 
     return new Pagination<ProjectShare>({
-      // results: processProjectsUser(results),
       results,
       total,
     })

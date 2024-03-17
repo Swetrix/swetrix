@@ -22,19 +22,31 @@ export class ProjectShare {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
+  /**
+   * User whom with the project was shared
+   */
   @ApiProperty({ type: () => User })
   @ManyToOne(() => User, user => user.sharedProjects)
   user: User
 
+  /**
+   * Project in question
+   */
   @ManyToOne(() => Project, project => project.share)
   project: Project
 
+  /**
+   * Boolean indicating whether the user accepted project invitation
+   */
   @ApiProperty()
   @Column({
     default: false,
   })
   confirmed: boolean
 
+  /**
+   * User's role in the project
+   */
   @Column({
     type: 'enum',
     enum: Role,
