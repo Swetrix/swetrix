@@ -69,19 +69,7 @@ const tabDeleteDataModal = [
   },
 ]
 
-const ModalMessage = ({
-  dateRange,
-  setDateRange,
-  setTab,
-  t,
-  tab,
-  pid,
-  activeFilter,
-  setActiveFilter,
-  filterType,
-  setFilterType,
-  language,
-}: {
+interface IModalMessage {
   dateRange: Date[]
   setDateRange: (a: Date[]) => void
   setTab: (i: string) => void
@@ -98,7 +86,21 @@ const ModalMessage = ({
   filterType: string
   setFilterType: (a: string) => void
   language: string
-}): JSX.Element => {
+}
+
+const ModalMessage = ({
+  dateRange,
+  setDateRange,
+  setTab,
+  t,
+  tab,
+  pid,
+  activeFilter,
+  setActiveFilter,
+  filterType,
+  setFilterType,
+  language,
+}: IModalMessage): JSX.Element => {
   const [filterList, setFilterList] = useState<string[]>([])
   const [searchList, setSearchList] = useState<string[]>([])
 
@@ -262,6 +264,7 @@ interface IProjectSettings {
   deleteProjectFailed: (message: string) => void
   loadProjects: (shared: boolean, skip: number) => void
   isLoading: boolean
+  isLoadingShared: boolean
   projects: IProject[]
   showError: (message: string) => void
   removeProject: (pid: string, shared: boolean) => void
@@ -272,7 +275,7 @@ interface IProjectSettings {
   setProjectProtectedPassword: (pid: string, password: string) => void
   dashboardPaginationPage: number
   dashboardPaginationPageShared: number
-  loading: boolean
+  authLoading: boolean
   isSettings: boolean
 }
 
@@ -284,6 +287,7 @@ const ProjectSettings = ({
   deleteProjectFailed,
   loadProjects,
   isLoading,
+  isLoadingShared,
   projects,
   showError,
   removeProject,
@@ -294,22 +298,12 @@ const ProjectSettings = ({
   setProjectProtectedPassword,
   dashboardPaginationPage,
   dashboardPaginationPageShared,
-  loading,
+  authLoading,
   isSettings,
 }: IProjectSettings) => {
   const {
     t,
     i18n: { language },
-  }: {
-    t: (
-      key: string,
-      options?: {
-        [key: string]: string | number | null
-      },
-    ) => string
-    i18n: {
-      language: string
-    }
   } = useTranslation('common')
   // @ts-ignore
   const {
@@ -360,7 +354,7 @@ const ProjectSettings = ({
     : dashboardPaginationPage * ENTRIES_PER_PAGE_DASHBOARD
 
   useEffect(() => {
-    if (loading) {
+    if (authLoading) {
       return
     }
 
@@ -369,7 +363,7 @@ const ProjectSettings = ({
       navigate(routes.dashboard)
     }
 
-    if (!isLoading && isSettings && !projectDeleting) {
+    if (!isLoading && !isLoadingShared && isSettings && !projectDeleting) {
       if (_isEmpty(project) || project?.uiHidden) {
         showError(t('project.noExist'))
         navigate(routes.dashboard)
@@ -381,7 +375,7 @@ const ProjectSettings = ({
         })
       }
     }
-  }, [user, project, isLoading, isSettings, navigate, showError, projectDeleting, t, loading])
+  }, [user, project, isLoading, isSettings, navigate, showError, projectDeleting, t, authLoading, isLoadingShared])
 
   const onSubmit = async (data: IForm) => {
     if (!projectSaving) {
@@ -581,7 +575,7 @@ const ProjectSettings = ({
     document.title = pageTitle
   }, [form, t, isSettings])
 
-  if (loading) {
+  if (authLoading || isLoading || isLoadingShared) {
     return (
       <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
         <Loader />
@@ -672,7 +666,6 @@ const ProjectSettings = ({
                   handleInput(e)
                 }
               }}
-              disabled={form?.isPasswordProtected}
               name='public'
               id='public'
               className='mt-4'
@@ -695,7 +688,6 @@ const ProjectSettings = ({
                     setShowProtected(true)
                   }
                 }}
-                disabled={form?.public}
                 name='isPasswordProtected'
                 id='isPasswordProtected'
                 className='mt-4'
@@ -752,16 +744,16 @@ const ProjectSettings = ({
                 </div>
               )}
             </div>
-            {!isSelfhosted && !project?.shared && (
+            {!isSelfhosted && (
               <>
                 <hr className='mt-8 xs:mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
                 <Emails projectId={id} projectName={project.name} />
               </>
             )}
-            {!isSelfhosted && !project?.shared && (
+            {!isSelfhosted && (
               <>
                 <hr className='mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
-                <People project={project} />
+                <People project={project} isSharedProject={isSharedProject} />
               </>
             )}
           </>

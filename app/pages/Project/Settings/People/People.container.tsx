@@ -9,6 +9,7 @@ import People from './People'
 
 const mapStateToProps = (state: StateType) => ({
   isPaidTierUsed: state.auth.isPaidTierUsed,
+  user: state.auth.user,
 })
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
