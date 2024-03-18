@@ -20,7 +20,6 @@ import PaidFeature from 'modals/PaidFeature'
 import { roles, roleViewer, roleAdmin, INVITATION_EXPIRES_IN } from 'redux/constants'
 import useOnClickOutside from 'hooks/useOnClickOutside'
 import { IProject, IShareOwnerProject } from 'redux/models/IProject'
-import { IUser } from 'redux/models/IUser'
 
 const NoEvents = ({ t }: { t: (key: string) => string }): JSX.Element => (
   <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
@@ -29,25 +28,6 @@ const NoEvents = ({ t }: { t: (key: string) => string }): JSX.Element => (
     </div>
   </div>
 )
-
-interface IUsersList {
-  data: IShareOwnerProject
-  onRemove: (id: string) => void
-  t: (
-    key: string,
-    options?: {
-      [key: string]: string | number | null
-    },
-  ) => string
-  share?: IShareOwnerProject[]
-  setProjectShareData: (item: Partial<IProject>, id: string, shared: boolean) => void
-  pid: string
-  updateProjectFailed: (message: string) => void
-  language: string
-  roleUpdatedNotification: (email: string, role?: string) => void
-  authedUserEmail: string | undefined
-  isSharedProject: boolean
-}
 
 const UsersList = ({
   data,
@@ -59,11 +39,24 @@ const UsersList = ({
   updateProjectFailed,
   language,
   roleUpdatedNotification,
-  authedUserEmail,
-  isSharedProject,
-}: IUsersList) => {
-  const [open, setOpen] = useState(false)
-  const [showDeleteModal, setShowDeleteModal] = useState(false)
+}: {
+  data: IShareOwnerProject
+  onRemove: (id: string) => void
+  t: (
+    key: string,
+    options?: {
+      [key: string]: string | number | null
+    },
+  ) => string
+  share?: IShareOwnerProject[]
+  setProjectShareData: (item: Partial<IProject>, id: string) => void
+  pid: string
+  updateProjectFailed: (message: string) => void
+  language: string
+  roleUpdatedNotification: (email: string, role?: string) => void
+}) => {
+  const [open, setOpen] = useState<boolean>(false)
+  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false)
   const openRef = useRef<HTMLDivElement>(null)
   useOnClickOutside(openRef, () => setOpen(false))
   const { id, created, confirmed, role, user } = data
@@ -73,11 +66,11 @@ const UsersList = ({
       const results = await changeShareRole(id, { role: newRole })
       const newShared: IShareOwnerProject[] = _map(share, (itShare) => {
         if (itShare.id === results.id) {
-          return { ...results, user: itShare.user, role: newRole }
+          return { ...results, user: itShare.user }
         }
         return itShare
       })
-      setProjectShareData({ share: newShared }, pid, isSharedProject)
+      setProjectShareData({ share: newShared }, pid)
       roleUpdatedNotification(t('apiNotifications.roleUpdated'))
     } catch (e) {
       console.error(`[ERROR] Error while updating user's role: ${e}`)
@@ -103,8 +96,7 @@ const UsersList = ({
             <button
               onClick={() => setOpen(!open)}
               type='button'
-              disabled={user.email === authedUserEmail}
-              className='inline-flex disabled:opacity-80 disabled:cursor-not-allowed items-center shadow-sm pl-2 pr-1 py-0.5 border border-gray-200 dark:border-gray-600 text-sm leading-5 font-medium rounded-full bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600'
+              className='inline-flex items-center shadow-sm pl-2 pr-1 py-0.5 border border-gray-200 dark:border-gray-600 text-sm leading-5 font-medium rounded-full bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600'
             >
               {t(`project.settings.roles.${role}.name`)}
               <ChevronDownIcon style={{ transform: open ? 'rotate(180deg)' : '' }} className='w-4 h-4 pt-px ml-0.5' />
@@ -202,8 +194,6 @@ interface IPeopleProps {
   inviteUserNotification: (email: string, type?: string) => void
   removeUserNotification: (email: string) => void
   isPaidTierUsed: boolean
-  user: IUser
-  isSharedProject: boolean
 }
 
 const People: React.FunctionComponent<IPeopleProps> = ({
@@ -214,25 +204,36 @@ const People: React.FunctionComponent<IPeopleProps> = ({
   inviteUserNotification,
   removeUserNotification,
   isPaidTierUsed,
-  user: currentUser,
-  isSharedProject,
 }: IPeopleProps): JSX.Element => {
   const [showModal, setShowModal] = useState<boolean>(false)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState<boolean>(false)
   const {
     t,
     i18n: { language },
+  }: {
+    t: (
+      key: string,
+      options?: {
+        [key: string]: string | number | null
+      },
+    ) => string
+    i18n: {
+      language: string
+    }
   } = useTranslation('common')
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    email: string
+    role: string
+  }>({
     email: '',
     role: '',
   })
-  const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
   const [errors, setErrors] = useState<{
     email?: string
     role?: string
   }>({})
-  const [validated, setValidated] = useState(false)
+  const [validated, setValidated] = useState<boolean>(false)
   const { id, name, share } = project
 
   const validate = () => {
@@ -383,8 +384,6 @@ const People: React.FunctionComponent<IPeopleProps> = ({
                           updateProjectFailed={updateProjectFailed}
                           roleUpdatedNotification={roleUpdatedNotification}
                           pid={id}
-                          authedUserEmail={currentUser?.email}
-                          isSharedProject={isSharedProject}
                         />
                       ))}
                     </tbody>
