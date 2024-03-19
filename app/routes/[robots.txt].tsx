@@ -1,7 +1,14 @@
 export const loader = () => {
-  const robotText = `User-agent: *
-Allow: /
-Sitemap: https://swetrix.com/sitemap.xml`
+  const robotText = `Sitemap: https://swetrix.com/sitemap.xml
+
+User-agent: *
+Disallow: /ref
+Disallow: /ref/*
+Disallow: /password-reset/*
+Disallow: /verify/*
+Disallow: /share/*
+Disallow: /change-email/*
+`
 
   return new Response(robotText, {
     status: 200,
