@@ -111,8 +111,6 @@ const generatePlanUsageQuery = (
 ): string => {
   let query = ''
 
-  console.log('users:', users)
-
   for (let i = 0; i < _size(users); ++i) {
     const user = users[i]
     const pidsStringified = _map(user.projects, p => `'${p.id}'`).join(',')
