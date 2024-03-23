@@ -111,6 +111,8 @@ const generatePlanUsageQuery = (
 ): string => {
   let query = ''
 
+  console.log('users:', users)
+
   for (let i = 0; i < _size(users); ++i) {
     const user = users[i]
     const pidsStringified = _map(user.projects, p => `'${p.id}'`).join(',')
@@ -127,6 +129,10 @@ const generatePlanUsageQuery = (
   }
 
   return query
+}
+
+const filterUsersWithEmptyProjects = (users: User[]) => {
+  return _filter(users, (user: User) => !_isEmpty(user.projects))
 }
 
 const getUsersThatExceedPlanUsage = (
@@ -306,17 +312,19 @@ export class TaskManagerService {
       .subtract(7, 'days')
       .format('YYYY-MM-DD HH:mm:ss')
 
-    const users = await this.userService.find({
-      where: {
-        isActive: true,
-        planCode: Not(PlanCode.none),
-        planExceedContactedAt: MoreThan(sevenDaysAgo),
-        dashboardBlockReason: IsNull(),
-        isAccountBillingSuspended: false,
-      },
-      relations: ['projects'],
-      select: ['id', 'email', 'planCode'],
-    })
+    const users = filterUsersWithEmptyProjects(
+      await this.userService.find({
+        where: {
+          isActive: true,
+          planCode: Not(PlanCode.none),
+          planExceedContactedAt: MoreThan(sevenDaysAgo),
+          dashboardBlockReason: IsNull(),
+          isAccountBillingSuspended: false,
+        },
+        relations: ['projects'],
+        select: ['id', 'email', 'planCode'],
+      }),
+    )
 
     if (_isEmpty(users)) {
       return
@@ -362,19 +370,21 @@ export class TaskManagerService {
     })
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_4PM)
+  @Cron(CronExpression.EVERY_10_SECONDS)
   async checkPlanUsage(): Promise<void> {
-    const users = await this.userService.find({
-      where: {
-        isActive: true,
-        planCode: Not(PlanCode.none),
-        planExceedContactedAt: IsNull(),
-        dashboardBlockReason: IsNull(),
-        isAccountBillingSuspended: false,
-      },
-      relations: ['projects'],
-      select: ['id', 'email', 'planCode'],
-    })
+    const users = filterUsersWithEmptyProjects(
+      await this.userService.find({
+        where: {
+          isActive: true,
+          planCode: Not(PlanCode.none),
+          planExceedContactedAt: IsNull(),
+          dashboardBlockReason: IsNull(),
+          isAccountBillingSuspended: false,
+        },
+        relations: ['projects'],
+        select: ['id', 'email', 'planCode'],
+      }),
+    )
 
     if (_isEmpty(users)) {
       return
