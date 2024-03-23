@@ -370,7 +370,7 @@ export class TaskManagerService {
     })
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_DAY_AT_4PM)
   async checkPlanUsage(): Promise<void> {
     const users = filterUsersWithEmptyProjects(
       await this.userService.find({
