@@ -84,6 +84,7 @@ import {
   IOverallCaptcha,
   IOverallPerformance,
   IPageflow,
+  PerfMeasure,
 } from './interfaces'
 
 dayjs.extend(utc)
@@ -2049,23 +2050,30 @@ export class AnalyticsService {
   generatePerformanceAggregationQuery(
     timeBucket: TimeBucketType,
     filtersQuery: string,
-    safeTimezone,
+    safeTimezone: string,
+    measure: PerfMeasure,
   ): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
     const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
     const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
+    const cols = ['dns', 'tls', 'conn', 'response', 'render', 'domLoad', 'ttfb']
+
+    const measures = {
+      average: 'avg',
+      median: 'median',
+      p95: 'quantileExact(0.95)',
+    }
+
+    const columnSelectors = cols
+      .map(col => `${measures[measure]}(${col}) as ${col}`)
+      .join(', ')
+
     return `
       SELECT
         ${selector},
-        avg(dns) as dns,
-        avg(tls) as tls,
-        avg(conn) as conn,
-        avg(response) as response,
-        avg(render) as render,
-        avg(domLoad) as domLoad,
-        avg(ttfb) as ttfb
+        ${columnSelectors}
       FROM (
         SELECT *,
           ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
@@ -2387,6 +2395,7 @@ export class AnalyticsService {
     filtersQuery: string,
     paramsData: object,
     safeTimezone: string,
+    measure: PerfMeasure,
   ) {
     const { xShifted } = this.generateXAxis(timeBucket, from, to, safeTimezone)
 
@@ -2394,11 +2403,17 @@ export class AnalyticsService {
       timeBucket,
       filtersQuery,
       safeTimezone,
+      measure,
     )
+
+    const token = `${Math.random()} - performance agg query`
+    console.time(token)
 
     const result = <Array<PerformanceCHResponse>>(
       await clickhouse.query(query, paramsData).toPromise()
     )
+
+    console.timeLog(token)
 
     return {
       x: xShifted,
@@ -2414,6 +2429,7 @@ export class AnalyticsService {
     filtersQuery: string,
     paramsData: object,
     safeTimezone: string,
+    measure: PerfMeasure,
   ): Promise<object | void> {
     let params: unknown = {}
     let chart: unknown = {}
@@ -2446,6 +2462,7 @@ export class AnalyticsService {
           filtersQuery,
           paramsData,
           safeTimezone,
+          measure,
         )
       })(),
     ]
@@ -2809,5 +2826,15 @@ export class AnalyticsService {
   async getOnlineCountByProjectId(projectId: string) {
     // @ts-ignore
     return redis.countKeysByPattern(`hb:${projectId}:*`)
+  }
+
+  checkIfPerfMeasureIsValid(measure: PerfMeasure) {
+    const validMeasures = ['average', 'median', 'p95']
+
+    if (!_includes(validMeasures, measure)) {
+      throw new UnprocessableEntityException(
+        `Please provide a valid "measure" parameter, it must be one of ${validMeasures}`,
+      )
+    }
   }
 }
