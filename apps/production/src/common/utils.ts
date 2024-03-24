@@ -9,6 +9,7 @@ import * as _sample from 'lodash/sample'
 import * as _toNumber from 'lodash/toNumber'
 import * as _replace from 'lodash/replace'
 import * as _find from 'lodash/find'
+import * as _size from 'lodash/size'
 import * as _round from 'lodash/round'
 import * as _split from 'lodash/split'
 
@@ -241,6 +242,17 @@ const getIPFromHeaders = (headers: any, tryXClientIPAddress?: boolean) => {
   return _split(ip, ',')[0]
 }
 
+const sumArrays = (source: number[], target: number[]) => {
+  const result = []
+  const size = _size(source)
+
+  for (let i = 0; i < size; ++i) {
+    result.push(source[i] + target[i])
+  }
+
+  return result
+}
+
 export {
   getRandomTip,
   checkRateLimit,
@@ -253,4 +265,5 @@ export {
   getGeoDetails,
   getIPFromHeaders,
   generateRefCode,
+  sumArrays,
 }
