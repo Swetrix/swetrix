@@ -170,3 +170,5 @@ export interface IPageflow {
   value: string
   created: string
 }
+
+export type PerfMeasure = 'average' | 'median' | 'p95' | 'quantiles'

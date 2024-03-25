@@ -55,6 +55,7 @@ import {
 import {
   calculateRelativePercentage,
   millisecondsToSeconds,
+  sumArrays,
 } from '../common/utils'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
@@ -84,6 +85,7 @@ import {
   IOverallCaptcha,
   IOverallPerformance,
   IPageflow,
+  PerfMeasure,
 } from './interfaces'
 
 dayjs.extend(utc)
@@ -2049,23 +2051,30 @@ export class AnalyticsService {
   generatePerformanceAggregationQuery(
     timeBucket: TimeBucketType,
     filtersQuery: string,
-    safeTimezone,
+    safeTimezone: string,
+    measure: PerfMeasure,
   ): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
     const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
     const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
+    const cols = ['dns', 'tls', 'conn', 'response', 'render', 'domLoad', 'ttfb']
+
+    const measures = {
+      average: 'avg',
+      median: 'median',
+      p95: 'quantileExact(0.95)',
+    }
+
+    const columnSelectors = cols
+      .map(col => `${measures[measure]}(${col}) as ${col}`)
+      .join(', ')
+
     return `
       SELECT
         ${selector},
-        avg(dns) as dns,
-        avg(tls) as tls,
-        avg(conn) as conn,
-        avg(response) as response,
-        avg(render) as render,
-        avg(domLoad) as domLoad,
-        avg(ttfb) as ttfb
+        ${columnSelectors}
       FROM (
         SELECT *,
           ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
@@ -2077,7 +2086,41 @@ export class AnalyticsService {
       ) as subquery
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
-      `
+    `
+  }
+
+  generatePerformanceQuantilesQuery(
+    timeBucket: TimeBucketType,
+    filtersQuery: string,
+    safeTimezone: string,
+  ): string {
+    const timeBucketFunc = timeBucketConversion[timeBucket]
+    const [selector, groupBy] = this.getGroupSubquery(timeBucket)
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+
+    const cols = ['dns', 'tls', 'conn', 'response', 'render', 'domLoad', 'ttfb']
+
+    const columnSelectors = cols
+      .map(col => `quantilesExactInclusive(0.5, 0.75, 0.95)(${col}) as ${col}`)
+      .join(', ')
+
+    return `
+      SELECT
+        ${selector},
+        ${columnSelectors}
+      FROM (
+        SELECT *,
+          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
+        FROM performance
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND created BETWEEN ${tzFromDate} AND ${tzToDate}
+          ${filtersQuery}
+      ) as subquery
+      GROUP BY ${groupBy}
+      ORDER BY ${groupBy}
+    `
   }
 
   generateCaptchaAggregationQuery(
@@ -2380,6 +2423,39 @@ export class AnalyticsService {
     }
   }
 
+  extractPerformanceQuantilesData(result, x: string[]): any {
+    const cols = ['dns', 'tls', 'conn', 'response', 'render', 'domLoad', 'ttfb']
+
+    const p50 = Array(x.length).fill(0)
+    const p75 = Array(x.length).fill(0)
+    const p95 = Array(x.length).fill(0)
+
+    for (let row = 0; row < _size(result); ++row) {
+      const dateString = this.generateDateString(result[row])
+
+      const index = x.indexOf(dateString)
+
+      if (index !== -1) {
+        let quantiles = [0, 0, 0]
+
+        for (let i = 0; i < cols.length; ++i) {
+          const col = cols[i]
+          quantiles = sumArrays(quantiles, result[row][col] || [])
+        }
+
+        p50[index] = _round(millisecondsToSeconds(quantiles[0]), 2)
+        p75[index] = _round(millisecondsToSeconds(quantiles[1]), 2)
+        p95[index] = _round(millisecondsToSeconds(quantiles[2]), 2)
+      }
+    }
+
+    return {
+      p50,
+      p75,
+      p95,
+    }
+  }
+
   async getPerfChartData(
     timeBucket: TimeBucketType,
     from: string,
@@ -2387,13 +2463,30 @@ export class AnalyticsService {
     filtersQuery: string,
     paramsData: object,
     safeTimezone: string,
+    measure: PerfMeasure,
   ) {
     const { xShifted } = this.generateXAxis(timeBucket, from, to, safeTimezone)
+
+    if (measure === 'quantiles') {
+      const query = this.generatePerformanceQuantilesQuery(
+        timeBucket,
+        filtersQuery,
+        safeTimezone,
+      )
+
+      const result = await clickhouse.query(query, paramsData).toPromise()
+
+      return {
+        x: xShifted,
+        ...this.extractPerformanceQuantilesData(result, xShifted),
+      }
+    }
 
     const query = this.generatePerformanceAggregationQuery(
       timeBucket,
       filtersQuery,
       safeTimezone,
+      measure,
     )
 
     const result = <Array<PerformanceCHResponse>>(
@@ -2414,6 +2507,7 @@ export class AnalyticsService {
     filtersQuery: string,
     paramsData: object,
     safeTimezone: string,
+    measure: PerfMeasure,
   ): Promise<object | void> {
     let params: unknown = {}
     let chart: unknown = {}
@@ -2446,6 +2540,7 @@ export class AnalyticsService {
           filtersQuery,
           paramsData,
           safeTimezone,
+          measure,
         )
       })(),
     ]
@@ -2809,5 +2904,15 @@ export class AnalyticsService {
   async getOnlineCountByProjectId(projectId: string) {
     // @ts-ignore
     return redis.countKeysByPattern(`hb:${projectId}:*`)
+  }
+
+  checkIfPerfMeasureIsValid(measure: PerfMeasure) {
+    const validMeasures = ['average', 'median', 'p95', 'quantiles']
+
+    if (!_includes(validMeasures, measure)) {
+      throw new UnprocessableEntityException(
+        `Please provide a valid "measure" parameter, it must be one of ${validMeasures}`,
+      )
+    }
   }
 }

@@ -12,6 +12,7 @@ import * as _split from 'lodash/split'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _head from 'lodash/head'
 import * as _round from 'lodash/round'
+import * as _size from 'lodash/size'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as _map from 'lodash/map'
@@ -355,6 +356,17 @@ const getIPFromHeaders = (headers: any) => {
   return _split(ip, ',')[0]
 }
 
+const sumArrays = (source: number[], target: number[]) => {
+  const result = []
+  const size = _size(source)
+
+  for (let i = 0; i < size; ++i) {
+    result.push(source[i] + target[i])
+  }
+
+  return result
+}
+
 export {
   checkRateLimit,
   createProjectClickhouse,
@@ -372,4 +384,5 @@ export {
   createUserClickhouse,
   getGeoDetails,
   getIPFromHeaders,
+  sumArrays,
 }
