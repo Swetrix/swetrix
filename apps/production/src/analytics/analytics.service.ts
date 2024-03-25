@@ -2086,7 +2086,7 @@ export class AnalyticsService {
       ) as subquery
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
-      `
+    `
   }
 
   generatePerformanceQuantilesQuery(
@@ -2120,7 +2120,7 @@ export class AnalyticsService {
       ) as subquery
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
-      `
+    `
   }
 
   generateCaptchaAggregationQuery(

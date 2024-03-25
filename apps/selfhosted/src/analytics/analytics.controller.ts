@@ -74,6 +74,7 @@ import {
   IFunnel,
   IGetFunnel,
   IUserFlow,
+  PerfMeasure,
 } from './interfaces'
 import { GetSessionsDto } from './dto/get-sessions.dto'
 import { GetSessionDto } from './dto/get-session.dto'
@@ -83,6 +84,8 @@ const mysql = require('mysql2')
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
+
+export const DEFAULT_MEASURE = 'median'
 
 const getSessionKeyCustom = (
   ip: string,
@@ -586,7 +589,7 @@ export class AnalyticsController {
   @Get('performance')
   @Auth([], true, true)
   async getPerfData(
-    @Query() data: AnalyticsGET_DTO,
+    @Query() data: AnalyticsGET_DTO & { measure: PerfMeasure },
     @CurrentUserId() uid: string,
   ): Promise<any> {
     const {
@@ -597,8 +600,11 @@ export class AnalyticsController {
       to,
       filters,
       timezone = DEFAULT_TIMEZONE,
+      measure = DEFAULT_MEASURE,
     } = data
     this.analyticsService.validatePID(pid)
+
+    this.analyticsService.checkIfPerfMeasureIsValid(measure)
 
     if (!_isEmpty(period)) {
       this.analyticsService.validatePeriod(period)
@@ -658,6 +664,7 @@ export class AnalyticsController {
       filtersQuery,
       paramsData,
       safeTimezone,
+      measure,
     )
 
     return {
@@ -670,7 +677,7 @@ export class AnalyticsController {
   @Get('performance/chart')
   @Auth([], true, true)
   async getPerfChartData(
-    @Query() data: AnalyticsGET_DTO,
+    @Query() data: AnalyticsGET_DTO & { measure: PerfMeasure },
     @CurrentUserId() uid: string,
   ): Promise<any> {
     const {
@@ -681,8 +688,11 @@ export class AnalyticsController {
       to,
       filters,
       timezone = DEFAULT_TIMEZONE,
+      measure = DEFAULT_MEASURE,
     } = data
     this.analyticsService.validatePID(pid)
+
+    this.analyticsService.checkIfPerfMeasureIsValid(measure)
 
     if (!_isEmpty(period)) {
       this.analyticsService.validatePeriod(period)
@@ -718,6 +728,7 @@ export class AnalyticsController {
       filtersQuery,
       paramsData,
       safeTimezone,
+      measure,
     )
 
     return {
