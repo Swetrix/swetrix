@@ -86,7 +86,7 @@ const mysql = require('mysql2')
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
 
-export const DEFAULT_MEASURE = 'average'
+export const DEFAULT_MEASURE = 'median'
 
 const getSessionKeyCustom = (
   ip: string,
