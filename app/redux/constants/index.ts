@@ -393,7 +393,8 @@ export const getProjectCacheKey = (
   timeBucket: string,
   mode: 'periodical' | 'cumulative',
   filters?: any,
-): string => `${period}${timeBucket}${mode}${filters ? JSON.stringify(filters) : ''}}`
+  meta = '',
+): string => `${period}${timeBucket}${mode}${filters ? JSON.stringify(filters) : ''}${meta}`
 export const getProjectCaptchaCacheKey = (period: string, timeBucket: string, filters?: any): string =>
   `${period}${timeBucket}captcha${filters ? JSON.stringify(filters) : ''}}`
 export const getProjectForcastCacheKey = (
@@ -408,9 +409,15 @@ export const getProjectCacheCustomKey = (
   timeBucket: string,
   mode: 'periodical' | 'cumulative',
   filters: any,
-): string => `cst${from}${to}${timeBucket}-${mode}${filters ? JSON.stringify(filters) : ''}}`
-export const getProjectCacheCustomKeyPerf = (from: string, to: string, timeBucket: string, filters: any): string =>
-  `${from}-${to}-${timeBucket}perf${filters ? JSON.stringify(filters) : ''}`
+  meta = '',
+): string => `cst${from}${to}${timeBucket}-${mode}${filters ? JSON.stringify(filters) : ''}${meta}`
+export const getProjectCacheCustomKeyPerf = (
+  from: string,
+  to: string,
+  timeBucket: string,
+  filters: any,
+  measure: string,
+): string => `${from}-${to}-${timeBucket}perf${filters ? JSON.stringify(filters) : ''}-${measure}`
 export const getUserFlowCacheKey = (pid: string, period: string, filters: any): string =>
   `${pid}${period}userflow${filters ? JSON.stringify(filters) : ''}`
 export const getFunnelsCacheKey = (pid: string, funnelId: string, period: string): string =>

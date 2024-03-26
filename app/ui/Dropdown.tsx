@@ -27,6 +27,7 @@ interface IDropdown {
   header?: string | JSX.Element
   chevron?: 'regular' | 'mini'
   headless?: boolean
+  disabled?: boolean
 }
 
 const Dropdown = ({
@@ -44,6 +45,7 @@ const Dropdown = ({
   header,
   chevron,
   headless,
+  disabled,
 }: IDropdown): JSX.Element => (
   <Menu as='div' className={cx('relative inline-block text-left', className)}>
     {({ open }) => (
@@ -51,13 +53,15 @@ const Dropdown = ({
         {!_isEmpty(desc) && <p className='mb-2 text-sm text-gray-900'>{desc}</p>}
         <div>
           <Menu.Button
+            disabled={disabled}
             className={cx(buttonClassName, {
               'justify-between': aside,
               'justify-center': !aside,
-              'inline-flex w-full rounded-md border border-gray-300 shadow-sm px-3 md:px-4 py-2 bg-white text-sm font-medium text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500':
+              'inline-flex w-full rounded-md border border-gray-300 shadow-sm px-3 md:px-4 py-2 bg-white text-sm font-medium dark:border-gray-800 dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500':
                 !headless,
-              'inline-flex w-full px-3 md:px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-50 outline-none group':
-                headless,
+              'inline-flex w-full px-3 md:px-4 py-2 text-sm font-medium outline-none group': headless,
+              'text-gray-700 dark:text-gray-50': !disabled,
+              'cursor-not-allowed text-gray-500 dark:text-gray-400': disabled,
             })}
           >
             {title}
@@ -137,6 +141,7 @@ Dropdown.propTypes = {
   menuItemsClassName: PropTypes.string,
   chevron: PropTypes.oneOf(['regular', 'mini']),
   headless: PropTypes.bool,
+  disabled: PropTypes.bool,
 }
 
 Dropdown.defaultProps = {
@@ -151,6 +156,7 @@ Dropdown.defaultProps = {
   menuItemsClassName: '',
   chevron: 'regular',
   headless: false,
+  disabled: false,
 }
 
 export default memo(Dropdown)

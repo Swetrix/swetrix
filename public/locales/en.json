@@ -523,6 +523,7 @@
     "network": "Network",
     "timing": "Timing breakdown",
     "timingFull": "Timing breakdown (full)",
+    "allocation": "Load time allocation",
     "dns": "DNS",
     "conn": "Connection",
     "tls": "TLS Setup",
@@ -530,7 +531,10 @@
     "domLoad": "DOM Content Load",
     "pageLoad": "Page load time",
     "render": "Browser render",
-    "response": "Response Time"
+    "response": "Response Time",
+    "average": "Average",
+    "median": "Median",
+    "xPercentile": "{{x}}th percentile"
   },
   "alert": {
     "create": "Create an alert",

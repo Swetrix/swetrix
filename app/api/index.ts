@@ -460,13 +460,14 @@ export const getPerfData = (
   from: string = '',
   to: string = '',
   timezone: string = '',
+  measure: string = '',
   password: string | undefined = '',
 ) =>
   api
     .get(
       `log/performance?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(
         filters,
-      )}&from=${from}&to=${to}&timezone=${timezone}`,
+      )}&from=${from}&to=${to}&timezone=${timezone}&measure=${measure}`,
       {
         headers: {
           'x-password': password,

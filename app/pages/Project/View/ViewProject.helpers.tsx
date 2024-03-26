@@ -195,11 +195,22 @@ const CHART_METRICS_MAPPING = {
 const FILTER_CHART_METRICS_MAPPING_FOR_COMPARE = ['bounce', 'viewsPerUnique', 'trendlines', 'customEvents']
 
 const CHART_METRICS_MAPPING_PERF = {
+  quantiles: 'quantiles',
   full: 'full',
   timing: 'timing',
   network: 'network',
   frontend: 'frontend',
   backend: 'backend',
+}
+
+const CHART_MEASURES_MAPPING_PERF = {
+  // Dependent on metric
+  average: 'average',
+  median: 'median',
+  p95: 'p95',
+
+  // Independent measure that provides it's own metrics
+  quantiles: 'quantiles',
 }
 
 // function to filter the data for the chart
@@ -279,7 +290,19 @@ const getColumnsPerf = (
 ) => {
   const columns: any[] = [['x', ..._map(chart.x, (el) => dayjs(el).toDate())]]
 
-  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.full) {
+  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.quantiles && chart?.p50 && chart?.p75 && chart?.p95) {
+    columns.push(['p50', ...chart.p50])
+    columns.push(['p75', ...chart.p75])
+    columns.push(['p95', ...chart.p95])
+
+    if (compareChart?.p50 && compareChart?.p75 && compareChart?.p95) {
+      columns.push(['p50Compare', ...compareChart.p50])
+      columns.push(['p75Compare', ...compareChart.p75])
+      columns.push(['p95Compare', ...compareChart.p95])
+    }
+  }
+
+  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.full && chart.dns) {
     columns.push(['dns', ...chart.dns])
     columns.push(['tls', ...chart.tls])
     columns.push(['conn', ...chart.conn])
@@ -307,7 +330,7 @@ const getColumnsPerf = (
     }
   }
 
-  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.timing) {
+  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.timing && chart.ttfb) {
     columns.push(['frontend', ...sumArrays(chart.render, chart.domLoad)])
     columns.push(['network', ...sumArrays(chart.dns, chart.tls, chart.conn, chart.response)])
     columns.push(['backend', ...chart.ttfb])
@@ -330,7 +353,7 @@ const getColumnsPerf = (
     }
   }
 
-  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.network) {
+  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.network && chart.dns) {
     columns.push(['dns', ...chart.dns])
     columns.push(['tls', ...chart.tls])
     columns.push(['conn', ...chart.conn])
@@ -344,7 +367,7 @@ const getColumnsPerf = (
     }
   }
 
-  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.frontend) {
+  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.frontend && chart.render) {
     columns.push(['render', ...chart.render])
     columns.push(['dom_load', ...chart.domLoad])
 
@@ -354,7 +377,7 @@ const getColumnsPerf = (
     }
   }
 
-  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.backend) {
+  if (activeChartMetrics === CHART_METRICS_MAPPING_PERF.backend && chart.ttfb) {
     columns.push(['ttfb', ...chart.ttfb])
 
     if (compareChart?.ttfb) {
@@ -372,6 +395,10 @@ const getValueForTooltipPerfomance = (
   id: string,
   index: number,
 ) => {
+  if (id === 'p50' || id === 'p75' || id === 'p95') {
+    return chart[id] ? chart[id][index] : 0
+  }
+
   if (id === 'dns' || id === 'tls' || id === 'conn' || id === 'response' || id === 'render' || id === 'ttfb') {
     return chart[id] ? chart[id][index] : 0
   }
@@ -1047,6 +1074,9 @@ const perfomanceChartCompare = [
   'frontendCompare',
   'networkCompare',
   'backendCompare',
+  'p50Compare',
+  'p75Compare',
+  'p95Compare',
 ]
 
 const getSettingsPerf = (
@@ -1080,6 +1110,9 @@ const getSettingsPerf = (
         frontend: chartType === chartTypes.line ? areaSpline() : bar(),
         network: chartType === chartTypes.line ? areaSpline() : bar(),
         backend: chartType === chartTypes.line ? areaSpline() : bar(),
+        p50: chartType === chartTypes.line ? areaSpline() : bar(),
+        p75: chartType === chartTypes.line ? areaSpline() : bar(),
+        p95: chartType === chartTypes.line ? areaSpline() : bar(),
         dnsCompare: chartType === chartTypes.line ? spline() : bar(),
         tlsCompare: chartType === chartTypes.line ? spline() : bar(),
         connCompare: chartType === chartTypes.line ? spline() : bar(),
@@ -1090,6 +1123,9 @@ const getSettingsPerf = (
         frontendCompare: chartType === chartTypes.line ? spline() : bar(),
         networkCompare: chartType === chartTypes.line ? spline() : bar(),
         backendCompare: chartType === chartTypes.line ? spline() : bar(),
+        p50Compare: chartType === chartTypes.line ? spline() : bar(),
+        p75Compare: chartType === chartTypes.line ? spline() : bar(),
+        p95Compare: chartType === chartTypes.line ? spline() : bar(),
       },
       colors: {
         dns: '#EC4319',
@@ -1102,6 +1138,12 @@ const getSettingsPerf = (
         frontend: '#709775',
         network: '#F7A265',
         backend: '#00A8E8',
+        p50: '#38bdf8',
+        p75: '#facc15',
+        p95: '#f87171',
+        p50Compare: 'rgba(56, 189, 248, 0.4)',
+        p75Compare: 'rgba(250, 204, 21, 0.4)',
+        p95Compare: 'rgba(248, 113, 113, 0.4)',
         dnsCompare: 'rgba(236, 67, 25, 0.4)',
         tlsCompare: 'rgba(242, 112, 89, 0.4)',
         connCompare: 'rgba(247, 162, 101, 0.4)',
@@ -1114,6 +1156,8 @@ const getSettingsPerf = (
         backendCompare: 'rgba(0, 168, 232, 0.4)',
       },
       groups: [
+        ['p50', 'p75', 'p95'],
+        ['p50Compare', 'p75Compare', 'p95Compare'],
         ['dns', 'tls', 'conn', 'response', 'render', 'dom_load', 'ttfb', 'frontend', 'network', 'backend'],
         [
           'dnsCompare',
@@ -1402,4 +1446,5 @@ export {
   SHORTCUTS_TABS_LISTENERS,
   SHORTCUTS_GENERAL_LISTENERS,
   SHORTCUTS_TIMEBUCKETS_LISTENERS,
+  CHART_MEASURES_MAPPING_PERF,
 }

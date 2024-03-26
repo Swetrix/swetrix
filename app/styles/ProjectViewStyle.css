@@ -75,6 +75,18 @@ html.dark .bb-axis .domain {
   stroke: #00a8e8 !important;
 }
 
+.bb-target-p50 .bb-bar {
+  stroke: #0ea5e9 !important;
+}
+
+.bb-target-p75 .bb-bar {
+  stroke: #eab308 !important;
+}
+
+.bb-target-p95 .bb-bar {
+  stroke: #ef4444 !important;
+}
+
 .bb-target-events .bb-bar {
   stroke: #2563eb !important;
 }

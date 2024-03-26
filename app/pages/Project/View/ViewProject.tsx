@@ -155,6 +155,7 @@ import {
   SHORTCUTS_TABS_MAP,
   SHORTCUTS_GENERAL_LISTENERS,
   SHORTCUTS_TIMEBUCKETS_LISTENERS,
+  CHART_MEASURES_MAPPING_PERF,
 } from './ViewProject.helpers'
 import CCRow from './components/CCRow'
 import FunnelsList from './components/FunnelsList'
@@ -387,6 +388,7 @@ const ViewProject = ({
   })
   // similar activeChartMetrics but using for performance tab
   const [activeChartMetricsPerf, setActiveChartMetricsPerf] = useState<string>(CHART_METRICS_MAPPING_PERF.timing)
+  const [activePerfMeasure, setActivePerfMeasure] = useState(CHART_MEASURES_MAPPING_PERF.median)
   // checkIfAllMetricsAreDisabled when all metrics are disabled, we are hidden chart
   const checkIfAllMetricsAreDisabled = useMemo(
     () => !_some({ ...activeChartMetrics, ...activeChartMetricsCustomEvents }, (value) => value),
@@ -689,32 +691,57 @@ const ViewProject = ({
   const chartMetricsPerf = useMemo(() => {
     return [
       {
+        id: CHART_METRICS_MAPPING_PERF.quantiles,
+        label: t('dashboard.allocation'),
+        active: activeChartMetricsPerf === CHART_METRICS_MAPPING_PERF.quantiles,
+      },
+      {
         id: CHART_METRICS_MAPPING_PERF.full,
         label: t('dashboard.timingFull'),
-        active: _includes(activeChartMetricsPerf, CHART_METRICS_MAPPING_PERF.full),
+        active: activeChartMetricsPerf === CHART_METRICS_MAPPING_PERF.full,
       },
       {
         id: CHART_METRICS_MAPPING_PERF.timing,
         label: t('dashboard.timing'),
-        active: _includes(activeChartMetricsPerf, CHART_METRICS_MAPPING_PERF.timing),
+        active: activeChartMetricsPerf === CHART_METRICS_MAPPING_PERF.timing,
       },
       {
         id: CHART_METRICS_MAPPING_PERF.network,
         label: t('dashboard.network'),
-        active: _includes(activeChartMetricsPerf, CHART_METRICS_MAPPING_PERF.network),
+        active: activeChartMetricsPerf === CHART_METRICS_MAPPING_PERF.network,
       },
       {
         id: CHART_METRICS_MAPPING_PERF.frontend,
         label: t('dashboard.frontend'),
-        active: _includes(activeChartMetricsPerf, CHART_METRICS_MAPPING_PERF.frontend),
+        active: activeChartMetricsPerf === CHART_METRICS_MAPPING_PERF.frontend,
       },
       {
         id: CHART_METRICS_MAPPING_PERF.backend,
         label: t('dashboard.backend'),
-        active: _includes(activeChartMetricsPerf, CHART_METRICS_MAPPING_PERF.backend),
+        active: activeChartMetricsPerf === CHART_METRICS_MAPPING_PERF.backend,
       },
     ]
   }, [t, activeChartMetricsPerf])
+
+  const chartMeasuresPerf = useMemo(() => {
+    return [
+      {
+        id: CHART_MEASURES_MAPPING_PERF.average,
+        label: t('dashboard.average'),
+        active: activePerfMeasure === CHART_MEASURES_MAPPING_PERF.average,
+      },
+      {
+        id: CHART_MEASURES_MAPPING_PERF.median,
+        label: t('dashboard.median'),
+        active: activePerfMeasure === CHART_MEASURES_MAPPING_PERF.median,
+      },
+      {
+        id: CHART_MEASURES_MAPPING_PERF.p95,
+        label: t('dashboard.xPercentile', { x: 95 }),
+        active: activePerfMeasure === CHART_MEASURES_MAPPING_PERF.p95,
+      },
+    ]
+  }, [t, activePerfMeasure])
 
   // chartMetricsCustomEvents is a list of custom events for dropdown
   const chartMetricsCustomEvents = useMemo(() => {
@@ -765,6 +792,9 @@ const ViewProject = ({
       render: t('dashboard.render'),
       dom_load: t('dashboard.domLoad'),
       ttfb: t('dashboard.ttfb'),
+      p50: t('dashboard.xPercentile', { x: 50 }),
+      p75: t('dashboard.xPercentile', { x: 75 }),
+      p95: t('dashboard.xPercentile', { x: 95 }),
     }),
     [t],
   )
@@ -1413,7 +1443,13 @@ const ViewProject = ({
           if (activePeriod?.period === 'custom' ? diffCompare <= diff : diffCompare <= activePeriod?.countDays) {
             fromCompare = getFormatDate(dateRangeCompare[0])
             toCompare = getFormatDate(dateRangeCompare[1])
-            keyCompare = getProjectCacheCustomKeyPerf(fromCompare, toCompare, timeBucket, newFilters || filtersPerf)
+            keyCompare = getProjectCacheCustomKeyPerf(
+              fromCompare,
+              toCompare,
+              timeBucket,
+              newFilters || filtersPerf,
+              activePerfMeasure,
+            )
           } else {
             showError(t('project.compareDateRangeError'))
             compareDisable()
@@ -1429,7 +1465,13 @@ const ViewProject = ({
           if (date) {
             fromCompare = date.from
             toCompare = date.to
-            keyCompare = getProjectCacheCustomKeyPerf(fromCompare, toCompare, timeBucket, newFilters || filtersPerf)
+            keyCompare = getProjectCacheCustomKeyPerf(
+              fromCompare,
+              toCompare,
+              timeBucket,
+              newFilters || filtersPerf,
+              activePerfMeasure,
+            )
           }
         }
 
@@ -1445,6 +1487,7 @@ const ViewProject = ({
               fromCompare,
               toCompare,
               timezone,
+              activePerfMeasure,
               projectPassword,
             )
             const compareOverall = await getPerformanceOverallStats(
@@ -1463,12 +1506,17 @@ const ViewProject = ({
         setProjectCachePerf(id, dataCompare || {}, keyCompare)
       }
 
+      const measure =
+        activeChartMetricsPerf === CHART_METRICS_MAPPING_PERF.quantiles
+          ? CHART_METRICS_MAPPING_PERF.quantiles
+          : activePerfMeasure
+
       if (dateRange) {
         from = getFormatDate(dateRange[0])
         to = getFormatDate(dateRange[1])
-        key = getProjectCacheCustomKey(from, to, timeBucket, mode, newFilters || filtersPerf)
+        key = getProjectCacheCustomKey(from, to, timeBucket, mode, newFilters || filtersPerf, measure)
       } else {
-        key = getProjectCacheKey(period, timeBucket, mode, newFilters || filtersPerf)
+        key = getProjectCacheKey(period, timeBucket, mode, newFilters || filtersPerf, measure)
       }
 
       if (!forced && !_isEmpty(cachePerf[id]) && !_isEmpty(cachePerf[id][key])) {
@@ -1485,6 +1533,7 @@ const ViewProject = ({
             from,
             to,
             timezone,
+            measure,
             projectPassword,
           )
           rawOverall = await getOverallStats([id], period, from, to, timezone, newFilters || filters, projectPassword)
@@ -1497,6 +1546,7 @@ const ViewProject = ({
             '',
             '',
             timezone,
+            measure,
             projectPassword,
           )
           rawOverall = await getPerformanceOverallStats(
@@ -2603,6 +2653,15 @@ const ViewProject = ({
     setForecasedChartData({})
   }
 
+  const onMeasureChange = (measure: string) => {
+    setActivePerfMeasure(measure)
+  }
+
+  useEffect(() => {
+    loadAnalyticsPerf()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activePerfMeasure, activeChartMetricsPerf])
+
   const openSettingsHandler = () => {
     navigate(_replace(routes.project_settings, ':id', id))
   }
@@ -3253,6 +3312,25 @@ const ViewProject = ({
                             keyExtractor={(pair) => pair.id}
                             onSelect={({ id: pairID }) => {
                               switchActiveChartMetric(pairID)
+                            }}
+                            chevron='mini'
+                            headless
+                          />
+                        )}
+                        {activeTab === PROJECT_TABS.performance && !isPanelsDataEmptyPerf && (
+                          <Dropdown
+                            disabled={activeChartMetricsPerf === CHART_METRICS_MAPPING_PERF.quantiles}
+                            items={chartMeasuresPerf}
+                            className='min-w-[170px] xs:min-w-0'
+                            title={
+                              <p>
+                                {_find(chartMeasuresPerf, ({ id: chartId }) => chartId === activePerfMeasure)?.label}
+                              </p>
+                            }
+                            labelExtractor={(pair) => pair.label}
+                            keyExtractor={(pair) => pair.id}
+                            onSelect={({ id: pairID }) => {
+                              onMeasureChange(pairID)
                             }}
                             chevron='mini'
                             headless
