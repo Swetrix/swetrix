@@ -87,6 +87,7 @@ import {
   IPageflow,
   PerfMeasure,
 } from './interfaces'
+import { DEFAULT_MEASURE } from './analytics.controller'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -279,7 +280,9 @@ const generateParamsQuery = (
   const columnsQuery = columns.join(', ')
 
   if (isPerformance) {
-    const fn = MEASURES_MAP[measure]
+    const processedMeasure = measure === 'quantiles' ? DEFAULT_MEASURE : measure
+
+    const fn = MEASURES_MAP[processedMeasure]
 
     if (col === 'pg') {
       return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} GROUP BY ${columnsQuery}`
