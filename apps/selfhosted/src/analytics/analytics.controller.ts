@@ -842,7 +842,14 @@ export class AnalyticsController {
       timezone = DEFAULT_TIMEZONE,
       filters,
     } = data
+    let { measure = DEFAULT_MEASURE } = data
     const pidsArray = getPIDsArray(pids, pid)
+
+    this.analyticsService.checkIfPerfMeasureIsValid(measure)
+
+    if (measure === 'quantiles') {
+      measure = DEFAULT_MEASURE
+    }
 
     const validationPromises = _map(pidsArray, async currentPID => {
       this.analyticsService.validatePID(currentPID)
@@ -858,6 +865,7 @@ export class AnalyticsController {
       to,
       timezone,
       filters,
+      measure,
     )
   }
 

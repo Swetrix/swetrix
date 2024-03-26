@@ -1256,6 +1256,7 @@ export class AnalyticsService {
     to?: string,
     timezone?: string,
     filters?: string,
+    measure: PerfMeasure = 'median',
   ): Promise<IOverallPerformance> {
     // eslint-disable-next-line
     let _from: string
@@ -1287,6 +1288,18 @@ export class AnalyticsService {
       true,
     )
 
+    const cols = ['dns', 'tls', 'conn', 'response', 'render', 'domLoad', 'ttfb']
+
+    const measures = {
+      average: 'avg',
+      median: 'median',
+      p95: 'quantileExact(0.95)',
+    }
+
+    const columnSelectors = cols
+      .map(col => `${measures[measure]}(${col}) as ${col}`)
+      .join(', ')
+
     const promises = pids.map(async pid => {
       if (!isValidPID(pid)) {
         throw new BadRequestException(
@@ -1296,7 +1309,7 @@ export class AnalyticsService {
 
       try {
         if (period === 'all') {
-          const queryAll = `SELECT avg(dns) AS dns, avg(tls) as tls, avg(conn) as conn, avg(response) as response, avg(render) as render, avg(domLoad) as domLoad, avg(ttfb) as ttfb FROM performance WHERE pid = {pid:FixedString(12)} ${filtersQuery}`
+          const queryAll = `SELECT ${columnSelectors} FROM performance WHERE pid = {pid:FixedString(12)} ${filtersQuery}`
           const rawResult = <Array<Partial<PerformanceCHResponse>>>(
             await clickhouse
               .query(queryAll, {
@@ -1362,8 +1375,8 @@ export class AnalyticsService {
             .format('YYYY-MM-DD HH:mm:ss')
         }
 
-        const queryCurrent = `SELECT 1 AS sortOrder, avg(dns) AS dns, avg(tls) as tls, avg(conn) as conn, avg(response) as response, avg(render) as render, avg(domLoad) as domLoad, avg(ttfb) as ttfb FROM performance WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodFormatted:String} AND {now:String} ${filtersQuery}`
-        const queryPrevious = `SELECT 2 AS sortOrder, avg(dns) AS dns, avg(tls) as tls, avg(conn) as conn, avg(response) as response, avg(render) as render, avg(domLoad) as domLoad, avg(ttfb) as ttfb FROM performance WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String} ${filtersQuery}`
+        const queryCurrent = `SELECT 1 AS sortOrder, ${columnSelectors} FROM performance WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodFormatted:String} AND {now:String} ${filtersQuery}`
+        const queryPrevious = `SELECT 2 AS sortOrder, ${columnSelectors} FROM performance WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String} ${filtersQuery}`
 
         const query = `${queryCurrent} UNION ALL ${queryPrevious}`
 
