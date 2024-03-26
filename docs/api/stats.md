@@ -39,6 +39,14 @@ If you have special needs for more requests, please contact us to request more c
 `Time buckets` and `periods` are predefined values that you can use in your API requests. The API won't accept any other values. If you want to specify a custom time range, use `from` and `to` parameters in your aggregation requests.
 :::
 
+### Measures
+Measures are an aggregate functions that are used for performance-related endpoints. They allow you to select a function that will be used for aggregation of your metrics.
+It supports the following values:
+1. `median` (default) - the middle value of a set of numbers (i.e. 50th percentile).
+2. `average` - the arithmetic mean value.
+3. `p95` - the 95th quantile.
+4. `quantiles` - it's a special measure, because instead of the regular metrics (e.g. `dns`, `tls`, etc.) it will return load time (the sum on all metrics) across 3 qunatiles: `p50`, `p75` and `p95`.
+
 ### Filters
 Filters are used to aggregate data by specific parameters. For example, you can filter the data by country, browser, operating system, etc.
 
@@ -171,12 +179,7 @@ The metrics are:
 - `domLoad` - DOM Content Load time;
 - `ttfb` - Time to First Byte.
 
-This endpoint also accepts `measures` parameter. It allows you to select a function that will be used for aggregation of your metrics.
-It supports the following values:
-1. `median` (default) - the middle value of a set of numbers (i.e. 50th percentile).
-2. `average` - the arithmetic mean value.
-3. `p95` - the 95th quantile.
-4. `quantiles` - it's a special measure, because instead of the regular metrics (e.g. `dns`, `tls`, etc.) it will return load time (the sum on all metrics) across 3 qunatiles: `p50`, `p75` and `p95`.
+This endpoint also accepts [measures](#measures) parameter.
 
 ```bash
 curl 'https://api.swetrix.com/v1/log/performance?pid=YOUR_PROJECT_ID&timeBucket=day&period=7d&measure=average'\
@@ -315,7 +318,8 @@ An array of [filter objects](#filters).
 <hr />
 
 ### GET /v1/log/performance/birdseye
-This endpoint returns a summary of the performance data for the specified projects. The response is an object with project IDs as keys and objects with the following properties as values:
+This endpoint returns a summary of the performance data for the specified projects. This endpoint also accepts [measures](#measures) parameter.
+The response is an object with project IDs as keys and objects with the following properties as values:
 ```typescript
 {
   current: { // data for the selected period
