@@ -171,8 +171,15 @@ The metrics are:
 - `domLoad` - DOM Content Load time;
 - `ttfb` - Time to First Byte.
 
+This endpoint also accepts `measures` parameter. It allows you to select a function that will be used for aggregation of your metrics.
+It supports the following values:
+1. `median` (default) - the middle value of a set of numbers (i.e. 50th percentile).
+2. `average` - the arithmetic mean value.
+3. `p95` - the 95th quantile.
+4. `quantiles` - it's a special measure, because instead of the regular metrics (e.g. `dns`, `tls`, etc.) it will return load time (the sum on all metrics) across 3 qunatiles: `p50`, `p75` and `p95`.
+
 ```bash
-curl 'https://api.swetrix.com/v1/log/performance?pid=YOUR_PROJECT_ID&timeBucket=day&period=7d'\
+curl 'https://api.swetrix.com/v1/log/performance?pid=YOUR_PROJECT_ID&timeBucket=day&period=7d&measure=average'\
   -H "X-Api-Key: ${SWETRIX_API_KEY}"
 ```
 
