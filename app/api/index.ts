@@ -608,13 +608,14 @@ export const getPerformanceOverallStats = (
   to = '',
   timezone = 'Etc/GMT',
   filters: any = '',
+  measure: any = '',
   password?: string,
 ) =>
   api
     .get(
       `log/performance/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(
         ',',
-      )}]&period=${period}&from=${from}&to=${to}&timezone=${timezone}&filters=${JSON.stringify(filters)}`,
+      )}]&period=${period}&from=${from}&to=${to}&timezone=${timezone}&filters=${JSON.stringify(filters)}&measure=${measure}`,
       {
         headers: {
           'x-password': password,

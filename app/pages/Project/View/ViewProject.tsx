@@ -1424,6 +1424,11 @@ const ViewProject = ({
       let toCompare: string | undefined
       let rawOverall: any
 
+      const measure =
+        activeChartMetricsPerf === CHART_METRICS_MAPPING_PERF.quantiles
+          ? CHART_METRICS_MAPPING_PERF.quantiles
+          : activePerfMeasure
+
       if (isActiveCompare) {
         if (dateRangeCompare && activePeriodCompare === PERIOD_PAIRS_COMPARE.CUSTOM) {
           let start
@@ -1448,7 +1453,7 @@ const ViewProject = ({
               toCompare,
               timeBucket,
               newFilters || filtersPerf,
-              activePerfMeasure,
+              measure,
             )
           } else {
             showError(t('project.compareDateRangeError'))
@@ -1470,7 +1475,7 @@ const ViewProject = ({
               toCompare,
               timeBucket,
               newFilters || filtersPerf,
-              activePerfMeasure,
+              measure,
             )
           }
         }
@@ -1487,7 +1492,7 @@ const ViewProject = ({
               fromCompare,
               toCompare,
               timezone,
-              activePerfMeasure,
+              measure,
               projectPassword,
             )
             const compareOverall = await getPerformanceOverallStats(
@@ -1497,6 +1502,7 @@ const ViewProject = ({
               toCompare,
               timezone,
               newFilters || filters,
+              measure,
               projectPassword,
             )
             dataCompare.overall = compareOverall[id]
@@ -1505,11 +1511,6 @@ const ViewProject = ({
 
         setProjectCachePerf(id, dataCompare || {}, keyCompare)
       }
-
-      const measure =
-        activeChartMetricsPerf === CHART_METRICS_MAPPING_PERF.quantiles
-          ? CHART_METRICS_MAPPING_PERF.quantiles
-          : activePerfMeasure
 
       if (dateRange) {
         from = getFormatDate(dateRange[0])
@@ -1556,6 +1557,7 @@ const ViewProject = ({
             '',
             timezone,
             newFilters || filters,
+            measure,
             projectPassword,
           )
         }
