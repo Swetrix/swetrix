@@ -120,6 +120,12 @@ export const validPeriods = [
   'all',
 ]
 
+const MEASURES_MAP = {
+  average: 'avg',
+  median: 'median',
+  p95: 'quantileExact(0.95)',
+}
+
 const validTimebuckets = [
   TimeBucketType.MINUTE,
   TimeBucketType.HOUR,
@@ -260,6 +266,7 @@ const generateParamsQuery = (
   isPageInclusiveFilterSet: boolean,
   isCaptcha?: boolean,
   isPerformance?: boolean,
+  measure?: PerfMeasure,
 ): string => {
   let columns = [`${col} as name`]
 
@@ -272,11 +279,13 @@ const generateParamsQuery = (
   const columnsQuery = columns.join(', ')
 
   if (isPerformance) {
+    const fn = MEASURES_MAP[measure]
+
     if (col === 'pg') {
-      return `SELECT ${columnsQuery}, round(divide(avg(pageLoad), 1000), 2) as count ${subQuery} GROUP BY ${columnsQuery}`
+      return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} GROUP BY ${columnsQuery}`
     }
 
-    return `SELECT ${columnsQuery}, round(divide(avg(pageLoad), 1000), 2) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
+    return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
   }
 
   if (isCaptcha) {
@@ -1543,14 +1552,8 @@ export class AnalyticsService {
 
     const cols = ['dns', 'tls', 'conn', 'response', 'render', 'domLoad', 'ttfb']
 
-    const measures = {
-      average: 'avg',
-      median: 'median',
-      p95: 'quantileExact(0.95)',
-    }
-
     const columnSelectors = cols
-      .map(col => `${measures[measure]}(${col}) as ${col}`)
+      .map(col => `${MEASURES_MAP[measure]}(${col}) as ${col}`)
       .join(', ')
 
     const promises = pids.map(async pid => {
@@ -1738,6 +1741,7 @@ export class AnalyticsService {
     paramsData: any,
     isCaptcha: boolean,
     isPerformance: boolean,
+    measure?: PerfMeasure,
   ): Promise<any> {
     const params = {}
 
@@ -1770,6 +1774,7 @@ export class AnalyticsService {
         isPageInclusiveFilterSet,
         isCaptcha,
         isPerformance,
+        measure,
       )
       const res = await clickhouse.query(query, paramsData).toPromise()
 
@@ -2074,14 +2079,8 @@ export class AnalyticsService {
 
     const cols = ['dns', 'tls', 'conn', 'response', 'render', 'domLoad', 'ttfb']
 
-    const measures = {
-      average: 'avg',
-      median: 'median',
-      p95: 'quantileExact(0.95)',
-    }
-
     const columnSelectors = cols
-      .map(col => `${measures[measure]}(${col}) as ${col}`)
+      .map(col => `${MEASURES_MAP[measure]}(${col}) as ${col}`)
       .join(', ')
 
     return `
@@ -2535,6 +2534,7 @@ export class AnalyticsService {
           paramsData,
           false,
           true,
+          measure,
         )
 
         if (!_some(_values(params), val => !_isEmpty(val))) {
