@@ -76,7 +76,6 @@ import {
   IPageflow,
   PerfMeasure,
 } from './interfaces'
-import { DEFAULT_MEASURE } from './analytics.controller'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -268,7 +267,7 @@ const generateParamsQuery = (
   const columnsQuery = columns.join(', ')
 
   if (isPerformance) {
-    const processedMeasure = measure === 'quantiles' ? DEFAULT_MEASURE : measure
+    const processedMeasure = measure === 'quantiles' ? 'median' : measure
 
     const fn = MEASURES_MAP[processedMeasure]
 
