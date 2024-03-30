@@ -65,7 +65,7 @@ const processedList = _reduce(
 // The order in the table is defined by the Swetrix object
 const COMPETITOR_FEATURE_TABLE: {
   [key: string]: {
-    [key: string]: boolean | null
+    [key: string]: boolean
   }
 } = {
   Swetrix: {
@@ -100,7 +100,7 @@ const COMPETITOR_FEATURE_TABLE: {
   },
   Fathom: {
     'main.competitiveFeatures.gdpr': true,
-    'main.competitiveFeatures.open': null,
+    'main.competitiveFeatures.open': false,
     'main.competitiveFeatures.perf': false,
     'main.competitiveFeatures.usfl': false,
     'main.competitiveFeatures.funnels': false,
@@ -707,14 +707,11 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                                         aria-label={t('common.yes')}
                                       />
                                     )}
-                                    {COMPETITOR_FEATURE_TABLE[service][key] === false && (
+                                    {!COMPETITOR_FEATURE_TABLE[service][key] && (
                                       <XMarkIcon
                                         className='flex-shrink-0 h-5 w-5 text-red-600 dark:text-red-500'
                                         aria-label={t('common.no')}
                                       />
-                                    )}
-                                    {COMPETITOR_FEATURE_TABLE[service][key] === null && (
-                                      <p className='text-slate-700 dark:text-gray-50 h-5 w-5 text-center'>-</p>
                                     )}
                                   </td>
                                 ))}

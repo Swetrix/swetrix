@@ -338,6 +338,7 @@ export const MAIN_URL: string = 'https://swetrix.com'
 export const REF_URL_PREFIX: string = `${MAIN_URL}/ref/`
 export const UTM_GENERATOR_URL: string = 'https://url.swetrix.com'
 export const LIVE_DEMO_URL: string = '/projects/STEzHcB1rALV'
+export const PERFORMANCE_LIVE_DEMO_URL: string = '/projects/STEzHcB1rALV?tab=performance'
 export const MARKETPLACE_URL: string = 'https://marketplace.swetrix.com'
 export const DOCS_URL: string = 'https://docs.swetrix.com'
 export const CAPTCHA_URL: string = 'https://captcha.swetrix.com'

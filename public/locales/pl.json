@@ -94,6 +94,27 @@
     "xMembers": "{{number}} Members",
     "general": "General"
   },
+  "performance": {
+    "slogan": "End user <span>performance monitoring</span> to deliver fast websites.",
+    "description": "Deliver a flawless experience to your users, and we will let you know if your site is fast enough.",
+    "fast": {
+      "title": "Everyone loves a fast website",
+      "desc": "People love fast websites, so in addition to <indexUrl>traffic analytics</indexUrl>, Swetrix allows you to analyse your website speed and monitor other performance metrics based on real traffic from your users.\nUsers are more likely to <wpostatsUrl>abandon your website</wpostatsUrl> if it takes too long to load, stay ahead of these problems and measure insights from real interactions.",
+      "list": [
+        "Measure which pages are taking too long to load",
+        "Aggregate performance data by geolocation, browser, device type, page and other metrics",
+        "Compare site speed to previous periods to analyse potential problems or improvements"
+      ]
+    },
+    "metrics": {
+      "title": "Analyse all key metrics in one tool",
+      "desc": "With Swetrix you can measure key metrics such as overall page load time, detailed breakdowns by TTFB, DNS, TLS resolution time and other metrics. Split the data into different percentiles to see how well your site performs for people with fast and slow internet connections."
+    },
+    "privacy": {
+      "title": "Privacy-first, easy to use",
+      "desc": "Swetrix is built with a privacy-first and transparent approach. We do not use cookies or collect personal information from our users. There's no cross-site or cross-device tracking. No data is ever sold to advertisers or anyone else.\nThe Swetrix dashboard is very intuitive to use, giving you real-time data and a clear view of your website. There are no layers of menus, no need to export your data into custom reports to understand it properly."
+    }
+  },
   "main": {
     "ukrSupport": "Wspieraj ukraińską armię w walce z rosyjską inwazją.",
     "slogan": "<span>Ultimate open-source web analytics</span> to satisfy all your needs.",
@@ -523,6 +544,7 @@
     "network": "Sieć",
     "timing": "Podział czasowy",
     "timingFull": "Podział czasowy (pełny)",
+    "allocation": "Load time allocation",
     "dns": "DNS",
     "conn": "Połączenie",
     "tls": "Ustawienia TLS",
@@ -530,7 +552,10 @@
     "domLoad": "Ładowanie zawartości DOM",
     "pageLoad": "Czas ładowania strony",
     "render": "Renderowanie przez przeglądarkę",
-    "response": "Czas odpowiedzi"
+    "response": "Czas odpowiedzi",
+    "average": "Average",
+    "median": "Median",
+    "xPercentile": "{{x}}th percentile"
   },
   "alert": {
     "create": "Utwórz alert",
@@ -943,7 +968,8 @@
     "socialisation": "Socjalizacja",
     "open": "Open startup",
     "passwordProtected": "This project is password protected",
-    "confirm": "Check your inbox"
+    "confirm": "Check your inbox",
+    "performance": "End user performance monitoring to deliver fast websites"
   },
   "header": {
     "switchTheme": "Motyw przełącznika",

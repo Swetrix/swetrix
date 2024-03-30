@@ -185,6 +185,12 @@ export const getPageMeta = (t: (key: string) => string, url?: string, _pathname?
       }
       break
 
+    case routes.performance:
+      result = {
+        title: t('titles.performance'),
+      }
+      break
+
     case routes.privacy:
       result = {
         title: 'Privacy Policy',
