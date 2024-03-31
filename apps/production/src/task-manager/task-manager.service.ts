@@ -59,6 +59,7 @@ import {
   PAYPAL_CLIENT_SECRET,
   TRAFFIC_SPIKE_ALLOWED_PERCENTAGE,
   isDevelopment,
+  REDIS_LOG_ERROR_CACHE_KEY,
 } from '../common/constants'
 import { CHPlanUsage } from './interfaces'
 import { getRandomTip } from '../common/utils'
@@ -252,6 +253,7 @@ export class TaskManagerService {
     const customData = await redis.lrange(REDIS_LOG_CUSTOM_CACHE_KEY, 0, -1)
     const perfData = await redis.lrange(REDIS_LOG_PERF_CACHE_KEY, 0, -1)
     const captchaData = await redis.lrange(REDIS_LOG_CAPTCHA_CACHE_KEY, 0, -1)
+    const errorData = await redis.lrange(REDIS_LOG_ERROR_CACHE_KEY, 0, -1)
 
     if (!_isEmpty(data)) {
       await redis.del(REDIS_LOG_DATA_CACHE_KEY)
@@ -278,6 +280,19 @@ export class TaskManagerService {
     if (!_isEmpty(customData)) {
       await redis.del(REDIS_LOG_CUSTOM_CACHE_KEY)
       const query = `INSERT INTO customEV (*) VALUES ${_join(customData, ',')}`
+
+      try {
+        await clickhouse.query(query).toPromise()
+      } catch (e) {
+        console.error(
+          `[CRON WORKER] Error whilst saving custom events data: ${e}`,
+        )
+      }
+    }
+
+    if (!_isEmpty(errorData)) {
+      await redis.del(REDIS_LOG_ERROR_CACHE_KEY)
+      const query = `INSERT INTO errors (*) VALUES ${_join(errorData, ',')}`
 
       try {
         await clickhouse.query(query).toPromise()

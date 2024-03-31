@@ -75,6 +75,7 @@ const REDIS_LOG_DATA_CACHE_KEY = 'log_cache'
 const REDIS_LOG_CAPTCHA_CACHE_KEY = 'log:captcha'
 const REDIS_LOG_PERF_CACHE_KEY = 'perf_cache'
 const REDIS_LOG_CUSTOM_CACHE_KEY = 'log_custom_cache_v3'
+const REDIS_LOG_ERROR_CACHE_KEY = 'log_error_cache'
 const REDIS_SESSION_SALT_KEY = 'log_salt' // is updated every 24 hours
 const REDIS_USERS_COUNT_KEY = 'stats:users_count'
 const REDIS_PROJECTS_COUNT_KEY = 'stats:projects_count'
@@ -238,4 +239,5 @@ export {
   BLOG_POSTS_ROOT,
   TRAFFIC_SPIKE_ALLOWED_PERCENTAGE,
   AFFILIATE_CUT,
+  REDIS_LOG_ERROR_CACHE_KEY,
 }

@@ -99,7 +99,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     cc LowCardinality(Nullable(FixedString(2))),
     rg LowCardinality(Nullable(String)),
     ct Nullable(String),
-    name Nullable(String),
+    name String,
     message Nullable(String),
     lineno Nullable(UInt32),
     colno Nullable(UInt32),

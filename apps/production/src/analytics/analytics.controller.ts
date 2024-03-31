@@ -64,6 +64,7 @@ import {
   REDIS_EVENTS_COUNT_KEY,
   REDIS_SESSION_SALT_KEY,
   clickhouse,
+  REDIS_LOG_ERROR_CACHE_KEY,
 } from '../common/constants'
 import { getGeoDetails, getIPFromHeaders } from '../common/utils'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
@@ -79,6 +80,7 @@ import {
 } from './interfaces'
 import { GetSessionsDto } from './dto/get-sessions.dto'
 import { GetSessionDto } from './dto/get-session.dto'
+import { ErrorDTO } from './dto/error.dto'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mysql = require('mysql2')
@@ -213,6 +215,43 @@ const customLogDTO = (
     ct,
     keys,
     values,
+    dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
+  ]
+}
+
+const errorLogDTO = (
+  psid: string,
+  pid: string,
+  pg: string,
+  dv: string,
+  br: string,
+  os: string,
+  lc: string,
+  cc: string,
+  rg: string,
+  ct: string,
+  name: string,
+  message: string,
+  lineno: number,
+  colno: number,
+  filename: string,
+): Array<string | number | string[]> => {
+  return [
+    psid,
+    pid,
+    pg,
+    dv,
+    br,
+    os,
+    lc,
+    cc,
+    rg,
+    ct,
+    name,
+    message,
+    lineno,
+    colno,
+    filename,
     dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
   ]
 }
@@ -1088,6 +1127,69 @@ export class AnalyticsController {
     )
 
     return processed
+  }
+
+  // Log error event
+  @Post('error')
+  @UseGuards(BotDetectionGuard)
+  @BotDetection()
+  @Public()
+  async logError(
+    @Body() errorDTO: ErrorDTO,
+    @Headers() headers,
+    @Ip() reqIP,
+  ): Promise<any> {
+    const { 'user-agent': userAgent, origin } = headers
+
+    const ip = getIPFromHeaders(headers, true) || reqIP || ''
+
+    await this.analyticsService.validate(errorDTO, origin, 'error', ip)
+
+    const salt = await redis.get(REDIS_SESSION_SALT_KEY)
+
+    const {
+      city = 'NULL',
+      region = 'NULL',
+      country = 'NULL',
+    } = getGeoDetails(ip, errorDTO.tz)
+
+    const ua = UAParser(userAgent)
+    const dv = ua.device.type || 'desktop'
+    const br = ua.browser.name
+    const os = ua.os.name
+
+    const sessionHash = getSessionKey(ip, userAgent, errorDTO.pid, salt)
+    const [, psid] = await this.analyticsService.isUnique(sessionHash)
+
+    const { name, message, lineno, colno, filename } = errorDTO
+
+    const dto = errorLogDTO(
+      psid,
+      errorDTO.pid,
+      errorDTO.pg,
+      dv,
+      br,
+      os,
+      errorDTO.lc,
+      country,
+      region,
+      city,
+      name,
+      message,
+      lineno,
+      colno,
+      filename,
+    )
+
+    try {
+      const values = `(${dto.map(getElValue).join(',')})`
+      await redis.rpush(REDIS_LOG_ERROR_CACHE_KEY, values)
+    } catch (e) {
+      this.logger.error(e)
+      throw new InternalServerErrorException(
+        'Error occured while saving the custom event',
+      )
+    }
   }
 
   // Log custom event

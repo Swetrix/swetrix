@@ -87,6 +87,7 @@ import {
   IPageflow,
   PerfMeasure,
 } from './interfaces'
+import { ErrorDTO } from './dto/error.dto'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -411,9 +412,9 @@ export class AnalyticsService {
   }
 
   async validate(
-    logDTO: PageviewsDTO | EventsDTO,
+    logDTO: PageviewsDTO | EventsDTO | ErrorDTO,
     origin: string,
-    type: 'custom' | 'log' = 'log',
+    type: 'custom' | 'log' | 'error' = 'log',
     ip?: string,
   ): Promise<string | null> {
     if (_isEmpty(logDTO)) {
