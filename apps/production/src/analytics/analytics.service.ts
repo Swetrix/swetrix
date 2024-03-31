@@ -378,6 +378,7 @@ export class AnalyticsService {
         }
       } else {
         const { hostname } = new URL(origin)
+
         if (!isValidOrigin(origins, hostname)) {
           throw new BadRequestException(
             "This origin is prohibited by the project's origins policy",
@@ -2913,6 +2914,43 @@ export class AnalyticsService {
     `
 
     const result = await clickhouse.query(query, paramsData).toPromise()
+
+    return result
+  }
+
+  async getErrorsList(
+    filtersQuery: string,
+    paramsData: object,
+    safeTimezone: string,
+    take = 30,
+    skip = 0,
+  ): Promise<object | void> {
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+
+    const query = `
+      SELECT
+        name,
+        message,
+        count() AS count,
+        created
+      FROM errors
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND created BETWEEN ${tzFromDate} AND ${tzToDate}
+        ${filtersQuery}
+      GROUP BY name, message, created
+      ORDER BY created DESC
+      LIMIT ${take}
+      OFFSET ${skip}
+    `
+
+    console.log('query:', query)
+    console.log('params:', paramsData)
+
+    const result = await clickhouse.query(query, paramsData).toPromise()
+
+    console.log('getErrorsList result:', result)
 
     return result
   }
