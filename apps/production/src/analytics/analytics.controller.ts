@@ -82,6 +82,7 @@ import { GetSessionsDto } from './dto/get-sessions.dto'
 import { GetSessionDto } from './dto/get-session.dto'
 import { ErrorDTO } from './dto/error.dto'
 import { GetErrorsDto } from './dto/get-errors.dto'
+import { GetErrorDTO } from './dto/get-error.dto'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mysql = require('mysql2')
@@ -221,6 +222,7 @@ const customLogDTO = (
 }
 
 const errorLogDTO = (
+  eid: string,
   psid: string,
   pid: string,
   pg: string,
@@ -238,6 +240,7 @@ const errorLogDTO = (
   filename: string,
 ): Array<string | number | string[]> => {
   return [
+    eid,
     psid,
     pid,
     pg,
@@ -1165,6 +1168,7 @@ export class AnalyticsController {
     const { name, message, lineno, colno, filename } = errorDTO
 
     const dto = errorLogDTO(
+      this.analyticsService.getErrorID(errorDTO),
       psid,
       errorDTO.pid,
       errorDTO.pg,
@@ -1659,6 +1663,77 @@ export class AnalyticsController {
       take,
       skip,
     }
+  }
+
+  @Get('error')
+  @Auth([], true, true)
+  async getError(
+    @Query() data: GetErrorDTO,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<any> {
+    const {
+      pid,
+      timezone = DEFAULT_TIMEZONE,
+      eid,
+      period,
+      from,
+      to,
+      //
+    } = data
+    this.analyticsService.validatePID(pid)
+
+    if (!_isEmpty(period)) {
+      this.analyticsService.validatePeriod(period)
+    }
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    let timeBucket
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.getTimeBucketForAllTime(
+        pid,
+        period,
+        timezone,
+      )
+
+      // eslint-disable-next-line prefer-destructuring
+      timeBucket = res.timeBucket[0]
+      diff = res.diff
+    } else {
+      timeBucket = getLowestPossibleTimeBucket(period, from, to)
+    }
+
+    this.analyticsService.validateTimebucket(timeBucket)
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const result = await this.analyticsService.getErrorDetails(
+      pid,
+      eid,
+      safeTimezone,
+      groupFrom,
+      groupTo,
+      timeBucket,
+    )
+
+    return result
   }
 
   @Get('session')

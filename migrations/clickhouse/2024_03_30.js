@@ -3,6 +3,7 @@ const { queriesRunner, dbName } = require('./setup')
 const queries = [
   `CREATE TABLE IF NOT EXISTS ${dbName}.errors
   (
+    eid FixedString(32),
     psid Nullable(UInt64),
     pid FixedString(12),
     pg Nullable(String),

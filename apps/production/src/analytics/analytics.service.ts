@@ -48,6 +48,7 @@ import {
   TRAFFIC_COLUMNS,
   ALL_COLUMNS,
   CAPTCHA_COLUMNS,
+  ERROR_COLUMNS,
   PERFORMANCE_COLUMNS,
   MIN_PAGES_IN_FUNNEL,
   MAX_PAGES_IN_FUNNEL,
@@ -265,8 +266,7 @@ const generateParamsQuery = (
   subQuery: string,
   customEVFilterApplied: boolean,
   isPageInclusiveFilterSet: boolean,
-  isCaptcha?: boolean,
-  isPerformance?: boolean,
+  type: 'traffic' | 'performance' | 'captcha' | 'errors',
   measure?: PerfMeasure,
 ): string => {
   let columns = [`${col} as name`]
@@ -279,7 +279,7 @@ const generateParamsQuery = (
 
   const columnsQuery = columns.join(', ')
 
-  if (isPerformance) {
+  if (type === 'performance') {
     const processedMeasure = measure === 'quantiles' ? 'median' : measure
 
     const fn = MEASURES_MAP[processedMeasure]
@@ -291,7 +291,11 @@ const generateParamsQuery = (
     return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
   }
 
-  if (isCaptcha) {
+  if (type === 'errors') {
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
+  }
+
+  if (type === 'captcha') {
     return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
   }
 
@@ -1743,30 +1747,32 @@ export class AnalyticsService {
     subQuery: string,
     customEVFilterApplied: boolean,
     paramsData: any,
-    isCaptcha: boolean,
-    isPerformance: boolean,
+    type: 'traffic' | 'performance' | 'captcha' | 'errors',
     measure?: PerfMeasure,
   ): Promise<any> {
     const params = {}
 
     // We need this to display all the pageview related data (e.g. country, browser) when user applies an inclusive filter on the Page column
-    const isPageInclusiveFilterSet =
-      isCaptcha || isPerformance
-        ? false
-        : !_isEmpty(
-            _find(
-              parsedFilters,
-              filter => filter.column === 'pg' && !filter.isExclusive,
-            ),
-          )
+    const isPageInclusiveFilterSet = ['captcha', 'performance'].includes(type)
+      ? false
+      : !_isEmpty(
+          _find(
+            parsedFilters,
+            filter => filter.column === 'pg' && !filter.isExclusive,
+          ),
+        )
 
     let columns = TRAFFIC_COLUMNS
 
-    if (isCaptcha) {
+    if (type === 'captcha') {
       columns = CAPTCHA_COLUMNS
     }
 
-    if (isPerformance) {
+    if (type === 'errors') {
+      columns = ERROR_COLUMNS
+    }
+
+    if (type === 'performance') {
       columns = PERFORMANCE_COLUMNS
     }
 
@@ -1776,8 +1782,7 @@ export class AnalyticsService {
         subQuery,
         customEVFilterApplied,
         isPageInclusiveFilterSet,
-        isCaptcha,
-        isPerformance,
+        type,
         measure,
       )
       const res = await clickhouse.query(query, paramsData).toPromise()
@@ -2180,6 +2185,47 @@ export class AnalyticsService {
     return baseQuery
   }
 
+  generateErrorsAggregationQuery(
+    timeBucket: TimeBucketType,
+    filtersQuery: string,
+    safeTimezone: string,
+    mode: ChartRenderMode,
+  ): string {
+    const timeBucketFunc = timeBucketConversion[timeBucket]
+    const [selector, groupBy] = this.getGroupSubquery(timeBucket)
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+
+    const baseQuery = `
+      SELECT
+        ${selector},
+        count() as count
+      FROM (
+        SELECT pg, dv, br, os, lc, cc, rg, ct,
+          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
+        FROM errors
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND created BETWEEN ${tzFromDate} AND ${tzToDate}
+          ${filtersQuery}
+      ) as subquery
+      GROUP BY ${groupBy}
+      ORDER BY ${groupBy}
+    `
+
+    if (mode === ChartRenderMode.CUMULATIVE) {
+      return `
+        SELECT
+          *,
+          sum(pageviews) OVER (ORDER BY ${groupBy}) as pageviews,
+          sum(uniques) OVER (ORDER BY ${groupBy}) as uniques
+        FROM (${baseQuery})
+      `
+    }
+
+    return baseQuery
+  }
+
   async groupByTimeBucket(
     timeBucket: TimeBucketType,
     from: string,
@@ -2249,8 +2295,7 @@ export class AnalyticsService {
       subQuery,
       customEVFilterApplied,
       paramsData,
-      false,
-      false,
+      'traffic',
     )
   }
 
@@ -2356,8 +2401,7 @@ export class AnalyticsService {
           subQuery,
           false,
           paramsData,
-          true,
-          false,
+          'captcha',
         )
 
         if (!_some(_values(params), val => !_isEmpty(val))) {
@@ -2377,6 +2421,73 @@ export class AnalyticsService {
         )
 
         const query = this.generateCaptchaAggregationQuery(
+          timeBucket,
+          filtersQuery,
+          safeTimezone,
+          mode,
+        )
+
+        const result = <Array<TrafficCEFilterCHResponse>>(
+          await clickhouse.query(query, paramsData).toPromise()
+        )
+        const { count } = this.extractCaptchaChartData(result, xShifted)
+
+        chart = {
+          x: xShifted,
+          results: count,
+        }
+      })(),
+    ]
+
+    await Promise.all(promises)
+
+    return Promise.resolve({
+      params,
+      chart,
+    })
+  }
+
+  async groupErrorsByTimeBucket(
+    timeBucket: TimeBucketType,
+    from: string,
+    to: string,
+    subQuery: string,
+    filtersQuery: string,
+    paramsData: object,
+    safeTimezone: string,
+    mode: ChartRenderMode,
+  ): Promise<object | void> {
+    let params: unknown = {}
+    let chart: unknown = {}
+
+    const promises = [
+      // Params
+      (async () => {
+        params = await this.generateParams(
+          null,
+          subQuery,
+          false,
+          paramsData,
+          'errors',
+        )
+
+        if (!_some(_values(params), val => !_isEmpty(val))) {
+          throw new BadRequestException(
+            'The are no parameters for the specified time frames',
+          )
+        }
+      })(),
+
+      // Chart data
+      (async () => {
+        const { xShifted } = this.generateXAxis(
+          timeBucket,
+          from,
+          to,
+          safeTimezone,
+        )
+
+        const query = this.generateErrorsAggregationQuery(
           timeBucket,
           filtersQuery,
           safeTimezone,
@@ -2536,8 +2647,7 @@ export class AnalyticsService {
           subQuery,
           false,
           paramsData,
-          false,
-          true,
+          'performance',
           measure,
         )
 
@@ -2929,30 +3039,107 @@ export class AnalyticsService {
     const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
     const query = `
-      SELECT
-        name,
-        message,
-        count() AS count,
-        created
-      FROM errors
-      WHERE
-        pid = {pid:FixedString(12)}
-        AND created BETWEEN ${tzFromDate} AND ${tzToDate}
-        ${filtersQuery}
-      GROUP BY name, message, created
-      ORDER BY created DESC
+      SELECT eid, any(name) as name, any(message) as message, any(filename) as filename, count(*) as count, max(created) as last_seen
+      FROM (
+        SELECT eid, name, message, filename, created
+        FROM errors
+        WHERE pid = {pid:FixedString(12)}
+          AND created BETWEEN ${tzFromDate} AND ${tzToDate}
+          ${filtersQuery}
+      ) subquery
+      GROUP BY eid
+      ORDER BY last_seen DESC
       LIMIT ${take}
-      OFFSET ${skip}
+      OFFSET ${skip};
     `
 
-    console.log('query:', query)
-    console.log('params:', paramsData)
+    /*
+        SELECT eid, any(name) as name, any(message) as message, any(filename) as filename, count(*) as count, max(created) as last_seen
+        FROM (
+          SELECT eid, name, message, filename, created
+          FROM errors
+          WHERE pid = '79eF2Z9rNNvv' AND created BETWEEN '2024-03-25' AND '2024-04-05'
+        ) subquery
+        GROUP BY eid
+        ORDER BY last_seen DESC
+        LIMIT 30
+        OFFSET 0;
+    */
 
     const result = await clickhouse.query(query, paramsData).toPromise()
 
-    console.log('getErrorsList result:', result)
-
     return result
+  }
+
+  async getErrorDetails(
+    pid: string,
+    eid: string,
+    safeTimezone: string,
+    groupFrom: string,
+    groupTo: string,
+    timeBucket: any,
+  ): Promise<any> {
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+
+    const queryErrorDetailsNoDate = `
+      SELECT eid, any(name) as name, any(message) as message, any(filename) as filename, any(colno) as colno, any(lineno) as lineno, count(*) as count, max(created) as last_seen, min(created) as first_seen
+      FROM (
+        SELECT eid, name, message, filename, created, colno, lineno
+        FROM errors
+        WHERE pid = {pid:FixedString(12)}
+          AND eid = {eid:FixedString(32)}
+      ) subquery
+      GROUP BY eid
+      ORDER BY last_seen DESC;
+    `
+
+    // const queryErrorDetails = `
+    //   SELECT eid, any(name) as name, any(message) as message, any(filename) as filename, any(colno) as colno, any(lineno) as lineno, count(*) as count, max(created) as last_seen, min(created) as first_seen
+    //   FROM (
+    //     SELECT eid, name, message, filename, created, colno, lineno
+    //     FROM errors
+    //     WHERE pid = {pid:FixedString(12)}
+    //       AND eid = {eid:FixedString(32)}
+    //       AND created BETWEEN ${tzFromDate} AND ${tzToDate}
+    //   ) subquery
+    //   GROUP BY eid
+    //   ORDER BY last_seen DESC;
+    // `
+
+    const paramsData = {
+      params: {
+        pid,
+        eid,
+        groupFrom,
+        groupTo,
+      },
+    }
+
+    const details = (
+      await clickhouse.query(queryErrorDetailsNoDate, paramsData).toPromise()
+    )[0]
+
+    const groupedChart = await this.groupErrorsByTimeBucket(
+      timeBucket,
+      groupFrom,
+      groupTo,
+      'FROM errors WHERE eid = {eid:FixedString(32)}',
+      'AND eid = {eid:FixedString(32)}',
+      paramsData,
+      safeTimezone,
+      ChartRenderMode.PERIODICAL,
+    )
+
+    return { details, ...groupedChart }
+  }
+
+  getErrorID(errorDTO: ErrorDTO): string {
+    const { name, message, colno, lineno, filename } = errorDTO
+
+    return hash(`${name}${message}${colno}${lineno}${filename}`, {
+      length: 16,
+    }).toString('hex')
   }
 
   async getOnlineCountByProjectId(projectId: string) {

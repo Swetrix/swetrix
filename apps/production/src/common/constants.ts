@@ -142,6 +142,8 @@ const TRAFFIC_COLUMNS = [
   'ca',
 ]
 
+const ERROR_COLUMNS = ['pg', 'dv', 'br', 'os', 'lc', 'cc', 'rg', 'ct']
+
 const ALL_COLUMNS = [...TRAFFIC_COLUMNS, 'ev']
 
 const CAPTCHA_COLUMNS = ['cc', 'br', 'os', 'dv']
@@ -226,6 +228,7 @@ export {
   redisUserUsageinfoCacheTimeout,
   TRAFFIC_COLUMNS,
   CAPTCHA_COLUMNS,
+  ERROR_COLUMNS,
   PERFORMANCE_COLUMNS,
   sentryIgnoreErrors,
   isProxiedByCloudflare,

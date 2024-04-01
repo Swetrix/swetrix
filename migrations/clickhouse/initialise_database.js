@@ -89,6 +89,7 @@ const CLICKHOUSE_INIT_QUERIES = [
   // Error events table
   `CREATE TABLE IF NOT EXISTS ${dbName}.errors
   (
+    eid FixedString(32),
     psid Nullable(UInt64),
     pid FixedString(12),
     pg Nullable(String),
