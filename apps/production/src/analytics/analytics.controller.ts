@@ -8,6 +8,7 @@ import * as _values from 'lodash/values'
 import * as _map from 'lodash/map'
 import * as _uniqBy from 'lodash/uniqBy'
 import * as _round from 'lodash/round'
+import * as _reduce from 'lodash/reduce'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as dayjsTimezone from 'dayjs/plugin/timezone'
@@ -19,6 +20,7 @@ import {
   UseGuards,
   Get,
   Post,
+  Patch,
   Headers,
   BadRequestException,
   InternalServerErrorException,
@@ -83,6 +85,7 @@ import { GetSessionDto } from './dto/get-session.dto'
 import { ErrorDTO } from './dto/error.dto'
 import { GetErrorsDto } from './dto/get-errors.dto'
 import { GetErrorDTO } from './dto/get-error.dto'
+import { PatchStatusDTO } from './dto/patch-status.dto'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mysql = require('mysql2')
@@ -223,7 +226,6 @@ const customLogDTO = (
 
 const errorLogDTO = (
   eid: string,
-  psid: string,
   pid: string,
   pg: string,
   dv: string,
@@ -241,7 +243,6 @@ const errorLogDTO = (
 ): Array<string | number | string[]> => {
   return [
     eid,
-    psid,
     pid,
     pg,
     dv,
@@ -322,6 +323,27 @@ const getPIDsArray = (pids, pid) => {
   }
 
   return pids
+}
+
+const getEIDsArray = (eids, eid) => {
+  const eidsEmpty = _isEmpty(eids)
+  const eidEmpty = _isEmpty(eid)
+  if (eidsEmpty && eidEmpty) {
+    throw new BadRequestException(
+      "An array of Error ID's (eids) or a Error ID (eid) has to be provided",
+    )
+  }
+  if (!eidsEmpty && !eidEmpty) {
+    throw new BadRequestException(
+      "Please provide either an array of Error ID's (eids) or a Error ID (eid), but not both",
+    )
+  }
+
+  if (!eidsEmpty) {
+    return eids
+  }
+
+  return [eid]
 }
 
 // needed for serving 1x1 px GIF
@@ -1149,8 +1171,6 @@ export class AnalyticsController {
 
     await this.analyticsService.validate(errorDTO, origin, 'error', ip)
 
-    const salt = await redis.get(REDIS_SESSION_SALT_KEY)
-
     const {
       city = 'NULL',
       region = 'NULL',
@@ -1162,14 +1182,10 @@ export class AnalyticsController {
     const br = ua.browser.name
     const os = ua.os.name
 
-    const sessionHash = getSessionKey(ip, userAgent, errorDTO.pid, salt)
-    const [, psid] = await this.analyticsService.isUnique(sessionHash)
-
     const { name, message, lineno, colno, filename } = errorDTO
 
     const dto = errorLogDTO(
       this.analyticsService.getErrorID(errorDTO),
-      psid,
       errorDTO.pid,
       errorDTO.pg,
       dv,
@@ -1195,6 +1211,29 @@ export class AnalyticsController {
         'Error occured while saving the custom event',
       )
     }
+  }
+
+  // Log error event
+  @Patch('error-status')
+  @Auth([], true, true)
+  async patchStatus(
+    @Body() statusDTO: PatchStatusDTO,
+    @CurrentUserId() uid: string,
+    @Headers() headers,
+    @Ip() reqIP,
+  ): Promise<any> {
+    this.analyticsService.validatePID(statusDTO.pid)
+    // await this.analyticsService.checkManageAccess(statusDTO.pid, uid)
+
+    const eids = getEIDsArray(statusDTO.eids, statusDTO.eid)
+
+    await this.analyticsService.checkManageEIDAccess(eids, statusDTO.pid)
+
+    return this.analyticsService.updateEIDStatus(
+      eids,
+      statusDTO.status,
+      statusDTO.pid,
+    )
   }
 
   // Log custom event
@@ -1665,7 +1704,7 @@ export class AnalyticsController {
     }
   }
 
-  @Get('error')
+  @Get('get-error')
   @Auth([], true, true)
   async getError(
     @Query() data: GetErrorDTO,

@@ -90,7 +90,6 @@ const CLICKHOUSE_INIT_QUERIES = [
   `CREATE TABLE IF NOT EXISTS ${dbName}.errors
   (
     eid FixedString(32),
-    psid Nullable(UInt64),
     pid FixedString(12),
     pg Nullable(String),
     dv LowCardinality(Nullable(String)),
@@ -110,6 +109,17 @@ const CLICKHOUSE_INIT_QUERIES = [
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
   ORDER BY (pid, created);`,
+
+  // Error events status table
+  `CREATE TABLE IF NOT EXISTS ${dbName}.error_statuses (
+    eid FixedString(32),
+    pid FixedString(12),
+    status Enum8('active', 'regressed', 'resolved')
+    updated DateTime('UTC') DEFAULT now()
+  )
+  ENGINE = ReplacingMergeTree()
+  PARTITION BY toYYYYMM(updated)
+  ORDER BY (eid, updated);`,
 
   // The CAPTCHA data table
   `CREATE TABLE IF NOT EXISTS ${dbName}.captcha

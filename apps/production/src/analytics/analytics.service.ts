@@ -357,6 +357,11 @@ export class AnalyticsService {
     this.projectService.allowedToView(project, uid, password)
   }
 
+  async checkManageAccess(pid: string, uid: string | null): Promise<void> {
+    const project = await this.projectService.getRedisProject(pid)
+    this.projectService.allowedToManage(project, uid)
+  }
+
   async checkBillingAccess(pid: string) {
     const project = await this.projectService.getRedisProject(pid)
 
@@ -2501,7 +2506,7 @@ export class AnalyticsService {
 
         chart = {
           x: xShifted,
-          results: count,
+          occurrences: count,
         }
       })(),
     ]
@@ -3039,32 +3044,27 @@ export class AnalyticsService {
     const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
     const query = `
-      SELECT eid, any(name) as name, any(message) as message, any(filename) as filename, count(*) as count, max(created) as last_seen
+      SELECT
+        eid,
+        any(name) as name,
+        any(message) as message,
+        any(filename) as filename,
+        count(*) as count,
+        max(created) as last_seen,
+        status.status
       FROM (
         SELECT eid, name, message, filename, created
         FROM errors
         WHERE pid = {pid:FixedString(12)}
           AND created BETWEEN ${tzFromDate} AND ${tzToDate}
           ${filtersQuery}
-      ) subquery
-      GROUP BY eid
+      ) AS errors
+      LEFT JOIN error_statuses AS status ON errors.eid = status.eid
+      GROUP BY errors.eid, status.status
       ORDER BY last_seen DESC
       LIMIT ${take}
       OFFSET ${skip};
     `
-
-    /*
-        SELECT eid, any(name) as name, any(message) as message, any(filename) as filename, count(*) as count, max(created) as last_seen
-        FROM (
-          SELECT eid, name, message, filename, created
-          FROM errors
-          WHERE pid = '79eF2Z9rNNvv' AND created BETWEEN '2024-03-25' AND '2024-04-05'
-        ) subquery
-        GROUP BY eid
-        ORDER BY last_seen DESC
-        LIMIT 30
-        OFFSET 0;
-    */
 
     const result = await clickhouse.query(query, paramsData).toPromise()
 
@@ -3131,7 +3131,7 @@ export class AnalyticsService {
       ChartRenderMode.PERIODICAL,
     )
 
-    return { details, ...groupedChart }
+    return { details, ...groupedChart, timeBucket }
   }
 
   getErrorID(errorDTO: ErrorDTO): string {
@@ -3140,6 +3140,73 @@ export class AnalyticsService {
     return hash(`${name}${message}${colno}${lineno}${filename}`, {
       length: 16,
     }).toString('hex')
+  }
+
+  async checkManageEIDAccess(eids: string[], pid: string) {
+    const params = _reduce(
+      eids,
+      (acc, curr, index) => ({
+        ...acc,
+        [`e_${index}`]: curr,
+      }),
+      {},
+    )
+
+    const query = `SELECT count() as count FROM error_statuses WHERE pid = {pid:FixedString(12)} AND eid IN (${_map(
+      params,
+      (val, key) => `{${key}:FixedString(32)}`,
+    ).join(', ')})`
+
+    let result
+
+    try {
+      ;[result] = await clickhouse
+        .query(query, { params: { ...params, pid } })
+        .toPromise()
+    } catch (reason) {
+      console.error('checkManageEIDAccess - clickhouse request error')
+      console.error(reason)
+      throw new InternalServerErrorException(
+        'Error occured while checking error ID access',
+      )
+    }
+
+    if (result.count !== _size(eids)) {
+      throw new UnprocessableEntityException(
+        'You are not allowed to delete some of the error IDs (eid(s) parameter) you provided',
+      )
+    }
+  }
+
+  async updateEIDStatus(
+    eids: string[],
+    status: 'resolved' | 'active',
+    pid: string,
+  ) {
+    const params = _reduce(
+      eids,
+      (acc, curr, index) => ({
+        ...acc,
+        [`e_${index}`]: curr,
+      }),
+      {},
+    )
+
+    const query = `INSERT INTO error_statuses (eid, pid, status) VALUES ${_map(
+      params,
+      (val, key) =>
+        `({${key}:FixedString(32)}, {pid:FixedString(12)}, '${status}')`,
+    ).join(', ')}`
+
+    try {
+      await clickhouse.query(query, { params: { ...params, pid } }).toPromise()
+    } catch (reason) {
+      console.error('Error at PATCH error-status:')
+      console.error(reason)
+      throw new InternalServerErrorException(
+        'Error occured while updating error status',
+      )
+    }
   }
 
   async getOnlineCountByProjectId(projectId: string) {
