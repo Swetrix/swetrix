@@ -200,6 +200,12 @@ const financeData = {
     MRR: 129,
     Revenue: 403,
   },
+  '2024-03-01': {
+    'Technical Expences': -23,
+    'Business Expences': -252, // google ads campaign
+    MRR: 144,
+    Revenue: 150,
+  },
 }
 
 const financeDataToColumns = (financeData: any) => {
