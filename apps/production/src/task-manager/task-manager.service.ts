@@ -890,29 +890,8 @@ export class TaskManagerService {
   }
 
   @Cron(CronExpression.EVERY_10_MINUTES)
-  async getGeneralStats(): Promise<object> {
-    const trafficQuery = 'SELECT count(*) FROM analytics'
-    const customEVQuery = 'SELECT count(*) FROM customEV'
-    const performanceQuery = 'SELECT count(*) FROM performance'
-    const captchaQuery = 'SELECT count(*) FROM captcha'
-
-    const users = await this.userService.count()
-    const projects = await this.projectService.count()
-    const events =
-      (await clickhouse.query(trafficQuery).toPromise())[0]['count()'] +
-      (await clickhouse.query(customEVQuery).toPromise())[0]['count()'] +
-      (await clickhouse.query(performanceQuery).toPromise())[0]['count()'] +
-      (await clickhouse.query(captchaQuery).toPromise())[0]['count()']
-
-    await redis.set(REDIS_USERS_COUNT_KEY, users, 'EX', 630)
-    await redis.set(REDIS_PROJECTS_COUNT_KEY, projects, 'EX', 630)
-    await redis.set(REDIS_EVENTS_COUNT_KEY, events, 'EX', 630)
-
-    return {
-      users,
-      projects,
-      events,
-    }
+  async getGeneralStats(): Promise<any> {
+    return this.analyticsService.getGeneralStats()
   }
 
   @Cron(CronExpression.EVERY_MINUTE)

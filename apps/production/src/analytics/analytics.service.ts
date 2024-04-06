@@ -51,6 +51,9 @@ import {
   PERFORMANCE_COLUMNS,
   MIN_PAGES_IN_FUNNEL,
   MAX_PAGES_IN_FUNNEL,
+  REDIS_USERS_COUNT_KEY,
+  REDIS_PROJECTS_COUNT_KEY,
+  REDIS_EVENTS_COUNT_KEY,
 } from '../common/constants'
 import {
   calculateRelativePercentage,
@@ -60,6 +63,7 @@ import {
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
 import { ProjectService } from '../project/project.service'
+import { UserService } from '../user/user.service'
 import { Project } from '../project/entity/project.entity'
 import { ChartRenderMode, TimeBucketType } from './dto/getData.dto'
 import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
@@ -341,7 +345,10 @@ const isValidOrigin = (origins: string[], origin: string) => {
 
 @Injectable()
 export class AnalyticsService {
-  constructor(private readonly projectService: ProjectService) {}
+  constructor(
+    private readonly projectService: ProjectService,
+    private readonly userService: UserService,
+  ) {}
 
   async checkProjectAccess(
     pid: string,
@@ -2928,6 +2935,31 @@ export class AnalyticsService {
       throw new UnprocessableEntityException(
         `Please provide a valid "measure" parameter, it must be one of ${validMeasures}`,
       )
+    }
+  }
+
+  async getGeneralStats(): Promise<any> {
+    const trafficQuery = 'SELECT count(*) FROM analytics'
+    const customEVQuery = 'SELECT count(*) FROM customEV'
+    const performanceQuery = 'SELECT count(*) FROM performance'
+    const captchaQuery = 'SELECT count(*) FROM captcha'
+
+    const users = await this.userService.count()
+    const projects = await this.projectService.count()
+    const events =
+      (await clickhouse.query(trafficQuery).toPromise())[0]['count()'] +
+      (await clickhouse.query(customEVQuery).toPromise())[0]['count()'] +
+      (await clickhouse.query(performanceQuery).toPromise())[0]['count()'] +
+      (await clickhouse.query(captchaQuery).toPromise())[0]['count()']
+
+    await redis.set(REDIS_USERS_COUNT_KEY, users, 'EX', 630)
+    await redis.set(REDIS_PROJECTS_COUNT_KEY, projects, 'EX', 630)
+    await redis.set(REDIS_EVENTS_COUNT_KEY, events, 'EX', 630)
+
+    return {
+      users,
+      projects,
+      events,
     }
   }
 }

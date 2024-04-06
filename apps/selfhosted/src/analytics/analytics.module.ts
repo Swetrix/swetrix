@@ -1,19 +1,12 @@
-import { Module, forwardRef } from '@nestjs/common'
+import { Module } from '@nestjs/common'
 
 import { AnalyticsService } from './analytics.service'
 import { AnalyticsController } from './analytics.controller'
-import { UserModule } from '../user/user.module'
 import { AppLoggerModule } from '../logger/logger.module'
 import { ProjectModule } from '../project/project.module'
-import { TaskManagerModule } from '../task-manager/task-manager.module'
 
 @Module({
-  imports: [
-    forwardRef(() => UserModule),
-    TaskManagerModule,
-    AppLoggerModule,
-    ProjectModule,
-  ],
+  imports: [AppLoggerModule, ProjectModule],
   providers: [AnalyticsService],
   exports: [AnalyticsService],
   controllers: [AnalyticsController],
