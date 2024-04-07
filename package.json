@@ -26,6 +26,7 @@
     "find-deadcode": "ts-prune"
   },
   "dependencies": {
+    "@aws-sdk/client-ses": "^3.549.0",
     "@faker-js/faker": "^8.3.1",
     "@nestjs/axios": "^3.0.1",
     "@nestjs/common": "^10.2.10",
@@ -71,12 +72,12 @@
     "nestjs-form-data": "^1.9.4",
     "nestjs-i18n": "^10.4.0",
     "nestjs-telegraf": "^2.7.0",
+    "nodemailer": "^6.9.13",
     "otplib": "^12.0.1",
     "passport": "^0.7.0",
     "passport-headerapikey": "^1.2.2",
     "passport-jwt": "^4.0.1",
     "php-serialize": "^4.1.1",
-    "postmark": "^4.0.2",
     "puppeteer": "^21.6.0",
     "randomstring": "^1.3.0",
     "reflect-metadata": "^0.1.14",

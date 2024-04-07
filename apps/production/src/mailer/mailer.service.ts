@@ -1,7 +1,8 @@
 import fs = require('fs')
 import path = require('path')
 import { Injectable } from '@nestjs/common'
-import * as postmark from 'postmark'
+import * as nodemailer from 'nodemailer'
+import * as aws from '@aws-sdk/client-ses'
 import handlebars from 'handlebars'
 import { LetterTemplate } from './letter'
 import { AppLoggerService } from '../logger/logger.service'
@@ -143,7 +144,18 @@ handlebars.registerHelper('greater', function greater(v1, v2, options) {
   return options.inverse(this)
 })
 
-const mailClient = new postmark.ServerClient(process.env.SMTP_PASSWORD)
+const ses = new aws.SES({
+  apiVersion: '2010-12-01',
+  region: 'eu-north-1',
+  credentials: {
+    accessKeyId: process.env.AWS_SES_ACCESS_KEY,
+    secretAccessKey: process.env.AWS_SES_SECRET_KEY,
+  },
+})
+
+const transporter = nodemailer.createTransport({
+  SES: { ses, aws },
+})
 
 @Injectable()
 export class MailerService {
@@ -153,6 +165,7 @@ export class MailerService {
     email: string,
     templateName: LetterTemplate,
     params: Params = null,
+    // todo: investigate is SES supports message streams, or if we should just use 2 different mailing servers for that
     messageStream: 'broadcast' | 'outbound' = 'outbound',
   ): Promise<void> {
     try {
@@ -162,12 +175,11 @@ export class MailerService {
       const template = handlebars.compile(letter)
       const htmlToSend = template(params)
 
-      const message: postmark.Models.Message = {
-        From: process.env.FROM_EMAIL,
-        To: email,
-        Subject: subject,
-        HtmlBody: htmlToSend,
-        MessageStream: messageStream,
+      const message = {
+        from: process.env.FROM_EMAIL,
+        to: email,
+        subject,
+        html: htmlToSend,
       }
 
       if (process.env.SMTP_MOCK) {
@@ -180,10 +192,10 @@ export class MailerService {
           true,
         )
       } else {
-        await mailClient.sendEmail(message)
+        await transporter.sendEmail(message)
       }
-    } catch (error) {
-      console.error(`[ERROR][MAILER] ${error}`)
+    } catch (reason) {
+      this.logger.error(reason, 'sendEmail', true)
     }
   }
 }
