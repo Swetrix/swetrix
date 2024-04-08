@@ -47,6 +47,9 @@ export class WebhookController {
     @Headers() headers,
     @Ip() reqIP,
   ): Promise<any> {
+    // console.log('body:', body)
+    // console.log('headers:', headers)
+
     const { notificationType } = body
 
     switch (notificationType) {
