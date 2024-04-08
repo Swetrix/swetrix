@@ -1602,6 +1602,26 @@ export class ProjectController {
     return _omit(project, ['passwordHash'])
   }
 
+  // Used to unsubscribe from email reports for 3rd party users (i.e. project-subscriber.entity.ts)
+  @Get('/unsubscribe/:token')
+  @Public()
+  @ApiResponse({ status: 204 })
+  async unsubscribeFromEmailReports(
+    @Param('token') token: string,
+  ): Promise<void> {
+    this.logger.log({ token }, 'GET /project/unsubscribe/:token')
+
+    const subscriberId = this.projectService.decryptUnsubscribeKey(token)
+
+    const subscriber = await this.projectService.getSubscriberById(subscriberId)
+
+    if (!subscriber) {
+      throw new NotFoundException('Unsubscribe token is invalid')
+    }
+
+    await this.projectService.removeSubscriberById(subscriberId)
+  }
+
   @Get('/ogimage/:id')
   @HttpCode(200)
   @Header('Content-Type', 'image/jpeg')

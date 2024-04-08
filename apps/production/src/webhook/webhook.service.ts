@@ -11,8 +11,11 @@ import * as _keys from 'lodash/keys'
 import * as _isArray from 'lodash/isArray'
 import { AppLoggerService } from '../logger/logger.service'
 import { PayoutsService } from '../payouts/payouts.service'
+import { ProjectService } from '../project/project.service'
+import { UserService } from '../user/user.service'
 import { PayoutStatus } from '../payouts/entities/payouts.entity'
 import { User } from '../user/entities/user.entity'
+import { ReportFrequency } from '../project/enums'
 
 const PADDLE_PUB_KEY = `-----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAqFcHslKkXcJlTYg4FL6j
@@ -45,6 +48,8 @@ export class WebhookService {
   constructor(
     private readonly logger: AppLoggerService,
     private readonly payoutsService: PayoutsService,
+    private readonly userService: UserService,
+    private readonly projectService: ProjectService,
   ) {}
 
   public ksort(obj: Record<string, unknown>): Record<string, unknown> {
@@ -124,5 +129,32 @@ export class WebhookService {
         status: PayoutStatus.processing,
       },
     )
+  }
+
+  async unsubscribeByEmail(email: string, sesBody: any): Promise<void> {
+    const user = await this.userService.findOneWhere({
+      email,
+    })
+
+    // checking if the bounce originates from admin email reports
+    if (user) {
+      await this.userService.update(user.id, {
+        reportFrequency: ReportFrequency.NEVER,
+      })
+      return
+    }
+
+    // checking if the bounce originates from project subscriber email reports
+    const subscribtion = await this.projectService.findOneSubscriber({
+      email,
+    })
+
+    if (subscribtion) {
+      await this.projectService.removeSubscriberById(subscribtion.id)
+    }
+
+    // if it's some other kind of bounce, we can ignore it because it originates from other transactional emails
+    // but I'll log it here for now
+    this.logger.log(sesBody, 'GET /webhook/ses', true)
   }
 }

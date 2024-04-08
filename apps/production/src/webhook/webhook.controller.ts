@@ -39,6 +39,38 @@ export class WebhookController {
     private readonly mailerService: MailerService,
   ) {}
 
+  // AWS SES - email provider webhook
+  @Post('/ses')
+  @HttpCode(200)
+  async sesWebhook(
+    @Body() body,
+    @Headers() headers,
+    @Ip() reqIP,
+  ): Promise<any> {
+    const { notificationType } = body
+
+    switch (notificationType) {
+      case 'Bounce': {
+        const { emailAddress } = body.bounce.bouncedRecipients[0]
+
+        await this.webhookService.unsubscribeByEmail(emailAddress, body)
+
+        break
+      }
+
+      case 'Complaint': {
+        const { emailAddress } = body.complaint.complainedRecipients[0]
+
+        await this.webhookService.unsubscribeByEmail(emailAddress, body)
+
+        break
+      }
+
+      default:
+    }
+  }
+
+  // Paddle - payment processor webhook
   @Post('/paddle')
   @HttpCode(200)
   async paddleWebhook(

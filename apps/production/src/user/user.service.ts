@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm'
 import { In, Repository } from 'typeorm'
 import axios from 'axios'
+import * as CryptoJS from 'crypto-js'
 import * as dayjs from 'dayjs'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _size from 'lodash/size'
@@ -28,6 +29,7 @@ import { RefreshToken } from './entities/refresh-token.entity'
 import { DeleteFeedback } from './entities/delete-feedback.entity'
 import { UserGoogleDTO } from './dto/user-google.dto'
 import { UserGithubDTO } from './dto/user-github.dto'
+import { EMAIL_ACTION_ENCRYPTION_KEY } from '../common/constants'
 
 const EUR = {
   symbol: '€',
@@ -506,6 +508,18 @@ export class UserService {
         user: user.id,
       },
     )
+  }
+
+  createUnsubscribeKey(userId: string): string {
+    return CryptoJS.Rabbit.encrypt(
+      userId,
+      EMAIL_ACTION_ENCRYPTION_KEY,
+    ).toString()
+  }
+
+  decryptUnsubscribeKey(token: string): string {
+    const bytes = CryptoJS.Rabbit.decrypt(token, EMAIL_ACTION_ENCRYPTION_KEY)
+    return bytes.toString(CryptoJS.enc.Utf8)
   }
 
   async getReferralsList(user: User): Promise<Partial<User>[]> {

@@ -12,6 +12,7 @@ import { Repository } from 'typeorm'
 import { customAlphabet } from 'nanoid'
 import handlebars from 'handlebars'
 import puppeteer from 'puppeteer'
+import * as CryptoJS from 'crypto-js'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _size from 'lodash/size'
 import * as _join from 'lodash/join'
@@ -51,6 +52,7 @@ import {
   getRedisUserUsageInfoKey,
   redisUserUsageinfoCacheTimeout,
   TRAFFIC_COLUMNS,
+  EMAIL_ACTION_ENCRYPTION_KEY,
 } from '../common/constants'
 import { IUsageInfoRedis } from '../user/interfaces'
 import { ProjectSubscriber, Funnel } from './entity'
@@ -922,9 +924,19 @@ export class ProjectService {
     })
   }
 
+  async findOneSubscriber(where: Record<string, unknown>) {
+    return this.projectSubscriberRepository.findOne({ where })
+  }
+
   async getSubscriber(projectId: string, subscriberId: string) {
     return this.projectSubscriberRepository.findOne({
       where: { id: subscriberId, projectId },
+    })
+  }
+
+  async getSubscriberById(id: string) {
+    return this.projectSubscriberRepository.findOne({
+      where: { id },
     })
   }
 
@@ -997,6 +1009,12 @@ export class ProjectService {
     })
   }
 
+  async removeSubscriberById(id: string) {
+    await this.projectSubscriberRepository.delete({
+      id,
+    })
+  }
+
   async getSubscribersForReports(reportFrequency: ReportFrequency) {
     return this.projectSubscriberRepository.find({
       relations: ['project'],
@@ -1016,6 +1034,18 @@ export class ProjectService {
     return this.projectsRepository.findOne({
       where: { id: projectId, admin: { id: userId } },
     })
+  }
+
+  createUnsubscribeKey(subscriberId: string): string {
+    return CryptoJS.Rabbit.encrypt(
+      subscriberId,
+      EMAIL_ACTION_ENCRYPTION_KEY,
+    ).toString()
+  }
+
+  decryptUnsubscribeKey(token: string): string {
+    const bytes = CryptoJS.Rabbit.decrypt(token, EMAIL_ACTION_ENCRYPTION_KEY)
+    return bytes.toString(CryptoJS.enc.Utf8)
   }
 
   async transferProject(
