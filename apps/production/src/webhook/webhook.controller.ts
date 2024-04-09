@@ -47,24 +47,31 @@ export class WebhookController {
     @Headers() headers,
     @Ip() reqIP,
   ): Promise<any> {
-    // console.log('body:', body)
-    // console.log('headers:', headers)
+    const json = typeof body === 'string' ? JSON.parse(body) : body
 
-    const { notificationType } = body
+    const { Type, Message } = json
 
-    switch (notificationType) {
+    if (Type !== 'Notification') {
+      return
+    }
+
+    const message = typeof Message === 'string' ? JSON.parse(Message) : Message
+
+    console.log('Message:', message)
+
+    switch (message.eventType) {
       case 'Bounce': {
-        const { emailAddress } = body.bounce.bouncedRecipients[0]
+        const { emailAddress } = message.bounce.bouncedRecipients[0]
 
-        await this.webhookService.unsubscribeByEmail(emailAddress, body)
+        await this.webhookService.unsubscribeByEmail(emailAddress)
 
         break
       }
 
       case 'Complaint': {
-        const { emailAddress } = body.complaint.complainedRecipients[0]
+        const { emailAddress } = message.complaint.complainedRecipients[0]
 
-        await this.webhookService.unsubscribeByEmail(emailAddress, body)
+        await this.webhookService.unsubscribeByEmail(emailAddress)
 
         break
       }

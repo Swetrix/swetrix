@@ -131,7 +131,7 @@ export class WebhookService {
     )
   }
 
-  async unsubscribeByEmail(email: string, sesBody: any): Promise<void> {
+  async unsubscribeByEmail(email: string): Promise<void> {
     const user = await this.userService.findOneWhere({
       email,
     })
@@ -155,6 +155,10 @@ export class WebhookService {
 
     // if it's some other kind of bounce, we can ignore it because it originates from other transactional emails
     // but I'll log it here for now
-    this.logger.log(sesBody, 'GET /webhook/ses', true)
+    this.logger.log(
+      `Received an email notification, but it originates from other transactional emails. Email: ${email}`,
+      'POST /webhook/ses',
+      true,
+    )
   }
 }
