@@ -76,8 +76,8 @@ async function bootstrap() {
 
   app.use('/webhook', bodyParser.raw({ type: 'application/json' }))
 
-  app.use('/webhook/ses', bodyParser.raw())
-  app.use('/webhook/ses', bodyParser.text())
+  app.use('/webhook/sns', bodyParser.raw())
+  app.use('/webhook/sns', bodyParser.text())
 
   if (process.env.NODE_ENV === 'production') {
     const bot = app.get(getBotToken())

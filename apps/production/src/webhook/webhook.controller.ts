@@ -39,15 +39,13 @@ export class WebhookController {
     private readonly mailerService: MailerService,
   ) {}
 
-  // AWS SES - email provider webhook
-  @Post('/ses')
+  // AWS SNS webhook
+  @Post('/sns')
   @HttpCode(200)
-  async sesWebhook(
-    @Body() body,
-    @Headers() headers,
-    @Ip() reqIP,
-  ): Promise<any> {
+  async snsWebhook(@Body() body): Promise<any> {
     const json = typeof body === 'string' ? JSON.parse(body) : body
+
+    await this.webhookService.verifySNSRequest(json)
 
     const { Type, Message } = json
 
@@ -56,8 +54,6 @@ export class WebhookController {
     }
 
     const message = typeof Message === 'string' ? JSON.parse(Message) : Message
-
-    console.log('Message:', message)
 
     switch (message.eventType) {
       case 'Bounce': {

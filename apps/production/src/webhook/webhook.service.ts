@@ -1,5 +1,6 @@
 /* eslint-disable no-param-reassign, no-prototype-builtins */
 import * as crypto from 'crypto'
+import * as Validator from 'sns-payload-validator'
 import {
   Injectable,
   BadRequestException,
@@ -42,6 +43,8 @@ const paddleWhitelistIPs = [
   '54.234.237.108',
   '3.208.120.145',
 ]
+
+const validator = new Validator()
 
 @Injectable()
 export class WebhookService {
@@ -129,6 +132,14 @@ export class WebhookService {
         status: PayoutStatus.processing,
       },
     )
+  }
+
+  async verifySNSRequest(payload: any): Promise<void> {
+    try {
+      await validator.validate(payload)
+    } catch {
+      throw new BadRequestException('Webhook signature verification failed')
+    }
   }
 
   async unsubscribeByEmail(email: string): Promise<void> {
