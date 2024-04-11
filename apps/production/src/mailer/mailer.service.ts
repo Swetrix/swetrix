@@ -1,7 +1,8 @@
 import fs = require('fs')
 import path = require('path')
+// import * as nodemailer from 'nodemailer'
+import { MailerService as NodeMailerService } from '@nestjs-modules/mailer'
 import { Injectable } from '@nestjs/common'
-import * as nodemailer from 'nodemailer'
 import handlebars from 'handlebars'
 import { LetterTemplate } from './letter'
 import { AppLoggerService } from '../logger/logger.service'
@@ -145,21 +146,24 @@ handlebars.registerHelper('greater', function greater(v1, v2, options) {
   return options.inverse(this)
 })
 
-const transporter = nodemailer.createTransport({
-  sendingRate: 14,
-  // pool: true, // if true - set up pooled connections against a SMTP server
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
-  secure: true, // if false - upgrade later with STARTTLS
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASSWORD,
-  },
-})
+// const transporter = nodemailer.createTransport({
+//   sendingRate: 14,
+//   // pool: true, // if true - set up pooled connections against a SMTP server
+//   host: process.env.SMTP_HOST,
+//   port: process.env.SMTP_PORT,
+//   secure: true, // if false - upgrade later with STARTTLS
+//   auth: {
+//     user: process.env.SMTP_USER,
+//     pass: process.env.SMTP_PASSWORD,
+//   },
+// })
 
 @Injectable()
 export class MailerService {
-  constructor(private readonly logger: AppLoggerService) {}
+  constructor(
+    private readonly logger: AppLoggerService,
+    private readonly nodeMailerService: NodeMailerService,
+  ) {}
 
   async sendEmail(
     email: string,
@@ -190,7 +194,7 @@ export class MailerService {
           true,
         )
       } else {
-        await transporter.sendEmail(message)
+        await this.nodeMailerService.sendMail(message)
       }
     } catch (reason) {
       this.logger.error(reason, 'sendEmail', true)

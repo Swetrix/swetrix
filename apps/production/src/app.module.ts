@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { ConfigModule } from '@nestjs/config'
 import { ScheduleModule } from '@nestjs/schedule'
 import { NestjsFormDataModule } from 'nestjs-form-data'
+import { MailerModule as NodeMailerModule } from '@nestjs-modules/mailer'
 
 import { I18nModule } from 'nestjs-i18n'
 import { UserModule } from './user/user.module'
@@ -29,6 +30,22 @@ const modules = [
     envFilePath: '.env',
     expandVariables: true,
     isGlobal: true,
+  }),
+  NodeMailerModule.forRoot({
+    transport: {
+      sendingRate: 14,
+      // pool: true, // if true - set up pooled connections against a SMTP server
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT),
+      secure: true, // if false - upgrade later with STARTTLS
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD,
+      },
+    },
+    defaults: {
+      from: `"Swetrix" <${process.env.FROM_EMAIL}>`, // outgoing email ID
+    },
   }),
   TypeOrmModule.forRoot({
     type: 'mysql',
