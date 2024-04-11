@@ -2,7 +2,6 @@ import fs = require('fs')
 import path = require('path')
 import { Injectable } from '@nestjs/common'
 import * as nodemailer from 'nodemailer'
-import * as aws from '@aws-sdk/client-ses'
 import handlebars from 'handlebars'
 import { LetterTemplate } from './letter'
 import { AppLoggerService } from '../logger/logger.service'
@@ -146,17 +145,16 @@ handlebars.registerHelper('greater', function greater(v1, v2, options) {
   return options.inverse(this)
 })
 
-const ses = new aws.SES({
-  apiVersion: '2010-12-01',
-  region: 'eu-north-1',
-  credentials: {
-    accessKeyId: process.env.AWS_SES_ACCESS_KEY,
-    secretAccessKey: process.env.AWS_SES_SECRET_KEY,
-  },
-})
-
 const transporter = nodemailer.createTransport({
-  SES: { ses, aws },
+  sendingRate: 14,
+  // pool: true, // if true - set up pooled connections against a SMTP server
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  secure: true, // if false - upgrade later with STARTTLS
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASSWORD,
+  },
 })
 
 @Injectable()
@@ -167,21 +165,19 @@ export class MailerService {
     email: string,
     templateName: LetterTemplate,
     params: Params = null,
-    // todo: investigate is SES supports message streams, or if we should just use 2 different mailing servers for that
-    messageStream: 'broadcast' | 'outbound' = 'outbound',
   ): Promise<void> {
     try {
       const templatePath = `${TEMPLATES_PATH}/en/${templateName}.html`
       const letter = fs.readFileSync(templatePath, { encoding: 'utf-8' })
       const subject = metaInfoJson[templateName].subject.en(params)
       const template = handlebars.compile(letter)
-      const htmlToSend = template(params)
+      const html = template(params)
 
       const message = {
         from: process.env.FROM_EMAIL,
         to: email,
         subject,
-        html: htmlToSend,
+        html,
       }
 
       if (process.env.SMTP_MOCK) {

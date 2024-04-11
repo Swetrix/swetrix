@@ -341,7 +341,6 @@ export class TaskManagerService {
         email,
         LetterTemplate.ProjectReport,
         result,
-        'broadcast',
       )
     })
 
@@ -400,7 +399,6 @@ export class TaskManagerService {
         email,
         LetterTemplate.ProjectReport,
         result,
-        'broadcast',
       )
     })
 
@@ -712,7 +710,6 @@ export class TaskManagerService {
           email,
           LetterTemplate.TierWarning,
           emailParams,
-          'broadcast',
         )
         await this.userService.update(id, {
           evWarningSentOn: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
