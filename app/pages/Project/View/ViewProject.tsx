@@ -3536,23 +3536,18 @@ const ViewProject = ({
               )}
               {activeTab === PROJECT_TABS.sessions && activeSession && (
                 <>
-                  <div className='flex items-baseline space-x-2 mt-2'>
-                    <h2 className='text-xl font-bold text-gray-900 dark:text-gray-50 break-words break-all'>
-                      {activeSession?.psid}
-                    </h2>
-                    <button
-                      onClick={() => {
-                        setActiveSession(null)
-                        const url = new URL(window.location.href)
-                        url.searchParams.delete('psid')
-                        window.history.pushState({}, '', url.toString())
-                      }}
-                      className='flex items-center text-base font-normal underline decoration-dashed hover:decoration-solid mb-4 mx-auto lg:mx-0 mt-2 lg:mt-0 text-gray-900 dark:text-gray-100'
-                    >
-                      <ChevronLeftIcon className='w-4 h-4' />
-                      {t('project.backToSessions')}
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => {
+                      setActiveSession(null)
+                      const url = new URL(window.location.href)
+                      url.searchParams.delete('psid')
+                      window.history.pushState({}, '', url.toString())
+                    }}
+                    className='flex items-center text-base font-normal underline decoration-dashed hover:decoration-solid mb-4 mx-auto lg:mx-0 mt-2 text-gray-900 dark:text-gray-100'
+                  >
+                    <ChevronLeftIcon className='w-4 h-4' />
+                    {t('project.backToSessions')}
+                  </button>
                   {activeSession?.details && (
                     <SessionDetails details={activeSession?.details} psid={activeSession?.psid} />
                   )}

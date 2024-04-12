@@ -92,7 +92,8 @@
     "nothingFound": "Nothing found",
     "oneMember": "1 Member",
     "xMembers": "{{number}} Members",
-    "general": "General"
+    "general": "General",
+    "fixIt": "Fix it"
   },
   "performance": {
     "slogan": "End user <span>performance monitoring</span> to deliver fast websites.",
@@ -532,6 +533,8 @@
     "performance": "Performance",
     "funnels": "Funnels",
     "sessions": "Sessions",
+    "xPageviews": "{{x}} pageviews",
+    "onePageview": "1 pageview",
     "alerts": "Alerts",
     "alertsDesc": "Automated alerts is a powerful tool that allows you to run automated tasks when specific events occur.\nWe can automatically monitor your project for traffic spikes and notify you via Telegram.",
     "funnelsDesc": "Funnels is a powerful tool that allows you to track the conversion rate of your users through a series of steps.\nThe analysis provided by the marketing funnel gives you the ability to discover potential problems, improve your website, and boost your conversion rate.",
@@ -556,13 +559,15 @@
   "alert": {
     "create": "Create an alert",
     "customEvent": "Custom event name",
-    "add": "Add Alert",
+    "add": "Add alert",
     "delete": "Delete alert",
     "noNameError": "Please enter a name for the alert.",
     "queryValueError": "Please fill threshold and the query value has to be a number.",
     "noIntegration": "You have not configured an integration yet. Create one in your <url>account settings</url>.",
-    "noNotification": "No notification channels set",
+    "noNotificationChannel": "You do not have a notification channel set up, please set it up to be notified when one of your alerts is triggered.",
     "lastTriggered": "Last Triggered",
+    "lastTriggeredOn": "Last triggered on {{date}}",
+    "notYetTriggered": "Not yet triggered",
     "never": "Never",
     "qDelete": "Delete the alert?",
     "settingsOf": "Settings of {{name}}",

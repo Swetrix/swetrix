@@ -19,6 +19,10 @@ interface IMetricCard {
   change?: number
   type?: 'percent' | 'string'
   valueMapper?: (value: any, type: 'main' | 'badge') => any
+  classes?: {
+    value?: string
+    label?: string
+  }
 }
 
 const ChangeBadge = ({ change, type, goodChangeDirection, valueMapper }: Partial<IMetricCard>) => {
@@ -57,15 +61,27 @@ const ChangeBadge = ({ change, type, goodChangeDirection, valueMapper }: Partial
   }
 }
 
-export const MetricCard: React.FC<IMetricCard> = ({ label, value, change, type, goodChangeDirection, valueMapper }) => (
+export const MetricCard: React.FC<IMetricCard> = ({
+  label,
+  value,
+  change,
+  type,
+  goodChangeDirection,
+  valueMapper,
+  classes,
+}) => (
   <div className='flex flex-col'>
-    <div className='font-bold text-4xl whitespace-nowrap text-slate-900 dark:text-gray-50'>
+    <div className={cx('font-bold text-4xl whitespace-nowrap text-slate-900 dark:text-gray-50', classes?.value)}>
       {valueMapper ? valueMapper(value, 'main') : value}
     </div>
     <div
-      className={cx('flex items-center font-bold whitespace-nowrap text-sm', {
-        'space-x-2': _isNumber(change),
-      })}
+      className={cx(
+        'flex items-center font-bold whitespace-nowrap text-sm',
+        {
+          'space-x-2': _isNumber(change),
+        },
+        classes?.label,
+      )}
     >
       <span className='text-slate-900 dark:text-gray-50'>{label}</span>
       <ChangeBadge change={change} type={type} goodChangeDirection={goodChangeDirection} valueMapper={valueMapper} />
@@ -80,9 +96,13 @@ interface IMetricCardSelect {
   }[]
   valueMapper?: (value: any, index: number) => any
   selectLabel: string
+  classes?: {
+    value?: string
+    label?: string
+  }
 }
 
-export const MetricCardSelect: React.FC<IMetricCardSelect> = ({ values, valueMapper, selectLabel }) => {
+export const MetricCardSelect: React.FC<IMetricCardSelect> = ({ values, valueMapper, selectLabel, classes }) => {
   const [selected, setSelected] = useState(0)
   const [show, setShow] = useState<boolean>(false)
 
@@ -93,12 +113,15 @@ export const MetricCardSelect: React.FC<IMetricCardSelect> = ({ values, valueMap
 
   return (
     <div className='flex flex-col'>
-      <div className='font-bold text-4xl whitespace-nowrap text-slate-900 dark:text-gray-50'>
+      <div className={cx('font-bold text-4xl whitespace-nowrap text-slate-900 dark:text-gray-50', classes?.value)}>
         {valueMapper ? valueMapper(values[selected], selected) : values[selected].value}
       </div>
       <div className='flex items-center font-bold whitespace-nowrap text-sm relative'>
         <OutsideClickHandler onOutsideClick={() => setShow(false)}>
-          <span className='text-slate-900 dark:text-gray-50 cursor-pointer' onClick={() => setShow(!show)}>
+          <span
+            className={cx('text-slate-900 dark:text-gray-50 cursor-pointer', classes?.label)}
+            onClick={() => setShow(!show)}
+          >
             {values[selected].label}{' '}
             {show ? <ChevronUpIcon className='inline w-4 h-4' /> : <ChevronDownIcon className='inline w-4 h-4' />}
           </span>

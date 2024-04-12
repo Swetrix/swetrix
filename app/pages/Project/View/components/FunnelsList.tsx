@@ -32,7 +32,7 @@ const FunnelCard = ({ funnel, openFunnelSettings, openFunnel, deleteFunnel, load
   return (
     <li
       onClick={() => openFunnel(funnel)}
-      className='overflow-hidden min-h-[120px] rounded-xl border border-gray-200 cursor-pointer bg-gray-50 hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-slate-700 dark:border-slate-800/25'
+      className='overflow-hidden min-h-[120px] rounded-xl border border-gray-200 cursor-pointer bg-gray-50 hover:bg-gray-100 dark:bg-[#162032] dark:hover:bg-slate-800 dark:border-slate-800/25'
     >
       <div className='py-4 px-4'>
         <div className='flex justify-between items-center'>
@@ -76,7 +76,7 @@ const AddFunnel = ({ openFunnelSettings }: IAddFunnel): JSX.Element => {
   return (
     <li
       onClick={onClick}
-      className='flex cursor-pointer justify-center items-center rounded-lg border-2 border-dashed h-auto min-h-[120px] group border-gray-300 hover:border-gray-400'
+      className='flex cursor-pointer justify-center items-center rounded-lg border-2 border-dashed h-auto min-h-[120px] group border-gray-300 hover:border-gray-400 dark:border-gray-500 dark:hover:border-gray-600'
     >
       <div>
         <PlusCircleIcon className='mx-auto h-12 w-12 text-gray-400 dark:text-gray-200 group-hover:text-gray-500 group-hover:dark:text-gray-400' />
@@ -102,7 +102,7 @@ const FunnelsList = ({
   loading,
   authenticated,
 }: IFunnelsList): JSX.Element => (
-  <ul className='grid grid-cols-1 gap-x-6 gap-y-3 lg:gap-y-6 lg:grid-cols-3 mt-2'>
+  <ul className='grid grid-cols-1 gap-x-6 gap-y-3 lg:gap-y-6 lg:grid-cols-3 mt-4'>
     {_map(funnels, (funnel) => (
       <FunnelCard
         key={funnel.id}
