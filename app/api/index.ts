@@ -1284,3 +1284,21 @@ export const getLastPost = () =>
       debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
+
+export const unsubscribeFromEmailReports = (token: string) =>
+  api
+    .get(`user/unsubscribe/${token}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw error
+    })
+
+export const unsubscribeFromEmailReports3rdParty = (token: string) =>
+  api
+    .get(`project/unsubscribe/${token}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw error
+    })

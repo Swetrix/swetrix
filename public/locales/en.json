@@ -297,6 +297,9 @@
     "cookieDetails": "If you click on the buttons above, a cookie will be stored for {{days}} days to reward the person who referred you and give you {{discount}}% off your first bill.",
     "buttons": "Click on these buttons to receive {{discount}}% off your first bill!"
   },
+  "unsubscribe": {
+    "success": "You've unsubscribed from analytics email reports"
+  },
   "auth": {
     "recovery": {
       "title": "Account recovery",
