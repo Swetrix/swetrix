@@ -1037,14 +1037,19 @@ export class ProjectService {
   }
 
   createUnsubscribeKey(subscriberId: string): string {
-    return CryptoJS.Rabbit.encrypt(
-      subscriberId,
-      EMAIL_ACTION_ENCRYPTION_KEY,
-    ).toString()
+    return encodeURIComponent(
+      CryptoJS.Rabbit.encrypt(
+        subscriberId,
+        EMAIL_ACTION_ENCRYPTION_KEY,
+      ).toString(),
+    )
   }
 
   decryptUnsubscribeKey(token: string): string {
-    const bytes = CryptoJS.Rabbit.decrypt(token, EMAIL_ACTION_ENCRYPTION_KEY)
+    const bytes = CryptoJS.Rabbit.decrypt(
+      decodeURIComponent(token),
+      EMAIL_ACTION_ENCRYPTION_KEY,
+    )
     return bytes.toString(CryptoJS.enc.Utf8)
   }
 

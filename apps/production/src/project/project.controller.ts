@@ -1611,7 +1611,13 @@ export class ProjectController {
   ): Promise<void> {
     this.logger.log({ token }, 'GET /project/unsubscribe/:token')
 
-    const subscriberId = this.projectService.decryptUnsubscribeKey(token)
+    let subscriberId
+
+    try {
+      subscriberId = this.projectService.decryptUnsubscribeKey(token)
+    } catch {
+      throw new NotFoundException('Unsubscribe token is invalid')
+    }
 
     const subscriber = await this.projectService.getSubscriberById(subscriberId)
 

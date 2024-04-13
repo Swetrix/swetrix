@@ -911,7 +911,13 @@ export class UserController {
   ): Promise<void> {
     this.logger.log({ token }, 'GET /project/unsubscribe/:token')
 
-    const userId = this.userService.decryptUnsubscribeKey(token)
+    let userId
+
+    try {
+      userId = this.userService.decryptUnsubscribeKey(token)
+    } catch {
+      throw new NotFoundException('Unsubscribe token is invalid')
+    }
 
     const user = await this.userService.findOneWhere({
       id: userId,
