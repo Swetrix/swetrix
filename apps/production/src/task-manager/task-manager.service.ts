@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { IsNull, LessThan, In, Not, Between, MoreThan, Like } from 'typeorm'
+import { ConfigService } from '@nestjs/config'
 import * as Paypal from '@paypal/payouts-sdk'
 import * as bcrypt from 'bcrypt'
 import * as dayjs from 'dayjs'
@@ -231,6 +232,24 @@ const getUsersThatExceedContinuously = (
   return exceedingUsers as User & { usage: any[] }[]
 }
 
+const EMAIL_REPORTS_MAP = {
+  [ReportFrequency.WEEKLY]: {
+    type: 'w',
+    dayjsParams: [1, 'w'],
+    analyticsParam: '7d',
+  },
+  [ReportFrequency.MONTHLY]: {
+    type: 'M',
+    dayjsParams: [1, 'M'],
+    analyticsParam: '4w',
+  },
+  [ReportFrequency.QUARTERLY]: {
+    type: 'M',
+    dayjsParams: [3, 'M'],
+    analyticsParam: '3M',
+  },
+}
+
 @Injectable()
 export class TaskManagerService {
   constructor(
@@ -244,7 +263,151 @@ export class TaskManagerService {
     private readonly logger: AppLoggerService,
     private readonly telegramService: TelegramService,
     private readonly payoutsService: PayoutsService,
+    private readonly configService: ConfigService,
   ) {}
+
+  generateUnsubscribeUrl(
+    id: string,
+    type: '3rdparty' | 'user-reports',
+  ): string {
+    if (type === '3rdparty') {
+      const token = this.projectService.createUnsubscribeKey(id)
+      return `${this.configService.get(
+        'CLIENT_URL',
+      )}/3rd-party-unsubscribe/${token}`
+    }
+
+    const token = this.userService.createUnsubscribeKey(id)
+    return `${this.configService.get(
+      'CLIENT_URL',
+    )}/reports-unsubscribe/${token}`
+  }
+
+  async handleUserReports(
+    reportFrequency:
+      | ReportFrequency.WEEKLY
+      | ReportFrequency.MONTHLY
+      | ReportFrequency.QUARTERLY,
+  ): Promise<void> {
+    const params = EMAIL_REPORTS_MAP[reportFrequency]
+
+    const users = await this.userService.find({
+      where: {
+        reportFrequency,
+        planCode: Not(PlanCode.none),
+        dashboardBlockReason: IsNull(),
+      },
+      relations: ['projects'],
+      select: ['id', 'email'],
+    })
+    const now = dayjs.utc().format('DD.MM.YYYY')
+    const timeAgo = dayjs
+      .utc()
+      // @ts-ignore
+      .subtract(...params.dayjsParams)
+      .format('DD.MM.YYYY')
+    const date = `${timeAgo} - ${now}`
+    const tip = getRandomTip()
+
+    const promises = _map(users, async user => {
+      const { id, email, projects } = user
+
+      if (_isEmpty(projects) || _isNull(projects)) {
+        return
+      }
+
+      const unsubscribeUrl = this.generateUnsubscribeUrl(id, 'user-reports')
+
+      const ids = _map(projects, p => p.id)
+      const data = this.analyticsService.convertSummaryToObsoleteFormat(
+        await this.analyticsService.getAnalyticsSummary(
+          ids,
+          params.analyticsParam,
+        ),
+      )
+
+      const result = {
+        type: params.type,
+        date,
+        projects: _map(ids, (pid, index) => ({
+          data: data[pid],
+          name: projects[index].name,
+        })),
+        tip,
+        unsubscribeUrl,
+      }
+
+      await this.mailerService.sendEmail(
+        email,
+        LetterTemplate.ProjectReport,
+        result,
+      )
+    })
+
+    await Promise.allSettled(promises).catch(reason => {
+      this.logger.error(
+        `[CRON WORKER](handleUserReports) Frequency: ${reportFrequency}; Error occured: ${reason}`,
+      )
+    })
+  }
+
+  async handleSubscriberReports(
+    reportFrequency:
+      | ReportFrequency.WEEKLY
+      | ReportFrequency.MONTHLY
+      | ReportFrequency.QUARTERLY,
+  ): Promise<void> {
+    const params = EMAIL_REPORTS_MAP[reportFrequency]
+
+    const subscribers =
+      await this.projectService.getSubscribersForReports(reportFrequency)
+    const now = dayjs.utc().format('DD.MM.YYYY')
+    const timeAgo = dayjs
+      .utc()
+      // @ts-ignore
+      .subtract(...params.dayjsParams)
+      .format('DD.MM.YYYY')
+    const date = `${timeAgo} - ${now}`
+    const tip = getRandomTip()
+
+    const promises = _map(subscribers, async subscriber => {
+      const { id, email } = subscriber
+      const projects = await this.projectService.getSubscriberProjects(id)
+
+      const unsubscribeUrl = this.generateUnsubscribeUrl(id, '3rdparty')
+
+      const ids = projects.map(project => project.id)
+      const data = this.analyticsService.convertSummaryToObsoleteFormat(
+        await this.analyticsService.getAnalyticsSummary(
+          ids,
+          params.analyticsParam,
+        ),
+      )
+
+      const result = {
+        type: params.type,
+        date,
+        projects: _map(ids, (pid, index) => ({
+          data: data[pid],
+          name: projects[index].name,
+        })),
+        tip,
+        unsubscribeUrl,
+      }
+
+      await this.mailerService.sendEmail(
+        email,
+        LetterTemplate.ProjectReport,
+        result,
+      )
+    })
+
+    await Promise.allSettled(promises).catch(reason => {
+      this.logger.error(
+        `[CRON WORKER](handleSubscriberReports) Frequency: ${reportFrequency}; Error: ${reason}`,
+      )
+    })
+  }
 
   @Cron(CronExpression.EVERY_MINUTE)
   async saveLogData(): Promise<void> {
@@ -547,7 +710,6 @@ export class TaskManagerService {
           email,
           LetterTemplate.TierWarning,
           emailParams,
-          'broadcast',
         )
         await this.userService.update(id, {
           evWarningSentOn: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
@@ -595,298 +757,37 @@ export class TaskManagerService {
   // EVERY SUNDAY AT 2:30 AM
   @Cron('30 02 * * 0')
   async weeklyReportsHandler(): Promise<void> {
-    const users = await this.userService.find({
-      where: {
-        reportFrequency: ReportFrequency.WEEKLY,
-        planCode: Not(PlanCode.none),
-        dashboardBlockReason: IsNull(),
-      },
-      relations: ['projects'],
-      select: ['email'],
-    })
-    const now = dayjs.utc().format('DD.MM.YYYY')
-    const weekAgo = dayjs.utc().subtract(1, 'w').format('DD.MM.YYYY')
-    const date = `${weekAgo} - ${now}`
-    const tip = getRandomTip()
-
-    const promises = _map(users, async user => {
-      const { email, projects } = user
-
-      if (_isEmpty(projects) || _isNull(projects)) {
-        return
-      }
-
-      const ids = _map(projects, p => p.id)
-      const data = this.analyticsService.convertSummaryToObsoleteFormat(
-        await this.analyticsService.getAnalyticsSummary(ids, '7d'),
-      )
-
-      const result = {
-        type: 'w', // week
-        date,
-        projects: _map(ids, (pid, index) => ({
-          data: data[pid],
-          name: projects[index].name,
-        })),
-        tip,
-      }
-
-      await this.mailerService.sendEmail(
-        email,
-        LetterTemplate.ProjectReport,
-        result,
-        'broadcast',
-      )
-    })
-
-    await Promise.allSettled(promises).catch(reason => {
-      this.logger.error(
-        `[CRON WORKER](weeklyReportsHandler) Error occured: ${reason}`,
-      )
-    })
+    await this.handleUserReports(ReportFrequency.WEEKLY)
   }
 
   // ON THE FIRST DAY OF EVERY MONTH AT 2 AM
   @Cron('0 02 1 * *')
   async monthlyReportsHandler(): Promise<void> {
-    const users = await this.userService.find({
-      where: {
-        reportFrequency: ReportFrequency.MONTHLY,
-        planCode: Not(PlanCode.none),
-        dashboardBlockReason: IsNull(),
-      },
-      relations: ['projects'],
-      select: ['email'],
-    })
-    const now = dayjs.utc().format('DD.MM.YYYY')
-    const weekAgo = dayjs.utc().subtract(1, 'M').format('DD.MM.YYYY')
-    const date = `${weekAgo} - ${now}`
-    const tip = getRandomTip()
-
-    const promises = _map(users, async user => {
-      const { email, projects } = user
-
-      if (_isEmpty(projects) || _isNull(projects)) {
-        return
-      }
-
-      const ids = _map(projects, p => p.id)
-      const data = this.analyticsService.convertSummaryToObsoleteFormat(
-        await this.analyticsService.getAnalyticsSummary(ids, '4w'),
-      )
-
-      const result = {
-        type: 'M', // month
-        date,
-        projects: _map(ids, (pid, index) => ({
-          data: data[pid],
-          name: projects[index].name,
-        })),
-        tip,
-      }
-
-      await this.mailerService.sendEmail(
-        email,
-        LetterTemplate.ProjectReport,
-        result,
-        'broadcast',
-      )
-    })
-
-    await Promise.allSettled(promises).catch(reason => {
-      this.logger.error(
-        `[CRON WORKER](monthlyReportsHandler) Error occured: ${reason}`,
-      )
-    })
+    await this.handleUserReports(ReportFrequency.MONTHLY)
   }
 
   @Cron(CronExpression.EVERY_QUARTER)
   async quarterlyReportsHandler(): Promise<void> {
-    const users = await this.userService.find({
-      where: {
-        reportFrequency: ReportFrequency.QUARTERLY,
-        planCode: Not(PlanCode.none),
-        dashboardBlockReason: IsNull(),
-      },
-      relations: ['projects'],
-      select: ['email'],
-    })
-    const now = dayjs.utc().format('DD.MM.YYYY')
-    const quarterAgo = dayjs.utc().subtract(3, 'M').format('DD.MM.YYYY')
-    const date = `${quarterAgo} - ${now}`
-    const tip = getRandomTip()
-
-    const promises = _map(users, async user => {
-      const { email, projects } = user
-
-      if (_isEmpty(projects) || _isNull(projects)) {
-        return
-      }
-
-      const ids = _map(projects, p => p.id)
-      const data = this.analyticsService.convertSummaryToObsoleteFormat(
-        await this.analyticsService.getAnalyticsSummary(ids, '3M'),
-      )
-
-      const result = {
-        type: 'Q', // quarterly
-        date,
-        projects: _map(ids, (pid, index) => ({
-          data: data[pid],
-          name: projects[index].name,
-        })),
-        tip,
-      }
-
-      await this.mailerService.sendEmail(
-        email,
-        LetterTemplate.ProjectReport,
-        result,
-        'broadcast',
-      )
-    })
-
-    await Promise.allSettled(promises).catch(reason => {
-      this.logger.error(
-        `[CRON WORKER](quarterlyReportsHandler) Error occured: ${reason}`,
-      )
-    })
+    await this.handleUserReports(ReportFrequency.QUARTERLY)
   }
 
   // EMAIL REPORTS, BUT FOR MULTIPLE PROJECT SUBSCRIBERS
 
   @Cron(CronExpression.EVERY_QUARTER)
   async handleQuarterlyReports(): Promise<void> {
-    const subscribers = await this.projectService.getSubscribersForReports(
-      ReportFrequency.QUARTERLY,
-    )
-    const now = dayjs.utc().format('DD.MM.YYYY')
-    const quarterAgo = dayjs.utc().subtract(3, 'M').format('DD.MM.YYYY')
-    const date = `${quarterAgo} - ${now}`
-    const tip = getRandomTip()
-
-    const promises = _map(subscribers, async subscriber => {
-      const { id, email } = subscriber
-      const projects = await this.projectService.getSubscriberProjects(id)
-
-      const ids = projects.map(project => project.id)
-      const data = this.analyticsService.convertSummaryToObsoleteFormat(
-        await this.analyticsService.getAnalyticsSummary(ids, '3M'),
-      )
-
-      const result = {
-        type: 'Q', // quarter
-        date,
-        projects: _map(ids, (pid, index) => ({
-          data: data[pid],
-          name: projects[index].name,
-        })),
-        tip,
-      }
-
-      await this.mailerService.sendEmail(
-        email,
-        LetterTemplate.ProjectReport,
-        result,
-        'broadcast',
-      )
-    })
-
-    await Promise.allSettled(promises).catch(reason => {
-      this.logger.error(
-        `[CRON WORKER](handleQuarterlyReports) Error occured: ${reason}`,
-      )
-    })
+    await this.handleSubscriberReports(ReportFrequency.QUARTERLY)
   }
 
   // ON THE FIRST DAY OF EVERY MONTH AT 3 AM
   @Cron('0 03 1 * *')
   async handleMonthlyReports(): Promise<void> {
-    const subscribers = await this.projectService.getSubscribersForReports(
-      ReportFrequency.MONTHLY,
-    )
-    const now = dayjs.utc().format('DD.MM.YYYY')
-    const weekAgo = dayjs.utc().subtract(1, 'M').format('DD.MM.YYYY')
-    const date = `${weekAgo} - ${now}`
-    const tip = getRandomTip()
-
-    const promises = _map(subscribers, async subscriber => {
-      const { id, email } = subscriber
-      const projects = await this.projectService.getSubscriberProjects(id)
-
-      const ids = projects.map(project => project.id)
-      const data = this.analyticsService.convertSummaryToObsoleteFormat(
-        await this.analyticsService.getAnalyticsSummary(ids, '4w'),
-      )
-
-      const result = {
-        type: 'M', // month
-        date,
-        projects: _map(ids, (pid, index) => ({
-          data: data[pid],
-          name: projects[index].name,
-        })),
-        tip,
-      }
-
-      await this.mailerService.sendEmail(
-        email,
-        LetterTemplate.ProjectReport,
-        result,
-        'broadcast',
-      )
-    })
-
-    await Promise.allSettled(promises).catch(reason => {
-      this.logger.error(
-        `[CRON WORKER](handleMonthlyReports) Error occured: ${reason}`,
-      )
-    })
+    await this.handleSubscriberReports(ReportFrequency.MONTHLY)
   }
 
   // EVERY SUNDAY AT 3 AM
   @Cron('0 03 * * 0')
   async handleWeeklyReports(): Promise<void> {
-    const subscribers = await this.projectService.getSubscribersForReports(
-      ReportFrequency.WEEKLY,
-    )
-    const now = dayjs.utc().format('DD.MM.YYYY')
-    const weekAgo = dayjs.utc().subtract(1, 'w').format('DD.MM.YYYY')
-    const date = `${weekAgo} - ${now}`
-    const tip = getRandomTip()
-
-    const promises = _map(subscribers, async subscriber => {
-      const { id, email } = subscriber
-      const projects = await this.projectService.getSubscriberProjects(id)
-
-      const ids = projects.map(project => project.id)
-      const data = this.analyticsService.convertSummaryToObsoleteFormat(
-        await this.analyticsService.getAnalyticsSummary(ids, '7d'),
-      )
-
-      const result = {
-        type: 'w', // week
-        date,
-        projects: _map(ids, (pid, index) => ({
-          data: data[pid],
-          name: projects[index].name,
-        })),
-        tip,
-      }
-
-      await this.mailerService.sendEmail(
-        email,
-        LetterTemplate.ProjectReport,
-        result,
-        'broadcast',
-      )
-    })
-
-    await Promise.allSettled(promises).catch(reason => {
-      this.logger.error(
-        `[CRON WORKER](handleWeeklyReports) Error occured: ${reason}`,
-      )
-    })
+    await this.handleSubscriberReports(ReportFrequency.WEEKLY)
   }
 
   @Cron(CronExpression.EVERY_10_MINUTES)

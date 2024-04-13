@@ -1,5 +1,6 @@
 /* eslint-disable no-param-reassign, no-prototype-builtins */
 import * as crypto from 'crypto'
+import * as Validator from 'sns-payload-validator'
 import {
   Injectable,
   BadRequestException,
@@ -11,8 +12,11 @@ import * as _keys from 'lodash/keys'
 import * as _isArray from 'lodash/isArray'
 import { AppLoggerService } from '../logger/logger.service'
 import { PayoutsService } from '../payouts/payouts.service'
+import { ProjectService } from '../project/project.service'
+import { UserService } from '../user/user.service'
 import { PayoutStatus } from '../payouts/entities/payouts.entity'
 import { User } from '../user/entities/user.entity'
+import { ReportFrequency } from '../project/enums'
 
 const PADDLE_PUB_KEY = `-----BEGIN PUBLIC KEY-----
 MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAqFcHslKkXcJlTYg4FL6j
@@ -40,11 +44,15 @@ const paddleWhitelistIPs = [
   '3.208.120.145',
 ]
 
+const validator = new Validator()
+
 @Injectable()
 export class WebhookService {
   constructor(
     private readonly logger: AppLoggerService,
     private readonly payoutsService: PayoutsService,
+    private readonly userService: UserService,
+    private readonly projectService: ProjectService,
   ) {}
 
   public ksort(obj: Record<string, unknown>): Record<string, unknown> {
@@ -123,6 +131,45 @@ export class WebhookService {
       {
         status: PayoutStatus.processing,
       },
+    )
+  }
+
+  async verifySNSRequest(payload: any): Promise<void> {
+    try {
+      await validator.validate(payload)
+    } catch {
+      throw new BadRequestException('Webhook signature verification failed')
+    }
+  }
+
+  async unsubscribeByEmail(email: string): Promise<void> {
+    const user = await this.userService.findOneWhere({
+      email,
+    })
+
+    // checking if the bounce originates from admin email reports
+    if (user) {
+      await this.userService.update(user.id, {
+        reportFrequency: ReportFrequency.NEVER,
+      })
+      return
+    }
+
+    // checking if the bounce originates from project subscriber email reports
+    const subscribtion = await this.projectService.findOneSubscriber({
+      email,
+    })
+
+    if (subscribtion) {
+      await this.projectService.removeSubscriberById(subscribtion.id)
+    }
+
+    // if it's some other kind of bounce, we can ignore it because it originates from other transactional emails
+    // but I'll log it here for now
+    this.logger.log(
+      `Received an email notification, but it originates from other transactional emails. Email: ${email}`,
+      'POST /webhook/ses',
+      true,
     )
   }
 }

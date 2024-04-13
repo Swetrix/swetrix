@@ -7,8 +7,12 @@ import * as _toNumber from 'lodash/toNumber'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config()
 
-const { CLICKHOUSE_DATABASE, PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET } =
-  process.env
+const {
+  CLICKHOUSE_DATABASE,
+  PAYPAL_CLIENT_ID,
+  PAYPAL_CLIENT_SECRET,
+  EMAIL_ACTION_ENCRYPTION_KEY,
+} = process.env
 
 const redis = new Redis(
   _toNumber(process.env.REDIS_PORT),
@@ -211,6 +215,7 @@ export {
   REDIS_LOG_PERF_CACHE_KEY,
   CAPTCHA_SALT,
   CAPTCHA_ENCRYPTION_KEY,
+  EMAIL_ACTION_ENCRYPTION_KEY,
   isDevelopment,
   getRedisCaptchaKey,
   CAPTCHA_COOKIE_KEY,
