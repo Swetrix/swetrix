@@ -63,7 +63,6 @@ const checkIgnore = (path: string | undefined | null, ignore: RegExp[]) => {
   return false
 }
 
-
 const getNewPath = (path: string | undefined | null) => {
   if (!path) {
     return path
@@ -83,7 +82,6 @@ const getNewPath = (path: string | undefined | null) => {
 Swetrix.init(SWETRIX_PID, {
   devMode: isDevelopment,
 })
-
 
 const trackViews = () => {
   if (!isSelfhosted) {

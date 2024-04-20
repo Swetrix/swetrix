@@ -1,7 +1,7 @@
 /* eslint-disable react/forbid-prop-types */
 import React, { memo, useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate } from '@remix-run/react'
-import { ClientOnly } from 'remix-utils'
+import { ClientOnly } from 'remix-utils/client-only'
 import cx from 'clsx'
 import PropTypes from 'prop-types'
 import _isEmpty from 'lodash/isEmpty'

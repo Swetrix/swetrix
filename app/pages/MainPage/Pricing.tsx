@@ -1,7 +1,7 @@
 /* eslint-disable no-confusing-arrow */
 import React, { memo, useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { ClientOnly } from 'remix-utils'
+import { ClientOnly } from 'remix-utils/client-only'
 import { Link } from '@remix-run/react'
 import { CheckIcon } from '@heroicons/react/24/solid'
 import dayjs from 'dayjs'

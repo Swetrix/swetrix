@@ -3,10 +3,10 @@ import { PassThrough } from 'node:stream'
 import { resolve as feResolve } from 'node:path'
 import { createInstance } from 'i18next'
 import { I18nextProvider, initReactI18next } from 'react-i18next'
+import { createReadableStreamFromReadable } from '@remix-run/node'
 import FSBackend from 'i18next-fs-backend'
-import { Response } from '@remix-run/node'
 import { RemixServer } from '@remix-run/react'
-import isbot from 'isbot'
+import { isbot } from 'isbot'
 import { renderToPipeableStream } from 'react-dom/server'
 import { createSitemapGenerator } from 'remix-sitemap'
 
@@ -29,6 +29,7 @@ export default async function handleRequest(
   remixContext: EntryContext,
 ) {
   if (isSitemapUrl(request)) {
+    // @ts-ignore
     const stm = await sitemap(request, remixContext)
     return stm
   }
@@ -61,9 +62,12 @@ export default async function handleRequest(
       {
         [callbackName]: () => {
           const body = new PassThrough()
+          const stream = createReadableStreamFromReadable(body)
+
           responseHeaders.set('Content-Type', 'text/html')
+
           resolve(
-            new Response(body, {
+            new Response(stream, {
               headers: responseHeaders,
               status: didError ? 500 : responseStatusCode,
             }),

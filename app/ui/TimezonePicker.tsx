@@ -1,17 +1,17 @@
 import React from 'react'
 import spacetime from 'spacetime'
 import soft from 'timezone-soft'
-import { allTimezones } from 'react-timezone-select'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import _find from 'lodash/find'
 import _reduce from 'lodash/reduce'
 import _includes from 'lodash/includes'
+import timezones from 'redux/constants/timezones'
 
 import Select from './Select'
 
 const options = _reduce(
-  Object.entries(allTimezones),
+  Object.entries(timezones),
   (selectOptions: any[], zone) => {
     const now = spacetime.now(zone[0])
     const tz = now.timezone()

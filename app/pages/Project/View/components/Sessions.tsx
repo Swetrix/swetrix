@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from '@remix-run/react'
-import { ClientOnly } from 'remix-utils'
+import { ClientOnly } from 'remix-utils/client-only'
 import { useTranslation } from 'react-i18next'
 import _map from 'lodash/map'
 import { ChevronRightIcon } from '@heroicons/react/24/outline'

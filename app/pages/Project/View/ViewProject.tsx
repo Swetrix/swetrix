@@ -1,6 +1,6 @@
 /* eslint-disable react/forbid-prop-types, react/no-unstable-nested-components, react/display-name */
 import React, { useState, useEffect, useMemo, memo, useRef, useCallback } from 'react'
-import { ClientOnly } from 'remix-utils'
+import { ClientOnly } from 'remix-utils/client-only'
 import useSize from 'hooks/useSize'
 import { useNavigate, useParams, Link } from '@remix-run/react'
 import bb from 'billboard.js'

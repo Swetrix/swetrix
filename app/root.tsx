@@ -24,7 +24,7 @@ import BillboardCss from 'billboard.js/dist/billboard.min.css'
 
 import AlertTemplate from 'ui/Alert'
 import { trackViews } from 'utils/analytics'
-import { useChangeLanguage } from 'remix-i18next'
+import { useChangeLanguage } from 'remix-i18next/react'
 import { useTranslation } from 'react-i18next'
 import AppWrapper from 'App'
 import { detectLanguage } from 'i18n'

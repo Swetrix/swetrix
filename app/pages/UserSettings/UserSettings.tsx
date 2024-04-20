@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign, react/forbid-prop-types */
 import React, { useState, useEffect, memo, useRef, useMemo } from 'react'
 import { useNavigate } from '@remix-run/react'
-import { ClientOnly } from 'remix-utils'
+import { ClientOnly } from 'remix-utils/client-only'
 import { useTranslation } from 'react-i18next'
 import _size from 'lodash/size'
 import _isEmpty from 'lodash/isEmpty'

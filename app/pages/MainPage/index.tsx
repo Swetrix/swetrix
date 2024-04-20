@@ -3,7 +3,7 @@ import React, { memo } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import cx from 'clsx'
 import { useSelector } from 'react-redux'
-import { ClientOnly } from 'remix-utils'
+import { ClientOnly } from 'remix-utils/client-only'
 import {
   ArrowTopRightOnSquareIcon,
   ArrowSmallRightIcon,
