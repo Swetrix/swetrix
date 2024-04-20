@@ -5,7 +5,7 @@ module.exports = {
   ignoredRouteFiles: ['**/.*'],
   appDirectory: 'app',
   // assetsBuildDirectory: "public/build",
-  // serverBuildPath: "build/index.js",
+  // serverBuildPath: 'build/index.js',
   // publicPath: "/build/",
   tailwind: true,
   postcss: true,
