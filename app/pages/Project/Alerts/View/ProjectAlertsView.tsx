@@ -8,9 +8,11 @@ import _replace from 'lodash/replace'
 import _values from 'lodash/values'
 import _reduce from 'lodash/reduce'
 import _filter from 'lodash/filter'
+import _isString from 'lodash/isString'
 import { useNavigate, Link } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   BellIcon,
   CurrencyDollarIcon,
@@ -22,10 +24,14 @@ import {
 
 import routes from 'routesPath'
 import Button from 'ui/Button'
+import Modal from 'ui/Modal'
 import PaidFeature from 'modals/PaidFeature'
 import { QUERY_METRIC, PLAN_LIMITS } from 'redux/constants'
-import { IAlerts } from 'redux/models/IAlerts'
-import { IUser } from 'redux/models/IUser'
+import UIActions from 'redux/reducers/ui'
+import { alertsActions } from 'redux/reducers/alerts'
+import { errorsActions } from 'redux/reducers/errors'
+import { deleteAlert as deleteAlertApi } from 'api'
+import { StateType } from 'redux/store'
 
 const Separator = () => (
   <svg viewBox='0 0 2 2' className='h-0.5 w-0.5 flex-none fill-gray-400'>
@@ -83,56 +89,68 @@ const AlertCard = ({
     t,
     i18n: { language },
   } = useTranslation()
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   return (
-    <li
-      onClick={() => openAlert(id)}
-      className='overflow-hidden min-h-[120px] rounded-xl border border-gray-200 cursor-pointer bg-gray-50 hover:bg-gray-100 dark:bg-[#162032] dark:hover:bg-slate-800 dark:border-slate-800/25'
-    >
-      <div className='py-4 px-4'>
-        <div className='flex justify-between'>
-          <div>
-            <p className='flex items-center gap-x-2 text-lg text-slate-900 dark:text-gray-50'>
-              <span className='font-semibold'>{name}</span>
-              <Separator />
-              <span>{queryMetricTMapping[queryMetric]}</span>
-            </p>
-            <p className='text-base text-slate-900 dark:text-gray-50'>
-              {lastTriggered
-                ? t('alert.lastTriggeredOn', {
-                    date:
-                      language === 'en'
-                        ? dayjs(lastTriggered).locale(language).format('MMMM D, YYYY')
-                        : dayjs(lastTriggered).locale(language).format('D MMMM, YYYY'),
-                  })
-                : t('alert.notYetTriggered')}
-            </p>
-          </div>
-          <div className='flex gap-2'>
-            <AdjustmentsVerticalIcon
-              role='button'
-              aria-label={t('common.settings')}
-              onClick={(e) => {
-                e.stopPropagation()
-                openAlert(id)
-              }}
-              className='w-6 h-6 text-gray-800 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-500'
-            />
-            <TrashIcon
-              onClick={(e) => {
-                e.stopPropagation()
-                deleteAlert(id)
-              }}
-              role='button'
-              aria-label={t('common.delete')}
-              className={cx('w-6 h-6 text-gray-800 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-500', {
-                // 'cursor-not-allowed': loading,
-              })}
-            />
+    <>
+      <li
+        onClick={() => openAlert(id)}
+        className='overflow-hidden min-h-[120px] rounded-xl border border-gray-200 cursor-pointer bg-gray-50 hover:bg-gray-100 dark:bg-[#162032] dark:hover:bg-slate-800 dark:border-slate-800/25'
+      >
+        <div className='py-4 px-4'>
+          <div className='flex justify-between'>
+            <div>
+              <p className='flex items-center gap-x-2 text-lg text-slate-900 dark:text-gray-50'>
+                <span className='font-semibold'>{name}</span>
+                <Separator />
+                <span>{queryMetricTMapping[queryMetric]}</span>
+              </p>
+              <p className='text-base text-slate-900 dark:text-gray-50'>
+                {lastTriggered
+                  ? t('alert.lastTriggeredOn', {
+                      date:
+                        language === 'en'
+                          ? dayjs(lastTriggered).locale(language).format('MMMM D, YYYY')
+                          : dayjs(lastTriggered).locale(language).format('D MMMM, YYYY'),
+                    })
+                  : t('alert.notYetTriggered')}
+              </p>
+            </div>
+            <div className='flex gap-2'>
+              <AdjustmentsVerticalIcon
+                role='button'
+                aria-label={t('common.settings')}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  openAlert(id)
+                }}
+                className='w-6 h-6 text-gray-800 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-500'
+              />
+              <TrashIcon
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowDeleteModal(true)
+                }}
+                role='button'
+                aria-label={t('common.delete')}
+                className='w-6 h-6 text-gray-800 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-500'
+              />
+            </div>
           </div>
         </div>
-      </div>
-    </li>
+      </li>
+      <Modal
+        onClose={() => setShowDeleteModal(false)}
+        onSubmit={() => deleteAlert(id)}
+        submitText={t('alert.delete')}
+        closeText={t('common.close')}
+        title={t('alert.qDelete')}
+        message={t('alert.deleteHint')}
+        submitType='danger'
+        type='error'
+        isOpened={showDeleteModal}
+      />
+    </>
   )
 }
 
@@ -163,22 +181,15 @@ const AddAlert = ({ handleNewAlert, isLimitReached }: IAddAlert): JSX.Element =>
   )
 }
 
-const ProjectAlerts = ({
-  projectId,
-  alerts,
-  loading,
-  user,
-  total,
-  authenticated,
-}: {
+interface IProjectAlerts {
   projectId: string
-  alerts: IAlerts[]
-  loading: boolean
-  user: IUser
-  total: number
-  authenticated: boolean
-}): JSX.Element => {
+}
+
+const ProjectAlerts = ({ projectId }: IProjectAlerts): JSX.Element => {
   const { t } = useTranslation()
+  const dispatch = useDispatch()
+  const { loading, total, alerts } = useSelector((state: StateType) => state.ui.alerts)
+  const { user, authenticated } = useSelector((state: StateType) => state.auth)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState<boolean>(false)
   const navigate = useNavigate()
 
@@ -219,6 +230,30 @@ const ProjectAlerts = ({
     navigate(_replace(routes.create_alert, ':pid', projectId))
   }
 
+  const onDelete = async (id: string) => {
+    try {
+      await deleteAlertApi(id)
+      dispatch(UIActions.setProjectAlerts(_filter(alerts, (a) => a.id !== id)))
+      dispatch(
+        UIActions.setProjectAlertsTotal({
+          total: total - 1,
+        }),
+      )
+      dispatch(
+        alertsActions.generateAlerts({
+          message: t('alertsSettings.alertDeleted'),
+          type: 'success',
+        }),
+      )
+    } catch (reason: any) {
+      dispatch(
+        errorsActions.genericError({
+          message: reason?.response?.data?.message || reason?.message || 'Something went wrong',
+        }),
+      )
+    }
+  }
+
   return (
     <div>
       <div className='mt-4'>
@@ -254,7 +289,7 @@ const ProjectAlerts = ({
                   openAlert={(id) => {
                     navigate(_replace(_replace(routes.alert_settings, ':pid', projectId), ':id', id))
                   }}
-                  deleteAlert={() => {}}
+                  deleteAlert={onDelete}
                   queryMetricTMapping={queryMetricTMapping}
                 />
               ))}

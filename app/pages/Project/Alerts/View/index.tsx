@@ -1,3 +1,3 @@
-import ProjectAlertsView from './ProjectAlertsView.container'
+import ProjectAlertsView from './ProjectAlertsView'
 
 export default ProjectAlertsView
