@@ -1,3 +1,5 @@
+# Mirrors Swetrix API code to Gitlab. We have to do it to deploy code properly
+# until Github starts supporting IPv6
 name: Mirror to Gitlab
 
 on:
@@ -15,6 +17,6 @@ jobs:
           fetch-depth: 0
       - uses: yesolutions/mirror-action@master
         with:
-          REMOTE: 'https://gitlab.com/spyoungtech/mirror-action.git'
+          REMOTE: 'https://gitlab.com/Blaumaus/swetrix-api.git'
           GIT_USERNAME: ${{ secrets.GITLAB_MIRROR_USERNAME }}
           GIT_PASSWORD: ${{ secrets.GITLAB_MIRROR_PASSWORD }}
