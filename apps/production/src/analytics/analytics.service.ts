@@ -909,24 +909,28 @@ export class AnalyticsService {
 
         const res = []
 
+        // commented encodeURIComponent lines of code to support filtering for pages like /product/[id]
+        // until I find a more suitable solution for that later
         if (_isArray(filter)) {
           for (const f of filter) {
-            let encoded = f
+            // let encoded = f
 
-            if (column === 'pg' && f !== null) {
-              encoded = _replace(encodeURIComponent(f), /%2F/g, '/')
-            }
+            // if (column === 'pg' && f !== null) {
+            //   encoded = _replace(encodeURIComponent(f), /%2F/g, '/')
+            // }
 
-            res.push({ filter: encoded, isExclusive })
+            // res.push({ filter: encoded, isExclusive })
+            res.push({ filter: f, isExclusive })
           }
         } else {
-          let encoded = filter
+          // let encoded = filter
 
-          if (column === 'pg' && filter !== null) {
-            encoded = _replace(encodeURIComponent(filter), /%2F/g, '/')
-          }
+          // if (column === 'pg' && filter !== null) {
+          //   encoded = _replace(encodeURIComponent(filter), /%2F/g, '/')
+          // }
 
-          res.push({ filter: encoded, isExclusive })
+          // res.push({ filter: encoded, isExclusive })
+          res.push({ filter, isExclusive })
         }
 
         if (prev[column]) {

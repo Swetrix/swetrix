@@ -26,7 +26,6 @@ ENV TZ=UTC \
     CLICKHOUSE_DATABASE=analytics \
     API_ORIGINS= \
     SMTP_HOST=localhost \
-    SMTP_BROADCAST_HOST=localhost \
     SMTP_PORT=1025 \
     SMTP_USER=smtp_user_name \
     SMTP_PASSWORD=smtp_password \

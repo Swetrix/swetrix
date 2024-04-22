@@ -1,7 +1,7 @@
 import fs = require('fs')
 import path = require('path')
+import { MailerService as NodeMailerService } from '@nestjs-modules/mailer'
 import { Injectable } from '@nestjs/common'
-import * as postmark from 'postmark'
 import handlebars from 'handlebars'
 import { LetterTemplate } from './letter'
 import { AppLoggerService } from '../logger/logger.service'
@@ -104,17 +104,19 @@ const metaInfoJson = {
   },
   [LetterTemplate.UsageOverLimit]: {
     subject: {
-      en: () => 'You have exceeded your Swetrix subscription plan',
+      en: () =>
+        '[ACTION REQUIRED] You have exceeded your Swetrix subscription plan',
     },
   },
   [LetterTemplate.DashboardLockedExceedingLimits]: {
     subject: {
-      en: () => 'Your Swetrix dashboard has been locked',
+      en: () => '[ACTION REQUIRED] Your Swetrix dashboard has been locked',
     },
   },
   [LetterTemplate.DashboardLockedPaymentFailure]: {
     subject: {
-      en: () => 'Your Swetrix dashboard has been locked due to a payment issue',
+      en: () =>
+        '[ACTION REQUIRED] Your Swetrix dashboard has been locked due to a payment issue',
     },
   },
 }
@@ -143,31 +145,30 @@ handlebars.registerHelper('greater', function greater(v1, v2, options) {
   return options.inverse(this)
 })
 
-const mailClient = new postmark.ServerClient(process.env.SMTP_PASSWORD)
-
 @Injectable()
 export class MailerService {
-  constructor(private readonly logger: AppLoggerService) {}
+  constructor(
+    private readonly logger: AppLoggerService,
+    private readonly nodeMailerService: NodeMailerService,
+  ) {}
 
   async sendEmail(
     email: string,
     templateName: LetterTemplate,
     params: Params = null,
-    messageStream: 'broadcast' | 'outbound' = 'outbound',
   ): Promise<void> {
     try {
       const templatePath = `${TEMPLATES_PATH}/en/${templateName}.html`
       const letter = fs.readFileSync(templatePath, { encoding: 'utf-8' })
       const subject = metaInfoJson[templateName].subject.en(params)
       const template = handlebars.compile(letter)
-      const htmlToSend = template(params)
+      const html = template(params)
 
-      const message: postmark.Models.Message = {
-        From: process.env.FROM_EMAIL,
-        To: email,
-        Subject: subject,
-        HtmlBody: htmlToSend,
-        MessageStream: messageStream,
+      const message = {
+        from: process.env.FROM_EMAIL,
+        to: email,
+        subject,
+        html,
       }
 
       if (process.env.SMTP_MOCK) {
@@ -180,10 +181,10 @@ export class MailerService {
           true,
         )
       } else {
-        await mailClient.sendEmail(message)
+        await this.nodeMailerService.sendMail(message)
       }
-    } catch (error) {
-      console.error(`[ERROR][MAILER] ${error}`)
+    } catch (reason) {
+      this.logger.error(reason, 'sendEmail', true)
     }
   }
 }

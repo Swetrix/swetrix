@@ -39,6 +39,44 @@ export class WebhookController {
     private readonly mailerService: MailerService,
   ) {}
 
+  // AWS SNS webhook
+  @Post('/sns')
+  @HttpCode(200)
+  async snsWebhook(@Body() body): Promise<any> {
+    const json = typeof body === 'string' ? JSON.parse(body) : body
+
+    await this.webhookService.verifySNSRequest(json)
+
+    const { Type, Message } = json
+
+    if (Type !== 'Notification') {
+      return
+    }
+
+    const message = typeof Message === 'string' ? JSON.parse(Message) : Message
+
+    switch (message.eventType) {
+      case 'Bounce': {
+        const { emailAddress } = message.bounce.bouncedRecipients[0]
+
+        await this.webhookService.unsubscribeByEmail(emailAddress)
+
+        break
+      }
+
+      case 'Complaint': {
+        const { emailAddress } = message.complaint.complainedRecipients[0]
+
+        await this.webhookService.unsubscribeByEmail(emailAddress)
+
+        break
+      }
+
+      default:
+    }
+  }
+
+  // Paddle - payment processor webhook
   @Post('/paddle')
   @HttpCode(200)
   async paddleWebhook(
