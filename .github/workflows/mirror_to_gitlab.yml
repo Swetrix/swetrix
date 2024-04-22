@@ -3,9 +3,11 @@
 name: Mirror to Gitlab
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch
+# Uncomment to enable
+#  push:
+#    branches:
+#      - main
 
 jobs:
   mirror:
