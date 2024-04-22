@@ -42,7 +42,6 @@ import {
   validPeriods,
   getLowestPossibleTimeBucket,
 } from './analytics.service'
-import { TaskManagerService } from '../task-manager/task-manager.service'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
 import { RolesGuard } from '../auth/guards/roles.guard'
@@ -294,7 +293,6 @@ export class AnalyticsController {
   constructor(
     private readonly analyticsService: AnalyticsService,
     private readonly logger: AppLoggerService,
-    private readonly taskManagerService: TaskManagerService,
   ) {}
 
   @Get()
@@ -1011,7 +1009,7 @@ export class AnalyticsController {
       }
     }
 
-    return this.taskManagerService.getGeneralStats()
+    return this.analyticsService.getGeneralStats()
   }
 
   @Get('hb')

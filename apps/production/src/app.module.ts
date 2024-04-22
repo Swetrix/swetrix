@@ -60,7 +60,6 @@ const modules = [
   I18nModule.forRootAsync(getI18nConfig()),
   ScheduleModule.forRoot(),
   NestjsFormDataModule.config({ isGlobal: true }),
-  TaskManagerModule,
   BlogModule,
   UserModule,
   MailerModule,
@@ -81,6 +80,7 @@ const modules = [
   imports: [
     ...modules,
     ...(process.env.ENABLE_INTEGRATIONS === 'true' ? [IntegrationsModule] : []),
+    ...(process.env.IS_MASTER_NODE === 'true' ? [TaskManagerModule] : []),
   ],
 })
 export class AppModule {}
