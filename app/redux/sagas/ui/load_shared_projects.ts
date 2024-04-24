@@ -31,6 +31,12 @@ export default function* loadSharedProjects({ payload: { take = ENTRIES_PER_PAGE
     } = yield call(getSharedProjects, take, skip, search)
 
     if (total === 0) {
+      yield put(
+        UIActions.setProjectsLoading({
+          isLoading: false,
+          shared: true,
+        }),
+      )
       return
     }
 

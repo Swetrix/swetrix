@@ -344,6 +344,7 @@ const ProjectSettings = ({
   const [dateRange, setDateRange] = useState<Date[]>([])
   const [tab, setTab] = useState<string>(tabDeleteDataModal[0].name)
   const [showProtected, setShowProtected] = useState<boolean>(false)
+  const [initialised, setInitialised] = useState(false)
 
   // for reset data via filters
   const [activeFilter, setActiveFilter] = useState<string[]>([])
@@ -354,7 +355,7 @@ const ProjectSettings = ({
     : dashboardPaginationPage * ENTRIES_PER_PAGE_DASHBOARD
 
   useEffect(() => {
-    if (authLoading) {
+    if (authLoading || initialised) {
       return
     }
 
@@ -373,9 +374,22 @@ const ProjectSettings = ({
           ipBlacklist: _isString(project.ipBlacklist) ? project.ipBlacklist : _join(project.ipBlacklist, ', '),
           origins: _isString(project.origins) ? project.origins : _join(project.origins, ', '),
         })
+        setInitialised(true)
       }
     }
-  }, [user, project, isLoading, isSettings, navigate, showError, projectDeleting, t, authLoading, isLoadingShared])
+  }, [
+    user,
+    project,
+    initialised,
+    isLoading,
+    isSettings,
+    navigate,
+    showError,
+    projectDeleting,
+    t,
+    authLoading,
+    isLoadingShared,
+  ])
 
   const onSubmit = async (data: IForm) => {
     if (!projectSaving) {
@@ -575,7 +589,7 @@ const ProjectSettings = ({
     document.title = pageTitle
   }, [form, t, isSettings])
 
-  if (authLoading) {
+  if (authLoading || !initialised) {
     return (
       <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
         <Loader />
