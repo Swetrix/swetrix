@@ -1724,12 +1724,12 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, uid, user.roles)
 
-    if (projectDTO.public) {
-      project.public = Boolean(projectDTO.public)
+    if (_isBoolean(projectDTO.public)) {
+      project.public = projectDTO.public
     }
 
-    if (projectDTO.active) {
-      project.active = Boolean(projectDTO.active)
+    if (_isBoolean(projectDTO.active)) {
+      project.active = projectDTO.active
     }
 
     if (projectDTO.origins) {
