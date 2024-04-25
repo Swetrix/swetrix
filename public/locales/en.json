@@ -38,7 +38,8 @@
     "incorrectPassword": "Incorrect password, please try again.",
     "funnelCreated": "The funnel has been created",
     "funnelUpdated": "The funnel has been updated",
-    "funnelDeleted": "The funnel has been deleted"
+    "funnelDeleted": "The funnel has been deleted",
+    "errorCode": "Error code: {{error}}"
   },
   "common": {
     "features": "Features",
@@ -502,6 +503,7 @@
   "dashboard": {
     "newProject": "New project",
     "newFunnel": "New funnel",
+    "reloadPage": "Reload page",
     "newCaptchaProject": "New CAPTCHA project",
     "verifyEmailTitle": "Please, verify the email address first",
     "verifyEmailDesc": "To start using our service and creating your projects, you first need to confirm your email address.\n\nA link to confirm your account was sent to the email address you provided during registration, if it was not delivered - you can request the link again in your account settings.",

@@ -498,16 +498,36 @@ const Dashboard = ({
 
   if (error && !isLoading) {
     return (
-      <div className='flex justify-center pt-10'>
-        <div className='rounded-md bg-red-50 p-4 w-11/12 lg:w-4/6'>
-          <div className='flex'>
-            <div className='flex-shrink-0'>
-              <XCircleIcon className='h-5 w-5 text-red-400' aria-hidden='true' />
+      <div className='bg-gray-50 dark:bg-slate-900 min-h-page px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
+        <div className='max-w-max mx-auto'>
+          <main className='sm:flex'>
+            <XCircleIcon className='h-12 w-12 text-red-400' aria-hidden='true' />
+            <div className='sm:ml-6'>
+              <div className='sm:border-l max-w-prose sm:border-gray-200 sm:pl-6'>
+                <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight sm:text-5xl'>
+                  {t('apiNotifications.somethingWentWrong')}
+                </h1>
+                <p className='text-2xl mt-4 font-medium text-gray-700 dark:text-gray-200 tracking-tight'>
+                  {t('apiNotifications.errorCode', { error })}
+                </p>
+              </div>
+              <div className='mt-8 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>
+                <button
+                  type='button'
+                  onClick={() => window.location.reload()}
+                  className='inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                >
+                  {t('dashboard.reloadPage')}
+                </button>
+                <Link
+                  to={routes.contact}
+                  className='inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700 dark:focus:ring-gray-50'
+                >
+                  {t('notFoundPage.support')}
+                </Link>
+              </div>
             </div>
-            <div className='ml-3'>
-              <h3 className='text-sm font-medium text-red-800'>{error}</h3>
-            </div>
-          </div>
+          </main>
         </div>
       </div>
     )
