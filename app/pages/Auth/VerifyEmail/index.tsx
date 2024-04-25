@@ -4,6 +4,7 @@ import { useParams, Link } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import _isString from 'lodash/isString'
+import _isArray from 'lodash/isArray'
 
 import sagaActions from 'redux/sagas/actions'
 import Loader from 'ui/Loader'
@@ -42,8 +43,15 @@ const VerifyEmail = (): JSX.Element => {
         () => {
           setLoading(false)
         },
-        (verifyError: string | { message: string }) => {
-          setError(_isString(verifyError) ? verifyError : verifyError.message)
+        (verifyError: any) => {
+          if (_isArray(verifyError)) {
+            setError(verifyError[0])
+          } else if (_isString(verifyError)) {
+            setError(verifyError)
+          } else {
+            setError(verifyError?.message || t('auth.verification.invalid'))
+          }
+
           setLoading(false)
         },
       ),
