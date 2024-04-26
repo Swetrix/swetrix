@@ -248,6 +248,7 @@ const projectsSlice = createSlice({
       state.captchaTotal = 0
       state.alerts = []
       state.subscribers = []
+      state.error = null
     },
     setBirdsEyeBulk(state, { payload }: PayloadAction<IOverall>) {
       state.birdseye = {
