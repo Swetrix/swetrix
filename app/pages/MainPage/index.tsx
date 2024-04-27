@@ -28,7 +28,7 @@ import _isEmpty from 'lodash/isEmpty'
 import routesPath from 'routesPath'
 import { getAccessToken } from 'utils/accessToken'
 import { nFormatterSeparated } from 'utils/generic'
-import { GITHUB_URL, MARKETPLACE_URL, LIVE_DEMO_URL, isBrowser } from 'redux/constants'
+import { GITHUB_URL, MARKETPLACE_URL, LIVE_DEMO_URL, BOOK_A_CALL_URL, isBrowser } from 'redux/constants'
 import { StateType } from 'redux/store/index'
 import BackgroundSvg from 'ui/icons/BackgroundSvg'
 import Webflow from 'ui/icons/Webflow'
@@ -301,6 +301,16 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                     <span className='text-base font-semibold'>{t('common.liveDemo')}</span>
                   </a>
                 </div>
+                <a
+                  href={BOOK_A_CALL_URL}
+                  className='mt-8 dark:text-gray-100 text-slate-900 hover:underline font-bold border-0 flex items-center'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  aria-label={`${t('common.bookADemo')} (opens in a new tab)`}
+                >
+                  <span className='text-base font-semibold'>{t('common.bookADemo')}</span>
+                  <ArrowSmallRightIcon className='h-4 w-5 mt-[1px]' />
+                </a>
               </div>
               <div className='max-w-md xl:max-w-lg hidden lg:block'>
                 <Lines />

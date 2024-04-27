@@ -15,7 +15,6 @@ import _filter from 'lodash/filter'
 import _map from 'lodash/map'
 import _toUpper from 'lodash/toUpper'
 import _includes from 'lodash/includes'
-import PropTypes from 'prop-types'
 import { ExclamationTriangleIcon, TrashIcon, RocketLaunchIcon } from '@heroicons/react/24/outline'
 
 import { withAuthentication, auth } from 'hoc/protected'
@@ -24,7 +23,6 @@ import { IProject } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 import { IProjectForShared, ISharedProject } from 'redux/models/ISharedProject'
 import {
-  createProject,
   updateProject,
   deleteProject,
   resetProject,
@@ -39,7 +37,6 @@ import Loader from 'ui/Loader'
 import Checkbox from 'ui/Checkbox'
 import Modal from 'ui/Modal'
 import FlatPicker from 'ui/Flatpicker'
-import { trackCustom } from 'utils/analytics'
 import countries from 'utils/isoCountries'
 import routes from 'routesPath'
 import Dropdown from 'ui/Dropdown'
@@ -258,7 +255,6 @@ const DEFAULT_PROJECT_NAME = 'Untitled Project'
 
 interface IProjectSettings {
   updateProjectFailed: (message: string) => void
-  createNewProjectFailed: (message: string) => void
   generateAlerts: (message: string) => void
   projectDeleted: (message: string) => void
   deleteProjectFailed: (message: string) => void
@@ -276,12 +272,10 @@ interface IProjectSettings {
   dashboardPaginationPage: number
   dashboardPaginationPageShared: number
   authLoading: boolean
-  isSettings: boolean
 }
 
 const ProjectSettings = ({
   updateProjectFailed,
-  createNewProjectFailed,
   generateAlerts,
   projectDeleted,
   deleteProjectFailed,
@@ -299,7 +293,6 @@ const ProjectSettings = ({
   dashboardPaginationPage,
   dashboardPaginationPageShared,
   authLoading,
-  isSettings,
 }: IProjectSettings) => {
   const {
     t,
@@ -364,7 +357,7 @@ const ProjectSettings = ({
       navigate(routes.dashboard)
     }
 
-    if (!isLoading && !isLoadingShared && isSettings && !projectDeleting) {
+    if (!isLoading && !isLoadingShared && !projectDeleting) {
       if (_isEmpty(project) || project?.uiHidden) {
         showError(t('project.noExist'))
         navigate(routes.dashboard)
@@ -377,19 +370,7 @@ const ProjectSettings = ({
         setInitialised(true)
       }
     }
-  }, [
-    user,
-    project,
-    initialised,
-    isLoading,
-    isSettings,
-    navigate,
-    showError,
-    projectDeleting,
-    t,
-    authLoading,
-    isLoadingShared,
-  ])
+  }, [user, project, initialised, isLoading, navigate, showError, projectDeleting, t, authLoading, isLoadingShared])
 
   const onSubmit = async (data: IForm) => {
     if (!projectSaving) {
@@ -411,25 +392,12 @@ const ProjectSettings = ({
               }),
           ipBlacklist: _isEmpty(data.ipBlacklist) ? null : _split(data.ipBlacklist, ','),
         }
-        if (isSettings) {
-          await updateProject(id, formalisedData as Partial<IProject>)
-          generateAlerts(t('project.settings.updated'))
-        } else {
-          await createProject({
-            name: data.name || DEFAULT_PROJECT_NAME,
-          })
-          trackCustom('PROJECT_CREATED')
-          navigate(routes.dashboard)
-          generateAlerts(t('project.settings.created'))
-        }
+        await updateProject(id, formalisedData as Partial<IProject>)
+        generateAlerts(t('project.settings.updated'))
 
         loadProjects(isSharedProject, paginationSkip)
-      } catch (e) {
-        if (isSettings) {
-          updateProjectFailed(e as string)
-        } else {
-          createNewProjectFailed(e as string)
-        }
+      } catch (reason) {
+        updateProjectFailed(reason as string)
       } finally {
         setProjectSaving(false)
       }
@@ -545,7 +513,7 @@ const ProjectSettings = ({
   }
 
   const onCancel = () => {
-    navigate(isSettings ? _replace(routes.project, ':id', id) : routes.dashboard)
+    navigate(_replace(routes.project, ':id', id))
   }
 
   const onTransfer = async () => {
@@ -580,14 +548,11 @@ const ProjectSettings = ({
     }
   }
 
-  const title = isSettings ? `${t('project.settings.settings')} ${form.name}` : t('project.settings.create')
+  const title = `${t('project.settings.settings')} ${form.name}`
 
   useEffect(() => {
-    let pageTitle = isSettings ? `${t('project.settings.settings')} ${form.name}` : t('project.settings.create')
-    pageTitle += ` ${TITLE_SUFFIX}`
-
-    document.title = pageTitle
-  }, [form, t, isSettings])
+    document.title = `${t('project.settings.settings')} ${form.name} ${TITLE_SUFFIX}`
+  }, [form, t])
 
   if (authLoading || !initialised) {
     return (
@@ -598,11 +563,7 @@ const ProjectSettings = ({
   }
 
   return (
-    <div
-      className={cx('min-h-min-footer bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8', {
-        'pb-40': isSettings,
-      })}
-    >
+    <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8 pb-40'>
       <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
         <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{title}</h2>
         <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('profileSettings.general')}</h3>
@@ -617,170 +578,100 @@ const ProjectSettings = ({
           onChange={handleInput}
           error={beenSubmitted ? errors.name : null}
         />
-        {isSettings ? (
-          <>
-            <Input
-              name='id'
-              id='id'
-              type='text'
-              label={t('project.settings.pid')}
-              value={form.id}
-              className='mt-4'
-              onChange={handleInput}
-              error={null}
-              disabled
-            />
-            <Input
-              name='sharableLink'
-              id='sharableLink'
-              type='text'
-              label={t('project.settings.sharableLink')}
-              hint={t('project.settings.sharableDesc')}
-              value={`https://swetrix.com/projects/${form.id}`}
-              className='mt-4'
-              onChange={handleInput}
-              error={null}
-              disabled
-            />
-            <Input
-              name='origins'
-              id='origins'
-              type='text'
-              label={t('project.settings.origins')}
-              hint={t('project.settings.originsHint')}
-              value={form.origins || ''}
-              className='mt-4'
-              onChange={handleInput}
-              error={beenSubmitted ? errors.origins : null}
-            />
-            <Input
-              name='ipBlacklist'
-              id='ipBlacklist'
-              type='text'
-              label={t('project.settings.ipBlacklist')}
-              hint={t('project.settings.ipBlacklistHint')}
-              value={form.ipBlacklist || ''}
-              className='mt-4'
-              onChange={handleInput}
-              error={beenSubmitted ? errors.ipBlacklist : null}
-            />
-            <Checkbox
-              checked={Boolean(form.active)}
-              onChange={handleInput}
-              name='active'
-              id='active'
-              className='mt-4'
-              label={t('project.settings.enabled')}
-              hint={t('project.settings.enabledHint')}
-            />
-            <Checkbox
-              checked={Boolean(form.public)}
-              onChange={(e: any) => {
-                if (!form.isPasswordProtected) {
-                  handleInput(e)
-                }
-              }}
-              name='public'
-              id='public'
-              className='mt-4'
-              label={t('project.settings.public')}
-              hint={t('project.settings.publicHint')}
-            />
-            {!isSelfhosted && (
-              <Checkbox
-                checked={Boolean(form.isPasswordProtected)}
-                onChange={() => {
-                  if (!form.public && form.isPasswordProtected) {
-                    setForm({
-                      ...form,
-                      isPasswordProtected: false,
-                    })
-                    return
-                  }
+        <Input
+          name='id'
+          id='id'
+          type='text'
+          label={t('project.settings.pid')}
+          value={form.id}
+          className='mt-4'
+          onChange={handleInput}
+          error={null}
+          disabled
+        />
+        <Input
+          name='sharableLink'
+          id='sharableLink'
+          type='text'
+          label={t('project.settings.sharableLink')}
+          hint={t('project.settings.sharableDesc')}
+          value={`https://swetrix.com/projects/${form.id}`}
+          className='mt-4'
+          onChange={handleInput}
+          error={null}
+          disabled
+        />
+        <Input
+          name='origins'
+          id='origins'
+          type='text'
+          label={t('project.settings.origins')}
+          hint={t('project.settings.originsHint')}
+          value={form.origins || ''}
+          className='mt-4'
+          onChange={handleInput}
+          error={beenSubmitted ? errors.origins : null}
+        />
+        <Input
+          name='ipBlacklist'
+          id='ipBlacklist'
+          type='text'
+          label={t('project.settings.ipBlacklist')}
+          hint={t('project.settings.ipBlacklistHint')}
+          value={form.ipBlacklist || ''}
+          className='mt-4'
+          onChange={handleInput}
+          error={beenSubmitted ? errors.ipBlacklist : null}
+        />
+        <Checkbox
+          checked={Boolean(form.active)}
+          onChange={handleInput}
+          name='active'
+          id='active'
+          className='mt-4'
+          label={t('project.settings.enabled')}
+          hint={t('project.settings.enabledHint')}
+        />
+        <Checkbox
+          checked={Boolean(form.public)}
+          onChange={(e: any) => {
+            if (!form.isPasswordProtected) {
+              handleInput(e)
+            }
+          }}
+          name='public'
+          id='public'
+          className='mt-4'
+          label={t('project.settings.public')}
+          hint={t('project.settings.publicHint')}
+        />
+        {!isSelfhosted && (
+          <Checkbox
+            checked={Boolean(form.isPasswordProtected)}
+            onChange={() => {
+              if (!form.public && form.isPasswordProtected) {
+                setForm({
+                  ...form,
+                  isPasswordProtected: false,
+                })
+                return
+              }
 
-                  if (!form.public) {
-                    setShowProtected(true)
-                  }
-                }}
-                name='isPasswordProtected'
-                id='isPasswordProtected'
-                className='mt-4'
-                label={t('project.settings.protected')}
-                hint={t('project.settings.protectedHint')}
-              />
-            )}
-            <div className='flex flex-wrap justify-center sm:justify-between gap-2 mt-8'>
-              <div className='flex flex-wrap items-center gap-2'>
-                <Button
-                  className='border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700'
-                  onClick={onCancel}
-                  secondary
-                  regular
-                >
-                  {t('common.cancel')}
-                </Button>
-                <Button type='submit' loading={projectSaving} primary regular>
-                  {t('common.save')}
-                </Button>
-              </div>
-              {!project?.shared && (
-                <div className='flex flex-wrap justify-center gap-2'>
-                  {!isSelfhosted && (
-                    <Button onClick={() => setShowTransfer(true)} semiDanger semiSmall>
-                      <>
-                        <RocketLaunchIcon className='w-5 h-5 mr-1' />
-                        {t('project.settings.transfer')}
-                      </>
-                    </Button>
-                  )}
-                  <Button
-                    onClick={() => !projectResetting && setShowReset(true)}
-                    loading={projectDeleting}
-                    semiDanger
-                    semiSmall
-                  >
-                    <>
-                      <TrashIcon className='w-5 h-5 mr-1' />
-                      {t('project.settings.reset')}
-                    </>
-                  </Button>
-                  <Button
-                    onClick={() => !projectDeleting && setShowDelete(true)}
-                    loading={projectDeleting}
-                    danger
-                    semiSmall
-                  >
-                    <>
-                      <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
-                      {t('project.settings.delete')}
-                    </>
-                  </Button>
-                </div>
-              )}
-            </div>
-            {!isSelfhosted && (
-              <>
-                <hr className='mt-8 xs:mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
-                <Emails projectId={id} projectName={project.name} />
-              </>
-            )}
-            {!isSelfhosted && (
-              <>
-                <hr className='mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
-                <People project={project} isSharedProject={isSharedProject} />
-              </>
-            )}
-          </>
-        ) : (
-          <p className='text-gray-500 dark:text-gray-300 italic mt-1 mb-4 text-sm'>
-            {t('project.settings.createHint')}
-          </p>
+              if (!form.public) {
+                setShowProtected(true)
+              }
+            }}
+            name='isPasswordProtected'
+            id='isPasswordProtected'
+            className='mt-4'
+            label={t('project.settings.protected')}
+            hint={t('project.settings.protectedHint')}
+          />
         )}
-
-        {!isSettings && (
-          <div>
+        <div className='flex flex-wrap justify-center sm:justify-between gap-2 mt-8'>
+          <div className='flex flex-wrap items-center gap-2'>
             <Button
-              className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700'
+              className='border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700'
               onClick={onCancel}
               secondary
               regular
@@ -791,6 +682,52 @@ const ProjectSettings = ({
               {t('common.save')}
             </Button>
           </div>
+          {!project?.shared && (
+            <div className='flex flex-wrap justify-center gap-2'>
+              {!isSelfhosted && (
+                <Button onClick={() => setShowTransfer(true)} semiDanger semiSmall>
+                  <>
+                    <RocketLaunchIcon className='w-5 h-5 mr-1' />
+                    {t('project.settings.transfer')}
+                  </>
+                </Button>
+              )}
+              <Button
+                onClick={() => !projectResetting && setShowReset(true)}
+                loading={projectDeleting}
+                semiDanger
+                semiSmall
+              >
+                <>
+                  <TrashIcon className='w-5 h-5 mr-1' />
+                  {t('project.settings.reset')}
+                </>
+              </Button>
+              <Button
+                onClick={() => !projectDeleting && setShowDelete(true)}
+                loading={projectDeleting}
+                danger
+                semiSmall
+              >
+                <>
+                  <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
+                  {t('project.settings.delete')}
+                </>
+              </Button>
+            </div>
+          )}
+        </div>
+        {!isSelfhosted && (
+          <>
+            <hr className='mt-8 xs:mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
+            <Emails projectId={id} projectName={project.name} />
+          </>
+        )}
+        {!isSelfhosted && (
+          <>
+            <hr className='mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
+            <People project={project} isSharedProject={isSharedProject} />
+          </>
         )}
       </form>
       <Modal
@@ -884,26 +821,6 @@ const ProjectSettings = ({
       />
     </div>
   )
-}
-
-ProjectSettings.propTypes = {
-  updateProjectFailed: PropTypes.func.isRequired,
-  createNewProjectFailed: PropTypes.func.isRequired,
-  generateAlerts: PropTypes.func.isRequired,
-  projectDeleted: PropTypes.func.isRequired,
-  deleteProjectFailed: PropTypes.func.isRequired,
-  loadProjects: PropTypes.func.isRequired,
-  projects: PropTypes.arrayOf(PropTypes.object).isRequired,
-  showError: PropTypes.func.isRequired,
-  isLoading: PropTypes.bool.isRequired,
-  user: PropTypes.object.isRequired,
-  isSharedProject: PropTypes.bool.isRequired,
-  deleteProjectCache: PropTypes.func.isRequired,
-  isSettings: PropTypes.bool,
-}
-
-ProjectSettings.defaultProps = {
-  isSettings: false,
 }
 
 export default memo(withAuthentication(ProjectSettings, auth.authenticated))

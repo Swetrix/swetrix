@@ -1,4 +1,4 @@
-import ProjectSettings from 'pages/Project/Settings'
+import NewProject from 'pages/Project/New'
 import type { SitemapFunction } from 'remix-sitemap'
 
 export const sitemap: SitemapFunction = () => ({
@@ -6,5 +6,5 @@ export const sitemap: SitemapFunction = () => ({
 })
 
 export default function Index() {
-  return <ProjectSettings />
+  return <NewProject />
 }

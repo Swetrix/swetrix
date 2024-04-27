@@ -94,7 +94,8 @@
     "oneMember": "1 Member",
     "xMembers": "{{number}} Members",
     "general": "General",
-    "fixIt": "Fix it"
+    "fixIt": "Fix it",
+    "bookADemo": "Book an enterprise demo"
   },
   "performance": {
     "slogan": "End user <span>performance monitoring</span> to deliver fast websites.",

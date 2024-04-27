@@ -28,13 +28,6 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
       }),
     )
   },
-  createNewProjectFailed: (message: string) => {
-    dispatch(
-      errorsActions.createNewProjectFailed({
-        message,
-      }),
-    )
-  },
   generateAlerts: (message: string) => {
     dispatch(
       alertsActions.generateAlerts({
