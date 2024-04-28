@@ -1,9 +1,7 @@
 // This script initialises the Swetrix cloud edition database and tables if they're absent
 const { queriesRunner, dbName, databaselessQueriesRunner } = require('./setup')
 
-const CLICKHOUSE_DB_INIT_QUERIES = [
-  `CREATE DATABASE IF NOT EXISTS ${dbName}`,
-]
+const CLICKHOUSE_DB_INIT_QUERIES = [`CREATE DATABASE IF NOT EXISTS ${dbName}`]
 
 const CLICKHOUSE_INIT_QUERIES = [
   // The traffic data table
@@ -25,6 +23,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     cc Nullable(FixedString(2)),
     rg LowCardinality(Nullable(String)),
     ct Nullable(String),
+    lt Nullable(UInt8),
     sdur Nullable(UInt32), 
     unique UInt8,
     created DateTime('UTC')
@@ -51,6 +50,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     cc Nullable(FixedString(2)),
     rg LowCardinality(Nullable(String)),
     ct Nullable(String),
+    lt Nullable(UInt8),
     meta Nested
     (
       key String,
@@ -99,7 +99,7 @@ const CLICKHOUSE_INIT_QUERIES = [
   )
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
-  ORDER BY (pid, created);`
+  ORDER BY (pid, created);`,
 ]
 
 const initialiseDatabase = async () => {
@@ -107,7 +107,9 @@ const initialiseDatabase = async () => {
     await databaselessQueriesRunner(CLICKHOUSE_DB_INIT_QUERIES)
     await queriesRunner(CLICKHOUSE_INIT_QUERIES)
   } catch (reason) {
-    console.error(`[ERROR] Error occured whilst initialising the database: ${reason}`)
+    console.error(
+      `[ERROR] Error occured whilst initialising the database: ${reason}`,
+    )
   }
 }
 
