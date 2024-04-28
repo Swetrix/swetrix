@@ -1221,7 +1221,7 @@ export class AnalyticsController {
     @Ip() reqIP,
   ): Promise<any> {
     this.analyticsService.validatePID(statusDTO.pid)
-    // await this.analyticsService.checkManageAccess(statusDTO.pid, uid)
+    await this.analyticsService.checkManageAccess(statusDTO.pid, uid)
 
     const eids = getEIDsArray(statusDTO.eids, statusDTO.eid)
 
