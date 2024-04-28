@@ -9,31 +9,27 @@ import Flag from 'react-flagkit'
 import { getLiveVisitorsInfo, IGetLiveVisitorsInfo } from 'api'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
 
-const LiveVisitorsDropdown = ({
-  live,
-  projectId,
-  projectPassword,
-}: {
+interface ILiveVisitorsDropdown {
   live: number | string
   projectId: string
   projectPassword?: string
-}): JSX.Element => {
+}
+
+const LiveVisitorsDropdown = ({ live, projectId, projectPassword }: ILiveVisitorsDropdown): JSX.Element => {
   const { t } = useTranslation()
   const [show, setShow] = useState<boolean>(false)
   const [liveInfo, setLiveInfo] = useState<IGetLiveVisitorsInfo[]>([])
   const [loading, setLoading] = useState<boolean>(true)
 
   const getLiveVisitors = async () => {
-    await getLiveVisitorsInfo(projectId, projectPassword)
-      .then((res) => {
-        setLiveInfo(res)
-      })
-      .catch((err) => {
-        console.log(err)
-      })
-      .finally(() => {
-        setLoading(false)
-      })
+    try {
+      const info = await getLiveVisitorsInfo(projectId, projectPassword)
+      setLiveInfo(info)
+    } catch (reason) {
+      console.error('[LiveVisitorsDropdown] getLiveVisitors:', reason)
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
@@ -64,20 +60,25 @@ const LiveVisitorsDropdown = ({
               {loading ? (
                 <p className='text-sm text-gray-900 dark:text-gray-50'>{t('common.loading')}</p>
               ) : (
-                _map(liveInfo, ({ dv, br, os, cc }, index) => (
-                  <div
-                    key={`${dv}${br}${os}${cc}${index}`}
-                    className='flex flex-row items-center justify-between w-full p-2 mt-2 text-sm text-gray-900 bg-gray-100 rounded-md dark:text-gray-50 dark:bg-slate-800'
-                  >
-                    <div className='flex flex-row items-center'>
-                      <Flag className='rounded-sm mr-2' country={cc} size={21} alt='' aria-hidden='true' />
-                      <p className='mr-2'>{os}</p>
-                      <p className='mr-2'>{br}</p>
-                      <p className='mr-2 capitalize'>{dv}</p>
-                    </div>
-                    <p className='text-xs font-semibold text-green-500'>{t('dashboard.live')}</p>
-                  </div>
-                ))
+                <table className='border-separate border-spacing-y-2'>
+                  <tbody>
+                    {_map(liveInfo, ({ dv, br, os, cc }, index) => (
+                      <tr
+                        key={`${dv}${br}${os}${cc}${index}`}
+                        className='rounded-md text-sm text-gray-900 dark:text-gray-50'
+                      >
+                        <td className='py-2 pl-2 pr-2 rounded-l-lg bg-gray-100 dark:bg-slate-800'>
+                          <Flag className='rounded-sm' country={cc} size={21} alt='' aria-hidden='true' />
+                        </td>
+                        <td className='bg-gray-100 dark:bg-slate-800 pr-2'>{os}</td>
+                        <td className='bg-gray-100 dark:bg-slate-800 pr-2'>{br}</td>
+                        <td className='pr-2 rounded-r-lg bg-gray-100 dark:bg-slate-800'>
+                          <p className='capitalize'>{dv}</p>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               )}
             </div>
             <XMarkIcon
