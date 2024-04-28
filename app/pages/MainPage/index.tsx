@@ -303,7 +303,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                 </div>
                 <a
                   href={BOOK_A_CALL_URL}
-                  className='mt-8 dark:text-gray-100 text-slate-900 hover:underline font-bold border-0 flex items-center'
+                  className='mt-8 dark:text-gray-100 text-slate-900 hover:underline font-bold border-0 flex items-center max-w-max'
                   target='_blank'
                   rel='noopener noreferrer'
                   aria-label={`${t('common.bookADemo')} (opens in a new tab)`}
