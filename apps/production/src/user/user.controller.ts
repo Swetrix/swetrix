@@ -16,6 +16,7 @@ import {
   Headers,
   Ip,
   Patch,
+  NotFoundException,
 } from '@nestjs/common'
 import { Request } from 'express'
 import { ApiTags, ApiQuery, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
@@ -72,6 +73,7 @@ import {
   generateRefCode,
 } from '../common/utils'
 import { IUsageInfo, IMetaInfo } from './interfaces'
+import { ReportFrequency } from '../project/enums'
 
 dayjs.extend(utc)
 
@@ -898,5 +900,35 @@ export class UserController {
     const { planId } = body
 
     return this.userService.previewSubscription(id, planId)
+  }
+
+  // Used to unsubscribe from email reports
+  @Get('/unsubscribe/:token')
+  @Public()
+  @ApiResponse({ status: 204 })
+  async unsubscribeFromEmailReports(
+    @Param('token') token: string,
+  ): Promise<void> {
+    this.logger.log({ token }, 'GET /project/unsubscribe/:token')
+
+    let userId
+
+    try {
+      userId = this.userService.decryptUnsubscribeKey(token)
+    } catch {
+      throw new NotFoundException('Unsubscribe token is invalid')
+    }
+
+    const user = await this.userService.findOneWhere({
+      id: userId,
+    })
+
+    if (!user) {
+      throw new NotFoundException('Unsubscribe token is invalid')
+    }
+
+    await this.userService.update(userId, {
+      reportFrequency: ReportFrequency.NEVER,
+    })
   }
 }

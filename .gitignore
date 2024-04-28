@@ -39,3 +39,5 @@ pnpm-lock.yaml
 yarn.lock
 *.mmdb
 *.mmdb.gz
+
+.env.prod
