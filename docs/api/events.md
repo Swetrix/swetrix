@@ -70,6 +70,7 @@ All of the values are numbers in milliseconds.
 | `so` | `string` | `false` | A source of the pageview (e.g. `ref`, `source` or `utm_source` GET parameter) |
 | `me` | `string` | `false` | A medium of the pageview (e.g. `utm_medium` GET parameter) |
 | `ca` | `string` | `false` | A campaign of the pageview (e.g. `utm_campaign` GET parameter) |
+| `meta` | `object` | `false` | A `key` / `value` pair of custom properties for your event (e.g. if your event is `signup`, you can include `meta` like `{ affiliate: 'Yes', currency: 'GBP' }`). The values of the object must be strings, the maximum number of keys allowed is 20 and the total length of the values combined must be less than 1000 characters. |
 
 ### Heartbeat event structure
 | Name | Type | Required | Description |
