@@ -827,6 +827,7 @@ export class ProjectService {
         id: projectId,
         admin: { id: userId },
       },
+      relations: ['admin'],
     })
   }
 

@@ -549,7 +549,7 @@ export class ProjectController {
   async updateFunnel(
     @Body() funnelDTO: FunnelUpdateDTO,
     @CurrentUserId() userId: string,
-  ): Promise<any> {
+  ): Promise<void> {
     this.logger.log({ funnelDTO, userId }, 'PATCH /project/funnel')
 
     if (!userId) {
@@ -609,7 +609,7 @@ export class ProjectController {
       throw new NotFoundException('Funnel not found.')
     }
 
-    return this.projectService.updateFunnel({
+    await this.projectService.updateFunnel({
       id: funnelDTO.id,
       name: funnelDTO.name,
       steps: funnelDTO.steps,
