@@ -476,7 +476,7 @@ const ViewProject = ({
     setFunnelActionLoading(true)
 
     try {
-      updateFunnel(funnelId, id, name, steps)
+      await updateFunnel(funnelId, id, name, steps)
     } catch (reason: any) {
       console.error('[ERROR] (onFunnelEdit)(updateFunnel)', reason)
       showError(reason)
@@ -485,7 +485,7 @@ const ViewProject = ({
     try {
       const funnels = await getFunnels(id, projectPassword)
 
-      updateProject(id, {
+      await updateProject(id, {
         funnels,
       })
     } catch (reason: any) {
