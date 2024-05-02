@@ -6,6 +6,8 @@ import {
   ArrayMinSize,
   ArrayNotEmpty,
   IsArray,
+  IsDateString,
+  IsNotEmpty,
 } from 'class-validator'
 
 const PROJECT_ID_REGEX = /^(?!.*--)[a-zA-Z0-9-]{12}$/
@@ -21,4 +23,14 @@ export class DeleteBulkProjectsDto {
   @ArrayNotEmpty()
   @IsArray()
   public readonly projectIds: string[]
+
+  @ApiProperty({ format: 'date' })
+  @IsDateString()
+  @IsNotEmpty()
+  public readonly startDate: string
+
+  @ApiProperty({ format: 'date' })
+  @IsDateString()
+  @IsNotEmpty()
+  public readonly endDate: string
 }
