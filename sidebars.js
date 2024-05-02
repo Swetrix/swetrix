@@ -8,7 +8,15 @@ module.exports = {
       {
         type: 'category',
         label: 'Integrations',
-        items: ['integrations/wordpress', 'integrations/webflow', 'integrations/framer', 'integrations/wix', 'integrations/ghost', 'integrations/django', 'integrations/sveltekit'],
+        items: [
+          'integrations/wordpress',
+          'integrations/webflow',
+          'integrations/framer',
+          'integrations/wix',
+          'integrations/ghost',
+          'integrations/django',
+          'integrations/sveltekit',
+        ],
       },
       'troubleshooting',
     ],
@@ -25,32 +33,25 @@ module.exports = {
       'billing/cancel-subscription',
       'billing/faq',
     ],
-    'Affiliate program': [
-      'affiliate/about',
-      'affiliate/terms',
+    Adblockers: [
+      'adblockers/how-to-deal-with-adblockers',
+      {
+        type: 'category',
+        label: 'Proxy guides',
+        items: [
+          {
+            id: 'adblockers/guides/nginx',
+            type: 'doc',
+            label: 'Nginx',
+          },
+        ],
+      },
     ],
-    'Extensions SDK': [
-      'ext-sdk-introduction',
-      'ext-sdk-faq',
-      'ext-sdk-reference',
-    ],
-    'API': [
-      'api/stats',
-      'api/events',
-      'api/admin',
-    ],
-    'CAPTCHA': [
-      'captcha/introduction',
-      'captcha/client-side-usage',
-      'captcha/server-side-validation',
-      'captcha/testing',
-    ],
-    'Self-hosting': [
-      'selfhosting/how-to',
-      'selfhosting/configuring',
-    ],
-    'Contribute': [
-      'contribute/how-to',
-    ],
+    'Affiliate program': ['affiliate/about', 'affiliate/terms'],
+    'Extensions SDK': ['ext-sdk-introduction', 'ext-sdk-faq', 'ext-sdk-reference'],
+    API: ['api/stats', 'api/events', 'api/admin'],
+    CAPTCHA: ['captcha/introduction', 'captcha/client-side-usage', 'captcha/server-side-validation', 'captcha/testing'],
+    'Self-hosting': ['selfhosting/how-to', 'selfhosting/configuring'],
+    Contribute: ['contribute/how-to'],
   },
 }
