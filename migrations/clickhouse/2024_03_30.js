@@ -33,8 +33,7 @@ const queries = [
     updated DateTime('UTC') DEFAULT now()
   )
   ENGINE = ReplacingMergeTree()
-  PARTITION BY toYYYYMM(updated)
-  ORDER BY (eid, updated);`,
+  PRIMARY KEY (eid, pid);`,
 ]
 
 queriesRunner(queries)

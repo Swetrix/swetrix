@@ -1211,7 +1211,7 @@ export class AnalyticsController {
     }
   }
 
-  // Log error event
+  // Update error(s) status
   @Patch('error-status')
   @Auth([], true, true)
   async patchStatus(

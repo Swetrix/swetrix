@@ -3070,7 +3070,14 @@ export class AnalyticsService {
           AND created BETWEEN ${tzFromDate} AND ${tzToDate}
           ${filtersQuery}
       ) AS errors
-      LEFT JOIN error_statuses AS status ON errors.eid = status.eid
+      LEFT JOIN (
+        SELECT
+          eid,
+          argMax(status, updated) AS status
+        FROM error_statuses
+        WHERE pid = {pid:FixedString(12)}
+        GROUP BY eid
+      ) AS status ON errors.eid = status.eid
       GROUP BY errors.eid, status.status
       ORDER BY last_seen DESC
       LIMIT ${take}
