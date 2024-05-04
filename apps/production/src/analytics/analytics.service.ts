@@ -1758,6 +1758,22 @@ export class AnalyticsService {
     return _map(results, type)
   }
 
+  async getErrorsFilters(pid: string, type: string): Promise<Array<string>> {
+    if (!_includes(ERROR_COLUMNS, type)) {
+      throw new UnprocessableEntityException(
+        `The provided type (${type}) is incorrect`,
+      )
+    }
+
+    const query = `SELECT ${type} FROM errors WHERE pid={pid:FixedString(12)} AND ${type} IS NOT NULL GROUP BY ${type}`
+
+    const results = await clickhouse
+      .query(query, { params: { pid } })
+      .toPromise()
+
+    return _map(results, type)
+  }
+
   async generateParams(
     parsedFilters: Array<{ [key: string]: string }>,
     subQuery: string,
@@ -3053,6 +3069,9 @@ export class AnalyticsService {
   ): Promise<object | void> {
     const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
     const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+
+    console.log('filtersQuery:', filtersQuery)
+    console.log('paramsData:', paramsData)
 
     const query = `
       SELECT

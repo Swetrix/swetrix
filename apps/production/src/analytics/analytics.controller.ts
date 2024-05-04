@@ -620,6 +620,27 @@ export class AnalyticsController {
     return this.analyticsService.getFilters(pid, type)
   }
 
+  @Get('errors-filters')
+  @Auth([], true, true)
+  async getErrorsFilters(
+    @Query() data: GetFiltersDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<any> {
+    const { pid, type } = data
+    this.analyticsService.validatePID(pid)
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    return this.analyticsService.getErrorsFilters(pid, type)
+  }
+
   @Get('chart')
   @Auth([], true, true)
   async getChartData(
