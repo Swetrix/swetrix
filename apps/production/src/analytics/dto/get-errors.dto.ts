@@ -19,7 +19,5 @@ export class GetErrorsDto extends PickType(AnalyticsGET_DTO, [
     },
     description: 'Errors list options',
   })
-  options?: {
-    showResolved: boolean
-  }
+  options?: string
 }

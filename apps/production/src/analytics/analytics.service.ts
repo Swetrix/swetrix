@@ -3061,7 +3061,7 @@ export class AnalyticsService {
   }
 
   async getErrorsList(
-    options: any,
+    options: string,
     filtersQuery: string,
     paramsData: object,
     safeTimezone: string,
@@ -3070,6 +3070,16 @@ export class AnalyticsService {
   ): Promise<object | void> {
     const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
     const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+
+    let parsedOptions: {
+      showResolved?: boolean
+    } = {}
+
+    try {
+      parsedOptions = JSON.parse(options)
+    } catch (reason) {
+      console.error('[getErrorsList] Failed to parse options:', options)
+    }
 
     const query = `
       SELECT
@@ -3095,7 +3105,11 @@ export class AnalyticsService {
         WHERE pid = {pid:FixedString(12)}
         GROUP BY eid
       ) AS status ON errors.eid = status.eid
-      ${options?.showResolved ? '' : "WHERE status.status = 'active'"}
+      ${
+        parsedOptions?.showResolved
+          ? ''
+          : "WHERE status.status = 'active' OR status.status = 'regressed'"
+      }
       GROUP BY errors.eid, status.status
       ORDER BY last_seen DESC
       LIMIT ${take}
