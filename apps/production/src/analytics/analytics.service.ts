@@ -3061,6 +3061,7 @@ export class AnalyticsService {
   }
 
   async getErrorsList(
+    options: any,
     filtersQuery: string,
     paramsData: object,
     safeTimezone: string,
@@ -3069,9 +3070,6 @@ export class AnalyticsService {
   ): Promise<object | void> {
     const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
     const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
-
-    console.log('filtersQuery:', filtersQuery)
-    console.log('paramsData:', paramsData)
 
     const query = `
       SELECT
@@ -3097,6 +3095,7 @@ export class AnalyticsService {
         WHERE pid = {pid:FixedString(12)}
         GROUP BY eid
       ) AS status ON errors.eid = status.eid
+      ${options?.showResolved ? '' : "WHERE status.status = 'active'"}
       GROUP BY errors.eid, status.status
       ORDER BY last_seen DESC
       LIMIT ${take}

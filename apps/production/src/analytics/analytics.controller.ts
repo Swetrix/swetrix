@@ -1643,7 +1643,15 @@ export class AnalyticsController {
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ): Promise<any> {
-    const { pid, period, from, to, filters, timezone = DEFAULT_TIMEZONE } = data
+    const {
+      pid,
+      period,
+      from,
+      to,
+      filters,
+      timezone = DEFAULT_TIMEZONE,
+      options,
+    } = data
     this.analyticsService.validatePID(pid)
 
     if (!_isEmpty(period)) {
@@ -1708,6 +1716,7 @@ export class AnalyticsController {
     }
 
     const errors = await this.analyticsService.getErrorsList(
+      options,
       filtersQuery,
       paramsData,
       safeTimezone,
