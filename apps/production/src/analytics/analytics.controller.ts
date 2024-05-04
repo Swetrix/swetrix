@@ -1225,7 +1225,7 @@ export class AnalyticsController {
 
     const eids = getEIDsArray(statusDTO.eids, statusDTO.eid)
 
-    await this.analyticsService.checkManageEIDAccess(eids, statusDTO.pid)
+    await this.analyticsService.validateEIDs(eids, statusDTO.pid)
 
     return this.analyticsService.updateEIDStatus(
       eids,

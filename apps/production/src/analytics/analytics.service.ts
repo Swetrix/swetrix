@@ -3186,7 +3186,7 @@ export class AnalyticsService {
     }).toString('hex')
   }
 
-  async checkManageEIDAccess(eids: string[], pid: string) {
+  async validateEIDs(eids: string[], pid: string) {
     const params = _reduce(
       eids,
       (acc, curr, index) => ({
@@ -3196,7 +3196,7 @@ export class AnalyticsService {
       {},
     )
 
-    const query = `SELECT count() as count FROM error_statuses WHERE pid = {pid:FixedString(12)} AND eid IN (${_map(
+    const query = `SELECT count(DISTINCT eid) as count FROM errors WHERE pid = {pid:FixedString(12)} AND eid IN (${_map(
       params,
       (val, key) => `{${key}:FixedString(32)}`,
     ).join(', ')})`
@@ -3208,16 +3208,16 @@ export class AnalyticsService {
         .query(query, { params: { ...params, pid } })
         .toPromise()
     } catch (reason) {
-      console.error('checkManageEIDAccess - clickhouse request error')
+      console.error('validateEIDs - clickhouse request error')
       console.error(reason)
       throw new InternalServerErrorException(
-        'Error occured while checking error ID access',
+        'Error occured while validating error IDs',
       )
     }
 
     if (result.count !== _size(eids)) {
       throw new UnprocessableEntityException(
-        'You are not allowed to delete some of the error IDs (eid(s) parameter) you provided',
+        'Some of the error IDs you provided are not valid (do not exist in our database)',
       )
     }
   }
