@@ -3156,6 +3156,7 @@ export class AnalyticsService {
         FROM errors
         WHERE pid = {pid:FixedString(12)}
           AND eid = {eid:FixedString(32)}
+          AND created BETWEEN ${tzFromDate} AND ${tzToDate}
       ) AS subquery
       LEFT JOIN (
         SELECT
@@ -3169,19 +3170,6 @@ export class AnalyticsService {
       GROUP BY subquery.eid, status.status
       ORDER BY last_seen DESC;
     `
-
-    // const queryErrorDetails = `
-    //   SELECT eid, any(name) as name, any(message) as message, any(filename) as filename, any(colno) as colno, any(lineno) as lineno, count(*) as count, max(created) as last_seen, min(created) as first_seen
-    //   FROM (
-    //     SELECT eid, name, message, filename, created, colno, lineno
-    //     FROM errors
-    //     WHERE pid = {pid:FixedString(12)}
-    //       AND eid = {eid:FixedString(32)}
-    //       AND created BETWEEN ${tzFromDate} AND ${tzToDate}
-    //   ) subquery
-    //   GROUP BY eid
-    //   ORDER BY last_seen DESC;
-    // `
 
     const paramsData = {
       params: {

@@ -67,7 +67,11 @@ import {
   clickhouse,
   REDIS_LOG_ERROR_CACHE_KEY,
 } from '../common/constants'
-import { getGeoDetails, getIPFromHeaders } from '../common/utils'
+import {
+  checkRateLimit,
+  getGeoDetails,
+  getIPFromHeaders,
+} from '../common/utils'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { GetCustomEventsDto } from './dto/get-custom-events.dto'
@@ -1241,18 +1245,20 @@ export class AnalyticsController {
     @Headers() headers,
     @Ip() reqIP,
   ): Promise<any> {
-    this.analyticsService.validatePID(statusDTO.pid)
-    await this.analyticsService.checkManageAccess(statusDTO.pid, uid)
+    const { pid, eid, eids: unprocessedEids, status } = statusDTO
+    const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    const eids = getEIDsArray(statusDTO.eids, statusDTO.eid)
+    await checkRateLimit(ip, 'error-status', 100, 1800)
 
-    await this.analyticsService.validateEIDs(eids, statusDTO.pid)
+    this.analyticsService.validatePID(pid)
+    await this.analyticsService.checkManageAccess(pid, uid)
+    await this.analyticsService.checkBillingAccess(pid)
 
-    return this.analyticsService.updateEIDStatus(
-      eids,
-      statusDTO.status,
-      statusDTO.pid,
-    )
+    const eids = getEIDsArray(unprocessedEids, eid)
+
+    await this.analyticsService.validateEIDs(eids, pid)
+
+    return this.analyticsService.updateEIDStatus(eids, status, pid)
   }
 
   // Log custom event
