@@ -3101,14 +3101,40 @@ export class AnalyticsService {
     const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
     const queryErrorDetailsNoDate = `
-      SELECT eid, any(name) as name, any(message) as message, any(filename) as filename, any(colno) as colno, any(lineno) as lineno, count(*) as count, max(created) as last_seen, min(created) as first_seen
+      SELECT
+        subquery.eid,
+        any(subquery.name) AS name,
+        any(subquery.message) AS message,
+        any(subquery.filename) AS filename,
+        any(subquery.colno) AS colno,
+        any(subquery.lineno) AS lineno,
+        count(*) AS count,
+        max(subquery.created) AS last_seen,
+        min(subquery.created) AS first_seen,
+        status.status
       FROM (
-        SELECT eid, name, message, filename, created, colno, lineno
+        SELECT
+          eid,
+          name,
+          message,
+          filename,
+          created,
+          colno,
+          lineno
         FROM errors
         WHERE pid = {pid:FixedString(12)}
           AND eid = {eid:FixedString(32)}
-      ) subquery
-      GROUP BY eid
+      ) AS subquery
+      LEFT JOIN (
+        SELECT
+          eid,
+          argMax(status, updated) AS status
+        FROM error_statuses
+        WHERE pid = {pid:FixedString(12)}
+          AND eid = {eid:FixedString(32)}
+        GROUP BY eid
+      ) AS status ON subquery.eid = status.eid
+      GROUP BY subquery.eid, status.status
       ORDER BY last_seen DESC;
     `
 
