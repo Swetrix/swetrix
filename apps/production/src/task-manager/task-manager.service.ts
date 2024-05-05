@@ -458,7 +458,7 @@ export class TaskManagerService {
         await clickhouse.query(query).toPromise()
       } catch (e) {
         console.error(
-          `[CRON WORKER] Error whilst saving custom events data: ${e}`,
+          `[CRON WORKER] Error whilst saving error events data: ${e}`,
         )
       }
     }
