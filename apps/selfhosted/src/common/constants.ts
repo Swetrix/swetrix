@@ -78,6 +78,7 @@ const REDIS_LOG_CUSTOM_CACHE_KEY = 'log_custom_cache_v3'
 const REDIS_SESSION_SALT_KEY = 'log_salt' // is updated every 24 hours
 const REDIS_USERS_COUNT_KEY = 'stats:users_count'
 const REDIS_PROJECTS_COUNT_KEY = 'stats:projects_count'
+const REDIS_LOG_ERROR_CACHE_KEY = 'log_error_cache'
 
 // 3600 sec -> 1 hour
 const redisProjectCacheTimeout = 3600
@@ -108,6 +109,7 @@ const TRAFFIC_COLUMNS = [
 ]
 
 const PERFORMANCE_COLUMNS = ['cc', 'rg', 'ct', 'pg', 'dv', 'br']
+const ERROR_COLUMNS = ['pg', 'dv', 'br', 'os', 'lc', 'cc', 'rg', 'ct']
 
 const NUMBER_JWT_REFRESH_TOKEN_LIFETIME = Number(JWT_REFRESH_TOKEN_LIFETIME)
 const NUMBER_JWT_ACCESS_TOKEN_LIFETIME = Number(JWT_ACCESS_TOKEN_LIFETIME)
@@ -143,4 +145,7 @@ export {
   isProxiedByCloudflare,
   MIN_PAGES_IN_FUNNEL,
   MAX_PAGES_IN_FUNNEL,
+  ERROR_COLUMNS,
+  REDIS_LOG_ERROR_CACHE_KEY,
+  PID_REGEX,
 }

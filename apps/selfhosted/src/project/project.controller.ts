@@ -76,11 +76,17 @@ export class ProjectController {
         _map(formatted, ({ id }) => id),
       )
 
+    const pidsWithErrorData =
+      await this.projectService.getPIDsWhereErrorsDataExists(
+        _map(formatted, ({ id }) => id),
+      )
+
     const results = _map(formatted, p => ({
       ...p,
       isOwner: true,
       isLocked: false,
       isDataExists: _includes(pidsWithData, p?.id),
+      isErrorDataExists: _includes(pidsWithErrorData, p?.id),
     }))
 
     return {
@@ -306,9 +312,14 @@ export class ProjectController {
       await this.projectService.getPIDsWhereAnalyticsDataExists([id]),
     )
 
+    const isErrorDataExists = !_isEmpty(
+      await this.projectService.getPIDsWhereErrorsDataExists([id]),
+    )
+
     return this.projectService.formatFromClickhouse({
       ...project,
       isDataExists,
+      isErrorDataExists,
     })
   }
 }

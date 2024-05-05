@@ -156,6 +156,50 @@ export class ProjectService {
     return _map(result, ({ pid }) => pid)
   }
 
+  async getPIDsWhereErrorsDataExists(projectIds: string[]) {
+    if (_isEmpty(projectIds)) {
+      return {}
+    }
+
+    const params = _reduce(
+      projectIds,
+      (acc, curr, index) => ({
+        ...acc,
+        [`pid_${index}`]: curr,
+      }),
+      {},
+    )
+
+    const pids = _join(
+      _map(params, (val, key) => `{${key}:FixedString(12)}`),
+      ',',
+    )
+
+    const query = `
+      SELECT
+        pid,
+        CASE
+          WHEN EXISTS (
+            SELECT 1
+            FROM errors
+            WHERE pid IN (${pids})
+          )
+          THEN 1
+          ELSE 0
+        END AS exists
+      FROM
+      (
+        SELECT DISTINCT pid
+        FROM errors
+        WHERE pid IN (${pids})
+      );
+    `
+
+    const result: any = await clickhouse.query(query, { params }).toPromise()
+
+    return _map(result, ({ pid }) => pid)
+  }
+
   async removeDataFromClickhouse(
     pid: string,
     from: string,
