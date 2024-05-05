@@ -1,5 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty, IsIn } from 'class-validator'
+import {
+  IsNotEmpty,
+  IsIn,
+  ValidateIf,
+  IsString,
+  IsArray,
+  Matches,
+} from 'class-validator'
+import { PID_REGEX } from '../../common/constants'
 
 export class PatchStatusDTO {
   @ApiProperty({
@@ -8,12 +16,18 @@ export class PatchStatusDTO {
     description: 'The project ID',
   })
   @IsNotEmpty()
+  @Matches(PID_REGEX, {
+    message: 'Incorrect project ID format.',
+  })
   pid: string
 
   @ApiProperty({
     example: 'c138c2b1826d9fec65d230e471ab2c25',
     description: 'Error id',
   })
+  @ValidateIf(o => !o.eids || o.eid)
+  @IsNotEmpty()
+  @IsString()
   eid: string
 
   @ApiProperty({
@@ -23,6 +37,10 @@ export class PatchStatusDTO {
     ],
     description: 'Error id list',
   })
+  @ValidateIf(o => o.eids || !o.eid)
+  @IsNotEmpty()
+  @IsArray()
+  @IsString({ each: true })
   eids: string
 
   @ApiProperty({
