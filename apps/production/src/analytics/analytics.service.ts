@@ -3132,7 +3132,7 @@ export class AnalyticsService {
     const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
     const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
-    const queryErrorDetailsNoDate = `
+    const queryErrorDetails = `
       SELECT
         subquery.eid,
         any(subquery.name) AS name,
@@ -3181,14 +3181,14 @@ export class AnalyticsService {
     }
 
     const details = (
-      await clickhouse.query(queryErrorDetailsNoDate, paramsData).toPromise()
+      await clickhouse.query(queryErrorDetails, paramsData).toPromise()
     )[0]
 
     const groupedChart = await this.groupErrorsByTimeBucket(
       timeBucket,
       groupFrom,
       groupTo,
-      'FROM errors WHERE eid = {eid:FixedString(32)}',
+      `FROM errors WHERE eid = {eid:FixedString(32)} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`,
       'AND eid = {eid:FixedString(32)}',
       paramsData,
       safeTimezone,
