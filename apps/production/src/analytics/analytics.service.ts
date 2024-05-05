@@ -3288,19 +3288,28 @@ export class AnalyticsService {
     }
   }
 
-  async getGeneralStats(): Promise<any> {
-    const trafficQuery = 'SELECT count(*) FROM analytics'
-    const customEVQuery = 'SELECT count(*) FROM customEV'
-    const performanceQuery = 'SELECT count(*) FROM performance'
-    const captchaQuery = 'SELECT count(*) FROM captcha'
+  async getGeneralStats(): Promise<{
+    users: number
+    projects: number
+    events: number
+  }> {
+    const query = `
+      SELECT 'traffic' AS type, count(*) AS count FROM analytics
+      UNION ALL
+      SELECT 'customEV' AS type, count(*) AS count FROM customEV
+      UNION ALL
+      SELECT 'performance' AS type, count(*) AS count FROM performance
+      UNION ALL
+      SELECT 'captcha' AS type, count(*) AS count FROM captcha
+      UNION ALL
+      SELECT 'errors' AS type, count(*) AS count FROM errors
+    `
 
     const users = await this.userService.count()
     const projects = await this.projectService.count()
-    const events =
-      (await clickhouse.query(trafficQuery).toPromise())[0]['count()'] +
-      (await clickhouse.query(customEVQuery).toPromise())[0]['count()'] +
-      (await clickhouse.query(performanceQuery).toPromise())[0]['count()'] +
-      (await clickhouse.query(captchaQuery).toPromise())[0]['count()']
+    const results = await clickhouse.query(query).toPromise()
+    // @ts-expect-error
+    const events = results.reduce((total, row) => total + row.count, 0)
 
     await redis.set(REDIS_USERS_COUNT_KEY, users, 'EX', 630)
     await redis.set(REDIS_PROJECTS_COUNT_KEY, projects, 'EX', 630)
