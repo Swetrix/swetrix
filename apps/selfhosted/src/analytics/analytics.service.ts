@@ -1936,7 +1936,7 @@ export class AnalyticsService {
 
         if (!_some(_values(params), val => !_isEmpty(val))) {
           throw new BadRequestException(
-            'The are no parameters for the specified time frames',
+            'There are no parameters for the specified time frames',
           )
         }
       })(),
@@ -2151,7 +2151,7 @@ export class AnalyticsService {
 
         if (!_some(_values(params), val => !_isEmpty(val))) {
           throw new BadRequestException(
-            'The are no parameters for the specified time frames',
+            'There are no parameters for the specified time frames',
           )
         }
       })(),
