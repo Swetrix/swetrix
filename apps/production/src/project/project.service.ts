@@ -914,7 +914,7 @@ export class ProjectService {
             SELECT 1
             FROM errors
             WHERE pid IN (${pids})
-          )]
+          )
           THEN 1
           ELSE 0
         END AS exists
