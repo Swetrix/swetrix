@@ -1,4 +1,4 @@
-import { Lib, defaultPageActions } from './Lib';
+import { Lib, defaultActions, } from './Lib';
 export let LIB_INSTANCE = null;
 /**
  * Initialise the tracking library instance (other methods won't work if the library is not initialised).
@@ -26,17 +26,15 @@ export function track(event) {
     LIB_INSTANCE.track(event);
 }
 /**
- * With this function you are able to track any custom events you want.
- * You should never send any identifiable data (like User ID, email, session cookie, etc.) as an event name.
- * The total number of track calls and their conversion rate will be saved.
+ * With this function you are able to automatically track pageviews across your application.
  *
- * @param {PageViewsOptions} options The options related to the custom event.
+ * @param {PageViewsOptions} options Pageviews tracking options.
  * @returns {PageActions} The actions related to the tracking. Used to stop tracking pages.
  */
 export function trackViews(options) {
     return new Promise((resolve) => {
         if (!LIB_INSTANCE) {
-            resolve(defaultPageActions);
+            resolve(defaultActions);
             return;
         }
         // We need to verify that document.readyState is complete for the performance stats to be collected correctly.
@@ -50,6 +48,32 @@ export function trackViews(options) {
             });
         }
     });
+}
+/**
+ * With this function you are able to track any custom events you want.
+ * You should never send any identifiable data (like User ID, email, session cookie, etc.) as an event name.
+ * The total number of track calls and their conversion rate will be saved.
+ *
+ * @param {PageViewsOptions} options The options related to the custom event.
+ * @returns {PageActions} The actions related to the tracking. Used to stop tracking pages.
+ */
+export function trackErrors(options) {
+    if (!LIB_INSTANCE) {
+        return defaultActions;
+    }
+    return LIB_INSTANCE.trackErrors(options);
+}
+/**
+ * This function is used to manually track an error event.
+ * It's useful if you want to track specific errors in your application.
+ *
+ * @param payload Swetrix error object to send.
+ * @returns void
+ */
+export function trackError(payload) {
+    if (!LIB_INSTANCE)
+        return;
+    LIB_INSTANCE.submitError(payload, false);
 }
 /**
  * This function is used to manually track a page view event.

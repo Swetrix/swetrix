@@ -57,6 +57,21 @@ export interface IPageViewPayload {
   prev: string | null | undefined
 }
 
+// Partial user-editable error payload
+export interface IErrorEventPayload {
+  name: string
+  message: string | null | undefined
+  lineno: number | null | undefined
+  colno: number | null | undefined
+  filename: string | null | undefined
+}
+
+export interface IInternalErrorEventPayload extends IErrorEventPayload {
+  lc: string | undefined
+  tz: string | undefined
+  pg: string | null | undefined
+}
+
 interface IPerfPayload {
   dns: number
   tls: number
@@ -76,12 +91,39 @@ export interface PageActions {
   stop: () => void
 }
 
+/**
+ * The object returned by `trackErrors()`, used to stop tracking errors.
+ */
+export interface ErrorActions {
+  /** Stops the tracking of errors. */
+  stop: () => void
+}
+
 export interface PageData {
   /** Current URL path. */
   path: string
 
   /** The object returned by `trackPageViews()`, used to stop tracking pages. */
   actions: PageActions
+}
+
+export interface ErrorOptions {
+  /**
+   * A number that indicates how many errors should be sent to the server.
+   * Accepts values between 0 and 1. For example, if set to 0.5 - only ~50% of errors will be sent to Swetrix.
+   * For testing, we recommend setting this value to 1. For production, you should configure it depending on your needs as each error event counts towards your plan.
+   *
+   * The default value for this option is 1.
+   */
+  sampleRate?: number
+
+  /**
+   * Callback to edit / prevent sending errors.
+   *
+   * @param payload - The error payload.
+   * @returns The edited payload or `false` to prevent sending the error event. If `true` is returned, the payload will be sent as-is.
+   */
+  callback?: (payload: IInternalErrorEventPayload) => Partial<IInternalErrorEventPayload> | boolean
 }
 
 export interface PageViewsOptions {
@@ -115,7 +157,7 @@ export interface PageViewsOptions {
   callback?: (payload: IPageViewPayload) => Partial<IPageViewPayload> | boolean
 }
 
-export const defaultPageActions = {
+export const defaultActions = {
   stop() {},
 }
 
@@ -124,12 +166,91 @@ const DEFAULT_API_HOST = 'https://api.swetrix.com/log'
 export class Lib {
   private pageData: PageData | null = null
   private pageViewsOptions: PageViewsOptions | null | undefined = null
+  private errorsOptions: ErrorOptions | null | undefined = null
   private perfStatsCollected: Boolean = false
   private activePage: string | null = null
+  private errorListenerExists = false
 
   constructor(private projectID: string, private options?: LibOptions) {
     this.trackPathChange = this.trackPathChange.bind(this)
     this.heartbeat = this.heartbeat.bind(this)
+    this.captureError = this.captureError.bind(this)
+  }
+
+  captureError(event: ErrorEvent): void {
+    if (typeof this.errorsOptions?.sampleRate === 'number' && this.errorsOptions.sampleRate > Math.random()) {
+      return
+    }
+
+    this.submitError({
+      // The file in which error occured.
+      filename: event.filename,
+
+      // The line of code error occured on.
+      lineno: event.lineno,
+
+      // The column of code error occured on.
+      colno: event.colno,
+
+      // Name of the error, if not exists (i.e. it's a custom thrown error). The initial value of name is "Error", but just in case lets explicitly set it here too.
+      name: event.error?.name || 'Error',
+
+      // Description of the error. By default, we use message from Error object, is it does not contain the error name
+      // (we want to split error name and message so we could group them together later in dashboard).
+      // If message in error object does not exist - lets use a message from the Error event itself.
+      message: event.error?.message || event.message,
+    })
+  }
+
+  trackErrors(options?: ErrorOptions): ErrorActions {
+    if (this.errorListenerExists || !this.canTrack()) {
+      return defaultActions
+    }
+
+    this.errorsOptions = options
+
+    window.addEventListener('error', this.captureError)
+    this.errorListenerExists = true
+
+    return {
+      stop: () => {
+        window.removeEventListener('error', this.captureError)
+      },
+    }
+  }
+
+  submitError(payload: IErrorEventPayload, evokeCallback?: boolean): void {
+    const privateData = {
+      pid: this.projectID,
+    }
+
+    const errorPayload = {
+      pg:
+        this.activePage ||
+        getPath({
+          hash: this.pageViewsOptions?.hash,
+          search: this.pageViewsOptions?.search,
+        }),
+      lc: getLocale(),
+      tz: getTimezone(),
+      ...payload,
+    }
+
+    if (evokeCallback && this.errorsOptions?.callback) {
+      const callbackResult = this.errorsOptions.callback(errorPayload)
+
+      if (callbackResult === false) {
+        return
+      }
+
+      if (callbackResult && typeof callbackResult === 'object') {
+        Object.assign(errorPayload, callbackResult)
+      }
+    }
+
+    Object.assign(errorPayload, privateData)
+
+    this.sendRequest('error', errorPayload)
   }
 
   track(event: TrackEventOptions): void {
@@ -153,7 +274,7 @@ export class Lib {
 
   trackPageViews(options?: PageViewsOptions): PageActions {
     if (!this.canTrack()) {
-      return defaultPageActions
+      return defaultActions
     }
 
     if (this.pageData) {

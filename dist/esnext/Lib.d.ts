@@ -35,6 +35,18 @@ export interface IPageViewPayload {
     pg: string | null | undefined;
     prev: string | null | undefined;
 }
+export interface IErrorEventPayload {
+    name: string;
+    message: string | null | undefined;
+    lineno: number | null | undefined;
+    colno: number | null | undefined;
+    filename: string | null | undefined;
+}
+export interface IInternalErrorEventPayload extends IErrorEventPayload {
+    lc: string | undefined;
+    tz: string | undefined;
+    pg: string | null | undefined;
+}
 interface IPerfPayload {
     dns: number;
     tls: number;
@@ -52,11 +64,35 @@ export interface PageActions {
     /** Stops the tracking of pages. */
     stop: () => void;
 }
+/**
+ * The object returned by `trackErrors()`, used to stop tracking errors.
+ */
+export interface ErrorActions {
+    /** Stops the tracking of errors. */
+    stop: () => void;
+}
 export interface PageData {
     /** Current URL path. */
     path: string;
     /** The object returned by `trackPageViews()`, used to stop tracking pages. */
     actions: PageActions;
+}
+export interface ErrorOptions {
+    /**
+     * A number that indicates how many errors should be sent to the server.
+     * Accepts values between 0 and 1. For example, if set to 0.5 - only ~50% of errors will be sent to Swetrix.
+     * For testing, we recommend setting this value to 1. For production, you should configure it depending on your needs as each error event counts towards your plan.
+     *
+     * The default value for this option is 1.
+     */
+    sampleRate?: number;
+    /**
+     * Callback to edit / prevent sending errors.
+     *
+     * @param payload - The error payload.
+     * @returns The edited payload or `false` to prevent sending the error event. If `true` is returned, the payload will be sent as-is.
+     */
+    callback?: (payload: IInternalErrorEventPayload) => Partial<IInternalErrorEventPayload> | boolean;
 }
 export interface PageViewsOptions {
     /**
@@ -84,7 +120,7 @@ export interface PageViewsOptions {
      */
     callback?: (payload: IPageViewPayload) => Partial<IPageViewPayload> | boolean;
 }
-export declare const defaultPageActions: {
+export declare const defaultActions: {
     stop(): void;
 };
 export declare class Lib {
@@ -92,9 +128,14 @@ export declare class Lib {
     private options?;
     private pageData;
     private pageViewsOptions;
+    private errorsOptions;
     private perfStatsCollected;
     private activePage;
+    private errorListenerExists;
     constructor(projectID: string, options?: LibOptions | undefined);
+    captureError(event: ErrorEvent): void;
+    trackErrors(options?: ErrorOptions): ErrorActions;
+    submitError(payload: IErrorEventPayload, evokeCallback?: boolean): void;
     track(event: TrackEventOptions): void;
     trackPageViews(options?: PageViewsOptions): PageActions;
     getPerformanceStats(): IPerfPayload | {};

@@ -1,4 +1,14 @@
-import { Lib, LibOptions, TrackEventOptions, PageViewsOptions, PageActions, defaultPageActions } from './Lib'
+import {
+  Lib,
+  LibOptions,
+  TrackEventOptions,
+  PageViewsOptions,
+  ErrorOptions,
+  PageActions,
+  ErrorActions,
+  defaultActions,
+  IErrorEventPayload,
+} from './Lib'
 
 export let LIB_INSTANCE: Lib | null = null
 
@@ -31,17 +41,15 @@ export function track(event: TrackEventOptions): void {
 }
 
 /**
- * With this function you are able to track any custom events you want.
- * You should never send any identifiable data (like User ID, email, session cookie, etc.) as an event name.
- * The total number of track calls and their conversion rate will be saved.
+ * With this function you are able to automatically track pageviews across your application.
  *
- * @param {PageViewsOptions} options The options related to the custom event.
+ * @param {PageViewsOptions} options Pageviews tracking options.
  * @returns {PageActions} The actions related to the tracking. Used to stop tracking pages.
  */
 export function trackViews(options?: PageViewsOptions): Promise<PageActions> {
   return new Promise((resolve) => {
     if (!LIB_INSTANCE) {
-      resolve(defaultPageActions)
+      resolve(defaultActions)
       return
     }
 
@@ -55,6 +63,35 @@ export function trackViews(options?: PageViewsOptions): Promise<PageActions> {
       })
     }
   })
+}
+
+/**
+ * With this function you are able to track any custom events you want.
+ * You should never send any identifiable data (like User ID, email, session cookie, etc.) as an event name.
+ * The total number of track calls and their conversion rate will be saved.
+ *
+ * @param {PageViewsOptions} options The options related to the custom event.
+ * @returns {PageActions} The actions related to the tracking. Used to stop tracking pages.
+ */
+export function trackErrors(options?: ErrorOptions): ErrorActions {
+  if (!LIB_INSTANCE) {
+    return defaultActions
+  }
+
+  return LIB_INSTANCE.trackErrors(options)
+}
+
+/**
+ * This function is used to manually track an error event.
+ * It's useful if you want to track specific errors in your application.
+ *
+ * @param payload Swetrix error object to send.
+ * @returns void
+ */
+export function trackError(payload: IErrorEventPayload): void {
+  if (!LIB_INSTANCE) return
+
+  LIB_INSTANCE.submitError(payload, false)
 }
 
 /**

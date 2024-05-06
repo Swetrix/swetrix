@@ -95,7 +95,7 @@ var getPath = function (options) {
     return result;
 };
 
-var defaultPageActions = {
+var defaultActions = {
     stop: function () { },
 };
 var DEFAULT_API_HOST = 'https://api.swetrix.com/log';
@@ -105,11 +105,70 @@ var Lib = /** @class */ (function () {
         this.options = options;
         this.pageData = null;
         this.pageViewsOptions = null;
+        this.errorsOptions = null;
         this.perfStatsCollected = false;
         this.activePage = null;
+        this.errorListenerExists = false;
         this.trackPathChange = this.trackPathChange.bind(this);
         this.heartbeat = this.heartbeat.bind(this);
+        this.captureError = this.captureError.bind(this);
     }
+    Lib.prototype.captureError = function (event) {
+        var _a, _b, _c;
+        if (typeof ((_a = this.errorsOptions) === null || _a === void 0 ? void 0 : _a.sampleRate) === 'number' && this.errorsOptions.sampleRate > Math.random()) {
+            return;
+        }
+        this.submitError({
+            // The file in which error occured.
+            filename: event.filename,
+            // The line of code error occured on.
+            lineno: event.lineno,
+            // The column of code error occured on.
+            colno: event.colno,
+            // Name of the error, if not exists (i.e. it's a custom thrown error). The initial value of name is "Error", but just in case lets explicitly set it here too.
+            name: ((_b = event.error) === null || _b === void 0 ? void 0 : _b.name) || 'Error',
+            // Description of the error. By default, we use message from Error object, is it does not contain the error name
+            // (we want to split error name and message so we could group them together later in dashboard).
+            // If message in error object does not exist - lets use a message from the Error event itself.
+            message: ((_c = event.error) === null || _c === void 0 ? void 0 : _c.message) || event.message,
+        });
+    };
+    Lib.prototype.trackErrors = function (options) {
+        var _this = this;
+        if (this.errorListenerExists || !this.canTrack()) {
+            return defaultActions;
+        }
+        this.errorsOptions = options;
+        window.addEventListener('error', this.captureError);
+        this.errorListenerExists = true;
+        return {
+            stop: function () {
+                window.removeEventListener('error', _this.captureError);
+            },
+        };
+    };
+    Lib.prototype.submitError = function (payload, evokeCallback) {
+        var _a, _b, _c;
+        var privateData = {
+            pid: this.projectID,
+        };
+        var errorPayload = __assign({ pg: this.activePage ||
+                getPath({
+                    hash: (_a = this.pageViewsOptions) === null || _a === void 0 ? void 0 : _a.hash,
+                    search: (_b = this.pageViewsOptions) === null || _b === void 0 ? void 0 : _b.search,
+                }), lc: getLocale(), tz: getTimezone() }, payload);
+        if (evokeCallback && ((_c = this.errorsOptions) === null || _c === void 0 ? void 0 : _c.callback)) {
+            var callbackResult = this.errorsOptions.callback(errorPayload);
+            if (callbackResult === false) {
+                return;
+            }
+            if (callbackResult && typeof callbackResult === 'object') {
+                Object.assign(errorPayload, callbackResult);
+            }
+        }
+        Object.assign(errorPayload, privateData);
+        this.sendRequest('error', errorPayload);
+    };
     Lib.prototype.track = function (event) {
         if (!this.canTrack()) {
             return;
@@ -119,7 +178,7 @@ var Lib = /** @class */ (function () {
     };
     Lib.prototype.trackPageViews = function (options) {
         if (!this.canTrack()) {
-            return defaultPageActions;
+            return defaultActions;
         }
         if (this.pageData) {
             return this.pageData.actions;
@@ -313,17 +372,15 @@ function track(event) {
     exports.LIB_INSTANCE.track(event);
 }
 /**
- * With this function you are able to track any custom events you want.
- * You should never send any identifiable data (like User ID, email, session cookie, etc.) as an event name.
- * The total number of track calls and their conversion rate will be saved.
+ * With this function you are able to automatically track pageviews across your application.
  *
- * @param {PageViewsOptions} options The options related to the custom event.
+ * @param {PageViewsOptions} options Pageviews tracking options.
  * @returns {PageActions} The actions related to the tracking. Used to stop tracking pages.
  */
 function trackViews(options) {
     return new Promise(function (resolve) {
         if (!exports.LIB_INSTANCE) {
-            resolve(defaultPageActions);
+            resolve(defaultActions);
             return;
         }
         // We need to verify that document.readyState is complete for the performance stats to be collected correctly.
@@ -337,6 +394,32 @@ function trackViews(options) {
             });
         }
     });
+}
+/**
+ * With this function you are able to track any custom events you want.
+ * You should never send any identifiable data (like User ID, email, session cookie, etc.) as an event name.
+ * The total number of track calls and their conversion rate will be saved.
+ *
+ * @param {PageViewsOptions} options The options related to the custom event.
+ * @returns {PageActions} The actions related to the tracking. Used to stop tracking pages.
+ */
+function trackErrors(options) {
+    if (!exports.LIB_INSTANCE) {
+        return defaultActions;
+    }
+    return exports.LIB_INSTANCE.trackErrors(options);
+}
+/**
+ * This function is used to manually track an error event.
+ * It's useful if you want to track specific errors in your application.
+ *
+ * @param payload Swetrix error object to send.
+ * @returns void
+ */
+function trackError(payload) {
+    if (!exports.LIB_INSTANCE)
+        return;
+    exports.LIB_INSTANCE.submitError(payload, false);
 }
 /**
  * This function is used to manually track a page view event.
@@ -355,5 +438,7 @@ function trackPageview(path, prev, unique) {
 
 exports.init = init;
 exports.track = track;
+exports.trackError = trackError;
+exports.trackErrors = trackErrors;
 exports.trackPageview = trackPageview;
 exports.trackViews = trackViews;

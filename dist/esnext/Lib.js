@@ -1,5 +1,5 @@
 import { isInBrowser, isLocalhost, isAutomated, getLocale, getTimezone, getReferrer, getUTMCampaign, getUTMMedium, getUTMSource, getPath, } from './utils';
-export const defaultPageActions = {
+export const defaultActions = {
     stop() { },
 };
 const DEFAULT_API_HOST = 'https://api.swetrix.com/log';
@@ -9,10 +9,71 @@ export class Lib {
         this.options = options;
         this.pageData = null;
         this.pageViewsOptions = null;
+        this.errorsOptions = null;
         this.perfStatsCollected = false;
         this.activePage = null;
+        this.errorListenerExists = false;
         this.trackPathChange = this.trackPathChange.bind(this);
         this.heartbeat = this.heartbeat.bind(this);
+        this.captureError = this.captureError.bind(this);
+    }
+    captureError(event) {
+        if (typeof this.errorsOptions?.sampleRate === 'number' && this.errorsOptions.sampleRate > Math.random()) {
+            return;
+        }
+        this.submitError({
+            // The file in which error occured.
+            filename: event.filename,
+            // The line of code error occured on.
+            lineno: event.lineno,
+            // The column of code error occured on.
+            colno: event.colno,
+            // Name of the error, if not exists (i.e. it's a custom thrown error). The initial value of name is "Error", but just in case lets explicitly set it here too.
+            name: event.error?.name || 'Error',
+            // Description of the error. By default, we use message from Error object, is it does not contain the error name
+            // (we want to split error name and message so we could group them together later in dashboard).
+            // If message in error object does not exist - lets use a message from the Error event itself.
+            message: event.error?.message || event.message,
+        });
+    }
+    trackErrors(options) {
+        if (this.errorListenerExists || !this.canTrack()) {
+            return defaultActions;
+        }
+        this.errorsOptions = options;
+        window.addEventListener('error', this.captureError);
+        this.errorListenerExists = true;
+        return {
+            stop: () => {
+                window.removeEventListener('error', this.captureError);
+            },
+        };
+    }
+    submitError(payload, evokeCallback) {
+        const privateData = {
+            pid: this.projectID,
+        };
+        const errorPayload = {
+            pg: this.activePage ||
+                getPath({
+                    hash: this.pageViewsOptions?.hash,
+                    search: this.pageViewsOptions?.search,
+                }),
+            lc: getLocale(),
+            tz: getTimezone(),
+            ...payload,
+        };
+        if (evokeCallback && this.errorsOptions?.callback) {
+            const callbackResult = this.errorsOptions.callback(errorPayload);
+            if (callbackResult === false) {
+                return;
+            }
+            if (callbackResult && typeof callbackResult === 'object') {
+                Object.assign(errorPayload, callbackResult);
+            }
+        }
+        Object.assign(errorPayload, privateData);
+        this.sendRequest('error', errorPayload);
     }
     track(event) {
         if (!this.canTrack()) {
@@ -33,7 +94,7 @@ export class Lib {
     }
     trackPageViews(options) {
         if (!this.canTrack()) {
-            return defaultPageActions;
+            return defaultActions;
         }
         if (this.pageData) {
             return this.pageData.actions;
