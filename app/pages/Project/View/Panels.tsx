@@ -172,7 +172,7 @@ const PanelContainer = ({
           </>
         )}
 
-        {type === 'pg' && activeTab !== PROJECT_TABS.performance && (
+        {type === 'pg' && activeTab !== PROJECT_TABS.performance && activeTab !== PROJECT_TABS.errors && (
           <>
             <RectangleGroupIcon
               className={cx(iconClassName, 'ml-2 cursor-pointer', {
@@ -243,7 +243,12 @@ const PanelContainer = ({
     {/* for other tabs */}
     <div
       className={cx('flex flex-col h-full scroll-auto', {
-        'overflow-auto': !(type === 'pg' && activeTab !== PROJECT_TABS.performance && activeFragment === 1),
+        'overflow-auto': !(
+          type === 'pg' &&
+          activeTab !== PROJECT_TABS.performance &&
+          activeTab !== PROJECT_TABS.errors &&
+          activeFragment === 1
+        ),
         relative: isCustomContent,
       })}
     >

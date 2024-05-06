@@ -192,6 +192,10 @@ const CHART_METRICS_MAPPING = {
   cumulativeMode: 'cumulativeMode',
 }
 
+const ERROR_FILTERS_MAPPING = {
+  showResolved: 'showResolved',
+}
+
 const FILTER_CHART_METRICS_MAPPING_FOR_COMPARE = ['bounce', 'viewsPerUnique', 'trendlines', 'customEvents']
 
 const CHART_METRICS_MAPPING_PERF = {
@@ -225,7 +229,7 @@ const getColumns = (
     [key: string]: string[]
   },
 ) => {
-  const { views, bounce, viewsPerUnique, unique, trendlines, sessionDuration } = activeChartMetrics
+  const { views, bounce, viewsPerUnique, unique, trendlines, sessionDuration, occurrences } = activeChartMetrics
 
   const columns: any[] = [['x', ..._map(chart.x, (el) => dayjs(el).toDate())]]
 
@@ -237,6 +241,14 @@ const getColumns = (
 
     if (compareChart?.uniques) {
       columns.push(['uniqueCompare', ...compareChart.uniques])
+    }
+  }
+
+  if (occurrences) {
+    columns.push(['occurrences', ...chart.occurrences])
+
+    if (compareChart?.occurrences) {
+      columns.push(['occurrencesCompare', ...compareChart.occurrences])
     }
   }
 
@@ -917,6 +929,131 @@ const getSettingsSession = (
   }
 }
 
+// function to get the settings and data for the error details chart
+const getSettingsError = (
+  chart: any,
+  timeBucket: string,
+  timeFormat: string,
+  rotateXAxis: boolean,
+  chartType: string,
+) => {
+  const xAxisSize = _size(chart.x)
+
+  const columns = getColumns(chart, { occurrences: true }, {})
+
+  let regionStart
+
+  if (xAxisSize > 1) {
+    regionStart = dayjs(chart.x[xAxisSize - 2]).toDate()
+  } else {
+    regionStart = dayjs(chart.x[xAxisSize - 1]).toDate()
+  }
+
+  return {
+    data: {
+      x: 'x',
+      columns,
+      types: {
+        occurrences: chartType === chartTypes.line ? area() : bar(),
+      },
+      colors: {
+        occurrences: '#dc2626',
+        occurrencesCompare: 'rgba(220, 38, 38, 0.4)',
+      },
+      regions: {
+        occurrences: [
+          {
+            start: regionStart,
+            style: {
+              dasharray: '6 2',
+            },
+          },
+        ],
+      },
+    },
+    // grid: {
+    //   x: {
+    //     lines,
+    //   },
+    // },
+    transition: {
+      duration: 500,
+    },
+    resize: {
+      auto: true,
+      timer: false,
+    },
+    axis: {
+      x: {
+        clipPath: false,
+        tick: {
+          fit: true,
+          rotate: rotateXAxis ? 45 : 0,
+          format:
+            timeFormat === TimeFormat['24-hour']
+              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x)
+              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
+        },
+        localtime: timeFormat === TimeFormat['24-hour'],
+        type: 'timeseries',
+      },
+      y: {
+        tick: {
+          format: (d: number) => nFormatter(d, 1),
+        },
+        show: true,
+        inner: true,
+      },
+    },
+    tooltip: {
+      contents: (item: any, _: any, __: any, color: any) => {
+        return `<ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
+          <li class='font-semibold'>${
+            timeFormat === TimeFormat['24-hour']
+              ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
+              : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(item[0].x)
+          }</li>
+          <hr class='border-gray-200 dark:border-gray-600' />
+          ${_map(
+            item,
+            (el: { id: string; index: number; name: string; value: string; x: Date }) => `
+            <li class='flex justify-between'>
+              <div class='flex justify-items-start'>
+                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                <span>${el.name}</span>
+              </div>
+              <span class='pl-4'>${el.value}</span>
+            </li>
+            `,
+          ).join('')}`
+      },
+    },
+    point: {
+      focus: {
+        only: xAxisSize > 1,
+      },
+      pattern: ['circle'],
+      r: 3,
+    },
+    legend: {
+      usePoint: true,
+      item: {
+        tile: {
+          width: 10,
+        },
+      },
+      hide: ['uniqueCompare', 'totalCompare', 'bounceCompare', 'sessionDurationCompare'],
+    },
+    area: {
+      linearGradient: true,
+    },
+    bar: {
+      linearGradient: true,
+    },
+    bindto: '#errorChart',
+  }
+}
+
 // function to get the settings and data for the funnels chart
 const getSettingsFunnels = (
   funnel: IAnalyticsFunnel[],
@@ -1447,4 +1584,6 @@ export {
   SHORTCUTS_GENERAL_LISTENERS,
   SHORTCUTS_TIMEBUCKETS_LISTENERS,
   CHART_MEASURES_MAPPING_PERF,
+  getSettingsError,
+  ERROR_FILTERS_MAPPING,
 }

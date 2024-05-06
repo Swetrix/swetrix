@@ -16,6 +16,10 @@ interface ITBPeriodSelector {
   activePeriod: any
   updateTimebucket: (tb: string) => void
   timeBucket: string
+  classes?: {
+    timeBucket?: string
+    periods?: string
+  }
 }
 
 const TBPeriodSelector = ({
@@ -25,6 +29,7 @@ const TBPeriodSelector = ({
   activePeriod,
   updateTimebucket,
   timeBucket,
+  classes,
 }: ITBPeriodSelector): JSX.Element => {
   const { t } = useTranslation('common')
 
@@ -58,7 +63,12 @@ const TBPeriodSelector = ({
         {/* w-56 */}
         <Popover.Panel className='absolute left-1/2 md:left-auto right-0 z-20 mt-3 w-max max-w-sm -translate-x-1/2 transform md:transform-none px-4 sm:px-0 lg:max-w-3xl'>
           <div className='p-1 overflow-hidden rounded-lg shadow-lg ring-1 ring-black/5 bg-gray-50 dark:bg-slate-800'>
-            <div className='bg-slate-200 dark:bg-slate-700 rounded-md relative z-0 flex items-center space-x-5 px-2 py-3 mb-1'>
+            <div
+              className={cx(
+                'bg-slate-200 dark:bg-slate-700 rounded-md relative z-0 flex items-center space-x-5 px-2 py-3 mb-1',
+                classes?.timeBucket,
+              )}
+            >
               {_map(periods, ({ label, value, available }) => (
                 <Popover.Button
                   key={value}
@@ -82,7 +92,7 @@ const TBPeriodSelector = ({
                 </Popover.Button>
               ))}
             </div>
-            <ul className='text-left w-full'>
+            <ul className={cx('text-left w-full', classes?.periods)}>
               {_map(items, (item) => (
                 <Popover.Button
                   as='li'

@@ -191,6 +191,12 @@ export const getPageMeta = (t: (key: string) => string, url?: string, _pathname?
       }
       break
 
+    case routes.errorTracking:
+      result = {
+        title: t('titles.errors'),
+      }
+      break
+
     case routes.privacy:
       result = {
         title: 'Privacy Policy',

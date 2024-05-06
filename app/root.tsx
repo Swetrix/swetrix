@@ -23,7 +23,7 @@ import { transitions, positions, Provider as AlertProvider } from '@blaumaus/rea
 import BillboardCss from 'billboard.js/dist/billboard.min.css'
 
 import AlertTemplate from 'ui/Alert'
-import { trackViews } from 'utils/analytics'
+import { trackViews, trackErrors } from 'utils/analytics'
 import { useChangeLanguage } from 'remix-i18next/react'
 import { useTranslation } from 'react-i18next'
 import AppWrapper from 'App'
@@ -40,6 +40,7 @@ import FlatpickrDarkCss from 'flatpickr/dist/themes/dark.css'
 import FontsCss from 'styles/fonts.css'
 
 trackViews()
+trackErrors()
 
 declare global {
   interface Window {

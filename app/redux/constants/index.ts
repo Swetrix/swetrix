@@ -197,6 +197,10 @@ export const captchaTbPeriodPairs = (
 
 export const filtersPeriodPairs = ['1h', '1d', '7d', '4w', '3M', '12M', 'custom', 'compare']
 
+// TODO: add 'custom' later after an issue with it is resolved
+// currently if you select a date range - it will not display errors within the last day of the date range
+export const errorPeriodPairs = ['1h', '1d', '7d', '4w', '3M', '12M']
+
 export const tbPeriodPairsCompare = (
   t: Function,
   dates?: Date[],
@@ -236,9 +240,11 @@ interface IStringObject {
 }
 
 // the order of panels in the project view
-export const TRAFFIC_PANELS_ORDER: string[] = ['cc', 'pg', 'br', 'os', 'ref', 'lc', 'dv', 'so']
-export const FILTERS_PANELS_ORDER: string[] = ['cc', 'pg', 'br', 'os', 'ref', 'lc', 'dv']
-export const PERFORMANCE_PANELS_ORDER: string[] = ['cc', 'pg', 'br', 'dv']
+export const TRAFFIC_PANELS_ORDER = ['cc', 'pg', 'br', 'os', 'ref', 'lc', 'dv', 'so']
+export const FILTERS_PANELS_ORDER = ['cc', 'pg', 'br', 'os', 'ref', 'lc', 'dv']
+export const ERRORS_FILTERS_PANELS_ORDER = ['cc', 'pg', 'br', 'os', 'lc', 'dv']
+export const PERFORMANCE_PANELS_ORDER = ['cc', 'pg', 'br', 'dv']
+export const ERROR_PANELS_ORDER = ['cc', 'pg', 'br', 'os', 'lc', 'dv']
 
 // the maximum amount of months user can go back when picking a date in flat picker (project view)
 export const MAX_MONTHS_IN_PAST: number = 24
@@ -340,8 +346,10 @@ export const UTM_GENERATOR_URL: string = 'https://url.swetrix.com'
 export const LIVE_DEMO_URL: string = '/projects/STEzHcB1rALV'
 export const BOOK_A_CALL_URL: string = 'https://cal.com/swetrix'
 export const PERFORMANCE_LIVE_DEMO_URL: string = '/projects/STEzHcB1rALV?tab=performance'
+export const ERROR_TRACKING_LIVE_DEMO_URL: string = '/projects/STEzHcB1rALV?tab=errors'
 export const MARKETPLACE_URL: string = 'https://marketplace.swetrix.com'
 export const DOCS_URL: string = 'https://docs.swetrix.com'
+export const ERROR_TRACKING_DOCS_URL: string = 'https://docs.swetrix.com/error-tracking'
 export const CAPTCHA_URL: string = 'https://captcha.swetrix.com'
 export const DOCS_CAPTCHA_URL: string = `${DOCS_URL}/captcha/introduction`
 export const DOCS_REFERRAL_PROGRAM_URL: string = `${DOCS_URL}/affiliate/about`
@@ -533,6 +541,7 @@ const SELFHOSTED_PROJECT_TABS: IStringObject = {
   performance: 'performance',
   funnels: 'funnels',
   sessions: 'sessions',
+  errors: 'errors',
 }
 
 const PRODUCTION_PROJECT_TABS: IStringObject = {
@@ -540,6 +549,7 @@ const PRODUCTION_PROJECT_TABS: IStringObject = {
   performance: 'performance',
   funnels: 'funnels',
   sessions: 'sessions',
+  errors: 'errors',
   alerts: 'alerts',
 }
 

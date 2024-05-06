@@ -508,6 +508,35 @@ export const getSessions = (
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
+export const getErrors = (
+  pid: string,
+  period: string = '3d',
+  filters: string[] = [],
+  options: any = {},
+  from: string = '',
+  to: string = '',
+  take: number = 30,
+  skip: number = 0,
+  timezone: string = '',
+  password: string | undefined = '',
+) =>
+  api
+    .get(
+      `log/errors?pid=${pid}&take=${take}&skip=${skip}&period=${period}&filters=${JSON.stringify(
+        filters,
+      )}&options=${JSON.stringify(options)}&from=${from}&to=${to}&timezone=${timezone}`,
+      {
+        headers: {
+          'x-password': password,
+        },
+      },
+    )
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
 export const getSession = (pid: string, psid: string, timezone: string = '', password: string | undefined = '') =>
   api
     .get(`log/session?pid=${pid}&psid=${psid}&timezone=${timezone}`, {
@@ -519,6 +548,27 @@ export const getSession = (pid: string, psid: string, timezone: string = '', pas
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getError = (
+  pid: string,
+  eid: string,
+  period: string = '7d',
+  from: string = '',
+  to: string = '',
+  timezone: string = '',
+  password: string | undefined = '',
+) =>
+  api
+    .get(`log/get-error?pid=${pid}&eid=${eid}&period=${period}&from=${from}&to=${to}&timezone=${timezone}`, {
+      headers: {
+        'x-password': password,
+      },
+    })
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw error.response
     })
 
 export const getFunnelData = (
@@ -1188,6 +1238,19 @@ export const getFilters = (pid: string, type: string, password = '') =>
       throw error
     })
 
+export const getErrorsFilters = (pid: string, type: string, password = '') =>
+  api
+    .get(`log/errors-filters?pid=${pid}&type=${type}`, {
+      headers: {
+        'x-password': password,
+      },
+    })
+    .then((response): string[] => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw error
+    })
+
 export const resetFilters = (pid: string, type: string, filters: string[]) =>
   api
     .delete(`project/reset-filters/${pid}?type=${type}&filters=${JSON.stringify(filters)}`)
@@ -1301,4 +1364,13 @@ export const unsubscribeFromEmailReports3rdParty = (token: string) =>
     .catch((error) => {
       debug('%s', error)
       throw error
+    })
+
+export const updateErrorStatus = (pid: string, status: 'resolved' | 'active', eid?: string, eids?: string[]) =>
+  api
+    .patch('log/error-status', { pid, eid, eids, status })
+    .then((response): any => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })

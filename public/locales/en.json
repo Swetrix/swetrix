@@ -39,7 +39,9 @@
     "funnelCreated": "The funnel has been created",
     "funnelUpdated": "The funnel has been updated",
     "funnelDeleted": "The funnel has been deleted",
-    "errorCode": "Error code: {{error}}"
+    "errorCode": "Error code: {{error}}",
+    "updateErrorStatusFailed": "Error occured while updating error status",
+    "errorStatusUpdated": "Error status has been updated"
   },
   "common": {
     "features": "Features",
@@ -112,6 +114,19 @@
     "privacy": {
       "title": "Privacy-first, easy to use",
       "desc": "Swetrix is built with a privacy-first and transparent approach. We do not use cookies or collect personal information from our users. There's no cross-site or cross-device tracking. No data is ever sold to advertisers or anyone else.\nThe Swetrix dashboard is very intuitive to use, giving you real-time data and a clear view of your website. There are no layers of menus, no need to export your data into custom reports to understand it properly."
+    }
+  },
+  "errors": {
+    "slogan": "End user <span>error tracking</span> tool to deliver bug-free experiences.",
+    "description": "Focus on making beautiful apps, and we will let you know if something goes wrong.",
+    "fast": {
+      "title": "Deliver bug-free experiences",
+      "desc": "Everyone hates bugs, so in addition to <indexUrl>traffic</indexUrl> and <perfUrl>performance</perfUrl> analytics, Swetrix allows you to monitor your website errors to quickly resolve them. Easily set up error monitoring with a <oneLC>one line of code</oneLC>, so you can focus on building your applications, not hunting for bugs.",
+      "list": ["Get a bird's eye insights on what kind of errors are present on your website", "View specific error details and aggregated data by geolocation, browser, device type, page and other metrics", "Understand if the bug is new or regressed, making it easier to fix"]
+    },
+    "track": {
+      "title": "Track all errors with one tool",
+      "desc": "With Swetrix, you can track exactly what kind of errors your users are experiencing and when. We also give you insight into which browsers, operating systems, devices and more, making it even easier to resolve issues."
     }
   },
   "main": {
@@ -521,6 +536,9 @@
     "disabled": "Disabled",
     "pageviews": "Pageviews",
     "captchaEvents": "CAPTCHA events",
+    "firstSeen": "First seen",
+    "lastSeen": "Last seen",
+    "atFile": "At {{filename}}, line {{lineno}}, column {{colno}}",
     "unique": "Unique views",
     "createdAt": "Created at",
     "inc": "Increased by",
@@ -539,6 +557,8 @@
     "performance": "Performance",
     "funnels": "Funnels",
     "sessions": "Sessions",
+    "xOccurrences": "{{x}} occurrences",
+    "errors": "Errors",
     "xPageviews": "{{x}} pageviews",
     "onePageview": "1 pageview",
     "alerts": "Alerts",
@@ -601,6 +621,13 @@
       "custom_events": "Custom events"
     }
   },
+  "error": {
+    "status": {
+      "active": "Active",
+      "resolved": "Resolved",
+      "regressed": "Regressed"
+    }
+  },
   "notFoundPage": {
     "title": "Page not found",
     "description": "Sorry, we couldn’t find the page you’re looking for.\nPlease check the URL in the address bar and try again.",
@@ -626,10 +653,14 @@
     "exportData": "Export data",
     "asCSV": "As CSV",
     "noEvTitle": "No events yet",
+    "noErrorDetails": "No error details",
+    "noErrorDesc": "This error does not exist or has not occurred within the specified time frame.",
     "showAll": "Show all views",
     "trendlineUnique": "Unique visitors trendline",
     "backToFunnels": "Back to funnels list",
     "backToSessions": "Back to sessions list",
+    "backToErrors": "Back to errors list",
+    "occurrences": "Occurrences",
     "visitPage": "Visit {{page}}",
     "visitors": "Visitors",
     "events": "Events",
@@ -649,6 +680,10 @@
     "waiting": {
       "title": "Waiting for your first pageview",
       "desc": "We're waiting for your first pageview! If your integration is set up correctly, you should see it within 1 minute.\n<snippet>Click here</snippet> to view your JavaScript tracking code.\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
+    },
+    "waitingError": {
+      "title": "Waiting for your first error.. hopefully not :)",
+      "desc": "We're waiting for your first error event! If your integration is set up correctly, you should see it within 1 minute when it happens.\n<howto>Click here</howto> to learn how to set up error tracking for your website.\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
     },
     "trendlineTotal": "Pageviews trendline",
     "noEvContent": "No events have been recorded for the specified period, please try a different period.",
@@ -704,6 +739,10 @@
     "exportImgError": "Exporting data as image failed",
     "codeExample": "Or insert the following code into your website to track your events:",
     "metricVis": "Metrics visualisation",
+    "filters": "Filters",
+    "showResolved": "Show resolved",
+    "resolve": "Resolve",
+    "markAsActive": "Mark as active",
     "refreshStats": "Refresh stats",
     "barChart": "Bar chart",
     "lineChart": "Line chart",
@@ -976,7 +1015,8 @@
     "open": "Open startup",
     "passwordProtected": "This project is password protected",
     "confirm": "Check your inbox",
-    "performance": "End user performance monitoring to deliver fast websites"
+    "performance": "End user performance monitoring to deliver fast websites",
+    "errors": "End user error tracking tool to deliver bug-free experiences"
   },
   "header": {
     "switchTheme": "Switch theme",

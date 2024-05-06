@@ -9,9 +9,9 @@ import Modal from 'ui/Modal'
 import Checkbox from 'ui/Checkbox'
 import Select from 'ui/Select'
 import Combobox from 'ui/Combobox'
-import { FILTERS_PANELS_ORDER } from 'redux/constants'
+import { FILTERS_PANELS_ORDER, ERRORS_FILTERS_PANELS_ORDER } from 'redux/constants'
 import countries from 'utils/isoCountries'
-import { getFilters } from 'api'
+import { getFilters, getErrorsFilters } from 'api'
 import { Filter } from './Filters'
 
 interface ISearchFilters {
@@ -32,11 +32,12 @@ interface ISearchFilters {
     filter: string
     isExclusive: boolean
   }[]
+  type: 'traffic' | 'errors'
 }
 
-const getLabelToTypeMap = (t: any) =>
+const getLabelToTypeMap = (t: any, type: 'traffic' | 'errors') =>
   _reduce(
-    FILTERS_PANELS_ORDER,
+    type === 'traffic' ? FILTERS_PANELS_ORDER : ERRORS_FILTERS_PANELS_ORDER,
     (acc, curr) => ({
       ...acc,
       [t(`project.mapping.${curr}`)]: curr,
@@ -67,6 +68,7 @@ const SearchFilters = ({
   tnMapping,
   filters,
   projectPassword,
+  type,
 }: ISearchFilters) => {
   const {
     t,
@@ -77,14 +79,21 @@ const SearchFilters = ({
   const [activeFilters, setActiveFilters] = useState<any>({})
   const [override, setOverride] = useState<boolean>(false)
 
-  const labelToTypeMap = useMemo(() => getLabelToTypeMap(t), [t])
+  const labelToTypeMap = useMemo(() => getLabelToTypeMap(t, type), [t, type])
 
   const getFiltersList = useCallback(
-    async (type: string) => {
-      const res = await getFilters(pid, type, projectPassword)
-      setSearchList(res)
+    async (category: string) => {
+      let result: any[]
+
+      if (type === 'errors') {
+        result = await getErrorsFilters(pid, category, projectPassword)
+      } else {
+        result = await getFilters(pid, category, projectPassword)
+      }
+
+      setSearchList(result)
     },
-    [pid, projectPassword],
+    [pid, projectPassword, type],
   )
 
   useEffect(() => {
@@ -117,7 +126,7 @@ const SearchFilters = ({
         <div className='min-h-[410px]'>
           <Select
             label={t('project.selectCategory')}
-            items={FILTERS_PANELS_ORDER}
+            items={type === 'traffic' ? FILTERS_PANELS_ORDER : ERRORS_FILTERS_PANELS_ORDER}
             labelExtractor={(item) => t(`project.mapping.${item}`)}
             // @ts-ignore
             onSelect={(item: string) => setFilterType(labelToTypeMap[item])}

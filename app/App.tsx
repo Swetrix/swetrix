@@ -107,9 +107,9 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
   return (
     // eslint-disable-next-line react/jsx-no-useless-fragment
     <>
-      {pathname !== routesPath.main && pathname !== routesPath.performance && !isReferralPage && !isProjectViewPage && (
-        <Header ssrTheme={ssrTheme} authenticated={authenticated} />
-      )}
+      {!_includes([routesPath.main, routesPath.performance, routesPath.errorTracking], pathname) &&
+        !isReferralPage &&
+        !isProjectViewPage && <Header ssrTheme={ssrTheme} authenticated={authenticated} />}
       <Outlet />
       {!isReferralPage && !isProjectViewPage && <Footer minimal={isMinimalFooter} authenticated={authenticated} />}
     </>

@@ -10,10 +10,9 @@ import CCRow from './CCRow'
 
 interface ISessionDetailsComponent {
   details: ISessionDetails
-  psid: string
 }
 
-export const SessionDetails = ({ details, psid }: ISessionDetailsComponent) => {
+export const SessionDetails = ({ details }: ISessionDetailsComponent) => {
   const {
     t,
     i18n: { language },

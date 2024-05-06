@@ -101,6 +101,7 @@ export interface IProject {
   password?: string
   isLocked: boolean
   isDataExists: boolean
+  isErrorDataExists: boolean
 }
 
 export interface ICaptchaProject {

@@ -10,7 +10,7 @@ import _isEmpty from 'lodash/isEmpty'
 import routesPath from 'routesPath'
 import { getAccessToken } from 'utils/accessToken'
 import { nFormatterSeparated } from 'utils/generic'
-import { PERFORMANCE_LIVE_DEMO_URL, isBrowser } from 'redux/constants'
+import { ERROR_TRACKING_LIVE_DEMO_URL, isBrowser } from 'redux/constants'
 import { StateType } from 'redux/store/index'
 import BackgroundSvg from 'ui/icons/BackgroundSvg'
 
@@ -20,16 +20,16 @@ import Pricing from '../MainPage/Pricing'
 export const Lines = (): JSX.Element => (
   <div className='relative pointer-events-none'>
     <div className='absolute rotate-6 right-[-48rem] top-[32rem] h-px w-[800%] bg-gradient-to-l from-slate-600 dark:from-slate-400 opacity-10' />
-    <div className='absolute rotate-[96deg] top-[22.26rem] xl:top-[23.5rem] -left-60 ml-[-0.5px] h-96 w-[2px] rounded-full bg-gradient-to-t from-orange-600 dark:from-orange-700 opacity-50' />
+    <div className='absolute rotate-[96deg] top-[22.26rem] xl:top-[23.5rem] -left-60 ml-[-0.5px] h-96 w-[2px] rounded-full bg-gradient-to-t from-red-600 dark:from-red-700 opacity-50' />
   </div>
 )
 
-interface IPerformance {
+interface IErrorTracking {
   ssrTheme: 'dark' | 'light'
   ssrAuthenticated: boolean
 }
 
-const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
+const ErrorTracking: React.FC<IErrorTracking> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
   const {
     t,
     i18n: { language },
@@ -98,10 +98,10 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
                   <Trans
                     // @ts-ignore
                     t={t}
-                    i18nKey='performance.slogan'
+                    i18nKey='errors.slogan'
                     components={{
                       span: (
-                        <span className='from-orange-700 to-orange-700 dark:from-orange-600 dark:to-red-400 text-transparent bg-clip-text bg-gradient-to-r' />
+                        <span className='from-red-700 to-red-700 dark:from-red-600 dark:to-red-400 text-transparent bg-clip-text bg-gradient-to-r' />
                       ),
                     }}
                   />
@@ -131,7 +131,7 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
                   )}
                 </div>
                 <p className='text-base leading-8 text-slate-900 dark:text-slate-300 sm:text-xl lg:text-lg xl:text-lg'>
-                  {t('performance.description')}
+                  {t('errors.description')}
                   <br />
                   {t('main.trackEveryMetric')}
                 </p>
@@ -145,7 +145,7 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
                     <ArrowSmallRightIcon className='h-4 w-5 mt-[1px]' />
                   </Link>
                   <a
-                    href={PERFORMANCE_LIVE_DEMO_URL}
+                    href={ERROR_TRACKING_LIVE_DEMO_URL}
                     className='rounded-md !duration-300 transition-all sm:mt-0 mt-2 ring-1 ring-slate-900 dark:ring-white/20 w-full sm:max-w-[210px] h-12 flex items-center justify-center shadow-sm text-slate-900 dark:text-white bg-transparent hover:bg-slate-200 dark:hover:bg-gray-800'
                     target='_blank'
                     rel='noopener noreferrer'
@@ -160,12 +160,14 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
                 <picture>
                   <source
                     srcSet={
-                      theme === 'dark' ? '/assets/screenshot_perf_dark.webp' : '/assets/screenshot_perf_light.webp'
+                      theme === 'dark' ? '/assets/screenshot_errors_dark.webp' : '/assets/screenshot_errors_light.webp'
                     }
                     type='image/webp'
                   />
                   <img
-                    src={theme === 'dark' ? '/assets/screenshot_perf_dark.png' : '/assets/screenshot_perf_light.png'}
+                    src={
+                      theme === 'dark' ? '/assets/screenshot_errors_dark.png' : '/assets/screenshot_errors_light.png'
+                    }
                     className='h-full min-w-[880px] rounded-xl relative shadow-2xl ring-1 ring-gray-900/10 dark:ring-white/10'
                     width='100%'
                     height='auto'
@@ -177,11 +179,13 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
             <div className='my-10 block lg:hidden relative z-20 px-4 md:px-0'>
               <picture>
                 <source
-                  srcSet={theme === 'dark' ? '/assets/screenshot_perf_dark.webp' : '/assets/screenshot_perf_light.webp'}
+                  srcSet={
+                    theme === 'dark' ? '/assets/screenshot_errors_dark.webp' : '/assets/screenshot_errors_light.webp'
+                  }
                   type='image/webp'
                 />
                 <img
-                  src={theme === 'dark' ? '/assets/screenshot_perf_dark.png' : '/assets/screenshot_perf_light.png'}
+                  src={theme === 'dark' ? '/assets/screenshot_errors_dark.png' : '/assets/screenshot_errors_light.png'}
                   className='rounded-xl relative shadow-2xl w-full ring-1 ring-gray-900/10 dark:ring-white/10'
                   width='100%'
                   height='auto'
@@ -194,25 +198,28 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
         {/* end first block with live demo */}
 
         <div className='dark:bg-slate-900 bg-white px-4 pb-16 mx-auto max-w-7xl whitespace-pre-line mt-12'>
-          <h2 className='font-extrabold text-4xl dark:text-white text-slate-900'>{t('performance.fast.title')}</h2>
+          <h2 className='font-extrabold text-4xl dark:text-white text-slate-900'>{t('errors.fast.title')}</h2>
           <p className='mt-6 dark:text-gray-50 text-gray-900 text-lg'>
             <Trans
               // @ts-ignore
               t={t}
-              i18nKey='performance.fast.desc'
+              i18nKey='errors.fast.desc'
               components={{
                 // eslint-disable-next-line jsx-a11y/anchor-has-content
                 indexUrl: (
-                  <Link
-                    to={routesPath.main}
-                    className='font-medium text-orange-600 dark:text-orange-400 hover:underline'
-                  />
+                  <Link to={routesPath.main} className='font-medium text-red-600 dark:text-red-400 hover:underline' />
                 ),
                 // eslint-disable-next-line jsx-a11y/anchor-has-content
-                wpostatsUrl: (
+                perfUrl: (
+                  <Link
+                    to={routesPath.performance}
+                    className='font-medium text-red-600 dark:text-red-400 hover:underline'
+                  />
+                ),
+                oneLC: (
                   <a
-                    href='https://wpostats.com/?utm_source=swetrix.com'
-                    className='font-medium text-orange-600 dark:text-orange-400 hover:underline'
+                    href='https://docs.swetrix.com/swetrix-js-reference#trackerrors'
+                    className='font-medium text-red-600 dark:text-red-400 hover:underline'
                     target='_blank'
                     rel='noopener noreferrer'
                   />
@@ -221,17 +228,15 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
             />
           </p>
           <ul className='mt-2 list-disc list-inside dark:text-gray-50 text-gray-900 text-lg'>
-            {_map(t('performance.fast.list', { returnObjects: true }), (item) => (
+            {_map(t('errors.fast.list', { returnObjects: true }), (item) => (
               <li key={item} className='mb-2'>
                 {item}
               </li>
             ))}
           </ul>
 
-          <h2 className='mt-10 font-extrabold text-4xl dark:text-white text-slate-900'>
-            {t('performance.metrics.title')}
-          </h2>
-          <p className='mt-6 dark:text-gray-50 text-gray-900 text-lg'>{t('performance.metrics.desc')}</p>
+          <h2 className='mt-10 font-extrabold text-4xl dark:text-white text-slate-900'>{t('errors.track.title')}</h2>
+          <p className='mt-6 dark:text-gray-50 text-gray-900 text-lg'>{t('errors.track.desc')}</p>
 
           <h2 className='mt-10 font-extrabold text-4xl dark:text-white text-slate-900'>
             {t('performance.privacy.title')}
@@ -285,7 +290,7 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
                   className='rounded-xl ring-1 ring-gray-900/10 min-h-[600px] min-w-[880px]'
                   width='1760'
                   height='880'
-                  src={theme === 'dark' ? '/assets/screenshot_perf_dark.png' : '/assets/screenshot_perf_light.png'}
+                  src={theme === 'dark' ? '/assets/screenshot_errors_dark.png' : '/assets/screenshot_errors_light.png'}
                   alt='Swetrix Analytics dashboard'
                 />
               </div>
@@ -355,4 +360,4 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
   )
 }
 
-export default memo(Performance)
+export default memo(ErrorTracking)

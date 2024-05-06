@@ -30,7 +30,7 @@ export const Pageflow = ({ pages }: IPageflow) => {
           })
 
           return (
-            <li key={`${value}${created}`}>
+            <li key={`${value}${created}${index}`}>
               <div className='relative pb-8'>
                 {index !== pages.length - 1 ? (
                   <span

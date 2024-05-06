@@ -107,6 +107,12 @@ const trackViews = () => {
   }
 }
 
+const trackErrors = () => {
+  if (!isSelfhosted) {
+    Swetrix.trackErrors()
+  }
+}
+
 const trackCustom = (ev: string, meta?: any) => {
   if (!isSelfhosted) {
     Swetrix.track({
@@ -116,4 +122,4 @@ const trackCustom = (ev: string, meta?: any) => {
   }
 }
 
-export { trackViews, trackCustom, SWETRIX_PID }
+export { trackViews, trackCustom, trackErrors, SWETRIX_PID }

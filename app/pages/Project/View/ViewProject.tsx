@@ -17,6 +17,7 @@ import {
   ChevronLeftIcon,
   GlobeAltIcon,
   UsersIcon,
+  BugAntIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -86,6 +87,9 @@ import {
   OS_LOGO_MAP,
   OS_LOGO_MAP_DARK,
   ITBPeriodPairs,
+  ERROR_PANELS_ORDER,
+  ERRORS_FILTERS_PANELS_ORDER,
+  errorPeriodPairs,
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import {
@@ -130,6 +134,9 @@ import {
   getPerformanceOverallStats,
   getSessions,
   getSession,
+  getErrors,
+  getError,
+  updateErrorStatus,
 } from 'api'
 import { getChartPrediction } from 'api/ai'
 import { Panel, CustomEvents } from './Panels'
@@ -156,6 +163,7 @@ import {
   SHORTCUTS_GENERAL_LISTENERS,
   SHORTCUTS_TIMEBUCKETS_LISTENERS,
   CHART_MEASURES_MAPPING_PERF,
+  ERROR_FILTERS_MAPPING,
 } from './ViewProject.helpers'
 import CCRow from './components/CCRow'
 import FunnelsList from './components/FunnelsList'
@@ -175,12 +183,19 @@ import { Sessions } from './components/Sessions'
 import { Pageflow } from './components/Pageflow'
 import { SessionDetails } from './components/SessionDetails'
 import { SessionChart } from './components/SessionChart'
+import { Errors } from './components/Errors'
 import LockedDashboard from './components/LockedDashboard'
 import WaitingForAnEvent from './components/WaitingForAnEvent'
+import { ErrorChart } from './components/ErrorChart'
+import { ErrorDetails } from './components/ErrorDetails'
+import { IError } from './interfaces/error'
+import NoErrorDetails from './components/NoErrorDetails'
+import WaitingForAnError from './components/WaitingForAnError'
 const SwetrixSDK = require('@swetrix/sdk')
 
 const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
 const SESSIONS_TAKE = 30
+const ERRORS_TAKE = 30
 
 interface IViewProject {
   projects: IProject[]
@@ -386,6 +401,11 @@ const ViewProject = ({
     [CHART_METRICS_MAPPING.trendlines]: false,
     [CHART_METRICS_MAPPING.cumulativeMode]: false,
   })
+  const [errorOptions, setErrorOptions] = useState<{
+    [key: string]: boolean
+  }>({
+    [ERROR_FILTERS_MAPPING.showResolved]: false,
+  })
   // similar activeChartMetrics but using for performance tab
   const [activeChartMetricsPerf, setActiveChartMetricsPerf] = useState<string>(CHART_METRICS_MAPPING_PERF.timing)
   const [activePerfMeasure, setActivePerfMeasure] = useState(CHART_MEASURES_MAPPING_PERF.median)
@@ -401,6 +421,8 @@ const ViewProject = ({
   // similar filters but using for the sessions tab
   const [filtersSessions, setFiltersSessions] = useState<any[]>([])
   const [areFiltersSessionsParsed, setAreFiltersSessionsParsed] = useState<boolean>(false)
+  const [filtersErrors, setFiltersErrors] = useState<any[]>([])
+  const [areFiltersErrorsParsed, setAreFiltersErrorsParsed] = useState<boolean>(false)
 
   // isLoading is a true when we loading data from api
   const isLoading = authenticated ? _isLoading : false
@@ -433,6 +455,16 @@ const ViewProject = ({
   const [sessionsLoading, setSessionsLoading] = useState<boolean | null>(null) // null - not loaded, true - loading, false - loaded
   const [activeSession, setActiveSession] = useState<any>(null)
   const [sessionLoading, setSessionLoading] = useState<boolean>(false)
+
+  // errors
+  const [errorsSkip, setErrorsSkip] = useState<number>(0)
+  const [canLoadMoreErrors, setCanLoadMoreErrors] = useState<boolean>(false)
+  const [errors, setErrors] = useState<any[]>([])
+  const [errorsLoading, setErrorsLoading] = useState<boolean | null>(null) // null - not loaded, true - loading, false - loaded
+  const [activeError, setActiveError] = useState<any>(null)
+  const [errorLoading, setErrorLoading] = useState<boolean>(false)
+  const [errorStatusUpdating, setErrorStatusUpdating] = useState(false)
+  const [activeEID, setActiveEID] = useState<string | null>(null)
 
   const [activeFunnel, setActiveFunnel] = useState<IFunnel | null>(null)
   const [funnelToEdit, setFunnelToEdit] = useState<IFunnel | undefined>(undefined)
@@ -636,6 +668,28 @@ const ViewProject = ({
   // sharedRoles is a role for shared project
   const sharedRoles = useMemo(() => _find(user.sharedProjects, (p) => p.project.id === id)?.role || {}, [user, id])
 
+  const timeBucketSelectorItems = useMemo(() => {
+    if (activeTab === PROJECT_TABS.errors) {
+      return _filter(periodPairs, (el) => {
+        return _includes(errorPeriodPairs, el.period)
+      })
+    }
+
+    if (isActiveCompare) {
+      return _filter(periodPairs, (el) => {
+        return _includes(filtersPeriodPairs, el.period)
+      })
+    }
+
+    if (_includes(filtersPeriodPairs, period)) {
+      return periodPairs
+    }
+
+    return _filter(periodPairs, (el) => {
+      return el.period !== PERIOD_PAIRS_COMPARE.COMPARE
+    })
+  }, [activeTab, isActiveCompare, period, periodPairs])
+
   // for search filters
   const [showFiltersSearch, setShowFiltersSearch] = useState(false)
 
@@ -686,6 +740,16 @@ const ViewProject = ({
       },
     ]
   }, [t, activeChartMetrics])
+
+  const errorFilters = useMemo(() => {
+    return [
+      {
+        id: ERROR_FILTERS_MAPPING.showResolved,
+        label: t('project.showResolved'),
+        active: errorOptions[ERROR_FILTERS_MAPPING.showResolved],
+      },
+    ]
+  }, [t, errorOptions])
 
   // chartMetricsPerf is a list of metrics for dropdown in performance tab
   const chartMetricsPerf = useMemo(() => {
@@ -772,6 +836,7 @@ const ViewProject = ({
       viewsPerUnique: t('dashboard.viewsPerUnique'),
       trendlineTotal: t('project.trendlineTotal'),
       trendlineUnique: t('project.trendlineUnique'),
+      occurrences: t('project.occurrences'),
       sessionDuration: t('dashboard.sessionDuration'),
       ...dataNamesCustomEvents,
     }),
@@ -849,6 +914,11 @@ const ViewProject = ({
         icon: UsersIcon,
       },
       {
+        id: PROJECT_TABS.errors,
+        label: t('dashboard.errors'),
+        icon: BugAntIcon,
+      },
+      {
         id: PROJECT_TABS.funnels,
         label: t('dashboard.funnels'),
         icon: FunnelIcon,
@@ -883,6 +953,76 @@ const ViewProject = ({
     }, 0),
     [activeTab],
   )
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const switchActiveErrorFilter = useCallback(
+    _debounce((pairID: string) => {
+      setErrorOptions((prev) => ({ ...prev, [pairID]: !prev[pairID] }))
+      resetErrors()
+    }, 0),
+    [],
+  )
+
+  const updateStatusInErrors = (status: 'active' | 'resolved') => {
+    if (!activeError?.details?.eid) {
+      return
+    }
+
+    const index = _findIndex(errors, (error) => error.eid === activeEID)
+
+    if (index === -1) {
+      return
+    }
+
+    errors[index] = {
+      ...errors[index],
+      status,
+    }
+  }
+
+  const markErrorAsResolved = async () => {
+    if (errorStatusUpdating || !activeEID || !activeError?.details?.eid) {
+      return
+    }
+
+    setErrorStatusUpdating(true)
+
+    try {
+      await updateErrorStatus(project.id, 'resolved', activeEID)
+      await loadError(activeEID)
+      updateStatusInErrors('resolved')
+    } catch (reason) {
+      console.error('[markErrorAsResolved]', reason)
+      generateAlert(t('apiNotifications.updateErrorStatusFailed'), 'error')
+      setErrorStatusUpdating(false)
+      return
+    }
+
+    generateAlert(t('apiNotifications.errorStatusUpdated'), 'success')
+    setErrorStatusUpdating(false)
+  }
+
+  const markErrorAsActive = async () => {
+    if (errorStatusUpdating || !activeEID || !activeError?.details?.eid) {
+      return
+    }
+
+    setErrorStatusUpdating(true)
+
+    try {
+      await updateErrorStatus(project.id, 'active', activeEID)
+      await loadError(activeEID)
+      updateStatusInErrors('active')
+    } catch (reason) {
+      console.error('[markErrorAsResolved]', reason)
+      generateAlert(t('apiNotifications.updateErrorStatusFailed'), 'error')
+      setErrorStatusUpdating(false)
+      return
+    }
+
+    generateAlert(t('apiNotifications.errorStatusUpdated'), 'success')
+    setErrorStatusUpdating(false)
+  }
 
   // onErrorLoading is a function for redirect to dashboard when project do not exist
   const onErrorLoading = () => {
@@ -1311,6 +1451,45 @@ const ViewProject = ({
     return getCustomEventsMetadata(id, event, timeBucket, period, '', '', timezone, projectPassword)
   }
 
+  const loadError = useCallback(
+    async (eid: string) => {
+      setErrorLoading(true)
+
+      try {
+        let error
+        let from
+        let to
+
+        if (dateRange) {
+          from = getFormatDate(dateRange[0])
+          to = getFormatDate(dateRange[1])
+        }
+
+        if (period === 'custom' && dateRange) {
+          error = await getError(id, eid, '', from, to, timezone, projectPassword)
+        } else {
+          error = await getError(id, eid, period, '', '', timezone, projectPassword)
+        }
+
+        setActiveError(error)
+      } catch (reason: any) {
+        if (reason?.status === 400) {
+          // this error did not occur within specified time frame
+          setErrorLoading(false)
+          setActiveError(null)
+          return
+        }
+
+        const message = _isEmpty(reason.data?.message) ? reason.data : reason.data.message
+
+        console.error('[ERROR] (loadError)(getError)', message)
+        showError(message)
+      }
+      setErrorLoading(false)
+    },
+    [dateRange, id, period, projectPassword, showError, timezone],
+  )
+
   const loadSession = async (psid: string) => {
     if (sessionLoading) {
       return
@@ -1346,6 +1525,29 @@ const ViewProject = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    // @ts-ignore
+    const url = new URL(window.location)
+    const { searchParams } = url
+    const eid = searchParams.get('eid') as string
+    const tab = searchParams.get('tab') as string
+
+    if (eid && tab === PROJECT_TABS.errors) {
+      // loadError(eid)
+      setActiveEID(eid)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (!activeEID) {
+      return
+    }
+
+    loadError(activeEID)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [period, dateRange, timeBucket, activeEID])
 
   const loadSessions = async () => {
     if (sessionsLoading) {
@@ -1403,6 +1605,79 @@ const ViewProject = ({
       console.error(e)
     } finally {
       setSessionsLoading(false)
+    }
+  }
+
+  const loadErrors = async (forcedSkip?: number, override?: boolean) => {
+    if (errorsLoading) {
+      return
+    }
+
+    setErrorsLoading(true)
+
+    try {
+      const skip = typeof forcedSkip === 'number' ? forcedSkip : errorsSkip
+      let dataErrors: { errors: IError[]; appliedFilters: any[] }
+      let from
+      let to
+
+      if (dateRange) {
+        from = getFormatDate(dateRange[0])
+        to = getFormatDate(dateRange[1])
+      }
+
+      if (period === 'custom' && dateRange) {
+        dataErrors = await getErrors(
+          id,
+          '',
+          filtersErrors,
+          errorOptions,
+          from,
+          to,
+          ERRORS_TAKE,
+          skip,
+          timezone,
+          projectPassword,
+        )
+      } else {
+        dataErrors = await getErrors(
+          id,
+          period,
+          filtersErrors,
+          errorOptions,
+          '',
+          '',
+          ERRORS_TAKE,
+          skip,
+          timezone,
+          projectPassword,
+        )
+      }
+
+      if (override) {
+        setErrors(dataErrors?.errors || [])
+      } else {
+        setErrors((prev) => [...prev, ...(dataErrors?.errors || [])])
+      }
+
+      setErrorsSkip((prev) => {
+        if (typeof forcedSkip === 'number') {
+          return ERRORS_TAKE + forcedSkip
+        }
+
+        return ERRORS_TAKE + prev
+      })
+
+      if (dataErrors?.errors?.length < ERRORS_TAKE) {
+        setCanLoadMoreErrors(false)
+      } else {
+        setCanLoadMoreErrors(true)
+      }
+    } catch (e) {
+      console.error('[ERROR](loadErrors) Loading errors data failed')
+      console.error(e)
+    } finally {
+      setErrorsLoading(false)
     }
   }
 
@@ -1743,8 +2018,10 @@ const ViewProject = ({
     let newFilters
     let newFiltersPerf
     let newFiltersSessions
+    let newFiltersErrors
     const columnPerf = `${column}_perf`
     const columnSessions = `${column}_sess`
+    const columnErrors = `${column}_err`
 
     if (activeTab === PROJECT_TABS.performance) {
       if (_find(filtersPerf, (f) => f.filter === filter)) {
@@ -1790,6 +2067,28 @@ const ViewProject = ({
       }
     }
 
+    if (activeTab === PROJECT_TABS.errors) {
+      if (_find(filtersErrors, (f) => f.filter === filter)) {
+        newFiltersErrors = _filter(filtersErrors, (f) => f.filter !== filter)
+
+        // @ts-ignore
+        const url = new URL(window.location)
+        url.searchParams.delete(columnErrors)
+        const { pathname, search } = url
+        navigate(`${pathname}${search}`)
+        setFiltersErrors(newFiltersErrors)
+      } else {
+        newFiltersErrors = [...filtersErrors, { column, filter, isExclusive }]
+
+        // @ts-ignore
+        const url = new URL(window.location)
+        url.searchParams.append(columnErrors, filter)
+        const { pathname, search } = url
+        navigate(`${pathname}${search}`)
+        setFiltersErrors(newFiltersErrors)
+      }
+    }
+
     if (activeTab === PROJECT_TABS.traffic) {
       // eslint-disable-next-line no-lonely-if
       if (_find(filters, (f) => f.filter === filter) /* && f.filter === filter) */) {
@@ -1821,11 +2120,12 @@ const ViewProject = ({
     }
 
     resetSessions()
+    resetErrors()
 
     sdkInstance?._emitEvent('filtersupdate', newFilters)
     if (activeTab === PROJECT_TABS.performance) {
       loadAnalyticsPerf(true, newFiltersPerf)
-    } else {
+    } else if (activeTab === PROJECT_TABS.traffic) {
       loadAnalytics(true, newFilters)
     }
   }
@@ -1902,6 +2202,36 @@ const ViewProject = ({
       }
 
       setFiltersSessions(converted)
+    } else if (activeTab === PROJECT_TABS.errors) {
+      if (override) {
+        _forEach(ERRORS_FILTERS_PANELS_ORDER, (value) => {
+          if (url.searchParams.has(`${value}_err`)) {
+            url.searchParams.delete(`${value}_err`)
+          }
+        })
+      }
+
+      _forEach(items, (item) => {
+        if (url.searchParams.has(`${item.column}_err`)) {
+          url.searchParams.delete(`${item.column}_err`)
+        }
+        _forEach(item.filter, (filter) => {
+          url.searchParams.append(`${item.column}_err`, filter)
+        })
+      })
+
+      const { pathname, search } = url
+      navigate(`${pathname}${search}`)
+
+      const converted = convertFilters(newFilters)
+      resetErrors()
+
+      if (!override) {
+        setFiltersErrors([...filters, ...converted])
+        return
+      }
+
+      setFiltersErrors(converted)
     } else {
       if (override) {
         _forEach(FILTERS_PANELS_ORDER, (value) => {
@@ -1934,6 +2264,7 @@ const ViewProject = ({
     }
 
     resetSessions()
+    resetErrors()
   }
 
   // this function is used for requesting the data from the API when the exclusive filter is changed
@@ -1964,6 +2295,19 @@ const ViewProject = ({
         return f
       })
       setFiltersSessions(newFilters)
+    } else if (activeTab === PROJECT_TABS.errors) {
+      newFilters = _map(filtersErrors, (f) => {
+        if (f.column === column && f.filter === filter) {
+          return {
+            ...f,
+            isExclusive,
+          }
+        }
+
+        return f
+      })
+      resetErrors()
+      setFiltersErrors(newFilters)
     } else {
       newFilters = _map(filters, (f) => {
         if (f.column === column && f.filter === filter) {
@@ -1998,7 +2342,7 @@ const ViewProject = ({
   }
 
   // this function is used for requesting the data from the API when you press the reset button
-  const refreshStats = () => {
+  const refreshStats = async () => {
     if (!isLoading && !dataLoading) {
       if (activeTab === PROJECT_TABS.performance) {
         loadAnalyticsPerf(true)
@@ -2013,6 +2357,17 @@ const ViewProject = ({
       if (activeTab === PROJECT_TABS.sessions) {
         resetSessions()
         loadSessions()
+        return
+      }
+
+      if (activeTab === PROJECT_TABS.errors) {
+        if (activeEID) {
+          await loadError(activeEID)
+          return
+        }
+
+        resetErrors()
+        loadErrors(0)
         return
       }
 
@@ -2378,6 +2733,40 @@ const ViewProject = ({
     }
   }, [])
 
+  useEffect(() => {
+    try {
+      // @ts-ignore
+      const url = new URL(window.location)
+      const { searchParams } = url
+      const initialFilters: any[] = []
+      // eslint-disable-next-line lodash/prefer-lodash-method
+      searchParams.forEach((value, key) => {
+        if (!_includes(key, '_err')) {
+          return
+        }
+
+        const keyErr = _replace(key, '_err', '')
+
+        if (!_includes(validFilters, keyErr)) {
+          return
+        }
+
+        const isExclusive = _startsWith(value, '!')
+        initialFilters.push({
+          column: keyErr,
+          filter: isExclusive ? value.substring(1) : value,
+          isExclusive,
+        })
+      })
+
+      setFiltersErrors(initialFilters)
+    } catch (reason) {
+      console.error(`[ERROR] useEffect - Parsing initial filters from url also using for errors tab: ${reason}`)
+    } finally {
+      setAreFiltersErrorsParsed(true)
+    }
+  }, [])
+
   // Parsing timeBucket from url
   useEffect(() => {
     if (arePeriodParsed) {
@@ -2406,6 +2795,12 @@ const ViewProject = ({
     setSessionsSkip(0)
     setSessions([])
     setSessionsLoading(null)
+  }
+
+  const resetErrors = () => {
+    setErrorsSkip(0)
+    setErrors([])
+    setErrorsLoading(null)
   }
 
   // onRangeDateChange if is activeChartMetrics custom and we select custom date range
@@ -2447,6 +2842,7 @@ const ViewProject = ({
 
         setCanLoadMoreSessions(false)
         resetSessions()
+        resetErrors()
 
         sdkInstance?._emitEvent('timeupdate', {
           period: 'custom',
@@ -2493,6 +2889,13 @@ const ViewProject = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, dateRange, filtersSessions, id, period, projectPassword, timezone, areFiltersSessionsParsed])
+
+  useEffect(() => {
+    if (activeTab === PROJECT_TABS.errors && areFiltersErrorsParsed) {
+      loadErrors()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, errorOptions, dateRange, filtersErrors, id, period, projectPassword, timezone, areFiltersErrorsParsed])
 
   useEffect(() => {
     if (period !== KEY_FOR_ALL_TIME) {
@@ -2624,6 +3027,7 @@ const ViewProject = ({
 
       setCanLoadMoreSessions(false)
       resetSessions()
+      resetErrors()
 
       setDateRange(null)
     }
@@ -2739,6 +3143,7 @@ const ViewProject = ({
     setFilters([])
     setFiltersPerf([])
     setFiltersSessions([])
+    setFiltersErrors([])
     if (activeTab === PROJECT_TABS.performance) {
       loadAnalyticsPerf(true, [])
     } else if (activeTab === PROJECT_TABS.traffic) {
@@ -2982,7 +3387,7 @@ const ViewProject = ({
     )
   }
 
-  if (!project.isDataExists && !analyticsLoading) {
+  if (!project.isDataExists && activeTab !== PROJECT_TABS.errors && !analyticsLoading) {
     return (
       <>
         {!embedded && <Header ssrTheme={ssrTheme} authenticated={authenticated} />}
@@ -2997,6 +3402,31 @@ const ViewProject = ({
             {name}
           </h2>
           <WaitingForAnEvent project={project} />
+        </div>
+        {!embedded && <Footer authenticated={authenticated} minimal />}
+      </>
+    )
+  }
+
+  if (
+    typeof project.isErrorDataExists === 'boolean' && // to prevent flickering
+    !project.isErrorDataExists &&
+    activeTab === PROJECT_TABS.errors
+  ) {
+    return (
+      <>
+        {!embedded && <Header ssrTheme={ssrTheme} authenticated={authenticated} />}
+        <div
+          className={cx('max-w-[1584px] bg-gray-50 dark:bg-slate-900 w-full mx-auto py-6 px-2 sm:px-4 lg:px-8', {
+            'min-h-min-footer': !embedded,
+            'min-h-[100vh]': embedded,
+          })}
+        >
+          <TabsSelector />
+          <h2 className='text-xl mt-2 font-bold text-gray-900 dark:text-gray-50 break-words break-all text-center sm:text-left'>
+            {name}
+          </h2>
+          <WaitingForAnError />
         </div>
         {!embedded && <Footer authenticated={authenticated} minimal />}
       </>
@@ -3091,6 +3521,7 @@ const ViewProject = ({
                             <div
                               className={cx('border-gray-200 dark:border-gray-600', {
                                 'lg:border-r': activeTab === PROJECT_TABS.funnels,
+                                hidden: activeTab === PROJECT_TABS.errors && activeError,
                               })}
                             >
                               <button
@@ -3107,36 +3538,38 @@ const ViewProject = ({
                                 <MagnifyingGlassIcon className='w-5 h-5 stroke-2 text-gray-700 dark:text-gray-50' />
                               </button>
                             </div>
-                            {activeTab !== PROJECT_TABS.funnels && activeTab !== PROJECT_TABS.sessions && (
-                              <Dropdown
-                                header={t('project.exportData')}
-                                items={[
-                                  ...exportTypes,
-                                  ...customExportTypes,
-                                  { label: t('project.lookingForMore'), lookingForMore: true, onClick: () => {} },
-                                ]}
-                                title={[<ArrowDownTrayIcon key='download-icon' className='w-5 h-5' />]}
-                                labelExtractor={(item) => {
-                                  const { label } = item
+                            {activeTab !== PROJECT_TABS.funnels &&
+                              activeTab !== PROJECT_TABS.sessions &&
+                              activeTab !== PROJECT_TABS.errors && (
+                                <Dropdown
+                                  header={t('project.exportData')}
+                                  items={[
+                                    ...exportTypes,
+                                    ...customExportTypes,
+                                    { label: t('project.lookingForMore'), lookingForMore: true, onClick: () => {} },
+                                  ]}
+                                  title={[<ArrowDownTrayIcon key='download-icon' className='w-5 h-5' />]}
+                                  labelExtractor={(item) => {
+                                    const { label } = item
 
-                                  return label
-                                }}
-                                keyExtractor={(item) => item.label}
-                                onSelect={(item, e) => {
-                                  if (item.lookingForMore) {
-                                    e?.stopPropagation()
-                                    window.open(MARKETPLACE_URL, '_blank')
+                                    return label
+                                  }}
+                                  keyExtractor={(item) => item.label}
+                                  onSelect={(item, e) => {
+                                    if (item.lookingForMore) {
+                                      e?.stopPropagation()
+                                      window.open(MARKETPLACE_URL, '_blank')
 
-                                    return
-                                  }
+                                      return
+                                    }
 
-                                  item.onClick(panelsData, t)
-                                }}
-                                chevron='mini'
-                                buttonClassName='!p-2 rounded-md hover:bg-white hover:shadow-sm dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200'
-                                headless
-                              />
-                            )}
+                                    item.onClick(panelsData, t)
+                                  }}
+                                  chevron='mini'
+                                  buttonClassName='!p-2 rounded-md hover:bg-white hover:shadow-sm dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200'
+                                  headless
+                                />
+                              )}
                             <div
                               className={cx(
                                 'border-gray-200 dark:border-gray-600 lg:px-3 sm:mr-3 space-x-2 lg:border-x',
@@ -3145,7 +3578,8 @@ const ViewProject = ({
                                     isPanelsDataEmpty ||
                                     analyticsLoading ||
                                     checkIfAllMetricsAreDisabled ||
-                                    activeTab === PROJECT_TABS.sessions,
+                                    activeTab === PROJECT_TABS.sessions ||
+                                    activeTab === PROJECT_TABS.errors,
                                 },
                               )}
                             >
@@ -3283,6 +3717,56 @@ const ViewProject = ({
                             headless
                           />
                         )}
+                        {activeTab === PROJECT_TABS.errors &&
+                          activeError &&
+                          activeError?.details?.status !== 'resolved' && (
+                            <button
+                              type='button'
+                              disabled={errorStatusUpdating}
+                              onClick={markErrorAsResolved}
+                              className={cx('text-sm p-2 font-medium text-gray-700 dark:text-gray-50', {
+                                'cursor-not-allowed': isLoading || errorLoading,
+                                'opacity-50': errorLoading && !errorStatusUpdating,
+                                'animate-pulse cursor-not-allowed': errorStatusUpdating,
+                              })}
+                            >
+                              {t('project.resolve')}
+                            </button>
+                          )}
+                        {activeTab === PROJECT_TABS.errors &&
+                          activeError &&
+                          activeError?.details?.status === 'resolved' && (
+                            <button
+                              type='button'
+                              disabled={errorStatusUpdating}
+                              onClick={markErrorAsActive}
+                              className={cx('text-sm p-2 font-medium text-gray-700 dark:text-gray-50', {
+                                'cursor-not-allowed': isLoading || errorLoading,
+                                'opacity-50': errorLoading && !errorStatusUpdating,
+                                'animate-pulse cursor-not-allowed': errorStatusUpdating,
+                              })}
+                            >
+                              {t('project.markAsActive')}
+                            </button>
+                          )}
+                        {activeTab === PROJECT_TABS.errors && !activeError && (
+                          <Dropdown
+                            items={errorFilters}
+                            title={t('project.filters')}
+                            labelExtractor={(pair) => {
+                              const { label, id: pairID, active } = pair
+
+                              return <Checkbox className='px-4 py-2' label={label} id={pairID} checked={active} />
+                            }}
+                            selectItemClassName='group text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 block text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'
+                            keyExtractor={(pair) => pair.id}
+                            onSelect={({ id: pairID }) => {
+                              switchActiveErrorFilter(pairID)
+                            }}
+                            chevron='mini'
+                            headless
+                          />
+                        )}
                         {activeTab === PROJECT_TABS.funnels && (
                           <button
                             type='button'
@@ -3339,20 +3823,13 @@ const ViewProject = ({
                           />
                         )}
                         <TBPeriodSelector
+                          classes={{
+                            timeBucket: activeTab === PROJECT_TABS.errors && !activeEID ? 'hidden' : '',
+                          }}
                           activePeriod={activePeriod}
                           updateTimebucket={updateTimebucket}
                           timeBucket={timeBucket}
-                          items={
-                            isActiveCompare
-                              ? _filter(periodPairs, (el) => {
-                                  return _includes(filtersPeriodPairs, el.period)
-                                })
-                              : _includes(filtersPeriodPairs, period)
-                                ? periodPairs
-                                : _filter(periodPairs, (el) => {
-                                    return el.period !== PERIOD_PAIRS_COMPARE.COMPARE
-                                  })
-                          }
+                          items={timeBucketSelectorItems}
                           title={activePeriod?.label}
                           onSelect={(pair) => {
                             if (pair.period === PERIOD_PAIRS_COMPARE.COMPARE) {
@@ -3381,7 +3858,7 @@ const ViewProject = ({
                             }
                           }}
                         />
-                        {isActiveCompare && (
+                        {isActiveCompare && activeTab !== PROJECT_TABS.errors && (
                           <>
                             <div className='mx-2 text-md font-medium text-gray-600 whitespace-pre-line dark:text-gray-200'>
                               vs
@@ -3548,9 +4025,7 @@ const ViewProject = ({
                     <ChevronLeftIcon className='w-4 h-4' />
                     {t('project.backToSessions')}
                   </button>
-                  {activeSession?.details && (
-                    <SessionDetails details={activeSession?.details} psid={activeSession?.psid} />
-                  )}
+                  {activeSession?.details && <SessionDetails details={activeSession?.details} />}
                   <SessionChart
                     chart={activeSession?.chart}
                     timeBucket={activeSession?.timeBucket}
@@ -3560,6 +4035,289 @@ const ViewProject = ({
                     dataNames={dataNames}
                   />
                   <Pageflow pages={activeSession?.pages} />
+                </>
+              )}
+              {activeTab === PROJECT_TABS.errors && !activeEID && (
+                <>
+                  <Filters
+                    filters={filtersErrors}
+                    onRemoveFilter={filterHandler}
+                    onChangeExclusive={onChangeExclusive}
+                    tnMapping={tnMapping}
+                  />
+                  {!errorsLoading && _isEmpty(errors) && (
+                    <NoEvents filters={filtersErrors} resetFilters={resetFilters} />
+                  )}
+                  <Errors
+                    errors={errors}
+                    onClick={(eidToLoad) => {
+                      setActiveEID(eidToLoad)
+                      setErrorLoading(true)
+                    }}
+                  />
+                  {canLoadMoreErrors && (
+                    <button
+                      type='button'
+                      title={t('project.refreshStats')}
+                      onClick={() => loadErrors()}
+                      className={cx(
+                        'flex items-center mx-auto mt-2 text-gray-700 dark:text-gray-50 relative rounded-md p-2 bg-gray-50 text-sm font-medium hover:bg-white hover:shadow-sm dark:bg-slate-900 dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
+                        {
+                          'cursor-not-allowed opacity-50': sessionsLoading,
+                        },
+                      )}
+                    >
+                      <ArrowDownTrayIcon className='w-5 h-5 mr-2' />
+                      {t('project.loadMore')}
+                    </button>
+                  )}
+                  {_isEmpty(errors) && errorsLoading && <Loader />}
+                </>
+              )}
+              {activeTab === PROJECT_TABS.errors && activeEID && (
+                <>
+                  <button
+                    onClick={() => {
+                      setActiveError(null)
+                      setActiveEID(null)
+                      const url = new URL(window.location.href)
+                      url.searchParams.delete('eid')
+                      window.history.pushState({}, '', url.toString())
+                    }}
+                    className='flex items-center text-base font-normal underline decoration-dashed hover:decoration-solid mb-4 mx-auto lg:mx-0 mt-2 lg:mt-0 text-gray-900 dark:text-gray-100'
+                  >
+                    <ChevronLeftIcon className='w-4 h-4' />
+                    {t('project.backToErrors')}
+                  </button>
+                  {activeError?.details && <ErrorDetails details={activeError.details} />}
+                  {activeError?.chart && (
+                    <ErrorChart
+                      chart={activeError?.chart}
+                      timeBucket={activeError?.timeBucket}
+                      timeFormat={timeFormat}
+                      rotateXAxis={rotateXAxis}
+                      chartType={chartType}
+                      dataNames={dataNames}
+                    />
+                  )}
+                  <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
+                    {!_isEmpty(activeError?.params) &&
+                      _map(ERROR_PANELS_ORDER, (type: keyof typeof tnMapping) => {
+                        const panelName = tnMapping[type]
+                        // @ts-ignore
+                        const panelIcon = panelIconMapping[type]
+
+                        if (type === 'cc') {
+                          const ccPanelName = tnMapping[countryActiveTab]
+
+                          const rowMapper = (entry: ICountryEntry) => {
+                            const { name: entryName, cc } = entry
+
+                            if (cc) {
+                              return <CCRow cc={cc} name={entryName} language={language} />
+                            }
+
+                            return <CCRow cc={entryName} language={language} />
+                          }
+
+                          return (
+                            <Panel
+                              projectPassword={projectPassword}
+                              t={t}
+                              key={countryActiveTab}
+                              icon={panelIcon}
+                              id={countryActiveTab}
+                              onFilter={filterHandler}
+                              activeTab={activeTab}
+                              name={<CountryDropdown onSelect={setCountryActiveTab} title={ccPanelName} />}
+                              data={activeError.params[countryActiveTab]}
+                              rowMapper={rowMapper}
+                            />
+                          )
+                        }
+
+                        if (type === 'br') {
+                          const rowMapper = (entry: any) => {
+                            const { name: entryName } = entry
+                            // @ts-ignore
+                            const logoUrl = BROWSER_LOGO_MAP[entryName]
+
+                            if (!logoUrl) {
+                              return (
+                                <>
+                                  <GlobeAltIcon className='w-5 h-5' />
+                                  &nbsp;
+                                  {entryName}
+                                </>
+                              )
+                            }
+
+                            return (
+                              <>
+                                <img src={logoUrl} className='w-5 h-5' alt='' />
+                                &nbsp;
+                                {entryName}
+                              </>
+                            )
+                          }
+
+                          return (
+                            <Panel
+                              projectPassword={projectPassword}
+                              t={t}
+                              key={type}
+                              icon={panelIcon}
+                              id={type}
+                              activeTab={activeTab}
+                              onFilter={filterHandler}
+                              name={panelName}
+                              data={activeError.params[type]}
+                              rowMapper={rowMapper}
+                            />
+                          )
+                        }
+
+                        if (type === 'os') {
+                          const rowMapper = (entry: any) => {
+                            const { name: entryName } = entry
+                            // @ts-ignore
+                            const logoPathLight = OS_LOGO_MAP[entryName]
+                            // @ts-ignore
+                            const logoPathDark = OS_LOGO_MAP_DARK[entryName]
+
+                            let logoPath = _theme === 'dark' ? logoPathDark : logoPathLight
+                            logoPath ||= logoPathLight
+
+                            if (!logoPath) {
+                              return (
+                                <>
+                                  <GlobeAltIcon className='w-5 h-5' />
+                                  &nbsp;
+                                  {entryName}
+                                </>
+                              )
+                            }
+
+                            const logoUrl = `/${logoPath}`
+
+                            return (
+                              <>
+                                <img src={logoUrl} className='w-5 h-5 dark:fill-gray-50' alt='' />
+                                &nbsp;
+                                {entryName}
+                              </>
+                            )
+                          }
+
+                          return (
+                            <Panel
+                              projectPassword={projectPassword}
+                              t={t}
+                              key={type}
+                              icon={panelIcon}
+                              id={type}
+                              activeTab={activeTab}
+                              onFilter={filterHandler}
+                              name={panelName}
+                              data={activeError.params[type]}
+                              rowMapper={rowMapper}
+                            />
+                          )
+                        }
+
+                        if (type === 'dv') {
+                          return (
+                            <Panel
+                              projectPassword={projectPassword}
+                              t={t}
+                              key={type}
+                              activeTab={activeTab}
+                              icon={panelIcon}
+                              id={type}
+                              onFilter={filterHandler}
+                              name={panelName}
+                              data={activeError.params[type]}
+                              capitalize
+                            />
+                          )
+                        }
+
+                        if (type === 'pg') {
+                          return (
+                            <Panel
+                              projectPassword={projectPassword}
+                              t={t}
+                              key={type}
+                              icon={panelIcon}
+                              id={type}
+                              onFilter={filterHandler}
+                              onFragmentChange={setPgActiveFragment}
+                              // @ts-ignore
+                              rowMapper={({ name: entryName }) => {
+                                if (!entryName) {
+                                  return _toUpper(t('project.redactedPage'))
+                                }
+
+                                let decodedUri = entryName as string
+
+                                try {
+                                  decodedUri = decodeURIComponent(entryName)
+                                } catch (_) {
+                                  // do nothing
+                                }
+
+                                return decodedUri
+                              }}
+                              name={pgPanelNameMapping[pgActiveFragment]}
+                              data={activeError.params[type]}
+                              period={period}
+                              activeTab={activeTab}
+                              pid={id}
+                              timeBucket={timeBucket}
+                              filters={filters}
+                              from={dateRange ? getFormatDate(dateRange[0]) : null}
+                              to={dateRange ? getFormatDate(dateRange[1]) : null}
+                              timezone={timezone}
+                            />
+                          )
+                        }
+
+                        if (type === 'lc') {
+                          return (
+                            <Panel
+                              projectPassword={projectPassword}
+                              t={t}
+                              key={type}
+                              icon={panelIcon}
+                              id={type}
+                              activeTab={activeTab}
+                              onFilter={filterHandler}
+                              name={panelName}
+                              data={activeError.params[type]}
+                              rowMapper={({ name: entryName }: { name: string }) =>
+                                getLocaleDisplayName(entryName, language)
+                              }
+                            />
+                          )
+                        }
+
+                        return (
+                          <Panel
+                            projectPassword={projectPassword}
+                            t={t}
+                            key={type}
+                            icon={panelIcon}
+                            id={type}
+                            activeTab={activeTab}
+                            onFilter={filterHandler}
+                            name={panelName}
+                            data={activeError.params[type]}
+                          />
+                        )
+                      })}
+                  </div>
+                  {_isEmpty(activeError) && errorLoading && <Loader />}
+                  {!errorLoading && _isEmpty(activeError) && <NoErrorDetails />}
                 </>
               )}
               {activeTab === PROJECT_TABS.alerts && !isSharedProject && project?.isOwner && authenticated && (
@@ -3844,7 +4602,9 @@ const ViewProject = ({
                               onFilter={filterHandler}
                               name={panelName}
                               data={panelsData.data[type]}
-                              rowMapper={({ name: entryName }) => getLocaleDisplayName(entryName, language)}
+                              rowMapper={({ name: entryName }: { name: string }) =>
+                                getLocaleDisplayName(entryName, language)
+                              }
                               customTabs={customTabs}
                             />
                           )
@@ -4102,6 +4862,7 @@ const ViewProject = ({
             loading={funnelActionLoading}
           />
           <SearchFilters
+            type={activeTab === PROJECT_TABS.errors ? 'errors' : 'traffic'}
             projectPassword={projectPassword}
             showModal={showFiltersSearch}
             setShowModal={setShowFiltersSearch}
@@ -4113,7 +4874,9 @@ const ViewProject = ({
                 ? filtersPerf
                 : activeTab === PROJECT_TABS.sessions
                   ? filtersSessions
-                  : filters
+                  : activeTab === PROJECT_TABS.errors
+                    ? filtersErrors
+                    : filters
             }
           />
           {!embedded && <Footer authenticated={authenticated} minimal showDBIPMessage />}

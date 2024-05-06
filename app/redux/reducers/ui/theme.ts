@@ -19,7 +19,7 @@ const setTheme = (theme: string, storeToCookie = true): string => {
   setThemeToDOM(theme)
 
   if (storeToCookie) {
-    setCookie(LS_THEME_SETTING, theme)
+    setCookie(LS_THEME_SETTING, theme, 3600 * 24 * 90) // storing theme data for 90 days
   }
 
   return theme
