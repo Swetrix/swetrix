@@ -121,3 +121,58 @@ swetrix.trackPageview('/hello')
 // Track a page view with a path '/hello' and previous page '/world'.
 swetrix.trackPageview('/hello', '/world')
 ```
+
+## trackErrors()
+This function is used to enable automatic client-side error monitoring. It adds an `error` event listener on your site and when an error happens - send it to our APIs.
+
+The data we collect includes the following params if available:
+1. `pid` - the unique Project ID request is related to.
+2. `lc` - users locale (e.g. en_US or uk_UA).
+3. `tz` - users timezone (e.g. Europe/Helsinki).
+4. `pg` - the page user currently views (e.g. /hello).
+5. `name` - error name (e.g. ParseError)
+6. `message` - error message (e.g. Malformed input)
+7. `lineno` / `colno` - on what line and column in your code did the error occur
+8. `filename` - in what file did the error occur
+
+Here's an example of how to use this function with all the available options:
+```javascript
+swetrix.trackErrors({
+  sampleRate: 1,
+  callback: undefined,
+})
+```
+
+| Name | Description | Default value |
+| --- | --- | --- |
+| sampleRate | A number that indicates how many errors should be sent to the server. Accepts values between 0 and 1. For example, if set to 0.5 - only ~50% of errors will be sent to Swetrix. For testing, we recommend setting this value to 1. For production, you should configure it depending on your needs as each error event counts towards your plan. | `1` |
+| callback | A callback used to edit / prevent sending errors. It accepts an object which contains some information about the error (`name`, `message`, `lineno`, `colno`, `filename`), as well as some regular analytics info (`lc`, `tz`, `pg`).<br />The callback is supposed to return the edited payload or `false` to prevent sending the pageview. If `true` is returned, the payload will be sent as-is. | `undefined` |
+
+The `trackErrors` function returns an object with some methods allowing you to alter the behaviour of page tracking:
+```javascript
+{
+  // This function stops the tracking of errors.
+  stop() {},
+}
+```
+
+## trackError()
+This function is used to manually track an error event.
+
+This function takes the following arguments:
+1. `name` - the error name (e.g. ParseError)
+2. (optional) `message` - error message (e.g. Malformed input)
+3. (optional) `lineno` - on what line in your code did the error occur (e.g. 1520)
+4. (optional) `colno` - on what column in your code did the error occur (e.g. 26)
+5. (optional) `filename` - in what file did the error occur (e.g. https://example.com/broken.js)
+
+Here is an example of how to use this function:
+```javascript
+swetrix.trackError({
+  name: 'ParseError',
+  message: 'Malformed input',
+  lineno: 1520,
+  colno: 26,
+  filename: 'https://example.com/broken.js',
+})
+```

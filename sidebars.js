@@ -4,6 +4,7 @@ module.exports = {
       'introduction',
       'add-script',
       'script-reference',
+      'error-tracking',
       'integration-guides',
       {
         type: 'category',
