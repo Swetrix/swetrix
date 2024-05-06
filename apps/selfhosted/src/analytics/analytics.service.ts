@@ -2760,8 +2760,6 @@ export class AnalyticsService {
         any(subquery.colno) AS colno,
         any(subquery.lineno) AS lineno,
         count(*) AS count,
-        max(subquery.created) AS last_seen,
-        min(subquery.created) AS first_seen,
         status.status
       FROM (
         SELECT
@@ -2769,7 +2767,6 @@ export class AnalyticsService {
           name,
           message,
           filename,
-          created,
           colno,
           lineno
         FROM errors
@@ -2786,8 +2783,17 @@ export class AnalyticsService {
           AND eid = {eid:FixedString(32)}
         GROUP BY eid
       ) AS status ON subquery.eid = status.eid
-      GROUP BY subquery.eid, status.status
-      ORDER BY last_seen DESC;
+      GROUP BY subquery.eid, status.status;
+    `
+
+    const queryFirstLastSeen = `
+      SELECT
+        max(created) AS last_seen,
+        min(created) AS first_seen
+      FROM errors
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND eid = {eid:FixedString(32)};
     `
 
     const paramsData = {
@@ -2803,6 +2809,10 @@ export class AnalyticsService {
       await clickhouse.query(queryErrorDetails, paramsData).toPromise()
     )[0]
 
+    const occurenceDetails = (
+      await clickhouse.query(queryFirstLastSeen, paramsData).toPromise()
+    )[0]
+
     const groupedChart = await this.groupErrorsByTimeBucket(
       timeBucket,
       groupFrom,
@@ -2814,7 +2824,14 @@ export class AnalyticsService {
       ChartRenderMode.PERIODICAL,
     )
 
-    return { details, ...groupedChart, timeBucket }
+    return {
+      details: {
+        ...details,
+        ...occurenceDetails,
+      },
+      ...groupedChart,
+      timeBucket,
+    }
   }
 
   getErrorID(errorDTO: ErrorDTO): string {
