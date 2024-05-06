@@ -1,4 +1,5 @@
 import * as Swetrix from 'swetrix'
+import _includes from 'lodash/includes'
 import { isDevelopment, isSelfhosted } from 'redux/constants'
 
 const SWETRIX_PID = 'STEzHcB1rALV'
@@ -109,7 +110,15 @@ const trackViews = () => {
 
 const trackErrors = () => {
   if (!isSelfhosted) {
-    Swetrix.trackErrors()
+    Swetrix.trackErrors({
+      callback: ({ message }) => {
+        if (_includes(message, 'Minified React error')) {
+          return false
+        }
+
+        return true
+      },
+    })
   }
 }
 
