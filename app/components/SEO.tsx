@@ -5,6 +5,7 @@ import _toUpper from 'lodash/toUpper'
 // import { MAIN_URL } from 'redux/constants'
 import { getPageMeta } from 'utils/server'
 import { getOgImageUrl } from 'redux/constants'
+import routes from 'routesPath'
 
 export const SEO = () => {
   const {
@@ -16,6 +17,7 @@ export const SEO = () => {
 
   const isBlogPage = _startsWith(pathname, '/blog')
   const isMainPage = pathname === '/'
+  const isErrorsPage = pathname === routes.errorTracking
   const isProjectViewPage = _startsWith(pathname, '/projects/')
   const ogImageUrl = getOgImageUrl(prefixLessTitle)
 
@@ -44,7 +46,13 @@ export const SEO = () => {
               <meta property='og:image' content='https://swetrix.com/assets/og_image.png' />
             </>
           )}
-          {!isProjectViewPage && !isMainPage && (
+          {isErrorsPage && (
+            <>
+              <meta name='twitter:image' content='https://swetrix.com/assets/og_image_errors.png' />
+              <meta property='og:image' content='https://swetrix.com/assets/og_image_errors.png' />
+            </>
+          )}
+          {!isProjectViewPage && !isMainPage && !isErrorsPage && (
             <>
               <meta name='twitter:image' content={ogImageUrl} />
               <meta property='og:image' content={ogImageUrl} />
