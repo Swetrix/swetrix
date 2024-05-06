@@ -1,9 +1,7 @@
 // This script initialises the Swetrix cloud edition database and tables if they're absent
 const { queriesRunner, dbName, databaselessQueriesRunner } = require('./setup')
 
-const CLICKHOUSE_DB_INIT_QUERIES = [
-  `CREATE DATABASE IF NOT EXISTS ${dbName}`,
-]
+const CLICKHOUSE_DB_INIT_QUERIES = [`CREATE DATABASE IF NOT EXISTS ${dbName}`]
 
 const CLICKHOUSE_INIT_QUERIES = [
   // The traffic data table
@@ -86,6 +84,40 @@ const CLICKHOUSE_INIT_QUERIES = [
   PARTITION BY toYYYYMM(created)
   ORDER BY (pid, created);`,
 
+  // Error events table
+  `CREATE TABLE IF NOT EXISTS ${dbName}.errors
+  (
+    eid FixedString(32),
+    pid FixedString(12),
+    pg Nullable(String),
+    dv LowCardinality(Nullable(String)),
+    br LowCardinality(Nullable(String)),
+    os LowCardinality(Nullable(String)),
+    lc LowCardinality(Nullable(String)),
+    cc LowCardinality(Nullable(FixedString(2))),
+    rg LowCardinality(Nullable(String)),
+    ct Nullable(String),
+    name String,
+    message Nullable(String),
+    lineno Nullable(UInt32),
+    colno Nullable(UInt32),
+    filename Nullable(String),
+    created DateTime('UTC')
+  )
+  ENGINE = MergeTree()
+  PARTITION BY toYYYYMM(created)
+  ORDER BY (pid, created);`,
+
+  // Error events status table
+  `CREATE TABLE IF NOT EXISTS ${dbName}.error_statuses (
+    eid FixedString(32),
+    pid FixedString(12),
+    status Enum8('active', 'regressed', 'resolved'),
+    updated DateTime('UTC') DEFAULT now()
+  )
+  ENGINE = ReplacingMergeTree()
+  PRIMARY KEY (eid, pid);`,
+
   // The CAPTCHA data table
   `CREATE TABLE IF NOT EXISTS ${dbName}.captcha
   (
@@ -99,7 +131,7 @@ const CLICKHOUSE_INIT_QUERIES = [
   )
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
-  ORDER BY (pid, created);`
+  ORDER BY (pid, created);`,
 ]
 
 const initialiseDatabase = async () => {
@@ -107,7 +139,9 @@ const initialiseDatabase = async () => {
     await databaselessQueriesRunner(CLICKHOUSE_DB_INIT_QUERIES)
     await queriesRunner(CLICKHOUSE_INIT_QUERIES)
   } catch (reason) {
-    console.error(`[ERROR] Error occured whilst initialising the database: ${reason}`)
+    console.error(
+      `[ERROR] Error occured whilst initialising the database: ${reason}`,
+    )
   }
 }
 

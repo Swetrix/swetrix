@@ -19,6 +19,7 @@ import {
   UseGuards,
   Get,
   Post,
+  Patch,
   Headers,
   BadRequestException,
   InternalServerErrorException,
@@ -63,8 +64,13 @@ import {
   REDIS_EVENTS_COUNT_KEY,
   REDIS_SESSION_SALT_KEY,
   clickhouse,
+  REDIS_LOG_ERROR_CACHE_KEY,
 } from '../common/constants'
-import { getGeoDetails, getIPFromHeaders } from '../common/utils'
+import {
+  checkRateLimit,
+  getGeoDetails,
+  getIPFromHeaders,
+} from '../common/utils'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { GetCustomEventsDto } from './dto/get-custom-events.dto'
@@ -78,6 +84,10 @@ import {
 } from './interfaces'
 import { GetSessionsDto } from './dto/get-sessions.dto'
 import { GetSessionDto } from './dto/get-session.dto'
+import { ErrorDTO } from './dto/error.dto'
+import { GetErrorsDto } from './dto/get-errors.dto'
+import { GetErrorDTO } from './dto/get-error.dto'
+import { PatchStatusDTO } from './dto/patch-status.dto'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mysql = require('mysql2')
@@ -216,6 +226,43 @@ const customLogDTO = (
   ]
 }
 
+const errorLogDTO = (
+  eid: string,
+  pid: string,
+  pg: string,
+  dv: string,
+  br: string,
+  os: string,
+  lc: string,
+  cc: string,
+  rg: string,
+  ct: string,
+  name: string,
+  message: string,
+  lineno: number,
+  colno: number,
+  filename: string,
+): Array<string | number | string[]> => {
+  return [
+    eid,
+    pid,
+    pg,
+    dv,
+    br,
+    os,
+    lc,
+    cc,
+    rg,
+    ct,
+    name,
+    message,
+    lineno,
+    colno,
+    filename,
+    dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
+  ]
+}
+
 export const getElValue = el => {
   if (_isArray(el)) {
     return `[${_map(el, getElValue).join(',')}]`
@@ -278,6 +325,27 @@ const getPIDsArray = (pids, pid) => {
   }
 
   return pids
+}
+
+const getEIDsArray = (eids, eid) => {
+  const eidsEmpty = _isEmpty(eids)
+  const eidEmpty = _isEmpty(eid)
+  if (eidsEmpty && eidEmpty) {
+    throw new BadRequestException(
+      "An array of Error ID's (eids) or a Error ID (eid) has to be provided",
+    )
+  }
+  if (!eidsEmpty && !eidEmpty) {
+    throw new BadRequestException(
+      "Please provide either an array of Error ID's (eids) or a Error ID (eid), but not both",
+    )
+  }
+
+  if (!eidsEmpty) {
+    return eids
+  }
+
+  return [eid]
 }
 
 // needed for serving 1x1 px GIF
@@ -553,6 +621,27 @@ export class AnalyticsController {
     await this.analyticsService.checkBillingAccess(pid)
 
     return this.analyticsService.getFilters(pid, type)
+  }
+
+  @Get('errors-filters')
+  @Auth([], true, true)
+  async getErrorsFilters(
+    @Query() data: GetFiltersDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<any> {
+    const { pid, type } = data
+    this.analyticsService.validatePID(pid)
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    return this.analyticsService.getErrorsFilters(pid, type)
   }
 
   @Get('chart')
@@ -1088,6 +1177,89 @@ export class AnalyticsController {
     return processed
   }
 
+  // Log error event
+  @Post('error')
+  @UseGuards(BotDetectionGuard)
+  @BotDetection()
+  @Public()
+  async logError(
+    @Body() errorDTO: ErrorDTO,
+    @Headers() headers,
+    @Ip() reqIP,
+  ): Promise<any> {
+    const { 'user-agent': userAgent, origin } = headers
+
+    const ip = getIPFromHeaders(headers, true) || reqIP || ''
+
+    await this.analyticsService.validate(errorDTO, origin, 'error', ip)
+
+    const {
+      city = 'NULL',
+      region = 'NULL',
+      country = 'NULL',
+    } = getGeoDetails(ip, errorDTO.tz)
+
+    const ua = UAParser(userAgent)
+    const dv = ua.device.type || 'desktop'
+    const br = ua.browser.name
+    const os = ua.os.name
+
+    const { name, message, lineno, colno, filename } = errorDTO
+
+    const dto = errorLogDTO(
+      this.analyticsService.getErrorID(errorDTO),
+      errorDTO.pid,
+      errorDTO.pg,
+      dv,
+      br,
+      os,
+      errorDTO.lc,
+      country,
+      region,
+      city,
+      name,
+      message,
+      lineno,
+      colno,
+      filename,
+    )
+
+    try {
+      const values = `(${dto.map(getElValue).join(',')})`
+      await redis.rpush(REDIS_LOG_ERROR_CACHE_KEY, values)
+    } catch (e) {
+      this.logger.error(e)
+      throw new InternalServerErrorException(
+        'Error occured while saving the custom event',
+      )
+    }
+  }
+
+  // Update error(s) status
+  @Patch('error-status')
+  @Auth([], true, true)
+  async patchStatus(
+    @Body() statusDTO: PatchStatusDTO,
+    @CurrentUserId() uid: string,
+    @Headers() headers,
+    @Ip() reqIP,
+  ): Promise<any> {
+    const { pid, eid, eids: unprocessedEids, status } = statusDTO
+    const ip = getIPFromHeaders(headers) || reqIP || ''
+
+    await checkRateLimit(ip, 'error-status', 100, 1800)
+
+    this.analyticsService.validatePID(pid)
+    await this.analyticsService.checkManageAccess(pid, uid)
+    await this.analyticsService.checkBillingAccess(pid)
+
+    const eids = getEIDsArray(unprocessedEids, eid)
+
+    await this.analyticsService.validateEIDs(eids, pid)
+
+    return this.analyticsService.updateEIDStatus(eids, status, pid)
+  }
+
   // Log custom event
   @Post('custom')
   @UseGuards(BotDetectionGuard)
@@ -1467,6 +1639,173 @@ export class AnalyticsController {
       take,
       skip,
     }
+  }
+
+  @Get('errors')
+  @Auth([], true, true)
+  async getErrors(
+    @Query() data: GetErrorsDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<any> {
+    const {
+      pid,
+      period,
+      from,
+      to,
+      filters,
+      timezone = DEFAULT_TIMEZONE,
+      options,
+    } = data
+    this.analyticsService.validatePID(pid)
+
+    if (!_isEmpty(period)) {
+      this.analyticsService.validatePeriod(period)
+    }
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    const take = this.analyticsService.getSafeNumber(data.take, 30)
+    const skip = this.analyticsService.getSafeNumber(data.skip, 0)
+
+    if (take > 150) {
+      throw new BadRequestException(
+        'The maximum number of errors to return is 150',
+      )
+    }
+
+    let timeBucket
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.getTimeBucketForAllTime(
+        pid,
+        period,
+        timezone,
+      )
+
+      // eslint-disable-next-line prefer-destructuring
+      timeBucket = res.timeBucket[0]
+      diff = res.diff
+    } else {
+      timeBucket = getLowestPossibleTimeBucket(period, from, to)
+    }
+
+    this.analyticsService.validateTimebucket(timeBucket)
+    const [filtersQuery, filtersParams, appliedFilters] =
+      this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom,
+        groupTo,
+        ...filtersParams,
+      },
+    }
+
+    const errors = await this.analyticsService.getErrorsList(
+      options,
+      filtersQuery,
+      paramsData,
+      safeTimezone,
+      take,
+      skip,
+    )
+
+    return {
+      errors,
+      appliedFilters,
+      take,
+      skip,
+    }
+  }
+
+  @Get('get-error')
+  @Auth([], true, true)
+  async getError(
+    @Query() data: GetErrorDTO,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<any> {
+    const {
+      pid,
+      timezone = DEFAULT_TIMEZONE,
+      eid,
+      period,
+      from,
+      to,
+      //
+    } = data
+    this.analyticsService.validatePID(pid)
+
+    if (!_isEmpty(period)) {
+      this.analyticsService.validatePeriod(period)
+    }
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    let timeBucket
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.getTimeBucketForAllTime(
+        pid,
+        period,
+        timezone,
+      )
+
+      // eslint-disable-next-line prefer-destructuring
+      timeBucket = res.timeBucket[0]
+      diff = res.diff
+    } else {
+      timeBucket = getLowestPossibleTimeBucket(period, from, to)
+    }
+
+    this.analyticsService.validateTimebucket(timeBucket)
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+      from,
+      to,
+      timeBucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const result = await this.analyticsService.getErrorDetails(
+      pid,
+      eid,
+      safeTimezone,
+      groupFrom,
+      groupTo,
+      timeBucket,
+    )
+
+    return result
   }
 
   @Get('session')

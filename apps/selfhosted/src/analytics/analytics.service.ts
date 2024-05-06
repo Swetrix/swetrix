@@ -45,6 +45,7 @@ import {
   REDIS_SESSION_SALT_KEY,
   TRAFFIC_COLUMNS,
   PERFORMANCE_COLUMNS,
+  ERROR_COLUMNS,
 } from '../common/constants'
 import { millisecondsToSeconds, sumArrays } from '../common/utils'
 import { PageviewsDTO } from './dto/pageviews.dto'
@@ -76,6 +77,7 @@ import {
   IPageflow,
   PerfMeasure,
 } from './interfaces'
+import { ErrorDTO } from './dto/error.dto'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -253,7 +255,7 @@ const generateParamsQuery = (
   subQuery: string,
   customEVFilterApplied: boolean,
   isPageInclusiveFilterSet: boolean,
-  isPerformance?: boolean,
+  type: 'traffic' | 'performance' | 'errors',
   measure?: PerfMeasure,
 ): string => {
   let columns = [`${col} as name`]
@@ -266,7 +268,7 @@ const generateParamsQuery = (
 
   const columnsQuery = columns.join(', ')
 
-  if (isPerformance) {
+  if (type === 'performance') {
     const processedMeasure = measure === 'quantiles' ? 'median' : measure
 
     const fn = MEASURES_MAP[processedMeasure]
@@ -276,6 +278,10 @@ const generateParamsQuery = (
     }
 
     return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
+  }
+
+  if (type === 'errors') {
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
   }
 
   if (customEVFilterApplied) {
@@ -379,9 +385,9 @@ export class AnalyticsService {
   }
 
   async validate(
-    logDTO: PageviewsDTO | EventsDTO,
+    logDTO: PageviewsDTO | EventsDTO | ErrorDTO,
     origin: string,
-    type: 'custom' | 'log' = 'log',
+    type: 'custom' | 'log' | 'error' = 'log',
     ip?: string,
   ): Promise<string | null> {
     if (_isEmpty(logDTO)) {
@@ -437,6 +443,22 @@ export class AnalyticsService {
     this.checkOrigin(project, origin)
 
     return null
+  }
+
+  async getErrorsFilters(pid: string, type: string): Promise<Array<string>> {
+    if (!_includes(ERROR_COLUMNS, type)) {
+      throw new UnprocessableEntityException(
+        `The provided type (${type}) is incorrect`,
+      )
+    }
+
+    const query = `SELECT ${type} FROM errors WHERE pid={pid:FixedString(12)} AND ${type} IS NOT NULL GROUP BY ${type}`
+
+    const results = await clickhouse
+      .query(query, { params: { pid } })
+      .toPromise()
+
+    return _map(results, type)
   }
 
   getDataTypeColumns(dataType: DataType): string[] {
@@ -1483,25 +1505,30 @@ export class AnalyticsService {
     subQuery: string,
     customEVFilterApplied: boolean,
     paramsData: any,
-    isPerformance: boolean,
+    type: 'traffic' | 'performance' | 'errors',
     measure?: PerfMeasure,
   ): Promise<any> {
     const params = {}
 
     // We need this to display all the pageview related data (e.g. country, browser) when user applies an inclusive filter on the Page column
-    const isPageInclusiveFilterSet = isPerformance
-      ? false
-      : !_isEmpty(
-          _find(
-            parsedFilters,
-            filter => filter.column === 'pg' && !filter.isExclusive,
-          ),
-        )
+    const isPageInclusiveFilterSet =
+      type === 'performance'
+        ? false
+        : !_isEmpty(
+            _find(
+              parsedFilters,
+              filter => filter.column === 'pg' && !filter.isExclusive,
+            ),
+          )
 
     let columns = TRAFFIC_COLUMNS
 
-    if (isPerformance) {
+    if (type === 'performance') {
       columns = PERFORMANCE_COLUMNS
+    }
+
+    if (type === 'errors') {
+      columns = ERROR_COLUMNS
     }
 
     const paramsPromises = _map(columns, async col => {
@@ -1510,7 +1537,7 @@ export class AnalyticsService {
         subQuery,
         customEVFilterApplied,
         isPageInclusiveFilterSet,
-        isPerformance,
+        type,
         measure,
       )
       const res = await clickhouse.query(query, paramsData).toPromise()
@@ -1909,6 +1936,47 @@ export class AnalyticsService {
     }
   }
 
+  generateErrorsAggregationQuery(
+    timeBucket: TimeBucketType,
+    filtersQuery: string,
+    safeTimezone: string,
+    mode: ChartRenderMode,
+  ): string {
+    const timeBucketFunc = timeBucketConversion[timeBucket]
+    const [selector, groupBy] = this.getGroupSubquery(timeBucket)
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+
+    const baseQuery = `
+      SELECT
+        ${selector},
+        count() as count
+      FROM (
+        SELECT pg, dv, br, os, lc, cc, rg, ct,
+          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
+        FROM errors
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND created BETWEEN ${tzFromDate} AND ${tzToDate}
+          ${filtersQuery}
+      ) as subquery
+      GROUP BY ${groupBy}
+      ORDER BY ${groupBy}
+    `
+
+    if (mode === ChartRenderMode.CUMULATIVE) {
+      return `
+        SELECT
+          *,
+          sum(pageviews) OVER (ORDER BY ${groupBy}) as pageviews,
+          sum(uniques) OVER (ORDER BY ${groupBy}) as uniques
+        FROM (${baseQuery})
+      `
+    }
+
+    return baseQuery
+  }
+
   async groupByTimeBucket(
     timeBucket: TimeBucketType,
     from: string,
@@ -1936,7 +2004,7 @@ export class AnalyticsService {
 
         if (!_some(_values(params), val => !_isEmpty(val))) {
           throw new BadRequestException(
-            'The are no parameters for the specified time frames',
+            'There are no parameters for the specified time frames',
           )
         }
       })(),
@@ -1978,7 +2046,7 @@ export class AnalyticsService {
       subQuery,
       customEVFilterApplied,
       paramsData,
-      false,
+      'traffic',
     )
   }
 
@@ -2042,6 +2110,91 @@ export class AnalyticsService {
         uniques,
         sdur,
       },
+    })
+  }
+
+  extractErrorsChartData(result, x: string[]): any {
+    const count = Array(x.length).fill(0)
+
+    for (let row = 0; row < _size(result); ++row) {
+      const dateString = this.generateDateString(result[row])
+
+      const index = x.indexOf(dateString)
+
+      if (index !== -1) {
+        count[index] = result[row].count
+      }
+    }
+
+    return {
+      count,
+    }
+  }
+
+  async groupErrorsByTimeBucket(
+    timeBucket: TimeBucketType,
+    from: string,
+    to: string,
+    subQuery: string,
+    filtersQuery: string,
+    paramsData: object,
+    safeTimezone: string,
+    mode: ChartRenderMode,
+  ): Promise<object | void> {
+    let params: unknown = {}
+    let chart: unknown = {}
+
+    const promises = [
+      // Params
+      (async () => {
+        params = await this.generateParams(
+          null,
+          subQuery,
+          false,
+          paramsData,
+          'errors',
+        )
+
+        if (!_some(_values(params), val => !_isEmpty(val))) {
+          throw new BadRequestException(
+            'There are no error details for specified time frame',
+          )
+        }
+      })(),
+
+      // Chart data
+      (async () => {
+        const { xShifted } = this.generateXAxis(
+          timeBucket,
+          from,
+          to,
+          safeTimezone,
+        )
+
+        const query = this.generateErrorsAggregationQuery(
+          timeBucket,
+          filtersQuery,
+          safeTimezone,
+          mode,
+        )
+
+        const result = <Array<TrafficCEFilterCHResponse>>(
+          await clickhouse.query(query, paramsData).toPromise()
+        )
+        const { count } = this.extractErrorsChartData(result, xShifted)
+
+        chart = {
+          x: xShifted,
+          occurrences: count,
+        }
+      })(),
+    ]
+
+    await Promise.all(promises)
+
+    return Promise.resolve({
+      params,
+      chart,
     })
   }
 
@@ -2145,13 +2298,13 @@ export class AnalyticsService {
           subQuery,
           false,
           paramsData,
-          true,
+          'performance',
           measure,
         )
 
         if (!_some(_values(params), val => !_isEmpty(val))) {
           throw new BadRequestException(
-            'The are no parameters for the specified time frames',
+            'There are no parameters for the specified time frames',
           )
         }
       })(),
@@ -2524,6 +2677,236 @@ export class AnalyticsService {
     const result = await clickhouse.query(query, paramsData).toPromise()
 
     return result
+  }
+
+  async getErrorsList(
+    options: string,
+    filtersQuery: string,
+    paramsData: object,
+    safeTimezone: string,
+    take = 30,
+    skip = 0,
+  ): Promise<object | void> {
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+
+    let parsedOptions: {
+      showResolved?: boolean
+    } = {}
+
+    try {
+      parsedOptions = JSON.parse(options)
+    } catch (reason) {
+      console.error('[getErrorsList] Failed to parse options:', options)
+    }
+
+    const query = `
+      SELECT
+        eid,
+        any(name) as name,
+        any(message) as message,
+        any(filename) as filename,
+        count(*) as count,
+        max(created) as last_seen,
+        status.status
+      FROM (
+        SELECT eid, name, message, filename, created
+        FROM errors
+        WHERE pid = {pid:FixedString(12)}
+          AND created BETWEEN ${tzFromDate} AND ${tzToDate}
+          ${filtersQuery}
+      ) AS errors
+      LEFT JOIN (
+        SELECT
+          eid,
+          argMax(status, updated) AS status
+        FROM error_statuses
+        WHERE pid = {pid:FixedString(12)}
+        GROUP BY eid
+      ) AS status ON errors.eid = status.eid
+      ${
+        parsedOptions?.showResolved
+          ? ''
+          : "WHERE status.status = 'active' OR status.status = 'regressed'"
+      }
+      GROUP BY errors.eid, status.status
+      ORDER BY last_seen DESC
+      LIMIT ${take}
+      OFFSET ${skip};
+    `
+
+    const result = await clickhouse.query(query, paramsData).toPromise()
+
+    return result
+  }
+
+  async getErrorDetails(
+    pid: string,
+    eid: string,
+    safeTimezone: string,
+    groupFrom: string,
+    groupTo: string,
+    timeBucket: any,
+  ): Promise<any> {
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+
+    const queryErrorDetails = `
+      SELECT
+        subquery.eid,
+        any(subquery.name) AS name,
+        any(subquery.message) AS message,
+        any(subquery.filename) AS filename,
+        any(subquery.colno) AS colno,
+        any(subquery.lineno) AS lineno,
+        count(*) AS count,
+        status.status
+      FROM (
+        SELECT
+          eid,
+          name,
+          message,
+          filename,
+          colno,
+          lineno
+        FROM errors
+        WHERE pid = {pid:FixedString(12)}
+          AND eid = {eid:FixedString(32)}
+          AND created BETWEEN ${tzFromDate} AND ${tzToDate}
+      ) AS subquery
+      LEFT JOIN (
+        SELECT
+          eid,
+          argMax(status, updated) AS status
+        FROM error_statuses
+        WHERE pid = {pid:FixedString(12)}
+          AND eid = {eid:FixedString(32)}
+        GROUP BY eid
+      ) AS status ON subquery.eid = status.eid
+      GROUP BY subquery.eid, status.status;
+    `
+
+    const queryFirstLastSeen = `
+      SELECT
+        max(created) AS last_seen,
+        min(created) AS first_seen
+      FROM errors
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND eid = {eid:FixedString(32)};
+    `
+
+    const paramsData = {
+      params: {
+        pid,
+        eid,
+        groupFrom,
+        groupTo,
+      },
+    }
+
+    const details = (
+      await clickhouse.query(queryErrorDetails, paramsData).toPromise()
+    )[0]
+
+    const occurenceDetails = (
+      await clickhouse.query(queryFirstLastSeen, paramsData).toPromise()
+    )[0]
+
+    const groupedChart = await this.groupErrorsByTimeBucket(
+      timeBucket,
+      groupFrom,
+      groupTo,
+      `FROM errors WHERE eid = {eid:FixedString(32)} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`,
+      'AND eid = {eid:FixedString(32)}',
+      paramsData,
+      safeTimezone,
+      ChartRenderMode.PERIODICAL,
+    )
+
+    return {
+      details: {
+        ...details,
+        ...occurenceDetails,
+      },
+      ...groupedChart,
+      timeBucket,
+    }
+  }
+
+  getErrorID(errorDTO: ErrorDTO): string {
+    const { name, message, colno, lineno, filename } = errorDTO
+
+    return hash(`${name}${message}${colno}${lineno}${filename}`, {
+      length: 16,
+    }).toString('hex')
+  }
+
+  async validateEIDs(eids: string[], pid: string) {
+    const params = _reduce(
+      eids,
+      (acc, curr, index) => ({
+        ...acc,
+        [`e_${index}`]: curr,
+      }),
+      {},
+    )
+
+    const query = `SELECT count(DISTINCT eid) as count FROM errors WHERE pid = {pid:FixedString(12)} AND eid IN (${_map(
+      params,
+      (val, key) => `{${key}:FixedString(32)}`,
+    ).join(', ')})`
+
+    let result
+
+    try {
+      ;[result] = await clickhouse
+        .query(query, { params: { ...params, pid } })
+        .toPromise()
+    } catch (reason) {
+      console.error('validateEIDs - clickhouse request error')
+      console.error(reason)
+      throw new InternalServerErrorException(
+        'Error occured while validating error IDs',
+      )
+    }
+
+    if (result.count !== _size(eids)) {
+      throw new UnprocessableEntityException(
+        'Some of the error IDs you provided are not valid (do not exist in our database)',
+      )
+    }
+  }
+
+  async updateEIDStatus(
+    eids: string[],
+    status: 'resolved' | 'active',
+    pid: string,
+  ) {
+    const params = _reduce(
+      eids,
+      (acc, curr, index) => ({
+        ...acc,
+        [`e_${index}`]: curr,
+      }),
+      {},
+    )
+
+    const query = `INSERT INTO error_statuses (eid, pid, status) VALUES ${_map(
+      params,
+      (val, key) =>
+        `({${key}:FixedString(32)}, {pid:FixedString(12)}, '${status}')`,
+    ).join(', ')}`
+
+    try {
+      await clickhouse.query(query, { params: { ...params, pid } }).toPromise()
+    } catch (reason) {
+      console.error('Error at PATCH error-status:')
+      console.error(reason)
+      throw new InternalServerErrorException(
+        'Error occured while updating error status',
+      )
+    }
   }
 
   async getOnlineCountByProjectId(projectId: string) {
