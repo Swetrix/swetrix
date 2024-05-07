@@ -69,7 +69,7 @@
     "remix-sitemap": "^3.2.0",
     "remix-utils": "^7.6.0",
     "spacetime": "^7.6.0",
-    "swetrix": "^3.1.0",
+    "swetrix": "^3.1.1",
     "timezone-soft": "^1.5.2",
     "ts-jest": "^29.1.2"
   },

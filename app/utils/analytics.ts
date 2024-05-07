@@ -111,13 +111,7 @@ const trackViews = () => {
 const trackErrors = () => {
   if (!isSelfhosted) {
     Swetrix.trackErrors({
-      callback: ({ message }) => {
-        if (_includes(message, 'Minified React error')) {
-          return false
-        }
-
-        return true
-      },
+      callback: ({ message }) => !_includes(message, 'Minified React error'),
     })
   }
 }
