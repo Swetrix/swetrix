@@ -48,6 +48,26 @@ const PATHS_REPLACEMENT_MAP = [
     regex: /^\/captchas\/settings/i,
     replacement: '/captchas/settings/[id]',
   },
+  {
+    regex: /^\/ref/i,
+    replacement: '/ref/[id]',
+  },
+  {
+    regex: /\/projects\/([^/]+)\/alerts\/create/i,
+    replacement: '/projects/[id]/alerts/create',
+  },
+  {
+    regex: /\/projects\/([^/]+)\/subsribers\/invite/i,
+    replacement: '/projects/[id]/subsribers/invite',
+  },
+  {
+    regex: /\/projects\/([^/]+)\/alerts\/settings/i,
+    replacement: '/projects/[id]/alerts/settings/[alert]',
+  },
+  {
+    regex: /\/projects\/([^/]+)\/password/i,
+    replacement: '/projects/[id]/password',
+  },
 ]
 
 const checkIgnore = (path: string | undefined | null, ignore: RegExp[]) => {
@@ -111,7 +131,15 @@ const trackViews = () => {
 const trackErrors = () => {
   if (!isSelfhosted) {
     Swetrix.trackErrors({
-      callback: ({ message }) => !_includes(message, 'Minified React error'),
+      callback: ({ message, pg }) => {
+        if (_includes(message, 'Minified React error')) {
+          return false
+        }
+
+        return {
+          pg: getNewPath(pg),
+        }
+      },
     })
   }
 }
