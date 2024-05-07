@@ -864,6 +864,8 @@ const ViewProject = ({
     [t],
   )
 
+  const allowedToManage = useMemo(() => project?.isOwner || sharedRoles === roleAdmin.role, [project, sharedRoles])
+
   const dataNamesFunnel = useMemo(
     () => ({
       dropoff: t('project.dropoff'),
@@ -891,16 +893,15 @@ const ViewProject = ({
       },
     ]
 
-    const adminTabs =
-      project?.isOwner || sharedRoles === roleAdmin.role
-        ? [
-            {
-              id: 'settings',
-              label: t('common.settings'),
-              icon: Cog8ToothIcon,
-            },
-          ]
-        : []
+    const adminTabs = allowedToManage
+      ? [
+          {
+            id: 'settings',
+            label: t('common.settings'),
+            icon: Cog8ToothIcon,
+          },
+        ]
+      : []
 
     if (isSelfhosted) {
       return [...selfhostedOnly, ...adminTabs]
@@ -936,7 +937,7 @@ const ViewProject = ({
     }
 
     return newTabs
-  }, [t, sharedRoles, project, projectQueryTabs])
+  }, [t, projectQueryTabs, allowedToManage])
 
   // activeTabLabel is a label for active tab. Using for title in dropdown
   const activeTabLabel = useMemo(() => _find(tabs, (tab) => tab.id === activeTab)?.label, [tabs, activeTab])
@@ -3718,6 +3719,7 @@ const ViewProject = ({
                           />
                         )}
                         {activeTab === PROJECT_TABS.errors &&
+                          allowedToManage &&
                           activeError &&
                           activeError?.details?.status !== 'resolved' && (
                             <button
@@ -3734,6 +3736,7 @@ const ViewProject = ({
                             </button>
                           )}
                         {activeTab === PROJECT_TABS.errors &&
+                          allowedToManage &&
                           activeError &&
                           activeError?.details?.status === 'resolved' && (
                             <button
