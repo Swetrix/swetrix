@@ -95,7 +95,7 @@ const NewFunnel = ({
   }
 
   const _onSubmit = async () => {
-    if (!name || !allStepsFulfilled) {
+    if (!name || !allStepsFulfilled || !allowedToManage) {
       return
     }
 
