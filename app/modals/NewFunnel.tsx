@@ -21,6 +21,7 @@ interface INewFunnel {
   isOpened: boolean
   pid: string
   loading: boolean
+  allowedToManage: boolean
   funnel?: IFunnel
   projectPassword?: string
 }
@@ -36,6 +37,7 @@ const NewFunnel = ({
   loading,
   project,
   projectPassword,
+  allowedToManage,
 }: INewFunnel): JSX.Element => {
   const { t } = useTranslation('common')
   const [name, setName] = useState<string>(funnel?.name || '')
@@ -115,6 +117,7 @@ const NewFunnel = ({
             label={t('modals.funnels.name')}
             value={name}
             onChange={(e) => setName(e.target.value)}
+            disabled={!allowedToManage}
           />
           <p className='mt-5 text-sm font-medium text-gray-700 dark:text-gray-200'>{t('modals.funnels.steps')}</p>
           {_map(steps, (step, index) => (
@@ -133,8 +136,9 @@ const NewFunnel = ({
                   setSteps(newSteps)
                 }}
                 title={step || ''}
+                disabled={!allowedToManage}
               />
-              {steps.length > MIN_FUNNEL_STEPS && (
+              {steps.length > MIN_FUNNEL_STEPS && allowedToManage && (
                 <TrashIcon
                   role='button'
                   aria-label='Remove step'
@@ -148,7 +152,7 @@ const NewFunnel = ({
               )}
             </div>
           ))}
-          {steps.length < MAX_FUNNEL_STEPS && (
+          {steps.length < MAX_FUNNEL_STEPS && allowedToManage && (
             <p
               onClick={() => {
                 setSteps([...steps, null])
@@ -163,7 +167,7 @@ const NewFunnel = ({
       }
       title={funnel ? t('modals.funnels.editTitle') : t('modals.funnels.addTitle')}
       isOpened={isOpened}
-      submitDisabled={!name || !allStepsFulfilled}
+      submitDisabled={!name || !allStepsFulfilled || !allowedToManage}
       overflowVisible
     />
   )

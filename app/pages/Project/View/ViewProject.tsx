@@ -3958,6 +3958,7 @@ const ViewProject = ({
                   deleteFunnel={onFunnelDelete}
                   loading={funnelActionLoading}
                   authenticated={authenticated}
+                  allowedToManage={allowedToManage}
                 />
               )}
               {activeTab === PROJECT_TABS.funnels && !activeFunnel && _isEmpty(project.funnels) && (
@@ -4850,6 +4851,7 @@ const ViewProject = ({
             pid={id}
             funnel={funnelToEdit}
             isOpened={isNewFunnelOpened}
+            allowedToManage={allowedToManage}
             onClose={() => {
               setIsNewFunnelOpened(false)
               setFunnelToEdit(undefined)

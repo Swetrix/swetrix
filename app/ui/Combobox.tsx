@@ -18,6 +18,7 @@ interface ISelect {
   labelExtractor?: (item: any, index: number) => string
   keyExtractor?: (item: any, index: number) => string
   onSelect: (item: any) => void
+  disabled?: boolean
   placeholder?: string
 }
 
@@ -30,6 +31,7 @@ const Combobox = ({
   onSelect,
   buttonClassName,
   placeholder,
+  disabled,
 }: ISelect): JSX.Element => {
   const { t } = useTranslation('common')
   const [query, setQuery] = useState('')
@@ -43,7 +45,7 @@ const Combobox = ({
       })
 
   return (
-    <HeadlessCombobox value={title} onChange={onSelect}>
+    <HeadlessCombobox disabled={disabled} value={title} onChange={onSelect}>
       <div className={cx('relative mt-1', className)}>
         <div className='relative w-full cursor-default rounded-lg'>
           <HeadlessCombobox.Input
@@ -120,6 +122,7 @@ Combobox.propTypes = {
   labelExtractor: PropTypes.func,
   keyExtractor: PropTypes.func,
   onSelect: PropTypes.func.isRequired,
+  disabled: PropTypes.bool,
 }
 
 Combobox.defaultProps = {
@@ -129,6 +132,7 @@ Combobox.defaultProps = {
   buttonClassName: '',
   labelExtractor: null,
   keyExtractor: null,
+  disabled: false,
 }
 
 export default memo(Combobox)

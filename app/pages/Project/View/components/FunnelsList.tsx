@@ -12,6 +12,7 @@ interface IFunnelsList {
   deleteFunnel: (id: string) => void
   loading: boolean
   authenticated: boolean
+  allowedToManage: boolean
 }
 
 interface IFunnelCard {
@@ -20,13 +21,21 @@ interface IFunnelCard {
   openFunnel: (funnel: IFunnel) => void
   deleteFunnel: (id: string) => void
   loading: boolean
+  allowedToManage: boolean
 }
 
 interface IAddFunnel {
   openFunnelSettings: (funnel?: IFunnel) => void
 }
 
-const FunnelCard = ({ funnel, openFunnelSettings, openFunnel, deleteFunnel, loading }: IFunnelCard): JSX.Element => {
+const FunnelCard = ({
+  funnel,
+  openFunnelSettings,
+  openFunnel,
+  deleteFunnel,
+  loading,
+  allowedToManage,
+}: IFunnelCard): JSX.Element => {
   const { t } = useTranslation()
 
   return (
@@ -48,17 +57,22 @@ const FunnelCard = ({ funnel, openFunnelSettings, openFunnel, deleteFunnel, load
             >
               <AdjustmentsVerticalIcon className='w-6 h-6 text-gray-800 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-500' />
             </button>
-            <TrashIcon
-              onClick={(e) => {
-                e.stopPropagation()
-                deleteFunnel(funnel.id)
-              }}
-              role='button'
-              aria-label={t('common.delete')}
-              className={cx('w-6 h-6 text-gray-800 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-500', {
-                'cursor-not-allowed': loading,
-              })}
-            />
+            {allowedToManage && (
+              <TrashIcon
+                onClick={(e) => {
+                  e.stopPropagation()
+                  deleteFunnel(funnel.id)
+                }}
+                role='button'
+                aria-label={t('common.delete')}
+                className={cx(
+                  'w-6 h-6 text-gray-800 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-500',
+                  {
+                    'cursor-not-allowed': loading,
+                  },
+                )}
+              />
+            )}
           </div>
         </div>
       </div>
@@ -101,6 +115,7 @@ const FunnelsList = ({
   deleteFunnel,
   loading,
   authenticated,
+  allowedToManage,
 }: IFunnelsList): JSX.Element => (
   <ul className='grid grid-cols-1 gap-x-6 gap-y-3 lg:gap-y-6 lg:grid-cols-3 mt-4'>
     {_map(funnels, (funnel) => (
@@ -111,9 +126,10 @@ const FunnelsList = ({
         openFunnelSettings={openFunnelSettings}
         openFunnel={openFunnel}
         loading={loading}
+        allowedToManage={allowedToManage}
       />
     ))}
-    {authenticated && <AddFunnel openFunnelSettings={openFunnelSettings} />}
+    {authenticated && allowedToManage && <AddFunnel openFunnelSettings={openFunnelSettings} />}
   </ul>
 )
 
