@@ -182,24 +182,27 @@ export class Lib {
       return
     }
 
-    this.submitError({
-      // The file in which error occured.
-      filename: event.filename,
+    this.submitError(
+      {
+        // The file in which error occured.
+        filename: event.filename,
 
-      // The line of code error occured on.
-      lineno: event.lineno,
+        // The line of code error occured on.
+        lineno: event.lineno,
 
-      // The column of code error occured on.
-      colno: event.colno,
+        // The column of code error occured on.
+        colno: event.colno,
 
-      // Name of the error, if not exists (i.e. it's a custom thrown error). The initial value of name is "Error", but just in case lets explicitly set it here too.
-      name: event.error?.name || 'Error',
+        // Name of the error, if not exists (i.e. it's a custom thrown error). The initial value of name is "Error", but just in case lets explicitly set it here too.
+        name: event.error?.name || 'Error',
 
-      // Description of the error. By default, we use message from Error object, is it does not contain the error name
-      // (we want to split error name and message so we could group them together later in dashboard).
-      // If message in error object does not exist - lets use a message from the Error event itself.
-      message: event.error?.message || event.message,
-    })
+        // Description of the error. By default, we use message from Error object, is it does not contain the error name
+        // (we want to split error name and message so we could group them together later in dashboard).
+        // If message in error object does not exist - lets use a message from the Error event itself.
+        message: event.error?.message || event.message,
+      },
+      true,
+    )
   }
 
   trackErrors(options?: ErrorOptions): ErrorActions {

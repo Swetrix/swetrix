@@ -127,7 +127,7 @@ var Lib = /** @class */ (function () {
             // (we want to split error name and message so we could group them together later in dashboard).
             // If message in error object does not exist - lets use a message from the Error event itself.
             message: ((_c = event.error) === null || _c === void 0 ? void 0 : _c.message) || event.message,
-        });
+        }, true);
     };
     Lib.prototype.trackErrors = function (options) {
         var _this = this;
