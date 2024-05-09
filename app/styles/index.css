@@ -199,6 +199,10 @@ code {
   scrollbar-width: thin;
 }
 
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
 .disabled {
   opacity: 0.8;
   cursor: not-allowed;
