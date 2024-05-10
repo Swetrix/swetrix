@@ -1293,8 +1293,6 @@ const getSettingsPerf = (
         backendCompare: 'rgba(0, 168, 232, 0.4)',
       },
       groups: [
-        ['p50', 'p75', 'p95'],
-        ['p50Compare', 'p75Compare', 'p95Compare'],
         ['dns', 'tls', 'conn', 'response', 'render', 'dom_load', 'ttfb', 'frontend', 'network', 'backend'],
         [
           'dnsCompare',
