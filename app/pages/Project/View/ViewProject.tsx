@@ -1572,8 +1572,6 @@ const ViewProject = ({
         to = getFormatDate(dateRange[1])
       }
 
-      console.log('timezone:', timezone)
-
       if (period === 'custom' && dateRange) {
         dataSessions = await getSessions(
           id,
