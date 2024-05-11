@@ -310,7 +310,8 @@ export class TaskManagerService {
     const promises = _map(users, async user => {
       const { id, email, projects } = user
 
-      if (_isEmpty(projects) || _isNull(projects)) {
+      // todo: move _size(projects) to query
+      if (_isEmpty(projects) || _isNull(projects) || _size(projects) > 50) {
         return
       }
 
