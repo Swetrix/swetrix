@@ -1511,6 +1511,10 @@ const ViewProject = ({
   }
 
   useEffect(() => {
+    if (authLoading) {
+      return
+    }
+
     // @ts-ignore
     const url = new URL(window.location)
     const { searchParams } = url
@@ -1525,7 +1529,7 @@ const ViewProject = ({
       setActiveTab(tab)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [authLoading])
 
   useEffect(() => {
     // @ts-ignore
@@ -1567,6 +1571,8 @@ const ViewProject = ({
         from = getFormatDate(dateRange[0])
         to = getFormatDate(dateRange[1])
       }
+
+      console.log('timezone:', timezone)
 
       if (period === 'custom' && dateRange) {
         dataSessions = await getSessions(
@@ -2892,11 +2898,25 @@ const ViewProject = ({
   ])
 
   useEffect(() => {
+    if (authLoading) {
+      return
+    }
+
     if (activeTab === PROJECT_TABS.sessions && areFiltersSessionsParsed) {
       loadSessions()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, dateRange, filtersSessions, id, period, projectPassword, timezone, areFiltersSessionsParsed])
+  }, [
+    activeTab,
+    dateRange,
+    filtersSessions,
+    id,
+    period,
+    projectPassword,
+    timezone,
+    areFiltersSessionsParsed,
+    authLoading,
+  ])
 
   useEffect(() => {
     if (activeTab === PROJECT_TABS.errors && areFiltersErrorsParsed) {
