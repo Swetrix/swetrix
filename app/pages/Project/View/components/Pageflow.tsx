@@ -10,9 +10,10 @@ interface IPageflow {
     value: string
     created: string
   }[]
+  timeFormat: '12-hour' | '24-hour'
 }
 
-export const Pageflow = ({ pages }: IPageflow) => {
+export const Pageflow = ({ pages, timeFormat }: IPageflow) => {
   const {
     t,
     i18n: { language },
@@ -27,6 +28,7 @@ export const Pageflow = ({ pages }: IPageflow) => {
             month: 'short',
             hour: 'numeric',
             minute: 'numeric',
+            hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
           })
 
           return (

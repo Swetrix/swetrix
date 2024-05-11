@@ -11,11 +11,13 @@ import CCRow from './CCRow'
 interface ISessions {
   sessions: ISession[]
   onClick: (psid: string) => void
+  timeFormat: '12-hour' | '24-hour'
 }
 
 interface ISessionComponent {
   session: ISession
   onClick: (psid: string) => void
+  timeFormat: '12-hour' | '24-hour'
 }
 
 const Separator = () => (
@@ -24,7 +26,7 @@ const Separator = () => (
   </svg>
 )
 
-const Session = ({ session, onClick }: ISessionComponent) => {
+const Session = ({ session, onClick, timeFormat }: ISessionComponent) => {
   const {
     t,
     i18n: { language },
@@ -35,6 +37,7 @@ const Session = ({ session, onClick }: ISessionComponent) => {
     year: 'numeric',
     hour: 'numeric',
     minute: 'numeric',
+    hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
   })
 
   const psidUrl = new URL(window.location.href)
@@ -84,7 +87,7 @@ const Session = ({ session, onClick }: ISessionComponent) => {
   )
 }
 
-export const Sessions: React.FC<ISessions> = ({ sessions, onClick }) => {
+export const Sessions: React.FC<ISessions> = ({ sessions, onClick, timeFormat }) => {
   return (
     <ClientOnly
       fallback={
@@ -96,7 +99,7 @@ export const Sessions: React.FC<ISessions> = ({ sessions, onClick }) => {
       {() => (
         <ul className='mt-4'>
           {_map(sessions, (session) => (
-            <Session key={session.psid} session={session} onClick={onClick} />
+            <Session key={session.psid} session={session} onClick={onClick} timeFormat={timeFormat} />
           ))}
         </ul>
       )}

@@ -576,7 +576,8 @@ const ViewProject = ({
   // similar to panelsData but using for performance tab
   const [panelsDataPerf, setPanelsDataPerf] = useState<any>({})
   // timeFormat is a time format for chart
-  const timeFormat = useMemo(() => user.timeFormat || TimeFormat['12-hour'], [user])
+  // @ts-expect-error
+  const timeFormat = useMemo<'12-hour' | '24-hour'>(() => user.timeFormat || TimeFormat['12-hour'], [user])
   // ref, size using for logic with responsive chart
   const [ref, size] = useSize() as any
   // rotateXAxias using for logic with responsive chart
@@ -4022,7 +4023,7 @@ const ViewProject = ({
                   />
                   {sessionsLoading && _isEmpty(sessions) && <Loader />}
                   {!sessionsLoading && _isEmpty(sessions) && <NoEvents filters={filters} resetFilters={resetFilters} />}
-                  <Sessions sessions={sessions} onClick={loadSession} />
+                  <Sessions sessions={sessions} onClick={loadSession} timeFormat={timeFormat} />
                   {canLoadMoreSessions && (
                     <button
                       type='button'
@@ -4065,7 +4066,7 @@ const ViewProject = ({
                     chartType={chartType}
                     dataNames={dataNames}
                   />
-                  <Pageflow pages={activeSession?.pages} />
+                  <Pageflow pages={activeSession?.pages} timeFormat={timeFormat} />
                 </>
               )}
               {activeTab === PROJECT_TABS.errors && !activeEID && (
