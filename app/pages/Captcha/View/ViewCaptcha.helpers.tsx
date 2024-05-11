@@ -28,6 +28,8 @@ import {
 import * as d3 from 'd3'
 import { nFormatter } from 'utils/generic'
 
+const PANELS_ORDER = ['cc', 'br', 'os', 'dv']
+
 const getExportFilename = (prefix: string) => {
   // turn something like 2022-03-02T19:31:00.100Z into 2022-03-02
   const date = _split(_replace(_split(new Date().toISOString(), '.')[0], /:/g, '-'), 'T')[0]
@@ -187,7 +189,7 @@ const getSettings = (
     padding: {
       right: rotateXAxias && 35,
     },
-    bindto: '#dataChart',
+    bindto: '#captchaChart',
   }
 }
 
@@ -197,17 +199,9 @@ const validFilters = ['cc', 'pg', 'lc', 'ref', 'dv', 'br', 'os', 'so', 'me', 'ca
 
 const typeNameMapping = (t: (key: string) => string) => ({
   cc: t('project.mapping.cc'),
-  pg: t('project.mapping.pg'),
-  lc: t('project.mapping.lc'),
-  ref: t('project.mapping.ref'),
   dv: t('project.mapping.dv'),
   br: t('project.mapping.br'),
   os: t('project.mapping.os'),
-  so: t('project.mapping.so'),
-  me: t('project.mapping.me'),
-  ca: t('project.mapping.ca'),
-  lt: t('project.mapping.lt'),
-  ev: t('project.event'),
 })
 
 const iconClassName = 'w-6 h-6'
@@ -244,4 +238,5 @@ export {
   getExportFilename,
   getColumns,
   CHART_METRICS_MAPPING,
+  PANELS_ORDER,
 }

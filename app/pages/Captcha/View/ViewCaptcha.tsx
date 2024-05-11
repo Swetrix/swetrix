@@ -2,8 +2,9 @@
 import React, { useState, useEffect, useMemo, memo, useRef } from 'react'
 import useSize from 'hooks/useSize'
 import { useNavigate, useParams } from '@remix-run/react'
+import { ClientOnly } from 'remix-utils/client-only'
 import bb from 'billboard.js'
-import { ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon } from '@heroicons/react/24/outline'
+import { ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import { useTranslation } from 'react-i18next'
 import _keys from 'lodash/keys'
@@ -34,8 +35,13 @@ import {
   chartTypes,
   TITLE_SUFFIX,
   KEY_FOR_ALL_TIME,
+  BROWSER_LOGO_MAP,
+  OS_LOGO_MAP,
+  OS_LOGO_MAP_DARK,
+  isBrowser,
+  ThemeType,
 } from 'redux/constants'
-import { ICaptchaProject, IProject, ILiveStats } from 'redux/models/IProject'
+import { ICaptchaProject, IProject } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
@@ -55,6 +61,7 @@ import {
   getSettings,
   CHART_METRICS_MAPPING,
   getColumns,
+  PANELS_ORDER,
 } from './ViewCaptcha.helpers'
 import { onCSVExportClick } from 'pages/Project/View/ViewProject.helpers'
 import TBPeriodSelector from 'pages/Project/View/components/TBPeriodSelector'
@@ -62,19 +69,13 @@ import CCRow from '../../Project/View/components/CCRow'
 import NoEvents from './components/NoEvents'
 import Filters from './components/Filters'
 
-const ViewProject = ({
-  projects,
-  isLoading: _isLoading,
-  showError,
-  cache,
-  setProjectCache,
-  projectViewPrefs,
-  setProjectViewPrefs,
-  authenticated,
-  user,
-  setProjects,
-  liveStats,
-}: {
+const PageLoader = () => (
+  <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
+    <Loader />
+  </div>
+)
+
+interface IViewCaptcha {
   projects: ICaptchaProject[]
   isLoading: boolean
   showError: (message: string) => void
@@ -86,19 +87,27 @@ const ViewProject = ({
   user: IUser
   // eslint-disable-next-line no-unused-vars, no-shadow
   setProjects: (projects: ICaptchaProject[]) => void
-  liveStats: ILiveStats
-}): JSX.Element => {
+  theme: ThemeType
+  ssrTheme: ThemeType
+}
+
+const ViewCaptcha = ({
+  projects,
+  isLoading: _isLoading,
+  showError,
+  cache,
+  setProjectCache,
+  projectViewPrefs,
+  setProjectViewPrefs,
+  authenticated,
+  user,
+  setProjects,
+  theme,
+  ssrTheme,
+}: IViewCaptcha): JSX.Element => {
   const {
     t,
     i18n: { language },
-  }: {
-    t: (
-      key: string,
-      options?: {
-        [key: string]: string | number | boolean | undefined | null
-      },
-    ) => string
-    i18n: { language: string }
   } = useTranslation('common')
   const [periodPairs, setPeriodPairs] = useState(captchaTbPeriodPairs(t, undefined, undefined, language))
   const dashboardRef = useRef(null)
@@ -161,6 +170,8 @@ const ViewProject = ({
   const [chartType, setChartType] = useState<string>((getItem('chartType') as string) || chartTypes.line)
   const [mainChart, setMainChart] = useState<any>(null)
 
+  const _theme = isBrowser ? theme : ssrTheme
+
   const { name } = project as IProject
 
   useEffect(() => {
@@ -205,7 +216,7 @@ const ViewProject = ({
   }
 
   // this function is used for requesting the data from the API
-  const loadAnalytics = async (forced: boolean = false, newFilters: any = null) => {
+  const loadCaptcha = async (forced: boolean = false, newFilters: any = null) => {
     if (!forced && (isLoading || _isEmpty(project) || dataLoading)) {
       return
     }
@@ -285,7 +296,7 @@ const ViewProject = ({
           applyRegions,
           timeFormat,
           rotateXAxias,
-          chartType,
+          chartTypes.line, // chartType,
         )
         setChartData(chart)
 
@@ -353,7 +364,7 @@ const ViewProject = ({
       navigate(`${pathname}${search}`)
     }
 
-    loadAnalytics(true, newFilters)
+    loadCaptcha(true, newFilters)
   }
 
   // this function is used for requesting the data from the API when the exclusive filter is changed
@@ -369,7 +380,7 @@ const ViewProject = ({
       return f
     })
     setFilters(newFilters)
-    loadAnalytics(true, newFilters)
+    loadCaptcha(true, newFilters)
 
     // storing exclusive filter in the page URL
     // @ts-ignore
@@ -384,7 +395,7 @@ const ViewProject = ({
 
   const refreshStats = () => {
     if (!isLoading && !dataLoading) {
-      loadAnalytics(true)
+      loadCaptcha(true)
     }
   }
 
@@ -488,7 +499,7 @@ const ViewProject = ({
     }
 
     if (areFiltersParsed && areTimeBucketParsed && arePeriodParsed) {
-      loadAnalytics()
+      loadCaptcha()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project, period, chartType, filters, arePeriodParsed])
@@ -499,7 +510,7 @@ const ViewProject = ({
     }
 
     if (areFiltersParsed && areTimeBucketParsed && arePeriodParsed) {
-      loadAnalytics()
+      loadCaptcha()
     }
   }, [project, period, chartType, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t]) // eslint-disable-line
 
@@ -621,7 +632,7 @@ const ViewProject = ({
     const { pathname, search } = url
     navigate(`${pathname}${search}`)
     setFilters([])
-    loadAnalytics(true, [])
+    loadCaptcha(true, [])
   }
 
   const exportTypes = [
@@ -641,250 +652,340 @@ const ViewProject = ({
 
   // useEffect to change chart if we change chart type
   useEffect(() => {
-    loadAnalytics()
+    loadCaptcha()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chartType])
 
-  if (!isLoading) {
-    return (
-      <>
-        <EventsRunningOutBanner />
-        <div ref={ref} className='bg-gray-50 dark:bg-slate-900'>
-          <div className='max-w-[1584px] w-full mx-auto py-6 px-2 sm:px-4 lg:px-8 min-h-min-footer' ref={dashboardRef}>
-            <div className='flex flex-col lg:flex-row items-center lg:items-start justify-between mt-2'>
-              <h2 className='text-xl font-bold text-gray-900 dark:text-gray-50 break-words break-all'>{name}</h2>
-              <div className='flex mt-3 lg:mt-0 max-w-[420px] flex-wrap items-center sm:max-w-none justify-between w-full sm:w-auto mx-auto sm:mx-0'>
-                <button
-                  type='button'
-                  title={t('project.refreshStats')}
-                  onClick={refreshStats}
-                  className={cx(
-                    'mr-3 relative rounded-md p-2 bg-gray-50 text-sm font-medium hover:bg-white hover:shadow-sm dark:bg-slate-900 dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
-                    {
-                      'cursor-not-allowed opacity-50': isLoading || dataLoading,
-                    },
-                  )}
-                >
-                  <ArrowPathIcon className='w-5 h-5 text-gray-700 dark:text-gray-50' />
-                </button>
-                <Dropdown
-                  header={t('project.exportData')}
-                  items={exportTypes}
-                  title={[<ArrowDownTrayIcon key='download-icon' className='w-5 h-5' />]}
-                  labelExtractor={(item) => item.label}
-                  keyExtractor={(item) => item.label}
-                  onSelect={(item) => item.onClick(panelsData, t)}
-                  className={cx('mr-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
-                  chevron='mini'
-                  buttonClassName='!p-2 rounded-md hover:bg-white hover:shadow-sm dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200'
-                  headless
-                />
-                <div
-                  className={cx('border-gray-200 dark:border-gray-600 lg:px-3 sm:mr-3 space-x-2 lg:border-x', {
-                    hidden: isPanelsDataEmpty || analyticsLoading || checkIfAllMetricsAreDisabled,
-                  })}
-                >
-                  <button
-                    type='button'
-                    title={t('project.barChart')}
-                    onClick={() => setChartTypeOnClick(chartTypes.bar)}
-                    className={cx(
-                      'relative fill-gray-700 dark:fill-gray-50 rounded-md p-2 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
-                      {
-                        'bg-white dark:bg-slate-800 stroke-white dark:stroke-slate-800 shadow-sm':
-                          chartType === chartTypes.bar,
-                        'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200':
-                          chartType !== chartTypes.bar,
-                      },
-                    )}
-                  >
-                    <BarChart className='w-5 h-5 [&_path]:stroke-[3.5%]' />
-                  </button>
-                  <button
-                    type='button'
-                    title={t('project.lineChart')}
-                    onClick={() => setChartTypeOnClick(chartTypes.line)}
-                    className={cx(
-                      'relative fill-gray-700 dark:fill-gray-50 rounded-md p-2 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
-                      {
-                        'bg-white dark:bg-slate-800 stroke-white dark:stroke-slate-800 shadow-sm':
-                          chartType === chartTypes.line,
-                        'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200':
-                          chartType !== chartTypes.line,
-                      },
-                    )}
-                  >
-                    <LineChart className='w-5 h-5 [&_path]:stroke-[3.5%]' />
-                  </button>
-                </div>
-                {!isPanelsDataEmpty && (
-                  <Dropdown
-                    items={chartMetrics}
-                    title={t('project.metricVis')}
-                    className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
-                    labelExtractor={(pair) => {
-                      const { label, id: pairID, active } = pair
-
-                      return (
-                        <Checkbox
-                          className={cx('px-4 py-2', { hidden: isPanelsDataEmpty || analyticsLoading })}
-                          label={label}
-                          id={pairID}
-                          checked={active}
-                          onChange={() => {}}
-                        />
-                      )
-                    }}
-                    keyExtractor={(pair) => pair.id}
-                    onSelect={({ id: pairID }) => {
-                      switchActiveChartMetric(pairID)
-                    }}
-                    buttonClassName='!px-3'
-                    selectItemClassName='group text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 block text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'
-                    chevron='mini'
-                    headless
-                  />
-                )}
-                <TBPeriodSelector
-                  activePeriod={activePeriod}
-                  updateTimebucket={updateTimebucket}
-                  timeBucket={timeBucket}
-                  items={_filter(periodPairs, (item) => !_includes(['all', '1h'], item.period))}
-                  title={activePeriod?.label}
-                  onSelect={(pair) => {
-                    if (pair.isCustomDate) {
-                      setTimeout(() => {
-                        // @ts-ignore
-                        refCalendar.current.openCalendar()
-                      }, 100)
-                    } else {
-                      setPeriodPairs(captchaTbPeriodPairs(t, undefined, undefined, language))
-                      setDateRange(null)
-                      updatePeriod(pair)
-                    }
-                  }}
-                />
-                {(project?.isOwner || sharedRoles === roleAdmin.role) && (
-                  <button
-                    type='button'
-                    onClick={openSettingsHandler}
-                    className='flex px-3 text-gray-700 dark:text-gray-50 hover:text-gray-600 dark:hover:text-gray-200 text-sm font-medium'
-                  >
-                    <>
-                      <Cog8ToothIcon className='w-5 h-5 mr-1' />
-                      {t('common.settings')}
-                    </>
-                  </button>
-                )}
-                <FlatPicker
-                  ref={refCalendar}
-                  onChange={(date) => setDateRange(date)}
-                  value={dateRange || []}
-                  maxDateMonths={MAX_MONTHS_IN_PAST}
-                />
-              </div>
-            </div>
-            {analyticsLoading && <Loader />}
-            {isPanelsDataEmpty && <NoEvents filters={filters} resetFilters={resetFilters} />}
-            <div className={cx('pt-4', { hidden: isPanelsDataEmpty || analyticsLoading })}>
-              <div
-                className={cx('h-80', {
-                  hidden: checkIfAllMetricsAreDisabled,
-                })}
-              >
-                <div className='h-80 [&_svg]:!overflow-visible' id='dataChart' />
-              </div>
-              <Filters
-                filters={filters}
-                onRemoveFilter={filterHandler}
-                onChangeExclusive={onChangeExclusive}
-                tnMapping={tnMapping}
-              />
-              {dataLoading && (
-                <div className='!bg-transparent static mt-4' id='loader'>
-                  <div className='loader-head dark:!bg-slate-800'>
-                    <div className='first dark:!bg-slate-600' />
-                    <div className='second dark:!bg-slate-600' />
-                  </div>
-                </div>
-              )}
-              <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
-                {_map(panelsData.types, (type: keyof typeof tnMapping) => {
-                  const panelName = tnMapping[type]
-                  // @ts-ignore
-                  const panelIcon = panelIconMapping[type]
-
-                  if (type === 'cc') {
-                    const rowMapper = (entry: any) => {
-                      const { name: entryName, cc } = entry
-
-                      if (cc) {
-                        return <CCRow cc={cc} name={entryName} language={language} />
-                      }
-
-                      return <CCRow cc={entryName} language={language} />
-                    }
-
-                    return (
-                      <Panel
-                        t={t}
-                        key={type}
-                        icon={panelIcon}
-                        id={type}
-                        onFilter={filterHandler}
-                        name={panelName}
-                        data={panelsData.data[type]}
-                        rowMapper={rowMapper}
-                      />
-                    )
-                  }
-
-                  if (type === 'dv') {
-                    return (
-                      <Panel
-                        t={t}
-                        key={type}
-                        icon={panelIcon}
-                        id={type}
-                        onFilter={filterHandler}
-                        name={panelName}
-                        data={panelsData.data[type]}
-                        capitalize
-                      />
-                    )
-                  }
-
-                  return (
-                    <Panel
-                      t={t}
-                      key={type}
-                      icon={panelIcon}
-                      id={type}
-                      onFilter={filterHandler}
-                      name={panelName}
-                      data={panelsData.data[type]}
-                    />
-                  )
-                })}
-                {!_isEmpty(panelsData.customs) && (
-                  <CustomEvents t={t} customs={panelsData.customs} onFilter={filterHandler} chartData={chartData} />
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </>
-    )
+  if (isLoading) {
+    return <PageLoader />
   }
 
   return (
-    <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-      <Loader />
-    </div>
+    <ClientOnly fallback={<PageLoader />}>
+      {() => (
+        <>
+          <EventsRunningOutBanner />
+          <div ref={ref} className='bg-gray-50 dark:bg-slate-900'>
+            <div
+              className='max-w-[1584px] w-full mx-auto py-6 px-2 sm:px-4 lg:px-8 min-h-min-footer'
+              ref={dashboardRef}
+            >
+              <div className='flex flex-col lg:flex-row items-center lg:items-start justify-between mt-2'>
+                <h2 className='text-xl font-bold text-gray-900 dark:text-gray-50 break-words break-all'>{name}</h2>
+                <div className='flex mt-3 lg:mt-0 max-w-[420px] flex-wrap items-center sm:max-w-none justify-between w-full sm:w-auto mx-auto sm:mx-0'>
+                  <button
+                    type='button'
+                    title={t('project.refreshStats')}
+                    onClick={refreshStats}
+                    className={cx(
+                      'mr-3 relative rounded-md p-2 bg-gray-50 text-sm font-medium hover:bg-white hover:shadow-sm dark:bg-slate-900 dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
+                      {
+                        'cursor-not-allowed opacity-50': isLoading || dataLoading,
+                      },
+                    )}
+                  >
+                    <ArrowPathIcon className='w-5 h-5 text-gray-700 dark:text-gray-50' />
+                  </button>
+                  <Dropdown
+                    header={t('project.exportData')}
+                    items={exportTypes}
+                    title={[<ArrowDownTrayIcon key='download-icon' className='w-5 h-5' />]}
+                    labelExtractor={(item) => item.label}
+                    keyExtractor={(item) => item.label}
+                    onSelect={(item) => item.onClick(panelsData, t)}
+                    className={cx('mr-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
+                    chevron='mini'
+                    buttonClassName='!p-2 rounded-md hover:bg-white hover:shadow-sm dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200'
+                    headless
+                  />
+                  <div
+                    className={cx('border-gray-200 dark:border-gray-600 lg:px-3 sm:mr-3 space-x-2 lg:border-x', {
+                      // TODO: Fix a crash when user selects 'bar' chart and refreshes the page:
+                      // Uncaught TypeError: can't access property "create", point5 is undefined
+                      hidden: isPanelsDataEmpty || analyticsLoading || checkIfAllMetricsAreDisabled || true,
+                    })}
+                  >
+                    <button
+                      type='button'
+                      title={t('project.barChart')}
+                      onClick={() => setChartTypeOnClick(chartTypes.bar)}
+                      className={cx(
+                        'relative fill-gray-700 dark:fill-gray-50 rounded-md p-2 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
+                        {
+                          'bg-white dark:bg-slate-800 stroke-white dark:stroke-slate-800 shadow-sm':
+                            chartType === chartTypes.bar,
+                          'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200':
+                            chartType !== chartTypes.bar,
+                        },
+                      )}
+                    >
+                      <BarChart className='w-5 h-5 [&_path]:stroke-[3.5%]' />
+                    </button>
+                    <button
+                      type='button'
+                      title={t('project.lineChart')}
+                      onClick={() => setChartTypeOnClick(chartTypes.line)}
+                      className={cx(
+                        'relative fill-gray-700 dark:fill-gray-50 rounded-md p-2 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
+                        {
+                          'bg-white dark:bg-slate-800 stroke-white dark:stroke-slate-800 shadow-sm':
+                            chartType === chartTypes.line,
+                          'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200':
+                            chartType !== chartTypes.line,
+                        },
+                      )}
+                    >
+                      <LineChart className='w-5 h-5 [&_path]:stroke-[3.5%]' />
+                    </button>
+                  </div>
+                  {!isPanelsDataEmpty && (
+                    <Dropdown
+                      items={chartMetrics}
+                      title={t('project.metricVis')}
+                      className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
+                      labelExtractor={(pair) => {
+                        const { label, id: pairID, active } = pair
+
+                        return (
+                          <Checkbox
+                            className={cx('px-4 py-2', { hidden: isPanelsDataEmpty || analyticsLoading })}
+                            label={label}
+                            id={pairID}
+                            checked={active}
+                            onChange={() => {}}
+                          />
+                        )
+                      }}
+                      keyExtractor={(pair) => pair.id}
+                      onSelect={({ id: pairID }) => {
+                        switchActiveChartMetric(pairID)
+                      }}
+                      buttonClassName='!px-3'
+                      selectItemClassName='group text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 block text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'
+                      chevron='mini'
+                      headless
+                    />
+                  )}
+                  <TBPeriodSelector
+                    activePeriod={activePeriod}
+                    updateTimebucket={updateTimebucket}
+                    timeBucket={timeBucket}
+                    items={_filter(periodPairs, (item) => !_includes(['all', '1h'], item.period))}
+                    title={activePeriod?.label}
+                    onSelect={(pair) => {
+                      if (pair.isCustomDate) {
+                        setTimeout(() => {
+                          // @ts-ignore
+                          refCalendar.current.openCalendar()
+                        }, 100)
+                      } else {
+                        setPeriodPairs(captchaTbPeriodPairs(t, undefined, undefined, language))
+                        setDateRange(null)
+                        updatePeriod(pair)
+                      }
+                    }}
+                  />
+                  {(project?.isOwner || sharedRoles === roleAdmin.role) && (
+                    <button
+                      type='button'
+                      onClick={openSettingsHandler}
+                      className='flex px-3 text-gray-700 dark:text-gray-50 hover:text-gray-600 dark:hover:text-gray-200 text-sm font-medium'
+                    >
+                      <>
+                        <Cog8ToothIcon className='w-5 h-5 mr-1' />
+                        {t('common.settings')}
+                      </>
+                    </button>
+                  )}
+                  <FlatPicker
+                    ref={refCalendar}
+                    onChange={(date) => setDateRange(date)}
+                    value={dateRange || []}
+                    maxDateMonths={MAX_MONTHS_IN_PAST}
+                  />
+                </div>
+              </div>
+              {analyticsLoading && <Loader />}
+              {isPanelsDataEmpty && <NoEvents filters={filters} resetFilters={resetFilters} />}
+              <div className={cx('pt-4', { hidden: isPanelsDataEmpty || analyticsLoading })}>
+                <div
+                  className={cx('h-80', {
+                    hidden: checkIfAllMetricsAreDisabled,
+                  })}
+                >
+                  <div className='h-80 [&_svg]:!overflow-visible' id='captchaChart' />
+                </div>
+                <Filters
+                  filters={filters}
+                  onRemoveFilter={filterHandler}
+                  onChangeExclusive={onChangeExclusive}
+                  tnMapping={tnMapping}
+                />
+                {dataLoading && (
+                  <div className='!bg-transparent static mt-4' id='loader'>
+                    <div className='loader-head dark:!bg-slate-800'>
+                      <div className='first dark:!bg-slate-600' />
+                      <div className='second dark:!bg-slate-600' />
+                    </div>
+                  </div>
+                )}
+                <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
+                  {!_isEmpty(panelsData.types) &&
+                    _map(PANELS_ORDER, (type: keyof typeof tnMapping) => {
+                      const panelName = tnMapping[type]
+                      const panelIcon = panelIconMapping[type]
+
+                      if (type === 'cc') {
+                        const rowMapper = (entry: any) => {
+                          const { name: entryName, cc } = entry
+
+                          if (cc) {
+                            return <CCRow cc={cc} name={entryName} language={language} />
+                          }
+
+                          return <CCRow cc={entryName} language={language} />
+                        }
+
+                        return (
+                          <Panel
+                            t={t}
+                            key={type}
+                            icon={panelIcon}
+                            id={type}
+                            onFilter={filterHandler}
+                            name={panelName}
+                            data={panelsData.data[type]}
+                            rowMapper={rowMapper}
+                          />
+                        )
+                      }
+
+                      if (type === 'dv') {
+                        return (
+                          <Panel
+                            t={t}
+                            key={type}
+                            icon={panelIcon}
+                            id={type}
+                            onFilter={filterHandler}
+                            name={panelName}
+                            data={panelsData.data[type]}
+                            capitalize
+                          />
+                        )
+                      }
+
+                      if (type === 'br') {
+                        const rowMapper = (entry: any) => {
+                          const { name: entryName } = entry
+                          // @ts-ignore
+                          const logoUrl = BROWSER_LOGO_MAP[entryName]
+
+                          if (!logoUrl) {
+                            return (
+                              <>
+                                <GlobeAltIcon className='w-5 h-5' />
+                                &nbsp;
+                                {entryName}
+                              </>
+                            )
+                          }
+
+                          return (
+                            <>
+                              <img src={logoUrl} className='w-5 h-5' alt='' />
+                              &nbsp;
+                              {entryName}
+                            </>
+                          )
+                        }
+
+                        return (
+                          <Panel
+                            t={t}
+                            key={type}
+                            icon={panelIcon}
+                            id={type}
+                            onFilter={filterHandler}
+                            name={panelName}
+                            data={panelsData.data[type]}
+                            rowMapper={rowMapper}
+                          />
+                        )
+                      }
+
+                      if (type === 'os') {
+                        const rowMapper = (entry: any) => {
+                          const { name: entryName } = entry
+                          // @ts-ignore
+                          const logoPathLight = OS_LOGO_MAP[entryName]
+                          // @ts-ignore
+                          const logoPathDark = OS_LOGO_MAP_DARK[entryName]
+
+                          let logoPath = _theme === 'dark' ? logoPathDark : logoPathLight
+                          logoPath ||= logoPathLight
+
+                          if (!logoPath) {
+                            return (
+                              <>
+                                <GlobeAltIcon className='w-5 h-5' />
+                                &nbsp;
+                                {entryName}
+                              </>
+                            )
+                          }
+
+                          const logoUrl = `/${logoPath}`
+
+                          return (
+                            <>
+                              <img src={logoUrl} className='w-5 h-5 dark:fill-gray-50' alt='' />
+                              &nbsp;
+                              {entryName}
+                            </>
+                          )
+                        }
+
+                        return (
+                          <Panel
+                            t={t}
+                            key={type}
+                            icon={panelIcon}
+                            id={type}
+                            onFilter={filterHandler}
+                            name={panelName}
+                            data={panelsData.data[type]}
+                            rowMapper={rowMapper}
+                          />
+                        )
+                      }
+
+                      return (
+                        <Panel
+                          t={t}
+                          key={type}
+                          icon={panelIcon}
+                          id={type}
+                          onFilter={filterHandler}
+                          name={panelName}
+                          data={panelsData.data[type]}
+                        />
+                      )
+                    })}
+                  {!_isEmpty(panelsData.customs) && (
+                    <CustomEvents t={t} customs={panelsData.customs} onFilter={filterHandler} chartData={chartData} />
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+    </ClientOnly>
   )
 }
 
-ViewProject.propTypes = {
+ViewCaptcha.propTypes = {
   projects: PropTypes.arrayOf(PropTypes.object).isRequired,
   cache: PropTypes.objectOf(PropTypes.object).isRequired,
   projectViewPrefs: PropTypes.objectOf(PropTypes.object).isRequired,
@@ -895,4 +996,4 @@ ViewProject.propTypes = {
   authenticated: PropTypes.bool.isRequired,
 }
 
-export default memo(ViewProject)
+export default memo(ViewCaptcha)

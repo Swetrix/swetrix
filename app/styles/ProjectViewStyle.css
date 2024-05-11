@@ -19,6 +19,10 @@ html.dark .bb-axis .domain {
   stroke: #2563eb !important;
 }
 
+.bb-target-results .bb-bar {
+  stroke: #2563eb !important;
+}
+
 .bb-target-total .bb-bar {
   stroke: #d97706 !important;
 }

@@ -24,7 +24,7 @@ import routesPath from 'routesPath'
 import { getPageMeta } from 'utils/server'
 import { authMe } from './api'
 
-const minimalFooterPages = ['/projects', '/dashboard', '/contact']
+const minimalFooterPages = ['/projects', '/dashboard', '/contact', '/captchas']
 
 interface IApp {
   ssrTheme: 'dark' | 'light'

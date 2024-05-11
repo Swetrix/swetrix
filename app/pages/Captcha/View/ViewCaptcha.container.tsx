@@ -14,7 +14,7 @@ const mapStateToProps = (state: StateType) => ({
   authenticated: state.auth.authenticated,
   timezone: state.auth.user.timezone,
   user: state.auth.user,
-  liveStats: state.ui.projects.liveStats,
+  theme: state.ui.theme.theme,
 })
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
