@@ -4002,6 +4002,7 @@ const ViewProject = ({
                     onChangeExclusive={onChangeExclusive}
                     tnMapping={tnMapping}
                   />
+                  {sessionsLoading && _isEmpty(sessions) && <Loader />}
                   {!sessionsLoading && _isEmpty(sessions) && <NoEvents filters={filters} resetFilters={resetFilters} />}
                   <Sessions sessions={sessions} onClick={loadSession} />
                   {canLoadMoreSessions && (
@@ -4013,6 +4014,7 @@ const ViewProject = ({
                         'flex items-center mx-auto mt-2 text-gray-700 dark:text-gray-50 relative rounded-md p-2 bg-gray-50 text-sm font-medium hover:bg-white hover:shadow-sm dark:bg-slate-900 dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
                         {
                           'cursor-not-allowed opacity-50': sessionsLoading,
+                          hidden: sessionsLoading && _isEmpty(sessions),
                         },
                       )}
                     >
@@ -4074,7 +4076,8 @@ const ViewProject = ({
                       className={cx(
                         'flex items-center mx-auto mt-2 text-gray-700 dark:text-gray-50 relative rounded-md p-2 bg-gray-50 text-sm font-medium hover:bg-white hover:shadow-sm dark:bg-slate-900 dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
                         {
-                          'cursor-not-allowed opacity-50': sessionsLoading,
+                          'cursor-not-allowed opacity-50': errorsLoading,
+                          hidden: errorsLoading && _isEmpty(errors),
                         },
                       )}
                     >
