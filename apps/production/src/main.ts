@@ -1,4 +1,4 @@
-import { NestFactory } from '@nestjs/core'
+import { NestFactory, BaseExceptionFilter, HttpAdapterHost } from '@nestjs/core'
 import { ValidationPipe, VersioningType } from '@nestjs/common'
 import * as cookieParser from 'cookie-parser'
 import * as bodyParser from 'body-parser'
@@ -9,25 +9,26 @@ import { ConfigService } from '@nestjs/config'
 import * as Sentry from '@sentry/node'
 import { isDevelopment, sentryIgnoreErrors } from './common/constants'
 import { AppModule } from './app.module'
-import { SentryInterceptor } from './common/interceptors/sentry.interceptor'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
 
   const configService = app.get(ConfigService)
 
-  const isSentryEnabled = configService.getOrThrow<boolean>('SENTRY_ENABLED')
+  const isSentryEnabled = configService.get<boolean>('SENTRY_ENABLED')
 
   if (isSentryEnabled) {
     const isProduction = configService.get<string>('NODE_ENV') === 'production'
 
     Sentry.init({
       dsn: configService.get<string>('SENTRY_DSN'),
-      tracesSampleRate: isProduction ? 0.1 : 1.0,
+      tracesSampleRate: isProduction ? 0.2 : 1.0,
       ignoreErrors: sentryIgnoreErrors,
     })
 
-    app.useGlobalInterceptors(new SentryInterceptor())
+    const { httpAdapter } = app.get(HttpAdapterHost)
+
+    Sentry.setupNestErrorHandler(app, new BaseExceptionFilter(httpAdapter))
   }
 
   app.use(cookieParser())

@@ -1086,6 +1086,8 @@ export class AnalyticsController {
       REDIS_EVENTS_COUNT_KEY,
     )
 
+    throw new Error('Test Sentry error')
+
     if (exists) {
       const users = _toNumber(await redis.get(REDIS_USERS_COUNT_KEY))
       const projects = _toNumber(await redis.get(REDIS_PROJECTS_COUNT_KEY))
