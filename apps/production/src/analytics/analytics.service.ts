@@ -2068,6 +2068,35 @@ export class AnalyticsService {
     return baseQuery
   }
 
+  generateSessionAggregationQuery(
+    timeBucket: TimeBucketType,
+    filtersQuery: string,
+  ): string {
+    const timeBucketFunc = timeBucketConversion[timeBucket]
+    const [selector, groupBy] = this.getGroupSubquery(timeBucket)
+
+    const baseQuery = `
+      SELECT
+        ${selector},
+        avg(sdur) as sdur,
+        count() as pageviews,
+        countIf(unique=1) as uniques
+      FROM (
+        SELECT *,
+          ${timeBucketFunc}(created) as tz_created
+        FROM analytics
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
+      ) as subquery
+      GROUP BY ${groupBy}
+      ORDER BY ${groupBy}
+    `
+
+    return baseQuery
+  }
+
   generateCustomEventsAggregationQuery(
     timeBucket: TimeBucketType,
     filtersQuery: string,
@@ -2387,6 +2416,118 @@ export class AnalyticsService {
     return Promise.resolve({
       chart: {
         x: xShifted,
+        visits,
+        uniques,
+        sdur,
+      },
+    })
+  }
+
+  generateUTCXAxis(
+    timeBucket: TimeBucketType,
+    from: string,
+    to: string,
+  ): {
+    x: string[]
+    format: string
+  } {
+    const iterateTo = dayjs.utc(to)
+    let djsFrom = dayjs.utc(from)
+
+    let format
+
+    switch (timeBucket) {
+      case TimeBucketType.MINUTE:
+      case TimeBucketType.HOUR:
+        format = 'YYYY-MM-DD HH:mm:ss'
+        break
+
+      case TimeBucketType.DAY:
+        format = 'YYYY-MM-DD'
+        break
+
+      case TimeBucketType.MONTH:
+        format = 'YYYY-MM'
+        break
+
+      case TimeBucketType.YEAR:
+        format = 'YYYY'
+        break
+
+      default:
+        throw new BadRequestException(
+          `The provided time bucket (${timeBucket}) is incorrect`,
+        )
+    }
+
+    const x = []
+
+    while (djsFrom.isSameOrBefore(iterateTo, timeBucket)) {
+      x.push(djsFrom.format(format))
+      djsFrom = djsFrom.add(1, timeBucket)
+    }
+
+    return {
+      x,
+      format,
+    }
+  }
+
+  shiftToTimezone(x: string[], timezone: string, format: string): string[] {
+    return _map(x, (date: string) =>
+      dayjs.utc(date).tz(timezone).format(format),
+    )
+  }
+
+  async groupSessionChartByTimeBucket(
+    timeBucket: TimeBucketType,
+    from: string,
+    to: string,
+    filtersQuery: string,
+    paramsData: any,
+    safeTimezone: string,
+  ): Promise<object | void> {
+    const { x, format } = this.generateUTCXAxis(timeBucket, from, to)
+
+    // if (false) {
+    //   const query = this.generateCustomEventsAggregationQuery(
+    //     timeBucket,
+    //     filtersQuery,
+    //     safeTimezone,
+    //     ChartRenderMode.PERIODICAL,
+    //   )
+
+    //   const result = <Array<TrafficCEFilterCHResponse>>(
+    //     await clickhouse.query(query, paramsData).toPromise()
+    //   )
+
+    //   const uniques =
+    //     this.extractCustomEventsChartData(result, xShifted)?._unknown_event ||
+    //     []
+
+    //   const sdur = Array(_size(xShifted)).fill(0)
+
+    //   return Promise.resolve({
+    //     chart: {
+    //       x: xShifted,
+    //       visits: uniques,
+    //       uniques,
+    //       sdur,
+    //     },
+    //   })
+    // }
+
+    const query = this.generateSessionAggregationQuery(timeBucket, filtersQuery)
+
+    const result = <Array<TrafficCHResponse>>(
+      await clickhouse.query(query, paramsData).toPromise()
+    )
+
+    const { visits, uniques, sdur } = this.extractChartData(result, x)
+
+    return Promise.resolve({
+      chart: {
+        x: this.shiftToTimezone(x, safeTimezone, format),
         visits,
         uniques,
         sdur,
@@ -2888,7 +3029,7 @@ export class AnalyticsService {
         SELECT
           'pageview' AS type,
           pg AS value,
-          created
+          toTimeZone(analytics.created, '${safeTimezone}') AS created
         FROM analytics
         WHERE
           pid = {pid:FixedString(12)}
@@ -2899,7 +3040,7 @@ export class AnalyticsService {
         SELECT
           'event' AS type,
           ev AS value,
-          created
+          toTimeZone(customEV.created, '${safeTimezone}') AS created
         FROM customEV
         WHERE
           pid = {pid:FixedString(12)}
@@ -2956,10 +3097,14 @@ export class AnalyticsService {
     let timeBucket = null
 
     if (!_isEmpty(pages)) {
-      const from = dayjs(pages[0].created)
+      const from = dayjs
+        .tz(pages[0].created, safeTimezone)
+        .utc()
         .startOf('minute')
         .format('YYYY-MM-DD HH:mm:ss')
-      const to = dayjs(pages[_size(pages) - 1].created)
+      const to = dayjs
+        .tz(pages[_size(pages) - 1].created, safeTimezone)
+        .utc()
         .endOf('minute')
         .format('YYYY-MM-DD HH:mm:ss')
 
@@ -2969,7 +3114,7 @@ export class AnalyticsService {
           ? TimeBucketType.HOUR
           : TimeBucketType.MINUTE
 
-      const groupedChart = await this.groupChartByTimeBucket(
+      const groupedChart = await this.groupSessionChartByTimeBucket(
         timeBucket,
         from,
         to,
@@ -2982,8 +3127,6 @@ export class AnalyticsService {
           },
         },
         safeTimezone,
-        false,
-        ChartRenderMode.PERIODICAL,
       )
 
       // @ts-ignore
@@ -3001,9 +3144,6 @@ export class AnalyticsService {
     skip = 0,
     customEVFilterApplied = false,
   ): Promise<object | void> {
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
-
     const analyticsSubquery = `
       SELECT
         isNotNull(sid) AS active,
@@ -3011,12 +3151,12 @@ export class AnalyticsService {
         cc,
         os,
         br,
-        created
+        toTimeZone(analytics.created, '${safeTimezone}') AS created
       FROM analytics
       WHERE
         pid = {pid:FixedString(12)}
         AND psid IS NOT NULL
-        AND created BETWEEN ${tzFromDate} AND ${tzToDate}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         ${filtersQuery}
     `
 
@@ -3027,12 +3167,12 @@ export class AnalyticsService {
         cc,
         os,
         br,
-        created
+        toTimeZone(customEV.created, '${safeTimezone}') AS created
       FROM customEV
       WHERE
         pid = {pid:FixedString(12)}
         AND psid IS NOT NULL
-        AND created BETWEEN ${tzFromDate} AND ${tzToDate}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
         ${filtersQuery}
     `
 

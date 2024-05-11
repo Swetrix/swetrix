@@ -1338,7 +1338,7 @@ export class AnalyticsController {
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
-    const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
+    const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(
       from,
       to,
       timeBucket,
@@ -1350,8 +1350,8 @@ export class AnalyticsController {
     const paramsData = {
       params: {
         pid,
-        groupFrom,
-        groupTo,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
         ...filtersParams,
       },
     }
