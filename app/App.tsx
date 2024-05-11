@@ -8,7 +8,6 @@ import _some from 'lodash/some'
 import _includes from 'lodash/includes'
 import _startsWith from 'lodash/startsWith'
 import _endsWith from 'lodash/endsWith'
-import 'dayjs/locale/ru'
 import 'dayjs/locale/uk'
 
 import Header from 'components/Header'
