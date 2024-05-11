@@ -10,9 +10,7 @@ import { setRefreshToken } from 'utils/refreshToken'
 import sagaActions from '../../actions/index'
 const { login } = require('api')
 
-export default function* singinWorker({
-  payload: { credentials, callback },
-}: {
+interface ISigninWorker {
   payload: {
     credentials: {
       email: string
@@ -21,7 +19,9 @@ export default function* singinWorker({
     }
     callback: (isSuccess: boolean, isTwoFactorAuthenticationEnabled: boolean) => void
   }
-}) {
+}
+
+export default function* singinWorker({ payload: { credentials, callback } }: ISigninWorker) {
   try {
     const { dontRemember } = credentials
     const { user, accessToken, refreshToken } = yield call(login, _omit(credentials, ['dontRemember']))
@@ -42,6 +42,7 @@ export default function* singinWorker({
     yield put(UIActions.setThemeType(user.theme))
     yield put(sagaActions.loadProjects())
     yield put(sagaActions.loadSharedProjects())
+    yield put(sagaActions.loadProjectsCaptcha())
     yield put(sagaActions.loadProjectAlerts())
     callback(true, false)
   } catch (error) {
