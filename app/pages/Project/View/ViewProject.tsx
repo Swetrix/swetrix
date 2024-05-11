@@ -1550,7 +1550,7 @@ const ViewProject = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period, dateRange, timeBucket, activeEID])
 
-  const loadSessions = async () => {
+  const loadSessions = async (forcedSkip?: number) => {
     if (sessionsLoading) {
       return
     }
@@ -1558,6 +1558,7 @@ const ViewProject = ({
     setSessionsLoading(true)
 
     try {
+      const skip = typeof forcedSkip === 'number' ? forcedSkip : sessionsSkip
       let dataSessions: { sessions: ISession[]; appliedFilters: any[] }
       let from
       let to
@@ -1575,7 +1576,7 @@ const ViewProject = ({
           from,
           to,
           SESSIONS_TAKE,
-          sessionsSkip,
+          skip,
           timezone,
           projectPassword,
         )
@@ -1587,14 +1588,20 @@ const ViewProject = ({
           '',
           '',
           SESSIONS_TAKE,
-          sessionsSkip,
+          skip,
           timezone,
           projectPassword,
         )
       }
 
       setSessions((prev) => [...prev, ...(dataSessions?.sessions || [])])
-      setSessionsSkip((prev) => SESSIONS_TAKE + prev)
+      setSessionsSkip((prev) => {
+        if (typeof forcedSkip === 'number') {
+          return SESSIONS_TAKE + forcedSkip
+        }
+
+        return SESSIONS_TAKE + prev
+      })
 
       if (dataSessions?.sessions?.length < SESSIONS_TAKE) {
         setCanLoadMoreSessions(false)
@@ -2357,7 +2364,7 @@ const ViewProject = ({
 
       if (activeTab === PROJECT_TABS.sessions) {
         resetSessions()
-        loadSessions()
+        loadSessions(0)
         return
       }
 
