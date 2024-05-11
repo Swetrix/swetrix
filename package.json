@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@faker-js/faker": "^8.3.1",
-    "@nestjs-modules/mailer": "^1.11.2",
+    "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/axios": "^3.0.2",
     "@nestjs/common": "^10.2.10",
     "@nestjs/config": "^3.1.1",
