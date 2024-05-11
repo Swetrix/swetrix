@@ -2775,7 +2775,7 @@ export class AnalyticsService {
       WHERE
         pid = {pid:FixedString(12)}
         AND psid IS NOT NULL
-        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        AND analytics.created BETWEEN {groupFrom:String} AND {groupTo:String}
         ${filtersQuery}
     `
 
@@ -2791,7 +2791,7 @@ export class AnalyticsService {
       WHERE
         pid = {pid:FixedString(12)}
         AND psid IS NOT NULL
-        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        AND customEV.created BETWEEN {groupFrom:String} AND {groupTo:String}
         ${filtersQuery}
     `
 
