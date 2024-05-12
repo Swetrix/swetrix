@@ -1533,6 +1533,10 @@ const ViewProject = ({
   }, [authLoading])
 
   useEffect(() => {
+    if (authLoading) {
+      return
+    }
+
     // @ts-ignore
     const url = new URL(window.location)
     const { searchParams } = url
@@ -1544,7 +1548,7 @@ const ViewProject = ({
       setActiveEID(eid)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [authLoading])
 
   useEffect(() => {
     if (!activeEID) {
@@ -2918,11 +2922,26 @@ const ViewProject = ({
   ])
 
   useEffect(() => {
+    if (authLoading) {
+      return
+    }
+
     if (activeTab === PROJECT_TABS.errors && areFiltersErrorsParsed) {
       loadErrors()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, errorOptions, dateRange, filtersErrors, id, period, projectPassword, timezone, areFiltersErrorsParsed])
+  }, [
+    activeTab,
+    errorOptions,
+    dateRange,
+    filtersErrors,
+    id,
+    period,
+    projectPassword,
+    timezone,
+    areFiltersErrorsParsed,
+    authLoading,
+  ])
 
   useEffect(() => {
     if (period !== KEY_FOR_ALL_TIME) {
