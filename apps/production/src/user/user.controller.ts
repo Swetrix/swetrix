@@ -868,6 +868,7 @@ export class UserController {
       trafficPerc: _round((rawInfo.traffic / rawInfo.total) * 100, 2),
       customEventsPerc: _round((rawInfo.customEvents / rawInfo.total) * 100, 2),
       captchaPerc: _round((rawInfo.captcha / rawInfo.total) * 100, 2),
+      errorsPerc: _round((rawInfo.errors / rawInfo.total) * 100, 2),
     }
 
     return info

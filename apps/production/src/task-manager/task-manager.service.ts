@@ -103,7 +103,7 @@ const getQueryCondition = (condition: QueryCondition): string => {
   return ''
 }
 
-// TODO: Check custom events & CAPTCHA events as well
+// TODO: Check custom events, CAPTCHA events and errors as well
 const generatePlanUsageQuery = (
   users: User[],
   getDate: (user?: User) => string,
