@@ -866,6 +866,7 @@
     "pageviews": "Pageview events: {{quantity}} ({{percentage}}%)",
     "customEvents": "Custom events: {{quantity}} ({{percentage}}%)",
     "captcha": "CAPTCHA events: {{quantity}} ({{percentage}}%)",
+    "errors": "Error events: {{quantity}} ({{percentage}}%)",
     "gotoUsage": "Go to plan usage",
     "confirmNewPlan": "Confirm your new subscription plan",
     "previewLoadingError": "An error occured while loading the pricing preview, please try again later.\nIf the problem persists, please contact us at <mail>{{email}}</mail>.\nYou can still change your plan, but you won't be able to see the pricing preview at the moment, sorry for that.",

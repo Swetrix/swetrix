@@ -32,9 +32,11 @@ const initialState: IInitialState = {
   usageinfo: {
     total: 0,
     traffic: 0,
+    errors: 0,
     customEvents: 0,
     captcha: 0,
     trafficPerc: 0,
+    errorsPerc: 0,
     customEventsPerc: 0,
     captchaPerc: 0,
   },

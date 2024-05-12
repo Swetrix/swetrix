@@ -319,6 +319,12 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated, ssrTheme }): JSX.Elemen
                           percentage: usageinfo.captchaPerc || 0,
                         })}
                       </li>
+                      <li className='marker:text-red-600 dark:marker:text-red-800'>
+                        {t('billing.errors', {
+                          quantity: usageinfo.errors || 0,
+                          percentage: usageinfo.errorsPerc || 0,
+                        })}
+                      </li>
                     </ul>
                   </div>
                 }
