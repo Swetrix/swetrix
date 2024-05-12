@@ -1968,13 +1968,10 @@ export class AnalyticsService {
   generateErrorsAggregationQuery(
     timeBucket: TimeBucketType,
     filtersQuery: string,
-    safeTimezone: string,
     mode: ChartRenderMode,
   ): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
     const baseQuery = `
       SELECT
@@ -1982,11 +1979,11 @@ export class AnalyticsService {
         count() as count
       FROM (
         SELECT pg, dv, br, os, lc, cc, rg, ct,
-          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
+          ${timeBucketFunc}(created) as tz_created
         FROM errors
         WHERE
           pid = {pid:FixedString(12)}
-          AND created BETWEEN ${tzFromDate} AND ${tzToDate}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
           ${filtersQuery}
       ) as subquery
       GROUP BY ${groupBy}
@@ -2305,27 +2302,21 @@ export class AnalyticsService {
 
       // Chart data
       (async () => {
-        const { xShifted } = this.generateXAxis(
-          timeBucket,
-          from,
-          to,
-          safeTimezone,
-        )
+        const { x, format } = this.generateUTCXAxis(timeBucket, from, to)
 
         const query = this.generateErrorsAggregationQuery(
           timeBucket,
           filtersQuery,
-          safeTimezone,
           mode,
         )
 
         const result = <Array<TrafficCEFilterCHResponse>>(
           await clickhouse.query(query, paramsData).toPromise()
         )
-        const { count } = this.extractErrorsChartData(result, xShifted)
+        const { count } = this.extractErrorsChartData(result, x)
 
         chart = {
-          x: xShifted,
+          x: this.shiftToTimezone(x, safeTimezone, format),
           occurrences: count,
         }
       })(),
@@ -2827,9 +2818,6 @@ export class AnalyticsService {
     take = 30,
     skip = 0,
   ): Promise<object | void> {
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
-
     let parsedOptions: {
       showResolved?: boolean
     } = {}
@@ -2850,10 +2838,10 @@ export class AnalyticsService {
         max(created) as last_seen,
         status.status
       FROM (
-        SELECT eid, name, message, filename, created
+        SELECT eid, name, message, filename, toTimeZone(errors.created, '${safeTimezone}') AS created
         FROM errors
         WHERE pid = {pid:FixedString(12)}
-          AND created BETWEEN ${tzFromDate} AND ${tzToDate}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
           ${filtersQuery}
       ) AS errors
       LEFT JOIN (
@@ -2888,9 +2876,6 @@ export class AnalyticsService {
     groupTo: string,
     timeBucket: any,
   ): Promise<any> {
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
-
     const queryErrorDetails = `
       SELECT
         subquery.eid,
@@ -2912,7 +2897,7 @@ export class AnalyticsService {
         FROM errors
         WHERE pid = {pid:FixedString(12)}
           AND eid = {eid:FixedString(32)}
-          AND created BETWEEN ${tzFromDate} AND ${tzToDate}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
       ) AS subquery
       LEFT JOIN (
         SELECT
