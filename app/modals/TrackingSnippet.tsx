@@ -59,7 +59,7 @@ const TrackingSnippet = ({ onClose, isOpened, pid }: ITrackingSnippet): JSX.Elem
                 pdocs: (
                   <a
                     href={SCRIPT_DOCS_URL}
-                    className='font-medium text-indigo-400 hover:underline hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                    className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
                     target='_blank'
                     rel='noreferrer noopener'
                   />

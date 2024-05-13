@@ -226,18 +226,20 @@ const ProfileMenu = ({
             )}
           </Menu>
 
-          <Menu.Item>
-            {({ active }) => (
-              <Link
-                to={routesPath.changelog}
-                className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
-                  'bg-gray-100 dark:bg-slate-800': active,
-                })}
-              >
-                {t('footer.changelog')}
-              </Link>
-            )}
-          </Menu.Item>
+          {!isSelfhosted && (
+            <Menu.Item>
+              {({ active }) => (
+                <Link
+                  to={routesPath.changelog}
+                  className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
+                    'bg-gray-100 dark:bg-slate-800': active,
+                  })}
+                >
+                  {t('footer.changelog')}
+                </Link>
+              )}
+            </Menu.Item>
+          )}
           <Menu.Item>
             {({ active }) => (
               <Link
@@ -368,12 +370,23 @@ const AuthedHeader = ({
                 {t('billing.inactive')}
               </Link>
             )}
-            <Link
-              to={routesPath.blog}
-              className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
-            >
-              {t('footer.blog')}
-            </Link>
+            {isSelfhosted ? (
+              <a
+                href={`https://swetrix.com${routesPath.blog}`}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+              >
+                {t('footer.blog')}
+              </a>
+            ) : (
+              <Link
+                to={routesPath.blog}
+                className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+              >
+                {t('footer.blog')}
+              </Link>
+            )}
             <a
               href={DOCS_URL}
               className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
@@ -424,12 +437,23 @@ const AuthedHeader = ({
         </div>
       </div>
       <div className='py-4 flex gap-4 flex-wrap justify-center space-x-2 lg:hidden'>
-        <Link
-          to={routesPath.blog}
-          className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
-        >
-          {t('footer.blog')}
-        </Link>
+        {isSelfhosted ? (
+          <a
+            href={`https://swetrix.com${routesPath.blog}`}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+          >
+            {t('footer.blog')}
+          </a>
+        ) : (
+          <Link
+            to={routesPath.blog}
+            className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+          >
+            {t('footer.blog')}
+          </Link>
+        )}
         <a
           href={DOCS_URL}
           className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
@@ -501,12 +525,23 @@ const NotAuthedHeader = ({
 
           {!refPage && (
             <div className='hidden ml-10 space-x-1 lg:flex gap-4 items-center'>
-              <Link
-                to={routesPath.blog}
-                className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
-              >
-                {t('footer.blog')}
-              </Link>
+              {isSelfhosted ? (
+                <a
+                  href={`https://swetrix.com${routesPath.blog}`}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                >
+                  {t('footer.blog')}
+                </a>
+              ) : (
+                <Link
+                  to={routesPath.blog}
+                  className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                >
+                  {t('footer.blog')}
+                </Link>
+              )}
               {!isSelfhosted && (
                 <Link
                   to={`${routesPath.main}#pricing`}
@@ -596,12 +631,23 @@ const NotAuthedHeader = ({
       </div>
       {!refPage && (
         <div className='py-4 flex gap-4 flex-wrap justify-center space-x-2 lg:hidden'>
-          <Link
-            to={routesPath.blog}
-            className='flex items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
-          >
-            {t('footer.blog')}
-          </Link>
+          {isSelfhosted ? (
+            <a
+              href={`https://swetrix.com${routesPath.blog}`}
+              target='_blank'
+              rel='noopener noreferrer'
+              className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+            >
+              {t('footer.blog')}
+            </a>
+          ) : (
+            <Link
+              to={routesPath.blog}
+              className='flex items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+            >
+              {t('footer.blog')}
+            </Link>
+          )}
           <Link
             to={`${routesPath.main}#pricing`}
             className='flex items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'

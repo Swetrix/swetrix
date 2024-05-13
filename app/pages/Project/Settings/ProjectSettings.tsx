@@ -316,6 +316,7 @@ const ProjectSettings = ({
     name: '',
     id,
     public: false,
+    isPasswordProtected: false,
     origins: null,
     ipBlacklist: null,
   })
@@ -531,11 +532,11 @@ const ProjectSettings = ({
       })
   }
 
-  const onProtected = () => {
+  const onProtected = async () => {
     setBeenSubmitted(true)
 
     if (validated) {
-      onSubmit({
+      await onSubmit({
         ...form,
         isPasswordProtected: true,
       })
@@ -543,6 +544,11 @@ const ProjectSettings = ({
       if (!_isEmpty(form.password) && !_isEmpty(form.id)) {
         setProjectProtectedPassword(form?.id || '', form?.password || '')
       }
+
+      setForm((prev) => ({
+        ...prev,
+        isPasswordProtected: true,
+      }))
 
       setShowProtected(false)
     }
@@ -645,29 +651,27 @@ const ProjectSettings = ({
           label={t('project.settings.public')}
           hint={t('project.settings.publicHint')}
         />
-        {!isSelfhosted && (
-          <Checkbox
-            checked={Boolean(form.isPasswordProtected)}
-            onChange={() => {
-              if (!form.public && form.isPasswordProtected) {
-                setForm({
-                  ...form,
-                  isPasswordProtected: false,
-                })
-                return
-              }
+        <Checkbox
+          checked={Boolean(form.isPasswordProtected)}
+          onChange={() => {
+            if (!form.public && form.isPasswordProtected) {
+              setForm({
+                ...form,
+                isPasswordProtected: false,
+              })
+              return
+            }
 
-              if (!form.public) {
-                setShowProtected(true)
-              }
-            }}
-            name='isPasswordProtected'
-            id='isPasswordProtected'
-            className='mt-4'
-            label={t('project.settings.protected')}
-            hint={t('project.settings.protectedHint')}
-          />
-        )}
+            if (!form.public) {
+              setShowProtected(true)
+            }
+          }}
+          name='isPasswordProtected'
+          id='isPasswordProtected'
+          className='mt-4'
+          label={t('project.settings.protected')}
+          hint={t('project.settings.protectedHint')}
+        />
         <div className='flex flex-wrap justify-center sm:justify-between gap-2 mt-8'>
           <div className='flex flex-wrap items-center gap-2'>
             <Button
@@ -768,7 +772,13 @@ const ProjectSettings = ({
         isOpened={showReset}
       />
       <Modal
-        onClose={() => setShowProtected(false)}
+        onClose={() => {
+          setShowProtected(false)
+          setForm((prev) => ({
+            ...prev,
+            password: undefined,
+          }))
+        }}
         onSubmit={onProtected}
         submitText={t('common.save')}
         closeText={t('common.cancel')}

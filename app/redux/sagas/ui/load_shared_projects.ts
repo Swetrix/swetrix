@@ -13,6 +13,12 @@ const debug = Debug('swetrix:rx:s:load-projects')
 
 export default function* loadSharedProjects({ payload: { take = ENTRIES_PER_PAGE_DASHBOARD, skip = 0, search = '' } }) {
   if (isSelfhosted) {
+    yield put(
+      UIActions.setProjectsLoading({
+        isLoading: false,
+        shared: true,
+      }),
+    )
     return
   }
 

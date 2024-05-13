@@ -6,7 +6,7 @@ import { getAccessToken } from 'utils/accessToken'
 
 import UIActions from 'redux/reducers/ui'
 
-import { ENTRIES_PER_PAGE_DASHBOARD } from 'redux/constants'
+import { ENTRIES_PER_PAGE_DASHBOARD, isSelfhosted } from 'redux/constants'
 import { IOverall } from 'redux/models/IProject'
 const { getProjects, getOverallStats, getLiveVisitors, getOverallStatsCaptcha } = require('../../../api')
 
@@ -15,6 +15,11 @@ const debug = Debug('swetrix:rx:s:load-projects')
 export default function* loadProjects({
   payload: { take = ENTRIES_PER_PAGE_DASHBOARD, skip = 0, isCaptcha = false, search = '' },
 }) {
+  if (isCaptcha && isSelfhosted) {
+    yield put(UIActions.setCaptchaLoading(false))
+    return
+  }
+
   const token = getAccessToken()
 
   if (!token) {

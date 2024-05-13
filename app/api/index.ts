@@ -11,7 +11,7 @@ import { authActions } from 'redux/reducers/auth'
 import sagaActions from 'redux/sagas/actions'
 import { getAccessToken, removeAccessToken, setAccessToken } from 'utils/accessToken'
 import { getRefreshToken, removeRefreshToken } from 'utils/refreshToken'
-import { DEFAULT_ALERTS_TAKE, isSelfhosted, isBrowser, API_URL } from 'redux/constants'
+import { DEFAULT_ALERTS_TAKE, API_URL } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { IAuth } from 'redux/models/IAuth'
 import { IProject, IOverall, IProjectNames } from 'redux/models/IProject'
@@ -21,16 +21,14 @@ import { ISubscribers } from 'redux/models/ISubscribers'
 
 const debug = Debug('swetrix:api')
 
-const baseURL: string = isSelfhosted ? (isBrowser ? window.env.API_URL : null) : API_URL
-
 const api = axios.create({
-  baseURL,
+  baseURL: API_URL,
 })
 
 // Function that will be called to refresh authorization
 const refreshAuthLogic = (failedRequest: { response: AxiosResponse }) =>
   axios
-    .post(`${baseURL}v1/auth/refresh-token`, null, {
+    .post(`${API_URL}v1/auth/refresh-token`, null, {
       headers: {
         Authorization: `Bearer ${getRefreshToken()}`,
       },
@@ -78,7 +76,7 @@ export const authMe = () =>
 
 export const logoutApi = (refreshToken: string | null) =>
   axios
-    .post(`${baseURL}v1/auth/logout`, null, {
+    .post(`${API_URL}v1/auth/logout`, null, {
       headers: {
         Authorization: `Bearer ${refreshToken}`,
       },
@@ -95,7 +93,7 @@ export const logoutApi = (refreshToken: string | null) =>
 
 export const logoutAllApi = () =>
   api
-    .post(`${baseURL}v1/auth/logout-all`)
+    .post(`${API_URL}v1/auth/logout-all`)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)

@@ -72,7 +72,7 @@ import {
   isSelfhosted,
   tbPeriodPairsCompare,
   PERIOD_PAIRS_COMPARE,
-  filtersPeriodPairs,
+  FILTERS_PERIOD_PAIRS,
   IS_ACTIVE_COMPARE,
   PROJECTS_PROTECTED,
   getProjectCacheCustomKeyPerf,
@@ -89,7 +89,8 @@ import {
   ITBPeriodPairs,
   ERROR_PANELS_ORDER,
   ERRORS_FILTERS_PANELS_ORDER,
-  errorPeriodPairs,
+  ERROR_PERIOD_PAIRS,
+  FUNNELS_PERIOD_PAIRS,
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import {
@@ -672,17 +673,23 @@ const ViewProject = ({
   const timeBucketSelectorItems = useMemo(() => {
     if (activeTab === PROJECT_TABS.errors) {
       return _filter(periodPairs, (el) => {
-        return _includes(errorPeriodPairs, el.period)
+        return _includes(ERROR_PERIOD_PAIRS, el.period)
+      })
+    }
+
+    if (activeTab === PROJECT_TABS.funnels) {
+      return _filter(periodPairs, (el) => {
+        return _includes(FUNNELS_PERIOD_PAIRS, el.period)
       })
     }
 
     if (isActiveCompare) {
       return _filter(periodPairs, (el) => {
-        return _includes(filtersPeriodPairs, el.period)
+        return _includes(FILTERS_PERIOD_PAIRS, el.period)
       })
     }
 
-    if (_includes(filtersPeriodPairs, period)) {
+    if (_includes(FILTERS_PERIOD_PAIRS, period)) {
       return periodPairs
     }
 
@@ -892,6 +899,21 @@ const ViewProject = ({
         label: t('dashboard.performance'),
         icon: BoltIcon,
       },
+      {
+        id: PROJECT_TABS.sessions,
+        label: t('dashboard.sessions'),
+        icon: UsersIcon,
+      },
+      {
+        id: PROJECT_TABS.errors,
+        label: t('dashboard.errors'),
+        icon: BugAntIcon,
+      },
+      {
+        id: PROJECT_TABS.funnels,
+        label: t('dashboard.funnels'),
+        icon: FunnelIcon,
+      },
     ]
 
     const adminTabs = allowedToManage
@@ -910,21 +932,6 @@ const ViewProject = ({
 
     const newTabs = [
       ...selfhostedOnly,
-      {
-        id: PROJECT_TABS.sessions,
-        label: t('dashboard.sessions'),
-        icon: UsersIcon,
-      },
-      {
-        id: PROJECT_TABS.errors,
-        label: t('dashboard.errors'),
-        icon: BugAntIcon,
-      },
-      {
-        id: PROJECT_TABS.funnels,
-        label: t('dashboard.funnels'),
-        icon: FunnelIcon,
-      },
       {
         id: PROJECT_TABS.alerts,
         label: t('dashboard.alerts'),

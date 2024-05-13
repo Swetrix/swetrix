@@ -762,9 +762,9 @@
       "origins": "Allowed origins",
       "originsHint": "A list of origins (domains) which are allowed to use script with your ProjectID, separated by commas.\nLeave it empty to allow all origins (default setting).\nExample: cornell.edu, app.example.com, *.gov.ua",
       "enabled": "Project enabled",
-      "public": "Dashboard is public",
+      "public": "Public dashboard",
       "enabledHint": "Disabled projects will not count any newly incoming events or pageviews.\nYou will still be able to access the project's analytics in dashboard.",
-      "publicHint": "By checking this, anyone on the internet (including Google) would be able to see this project's Dashboard.\nOnly project's administrator can edit the settings.",
+      "publicHint": "By checking this, anyone on the Internet (including Google) would be able to see this project's dashboard.\nOnly the project administrator can edit the settings.",
       "createHint": "*you will be able to set up your project more thoroughly after you have created it",
       "delete": "Delete project",
       "reset": "Reset project",
@@ -817,8 +817,8 @@
         "filtersPlaceholder": "Select filters",
         "noFilters": "No filters selected or no data for the selected filter type"
       },
-      "protected": "Password protected Dashboard",
-      "protectedHint": "You can make your Dashboard public & password protected. This way, only people who know the password will be able to access it.",
+      "protected": "Password protected",
+      "protectedHint": "You can protect your password. That way, people who know the password can access it through a shareable link.",
       "password": "Dashboard password"
     },
     "captcha": {

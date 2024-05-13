@@ -195,11 +195,13 @@ export const captchaTbPeriodPairs = (
   },
 ]
 
-export const filtersPeriodPairs = ['1h', '1d', '7d', '4w', '3M', '12M', 'custom', 'compare']
+export const FILTERS_PERIOD_PAIRS = ['1h', '1d', '7d', '4w', '3M', '12M', 'custom', 'compare']
 
 // TODO: add 'custom' later after an issue with it is resolved
 // currently if you select a date range - it will not display errors within the last day of the date range
-export const errorPeriodPairs = ['1h', '1d', '7d', '4w', '3M', '12M']
+export const ERROR_PERIOD_PAIRS = ['1h', '1d', '7d', '4w', '3M', '12M']
+
+export const FUNNELS_PERIOD_PAIRS = ['1h', '1d', '7d', '4w', '3M', '12M', 'custom']
 
 export const tbPeriodPairsCompare = (
   t: Function,
@@ -383,13 +385,14 @@ const isStaging = isBrowser ? window.REMIX_ENV?.STAGING : process.env.STAGING
 const STAGING_API_URL = isBrowser ? window.REMIX_ENV?.API_STAGING_URL : process.env.API_STAGING_URL
 const PRODUCTION_API_URL = isBrowser ? window.REMIX_ENV?.API_URL : process.env.API_URL
 
-export const API_URL = isStaging ? STAGING_API_URL : PRODUCTION_API_URL
+export const isSelfhosted = Boolean(isBrowser ? window.REMIX_ENV?.SELFHOSTED : process.env.SELFHOSTED)
+
+export const API_URL = isSelfhosted || !isStaging ? PRODUCTION_API_URL : STAGING_API_URL
 export const AIAPI_URL = isBrowser ? window.REMIX_ENV?.AIAPI_URL : process.env.AIAPI_URL
 export const CDN_URL = isBrowser ? window.REMIX_ENV?.CDN_URL : process.env.CDN_URL
 export const NODE_ENV = isBrowser ? window.REMIX_ENV?.NODE_ENV : process.env.NODE_ENV
 
 export const isDevelopment = !NODE_ENV || NODE_ENV === 'development'
-export const isSelfhosted = Boolean(isBrowser ? window.REMIX_ENV?.SELFHOSTED : process.env.SELFHOSTED)
 
 export const getOgImageUrl = (title: string) => {
   const apiUrl = _endsWith(API_URL, '/') ? API_URL.slice(0, -1) : API_URL

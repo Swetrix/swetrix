@@ -43,7 +43,6 @@ import { withAuthentication, auth } from 'hoc/protected'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
 import Modal from 'ui/Modal'
-import Beta from 'ui/Beta'
 import Select from 'ui/Select'
 import Checkbox from 'ui/Checkbox'
 import PaidFeature from 'modals/PaidFeature'
@@ -79,28 +78,45 @@ const TAB_MAPPING = {
   COMMUNICATIONS: 'communications',
 }
 
-const getTabs = (t: (key: string) => string) => [
-  {
-    id: TAB_MAPPING.ACCOUNT,
-    label: t('profileSettings.account'),
-    icon: UserIcon,
-  },
-  {
-    id: TAB_MAPPING.COMMUNICATIONS,
-    label: 'Communications',
-    icon: ChatBubbleLeftEllipsisIcon,
-  },
-  {
-    id: TAB_MAPPING.INTERFACE,
-    label: 'Interface settings',
-    icon: ComputerDesktopIcon,
-  },
-  {
-    id: TAB_MAPPING.REFERRALS,
-    label: t('profileSettings.referral.title'),
-    icon: CursorArrowRaysIcon,
-  },
-]
+const getTabs = (t: (key: string) => string) => {
+  if (isSelfhosted) {
+    return [
+      {
+        id: TAB_MAPPING.ACCOUNT,
+        label: t('profileSettings.account'),
+        icon: UserIcon,
+      },
+      {
+        id: TAB_MAPPING.INTERFACE,
+        label: 'Interface settings',
+        icon: ComputerDesktopIcon,
+      },
+    ]
+  }
+
+  return [
+    {
+      id: TAB_MAPPING.ACCOUNT,
+      label: t('profileSettings.account'),
+      icon: UserIcon,
+    },
+    {
+      id: TAB_MAPPING.COMMUNICATIONS,
+      label: 'Communications',
+      icon: ChatBubbleLeftEllipsisIcon,
+    },
+    {
+      id: TAB_MAPPING.INTERFACE,
+      label: 'Interface settings',
+      icon: ComputerDesktopIcon,
+    },
+    {
+      id: TAB_MAPPING.REFERRALS,
+      label: t('profileSettings.referral.title'),
+      icon: CursorArrowRaysIcon,
+    },
+  ]
+}
 
 interface IProps {
   onDelete: (t: (key: string) => string, deletionFeedback: string, callback: () => void) => void
@@ -845,9 +861,6 @@ const UserSettings = ({
                   {/* Timezone selector */}
                   <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50 flex items-center'>
                     {t('profileSettings.timezone')}
-                    <div className='ml-5'>
-                      <Beta />
-                    </div>
                   </h3>
                   <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
                     <div>

@@ -75,7 +75,7 @@ const NewFunnel = ({
       ]
 
       try {
-        await Promise.all(promises)
+        await Promise.allSettled(promises)
       } catch (reason) {
         console.error('[ERROR] (NewFunnel -> getFiltersData):', reason)
       }

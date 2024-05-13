@@ -204,7 +204,7 @@ const Signin = ({ login, loginSuccess, loginFailed, authSSO, ssrTheme }: ISignin
   }
 
   return (
-    <div className='bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+    <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
       <div className='sm:mx-auto sm:w-full sm:max-w-md'>
         <h2 className='text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-gray-50'>
           {t('auth.signin.title')}
@@ -242,14 +242,16 @@ const Signin = ({ login, loginSuccess, loginFailed, authSSO, ssrTheme }: ISignin
                 id='dontRemember'
                 label={t('auth.common.noRemember')}
               />
-              <div className='text-sm leading-6'>
-                <Link
-                  to={routes.reset_password}
-                  className='font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
-                >
-                  {t('auth.signin.forgot')}
-                </Link>
-              </div>
+              {!isSelfhosted && (
+                <div className='text-sm leading-6'>
+                  <Link
+                    to={routes.reset_password}
+                    className='font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                  >
+                    {t('auth.signin.forgot')}
+                  </Link>
+                </div>
+              )}
             </div>
 
             <Button className='w-full justify-center' type='submit' loading={isLoading} primary giant>
@@ -288,26 +290,28 @@ const Signin = ({ login, loginSuccess, loginFailed, authSSO, ssrTheme }: ISignin
           )}
         </div>
 
-        <p className='mt-10 mb-4 text-center text-sm text-gray-500 dark:text-gray-200'>
-          <Trans
-            // @ts-ignore
-            t={t}
-            i18nKey='auth.signin.notAMember'
-            components={{
-              // eslint-disable-next-line jsx-a11y/anchor-has-content
-              url: (
-                <Link
-                  to={routes.signup}
-                  className='font-semibold leading-6 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
-                  aria-label={t('titles.signup')}
-                />
-              ),
-            }}
-            values={{
-              amount: TRIAL_DAYS,
-            }}
-          />
-        </p>
+        {!isSelfhosted && (
+          <p className='mt-10 mb-4 text-center text-sm text-gray-500 dark:text-gray-200'>
+            <Trans
+              // @ts-ignore
+              t={t}
+              i18nKey='auth.signin.notAMember'
+              components={{
+                // eslint-disable-next-line jsx-a11y/anchor-has-content
+                url: (
+                  <Link
+                    to={routes.signup}
+                    className='font-semibold leading-6 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                    aria-label={t('titles.signup')}
+                  />
+                ),
+              }}
+              values={{
+                amount: TRIAL_DAYS,
+              }}
+            />
+          </p>
+        )}
       </div>
     </div>
   )

@@ -10,6 +10,7 @@ const debug = Debug('swetrix:rx:s:load-extensions')
 
 export default function* loadProjectAlerts({ payload: { take = DEFAULT_ALERTS_TAKE, skip = 0 } }) {
   if (isSelfhosted) {
+    yield put(UIActions.setProjectAlertsLoading(false))
     return
   }
 

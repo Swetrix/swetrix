@@ -233,7 +233,7 @@ const ProjectCard = ({
               ))}
             {isTransferring && <Badge colour='indigo' label={t('common.transferring')} />}
             {isPublic && <Badge colour='green' label={t('dashboard.public')} />}
-            {_isNumber(members) && (
+            {!isSelfhosted && _isNumber(members) && (
               <Badge
                 colour='slate'
                 label={
@@ -297,6 +297,12 @@ interface INoProjects {
   onClick: () => void
 }
 
+interface IAddProject {
+  t: (key: string) => string
+  onClick: () => void
+  sitesCount: number
+}
+
 const NoProjects = ({ t, onClick }: INoProjects): JSX.Element => (
   <button
     type='button'
@@ -310,10 +316,15 @@ const NoProjects = ({ t, onClick }: INoProjects): JSX.Element => (
   </button>
 )
 
-const AddProject = ({ t, onClick }: INoProjects): JSX.Element => (
+const AddProject = ({ t, onClick, sitesCount }: IAddProject): JSX.Element => (
   <li
     onClick={onClick}
-    className='flex cursor-pointer justify-center items-center rounded-lg border-2 border-dashed h-auto min-h-[149.1px] lg:min-h-[auto] group border-gray-300 hover:border-gray-400'
+    className={cx(
+      'flex cursor-pointer justify-center items-center rounded-lg border-2 border-dashed h-auto group border-gray-300 hover:border-gray-400 min-h-[153.1px]',
+      {
+        'lg:min-h-[auto]': sitesCount % 3 !== 0,
+      },
+    )}
   >
     <div>
       <FolderPlusIcon className='mx-auto h-12 w-12 text-gray-400 dark:text-gray-200 group-hover:text-gray-500 group-hover:dark:text-gray-400' />
@@ -705,7 +716,11 @@ const Dashboard = ({
                                 />
                               ),
                             )}
-                            <AddProject t={t} onClick={onNewProject} />
+                            <AddProject
+                              sitesCount={_size(_filter(projects, ({ uiHidden }) => !uiHidden))}
+                              t={t}
+                              onClick={onNewProject}
+                            />
                           </ul>
                         )}
                       </div>
@@ -741,7 +756,11 @@ const Dashboard = ({
                                 />
                               ),
                             )}
-                            <AddProject t={t} onClick={onNewProject} />
+                            <AddProject
+                              sitesCount={_size(_filter(captchaProjects, ({ uiHidden }) => !uiHidden))}
+                              t={t}
+                              onClick={onNewProject}
+                            />
                           </ul>
                         )}
                       </div>
