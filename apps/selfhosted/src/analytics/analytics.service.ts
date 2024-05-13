@@ -46,8 +46,14 @@ import {
   TRAFFIC_COLUMNS,
   PERFORMANCE_COLUMNS,
   ERROR_COLUMNS,
+  MIN_PAGES_IN_FUNNEL,
+  MAX_PAGES_IN_FUNNEL,
 } from '../common/constants'
-import { millisecondsToSeconds, sumArrays } from '../common/utils'
+import {
+  getFunnelsClickhouse,
+  millisecondsToSeconds,
+  sumArrays,
+} from '../common/utils'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
 import { ProjectService } from '../project/project.service'
@@ -332,9 +338,13 @@ const isValidOrigin = (origins: string[], origin: string) => {
 export class AnalyticsService {
   constructor(private readonly projectService: ProjectService) {}
 
-  async checkProjectAccess(pid: string, uid: string | null): Promise<void> {
+  async checkProjectAccess(
+    pid: string,
+    uid: string | null,
+    password: string | null,
+  ): Promise<void> {
     const project = await this.projectService.getRedisProject(pid)
-    this.projectService.allowedToView(project, uid)
+    this.projectService.allowedToView(project, uid, password)
   }
 
   checkOrigin(project: Project, origin: string): void {
@@ -705,6 +715,62 @@ export class AnalyticsService {
     }
   }
 
+  async getPagesArray(
+    rawPages?: string,
+    funnelId?: string,
+    projectId?: string,
+  ): Promise<string[]> {
+    if (funnelId && projectId) {
+      const funnel = this.projectService.formatFunnelFromClickhouse(
+        await getFunnelsClickhouse(projectId, funnelId),
+      )
+
+      if (!funnel || _isEmpty(funnel)) {
+        throw new UnprocessableEntityException(
+          'The provided funnelId is incorrect',
+        )
+      }
+
+      return funnel.steps
+    }
+
+    try {
+      const pages = JSON.parse(rawPages)
+
+      if (!_isArray(pages)) {
+        throw new UnprocessableEntityException(
+          'An array of pages has to be provided as a pages param',
+        )
+      }
+
+      const size = _size(pages)
+
+      if (size < MIN_PAGES_IN_FUNNEL) {
+        throw new UnprocessableEntityException(
+          `A minimum of ${MIN_PAGES_IN_FUNNEL} pages or events has to be provided`,
+        )
+      }
+
+      if (size > MAX_PAGES_IN_FUNNEL) {
+        throw new UnprocessableEntityException(
+          `A maximum of ${MAX_PAGES_IN_FUNNEL} pages or events can be provided`,
+        )
+      }
+
+      if (_some(pages, page => !_isString(page))) {
+        throw new UnprocessableEntityException(
+          'Pages array must contain string values only',
+        )
+      }
+
+      return pages
+    } catch (e) {
+      throw new UnprocessableEntityException(
+        'Cannot process the provided array of pages',
+      )
+    }
+  }
+
   async getTimeBucketForAllTime(
     pid: string,
     period: string,
@@ -731,7 +797,7 @@ export class AnalyticsService {
     let diff = null
 
     if (from && to) {
-      diff = dayjs(to).diff(dayjs(from?.[0].created || to), 'days')
+      diff = dayjs(to).diff(dayjs(from?.[0]?.created || to), 'days')
 
       const tbMap = _find(timeBucketToDays, ({ lt }) => diff <= lt)
 
@@ -932,7 +998,7 @@ export class AnalyticsService {
       let dropoff = 0
       let eventsPerc = 100
       let eventsPercStep = 100
-      let dropoffPerc = 0
+      let dropoffPercStep = 0
 
       if (index > 0) {
         const prev = data[index - 1]
@@ -940,7 +1006,7 @@ export class AnalyticsService {
         dropoff = prev.c - row.c
         eventsPerc = _round((row.c / data[0].c) * 100, 2)
         eventsPercStep = _round((row.c / prev.c) * 100, 2)
-        dropoffPerc = _round((dropoff / prev.c) * 100, 2)
+        dropoffPercStep = _round((dropoff / prev.c) * 100, 2)
       }
 
       return {
@@ -949,7 +1015,7 @@ export class AnalyticsService {
         eventsPerc,
         eventsPercStep,
         dropoff,
-        dropoffPerc,
+        dropoffPercStep,
       }
     })
 

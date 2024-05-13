@@ -11,5 +11,9 @@ export class Project {
 
   public: boolean
 
+  isPasswordProtected: boolean
+
+  passwordHash?: string
+
   created: Date
 }

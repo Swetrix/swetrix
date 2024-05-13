@@ -1,2 +1,6 @@
 export * from './create-project.dto'
 export * from './project.dto'
+export * from './update-project.dto'
+export * from './project-password.dto'
+export * from './funnel-create.dto'
+export * from './funnel-update.dto'

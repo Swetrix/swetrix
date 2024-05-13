@@ -6,9 +6,6 @@ import * as _uniqBy from 'lodash/uniqBy'
 import * as _round from 'lodash/round'
 import * as _includes from 'lodash/includes'
 import * as _keys from 'lodash/keys'
-import * as _size from 'lodash/size'
-import * as _some from 'lodash/some'
-import * as _isString from 'lodash/isString'
 import * as _values from 'lodash/values'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
@@ -62,8 +59,6 @@ import {
   REDIS_LOG_CUSTOM_CACHE_KEY,
   HEARTBEAT_SID_LIFE_TIME,
   REDIS_SESSION_SALT_KEY,
-  MIN_PAGES_IN_FUNNEL,
-  MAX_PAGES_IN_FUNNEL,
   clickhouse,
   REDIS_LOG_ERROR_CACHE_KEY,
 } from '../common/constants'
@@ -348,44 +343,6 @@ const getEIDsArray = (eids, eid) => {
   return [eid]
 }
 
-const getPagesArray = (rawPages: string): string[] => {
-  try {
-    const pages = JSON.parse(rawPages)
-
-    if (!_isArray(pages)) {
-      throw new UnprocessableEntityException(
-        'An array of pages has to be provided as a pages param',
-      )
-    }
-
-    const size = _size(pages)
-
-    if (size < MIN_PAGES_IN_FUNNEL) {
-      throw new UnprocessableEntityException(
-        `A minimum of ${MIN_PAGES_IN_FUNNEL} pages or events has to be provided`,
-      )
-    }
-
-    if (size > MAX_PAGES_IN_FUNNEL) {
-      throw new UnprocessableEntityException(
-        `A maximum of ${MAX_PAGES_IN_FUNNEL} pages or events can be provided`,
-      )
-    }
-
-    if (_some(pages, page => !_isString(page))) {
-      throw new UnprocessableEntityException(
-        'Pages array must contain string values only',
-      )
-    }
-
-    return pages
-  } catch (e) {
-    throw new UnprocessableEntityException(
-      'Cannot process the provided array of pages',
-    )
-  }
-}
-
 // needed for serving 1x1 px GIF
 const TRANSPARENT_GIF_BUFFER = Buffer.from(
   'R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=',
@@ -406,6 +363,7 @@ export class AnalyticsController {
   async getData(
     @Query() data: AnalyticsGET_DTO,
     @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
   ): Promise<any> {
     const {
       pid,
@@ -423,7 +381,11 @@ export class AnalyticsController {
       this.analyticsService.validatePeriod(period)
     }
 
-    await this.analyticsService.checkProjectAccess(pid, uid)
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
 
     let newTimebucket = timeBucket
     let allowedTumebucketForPeriodAll
@@ -509,17 +471,34 @@ export class AnalyticsController {
   async getFunnel(
     @Query() data: GetFunnelsDTO,
     @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
   ): Promise<IGetFunnel> {
-    const { pid, period, from, to, timezone = DEFAULT_TIMEZONE, pages } = data
+    const {
+      pid,
+      period,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE,
+      pages,
+      funnelId,
+    } = data
     this.analyticsService.validatePID(pid)
 
     if (!_isEmpty(period)) {
       this.analyticsService.validatePeriod(period)
     }
 
-    const pagesArr = getPagesArray(pages)
+    const pagesArr = await this.analyticsService.getPagesArray(
+      pages,
+      funnelId,
+      pid,
+    )
 
-    await this.analyticsService.checkProjectAccess(pid, uid)
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
@@ -565,6 +544,7 @@ export class AnalyticsController {
   async getCustomEventMetadata(
     @Query() data: GetCustomEventMetadata,
     @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
   ): Promise<IAggregatedMetadata[]> {
     const { pid, period } = data
     this.analyticsService.validatePID(pid)
@@ -573,7 +553,11 @@ export class AnalyticsController {
       this.analyticsService.validatePeriod(period)
     }
 
-    await this.analyticsService.checkProjectAccess(pid, uid)
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
 
     return this.analyticsService.getCustomEventMetadata(data)
   }
@@ -583,11 +567,16 @@ export class AnalyticsController {
   async getFilters(
     @Query() data: GetFiltersDto,
     @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
   ): Promise<any> {
     const { pid, type } = data
     this.analyticsService.validatePID(pid)
 
-    await this.analyticsService.checkProjectAccess(pid, uid)
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
 
     return this.analyticsService.getFilters(pid, type)
   }
@@ -597,6 +586,7 @@ export class AnalyticsController {
   async getChartData(
     @Query() data: AnalyticsGET_DTO,
     @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
   ): Promise<any> {
     const {
       pid,
@@ -626,7 +616,11 @@ export class AnalyticsController {
       period,
       safeTimezone,
     )
-    await this.analyticsService.checkProjectAccess(pid, uid)
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
 
     const paramsData = {
       params: {
@@ -659,6 +653,7 @@ export class AnalyticsController {
   async getPerfData(
     @Query() data: AnalyticsGET_DTO & { measure: PerfMeasure },
     @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
   ): Promise<any> {
     const {
       pid,
@@ -678,7 +673,11 @@ export class AnalyticsController {
       this.analyticsService.validatePeriod(period)
     }
 
-    await this.analyticsService.checkProjectAccess(pid, uid)
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
 
     let newTimeBucket = timeBucket
     let allowedTumebucketForPeriodAll
@@ -747,6 +746,7 @@ export class AnalyticsController {
   async getPerfChartData(
     @Query() data: AnalyticsGET_DTO & { measure: PerfMeasure },
     @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
   ): Promise<any> {
     const {
       pid,
@@ -778,7 +778,11 @@ export class AnalyticsController {
       period,
       safeTimezone,
     )
-    await this.analyticsService.checkProjectAccess(pid, uid)
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
 
     const paramsData = {
       params: {
@@ -810,6 +814,7 @@ export class AnalyticsController {
   async getUserFlow(
     @Query() data: GetUserFlowDTO,
     @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
   ): Promise<IUserFlow | { appliedFilters: any[] }> {
     const { pid, period, from, to, timezone = DEFAULT_TIMEZONE, filters } = data
     this.analyticsService.validatePID(pid)
@@ -818,7 +823,11 @@ export class AnalyticsController {
       this.analyticsService.validatePeriod(period)
     }
 
-    await this.analyticsService.checkProjectAccess(pid, uid)
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
 
     let diff
 
@@ -866,6 +875,7 @@ export class AnalyticsController {
   async getOverallStats(
     @Query() data,
     @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
   ): Promise<any> {
     const {
       pids,
@@ -880,7 +890,11 @@ export class AnalyticsController {
 
     const validationPromises = _map(pidsArray, async currentPID => {
       this.analyticsService.validatePID(currentPID)
-      await this.analyticsService.checkProjectAccess(currentPID, uid)
+      await this.analyticsService.checkProjectAccess(
+        currentPID,
+        uid,
+        headers['x-password'],
+      )
     })
 
     await Promise.all(validationPromises)
@@ -900,6 +914,7 @@ export class AnalyticsController {
   async getPerformanceOverallStats(
     @Query() data,
     @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
   ): Promise<any> {
     const {
       pids,
@@ -921,7 +936,11 @@ export class AnalyticsController {
 
     const validationPromises = _map(pidsArray, async currentPID => {
       this.analyticsService.validatePID(currentPID)
-      await this.analyticsService.checkProjectAccess(currentPID, uid)
+      await this.analyticsService.checkProjectAccess(
+        currentPID,
+        uid,
+        headers['x-password'],
+      )
     })
 
     await Promise.all(validationPromises)
@@ -941,13 +960,18 @@ export class AnalyticsController {
   async getHeartBeatStats(
     @Query() data,
     @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
   ): Promise<object> {
     const { pids, pid } = data
     const pidsArray = getPIDsArray(pids, pid)
 
     const validationPromises = _map(pidsArray, async currentPID => {
       this.analyticsService.validatePID(currentPID)
-      await this.analyticsService.checkProjectAccess(currentPID, uid)
+      await this.analyticsService.checkProjectAccess(
+        currentPID,
+        uid,
+        headers['x-password'],
+      )
     })
 
     await Promise.all(validationPromises)
@@ -974,11 +998,16 @@ export class AnalyticsController {
   async getLiveVisitors(
     @Query() data,
     @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
   ): Promise<object> {
     const { pid } = data
 
     this.analyticsService.validatePID(pid)
-    await this.analyticsService.checkProjectAccess(pid, uid)
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
 
     const keys = await redis.keys(`sd:*:${pid}`)
 
@@ -1297,6 +1326,7 @@ export class AnalyticsController {
   async getSessions(
     @Query() data: GetSessionsDto,
     @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
   ): Promise<any> {
     const { pid, period, from, to, filters, timezone = DEFAULT_TIMEZONE } = data
     this.analyticsService.validatePID(pid)
@@ -1305,7 +1335,11 @@ export class AnalyticsController {
       this.analyticsService.validatePeriod(period)
     }
 
-    await this.analyticsService.checkProjectAccess(pid, uid)
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
 
     const take = this.analyticsService.getSafeNumber(data.take, 30)
     const skip = this.analyticsService.getSafeNumber(data.skip, 0)
@@ -1378,6 +1412,7 @@ export class AnalyticsController {
   async getSession(
     @Query() data: GetSessionDto,
     @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
   ): Promise<any> {
     const {
       pid,
@@ -1387,7 +1422,11 @@ export class AnalyticsController {
     } = data
     this.analyticsService.validatePID(pid)
 
-    await this.analyticsService.checkProjectAccess(pid, uid)
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
 
     const result = await this.analyticsService.getSessionDetails(
@@ -1404,6 +1443,7 @@ export class AnalyticsController {
   async getCustomEvents(
     @Query() data: GetCustomEventsDto,
     @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
   ): Promise<any> {
     const {
       pid,
@@ -1421,7 +1461,11 @@ export class AnalyticsController {
       this.analyticsService.validatePeriod(period)
     }
 
-    await this.analyticsService.checkProjectAccess(pid, uid)
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
 
     let newTimeBucket = timeBucket
     let diff
@@ -1505,11 +1549,16 @@ export class AnalyticsController {
   async getErrorsFilters(
     @Query() data: GetFiltersDto,
     @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
   ): Promise<any> {
     const { pid, type } = data
     this.analyticsService.validatePID(pid)
 
-    await this.analyticsService.checkProjectAccess(pid, uid)
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
 
     return this.analyticsService.getErrorsFilters(pid, type)
   }
@@ -1587,7 +1636,11 @@ export class AnalyticsController {
     await checkRateLimit(ip, 'error-status', 100, 1800)
 
     this.analyticsService.validatePID(pid)
-    await this.analyticsService.checkProjectAccess(pid, uid)
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
 
     const eids = getEIDsArray(unprocessedEids, eid)
 
@@ -1601,6 +1654,7 @@ export class AnalyticsController {
   async getErrors(
     @Query() data: GetErrorsDto,
     @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
   ): Promise<any> {
     const {
       pid,
@@ -1617,7 +1671,11 @@ export class AnalyticsController {
       this.analyticsService.validatePeriod(period)
     }
 
-    await this.analyticsService.checkProjectAccess(pid, uid)
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
 
     const take = this.analyticsService.getSafeNumber(data.take, 30)
     const skip = this.analyticsService.getSafeNumber(data.skip, 0)
@@ -1690,6 +1748,7 @@ export class AnalyticsController {
   async getError(
     @Query() data: GetErrorDTO,
     @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
   ): Promise<any> {
     const {
       pid,
@@ -1706,7 +1765,11 @@ export class AnalyticsController {
       this.analyticsService.validatePeriod(period)
     }
 
-    await this.analyticsService.checkProjectAccess(pid, uid)
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
 
     let timeBucket
     let diff
