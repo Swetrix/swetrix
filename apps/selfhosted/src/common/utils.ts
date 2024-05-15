@@ -10,6 +10,7 @@ import * as _keys from 'lodash/keys'
 import * as _toNumber from 'lodash/toNumber'
 import * as _split from 'lodash/split'
 import * as _isEmpty from 'lodash/isEmpty'
+import * as _isNil from 'lodash/isNil'
 import * as _head from 'lodash/head'
 import * as _round from 'lodash/round'
 import * as _size from 'lodash/size'
@@ -149,7 +150,7 @@ const createFunnelClickhouse = async (funnel: Partial<Funnel>) => {
 
 const getProjectsClickhouse = async (id = null) => {
   if (!id) {
-    const query = 'SELECT * FROM project;'
+    const query = 'SELECT * FROM project ORDER BY created ASC;'
     return clickhouse.query(query).toPromise()
   }
 
@@ -347,17 +348,17 @@ const updateUserClickhouse = async (user: IClickhouseUser) => {
   let query = 'ALTER table sfuser UPDATE '
   let separator = ''
 
-  if (user.timezone) {
+  if (!_isNil(user.timezone)) {
     query += `${separator}timezone={timezone:String}`
     separator = ', '
   }
 
-  if (user.timeFormat) {
+  if (!_isNil(user.timeFormat)) {
     query += `${separator}timeFormat={timeFormat:String}`
     separator = ', '
   }
 
-  if (user.showLiveVisitorsInTitle) {
+  if (!_isNil(user.showLiveVisitorsInTitle)) {
     query += `${separator}showLiveVisitorsInTitle={showLiveVisitorsInTitle:Int8}`
     separator = ', '
   }

@@ -292,6 +292,14 @@ export class ProjectService {
     return updFunnel
   }
 
+  formatFunnelsFromClickhouse(funnels: any[]): Funnel[] {
+    if (_isEmpty(funnels)) {
+      return []
+    }
+
+    return _map(funnels, this.formatFunnelFromClickhouse)
+  }
+
   formatFunnelFromClickhouse(funnel: any): Funnel {
     const updFunnel = { ...funnel }
 

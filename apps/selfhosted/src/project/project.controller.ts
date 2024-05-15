@@ -118,7 +118,7 @@ export class ProjectController {
 
         return {
           ...acc,
-          [value.pid]: this.projectService.formatFunnelFromClickhouse(
+          [value.pid]: this.projectService.formatFunnelsFromClickhouse(
             value.data,
           ),
         }
@@ -547,7 +547,7 @@ export class ProjectController {
 
     return this.projectService.formatFromClickhouse({
       ..._omit(project, ['passwordHash']),
-      funnels: _map(funnels, this.projectService.formatFunnelFromClickhouse),
+      funnels: this.projectService.formatFunnelsFromClickhouse(funnels),
       isDataExists,
       isErrorDataExists,
     })
