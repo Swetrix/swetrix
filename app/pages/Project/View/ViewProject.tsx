@@ -1961,7 +1961,7 @@ const ViewProject = ({
 
   const loadFunnelsData = useCallback(
     async (forced = false) => {
-      if (!activeFunnel) {
+      if (!activeFunnel || !activeFunnel.id) {
         return
       }
 
@@ -1971,9 +1971,10 @@ const ViewProject = ({
 
       setDataLoading(true)
 
+      let key
+
       try {
         let dataFunnel: { funnel: IAnalyticsFunnel[]; totalPageviews: number }
-        let key
         let from
         let to
 
@@ -2015,6 +2016,11 @@ const ViewProject = ({
       } catch (e) {
         setAnalyticsLoading(false)
         setDataLoading(false)
+
+        if (key) {
+          setFunnelsCache(id, {}, key)
+        }
+
         console.error('[ERROR](loadFunnelsData) Loading funnels data failed')
         console.error(e)
       }
