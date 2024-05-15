@@ -88,7 +88,6 @@ const REDIS_SSO_UUID = 'sso:uuid'
 
 // Captcha service
 const { CAPTCHA_SALT } = process.env
-const { CAPTCHA_ENCRYPTION_KEY } = process.env
 
 // 3600 sec -> 1 hour
 const redisProjectCacheTimeout = 3600
@@ -115,7 +114,6 @@ const SEND_WARNING_AT_PERC = 85
 
 const PROJECT_INVITE_EXPIRE = 48
 
-const CAPTCHA_COOKIE_KEY = 'swetrix-captcha-token'
 const CAPTCHA_TOKEN_LIFETIME = 300 // seconds (5 minutes).
 const CAPTCHA_SECRET_KEY_LENGTH = 50
 
@@ -217,11 +215,9 @@ export {
   ORIGINS_REGEX,
   REDIS_LOG_PERF_CACHE_KEY,
   CAPTCHA_SALT,
-  CAPTCHA_ENCRYPTION_KEY,
   EMAIL_ACTION_ENCRYPTION_KEY,
   isDevelopment,
   getRedisCaptchaKey,
-  CAPTCHA_COOKIE_KEY,
   CAPTCHA_TOKEN_LIFETIME,
   CAPTCHA_SECRET_KEY_LENGTH,
   PRODUCTION_ORIGIN,
