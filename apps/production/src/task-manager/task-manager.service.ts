@@ -490,7 +490,7 @@ export class TaskManagerService {
       await this.userService.find({
         where: {
           isActive: true,
-          planCode: Not(PlanCode.none),
+          planCode: Not(In([PlanCode.none, PlanCode.trial])),
           planExceedContactedAt: MoreThan(sevenDaysAgo),
           dashboardBlockReason: IsNull(),
           isAccountBillingSuspended: false,
@@ -551,7 +551,7 @@ export class TaskManagerService {
       await this.userService.find({
         where: {
           isActive: true,
-          planCode: Not(PlanCode.none),
+          planCode: Not(In([PlanCode.none, PlanCode.trial])),
           planExceedContactedAt: IsNull(),
           dashboardBlockReason: IsNull(),
           isAccountBillingSuspended: false,
