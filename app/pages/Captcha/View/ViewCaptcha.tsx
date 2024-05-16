@@ -129,10 +129,10 @@ const ViewCaptcha = ({
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState<boolean>(false)
   const [analyticsLoading, setAnalyticsLoading] = useState<boolean>(true)
   const [period, setPeriod] = useState<string>(
-    projectViewPrefs ? projectViewPrefs[id]?.period || periodPairs[3].period : periodPairs[3].period,
+    projectViewPrefs ? projectViewPrefs[id]?.period || periodPairs[4].period : periodPairs[4].period,
   )
   const [timeBucket, setTimebucket] = useState<string>(
-    projectViewPrefs ? projectViewPrefs[id]?.timeBucket || periodPairs[3].tbs[1] : periodPairs[3].tbs[1],
+    projectViewPrefs ? projectViewPrefs[id]?.timeBucket || periodPairs[4].tbs[1] : periodPairs[4].tbs[1],
   )
   const activePeriod: {
     period: string
