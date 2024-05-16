@@ -686,7 +686,7 @@ export const PLAN_LIMITS = {
   trial: {
     index: 0, // 'downgrade' or 'upgrade' logic depends on this
     planCode: 'trial',
-    monthlyUsageLimit: 100000,
+    monthlyUsageLimit: 10000000,
     legacy: false,
     price: {
       USD: {
