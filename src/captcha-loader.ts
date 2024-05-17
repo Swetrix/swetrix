@@ -17,9 +17,7 @@ enum LOG_ACTIONS {
   info = 'info',
 }
 
-const DUMMY_PIDS = [
-  'AP00000000000', 'MP00000000000', 'FAIL000000000',
-]
+const DUMMY_PIDS = ['AP00000000000', 'FAIL000000000']
 
 const isValidPID = (pid: string) => DUMMY_PIDS.includes(pid) || PID_REGEX.test(pid)
 
@@ -37,9 +35,11 @@ const log = (status: LOG_ACTIONS, text: string) => {
 }
 
 const appendParamsToURL = (url: string, params: any) => {
-  const queryString = Object.keys(params).map((key) => {
-    return `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`
-  }).join('&')
+  const queryString = Object.keys(params)
+    .map((key) => {
+      return `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`
+    })
+    .join('&')
 
   return `${url}?${queryString}`
 }
@@ -79,9 +79,7 @@ const postMessageCallback = (pmEvent: MessageEvent) => {
     return
   }
 
-  const {
-    type, cid, event,
-  } = data
+  const { type, cid, event } = data
 
   if (type !== MESSAGE_IDENTIFIER) {
     return
@@ -132,7 +130,7 @@ const postMessageCallback = (pmEvent: MessageEvent) => {
 
       break
     }
-    
+
     case 'manualStarted': {
       const frame = document.getElementById(getFrameID(cid))
 
@@ -166,9 +164,10 @@ const generateCaptchaFrame = (params: any) => {
   const captchaFrame = document.createElement('iframe')
 
   captchaFrame.id = getFrameID(params.cid)
-  captchaFrame.src = theme === 'dark'
-    ? appendParamsToURL(DARK_CAPTCHA_IFRAME_URL, params)
-    : appendParamsToURL(LIGHT_CAPTCHA_IFRAME_URL, params)
+  captchaFrame.src =
+    theme === 'dark'
+      ? appendParamsToURL(DARK_CAPTCHA_IFRAME_URL, params)
+      : appendParamsToURL(LIGHT_CAPTCHA_IFRAME_URL, params)
   captchaFrame.style.height = FRAME_HEIGHT_MAPPING.default
   captchaFrame.title = 'Swetrix Captcha'
   captchaFrame.style.border = 'none'

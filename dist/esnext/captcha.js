@@ -8,9 +8,8 @@ const CAPTCHA_TOKEN_LIFETIME = 300; // seconds (5 minutes).
 let TOKEN = '';
 let HASH = '';
 const ENDPOINTS = {
-    VERIFY: '/verify',
     GENERATE: '/generate',
-    VERIFY_MANUAL: '/verify-manual',
+    VERIFY: '/verify',
 };
 var IFRAME_MESSAGE_TYPES;
 (function (IFRAME_MESSAGE_TYPES) {
@@ -128,30 +127,6 @@ const generateCaptcha = async () => {
         return {};
     }
 };
-const verify = async () => {
-    try {
-        const response = await fetch(`${API_URL}${ENDPOINTS.VERIFY}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                // @ts-ignore
-                pid: window.__SWETRIX_PROJECT_ID,
-            }),
-        });
-        if (!response.ok) {
-            return {};
-        }
-        const data = await response.json();
-        return data;
-    }
-    catch (e) {
-        sendMessageToLoader(IFRAME_MESSAGE_TYPES.FAILURE);
-        activateAction(ACTION.failure);
-        return {};
-    }
-};
 document.addEventListener('DOMContentLoaded', () => {
     const captchaComponent = document.querySelector('#swetrix-captcha');
     const branding = document.querySelector('#branding');
@@ -172,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         let response;
         try {
-            response = await fetch(`${API_URL}${ENDPOINTS.VERIFY_MANUAL}`, {
+            response = await fetch(`${API_URL}${ENDPOINTS.VERIFY}`, {
                 method: 'POST',
                 body: JSON.stringify({
                     hash: HASH,
@@ -226,23 +201,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         activateAction(ACTION.loading);
-        try {
-            const { token } = await verify();
-            if (!token) {
-                throw '';
-            }
-            TOKEN = token;
-            sendMessageToLoader(IFRAME_MESSAGE_TYPES.SUCCESS, { token });
-            setLifetimeTimeout();
-            activateAction(ACTION.completed);
-            return;
-        }
-        catch (e) {
-            const { data, hash } = await generateCaptcha();
-            HASH = hash;
-            enableManualChallenge(data);
-            return;
-        }
+        const { data, hash } = await generateCaptcha();
+        HASH = hash;
+        enableManualChallenge(data);
     });
 });
 //# sourceMappingURL=captcha.js.map
