@@ -45,6 +45,11 @@ module.exports = {
             type: 'doc',
             label: 'Nginx',
           },
+          {
+            id: 'adblockers/guides/netlify',
+            type: 'doc',
+            label: 'Netlify',
+          },
         ],
       },
     ],

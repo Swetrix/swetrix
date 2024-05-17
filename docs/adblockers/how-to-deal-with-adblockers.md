@@ -24,4 +24,5 @@ If you've installed [Swetrix using npm](/install-script#install-swetrix-via-npm)
 If you have installed Swetrix using our CDN (`swetrix.org/swetrix.js`), you will need to proxy it to bypass adblockers. Please refer to one of the guides below on how to do this.
 
 ### Managed proxy guides
+ - [Netlify](/adblockers/guides/netlify)
  - [Nginx](/adblockers/guides/nginx)

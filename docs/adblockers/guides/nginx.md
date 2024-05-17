@@ -57,3 +57,7 @@ swetrix.init('YOUR_PROJECT_ID', {
   apiURL: 'https://<yourproxydomain>/log',
 })
 ```
+
+:::note
+If you are not using the [Swetrix NPM package](/install-script#install-swetrix-via-npm), don't forget to also replace `https://swetrix.org/swetrix.js` with your proxy URL in the analytics `<script>` tag.
+:::
