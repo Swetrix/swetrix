@@ -30,14 +30,15 @@ The successful response will have the `success` field set to `true` and the `dat
 | --- | --- | --- |
 | hash | string | The hash of CAPTCHA user passed. |
 | timestamp | number | The timestamp of CAPTCHA user passed. |
-| autoVerified | boolean | Whether the CAPTCHA was auto-verified (i.e. user was NOT presented a CAPTCHA challenge). |
 | pid | string | The ID of the CAPTCHA project. |
 
 ```json
 {
-  success: true,
-  data: {
-    hash, timestamp, autoVerified, pid,
+  "success": true,
+  "data": {
+    "hash": "HASH_12345678",
+    "timestamp": 1111111111,
+    "pid": "PROJECTID123"
   }
 }
 ```
