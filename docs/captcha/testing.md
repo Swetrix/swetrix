@@ -8,8 +8,7 @@ You can use the following project IDs for testing.
 
 | Project ID | Description |
 |------------|-------------|
-| `AP00000000000` | Always pass captcha without manual verification. |
-| `MP00000000000` | Fail automatic verification, but always pass manual. |
+| `AP00000000000` | Always pass captcha regardless of what was entered in challenge input field. |
 | `FAIL000000000` | Always fail captcha. |
 
 ## Dummy secret keys
