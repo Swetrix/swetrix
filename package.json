@@ -1,6 +1,6 @@
 {
   "name": "@swetrix/captcha",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "description": "Swetrix CAPTCHA",
   "captchaloader": "dist/captcha-loader.js",
   "captcha": "dist/captcha.js",
@@ -24,7 +24,7 @@
     "type": "git",
     "url": "git+https://github.com/Swetrix/swetrix-js.git"
   },
-  "author": "Andrii R. <contact@swetrix.com>",
+  "author": "Swetrix Ltd <contact@swetrix.com>",
   "funding": "https://ko-fi.com/andriir",
   "license": "MIT",
   "bugs": {
