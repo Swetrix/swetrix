@@ -6,9 +6,8 @@ declare const CAPTCHA_TOKEN_LIFETIME = 300;
 declare let TOKEN: string;
 declare let HASH: string;
 declare const ENDPOINTS: {
-    VERIFY: string;
     GENERATE: string;
-    VERIFY_MANUAL: string;
+    VERIFY: string;
 };
 declare enum IFRAME_MESSAGE_TYPES {
     SUCCESS = "success",
@@ -34,4 +33,3 @@ declare const setLifetimeTimeout: () => void;
 declare const enableManualChallenge: (svg: string) => void;
 declare const disableManualChallenge: () => void;
 declare const generateCaptcha: () => Promise<any>;
-declare const verify: () => Promise<any>;
