@@ -25,4 +25,5 @@ If you have installed Swetrix using our CDN (`swetrix.org/swetrix.js`), you will
 
 ### Managed proxy guides
  - [Netlify](/adblockers/guides/netlify)
+ - [Next.js](/adblockers/guides/nextjs)
  - [Nginx](/adblockers/guides/nginx)

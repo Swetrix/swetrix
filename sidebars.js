@@ -41,14 +41,19 @@ module.exports = {
         label: 'Proxy guides',
         items: [
           {
-            id: 'adblockers/guides/nginx',
-            type: 'doc',
-            label: 'Nginx',
-          },
-          {
             id: 'adblockers/guides/netlify',
             type: 'doc',
             label: 'Netlify',
+          },
+          {
+            id: 'adblockers/guides/nextjs',
+            type: 'doc',
+            label: 'Next.js',
+          },
+          {
+            id: 'adblockers/guides/nginx',
+            type: 'doc',
+            label: 'Nginx',
           },
         ],
       },
