@@ -9,9 +9,8 @@ let TOKEN = ''
 let HASH = ''
 
 const ENDPOINTS = {
-  VERIFY: '/verify',
   GENERATE: '/generate',
-  VERIFY_MANUAL: '/verify-manual',
+  VERIFY: '/verify',
 }
 
 enum IFRAME_MESSAGE_TYPES {
@@ -32,13 +31,16 @@ enum ACTION {
 let activeAction: ACTION = ACTION.checkbox
 
 const sendMessageToLoader = (event: IFRAME_MESSAGE_TYPES, data = {}) => {
-  window.parent.postMessage({
-    event,
-    type: MSG_IDENTIFIER,
-    // @ts-ignore
-    cid: window.__SWETRIX_CAPTCHA_ID,
-    ...data,
-  }, '*')
+  window.parent.postMessage(
+    {
+      event,
+      type: MSG_IDENTIFIER,
+      // @ts-ignore
+      cid: window.__SWETRIX_CAPTCHA_ID,
+      ...data,
+    },
+    '*',
+  )
 }
 
 /**
@@ -132,35 +134,9 @@ const generateCaptcha = async () => {
         pid: window.__SWETRIX_PROJECT_ID,
       }),
     })
-  
+
     if (!response.ok) {
       throw ''
-    }
-  
-    const data = await response.json()
-    return data
-  } catch (e) {
-    sendMessageToLoader(IFRAME_MESSAGE_TYPES.FAILURE)
-    activateAction(ACTION.failure)
-    return {}
-  }
-}
-
-const verify = async () => {
-  try {
-    const response = await fetch(`${API_URL}${ENDPOINTS.VERIFY}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        // @ts-ignore
-        pid: window.__SWETRIX_PROJECT_ID,
-      }),
-    })
-
-    if (!response.ok) {
-      return {}
     }
 
     const data = await response.json()
@@ -199,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let response
 
     try {
-      response = await fetch(`${API_URL}${ENDPOINTS.VERIFY_MANUAL}`, {
+      response = await fetch(`${API_URL}${ENDPOINTS.VERIFY}`, {
         method: 'POST',
         body: JSON.stringify({
           hash: HASH,
@@ -261,24 +237,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     activateAction(ACTION.loading)
 
-    try {
-      const { token } = await verify()
+    const { data, hash } = await generateCaptcha()
 
-      if (!token) {
-        throw ''
-      }
-
-      TOKEN = token
-      sendMessageToLoader(IFRAME_MESSAGE_TYPES.SUCCESS, { token })
-      setLifetimeTimeout()
-      activateAction(ACTION.completed)
-      return
-    } catch (e) {
-      const { data, hash } = await generateCaptcha()
-
-      HASH = hash
-      enableManualChallenge(data)
-      return
-    }
+    HASH = hash
+    enableManualChallenge(data)
   })
 })
