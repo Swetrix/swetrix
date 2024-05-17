@@ -13,26 +13,21 @@ import * as utc from 'dayjs/plugin/utc'
 import { ProjectService } from '../project/project.service'
 import { AppLoggerService } from '../logger/logger.service'
 import {
-  isDevelopment,
   redis,
   REDIS_LOG_CAPTCHA_CACHE_KEY,
   isValidPID,
   getRedisCaptchaKey,
   CAPTCHA_SALT,
-  CAPTCHA_ENCRYPTION_KEY,
-  CAPTCHA_COOKIE_KEY,
   CAPTCHA_TOKEN_LIFETIME,
 } from '../common/constants'
 import { getGeoDetails } from '../common/utils'
 import { getElValue } from '../analytics/analytics.controller'
 import { GeneratedCaptcha } from './interfaces/generated-captcha'
-import { TokenCaptcha } from './interfaces/token-captcha'
 
 dayjs.extend(utc)
 
 export const DUMMY_PIDS = {
-  AUTO_PASS: 'AP00000000000',
-  MANUAL_PASS: 'MP00000000000',
+  ALWAYS_PASS: 'AP00000000000',
   ALWAYS_FAIL: 'FAIL000000000',
 }
 
@@ -54,14 +49,6 @@ const decryptString = (text: string, key: string): string => {
   const bytes = CryptoJS.Rabbit.decrypt(text, key)
   return bytes.toString(CryptoJS.enc.Utf8)
 }
-
-// Set the weights for the manual and automatic verifications
-const MANUAL_WEIGHT = 2
-const AUTO_WEIGHT = 1
-const THRESHOLD = 1.5
-
-// 300 days
-const COOKIE_MAX_AGE = 300 * 24 * 60 * 60 * 1000
 
 const captchaString = (text: string) => `${_toLower(text)}${CAPTCHA_SALT}`
 
@@ -167,7 +154,6 @@ export class CaptchaService {
     pid: string,
     captchaHash: string,
     timestamp: number,
-    autoVerified: boolean,
   ): Promise<string> {
     if (isDummyPID(pid)) {
       return this.generateDummyToken()
@@ -189,7 +175,6 @@ export class CaptchaService {
     const token = {
       hash: captchaHash,
       timestamp,
-      autoVerified,
       pid,
     }
 
@@ -211,8 +196,7 @@ export class CaptchaService {
       return {
         hash: 'DUMMY_HASH00000111112222233333444445555566666777778888899999',
         timestamp: dayjs().unix(),
-        autoVerified: false,
-        pid: DUMMY_PIDS.AUTO_PASS,
+        pid: DUMMY_PIDS.ALWAYS_PASS,
       }
     }
 
@@ -265,101 +249,5 @@ export class CaptchaService {
 
   verifyCaptcha(text: string, captchaHash: string): boolean {
     return captchaHash === this.hashCaptcha(text)
-  }
-
-  incrementManuallyVerified(tokenCaptcha: TokenCaptcha): TokenCaptcha {
-    return {
-      ...tokenCaptcha,
-      manuallyVerified: 1 + tokenCaptcha.manuallyVerified,
-    }
-  }
-
-  incrementAutomaticallyVerified(tokenCaptcha: TokenCaptcha): TokenCaptcha {
-    return {
-      ...tokenCaptcha,
-      automaticallyVerified: 1 + tokenCaptcha.automaticallyVerified,
-    }
-  }
-
-  private async canPassWithoutVerification(
-    tokenCaptcha: TokenCaptcha,
-  ): Promise<boolean> {
-    const { manuallyVerified, automaticallyVerified } = tokenCaptcha
-
-    // Calculate the weighted average of the manual and automatic verifications
-    const weightedAverage =
-      (MANUAL_WEIGHT * manuallyVerified + AUTO_WEIGHT * automaticallyVerified) /
-      (MANUAL_WEIGHT + AUTO_WEIGHT)
-
-    // If the weighted average is above a certain threshold, the user can pass without verification
-    return weightedAverage >= THRESHOLD
-  }
-
-  async decryptTokenCaptcha(
-    jwtCookie: string | undefined,
-  ): Promise<TokenCaptcha> {
-    try {
-      const decryptedtokenCaptcha = decryptString(
-        jwtCookie,
-        CAPTCHA_ENCRYPTION_KEY,
-      )
-
-      // @ts-ignore
-      return JSON.parse(decryptedtokenCaptcha)
-    } catch (e) {
-      throw new Error('Invalid JWT captcha')
-    }
-  }
-
-  getTokenCaptcha(manuallyVerified = 0, automaticallyVerified = 0): string {
-    const tokenCaptcha: TokenCaptcha = {
-      manuallyVerified,
-      automaticallyVerified,
-    }
-
-    // @ts-ignore
-    const encryptedTokenCaptcha: string = encryptString(
-      JSON.stringify(tokenCaptcha),
-      CAPTCHA_ENCRYPTION_KEY,
-    )
-
-    return encryptedTokenCaptcha
-  }
-
-  async autoVerifiable(
-    pid: string,
-    tokenCookie: string | undefined,
-  ): Promise<boolean> {
-    if (pid === DUMMY_PIDS.AUTO_PASS) {
-      return true
-    }
-
-    if (!tokenCookie) {
-      throw new Error('No JWT captcha cookie')
-    }
-
-    const tokenCaptcha: TokenCaptcha =
-      await this.decryptTokenCaptcha(tokenCookie)
-
-    return this.canPassWithoutVerification(tokenCaptcha)
-  }
-
-  setTokenCookie(response: any, tokenCookie: string): void {
-    if (isDevelopment) {
-      // @ts-ignore
-      response.cookie(CAPTCHA_COOKIE_KEY, tokenCookie, {
-        httpOnly: true,
-        maxAge: COOKIE_MAX_AGE,
-      })
-    } else {
-      // @ts-ignore
-      response.cookie(CAPTCHA_COOKIE_KEY, tokenCookie, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none',
-        maxAge: COOKIE_MAX_AGE,
-        domain: '.swetrix.com',
-      })
-    }
   }
 }
