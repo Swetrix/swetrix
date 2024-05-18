@@ -77,10 +77,14 @@ const Press = (): JSX.Element => {
         <h2 className='text-2xl mt-2 font-bold text-gray-900 dark:text-gray-50 tracking-tight'>{t('press.logos')}</h2>
         <div className='grid grid-cols-none sm:grid-cols-2 gap-4 mt-2'>
           <div className='dark:bg-gray-100 p-2 rounded-lg backdrop-blur-lg bg-gray-100 '>
-          <LogoComponent description={t('press.logo')} logoPNG='/assets/logo_blue.png' textColor='text-black' />
+            <LogoComponent description={t('press.logo')} logoPNG='/assets/logo_blue.png' textColor='text-black' />
           </div>
           <div className='dark:bg-slate-800 p-2 rounded-lg backdrop-blur-lg bg-slate-800'>
-          <LogoComponent description={t('press.logoWhiteText')} logoPNG='/assets/logo_white.png' textColor='text-white' />
+            <LogoComponent
+              description={t('press.logoWhiteText')}
+              logoPNG='/assets/logo_white.png'
+              textColor='text-white'
+            />
           </div>
         </div>
         <div className='grid grid-cols-2 gap-4 mt-8'>

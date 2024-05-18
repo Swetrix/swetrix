@@ -1023,7 +1023,28 @@
     "switchTheme": "Switch theme",
     "dark": "Dark",
     "light": "Light",
-    "signedInAs": "Signed in as"
+    "signedInAs": "Signed in as",
+    "watchDemo": "Watch demo",
+    "contactSales": "Contact sales",
+    "solutions": {
+      "title": "Solutions",
+      "analytics": {
+        "title": "Analytics",
+        "desc": "Monitor your site's traffic with privacy in mind"
+      },
+      "errors": {
+        "title": "Error tracking",
+        "desc": "Deliver bug-free experiences to your users"
+      },
+      "captcha": {
+        "title": "CAPTCHA",
+        "desc": "Protect your site from bots with privacy-focused captcha"
+      },
+      "performance": {
+        "title": "Performance monitoring",
+        "desc": "Analyse your sites key speed metrics"
+      }
+    }
   },
   "footer": {
     "slogan": "The best apps need the best services.",
