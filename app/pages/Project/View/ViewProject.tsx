@@ -2227,7 +2227,7 @@ const ViewProject = ({
       resetSessions()
 
       if (!override) {
-        setFiltersSessions([...filters, ...converted])
+        setFiltersSessions((prev) => [...prev, ...converted])
         return
       }
 
