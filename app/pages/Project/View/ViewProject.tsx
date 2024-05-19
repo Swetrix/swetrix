@@ -2257,7 +2257,7 @@ const ViewProject = ({
       resetErrors()
 
       if (!override) {
-        setFiltersErrors([...filters, ...converted])
+        setFiltersErrors((prev) => [...prev, ...converted])
         return
       }
 
