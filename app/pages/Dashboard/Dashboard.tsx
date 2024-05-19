@@ -394,20 +394,11 @@ const Dashboard = ({
   liveStats,
   birdseye,
 }: DashboardProps): JSX.Element => {
-  const {
-    t,
-  }: {
-    t: (
-      key: string,
-      options?: {
-        [key: string]: string | number | null | undefined
-      },
-    ) => string
-  } = useTranslation('common')
+  const { t } = useTranslation('common')
   const [isSearchActive, setIsSearchActive] = useState<boolean>(false)
   const [showActivateEmailModal, setShowActivateEmailModal] = useState<boolean>(false)
   const navigate = useNavigate()
-  const [tabProjects, setTabProjects] = useState<string>(dashboardTabs)
+  const [activeTab, setActiveTab] = useState<string>(dashboardTabs)
   const pageAmountShared: number = Math.ceil(sharedTotal / ENTRIES_PER_PAGE_DASHBOARD)
   const pageAmount: number = Math.ceil(total / ENTRIES_PER_PAGE_DASHBOARD)
   const pageAmountCaptcha: number = Math.ceil(captchaTotal / ENTRIES_PER_PAGE_DASHBOARD)
@@ -431,34 +422,34 @@ const Dashboard = ({
   }
 
   useEffect(() => {
-    if (sharedTotal <= 0 && tabProjects === tabForSharedProject) {
+    if (sharedTotal <= 0 && activeTab === tabForSharedProject) {
       setDashboardTabs(tabForOwnedProject)
-      setTabProjects(tabForOwnedProject)
+      setActiveTab(tabForOwnedProject)
     }
 
-    setDashboardTabs(tabProjects)
-  }, [tabProjects, setDashboardTabs, sharedTotal])
+    setDashboardTabs(activeTab)
+  }, [activeTab, setDashboardTabs, sharedTotal])
 
   useEffect(() => {
     setSearch('')
-  }, [tabProjects])
+  }, [activeTab])
 
   useEffect(() => {
-    if (tabProjects === tabForOwnedProject) {
+    if (activeTab === tabForOwnedProject) {
       loadProjects(
         ENTRIES_PER_PAGE_DASHBOARD,
         (dashboardPaginationPage - 1) * ENTRIES_PER_PAGE_DASHBOARD,
         debouncedSearch,
       )
     }
-    if (tabProjects === tabForSharedProject) {
+    if (activeTab === tabForSharedProject) {
       loadSharedProjects(
         ENTRIES_PER_PAGE_DASHBOARD,
         (dashboardPaginationPageShared - 1) * ENTRIES_PER_PAGE_DASHBOARD,
         debouncedSearch,
       )
     }
-    if (tabProjects === tabForCaptchaProject) {
+    if (activeTab === tabForCaptchaProject) {
       loadProjectsCaptcha(
         ENTRIES_PER_PAGE_DASHBOARD,
         (dashboardPaginationPageCaptcha - 1) * ENTRIES_PER_PAGE_DASHBOARD,
@@ -504,8 +495,8 @@ const Dashboard = ({
   }, [t, sharedTotal])
 
   const activeTabLabel = useMemo(() => {
-    return _find(dashboardLocTabs, (tab) => tab.name === tabProjects)?.label
-  }, [dashboardLocTabs, tabProjects])
+    return _find(dashboardLocTabs, (tab) => tab.name === activeTab)?.label
+  }, [dashboardLocTabs, activeTab])
 
   if (error && !isLoading) {
     return (
@@ -601,7 +592,7 @@ const Dashboard = ({
                 className='!pl-2 inline-flex justify-center items-center cursor-pointer text-center border border-transparent leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 shadow-sm text-white bg-slate-900 hover:bg-slate-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 dark:hover:bg-slate-700 px-3 py-2 text-sm'
               >
                 <FolderPlusIcon className='w-5 h-5 mr-1' />
-                {tabProjects === tabForCaptchaProject ? t('dashboard.newCaptchaProject') : t('dashboard.newProject')}
+                {activeTab === tabForCaptchaProject ? t('dashboard.newCaptchaProject') : t('dashboard.newProject')}
               </span>
             </div>
             {isSearchActive && (
@@ -635,7 +626,7 @@ const Dashboard = ({
                       onSelect={(label) => {
                         const nameTab = _find(dashboardLocTabs, (tab) => t(tab.label) === label)?.name
                         if (nameTab) {
-                          setTabProjects(nameTab)
+                          setActiveTab(nameTab)
                         }
                       }}
                       title={activeTabLabel}
@@ -653,14 +644,14 @@ const Dashboard = ({
                           <button
                             key={tab.name}
                             type='button'
-                            onClick={() => setTabProjects(tab.name)}
+                            onClick={() => setActiveTab(tab.name)}
                             className={cx('whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-md', {
                               'border-slate-900 text-slate-900 dark:text-gray-50 dark:border-gray-50':
-                                tabProjects === tab.name,
+                                activeTab === tab.name,
                               'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300':
-                                tabProjects !== tab.name,
+                                activeTab !== tab.name,
                             })}
-                            aria-current={tab.name === tabProjects ? 'page' : undefined}
+                            aria-current={tab.name === activeTab ? 'page' : undefined}
                           >
                             {t(tab.label)}
                           </button>
@@ -685,7 +676,7 @@ const Dashboard = ({
               >
                 {() => (
                   <>
-                    {tabProjects === tabForOwnedProject && (
+                    {activeTab === tabForOwnedProject && (
                       <div>
                         {_isEmpty(_filter(projects, ({ uiHidden }) => !uiHidden)) ? (
                           <NoProjects t={t} onClick={onNewProject} />
@@ -726,7 +717,7 @@ const Dashboard = ({
                       </div>
                     )}
 
-                    {tabProjects === tabForCaptchaProject && (
+                    {activeTab === tabForCaptchaProject && (
                       <div>
                         {_isEmpty(_filter(captchaProjects, ({ uiHidden }) => !uiHidden)) ? (
                           <NoProjects t={t} onClick={onNewProject} />
@@ -766,7 +757,7 @@ const Dashboard = ({
                       </div>
                     )}
 
-                    {tabProjects === tabForSharedProject && (
+                    {activeTab === tabForSharedProject && (
                       <div>
                         {_isEmpty(_filter(sharedProjects, ({ uiHidden }) => !uiHidden)) ? (
                           <NoProjects t={t} onClick={onNewProject} />
@@ -832,7 +823,7 @@ const Dashboard = ({
                 )}
               </ClientOnly>
             )}
-            {tabProjects === tabForOwnedProject && pageAmount > 1 && (
+            {activeTab === tabForOwnedProject && pageAmount > 1 && (
               <Pagination
                 className='mt-2'
                 page={dashboardPaginationPage}
@@ -841,7 +832,7 @@ const Dashboard = ({
                 total={total}
               />
             )}
-            {tabProjects === tabForSharedProject && pageAmountShared > 1 && (
+            {activeTab === tabForSharedProject && pageAmountShared > 1 && (
               <Pagination
                 className='mt-2'
                 page={dashboardPaginationPageShared}
@@ -850,7 +841,7 @@ const Dashboard = ({
                 total={sharedTotal}
               />
             )}
-            {tabProjects === tabForCaptchaProject && pageAmountCaptcha > 1 && (
+            {activeTab === tabForCaptchaProject && pageAmountCaptcha > 1 && (
               <Pagination
                 className='mt-2'
                 page={dashboardPaginationPageCaptcha}
