@@ -9,7 +9,6 @@ import _reduce from 'lodash/reduce'
 import _filter from 'lodash/filter'
 import { useNavigate, Link } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
-import PropTypes from 'prop-types'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   BellIcon,
@@ -299,15 +298,6 @@ const ProjectAlerts = ({ projectId }: IProjectAlerts): JSX.Element => {
       <PaidFeature isOpened={isPaidFeatureOpened} onClose={() => setIsPaidFeatureOpened(false)} />
     </div>
   )
-}
-
-ProjectAlerts.propTypes = {
-  projectId: PropTypes.string.isRequired,
-  alerts: PropTypes.array.isRequired,
-  loading: PropTypes.bool.isRequired,
-  user: PropTypes.object.isRequired,
-  total: PropTypes.number.isRequired,
-  authenticated: PropTypes.bool.isRequired,
 }
 
 export default memo(ProjectAlerts)
