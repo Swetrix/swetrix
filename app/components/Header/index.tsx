@@ -959,55 +959,57 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                     </>
                   )}
                 </Menu>
-                <Disclosure as='div' className='-mx-3'>
-                  {({ open }) => (
-                    <>
-                      <Disclosure.Button className='flex w-full items-center justify-between rounded-lg py-2 pl-3 pr-3.5 text-base font-semibold leading-7 text-gray-900 dark:text-gray-50 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'>
-                        {t('header.solutions.title')}
-                        <ChevronDownIcon
-                          className={cx(open ? 'rotate-180' : '', 'h-5 w-5 flex-none')}
-                          aria-hidden='true'
-                        />
-                      </Disclosure.Button>
-                      <Disclosure.Panel className='mt-2 space-y-2'>
-                        {_map(solutions, (item) => (
-                          <Disclosure.Button
-                            key={item.name}
-                            as='div'
-                            className='group relative flex gap-x-2 rounded-lg p-2 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'
-                          >
-                            <item.icon className='h-5 w-5 text-gray-600 dark:text-gray-300 mt-1' aria-hidden='true' />
-                            <div>
-                              {_startsWith(item.link, '/') ? (
-                                <Link
-                                  to={item.link}
-                                  onClick={() => setMobileMenuOpen(false)}
-                                  className='text-sm font-semibold text-gray-900 dark:text-gray-50'
-                                >
-                                  {item.name}
-                                  <span className='absolute inset-0' />
-                                </Link>
-                              ) : (
-                                <a
-                                  href={item.link}
-                                  onClick={() => setMobileMenuOpen(false)}
-                                  target='_blank'
-                                  rel='noopener noreferrer'
-                                  className='text-sm font-semibold text-gray-900 dark:text-gray-50'
-                                >
-                                  {item.name}
-                                  <span className='absolute inset-0' />
-                                </a>
-                              )}
+                {!isSelfhosted && (
+                  <Disclosure as='div' className='-mx-3'>
+                    {({ open }) => (
+                      <>
+                        <Disclosure.Button className='flex w-full items-center justify-between rounded-lg py-2 pl-3 pr-3.5 text-base font-semibold leading-7 text-gray-900 dark:text-gray-50 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'>
+                          {t('header.solutions.title')}
+                          <ChevronDownIcon
+                            className={cx(open ? 'rotate-180' : '', 'h-5 w-5 flex-none')}
+                            aria-hidden='true'
+                          />
+                        </Disclosure.Button>
+                        <Disclosure.Panel className='mt-2 space-y-2'>
+                          {_map(solutions, (item) => (
+                            <Disclosure.Button
+                              key={item.name}
+                              as='div'
+                              className='group relative flex gap-x-2 rounded-lg p-2 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'
+                            >
+                              <item.icon className='h-5 w-5 text-gray-600 dark:text-gray-300 mt-1' aria-hidden='true' />
+                              <div>
+                                {_startsWith(item.link, '/') ? (
+                                  <Link
+                                    to={item.link}
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    className='text-sm font-semibold text-gray-900 dark:text-gray-50'
+                                  >
+                                    {item.name}
+                                    <span className='absolute inset-0' />
+                                  </Link>
+                                ) : (
+                                  <a
+                                    href={item.link}
+                                    onClick={() => setMobileMenuOpen(false)}
+                                    target='_blank'
+                                    rel='noopener noreferrer'
+                                    className='text-sm font-semibold text-gray-900 dark:text-gray-50'
+                                  >
+                                    {item.name}
+                                    <span className='absolute inset-0' />
+                                  </a>
+                                )}
 
-                              <p className='text-xs mt-1 text-gray-600 dark:text-neutral-100'>{item.description}</p>
-                            </div>
-                          </Disclosure.Button>
-                        ))}
-                      </Disclosure.Panel>
-                    </>
-                  )}
-                </Disclosure>
+                                <p className='text-xs mt-1 text-gray-600 dark:text-neutral-100'>{item.description}</p>
+                              </div>
+                            </Disclosure.Button>
+                          ))}
+                        </Disclosure.Panel>
+                      </>
+                    )}
+                  </Disclosure>
+                )}
                 {!isSelfhosted && authenticated && user?.planCode === 'trial' && (
                   <Link
                     to={routes.billing}
