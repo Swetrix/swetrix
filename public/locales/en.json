@@ -963,12 +963,7 @@
     "cancelDesc": "After cancelling your subscription, no new events will be collected by Swetrix for your projects.\nYou will be able to return to your current plan at any time.\nIf you have any questions, you can always email us at {{email}}."
   },
   "contact": {
-    "howTo": "Have something to ask? There are several ways on how to contact us:",
-    "ways": {
-      "email": "You can drop us an email at <mail>{{email}}</mail>",
-      "twitter": "Tweet or message us at <url>{{twitter}}</url>",
-      "discord": "Join our Discord server by following <url>this link</url>"
-    }
+    "description": "You can reach us at <mail>{{email}}</mail>, tweet us at <twitter>{{twitterHandle}}</twitter> or talk to us via our <discord>Discord</discord> community. We aim to respond as soon as possible, usually within a day."
   },
   "beta": {
     "title": "Beta",
@@ -1008,7 +1003,7 @@
     "dashboard": "Dashboard",
     "docs": "Documentation",
     "billing": "Billing",
-    "contact": "Contact",
+    "contact": "Have something to ask?",
     "changelog": "Changelog",
     "main": "Ultimate open-source web analytics to satisfy all your needs",
     "press": "Media & Press",
