@@ -117,9 +117,11 @@ export class ProjectService {
     }
   }
 
-  async getPIDsWhereAnalyticsDataExists(projectIds: string[]) {
+  async getPIDsWhereAnalyticsDataExists(
+    projectIds: string[],
+  ): Promise<string[]> {
     if (_isEmpty(projectIds)) {
-      return {}
+      return []
     }
 
     const params = _reduce(
@@ -174,9 +176,9 @@ export class ProjectService {
     return _map(result, ({ pid }) => pid)
   }
 
-  async getPIDsWhereErrorsDataExists(projectIds: string[]) {
+  async getPIDsWhereErrorsDataExists(projectIds: string[]): Promise<string[]> {
     if (_isEmpty(projectIds)) {
-      return {}
+      return []
     }
 
     const params = _reduce(
