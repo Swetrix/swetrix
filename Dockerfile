@@ -1,23 +1,51 @@
 # Stage 1
-FROM node:lts-alpine as build
-ENV TZ=Etc/UTC \
-    SELFHOSTED=true \
-    CHOKIDAR_USEPOLLING=true \
-    GENERATE_SOURCEMAP=false
-RUN apk add --no-cache tzdata && cp /usr/share/zoneinfo/$TZ /etc/localtime
-WORKDIR /app
-COPY . .
-RUN chmod +x ./deployment/50-substitute-env-variables.sh
-RUN npm install -g pnpm && pnpm install && npm run build
-ENV NODE_ENV=production
-CMD ["npm", "run", "start"]
+FROM node:22-alpine as base
 
-# Stage 2
-FROM nginx:stable-alpine
-ENV TZ=Etc/UTC
-RUN apk add --no-cache tzdata && cp /usr/share/zoneinfo/$TZ /etc/localtime
-RUN rm -rf /usr/share/nginx/html/*
-COPY --from=build /app/deployment/default.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/deployment/50-substitute-env-variables.sh /docker-entrypoint.d/
-EXPOSE 80
-HEALTHCHECK CMD curl -f http://localhost/ || exit 1
+# Install all node_modules, including dev dependencies
+FROM base as deps
+
+RUN mkdir /app
+WORKDIR /app
+
+ADD package.json ./
+RUN yarn install --production=false
+
+# Setup production node_modules
+FROM base as production-deps
+
+RUN mkdir /app
+WORKDIR /app
+
+COPY --from=deps /app/node_modules /app/node_modules
+ADD package.json ./
+
+# Build the app
+FROM base as build
+
+ENV NODE_ENV=production \
+    SELFHOSTED=true
+
+RUN mkdir /app
+WORKDIR /app
+
+COPY --from=deps /app/node_modules /app/node_modules
+
+ADD . .
+RUN npm run build
+
+# Finally, build the production image with minimal footprint
+FROM base
+
+ENV NODE_ENV=production \
+    SELFHOSTED=true
+
+RUN mkdir /app
+WORKDIR /app
+
+COPY --from=production-deps /app/node_modules /app/node_modules
+
+COPY --from=build /app/build /app/build
+COPY --from=build /app/public /app/public
+ADD . .
+
+CMD ["npm", "run", "start"]
