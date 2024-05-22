@@ -11,6 +11,8 @@ const CLICKHOUSE_INIT_QUERIES = [
     ipBlacklist Nullable(String),
     active Int8,
     public Int8,
+    isPasswordProtected Int8,
+    passwordHash Nullable(String),
     created DateTime
   )
   ENGINE = MergeTree()
@@ -34,6 +36,17 @@ const CLICKHOUSE_INIT_QUERIES = [
   )
   ENGINE = MergeTree()
   PRIMARY KEY id;`,
+
+  `CREATE TABLE IF NOT EXISTS ${dbName}.funnel
+  (
+    id String,
+    name String,
+    steps String,
+    projectId FixedString(12),
+    created DateTime
+  )
+  ENGINE = MergeTree()
+  PRIMARY KEY id;`,
 ]
 
 const initialiseSelfhosted = async () => {
@@ -41,7 +54,9 @@ const initialiseSelfhosted = async () => {
     await initialiseDatabase()
     await queriesRunner(CLICKHOUSE_INIT_QUERIES)
   } catch (reason) {
-    console.error(`[ERROR] Error occured whilst initialising the database: ${reason}`)
+    console.error(
+      `[ERROR] Error occured whilst initialising the database: ${reason}`,
+    )
   }
 }
 

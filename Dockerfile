@@ -20,7 +20,8 @@ ENV TZ=UTC \
     CLICKHOUSE_DATABASE=analytics \
     API_ORIGINS=\
     EMAIL=test@test.com \
-    PASSWORD=12345678
+    PASSWORD=12345678 \
+    API_KEY=
 RUN apk add --no-cache tzdata && cp /usr/share/zoneinfo/$TZ /etc/localtime
 WORKDIR /app
 COPY --from=build /build/package*.json ./

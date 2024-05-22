@@ -824,7 +824,7 @@ export class AnalyticsService {
     let diff = null
 
     if (from && to) {
-      diff = dayjs(to).diff(dayjs(from?.[0].created || to), 'days')
+      diff = dayjs(to).diff(dayjs(from?.[0]?.created || to), 'days')
 
       const tbMap = _find(timeBucketToDays, ({ lt }) => diff <= lt)
 

@@ -4,7 +4,7 @@ import { PassportModule } from '@nestjs/passport'
 import { AuthController } from './auth.controller'
 import { AuthService } from './auth.service'
 import {
-  // ApiKeyStrategy,
+  ApiKeyStrategy,
   JwtAccessTokenStrategy,
   JwtRefreshTokenStrategy,
 } from './strategies'
@@ -16,7 +16,7 @@ import {
     AuthService,
     JwtAccessTokenStrategy,
     JwtRefreshTokenStrategy,
-    // ApiKeyStrategy,
+    ApiKeyStrategy,
   ],
   exports: [AuthService],
 })

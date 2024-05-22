@@ -58,7 +58,7 @@ services:
       - 'mariadb'
       - 'clickhouse'
   redis:
-    image: redis:7.0.11-alpine
+    image: redis:7.2-alpine
     restart: always
     environment:
       - REDIS_PORT=6379
@@ -77,7 +77,7 @@ services:
     volumes:
       - swetrix-users-data:/var/lib/mysql
   clickhouse:
-    image: clickhouse/clickhouse-server:23.4.2.11-alpine
+    image: clickhouse/clickhouse-server:23.8-alpine
     container_name: clickhouse
     environment:
       - CLICKHOUSE_DATABASE=analytics
