@@ -261,7 +261,6 @@ export default function App() {
             __html: `window.REMIX_ENV = ${JSON.stringify(REMIX_ENV)}`,
           }}
         />
-        <script src='/env.js' />
       </head>
       <body
         className={clsx({
