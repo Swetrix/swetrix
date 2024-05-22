@@ -148,8 +148,27 @@ const createFunnelClickhouse = async (funnel: Partial<Funnel>) => {
   return clickhouse.query(query, paramsData).toPromise()
 }
 
-const getProjectsClickhouse = async (id = null) => {
+const getProjectsClickhouse = async (id = null, search: string = null) => {
   if (!id) {
+    if (search) {
+      const paramsData = {
+        params: {
+          search: `%${search}%`,
+        },
+      }
+
+      const query = `
+        SELECT
+          *
+        FROM project
+        WHERE
+          name ILIKE {search:String} OR
+          id ILIKE {search:String}
+        ORDER BY created ASC`
+
+      return clickhouse.query(query, paramsData).toPromise()
+    }
+
     const query = 'SELECT * FROM project ORDER BY created ASC;'
     return clickhouse.query(query).toPromise()
   }

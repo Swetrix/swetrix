@@ -76,18 +76,18 @@ export class ProjectController {
   @Get('/')
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
-  @ApiQuery({ name: 'isCaptcha', required: false, type: Boolean })
-  @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
+  @ApiQuery({ name: 'search', required: false, type: String })
   @ApiResponse({ status: 200, type: [Project] })
   @Auth([UserType.CUSTOMER, UserType.ADMIN], true)
   async get(
     @CurrentUserId() userId: string,
     @Query('take') take: number | undefined,
     @Query('skip') skip: number | undefined,
+    @Query('search') search: string | undefined,
   ): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /project')
 
-    const chResults = await getProjectsClickhouse()
+    const chResults = await getProjectsClickhouse(null, search)
     const formatted = _map(chResults, this.projectService.formatFromClickhouse)
 
     const pidsWithData =
