@@ -227,9 +227,9 @@ const createProjectClickhouse = async (project: Partial<Project>) => {
       ...project,
     },
   }
-  const query = `INSERT INTO project (*) VALUES ({id:FixedString(12)},{name:String},'', '',1,0,'${dayjs
-    .utc()
-    .format('YYYY-MM-DD HH:mm:ss')}')`
+  const created = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+  const query = `INSERT INTO project (*) VALUES ({id:FixedString(12)},{name:String},'','',1,0,0,NULL,'${created}')`
+
   return clickhouse.query(query, paramsData).toPromise()
 }
 
