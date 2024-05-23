@@ -333,7 +333,9 @@ export class ProjectController {
 
     this.projectService.allowedToView(project, userId, headers['x-password'])
 
-    return getFunnelsClickhouse(pid)
+    return this.projectService.formatFunnelsFromClickhouse(
+      await getFunnelsClickhouse(pid),
+    )
   }
 
   @Get('password/:projectId')
