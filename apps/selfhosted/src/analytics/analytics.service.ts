@@ -1170,13 +1170,13 @@ export class AnalyticsService {
     // eslint-disable-next-line
     let _to: string
 
-    if (_isEmpty(period) || period === 'custom') {
+    if (_isEmpty(period) || ['today', 'yesterday', 'custom'].includes(period)) {
       const safeTimezone = this.getSafeTimezone(timezone)
 
       const { groupFrom, groupTo } = this.getGroupFromTo(
         from,
         to,
-        null,
+        ['today', 'yesterday'].includes(period) ? TimeBucketType.HOUR : null,
         period,
         safeTimezone,
       )

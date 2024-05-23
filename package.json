@@ -26,7 +26,7 @@
     "find-deadcode": "ts-prune"
   },
   "dependencies": {
-    "@faker-js/faker": "^8.3.1",
+    "@faker-js/faker": "^8.4.1",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/axios": "^3.0.2",
     "@nestjs/common": "^10.2.10",
