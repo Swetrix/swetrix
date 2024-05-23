@@ -3605,8 +3605,12 @@ const ViewProject = ({
                                   items={[
                                     ...exportTypes,
                                     ...customExportTypes,
-                                    { label: t('project.lookingForMore'), lookingForMore: true, onClick: () => {} },
-                                  ]}
+                                    !isSelfhosted && {
+                                      label: t('project.lookingForMore'),
+                                      lookingForMore: true,
+                                      onClick: () => {},
+                                    },
+                                  ].filter((el) => !!el)}
                                   title={[<ArrowDownTrayIcon key='download-icon' className='w-5 h-5' />]}
                                   labelExtractor={(item) => {
                                     const { label } = item
