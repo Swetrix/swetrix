@@ -1555,9 +1555,10 @@ const SHORTCUTS_TABS_MAP = {
   F: PROJECT_TABS.funnels,
   S: PROJECT_TABS.sessions,
   A: PROJECT_TABS.alerts,
+  R: PROJECT_TABS.errors,
 }
 
-const _SHORTCUTS_TABS_LISTENERS = 'shift+t, shift+p, shift+s, shift+f, shift+e'
+const _SHORTCUTS_TABS_LISTENERS = 'shift+t, shift+p, shift+s, shift+f, shift+e, shift+r'
 const SHORTCUTS_TABS_LISTENERS = isSelfhosted ? _SHORTCUTS_TABS_LISTENERS : _SHORTCUTS_TABS_LISTENERS + ', shift+a'
 
 const _SHORTCUTS_GENERAL_LISTENERS = 'alt+s,alt+ß, alt+b,alt+∫, alt+l,alt+¬, r'

@@ -36,6 +36,7 @@ const getHotkeys = (t: TFunction) => ({
     [t('dashboard.traffic')]: 'Shift + T',
     [t('dashboard.performance')]: 'Shift + P',
     [t('dashboard.sessions')]: 'Shift + S',
+    [t('dashboard.errors')]: 'Shift + R',
     [t('dashboard.funnels')]: 'Shift + F',
     [t('dashboard.alerts')]: 'Shift + A',
     [t('common.settings')]: 'Shift + E',
