@@ -2407,7 +2407,7 @@ const ViewProject = ({
 
   // onForecastOpen is a function for open forecast modal
   const onForecastOpen = () => {
-    if (isLoading || dataLoading) {
+    if (isLoading || dataLoading || isSelfhosted) {
       return
     }
 
@@ -2421,6 +2421,10 @@ const ViewProject = ({
 
   // onForecastSubmit is a function for submit forecast modal
   const onForecastSubmit = async (periodToForecast: string) => {
+    if (isSelfhosted) {
+      return
+    }
+
     setIsForecastOpened(false)
     setDataLoading(true)
     const key = getProjectForcastCacheKey(period, timeBucket, periodToForecast, filters)
