@@ -24,6 +24,8 @@ The following environment variables are available for configuration:
 | `REDIS_HOST` | `redis` | Redis host |
 | `CLICKHOUSE_HOST` | `http://clickhouse` | ClickHouse host |
 | `API_ORIGINS` | | A list of allowed origins (for the `Access-Control-Allow-Origin` header) |
+| `API_KEY` | | An optional API key for accessing your stats via the API directly. If not set - direct API access is disabled. |
+| `CLOUDFLARE_PROXY_ENABLED` | `false` | If set to `true` - Swetrix will get geolocation and IP address information from `cf-connecting-ip` and `cf-ipcountry` headers provided by Cloudflare. |
 
 ## Redis
 | Variable | Default | Description |

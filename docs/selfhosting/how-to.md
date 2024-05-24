@@ -46,7 +46,7 @@ Before running the following command, make sure that you have Docker installed o
 Once you've set up the server, you're ready to start up the server:
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 After you run this command, the following containers will be started:
@@ -72,12 +72,10 @@ docker pull swetrix/swetrix-fe
 
 And then restart the container:
 ```bash
-docker-compose restart
+docker compose restart
 ```
 
 ## Reverse proxy
-<!-- TODO: In the next versions of Swetrix x-real-ip is a preferred way to pass IPs. -->
-It's best to make sure to set up your reverse proxy to pass the request IP address as an `x-forwarded-for` header, otherwise it may cause the issues related to API routes rate-limiting and analytics sessions.
+It's best to make sure your reverse proxy is set up to pass the request IP address as the `x-real-ip` header, otherwise it may cause the problems related to API route rate limiting and analytics sessions. If the `x-real-ip` header is undefined, Swetrix will use `x-forwarded-for` as a backup.
 
-<!-- TODO: In the next versions of Swetrix Cloudflare becomes optional and may be set up via .env variables. Mention that. -->
-Currently, the API depends on several Cloudflare headers (`cf-ipcountry` and `cf-connecting-ip` as a backup), so ideally you should use it too.
+If you are using Cloudflare as a proxy for your self-hosted Swetrix instance, you can set the `CLOUDFLARE_PROXY_ENABLED` environment variable to `true`. This will allow the Swetrix API to retrieve geolocation and IP address information from the headers provided by Cloudflare (`cf-ipcountry` and `cf-connecting-ip`).
