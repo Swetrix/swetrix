@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import PropTypes from 'prop-types'
 import _isNaN from 'lodash/isNaN'
 
 import Modal from 'ui/Modal'
@@ -10,24 +9,16 @@ import _toString from 'lodash/toString'
 
 const DEFAULT_PERIOD = '3'
 
-const Forecast = ({
-  onClose,
-  onSubmit,
-  isOpened,
-  activeTB,
-  tb,
-}: {
+interface IForecast {
   onClose: () => void
   onSubmit: (period: string) => void
   isOpened: boolean
   activeTB: string
   tb: string
-}): JSX.Element => {
-  const {
-    t,
-  }: {
-    t: (key: string, options?: { [key: string]: string | number }) => string
-  } = useTranslation('common')
+}
+
+const Forecast = ({ onClose, onSubmit, isOpened, activeTB, tb }: IForecast): JSX.Element => {
+  const { t } = useTranslation('common')
   const [period, setPeriod] = useState<string>(DEFAULT_PERIOD)
   const [error, setError] = useState<string | null>(null)
 
@@ -98,14 +89,6 @@ const Forecast = ({
       isOpened={isOpened}
     />
   )
-}
-
-Forecast.propTypes = {
-  onClose: PropTypes.func.isRequired,
-  isOpened: PropTypes.bool.isRequired,
-  onSubmit: PropTypes.func.isRequired,
-  activeTB: PropTypes.string.isRequired,
-  tb: PropTypes.string.isRequired,
 }
 
 export default Forecast

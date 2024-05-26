@@ -1,6 +1,5 @@
 import React from 'react'
 import cx from 'clsx'
-import PropTypes from 'prop-types'
 
 interface ISpin {
   className?: string
@@ -29,15 +28,5 @@ const Spin = ({ className, alwaysLight }: ISpin): JSX.Element => (
     />
   </svg>
 )
-
-Spin.propTypes = {
-  className: PropTypes.string,
-  alwaysLight: PropTypes.bool,
-}
-
-Spin.defaultProps = {
-  className: '',
-  alwaysLight: false,
-}
 
 export default Spin

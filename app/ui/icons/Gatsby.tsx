@@ -1,6 +1,5 @@
 import React from 'react'
 import cx from 'clsx'
-import PropTypes from 'prop-types'
 
 const Gatsby = ({ theme, className }: { theme: 'dark' | 'light'; className?: string }): JSX.Element => (
   <svg
@@ -29,14 +28,5 @@ const Gatsby = ({ theme, className }: { theme: 'dark' | 'light'; className?: str
     </g>
   </svg>
 )
-
-Gatsby.propTypes = {
-  className: PropTypes.string,
-  theme: PropTypes.string.isRequired,
-}
-
-Gatsby.defaultProps = {
-  className: '',
-}
 
 export default Gatsby

@@ -1,6 +1,5 @@
 import React from 'react'
 import cx from 'clsx'
-import PropTypes from 'prop-types'
 
 const types = {
   small: {
@@ -17,21 +16,16 @@ const types = {
   },
 }
 
-const PulsatingCircle = ({ className, type }: { className?: string; type: 'small' | 'big' | 'giant' }): JSX.Element => (
+interface IPulsatingCircle {
+  className?: string
+  type: 'small' | 'big' | 'giant'
+}
+
+const PulsatingCircle = ({ className, type = 'small' }: IPulsatingCircle): JSX.Element => (
   <span className={cx('flex justify-center items-center', types[type]?.pulse, className)}>
     <span className={cx('animate-ping-slow absolute inline-flex rounded-full bg-green-400', types[type]?.pulse)} />
     <span className={cx('relative inline-flex rounded-full bg-green-500', types[type]?.base)} />
   </span>
 )
-
-PulsatingCircle.propTypes = {
-  className: PropTypes.string,
-  type: PropTypes.oneOf(['small', 'big', 'giant']),
-}
-
-PulsatingCircle.defaultProps = {
-  className: '',
-  type: 'small',
-}
 
 export default PulsatingCircle

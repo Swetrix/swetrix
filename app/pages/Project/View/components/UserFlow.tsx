@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import type i18next from 'i18next'
 import { ResponsiveSankey } from '@nivo/sankey'
 import { connect } from 'react-redux'
 import { StateType, AppDispatch } from 'redux/store'
@@ -47,7 +48,6 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
 })
 
 interface IJSXUserFlow {
-  disableLegend?: boolean
   pid: string
   userFlowAscendingCache: {
     [key: string]: IUserFlow
@@ -64,14 +64,13 @@ interface IJSXUserFlow {
   setUserFlowAscending: (data: IUserFlow, id: string, pd: string, fltr: any) => void
   setUserFlowDescending: (data: IUserFlow, id: string, pd: string, fltr: any) => void
   generateError: (message: string) => void
-  t: (key: string) => string
+  t: typeof i18next.t
   filters: string[]
   setReversed: () => void
   projectPassword?: string
 }
 
 const UserFlow = ({
-  disableLegend,
   pid,
   period,
   timeBucket,
@@ -158,7 +157,6 @@ const UserFlow = ({
       data={isReversed ? userFlowDescending : userFlowAscending}
       margin={{
         top: 0,
-        // right: disableLegend ? 0 : 120,
         right: 0,
         bottom: 0,
         left: 20,
@@ -186,34 +184,8 @@ const UserFlow = ({
         from: 'color',
         modifiers: [['darker', 1]],
       }}
-      // legends={!disableLegend ? [
-      //   {
-      //     anchor: 'bottom-right',
-      //     direction: 'column',
-      //     translateX: 100,
-      //     itemWidth: 100,
-      //     itemHeight: 14,
-      //     itemDirection: 'right-to-left',
-      //     itemsSpacing: 2,
-      //     itemTextColor: '#999',
-      //     symbolSize: 14,
-      //     effects: [
-      //       {
-      //         on: 'hover',
-      //         style: {
-      //           itemTextColor: '#000',
-      //         },
-      //       },
-      //     ],
-      //   },
-      // ] : []}
     />
   )
-}
-
-UserFlow.defaultProps = {
-  disableLegend: false,
-  isReversed: false,
 }
 
 const mergeProps = (

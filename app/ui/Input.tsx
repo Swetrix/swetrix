@@ -1,12 +1,11 @@
 import React, { memo } from 'react'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
-import PropTypes from 'prop-types'
 import { ExclamationCircleIcon } from '@heroicons/react/24/solid'
 import Beta from 'ui/Beta'
 
 interface IInput {
-  label: string | JSX.Element
+  label?: string | JSX.Element
   hint?: string | JSX.Element
   placeholder?: string
   type?: string
@@ -96,38 +95,6 @@ const Input = ({
       )}
     </div>
   )
-}
-
-Input.propTypes = {
-  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  label: PropTypes.string,
-  hint: PropTypes.string,
-  placeholder: PropTypes.string,
-  onChange: PropTypes.func,
-  onKeyDown: PropTypes.func,
-  id: PropTypes.string,
-  type: PropTypes.string,
-  className: PropTypes.string,
-  error: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
-  name: PropTypes.string,
-  disabled: PropTypes.bool,
-  isBeta: PropTypes.bool,
-}
-
-Input.defaultProps = {
-  value: null,
-  label: '',
-  hint: '',
-  placeholder: '',
-  onChange: () => {},
-  onKeyDown: () => {},
-  id: '',
-  type: '',
-  className: '',
-  error: null,
-  name: '',
-  disabled: false,
-  isBeta: false,
 }
 
 export default memo(Input)

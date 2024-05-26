@@ -11,16 +11,7 @@ import Loader from 'ui/Loader'
 import routes from 'routesPath'
 
 const Socialised = (): JSX.Element => {
-  const {
-    t,
-  }: {
-    t: (
-      key: string,
-      optinions?: {
-        [key: string]: string | number
-      },
-    ) => string
-  } = useTranslation('common')
+  const { t } = useTranslation('common')
   const [loading, setLoading] = useState<boolean>(true)
   const [isError, setIsError] = useState<boolean>(false)
 

@@ -1,5 +1,4 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 
 const GithubLightSVG = ({ className }: { className?: string }): JSX.Element => (
   <svg className={className} viewBox='0 0 100 100'>
@@ -11,13 +10,5 @@ const GithubLightSVG = ({ className }: { className?: string }): JSX.Element => (
     />
   </svg>
 )
-
-GithubLightSVG.propTypes = {
-  className: PropTypes.string,
-}
-
-GithubLightSVG.defaultProps = {
-  className: '',
-}
 
 export default GithubLightSVG

@@ -1,4 +1,5 @@
 import { call, put, delay } from 'redux-saga/effects'
+import type i18next from 'i18next'
 
 import { authActions } from 'redux/reducers/auth'
 import { errorsActions } from 'redux/reducers/errors'
@@ -19,7 +20,7 @@ interface ISSOAuth {
   payload: {
     callback: (isSuccess: boolean, is2FA: boolean) => void
     dontRemember: boolean
-    t: (key: string) => string
+    t: typeof i18next.t
     provider: string
   }
 }

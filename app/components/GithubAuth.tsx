@@ -1,4 +1,5 @@
 import React from 'react'
+import type i18next from 'i18next'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import cx from 'clsx'
@@ -11,7 +12,7 @@ import { SSO_PROVIDERS, isBrowser } from 'redux/constants'
 
 interface IGoogleAuth {
   setIsLoading: (isLoading: boolean) => void
-  authSSO: (provider: string, dontRemember: boolean, t: (key: string) => string, callback: (res: any) => void) => void
+  authSSO: (provider: string, dontRemember: boolean, t: typeof i18next.t, callback: (res: any) => void) => void
   ssrTheme: string
   callback?: any
   dontRemember?: boolean
@@ -23,7 +24,7 @@ const GithubAuth: React.FC<IGoogleAuth> = ({
   setIsLoading,
   authSSO,
   dontRemember,
-  callback,
+  callback = () => {},
   isMiniButton,
   className,
   ssrTheme,
@@ -70,13 +71,6 @@ const GithubAuth: React.FC<IGoogleAuth> = ({
       </>
     </Button>
   )
-}
-
-GithubAuth.defaultProps = {
-  dontRemember: false,
-  isMiniButton: false,
-  callback: () => {},
-  className: '',
 }
 
 export default GithubAuth

@@ -1,4 +1,5 @@
 import React from 'react'
+import type i18next from 'i18next'
 // @ts-ignore
 import {
   GlobeEuropeAfricaIcon,
@@ -197,7 +198,7 @@ const validTimeBacket = ['hour', 'day', 'week', 'month']
 const validPeriods = ['custom', 'today', 'yesterday', '1d', '7d', '4w', '3M', '12M', '24M']
 const validFilters = ['cc', 'pg', 'lc', 'ref', 'dv', 'br', 'os', 'so', 'me', 'ca', 'lt', 'ev']
 
-const typeNameMapping = (t: (key: string) => string) => ({
+const typeNameMapping = (t: typeof i18next.t) => ({
   cc: t('project.mapping.cc'),
   dv: t('project.mapping.dv'),
   br: t('project.mapping.br'),

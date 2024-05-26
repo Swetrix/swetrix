@@ -1,6 +1,5 @@
 import React from 'react'
 import cx from 'clsx'
-import PropTypes from 'prop-types'
 
 interface IBackgroundSvg {
   className?: string
@@ -196,15 +195,6 @@ const BackgroundSvg: React.FC<IBackgroundSvg> = ({ className, type, children, th
       {children}
     </svg>
   )
-}
-
-BackgroundSvg.propTypes = {
-  className: PropTypes.string,
-}
-
-BackgroundSvg.defaultProps = {
-  className: '',
-  children: undefined,
 }
 
 export default BackgroundSvg

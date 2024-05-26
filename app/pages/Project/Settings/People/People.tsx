@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react'
+import type i18next from 'i18next'
 import { ChevronDownIcon, CheckIcon } from '@heroicons/react/24/solid'
 import { TrashIcon, UserPlusIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline'
 import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
-import PropTypes from 'prop-types'
 import dayjs from 'dayjs'
 import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
@@ -22,7 +22,7 @@ import useOnClickOutside from 'hooks/useOnClickOutside'
 import { IProject, IShareOwnerProject } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 
-const NoEvents = ({ t }: { t: (key: string) => string }): JSX.Element => (
+const NoEvents = ({ t }: { t: typeof i18next.t }): JSX.Element => (
   <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
     <div className='max-w-7xl w-full mx-auto text-gray-900 dark:text-gray-50'>
       <h2 className='text-xl mb-8 text-center leading-snug px-4'>{t('project.settings.noPeople')}</h2>
@@ -33,12 +33,7 @@ const NoEvents = ({ t }: { t: (key: string) => string }): JSX.Element => (
 interface IUsersList {
   data: IShareOwnerProject
   onRemove: (id: string) => void
-  t: (
-    key: string,
-    options?: {
-      [key: string]: string | number | null
-    },
-  ) => string
+  t: typeof i18next.t
   share?: IShareOwnerProject[]
   setProjectShareData: (item: Partial<IProject>, id: string, shared: boolean) => void
   pid: string
@@ -66,7 +61,7 @@ const UsersList = ({
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const openRef = useRef<HTMLDivElement>(null)
   useOnClickOutside(openRef, () => setOpen(false))
-  const { id, created, confirmed, role, user } = data
+  const { id, created, confirmed, role, user } = data || {}
 
   const changeRole = async (newRole: string) => {
     try {
@@ -179,19 +174,6 @@ const UsersList = ({
       </td>
     </tr>
   )
-}
-
-UsersList.propTypes = {
-  share: PropTypes.arrayOf(PropTypes.object).isRequired, // eslint-disable-line react/forbid-prop-types
-  data: PropTypes.object, // eslint-disable-line react/forbid-prop-types
-  pid: PropTypes.string.isRequired,
-  onRemove: PropTypes.func.isRequired,
-  updateProjectFailed: PropTypes.func.isRequired,
-  language: PropTypes.string.isRequired,
-}
-
-UsersList.defaultProps = {
-  data: {},
 }
 
 interface IPeopleProps {
@@ -533,17 +515,6 @@ const People: React.FunctionComponent<IPeopleProps> = ({
       />
     </div>
   )
-}
-
-People.propTypes = {
-  // @ts-ignore
-  // eslint-disable-next-line react/forbid-prop-types
-  project: PropTypes.object.isRequired,
-  updateProjectFailed: PropTypes.func.isRequired,
-  setProjectShareData: PropTypes.func.isRequired,
-  roleUpdatedNotification: PropTypes.func.isRequired,
-  inviteUserNotification: PropTypes.func.isRequired,
-  removeUserNotification: PropTypes.func.isRequired,
 }
 
 export default People

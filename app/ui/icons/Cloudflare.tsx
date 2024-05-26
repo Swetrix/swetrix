@@ -1,6 +1,5 @@
 import React from 'react'
 import cx from 'clsx'
-import PropTypes from 'prop-types'
 
 const Cloudflare = ({ theme, className }: { theme: 'dark' | 'light'; className?: string }): JSX.Element => {
   const cn = cx(className, {
@@ -55,15 +54,6 @@ const Cloudflare = ({ theme, className }: { theme: 'dark' | 'light'; className?:
       />
     </svg>
   )
-}
-
-Cloudflare.propTypes = {
-  className: PropTypes.string,
-  theme: PropTypes.string.isRequired,
-}
-
-Cloudflare.defaultProps = {
-  className: '',
 }
 
 export default Cloudflare

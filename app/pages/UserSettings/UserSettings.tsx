@@ -1,5 +1,6 @@
-/* eslint-disable no-param-reassign, react/forbid-prop-types */
+/* eslint-disable no-param-reassign */
 import React, { useState, useEffect, memo, useRef, useMemo } from 'react'
+import type i18next from 'i18next'
 import { useNavigate } from '@remix-run/react'
 import { ClientOnly } from 'remix-utils/client-only'
 import { useTranslation } from 'react-i18next'
@@ -22,7 +23,6 @@ import {
   ComputerDesktopIcon,
   CursorArrowRaysIcon,
 } from '@heroicons/react/24/outline'
-import PropTypes from 'prop-types'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import cx from 'clsx'
@@ -78,7 +78,7 @@ const TAB_MAPPING = {
   COMMUNICATIONS: 'communications',
 }
 
-const getTabs = (t: (key: string) => string) => {
+const getTabs = (t: typeof i18next.t) => {
   if (isSelfhosted) {
     return [
       {
@@ -119,7 +119,7 @@ const getTabs = (t: (key: string) => string) => {
 }
 
 interface IProps {
-  onDelete: (t: (key: string) => string, deletionFeedback: string, callback: () => void) => void
+  onDelete: (t: typeof i18next.t, deletionFeedback: string, callback: () => void) => void
   onDeleteProjectCache: () => void
   removeProject: (id: string) => void
   removeShareProject: (id: string) => void
@@ -137,8 +137,8 @@ interface IProps {
   user: IUser
   dontRemember: boolean
   isPaidTierUsed: boolean
-  linkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => void
-  unlinkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => void
+  linkSSO: (t: typeof i18next.t, callback: (e: any) => void, provider: string) => void
+  unlinkSSO: (t: typeof i18next.t, callback: (e: any) => void, provider: string) => void
   theme: string
   updateShowLiveVisitorsInTitle: (show: boolean, callback: (isSuccess: boolean) => void) => void
   logoutLocal: () => void
@@ -186,16 +186,7 @@ const UserSettings = ({
   setCache,
 }: IProps): JSX.Element => {
   const navigate = useNavigate()
-  const {
-    t,
-  }: {
-    t: (
-      key: string,
-      options?: {
-        [key: string]: string | number | null
-      },
-    ) => string
-  } = useTranslation('common')
+  const { t } = useTranslation('common')
   const [activeTab, setActiveTab] = useState<string>(TAB_MAPPING.ACCOUNT)
   const [form, setForm] = useState<IForm>({
     email: user.email || '',
@@ -1091,35 +1082,6 @@ const UserSettings = ({
       />
     </div>
   )
-}
-
-UserSettings.propTypes = {
-  onDelete: PropTypes.func.isRequired,
-  onGDPRExportFailed: PropTypes.func.isRequired,
-  onDeleteProjectCache: PropTypes.func.isRequired,
-  removeProject: PropTypes.func.isRequired,
-  removeShareProject: PropTypes.func.isRequired,
-  setUserShareData: PropTypes.func.isRequired,
-  setProjectsShareData: PropTypes.func.isRequired,
-  userSharedUpdate: PropTypes.func.isRequired,
-  sharedProjectError: PropTypes.func.isRequired,
-  updateUserData: PropTypes.func.isRequired,
-  genericError: PropTypes.func.isRequired,
-  updateProfileFailed: PropTypes.func.isRequired,
-  updateUserProfileAsync: PropTypes.func.isRequired,
-  accountUpdated: PropTypes.func.isRequired,
-  setAPIKey: PropTypes.func.isRequired,
-  user: PropTypes.object.isRequired,
-  dontRemember: PropTypes.bool.isRequired,
-  isPaidTierUsed: PropTypes.bool.isRequired,
-  linkSSO: PropTypes.func.isRequired,
-  unlinkSSO: PropTypes.func.isRequired,
-  theme: PropTypes.string.isRequired,
-  logoutLocal: PropTypes.func.isRequired,
-  logoutAll: PropTypes.func.isRequired,
-  referralStatistics: PropTypes.object.isRequired,
-  activeReferrals: PropTypes.array.isRequired,
-  setCache: PropTypes.func.isRequired,
 }
 
 export default memo(withAuthentication(UserSettings, auth.authenticated))

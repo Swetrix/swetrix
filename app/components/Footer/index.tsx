@@ -3,7 +3,6 @@ import { Link } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import _map from 'lodash/map'
 import Flag from 'react-flagkit'
-import PropTypes from 'prop-types'
 
 import {
   isSelfhosted,
@@ -204,15 +203,13 @@ const SelfHostedFooter = () => {
   )
 }
 
-const Footer = ({
-  minimal,
-  authenticated,
-  showDBIPMessage,
-}: {
+interface IFooter {
   minimal?: boolean
   authenticated?: boolean
   showDBIPMessage?: boolean
-}): JSX.Element => {
+}
+
+const Footer = ({ minimal, authenticated, showDBIPMessage }: IFooter): JSX.Element => {
   const {
     t,
     i18n: { language },
@@ -444,15 +441,6 @@ const Footer = ({
       </div>
     </footer>
   )
-}
-
-Footer.propTypes = {
-  authenticated: PropTypes.bool.isRequired,
-  minimal: PropTypes.bool,
-}
-
-Footer.defaultProps = {
-  minimal: false,
 }
 
 export default memo(Footer)

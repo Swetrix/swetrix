@@ -1,4 +1,5 @@
 import React from 'react'
+import type i18next from 'i18next'
 import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
 
@@ -8,7 +9,7 @@ import { SSO_PROVIDERS } from 'redux/constants'
 
 interface IGoogleAuth {
   setIsLoading: (isLoading: boolean) => void
-  authSSO: (provider: string, dontRemember: boolean, t: (key: string) => string, callback: (res: any) => void) => void
+  authSSO: (provider: string, dontRemember: boolean, t: typeof i18next.t, callback: (res: any) => void) => void
   callback?: any
   dontRemember?: boolean
   isMiniButton?: boolean
@@ -19,7 +20,7 @@ const GoogleAuth: React.FC<IGoogleAuth> = ({
   setIsLoading,
   authSSO,
   dontRemember,
-  callback,
+  callback = () => {},
   isMiniButton,
   className,
 }) => {
@@ -63,13 +64,6 @@ const GoogleAuth: React.FC<IGoogleAuth> = ({
       </>
     </Button>
   )
-}
-
-GoogleAuth.defaultProps = {
-  dontRemember: false,
-  isMiniButton: false,
-  callback: () => {},
-  className: '',
 }
 
 export default GoogleAuth

@@ -5,7 +5,6 @@ import { ChevronDownIcon as ChevronDownIconMini } from '@heroicons/react/20/soli
 import cx from 'clsx'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
-import PropTypes from 'prop-types'
 
 // Define the prop types for the component
 interface IDropdown {
@@ -15,9 +14,9 @@ interface IDropdown {
   /* (array): An array of items to be displayed in the dropdown menu. */
   items: any[]
   /* (function): A function that returns the label for each item in the dropdown menu. */
-  labelExtractor: (item: any) => string | number | React.ReactNode
+  labelExtractor?: (item: any) => string | number | React.ReactNode
   /* (function): A function that returns the key for each item in the dropdown menu. */
-  keyExtractor: (item: any) => string | number | React.ReactNode
+  keyExtractor?: (item: any) => string | number | React.ReactNode
   /* (function): A function that is called when an item is selected. */
   onSelect: (item: any, e?: React.MouseEvent<HTMLElement>) => void | null
   aside?: boolean
@@ -43,7 +42,7 @@ const Dropdown = ({
   selectItemClassName,
   menuItemsClassName,
   header,
-  chevron,
+  chevron = 'regular',
   headless,
   disabled,
 }: IDropdown): JSX.Element => (
@@ -126,37 +125,5 @@ const Dropdown = ({
     )}
   </Menu>
 )
-
-Dropdown.propTypes = {
-  title: PropTypes.oneOfType([PropTypes.string, PropTypes.node]).isRequired,
-  onSelect: PropTypes.func.isRequired,
-  items: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.object])),
-  className: PropTypes.string,
-  buttonClassName: PropTypes.string,
-  selectItemClassName: PropTypes.string,
-  labelExtractor: PropTypes.func,
-  keyExtractor: PropTypes.func,
-  aside: PropTypes.bool,
-  desc: PropTypes.string,
-  menuItemsClassName: PropTypes.string,
-  chevron: PropTypes.oneOf(['regular', 'mini']),
-  headless: PropTypes.bool,
-  disabled: PropTypes.bool,
-}
-
-Dropdown.defaultProps = {
-  className: '',
-  buttonClassName: '',
-  selectItemClassName: '',
-  labelExtractor: null,
-  keyExtractor: null,
-  aside: false,
-  desc: '',
-  items: [],
-  menuItemsClassName: '',
-  chevron: 'regular',
-  headless: false,
-  disabled: false,
-}
 
 export default memo(Dropdown)

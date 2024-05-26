@@ -1,7 +1,6 @@
 // Custom Alert template for react-alert
 import React, { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import PropTypes from 'prop-types'
 import { CheckCircleIcon, InformationCircleIcon, XCircleIcon, XMarkIcon } from '@heroicons/react/24/solid'
 
 interface IAlert {
@@ -18,7 +17,7 @@ interface IAlert {
 // AlertTemplate component
 const AlertTemplate = ({ message, options, close }: IAlert): JSX.Element => {
   const { t } = useTranslation('common')
-  const { type } = options
+  const { type } = options || {}
   const isInfo = type === 'info'
   const isSuccess = type === 'success'
   const isError = type === 'error'
@@ -54,24 +53,6 @@ const AlertTemplate = ({ message, options, close }: IAlert): JSX.Element => {
       </div>
     </div>
   )
-}
-
-// Define prop types for the component
-AlertTemplate.propTypes = {
-  message: PropTypes.string,
-  className: PropTypes.string,
-  options: PropTypes.shape({
-    type: PropTypes.oneOf(['info', 'success', 'error']),
-  }),
-  close: PropTypes.func,
-}
-
-// Define default props for the component
-AlertTemplate.defaultProps = {
-  message: '',
-  className: '',
-  options: {},
-  close: () => {},
 }
 
 export default memo(AlertTemplate)

@@ -1,3 +1,4 @@
+import type i18next from 'i18next'
 import routes from 'routesPath'
 import _includes from 'lodash/includes'
 import _split from 'lodash/split'
@@ -102,7 +103,7 @@ interface IPageMeta {
   prefixLessTitle: string
 }
 
-export const getPageMeta = (t: (key: string) => string, url?: string, _pathname?: string): IPageMeta => {
+export const getPageMeta = (t: typeof i18next.t, url?: string, _pathname?: string): IPageMeta => {
   const DEFAULT_RESULT = {
     title: t('titles.main'),
   } as Partial<IPageMeta>

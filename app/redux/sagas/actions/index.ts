@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import types from 'redux/sagas/actions/types'
+import type i18next from 'i18next'
 import { removeAccessToken } from 'utils/accessToken'
 import { removeItem } from 'utils/localstorage'
 import { LS_VIEW_PREFS_SETTING, LS_CAPTCHA_VIEW_PREFS_SETTING } from 'redux/constants'
@@ -56,7 +57,8 @@ const loginAsync = (
 const authSSO = (
   provider: string,
   dontRemember: boolean,
-  t: (key: string) => string = () => '',
+  // @ts-expect-error
+  t: typeof i18next.t = () => '',
   callback: (res: any) => void = () => {},
 ) => ({
   type: types.AUTH_SSO,
@@ -69,11 +71,8 @@ const authSSO = (
 })
 
 // currently only google is supported, in future we should provide a variable specifying the provider
-const linkSSO = (
-  t: (key: string) => string = () => '',
-  callback: (res: any) => void = () => {},
-  provider = 'google',
-) => ({
+// @ts-expect-error
+const linkSSO = (t: typeof i18next.t = () => '', callback: (res: any) => void = () => {}, provider = 'google') => ({
   type: types.LINK_SSO,
   payload: {
     callback,
@@ -83,11 +82,8 @@ const linkSSO = (
 })
 
 // currently only google is supported, in future we should provide a variable specifying the provider
-const unlinkSSO = (
-  t: (key: string) => string = () => '',
-  callback: (res: any) => void = () => {},
-  provider = 'google',
-) => ({
+// @ts-expect-error
+const unlinkSSO = (t: typeof i18next.t = () => '', callback: (res: any) => void = () => {}, provider = 'google') => ({
   type: types.UNLINK_SSO,
   payload: {
     callback,

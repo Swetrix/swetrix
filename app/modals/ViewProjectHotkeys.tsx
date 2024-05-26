@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import PropTypes from 'prop-types'
 import { TFunction } from 'i18next'
 import _map from 'lodash/map'
 
@@ -95,11 +94,6 @@ const ViewProjectHotkeys = ({ onClose, isOpened }: IViewProjectHotkeys): JSX.Ele
       size='large'
     />
   )
-}
-
-ViewProjectHotkeys.propTypes = {
-  onClose: PropTypes.func.isRequired,
-  isOpened: PropTypes.bool.isRequired,
 }
 
 export default ViewProjectHotkeys

@@ -1,6 +1,5 @@
 import React from 'react'
 import cx from 'clsx'
-import PropTypes from 'prop-types'
 
 interface IRobot {
   className?: string
@@ -33,16 +32,6 @@ const Robot: React.FC<IRobot> = ({ className, containerClassName, theme }): JSX.
       <line x1='16' y1='16' x2='16' y2='16' className={cn} />
     </svg>
   )
-}
-
-Robot.propTypes = {
-  className: PropTypes.string,
-  containerClassName: PropTypes.string,
-}
-
-Robot.defaultProps = {
-  className: '',
-  containerClassName: '',
 }
 
 export default Robot

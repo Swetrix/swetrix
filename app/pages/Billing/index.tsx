@@ -57,16 +57,6 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated, ssrTheme }): JSX.Elemen
   const {
     t,
     i18n: { language },
-  }: {
-    t: (
-      key: string,
-      optinions?: {
-        [key: string]: string | number
-      },
-    ) => string
-    i18n: {
-      language: string
-    }
   } = useTranslation('common')
   const authenticated = isBrowser ? reduxAuthenticated : ssrAuthenticated
   const {

@@ -28,7 +28,18 @@ export type PostMarkdownAttributes = {
 export const getSlugFromFilename = (filename: string) => filename.substring(11)
 export const getDateFromFilename = (filename: string) => filename.substring(0, 10)
 
-export async function getPost(slug: string, category?: string) {
+interface IPost {
+  slug: string
+  title?: string
+  html: string
+  hidden?: boolean
+  intro?: string
+  date?: string
+  author?: string
+  nickname?: string
+}
+
+export async function getPost(slug: string, category?: string): Promise<IPost | null> {
   let post: any = null
 
   if (category) {
@@ -56,7 +67,7 @@ export async function getPost(slug: string, category?: string) {
   return {
     slug,
     title: post.attributes?.title,
-    html: marked(post.body, { renderer }),
+    html: marked(post.body, { renderer }) as string,
     hidden: post.attributes?.hidden,
     intro: post.attributes?.intro,
     date: post.attributes?.date,

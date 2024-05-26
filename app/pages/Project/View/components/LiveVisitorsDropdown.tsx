@@ -15,7 +15,7 @@ interface ILiveVisitorsDropdown {
   projectPassword?: string
 }
 
-const LiveVisitorsDropdown = ({ live, projectId, projectPassword }: ILiveVisitorsDropdown): JSX.Element => {
+const LiveVisitorsDropdown = ({ live, projectId, projectPassword = '' }: ILiveVisitorsDropdown): JSX.Element => {
   const { t } = useTranslation()
   const [show, setShow] = useState<boolean>(false)
   const [liveInfo, setLiveInfo] = useState<IGetLiveVisitorsInfo[]>([])
@@ -90,10 +90,6 @@ const LiveVisitorsDropdown = ({ live, projectId, projectPassword }: ILiveVisitor
       </p>
     </OutsideClickHandler>
   )
-}
-
-LiveVisitorsDropdown.defaultProps = {
-  projectPassword: '',
 }
 
 export default LiveVisitorsDropdown

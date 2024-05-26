@@ -1,6 +1,5 @@
 import React from 'react'
 import cx from 'clsx'
-import PropTypes from 'prop-types'
 
 interface IBarChart {
   className?: string
@@ -15,13 +14,5 @@ const BarChart = ({ className }: IBarChart): JSX.Element => (
     />
   </svg>
 )
-
-BarChart.propTypes = {
-  className: PropTypes.string,
-}
-
-BarChart.defaultProps = {
-  className: '',
-}
 
 export default BarChart

@@ -35,5 +35,5 @@ jobs:
       - name: Code formatting validation
         run: npm run format
 
-      - name: Unit tests
-        run: npm run test:ci
+      - name: TypeScript validation
+        run: npm run typecheck

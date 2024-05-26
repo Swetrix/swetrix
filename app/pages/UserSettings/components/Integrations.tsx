@@ -1,4 +1,5 @@
 import React, { useState, memo } from 'react'
+import type i18next from 'i18next'
 import { useTranslation, Trans } from 'react-i18next'
 import _map from 'lodash/map'
 import _isString from 'lodash/isString'
@@ -11,7 +12,7 @@ import { removeTgIntegration } from 'api'
 import { IUser } from 'redux/models/IUser'
 
 const getAvailableIntegrations = (
-  t: (key: string) => string,
+  t: typeof i18next.t,
 ): {
   name: string
   key: string
@@ -40,11 +41,7 @@ const Integrations = ({
   handleIntegrationSave: (data: Partial<IUser>, cb: () => void) => void
   genericError: (message: string) => void
 }) => {
-  const {
-    t,
-  }: {
-    t: (key: string) => string
-  } = useTranslation('common')
+  const { t } = useTranslation('common')
   const available = getAvailableIntegrations(t)
   const [integrationConfigurating, setIntegrationConfigurating] = useState<string | null>(null)
   const [tgChatId, setTgChatId] = useState<string | null>(null)

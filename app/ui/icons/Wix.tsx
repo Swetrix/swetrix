@@ -1,6 +1,5 @@
 import React from 'react'
 import cx from 'clsx'
-import PropTypes from 'prop-types'
 
 const Wix = ({ theme, className }: { theme: 'dark' | 'light'; className?: string }): JSX.Element => (
   <svg
@@ -19,14 +18,5 @@ const Wix = ({ theme, className }: { theme: 'dark' | 'light'; className?: string
     <path d='M270.4 60.7L311 0.6c0 0-16.8-3-25.5 4.8 -5.6 4.8-11.2 13.8-11.2 13.8l-14.7 21.6c-0.9 1.3-1.7 2.2-3 2.2s-2.6-1.3-3-2.2l-14.7-21.6c0 0-6-8.6-11.2-13.8 -8.6-7.8-25.5-4.8-25.5-4.8l39.3 60 -40.2 60c0 0 17.7 2.2 26.4-5.6 5.6-4.8 10.8-13 10.8-13l14.7-21.6c0.9-1.3 1.7-2.2 3-2.2s2.6 1.3 3 2.2l14.7 21.6c0 0 5.6 8.2 10.8 13 8.6 7.8 25.9 5.6 25.9 5.6L270.4 60.7z' />
   </svg>
 )
-
-Wix.propTypes = {
-  className: PropTypes.string,
-  theme: PropTypes.string.isRequired,
-}
-
-Wix.defaultProps = {
-  className: '',
-}
 
 export default Wix

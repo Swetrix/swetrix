@@ -1,5 +1,4 @@
 import React, { memo } from 'react'
-import PropTypes from 'prop-types'
 import { QuestionMarkCircleIcon } from '@heroicons/react/24/solid'
 import cx from 'clsx'
 
@@ -22,16 +21,5 @@ const Tooltip = ({ text, className, tooltipNode }: ITooltip): JSX.Element => (
     </div>
   </div>
 )
-
-Tooltip.propTypes = {
-  text: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.node]).isRequired,
-  className: PropTypes.string,
-  tooltipNode: PropTypes.node,
-}
-
-Tooltip.defaultProps = {
-  className: '',
-  tooltipNode: null,
-}
 
 export default memo(Tooltip)

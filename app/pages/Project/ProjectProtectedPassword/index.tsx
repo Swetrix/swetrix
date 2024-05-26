@@ -30,16 +30,7 @@ const ProjectProtectedPassword = ({
   embedded: boolean
   isAuth: boolean
 }): JSX.Element => {
-  const {
-    t,
-  }: {
-    t: (
-      key: string,
-      optinions?: {
-        [key: string]: string | number
-      },
-    ) => string
-  } = useTranslation('common')
+  const { t } = useTranslation('common')
   const [form, setForm] = useState<IProjectProtectedPasswordForm>({
     password: '',
   })
@@ -47,11 +38,7 @@ const ProjectProtectedPassword = ({
   const [errors, setErrors] = useState<{
     password?: string
   }>({})
-  const {
-    id,
-  }: {
-    id: string
-  } = useParams()
+  const { id } = useParams()
   const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const navigate = useNavigate()
@@ -83,17 +70,17 @@ const ProjectProtectedPassword = ({
   const onSubmit = async (data: IProjectProtectedPasswordForm) => {
     if (!isLoading) {
       setIsLoading(true)
-      await checkPassword(id, data.password)
+      await checkPassword(id as string, data.password)
         .then((res) => {
           if (res) {
             dispatch(
               UIActions.setProjectProtectedPassword({
-                id,
+                id: id as string,
                 password: data.password,
               }),
             )
             navigate({
-              pathname: _replace(routes.project, ':id', id),
+              pathname: _replace(routes.project, ':id', id as string),
               search: `?embedded=${embedded}&theme=${ssrTheme}`,
             })
           }

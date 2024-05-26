@@ -1,5 +1,4 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 
 const ReactSVG = ({ className }: { className?: string }): JSX.Element => (
   <svg className={className} viewBox='175.7 78 490.6 436.9'>
@@ -10,13 +9,5 @@ const ReactSVG = ({ className }: { className?: string }): JSX.Element => (
     </g>
   </svg>
 )
-
-ReactSVG.propTypes = {
-  className: PropTypes.string,
-}
-
-ReactSVG.defaultProps = {
-  className: '',
-}
 
 export default ReactSVG

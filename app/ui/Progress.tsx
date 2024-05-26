@@ -1,5 +1,4 @@
 import React, { memo } from 'react'
-import PropTypes from 'prop-types'
 
 interface IProgress {
   now: number
@@ -15,9 +14,5 @@ const Progress = ({ now }: IProgress): JSX.Element => (
     </div>
   </div>
 )
-
-Progress.propTypes = {
-  now: PropTypes.number.isRequired,
-}
 
 export default memo(Progress)

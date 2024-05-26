@@ -24,11 +24,7 @@ const CreateNewPassword = ({
   createNewPasswordFailed: (e: string) => void
   newPassword: (message: string) => void
 }): JSX.Element => {
-  const {
-    t,
-  }: {
-    t: (key: string, options?: { [key: string]: string | number }) => string
-  } = useTranslation('common')
+  const { t } = useTranslation('common')
   const navigate = useNavigate()
   const { id } = useParams()
   const [form, setForm] = useState<FormSubmitData>({

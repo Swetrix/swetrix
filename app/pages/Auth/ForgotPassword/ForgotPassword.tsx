@@ -19,11 +19,7 @@ const ForgotPassword = ({
   createNewPasswordFailed: (e: string) => void
   newPassword: (message: string) => void
 }): JSX.Element => {
-  const {
-    t,
-  }: {
-    t: (key: string) => string
-  } = useTranslation('common')
+  const { t } = useTranslation('common')
   const navigate = useNavigate()
   const [form, setForm] = useState<{
     email: string

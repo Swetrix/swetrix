@@ -1,5 +1,4 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 
 const GoogleGSVG = ({ className }: { className?: string }): JSX.Element => (
   <svg className={className} viewBox='0 0 186.69 190.5'>
@@ -31,13 +30,5 @@ const GoogleGSVG = ({ className }: { className?: string }): JSX.Element => (
     </g>
   </svg>
 )
-
-GoogleGSVG.propTypes = {
-  className: PropTypes.string,
-}
-
-GoogleGSVG.defaultProps = {
-  className: '',
-}
 
 export default GoogleGSVG

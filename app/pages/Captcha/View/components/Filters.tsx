@@ -1,25 +1,12 @@
 import React, { memo } from 'react'
+import type i18next from 'i18next'
 import _truncate from 'lodash/truncate'
 import _map from 'lodash/map'
-import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 
 import countries from 'utils/isoCountries'
 
-/**
- * This component is used for showing the filter in panel
- * @returns {JSX.Element}
- */
-const Filter = ({
-  column,
-  filter,
-  isExclusive,
-  onRemoveFilter,
-  onChangeExclusive,
-  tnMapping,
-  language,
-  t,
-}: {
+interface IFiler {
   column: string
   filter: string
   isExclusive: boolean
@@ -29,13 +16,24 @@ const Filter = ({
   onChangeExclusive: (column: string, filter: string, isExclusive: boolean) => void
   tnMapping: Record<string, string>
   language: string
-  t: (key: string) => string
-}): JSX.Element => {
+  t: typeof i18next.t
+}
+
+const Filter = ({
+  column,
+  filter,
+  isExclusive,
+  onRemoveFilter,
+  onChangeExclusive,
+  tnMapping,
+  language,
+  t,
+}: IFiler): JSX.Element => {
   const displayColumn = tnMapping[column]
   let displayFilter = filter
 
   if (column === 'cc') {
-    displayFilter = countries.getName(filter, language)
+    displayFilter = countries.getName(filter, language) as string
   }
 
   if (column === 'pg') {
@@ -71,21 +69,7 @@ const Filter = ({
   )
 }
 
-/**
- * This component is used for rendering the filter panel.
- *
- * @param {array} filters - Active filters.
- * @param {function} onRemoveFilter - Callback to remove a filter.
- * @param {function} onChangeExclusive - Callback to change the exclusive status of a filter.
- * @param {object} tnMapping - Mapping of column names to translated names.
- * @returns {JSX.Element}
- */
-const Filters = ({
-  filters,
-  onRemoveFilter,
-  onChangeExclusive,
-  tnMapping,
-}: {
+interface IFilters {
   filters: {
     column: string
     filter: string
@@ -96,7 +80,9 @@ const Filters = ({
   // eslint-disable-next-line no-shadow
   onChangeExclusive: (column: string, filter: string, isExclusive: boolean) => void
   tnMapping: Record<string, string>
-}) => {
+}
+
+const Filters = ({ filters, onRemoveFilter, onChangeExclusive, tnMapping }: IFilters) => {
   const {
     t,
     i18n: { language },
@@ -122,23 +108,6 @@ const Filters = ({
       })}
     </div>
   )
-}
-
-Filters.propTypes = {
-  filters: PropTypes.arrayOf(
-    PropTypes.shape({
-      column: PropTypes.string,
-      filter: PropTypes.string,
-      isExclusive: PropTypes.bool,
-    }),
-  ),
-  onRemoveFilter: PropTypes.func.isRequired,
-  onChangeExclusive: PropTypes.func.isRequired,
-  tnMapping: PropTypes.objectOf(PropTypes.string).isRequired,
-}
-
-Filters.defaultProps = {
-  filters: [],
 }
 
 export default memo(Filters)

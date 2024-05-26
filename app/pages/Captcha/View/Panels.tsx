@@ -1,4 +1,5 @@
 import React, { memo, useState, useEffect, useMemo, Fragment } from 'react'
+import type i18next from 'i18next'
 import { ArrowSmallUpIcon, ArrowSmallDownIcon } from '@heroicons/react/24/solid'
 import {
   FunnelIcon,
@@ -10,7 +11,6 @@ import {
   ArrowLongLeftIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
-import PropTypes from 'prop-types'
 import { pie } from 'billboard.js'
 import _keys from 'lodash/keys'
 import _values from 'lodash/values'
@@ -35,7 +35,7 @@ import Button from 'ui/Button'
 import { IEntry } from 'redux/models/IEntry'
 
 import LiveVisitorsDropdown from './components/LiveVisitorsDropdown'
-import InteractiveMap from './components/InteractiveMap'
+import InteractiveMap from '../../Project/View/components/InteractiveMap'
 import { iconClassName } from './ViewCaptcha.helpers'
 
 const ENTRIES_PER_PANEL = 5
@@ -46,6 +46,17 @@ const checkIfBarsNeeded = (panelID: string) => {
   return _includes(panelsWithBars, panelID)
 }
 
+interface IPanelContainer {
+  name: string
+  children?: React.ReactNode
+  noSwitch?: boolean
+  icon?: React.ReactNode
+  type: string
+  openModal?: () => void
+  activeFragment?: number | string
+  setActiveFragment?: (arg: number) => void
+}
+
 // noSwitch - 'previous' and 'next' buttons
 const PanelContainer = ({
   name,
@@ -53,19 +64,10 @@ const PanelContainer = ({
   noSwitch,
   icon,
   type,
-  openModal,
-  activeFragment,
-  setActiveFragment,
-}: {
-  name: string
-  children?: React.ReactNode
-  noSwitch?: boolean
-  icon?: React.ReactNode
-  type: string
-  openModal?: () => void
-  activeFragment: number | string
-  setActiveFragment: (arg: number) => void
-}): JSX.Element => (
+  openModal = () => {},
+  activeFragment = 0,
+  setActiveFragment = () => {},
+}: IPanelContainer): JSX.Element => (
   <div
     className={cx(
       'relative bg-white dark:bg-slate-800/25 pt-5 px-4 min-h-72 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden',
@@ -131,24 +133,6 @@ const PanelContainer = ({
   </div>
 )
 
-PanelContainer.propTypes = {
-  name: PropTypes.string.isRequired,
-  children: PropTypes.node.isRequired,
-  noSwitch: PropTypes.bool,
-  activeFragment: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  setActiveFragment: PropTypes.func,
-  icon: PropTypes.node,
-  openModal: PropTypes.func,
-}
-
-PanelContainer.defaultProps = {
-  icon: null,
-  noSwitch: false,
-  activeFragment: 0,
-  setActiveFragment: () => {},
-  openModal: () => {},
-}
-
 // First tab with stats
 const Overview = ({
   overall,
@@ -162,7 +146,7 @@ const Overview = ({
   overall: any
   chartData: any
   activePeriod: any
-  t: (arg: string) => string
+  t: typeof i18next.t
   live: number | string
   sessionDurationAVG: number
   projectId: string
@@ -178,7 +162,7 @@ const Overview = ({
   }
 
   return (
-    <PanelContainer name={t('project.overview')} noSwitch type='' openModal={() => {}}>
+    <PanelContainer name={t('project.overview')} noSwitch type=''>
       <div className='flex text-lg justify-between'>
         <div className='flex items-center dark:text-gray-50'>
           <PulsatingCircle className='mr-1.5' type='big' />
@@ -324,7 +308,7 @@ const CustomEvents = ({
   customs: any
   chartData: any
   onFilter: any
-  t: (arg0: string) => string
+  t: typeof i18next.t
 }) => {
   const keys = _keys(customs)
   const uniques = _sum(chartData.uniques)
@@ -404,37 +388,31 @@ const CustomEvents = ({
   )
 }
 
-CustomEvents.propTypes = {
-  customs: PropTypes.objectOf(PropTypes.number).isRequired,
-  onFilter: PropTypes.func.isRequired,
-  t: PropTypes.func.isRequired,
-  // eslint-disable-next-line react/forbid-prop-types
-  chartData: PropTypes.objectOf(PropTypes.any).isRequired,
+interface IPanel {
+  name: string
+  data: IEntry[]
+  rowMapper?: (row: any) => string | JSX.Element
+  capitalize?: boolean
+  linkContent?: boolean
+  t: typeof i18next.t
+  icon: any
+  id: string
+  hideFilters?: boolean
+  onFilter: any
 }
 
 const Panel = ({
   name,
   data,
-  rowMapper,
+  rowMapper = (row: IEntry): string => row.name,
   capitalize,
   linkContent,
   t,
   icon,
   id,
   hideFilters,
-  onFilter,
-}: {
-  name: string
-  data: IEntry[]
-  rowMapper: any
-  capitalize: boolean
-  linkContent: boolean
-  t: (arg0: string) => string
-  icon: any
-  id: string
-  hideFilters: boolean
-  onFilter: any
-}): JSX.Element => {
+  onFilter = () => {},
+}: IPanel): JSX.Element => {
   const [page, setPage] = useState(0)
   const currentIndex = page * ENTRIES_PER_PANEL
   const total = useMemo(() => _reduce(data, (prev, curr) => prev + curr.count, 0), [data])
@@ -580,7 +558,7 @@ const Panel = ({
                     className={cx('flex items-center label hover:underline text-blue-600 dark:text-blue-500', {
                       capitalize,
                     })}
-                    href={rowData}
+                    href={rowData as string}
                     target='_blank'
                     rel='noopener noreferrer nofollow'
                     aria-label={`${rowData} (opens in a new tab)`}
@@ -661,28 +639,6 @@ const Panel = ({
       )}
     </PanelContainer>
   )
-}
-
-Panel.propTypes = {
-  name: PropTypes.string.isRequired,
-  data: PropTypes.objectOf(PropTypes.number).isRequired,
-  id: PropTypes.string,
-  rowMapper: PropTypes.func,
-  onFilter: PropTypes.func,
-  capitalize: PropTypes.bool,
-  linkContent: PropTypes.bool,
-  hideFilters: PropTypes.bool,
-  icon: PropTypes.node,
-}
-
-Panel.defaultProps = {
-  id: null,
-  rowMapper: (row: IEntry): string => row.name,
-  capitalize: false,
-  linkContent: false,
-  onFilter: () => {},
-  hideFilters: false,
-  icon: null,
 }
 
 const PanelMemo = memo(Panel)

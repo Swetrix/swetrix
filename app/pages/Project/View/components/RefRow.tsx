@@ -1,13 +1,6 @@
 import React, { memo } from 'react'
 import _isEmpty from 'lodash/isEmpty'
-import PropTypes from 'prop-types'
 
-/**
- * Component that renders a link row in the 'Referrer' panel.
- *
- * @param {string} rowName - A link itself (e.g. https://google.com) to render in the row.
- * @returns {JSX.Element}
- */
 const RefRow = ({ rowName }: { rowName: string }): JSX.Element => {
   let isUrl: boolean = true
   let url: URL | null = null
@@ -44,10 +37,6 @@ const RefRow = ({ rowName }: { rowName: string }): JSX.Element => {
       )}
     </div>
   )
-}
-
-RefRow.propTypes = {
-  rowName: PropTypes.string.isRequired,
 }
 
 export default memo(RefRow)

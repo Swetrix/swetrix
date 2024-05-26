@@ -2,8 +2,19 @@ import React from 'react'
 import { Link, useLoaderData } from '@remix-run/react'
 import NotFound from 'pages/NotFound'
 
+interface IPost {
+  slug: string
+  title?: string
+  html: string
+  hidden?: boolean
+  intro?: string
+  date?: string
+  author?: string
+  nickname?: string
+}
+
 export default function PostSlug() {
-  const post = useLoaderData()
+  const post = useLoaderData() as IPost
 
   if (!post) {
     return <NotFound />

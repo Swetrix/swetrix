@@ -1,5 +1,5 @@
 import ViewProject from 'pages/Project/View'
-import type { LinksFunction, LoaderArgs, V2_MetaFunction } from '@remix-run/node'
+import type { LinksFunction, LoaderFunctionArgs, MetaFunction } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
 import { json } from '@remix-run/node'
 import _split from 'lodash/split'
@@ -10,7 +10,7 @@ import ProjectViewStyle from 'styles/ProjectViewStyle.css'
 
 export const links: LinksFunction = () => [{ rel: 'stylesheet', href: ProjectViewStyle }]
 
-export const meta: V2_MetaFunction = ({ location }) => {
+export const meta: MetaFunction = ({ location }) => {
   const { pathname } = location
   const pid = _split(pathname, '/')[2]
   const previewURL = `${API_URL}project/ogimage/${pid}`
@@ -21,7 +21,7 @@ export const meta: V2_MetaFunction = ({ location }) => {
   ]
 }
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const embedded = isEmbedded(request)
   const queryPassword = getProjectPassword(request)
   const [theme] = detectTheme(request)

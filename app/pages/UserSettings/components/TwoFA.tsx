@@ -23,16 +23,7 @@ const TwoFA = ({
   updateUserData: (data: Partial<IUser>) => void
   genericError: (message: string) => void
 }): JSX.Element => {
-  const {
-    t,
-  }: {
-    t: (
-      key: string,
-      options?: {
-        [key: string]: string | number
-      },
-    ) => string
-  } = useTranslation('common')
+  const { t } = useTranslation('common')
   const [twoFAConfigurating, setTwoFAConfigurating] = useState<boolean>(false)
   const [twoFADisabling, setTwoFADisabling] = useState<boolean>(false)
   const [twoFAConfigData, setTwoFAConfigData] = useState<{

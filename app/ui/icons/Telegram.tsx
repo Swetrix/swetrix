@@ -1,5 +1,4 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 
 const Telegram = ({ className }: { className?: string }): JSX.Element => (
   <svg className={className} viewBox='0 0 1000 1000'>
@@ -20,13 +19,5 @@ const Telegram = ({ className }: { className?: string }): JSX.Element => (
     </g>
   </svg>
 )
-
-Telegram.propTypes = {
-  className: PropTypes.string,
-}
-
-Telegram.defaultProps = {
-  className: '',
-}
 
 export default Telegram

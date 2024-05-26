@@ -33,16 +33,7 @@ interface IBasicSignup {
 }
 
 const BasicSignup: React.FC<IBasicSignup> = ({ ssrTheme }): JSX.Element => {
-  const {
-    t,
-  }: {
-    t: (
-      key: string,
-      optinions?: {
-        [key: string]: string | number
-      },
-    ) => string
-  } = useTranslation('common')
+  const { t } = useTranslation('common')
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   const [form, setForm] = useState<ISignUpForm>({

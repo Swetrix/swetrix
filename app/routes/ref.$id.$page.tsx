@@ -1,11 +1,11 @@
-import type { LoaderArgs } from '@remix-run/node'
+import type { LoaderFunctionArgs } from '@remix-run/node'
 import { redirect } from '@remix-run/node'
 
 import { isSelfhosted, REFERRAL_COOKIE, REFERRAL_COOKIE_DAYS } from 'redux/constants'
 import { generateCookieString } from 'utils/cookie'
 
 // This route sets the affiliate cookie ($id) and redirects to page specified at $page
-export async function loader({ params }: LoaderArgs) {
+export async function loader({ params }: LoaderFunctionArgs) {
   if (isSelfhosted) {
     return redirect('/login', 302)
   }

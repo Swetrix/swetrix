@@ -16,16 +16,7 @@ interface IReferralPage {
 }
 
 const ReferralPage = ({ ssrTheme }: IReferralPage): JSX.Element => {
-  const {
-    t,
-  }: {
-    t: (
-      key: string,
-      options?: {
-        [key: string]: string | number
-      },
-    ) => string
-  } = useTranslation('common')
+  const { t } = useTranslation('common')
   const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
   const theme = isBrowser ? reduxTheme : ssrTheme
 

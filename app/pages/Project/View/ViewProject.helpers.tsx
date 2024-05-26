@@ -1,4 +1,5 @@
 import React from 'react'
+import type i18next from 'i18next'
 // @ts-ignore
 import { saveAs } from 'file-saver'
 import {
@@ -1064,11 +1065,7 @@ const getSettingsError = (
 }
 
 // function to get the settings and data for the funnels chart
-const getSettingsFunnels = (
-  funnel: IAnalyticsFunnel[],
-  totalPageviews: number,
-  t: (key: string, params?: any) => string,
-) => {
+const getSettingsFunnels = (funnel: IAnalyticsFunnel[], totalPageviews: number, t: typeof i18next.t) => {
   const values = _map(funnel, (step) => {
     if (_startsWith(step.value, '/')) {
       return t('project.visitPage', { page: step.value })
@@ -1473,7 +1470,7 @@ export const filterInvalidViewPrefs = (prefs: any): any => {
   )
 }
 
-const typeNameMapping = (t: (str: string) => string) => ({
+const typeNameMapping = (t: typeof i18next.t) => ({
   cc: t('project.mapping.cc'),
   rg: t('project.mapping.rg'),
   ct: t('project.mapping.ct'),

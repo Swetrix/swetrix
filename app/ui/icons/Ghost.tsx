@@ -1,6 +1,5 @@
 import React from 'react'
 import cx from 'clsx'
-import PropTypes from 'prop-types'
 
 const Ghost = ({ theme, className }: { theme: 'dark' | 'light'; className?: string }): JSX.Element => {
   const cn = cx(className, {
@@ -42,15 +41,6 @@ const Ghost = ({ theme, className }: { theme: 'dark' | 'light'; className?: stri
       </g>
     </svg>
   )
-}
-
-Ghost.propTypes = {
-  className: PropTypes.string,
-  theme: PropTypes.string.isRequired,
-}
-
-Ghost.defaultProps = {
-  className: '',
 }
 
 export default Ghost

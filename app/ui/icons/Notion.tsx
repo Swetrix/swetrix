@@ -1,6 +1,5 @@
 import React from 'react'
 import cx from 'clsx'
-import PropTypes from 'prop-types'
 
 const Notion = ({ theme, className }: { theme: 'dark' | 'light'; className?: string }): JSX.Element => {
   const cn = cx(className, {
@@ -27,15 +26,6 @@ const Notion = ({ theme, className }: { theme: 'dark' | 'light'; className?: str
       />
     </svg>
   )
-}
-
-Notion.propTypes = {
-  className: PropTypes.string,
-  theme: PropTypes.string.isRequired,
-}
-
-Notion.defaultProps = {
-  className: '',
 }
 
 export default Notion

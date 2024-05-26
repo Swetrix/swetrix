@@ -1,4 +1,4 @@
-/* eslint-disable react/forbid-prop-types, react/no-unstable-nested-components, react/display-name */
+/* eslint-disable react/no-unstable-nested-components, react/display-name */
 import React, { useState, useEffect, useMemo, memo, useRef } from 'react'
 import useSize from 'hooks/useSize'
 import { useNavigate, useParams } from '@remix-run/react'
@@ -18,7 +18,6 @@ import _filter from 'lodash/filter'
 import _startsWith from 'lodash/startsWith'
 import _debounce from 'lodash/debounce'
 import _some from 'lodash/some'
-import PropTypes from 'prop-types'
 
 import LineChart from 'ui/icons/LineChart'
 import BarChart from 'ui/icons/BarChart'
@@ -983,17 +982,6 @@ const ViewCaptcha = ({
       )}
     </ClientOnly>
   )
-}
-
-ViewCaptcha.propTypes = {
-  projects: PropTypes.arrayOf(PropTypes.object).isRequired,
-  cache: PropTypes.objectOf(PropTypes.object).isRequired,
-  projectViewPrefs: PropTypes.objectOf(PropTypes.object).isRequired,
-  showError: PropTypes.func.isRequired,
-  setProjectCache: PropTypes.func.isRequired,
-  setProjectViewPrefs: PropTypes.func.isRequired,
-  isLoading: PropTypes.bool.isRequired,
-  authenticated: PropTypes.bool.isRequired,
 }
 
 export default memo(ViewCaptcha)

@@ -1,4 +1,3 @@
-/* eslint-disable react/forbid-prop-types */
 import React, { useMemo, memo, useState } from 'react'
 import dayjs from 'dayjs'
 import _map from 'lodash/map'

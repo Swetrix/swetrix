@@ -1,13 +1,12 @@
 import React, { Fragment, memo } from 'react'
 import cx from 'clsx'
-import PropTypes from 'prop-types'
 import { Listbox, Transition } from '@headlessui/react'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/solid'
 import _map from 'lodash/map'
 
 interface ISelect {
   title?: string
-  label: string
+  label?: string
   className?: string
   labelClassName?: string
   buttonClassName?: string
@@ -24,7 +23,7 @@ const Select = ({
   title,
   label,
   className,
-  items,
+  items = [],
   labelExtractor,
   keyExtractor,
   iconExtractor,
@@ -125,32 +124,5 @@ const Select = ({
     )}
   </Listbox>
 )
-
-Select.propTypes = {
-  title: PropTypes.string.isRequired,
-  onSelect: PropTypes.func.isRequired,
-  items: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.object])),
-  className: PropTypes.string,
-  labelClassName: PropTypes.string,
-  buttonClassName: PropTypes.string,
-  capitalise: PropTypes.bool,
-  labelExtractor: PropTypes.func,
-  iconExtractor: PropTypes.func,
-  keyExtractor: PropTypes.func,
-  label: PropTypes.string,
-}
-
-Select.defaultProps = {
-  className: '',
-  labelClassName: '',
-  buttonClassName: '',
-  capitalise: false,
-  labelExtractor: null,
-  keyExtractor: null,
-  iconExtractor: null,
-  label: '',
-  items: [],
-  id: '',
-}
 
 export default memo(Select)

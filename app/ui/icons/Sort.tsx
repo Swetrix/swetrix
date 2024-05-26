@@ -20,10 +20,4 @@ const Sort: React.FC<ISort> = ({ sortByAscend, sortByDescend, className }: ISort
   return <ChevronUpDownIcon className={cx(className, 'w-4 h-4')} />
 }
 
-Sort.defaultProps = {
-  sortByAscend: false,
-  sortByDescend: false,
-  className: '',
-}
-
 export default Sort

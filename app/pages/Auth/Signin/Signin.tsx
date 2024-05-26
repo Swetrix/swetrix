@@ -1,6 +1,6 @@
 import React, { useState, useEffect, memo } from 'react'
+import type i18next from 'i18next'
 import { Link } from '@remix-run/react'
-import PropTypes from 'prop-types'
 import { useTranslation, Trans } from 'react-i18next'
 import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
@@ -37,21 +37,12 @@ interface ISignin {
   ) => void
   loginSuccess: (user: IUser) => void
   loginFailed: (error: string) => void
-  authSSO: (provider: string, dontRemember: boolean, t: (key: string) => string, callback: (res: any) => void) => void
+  authSSO: (provider: string, dontRemember: boolean, t: typeof i18next.t, callback: (res: any) => void) => void
   ssrTheme: string
 }
 
 const Signin = ({ login, loginSuccess, loginFailed, authSSO, ssrTheme }: ISignin): JSX.Element => {
-  const {
-    t,
-  }: {
-    t: (
-      key: string,
-      optinions?: {
-        [key: string]: string | number
-      },
-    ) => string
-  } = useTranslation('common')
+  const { t } = useTranslation('common')
   const [form, setForm] = useState<ISigninForm>({
     email: '',
     password: '',
@@ -315,14 +306,6 @@ const Signin = ({ login, loginSuccess, loginFailed, authSSO, ssrTheme }: ISignin
       </div>
     </div>
   )
-}
-
-Signin.propTypes = {
-  login: PropTypes.func.isRequired,
-  loginSuccess: PropTypes.func.isRequired,
-  loginFailed: PropTypes.func.isRequired,
-  authSSO: PropTypes.func.isRequired,
-  ssrTheme: PropTypes.string.isRequired,
 }
 
 export default memo(withAuthentication(Signin, auth.notAuthenticated))

@@ -1,7 +1,6 @@
 import React, { memo } from 'react'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
-import PropTypes from 'prop-types'
 import { ExclamationCircleIcon } from '@heroicons/react/24/solid'
 import Beta from 'ui/Beta'
 
@@ -36,7 +35,7 @@ const Textarea = ({
   disabled,
   isBeta,
   readOnly,
-  rows,
+  rows = 4,
 }: ITextarea) => {
   const identifier = `textarea-${id || name || type}`
   const isError = !_isEmpty(error)
@@ -87,39 +86,6 @@ const Textarea = ({
       )}
     </div>
   )
-}
-
-Textarea.propTypes = {
-  value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-  label: PropTypes.string,
-  hint: PropTypes.string,
-  placeholder: PropTypes.string,
-  onChange: PropTypes.func,
-  id: PropTypes.string,
-  type: PropTypes.string,
-  className: PropTypes.string,
-  error: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
-  name: PropTypes.string,
-  disabled: PropTypes.bool,
-  isBeta: PropTypes.bool,
-  readOnly: PropTypes.bool,
-  rows: PropTypes.number,
-}
-
-Textarea.defaultProps = {
-  label: '',
-  hint: '',
-  placeholder: '',
-  onChange: () => {},
-  id: '',
-  type: '',
-  className: '',
-  error: null,
-  name: '',
-  disabled: false,
-  isBeta: false,
-  readOnly: false,
-  rows: 4,
 }
 
 export default memo(Textarea)

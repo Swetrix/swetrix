@@ -1,4 +1,4 @@
-import type { LoaderArgs } from '@remix-run/node'
+import type { LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
 import { json, redirect } from '@remix-run/node'
 import type { SitemapFunction } from 'remix-sitemap'
@@ -12,7 +12,7 @@ export const sitemap: SitemapFunction = () => ({
   exclude: isSelfhosted,
 })
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   if (isSelfhosted) {
     return redirect('/login', 302)
   }

@@ -1,5 +1,5 @@
-/* eslint-disable react/forbid-prop-types */
 import React, { useState, useEffect, useMemo, memo } from 'react'
+import type i18next from 'i18next'
 import { useNavigate, useParams } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
@@ -70,12 +70,7 @@ interface IModalMessage {
   dateRange: Date[]
   setDateRange: (a: Date[]) => void
   setTab: (i: string) => void
-  t: (
-    key: string,
-    options?: {
-      [key: string]: string | number | null
-    },
-  ) => string
+  t: typeof i18next.t
   tab: string
   pid: string
   activeFilter: string[]

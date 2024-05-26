@@ -1,5 +1,5 @@
 import { connect } from 'react-redux'
-
+import type i18next from 'i18next'
 import sagaActions from 'redux/sagas/actions'
 import { authActions } from 'redux/reducers/auth'
 import { errorsActions } from 'redux/reducers/errors'
@@ -30,7 +30,7 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
       }),
     )
   },
-  authSSO: (provider: string, dontRemember: boolean, t: (key: string) => string, callback: (res: any) => void) => {
+  authSSO: (provider: string, dontRemember: boolean, t: typeof i18next.t, callback: (res: any) => void) => {
     dispatch(sagaActions.authSSO(provider, dontRemember, t, callback))
   },
 })

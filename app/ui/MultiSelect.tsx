@@ -5,20 +5,7 @@ import _map from 'lodash/map'
 import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
 
-const MultiSelect = ({
-  onRemove,
-  onSelect,
-  items,
-  labelExtractor,
-  keyExtractor,
-  label,
-  hint,
-  placholder,
-  className,
-  itemExtractor,
-  searchPlaseholder,
-  onSearch,
-}: {
+interface IMultiSelect {
   className?: string
   onRemove: (item: any) => void
   onSelect: (item: any) => void
@@ -31,16 +18,31 @@ const MultiSelect = ({
   searchPlaseholder?: string
   onSearch?: (search: string) => void
   itemExtractor?: (item: any) => string
-}) => {
+}
+
+const MultiSelect = ({
+  onRemove,
+  onSelect,
+  items,
+  labelExtractor,
+  keyExtractor,
+  label,
+  hint,
+  placholder = 'Select...',
+  className,
+  itemExtractor,
+  searchPlaseholder = 'Search...',
+  onSearch,
+}: IMultiSelect) => {
   const [selected, setSelected] = useState(false)
 
   return (
-    <div className={`w-full flex flex-col items-center keypress-multiselect ${className}`}>
+    <div className={cx('w-full flex flex-col items-center keypress-multiselect', className)}>
       <div className='w-full'>
         <div className='flex flex-col items-center relative'>
           <div
             className='w-full cursor-pointer'
-            onClick={(e) => {
+            onClick={() => {
               setSelected(!selected)
             }}
           >
@@ -159,17 +161,6 @@ const MultiSelect = ({
       {hint && <p className='mt-2 text-sm text-gray-500 dark:text-gray-300 whitespace-pre-line'>{hint}</p>}
     </div>
   )
-}
-
-MultiSelect.defaultProps = {
-  className: '',
-  labelExtractor: (item: any) => item,
-  keyExtractor: (item: any) => item,
-  hint: '',
-  placholder: 'Select...',
-  itemExtractor: (item: any) => item,
-  searchPlaseholder: 'Search...',
-  onSearch: (e: string) => {},
 }
 
 export default MultiSelect

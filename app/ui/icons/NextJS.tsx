@@ -1,6 +1,5 @@
 import React from 'react'
 import cx from 'clsx'
-import PropTypes from 'prop-types'
 
 const NextJS = ({ theme, className }: { theme: 'dark' | 'light'; className?: string }): JSX.Element => (
   <svg
@@ -17,14 +16,5 @@ const NextJS = ({ theme, className }: { theme: 'dark' | 'light'; className?: str
     />
   </svg>
 )
-
-NextJS.propTypes = {
-  className: PropTypes.string,
-  theme: PropTypes.string.isRequired,
-}
-
-NextJS.defaultProps = {
-  className: '',
-}
 
 export default NextJS

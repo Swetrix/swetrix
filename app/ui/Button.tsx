@@ -1,7 +1,6 @@
 /* eslint-disable react/button-has-type */
 import React, { ButtonHTMLAttributes, memo } from 'react'
 import cx from 'clsx'
-import PropTypes from 'prop-types'
 import Spin from './icons/Spin'
 
 // Define the prop types for the component
@@ -47,13 +46,13 @@ const Button = ({
   regular,
   large,
   giant,
-  type,
+  type = 'button',
   className,
   loading,
   semiSmall,
   semiDanger,
   noBorder,
-  focus,
+  focus = true,
   disabled,
   ...props
 }: IButton): JSX.Element => (
@@ -88,51 +87,5 @@ const Button = ({
     {text || children}
   </button>
 )
-
-// Define the prop types for the component
-Button.propTypes = {
-  text: PropTypes.string,
-  children: PropTypes.node,
-  onClick: PropTypes.func,
-  primary: PropTypes.bool,
-  secondary: PropTypes.bool,
-  white: PropTypes.bool,
-  danger: PropTypes.bool,
-  semiDanger: PropTypes.bool,
-  small: PropTypes.bool,
-  semiSmall: PropTypes.bool,
-  regular: PropTypes.bool,
-  large: PropTypes.bool,
-  giant: PropTypes.bool,
-  type: PropTypes.string,
-  className: PropTypes.string,
-  loading: PropTypes.bool,
-  focus: PropTypes.bool,
-  noBorder: PropTypes.bool,
-  disabled: PropTypes.bool,
-}
-
-// Define the default props for the component
-Button.defaultProps = {
-  text: null,
-  onClick: () => {},
-  primary: false,
-  secondary: false,
-  white: false,
-  small: false,
-  semiSmall: false,
-  regular: false,
-  large: false,
-  danger: false,
-  semiDanger: false,
-  giant: false,
-  loading: false,
-  type: 'button',
-  className: '',
-  children: null,
-  focus: true,
-  noBorder: false,
-  disabled: false,
-}
 
 export default memo(Button)

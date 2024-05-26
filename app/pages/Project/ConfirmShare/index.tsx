@@ -11,11 +11,7 @@ import routes from 'routesPath'
 import { AppDispatch } from 'redux/store'
 
 const ConfirmShare = () => {
-  const {
-    t,
-  }: {
-    t: (key: string) => string
-  } = useTranslation('common')
+  const { t } = useTranslation('common')
   const dispatch: AppDispatch = useDispatch()
   const { id } = useParams()
   const [loading, setLoading] = useState<boolean>(true)

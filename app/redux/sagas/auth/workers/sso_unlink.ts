@@ -1,4 +1,5 @@
 import { call, put } from 'redux-saga/effects'
+import type i18next from 'i18next'
 import _values from 'lodash/values'
 import _includes from 'lodash/includes'
 
@@ -11,7 +12,7 @@ const { unlinkSSO, authMe } = require('api')
 export interface ISSOUnlink {
   payload: {
     provider: string
-    t: (key: string) => string
+    t: typeof i18next.t
     callback: (isSuccess: boolean) => void
   }
 }

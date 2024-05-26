@@ -1,4 +1,5 @@
 import React, { useState, memo } from 'react'
+import type i18next from 'i18next'
 import { useTranslation } from 'react-i18next'
 import _map from 'lodash/map'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
@@ -30,11 +31,6 @@ const AVAILABLE_SSO_PROVIDERS = [
   },
 ]
 
-/**
- * @param {IUser} user - user object
- * @param {string} socialisation - key from SOCIALISATIONS
- * @returns {[boolean, boolean]} - [isConnected, isUnlinkable]
- */
 const getStatusByUser = (user: IUser, socialisation: string) => {
   if (socialisation === SSO_PROVIDERS.GOOGLE) {
     const connected = user.googleId
@@ -53,18 +49,14 @@ const getStatusByUser = (user: IUser, socialisation: string) => {
 
 interface ISocialisations {
   user: IUser
-  linkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => void
-  unlinkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => void
+  linkSSO: (t: typeof i18next.t, callback: (e: any) => void, provider: string) => void
+  unlinkSSO: (t: typeof i18next.t, callback: (e: any) => void, provider: string) => void
   genericError: (message: string) => void
   theme: string
 }
 
 const Socialisations = ({ user, linkSSO, unlinkSSO, genericError, theme }: ISocialisations) => {
-  const {
-    t,
-  }: {
-    t: (key: string) => string
-  } = useTranslation('common')
+  const { t } = useTranslation('common')
   const [isLoading, setIsLoading] = useState(false)
 
   const _linkSSO = (provider: string) => {

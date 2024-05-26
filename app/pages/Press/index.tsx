@@ -15,7 +15,12 @@ interface ILogoComponent {
   textColor?: string
 }
 
-const LogoComponent = ({ description, logoSVG, logoPNG, textColor }: ILogoComponent): JSX.Element => (
+const LogoComponent = ({
+  description,
+  logoSVG,
+  logoPNG,
+  textColor = 'text-gray-900 dark:text-gray-50',
+}: ILogoComponent): JSX.Element => (
   <p>
     <b className={`font-bold tracking-tight ${textColor}`}>{description}</b>
     <img className='h-16 sm:h-20 mt-5 mb-2' src={logoSVG || logoPNG} alt={description} />
@@ -43,17 +48,8 @@ const LogoComponent = ({ description, logoSVG, logoPNG, textColor }: ILogoCompon
   </p>
 )
 
-LogoComponent.defaultProps = {
-  logoSVG: null,
-  textColor: 'text-gray-900 dark:text-gray-50',
-}
-
 const Press = (): JSX.Element => {
-  const {
-    t,
-  }: {
-    t: (key: string) => string
-  } = useTranslation('common')
+  const { t } = useTranslation('common')
 
   return (
     <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>

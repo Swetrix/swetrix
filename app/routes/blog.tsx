@@ -1,4 +1,4 @@
-import type { V2_MetaFunction } from '@remix-run/node'
+import type { MetaFunction } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
 import { blogLoader } from 'utils/getPosts'
 import _map from 'lodash/map'
@@ -7,7 +7,7 @@ import { TITLE_SUFFIX } from 'redux/constants'
 
 export const loader = blogLoader
 
-export const meta: V2_MetaFunction = () => {
+export const meta: MetaFunction = () => {
   return [
     {
       title: `Blog ${TITLE_SUFFIX}`,

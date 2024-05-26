@@ -1,6 +1,5 @@
 import React from 'react'
 import cx from 'clsx'
-import PropTypes from 'prop-types'
 
 const Wordpress = ({ theme, className }: { theme: 'dark' | 'light'; className?: string }): JSX.Element => (
   <svg
@@ -18,14 +17,5 @@ const Wordpress = ({ theme, className }: { theme: 'dark' | 'light'; className?: 
     />
   </svg>
 )
-
-Wordpress.propTypes = {
-  className: PropTypes.string,
-  theme: PropTypes.string.isRequired,
-}
-
-Wordpress.defaultProps = {
-  className: '',
-}
 
 export default Wordpress

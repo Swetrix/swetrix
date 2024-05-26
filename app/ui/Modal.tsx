@@ -1,5 +1,4 @@
 import React, { Fragment, memo } from 'react'
-import PropTypes from 'prop-types'
 import cx from 'clsx'
 import { Dialog, Transition } from '@headlessui/react'
 import {
@@ -14,8 +13,8 @@ import Spin from './icons/Spin'
 
 interface IModal {
   className?: string
-  type: 'error' | 'success' | 'info' | 'warning' | 'confirmed'
-  title: string
+  type?: 'error' | 'success' | 'info' | 'warning' | 'confirmed'
+  title?: string
   message: React.ReactNode | string
   isOpened: boolean
   onClose: () => void
@@ -41,8 +40,8 @@ const Modal = ({
   onSubmit,
   closeText,
   submitText,
-  submitType,
-  size,
+  submitType = 'regular',
+  size = 'regular',
   customButtons,
   isBeta,
   isLoading,
@@ -189,42 +188,5 @@ const Modal = ({
     </Dialog>
   </Transition.Root>
 )
-
-Modal.propTypes = {
-  type: PropTypes.oneOf(['error', 'success', 'info', 'warning', 'confirmed']),
-  title: PropTypes.string,
-  onClose: PropTypes.func.isRequired,
-  message: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
-  className: PropTypes.string,
-  isOpened: PropTypes.bool,
-  onSubmit: PropTypes.func,
-  closeText: PropTypes.string,
-  submitText: PropTypes.string,
-  submitDisabled: PropTypes.bool,
-  submitType: PropTypes.oneOf(['regular', 'danger']),
-  size: PropTypes.oneOf(['regular', 'large']),
-  customButtons: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.node), PropTypes.node]),
-  isBeta: PropTypes.bool,
-  isLoading: PropTypes.bool,
-  overflowVisible: PropTypes.bool,
-}
-
-Modal.defaultProps = {
-  className: '',
-  message: '',
-  isOpened: false,
-  onSubmit: () => {},
-  closeText: null,
-  submitText: null,
-  submitDisabled: false,
-  submitType: 'regular',
-  size: 'regular',
-  type: null,
-  title: null,
-  customButtons: null,
-  isBeta: false,
-  isLoading: false,
-  overflowVisible: false,
-}
 
 export default memo(Modal)

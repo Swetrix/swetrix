@@ -9,11 +9,7 @@ import { confirmTransferProject } from 'api'
 import routes from 'routesPath'
 
 const TransferProjectConfirm = (): JSX.Element => {
-  const {
-    t,
-  }: {
-    t: (key: string) => string
-  } = useTranslation('common')
+  const { t } = useTranslation('common')
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string>('')
 

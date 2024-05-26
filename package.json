@@ -9,8 +9,6 @@
     "dev:staging": "cross-env STAGING=true remix dev",
     "start": "remix-serve ./build/index.js",
     "start:staging": "cross-env STAGING=true remix-serve ./build/index.js",
-    "test": "jest --transformIgnorePatterns \"node_modules/(?!axios)/\"",
-    "test:ci": "CI=true npm run test",
     "typecheck": "tsc",
     "lint": "eslint app",
     "lint:fix": "eslint app --fix",
@@ -31,10 +29,8 @@
     "@remix-run/v1-route-convention": "^0.1.4",
     "@swetrix/sdk": "^1.1.0",
     "@tailwindcss/forms": "^0.5.7",
-    "@testing-library/jest-dom": "^6.4.2",
     "axios": "^1.6.8",
     "axios-auth-refresh": "^3.3.6",
-    "babel-jest": "^29.7.0",
     "billboard.js": "^3.11.3",
     "clsx": "^2.1.0",
     "d3": "^7.9.0",
@@ -52,7 +48,6 @@
     "jszip": "^3.10.1",
     "lodash": "^4.17.21",
     "marked": "^12.0.2",
-    "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-flagkit": "^2.0.4",
@@ -70,13 +65,11 @@
     "remix-utils": "^7.6.0",
     "spacetime": "^7.6.0",
     "swetrix": "^3.1.1",
-    "timezone-soft": "^1.5.2",
-    "ts-jest": "^29.1.2"
+    "timezone-soft": "^1.5.2"
   },
   "eslintConfig": {
     "extends": [
       "@remix-run/eslint-config",
-      "@remix-run/eslint-config/jest-testing-library",
       "eslint:recommended"
     ],
     "globals": {
@@ -87,7 +80,6 @@
       "react-hooks"
     ],
     "rules": {
-      "testing-library/prefer-user-event": "off",
       "jsx-quotes": [
         "error",
         "prefer-single"
@@ -123,8 +115,7 @@
       }
     },
     "env": {
-      "browser": true,
-      "jest": true
+      "browser": true
     }
   },
   "browserslist": {
@@ -143,18 +134,13 @@
     "@remix-run/dev": "^2.8.1",
     "@remix-run/eslint-config": "^2.8.1",
     "@tailwindcss/typography": "^0.5.12",
-    "@testing-library/react": "^15.0.2",
     "@types/debug": "^4.1.12",
-    "@types/jest": "^29.5.12",
     "@types/lodash": "^4.17.0",
     "@types/node": "^20.12.7",
-    "@types/prop-types": "^15.7.12",
     "@types/react": "^18.2.79",
     "@types/react-dom": "^18.2.25",
     "@types/react-flatpickr": "^3.8.11",
-    "@types/react-test-renderer": "^18.0.7",
     "@types/redux-mock-store": "^1.0.6",
-    "@types/testing-library__jest-dom": "^5.14.9",
     "@typescript-eslint/parser": "^7.7.0",
     "@typescript-eslint/typescript-estree": "^7.7.0",
     "autoprefixer": "^10.4.19",
@@ -163,8 +149,6 @@
     "eslint-plugin-jsx-a11y": "^6.8.0",
     "eslint-plugin-lodash": "^7.4.0",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "jest": "^29.7.0",
-    "jest-environment-jsdom": "^29.7.0",
     "postcss": "^8.4.38",
     "prettier": "^3.2.5",
     "resize-observer-polyfill": "^1.5.1",

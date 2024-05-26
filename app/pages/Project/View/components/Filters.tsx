@@ -1,8 +1,8 @@
 import React, { memo } from 'react'
+import type i18next from 'i18next'
 import cx from 'clsx'
 import _truncate from 'lodash/truncate'
 import _map from 'lodash/map'
-import PropTypes from 'prop-types'
 import { useTranslation } from 'react-i18next'
 
 import countries from 'utils/isoCountries'
@@ -18,7 +18,7 @@ interface IFilter {
   onChangeExclusive: (column: string, filter: string, isExclusive: boolean) => void
   tnMapping: Record<string, string>
   language: string
-  t: (key: string) => string
+  t: typeof i18next.t
   canChangeExclusive?: boolean
   removable?: boolean
 }
@@ -147,23 +147,6 @@ export const Filters = ({ filters, onRemoveFilter, onChangeExclusive, tnMapping 
       })}
     </div>
   )
-}
-
-Filters.propTypes = {
-  filters: PropTypes.arrayOf(
-    PropTypes.shape({
-      column: PropTypes.string,
-      filter: PropTypes.string,
-      isExclusive: PropTypes.bool,
-    }),
-  ),
-  onRemoveFilter: PropTypes.func.isRequired,
-  onChangeExclusive: PropTypes.func.isRequired,
-  tnMapping: PropTypes.objectOf(PropTypes.string).isRequired,
-}
-
-Filters.defaultProps = {
-  filters: [],
 }
 
 export default memo(Filters)

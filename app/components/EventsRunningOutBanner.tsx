@@ -9,16 +9,7 @@ import UIActions from 'redux/reducers/ui'
 import { SHOW_BANNER_AT_PERC } from 'redux/constants'
 
 const EventsRunningOutBanner = () => {
-  const {
-    t,
-  }: {
-    t: (
-      key: string,
-      item?: {
-        [key: string]: string | number
-      },
-    ) => string
-  } = useTranslation('common')
+  const { t } = useTranslation('common')
   const dispatch = useAppDispatch()
   const showNoEventsLeftBanner = useSelector((state: StateType) => state.ui.misc.showNoEventsLeftBanner)
   const dashboardBlockReason = useSelector((state: StateType) => state.auth.user.dashboardBlockReason)

@@ -9,11 +9,7 @@ import { rejectTransferProject } from 'api'
 import routes from 'routesPath'
 
 const TransferProjectReject = (): JSX.Element => {
-  const {
-    t,
-  }: {
-    t: (key: string) => string
-  } = useTranslation('common')
+  const { t } = useTranslation('common')
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string>('')
 

@@ -1,6 +1,5 @@
 import React, { memo } from 'react'
 import cx from 'clsx'
-import PropTypes from 'prop-types'
 import _map from 'lodash/map'
 
 interface IProgress {
@@ -31,21 +30,5 @@ const MultiProgress = ({ progress, theme, className }: IMultiProgress): JSX.Elem
     </div>
   </div>
 )
-
-MultiProgress.propTypes = {
-  progress: PropTypes.arrayOf(
-    PropTypes.shape({
-      value: PropTypes.number.isRequired,
-      lightColour: PropTypes.string.isRequired,
-      darkColour: PropTypes.string.isRequired,
-    }),
-  ).isRequired,
-  theme: PropTypes.oneOf(['dark', 'light']).isRequired,
-  className: PropTypes.string,
-}
-
-MultiProgress.defaultProps = {
-  className: '',
-}
 
 export default memo(MultiProgress)

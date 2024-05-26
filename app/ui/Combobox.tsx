@@ -1,6 +1,5 @@
 import React, { Fragment, memo, useState } from 'react'
 import cx from 'clsx'
-import PropTypes from 'prop-types'
 import { Combobox as HeadlessCombobox, Transition } from '@headlessui/react'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/solid'
 import { useTranslation } from 'react-i18next'
@@ -111,28 +110,6 @@ const Combobox = ({
       </div>
     </HeadlessCombobox>
   )
-}
-
-Combobox.propTypes = {
-  title: PropTypes.string,
-  placeholder: PropTypes.string,
-  className: PropTypes.string,
-  buttonClassName: PropTypes.string,
-  items: PropTypes.array.isRequired,
-  labelExtractor: PropTypes.func,
-  keyExtractor: PropTypes.func,
-  onSelect: PropTypes.func.isRequired,
-  disabled: PropTypes.bool,
-}
-
-Combobox.defaultProps = {
-  title: '',
-  placeholder: '',
-  className: '',
-  buttonClassName: '',
-  labelExtractor: null,
-  keyExtractor: null,
-  disabled: false,
 }
 
 export default memo(Combobox)

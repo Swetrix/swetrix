@@ -1,4 +1,4 @@
-import type { LinksFunction, LoaderArgs, HeadersFunction } from '@remix-run/node'
+import type { LinksFunction, LoaderFunctionArgs, HeadersFunction } from '@remix-run/node'
 import { json, redirect } from '@remix-run/node'
 import { useState } from 'react'
 import {
@@ -168,7 +168,7 @@ const removeMultipleLngParams = (url: string): string => {
   return _replace(url, /%3Flng%3D[^%]*/g, '')
 }
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const { url } = request
   const removedLng = removeMultipleLngParams(url)
 

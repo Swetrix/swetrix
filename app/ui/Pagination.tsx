@@ -3,7 +3,6 @@ import { ArrowLongLeftIcon, ArrowLongRightIcon } from '@heroicons/react/24/solid
 import _map from 'lodash/map'
 import cx from 'clsx'
 import { useTranslation } from 'react-i18next'
-import PropTypes from 'prop-types'
 import { usePagination, DOTS } from 'hooks/usePagination'
 
 interface IPagination {
@@ -82,18 +81,6 @@ const Pagination = ({ page, setPage, pageAmount, total, className }: IPagination
       </div>
     </nav>
   )
-}
-
-Pagination.propTypes = {
-  page: PropTypes.number.isRequired,
-  setPage: PropTypes.func.isRequired,
-  pageAmount: PropTypes.number.isRequired,
-  total: PropTypes.number.isRequired,
-  className: PropTypes.string,
-}
-
-Pagination.defaultProps = {
-  className: '',
 }
 
 export default memo(Pagination)

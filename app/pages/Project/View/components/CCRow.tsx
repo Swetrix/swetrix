@@ -11,14 +11,6 @@ interface ICCRow {
   spaces?: number
 }
 
-/**
- * Component to render country flag in the 'Countries' panel.
- *
- * @param {string} cc - The country code.
- * @param {string} name - Row name to override country name with.
- * @param {string} language - Language to use for country name.
- * @returns {JSX.Element}
- */
 const CCRow = ({ cc, name, language, size = 21, spaces = 2 }: ICCRow): JSX.Element => (
   <>
     <Flag className='rounded-sm' country={cc} size={size} alt='' aria-hidden='true' />
@@ -30,9 +22,5 @@ const CCRow = ({ cc, name, language, size = 21, spaces = 2 }: ICCRow): JSX.Eleme
     {name || countries.getName(cc, language)}
   </>
 )
-
-CCRow.defaultProps = {
-  name: null,
-}
 
 export default memo(CCRow)

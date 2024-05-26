@@ -1,6 +1,5 @@
 import React from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import PropTypes from 'prop-types'
 
 import Modal from 'ui/Modal'
 import { Badge } from 'ui/Badge'
@@ -73,11 +72,6 @@ const TrackingSnippet = ({ onClose, isOpened, pid }: ITrackingSnippet): JSX.Elem
       isOpened={isOpened}
     />
   )
-}
-
-TrackingSnippet.propTypes = {
-  onClose: PropTypes.func.isRequired,
-  isOpened: PropTypes.bool.isRequired,
 }
 
 export default TrackingSnippet

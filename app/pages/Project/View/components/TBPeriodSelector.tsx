@@ -111,8 +111,4 @@ const TBPeriodSelector = ({
   )
 }
 
-TBPeriodSelector.defaultProps = {
-  name: null,
-}
-
 export default memo(TBPeriodSelector)

@@ -1,9 +1,8 @@
-/* eslint-disable react/forbid-prop-types */
 import React, { memo, useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate } from '@remix-run/react'
+import type i18next from 'i18next'
 import { ClientOnly } from 'remix-utils/client-only'
 import cx from 'clsx'
-import PropTypes from 'prop-types'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
 import _isNumber from 'lodash/isNumber'
@@ -56,12 +55,7 @@ interface IProjectCard {
   active?: boolean
   birdseye: IOverall
   type: 'analytics' | 'captcha'
-  t: (
-    key: string,
-    options?: {
-      [key: string]: string | number | null | undefined
-    },
-  ) => string
+  t: typeof i18next.t
   live?: string | number
   isPublic?: boolean
   confirmed?: boolean
@@ -81,17 +75,12 @@ interface IProjectCard {
 
 interface IMiniCard {
   labelTKey: string
-  t: (
-    key: string,
-    options?: {
-      [key: string]: string | number | null | undefined
-    },
-  ) => string
+  t: typeof i18next.t
   total?: number | string
   percChange?: number
 }
 
-const MiniCard = ({ labelTKey, t, total, percChange }: IMiniCard): JSX.Element => {
+const MiniCard = ({ labelTKey, t, total = 0, percChange }: IMiniCard): JSX.Element => {
   const statsDidGrowUp = percChange ? percChange >= 0 : false
 
   return (
@@ -126,17 +115,12 @@ const MiniCard = ({ labelTKey, t, total, percChange }: IMiniCard): JSX.Element =
   )
 }
 
-MiniCard.defaultProps = {
-  total: 0,
-  percChange: null,
-}
-
 const ProjectCard = ({
   name,
   active,
   birdseye,
   t,
-  live,
+  live = 'N/A',
   isPublic,
   confirmed,
   id,
@@ -280,25 +264,13 @@ const ProjectCard = ({
   )
 }
 
-ProjectCard.defaultProps = {
-  isPublic: false,
-  active: false,
-  shared: false,
-  captcha: false,
-  confirmed: false,
-  name: '',
-  live: 'N/A',
-  isTransferring: false,
-  getRole: () => '',
-}
-
 interface INoProjects {
-  t: (key: string) => string
+  t: typeof i18next.t
   onClick: () => void
 }
 
 interface IAddProject {
-  t: (key: string) => string
+  t: typeof i18next.t
   onClick: () => void
   sitesCount: number
 }
@@ -864,33 +836,6 @@ const Dashboard = ({
       />
     </>
   )
-}
-
-Dashboard.propTypes = {
-  projects: PropTypes.arrayOf(PropTypes.object).isRequired,
-  sharedProjects: PropTypes.arrayOf(PropTypes.object).isRequired,
-  user: PropTypes.object.isRequired,
-  isLoading: PropTypes.bool.isRequired,
-  error: PropTypes.string,
-  deleteProjectFailed: PropTypes.func.isRequired,
-  setProjectsShareData: PropTypes.func.isRequired,
-  setUserShareData: PropTypes.func.isRequired,
-  sharedProjectError: PropTypes.func.isRequired,
-  userSharedUpdate: PropTypes.func.isRequired,
-  loadProjects: PropTypes.func.isRequired,
-  total: PropTypes.number.isRequired,
-  setDashboardPaginationPage: PropTypes.func.isRequired,
-  setDashboardPaginationPageShared: PropTypes.func.isRequired,
-  dashboardPaginationPage: PropTypes.number.isRequired,
-  dashboardPaginationPageShared: PropTypes.number.isRequired,
-  dashboardTabs: PropTypes.string.isRequired,
-  setDashboardTabs: PropTypes.func.isRequired,
-  sharedTotal: PropTypes.number.isRequired,
-  birdseye: PropTypes.object.isRequired,
-}
-
-Dashboard.defaultProps = {
-  error: '',
 }
 
 export default memo(withAuthentication(Dashboard, auth.authenticated))

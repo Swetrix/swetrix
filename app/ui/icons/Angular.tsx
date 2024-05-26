@@ -1,5 +1,4 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 
 const Angular = ({ className }: { className?: string }): JSX.Element => (
   <svg className={className} x='0px' y='0px' viewBox='0 0 250 250' xmlSpace='preserve'>
@@ -20,13 +19,5 @@ const Angular = ({ className }: { className?: string }): JSX.Element => (
     </g>
   </svg>
 )
-
-Angular.propTypes = {
-  className: PropTypes.string,
-}
-
-Angular.defaultProps = {
-  className: '',
-}
 
 export default Angular

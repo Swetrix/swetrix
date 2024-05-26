@@ -3,7 +3,6 @@ import React, { memo, createRef } from 'react'
 import Flatpickr from 'react-flatpickr'
 import _size from 'lodash/size'
 import _split from 'lodash/split'
-import PropTypes from 'prop-types'
 import cx from 'clsx'
 
 import { MAX_MONTHS_IN_PAST } from 'redux/constants'
@@ -31,7 +30,7 @@ class FlatPicker extends React.Component<
     this.setCustomDate = this.setCustomDate.bind(this)
     this.state = {
       maxDate: 'today',
-      minDate: this.removeMonths(new Date(), props?.maxDateMonths || 24),
+      minDate: this.removeMonths(new Date(), props?.maxDateMonths || MAX_MONTHS_IN_PAST),
     }
   }
 
@@ -60,7 +59,7 @@ class FlatPicker extends React.Component<
       this.setState({
         maxDate: 'today',
         // eslint-disable-next-line react/destructuring-assignment
-        minDate: this.removeMonths(new Date(), this.props?.maxDateMonths || 24),
+        minDate: this.removeMonths(new Date(), this.props?.maxDateMonths || MAX_MONTHS_IN_PAST),
       })
       this.calendar.current.flatpickr.open()
     }
@@ -126,24 +125,6 @@ class FlatPicker extends React.Component<
       </div>
     )
   }
-}
-
-// @ts-ignore
-FlatPicker.propTypes = {
-  onChange: PropTypes.func,
-  value: PropTypes.arrayOf(PropTypes.instanceOf(Date)),
-  maxDateMonths: PropTypes.number,
-  className: PropTypes.string,
-}
-
-// @ts-ignore
-FlatPicker.defaultProps = {
-  onChange: () => {},
-  value: [],
-  maxDateMonths: MAX_MONTHS_IN_PAST,
-  options: null,
-  maxRange: 0,
-  className: '',
 }
 
 export default memo(FlatPicker)

@@ -1,5 +1,6 @@
 /* eslint-disable no-confusing-arrow */
 import React, { memo, useState, useEffect } from 'react'
+import type i18next from 'i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { ClientOnly } from 'remix-utils/client-only'
 import { Link } from '@remix-run/react'
@@ -49,12 +50,7 @@ const getPaidFeatures = (t: any, tier: any) => {
 }
 
 interface IPricing {
-  t: (
-    key: string,
-    options?: {
-      [key: string]: string | number
-    },
-  ) => string
+  t: typeof i18next.t
   language: string
   authenticated: boolean
   isBillingPage?: boolean

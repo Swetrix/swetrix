@@ -5,11 +5,7 @@ import { useTranslation } from 'react-i18next'
 import routes from 'routesPath'
 
 const NotFound = (): JSX.Element => {
-  const {
-    t,
-  }: {
-    t: (key: string) => string
-  } = useTranslation('common')
+  const { t } = useTranslation('common')
 
   return (
     <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900 px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>

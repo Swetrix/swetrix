@@ -1,4 +1,5 @@
 import { connect } from 'react-redux'
+import type i18next from 'i18next'
 import UIActions from 'redux/reducers/ui'
 import { errorsActions } from 'redux/reducers/errors'
 import { authActions } from 'redux/reducers/auth'
@@ -33,7 +34,7 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
     )
   },
   onDelete: (
-    t: (key: string) => string,
+    t: typeof i18next.t,
     deletionFeedback: string,
     onSuccess: {
       (): void
@@ -160,10 +161,10 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
   // setThemeType: (theme) => {
   //   dispatch(UIActions.setThemeType(theme))
   // },
-  linkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => {
+  linkSSO: (t: typeof i18next.t, callback: (e: any) => void, provider: string) => {
     dispatch(sagaActions.linkSSO(t, callback, provider))
   },
-  unlinkSSO: (t: (key: string) => string, callback: (e: any) => void, provider: string) => {
+  unlinkSSO: (t: typeof i18next.t, callback: (e: any) => void, provider: string) => {
     dispatch(sagaActions.unlinkSSO(t, callback, provider))
   },
   updateShowLiveVisitorsInTitle: (show: boolean, callback: (isSuccess: boolean) => void) => {

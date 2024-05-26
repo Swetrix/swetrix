@@ -1,4 +1,5 @@
 import { call, put } from 'redux-saga/effects'
+import type i18next from 'i18next'
 
 import { authActions } from 'redux/reducers/auth'
 import { alertsActions } from 'redux/reducers/alerts'
@@ -10,7 +11,7 @@ export default function* deleteUserAccountWorker({
   payload: {
     errorCallback: (error: any) => void
     successCallback: () => void
-    t: (key: string) => string
+    t: typeof i18next.t
     deletionFeedback: string
   }
 }) {

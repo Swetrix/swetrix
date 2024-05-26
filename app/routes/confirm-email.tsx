@@ -1,6 +1,6 @@
 import CheckYourInbox from 'pages/Auth/CheckYourInbox'
 import type { SitemapFunction } from 'remix-sitemap'
-import type { HeadersFunction, LoaderArgs } from '@remix-run/node'
+import type { HeadersFunction, LoaderFunctionArgs } from '@remix-run/node'
 import { redirect } from '@remix-run/node'
 import { isSelfhosted } from 'redux/constants'
 
@@ -13,7 +13,7 @@ export const sitemap: SitemapFunction = () => ({
   exclude: true,
 })
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   if (isSelfhosted) {
     return redirect('/login', 302)
   }

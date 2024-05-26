@@ -1,4 +1,3 @@
-/* eslint-disable react/forbid-prop-types */
 import React, { useState, useEffect, useMemo, memo, useRef } from 'react'
 import { useNavigate, useParams } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
@@ -14,7 +13,6 @@ import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _filter from 'lodash/filter'
 import _includes from 'lodash/includes'
-import PropTypes from 'prop-types'
 import { ExclamationTriangleIcon, TrashIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline'
 
 import { withAuthentication, auth } from 'hoc/protected'
@@ -101,16 +99,7 @@ const CaptchaSettings = ({
   loading,
   isSettings,
 }: ICaptchaSettings): JSX.Element => {
-  const {
-    t,
-  }: {
-    t: (
-      key: string,
-      options?: {
-        [key: string]: string | number | boolean | undefined
-      },
-    ) => string
-  } = useTranslation('common')
+  const { t } = useTranslation('common')
   // @ts-ignore
   const {
     id,
@@ -653,25 +642,6 @@ const CaptchaSettings = ({
       />
     </div>
   )
-}
-
-CaptchaSettings.propTypes = {
-  updateProjectFailed: PropTypes.func.isRequired,
-  createNewProjectFailed: PropTypes.func.isRequired,
-  newProject: PropTypes.func.isRequired,
-  projectDeleted: PropTypes.func.isRequired,
-  deleteProjectFailed: PropTypes.func.isRequired,
-  loadProjects: PropTypes.func.isRequired,
-  projects: PropTypes.arrayOf(PropTypes.object).isRequired,
-  showError: PropTypes.func.isRequired,
-  isLoading: PropTypes.bool.isRequired,
-  user: PropTypes.object.isRequired,
-  deleteProjectCache: PropTypes.func.isRequired,
-  isSettings: PropTypes.bool,
-}
-
-CaptchaSettings.defaultProps = {
-  isSettings: false,
 }
 
 export default memo(withAuthentication(CaptchaSettings, auth.authenticated))

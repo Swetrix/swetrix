@@ -1,6 +1,5 @@
 import React from 'react'
 import cx from 'clsx'
-import PropTypes from 'prop-types'
 
 const NuxtJS = ({ theme, className }: { theme: 'dark' | 'light'; className?: string }): JSX.Element => {
   const cn = cx({
@@ -47,15 +46,6 @@ const NuxtJS = ({ theme, className }: { theme: 'dark' | 'light'; className?: str
       />
     </svg>
   )
-}
-
-NuxtJS.propTypes = {
-  className: PropTypes.string,
-  theme: PropTypes.string.isRequired,
-}
-
-NuxtJS.defaultProps = {
-  className: '',
 }
 
 export default NuxtJS

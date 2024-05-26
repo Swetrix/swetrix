@@ -1,4 +1,5 @@
 import { call, put, delay } from 'redux-saga/effects'
+import type i18next from 'i18next'
 
 import { authActions } from 'redux/reducers/auth'
 import { errorsActions } from 'redux/reducers/errors'
@@ -14,7 +15,7 @@ const HASH_CHECK_FREQUENCY = 1000 // 1 second
 export interface ISSOLink {
   payload: {
     callback: (isSuccess: boolean) => void
-    t: (key: string) => string
+    t: typeof i18next.t
     provider: string
   }
 }

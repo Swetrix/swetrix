@@ -3,7 +3,6 @@ import cx from 'clsx'
 import _map from 'lodash/map'
 import _reduce from 'lodash/reduce'
 import { useTranslation } from 'react-i18next'
-import PropTypes from 'prop-types'
 import countries from 'utils/isoCountries'
 import { PROJECT_TABS } from 'redux/constants'
 import { StateType } from 'redux/store'
@@ -98,7 +97,7 @@ const InteractiveMap = ({ data, onClickCountry, total }: IInteractiveMap) => {
                   if (ccData) {
                     setHoverShow(true)
                     setDataHover({
-                      countries: countries.getName(value, language),
+                      countries: countries.getName(value, language) as string,
                       data: ccData,
                     })
                   }
@@ -138,23 +137,6 @@ const InteractiveMap = ({ data, onClickCountry, total }: IInteractiveMap) => {
       </div>
     </div>
   )
-}
-
-InteractiveMap.propTypes = {
-  onClickCountry: PropTypes.func,
-  data: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string,
-      count: PropTypes.number,
-    }),
-  ),
-  total: PropTypes.number,
-}
-
-InteractiveMap.defaultProps = {
-  onClickCountry: () => {},
-  data: [],
-  total: 0,
 }
 
 export default memo(InteractiveMap)

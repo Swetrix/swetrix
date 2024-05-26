@@ -183,12 +183,7 @@ const ThemeMenu = ({
   switchTheme,
 }: {
   theme: string
-  t: (
-    key: string,
-    options?: {
-      [key: string]: string | number | null
-    },
-  ) => string
+  t: typeof i18next.t
   switchTheme: (i: string) => void
 }) => (
   <Menu as='div' className='relative ml-3'>
@@ -258,12 +253,7 @@ const ProfileMenu = ({
 }: {
   user: IUser
   logoutHandler: () => void
-  t: (
-    key: string,
-    options?: {
-      [key: string]: string | number | null
-    },
-  ) => string
+  t: typeof i18next.t
   onLanguageChange: (l: string) => void
   language: string
 }) => (

@@ -1,4 +1,5 @@
 import React, { memo, useState, useEffect, useMemo, Fragment } from 'react'
+import type i18next from 'i18next'
 import InnerHTML from 'dangerously-set-html-content'
 import { ArrowLongRightIcon, ArrowLongLeftIcon } from '@heroicons/react/24/solid'
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
@@ -12,7 +13,6 @@ import {
   RectangleGroupIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
-import PropTypes from 'prop-types'
 import { pie } from 'billboard.js'
 import _keys from 'lodash/keys'
 import _values from 'lodash/values'
@@ -116,12 +116,12 @@ const PanelContainer = ({
   noSwitch,
   icon,
   type,
-  activeFragment,
-  setActiveFragment,
-  customTabs,
+  activeFragment = 0,
+  setActiveFragment = () => {},
+  customTabs = [],
   activeTab,
   isCustomContent,
-  onExpandClick,
+  onExpandClick = () => {},
 }: IPanelContainer): JSX.Element => (
   <div
     className={cx(
@@ -257,27 +257,6 @@ const PanelContainer = ({
   </div>
 )
 
-PanelContainer.propTypes = {
-  name: PropTypes.oneOfType([PropTypes.string, PropTypes.node]).isRequired,
-  children: PropTypes.node.isRequired,
-  noSwitch: PropTypes.bool,
-  activeFragment: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  setActiveFragment: PropTypes.func,
-  onExpandClick: PropTypes.func,
-  icon: PropTypes.node,
-}
-
-PanelContainer.defaultProps = {
-  icon: null,
-  noSwitch: false,
-  activeFragment: 0,
-  setActiveFragment: () => {},
-  onExpandClick: () => {},
-  customTabs: [],
-  activeTab: '',
-  isCustomContent: false,
-}
-
 // Options for circle chart showing the stats of data
 const getPieOptions = (customs: any, uniques: number, t: any) => {
   const tQuantity = t('project.quantity')
@@ -324,7 +303,7 @@ interface ICustomEvents {
   customs: any
   chartData: any
   onFilter: any
-  t: (arg0: string) => string
+  t: typeof i18next.t
   getCustomEventMetadata: (event: string) => any
   customTabs: any
 }
@@ -410,7 +389,7 @@ const KVTable = ({ data, t, uniques, loading }: IKVTable) => {
 }
 
 // Tabs with custom events like submit form, press button, go to the link rate etc.
-const CustomEvents = ({ customs, chartData, onFilter, t, customTabs, getCustomEventMetadata }: ICustomEvents) => {
+const CustomEvents = ({ customs, chartData, onFilter, t, customTabs = [], getCustomEventMetadata }: ICustomEvents) => {
   const [page, setPage] = useState(0)
   const [modal, setModal] = useState(false)
   const [activeEvents, setActiveEvents] = useState<any>({})
@@ -910,31 +889,17 @@ const CustomEvents = ({ customs, chartData, onFilter, t, customTabs, getCustomEv
   )
 }
 
-CustomEvents.propTypes = {
-  customs: PropTypes.objectOf(PropTypes.number).isRequired,
-  onFilter: PropTypes.func.isRequired,
-  t: PropTypes.func.isRequired,
-  // eslint-disable-next-line react/forbid-prop-types
-  chartData: PropTypes.objectOf(PropTypes.any).isRequired,
-  // eslint-disable-next-line react/forbid-prop-types
-  customTabs: PropTypes.array,
-}
-
-CustomEvents.defaultProps = {
-  customTabs: [],
-}
-
 interface IPanel {
   name: string | JSX.Element
   data: IEntry[]
-  rowMapper: any
-  valueMapper: any
-  capitalize: boolean
-  linkContent: boolean
-  t: (arg0: string) => string
+  rowMapper?: (row: any) => string | JSX.Element
+  valueMapper?: (value: number) => number
+  capitalize?: boolean
+  linkContent?: boolean
+  t: typeof i18next.t
   icon: any
   id: string
-  hideFilters: boolean
+  hideFilters?: boolean
   onFilter: any
   customTabs?: any
   pid?: string | null
@@ -952,16 +917,16 @@ interface IPanel {
 const Panel = ({
   name,
   data,
-  rowMapper,
-  valueMapper,
+  rowMapper = (row: IEntry): string => row.name,
+  valueMapper = (value: number): number => value,
   capitalize,
   linkContent,
   t,
   icon,
   id,
   hideFilters,
-  onFilter,
-  customTabs,
+  onFilter = () => {},
+  customTabs = [],
   pid,
   period,
   timeBucket,
@@ -969,7 +934,7 @@ const Panel = ({
   to,
   timezone,
   activeTab,
-  onFragmentChange,
+  onFragmentChange = () => {},
   filters,
   projectPassword,
 }: IPanel): JSX.Element => {
@@ -1058,7 +1023,6 @@ const Panel = ({
         {/* @ts-ignore */}
         <UserFlow
           projectPassword={projectPassword}
-          disableLegend
           pid={pid || ''}
           period={period || ''}
           timeBucket={timeBucket || ''}
@@ -1219,7 +1183,7 @@ const Panel = ({
                     className={cx('flex items-center label hover:underline text-blue-600 dark:text-blue-500', {
                       capitalize,
                     })}
-                    href={rowData}
+                    href={rowData as string}
                     target='_blank'
                     rel='noopener noreferrer nofollow'
                     aria-label={`${rowData} (opens in a new tab)`}
@@ -1302,46 +1266,6 @@ const Panel = ({
       )}
     </PanelContainer>
   )
-}
-
-Panel.propTypes = {
-  name: PropTypes.oneOfType([PropTypes.string.isRequired, PropTypes.node]).isRequired,
-  data: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string,
-      count: PropTypes.number,
-    }),
-  ).isRequired,
-  id: PropTypes.string,
-  rowMapper: PropTypes.func,
-  valueMapper: PropTypes.func,
-  onFilter: PropTypes.func,
-  capitalize: PropTypes.bool,
-  linkContent: PropTypes.bool,
-  hideFilters: PropTypes.bool,
-  icon: PropTypes.node,
-  onFragmentChange: PropTypes.func,
-}
-
-Panel.defaultProps = {
-  id: null,
-  rowMapper: (row: IEntry): string => row.name,
-  valueMapper: (value: number): number => value,
-  capitalize: false,
-  linkContent: false,
-  onFilter: () => {},
-  hideFilters: false,
-  icon: null,
-  customTabs: [],
-  to: null,
-  from: null,
-  timezone: null,
-  timeBucket: null,
-  period: null,
-  pid: null,
-  activeTab: null,
-  onFragmentChange: () => {},
-  filters: [],
 }
 
 const PanelMemo = memo(Panel)
