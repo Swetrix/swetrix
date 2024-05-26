@@ -116,7 +116,6 @@ const CreateNewPassword = ({
             <form className='space-y-6' onSubmit={handleSubmit}>
               <Input
                 name='password'
-                id='password'
                 type='password'
                 label={t('auth.recovery.newPassword')}
                 hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
@@ -126,7 +125,6 @@ const CreateNewPassword = ({
               />
               <Input
                 name='repeat'
-                id='repeat'
                 type='password'
                 label={t('auth.common.repeat')}
                 value={form.repeat}

@@ -52,7 +52,6 @@ const ModalMessage = ({
     <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>{t('project.settings.inviteDesc')}</p>
     <Input
       name='email'
-      id='email'
       type='email'
       label={t('auth.common.email')}
       value={form.email}

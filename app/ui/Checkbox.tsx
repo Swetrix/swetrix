@@ -1,13 +1,14 @@
 import React, { memo } from 'react'
+import { Checkbox as HeadlessCheckbox, Description, Field, Label } from '@headlessui/react'
+import { CheckIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 
 interface ICheckbox {
   label: string | JSX.Element
   hint?: string | JSX.Element
-  id?: string
   name?: string
   className?: string
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onChange?: (checked: boolean) => void
   checked?: boolean
   hintClassName?: string
   disabled?: boolean
@@ -16,58 +17,29 @@ interface ICheckbox {
 const Checkbox = ({
   label,
   hint,
-  id,
   name,
   className,
   onChange,
   checked,
   hintClassName,
   disabled,
-}: ICheckbox): JSX.Element => {
-  const identifier = id || name
-
-  return (
-    <div
-      className={cx(
-        'relative flex items-start whitespace-pre-line',
-        {
-          'cursor-not-allowed': disabled,
-        },
-        className,
-      )}
-    >
-      <div className='flex h-5 items-center'>
-        <input
-          id={identifier}
-          aria-describedby={identifier}
-          name={name}
-          disabled={disabled}
-          type='checkbox'
-          checked={checked}
-          onChange={onChange}
-          className={cx(
-            'h-4 w-4 cursor-pointer rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-slate-800 dark:bg-slate-700 dark:checked:bg-indigo-600',
-            { '!cursor-not-allowed': disabled, 'opacity-50': disabled },
-          )}
-        />
-      </div>
-      <div className='ml-3 text-sm'>
-        <label
-          htmlFor={identifier}
-          className={cx('cursor-pointer font-medium text-gray-700 dark:text-gray-200', {
-            '!cursor-not-allowed': disabled,
-          })}
-        >
-          {label}
-        </label>
-        {hint && (
-          <p id={`${identifier}-description`} className={cx('text-gray-500 dark:text-gray-300', hintClassName)}>
-            {hint}
-          </p>
-        )}
-      </div>
+}: ICheckbox): JSX.Element => (
+  <Field className={className} disabled={disabled}>
+    <div className='flex items-center gap-2'>
+      <HeadlessCheckbox
+        name={name}
+        checked={checked}
+        onChange={onChange}
+        className='group size-4 rounded bg-white ring-1 ring-inset ring-gray-200 data-[checked]:bg-slate-900 data-[checked]:ring-slate-900 dark:bg-white/10 dark:ring-white/15 dark:data-[checked]:bg-white dark:data-[checked]:ring-white/15'
+      >
+        <CheckIcon className='hidden size-4 text-white group-data-[checked]:block dark:text-black' />
+      </HeadlessCheckbox>
+      <Label className='cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-200'>{label}</Label>
     </div>
-  )
-}
+    {hint && (
+      <Description className={cx('mt-1 text-sm text-gray-500 dark:text-gray-300', hintClassName)}>{hint}</Description>
+    )}
+  </Field>
+)
 
 export default memo(Checkbox)

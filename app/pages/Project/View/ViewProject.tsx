@@ -3720,7 +3720,6 @@ const ViewProject = ({
                                             event.label
                                           )
                                         }
-                                        id={event.id}
                                         onChange={() => {}}
                                         checked={event.active}
                                       />
@@ -3752,7 +3751,6 @@ const ViewProject = ({
                                   className={cx('px-4 py-2', { hidden: isPanelsDataEmpty || analyticsLoading })}
                                   label={label}
                                   disabled={conflicted}
-                                  id={pairID}
                                   checked={active}
                                 />
                               )
@@ -3814,9 +3812,9 @@ const ViewProject = ({
                             items={errorFilters}
                             title={t('project.filters')}
                             labelExtractor={(pair) => {
-                              const { label, id: pairID, active } = pair
+                              const { label, active } = pair
 
-                              return <Checkbox className='px-4 py-2' label={label} id={pairID} checked={active} />
+                              return <Checkbox className='px-4 py-2' label={label} checked={active} />
                             }}
                             selectItemClassName='group text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 block text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'
                             keyExtractor={(pair) => pair.id}

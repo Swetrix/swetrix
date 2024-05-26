@@ -743,13 +743,12 @@ const ViewCaptcha = ({
                       title={t('project.metricVis')}
                       className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
                       labelExtractor={(pair) => {
-                        const { label, id: pairID, active } = pair
+                        const { label, active } = pair
 
                         return (
                           <Checkbox
                             className={cx('px-4 py-2', { hidden: isPanelsDataEmpty || analyticsLoading })}
                             label={label}
-                            id={pairID}
                             checked={active}
                             onChange={() => {}}
                           />

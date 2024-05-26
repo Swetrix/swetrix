@@ -407,7 +407,6 @@ const People: React.FunctionComponent<IPeopleProps> = ({
             </p>
             <Input
               name='email'
-              id='email'
               type='email'
               label={t('auth.common.email')}
               value={form.email}

@@ -72,8 +72,6 @@ const Forecast = ({ onClose, onSubmit, isOpened, activeTB, tb }: IForecast): JSX
 
           <Input
             name='forecast-input'
-            id='forecast-input'
-            type='text'
             label={t('modals.forecast.input', {
               frequency: activeTB,
             })}

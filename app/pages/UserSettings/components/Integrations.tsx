@@ -143,7 +143,6 @@ const Integrations = ({
           </p>
           <div className='mt-4 flex items-center'>
             <Input
-              type='text'
               label={t('profileSettings.chatID')}
               value={tgChatId || ''}
               placeholder={t('profileSettings.chatID')}

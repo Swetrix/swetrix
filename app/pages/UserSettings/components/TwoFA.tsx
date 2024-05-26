@@ -126,7 +126,7 @@ const TwoFA = ({
     return (
       <div className='max-w-prose'>
         <p className='text-base text-gray-900 dark:text-gray-50'>{t('profileSettings.2faRecoveryNote')}</p>
-        <Input type='text' className='mt-4' value={twoFARecovery} />
+        <Input className='mt-4' value={twoFARecovery} />
         <Button onClick={recoverySaved} primary large>
           {t('profileSettings.2faRecoverySaved')}
         </Button>
@@ -141,7 +141,6 @@ const TwoFA = ({
           <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>{t('profileSettings.2faDisableHint')}</p>
           <div className='mt-4 flex items-center'>
             <Input
-              type='text'
               label={t('profileSettings.enter2faToDisable')}
               value={twoFACode}
               placeholder={t('profileSettings.yourOneTimeCode')}
@@ -190,7 +189,6 @@ const TwoFA = ({
         </p>
         <div className='mt-4 flex items-center'>
           <Input
-            type='text'
             label={t('profileSettings.enter2faToEnable')}
             value={twoFACode}
             placeholder={t('profileSettings.yourOneTimeCode')}

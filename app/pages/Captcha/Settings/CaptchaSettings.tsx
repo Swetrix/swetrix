@@ -284,11 +284,10 @@ const CaptchaSettings = ({
 
   const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { target } = event
-    const value = target.type === 'checkbox' ? target.checked : target.value
 
     setForm((oldForm) => ({
       ...oldForm,
-      [target.name]: value,
+      [target.name]: target.value,
     }))
   }
 
@@ -407,8 +406,6 @@ const CaptchaSettings = ({
         {tab === tabForNew && (
           <Input
             name='name'
-            id='name'
-            type='text'
             label={t('project.captcha.settings.name')}
             value={form.name}
             placeholder='My awesome project'
@@ -433,8 +430,6 @@ const CaptchaSettings = ({
           <>
             <Input
               name='id'
-              id='id'
-              type='text'
               label={t('project.captcha.settings.pid')}
               value={form.id}
               className='mt-4'
@@ -444,8 +439,6 @@ const CaptchaSettings = ({
             />
             <Input
               name='origins'
-              id='origins'
-              type='text'
               label={t('project.settings.origins')}
               hint={t('project.settings.originsHint')}
               value={(form.origins as string) || ''}
@@ -455,8 +448,6 @@ const CaptchaSettings = ({
             />
             <Input
               name='ipBlacklist'
-              id='ipBlacklist'
-              type='text'
               label={t('project.settings.ipBlacklist')}
               hint={t('project.settings.ipBlacklistHint')}
               value={(form.ipBlacklist as string) || ''}
@@ -481,8 +472,6 @@ const CaptchaSettings = ({
                   <div className='group relative'>
                     <Input
                       name='sercretKey'
-                      id='sercretKey'
-                      type='text'
                       className='pr-9'
                       value={captchaSecretKey}
                       onChange={handleInput}
@@ -525,18 +514,26 @@ const CaptchaSettings = ({
             <hr className='mt-5 border-gray-200 dark:border-gray-600' />
             <Checkbox
               checked={Boolean(form.active)}
-              onChange={handleInput}
+              onChange={(checked) =>
+                setForm((prev) => ({
+                  ...prev,
+                  active: checked,
+                }))
+              }
               name='active'
-              id='active'
               className='mt-4'
               label={t('project.captcha.settings.enabled')}
               hint={t('project.captcha.settings.enabledHint')}
             />
             <Checkbox
               checked={Boolean(form.public)}
-              onChange={handleInput}
+              onChange={(checked) =>
+                setForm((prev) => ({
+                  ...prev,
+                  public: checked,
+                }))
+              }
               name='public'
-              id='public'
               className='mt-4'
               label={t('project.settings.public')}
               hint={t('project.settings.publicHint')}

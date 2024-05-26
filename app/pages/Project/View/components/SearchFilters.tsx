@@ -211,9 +211,8 @@ const SearchFilters = ({
               })}
               <Checkbox
                 checked={Boolean(override)}
-                onChange={(e) => setOverride(e.target.checked)}
+                onChange={setOverride}
                 name='overrideCurrentlyFilters'
-                id='overrideCurrentlyFilters'
                 className='mt-4'
                 label={t('project.overrideCurrentlyFilters')}
               />

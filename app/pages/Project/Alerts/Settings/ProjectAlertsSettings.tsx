@@ -221,11 +221,10 @@ const ProjectAlertsSettings = ({
 
   const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { target } = event
-    const value = target.type === 'checkbox' ? target.checked : target.value
 
     setForm((prevForm) => ({
       ...prevForm,
-      [target.name]: value,
+      [target.name]: target.value,
     }))
   }
 
@@ -269,8 +268,6 @@ const ProjectAlertsSettings = ({
         )}
         <Input
           name='name'
-          id='name'
-          type='text'
           label={t('alert.name')}
           value={form.name || ''}
           placeholder={t('alert.name')}
@@ -280,9 +277,13 @@ const ProjectAlertsSettings = ({
         />
         <Checkbox
           checked={Boolean(form.active)}
-          onChange={handleInput}
+          onChange={(checked) =>
+            setForm((prev) => ({
+              ...prev,
+              active: checked,
+            }))
+          }
           name='active'
-          id='active'
           className='mt-4'
           label={t('alert.enabled')}
           hint={t('alert.enabledHint')}
@@ -307,8 +308,6 @@ const ProjectAlertsSettings = ({
         {form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS && (
           <Input
             name='queryCustomEvent'
-            id='queryCustomEvent'
-            type='text'
             label={t('alert.customEvent')}
             value={form.queryCustomEvent || ''}
             placeholder={t('alert.customEvent')}
@@ -336,8 +335,6 @@ const ProjectAlertsSettings = ({
         </div>
         <Input
           name='queryValue'
-          id='queryValue'
-          type='text'
           label={t('alert.threshold')}
           value={form.queryValue || ''}
           placeholder='10'

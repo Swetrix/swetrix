@@ -113,7 +113,6 @@ const NewFunnel = ({
         <div>
           <Input
             name='funnel-name-input'
-            type='text'
             label={t('modals.funnels.name')}
             value={name}
             onChange={(e) => setName(e.target.value)}

@@ -185,7 +185,6 @@ const Referral = ({
       </p>
       <div className='mt-2 flex space-x-2'>
         <Input
-          id='paypal-email'
           type='email'
           value={paypalEmailAddress || ''}
           placeholder='you@paypal.com'
@@ -210,7 +209,7 @@ const Referral = ({
       {user.refCode ? (
         <div className='grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
           <div className='group relative'>
-            <Input name='refCode' id='refCode' type='text' className='pr-9' value={refUrl} disabled />
+            <Input name='refCode' className='pr-9' value={refUrl} disabled />
             <div className='absolute right-2 top-3'>
               <div className='group relative'>
                 <Button

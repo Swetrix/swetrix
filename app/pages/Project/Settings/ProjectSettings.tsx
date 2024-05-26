@@ -570,8 +570,6 @@ const ProjectSettings = ({
         <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('profileSettings.general')}</h3>
         <Input
           name='name'
-          id='name'
-          type='text'
           label={t('project.settings.name')}
           value={form.name}
           placeholder='My awesome project'
@@ -581,8 +579,6 @@ const ProjectSettings = ({
         />
         <Input
           name='id'
-          id='id'
-          type='text'
           label={t('project.settings.pid')}
           value={form.id}
           className='mt-4'
@@ -592,8 +588,6 @@ const ProjectSettings = ({
         />
         <Input
           name='sharableLink'
-          id='sharableLink'
-          type='text'
           label={t('project.settings.sharableLink')}
           hint={t('project.settings.sharableDesc')}
           value={`https://swetrix.com/projects/${form.id}`}
@@ -604,8 +598,6 @@ const ProjectSettings = ({
         />
         <Input
           name='origins'
-          id='origins'
-          type='text'
           label={t('project.settings.origins')}
           hint={t('project.settings.originsHint')}
           value={form.origins || ''}
@@ -615,8 +607,6 @@ const ProjectSettings = ({
         />
         <Input
           name='ipBlacklist'
-          id='ipBlacklist'
-          type='text'
           label={t('project.settings.ipBlacklist')}
           hint={t('project.settings.ipBlacklistHint')}
           value={form.ipBlacklist || ''}
@@ -626,22 +616,28 @@ const ProjectSettings = ({
         />
         <Checkbox
           checked={Boolean(form.active)}
-          onChange={handleInput}
+          onChange={(checked) =>
+            setForm((prev) => ({
+              ...prev,
+              active: checked,
+            }))
+          }
           name='active'
-          id='active'
           className='mt-4'
           label={t('project.settings.enabled')}
           hint={t('project.settings.enabledHint')}
         />
         <Checkbox
           checked={Boolean(form.public)}
-          onChange={(e: any) => {
+          onChange={(checked) => {
             if (!form.isPasswordProtected) {
-              handleInput(e)
+              setForm((prev) => ({
+                ...prev,
+                public: checked,
+              }))
             }
           }}
           name='public'
-          id='public'
           className='mt-4'
           label={t('project.settings.public')}
           hint={t('project.settings.publicHint')}
@@ -662,7 +658,6 @@ const ProjectSettings = ({
             }
           }}
           name='isPasswordProtected'
-          id='isPasswordProtected'
           className='mt-4'
           label={t('project.settings.protected')}
           hint={t('project.settings.protectedHint')}
@@ -783,7 +778,6 @@ const ProjectSettings = ({
             <p className='mb-4 mt-1 text-sm text-gray-500 dark:text-gray-300'>{t('project.settings.protectedHint')}</p>
             <Input
               name='password'
-              id='password'
               type='password'
               label={t('project.settings.password')}
               value={form?.password || ''}
@@ -811,7 +805,6 @@ const ProjectSettings = ({
             </p>
             <Input
               name='email'
-              id='email'
               type='email'
               label={t('project.settings.transfereeEmail')}
               value={transferEmail}

@@ -151,8 +151,6 @@ const NewProject = () => {
         <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{t('project.settings.create')}</h2>
         <Input
           name='name'
-          id='name'
-          type='text'
           label={t('project.settings.name')}
           value={form.name}
           placeholder='My awesome project'

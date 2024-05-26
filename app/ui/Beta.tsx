@@ -8,10 +8,7 @@ interface IBeta {
   className?: string
 }
 
-const Beta = ({
-  // (string): Additional CSS classes to be applied to the alert container.
-  className,
-}: IBeta): JSX.Element => {
+const Beta = ({ className }: IBeta): JSX.Element => {
   const { t } = useTranslation('common')
 
   return (

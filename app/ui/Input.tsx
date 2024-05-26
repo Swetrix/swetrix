@@ -1,7 +1,7 @@
 import React, { memo } from 'react'
+import { Description, Field, Input as HeadlessInput, Label } from '@headlessui/react'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
-import { ExclamationCircleIcon } from '@heroicons/react/24/solid'
 import Beta from 'ui/Beta'
 
 interface IInput {
@@ -9,7 +9,6 @@ interface IInput {
   hint?: string | JSX.Element
   placeholder?: string
   type?: string
-  id?: string
   name?: string
   className?: string
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
@@ -24,8 +23,7 @@ const Input = ({
   label,
   hint,
   placeholder,
-  type,
-  id,
+  type = 'text',
   name,
   className,
   onChange,
@@ -35,65 +33,40 @@ const Input = ({
   onKeyDown,
   isBeta,
 }: IInput): JSX.Element => {
-  const identifier = id || name || type
   const isError = !_isEmpty(error)
 
   return (
-    <div className={className}>
-      <div
-        className={cx({
-          'flex justify-between': label && hint,
-        })}
-      >
-        <label htmlFor={identifier} className='flex text-sm font-medium text-gray-700 dark:text-gray-200'>
-          {label}
-          {isBeta && (
-            <div className='ml-5'>
-              <Beta />
-            </div>
-          )}
-        </label>
-      </div>
-      <div
-        className={cx('relative', {
-          'mt-1': label,
-        })}
-      >
-        <input
-          type={type}
-          value={value}
-          name={name}
-          id={identifier}
-          onChange={onChange}
-          onKeyDown={onKeyDown}
-          className={cx(
-            'block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-800/25 dark:bg-slate-800 dark:text-gray-50 dark:placeholder-gray-400 sm:text-sm',
-            {
-              'border-red-300 text-red-900 placeholder-red-300': isError,
-              'cursor-text': disabled,
-            },
-          )}
-          placeholder={placeholder}
-          aria-describedby={`${identifier}-optional`}
-          disabled={disabled}
-        />
-        {isError && (
-          <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3'>
-            <ExclamationCircleIcon className='h-5 w-5 text-red-500' aria-hidden />
+    <Field as='div' className={className}>
+      <Label className='mb-1 flex text-sm font-medium text-gray-700 dark:text-gray-200'>
+        {label}
+        {isBeta && (
+          <div className='ml-5'>
+            <Beta />
           </div>
         )}
-      </div>
+      </Label>
+      <HeadlessInput
+        type={type}
+        value={value}
+        name={name}
+        onChange={onChange}
+        onKeyDown={onKeyDown}
+        className={cx(
+          'block w-full rounded-md border-gray-300 shadow-sm dark:border-slate-800/25 dark:bg-slate-800 dark:text-gray-50 dark:placeholder-gray-400 sm:text-sm',
+          {
+            'text-red-900 placeholder-red-300 ring-1 ring-red-600': isError,
+            'cursor-text': disabled,
+          },
+        )}
+        placeholder={placeholder}
+        disabled={disabled}
+        invalid={isError}
+      />
+      {isError && <p className='mt-2 text-sm text-red-600 dark:text-red-500'>{error}</p>}
       {hint && (
-        <p className='mt-2 whitespace-pre-line text-sm text-gray-500 dark:text-gray-300' id={`${identifier}-optional`}>
-          {hint}
-        </p>
+        <Description className='mt-2 whitespace-pre-line text-sm text-gray-500 dark:text-gray-300'>{hint}</Description>
       )}
-      {isError && (
-        <p className='mt-2 text-sm text-red-600 dark:text-red-500' id='email-error'>
-          {error}
-        </p>
-      )}
-    </div>
+    </Field>
   )
 }
 

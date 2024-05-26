@@ -133,11 +133,9 @@ const Signin = ({ login, loginSuccess, loginFailed, authSSO, ssrTheme }: ISignin
   }
 
   const handleInput = ({ target }: { target: HTMLInputElement }) => {
-    const value = target.type === 'checkbox' ? target.checked : target.value
-
     setForm((oldForm) => ({
       ...oldForm,
-      [target.name]: value,
+      [target.name]: target.value,
     }))
   }
 
@@ -160,7 +158,6 @@ const Signin = ({ login, loginSuccess, loginFailed, authSSO, ssrTheme }: ISignin
             {t('auth.signin.2faDesc')}
           </p>
           <Input
-            type='text'
             label={t('profileSettings.enter2faToDisable')}
             value={twoFACode}
             placeholder={t('auth.signin.6digitCode')}
@@ -206,7 +203,6 @@ const Signin = ({ login, loginSuccess, loginFailed, authSSO, ssrTheme }: ISignin
           <form className='space-y-6' onSubmit={handleSubmit}>
             <Input
               name='email'
-              id='email'
               type='email'
               label={t('auth.common.email')}
               value={form.email}
@@ -216,7 +212,6 @@ const Signin = ({ login, loginSuccess, loginFailed, authSSO, ssrTheme }: ISignin
             />
             <Input
               name='password'
-              id='password'
               type='password'
               label={t('auth.common.password')}
               hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
@@ -228,9 +223,13 @@ const Signin = ({ login, loginSuccess, loginFailed, authSSO, ssrTheme }: ISignin
             <div className='flex items-center justify-between'>
               <Checkbox
                 checked={form.dontRemember}
-                onChange={handleInput}
+                onChange={(checked) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    dontRemember: checked,
+                  }))
+                }
                 name='dontRemember'
-                id='dontRemember'
                 label={t('auth.common.noRemember')}
               />
               {!isSelfhosted && (

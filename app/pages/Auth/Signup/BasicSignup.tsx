@@ -111,11 +111,10 @@ const BasicSignup: React.FC<IBasicSignup> = ({ ssrTheme }): JSX.Element => {
 
   const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { target } = event
-    const value = target.type === 'checkbox' ? target.checked : target.value
 
     setForm((oldForm) => ({
       ...oldForm,
-      [target.name]: value,
+      [target.name]: target.value,
     }))
   }
 
@@ -133,7 +132,6 @@ const BasicSignup: React.FC<IBasicSignup> = ({ ssrTheme }): JSX.Element => {
     <form className='space-y-6' onSubmit={handleSubmit}>
       <Input
         name='email'
-        id='email'
         type='email'
         value={form.email}
         placeholder={t('auth.signup.email')}
@@ -142,7 +140,6 @@ const BasicSignup: React.FC<IBasicSignup> = ({ ssrTheme }): JSX.Element => {
       />
       <Input
         name='password'
-        id='password'
         type='password'
         value={form.password}
         placeholder={t('auth.common.password')}
@@ -152,7 +149,6 @@ const BasicSignup: React.FC<IBasicSignup> = ({ ssrTheme }): JSX.Element => {
       />
       <Input
         name='repeat'
-        id='repeat'
         type='password'
         value={form.repeat}
         placeholder={t('auth.common.repeat')}
@@ -163,9 +159,13 @@ const BasicSignup: React.FC<IBasicSignup> = ({ ssrTheme }): JSX.Element => {
       <div className='mt-4 flex'>
         <Checkbox
           checked={form.checkIfLeaked}
-          onChange={handleInput}
+          onChange={(checked) =>
+            setForm((prev) => ({
+              ...prev,
+              checkIfLeaked: checked,
+            }))
+          }
           name='checkIfLeaked'
-          id='checkIfLeaked'
           label={t('auth.common.checkLeakedPassword')}
         />
         <Tooltip

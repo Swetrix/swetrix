@@ -336,12 +336,10 @@ const UserSettings = ({
     }
   }
 
-  const handleShowLiveVisitorsSave = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleShowLiveVisitorsSave = (checked: boolean) => {
     if (settingUpdating) {
       return
     }
-
-    const { checked } = e.target
 
     setSettingUpdating(true)
     updateShowLiveVisitorsInTitle(checked, (isSuccess: boolean) => {
@@ -356,12 +354,10 @@ const UserSettings = ({
     })
   }
 
-  const handleReceiveLoginNotifications = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleReceiveLoginNotifications = async (checked: boolean) => {
     if (settingUpdating) {
       return
     }
-
-    const { checked } = e.target
 
     setSettingUpdating(true)
 
@@ -602,7 +598,6 @@ const UserSettings = ({
                   </h3>
                   <Input
                     name='email'
-                    id='email'
                     type='email'
                     label={t('auth.common.email')}
                     value={form.email}
@@ -629,7 +624,6 @@ const UserSettings = ({
                         <div className='mt-4 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-6'>
                           <Input
                             name='password'
-                            id='password'
                             type='password'
                             label={t('auth.common.password')}
                             hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
@@ -641,7 +635,6 @@ const UserSettings = ({
                           />
                           <Input
                             name='repeat'
-                            id='repeat'
                             type='password'
                             label={t('auth.common.repeat')}
                             value={form.repeat}
@@ -677,8 +670,6 @@ const UserSettings = ({
                             <div className='group relative'>
                               <Input
                                 name='apiKey'
-                                id='apiKey'
-                                type='text'
                                 className='pr-9'
                                 value={user.apiKey}
                                 onChange={handleInput}
@@ -897,7 +888,6 @@ const UserSettings = ({
                     onChange={handleShowLiveVisitorsSave}
                     disabled={settingUpdating}
                     name='active'
-                    id='active'
                     className='mt-4'
                     label={t('profileSettings.showVisitorsInTitle')}
                   />
@@ -955,7 +945,6 @@ const UserSettings = ({
                           onChange={handleReceiveLoginNotifications}
                           disabled={settingUpdating}
                           name='receiveLoginNotifications'
-                          id='receiveLoginNotifications'
                           className='mt-4'
                           label={t('profileSettings.receiveLoginNotifications')}
                         />
@@ -1025,7 +1014,6 @@ const UserSettings = ({
           <>
             {t('profileSettings.deactivateConfirmation')}
             <Textarea
-              id='feedback'
               className='mt-4'
               placeholder={t('profileSettings.deletionFeedback')}
               onChange={(e) => setDeletionFeedback(e.target.value)}

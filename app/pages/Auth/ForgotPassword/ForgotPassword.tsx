@@ -101,7 +101,6 @@ const ForgotPassword = ({
             <form className='space-y-6' onSubmit={handleSubmit}>
               <Input
                 name='email'
-                id='email'
                 type='email'
                 label={t('auth.common.email')}
                 value={form.email}

@@ -128,7 +128,6 @@ const ProjectProtectedPassword = ({
           <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{t('titles.passwordProtected')}</h2>
           <Input
             name='password'
-            id='password'
             type='password'
             label={t('auth.common.password')}
             value={form.password}

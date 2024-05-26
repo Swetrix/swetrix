@@ -1,10 +1,11 @@
 /* eslint-disable react/button-has-type */
-import React, { ButtonHTMLAttributes, memo } from 'react'
+import React, { memo } from 'react'
+import { Button as HeadlessButton } from '@headlessui/react'
 import cx from 'clsx'
 import Spin from './icons/Spin'
 
 // Define the prop types for the component
-interface IButton extends React.DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> {
+interface IButton extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   // (string): The text to be displayed in the button.
   text?: string
   // (node): The content to be displayed in the button.
@@ -56,7 +57,7 @@ const Button = ({
   disabled,
   ...props
 }: IButton): JSX.Element => (
-  <button
+  <HeadlessButton
     {...props}
     disabled={disabled || loading}
     type={type}
@@ -64,7 +65,7 @@ const Button = ({
     className={cx(
       'relative inline-flex select-none items-center rounded-md border font-medium leading-4',
       {
-        'border-transparent bg-slate-900 text-gray-50 shadow-sm hover:bg-slate-700 dark:bg-indigo-700 dark:hover:bg-indigo-800':
+        'border-transparent bg-slate-900 text-gray-50 shadow-sm hover:bg-slate-700 dark:bg-white/10 dark:hover:bg-white/20':
           primary,
         'border-transparent bg-slate-300 text-slate-900 hover:bg-slate-200': secondary,
         'border-transparent bg-white text-gray-700 hover:bg-gray-50': white,
@@ -85,7 +86,7 @@ const Button = ({
   >
     {loading && <Spin alwaysLight />}
     {text || children}
-  </button>
+  </HeadlessButton>
 )
 
 export default memo(Button)
