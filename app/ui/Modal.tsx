@@ -1,6 +1,6 @@
 import React, { Fragment, memo } from 'react'
 import cx from 'clsx'
-import { Dialog, Transition } from '@headlessui/react'
+import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react'
 import {
   CheckIcon,
   ExclamationTriangleIcon,
@@ -48,7 +48,7 @@ const Modal = ({
   submitDisabled,
   overflowVisible,
 }: IModal): JSX.Element => (
-  <Transition.Root show={isOpened} as={Fragment}>
+  <Transition show={isOpened} as={Fragment}>
     <Dialog
       as='div'
       className={cx('fixed inset-0 z-10 overflow-y-auto', className)}
@@ -57,7 +57,7 @@ const Modal = ({
       static
     >
       <div className='min-h-screen flex items-end justify-center px-4 pb-20 pt-4 text-center sm:block sm:p-0'>
-        <Transition.Child
+        <TransitionChild
           as={Fragment}
           enter='ease-out duration-300'
           enterFrom='opacity-0'
@@ -66,14 +66,14 @@ const Modal = ({
           leaveFrom='opacity-100'
           leaveTo='opacity-0'
         >
-          <Dialog.Overlay className='fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-opacity-55' />
-        </Transition.Child>
+          <div className='fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-opacity-55' />
+        </TransitionChild>
 
         {/* This element is to trick the browser into centering the modal contents. */}
         <span className='hidden sm:inline-block sm:h-screen sm:align-middle' aria-hidden='true'>
           &#8203;
         </span>
-        <Transition.Child
+        <TransitionChild
           as={Fragment}
           enter='ease-out duration-300'
           enterFrom='opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95'
@@ -82,7 +82,7 @@ const Modal = ({
           leaveFrom='opacity-100 translate-y-0 sm:scale-100'
           leaveTo='opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95'
         >
-          <div
+          <DialogPanel
             className={cx(
               'inline-block transform rounded-lg bg-white px-4 pb-4 pt-5 text-left align-bottom shadow-xl transition-all dark:bg-slate-900 sm:my-8 sm:px-5 sm:py-4 sm:align-middle',
               {
@@ -121,7 +121,7 @@ const Modal = ({
               )}
               <div className='mt-3 w-full text-center sm:mt-0 sm:text-left'>
                 {title && (
-                  <Dialog.Title
+                  <DialogTitle
                     as='h3'
                     className={cx('flex items-center text-lg font-medium leading-6 text-gray-900 dark:text-gray-50', {
                       'justify-between': !closeText,
@@ -142,7 +142,7 @@ const Modal = ({
                         }}
                       />
                     )}
-                  </Dialog.Title>
+                  </DialogTitle>
                 )}
                 <div className='mt-2 whitespace-pre-line text-sm text-gray-600 dark:text-gray-200'>{message}</div>
               </div>
@@ -182,11 +182,11 @@ const Modal = ({
                 </button>
               )}
             </div>
-          </div>
-        </Transition.Child>
+          </DialogPanel>
+        </TransitionChild>
       </div>
     </Dialog>
-  </Transition.Root>
+  </Transition>
 )
 
 export default memo(Modal)
