@@ -320,9 +320,17 @@ export class UserController {
         )
         const query1 = `ALTER table analytics DELETE WHERE pid IN (${pids})`
         const query2 = `ALTER table customEV DELETE WHERE pid IN (${pids})`
+        const query3 = `ALTER table performance DELETE WHERE pid IN (${pids})`
+        const query4 = `ALTER table errors DELETE WHERE pid IN (${pids})`
+        const query5 = `ALTER table error_statuses DELETE WHERE pid IN (${pids})`
+        const query6 = `ALTER table captcha DELETE WHERE pid IN (${pids})`
         await this.projectService.deleteMultiple(pids)
         await clickhouse.query(query1).toPromise()
         await clickhouse.query(query2).toPromise()
+        await clickhouse.query(query3).toPromise()
+        await clickhouse.query(query4).toPromise()
+        await clickhouse.query(query5).toPromise()
+        await clickhouse.query(query6).toPromise()
       }
       await this.userService.delete(id)
 
@@ -361,9 +369,17 @@ export class UserController {
         )
         const query1 = `ALTER table analytics DELETE WHERE pid IN (${pids})`
         const query2 = `ALTER table customEV DELETE WHERE pid IN (${pids})`
+        const query3 = `ALTER table performance DELETE WHERE pid IN (${pids})`
+        const query4 = `ALTER table errors DELETE WHERE pid IN (${pids})`
+        const query5 = `ALTER table error_statuses DELETE WHERE pid IN (${pids})`
+        const query6 = `ALTER table captcha DELETE WHERE pid IN (${pids})`
         await this.projectService.deleteMultiple(pids)
         await clickhouse.query(query1).toPromise()
         await clickhouse.query(query2).toPromise()
+        await clickhouse.query(query3).toPromise()
+        await clickhouse.query(query4).toPromise()
+        await clickhouse.query(query5).toPromise()
+        await clickhouse.query(query6).toPromise()
       }
       await this.actionTokensService.deleteMultiple(`userId="${id}"`)
       await this.userService.delete(id)
