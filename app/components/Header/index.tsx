@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import Flag from 'react-flagkit'
 import i18next from 'i18next'
-import { Popover, Transition, Menu, Disclosure, Dialog } from '@headlessui/react'
+import { Popover, Transition, Menu, Disclosure, Dialog, PopoverButton, PopoverPanel } from '@headlessui/react'
 import {
   Bars3Icon,
   XMarkIcon,
@@ -26,7 +26,7 @@ import duration from 'dayjs/plugin/duration'
 import _map from 'lodash/map'
 import _includes from 'lodash/includes'
 import _startsWith from 'lodash/startsWith'
-import cx from 'clsx'
+import cx, { clsx } from 'clsx'
 
 import routes from 'routesPath'
 import { authActions } from 'redux/reducers/auth'
@@ -94,85 +94,97 @@ const SolutionsMenu = () => {
   const ctas = getCallsToAction(t)
 
   return (
-    <Popover className='relative'>
-      <Popover.Button className='inline-flex items-center gap-x-1 text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
-        <span>{t('header.solutions.title')}</span>
-        <ChevronDownIcon className='h-3 w-3 stroke-2' aria-hidden='true' />
-      </Popover.Button>
+    <Popover>
+      {({ open }) => (
+        <>
+          <PopoverButton className='inline-flex items-center gap-x-1 text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
+            <span>{t('header.solutions.title')}</span>
+            <ChevronDownIcon
+              className={clsx('h-3 w-3 stroke-2 transition-all', {
+                'rotate-180': open,
+              })}
+              aria-hidden='true'
+            />
+          </PopoverButton>
 
-      <Transition
-        as={Fragment}
-        enter='transition ease-out duration-200'
-        enterFrom='opacity-0 translate-y-1'
-        enterTo='opacity-100 translate-y-0'
-        leave='transition ease-in duration-150'
-        leaveFrom='opacity-100 translate-y-0'
-        leaveTo='opacity-0 translate-y-1'
-      >
-        <Popover.Panel className='absolute z-30 mt-5 flex w-screen max-w-max'>
-          <div className='flex w-[650px] flex-col divide-y divide-gray-300/80 rounded-lg border border-gray-300/80 bg-gray-100/80 p-[6px] backdrop-blur-2xl dark:divide-slate-900/60 dark:border-slate-900/80 dark:bg-slate-800/80'>
-            <div className='grid w-full grid-cols-2 gap-1 p-4'>
-              {_map(solutions, (item) => (
-                <div
-                  key={item.name}
-                  className='group relative flex gap-x-2 rounded-lg p-2 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'
-                >
-                  <item.icon className='mt-1 h-5 w-5 text-gray-600 dark:text-gray-300' aria-hidden='true' />
-                  <div>
-                    {_startsWith(item.link, '/') ? (
-                      <Link to={item.link} className='text-sm font-semibold text-gray-900 dark:text-gray-50'>
-                        {item.name}
-                        <span className='absolute inset-0' />
-                      </Link>
-                    ) : (
+          <Transition
+            as={Fragment}
+            enter='transition ease-out duration-200'
+            enterFrom='opacity-0 translate-y-1'
+            enterTo='opacity-100 translate-y-0'
+            leave='transition ease-in duration-150'
+            leaveFrom='opacity-100 translate-y-0'
+            leaveTo='opacity-0 translate-y-1'
+          >
+            <PopoverPanel className='absolute z-30 mt-4 flex w-screen max-w-max'>
+              <div className='flex w-[650px] flex-col divide-y divide-gray-300/80 rounded-lg border border-gray-300/80 bg-gray-100/80 p-[6px] backdrop-blur-2xl dark:divide-slate-900/60 dark:border-slate-900/80 dark:bg-slate-800/80'>
+                <div className='grid w-full grid-cols-2 gap-1 p-4'>
+                  {_map(solutions, (item) => (
+                    <div
+                      key={item.name}
+                      className='group relative flex gap-x-2 rounded-lg p-2 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'
+                    >
+                      <item.icon className='mt-1 h-5 w-5 text-gray-600 dark:text-gray-300' aria-hidden='true' />
+                      <div>
+                        {_startsWith(item.link, '/') ? (
+                          <Link to={item.link} className='text-sm font-semibold text-gray-900 dark:text-gray-50'>
+                            {item.name}
+                            <span className='absolute inset-0' />
+                          </Link>
+                        ) : (
+                          <a
+                            href={item.link}
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            className='text-sm font-semibold text-gray-900 dark:text-gray-50'
+                          >
+                            {item.name}
+                            <span className='absolute inset-0' />
+                          </a>
+                        )}
+
+                        <p className='mt-1 text-xs text-gray-600 dark:text-neutral-100'>{item.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className='grid grid-cols-2 gap-1 px-4 py-2'>
+                  {_map(ctas, (item) => {
+                    if (_startsWith(item.link, '/')) {
+                      return (
+                        <Link
+                          key={item.name}
+                          to={item.link}
+                          className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-800 hover:bg-gray-300/50 dark:text-gray-100 dark:hover:bg-slate-700/80'
+                        >
+                          <item.icon
+                            className='h-5 w-5 flex-none text-gray-400 dark:text-gray-300'
+                            aria-hidden='true'
+                          />
+                          {item.name}
+                        </Link>
+                      )
+                    }
+
+                    return (
                       <a
+                        key={item.name}
                         href={item.link}
                         target='_blank'
                         rel='noopener noreferrer'
-                        className='text-sm font-semibold text-gray-900 dark:text-gray-50'
+                        className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-800 hover:bg-gray-300/50 dark:text-gray-100 dark:hover:bg-slate-700/80'
                       >
+                        <item.icon className='h-5 w-5 flex-none text-gray-400 dark:text-gray-300' aria-hidden='true' />
                         {item.name}
-                        <span className='absolute inset-0' />
                       </a>
-                    )}
-
-                    <p className='mt-1 text-xs text-gray-600 dark:text-neutral-100'>{item.description}</p>
-                  </div>
+                    )
+                  })}
                 </div>
-              ))}
-            </div>
-            <div className='grid grid-cols-2 gap-1 px-4 py-2'>
-              {_map(ctas, (item) => {
-                if (_startsWith(item.link, '/')) {
-                  return (
-                    <Link
-                      key={item.name}
-                      to={item.link}
-                      className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-800 hover:bg-gray-300/50 dark:text-gray-100 dark:hover:bg-slate-700/80'
-                    >
-                      <item.icon className='h-5 w-5 flex-none text-gray-400 dark:text-gray-300' aria-hidden='true' />
-                      {item.name}
-                    </Link>
-                  )
-                }
-
-                return (
-                  <a
-                    key={item.name}
-                    href={item.link}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-800 hover:bg-gray-300/50 dark:text-gray-100 dark:hover:bg-slate-700/80'
-                  >
-                    <item.icon className='h-5 w-5 flex-none text-gray-400 dark:text-gray-300' aria-hidden='true' />
-                    {item.name}
-                  </a>
-                )
-              })}
-            </div>
-          </div>
-        </Popover.Panel>
-      </Transition>
+              </div>
+            </PopoverPanel>
+          </Transition>
+        </>
+      )}
     </Popover>
   )
 }
@@ -817,7 +829,7 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
   }
 
   return (
-    <Popover className='relative'>
+    <Popover>
       {/* Computer / Laptop / Tablet layout header */}
       {authenticated ? (
         <AuthedHeader
