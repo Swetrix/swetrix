@@ -65,7 +65,7 @@ const Button = ({
     className={cx(
       'relative inline-flex select-none items-center rounded-md border font-medium leading-4',
       {
-        'border-transparent bg-slate-900 text-gray-50 shadow-sm hover:bg-slate-700 dark:bg-white/10 dark:hover:bg-white/20':
+        'border-transparent bg-slate-900 text-gray-50 shadow-sm hover:bg-slate-700 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700':
           primary,
         'border-transparent bg-slate-300 text-slate-900 hover:bg-slate-200': secondary,
         'border-transparent bg-white text-gray-700 hover:bg-gray-50': white,
