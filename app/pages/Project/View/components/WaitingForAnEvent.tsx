@@ -20,12 +20,12 @@ const WaitingForAnEvent = ({ project }: IWaitingForAnEvent) => {
 
   return (
     <div className='px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
-      <div className='max-w-max mx-auto'>
+      <div className='mx-auto max-w-max'>
         <main className='sm:flex'>
           <PulsatingCircle type='giant' className='-ml-1.5 mb-2 sm:m-0' />
           <div className='sm:ml-6'>
             <div className='sm:border-l sm:border-gray-200 sm:pl-6'>
-              <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight sm:text-5xl'>
+              <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50 sm:text-5xl'>
                 {t('project.waiting.title')}
               </h1>
               <p className='mt-2 max-w-prose whitespace-pre-line text-base text-gray-700 dark:text-gray-300'>
@@ -38,7 +38,7 @@ const WaitingForAnEvent = ({ project }: IWaitingForAnEvent) => {
                     turl: (
                       <a
                         href={TROUBLESHOOTING_URL}
-                        className='font-medium text-indigo-600 dark:text-indigo-400 hover:underline'
+                        className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
                         target='_blank'
                         rel='noreferrer noopener'
                       />
@@ -46,13 +46,13 @@ const WaitingForAnEvent = ({ project }: IWaitingForAnEvent) => {
                     curl: (
                       <Link
                         to={routes.contact}
-                        className='font-medium text-indigo-600 dark:text-indigo-400 hover:underline'
+                        className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
                       />
                     ),
                     snippet: (
                       <span
                         role='button'
-                        className='cursor-pointer font-medium text-indigo-600 dark:text-indigo-400 hover:underline'
+                        className='cursor-pointer font-medium text-indigo-600 hover:underline dark:text-indigo-400'
                         onClick={() => setIsModalOpened(true)}
                       />
                     ),

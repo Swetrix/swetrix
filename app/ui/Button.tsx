@@ -62,23 +62,23 @@ const Button = ({
     type={type}
     onClick={onClick}
     className={cx(
-      'relative inline-flex select-none items-center border leading-4 font-medium rounded-md',
+      'relative inline-flex select-none items-center rounded-md border font-medium leading-4',
       {
-        'shadow-sm text-gray-50 bg-slate-900 hover:bg-slate-700 dark:bg-indigo-700 dark:hover:bg-indigo-800 border-transparent':
+        'border-transparent bg-slate-900 text-gray-50 shadow-sm hover:bg-slate-700 dark:bg-indigo-700 dark:hover:bg-indigo-800':
           primary,
-        'text-slate-900 bg-slate-300 hover:bg-slate-200 border-transparent': secondary,
-        'text-gray-700 bg-white hover:bg-gray-50 border-transparent': white,
-        'text-gray-50 bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 border-transparent': danger,
-        'text-red-500 hover:text-red-600 border-red-600 dark:text-red-300 dark:hover:text-red-400 dark:border-red-500 border-1':
+        'border-transparent bg-slate-300 text-slate-900 hover:bg-slate-200': secondary,
+        'border-transparent bg-white text-gray-700 hover:bg-gray-50': white,
+        'border-transparent bg-red-500 text-gray-50 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700': danger,
+        'border-1 border-red-600 text-red-500 hover:text-red-600 dark:border-red-500 dark:text-red-300 dark:hover:text-red-400':
           semiDanger,
-        'focus:border-none border-none text-gray-700 dark:text-white focus:ring-0 focus:ring-offset-0': noBorder,
+        'border-none text-gray-700 focus:border-none focus:ring-0 focus:ring-offset-0 dark:text-white': noBorder,
         'px-2.5 py-1.5 text-xs': small,
         'px-2.5 py-1.5 text-sm': semiSmall,
         'px-4 py-2 text-sm': large,
         'px-6 py-3 text-base': giant,
         'px-3 py-2 text-sm': regular,
         'cursor-not-allowed': loading,
-        'focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500': focus,
+        'focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2': focus,
       },
       className,
     )}

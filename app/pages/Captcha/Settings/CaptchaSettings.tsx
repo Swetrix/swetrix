@@ -368,7 +368,7 @@ const CaptchaSettings = ({
 
   if (loading) {
     return (
-      <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+      <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8'>
         <Loader />
       </div>
     )
@@ -376,11 +376,11 @@ const CaptchaSettings = ({
 
   return (
     <div
-      className={cx('min-h-min-footer bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8', {
+      className={cx('flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8', {
         'pb-40': isSettings,
       })}
     >
-      <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
+      <form className='mx-auto w-full max-w-7xl' onSubmit={handleSubmit}>
         <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{title}</h2>
         <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('profileSettings.general')}</h3>
         <div className='mt-6'>
@@ -392,9 +392,9 @@ const CaptchaSettings = ({
                     key={tabCaptcha.name}
                     type='button'
                     onClick={() => setTab(tabCaptcha.name)}
-                    className={cx('whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-md', {
+                    className={cx('text-md whitespace-nowrap border-b-2 px-1 pb-4 font-medium', {
                       'border-indigo-500 text-indigo-600 dark:text-indigo-500': tab === tabCaptcha.name,
-                      'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300':
+                      'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
                         tab !== tabCaptcha.name,
                     })}
                   >
@@ -466,7 +466,7 @@ const CaptchaSettings = ({
               isBeta
             />
             <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-            <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+            <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
               {t('profileSettings.captchaSecretKey')}
             </h3>
             {captchaSecretKey ? (
@@ -477,8 +477,8 @@ const CaptchaSettings = ({
                 <p className='mt-4 max-w-prose text-base text-gray-900 dark:text-gray-50'>
                   {t('profileSettings.captchaSecretKey')}
                 </p>
-                <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2'>
-                  <div className='relative group'>
+                <div className='grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
+                  <div className='group relative'>
                     <Input
                       name='sercretKey'
                       id='sercretKey'
@@ -497,9 +497,9 @@ const CaptchaSettings = ({
                           noBorder
                         >
                           <>
-                            <ClipboardDocumentIcon className='w-6 h-6' />
+                            <ClipboardDocumentIcon className='h-6 w-6' />
                             {copied && (
-                              <div className='animate-appear bg-white dark:bg-slate-800 cursor-auto rounded p-1 absolute sm:top-0 top-0.5 right-8 text-xs text-green-600'>
+                              <div className='absolute right-8 top-0.5 animate-appear cursor-auto rounded bg-white p-1 text-xs text-green-600 dark:bg-slate-800 sm:top-0'>
                                 {t('common.copied')}
                               </div>
                             )}
@@ -541,10 +541,10 @@ const CaptchaSettings = ({
               label={t('project.settings.public')}
               hint={t('project.settings.publicHint')}
             />
-            <div className='flex flex-wrap justify-center gap-2 sm:justify-between mt-8'>
+            <div className='mt-8 flex flex-wrap justify-center gap-2 sm:justify-between'>
               <div className='flex flex-wrap items-center justify-center gap-2'>
                 <Button
-                  className='border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700'
+                  className='border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
                   onClick={onCancel}
                   secondary
                   regular
@@ -563,7 +563,7 @@ const CaptchaSettings = ({
                   semiSmall
                 >
                   <>
-                    <TrashIcon className='w-5 h-5 mr-1' />
+                    <TrashIcon className='mr-1 h-5 w-5' />
                     {t('project.settings.reset')}
                   </>
                 </Button>
@@ -574,16 +574,16 @@ const CaptchaSettings = ({
                   semiSmall
                 >
                   <>
-                    <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
+                    <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
                     {t('project.settings.delete')}
                   </>
                 </Button>
               </div>
             </div>
-            <hr className='mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
+            <hr className='mt-2 border-gray-200 dark:border-gray-600 sm:mt-5' />
           </>
         ) : (
-          <p className='text-gray-500 dark:text-gray-300 italic mt-1 mb-4 text-sm'>
+          <p className='mb-4 mt-1 text-sm italic text-gray-500 dark:text-gray-300'>
             {t('project.settings.createHint')}
           </p>
         )}
@@ -591,7 +591,7 @@ const CaptchaSettings = ({
         {!isSettings && (
           <div>
             <Button
-              className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700'
+              className='mr-2 border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
               onClick={onCancel}
               secondary
               regular

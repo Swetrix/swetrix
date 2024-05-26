@@ -414,7 +414,7 @@ const UserSettings = ({
 
   const reportIconExtractor = (_: any, index: number) => {
     if (!isPaidTierUsed && reportFrequencies[index] === WEEKLY_REPORT_FREQUENCY) {
-      return <CurrencyDollarIcon className='w-5 h-5 mr-1' />
+      return <CurrencyDollarIcon className='mr-1 h-5 w-5' />
     }
 
     return null
@@ -527,8 +527,8 @@ const UserSettings = ({
   }
 
   return (
-    <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
-      <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
+    <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8'>
+      <form className='mx-auto w-full max-w-7xl' onSubmit={handleSubmit}>
         <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{t('titles.profileSettings')}</h2>
         {/* Tabs selector */}
         <div className='mt-2'>
@@ -562,10 +562,10 @@ const UserSettings = ({
                       key={tab.id}
                       onClick={onClick}
                       className={cx(
-                        'group inline-flex items-center whitespace-nowrap py-2 px-1 border-b-2 font-bold text-md cursor-pointer',
+                        'text-md group inline-flex cursor-pointer items-center whitespace-nowrap border-b-2 px-1 py-2 font-bold',
                         {
-                          'border-slate-900 text-slate-900 dark:text-gray-50 dark:border-gray-50': isCurrent,
-                          'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
+                          'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50': isCurrent,
+                          'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
                             !isCurrent,
                         },
                       )}
@@ -616,17 +616,17 @@ const UserSettings = ({
                     <>
                       <span
                         onClick={toggleShowPasswordFields}
-                        className='flex items-center cursor-pointer max-w-max text-gray-900 dark:text-gray-50 hover:underline mt-2'
+                        className='mt-2 flex max-w-max cursor-pointer items-center text-gray-900 hover:underline dark:text-gray-50'
                       >
                         {t('auth.common.changePassword')}
                         <ChevronDownIcon
-                          className={cx('w-4 h-4 ml-2', {
+                          className={cx('ml-2 h-4 w-4', {
                             'rotate-180': showPasswordFields,
                           })}
                         />
                       </span>
                       {showPasswordFields && (
-                        <div className='grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6 mt-4'>
+                        <div className='mt-4 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-6'>
                           <Input
                             name='password'
                             id='password'
@@ -662,7 +662,7 @@ const UserSettings = ({
                       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
 
                       {/* API access setup */}
-                      <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+                      <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
                         {t('profileSettings.apiKey')}
                       </h3>
                       {user.apiKey ? (
@@ -673,8 +673,8 @@ const UserSettings = ({
                           <p className='mt-4 max-w-prose text-base text-gray-900 dark:text-gray-50'>
                             {t('profileSettings.apiKey')}
                           </p>
-                          <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2'>
-                            <div className='relative group'>
+                          <div className='grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
+                            <div className='group relative'>
                               <Input
                                 name='apiKey'
                                 id='apiKey'
@@ -693,9 +693,9 @@ const UserSettings = ({
                                     noBorder
                                   >
                                     <>
-                                      <ClipboardDocumentIcon className='w-6 h-6' />
+                                      <ClipboardDocumentIcon className='h-6 w-6' />
                                       {copied && (
-                                        <div className='animate-appear bg-white dark:bg-slate-800 cursor-auto rounded p-1 absolute sm:top-0 top-0.5 right-8 text-xs text-green-600'>
+                                        <div className='absolute right-8 top-0.5 animate-appear cursor-auto rounded bg-white p-1 text-xs text-green-600 dark:bg-slate-800 sm:top-0'>
                                           {t('common.copied')}
                                         </div>
                                       )}
@@ -723,7 +723,7 @@ const UserSettings = ({
 
                       {/* 2FA setting */}
                       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-                      <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+                      <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
                         {t('profileSettings.2fa')}
                       </h3>
                       <TwoFA
@@ -737,7 +737,7 @@ const UserSettings = ({
                       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
                       <h3
                         id='socialisations'
-                        className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'
+                        className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'
                       >
                         {t('profileSettings.socialisations')}
                       </h3>
@@ -751,13 +751,13 @@ const UserSettings = ({
 
                       {/* Shared projects setting */}
                       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-                      <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+                      <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
                         {t('profileSettings.shared')}
                       </h3>
                       <div>
                         {!_isEmpty(user.sharedProjects) ? (
                           <div className='mt-3 flex flex-col'>
-                            <div className='-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8'>
+                            <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8'>
                               <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
                                 <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
                                   <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
@@ -765,7 +765,7 @@ const UserSettings = ({
                                       <tr className='dark:bg-slate-800'>
                                         <th
                                           scope='col'
-                                          className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'
+                                          className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6'
                                         >
                                           {t('profileSettings.sharedTable.project')}
                                         </th>
@@ -810,21 +810,21 @@ const UserSettings = ({
                       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
                       {!user.isActive && (
                         <div
-                          className='flex cursor-pointer mt-4 pl-0 underline text-blue-600 hover:text-indigo-800 dark:hover:text-indigo-600 max-w-max'
+                          className='mt-4 flex max-w-max cursor-pointer pl-0 text-blue-600 underline hover:text-indigo-800 dark:hover:text-indigo-600'
                           onClick={() => onEmailConfirm(setError)}
                         >
-                          <EnvelopeIcon className='mt-0.5 mr-2 w-6 h-6 text-blue-500' />
+                          <EnvelopeIcon className='mr-2 mt-0.5 h-6 w-6 text-blue-500' />
                           {t('profileSettings.noLink')}
                         </div>
                       )}
-                      <div className='flex flex-wrap justify-center sm:justify-between gap-2 mt-4'>
+                      <div className='mt-4 flex flex-wrap justify-center gap-2 sm:justify-between'>
                         <Button onClick={() => setShowExportModal(true)} semiSmall primary>
                           <>
-                            <ArrowDownTrayIcon className='w-5 h-5 mr-1' />
+                            <ArrowDownTrayIcon className='mr-1 h-5 w-5' />
                             {t('profileSettings.requestExport')}
                           </>
                         </Button>
-                        <div className='flex justify-center flex-wrap gap-2'>
+                        <div className='flex flex-wrap justify-center gap-2'>
                           <Button onClick={logoutAll} semiSmall semiDanger>
                             <>
                               {/* We need this div for the button to match the height of the button after it */}
@@ -834,7 +834,7 @@ const UserSettings = ({
                           </Button>
                           <Button onClick={() => setShowModal(true)} semiSmall semiDanger>
                             <>
-                              <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
+                              <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
                               {t('profileSettings.delete')}
                             </>
                           </Button>
@@ -850,10 +850,10 @@ const UserSettings = ({
               return (
                 <>
                   {/* Timezone selector */}
-                  <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50 flex items-center'>
+                  <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
                     {t('profileSettings.timezone')}
                   </h3>
-                  <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
+                  <div className='mt-4 grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
                     <div>
                       <TimezonePicker value={timezone} onChange={_setTimezone} />
                     </div>
@@ -866,7 +866,7 @@ const UserSettings = ({
                   <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
                     {t('profileSettings.timeFormat')}
                   </h3>
-                  <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
+                  <div className='mt-4 grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
                     <div>
                       <Select
                         title={t(`profileSettings.${form.timeFormat}`)}
@@ -914,7 +914,7 @@ const UserSettings = ({
                       <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
                         {t('profileSettings.email')}
                       </h3>
-                      <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2 mt-4'>
+                      <div className='mt-4 grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
                         <div>
                           <Select
                             title={t(`profileSettings.${reportFrequency}`)}
@@ -939,7 +939,7 @@ const UserSettings = ({
                       {/* Integrations setup */}
                       <h3
                         id='integrations'
-                        className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'
+                        className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'
                       >
                         {t('profileSettings.integrations')}
                       </h3>
@@ -971,7 +971,7 @@ const UserSettings = ({
                 <>
                   <h3
                     id='socialisations'
-                    className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'
+                    className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'
                   >
                     {t('profileSettings.referral.title')}
                   </h3>

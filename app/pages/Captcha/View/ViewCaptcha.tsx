@@ -666,29 +666,29 @@ const ViewCaptcha = ({
           <EventsRunningOutBanner />
           <div ref={ref} className='bg-gray-50 dark:bg-slate-900'>
             <div
-              className='max-w-[1584px] w-full mx-auto py-6 px-2 sm:px-4 lg:px-8 min-h-min-footer'
+              className='mx-auto min-h-min-footer w-full max-w-[1584px] px-2 py-6 sm:px-4 lg:px-8'
               ref={dashboardRef}
             >
-              <div className='flex flex-col lg:flex-row items-center lg:items-start justify-between mt-2'>
-                <h2 className='text-xl font-bold text-gray-900 dark:text-gray-50 break-words break-all'>{name}</h2>
-                <div className='flex mt-3 lg:mt-0 max-w-[420px] flex-wrap items-center sm:max-w-none justify-between w-full sm:w-auto mx-auto sm:mx-0'>
+              <div className='mt-2 flex flex-col items-center justify-between lg:flex-row lg:items-start'>
+                <h2 className='break-words break-all text-xl font-bold text-gray-900 dark:text-gray-50'>{name}</h2>
+                <div className='mx-auto mt-3 flex w-full max-w-[420px] flex-wrap items-center justify-between sm:mx-0 sm:w-auto sm:max-w-none lg:mt-0'>
                   <button
                     type='button'
                     title={t('project.refreshStats')}
                     onClick={refreshStats}
                     className={cx(
-                      'mr-3 relative rounded-md p-2 bg-gray-50 text-sm font-medium hover:bg-white hover:shadow-sm dark:bg-slate-900 dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
+                      'relative mr-3 rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                       {
                         'cursor-not-allowed opacity-50': isLoading || dataLoading,
                       },
                     )}
                   >
-                    <ArrowPathIcon className='w-5 h-5 text-gray-700 dark:text-gray-50' />
+                    <ArrowPathIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
                   </button>
                   <Dropdown
                     header={t('project.exportData')}
                     items={exportTypes}
-                    title={[<ArrowDownTrayIcon key='download-icon' className='w-5 h-5' />]}
+                    title={[<ArrowDownTrayIcon key='download-icon' className='h-5 w-5' />]}
                     labelExtractor={(item) => item.label}
                     keyExtractor={(item) => item.label}
                     onSelect={(item) => item.onClick(panelsData, t)}
@@ -698,7 +698,7 @@ const ViewCaptcha = ({
                     headless
                   />
                   <div
-                    className={cx('border-gray-200 dark:border-gray-600 lg:px-3 sm:mr-3 space-x-2 lg:border-x', {
+                    className={cx('space-x-2 border-gray-200 dark:border-gray-600 sm:mr-3 lg:border-x lg:px-3', {
                       // TODO: Fix a crash when user selects 'bar' chart and refreshes the page:
                       // Uncaught TypeError: can't access property "create", point5 is undefined
                       hidden: isPanelsDataEmpty || analyticsLoading || checkIfAllMetricsAreDisabled || true,
@@ -709,32 +709,32 @@ const ViewCaptcha = ({
                       title={t('project.barChart')}
                       onClick={() => setChartTypeOnClick(chartTypes.bar)}
                       className={cx(
-                        'relative fill-gray-700 dark:fill-gray-50 rounded-md p-2 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
+                        'relative rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                         {
-                          'bg-white dark:bg-slate-800 stroke-white dark:stroke-slate-800 shadow-sm':
+                          'bg-white stroke-white shadow-sm dark:bg-slate-800 dark:stroke-slate-800':
                             chartType === chartTypes.bar,
                           'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200':
                             chartType !== chartTypes.bar,
                         },
                       )}
                     >
-                      <BarChart className='w-5 h-5 [&_path]:stroke-[3.5%]' />
+                      <BarChart className='h-5 w-5 [&_path]:stroke-[3.5%]' />
                     </button>
                     <button
                       type='button'
                       title={t('project.lineChart')}
                       onClick={() => setChartTypeOnClick(chartTypes.line)}
                       className={cx(
-                        'relative fill-gray-700 dark:fill-gray-50 rounded-md p-2 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
+                        'relative rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                         {
-                          'bg-white dark:bg-slate-800 stroke-white dark:stroke-slate-800 shadow-sm':
+                          'bg-white stroke-white shadow-sm dark:bg-slate-800 dark:stroke-slate-800':
                             chartType === chartTypes.line,
                           'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200':
                             chartType !== chartTypes.line,
                         },
                       )}
                     >
-                      <LineChart className='w-5 h-5 [&_path]:stroke-[3.5%]' />
+                      <LineChart className='h-5 w-5 [&_path]:stroke-[3.5%]' />
                     </button>
                   </div>
                   {!isPanelsDataEmpty && (
@@ -788,10 +788,10 @@ const ViewCaptcha = ({
                     <button
                       type='button'
                       onClick={openSettingsHandler}
-                      className='flex px-3 text-gray-700 dark:text-gray-50 hover:text-gray-600 dark:hover:text-gray-200 text-sm font-medium'
+                      className='flex px-3 text-sm font-medium text-gray-700 hover:text-gray-600 dark:text-gray-50 dark:hover:text-gray-200'
                     >
                       <>
-                        <Cog8ToothIcon className='w-5 h-5 mr-1' />
+                        <Cog8ToothIcon className='mr-1 h-5 w-5' />
                         {t('common.settings')}
                       </>
                     </button>
@@ -821,7 +821,7 @@ const ViewCaptcha = ({
                   tnMapping={tnMapping}
                 />
                 {dataLoading && (
-                  <div className='!bg-transparent static mt-4' id='loader'>
+                  <div className='static mt-4 !bg-transparent' id='loader'>
                     <div className='loader-head dark:!bg-slate-800'>
                       <div className='first dark:!bg-slate-600' />
                       <div className='second dark:!bg-slate-600' />
@@ -883,7 +883,7 @@ const ViewCaptcha = ({
                           if (!logoUrl) {
                             return (
                               <>
-                                <GlobeAltIcon className='w-5 h-5' />
+                                <GlobeAltIcon className='h-5 w-5' />
                                 &nbsp;
                                 {entryName}
                               </>
@@ -892,7 +892,7 @@ const ViewCaptcha = ({
 
                           return (
                             <>
-                              <img src={logoUrl} className='w-5 h-5' alt='' />
+                              <img src={logoUrl} className='h-5 w-5' alt='' />
                               &nbsp;
                               {entryName}
                             </>
@@ -927,7 +927,7 @@ const ViewCaptcha = ({
                           if (!logoPath) {
                             return (
                               <>
-                                <GlobeAltIcon className='w-5 h-5' />
+                                <GlobeAltIcon className='h-5 w-5' />
                                 &nbsp;
                                 {entryName}
                               </>
@@ -938,7 +938,7 @@ const ViewCaptcha = ({
 
                           return (
                             <>
-                              <img src={logoUrl} className='w-5 h-5 dark:fill-gray-50' alt='' />
+                              <img src={logoUrl} className='h-5 w-5 dark:fill-gray-50' alt='' />
                               &nbsp;
                               {entryName}
                             </>

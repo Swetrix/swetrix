@@ -114,7 +114,7 @@ const ModalMessage = ({
 
   return (
     <>
-      <p className='text-gray-500 dark:text-gray-300 italic mt-1 mb-4 text-sm'>{t('project.settings.resetHint')}</p>
+      <p className='mb-4 mt-1 text-sm italic text-gray-500 dark:text-gray-300'>{t('project.settings.resetHint')}</p>
       <div className='mt-6'>
         <nav className='-mb-px flex space-x-6'>
           {_map(tabDeleteDataModal, (tabDelete) => (
@@ -122,9 +122,9 @@ const ModalMessage = ({
               key={tabDelete.name}
               type='button'
               onClick={() => setTab(tabDelete.name)}
-              className={cx('whitespace-nowrap pb-2 px-1 border-b-2 font-medium text-md', {
-                'border-indigo-500 text-indigo-600 dark:text-gray-50 dark:border-gray-50': tabDelete.name === tab,
-                'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-300':
+              className={cx('text-md whitespace-nowrap border-b-2 px-1 pb-2 font-medium', {
+                'border-indigo-500 text-indigo-600 dark:border-gray-50 dark:text-gray-50': tabDelete.name === tab,
+                'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
                   tab !== tabDelete.name,
               })}
             >
@@ -135,15 +135,15 @@ const ModalMessage = ({
       </div>
       {tab === tabDeleteDataModal[1].name && (
         <>
-          <p className='text-gray-500 dark:text-gray-300 mt-4 mb-2 text-sm'>
+          <p className='mb-2 mt-4 text-sm text-gray-500 dark:text-gray-300'>
             {t('project.settings.reseted.partiallyDesc')}
           </p>
-          <p className='text-gray-500 dark:text-gray-300 italic mt-1 mb-2 text-sm'>
+          <p className='mb-2 mt-1 text-sm italic text-gray-500 dark:text-gray-300'>
             {t('project.settings.reseted.partiallyHint')}
           </p>
           <input
             type='text'
-            className='h-0 w-0 border-0 p-0 m-0 focus:text-transparent focus:border-transparent focus:shadow-none focus:ring-transparent'
+            className='m-0 h-0 w-0 border-0 p-0 focus:border-transparent focus:text-transparent focus:shadow-none focus:ring-transparent'
           />
           <FlatPicker
             onChange={(date) => setDateRange(date)}
@@ -156,13 +156,13 @@ const ModalMessage = ({
         </>
       )}
       {tab === tabDeleteDataModal[0].name && (
-        <p className='text-gray-500 dark:text-gray-300 italic mt-4 mb-4 text-sm'>
+        <p className='mb-4 mt-4 text-sm italic text-gray-500 dark:text-gray-300'>
           {t('project.settings.reseted.allHint')}
         </p>
       )}
       {tab === tabDeleteDataModal[2].name && (
         <div className='min-h-[410px]'>
-          <p className='text-gray-500 dark:text-gray-300 italic mt-4 mb-4 text-sm'>
+          <p className='mb-4 mt-4 text-sm italic text-gray-500 dark:text-gray-300'>
             {t('project.settings.reseted.viaFiltersHint')}
           </p>
           <div>
@@ -230,7 +230,7 @@ const ModalMessage = ({
                 }
               />
             ) : (
-              <p className='text-gray-500 dark:text-gray-300 italic mt-4 mb-4 text-sm'>
+              <p className='mb-4 mt-4 text-sm italic text-gray-500 dark:text-gray-300'>
                 {t('project.settings.reseted.noFilters')}
               </p>
             )}
@@ -557,15 +557,15 @@ const ProjectSettings = ({
 
   if (authLoading || !initialised) {
     return (
-      <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+      <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8'>
         <Loader />
       </div>
     )
   }
 
   return (
-    <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8 pb-40'>
-      <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
+    <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 pb-40 dark:bg-slate-900 sm:px-6 lg:px-8'>
+      <form className='mx-auto w-full max-w-7xl' onSubmit={handleSubmit}>
         <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{title}</h2>
         <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('profileSettings.general')}</h3>
         <Input
@@ -667,10 +667,10 @@ const ProjectSettings = ({
           label={t('project.settings.protected')}
           hint={t('project.settings.protectedHint')}
         />
-        <div className='flex flex-wrap justify-center sm:justify-between gap-2 mt-8'>
+        <div className='mt-8 flex flex-wrap justify-center gap-2 sm:justify-between'>
           <div className='flex flex-wrap items-center gap-2'>
             <Button
-              className='border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700'
+              className='border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
               onClick={onCancel}
               secondary
               regular
@@ -686,7 +686,7 @@ const ProjectSettings = ({
               {!isSelfhosted && (
                 <Button onClick={() => setShowTransfer(true)} semiDanger semiSmall>
                   <>
-                    <RocketLaunchIcon className='w-5 h-5 mr-1' />
+                    <RocketLaunchIcon className='mr-1 h-5 w-5' />
                     {t('project.settings.transfer')}
                   </>
                 </Button>
@@ -698,7 +698,7 @@ const ProjectSettings = ({
                 semiSmall
               >
                 <>
-                  <TrashIcon className='w-5 h-5 mr-1' />
+                  <TrashIcon className='mr-1 h-5 w-5' />
                   {t('project.settings.reset')}
                 </>
               </Button>
@@ -709,7 +709,7 @@ const ProjectSettings = ({
                 semiSmall
               >
                 <>
-                  <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
+                  <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
                   {t('project.settings.delete')}
                 </>
               </Button>
@@ -718,13 +718,13 @@ const ProjectSettings = ({
         </div>
         {!isSelfhosted && (
           <>
-            <hr className='mt-8 xs:mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
+            <hr className='mt-8 border-gray-200 dark:border-gray-600 xs:mt-2 sm:mt-5' />
             <Emails projectId={id} projectName={project.name} />
           </>
         )}
         {!isSelfhosted && (
           <>
-            <hr className='mt-2 sm:mt-5 border-gray-200 dark:border-gray-600' />
+            <hr className='mt-2 border-gray-200 dark:border-gray-600 sm:mt-5' />
             <People project={project} isSharedProject={isSharedProject} />
           </>
         )}
@@ -780,7 +780,7 @@ const ProjectSettings = ({
         title={t('project.settings.protected')}
         message={
           <div>
-            <p className='text-gray-500 dark:text-gray-300 mt-1 mb-4 text-sm'>{t('project.settings.protectedHint')}</p>
+            <p className='mb-4 mt-1 text-sm text-gray-500 dark:text-gray-300'>{t('project.settings.protectedHint')}</p>
             <Input
               name='password'
               id='password'

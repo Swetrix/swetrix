@@ -37,5 +37,5 @@ export const SessionChart = ({ chart, timeBucket, timeFormat, rotateXAxis, chart
     // })
   }, [chart, timeBucket, timeFormat, rotateXAxis, chartType, dataNames])
 
-  return <div className='h-80 mt-5 md:mt-0 [&_svg]:!overflow-visible' id='sessionChart' />
+  return <div className='mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible' id='sessionChart' />
 }

@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import _endsWith from 'lodash/endsWith'
 
 const displayDateOptions: Intl.DateTimeFormatOptions = {

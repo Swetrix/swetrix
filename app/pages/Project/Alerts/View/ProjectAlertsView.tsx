@@ -39,19 +39,19 @@ const NoNotificationChannelSet = () => {
   const { t } = useTranslation('common')
 
   return (
-    <div className='bg-yellow-300 dark:bg-yellow-500 rounded-lg'>
-      <div className='max-w-7xl mx-auto py-3 px-3 sm:px-6 lg:px-8'>
-        <div className='flex items-center justify-between flex-wrap'>
-          <div className='flex-1 flex items-center'>
-            <span className='flex p-2 rounded-lg bg-yellow-500 dark:bg-yellow-600'>
+    <div className='rounded-lg bg-yellow-300 dark:bg-yellow-500'>
+      <div className='mx-auto max-w-7xl px-3 py-3 sm:px-6 lg:px-8'>
+        <div className='flex flex-wrap items-center justify-between'>
+          <div className='flex flex-1 items-center'>
+            <span className='flex rounded-lg bg-yellow-500 p-2 dark:bg-yellow-600'>
               <ExclamationTriangleIcon className='h-6 w-6 text-white' aria-hidden='true' />
             </span>
             <p className='ml-3 font-medium text-black'>{t('alert.noNotificationChannel')}</p>
           </div>
-          <div className='order-3 mt-2 flex-shrink-0 w-full sm:order-2 sm:mt-0 sm:w-auto'>
+          <div className='order-3 mt-2 w-full flex-shrink-0 sm:order-2 sm:mt-0 sm:w-auto'>
             <Link
               to={routes.user_settings}
-              className='flex items-center justify-center cursor-pointer px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-800 bg-gray-50 hover:bg-yellow-50 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700'
+              className='flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-gray-50 px-4 py-2 text-sm font-medium text-gray-800 shadow-sm hover:bg-yellow-50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
             >
               {t('common.fixIt')}
             </Link>
@@ -91,9 +91,9 @@ const AlertCard = ({
     <>
       <li
         onClick={() => openAlert(id)}
-        className='overflow-hidden min-h-[120px] rounded-xl border border-gray-200 cursor-pointer bg-gray-50 hover:bg-gray-100 dark:bg-[#162032] dark:hover:bg-slate-800 dark:border-slate-800/25'
+        className='min-h-[120px] cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 dark:border-slate-800/25 dark:bg-[#162032] dark:hover:bg-slate-800'
       >
-        <div className='py-4 px-4'>
+        <div className='px-4 py-4'>
           <div className='flex justify-between'>
             <div>
               <p className='flex items-center gap-x-2 text-lg text-slate-900 dark:text-gray-50'>
@@ -120,7 +120,7 @@ const AlertCard = ({
                   e.stopPropagation()
                   openAlert(id)
                 }}
-                className='w-6 h-6 text-gray-800 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-500'
+                className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500'
               />
               <TrashIcon
                 onClick={(e) => {
@@ -129,7 +129,7 @@ const AlertCard = ({
                 }}
                 role='button'
                 aria-label={t('common.delete')}
-                className='w-6 h-6 text-gray-800 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-500'
+                className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500'
               />
             </div>
           </div>
@@ -161,13 +161,13 @@ const AddAlert = ({ handleNewAlert, isLimitReached }: IAddAlert): JSX.Element =>
   return (
     <li
       onClick={handleNewAlert}
-      className='flex cursor-pointer justify-center items-center rounded-lg border-2 border-dashed h-auto min-h-[120px] group border-gray-300 hover:border-gray-400 dark:border-gray-500 dark:hover:border-gray-600'
+      className='group flex h-auto min-h-[120px] cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 dark:border-gray-500 dark:hover:border-gray-600'
     >
       <div>
         {isLimitReached ? (
-          <CurrencyDollarIcon className='mx-auto h-12 w-12 text-gray-400 dark:text-gray-200 group-hover:text-gray-500 group-hover:dark:text-gray-400' />
+          <CurrencyDollarIcon className='mx-auto h-12 w-12 text-gray-400 group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400' />
         ) : (
-          <PlusCircleIcon className='mx-auto h-12 w-12 text-gray-400 dark:text-gray-200 group-hover:text-gray-500 group-hover:dark:text-gray-400' />
+          <PlusCircleIcon className='mx-auto h-12 w-12 text-gray-400 group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400' />
         )}
         <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
           {t('alert.add')}
@@ -255,20 +255,20 @@ const ProjectAlerts = ({ projectId }: IProjectAlerts): JSX.Element => {
       <div className='mt-4'>
         {loading && <div>{t('common.loading')}</div>}
         {!loading && _isEmpty(projectAlerts) && (
-          <div className='p-5 mt-5 bg-gray-700 rounded-xl'>
+          <div className='mt-5 rounded-xl bg-gray-700 p-5'>
             <div className='flex items-center text-gray-50'>
-              <BellIcon className='w-8 h-8 mr-2' />
-              <p className='font-bold text-3xl'>{t('dashboard.alerts')}</p>
+              <BellIcon className='mr-2 h-8 w-8' />
+              <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>
             </div>
-            <p className='text-lg whitespace-pre-wrap mt-2 text-gray-100'>{t('dashboard.alertsDesc')}</p>
+            <p className='mt-2 whitespace-pre-wrap text-lg text-gray-100'>{t('dashboard.alertsDesc')}</p>
             <Button
               onClick={handleNewAlert}
-              className='mt-6 bg-white py-2 px-3 md:px-4 border border-transparent rounded-md text-base font-medium text-gray-700 hover:bg-indigo-50'
+              className='mt-6 rounded-md border border-transparent bg-white px-3 py-2 text-base font-medium text-gray-700 hover:bg-indigo-50 md:px-4'
               secondary
               large
             >
               <>
-                {isLimitReached && <CurrencyDollarIcon className='w-5 h-5 mr-1' />}
+                {isLimitReached && <CurrencyDollarIcon className='mr-1 h-5 w-5' />}
                 {t('alert.add')}
               </>
             </Button>
@@ -277,7 +277,7 @@ const ProjectAlerts = ({ projectId }: IProjectAlerts): JSX.Element => {
         {!loading && !_isEmpty(projectAlerts) && (
           <>
             {!isIntegrationLinked && <NoNotificationChannelSet />}
-            <ul className='grid grid-cols-1 gap-x-6 gap-y-3 lg:gap-y-6 lg:grid-cols-3 mt-4'>
+            <ul className='mt-4 grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
               {_map(projectAlerts, (alert) => (
                 <AlertCard
                   key={alert.id}

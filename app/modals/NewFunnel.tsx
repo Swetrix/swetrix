@@ -121,9 +121,9 @@ const NewFunnel = ({
           />
           <p className='mt-5 text-sm font-medium text-gray-700 dark:text-gray-200'>{t('modals.funnels.steps')}</p>
           {_map(steps, (step, index) => (
-            <div key={index} className='flex items-center space-x-2 mt-1'>
+            <div key={index} className='mt-1 flex items-center space-x-2'>
               <Combobox
-                className='w-full !ml-0'
+                className='!ml-0 w-full'
                 buttonClassName={cx({
                   'h-9': !step,
                 })}
@@ -142,7 +142,7 @@ const NewFunnel = ({
                 <TrashIcon
                   role='button'
                   aria-label='Remove step'
-                  className='h-5 w-5 text-gray-400 dark:text-gray-200 hover:text-gray-500 dark:hover:text-gray-300 cursor-pointer'
+                  className='h-5 w-5 cursor-pointer text-gray-400 hover:text-gray-500 dark:text-gray-200 dark:hover:text-gray-300'
                   onClick={() => {
                     const newSteps = [...steps]
                     newSteps.splice(index, 1)

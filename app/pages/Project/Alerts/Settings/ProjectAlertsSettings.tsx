@@ -247,22 +247,22 @@ const ProjectAlertsSettings = ({
 
   return (
     <div
-      className={cx('min-h-min-footer bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8', {
+      className={cx('flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8', {
         'pb-40': isSettings,
       })}
     >
-      <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
+      <form className='mx-auto w-full max-w-7xl' onSubmit={handleSubmit}>
         <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{title}</h2>
         {!loading && !isIntegrationLinked && (
-          <div className='flex items-center bg-blue-50 dark:text-gray-50 dark:bg-slate-800 rounded px-5 py-3 mt-2 whitespace-pre-wrap text-base'>
-            <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
+          <div className='mt-2 flex items-center whitespace-pre-wrap rounded bg-blue-50 px-5 py-3 text-base dark:bg-slate-800 dark:text-gray-50'>
+            <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
             <Trans
               // @ts-ignore
               t={t}
               i18nKey='alert.noIntegration'
               components={{
                 // eslint-disable-next-line jsx-a11y/anchor-has-content
-                url: <Link to={INTEGRATIONS_LINK} className='hover:underline text-blue-600 dark:text-blue-500' />,
+                url: <Link to={INTEGRATIONS_LINK} className='text-blue-600 hover:underline dark:text-blue-500' />,
               }}
             />
           </div>
@@ -363,16 +363,16 @@ const ProjectAlertsSettings = ({
           />
         </div>
         {isSettings ? (
-          <div className='flex justify-between items-center mt-5'>
+          <div className='mt-5 flex items-center justify-between'>
             <Button onClick={() => setShowModal(true)} danger semiSmall>
               <>
-                <ExclamationTriangleIcon className='w-5 h-5 mr-1' />
+                <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
                 {t('alert.delete')}
               </>
             </Button>
-            <div className='flex justify-between items-center'>
+            <div className='flex items-center justify-between'>
               <Button
-                className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700'
+                className='mr-2 border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
                 onClick={onCancel}
                 secondary
                 regular
@@ -385,9 +385,9 @@ const ProjectAlertsSettings = ({
             </div>
           </div>
         ) : (
-          <div className='mt-5 flex justify-between items-center'>
+          <div className='mt-5 flex items-center justify-between'>
             <Button
-              className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700'
+              className='mr-2 border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
               onClick={onCancel}
               secondary
               regular

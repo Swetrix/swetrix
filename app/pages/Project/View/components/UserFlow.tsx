@@ -135,7 +135,7 @@ const UserFlow = ({
   ) {
     return (
       <>
-        <p className='flex mt-4 items-center justify-center text-md text-gray-900 dark:text-gray-50'>
+        <p className='text-md mt-4 flex items-center justify-center text-gray-900 dark:text-gray-50'>
           {t('project.userFlow.noData')}
         </p>
         <button
@@ -143,7 +143,7 @@ const UserFlow = ({
           onClick={() => {
             setReversed()
           }}
-          className='mt-2 w-full inline-flex justify-center rounded-md dark:border-none border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:border-gray-600 dark:bg-slate-700 dark:hover:border-gray-600 dark:hover:bg-gray-700 sm:w-auto sm:text-sm'
+          className='mt-2 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-none dark:border-gray-600 dark:bg-slate-700 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700 sm:w-auto sm:text-sm'
         >
           {t('project.reverse')}
         </button>

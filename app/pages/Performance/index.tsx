@@ -18,9 +18,9 @@ import Header from 'components/Header'
 import Pricing from '../MainPage/Pricing'
 
 export const Lines = (): JSX.Element => (
-  <div className='relative pointer-events-none'>
-    <div className='absolute rotate-6 right-[-48rem] top-[32rem] h-px w-[800%] bg-gradient-to-l from-slate-600 dark:from-slate-400 opacity-10' />
-    <div className='absolute rotate-[96deg] top-[22.26rem] xl:top-[23.5rem] -left-60 ml-[-0.5px] h-96 w-[2px] rounded-full bg-gradient-to-t from-orange-600 dark:from-orange-700 opacity-50' />
+  <div className='pointer-events-none relative'>
+    <div className='absolute right-[-48rem] top-[32rem] h-px w-[800%] rotate-6 bg-gradient-to-l from-slate-600 opacity-10 dark:from-slate-400' />
+    <div className='absolute -left-60 top-[22.26rem] ml-[-0.5px] h-96 w-[2px] rotate-[96deg] rounded-full bg-gradient-to-t from-orange-600 opacity-50 dark:from-orange-700 xl:top-[23.5rem]' />
   </div>
 )
 
@@ -49,9 +49,9 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
     <div className='overflow-hidden'>
       <main className='bg-white dark:bg-slate-900'>
         {/* first block with live demo */}
-        <div className='relative overflow-x-clip isolate'>
+        <div className='relative isolate overflow-x-clip'>
           <svg
-            className='absolute inset-0 -z-10 h-full w-full stroke-gray-200 dark:stroke-white/10 [mask-image:radial-gradient(100%_100%_at_top_right,white,transparent)]'
+            className='absolute inset-0 -z-10 h-full w-full stroke-gray-200 [mask-image:radial-gradient(100%_100%_at_top_right,white,transparent)] dark:stroke-white/10'
             aria-hidden='true'
           >
             <defs>
@@ -80,47 +80,47 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
             />
           </div>
           <Header ssrTheme={ssrTheme} authenticated={authenticated} transparent />
-          <div className='flex justify-center items-center py-2 px-2'>
+          <div className='flex items-center justify-center px-2 py-2'>
             <a
               href='https://u24.gov.ua/'
               target='_blank'
               rel='noreferrer noopener'
-              className='text-slate-900 dark:text-white border-transparent border-b-2 hover:border-slate-900 dark:hover:border-white text-center'
+              className='border-b-2 border-transparent text-center text-slate-900 hover:border-slate-900 dark:text-white dark:hover:border-white'
             >
               {t('main.ukrSupport')}
             </a>
-            <ArrowTopRightOnSquareIcon className='h-4 w-4 text-slate-800 dark:text-white ml-1 hidden md:block' />
+            <ArrowTopRightOnSquareIcon className='ml-1 hidden h-4 w-4 text-slate-800 dark:text-white md:block' />
           </div>
-          <div className='relative pt-10 lg:pt-24 pb-5 xl:px-8 lg:px-6 sm:px-3 mx-auto min-h-[740px]'>
-            <div className='relative z-20 flex flex-row content-between 2xl:mr-[14vw] 2xl:justify-center justify-center lg:justify-start'>
-              <div className='lg:mt-0 text-left relative lg:mr-14 px-4'>
-                <h1 className='max-w-2xl text-3xl sm:text-5xl md:text-5xl font-extrabold text-slate-900 dark:text-white sm:leading-none lg:text-5xl xl:text-6xl xl:leading-[110%]'>
+          <div className='relative mx-auto min-h-[740px] pb-5 pt-10 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
+            <div className='relative z-20 flex flex-row content-between justify-center lg:justify-start 2xl:mr-[14vw] 2xl:justify-center'>
+              <div className='relative px-4 text-left lg:mr-14 lg:mt-0'>
+                <h1 className='max-w-2xl text-3xl font-extrabold text-slate-900 dark:text-white sm:text-5xl sm:leading-none md:text-5xl lg:text-5xl xl:text-6xl xl:leading-[110%]'>
                   <Trans
                     // @ts-ignore
                     t={t}
                     i18nKey='performance.slogan'
                     components={{
                       span: (
-                        <span className='from-orange-700 to-orange-700 dark:from-orange-600 dark:to-red-400 text-transparent bg-clip-text bg-gradient-to-r' />
+                        <span className='bg-gradient-to-r from-orange-700 to-orange-700 bg-clip-text text-transparent dark:from-orange-600 dark:to-red-400' />
                       ),
                     }}
                   />
                 </h1>
-                <div className='flex items-center overflow-hidden mt-2 mb-2 sm:text-xl lg:text-lg xl:text-lg'>
-                  <p className='rounded-full bg-indigo-500/10 px-3 py-1 text-sm text-center font-semibold leading-6 text-indigo-600 dark:text-indigo-400 ring-1 ring-inset ring-indigo-500/20'>
+                <div className='mb-2 mt-2 flex items-center overflow-hidden sm:text-xl lg:text-lg xl:text-lg'>
+                  <p className='rounded-full bg-indigo-500/10 px-3 py-1 text-center text-sm font-semibold leading-6 text-indigo-600 ring-1 ring-inset ring-indigo-500/20 dark:text-indigo-400'>
                     Latest news
                   </p>
                   {_isEmpty(lastBlogPost) ? (
-                    <div className='h-6 ml-1 bg-slate-300 dark:bg-slate-700 w-full max-w-xs rounded-md animate-pulse' />
+                    <div className='ml-1 h-6 w-full max-w-xs animate-pulse rounded-md bg-slate-300 dark:bg-slate-700' />
                   ) : (
                     <ClientOnly
                       fallback={
-                        <div className='h-6 ml-1 bg-slate-300 dark:bg-slate-700 w-full max-w-xs rounded-md animate-pulse' />
+                        <div className='ml-1 h-6 w-full max-w-xs animate-pulse rounded-md bg-slate-300 dark:bg-slate-700' />
                       }
                     >
                       {() => (
                         <Link
-                          className='inline-flex ml-1 items-center space-x-1 text-sm font-semibold leading-6 text-slate-700 dark:text-slate-300 hover:underline'
+                          className='ml-1 inline-flex items-center space-x-1 text-sm font-semibold leading-6 text-slate-700 hover:underline dark:text-slate-300'
                           to={`blog/${lastBlogPost.handle}`}
                         >
                           <small className='text-sm'>{lastBlogPost.title}</small>
@@ -138,15 +138,15 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
                 <div className='mt-10 flex flex-col items-center sm:flex-row'>
                   <Link
                     to={routesPath.signup}
-                    className='rounded-md !duration-300 transition-all w-full sm:max-w-[210px] h-12 flex items-center justify-center sm:mr-6 shadow-sm ring-1 text-white bg-slate-900 ring-slate-900 hover:bg-slate-700 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600'
+                    className='flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white shadow-sm ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600 sm:mr-6 sm:max-w-[210px]'
                     aria-label={t('titles.signup')}
                   >
-                    <span className='text-base font-semibold mr-1'>{t('common.getStarted')}</span>
-                    <ArrowSmallRightIcon className='h-4 w-5 mt-[1px]' />
+                    <span className='mr-1 text-base font-semibold'>{t('common.getStarted')}</span>
+                    <ArrowSmallRightIcon className='mt-[1px] h-4 w-5' />
                   </Link>
                   <a
                     href={PERFORMANCE_LIVE_DEMO_URL}
-                    className='rounded-md !duration-300 transition-all sm:mt-0 mt-2 ring-1 ring-slate-900 dark:ring-white/20 w-full sm:max-w-[210px] h-12 flex items-center justify-center shadow-sm text-slate-900 dark:text-white bg-transparent hover:bg-slate-200 dark:hover:bg-gray-800'
+                    className='mt-2 flex h-12 w-full items-center justify-center rounded-md bg-transparent text-slate-900 shadow-sm ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-200 dark:text-white dark:ring-white/20 dark:hover:bg-gray-800 sm:mt-0 sm:max-w-[210px]'
                     target='_blank'
                     rel='noopener noreferrer'
                     aria-label={`${t('common.liveDemo')} (opens in a new tab)`}
@@ -155,7 +155,7 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
                   </a>
                 </div>
               </div>
-              <div className='max-w-md xl:max-w-lg hidden lg:block'>
+              <div className='hidden max-w-md lg:block xl:max-w-lg'>
                 <Lines />
                 <picture>
                   <source
@@ -166,7 +166,7 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
                   />
                   <img
                     src={theme === 'dark' ? '/assets/screenshot_perf_dark.png' : '/assets/screenshot_perf_light.png'}
-                    className='h-full min-w-[880px] rounded-xl relative shadow-2xl ring-1 ring-gray-900/10 dark:ring-white/10'
+                    className='relative h-full min-w-[880px] rounded-xl shadow-2xl ring-1 ring-gray-900/10 dark:ring-white/10'
                     width='100%'
                     height='auto'
                     alt='Swetrix Analytics dashboard'
@@ -174,7 +174,7 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
                 </picture>
               </div>
             </div>
-            <div className='my-10 block lg:hidden relative z-20 px-4 md:px-0'>
+            <div className='relative z-20 my-10 block px-4 md:px-0 lg:hidden'>
               <picture>
                 <source
                   srcSet={theme === 'dark' ? '/assets/screenshot_perf_dark.webp' : '/assets/screenshot_perf_light.webp'}
@@ -182,7 +182,7 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
                 />
                 <img
                   src={theme === 'dark' ? '/assets/screenshot_perf_dark.png' : '/assets/screenshot_perf_light.png'}
-                  className='rounded-xl relative shadow-2xl w-full ring-1 ring-gray-900/10 dark:ring-white/10'
+                  className='relative w-full rounded-xl shadow-2xl ring-1 ring-gray-900/10 dark:ring-white/10'
                   width='100%'
                   height='auto'
                   alt='Swetrix Analytics dashboard'
@@ -193,9 +193,9 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
         </div>
         {/* end first block with live demo */}
 
-        <div className='dark:bg-slate-900 bg-white px-4 pb-16 mx-auto max-w-7xl whitespace-pre-line mt-12'>
-          <h2 className='font-extrabold text-4xl dark:text-white text-slate-900'>{t('performance.fast.title')}</h2>
-          <p className='mt-6 dark:text-gray-50 text-gray-900 text-lg'>
+        <div className='mx-auto mt-12 max-w-7xl whitespace-pre-line bg-white px-4 pb-16 dark:bg-slate-900'>
+          <h2 className='text-4xl font-extrabold text-slate-900 dark:text-white'>{t('performance.fast.title')}</h2>
+          <p className='mt-6 text-lg text-gray-900 dark:text-gray-50'>
             <Trans
               // @ts-ignore
               t={t}
@@ -205,14 +205,14 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
                 indexUrl: (
                   <Link
                     to={routesPath.main}
-                    className='font-medium text-orange-600 dark:text-orange-400 hover:underline'
+                    className='font-medium text-orange-600 hover:underline dark:text-orange-400'
                   />
                 ),
                 // eslint-disable-next-line jsx-a11y/anchor-has-content
                 wpostatsUrl: (
                   <a
                     href='https://wpostats.com/?utm_source=swetrix.com'
-                    className='font-medium text-orange-600 dark:text-orange-400 hover:underline'
+                    className='font-medium text-orange-600 hover:underline dark:text-orange-400'
                     target='_blank'
                     rel='noopener noreferrer'
                   />
@@ -220,7 +220,7 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
               }}
             />
           </p>
-          <ul className='mt-2 list-disc list-inside dark:text-gray-50 text-gray-900 text-lg'>
+          <ul className='mt-2 list-inside list-disc text-lg text-gray-900 dark:text-gray-50'>
             {_map(t('performance.fast.list', { returnObjects: true }), (item) => (
               <li key={item} className='mb-2'>
                 {item}
@@ -228,26 +228,26 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
             ))}
           </ul>
 
-          <h2 className='mt-10 font-extrabold text-4xl dark:text-white text-slate-900'>
+          <h2 className='mt-10 text-4xl font-extrabold text-slate-900 dark:text-white'>
             {t('performance.metrics.title')}
           </h2>
-          <p className='mt-6 dark:text-gray-50 text-gray-900 text-lg'>{t('performance.metrics.desc')}</p>
+          <p className='mt-6 text-lg text-gray-900 dark:text-gray-50'>{t('performance.metrics.desc')}</p>
 
-          <h2 className='mt-10 font-extrabold text-4xl dark:text-white text-slate-900'>
+          <h2 className='mt-10 text-4xl font-extrabold text-slate-900 dark:text-white'>
             {t('performance.privacy.title')}
           </h2>
-          <p className='mt-6 dark:text-gray-50 text-gray-900 text-lg'>{t('performance.privacy.desc')}</p>
+          <p className='mt-6 text-lg text-gray-900 dark:text-gray-50'>{t('performance.privacy.desc')}</p>
         </div>
 
         {/* For now let's hide Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
         {!authenticated && <Pricing authenticated={false} t={t} language={language} />}
 
-        <div className='bg-white dark:bg-slate-900 px-4 md:px-8 pb-12'>
+        <div className='bg-white px-4 pb-12 dark:bg-slate-900 md:px-8'>
           <section
-            className='relative isolate max-w-7xl w-full mx-auto bg-slate-800 overflow-hidden lg:h-[450px]'
+            className='relative isolate mx-auto w-full max-w-7xl overflow-hidden bg-slate-800 lg:h-[450px]'
             style={{ borderRadius: '100px 30px 30px 30px' }}
           >
-            <div className='absolute -z-10 inset-0 overflow-hidden' aria-hidden='true'>
+            <div className='absolute inset-0 -z-10 overflow-hidden' aria-hidden='true'>
               <div className='absolute left-[calc(20%-19rem)] top-[calc(50%-36rem)] transform-gpu blur-3xl'>
                 <div
                   className='aspect-[1097/1023] w-[68.5625rem] bg-gradient-to-r from-[#ff4694] to-[#776fff] opacity-25 dark:opacity-10'
@@ -258,9 +258,9 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
                 />
               </div>
             </div>
-            <div className='flex items-start justify-between pt-8 pl-8 sm:pl-14 lg:pl-28 md:flex-row flex-col'>
-              <div className='max-w-[520px] w-full pt-14 pr-3 mb-16 md:mb-0'>
-                <h2 className='font-bold text-2xl leading-9 sm:text-4xl sm:leading-[48px] md:text-[28px] md:leading-10 lg:text-[33px] lg:leading-[48px] text-white mb-3'>
+            <div className='flex flex-col items-start justify-between pl-8 pt-8 sm:pl-14 md:flex-row lg:pl-28'>
+              <div className='mb-16 w-full max-w-[520px] pr-3 pt-14 md:mb-0'>
+                <h2 className='mb-3 text-2xl font-bold leading-9 text-white sm:text-4xl sm:leading-[48px] md:text-[28px] md:leading-10 lg:text-[33px] lg:leading-[48px]'>
                   <Trans
                     // @ts-ignore
                     t={t}
@@ -270,19 +270,19 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
                     }}
                   />
                 </h2>
-                <p className='text-gray-300 mb-9 font-medium text-base sm:text-lg'>{t('main.whyDitch')}</p>
+                <p className='mb-9 text-base font-medium text-gray-300 sm:text-lg'>{t('main.whyDitch')}</p>
                 <Link
                   to={routesPath.signup}
-                  className='rounded-md border !duration-300 transition-all w-full max-w-[210px] h-[50px] flex items-center justify-center sm:mr-6 shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 border-transparent'
+                  className='flex h-[50px] w-full max-w-[210px] items-center justify-center rounded-md border border-transparent bg-indigo-600 text-white shadow-sm transition-all !duration-300 hover:bg-indigo-700 sm:mr-6'
                   aria-label={t('titles.signup')}
                 >
-                  <span className='text-base font-semibold mr-1'>{t('main.start')}</span>
-                  <ArrowSmallRightIcon className='w-5 h-4 mt-[1px]' />
+                  <span className='mr-1 text-base font-semibold'>{t('main.start')}</span>
+                  <ArrowSmallRightIcon className='mt-[1px] h-4 w-5' />
                 </Link>
               </div>
-              <div className='max-w-md xl:max-w-lg block h-[450px] md:shadow-[8px_8px_10px_3px] md:rounded-md '>
+              <div className='block h-[450px] max-w-md md:rounded-md md:shadow-[8px_8px_10px_3px] xl:max-w-lg '>
                 <img
-                  className='rounded-xl ring-1 ring-gray-900/10 min-h-[600px] min-w-[880px]'
+                  className='min-h-[600px] min-w-[880px] rounded-xl ring-1 ring-gray-900/10'
                   width='1760'
                   height='880'
                   src={theme === 'dark' ? '/assets/screenshot_perf_dark.png' : '/assets/screenshot_perf_light.png'}
@@ -294,57 +294,57 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
         </div>
 
         {/* Become a developer */}
-        <section className='bg-white dark:bg-slate-900 pt-20 pb-44 relative'>
+        <section className='relative bg-white pb-44 pt-20 dark:bg-slate-900'>
           <div className='absolute right-0 top-16 z-0'>
             <BackgroundSvg theme={theme} type='threecircle' />
           </div>
           <div className='absolute -left-9 top-52 rotate-90'>
             <BackgroundSvg theme={theme} type='shapes' />
           </div>
-          <div className='max-w-5xl w-full mx-auto px-3'>
-            <div className='max-w-prose w-full mx-auto'>
-              <h2 className='text-gray-900 dark:text-white text-3xl md:text-4xl font-extrabold text-center'>
+          <div className='mx-auto w-full max-w-5xl px-3'>
+            <div className='mx-auto w-full max-w-prose'>
+              <h2 className='text-center text-3xl font-extrabold text-gray-900 dark:text-white md:text-4xl'>
                 {t('main.peopleLoveSwetrix')}
               </h2>
-              <p className='mt-5 text-xl max-w-prose text-gray-600 dark:text-gray-200 text-center mx-auto'>
+              <p className='mx-auto mt-5 max-w-prose text-center text-xl text-gray-600 dark:text-gray-200'>
                 {t('main.whyPeopleLoveSwetrix')}
               </p>
             </div>
-            <div className='flex items-center justify-between mt-20 md:mt-32 md:flex-row flex-col'>
+            <div className='mt-20 flex flex-col items-center justify-between md:mt-32 md:flex-row'>
               <div className='text-center'>
-                <ClientOnly fallback={<p className='text-indigo-700 text-5xl font-extrabold text-center'>0</p>}>
+                <ClientOnly fallback={<p className='text-center text-5xl font-extrabold text-indigo-700'>0</p>}>
                   {() => (
-                    <p className='text-indigo-700 text-5xl font-extrabold text-center'>
+                    <p className='text-center text-5xl font-extrabold text-indigo-700'>
                       {users[0]}
                       {users[1] && <span className='text-gray-900 dark:text-indigo-200'>{users[1]}+</span>}
                     </p>
                   )}
                 </ClientOnly>
-                <p className='text-gray-600 text-lg dark:text-gray-200'>{t('main.users')}</p>
+                <p className='text-lg text-gray-600 dark:text-gray-200'>{t('main.users')}</p>
               </div>
-              <div className='bg-gray-800 dark:bg-gray-200 w-2 h-2 rounded-full mx-5 mb-14 mt-16 md:mb-0 md:mt-0' />
+              <div className='mx-5 mb-14 mt-16 h-2 w-2 rounded-full bg-gray-800 dark:bg-gray-200 md:mb-0 md:mt-0' />
               <div className='text-center'>
-                <ClientOnly fallback={<p className='text-indigo-700 text-5xl font-extrabold text-center'>0</p>}>
+                <ClientOnly fallback={<p className='text-center text-5xl font-extrabold text-indigo-700'>0</p>}>
                   {() => (
-                    <p className='text-indigo-700 text-5xl font-extrabold text-center'>
+                    <p className='text-center text-5xl font-extrabold text-indigo-700'>
                       {websites[0]}
                       {websites[1] && <span className='text-gray-900 dark:text-indigo-200'>{websites[1]}+</span>}
                     </p>
                   )}
                 </ClientOnly>
-                <p className='text-gray-600 text-lg dark:text-gray-200'>{t('main.websites')}</p>
+                <p className='text-lg text-gray-600 dark:text-gray-200'>{t('main.websites')}</p>
               </div>
-              <div className='bg-gray-800 dark:bg-gray-200 w-2 h-2 rounded-full mx-5 mb-14 mt-16 md:mb-0 md:mt-0' />
+              <div className='mx-5 mb-14 mt-16 h-2 w-2 rounded-full bg-gray-800 dark:bg-gray-200 md:mb-0 md:mt-0' />
               <div className='text-center'>
-                <ClientOnly fallback={<p className='text-indigo-700 text-5xl font-extrabold text-center'>0</p>}>
+                <ClientOnly fallback={<p className='text-center text-5xl font-extrabold text-indigo-700'>0</p>}>
                   {() => (
-                    <p className='text-indigo-700 text-5xl font-extrabold text-center'>
+                    <p className='text-center text-5xl font-extrabold text-indigo-700'>
                       {events[0]}
                       {events[1] && <span className='text-gray-900 dark:text-indigo-200'>{events[1]}+</span>}
                     </p>
                   )}
                 </ClientOnly>
-                <p className='text-gray-600 text-lg dark:text-gray-200'>{t('main.pageviews')}</p>
+                <p className='text-lg text-gray-600 dark:text-gray-200'>{t('main.pageviews')}</p>
               </div>
             </div>
           </div>

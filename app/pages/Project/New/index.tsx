@@ -139,15 +139,15 @@ const NewProject = () => {
 
   if (loading) {
     return (
-      <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+      <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8'>
         <Loader />
       </div>
     )
   }
 
   return (
-    <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
-      <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
+    <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8'>
+      <form className='mx-auto w-full max-w-7xl' onSubmit={handleSubmit}>
         <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{t('project.settings.create')}</h2>
         <Input
           name='name'
@@ -160,11 +160,11 @@ const NewProject = () => {
           onChange={handleInput}
           error={beenSubmitted ? errors.name : null}
         />
-        <p className='text-gray-500 dark:text-gray-300 italic mt-1 mb-4 text-sm'>{t('project.settings.createHint')}</p>
+        <p className='mb-4 mt-1 text-sm italic text-gray-500 dark:text-gray-300'>{t('project.settings.createHint')}</p>
 
         <div>
           <Button
-            className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700'
+            className='mr-2 border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
             onClick={onCancel}
             secondary
             regular

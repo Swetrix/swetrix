@@ -28,17 +28,17 @@ export default function Posts() {
 
   if (_filter(posts, (post) => !post.hidden).length === 0) {
     return (
-      <div className='flex justify-center items-center min-h-min-footer'>
+      <div className='flex min-h-min-footer items-center justify-center'>
         <h1 className='text-3xl font-bold text-slate-900 dark:text-slate-200'>No posts found</h1>
       </div>
     )
   }
 
   return (
-    <div className='bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-300 py-10'>
-      <div className='max-w-[52rem] mx-auto px-4 pb-28 sm:px-6 md:px-8 xl:px-12 lg:max-w-6xl'>
-        <div className='relative sm:pb-12 sm:ml-[calc(2rem+1px)] md:ml-[calc(3.5rem+1px)] lg:ml-[max(calc(14.5rem+1px),calc(100%-48rem))] mt-10 '>
-          <div className='hidden absolute top-3 bottom-0 right-full mr-7 md:mr-[3.25rem] w-px bg-slate-200 dark:bg-slate-700 sm:block'></div>
+    <div className='bg-gray-50 py-10 text-gray-700 dark:bg-slate-900 dark:text-gray-300'>
+      <div className='mx-auto max-w-[52rem] px-4 pb-28 sm:px-6 md:px-8 lg:max-w-6xl xl:px-12'>
+        <div className='relative mt-10 sm:ml-[calc(2rem+1px)] sm:pb-12 md:ml-[calc(3.5rem+1px)] lg:ml-[max(calc(14.5rem+1px),calc(100%-48rem))] '>
+          <div className='absolute bottom-0 right-full top-3 mr-7 hidden w-px bg-slate-200 dark:bg-slate-700 sm:block md:mr-[3.25rem]'></div>
 
           <div className='space-y-16'>
             {_map(posts, (post) => {
@@ -47,11 +47,11 @@ export default function Posts() {
               }
 
               return (
-                <article className='relative group' key={post.slug}>
-                  <div className='absolute -inset-y-2.5 -inset-x-4 md:-inset-y-4 md:-inset-x-6 sm:rounded-2xl group-hover:bg-slate-50/70 dark:group-hover:bg-slate-800/50'></div>
+                <article className='group relative' key={post.slug}>
+                  <div className='absolute -inset-x-4 -inset-y-2.5 group-hover:bg-slate-50/70 dark:group-hover:bg-slate-800/50 sm:rounded-2xl md:-inset-x-6 md:-inset-y-4'></div>
                   <svg
                     viewBox='0 0 9 9'
-                    className='hidden absolute right-full mr-6 top-2 text-slate-200 dark:text-slate-600 md:mr-12 w-[calc(0.5rem+1px)] h-[calc(0.5rem+1px)] overflow-visible sm:block'
+                    className='absolute right-full top-2 mr-6 hidden h-[calc(0.5rem+1px)] w-[calc(0.5rem+1px)] overflow-visible text-slate-200 dark:text-slate-600 sm:block md:mr-12'
                   >
                     <circle
                       cx='4.5'
@@ -63,11 +63,11 @@ export default function Posts() {
                     />
                   </svg>
                   <div className='relative'>
-                    <h3 className='text-base font-semibold tracking-tight text-slate-900 dark:text-slate-200 pt-8 lg:pt-0'>
+                    <h3 className='pt-8 text-base font-semibold tracking-tight text-slate-900 dark:text-slate-200 lg:pt-0'>
                       {post.title}
                     </h3>
                     {post.intro && (
-                      <div className='mt-2 mb-4 prose prose-slate prose-a:relative prose-a:z-10 dark:text-slate-400 line-clamp-2'>
+                      <div className='prose prose-slate mb-4 mt-2 line-clamp-2 prose-a:relative prose-a:z-10 dark:text-slate-400'>
                         <p>{post.intro}</p>
                       </div>
                     )}
@@ -79,13 +79,13 @@ export default function Posts() {
                     </dl>
                   </div>
                   <Link
-                    className='flex items-center text-sm text-indigo-600 dark:text-gray-50 font-medium'
+                    className='flex items-center text-sm font-medium text-indigo-600 dark:text-gray-50'
                     to={post.slug}
                   >
-                    <span className='absolute -inset-y-2.5 -inset-x-4 md:-inset-y-4 md:-inset-x-6 sm:rounded-2xl'></span>
+                    <span className='absolute -inset-x-4 -inset-y-2.5 sm:rounded-2xl md:-inset-x-6 md:-inset-y-4'></span>
                     <span className='relative'>Read more</span>
                     <svg
-                      className='relative mt-px overflow-visible ml-2.5 text-indigo-600 dark:text-gray-50'
+                      className='relative ml-2.5 mt-px overflow-visible text-indigo-600 dark:text-gray-50'
                       width='3'
                       height='6'
                       viewBox='0 0 3 6'

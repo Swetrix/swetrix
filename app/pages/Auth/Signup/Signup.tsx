@@ -154,8 +154,8 @@ const Signup = ({ signup, authSSO, ssrTheme, authenticated: reduxAuthenticated, 
 
   return (
     <div>
-      <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
-        <div className='flex min-h-full flex-1 flex-col justify-center py-6 sm:px-6 lg:px-8'>
+      <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8'>
+        <div className='min-h-full flex flex-1 flex-col justify-center py-6 sm:px-6 lg:px-8'>
           <div className='sm:mx-auto sm:w-full sm:max-w-md'>
             <h2 className='text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-gray-50'>
               {t('auth.signup.trial', {
@@ -165,7 +165,7 @@ const Signup = ({ signup, authSSO, ssrTheme, authenticated: reduxAuthenticated, 
             <p className='text-center text-base text-gray-900 dark:text-gray-50'>{t('auth.signup.noCC')}</p>
           </div>
           <div className='mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]'>
-            <div className='bg-white dark:bg-slate-800/20 dark:ring-1 dark:ring-slate-800 px-6 py-12 shadow sm:rounded-lg sm:px-12'>
+            <div className='bg-white px-6 py-12 shadow dark:bg-slate-800/20 dark:ring-1 dark:ring-slate-800 sm:rounded-lg sm:px-12'>
               <form className='space-y-6' onSubmit={handleSubmit}>
                 <Input
                   name='email'
@@ -211,7 +211,7 @@ const Signup = ({ signup, authSSO, ssrTheme, authenticated: reduxAuthenticated, 
                           tos: (
                             <Link
                               to={routes.terms}
-                              className='font-medium text-gray-900 dark:text-gray-300 underline decoration-dashed hover:decoration-solid'
+                              className='font-medium text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-300'
                               aria-label={t('footer.tos')}
                             />
                           ),
@@ -219,7 +219,7 @@ const Signup = ({ signup, authSSO, ssrTheme, authenticated: reduxAuthenticated, 
                           pp: (
                             <Link
                               to={routes.privacy}
-                              className='font-medium text-gray-900 dark:text-gray-300 underline decoration-dashed hover:decoration-solid'
+                              className='font-medium text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-300'
                               aria-label={t('footer.pp')}
                             />
                           ),
@@ -250,7 +250,7 @@ const Signup = ({ signup, authSSO, ssrTheme, authenticated: reduxAuthenticated, 
                           db: (
                             <a
                               href={HAVE_I_BEEN_PWNED_URL}
-                              className='font-medium text-indigo-400 hover:underline hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                              className='font-medium text-indigo-400 hover:text-indigo-500 hover:underline dark:text-indigo-400 dark:hover:text-indigo-500'
                               target='_blank'
                               rel='noreferrer noopener'
                             />
@@ -274,7 +274,7 @@ const Signup = ({ signup, authSSO, ssrTheme, authenticated: reduxAuthenticated, 
                     <div className='w-full border-t border-gray-200 dark:border-gray-600' />
                   </div>
                   <div className='relative flex justify-center text-sm font-medium leading-6'>
-                    <span className='bg-white dark:bg-slate-800/20 px-6 text-gray-900 dark:text-gray-50'>
+                    <span className='bg-white px-6 text-gray-900 dark:bg-slate-800/20 dark:text-gray-50'>
                       {t('auth.common.orContinueWith')}
                     </span>
                   </div>

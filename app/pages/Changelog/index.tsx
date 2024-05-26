@@ -317,22 +317,22 @@ const Changelog = (): JSX.Element => {
 
   return (
     <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-      <div className='w-11/12 md:w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 whitespace-pre-line'>
-        <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50 tracking-tight'>{t('titles.changelog')}</h1>
+      <div className='mx-auto w-11/12 whitespace-pre-line px-4 pb-16 pt-12 sm:px-6 md:w-4/5 lg:px-8'>
+        <h1 className='text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>{t('titles.changelog')}</h1>
 
-        <div className='relative sm:ml-[calc(2rem+1px)] md:ml-[calc(3.5rem+1px)] lg:ml-[calc(11rem)]  sm:pb-12 mt-10'>
-          <div className='hidden absolute top-3 bottom-0 right-full mr-7 md:mr-[3.25rem] w-px bg-slate-200 dark:bg-slate-700 sm:block' />
+        <div className='relative mt-10 sm:ml-[calc(2rem+1px)] sm:pb-12  md:ml-[calc(3.5rem+1px)] lg:ml-[calc(11rem)]'>
+          <div className='absolute bottom-0 right-full top-3 mr-7 hidden w-px bg-slate-200 dark:bg-slate-700 sm:block md:mr-[3.25rem]' />
           <div className='space-y-16'>
             {_map(changelog, (item) => {
               const date = dayjs(item.date).format('YYYY-MM-DDT00:00:00.000Z')
               const displayDate = dayjs(item.date).locale('en').format('MMM DD, YYYY')
 
               return (
-                <div key={item.date} className='relative group'>
-                  <div className='absolute -inset-y-2.5 -inset-x-4 md:-inset-y-4 md:-inset-x-6 sm:rounded-2xl group-hover:bg-slate-50/70 dark:group-hover:bg-slate-800/50' />
+                <div key={item.date} className='group relative'>
+                  <div className='absolute -inset-x-4 -inset-y-2.5 group-hover:bg-slate-50/70 dark:group-hover:bg-slate-800/50 sm:rounded-2xl md:-inset-x-6 md:-inset-y-4' />
                   <svg
                     viewBox='0 0 9 9'
-                    className='hidden absolute right-full mr-6 top-2 text-slate-200 dark:text-slate-600 md:mr-12 w-[calc(0.5rem+1px)] h-[calc(0.5rem+1px)] overflow-visible sm:block'
+                    className='absolute right-full top-2 mr-6 hidden h-[calc(0.5rem+1px)] w-[calc(0.5rem+1px)] overflow-visible text-slate-200 dark:text-slate-600 sm:block md:mr-12'
                   >
                     <circle
                       cx='4.5'
@@ -344,7 +344,7 @@ const Changelog = (): JSX.Element => {
                     />
                   </svg>
                   <div className='relative'>
-                    <ul className='list-disc text-gray-900 dark:text-gray-50 relative top-7 lg:top-0 lg:block text-base mt-2 mb-4 prose prose-slate prose-a:relative prose-a:z-10 dark:prose-dark line-clamp-2'>
+                    <ul className='dark:prose-dark prose prose-slate relative top-7 mb-4 mt-2 line-clamp-2 list-disc text-base text-gray-900 prose-a:relative prose-a:z-10 dark:text-gray-50 lg:top-0 lg:block'>
                       {_map(item.changes, (change) => (
                         // @ts-ignore
                         <li key={change} className='whitespace-pre-line'>

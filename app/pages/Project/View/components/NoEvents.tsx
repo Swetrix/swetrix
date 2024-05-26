@@ -17,13 +17,13 @@ const NoEvents = ({ filters, resetFilters }: INoEvents): JSX.Element => {
   const { t } = useTranslation('common')
 
   return (
-    <div className='flex flex-col py-6 sm:px-6 lg:px-8 mt-5'>
-      <div className='max-w-7xl w-full mx-auto text-gray-900 dark:text-gray-50'>
-        <h2 className='text-4xl text-center leading-tight my-3'>{t('project.noEvTitle')}</h2>
-        <h2 className='text-2xl mb-8 text-center leading-snug'>{t('project.noEvContent')}</h2>
+    <div className='mt-5 flex flex-col py-6 sm:px-6 lg:px-8'>
+      <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>
+        <h2 className='my-3 text-center text-4xl leading-tight'>{t('project.noEvTitle')}</h2>
+        <h2 className='mb-8 text-center text-2xl leading-snug'>{t('project.noEvContent')}</h2>
         {!_isEmpty(filters) && (
-          <div className='!flex !mx-auto'>
-            <Button onClick={resetFilters} className='!flex !mx-auto' primary giant>
+          <div className='!mx-auto !flex'>
+            <Button onClick={resetFilters} className='!mx-auto !flex' primary giant>
               {t('project.resetFilters')}
             </Button>
           </div>

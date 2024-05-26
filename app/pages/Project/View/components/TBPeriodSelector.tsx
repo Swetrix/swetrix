@@ -43,11 +43,11 @@ const TBPeriodSelector = ({
 
   return (
     <Popover className='relative'>
-      <Popover.Button className='inline-flex w-full px-3 md:px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-50 outline-none group'>
-        <CalendarDaysIcon className='w-5 h-5 mr-1' />
+      <Popover.Button className='group inline-flex w-full px-3 py-2 text-sm font-medium text-gray-700 outline-none dark:text-gray-50 md:px-4'>
+        <CalendarDaysIcon className='mr-1 h-5 w-5' />
         <span>{title}</span>
         <ChevronDownIcon
-          className='ml-2 h-5 w-5 transition duration-150 ease-in-out text-gray-700 dark:text-gray-50 group-hover:text-gray-500'
+          className='ml-2 h-5 w-5 text-gray-700 transition duration-150 ease-in-out group-hover:text-gray-500 dark:text-gray-50'
           aria-hidden='true'
         />
       </Popover.Button>
@@ -61,11 +61,11 @@ const TBPeriodSelector = ({
         leaveTo='opacity-0 translate-y-1'
       >
         {/* w-56 */}
-        <Popover.Panel className='absolute left-1/2 md:left-auto right-0 z-20 mt-3 w-max max-w-sm -translate-x-1/2 transform md:transform-none px-4 sm:px-0 lg:max-w-3xl'>
-          <div className='p-1 overflow-hidden rounded-lg shadow-lg ring-1 ring-black/5 bg-gray-50 dark:bg-slate-800'>
+        <Popover.Panel className='absolute left-1/2 right-0 z-20 mt-3 w-max max-w-sm -translate-x-1/2 transform px-4 sm:px-0 md:left-auto md:transform-none lg:max-w-3xl'>
+          <div className='overflow-hidden rounded-lg bg-gray-50 p-1 shadow-lg ring-1 ring-black/5 dark:bg-slate-800'>
             <div
               className={cx(
-                'bg-slate-200 dark:bg-slate-700 rounded-md relative z-0 flex items-center space-x-5 px-2 py-3 mb-1',
+                'relative z-0 mb-1 flex items-center space-x-5 rounded-md bg-slate-200 px-2 py-3 dark:bg-slate-700',
                 classes?.timeBucket,
               )}
             >
@@ -80,7 +80,7 @@ const TBPeriodSelector = ({
 
                     updateTimebucket(value)
                   }}
-                  className={cx('relative capitalize inline-flex items-center text-sm font-medium', {
+                  className={cx('relative inline-flex items-center text-sm font-medium capitalize', {
                     'text-gray-900 dark:text-gray-50': timeBucket === value,
                     'text-gray-700 dark:text-gray-300': available && timeBucket !== value,
                     'text-gray-400 dark:text-gray-500': !available && timeBucket !== value,
@@ -92,13 +92,13 @@ const TBPeriodSelector = ({
                 </Popover.Button>
               ))}
             </div>
-            <ul className={cx('text-left w-full', classes?.periods)}>
+            <ul className={cx('w-full text-left', classes?.periods)}>
               {_map(items, (item) => (
                 <Popover.Button
                   as='li'
                   key={item.label}
                   onClick={(e: React.MouseEvent<HTMLElement>) => onSelect(item, e)}
-                  className='text-gray-700 dark:text-gray-50 rounded-md block px-4 py-2 text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'
+                  className='block cursor-pointer rounded-md px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
                 >
                   {item.dropdownLabel || item.label}
                 </Popover.Button>

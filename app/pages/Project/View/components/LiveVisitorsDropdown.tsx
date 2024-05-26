@@ -41,21 +41,21 @@ const LiveVisitorsDropdown = ({ live, projectId, projectPassword = '' }: ILiveVi
   return (
     <OutsideClickHandler onOutsideClick={() => setShow(false)}>
       <p
-        className='relative flex items-center h-5 text-gray-900 dark:text-gray-50 text-base cursor-pointer'
+        className='relative flex h-5 cursor-pointer items-center text-base text-gray-900 dark:text-gray-50'
         onClick={() => setShow(!show)}
       >
         <PulsatingCircle className='mr-1.5' type='small' />
         {t('dashboard.xLiveVisitors', {
           amount: live || 0,
         })}{' '}
-        {show ? <ChevronUpIcon className='inline w-4 h-4 ml-1' /> : <ChevronDownIcon className='inline w-4 h-4 ml-1' />}
+        {show ? <ChevronUpIcon className='ml-1 inline h-4 w-4' /> : <ChevronDownIcon className='ml-1 inline h-4 w-4' />}
         {show && (
           <div
-            className={`absolute scrollbar-thin z-10 mt-2 right-0 top-3 text-gray-900 bg-white border border-gray-200 rounded-md shadow-lg dark:bg-slate-900 dark:border-slate-700/50 max-h-[200px] overflow-y-auto ${
+            className={`scrollbar-thin absolute right-0 top-3 z-10 mt-2 max-h-[200px] overflow-y-auto rounded-md border border-gray-200 bg-white text-gray-900 shadow-lg dark:border-slate-700/50 dark:bg-slate-900 ${
               liveInfo.length === 0 ? 'min-w-[200px]' : 'min-w-max'
             }`}
           >
-            <div className='flex flex-col w-full p-2'>
+            <div className='flex w-full flex-col p-2'>
               <p className='text-sm font-semibold text-gray-900 dark:text-gray-50'>{t('dashboard.liveVisitors')}</p>
               {loading ? (
                 <p className='text-sm text-gray-900 dark:text-gray-50'>{t('common.loading')}</p>
@@ -67,12 +67,12 @@ const LiveVisitorsDropdown = ({ live, projectId, projectPassword = '' }: ILiveVi
                         key={`${dv}${br}${os}${cc}${index}`}
                         className='rounded-md text-sm text-gray-900 dark:text-gray-50'
                       >
-                        <td className='pr-2 rounded-l-lg bg-gray-100 dark:bg-slate-800'>
-                          <Flag className='rounded-sm m-2' country={cc} size={21} alt='' aria-hidden='true' />
+                        <td className='rounded-l-lg bg-gray-100 pr-2 dark:bg-slate-800'>
+                          <Flag className='m-2 rounded-sm' country={cc} size={21} alt='' aria-hidden='true' />
                         </td>
-                        <td className='bg-gray-100 dark:bg-slate-800 pr-2'>{os}</td>
-                        <td className='bg-gray-100 dark:bg-slate-800 pr-2'>{br}</td>
-                        <td className='pr-2 rounded-r-lg bg-gray-100 dark:bg-slate-800'>
+                        <td className='bg-gray-100 pr-2 dark:bg-slate-800'>{os}</td>
+                        <td className='bg-gray-100 pr-2 dark:bg-slate-800'>{br}</td>
+                        <td className='rounded-r-lg bg-gray-100 pr-2 dark:bg-slate-800'>
                           <p className='capitalize'>{dv}</p>
                         </td>
                       </tr>
@@ -82,7 +82,7 @@ const LiveVisitorsDropdown = ({ live, projectId, projectPassword = '' }: ILiveVi
               )}
             </div>
             <XMarkIcon
-              className='absolute top-2 right-2 w-5 h-5 text-gray-900 cursor-pointer dark:text-gray-50'
+              className='absolute right-2 top-2 h-5 w-5 cursor-pointer text-gray-900 dark:text-gray-50'
               onClick={() => setShow(!show)}
             />
           </div>

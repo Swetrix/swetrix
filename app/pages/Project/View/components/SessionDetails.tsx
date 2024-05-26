@@ -49,7 +49,7 @@ export const SessionDetails = ({ details }: ISessionDetailsComponent) => {
   ]
 
   return (
-    <div className='flex justify-center lg:justify-start gap-5 mb-5 flex-wrap'>
+    <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
       <MetricCardSelect
         classes={{
           value: 'max-md:text-xl md:text-3xl',

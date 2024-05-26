@@ -22,8 +22,8 @@ interface IPulsatingCircle {
 }
 
 const PulsatingCircle = ({ className, type = 'small' }: IPulsatingCircle): JSX.Element => (
-  <span className={cx('flex justify-center items-center', types[type]?.pulse, className)}>
-    <span className={cx('animate-ping-slow absolute inline-flex rounded-full bg-green-400', types[type]?.pulse)} />
+  <span className={cx('flex items-center justify-center', types[type]?.pulse, className)}>
+    <span className={cx('absolute inline-flex animate-ping-slow rounded-full bg-green-400', types[type]?.pulse)} />
     <span className={cx('relative inline-flex rounded-full bg-green-500', types[type]?.base)} />
   </span>
 )

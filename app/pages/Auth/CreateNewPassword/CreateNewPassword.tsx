@@ -105,14 +105,14 @@ const CreateNewPassword = ({
 
   return (
     <div>
-      <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+      <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8'>
         <div className='sm:mx-auto sm:w-full sm:max-w-md'>
           <h2 className='text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-gray-50'>
             {t('auth.recovery.title')}
           </h2>
         </div>
         <div className='mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]'>
-          <div className='bg-white dark:bg-slate-800/20 dark:ring-1 dark:ring-slate-800 px-6 py-12 shadow sm:rounded-lg sm:px-12'>
+          <div className='bg-white px-6 py-12 shadow dark:bg-slate-800/20 dark:ring-1 dark:ring-slate-800 sm:rounded-lg sm:px-12'>
             <form className='space-y-6' onSubmit={handleSubmit}>
               <Input
                 name='password'
@@ -138,7 +138,7 @@ const CreateNewPassword = ({
               </Button>
             </form>
           </div>
-          <p className='mt-10 mb-4 text-center text-sm text-gray-500 dark:text-gray-200'>
+          <p className='mb-4 mt-10 text-center text-sm text-gray-500 dark:text-gray-200'>
             <Trans
               // @ts-ignore
               t={t}

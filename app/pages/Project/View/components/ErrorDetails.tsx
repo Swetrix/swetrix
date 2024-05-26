@@ -24,9 +24,9 @@ export const ErrorDetails = ({ details }: IErrorDetailsComponent) => {
   }, [details.last_seen, language])
 
   return (
-    <div className='flex justify-center lg:justify-start gap-5 mb-5 flex-wrap'>
+    <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
       <div className='flex flex-col'>
-        <p className='font-bold max-md:text-xl md:text-3xl text-slate-900 dark:text-gray-50'>{`${details.name}: ${details.message}`}</p>
+        <p className='font-bold text-slate-900 dark:text-gray-50 max-md:text-xl md:text-3xl'>{`${details.name}: ${details.message}`}</p>
         <p className='text-sm font-medium text-slate-700 dark:text-gray-200'>
           {t('dashboard.atFile', {
             filename: details.filename,

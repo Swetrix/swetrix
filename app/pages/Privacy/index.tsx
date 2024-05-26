@@ -51,9 +51,9 @@ const serviceProviders: {
 const Features = (): JSX.Element => {
   return (
     <div className='bg-gray-50 dark:bg-slate-900'>
-      <div className='w-11/12 md:w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8'>
-        <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50 tracking-tight'>Privacy Policy</h1>
-        <p className='mt-4 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+      <div className='mx-auto w-11/12 px-4 pb-16 pt-12 sm:px-6 md:w-4/5 lg:px-8'>
+        <h1 className='text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>Privacy Policy</h1>
+        <p className='mt-4 text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           This Swetrix Privacy Policy (“Policy”, "Privacy Policy") outlines the personal information that we gather, how
           we use that personal information, and the options you have to access, correct, or delete such personal
           information.
@@ -63,10 +63,10 @@ const Features = (): JSX.Element => {
           meanings as in our Terms and Conditions.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>
           1. Policy application
         </h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           This Privacy Policy applies to the following data subjects:
           <br />
           {'- '}
@@ -92,10 +92,10 @@ const Features = (): JSX.Element => {
           such minor dependent’s use of the Websites and Services.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>
           2. Information we collect
         </h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           We may collect the following types of data in order to provide and improve our Services:
           <br />
           {'- '}
@@ -154,10 +154,10 @@ const Features = (): JSX.Element => {
           .
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>
           3. How we use information we collect
         </h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           We only processes personal information in a way that is relevant for the purpose for which it was collected or
           authorized:
           <br />
@@ -190,10 +190,10 @@ const Features = (): JSX.Element => {
           We may use the Usage and Log Data to assemble non-personally identifiable web traffic reports and statistics.
           These reports and statistics may be shared with third parties.
         </p>
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>
           4. UK and EU residents
         </h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           Please note that the “personal information” referenced in this Privacy Policy means “personal data” as that
           term is defined under the European Union (“EU”) General Data Protection Regulations (“GDPR”) and its United
           Kingdom (“UK”) GDPR counterpart. Swetrix is the data controller for the Personal Data of Customers and Website
@@ -229,18 +229,18 @@ const Features = (): JSX.Element => {
           .
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>
           5. California Residents
         </h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           We do not sell, rent, or share personal information with third parties as defined under the California
           Consumer Privacy Act of 2018 (California Civil Code Sec. 1798.100 et seq.), nor do we sell, rent, or share
           personal information with third parties for their direct marketing purposes as defined under California Civil
           Code Sec. 1798.83.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>6. Retention of data</h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>6. Retention of data</h3>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           We may retain your information for as long as your account is active or as needed to provide you services,
           comply with our legal obligations, resolve disputes and enforce our agreements. In certain circumstances we
           may be required by law to retain your personal information, or may need to retain your personal information in
@@ -250,8 +250,8 @@ const Features = (): JSX.Element => {
           immediate and that the deleted information may persist in backup copies for a reasonable period of time.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>7. Transfer of data</h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>7. Transfer of data</h3>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           Your information, including Personal Data, may be transferred to — and maintained on — computers located
           outside of your state, province, country or other governmental jurisdiction where the data protection laws may
           differ from those in your jurisdiction. If you are located outside Germany and choose to provide information
@@ -264,10 +264,10 @@ const Features = (): JSX.Element => {
           other personal information.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>
           8. Information sharing
         </h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           We do not sell or rent personal information.
           <br />
           We may disclose personal information to service providers who help us run the Services and our business
@@ -281,10 +281,10 @@ const Features = (): JSX.Element => {
           required for their purpose.
           <br />
           <div className='mt-8 flex flex-col'>
-            <div className='-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8'>
+            <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8'>
               <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
                 <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
-                  <table className='min-w-full divide-y divide-gray-300 200 dark:divide-gray-500'>
+                  <table className='200 min-w-full divide-y divide-gray-300 dark:divide-gray-500'>
                     <thead className='bg-gray-50 dark:bg-slate-800'>
                       <tr>
                         <th
@@ -313,7 +313,7 @@ const Features = (): JSX.Element => {
                         </th>
                       </tr>
                     </thead>
-                    <tbody className='divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-slate-800'>
+                    <tbody className='divide-y divide-gray-200 bg-white dark:divide-gray-600 dark:bg-slate-800'>
                       {_map(serviceProviders, ({ company, purpose, dataSubjects, location }) => (
                         <tr key={company}>
                           <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50 sm:pl-6'>
@@ -352,10 +352,10 @@ const Features = (): JSX.Element => {
           <br />- Other purposes for which we obtain your consent.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>
           9. Data subject rights
         </h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           We would like to make sure you are fully aware of all of your data protection rights. In certain
           circumstances, you have the following data protection rights:
           <br />
@@ -397,10 +397,10 @@ const Features = (): JSX.Element => {
           compliance with all applicable laws and regulations with respect to their website users.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>
           10. Communication preferences
         </h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           Swetrix will send you commercial communications based on the communication preferences in your account
           settings. Swetrix also will send you service-related communications. You may manage your receipt of commercial
           communications by clicking on the “unsubscribe” link located on the bottom of such emails, through your
@@ -414,8 +414,8 @@ const Features = (): JSX.Element => {
           .
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>11. Data security</h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>11. Data security</h3>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           We take all reasonable steps to protect information we receive from you from loss, misuse or unauthorized
           access, disclosure, alteration and/or destruction. We have put in place appropriate physical, technical and
           administrative measures to safeguard and secure your information, and we make use of privacy-enhancing
@@ -430,10 +430,10 @@ const Features = (): JSX.Element => {
           .
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>
           12. Notification of changes
         </h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           If we make changes to this Policy that we believe materially impact the privacy of your personal information,
           we will promptly provide notice of any such changes (and, where necessary, obtain consent), as well as post
           the updated Policy on this website noting the date of any changes via the "Last updated" date at the bottom of
@@ -441,16 +441,16 @@ const Features = (): JSX.Element => {
           privacy practices.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>
           13. Business transactions
         </h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           We may assign or transfer this Policy, as well as information covered by this Policy, in the event of a
           merger, sale, change in control, or reorganization of all or part of our business.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>14. Contact</h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>14. Contact</h3>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           If you have any questions about this Privacy Policy, you can contact us by email at&nbsp;
           <a
             href={`mailto:${CONTACT_EMAIL}`}
@@ -461,8 +461,8 @@ const Features = (): JSX.Element => {
           .
         </p>
 
-        <hr className='mt-10 mb-4 border-gray-200 dark:border-gray-600' />
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <hr className='mb-4 mt-10 border-gray-200 dark:border-gray-600' />
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           <i>Last updated: July 23, 2023.</i>
         </p>
       </div>

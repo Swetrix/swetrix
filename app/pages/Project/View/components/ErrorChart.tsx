@@ -29,5 +29,5 @@ export const ErrorChart = ({ chart, timeBucket, timeFormat, rotateXAxis, chartTy
     generate.data.names(dataNames)
   }, [chart, timeBucket, timeFormat, rotateXAxis, chartType, dataNames])
 
-  return <div className='h-80 mt-5 md:mt-0 [&_svg]:!overflow-visible' id='errorChart' />
+  return <div className='mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible' id='errorChart' />
 }

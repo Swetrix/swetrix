@@ -198,23 +198,23 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated, ssrTheme }): JSX.Elemen
   }
 
   return (
-    <div className='bg-gray-50 dark:bg-slate-900 min-h-page'>
+    <div className='min-h-page bg-gray-50 dark:bg-slate-900'>
       <DashboardLockedBanner />
-      <div className='w-11/12 md:w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 whitespace-pre-line'>
-        <div className='flex justify-between flex-wrap gap-y-2 mb-4'>
-          <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50 tracking-tight mr-2'>
+      <div className='mx-auto w-11/12 whitespace-pre-line px-4 pb-16 pt-12 sm:px-6 md:w-4/5 lg:px-8'>
+        <div className='mb-4 flex flex-wrap justify-between gap-y-2'>
+          <h1 className='mr-2 text-4xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50'>
             {t('billing.title')}
           </h1>
         </div>
-        <h2 id='billing' className='text-2xl font-medium text-gray-900 dark:text-gray-50 tracking-tight mb-2'>
+        <h2 id='billing' className='mb-2 text-2xl font-medium tracking-tight text-gray-900 dark:text-gray-50'>
           {t('billing.subscription')}
         </h2>
-        <p className='mt-1 text-base text-gray-900 dark:text-gray-50 tracking-tight'>
+        <p className='mt-1 text-base tracking-tight text-gray-900 dark:text-gray-50'>
           {isSubscriber ? t('billing.selectPlan') : t('billing.changePlan')}
         </p>
-        <p className='text-base text-gray-900 dark:text-gray-50 tracking-tight'>{t('billing.membersNotification')}</p>
+        <p className='text-base tracking-tight text-gray-900 dark:text-gray-50'>{t('billing.membersNotification')}</p>
         {isSubscriber && nextBillDate && (
-          <p className='mt-1 text-base text-gray-900 dark:text-gray-50 tracking-tight'>
+          <p className='mt-1 text-base tracking-tight text-gray-900 dark:text-gray-50'>
             {t('billing.nextBillDateIs', {
               date:
                 language === 'en'
@@ -224,9 +224,9 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated, ssrTheme }): JSX.Elemen
           </p>
         )}
         {cancellationEffectiveDate && (
-          <div className='flex items-center text-lg text-gray-900 dark:text-gray-50 tracking-tight mt-3'>
-            <InformationCircleIcon className='h-10 w-10 mr-2 text-blue-600' aria-hidden='true' />
-            <span className='font-medium max-w-prose'>
+          <div className='mt-3 flex items-center text-lg tracking-tight text-gray-900 dark:text-gray-50'>
+            <InformationCircleIcon className='mr-2 h-10 w-10 text-blue-600' aria-hidden='true' />
+            <span className='max-w-prose font-medium'>
               {t('billing.cancelledSubMessage', {
                 date:
                   language === 'en'
@@ -237,21 +237,21 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated, ssrTheme }): JSX.Elemen
           </div>
         )}
         {isTrial && trialMessage && (
-          <div className='text-lg text-gray-900 dark:text-gray-50 tracking-tight mt-3'>
+          <div className='mt-3 text-lg tracking-tight text-gray-900 dark:text-gray-50'>
             <span className='font-medium'>{trialMessage}</span>
           </div>
         )}
         {isNoSub && (
-          <div className='flex items-center text-lg text-gray-900 dark:text-gray-50 tracking-tight mt-3'>
-            <ExclamationTriangleIcon className='h-10 w-10 mr-2 text-red-600' aria-hidden='true' />
-            <span className='font-medium max-w-prose'>{t('billing.noSubWarning')}</span>
+          <div className='mt-3 flex items-center text-lg tracking-tight text-gray-900 dark:text-gray-50'>
+            <ExclamationTriangleIcon className='mr-2 h-10 w-10 text-red-600' aria-hidden='true' />
+            <span className='max-w-prose font-medium'>{t('billing.noSubWarning')}</span>
           </div>
         )}
         {loading ? (
           <Loader />
         ) : (
           <>
-            <div className='flex xl:space-x-5 mt-5 flex-col xl:flex-row'>
+            <div className='mt-5 flex flex-col xl:flex-row xl:space-x-5'>
               <Pricing authenticated={authenticated} t={t} language={language} isBillingPage />
               <div className='space-y-2'>
                 {subUpdateURL && (
@@ -266,14 +266,14 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated, ssrTheme }): JSX.Elemen
                 )}
               </div>
             </div>
-            <h2 id='usage' className='mt-5 text-2xl font-medium text-gray-900 dark:text-gray-50 tracking-tight'>
+            <h2 id='usage' className='mt-5 text-2xl font-medium tracking-tight text-gray-900 dark:text-gray-50'>
               {t('billing.planUsage')}
             </h2>
-            <p className='mt-1 text-base text-gray-900 dark:text-gray-50 tracking-tight'>
+            <p className='mt-1 text-base tracking-tight text-gray-900 dark:text-gray-50'>
               {t('billing.planUsageDesc')}
             </p>
-            <div className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
-              <p className='text-base font-medium text-gray-900 dark:text-gray-50 tracking-tight mb-1'>
+            <div className='mt-2 text-lg tracking-tight text-gray-900 dark:text-gray-50'>
+              <p className='mb-1 text-base font-medium tracking-tight text-gray-900 dark:text-gray-50'>
                 {t('billing.xofy', {
                   x: usageinfo.total || 0,
                   y: maxEventsCount || 0,
@@ -290,7 +290,7 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated, ssrTheme }): JSX.Elemen
                         maxEvents: maxEventsCount || 0,
                       })}
                     </p>
-                    <ul className='list-disc list-inside mt-2'>
+                    <ul className='mt-2 list-inside list-disc'>
                       <li className='marker:text-blue-600 dark:marker:text-blue-800'>
                         {t('billing.pageviews', {
                           quantity: usageinfo.traffic || 0,
@@ -321,7 +321,7 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated, ssrTheme }): JSX.Elemen
                 tooltipNode={
                   <MultiProgress
                     theme={theme}
-                    className='max-w-[25rem] w-[85vw]'
+                    className='w-[85vw] max-w-[25rem]'
                     progress={[
                       {
                         value: usageinfo.traffic === 0 ? 0 : (usageinfo.traffic / maxEventsCount) * 100,
@@ -341,9 +341,9 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated, ssrTheme }): JSX.Elemen
                     ]}
                   />
                 }
-                className='max-w-max !w-max !h-auto'
+                className='!h-auto !w-max max-w-max'
               />
-              <p className='mt-1 text-base text-gray-900 dark:text-gray-50 tracking-tight'>{t('billing.resetDate')}</p>
+              <p className='mt-1 text-base tracking-tight text-gray-900 dark:text-gray-50'>{t('billing.resetDate')}</p>
             </div>
           </>
         )}

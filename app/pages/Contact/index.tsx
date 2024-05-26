@@ -16,9 +16,9 @@ const Panel = ({ href, title, description }: IPanel) => (
     href={href}
     target='_blank'
     rel='noopener noreferrer'
-    className='relative block rounded-2xl bg-gray-100 hover:bg-gray-200 dark:bg-slate-800/80 dark:hover:bg-slate-800 p-10 border border-gray-300/80 dark:border-slate-900/80'
+    className='relative block rounded-2xl border border-gray-300/80 bg-gray-100 p-10 hover:bg-gray-200 dark:border-slate-900/80 dark:bg-slate-800/80 dark:hover:bg-slate-800'
   >
-    <ArrowTopRightOnSquareIcon className='w-5 h-5 absolute top-5 right-5 text-gray-900' />
+    <ArrowTopRightOnSquareIcon className='absolute right-5 top-5 h-5 w-5 text-gray-900' />
     <h3 className='text-lg font-semibold leading-7 text-gray-900'>{title}</h3>
     <p className='mt-3 text-sm leading-6 text-gray-600'>{description}</p>
   </a>
@@ -29,9 +29,9 @@ const Contact = (): JSX.Element => {
 
   return (
     <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-      <div className='w-11/12 md:w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 whitespace-pre-line'>
-        <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50 tracking-tight'>{t('titles.contact')}</h1>
-        <div className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+      <div className='mx-auto w-11/12 whitespace-pre-line px-4 pb-16 pt-12 sm:px-6 md:w-4/5 lg:px-8'>
+        <h1 className='text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>{t('titles.contact')}</h1>
+        <div className='mt-2 text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           <Trans
             t={t}
             i18nKey='contact.description'
@@ -58,7 +58,7 @@ const Contact = (): JSX.Element => {
             }}
           />
         </div>
-        <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:col-span-2 lg:gap-8 mt-8'>
+        <div className='mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:col-span-2 lg:gap-8'>
           <Panel href={DOCS_URL} title={t('contact.docs.title')} description={t('contact.docs.desc')} />
           <Panel href={BOOK_A_CALL_URL} title={t('contact.demo.title')} description={t('contact.demo.desc')} />
         </div>

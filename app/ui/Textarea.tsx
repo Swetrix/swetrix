@@ -52,13 +52,13 @@ const Textarea = ({
           )}
         </label>
       )}
-      <div className='mt-1 relative'>
+      <div className='relative mt-1'>
         <textarea
           rows={rows}
           name={identifier}
           id={identifier}
           className={cx(
-            'shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:text-gray-50 dark:placeholder-gray-400 dark:border-slate-800/25 dark:bg-slate-800 rounded-md',
+            'block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-800/25 dark:bg-slate-800 dark:text-gray-50 dark:placeholder-gray-400 sm:text-sm',
             {
               'border-red-300 text-red-900 placeholder-red-300': isError,
               'cursor-text': disabled,
@@ -71,12 +71,12 @@ const Textarea = ({
           readOnly={readOnly}
         />
         {isError && (
-          <div className='absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none'>
+          <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3'>
             <ExclamationCircleIcon className='h-5 w-5 text-red-500' aria-hidden />
           </div>
         )}
       </div>
-      <p className='mt-2 text-sm text-gray-500 dark:text-gray-300 whitespace-pre-line' id={`${identifier}-optional`}>
+      <p className='mt-2 whitespace-pre-line text-sm text-gray-500 dark:text-gray-300' id={`${identifier}-optional`}>
         {hint}
       </p>
       {isError && (

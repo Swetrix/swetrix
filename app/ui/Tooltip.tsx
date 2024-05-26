@@ -9,15 +9,15 @@ interface ITooltip {
 }
 
 const Tooltip = ({ text, className, tooltipNode }: ITooltip): JSX.Element => (
-  <div className={cx('relative flex flex-col group items-center', className)} data-testid='tooltip-wrapper'>
+  <div className={cx('group relative flex flex-col items-center', className)} data-testid='tooltip-wrapper'>
     {tooltipNode || (
-      <QuestionMarkCircleIcon className='w-5 h-5 text-gray-700 dark:text-gray-300' data-testid='tooltip-icon' />
+      <QuestionMarkCircleIcon className='h-5 w-5 text-gray-700 dark:text-gray-300' data-testid='tooltip-icon' />
     )}
-    <div className='absolute bottom-0 flex-col mb-6 hidden group-hover:flex items-center'>
-      <span className='opacity-95 relative w-60 z-10 p-2 text-xs leading-none text-white whitespace-no-wrap bg-gray-700 shadow-lg rounded-md'>
+    <div className='absolute bottom-0 mb-6 hidden flex-col items-center group-hover:flex'>
+      <span className='whitespace-no-wrap relative z-10 w-60 rounded-md bg-gray-700 p-2 text-xs leading-none text-white opacity-95 shadow-lg'>
         {text}
       </span>
-      <div className='w-3 h-3 -mt-2 rotate-45 bg-gray-700 opacity-95' />
+      <div className='-mt-2 h-3 w-3 rotate-45 bg-gray-700 opacity-95' />
     </div>
   </div>
 )

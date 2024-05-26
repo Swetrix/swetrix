@@ -169,7 +169,7 @@ const Referral = ({
             url: (
               <a
                 href={DOCS_REFERRAL_PROGRAM_URL}
-                className='font-medium hover:underline text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                className='font-medium text-indigo-600 hover:text-indigo-500 hover:underline dark:text-indigo-400 dark:hover:text-indigo-500'
                 target='_blank'
                 rel='noreferrer noopener'
               />
@@ -177,13 +177,13 @@ const Referral = ({
           }}
         />
       </p>
-      <h3 className='flex items-center mt-5 text-lg font-bold text-gray-900 dark:text-gray-50'>
+      <h3 className='mt-5 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
         {t('profileSettings.referral.payoutEmail')}
       </h3>
       <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
         {t('profileSettings.referral.payoutEmailDesc')}
       </p>
-      <div className='flex space-x-2 mt-2'>
+      <div className='mt-2 flex space-x-2'>
         <Input
           id='paypal-email'
           type='email'
@@ -196,7 +196,7 @@ const Referral = ({
           {t('common.save')}
         </Button>
       </div>
-      <h3 className='flex items-center mt-5 text-lg font-bold text-gray-900 dark:text-gray-50'>
+      <h3 className='mt-5 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
         {t('profileSettings.referral.referralLink')}
       </h3>
       <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
@@ -208,8 +208,8 @@ const Referral = ({
         </p>
       )}
       {user.refCode ? (
-        <div className='grid grid-cols-1 gap-y-6 gap-x-4 lg:grid-cols-2'>
-          <div className='relative group'>
+        <div className='grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
+          <div className='group relative'>
             <Input name='refCode' id='refCode' type='text' className='pr-9' value={refUrl} disabled />
             <div className='absolute right-2 top-3'>
               <div className='group relative'>
@@ -220,9 +220,9 @@ const Referral = ({
                   noBorder
                 >
                   <>
-                    <ClipboardDocumentIcon className='w-6 h-6' />
+                    <ClipboardDocumentIcon className='h-6 w-6' />
                     {copied && (
-                      <div className='animate-appear bg-white dark:bg-slate-800 cursor-auto rounded p-1 absolute sm:top-0 top-0.5 right-8 text-xs text-green-600'>
+                      <div className='absolute right-8 top-0.5 animate-appear cursor-auto rounded bg-white p-1 text-xs text-green-600 dark:bg-slate-800 sm:top-0'>
                         {t('common.copied')}
                       </div>
                     )}
@@ -239,7 +239,7 @@ const Referral = ({
       )}
       {!_isEmpty(referralStatistics) && (
         <>
-          <h3 className='flex items-center mt-5 text-lg font-bold text-gray-900 dark:text-gray-50'>
+          <h3 className='mt-5 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.referral.referralStats')}
           </h3>
           <div>
@@ -250,7 +250,7 @@ const Referral = ({
                   {t('profileSettings.referral.trial')}: <Highlighted>{referralStatistics.trials}</Highlighted>
                 </span>
               }
-              className='max-w-max !w-auto !h-auto'
+              className='!h-auto !w-auto max-w-max'
             />
             <Tooltip
               text={t('profileSettings.referral.activeDesc')}
@@ -259,7 +259,7 @@ const Referral = ({
                   {t('profileSettings.referral.active')}: <Highlighted>{referralStatistics.subscribers}</Highlighted>
                 </span>
               }
-              className='max-w-max !w-auto !h-auto'
+              className='!h-auto !w-auto max-w-max'
             />
             <Tooltip
               text={t('profileSettings.referral.paidDesc')}
@@ -268,7 +268,7 @@ const Referral = ({
                   {t('profileSettings.referral.paid')}: <Highlighted>US$ {referralStatistics.paid}</Highlighted>
                 </span>
               }
-              className='max-w-max !w-auto !h-auto'
+              className='!h-auto !w-auto max-w-max'
             />
             <Tooltip
               text={t('profileSettings.referral.nextPayoutDesc')}
@@ -278,7 +278,7 @@ const Referral = ({
                   <Highlighted>US$ {referralStatistics.nextPayout}</Highlighted>
                 </span>
               }
-              className='max-w-max !w-auto !h-auto'
+              className='!h-auto !w-auto max-w-max'
             />
             <Tooltip
               text={t('profileSettings.referral.pendingDesc', {
@@ -289,17 +289,17 @@ const Referral = ({
                   {t('profileSettings.referral.pending')}: <Highlighted>US$ {referralStatistics.pending}</Highlighted>
                 </span>
               }
-              className='max-w-max !w-auto !h-auto'
+              className='!h-auto !w-auto max-w-max'
             />
           </div>
         </>
       )}
       {!_isEmpty(activeReferrals) && (
         <>
-          <h3 className='flex items-center mt-5 text-lg font-bold text-gray-900 dark:text-gray-50'>
+          <h3 className='mt-5 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('profileSettings.referral.activeReferrals')}
           </h3>
-          <table className='mt-2 min-w-full shadow ring-1 ring-black ring-opacity-5 md:rounded-lg divide-y divide-gray-300 200 dark:divide-gray-500'>
+          <table className='200 mt-2 min-w-full divide-y divide-gray-300 shadow ring-1 ring-black ring-opacity-5 dark:divide-gray-500 md:rounded-lg'>
             <thead className='bg-gray-50 dark:bg-slate-800'>
               <tr>
                 <th
@@ -315,7 +315,7 @@ const Referral = ({
                       amount: REFERRAL_CUT * 100,
                     })}
                     tooltipNode={<>{t('profileSettings.referral.activeReferralsTable.yourCut')}</>}
-                    className='max-w-max !w-auto !h-auto'
+                    className='!h-auto !w-auto max-w-max'
                   />
                 </th>
                 <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-50'>
@@ -323,7 +323,7 @@ const Referral = ({
                 </th>
               </tr>
             </thead>
-            <tbody className='divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-slate-800'>
+            <tbody className='divide-y divide-gray-200 bg-white dark:divide-gray-600 dark:bg-slate-800'>
               {_map(activeReferrals, ({ billingFrequency, created, planCode, tierCurrency }, index) => {
                 // @ts-ignore
                 const planPrice = PLAN_LIMITS[planCode].price[tierCurrency][billingFrequency]

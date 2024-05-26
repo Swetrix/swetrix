@@ -95,7 +95,7 @@ const SolutionsMenu = () => {
 
   return (
     <Popover className='relative'>
-      <Popover.Button className='inline-flex items-center gap-x-1 font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
+      <Popover.Button className='inline-flex items-center gap-x-1 text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
         <span>{t('header.solutions.title')}</span>
         <ChevronDownIcon className='h-3 w-3 stroke-2' aria-hidden='true' />
       </Popover.Button>
@@ -110,14 +110,14 @@ const SolutionsMenu = () => {
         leaveTo='opacity-0 translate-y-1'
       >
         <Popover.Panel className='absolute z-30 mt-5 flex w-screen max-w-max'>
-          <div className='rounded-lg border backdrop-blur-2xl flex flex-col w-[650px] p-[6px] bg-gray-100/80 border-gray-300/80 dark:bg-slate-800/80 dark:border-slate-900/80 divide-y divide-gray-300/80 dark:divide-slate-900/60'>
-            <div className='grid grid-cols-2 p-4 w-full gap-1'>
+          <div className='flex w-[650px] flex-col divide-y divide-gray-300/80 rounded-lg border border-gray-300/80 bg-gray-100/80 p-[6px] backdrop-blur-2xl dark:divide-slate-900/60 dark:border-slate-900/80 dark:bg-slate-800/80'>
+            <div className='grid w-full grid-cols-2 gap-1 p-4'>
               {_map(solutions, (item) => (
                 <div
                   key={item.name}
                   className='group relative flex gap-x-2 rounded-lg p-2 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'
                 >
-                  <item.icon className='h-5 w-5 text-gray-600 dark:text-gray-300 mt-1' aria-hidden='true' />
+                  <item.icon className='mt-1 h-5 w-5 text-gray-600 dark:text-gray-300' aria-hidden='true' />
                   <div>
                     {_startsWith(item.link, '/') ? (
                       <Link to={item.link} className='text-sm font-semibold text-gray-900 dark:text-gray-50'>
@@ -136,7 +136,7 @@ const SolutionsMenu = () => {
                       </a>
                     )}
 
-                    <p className='text-xs mt-1 text-gray-600 dark:text-neutral-100'>{item.description}</p>
+                    <p className='mt-1 text-xs text-gray-600 dark:text-neutral-100'>{item.description}</p>
                   </div>
                 </div>
               ))}
@@ -148,7 +148,7 @@ const SolutionsMenu = () => {
                     <Link
                       key={item.name}
                       to={item.link}
-                      className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-800 dark:text-gray-100 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'
+                      className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-800 hover:bg-gray-300/50 dark:text-gray-100 dark:hover:bg-slate-700/80'
                     >
                       <item.icon className='h-5 w-5 flex-none text-gray-400 dark:text-gray-300' aria-hidden='true' />
                       {item.name}
@@ -162,7 +162,7 @@ const SolutionsMenu = () => {
                     href={item.link}
                     target='_blank'
                     rel='noopener noreferrer'
-                    className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-800 dark:text-gray-100 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'
+                    className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-800 hover:bg-gray-300/50 dark:text-gray-100 dark:hover:bg-slate-700/80'
                   >
                     <item.icon className='h-5 w-5 flex-none text-gray-400 dark:text-gray-300' aria-hidden='true' />
                     {item.name}
@@ -188,12 +188,12 @@ const ThemeMenu = ({
 }) => (
   <Menu as='div' className='relative ml-3'>
     <div>
-      <Menu.Button className='flex justify-center items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
+      <Menu.Button className='flex items-center justify-center text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
         <span className='sr-only'>{t('header.switchTheme')}</span>
         {theme === 'dark' ? (
-          <SunIcon className='h-6 w-6 text-gray-200 hover:text-gray-300 cursor-pointer' aria-hidden='true' />
+          <SunIcon className='h-6 w-6 cursor-pointer text-gray-200 hover:text-gray-300' aria-hidden='true' />
         ) : (
-          <MoonIcon className='h-6 w-6 text-slate-700 hover:text-slate-600 cursor-pointer' aria-hidden='true' />
+          <MoonIcon className='h-6 w-6 cursor-pointer text-slate-700 hover:text-slate-600' aria-hidden='true' />
         )}
       </Menu.Button>
     </div>
@@ -206,19 +206,19 @@ const ThemeMenu = ({
       leaveFrom='transform opacity-100 scale-100'
       leaveTo='transform opacity-0 scale-95'
     >
-      <Menu.Items className='absolute right-0 z-30 mt-2 w-36 min-w-max origin-top-right rounded-md bg-white dark:bg-slate-900 py-1 shadow-lg ring-1 ring-slate-200 dark:ring-slate-800 focus:outline-none'>
+      <Menu.Items className='absolute right-0 z-30 mt-2 w-36 min-w-max origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-slate-200 focus:outline-none dark:bg-slate-900 dark:ring-slate-800'>
         <Menu.Item>
           {({ active }) => (
             <div
               className={cx(
-                'flex w-full font-semibold cursor-pointer px-4 py-2 text-sm text-indigo-600 dark:text-gray-50 hover:bg-gray-100 hover:dark:bg-slate-800',
+                'flex w-full cursor-pointer px-4 py-2 text-sm font-semibold text-indigo-600 hover:bg-gray-100 dark:text-gray-50 hover:dark:bg-slate-800',
                 {
                   'bg-gray-100 dark:bg-slate-800': active,
                 },
               )}
               onClick={() => switchTheme('light')}
             >
-              <SunIcon className='h-5 w-5 mr-2 text-indigo-600 dark:text-gray-200' aria-hidden='true' />
+              <SunIcon className='mr-2 h-5 w-5 text-indigo-600 dark:text-gray-200' aria-hidden='true' />
               {t('header.light')}
             </div>
           )}
@@ -227,14 +227,14 @@ const ThemeMenu = ({
           {({ active }) => (
             <div
               className={cx(
-                'flex w-full font-semibold cursor-pointer px-4 py-2 text-sm text-gray-700 dark:text-indigo-400 hover:bg-gray-100 hover:dark:bg-slate-800',
+                'flex w-full cursor-pointer px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 dark:text-indigo-400 hover:dark:bg-slate-800',
                 {
                   'bg-gray-100 dark:bg-slate-800': active,
                 },
               )}
               onClick={() => switchTheme('dark')}
             >
-              <MoonIcon className='h-5 w-5 mr-2 text-gray-200 dark:text-indigo-400' aria-hidden='true' />
+              <MoonIcon className='mr-2 h-5 w-5 text-gray-200 dark:text-indigo-400' aria-hidden='true' />
               {t('header.dark')}
             </div>
           )}
@@ -259,9 +259,9 @@ const ProfileMenu = ({
 }) => (
   <Menu as='div' className='relative ml-3'>
     <div>
-      <Menu.Button className='flex justify-center items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
+      <Menu.Button className='flex items-center justify-center text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
         <span>{t('common.account')}</span>
-        <ChevronDownIcon className='h-4 w-4 ml-1 stroke-2' aria-hidden='true' />
+        <ChevronDownIcon className='ml-1 h-4 w-4 stroke-2' aria-hidden='true' />
       </Menu.Button>
     </div>
     <Transition
@@ -273,10 +273,10 @@ const ProfileMenu = ({
       leaveFrom='transform opacity-100 scale-100'
       leaveTo='transform opacity-0 scale-95'
     >
-      <Menu.Items className='absolute right-0 z-30 mt-2 w-60 min-w-max origin-top-right rounded-md bg-white dark:bg-slate-900 py-1 shadow-lg ring-1 ring-slate-200 dark:ring-slate-800 focus:outline-none'>
-        <div className='border-gray-200 dark:border-slate-700/50 border-b-[1px]'>
+      <Menu.Items className='absolute right-0 z-30 mt-2 w-60 min-w-max origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-slate-200 focus:outline-none dark:bg-slate-900 dark:ring-slate-800'>
+        <div className='border-b-[1px] border-gray-200 dark:border-slate-700/50'>
           <Menu.Item>
-            <p className='truncate py-2 px-4' role='none'>
+            <p className='truncate px-4 py-2' role='none'>
               <span className='block text-xs text-gray-500 dark:text-gray-300' role='none'>
                 {t('header.signedInAs')}
               </span>
@@ -287,16 +287,16 @@ const ProfileMenu = ({
           </Menu.Item>
         </div>
 
-        <div className='border-gray-200 dark:border-slate-700/50 border-b-[1px]'>
+        <div className='border-b-[1px] border-gray-200 dark:border-slate-700/50'>
           {/* Language selector */}
           <Menu as='div'>
             {({ open }) => (
               <>
                 <div>
-                  <Menu.Button className='flex justify-between w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-50 hover:bg-gray-100 hover:dark:bg-slate-800'>
+                  <Menu.Button className='flex w-full justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-50 hover:dark:bg-slate-800'>
                     <div className='flex'>
                       <Flag
-                        className='rounded-sm mr-1.5'
+                        className='mr-1.5 rounded-sm'
                         country={languageFlag[language]}
                         size={20}
                         alt=''
@@ -322,13 +322,13 @@ const ProfileMenu = ({
                   leaveTo='transform opacity-0 scale-95'
                 >
                   <Menu.Items
-                    className='z-50 py-1 origin-top-right absolute right-0 mt-1 w-full min-w-max rounded-md shadow-lg bg-white dark:bg-slate-800 ring-1 ring-slate-200 dark:ring-slate-800 focus:outline-none'
+                    className='absolute right-0 z-50 mt-1 w-full min-w-max origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-slate-200 focus:outline-none dark:bg-slate-800 dark:ring-slate-800'
                     static
                   >
                     {_map(whitelist, (lng) => (
                       <Menu.Item key={lng}>
                         <span
-                          className='text-gray-700 dark:text-gray-50 dark:bg-slate-800 block px-4 py-2 text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600'
+                          className='block cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-600'
                           role='menuitem'
                           tabIndex={0}
                           onClick={() => onLanguageChange(lng)}
@@ -336,7 +336,7 @@ const ProfileMenu = ({
                           <div className='flex'>
                             <div className='pt-1'>
                               <Flag
-                                className='rounded-sm mr-1.5'
+                                className='mr-1.5 rounded-sm'
                                 country={languageFlag[lng]}
                                 size={20}
                                 alt={languageFlag[lng]}
@@ -453,11 +453,11 @@ const AuthedHeader = ({
   return (
     <header
       className={cx('relative overflow-x-clip', {
-        'bg-gray-50 dark:bg-slate-900 border-b border-gray-200 dark:border-slate-600/40': colourBackground,
+        'border-b border-gray-200 bg-gray-50 dark:border-slate-600/40 dark:bg-slate-900': colourBackground,
       })}
     >
       <nav className='mx-auto px-4 sm:px-6 lg:px-8' aria-label='Top'>
-        <div className='w-full py-4 flex items-center justify-between'>
+        <div className='flex w-full items-center justify-between py-4'>
           <div className='flex items-center'>
             {/* Logo */}
             <Link to={routes.main}>
@@ -471,11 +471,11 @@ const AuthedHeader = ({
               />
             </Link>
 
-            <div className='hidden ml-10 space-x-1 lg:flex gap-4'>
+            <div className='ml-10 hidden gap-4 space-x-1 lg:flex'>
               {user?.planCode === 'trial' && (
                 <Link
                   to={routes.billing}
-                  className={cx('font-semibold leading-6 text-base', {
+                  className={cx('text-base font-semibold leading-6', {
                     'text-amber-600 hover:text-amber-500': rawStatus === TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS,
                     'text-rose-600 hover:text-rose-500':
                       rawStatus === TRIAL_STATUS_MAPPING.ENDS_TODAY ||
@@ -490,7 +490,7 @@ const AuthedHeader = ({
               {user?.planCode === 'none' && (
                 <Link
                   to={routes.billing}
-                  className='font-semibold leading-6 text-base text-rose-600 hover:text-rose-500'
+                  className='text-base font-semibold leading-6 text-rose-600 hover:text-rose-500'
                   key='NoSubscription'
                 >
                   {t('billing.inactive')}
@@ -502,21 +502,21 @@ const AuthedHeader = ({
                   href={`https://swetrix.com${routes.blog}`}
                   target='_blank'
                   rel='noopener noreferrer'
-                  className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                  className='text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
                 >
                   {t('footer.blog')}
                 </a>
               ) : (
                 <Link
                   to={routes.blog}
-                  className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                  className='text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
                 >
                   {t('footer.blog')}
                 </Link>
               )}
               <a
                 href={DOCS_URL}
-                className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                className='text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
                 target='_blank'
                 rel='noreferrer noopener'
               >
@@ -524,13 +524,13 @@ const AuthedHeader = ({
               </a>
               <Link
                 to={routes.dashboard}
-                className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                className='text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
               >
                 {t('common.dashboard')}
               </Link>
             </div>
           </div>
-          <div className='hidden lg:flex justify-center items-center flex-wrap ml-1 lg:ml-10 space-y-1 sm:space-y-0 space-x-2 lg:space-x-4'>
+          <div className='ml-1 hidden flex-wrap items-center justify-center space-x-2 space-y-1 sm:space-y-0 lg:ml-10 lg:flex lg:space-x-4'>
             <ThemeMenu theme={theme} switchTheme={switchTheme} t={t} />
             <ProfileMenu
               user={user}
@@ -540,20 +540,20 @@ const AuthedHeader = ({
               t={t}
             />
           </div>
-          <div className='lg:hidden flex justify-center items-center space-x-3'>
+          <div className='flex items-center justify-center space-x-3 lg:hidden'>
             {/* Theme switch */}
             {theme === 'dark' ? (
-              <div className='transition-all duration-1000 ease-in-out rotate-180'>
+              <div className='rotate-180 transition-all duration-1000 ease-in-out'>
                 <SunIcon
                   onClick={() => switchTheme()}
-                  className='h-8 w-8 text-gray-200 hover:text-gray-300 cursor-pointer'
+                  className='h-8 w-8 cursor-pointer text-gray-200 hover:text-gray-300'
                 />
               </div>
             ) : (
               <div className='transition-all duration-1000 ease-in-out'>
                 <MoonIcon
                   onClick={() => switchTheme()}
-                  className='h-8 w-8 text-slate-700 hover:text-slate-600 cursor-pointer'
+                  className='h-8 w-8 cursor-pointer text-slate-700 hover:text-slate-600'
                 />
               </div>
             )}
@@ -595,11 +595,11 @@ const NotAuthedHeader = ({
   return (
     <header
       className={cx('relative overflow-x-clip', {
-        'bg-gray-50 dark:bg-slate-900 border-b border-gray-200 dark:border-slate-600/40': colourBackground,
+        'border-b border-gray-200 bg-gray-50 dark:border-slate-600/40 dark:bg-slate-900': colourBackground,
       })}
     >
       <nav className='mx-auto px-4 sm:px-6 lg:px-8' aria-label='Top'>
-        <div className='w-full py-4 flex items-center justify-between'>
+        <div className='flex w-full items-center justify-between py-4'>
           <div className='flex items-center'>
             {/* Logo */}
             {refPage ? (
@@ -627,21 +627,21 @@ const NotAuthedHeader = ({
             )}
 
             {!refPage && (
-              <div className='hidden ml-10 space-x-1 lg:flex gap-4 items-center'>
+              <div className='ml-10 hidden items-center gap-4 space-x-1 lg:flex'>
                 {!isSelfhosted && <SolutionsMenu />}
                 {isSelfhosted ? (
                   <a
                     href={`https://swetrix.com${routes.blog}`}
                     target='_blank'
                     rel='noopener noreferrer'
-                    className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                    className='text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
                   >
                     {t('footer.blog')}
                   </a>
                 ) : (
                   <Link
                     to={routes.blog}
-                    className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                    className='text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
                   >
                     {t('footer.blog')}
                   </Link>
@@ -649,7 +649,7 @@ const NotAuthedHeader = ({
                 {!isSelfhosted && (
                   <Link
                     to={`${routes.main}#pricing`}
-                    className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                    className='text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
                     key='Pricing'
                   >
                     {t('common.pricing')}
@@ -657,7 +657,7 @@ const NotAuthedHeader = ({
                 )}
                 <a
                   href={DOCS_URL}
-                  className='font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                  className='text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
                   target='_blank'
                   rel='noreferrer noopener'
                 >
@@ -667,7 +667,7 @@ const NotAuthedHeader = ({
               </div>
             )}
           </div>
-          <div className='hidden lg:flex justify-center items-center flex-wrap ml-1 lg:ml-10 space-y-1 sm:space-y-0 space-x-2 lg:space-x-4'>
+          <div className='ml-1 hidden flex-wrap items-center justify-center space-x-2 space-y-1 sm:space-y-0 lg:ml-10 lg:flex lg:space-x-4'>
             {/* Language selector */}
             <Dropdown
               items={whitelist}
@@ -676,7 +676,7 @@ const NotAuthedHeader = ({
               title={
                 <>
                   <Flag
-                    className='rounded-sm mr-1.5'
+                    className='mr-1.5 rounded-sm'
                     country={languageFlag[language]}
                     size={18}
                     alt=''
@@ -688,7 +688,7 @@ const NotAuthedHeader = ({
               labelExtractor={(lng: string) => (
                 <div className='flex'>
                   <div className='pt-1'>
-                    <Flag className='rounded-sm mr-1.5' country={languageFlag[lng]} size={21} alt={languageFlag[lng]} />
+                    <Flag className='mr-1.5 rounded-sm' country={languageFlag[lng]} size={21} alt={languageFlag[lng]} />
                   </div>
                   {languages[lng]}
                 </div>
@@ -702,28 +702,28 @@ const NotAuthedHeader = ({
                 <span className='text-slate-700'>|</span>
                 <Link
                   to={routes.signin}
-                  className='flex items-center font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                  className='flex items-center text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
                 >
                   {t('auth.common.signin')}
-                  <ArrowSmallRightIcon className='ml-1 stroke-2 h-4 w-4 mt-[1px]' />
+                  <ArrowSmallRightIcon className='ml-1 mt-[1px] h-4 w-4 stroke-2' />
                 </Link>
               </>
             )}
           </div>
-          <div className='lg:hidden flex justify-center items-center space-x-3'>
+          <div className='flex items-center justify-center space-x-3 lg:hidden'>
             {/* Theme switch */}
             {theme === 'dark' ? (
-              <div className='transition-all duration-1000 ease-in-out rotate-180'>
+              <div className='rotate-180 transition-all duration-1000 ease-in-out'>
                 <SunIcon
                   onClick={() => switchTheme()}
-                  className='h-8 w-8 text-gray-200 hover:text-gray-300 cursor-pointer'
+                  className='h-8 w-8 cursor-pointer text-gray-200 hover:text-gray-300'
                 />
               </div>
             ) : (
               <div className='transition-all duration-1000 ease-in-out'>
                 <MoonIcon
                   onClick={() => switchTheme()}
-                  className='h-8 w-8 text-slate-700 hover:text-slate-600 cursor-pointer'
+                  className='h-8 w-8 cursor-pointer text-slate-700 hover:text-slate-600'
                 />
               </div>
             )}
@@ -845,7 +845,7 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
       {/* Mobile header popup */}
       <Dialog className='lg:hidden' open={mobileMenuOpen} onClose={setMobileMenuOpen}>
         <div className='fixed inset-0 z-10' />
-        <Dialog.Panel className='fixed top-0 inset-y-0 right-0 z-30 w-full overflow-y-auto p-4 sm:max-w-sm sm:border backdrop-blur-2xl bg-gray-100/80 border-gray-300/80 dark:bg-slate-800/80 dark:border-slate-900/80'>
+        <Dialog.Panel className='fixed inset-y-0 right-0 top-0 z-30 w-full overflow-y-auto border-gray-300/80 bg-gray-100/80 p-4 backdrop-blur-2xl dark:border-slate-900/80 dark:bg-slate-800/80 sm:max-w-sm sm:border'>
           <div className='flex items-center justify-between'>
             <div>
               <span className='sr-only'>Swetrix</span>
@@ -857,20 +857,20 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                 alt=''
               />
             </div>
-            <div className='flex justify-center items-center space-x-3'>
+            <div className='flex items-center justify-center space-x-3'>
               {/* Theme switch */}
               {theme === 'dark' ? (
-                <div className='transition-all duration-1000 ease-in-out rotate-180'>
+                <div className='rotate-180 transition-all duration-1000 ease-in-out'>
                   <SunIcon
                     onClick={() => switchTheme()}
-                    className='h-8 w-8 text-gray-200 hover:text-gray-300 cursor-pointer'
+                    className='h-8 w-8 cursor-pointer text-gray-200 hover:text-gray-300'
                   />
                 </div>
               ) : (
                 <div className='transition-all duration-1000 ease-in-out'>
                   <MoonIcon
                     onClick={() => switchTheme()}
-                    className='h-8 w-8 text-slate-700 hover:text-slate-600 cursor-pointer'
+                    className='h-8 w-8 cursor-pointer text-slate-700 hover:text-slate-600'
                   />
                 </div>
               )}
@@ -891,10 +891,10 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                 <Menu as='div' className='-mx-3'>
                   {({ open }) => (
                     <>
-                      <Menu.Button className='flex w-full items-center justify-between rounded-lg py-2 pl-3 pr-3.5 text-base font-semibold leading-7 text-gray-900 dark:text-gray-50 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'>
+                      <Menu.Button className='flex w-full items-center justify-between rounded-lg py-2 pl-3 pr-3.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'>
                         <div className='flex'>
                           <Flag
-                            className='rounded-sm mr-1.5'
+                            className='mr-1.5 rounded-sm'
                             country={languageFlag[language]}
                             size={20}
                             alt=''
@@ -919,13 +919,13 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                         leaveTo='transform opacity-0 scale-95'
                       >
                         <Menu.Items
-                          className='z-50 py-1 origin-top-right absolute right-0 mt-1 w-full min-w-max rounded-md shadow-lg bg-white dark:bg-slate-800 ring-1 ring-slate-200 dark:ring-slate-800 focus:outline-none'
+                          className='absolute right-0 z-50 mt-1 w-full min-w-max origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-slate-200 focus:outline-none dark:bg-slate-800 dark:ring-slate-800'
                           static
                         >
                           {_map(whitelist, (lng) => (
                             <Menu.Item key={lng}>
                               <span
-                                className='text-gray-700 dark:text-gray-50 dark:bg-slate-800 block px-4 py-2 text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600'
+                                className='block cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-600'
                                 role='menuitem'
                                 tabIndex={0}
                                 onClick={() => onLanguageChange(lng)}
@@ -933,7 +933,7 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                                 <div className='flex'>
                                   <div className='pt-1'>
                                     <Flag
-                                      className='rounded-sm mr-1.5'
+                                      className='mr-1.5 rounded-sm'
                                       country={languageFlag[lng]}
                                       size={20}
                                       alt={languageFlag[lng]}
@@ -953,7 +953,7 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                   <Disclosure as='div' className='-mx-3'>
                     {({ open }) => (
                       <>
-                        <Disclosure.Button className='flex w-full items-center justify-between rounded-lg py-2 pl-3 pr-3.5 text-base font-semibold leading-7 text-gray-900 dark:text-gray-50 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'>
+                        <Disclosure.Button className='flex w-full items-center justify-between rounded-lg py-2 pl-3 pr-3.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'>
                           {t('header.solutions.title')}
                           <ChevronDownIcon
                             className={cx(open ? 'rotate-180' : '', 'h-5 w-5 flex-none')}
@@ -967,7 +967,7 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                               as='div'
                               className='group relative flex gap-x-2 rounded-lg p-2 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'
                             >
-                              <item.icon className='h-5 w-5 text-gray-600 dark:text-gray-300 mt-1' aria-hidden='true' />
+                              <item.icon className='mt-1 h-5 w-5 text-gray-600 dark:text-gray-300' aria-hidden='true' />
                               <div>
                                 {_startsWith(item.link, '/') ? (
                                   <Link
@@ -991,7 +991,7 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                                   </a>
                                 )}
 
-                                <p className='text-xs mt-1 text-gray-600 dark:text-neutral-100'>{item.description}</p>
+                                <p className='mt-1 text-xs text-gray-600 dark:text-neutral-100'>{item.description}</p>
                               </div>
                             </Disclosure.Button>
                           ))}
@@ -1033,7 +1033,7 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                   <Link
                     to={routes.billing}
                     onClick={() => setMobileMenuOpen(false)}
-                    className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 dark:text-gray-50 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'
+                    className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
                     key='Billing'
                   >
                     {t('common.billing')}
@@ -1043,7 +1043,7 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                   <Link
                     to={`${routes.main}#pricing`}
                     onClick={() => setMobileMenuOpen(false)}
-                    className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 dark:text-gray-50 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'
+                    className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
                     key='Pricing'
                   >
                     {t('common.pricing')}
@@ -1055,7 +1055,7 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                     href={`https://swetrix.com${routes.blog}`}
                     target='_blank'
                     rel='noopener noreferrer'
-                    className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 dark:text-gray-50 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'
+                    className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
                   >
                     {t('footer.blog')}
                   </a>
@@ -1063,7 +1063,7 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                   <Link
                     to={routes.blog}
                     onClick={() => setMobileMenuOpen(false)}
-                    className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 dark:text-gray-50 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'
+                    className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
                   >
                     {t('footer.blog')}
                   </Link>
@@ -1071,7 +1071,7 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                 <a
                   href={DOCS_URL}
                   onClick={() => setMobileMenuOpen(false)}
-                  className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 dark:text-gray-50 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'
+                  className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
                   target='_blank'
                   rel='noreferrer noopener'
                 >
@@ -1081,24 +1081,24 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                   <Link
                     to={routes.dashboard}
                     onClick={() => setMobileMenuOpen(false)}
-                    className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 dark:text-gray-50 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'
+                    className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
                   >
                     {t('common.dashboard')}
                   </Link>
                 )}
               </div>
-              <div className='py-6 space-y-2'>
+              <div className='space-y-2 py-6'>
                 {authenticated ? (
                   <>
                     <Link
                       to={routes.user_settings}
                       onClick={() => setMobileMenuOpen(false)}
-                      className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 dark:text-gray-50 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'
+                      className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
                     >
                       {t('common.accountSettings')}
                     </Link>
                     <span
-                      className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 dark:text-gray-50 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'
+                      className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
                       onClick={logoutHandler}
                     >
                       {t('common.logout')}
@@ -1109,14 +1109,14 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                     <Link
                       to={routes.signin}
                       onClick={() => setMobileMenuOpen(false)}
-                      className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 dark:text-gray-50 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'
+                      className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
                     >
                       {t('auth.common.signin')}
                     </Link>
                     <Link
                       to={routes.signup}
                       onClick={() => setMobileMenuOpen(false)}
-                      className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 dark:text-gray-50 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'
+                      className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
                       aria-label={t('titles.signup')}
                     >
                       {t('common.getStarted')}

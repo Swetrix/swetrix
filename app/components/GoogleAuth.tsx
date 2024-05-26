@@ -37,13 +37,13 @@ const GoogleAuth: React.FC<IGoogleAuth> = ({
         title={t('auth.common.continueWithGoogle')}
         className={cx(
           className,
-          'ring-1 ring-slate-300 bg-transparent hover:bg-slate-100 dark:ring-slate-700 dark:hover:bg-slate-800/60',
+          'bg-transparent ring-1 ring-slate-300 hover:bg-slate-100 dark:ring-slate-700 dark:hover:bg-slate-800/60',
         )}
         onClick={googleLogin}
         secondary
         regular
       >
-        <GoogleGSVG className='w-5 h-5' />
+        <GoogleGSVG className='h-5 w-5' />
       </Button>
     )
   }
@@ -52,14 +52,14 @@ const GoogleAuth: React.FC<IGoogleAuth> = ({
     <Button
       className={cx(
         className,
-        'flex items-center justify-center border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700',
+        'flex items-center justify-center border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700',
       )}
       onClick={googleLogin}
       secondary
       regular
     >
       <>
-        <GoogleGSVG className='w-5 h-5 mr-2' />
+        <GoogleGSVG className='mr-2 h-5 w-5' />
         {t('auth.common.google')}
       </>
     </Button>

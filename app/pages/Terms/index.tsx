@@ -6,11 +6,11 @@ import { CONTACT_EMAIL } from 'redux/constants'
 const Terms = (): JSX.Element => {
   return (
     <div className='bg-gray-50 dark:bg-slate-900'>
-      <div className='w-11/12 md:w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8'>
-        <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50 tracking-tight'>
+      <div className='mx-auto w-11/12 px-4 pb-16 pt-12 sm:px-6 md:w-4/5 lg:px-8'>
+        <h1 className='text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>
           Swetrix Terms and Conditions
         </h1>
-        <p className='mt-4 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <p className='mt-4 text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           These Swetrix Terms and Conditions ("Terms", "Terms and Conditions") govern your relationship with swetrix.com
           ("Service") operated by Swetrix Ltd ("Swetrix", "Swetrix Analytics", "Company", "us", "we", or "our"), located
           in Edinburgh, the United Kingdom, company number{' '}
@@ -27,8 +27,8 @@ const Terms = (): JSX.Element => {
           Please read these Terms and Conditions carefully before using the Service.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Acknowledgment</h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>Acknowledgment</h3>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           These are the Terms and Conditions governing the use of this Service and the agreement that operates between
           you and us. These Terms and Conditions set out the rights and obligations of all users regarding the use of
           the Service.
@@ -45,15 +45,15 @@ const Terms = (): JSX.Element => {
           rights and how the law protects you. Please read Our Privacy Policy carefully before using our Service.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Eligibility</h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>Eligibility</h3>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           By agreeing to these Terms, you represent and warrant to us: (i) that you are at least eighteen (18) years of
           age; (ii) that you have not previously been suspended or removed from our Service and (iii) that your use of
           our Service is in compliance with any and all applicable laws and regulations.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Indemnity</h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>Indemnity</h3>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           You agree that you will be responsible for your use of the Service, and you agree to defend, indemnify, and us
           hold harmless and our officers, directors, employees, consultants, affiliates, subsidiaries and agents
           (collectively, the "Company Entities") from and against any and all claims, liabilities, damages, losses, and
@@ -67,8 +67,8 @@ const Terms = (): JSX.Element => {
           and in such case, you agree to cooperate with our defense of such claim.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Termination</h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>Termination</h3>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           We may at our sole discretion suspend or terminate your access to our Service at any time, with or without
           notice for any reason or no reason at all. We also reserve the right to modify or discontinue the Service at
           any time (including, without limitation, by limiting or discontinuing certain features of the Service) without
@@ -76,8 +76,8 @@ const Terms = (): JSX.Element => {
           or termination of your access to or use of the Service.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Fair use</h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>Fair use</h3>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           We will use commercially reasonable efforts to provide all plan levels with sufficient capacity for the
           analytics data, number of websites, and other plan features that we determine are typical of accounts at that
           plan level. We may notify you if your usage is unreasonable, and we may at our sole discretion and at any time
@@ -85,8 +85,8 @@ const Terms = (): JSX.Element => {
           and/or business operations.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Third-party websites</h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>Third-party websites</h3>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           The Service may contain links to third-party websites or services that are not owned or controlled by us.
           <br />
           We have no control over, and assume no responsibility for, the content, privacy policies, or practices of any
@@ -99,8 +99,8 @@ const Terms = (): JSX.Element => {
           services that you visit.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>License grant to us</h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>License grant to us</h3>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           By submitting, posting, or publishing your content, suggestions, enhancement requests, recommendations,
           feedback, information, data, or comments (“Content”) to our Service, you are granting us a perpetual,
           irrevocable, worldwide, non-exclusive, royalty-free right and license (with the right to sublicense) to use,
@@ -112,8 +112,8 @@ const Terms = (): JSX.Element => {
           intellectual property or proprietary right; or (ii) slander, defame, or libel any third-party.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Prohibited uses</h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>Prohibited uses</h3>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           As a condition of your use of the Service, you will not use the Service for any purpose that is unlawful or
           prohibited by these Terms. You may not use the Service in any manner that could damage, disable, overburden,
           disrupt or impair any of our servers or APIs, or any networks connected to any of our server or APIs, or that
@@ -133,10 +133,10 @@ const Terms = (): JSX.Element => {
           emergency responses, and you shall not use our Service for any such purposes.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>
           Limitation of liability
         </h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           IN NO EVENT WILL THE COMPANY ENTITIES BE LIABLE TO YOU OR ANY THIRD PARTY FOR ANY DIRECT, INDIRECT,
           INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES ARISING OUT OF OR RELATING TO YOUR ACCESS TO OR USE
           OF, OR YOUR INABILITY TO ACCESS OR USE, THE SERVICE OR ANY MATERIALS OR CONTENT ON THE SERVICE, WHETHER BASED
@@ -144,10 +144,10 @@ const Terms = (): JSX.Element => {
           COMPANY ENTITIES HAVE BEEN INFORMED OF THE POSSIBILITY OF SUCH DAMAGE.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>
           Disclaimers; no warranties
         </h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           THE SERVICE ARE MADE AVAILABLE TO YOU ON AN "AS IS" AND "AS AVAILABLE" BASIS, WITH THE EXPRESS UNDERSTANDING
           THAT THE COMPANY ENTITIES HAVE NO OBLIGATION TO MONITOR, CONTROL, OR VET THE CONTENT OR DATA APPEARING ON THE
           SERVICE. AS SUCH, YOUR USE OF THE SERVICE IS AT YOUR OWN DISCRETION AND RISK. THE COMPANY ENTITIES MAKE NO
@@ -156,8 +156,8 @@ const Terms = (): JSX.Element => {
           PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Accounts</h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>Accounts</h3>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           When you create an account with us, you must provide us information that is accurate, complete, and current at
           all times. Failure to do so constitutes a breach of the Terms, which may result in immediate termination of
           your account on our Service.
@@ -173,8 +173,8 @@ const Terms = (): JSX.Element => {
           appropriate authorization, or a name that is otherwise offensive, vulgar or obscene.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Subscriptions</h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>Subscriptions</h3>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           Some parts of the Service are billed on a subscription basis ("Subscription(s)"). You will be billed in
           advance on a recurring and periodic basis ("Billing Cycle"). Billing cycles are set either on a monthly or
           annual basis, depending on the type of subscription plan you select when purchasing a Subscription.
@@ -194,8 +194,8 @@ const Terms = (): JSX.Element => {
           period as indicated on the invoice.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Fee changes</h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>Fee changes</h3>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           We may, at our sole discretion and at any time, modify the Subscription fees for the Subscriptions. Any
           Subscription fee change will become effective at the end of the then-current Billing Cycle.
           <br />
@@ -206,8 +206,8 @@ const Terms = (): JSX.Element => {
           agreement to pay the modified Subscription fee amount.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Refunds</h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>Refunds</h3>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           To avoid being charged for your Subscription, you must cancel the Subscription before your renewal date.
           Otherwise, you’ll be charged and will retain access to the Service through the end of the Billing Cycle.
           <br />
@@ -215,8 +215,8 @@ const Terms = (): JSX.Element => {
           team and at our sole discretion we may issue a refund on a case-by-case basis.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Governing Law</h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>Governing Law</h3>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           These Terms shall be governed and construed in accordance with the laws of Scotland, without regard to its
           conflict of law provisions.
           <br />
@@ -226,55 +226,55 @@ const Terms = (): JSX.Element => {
           Service, and supersede and replace any prior agreements we might have between us regarding the Service.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Disputes resolution</h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>Disputes resolution</h3>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           If you have any concern or dispute about the Service, you agree to first try to resolve the dispute informally
           by contacting the Company.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>
           For European Union (EU) users
         </h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           If You are a European Union consumer, you will benefit from any mandatory provisions of the law of the country
           in which you are resident in.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>
           United States Legal Compliance
         </h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           You represent and warrant that (i) you are not located in a country that is subject to the United States
           government embargo, or that has been designated by the United States government as a "terrorist supporting"
           country, and (ii) You are not listed on any United States government list of prohibited or restricted parties.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Severability</h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>Severability</h3>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           If any provision of these Terms is held to be unenforceable or invalid, such provision will be changed and
           interpreted to accomplish the objectives of such provision to the greatest extent possible under applicable
           law and the remaining provisions will continue in full force and effect.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Waiver</h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>Waiver</h3>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           Except as provided herein, the failure to exercise a right or to require performance of an obligation under
           this Agreement shall not affect a party’s ability to exercise such right or require such performance at any
           time thereafter, nor shall the waiver of a breach constitute the waiver of any subsequent breach.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>
           Translation interpretation
         </h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           These Terms and Conditions may have been translated if we have made them available to you on our Service. You
           agree that the original English text shall prevail in the case of a dispute.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>
           Changes to these Terms and Conditions
         </h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           We reserve the right, at our sole discretion, to modify or replace these Terms and Conditions at any time. If
           a revision is material we will make reasonable efforts to provide at least 30 days' notice prior to any new
           terms taking effect. What constitutes a material change will be determined at our sole discretion.
@@ -284,8 +284,8 @@ const Terms = (): JSX.Element => {
           and the Service.
         </p>
 
-        <h3 className='text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight mt-4'>Contact us</h3>
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <h3 className='mt-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>Contact us</h3>
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           If you have any questions you can contact us by sending us an email at&nbsp;
           <a
             href={`mailto:${CONTACT_EMAIL}`}
@@ -296,8 +296,8 @@ const Terms = (): JSX.Element => {
           .
         </p>
 
-        <hr className='mt-10 mb-4 border-gray-200 dark:border-gray-600' />
-        <p className='text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <hr className='mb-4 mt-10 border-gray-200 dark:border-gray-600' />
+        <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           <i>Last updated: February 2, 2024.</i>
         </p>
       </div>

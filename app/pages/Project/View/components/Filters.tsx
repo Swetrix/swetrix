@@ -60,7 +60,7 @@ export const Filter = ({
     <span
       title={truncatedFilter === displayFilter ? undefined : displayFilter}
       className={cx(
-        'inline-flex rounded-md items-center py-0.5 pl-2.5 pr-1 mr-2 mt-2 text-sm font-medium bg-gray-200 text-gray-800 dark:text-gray-50 dark:bg-slate-800',
+        'mr-2 mt-2 inline-flex items-center rounded-md bg-gray-200 py-0.5 pl-2.5 pr-1 text-sm font-medium text-gray-800 dark:bg-slate-800 dark:text-gray-50',
         {
           'pr-2': !removable,
         },
@@ -70,7 +70,7 @@ export const Filter = ({
       &nbsp;
       {canChangeExclusive ? (
         <span
-          className='text-blue-400 border-blue-400 border-b-2 border-dotted cursor-pointer'
+          className='cursor-pointer border-b-2 border-dotted border-blue-400 text-blue-400'
           onClick={() => onChangeExclusive(column, filter, !isExclusive)}
         >
           {t(`common.${isExclusive ? 'isNot' : 'is'}`)}
@@ -85,7 +85,7 @@ export const Filter = ({
         <button
           onClick={() => onRemoveFilter(column, filter)}
           type='button'
-          className='flex-shrink-0 ml-0.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-gray-800 hover:text-gray-900 hover:bg-gray-300 focus:bg-gray-300 focus:text-gray-900 dark:text-gray-50 dark:bg-slate-800 dark:hover:text-gray-300 dark:hover:bg-gray-800 dark:focus:bg-gray-800 dark:focus:text-gray-300 focus:outline-none '
+          className='ml-0.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-gray-800 hover:bg-gray-300 hover:text-gray-900 focus:bg-gray-300 focus:text-gray-900 focus:outline-none dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300 dark:focus:bg-gray-800 dark:focus:text-gray-300 '
         >
           <span className='sr-only'>Remove filter</span>
           <svg className='h-2 w-2' stroke='currentColor' fill='none' viewBox='0 0 8 8'>
@@ -126,7 +126,7 @@ export const Filters = ({ filters, onRemoveFilter, onChangeExclusive, tnMapping 
   } = useTranslation('common')
 
   return (
-    <div className='flex justify-center md:justify-start flex-wrap -mt-2'>
+    <div className='-mt-2 flex flex-wrap justify-center md:justify-start'>
       {_map(filters, (props) => {
         const { column, filter } = props
         const key = `${column}${filter}`

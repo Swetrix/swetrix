@@ -153,10 +153,10 @@ const Signin = ({ login, loginSuccess, loginFailed, authSSO, ssrTheme }: ISignin
 
   if (isTwoFARequired) {
     return (
-      <div className='min-h-page bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
-        <form className='max-w-prose mx-auto' onSubmit={_submit2FA}>
+      <div className='flex min-h-page flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8'>
+        <form className='mx-auto max-w-prose' onSubmit={_submit2FA}>
           <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{t('auth.signin.2fa')}</h2>
-          <p className='mt-4 text-base whitespace-pre-line text-gray-900 dark:text-gray-50'>
+          <p className='mt-4 whitespace-pre-line text-base text-gray-900 dark:text-gray-50'>
             {t('auth.signin.2faDesc')}
           </p>
           <Input
@@ -169,7 +169,7 @@ const Signin = ({ login, loginSuccess, loginFailed, authSSO, ssrTheme }: ISignin
             disabled={isLoading}
             error={twoFACodeError}
           />
-          <div className='flex justify-between mt-3'>
+          <div className='mt-3 flex justify-between'>
             <div className='whitespace-pre-line text-sm text-gray-600 dark:text-gray-400'>
               {!isSelfhosted && (
                 <Trans
@@ -195,14 +195,14 @@ const Signin = ({ login, loginSuccess, loginFailed, authSSO, ssrTheme }: ISignin
   }
 
   return (
-    <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
+    <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8'>
       <div className='sm:mx-auto sm:w-full sm:max-w-md'>
         <h2 className='text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-gray-50'>
           {t('auth.signin.title')}
         </h2>
       </div>
       <div className='mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]'>
-        <div className='bg-white dark:bg-slate-800/20 dark:ring-1 dark:ring-slate-800 px-6 py-12 shadow sm:rounded-lg sm:px-12'>
+        <div className='bg-white px-6 py-12 shadow dark:bg-slate-800/20 dark:ring-1 dark:ring-slate-800 sm:rounded-lg sm:px-12'>
           <form className='space-y-6' onSubmit={handleSubmit}>
             <Input
               name='email'
@@ -257,7 +257,7 @@ const Signin = ({ login, loginSuccess, loginFailed, authSSO, ssrTheme }: ISignin
                   <div className='w-full border-t border-gray-200 dark:border-gray-600' />
                 </div>
                 <div className='relative flex justify-center text-sm font-medium leading-6'>
-                  <span className='bg-white dark:bg-slate-800/20 px-6 text-gray-900 dark:text-gray-50'>
+                  <span className='bg-white px-6 text-gray-900 dark:bg-slate-800/20 dark:text-gray-50'>
                     {t('auth.common.orContinueWith')}
                   </span>
                 </div>
@@ -282,7 +282,7 @@ const Signin = ({ login, loginSuccess, loginFailed, authSSO, ssrTheme }: ISignin
         </div>
 
         {!isSelfhosted && (
-          <p className='mt-10 mb-4 text-center text-sm text-gray-500 dark:text-gray-200'>
+          <p className='mb-4 mt-10 text-center text-sm text-gray-500 dark:text-gray-200'>
             <Trans
               // @ts-ignore
               t={t}

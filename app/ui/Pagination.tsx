@@ -18,16 +18,16 @@ const Pagination = ({ page, setPage, pageAmount, total, className }: IPagination
   const paginationRange = usePagination(total, page)
 
   return (
-    <nav className={cx('border-t-0 border-gray-200 px-4 flex items-center justify-between sm:px-0', className)}>
-      <div className='-mt-px w-0 flex-1 flex group'>
+    <nav className={cx('flex items-center justify-between border-t-0 border-gray-200 px-4 sm:px-0', className)}>
+      <div className='group -mt-px flex w-0 flex-1'>
         {page > 1 && (
           <button
             type='button'
             onClick={() => setPage(page - 1)}
-            className='pt-4 pr-1 inline-flex items-center text-sm font-medium dark:group-hover:text-gray-400 group-hover:text-gray-700 dark:text-gray-300 text-gray-500'
+            className='inline-flex items-center pr-1 pt-4 text-sm font-medium text-gray-500 group-hover:text-gray-700 dark:text-gray-300 dark:group-hover:text-gray-400'
           >
             <ArrowLongLeftIcon
-              className='mr-3 h-5 w-5 dark:group-hover:text-gray-400 group-hover:text-gray-700 dark:text-gray-300 text-gray-500 transition-none'
+              className='mr-3 h-5 w-5 text-gray-500 transition-none group-hover:text-gray-700 dark:text-gray-300 dark:group-hover:text-gray-400'
               aria-hidden='true'
             />
             {t('project.prev')}
@@ -39,7 +39,7 @@ const Pagination = ({ page, setPage, pageAmount, total, className }: IPagination
           if (item === DOTS) {
             return (
               <span
-                className='border-transparent text-gray-500 dark:text-gray-300 border-t-2 pt-4 px-4 inline-flex items-center text-sm font-medium'
+                className='inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 dark:text-gray-300'
                 key={item + index}
               >
                 {DOTS}
@@ -53,9 +53,9 @@ const Pagination = ({ page, setPage, pageAmount, total, className }: IPagination
               type='button'
               onClick={() => setPage(item)}
               className={cx({
-                'border-slate-900 text-slate-900 dark:text-gray-50 dark:border-gray-50 border-t-2 pt-4 px-4 inline-flex items-center text-sm font-medium':
+                'inline-flex items-center border-t-2 border-slate-900 px-4 pt-4 text-sm font-medium text-slate-900 dark:border-gray-50 dark:text-gray-50':
                   item === page,
-                'border-transparent text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-400 hover:border-gray-300 border-t-2 pt-4 px-4 inline-flex items-center text-sm font-medium':
+                'inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-400':
                   item !== page,
               })}
             >
@@ -64,16 +64,16 @@ const Pagination = ({ page, setPage, pageAmount, total, className }: IPagination
           )
         })}
       </div>
-      <div className='-mt-px w-0 flex-1 flex justify-end group'>
+      <div className='group -mt-px flex w-0 flex-1 justify-end'>
         {page !== pageAmount && (
           <button
             type='button'
             onClick={() => setPage(page + 1)}
-            className='pt-4 pl-1 inline-flex items-center text-sm font-medium dark:group-hover:text-gray-400 group-hover:text-gray-700 dark:text-gray-300 text-gray-500'
+            className='inline-flex items-center pl-1 pt-4 text-sm font-medium text-gray-500 group-hover:text-gray-700 dark:text-gray-300 dark:group-hover:text-gray-400'
           >
             {t('project.next')}
             <ArrowLongRightIcon
-              className='ml-3 h-5 w-5 dark:group-hover:text-gray-400 group-hover:text-gray-700 dark:text-gray-300 text-gray-500 transition-none'
+              className='ml-3 h-5 w-5 text-gray-500 transition-none group-hover:text-gray-700 dark:text-gray-300 dark:group-hover:text-gray-400'
               aria-hidden='true'
             />
           </button>

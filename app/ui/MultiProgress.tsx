@@ -16,7 +16,7 @@ interface IMultiProgress {
 
 const MultiProgress = ({ progress, theme, className }: IMultiProgress): JSX.Element => (
   <div className='relative' data-testid='multiprogress'>
-    <div className={cx('overflow-hidden h-5 text-xs flex rounded bg-gray-200 dark:bg-slate-600', className)}>
+    <div className={cx('flex h-5 overflow-hidden rounded bg-gray-200 text-xs dark:bg-slate-600', className)}>
       {_map(progress, ({ value, lightColour, darkColour }) => (
         <div
           key={`${value}-${lightColour}-${darkColour}`}
@@ -24,7 +24,7 @@ const MultiProgress = ({ progress, theme, className }: IMultiProgress): JSX.Elem
             width: `${value}%`,
             backgroundColor: theme === 'dark' ? darkColour : lightColour,
           }}
-          className='shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center'
+          className='flex flex-col justify-center whitespace-nowrap text-center text-white shadow-none'
         />
       ))}
     </div>

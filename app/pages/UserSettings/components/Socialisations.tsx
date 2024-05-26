@@ -86,7 +86,7 @@ const Socialisations = ({ user, linkSSO, unlinkSSO, genericError, theme }: ISoci
   return (
     <>
       <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>{t('profileSettings.socialisationsDesc')}</p>
-      <div className='overflow-hidden bg-white dark:bg-slate-800 mt-2 shadow sm:rounded-md'>
+      <div className='mt-2 overflow-hidden bg-white shadow dark:bg-slate-800 sm:rounded-md'>
         <ul className='divide-y divide-gray-200 dark:divide-slate-700'>
           {_map(AVAILABLE_SSO_PROVIDERS, ({ name, key, icons }) => {
             const [connected, unlinkable] = getStatusByUser(user, key)
@@ -96,13 +96,13 @@ const Socialisations = ({ user, linkSSO, unlinkSSO, genericError, theme }: ISoci
 
             return (
               <li key={key}>
-                <div className='sm:flex items-center px-1 py-4 sm:px-6'>
+                <div className='items-center px-1 py-4 sm:flex sm:px-6'>
                   <div className='flex min-w-0 flex-1 items-center'>
-                    <div className='flex-shrink-0 hidden sm:block'>
+                    <div className='hidden flex-shrink-0 sm:block'>
                       {theme === 'dark' ? (
-                        <Light className='max-h-12 max-w-12 h-12 w-12 rounded-full' />
+                        <Light className='h-12 max-h-12 w-12 max-w-12 rounded-full' />
                       ) : (
-                        <Dark className='max-h-12 max-w-12 h-12 w-12 rounded-full' />
+                        <Dark className='h-12 max-h-12 w-12 max-w-12 rounded-full' />
                       )}
                     </div>
                     <div className='min-w-0 flex-1 px-2 sm:px-4 md:grid md:grid-cols-2 md:gap-4'>
@@ -123,7 +123,7 @@ const Socialisations = ({ user, linkSSO, unlinkSSO, genericError, theme }: ISoci
                       </div>
                     </div>
                   </div>
-                  <div className='flex justify-center mt-2 sm:block sm:mt-0'>
+                  <div className='mt-2 flex justify-center sm:mt-0 sm:block'>
                     {connected && !unlinkable && (
                       <Button onClick={() => genericError(t('profileSettings.cantUnlinkSocialisation'))} small danger>
                         {t('common.unlink')}

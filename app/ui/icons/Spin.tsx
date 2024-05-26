@@ -9,7 +9,7 @@ interface ISpin {
 const Spin = ({ className, alwaysLight }: ISpin): JSX.Element => (
   <svg
     className={cx(
-      'animate-spin -ml-1 mr-2 h-4 w-4 text-slate-900 dark:text-white',
+      '-ml-1 mr-2 h-4 w-4 animate-spin text-slate-900 dark:text-white',
       {
         'text-slate-900 dark:text-white': !alwaysLight,
         'text-white': alwaysLight,

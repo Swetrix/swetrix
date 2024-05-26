@@ -36,7 +36,7 @@ const Checkbox = ({
         className,
       )}
     >
-      <div className='flex items-center h-5'>
+      <div className='flex h-5 items-center'>
         <input
           id={identifier}
           aria-describedby={identifier}
@@ -46,7 +46,7 @@ const Checkbox = ({
           checked={checked}
           onChange={onChange}
           className={cx(
-            'focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 dark:border-slate-800 dark:bg-slate-700 dark:checked:bg-indigo-600 rounded cursor-pointer',
+            'h-4 w-4 cursor-pointer rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-slate-800 dark:bg-slate-700 dark:checked:bg-indigo-600',
             { '!cursor-not-allowed': disabled, 'opacity-50': disabled },
           )}
         />
@@ -54,7 +54,7 @@ const Checkbox = ({
       <div className='ml-3 text-sm'>
         <label
           htmlFor={identifier}
-          className={cx('font-medium text-gray-700 dark:text-gray-200 cursor-pointer', {
+          className={cx('cursor-pointer font-medium text-gray-700 dark:text-gray-200', {
             '!cursor-not-allowed': disabled,
           })}
         >

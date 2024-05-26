@@ -125,15 +125,15 @@ const PanelContainer = ({
 }: IPanelContainer): JSX.Element => (
   <div
     className={cx(
-      'relative bg-white dark:bg-slate-800/25 dark:border dark:border-slate-800/50 pt-5 px-4 min-h-72 max-h-96 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden',
+      'relative max-h-96 min-h-72 overflow-hidden rounded-lg bg-white px-4 pt-5 shadow dark:border dark:border-slate-800/50 dark:bg-slate-800/25 sm:px-6 sm:pt-6',
       {
         'pb-12': !noSwitch,
         'pb-5': noSwitch,
       },
     )}
   >
-    <div className='flex items-center justify-between mb-2'>
-      <h3 className='flex items-center text-lg leading-6 font-semibold text-gray-900 dark:text-gray-50'>
+    <div className='mb-2 flex items-center justify-between'>
+      <h3 className='flex items-center text-lg font-semibold leading-6 text-gray-900 dark:text-gray-50'>
         {icon && (
           <>
             {icon}
@@ -242,7 +242,7 @@ const PanelContainer = ({
     </div>
     {/* for other tabs */}
     <div
-      className={cx('flex flex-col h-full scroll-auto', {
+      className={cx('flex h-full flex-col scroll-auto', {
         'overflow-auto': !(
           type === 'pg' &&
           activeTab !== PROJECT_TABS.performance &&
@@ -344,27 +344,27 @@ const KVTable = ({ data, t, uniques, loading }: IKVTable) => {
 
   if (loading) {
     return (
-      <div className='flex justify-center items-center pt-5 pb-10 w-full'>
+      <div className='flex w-full items-center justify-center pb-10 pt-5'>
         <Loader />
       </div>
     )
   }
 
   if (_isEmpty(data)) {
-    return <p className='text-gray-600 dark:text-gray-200 mb-2'>{t('project.noData')}</p>
+    return <p className='mb-2 text-gray-600 dark:text-gray-200'>{t('project.noData')}</p>
   }
 
   return _map(processed, (value, key) => {
     return (
-      <table key={key} className='table-fixed w-full mb-2'>
+      <table key={key} className='mb-2 w-full table-fixed'>
         <thead>
           <tr className='text-gray-600 dark:text-gray-200'>
-            <th className='w-2/5 sm:w-4/6 text-left flex items-center'>{key}</th>
+            <th className='flex w-2/5 items-center text-left sm:w-4/6'>{key}</th>
             <th className='w-[30%] sm:w-1/6'>
-              <p className='flex justify-end items-center'>{t('project.quantity')}</p>
+              <p className='flex items-center justify-end'>{t('project.quantity')}</p>
             </th>
             <th className='w-[30%] sm:w-1/6'>
-              <p className='flex justify-end items-center'>{t('project.conversion')}</p>
+              <p className='flex items-center justify-end'>{t('project.conversion')}</p>
             </th>
           </tr>
         </thead>
@@ -372,9 +372,9 @@ const KVTable = ({ data, t, uniques, loading }: IKVTable) => {
           {_map(value, ({ value: nestedValue, count }) => (
             <tr
               key={nestedValue}
-              className='text-gray-900 dark:text-gray-50 group hover:bg-gray-100 hover:dark:bg-slate-700 py-3'
+              className='group py-3 text-gray-900 hover:bg-gray-100 dark:text-gray-50 hover:dark:bg-slate-700'
             >
-              <td className='text-left flex items-center'>{nestedValue}</td>
+              <td className='flex items-center text-left'>{nestedValue}</td>
               <td className='text-right'>
                 {count}
                 &nbsp;&nbsp;
@@ -576,11 +576,11 @@ const CustomEvents = ({ customs, chartData, onFilter, t, customTabs = [], getCus
           isOpened={modal}
           title={t('project.customEv')}
           message={
-            <table className='table-fixed w-full'>
+            <table className='w-full table-fixed'>
               <thead>
-                <tr className='text-gray-900 dark:text-gray-50 text-base'>
+                <tr className='text-base text-gray-900 dark:text-gray-50'>
                   <th
-                    className='w-2/5 sm:w-4/6 text-left flex items-center cursor-pointer hover:opacity-90'
+                    className='flex w-2/5 cursor-pointer items-center text-left hover:opacity-90 sm:w-4/6'
                     onClick={() => onSortBy('event')}
                   >
                     {t('project.event')}
@@ -592,7 +592,7 @@ const CustomEvents = ({ customs, chartData, onFilter, t, customTabs = [], getCus
                   </th>
                   <th className='w-[30%] sm:w-1/6'>
                     <p
-                      className='flex justify-end items-center cursor-pointer hover:opacity-90'
+                      className='flex cursor-pointer items-center justify-end hover:opacity-90'
                       onClick={() => onSortBy('quantity')}
                     >
                       {t('project.quantity')}
@@ -606,7 +606,7 @@ const CustomEvents = ({ customs, chartData, onFilter, t, customTabs = [], getCus
                   </th>
                   <th className='w-[30%] sm:w-1/6'>
                     <p
-                      className='flex justify-end items-center cursor-pointer hover:opacity-90'
+                      className='flex cursor-pointer items-center justify-end hover:opacity-90'
                       onClick={() => onSortBy('conversion')}
                     >
                       {t('project.conversion')}
@@ -623,14 +623,14 @@ const CustomEvents = ({ customs, chartData, onFilter, t, customTabs = [], getCus
                 {_map(keysToDisplay, (ev) => (
                   <Fragment key={ev}>
                     <tr
-                      className='text-gray-900 dark:text-gray-50 group hover:bg-gray-100 hover:dark:bg-slate-700 cursor-pointer text-base py-1'
+                      className='group cursor-pointer py-1 text-base text-gray-900 hover:bg-gray-100 dark:text-gray-50 hover:dark:bg-slate-700'
                       onClick={toggleEventMetadata(ev)}
                     >
-                      <td className='text-left flex items-center'>
+                      <td className='flex items-center text-left'>
                         {activeEvents[ev] ? (
-                          <ChevronUpIcon className='w-auto h-5 text-gray-500 dark:text-gray-300 px-2 hover:opacity-80' />
+                          <ChevronUpIcon className='h-5 w-auto px-2 text-gray-500 hover:opacity-80 dark:text-gray-300' />
                         ) : (
-                          <ChevronDownIcon className='w-auto h-5 text-gray-500 dark:text-gray-300 px-2 hover:opacity-80' />
+                          <ChevronDownIcon className='h-5 w-auto px-2 text-gray-500 hover:opacity-80 dark:text-gray-300' />
                         )}
                         {ev}
                       </td>
@@ -694,7 +694,7 @@ const CustomEvents = ({ customs, chartData, onFilter, t, customTabs = [], getCus
         <thead>
           <tr className='text-gray-900 dark:text-gray-50'>
             <th
-              className='w-4/6 text-left flex items-center cursor-pointer hover:opacity-90'
+              className='flex w-4/6 cursor-pointer items-center text-left hover:opacity-90'
               onClick={() => onSortBy('event')}
             >
               {t('project.event')}
@@ -705,7 +705,7 @@ const CustomEvents = ({ customs, chartData, onFilter, t, customTabs = [], getCus
               />
             </th>
             <th className='w-1/6 text-right'>
-              <p className='flex items-center cursor-pointer hover:opacity-90' onClick={() => onSortBy('quantity')}>
+              <p className='flex cursor-pointer items-center hover:opacity-90' onClick={() => onSortBy('quantity')}>
                 {t('project.quantity')}
                 <Sort
                   className='ml-1'
@@ -716,7 +716,7 @@ const CustomEvents = ({ customs, chartData, onFilter, t, customTabs = [], getCus
               </p>
             </th>
             <th className='w-1/6 text-right'>
-              <p className='flex items-center cursor-pointer hover:opacity-90' onClick={() => onSortBy('conversion')}>
+              <p className='flex cursor-pointer items-center hover:opacity-90' onClick={() => onSortBy('conversion')}>
                 {t('project.conversion')}
                 <Sort
                   className='ml-1'
@@ -731,12 +731,12 @@ const CustomEvents = ({ customs, chartData, onFilter, t, customTabs = [], getCus
           {_map(keysToDisplay, (ev) => (
             <tr
               key={ev}
-              className='text-gray-900 dark:text-gray-50 group hover:bg-gray-100 hover:dark:bg-slate-700 cursor-pointer'
+              className='group cursor-pointer text-gray-900 hover:bg-gray-100 dark:text-gray-50 hover:dark:bg-slate-700'
               onClick={() => onFilter('ev', ev)}
             >
-              <td className='text-left flex items-center'>
+              <td className='flex items-center text-left'>
                 {ev}
-                <FunnelIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
+                <FunnelIcon className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300' />
               </td>
               <td className='text-right'>
                 {customsEventsData[ev]}
@@ -755,22 +755,22 @@ const CustomEvents = ({ customs, chartData, onFilter, t, customTabs = [], getCus
       </table>
       {/* for pagination in tabs */}
       {_size(keys) > ENTRIES_PER_CUSTOM_EVENTS_PANEL && (
-        <div className='absolute bottom-0 w-card-toggle-sm sm:!w-card-toggle'>
-          <div className='flex justify-between select-none mb-2'>
+        <div className='w-card-toggle-sm absolute bottom-0 sm:!w-card-toggle'>
+          <div className='mb-2 flex select-none justify-between'>
             <div>
-              <span className='text-gray-500 dark:text-gray-200 font-light lowercase text-xs'>
+              <span className='text-xs font-light lowercase text-gray-500 dark:text-gray-200'>
                 {_size(keys)} {t('project.results')}
               </span>
-              <span className='text-gray-500 dark:text-gray-200 font-light text-xs'>
+              <span className='text-xs font-light text-gray-500 dark:text-gray-200'>
                 . {t('project.page')} {page + 1} / {totalPages}
               </span>
             </div>
-            <div className='flex justify-between w-[4.5rem]'>
+            <div className='flex w-[4.5rem] justify-between'>
               <Button
                 className={cx(
-                  'text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-slate-800 border-none px-1.5 py-0.5',
+                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow dark:bg-slate-800 dark:text-gray-200',
                   {
-                    'opacity-50 cursor-not-allowed': !canGoPrev(),
+                    'cursor-not-allowed opacity-50': !canGoPrev(),
                     'hover:bg-gray-200 hover:dark:bg-slate-700': canGoPrev(),
                   },
                 )}
@@ -779,13 +779,13 @@ const CustomEvents = ({ customs, chartData, onFilter, t, customTabs = [], getCus
                 disabled={!canGoPrev()}
                 focus={false}
               >
-                <ArrowLongLeftIcon className='w-5 h-5' />
+                <ArrowLongLeftIcon className='h-5 w-5' />
               </Button>
               <Button
                 className={cx(
-                  'text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-slate-800 border-none px-1.5 py-0.5',
+                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow dark:bg-slate-800 dark:text-gray-200',
                   {
-                    'opacity-50 cursor-not-allowed': !canGoNext(),
+                    'cursor-not-allowed opacity-50': !canGoNext(),
                     'hover:bg-gray-200 hover:dark:bg-slate-700': canGoNext(),
                   },
                 )}
@@ -794,7 +794,7 @@ const CustomEvents = ({ customs, chartData, onFilter, t, customTabs = [], getCus
                 type='button'
                 focus={false}
               >
-                <ArrowLongRightIcon className='w-5 h-5' />
+                <ArrowLongRightIcon className='h-5 w-5' />
               </Button>
             </div>
           </div>
@@ -805,11 +805,11 @@ const CustomEvents = ({ customs, chartData, onFilter, t, customTabs = [], getCus
         isOpened={modal}
         title={t('project.customEv')}
         message={
-          <table className='table-fixed w-full'>
+          <table className='w-full table-fixed'>
             <thead>
-              <tr className='text-gray-900 dark:text-gray-50 text-base'>
+              <tr className='text-base text-gray-900 dark:text-gray-50'>
                 <th
-                  className='w-2/5 sm:w-4/6 text-left flex items-center cursor-pointer hover:opacity-90'
+                  className='flex w-2/5 cursor-pointer items-center text-left hover:opacity-90 sm:w-4/6'
                   onClick={() => onSortBy('event')}
                 >
                   {t('project.event')}
@@ -821,7 +821,7 @@ const CustomEvents = ({ customs, chartData, onFilter, t, customTabs = [], getCus
                 </th>
                 <th className='w-[30%] sm:w-1/6'>
                   <p
-                    className='flex justify-end items-center cursor-pointer hover:opacity-90'
+                    className='flex cursor-pointer items-center justify-end hover:opacity-90'
                     onClick={() => onSortBy('quantity')}
                   >
                     {t('project.quantity')}
@@ -835,7 +835,7 @@ const CustomEvents = ({ customs, chartData, onFilter, t, customTabs = [], getCus
                 </th>
                 <th className='w-[30%] sm:w-1/6'>
                   <p
-                    className='flex justify-end items-center cursor-pointer hover:opacity-90'
+                    className='flex cursor-pointer items-center justify-end hover:opacity-90'
                     onClick={() => onSortBy('conversion')}
                   >
                     {t('project.conversion')}
@@ -852,14 +852,14 @@ const CustomEvents = ({ customs, chartData, onFilter, t, customTabs = [], getCus
               {_map(keysToDisplay, (ev) => (
                 <Fragment key={ev}>
                   <tr
-                    className='text-gray-900 dark:text-gray-50 group hover:bg-gray-100 hover:dark:bg-slate-700 cursor-pointer text-base py-1'
+                    className='group cursor-pointer py-1 text-base text-gray-900 hover:bg-gray-100 dark:text-gray-50 hover:dark:bg-slate-700'
                     onClick={toggleEventMetadata(ev)}
                   >
-                    <td className='text-left flex items-center'>
+                    <td className='flex items-center text-left'>
                       {activeEvents[ev] ? (
-                        <ChevronUpIcon className='w-auto h-5 text-gray-500 dark:text-gray-300 px-2 hover:opacity-80' />
+                        <ChevronUpIcon className='h-5 w-auto px-2 text-gray-500 hover:opacity-80 dark:text-gray-300' />
                       ) : (
-                        <ChevronDownIcon className='w-auto h-5 text-gray-500 dark:text-gray-300 px-2 hover:opacity-80' />
+                        <ChevronDownIcon className='h-5 w-auto px-2 text-gray-500 hover:opacity-80 dark:text-gray-300' />
                       )}
                       {ev}
                     </td>
@@ -1042,7 +1042,7 @@ const Panel = ({
             <button
               type='button'
               onClick={() => setIsReversedUserFlow(!isReversedUserFlow)}
-              className='mt-3 w-full inline-flex justify-center rounded-md dark:border-none border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:border-gray-600 dark:bg-slate-700 dark:hover:border-gray-600 dark:hover:bg-gray-700 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm'
+              className='mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-none dark:border-gray-600 dark:bg-slate-700 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700 sm:ml-3 sm:mt-0 sm:w-auto sm:text-sm'
             >
               {t('project.reverse')}
             </button>
@@ -1173,14 +1173,14 @@ const Panel = ({
           return (
             <Fragment key={`${id}-${entryName}-${cc}`}>
               <div
-                className={cx('flex justify-between mt-[0.32rem] first:mt-0 dark:text-gray-50 rounded', {
-                  'group hover:bg-gray-100 hover:dark:bg-slate-700 cursor-pointer': !hideFilters,
+                className={cx('mt-[0.32rem] flex justify-between rounded first:mt-0 dark:text-gray-50', {
+                  'group cursor-pointer hover:bg-gray-100 hover:dark:bg-slate-700': !hideFilters,
                 })}
                 onClick={() => _onFilter(id, entryName)}
               >
                 {linkContent ? (
                   <a
-                    className={cx('flex items-center label hover:underline text-blue-600 dark:text-blue-500', {
+                    className={cx('label flex items-center text-blue-600 hover:underline dark:text-blue-500', {
                       capitalize,
                     })}
                     href={rowData as string}
@@ -1190,14 +1190,14 @@ const Panel = ({
                   >
                     {rowData}
                     {!hideFilters && (
-                      <FunnelIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
+                      <FunnelIcon className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300' />
                     )}
                   </a>
                 ) : (
-                  <span className={cx('flex items-center label', { capitalize })}>
+                  <span className={cx('label flex items-center', { capitalize })}>
                     {rowData}
                     {!hideFilters && (
-                      <FunnelIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
+                      <FunnelIcon className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300' />
                     )}
                   </span>
                 )}
@@ -1205,7 +1205,7 @@ const Panel = ({
                   {activeTab === PROJECT_TABS.traffic ? nFormatter(valueData, 1) : valueData}
                   &nbsp;
                   {activeTab !== PROJECT_TABS.performance && (
-                    <span className='text-gray-500 dark:text-gray-200 font-light'>
+                    <span className='font-light text-gray-500 dark:text-gray-200'>
                       ({perc}
                       %)
                     </span>
@@ -1219,22 +1219,22 @@ const Panel = ({
       )}
       {/* for pagination in tabs */}
       {_size(entries) > ENTRIES_PER_PANEL && (
-        <div className='absolute bottom-0 w-card-toggle-sm sm:!w-card-toggle'>
-          <div className='flex justify-between select-none mb-2'>
+        <div className='w-card-toggle-sm absolute bottom-0 sm:!w-card-toggle'>
+          <div className='mb-2 flex select-none justify-between'>
             <div>
-              <span className='text-gray-500 dark:text-gray-200 font-light lowercase text-xs'>
+              <span className='text-xs font-light lowercase text-gray-500 dark:text-gray-200'>
                 {_size(entries)} {t('project.results')}
               </span>
-              <span className='text-gray-500 dark:text-gray-200 font-light text-xs'>
+              <span className='text-xs font-light text-gray-500 dark:text-gray-200'>
                 . {t('project.page')} {page + 1} / {totalPages}
               </span>
             </div>
-            <div className='flex justify-between w-[4.5rem]'>
+            <div className='flex w-[4.5rem] justify-between'>
               <Button
                 className={cx(
-                  'text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-slate-800 border-none px-1.5 py-0.5',
+                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow dark:bg-slate-800 dark:text-gray-200',
                   {
-                    'opacity-50 cursor-not-allowed': !canGoPrev(),
+                    'cursor-not-allowed opacity-50': !canGoPrev(),
                     'hover:bg-gray-200 hover:dark:bg-slate-700': canGoPrev(),
                   },
                 )}
@@ -1243,13 +1243,13 @@ const Panel = ({
                 disabled={!canGoPrev()}
                 focus={false}
               >
-                <ArrowLongLeftIcon className='w-5 h-5' />
+                <ArrowLongLeftIcon className='h-5 w-5' />
               </Button>
               <Button
                 className={cx(
-                  'text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-slate-800 border-none px-1.5 py-0.5',
+                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow dark:bg-slate-800 dark:text-gray-200',
                   {
-                    'opacity-50 cursor-not-allowed': !canGoNext(),
+                    'cursor-not-allowed opacity-50': !canGoNext(),
                     'hover:bg-gray-200 hover:dark:bg-slate-700': canGoNext(),
                   },
                 )}
@@ -1258,7 +1258,7 @@ const Panel = ({
                 type='button'
                 focus={false}
               >
-                <ArrowLongRightIcon className='w-5 h-5' />
+                <ArrowLongRightIcon className='h-5 w-5' />
               </Button>
             </div>
           </div>

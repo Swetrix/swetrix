@@ -138,8 +138,8 @@ const TwoFA = ({
     if (twoFADisabling) {
       return (
         <>
-          <p className='text-base max-w-prose text-gray-900 dark:text-gray-50'>{t('profileSettings.2faDisableHint')}</p>
-          <div className='flex items-center mt-4'>
+          <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>{t('profileSettings.2faDisableHint')}</p>
+          <div className='mt-4 flex items-center'>
             <Input
               type='text'
               label={t('profileSettings.enter2faToDisable')}
@@ -181,14 +181,14 @@ const TwoFA = ({
   if (twoFAConfigurating) {
     return (
       <>
-        <p className='text-base max-w-prose text-gray-900 dark:text-gray-50'>{t('profileSettings.2faDesc')}</p>
-        <div className='mt-4 p-4 bg-white w-max'>
+        <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>{t('profileSettings.2faDesc')}</p>
+        <div className='mt-4 w-max bg-white p-4'>
           <QRCode value={twoFAConfigData?.otpauthUrl || ''} />
         </div>
-        <p className='text-base whitespace-pre-line mt-2 text-gray-900 dark:text-gray-50'>
+        <p className='mt-2 whitespace-pre-line text-base text-gray-900 dark:text-gray-50'>
           {t('profileSettings.2faQRAlt', { key: twoFAConfigData?.secret || '' })}
         </p>
-        <div className='flex items-center mt-4'>
+        <div className='mt-4 flex items-center'>
           <Input
             type='text'
             label={t('profileSettings.enter2faToEnable')}

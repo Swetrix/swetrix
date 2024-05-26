@@ -28,7 +28,7 @@ const PerformanceMetricCards = ({ overall, overallCompare, activePeriodCompare }
   }
 
   return (
-    <div className='flex justify-center lg:justify-start gap-5 mb-5 flex-wrap'>
+    <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
       <MetricCard
         label={t('dashboard.frontend')}
         value={overall.current?.frontend}

@@ -123,8 +123,8 @@ const ProjectProtectedPassword = ({
   return (
     <>
       {!embedded && <Header ssrTheme={ssrTheme} authenticated={isAuth} />}
-      <div className='min-h-page bg-gray-50 dark:bg-slate-900 flex flex-col py-6 px-4 sm:px-6 lg:px-8'>
-        <form className='max-w-7xl w-full mx-auto' onSubmit={handleSubmit}>
+      <div className='flex min-h-page flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8'>
+        <form className='mx-auto w-full max-w-7xl' onSubmit={handleSubmit}>
           <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{t('titles.passwordProtected')}</h2>
           <Input
             name='password'
@@ -139,7 +139,7 @@ const ProjectProtectedPassword = ({
           />
           <div className='mt-5'>
             <Button
-              className='mr-2 border-indigo-100 dark:text-gray-50 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700'
+              className='mr-2 border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
               onClick={onCancel}
               secondary
               regular

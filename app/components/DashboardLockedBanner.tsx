@@ -33,18 +33,18 @@ const DashboardLockedBanner = () => {
   return (
     <>
       <div className='bg-yellow-400 dark:bg-yellow-500'>
-        <div className='max-w-7xl mx-auto py-3 px-3 sm:px-6 lg:px-8'>
-          <div className='flex items-center justify-between flex-wrap'>
-            <div className='flex-1 flex items-center'>
-              <span className='flex p-2 rounded-lg bg-yellow-600'>
+        <div className='mx-auto max-w-7xl px-3 py-3 sm:px-6 lg:px-8'>
+          <div className='flex flex-wrap items-center justify-between'>
+            <div className='flex flex-1 items-center'>
+              <span className='flex rounded-lg bg-yellow-600 p-2'>
                 <LockClosedIcon className='h-6 w-6 text-white' aria-hidden='true' />
               </span>
               <p className='ml-3 font-medium text-black'>{t('dashboard.accountLocked')}</p>
             </div>
-            <div className='order-3 mt-2 flex-shrink-0 w-full sm:order-2 sm:mt-0 sm:w-auto'>
+            <div className='order-3 mt-2 w-full flex-shrink-0 sm:order-2 sm:mt-0 sm:w-auto'>
               <span
                 onClick={() => setShowMoreInfoModal(true)}
-                className='flex items-center justify-center cursor-pointer px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-yellow-600 bg-gray-50 hover:bg-yellow-50 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700'
+                className='flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-gray-50 px-4 py-2 text-sm font-medium text-yellow-600 shadow-sm hover:bg-yellow-50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
               >
                 {t('common.learnMore')}
               </span>

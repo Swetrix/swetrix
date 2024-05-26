@@ -342,49 +342,49 @@ const OpenStartup = (): JSX.Element => {
 
   return (
     <div className='min-h-page bg-gray-50 dark:bg-slate-900'>
-      <div className='w-11/12 md:w-4/5 mx-auto pb-16 pt-12 px-4 sm:px-6 lg:px-8 whitespace-pre-line'>
-        <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50 tracking-tight'>{t('titles.open')}</h1>
+      <div className='mx-auto w-11/12 whitespace-pre-line px-4 pb-16 pt-12 sm:px-6 md:w-4/5 lg:px-8'>
+        <h1 className='text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>{t('titles.open')}</h1>
 
-        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>{t('open.desc')}</p>
+        <p className='mt-2 text-lg tracking-tight text-gray-900 dark:text-gray-50'>{t('open.desc')}</p>
 
-        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>{t('open.updated')}</p>
+        <p className='mt-2 text-lg tracking-tight text-gray-900 dark:text-gray-50'>{t('open.updated')}</p>
 
-        <h2 className='mt-8 text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight'>
+        <h2 className='mt-8 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>
           {t('open.finance.title')}
         </h2>
 
-        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>{t('open.finance.desc')}</p>
+        <p className='mt-2 text-lg tracking-tight text-gray-900 dark:text-gray-50'>{t('open.finance.desc')}</p>
 
-        <div className='h-80 mt-4' id='open-startup' />
+        <div className='mt-4 h-80' id='open-startup' />
 
-        <h2 className='mt-8 text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight'>
+        <h2 className='mt-8 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>
           {t('open.usage.title')}
         </h2>
 
-        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>{t('open.usage.desc')}</p>
+        <p className='mt-2 text-lg tracking-tight text-gray-900 dark:text-gray-50'>{t('open.usage.desc')}</p>
 
-        <p className='mt-2 text-md text-gray-900 dark:text-gray-50 tracking-tight'>
+        <p className='text-md mt-2 tracking-tight text-gray-900 dark:text-gray-50'>
           {t('main.users')}
           {': '}
           {users[0]}
           {users[1] && <span className='text-gray-900 dark:text-indigo-200'>{users[1]}+</span>}
         </p>
 
-        <p className='mt-2 text-md text-gray-900 dark:text-gray-50 tracking-tight'>
+        <p className='text-md mt-2 tracking-tight text-gray-900 dark:text-gray-50'>
           {t('main.websites')}
           {': '}
           {websites[0]}
           {websites[1] && <span className='text-gray-900 dark:text-indigo-200'>{websites[1]}+</span>}
         </p>
 
-        <p className='mt-2 text-md text-gray-900 dark:text-gray-50 tracking-tight'>
+        <p className='text-md mt-2 tracking-tight text-gray-900 dark:text-gray-50'>
           {t('main.pageviews')}
           {': '}
           {events[0]}
           {events[1] && <span className='text-gray-900 dark:text-indigo-200'>{events[1]}+</span>}
         </p>
 
-        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50 tracking-tight'>
+        <p className='mt-2 text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           <Trans
             t={t}
             i18nKey='open.usage.live'
@@ -392,7 +392,7 @@ const OpenStartup = (): JSX.Element => {
               livedemo: (
                 <Link
                   to={LIVE_DEMO_URL}
-                  className='font-medium hover:underline text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                  className='font-medium text-indigo-600 hover:text-indigo-500 hover:underline dark:text-indigo-400 dark:hover:text-indigo-500'
                 />
               ),
             }}

@@ -10,14 +10,14 @@ interface ISort {
 
 const Sort: React.FC<ISort> = ({ sortByAscend, sortByDescend, className }: ISort): JSX.Element => {
   if (sortByAscend) {
-    return <ChevronUpIcon className={cx(className, 'w-4 h-4')} />
+    return <ChevronUpIcon className={cx(className, 'h-4 w-4')} />
   }
 
   if (sortByDescend) {
-    return <ChevronDownIcon className={cx(className, 'w-4 h-4')} />
+    return <ChevronDownIcon className={cx(className, 'h-4 w-4')} />
   }
 
-  return <ChevronUpDownIcon className={cx(className, 'w-4 h-4')} />
+  return <ChevronUpDownIcon className={cx(className, 'h-4 w-4')} />
 }
 
 export default Sort

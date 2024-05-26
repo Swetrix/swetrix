@@ -78,17 +78,17 @@ const ErrorItem = ({ error, onClick, className }: IErrorItem) => {
       }}
       to={stringifiedUrl}
     >
-      <li className='relative flex justify-between gap-x-6 py-4 bg-gray-200/60 hover:bg-gray-200 dark:bg-[#162032] dark:hover:bg-slate-800 cursor-pointer px-4 sm:px-6 mb-4 rounded-lg'>
+      <li className='relative mb-4 flex cursor-pointer justify-between gap-x-6 rounded-lg bg-gray-200/60 px-4 py-4 hover:bg-gray-200 dark:bg-[#162032] dark:hover:bg-slate-800 sm:px-6'>
         <div className='flex min-w-0 gap-x-4'>
           <div className='min-w-0 flex-auto'>
             <p className='flex items-center gap-x-2 font-semibold leading-6 text-gray-900 dark:text-gray-50'>
-              <span className='font-bold text-base'>{error.name}</span>
+              <span className='text-base font-bold'>{error.name}</span>
               <Separator />
-              <span className='text-gray-500 mx-1 font-normal text-sm'>{error.filename}</span>
+              <span className='mx-1 text-sm font-normal text-gray-500'>{error.filename}</span>
             </p>
             <p className='mt-1 flex text-base leading-5 text-gray-500 dark:text-gray-300'>{error.message}</p>
             <p className='mt-1 flex items-center gap-x-2 text-base leading-5 text-gray-500 dark:text-gray-300'>
-              <Badge className='sm:hidden mr-2' label={status.label} colour={status.colour} />
+              <Badge className='mr-2 sm:hidden' label={status.label} colour={status.colour} />
               {lastSeen}
               <Separator className='sm:hidden' />
               <span className='sm:hidden'>

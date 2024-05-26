@@ -25,10 +25,10 @@ const ReferralPage = ({ ssrTheme }: IReferralPage): JSX.Element => {
 
   return (
     <div className='overflow-hidden'>
-      <main className='bg-white dark:bg-slate-900 min-h-[100vh]'>
-        <div className='relative overflow-x-clip isolate'>
+      <main className='min-h-[100vh] bg-white dark:bg-slate-900'>
+        <div className='relative isolate overflow-x-clip'>
           <svg
-            className='absolute inset-0 -z-10 h-full w-full stroke-gray-200 dark:stroke-white/10 [mask-image:radial-gradient(100%_100%_at_top_right,white,transparent)]'
+            className='absolute inset-0 -z-10 h-full w-full stroke-gray-200 [mask-image:radial-gradient(100%_100%_at_top_right,white,transparent)] dark:stroke-white/10'
             aria-hidden='true'
           >
             <defs>
@@ -57,25 +57,25 @@ const ReferralPage = ({ ssrTheme }: IReferralPage): JSX.Element => {
             />
           </div>
           <Header ssrTheme={ssrTheme} authenticated={false} refPage transparent />
-          <div className='relative pt-10 lg:pt-24 pb-5 xl:px-8 lg:px-6 sm:px-3 mx-auto min-h-[740px]'>
-            <div className='relative z-20 flex flex-row content-between 2xl:mr-[14vw] 2xl:justify-center justify-center lg:justify-start'>
-              <div className='lg:mt-0 text-left relative lg:mr-14 px-4'>
-                <h1 className='max-w-2xl text-2xl sm:text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white sm:leading-none xl:leading-[110%]'>
+          <div className='relative mx-auto min-h-[740px] pb-5 pt-10 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
+            <div className='relative z-20 flex flex-row content-between justify-center lg:justify-start 2xl:mr-[14vw] 2xl:justify-center'>
+              <div className='relative px-4 text-left lg:mr-14 lg:mt-0'>
+                <h1 className='max-w-2xl text-2xl font-extrabold text-slate-900 dark:text-white sm:text-4xl sm:leading-none md:text-5xl xl:leading-[110%]'>
                   <Trans
                     // @ts-ignore
                     t={t}
                     i18nKey='main.slogan'
                     components={{
                       span: (
-                        <span className='from-indigo-700 to-indigo-700 dark:from-indigo-600 dark:to-indigo-400 text-transparent bg-clip-text bg-gradient-to-r' />
+                        <span className='bg-gradient-to-r from-indigo-700 to-indigo-700 bg-clip-text text-transparent dark:from-indigo-600 dark:to-indigo-400' />
                       ),
                     }}
                   />
                 </h1>
-                <p className='text-base text-slate-700 dark:text-slate-300 sm:text-xl lg:text-lg xl:text-lg mt-5'>
+                <p className='mt-5 text-base text-slate-700 dark:text-slate-300 sm:text-xl lg:text-lg xl:text-lg'>
                   {t('referral.desc')}
                 </p>
-                <h2 className='text-xl sm:text-xl md:text-xl font-medium text-slate-900 dark:text-white sm:leading-none xl:leading-[110%] mt-10'>
+                <h2 className='mt-10 text-xl font-medium text-slate-900 dark:text-white sm:text-xl sm:leading-none md:text-xl xl:leading-[110%]'>
                   {t('referral.buttons', {
                     discount: REFERRAL_DISCOUNT,
                   })}
@@ -83,28 +83,28 @@ const ReferralPage = ({ ssrTheme }: IReferralPage): JSX.Element => {
                 <div className='mt-4 flex flex-col items-center sm:flex-row'>
                   <Link
                     to={`/ref/${id}${routes.signup}`}
-                    className='rounded-md !duration-300 transition-all w-full sm:max-w-[210px] h-12 flex items-center justify-center sm:mr-6 shadow-sm ring-1 text-white bg-slate-900 ring-slate-900 hover:bg-slate-700 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600'
+                    className='flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white shadow-sm ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600 sm:mr-6 sm:max-w-[210px]'
                     aria-label={t('titles.signup')}
                   >
-                    <span className='text-base font-semibold mr-1'>{t('common.getStarted')}</span>
-                    <ArrowSmallRightIcon className='h-4 w-5 mt-[1px]' />
+                    <span className='mr-1 text-base font-semibold'>{t('common.getStarted')}</span>
+                    <ArrowSmallRightIcon className='mt-[1px] h-4 w-5' />
                   </Link>
                   <Link
                     to={`/ref/${id}/index#core-analytics`}
-                    className='rounded-md !duration-300 transition-all sm:mt-0 mt-2 ring-1 ring-slate-900 dark:ring-white/20 w-full sm:max-w-[210px] h-12 flex items-center justify-center shadow-sm text-slate-900 dark:text-white bg-transparent hover:bg-slate-200 dark:hover:bg-gray-800'
+                    className='mt-2 flex h-12 w-full items-center justify-center rounded-md bg-transparent text-slate-900 shadow-sm ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-200 dark:text-white dark:ring-white/20 dark:hover:bg-gray-800 sm:mt-0 sm:max-w-[210px]'
                     aria-label={t('titles.signup')}
                   >
                     <span className='text-base font-semibold'>{t('common.learnMore')}</span>
                   </Link>
                 </div>
-                <p className='text-base tracking-tighter font-medium text-slate-500 dark:text-slate-500 mt-5'>
+                <p className='mt-5 text-base font-medium tracking-tighter text-slate-500 dark:text-slate-500'>
                   {t('referral.cookieDetails', {
                     days: REFERRAL_COOKIE_DAYS,
                     discount: REFERRAL_DISCOUNT,
                   })}
                 </p>
               </div>
-              <div className='max-w-md xl:max-w-lg hidden lg:block'>
+              <div className='hidden max-w-md lg:block xl:max-w-lg'>
                 <Lines />
                 <picture>
                   <source
@@ -113,7 +113,7 @@ const ReferralPage = ({ ssrTheme }: IReferralPage): JSX.Element => {
                   />
                   <img
                     src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
-                    className='h-full min-w-[880px] rounded-xl relative shadow-2xl ring-1 ring-gray-900/10 dark:ring-white/10'
+                    className='relative h-full min-w-[880px] rounded-xl shadow-2xl ring-1 ring-gray-900/10 dark:ring-white/10'
                     width='100%'
                     height='auto'
                     alt='Swetrix Analytics dashboard'
@@ -121,7 +121,7 @@ const ReferralPage = ({ ssrTheme }: IReferralPage): JSX.Element => {
                 </picture>
               </div>
             </div>
-            <div className='my-10 block lg:hidden relative z-20 px-4 md:px-0'>
+            <div className='relative z-20 my-10 block px-4 md:px-0 lg:hidden'>
               <picture>
                 <source
                   srcSet={theme === 'dark' ? '/assets/screenshot_dark.webp' : '/assets/screenshot_light.webp'}
@@ -129,7 +129,7 @@ const ReferralPage = ({ ssrTheme }: IReferralPage): JSX.Element => {
                 />
                 <img
                   src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
-                  className='rounded-xl relative shadow-2xl w-full ring-1 ring-gray-900/10 dark:ring-white/10'
+                  className='relative w-full rounded-xl shadow-2xl ring-1 ring-gray-900/10 dark:ring-white/10'
                   width='100%'
                   height='auto'
                   alt='Swetrix Analytics dashboard'

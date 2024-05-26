@@ -3372,10 +3372,10 @@ const ViewProject = ({
                   key={tab.id}
                   onClick={onClick}
                   className={cx(
-                    'group inline-flex items-center whitespace-nowrap py-2 px-1 border-b-2 font-bold text-md cursor-pointer',
+                    'text-md group inline-flex cursor-pointer items-center whitespace-nowrap border-b-2 px-1 py-2 font-bold',
                     {
-                      'border-slate-900 text-slate-900 dark:text-gray-50 dark:border-gray-50': isCurrent,
-                      'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
+                      'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50': isCurrent,
+                      'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
                         !isCurrent,
                     },
                   )}
@@ -3422,13 +3422,13 @@ const ViewProject = ({
       <>
         {!embedded && <Header ssrTheme={ssrTheme} authenticated={authenticated} />}
         <div
-          className={cx('max-w-[1584px] bg-gray-50 dark:bg-slate-900 w-full mx-auto py-6 px-2 sm:px-4 lg:px-8', {
+          className={cx('mx-auto w-full max-w-[1584px] bg-gray-50 px-2 py-6 dark:bg-slate-900 sm:px-4 lg:px-8', {
             'min-h-min-footer': !embedded,
             'min-h-[100vh]': embedded,
           })}
         >
           <TabsSelector />
-          <h2 className='text-xl mt-2 font-bold text-gray-900 dark:text-gray-50 break-words break-all text-center sm:text-left'>
+          <h2 className='mt-2 break-words break-all text-center text-xl font-bold text-gray-900 dark:text-gray-50 sm:text-left'>
             {name}
           </h2>
           <LockedDashboard user={user} project={project} isSharedProject={isSharedProject} />
@@ -3443,13 +3443,13 @@ const ViewProject = ({
       <>
         {!embedded && <Header ssrTheme={ssrTheme} authenticated={authenticated} />}
         <div
-          className={cx('max-w-[1584px] bg-gray-50 dark:bg-slate-900 w-full mx-auto py-6 px-2 sm:px-4 lg:px-8', {
+          className={cx('mx-auto w-full max-w-[1584px] bg-gray-50 px-2 py-6 dark:bg-slate-900 sm:px-4 lg:px-8', {
             'min-h-min-footer': !embedded,
             'min-h-[100vh]': embedded,
           })}
         >
           <TabsSelector />
-          <h2 className='text-xl mt-2 font-bold text-gray-900 dark:text-gray-50 break-words break-all text-center sm:text-left'>
+          <h2 className='mt-2 break-words break-all text-center text-xl font-bold text-gray-900 dark:text-gray-50 sm:text-left'>
             {name}
           </h2>
           <WaitingForAnEvent project={project} />
@@ -3468,13 +3468,13 @@ const ViewProject = ({
       <>
         {!embedded && <Header ssrTheme={ssrTheme} authenticated={authenticated} />}
         <div
-          className={cx('max-w-[1584px] bg-gray-50 dark:bg-slate-900 w-full mx-auto py-6 px-2 sm:px-4 lg:px-8', {
+          className={cx('mx-auto w-full max-w-[1584px] bg-gray-50 px-2 py-6 dark:bg-slate-900 sm:px-4 lg:px-8', {
             'min-h-min-footer': !embedded,
             'min-h-[100vh]': embedded,
           })}
         >
           <TabsSelector />
-          <h2 className='text-xl mt-2 font-bold text-gray-900 dark:text-gray-50 break-words break-all text-center sm:text-left'>
+          <h2 className='mt-2 break-words break-all text-center text-xl font-bold text-gray-900 dark:text-gray-50 sm:text-left'>
             {name}
           </h2>
           <WaitingForAnError />
@@ -3497,7 +3497,7 @@ const ViewProject = ({
             })}
           >
             <div
-              className={cx('max-w-[1584px] w-full mx-auto py-6 px-2 sm:px-4 lg:px-8', {
+              className={cx('mx-auto w-full max-w-[1584px] px-2 py-6 sm:px-4 lg:px-8', {
                 'min-h-min-footer': !embedded,
                 'min-h-[100vh]': embedded,
               })}
@@ -3509,9 +3509,9 @@ const ViewProject = ({
                 (activeTab !== PROJECT_TABS.sessions || !activeSession) &&
                 (activeFunnel || activeTab !== PROJECT_TABS.funnels) && (
                   <>
-                    <div className='flex flex-col lg:flex-row items-center lg:items-start justify-between mt-2'>
-                      <div className='flex items-center space-x-5 flex-wrap'>
-                        <h2 className='text-xl font-bold text-gray-900 dark:text-gray-50 break-words break-all'>
+                    <div className='mt-2 flex flex-col items-center justify-between lg:flex-row lg:items-start'>
+                      <div className='flex flex-wrap items-center space-x-5'>
+                        <h2 className='break-words break-all text-xl font-bold text-gray-900 dark:text-gray-50'>
                           {/* If tab is funnels - then display a funnel name, otherwise a project name */}
                           {activeTab === PROJECT_TABS.funnels ? activeFunnel?.name : name}
                         </h2>
@@ -3523,7 +3523,7 @@ const ViewProject = ({
                           />
                         )}
                       </div>
-                      <div className='flex items-center mt-3 lg:mt-0 max-w-[420px] flex-wrap sm:flex-nowrap sm:max-w-none justify-center sm:justify-between w-full sm:w-auto mx-auto sm:mx-0 space-x-2 gap-y-1'>
+                      <div className='mx-auto mt-3 flex w-full max-w-[420px] flex-wrap items-center justify-center gap-y-1 space-x-2 sm:mx-0 sm:w-auto sm:max-w-none sm:flex-nowrap sm:justify-between lg:mt-0'>
                         {activeTab !== PROJECT_TABS.funnels && (
                           <>
                             <div>
@@ -3532,13 +3532,13 @@ const ViewProject = ({
                                 title={t('project.refreshStats')}
                                 onClick={refreshStats}
                                 className={cx(
-                                  'relative rounded-md p-2 bg-gray-50 text-sm font-medium hover:bg-white hover:shadow-sm dark:bg-slate-900 dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
+                                  'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                                   {
                                     'cursor-not-allowed opacity-50': isLoading || dataLoading,
                                   },
                                 )}
                               >
-                                <ArrowPathIcon className='w-5 h-5 stroke-2 text-gray-700 dark:text-gray-50' />
+                                <ArrowPathIcon className='h-5 w-5 stroke-2 text-gray-700 dark:text-gray-50' />
                               </button>
                             </div>
                             {!isSelfhosted && !isActiveCompare && (
@@ -3553,10 +3553,10 @@ const ViewProject = ({
                                   onClick={onForecastOpen}
                                   disabled={!_isEmpty(filters)}
                                   className={cx(
-                                    'relative rounded-md p-2 bg-gray-50 text-sm font-medium hover:bg-white hover:shadow-sm dark:bg-slate-900 dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
+                                    'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                                     {
                                       'cursor-not-allowed opacity-50': isLoading || dataLoading || !_isEmpty(filters),
-                                      '!bg-gray-200 dark:!bg-gray-600 !border dark:!border-gray-500 !border-gray-300':
+                                      '!border !border-gray-300 !bg-gray-200 dark:!border-gray-500 dark:!bg-gray-600':
                                         !_isEmpty(forecasedChartData),
                                     },
                                   )}
@@ -3564,7 +3564,7 @@ const ViewProject = ({
                                   <Robot
                                     theme={_theme}
                                     containerClassName='w-5 h-5'
-                                    className='text-gray-700 dark:text-gray-50 stroke-2'
+                                    className='stroke-2 text-gray-700 dark:text-gray-50'
                                   />
                                 </button>
                               </div>
@@ -3580,13 +3580,13 @@ const ViewProject = ({
                                 title={t('project.search')}
                                 onClick={() => setShowFiltersSearch(true)}
                                 className={cx(
-                                  'relative rounded-md p-2 bg-gray-50 text-sm font-medium hover:bg-white hover:shadow-sm dark:bg-slate-900 dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
+                                  'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                                   {
                                     'cursor-not-allowed opacity-50': isLoading || dataLoading,
                                   },
                                 )}
                               >
-                                <MagnifyingGlassIcon className='w-5 h-5 stroke-2 text-gray-700 dark:text-gray-50' />
+                                <MagnifyingGlassIcon className='h-5 w-5 stroke-2 text-gray-700 dark:text-gray-50' />
                               </button>
                             </div>
                             {activeTab !== PROJECT_TABS.funnels &&
@@ -3606,7 +3606,7 @@ const ViewProject = ({
                                     ],
                                     (el) => !!el,
                                   )}
-                                  title={[<ArrowDownTrayIcon key='download-icon' className='w-5 h-5' />]}
+                                  title={[<ArrowDownTrayIcon key='download-icon' className='h-5 w-5' />]}
                                   labelExtractor={(item) => {
                                     const { label } = item
 
@@ -3630,7 +3630,7 @@ const ViewProject = ({
                               )}
                             <div
                               className={cx(
-                                'border-gray-200 dark:border-gray-600 lg:px-3 sm:mr-3 space-x-2 lg:border-x',
+                                'space-x-2 border-gray-200 dark:border-gray-600 sm:mr-3 lg:border-x lg:px-3',
                                 {
                                   hidden:
                                     isPanelsDataEmpty ||
@@ -3646,32 +3646,32 @@ const ViewProject = ({
                                 title={t('project.barChart')}
                                 onClick={() => setChartTypeOnClick(chartTypes.bar)}
                                 className={cx(
-                                  'relative fill-gray-700 dark:fill-gray-50 rounded-md p-2 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
+                                  'relative rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                                   {
-                                    'bg-white dark:bg-slate-800 stroke-white dark:stroke-slate-800 shadow-sm':
+                                    'bg-white stroke-white shadow-sm dark:bg-slate-800 dark:stroke-slate-800':
                                       chartType === chartTypes.bar,
                                     'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200':
                                       chartType !== chartTypes.bar,
                                   },
                                 )}
                               >
-                                <BarChart className='w-5 h-5 [&_path]:stroke-[3.5%]' />
+                                <BarChart className='h-5 w-5 [&_path]:stroke-[3.5%]' />
                               </button>
                               <button
                                 type='button'
                                 title={t('project.lineChart')}
                                 onClick={() => setChartTypeOnClick(chartTypes.line)}
                                 className={cx(
-                                  'relative fill-gray-700 dark:fill-gray-50 rounded-md p-2 text-sm font-medium focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
+                                  'relative rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                                   {
-                                    'bg-white dark:bg-slate-800 stroke-white dark:stroke-slate-800 shadow-sm':
+                                    'bg-white stroke-white shadow-sm dark:bg-slate-800 dark:stroke-slate-800':
                                       chartType === chartTypes.line,
                                     'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200':
                                       chartType !== chartTypes.line,
                                   },
                                 )}
                               >
-                                <LineChart className='w-5 h-5 [&_path]:stroke-[3.5%]' />
+                                <LineChart className='h-5 w-5 [&_path]:stroke-[3.5%]' />
                               </button>
                             </div>
                           </>
@@ -3694,8 +3694,8 @@ const ViewProject = ({
                               if (pairID === CHART_METRICS_MAPPING.customEvents) {
                                 if (_isEmpty(panelsData.customs)) {
                                   return (
-                                    <span className='px-4 py-2 flex items-center cursor-not-allowed'>
-                                      <NoSymbolIcon className='w-5 h-5 mr-1' />
+                                    <span className='flex cursor-not-allowed items-center px-4 py-2'>
+                                      <NoSymbolIcon className='mr-1 h-5 w-5' />
                                       {label}
                                     </span>
                                   )
@@ -3783,7 +3783,7 @@ const ViewProject = ({
                               type='button'
                               disabled={errorStatusUpdating}
                               onClick={markErrorAsResolved}
-                              className={cx('text-sm p-2 font-medium text-gray-700 dark:text-gray-50', {
+                              className={cx('p-2 text-sm font-medium text-gray-700 dark:text-gray-50', {
                                 'cursor-not-allowed': isLoading || errorLoading,
                                 'opacity-50': errorLoading && !errorStatusUpdating,
                                 'animate-pulse cursor-not-allowed': errorStatusUpdating,
@@ -3800,7 +3800,7 @@ const ViewProject = ({
                               type='button'
                               disabled={errorStatusUpdating}
                               onClick={markErrorAsActive}
-                              className={cx('text-sm p-2 font-medium text-gray-700 dark:text-gray-50', {
+                              className={cx('p-2 text-sm font-medium text-gray-700 dark:text-gray-50', {
                                 'cursor-not-allowed': isLoading || errorLoading,
                                 'opacity-50': errorLoading && !errorStatusUpdating,
                                 'animate-pulse cursor-not-allowed': errorStatusUpdating,
@@ -3833,13 +3833,13 @@ const ViewProject = ({
                             title={t('project.refreshStats')}
                             onClick={refreshStats}
                             className={cx(
-                              'relative rounded-md p-2 bg-gray-50 text-sm font-medium hover:bg-white hover:shadow-sm dark:bg-slate-900 dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
+                              'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                               {
                                 'cursor-not-allowed opacity-50': isLoading || dataLoading,
                               },
                             )}
                           >
-                            <ArrowPathIcon className='w-5 h-5 text-gray-700 dark:text-gray-50' />
+                            <ArrowPathIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
                           </button>
                         )}
                         {activeTab === PROJECT_TABS.performance && !isPanelsDataEmptyPerf && (
@@ -3920,7 +3920,7 @@ const ViewProject = ({
                         />
                         {isActiveCompare && activeTab !== PROJECT_TABS.errors && (
                           <>
-                            <div className='mx-2 text-md font-medium text-gray-600 whitespace-pre-line dark:text-gray-200'>
+                            <div className='text-md mx-2 whitespace-pre-line font-medium text-gray-600 dark:text-gray-200'>
                               vs
                             </div>
                             <Dropdown
@@ -3975,24 +3975,24 @@ const ViewProject = ({
                     {activeTab === PROJECT_TABS.funnels && (
                       <button
                         onClick={() => setActiveFunnel(null)}
-                        className='flex items-center text-base font-normal underline decoration-dashed hover:decoration-solid mb-4 mx-auto lg:mx-0 mt-2 lg:mt-0 text-gray-900 dark:text-gray-100'
+                        className='mx-auto mb-4 mt-2 flex items-center text-base font-normal text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100 lg:mx-0 lg:mt-0'
                       >
-                        <ChevronLeftIcon className='w-4 h-4' />
+                        <ChevronLeftIcon className='h-4 w-4' />
                         {t('project.backToFunnels')}
                       </button>
                     )}
                   </>
                 )}
               {activeTab === PROJECT_TABS.alerts && (isSharedProject || !project?.isOwner || !authenticated) && (
-                <div className='p-5 mt-5 bg-gray-700 rounded-xl'>
+                <div className='mt-5 rounded-xl bg-gray-700 p-5'>
                   <div className='flex items-center text-gray-50'>
-                    <BellIcon className='w-8 h-8 mr-2' />
-                    <p className='font-bold text-3xl'>{t('dashboard.alerts')}</p>
+                    <BellIcon className='mr-2 h-8 w-8' />
+                    <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>
                   </div>
-                  <p className='text-lg whitespace-pre-wrap mt-2 text-gray-100'>{t('dashboard.alertsDesc')}</p>
+                  <p className='mt-2 whitespace-pre-wrap text-lg text-gray-100'>{t('dashboard.alertsDesc')}</p>
                   <Link
                     to={routes.signup}
-                    className='inline-block select-none mt-6 bg-white py-2 px-3 border border-transparent rounded-md text-base font-medium text-gray-700 hover:bg-indigo-50'
+                    className='mt-6 inline-block select-none rounded-md border border-transparent bg-white px-3 py-2 text-base font-medium text-gray-700 hover:bg-indigo-50'
                     aria-label={t('titles.signup')}
                   >
                     {t('common.getStarted')}
@@ -4019,24 +4019,24 @@ const ViewProject = ({
                 />
               )}
               {activeTab === PROJECT_TABS.funnels && !activeFunnel && _isEmpty(project.funnels) && (
-                <div className='p-5 mt-5 bg-gray-700 rounded-xl'>
+                <div className='mt-5 rounded-xl bg-gray-700 p-5'>
                   <div className='flex items-center text-gray-50'>
-                    <FunnelIcon className='w-8 h-8 mr-2' />
-                    <p className='font-bold text-3xl'>{t('dashboard.funnels')}</p>
+                    <FunnelIcon className='mr-2 h-8 w-8' />
+                    <p className='text-3xl font-bold'>{t('dashboard.funnels')}</p>
                   </div>
-                  <p className='text-lg whitespace-pre-wrap mt-2 text-gray-100'>{t('dashboard.funnelsDesc')}</p>
+                  <p className='mt-2 whitespace-pre-wrap text-lg text-gray-100'>{t('dashboard.funnelsDesc')}</p>
                   {authenticated ? (
                     <button
                       type='button'
                       onClick={() => setIsNewFunnelOpened(true)}
-                      className='inline-block select-none mt-6 bg-white py-2 px-3 border border-transparent rounded-md text-base font-medium text-gray-700 hover:bg-indigo-50'
+                      className='mt-6 inline-block select-none rounded-md border border-transparent bg-white px-3 py-2 text-base font-medium text-gray-700 hover:bg-indigo-50'
                     >
                       {t('dashboard.newFunnel')}
                     </button>
                   ) : (
                     <Link
                       to={routes.signup}
-                      className='inline-block select-none mt-6 bg-white py-2 px-3 border border-transparent rounded-md text-base font-medium text-gray-700 hover:bg-indigo-50'
+                      className='mt-6 inline-block select-none rounded-md border border-transparent bg-white px-3 py-2 text-base font-medium text-gray-700 hover:bg-indigo-50'
                       aria-label={t('titles.signup')}
                     >
                       {t('common.getStarted')}
@@ -4061,14 +4061,14 @@ const ViewProject = ({
                       title={t('project.refreshStats')}
                       onClick={() => loadSessions()}
                       className={cx(
-                        'flex items-center mx-auto mt-2 text-gray-700 dark:text-gray-50 relative rounded-md p-2 bg-gray-50 text-sm font-medium hover:bg-white hover:shadow-sm dark:bg-slate-900 dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
+                        'relative mx-auto mt-2 flex items-center rounded-md bg-gray-50 p-2 text-sm font-medium text-gray-700 hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                         {
                           'cursor-not-allowed opacity-50': sessionsLoading,
                           hidden: sessionsLoading && _isEmpty(sessions),
                         },
                       )}
                     >
-                      <ArrowDownTrayIcon className='w-5 h-5 mr-2' />
+                      <ArrowDownTrayIcon className='mr-2 h-5 w-5' />
                       {t('project.loadMore')}
                     </button>
                   )}
@@ -4083,9 +4083,9 @@ const ViewProject = ({
                       url.searchParams.delete('psid')
                       window.history.pushState({}, '', url.toString())
                     }}
-                    className='flex items-center text-base font-normal underline decoration-dashed hover:decoration-solid mb-4 mx-auto lg:mx-0 mt-2 text-gray-900 dark:text-gray-100'
+                    className='mx-auto mb-4 mt-2 flex items-center text-base font-normal text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100 lg:mx-0'
                   >
-                    <ChevronLeftIcon className='w-4 h-4' />
+                    <ChevronLeftIcon className='h-4 w-4' />
                     {t('project.backToSessions')}
                   </button>
                   {activeSession?.details && <SessionDetails details={activeSession?.details} />}
@@ -4124,14 +4124,14 @@ const ViewProject = ({
                       title={t('project.refreshStats')}
                       onClick={() => loadErrors()}
                       className={cx(
-                        'flex items-center mx-auto mt-2 text-gray-700 dark:text-gray-50 relative rounded-md p-2 bg-gray-50 text-sm font-medium hover:bg-white hover:shadow-sm dark:bg-slate-900 dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200',
+                        'relative mx-auto mt-2 flex items-center rounded-md bg-gray-50 p-2 text-sm font-medium text-gray-700 hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                         {
                           'cursor-not-allowed opacity-50': errorsLoading,
                           hidden: errorsLoading && _isEmpty(errors),
                         },
                       )}
                     >
-                      <ArrowDownTrayIcon className='w-5 h-5 mr-2' />
+                      <ArrowDownTrayIcon className='mr-2 h-5 w-5' />
                       {t('project.loadMore')}
                     </button>
                   )}
@@ -4148,9 +4148,9 @@ const ViewProject = ({
                       url.searchParams.delete('eid')
                       window.history.pushState({}, '', url.toString())
                     }}
-                    className='flex items-center text-base font-normal underline decoration-dashed hover:decoration-solid mb-4 mx-auto lg:mx-0 mt-2 lg:mt-0 text-gray-900 dark:text-gray-100'
+                    className='mx-auto mb-4 mt-2 flex items-center text-base font-normal text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100 lg:mx-0 lg:mt-0'
                   >
-                    <ChevronLeftIcon className='w-4 h-4' />
+                    <ChevronLeftIcon className='h-4 w-4' />
                     {t('project.backToErrors')}
                   </button>
                   {activeError?.details && <ErrorDetails details={activeError.details} />}
@@ -4209,7 +4209,7 @@ const ViewProject = ({
                             if (!logoUrl) {
                               return (
                                 <>
-                                  <GlobeAltIcon className='w-5 h-5' />
+                                  <GlobeAltIcon className='h-5 w-5' />
                                   &nbsp;
                                   {entryName}
                                 </>
@@ -4218,7 +4218,7 @@ const ViewProject = ({
 
                             return (
                               <>
-                                <img src={logoUrl} className='w-5 h-5' alt='' />
+                                <img src={logoUrl} className='h-5 w-5' alt='' />
                                 &nbsp;
                                 {entryName}
                               </>
@@ -4255,7 +4255,7 @@ const ViewProject = ({
                             if (!logoPath) {
                               return (
                                 <>
-                                  <GlobeAltIcon className='w-5 h-5' />
+                                  <GlobeAltIcon className='h-5 w-5' />
                                   &nbsp;
                                   {entryName}
                                 </>
@@ -4266,7 +4266,7 @@ const ViewProject = ({
 
                             return (
                               <>
-                                <img src={logoUrl} className='w-5 h-5 dark:fill-gray-50' alt='' />
+                                <img src={logoUrl} className='h-5 w-5 dark:fill-gray-50' alt='' />
                                 &nbsp;
                                 {entryName}
                               </>
@@ -4410,7 +4410,7 @@ const ViewProject = ({
                       hidden: checkIfAllMetricsAreDisabled,
                     })}
                   >
-                    <div className='h-80 mt-5 md:mt-0 [&_svg]:!overflow-visible' id='dataChart' />
+                    <div className='mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible' id='dataChart' />
                   </div>
                   <Filters
                     filters={filters}
@@ -4419,7 +4419,7 @@ const ViewProject = ({
                     tnMapping={tnMapping}
                   />
                   {dataLoading && (
-                    <div className='!bg-transparent static mt-4' id='loader'>
+                    <div className='static mt-4 !bg-transparent' id='loader'>
                       <div className='loader-head dark:!bg-slate-800'>
                         <div className='first dark:!bg-slate-600' />
                         <div className='second dark:!bg-slate-600' />
@@ -4473,7 +4473,7 @@ const ViewProject = ({
                             if (!logoUrl) {
                               return (
                                 <>
-                                  <GlobeAltIcon className='w-5 h-5' />
+                                  <GlobeAltIcon className='h-5 w-5' />
                                   &nbsp;
                                   {entryName}
                                 </>
@@ -4482,7 +4482,7 @@ const ViewProject = ({
 
                             return (
                               <>
-                                <img src={logoUrl} className='w-5 h-5' alt='' />
+                                <img src={logoUrl} className='h-5 w-5' alt='' />
                                 &nbsp;
                                 {entryName}
                               </>
@@ -4520,7 +4520,7 @@ const ViewProject = ({
                             if (!logoPath) {
                               return (
                                 <>
-                                  <GlobeAltIcon className='w-5 h-5' />
+                                  <GlobeAltIcon className='h-5 w-5' />
                                   &nbsp;
                                   {entryName}
                                 </>
@@ -4531,7 +4531,7 @@ const ViewProject = ({
 
                             return (
                               <>
-                                <img src={logoUrl} className='w-5 h-5 dark:fill-gray-50' alt='' />
+                                <img src={logoUrl} className='h-5 w-5 dark:fill-gray-50' alt='' />
                                 &nbsp;
                                 {entryName}
                               </>
@@ -4725,7 +4725,7 @@ const ViewProject = ({
                     tnMapping={tnMapping}
                   />
                   {dataLoading && (
-                    <div className='!bg-transparent static mt-4' id='loader'>
+                    <div className='static mt-4 !bg-transparent' id='loader'>
                       <div className='loader-head dark:!bg-slate-800'>
                         <div className='first dark:!bg-slate-600' />
                         <div className='second dark:!bg-slate-600' />
@@ -4825,7 +4825,7 @@ const ViewProject = ({
                             if (!logoUrl) {
                               return (
                                 <>
-                                  <GlobeAltIcon className='w-5 h-5' />
+                                  <GlobeAltIcon className='h-5 w-5' />
                                   &nbsp;
                                   {entryName}
                                 </>
@@ -4834,7 +4834,7 @@ const ViewProject = ({
 
                             return (
                               <>
-                                <img src={logoUrl} className='w-5 h-5' alt='' />
+                                <img src={logoUrl} className='h-5 w-5' alt='' />
                                 &nbsp;
                                 {entryName}
                               </>
@@ -4883,10 +4883,10 @@ const ViewProject = ({
               {activeTab === PROJECT_TABS.funnels && (
                 <div className={cx('pt-4 md:pt-0', { hidden: !activeFunnel || analyticsLoading })}>
                   <div className='h-80'>
-                    <div className='h-80 mt-5 md:mt-0' id='dataChart' />
+                    <div className='mt-5 h-80 md:mt-0' id='dataChart' />
                   </div>
                   {dataLoading && (
-                    <div className='!bg-transparent static mt-4' id='loader'>
+                    <div className='static mt-4 !bg-transparent' id='loader'>
                       <div className='loader-head dark:!bg-slate-800'>
                         <div className='first dark:!bg-slate-600' />
                         <div className='second dark:!bg-slate-600' />

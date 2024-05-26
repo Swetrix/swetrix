@@ -70,15 +70,15 @@ const PanelContainer = ({
 }: IPanelContainer): JSX.Element => (
   <div
     className={cx(
-      'relative bg-white dark:bg-slate-800/25 pt-5 px-4 min-h-72 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden',
+      'relative min-h-72 overflow-hidden rounded-lg bg-white px-4 pt-5 shadow dark:bg-slate-800/25 sm:px-6 sm:pt-6',
       {
         'pb-12': !noSwitch,
         'pb-5': noSwitch,
       },
     )}
   >
-    <div className='flex items-center justify-between mb-2'>
-      <h3 className='flex items-center text-lg leading-6 font-semibold text-gray-900 dark:text-gray-50'>
+    <div className='mb-2 flex items-center justify-between'>
+      <h3 className='flex items-center text-lg font-semibold leading-6 text-gray-900 dark:text-gray-50'>
         {icon && (
           <>
             {icon}
@@ -129,7 +129,7 @@ const PanelContainer = ({
       </div>
     </div>
     {/* for other tabs */}
-    <div className='flex flex-col h-full scroll-auto overflow-auto'>{children}</div>
+    <div className='flex h-full flex-col overflow-auto scroll-auto'>{children}</div>
   </div>
 )
 
@@ -163,7 +163,7 @@ const Overview = ({
 
   return (
     <PanelContainer name={t('project.overview')} noSwitch type=''>
-      <div className='flex text-lg justify-between'>
+      <div className='flex justify-between text-lg'>
         <div className='flex items-center dark:text-gray-50'>
           <PulsatingCircle className='mr-1.5' type='big' />
           {t('dashboard.liveVisitors')}:
@@ -182,21 +182,21 @@ const Overview = ({
 
           <div className='flex justify-between'>
             <p className='text-lg dark:text-gray-50'>{t('dashboard.pageviews')}:</p>
-            <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>{pageviews}</p>
+            <p className='mr-2 h-5 text-xl text-gray-900 dark:text-gray-50'>{pageviews}</p>
           </div>
 
           <div className='flex justify-between'>
             <p className='text-lg dark:text-gray-50'>{t('dashboard.unique')}:</p>
-            <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>{uniques}</p>
+            <p className='mr-2 h-5 text-xl text-gray-900 dark:text-gray-50'>{uniques}</p>
           </div>
 
           <div className='flex justify-between'>
             <p className='text-lg dark:text-gray-50'>{t('dashboard.bounceRate')}:</p>
-            <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>{bounceRate}%</p>
+            <p className='mr-2 h-5 text-xl text-gray-900 dark:text-gray-50'>{bounceRate}%</p>
           </div>
           <div className='flex justify-between'>
             <p className='text-lg dark:text-gray-50'>{t('dashboard.sessionDuration')}:</p>
-            <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-xl'>{sessionDurationAVG}</p>
+            <p className='mr-2 h-5 text-xl text-gray-900 dark:text-gray-50'>{sessionDurationAVG}</p>
           </div>
           <hr className='my-2 border-gray-200 dark:border-gray-600' />
         </>
@@ -205,21 +205,21 @@ const Overview = ({
       <div className='flex justify-between'>
         <p className='text-lg dark:text-gray-50'>{t('dashboard.pageviews')}:</p>
         <dd className='flex items-baseline'>
-          <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-lg'>{overall.thisWeek}</p>
+          <p className='mr-2 h-5 text-lg text-gray-900 dark:text-gray-50'>{overall.thisWeek}</p>
           <p
-            className={cx('flex text-sm -ml-1 items-baseline', {
+            className={cx('-ml-1 flex items-baseline text-sm', {
               'text-green-600': pageviewsDidGrowUp,
               'text-red-600': !pageviewsDidGrowUp,
             })}
           >
             {pageviewsDidGrowUp ? (
               <>
-                <ArrowSmallUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
+                <ArrowSmallUpIcon className='h-4 w-4 flex-shrink-0 self-center text-green-500' />
                 <span className='sr-only'>{t('dashboard.inc')}</span>
               </>
             ) : (
               <>
-                <ArrowSmallDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
+                <ArrowSmallDownIcon className='h-4 w-4 flex-shrink-0 self-center text-red-500' />
                 <span className='sr-only'>{t('dashboard.dec')}</span>
               </>
             )}
@@ -230,21 +230,21 @@ const Overview = ({
       <div className='flex justify-between'>
         <p className='text-lg dark:text-gray-50'>{t('dashboard.unique')}:</p>
         <dd className='flex items-baseline'>
-          <p className='h-5 mr-2 text-gray-900 dark:text-gray-50 text-lg'>{overall.thisWeekUnique}</p>
+          <p className='mr-2 h-5 text-lg text-gray-900 dark:text-gray-50'>{overall.thisWeekUnique}</p>
           <p
-            className={cx('flex text-sm -ml-1 items-baseline', {
+            className={cx('-ml-1 flex items-baseline text-sm', {
               'text-green-600': uniqueDidGrowUp,
               'text-red-600': !uniqueDidGrowUp,
             })}
           >
             {uniqueDidGrowUp ? (
               <>
-                <ArrowSmallUpIcon className='self-center flex-shrink-0 h-4 w-4 text-green-500' />
+                <ArrowSmallUpIcon className='h-4 w-4 flex-shrink-0 self-center text-green-500' />
                 <span className='sr-only'>{t('dashboard.inc')}</span>
               </>
             ) : (
               <>
-                <ArrowSmallDownIcon className='self-center flex-shrink-0 h-4 w-4 text-red-500' />
+                <ArrowSmallDownIcon className='h-4 w-4 flex-shrink-0 self-center text-red-500' />
                 <span className='sr-only'>{t('dashboard.dec')}</span>
               </>
             )}
@@ -368,12 +368,12 @@ const CustomEvents = ({
           {_map(keys, (ev) => (
             <tr
               key={ev}
-              className='text-gray-900 dark:text-gray-50 group hover:bg-gray-100 hover:dark:bg-slate-800 cursor-pointer'
+              className='group cursor-pointer text-gray-900 hover:bg-gray-100 dark:text-gray-50 hover:dark:bg-slate-800'
               onClick={() => onFilter('ev', ev)}
             >
-              <td className='text-left flex items-center'>
+              <td className='flex items-center text-left'>
                 {ev}
-                <FunnelIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
+                <FunnelIcon className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300' />
               </td>
               <td className='text-right'>
                 {customs[ev]}
@@ -548,14 +548,14 @@ const Panel = ({
           return (
             <Fragment key={entryName}>
               <div
-                className={cx('flex justify-between mt-[0.32rem] first:mt-0 dark:text-gray-50 rounded', {
-                  'group hover:bg-gray-100 hover:dark:bg-slate-800 cursor-pointer': !hideFilters,
+                className={cx('mt-[0.32rem] flex justify-between rounded first:mt-0 dark:text-gray-50', {
+                  'group cursor-pointer hover:bg-gray-100 hover:dark:bg-slate-800': !hideFilters,
                 })}
                 onClick={() => _onFilter(id, entryName)}
               >
                 {linkContent ? (
                   <a
-                    className={cx('flex items-center label hover:underline text-blue-600 dark:text-blue-500', {
+                    className={cx('label flex items-center text-blue-600 hover:underline dark:text-blue-500', {
                       capitalize,
                     })}
                     href={rowData as string}
@@ -565,21 +565,21 @@ const Panel = ({
                   >
                     {rowData}
                     {!hideFilters && (
-                      <FunnelIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
+                      <FunnelIcon className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300' />
                     )}
                   </a>
                 ) : (
-                  <span className={cx('flex items-center label', { capitalize })}>
+                  <span className={cx('label flex items-center', { capitalize })}>
                     {rowData}
                     {!hideFilters && (
-                      <FunnelIcon className='ml-2 w-4 h-4 text-gray-500 hidden group-hover:block dark:text-gray-300' />
+                      <FunnelIcon className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300' />
                     )}
                   </span>
                 )}
                 <span className='ml-3 dark:text-gray-50'>
                   {valueData}
                   &nbsp;
-                  <span className='text-gray-500 dark:text-gray-200 font-light'>
+                  <span className='font-light text-gray-500 dark:text-gray-200'>
                     ({perc}
                     %)
                   </span>
@@ -592,22 +592,22 @@ const Panel = ({
       )}
       {/* for pagination in tabs */}
       {_size(entries) > ENTRIES_PER_PANEL && (
-        <div className='absolute bottom-0 w-card-toggle-sm sm:!w-card-toggle'>
-          <div className='flex justify-between select-none mb-2'>
+        <div className='w-card-toggle-sm absolute bottom-0 sm:!w-card-toggle'>
+          <div className='mb-2 flex select-none justify-between'>
             <div>
-              <span className='text-gray-500 dark:text-gray-200 font-light lowercase text-xs'>
+              <span className='text-xs font-light lowercase text-gray-500 dark:text-gray-200'>
                 {_size(entries)} {t('project.results')}
               </span>
-              <span className='text-gray-500 dark:text-gray-200 font-light text-xs'>
+              <span className='text-xs font-light text-gray-500 dark:text-gray-200'>
                 . {t('project.page')} {page + 1} / {totalPages}
               </span>
             </div>
-            <div className='flex justify-between w-[4.5rem]'>
+            <div className='flex w-[4.5rem] justify-between'>
               <Button
                 className={cx(
-                  'text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-slate-800 border-none px-1.5 py-0.5',
+                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow dark:bg-slate-800 dark:text-gray-200',
                   {
-                    'opacity-50 cursor-not-allowed': !canGoPrev(),
+                    'cursor-not-allowed opacity-50': !canGoPrev(),
                     'hover:bg-gray-200 hover:dark:bg-slate-700': canGoPrev(),
                   },
                 )}
@@ -616,13 +616,13 @@ const Panel = ({
                 disabled={!canGoPrev()}
                 focus={false}
               >
-                <ArrowLongLeftIcon className='w-5 h-5' />
+                <ArrowLongLeftIcon className='h-5 w-5' />
               </Button>
               <Button
                 className={cx(
-                  'text-gray-500 dark:text-gray-200 font-light shadow bg-gray-100 dark:bg-slate-800 border-none px-1.5 py-0.5',
+                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow dark:bg-slate-800 dark:text-gray-200',
                   {
-                    'opacity-50 cursor-not-allowed': !canGoNext(),
+                    'cursor-not-allowed opacity-50': !canGoNext(),
                     'hover:bg-gray-200 hover:dark:bg-slate-700': canGoNext(),
                   },
                 )}
@@ -631,7 +631,7 @@ const Panel = ({
                 type='button'
                 focus={false}
               >
-                <ArrowLongRightIcon className='w-5 h-5' />
+                <ArrowLongRightIcon className='h-5 w-5' />
               </Button>
             </div>
           </div>

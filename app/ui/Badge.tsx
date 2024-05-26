@@ -10,7 +10,7 @@ interface IBadge {
 const Badge = ({ label, className, colour }: IBadge): JSX.Element => (
   <span
     className={cx('inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset', className, {
-      'ring-slate-500/10 text-slate-600 bg-slate-50 dark:bg-slate-400/10 dark:text-slate-400 dark:ring-slate-400/20':
+      'bg-slate-50 text-slate-600 ring-slate-500/10 dark:bg-slate-400/10 dark:text-slate-400 dark:ring-slate-400/20':
         colour === 'slate',
       'bg-indigo-50 text-indigo-700 ring-indigo-700/10 dark:bg-indigo-400/10 dark:text-indigo-400 dark:ring-indigo-400/30':
         colour === 'indigo',

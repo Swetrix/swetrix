@@ -48,6 +48,7 @@
     "jszip": "^3.10.1",
     "lodash": "^4.17.21",
     "marked": "^12.0.2",
+    "prettier-plugin-tailwindcss": "^0.5.14",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-flagkit": "^2.0.4",

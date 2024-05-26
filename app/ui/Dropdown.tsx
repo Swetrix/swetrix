@@ -56,9 +56,9 @@ const Dropdown = ({
             className={cx(buttonClassName, {
               'justify-between': aside,
               'justify-center': !aside,
-              'inline-flex w-full rounded-md border border-gray-300 shadow-sm px-3 md:px-4 py-2 bg-white text-sm font-medium dark:border-gray-800 dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500':
+              'inline-flex w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100 dark:border-gray-800 dark:bg-slate-800 dark:hover:bg-slate-700 md:px-4':
                 !headless,
-              'inline-flex w-full px-3 md:px-4 py-2 text-sm font-medium outline-none group': headless,
+              'group inline-flex w-full px-3 py-2 text-sm font-medium outline-none md:px-4': headless,
               'text-gray-700 dark:text-gray-50': !disabled,
               'cursor-not-allowed text-gray-500 dark:text-gray-400': disabled,
             })}
@@ -96,20 +96,20 @@ const Dropdown = ({
           <Menu.Items
             static
             className={cx(
-              'z-50 origin-top-right absolute right-0 mt-2 w-40 min-w-max rounded-md shadow-lg bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 focus:outline-none',
+              'absolute right-0 z-50 mt-2 w-40 min-w-max origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-slate-800',
               menuItemsClassName,
               {
                 'divide-y divide-gray-100 dark:divide-gray-600': header,
               },
             )}
           >
-            {header && <p className='text-gray-700 dark:text-gray-50 px-4 py-2 text-sm font-medium'>{header}</p>}
+            {header && <p className='px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-50'>{header}</p>}
             {_map(items, (item) => (
               <Menu.Item key={keyExtractor ? keyExtractor(item) : item}>
                 <span
                   className={
                     selectItemClassName ||
-                    'text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 block px-4 py-2 text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'
+                    'block cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
                   }
                   role='menuitem'
                   tabIndex={0}

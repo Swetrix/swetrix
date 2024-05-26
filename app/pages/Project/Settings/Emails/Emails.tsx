@@ -67,8 +67,8 @@ const ModalMessage = ({
         {t('project.emails.reportFrequency')}
       </label>
       <div
-        className={cx('mt-1 bg-white rounded-md -space-y-px dark:bg-slate-900', {
-          'border-red-300 border': errors.reportFrequency,
+        className={cx('mt-1 -space-y-px rounded-md bg-white dark:bg-slate-900', {
+          'border border-red-300': errors.reportFrequency,
         })}
       >
         {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
@@ -76,8 +76,8 @@ const ModalMessage = ({
           <div key={item.value}>
             {/*  eslint-disable-next-line jsx-a11y/label-has-associated-control */}
             <label
-              className={cx('dark:border-gray-500 relative border p-4 flex cursor-pointer border-gray-200', {
-                'bg-indigo-50 border-indigo-200 dark:bg-indigo-500 dark:border-indigo-800 z-10':
+              className={cx('relative flex cursor-pointer border border-gray-200 p-4 dark:border-gray-500', {
+                'z-10 border-indigo-200 bg-indigo-50 dark:border-indigo-800 dark:bg-indigo-500':
                   item.value === form.reportFrequency,
                 'border-gray-200': form.reportFrequency !== item.value,
                 'rounded-tl-md rounded-tr-md': index === 0,
@@ -86,7 +86,7 @@ const ModalMessage = ({
             >
               <input
                 name='reportFrequency'
-                className='focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300'
+                className='h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500'
                 id='reportFrequency'
                 type='radio'
                 value={item.value}
@@ -177,33 +177,33 @@ const EmailList = ({
           ? dayjs(addedAt).locale(language).format('MMMM D, YYYY')
           : dayjs(addedAt).locale(language).format('D MMMM, YYYY')}
       </td>
-      <td className='relative whitespace-nowrap py-4 text-right text-sm font-medium pr-2'>
+      <td className='relative whitespace-nowrap py-4 pr-2 text-right text-sm font-medium'>
         {isConfirmed ? (
           <div ref={openRef}>
             <button
               onClick={() => setOpen(!open)}
               type='button'
-              className='inline-flex items-center shadow-sm pl-2 pr-1 py-0.5 border border-gray-200 dark:border-gray-600 text-sm leading-5 font-medium rounded-full bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600'
+              className='inline-flex items-center rounded-full border border-gray-200 bg-white py-0.5 pl-2 pr-1 text-sm font-medium leading-5 text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-gray-600'
             >
               {t(`profileSettings.${_toLower(reportFrequency)}`)}
-              <ChevronDownIcon style={{ transform: open ? 'rotate(180deg)' : '' }} className='w-4 h-4 pt-px ml-0.5' />
+              <ChevronDownIcon style={{ transform: open ? 'rotate(180deg)' : '' }} className='ml-0.5 h-4 w-4 pt-px' />
             </button>
             {open && (
-              <ul className='text-left origin-top-right absolute z-10 right-0 mt-2 w-72 rounded-md shadow-lg bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-gray-700 focus:outline-none'>
+              <ul className='absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 rounded-md bg-white text-left shadow-lg focus:outline-none dark:divide-gray-700 dark:bg-slate-900'>
                 {_map(reportFrequencyForEmailsOptions, (item) => (
                   <li
                     onClick={() => changeRole(item)}
-                    className='p-4 hover:bg-indigo-600 group cursor-pointer flex justify-between items-center'
+                    className='group flex cursor-pointer items-center justify-between p-4 hover:bg-indigo-600'
                     key={item.value}
                   >
                     <div>
-                      <p className='font-bold text-gray-700 dark:text-gray-200 group-hover:text-gray-200'>
+                      <p className='font-bold text-gray-700 group-hover:text-gray-200 dark:text-gray-200'>
                         {t(`profileSettings.${_toLower(item.label)}`)}
                       </p>
                     </div>
                     {reportFrequency === item.value && (
                       <span className='text-indigo-600 group-hover:text-gray-200'>
-                        <CheckIcon className='w-7 h-7 pt-px ml-1' />
+                        <CheckIcon className='ml-1 h-7 w-7 pt-px' />
                       </span>
                     )}
                   </li>
@@ -213,7 +213,7 @@ const EmailList = ({
                     setOpen(false)
                     setShowDeleteModal(true)
                   }}
-                  className='p-4 hover:bg-gray-200 dark:hover:bg-gray-700 group cursor-pointer flex justify-between items-center'
+                  className='group flex cursor-pointer items-center justify-between p-4 hover:bg-gray-200 dark:hover:bg-gray-700'
                 >
                   <div>
                     <p className='font-bold text-red-600 dark:text-red-500'>{t('project.settings.removeMember')}</p>
@@ -227,7 +227,7 @@ const EmailList = ({
             <Badge colour='yellow' className='mr-3' label={t('common.pending')} />
             <Button
               type='button'
-              className='bg-white text-indigo-700 rounded-md text-base font-medium hover:bg-indigo-50 dark:text-gray-50 dark:border-gray-600 dark:bg-slate-800 dark:hover:bg-slate-700'
+              className='rounded-md bg-white text-base font-medium text-indigo-700 hover:bg-indigo-50 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
               small
               onClick={() => setShowDeleteModal(true)}
             >
@@ -259,8 +259,8 @@ const EmailList = ({
 
 const NoSubscribers = ({ t }: { t: typeof i18next.t }): JSX.Element => (
   <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
-    <div className='max-w-7xl w-full mx-auto text-gray-900 dark:text-gray-50'>
-      <h2 className='text-xl mb-8 text-center leading-snug px-4'>{t('project.settings.noPeople')}</h2>
+    <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>
+      <h2 className='mb-8 px-4 text-center text-xl leading-snug'>{t('project.settings.noPeople')}</h2>
     </div>
   </div>
 )
@@ -406,10 +406,10 @@ const Emails = ({
   }
 
   return (
-    <div className='mt-6 mb-6'>
-      <div className='flex flex-col sm:flex-row gap-y-2 justify-between items-start sm:items-center mb-3'>
+    <div className='mb-6 mt-6'>
+      <div className='mb-3 flex flex-col items-start justify-between gap-y-2 sm:flex-row sm:items-center'>
         <div>
-          <h3 className='flex items-center mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
+          <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
             {t('project.emails.title')}
             <div className='ml-5'>
               <Beta />
@@ -417,16 +417,16 @@ const Emails = ({
           </h3>
           <p className='text-sm text-gray-500 dark:text-gray-400'>{t('project.emails.description')}</p>
         </div>
-        <Button className='h-8 pl-2 whitespace-nowrap' primary regular type='button' onClick={() => setShowModal(true)}>
+        <Button className='h-8 whitespace-nowrap pl-2' primary regular type='button' onClick={() => setShowModal(true)}>
           <>
-            <InboxStackIcon className='w-5 h-5 mr-1' />
+            <InboxStackIcon className='mr-1 h-5 w-5' />
             {t('project.emails.add')}
           </>
         </Button>
       </div>
       <div>
         <div className='mt-3 flex flex-col'>
-          <div className='-my-2 -mx-4 overflow-x-auto md:overflow-x-visible sm:-mx-6 lg:-mx-8'>
+          <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 md:overflow-x-visible lg:-mx-8'>
             <div className='inline-block min-w-full py-2 md:px-6 lg:px-8'>
               {!loading && !_isEmpty(emails) && (
                 <div className='shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
@@ -435,7 +435,7 @@ const Emails = ({
                       <tr className='dark:bg-slate-800'>
                         <th
                           scope='col'
-                          className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'
+                          className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6'
                         >
                           {t('auth.common.email')}
                         </th>
@@ -477,7 +477,7 @@ const Emails = ({
         customButtons={
           <button
             type='button'
-            className='w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white sm:ml-3 sm:w-auto sm:text-sm bg-indigo-600 hover:bg-indigo-700'
+            className='inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm'
             onClick={handleSubmit}
           >
             {t('project.emails.add')}

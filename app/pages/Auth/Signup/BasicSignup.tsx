@@ -160,7 +160,7 @@ const BasicSignup: React.FC<IBasicSignup> = ({ ssrTheme }): JSX.Element => {
         onChange={handleInput}
         error={beenSubmitted && errors.repeat}
       />
-      <div className='flex mt-4'>
+      <div className='mt-4 flex'>
         <Checkbox
           checked={form.checkIfLeaked}
           onChange={handleInput}
@@ -180,7 +180,7 @@ const BasicSignup: React.FC<IBasicSignup> = ({ ssrTheme }): JSX.Element => {
                 db: (
                   <a
                     href={HAVE_I_BEEN_PWNED_URL}
-                    className='font-medium text-indigo-400 hover:underline hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                    className='font-medium text-indigo-400 hover:text-indigo-500 hover:underline dark:text-indigo-400 dark:hover:text-indigo-500'
                     target='_blank'
                     rel='noreferrer noopener'
                   />
@@ -193,24 +193,24 @@ const BasicSignup: React.FC<IBasicSignup> = ({ ssrTheme }): JSX.Element => {
           }
         />
       </div>
-      <Button className='w-full flex justify-center' type='submit' loading={isLoading} primary giant>
+      <Button className='flex w-full justify-center' type='submit' loading={isLoading} primary giant>
         {t('auth.signup.create')}
       </Button>
       {/* SSO options */}
       <div>
-        <hr className='mt-8 xs:mt-2 sm:mt-5 border-gray-200 dark:border-slate-700' />
-        <p className='text-sm mt-2 mb-2 text-center text-gray-500 dark:text-gray-100'>
+        <hr className='mt-8 border-gray-200 dark:border-slate-700 xs:mt-2 sm:mt-5' />
+        <p className='mb-2 mt-2 text-center text-sm text-gray-500 dark:text-gray-100'>
           {t('auth.socialisation.orSingUpWith')}
         </p>
         <div className='flex justify-around space-x-5'>
           <GoogleAuth
-            className='w-full flex justify-center'
+            className='flex w-full justify-center'
             setIsLoading={setIsLoading}
             authSSO={authSSO}
             isMiniButton
           />
           <GithubAuth
-            className='w-full flex justify-center'
+            className='flex w-full justify-center'
             setIsLoading={setIsLoading}
             authSSO={authSSO}
             ssrTheme={ssrTheme}
