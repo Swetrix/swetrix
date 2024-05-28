@@ -66,16 +66,18 @@ const Dropdown = ({
             {title}
             {chevron === 'regular' && (
               <ChevronDownIcon
-                className={cx('-mr-1 ml-2 h-5 w-5', {
+                className={cx('-mr-1 ml-2 h-5 w-5 transform-gpu transition-transform', {
                   'group-hover:text-gray-500': headless,
+                  'rotate-180': open,
                 })}
                 aria-hidden='true'
               />
             )}
             {chevron === 'mini' && (
               <ChevronDownIconMini
-                className={cx('-mr-1 ml-1 h-5 w-5', {
+                className={cx('-mr-1 ml-1 h-5 w-5 transform-gpu transition-transform', {
                   'group-hover:text-gray-500': headless,
+                  'rotate-180': open,
                 })}
                 aria-hidden='true'
               />

@@ -938,18 +938,31 @@ const ViewProject = ({
   // activeTabLabel is a label for active tab. Using for title in dropdown
   const activeTabLabel = useMemo(() => _find(tabs, (tab) => tab.id === activeTab)?.label, [tabs, activeTab])
 
-  // switchActiveChartMetric is a function for change activeChartMetrics
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const switchActiveChartMetric = useCallback(
-    _debounce((pairID) => {
-      if (activeTab === PROJECT_TABS.performance) {
-        setActiveChartMetricsPerf(pairID)
+  const switchTrafficChartMetric = (pairID: string, conflicts: string[]) => {
+    if (isConflicted(conflicts)) {
+      generateAlert(t('project.conflictMetric'), 'error')
+      return
+    }
+
+    if (pairID === CHART_METRICS_MAPPING.customEvents) {
+      return
+    }
+
+    setActiveChartMetrics((prev) => ({ ...prev, [pairID]: !prev[pairID] }))
+  }
+
+  const switchCustomEventChart = (id: string) => {
+    setActiveChartMetricsCustomEvents((prev) => {
+      const newActiveChartMetricsCustomEvents = [...prev]
+      const index = _findIndex(prev, (item) => item === id)
+      if (index === -1) {
+        newActiveChartMetricsCustomEvents.push(id)
       } else {
-        setActiveChartMetrics((prev) => ({ ...prev, [pairID]: !prev[pairID] }))
+        newActiveChartMetricsCustomEvents.splice(index, 1)
       }
-    }, 0),
-    [activeTab],
-  )
+      return newActiveChartMetricsCustomEvents
+    })
+  }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const switchActiveErrorFilter = useCallback(
@@ -3720,7 +3733,9 @@ const ViewProject = ({
                                             event.label
                                           )
                                         }
-                                        onChange={() => {}}
+                                        onChange={() => {
+                                          switchCustomEventChart(event.id)
+                                        }}
                                         checked={event.active}
                                       />
                                     )}
@@ -3730,17 +3745,9 @@ const ViewProject = ({
                                       e?.stopPropagation()
                                       e?.preventDefault()
 
-                                      setActiveChartMetricsCustomEvents((prev) => {
-                                        const newActiveChartMetricsCustomEvents = [...prev]
-                                        const index = _findIndex(prev, (item) => item === event.id)
-                                        if (index === -1) {
-                                          newActiveChartMetricsCustomEvents.push(event.id)
-                                        } else {
-                                          newActiveChartMetricsCustomEvents.splice(index, 1)
-                                        }
-                                        return newActiveChartMetricsCustomEvents
-                                      })
+                                      switchCustomEventChart(event.id)
                                     }}
+                                    chevron='mini'
                                     headless
                                   />
                                 )
@@ -3752,22 +3759,16 @@ const ViewProject = ({
                                   label={label}
                                   disabled={conflicted}
                                   checked={active}
+                                  onChange={() => {
+                                    switchTrafficChartMetric(pairID, conflicts)
+                                  }}
                                 />
                               )
                             }}
                             selectItemClassName='group text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 block text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'
                             keyExtractor={(pair) => pair.id}
                             onSelect={({ id: pairID, conflicts }) => {
-                              if (isConflicted(conflicts)) {
-                                generateAlert(t('project.conflictMetric'), 'error')
-                                return
-                              }
-
-                              if (pairID === CHART_METRICS_MAPPING.customEvents) {
-                                return
-                              }
-
-                              switchActiveChartMetric(pairID)
+                              switchTrafficChartMetric(pairID, conflicts)
                             }}
                             chevron='mini'
                             headless
@@ -3812,9 +3813,16 @@ const ViewProject = ({
                             items={errorFilters}
                             title={t('project.filters')}
                             labelExtractor={(pair) => {
-                              const { label, active } = pair
+                              const { label, active, id: pairID } = pair
 
-                              return <Checkbox className='px-4 py-2' label={label} checked={active} />
+                              return (
+                                <Checkbox
+                                  className='px-4 py-2'
+                                  label={label}
+                                  checked={active}
+                                  onChange={() => switchActiveErrorFilter(pairID)}
+                                />
+                              )
                             }}
                             selectItemClassName='group text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 block text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'
                             keyExtractor={(pair) => pair.id}
@@ -3855,7 +3863,7 @@ const ViewProject = ({
                             labelExtractor={(pair) => pair.label}
                             keyExtractor={(pair) => pair.id}
                             onSelect={({ id: pairID }) => {
-                              switchActiveChartMetric(pairID)
+                              setActiveChartMetricsPerf(pairID)
                             }}
                             chevron='mini'
                             headless
