@@ -655,6 +655,8 @@
     "noEvTitle": "No events yet",
     "noErrorDetails": "No error details",
     "noErrorDesc": "This error does not exist or has not occurred within the specified time frame.",
+    "noSessionDetails": "No session details",
+    "noSessionDesc": "We could not find a session with the specified session ID.",
     "showAll": "Show all views",
     "trendlineUnique": "Unique visitors trendline",
     "backToFunnels": "Back to funnels list",

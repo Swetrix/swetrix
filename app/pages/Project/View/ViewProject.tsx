@@ -191,6 +191,7 @@ import { ErrorDetails } from './components/ErrorDetails'
 import { IError } from './interfaces/error'
 import NoErrorDetails from './components/NoErrorDetails'
 import WaitingForAnError from './components/WaitingForAnError'
+import NoSessionDetails from './components/NoSessionDetails'
 const SwetrixSDK = require('@swetrix/sdk')
 
 const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
@@ -444,6 +445,7 @@ const ViewProject = ({
   const [sessionsLoading, setSessionsLoading] = useState<boolean | null>(null) // null - not loaded, true - loading, false - loaded
   const [activeSession, setActiveSession] = useState<any>(null)
   const [sessionLoading, setSessionLoading] = useState<boolean>(false)
+  const [activePSID, setActivePSID] = useState<string | null>(null)
 
   // errors
   const [errorsSkip, setErrorsSkip] = useState<number>(0)
@@ -1520,22 +1522,27 @@ const ViewProject = ({
   }
 
   useEffect(() => {
+    const url = new URL(window.location.toString())
+    const { searchParams } = url
+    const tab = searchParams.get('tab') as string
+
+    if (PROJECT_TABS[tab]) {
+      setActiveTab(tab)
+    }
+  }, [])
+
+  useEffect(() => {
     if (authLoading) {
       return
     }
 
-    // @ts-ignore
-    const url = new URL(window.location)
+    const url = new URL(window.location.toString())
     const { searchParams } = url
     const psid = searchParams.get('psid') as string
     const tab = searchParams.get('tab') as string
 
     if (psid && tab === PROJECT_TABS.sessions) {
-      loadSession(psid)
-    }
-
-    if (PROJECT_TABS[tab]) {
-      setActiveTab(tab)
+      setActivePSID(psid)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading])
@@ -1552,11 +1559,19 @@ const ViewProject = ({
     const tab = searchParams.get('tab') as string
 
     if (eid && tab === PROJECT_TABS.errors) {
-      // loadError(eid)
       setActiveEID(eid)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading])
+
+  useEffect(() => {
+    if (!activePSID) {
+      return
+    }
+
+    loadSession(activePSID)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [period, dateRange, timeBucket, activePSID])
 
   useEffect(() => {
     if (!activeEID) {
@@ -1626,7 +1641,7 @@ const ViewProject = ({
         setCanLoadMoreSessions(true)
       }
     } catch (e) {
-      console.error('[ERROR](loadAnalytics) Loading analytics data failed')
+      console.error('[ERROR](loadSessions) Loading sessions data failed')
       console.error(e)
     } finally {
       setSessionsLoading(false)
@@ -2386,6 +2401,11 @@ const ViewProject = ({
       }
 
       if (activeTab === PROJECT_TABS.sessions) {
+        if (activePSID) {
+          await loadSession(activePSID)
+          return
+        }
+
         resetSessions()
         loadSessions(0)
         return
@@ -3073,6 +3093,10 @@ const ViewProject = ({
 
   // updatePeriod using for update period and timeBucket also update url
   const updatePeriod = (newPeriod: { period: string; label?: string }) => {
+    if (period === newPeriod.period) {
+      return
+    }
+
     const newPeriodFull = _find(periodPairs, (el) => el.period === newPeriod.period)
     let tb = timeBucket
     // @ts-ignore
@@ -3524,7 +3548,7 @@ const ViewProject = ({
               {/* Tabs selector */}
               <TabsSelector />
               {activeTab !== PROJECT_TABS.alerts &&
-                (activeTab !== PROJECT_TABS.sessions || !activeSession) &&
+                (activeTab !== PROJECT_TABS.sessions || !activePSID) &&
                 (activeFunnel || activeTab !== PROJECT_TABS.funnels) && (
                   <>
                     <div className='mt-2 flex flex-col items-center justify-between lg:flex-row lg:items-start'>
@@ -4055,7 +4079,7 @@ const ViewProject = ({
                   )}
                 </div>
               )}
-              {activeTab === PROJECT_TABS.sessions && !activeSession && (
+              {activeTab === PROJECT_TABS.sessions && !activePSID && (
                 <>
                   <Filters
                     filters={filtersSessions}
@@ -4063,9 +4087,17 @@ const ViewProject = ({
                     onChangeExclusive={onChangeExclusive}
                     tnMapping={tnMapping}
                   />
-                  {sessionsLoading && _isEmpty(sessions) && <Loader />}
-                  {!sessionsLoading && _isEmpty(sessions) && <NoEvents filters={filters} resetFilters={resetFilters} />}
-                  <Sessions sessions={sessions} onClick={loadSession} timeFormat={timeFormat} />
+                  {(sessionsLoading === null || sessionsLoading) && _isEmpty(sessions) && <Loader />}
+                  {typeof sessionsLoading === 'boolean' && !sessionsLoading && _isEmpty(sessions) && (
+                    <NoEvents filters={filters} resetFilters={resetFilters} />
+                  )}
+                  <Sessions
+                    sessions={sessions}
+                    onClick={(psid) => {
+                      setActivePSID(psid)
+                    }}
+                    timeFormat={timeFormat}
+                  />
                   {canLoadMoreSessions && (
                     <button
                       type='button'
@@ -4074,7 +4106,7 @@ const ViewProject = ({
                       className={cx(
                         'relative mx-auto mt-2 flex items-center rounded-md bg-gray-50 p-2 text-sm font-medium text-gray-700 hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                         {
-                          'cursor-not-allowed opacity-50': sessionsLoading,
+                          'cursor-not-allowed opacity-50': sessionsLoading || sessionsLoading === null,
                           hidden: sessionsLoading && _isEmpty(sessions),
                         },
                       )}
@@ -4085,11 +4117,12 @@ const ViewProject = ({
                   )}
                 </>
               )}
-              {activeTab === PROJECT_TABS.sessions && activeSession && (
+              {activeTab === PROJECT_TABS.sessions && activePSID && (
                 <>
                   <button
                     onClick={() => {
                       setActiveSession(null)
+                      setActivePSID(null)
                       const url = new URL(window.location.href)
                       url.searchParams.delete('psid')
                       window.history.pushState({}, '', url.toString())
@@ -4100,15 +4133,21 @@ const ViewProject = ({
                     {t('project.backToSessions')}
                   </button>
                   {activeSession?.details && <SessionDetails details={activeSession?.details} />}
-                  <SessionChart
-                    chart={activeSession?.chart}
-                    timeBucket={activeSession?.timeBucket}
-                    timeFormat={timeFormat}
-                    rotateXAxis={rotateXAxis}
-                    chartType={chartType}
-                    dataNames={dataNames}
-                  />
+                  {!_isEmpty(activeSession?.chart) && (
+                    <SessionChart
+                      chart={activeSession?.chart}
+                      timeBucket={activeSession?.timeBucket}
+                      timeFormat={timeFormat}
+                      rotateXAxis={rotateXAxis}
+                      chartType={chartType}
+                      dataNames={dataNames}
+                    />
+                  )}
                   <Pageflow pages={activeSession?.pages} timeFormat={timeFormat} />
+                  {_isEmpty(activeSession) && sessionLoading && <Loader />}
+                  {_isEmpty(activeSession?.chart) && _isEmpty(activeSession?.pages) && !sessionLoading && (
+                    <NoSessionDetails />
+                  )}
                 </>
               )}
               {activeTab === PROJECT_TABS.errors && !activeEID && (
@@ -4119,7 +4158,8 @@ const ViewProject = ({
                     onChangeExclusive={onChangeExclusive}
                     tnMapping={tnMapping}
                   />
-                  {!errorsLoading && _isEmpty(errors) && (
+                  {(errorsLoading === null || errorsLoading) && _isEmpty(errors) && <Loader />}
+                  {typeof errorsLoading === 'boolean' && !errorsLoading && _isEmpty(errors) && (
                     <NoEvents filters={filtersErrors} resetFilters={resetFilters} />
                   )}
                   <Errors
@@ -4146,7 +4186,6 @@ const ViewProject = ({
                       {t('project.loadMore')}
                     </button>
                   )}
-                  {_isEmpty(errors) && errorsLoading && <Loader />}
                 </>
               )}
               {activeTab === PROJECT_TABS.errors && activeEID && (
