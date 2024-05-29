@@ -1,18 +1,86 @@
+/*
+  .bb-axis .domain - X / Y axis line
+  .bb-axis .tick line - ticks
+  .bb-axis - [fill] text
+  .bb-legend-item text - [fill] text underneath the chart
+  .bb-xgrid-focus - line which shows on chart on hover
+*/
+
+/* dark theme config */
 html.dark .bb-legend-item text {
-  fill: #f9fafb;
+  fill: #d1d5db;
 }
 
 html.dark .bb-axis {
-  fill: #f9fafb;
+  fill: #d1d5db;
 }
 
 html.dark .bb-axis .domain {
   stroke: #334155;
 }
 
+html.dark .bb-axis .tick line {
+  stroke: #334155;
+}
+
+html.dark .bb-xgrid-focus {
+  /* slate-600 */
+  stroke: #475569;
+}
+
+/* light theme config */
+html.light .bb-legend-item text {
+  /* gray-800 */
+  fill: #1f2937;
+}
+
+html.light .bb-axis {
+  /* gray-700 */
+  fill: #374151;
+}
+
+html.light .bb-axis .domain {
+  /* slate-400 */
+  stroke: #94a3b8;
+}
+
+html.light .bb-axis .tick line {
+  /* slate-400 */
+  stroke: #94a3b8;
+}
+
+html.light .bb-xgrid-focus {
+  /* slate-400 */
+  stroke: #94a3b8;
+}
+
+.bb-xgrid-focus {
+  shape-rendering: geometricprecision;
+}
+
+.bb-axis {
+  font-family:
+    'Inter',
+    'Cantarell',
+    'Roboto',
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Helvetica Neue',
+    'Oxygen',
+    'Ubuntu',
+    sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.bb-line {
+  stroke-width: 1.5;
+}
+
 .bb-bar {
   fill-opacity: 0.3;
-  stroke-width: 1 !important;
+  stroke-width: 1.5 !important;
 }
 
 .bb-target-unique .bb-bar {
@@ -59,7 +127,7 @@ html.dark .bb-axis .domain {
   stroke: #709775 !important;
 }
 
-.bb-target-dom_load .bb-bar {
+.bb-target-dom-load .bb-bar {
   stroke: #a5e6ab !important;
 }
 
@@ -109,10 +177,6 @@ html.dark .bb-axis .domain {
 
 .bb-target-MRR .bb-bar {
   stroke: #709775 !important;
-}
-
-html.dark .bb-axis .tick line {
-  stroke: #334155;
 }
 
 @media (max-width: 640px) {

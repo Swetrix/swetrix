@@ -1,4 +1,5 @@
 import React from 'react'
+import type { ChartOptions, GridLineOptions } from 'billboard.js'
 import type i18next from 'i18next'
 // @ts-ignore
 import { saveAs } from 'file-saver'
@@ -488,9 +489,9 @@ const getSettings = (
   compareChart?: {
     [key: string]: string[]
   },
-) => {
+): ChartOptions => {
   const xAxisSize = _size(chart.x)
-  const lines = []
+  const lines: GridLineOptions[] = []
   const modifiedChart = { ...chart }
   let regions
   const customEventsToArray = customEvents
@@ -514,7 +515,7 @@ const getSettings = (
 
   if (!_isEmpty(forecasedChartData) && _isEmpty(compareChart)) {
     lines.push({
-      value: _last(chart?.x),
+      value: _last(chart?.x) as string,
       text: 'Forecast',
     })
     modifiedChart.x = [...modifiedChart.x, ...forecasedChartData.x]
@@ -601,6 +602,7 @@ const getSettings = (
         sessionDurationCompare: 'rgba(201, 69, 237, 0.4)',
         ...customEventsColors,
       },
+      // @ts-expect-error
       regions,
       axes: {
         bounce: 'y2',
@@ -625,6 +627,7 @@ const getSettings = (
         tick: {
           fit: true,
           rotate: rotateXAxis ? 45 : 0,
+          // @ts-expect-error
           format:
             timeFormat === TimeFormat['24-hour']
               ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x)
@@ -643,17 +646,18 @@ const getSettings = (
       y2: {
         show: activeChartMetrics.bounce || activeChartMetrics.sessionDuration,
         tick: {
+          // @ts-expect-error
           format: activeChartMetrics.bounce
             ? (d: string) => `${d}%`
             : (d: string) => getStringFromTime(getTimeFromSeconds(d)),
         },
-        min: activeChartMetrics.bounce ? 10 : null,
-        max: activeChartMetrics.bounce ? 100 : null,
-        default: activeChartMetrics.bounce ? [10, 100] : null,
+        min: activeChartMetrics.bounce ? 10 : undefined,
+        max: activeChartMetrics.bounce ? 100 : undefined,
+        default: activeChartMetrics.bounce ? [10, 100] : undefined,
       },
     },
     tooltip: {
-      contents: (item: any, _: any, __: any, color: any) => {
+      contents: (item, _, __, color) => {
         const typesOptionsToTypesCompare: {
           [key: string]: string
         } = {
@@ -786,13 +790,14 @@ const getSettings = (
               only: xAxisSize > 1,
             },
             pattern: ['circle'],
-            r: 3,
+            r: 2,
           },
     legend: {
-      usePoint: true,
       item: {
         tile: {
+          type: 'circle',
           width: 10,
+          r: 3,
         },
       },
       hide: ['uniqueCompare', 'totalCompare', 'bounceCompare', 'sessionDurationCompare'],
@@ -814,7 +819,7 @@ const getSettingsSession = (
   timeFormat: string,
   rotateXAxis: boolean,
   chartType: string,
-) => {
+): ChartOptions => {
   const xAxisSize = _size(chart.x)
 
   const columns = getColumns(chart, { views: true }, {})
@@ -835,11 +840,6 @@ const getSettingsSession = (
         sessionDuration: 'y2',
       },
     },
-    // grid: {
-    //   x: {
-    //     lines,
-    //   },
-    // },
     transition: {
       duration: 500,
     },
@@ -853,6 +853,7 @@ const getSettingsSession = (
         tick: {
           fit: true,
           rotate: rotateXAxis ? 45 : 0,
+          // @ts-expect-error
           format:
             timeFormat === TimeFormat['24-hour']
               ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x)
@@ -915,13 +916,14 @@ const getSettingsSession = (
               only: xAxisSize > 1,
             },
             pattern: ['circle'],
-            r: 3,
+            r: 2,
           },
     legend: {
-      usePoint: true,
       item: {
         tile: {
+          type: 'circle',
           width: 10,
+          r: 3,
         },
       },
       hide: ['uniqueCompare', 'totalCompare', 'bounceCompare', 'sessionDurationCompare'],
@@ -943,7 +945,7 @@ const getSettingsError = (
   timeFormat: string,
   rotateXAxis: boolean,
   chartType: string,
-) => {
+): ChartOptions => {
   const xAxisSize = _size(chart.x)
 
   const columns = getColumns(chart, { occurrences: true }, {})
@@ -970,6 +972,7 @@ const getSettingsError = (
       regions: {
         occurrences: [
           {
+            // @ts-expect-error
             start: regionStart,
             style: {
               dasharray: '6 2',
@@ -978,11 +981,6 @@ const getSettingsError = (
         ],
       },
     },
-    // grid: {
-    //   x: {
-    //     lines,
-    //   },
-    // },
     transition: {
       duration: 500,
     },
@@ -996,6 +994,7 @@ const getSettingsError = (
         tick: {
           fit: true,
           rotate: rotateXAxis ? 45 : 0,
+          // @ts-expect-error
           format:
             timeFormat === TimeFormat['24-hour']
               ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x)
@@ -1043,13 +1042,14 @@ const getSettingsError = (
               only: xAxisSize > 1,
             },
             pattern: ['circle'],
-            r: 3,
+            r: 2,
           },
     legend: {
-      usePoint: true,
       item: {
         tile: {
+          type: 'circle',
           width: 10,
+          r: 3,
         },
       },
       hide: ['uniqueCompare', 'totalCompare', 'bounceCompare', 'sessionDurationCompare'],
@@ -1065,7 +1065,7 @@ const getSettingsError = (
 }
 
 // function to get the settings and data for the funnels chart
-const getSettingsFunnels = (funnel: IAnalyticsFunnel[], totalPageviews: number, t: typeof i18next.t) => {
+const getSettingsFunnels = (funnel: IAnalyticsFunnel[], totalPageviews: number, t: typeof i18next.t): ChartOptions => {
   const values = _map(funnel, (step) => {
     if (_startsWith(step.value, '/')) {
       return t('project.visitPage', { page: step.value })
@@ -1093,6 +1093,7 @@ const getSettingsFunnels = (funnel: IAnalyticsFunnel[], totalPageviews: number, 
         dropoff: 'rgba(37, 99, 235, 0.2)', // blue-600 + opacity
       },
       groups: [['events', 'dropoff']],
+      // @ts-expect-error
       order: (a: any, b: any) => {
         return a.id < b.id
       },
@@ -1234,7 +1235,7 @@ const getSettingsPerf = (
   compareChart?: {
     [key: string]: string[]
   },
-) => {
+): ChartOptions => {
   const xAxisSize = _size(chart.x)
 
   return {
@@ -1320,6 +1321,7 @@ const getSettingsPerf = (
         tick: {
           fit: true,
           rotate: rotateXAxis ? 45 : 0,
+          // @ts-expect-error
           format:
             timeFormat === TimeFormat['24-hour']
               ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x)
@@ -1330,8 +1332,11 @@ const getSettingsPerf = (
       },
       y: {
         tick: {
+          // @ts-expect-error
           format: (d: string) => getStringFromTime(getTimeFromSeconds(d), true),
         },
+        show: true,
+        inner: true,
       },
     },
     transition: {
@@ -1417,13 +1422,14 @@ const getSettingsPerf = (
               only: xAxisSize > 1,
             },
             pattern: ['circle'],
-            r: 3,
+            r: 2,
           },
     legend: {
-      usePoint: true,
       item: {
         tile: {
+          type: 'circle',
           width: 10,
+          r: 3,
         },
       },
       hide: perfomanceChartCompare,
