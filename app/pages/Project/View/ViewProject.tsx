@@ -3050,6 +3050,11 @@ const ViewProject = ({
           setPublicProject(projectRes)
         } else {
           setProjects([...(projects as any[]), projectRes])
+
+          if (projectRes.isLocked) {
+            return
+          }
+
           getLiveVisitors([id], projectPassword)
             .then((res) => {
               setLiveStatsForProject(id, res[id])
