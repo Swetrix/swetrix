@@ -4145,9 +4145,10 @@ const ViewProject = ({
                   )}
                   <Pageflow pages={activeSession?.pages} timeFormat={timeFormat} />
                   {_isEmpty(activeSession) && sessionLoading && <Loader />}
-                  {_isEmpty(activeSession?.chart) && _isEmpty(activeSession?.pages) && !sessionLoading && (
-                    <NoSessionDetails />
-                  )}
+                  {activeSession !== null &&
+                    _isEmpty(activeSession?.chart) &&
+                    _isEmpty(activeSession?.pages) &&
+                    !sessionLoading && <NoSessionDetails />}
                 </>
               )}
               {activeTab === PROJECT_TABS.errors && !activeEID && (
