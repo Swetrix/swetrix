@@ -110,6 +110,8 @@ const TRAFFIC_COLUMNS = [
   'ca',
 ]
 
+const ALL_COLUMNS = [...TRAFFIC_COLUMNS, 'ev']
+
 const PERFORMANCE_COLUMNS = ['cc', 'rg', 'ct', 'pg', 'dv', 'br']
 const ERROR_COLUMNS = ['pg', 'dv', 'br', 'os', 'lc', 'cc', 'rg', 'ct']
 
@@ -152,4 +154,5 @@ export {
   ERROR_COLUMNS,
   REDIS_LOG_ERROR_CACHE_KEY,
   PID_REGEX,
+  ALL_COLUMNS,
 }

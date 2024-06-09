@@ -48,6 +48,7 @@ import {
   ERROR_COLUMNS,
   MIN_PAGES_IN_FUNNEL,
   MAX_PAGES_IN_FUNNEL,
+  ALL_COLUMNS,
 } from '../common/constants'
 import {
   getFunnelsClickhouse,
@@ -1552,13 +1553,19 @@ export class AnalyticsService {
   }
 
   async getFilters(pid: string, type: string): Promise<Array<string>> {
-    if (!_includes(TRAFFIC_COLUMNS, type)) {
+    if (!_includes(ALL_COLUMNS, type)) {
       throw new UnprocessableEntityException(
         `The provided type (${type}) is incorrect`,
       )
     }
 
-    const query = `SELECT ${type} FROM analytics WHERE pid={pid:FixedString(12)} AND ${type} IS NOT NULL GROUP BY ${type}`
+    let query = `SELECT ${type} FROM analytics WHERE pid={pid:FixedString(12)} AND ${type} IS NOT NULL GROUP BY ${type}`
+
+    if (type === 'ev') {
+      query =
+        'SELECT ev FROM customEV WHERE pid={pid:FixedString(12)} AND ev IS NOT NULL GROUP BY ev'
+    }
+
     const results = await clickhouse
       .query(query, { params: { pid } })
       .toPromise()
