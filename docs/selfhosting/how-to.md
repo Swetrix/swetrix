@@ -12,7 +12,7 @@ The easiest way to get started with Swetrix is by [using our cloud service](http
 ## Prerequisites
 To self-host Swetrix you need to have the following:
 - A server with Docker installed
-- Support for the x86_64 CPU architecture on your server
+- Support for the x86_64 or arm64 CPU architecture on your server
 
 Most of the cloud providers offer Docker pre-installed on their servers, but in case it's missing, you can install it manually by following the [official Docker installation guide](https://docs.docker.com/get-docker/).
 We've tested self-hosting Swetrix using [Hetzner Cloud](https://hetzner.cloud/?ref=xIW4H6LVD01I) (affiliate link), but any other cloud provider should work just fine.
