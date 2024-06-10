@@ -262,7 +262,7 @@ const getSettings = () => {
         Profit: '#A5E6AB',
         Revenue: '#12731E',
       },
-      groups: [groups],
+      groups: [['MRR', 'Technical Expences', 'Business Expences']],
     },
     axis: {
       x: {
