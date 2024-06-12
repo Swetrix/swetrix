@@ -1,6 +1,5 @@
 import React, { memo, useState, useEffect, useMemo, Fragment } from 'react'
 import type i18next from 'i18next'
-import { ArrowSmallUpIcon, ArrowSmallDownIcon } from '@heroicons/react/24/solid'
 import {
   FunnelIcon,
   MapIcon,
@@ -27,14 +26,12 @@ import _slice from 'lodash/slice'
 import _sum from 'lodash/sum'
 
 import Progress from 'ui/Progress'
-import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import Modal from 'ui/Modal'
 import Chart from 'ui/Chart'
 import Button from 'ui/Button'
 
 import { IEntry } from 'redux/models/IEntry'
 
-import LiveVisitorsDropdown from './components/LiveVisitorsDropdown'
 import InteractiveMap from '../../Project/View/components/InteractiveMap'
 import { iconClassName } from './ViewCaptcha.helpers'
 
@@ -132,129 +129,6 @@ const PanelContainer = ({
     <div className='flex h-full flex-col overflow-auto scroll-auto'>{children}</div>
   </div>
 )
-
-// First tab with stats
-const Overview = ({
-  overall,
-  chartData,
-  activePeriod,
-  t,
-  live,
-  sessionDurationAVG,
-  projectId,
-}: {
-  overall: any
-  chartData: any
-  activePeriod: any
-  t: typeof i18next.t
-  live: number | string
-  sessionDurationAVG: number
-  projectId: string
-}) => {
-  const pageviewsDidGrowUp = overall.percChange >= 0
-  const uniqueDidGrowUp = overall.percChangeUnique >= 0
-  const pageviews = _sum(chartData?.visits) || 0
-  const uniques = _sum(chartData?.uniques) || 0
-  let bounceRate = 0
-
-  if (pageviews > 0) {
-    bounceRate = _round((uniques * 100) / pageviews, 1)
-  }
-
-  return (
-    <PanelContainer name={t('project.overview')} noSwitch type=''>
-      <div className='flex justify-between text-lg'>
-        <div className='flex items-center dark:text-gray-50'>
-          <PulsatingCircle className='mr-1.5' type='big' />
-          {t('dashboard.liveVisitors')}:
-        </div>
-        <LiveVisitorsDropdown projectId={projectId} live={live} />
-      </div>
-      {!_isEmpty(chartData) && (
-        <>
-          <p className='text-lg font-semibold dark:text-gray-50'>
-            {t('project.statsFor')}
-            <span className='lowercase'>
-              &nbsp;
-              {activePeriod.label}
-            </span>
-          </p>
-
-          <div className='flex justify-between'>
-            <p className='text-lg dark:text-gray-50'>{t('dashboard.pageviews')}:</p>
-            <p className='mr-2 h-5 text-xl text-gray-900 dark:text-gray-50'>{pageviews}</p>
-          </div>
-
-          <div className='flex justify-between'>
-            <p className='text-lg dark:text-gray-50'>{t('dashboard.unique')}:</p>
-            <p className='mr-2 h-5 text-xl text-gray-900 dark:text-gray-50'>{uniques}</p>
-          </div>
-
-          <div className='flex justify-between'>
-            <p className='text-lg dark:text-gray-50'>{t('dashboard.bounceRate')}:</p>
-            <p className='mr-2 h-5 text-xl text-gray-900 dark:text-gray-50'>{bounceRate}%</p>
-          </div>
-          <div className='flex justify-between'>
-            <p className='text-lg dark:text-gray-50'>{t('dashboard.sessionDuration')}:</p>
-            <p className='mr-2 h-5 text-xl text-gray-900 dark:text-gray-50'>{sessionDurationAVG}</p>
-          </div>
-          <hr className='my-2 border-gray-200 dark:border-gray-600' />
-        </>
-      )}
-      <p className='text-lg font-semibold dark:text-gray-50'>{t('project.weeklyStats')}</p>
-      <div className='flex justify-between'>
-        <p className='text-lg dark:text-gray-50'>{t('dashboard.pageviews')}:</p>
-        <dd className='flex items-baseline'>
-          <p className='mr-2 h-5 text-lg text-gray-900 dark:text-gray-50'>{overall.thisWeek}</p>
-          <p
-            className={cx('-ml-1 flex items-baseline text-sm', {
-              'text-green-600': pageviewsDidGrowUp,
-              'text-red-600': !pageviewsDidGrowUp,
-            })}
-          >
-            {pageviewsDidGrowUp ? (
-              <>
-                <ArrowSmallUpIcon className='h-4 w-4 flex-shrink-0 self-center text-green-500' />
-                <span className='sr-only'>{t('dashboard.inc')}</span>
-              </>
-            ) : (
-              <>
-                <ArrowSmallDownIcon className='h-4 w-4 flex-shrink-0 self-center text-red-500' />
-                <span className='sr-only'>{t('dashboard.dec')}</span>
-              </>
-            )}
-            {overall.percChange}%
-          </p>
-        </dd>
-      </div>
-      <div className='flex justify-between'>
-        <p className='text-lg dark:text-gray-50'>{t('dashboard.unique')}:</p>
-        <dd className='flex items-baseline'>
-          <p className='mr-2 h-5 text-lg text-gray-900 dark:text-gray-50'>{overall.thisWeekUnique}</p>
-          <p
-            className={cx('-ml-1 flex items-baseline text-sm', {
-              'text-green-600': uniqueDidGrowUp,
-              'text-red-600': !uniqueDidGrowUp,
-            })}
-          >
-            {uniqueDidGrowUp ? (
-              <>
-                <ArrowSmallUpIcon className='h-4 w-4 flex-shrink-0 self-center text-green-500' />
-                <span className='sr-only'>{t('dashboard.inc')}</span>
-              </>
-            ) : (
-              <>
-                <ArrowSmallDownIcon className='h-4 w-4 flex-shrink-0 self-center text-red-500' />
-                <span className='sr-only'>{t('dashboard.dec')}</span>
-              </>
-            )}
-            {overall.percChangeUnique}%
-          </p>
-        </dd>
-      </div>
-    </PanelContainer>
-  )
-}
 
 // Options for circle chart showing the stats of data
 const getPieOptions = (customs: any, uniques: number, t: any) => {
@@ -642,7 +516,6 @@ const Panel = ({
 }
 
 const PanelMemo = memo(Panel)
-const OverviewMemo = memo(Overview)
 const CustomEventsMemo = memo(CustomEvents)
 
-export { PanelMemo as Panel, OverviewMemo as Overview, CustomEventsMemo as CustomEvents }
+export { PanelMemo as Panel, CustomEventsMemo as CustomEvents }

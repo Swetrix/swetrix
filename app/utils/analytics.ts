@@ -153,4 +153,4 @@ const trackCustom = (ev: string, meta?: any) => {
   }
 }
 
-export { trackViews, trackCustom, trackErrors, SWETRIX_PID }
+export { trackViews, trackCustom, trackErrors }

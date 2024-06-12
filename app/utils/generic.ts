@@ -43,10 +43,6 @@ export const secondsTillNextMonth = () => {
   return 0 | ((date - now) / 1000)
 }
 
-export const convertMsToSeconds = (ms: any) => {
-  return ms / 1000
-}
-
 // Returns an object like { h: 0, m: 0, s: 0 } based on the seconds parameter provided
 export const getTimeFromSeconds = (seconds: any) => {
   const negative = seconds < 0
@@ -102,13 +98,6 @@ export const loadScript = (url: string) => {
   document.body.appendChild(script)
 }
 
-/**
- * Returns the % change of one number relative to the other
- *
- * @param oldVal The initial value
- * @param newVal The value that changed
- * @param round Numbers after floating point
- */
 export const calculateRelativePercentage = (oldVal: number, newVal: number, round = 2) => {
   if (oldVal === newVal) return 0
   if (oldVal === 0) return 100
@@ -121,7 +110,7 @@ export const calculateRelativePercentage = (oldVal: number, newVal: number, roun
   return _round((1 - newVal / oldVal) * -100, round)
 }
 
-export const displayNamesPolyfill = {
+const displayNamesPolyfill = {
   of: (name: string) => name,
 }
 

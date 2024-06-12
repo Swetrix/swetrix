@@ -15,15 +15,6 @@ renderer.link = (href: string, title: string | null | undefined, text: string) =
   return `<a href="${url.toString()}" referrerpolicy="strict-origin-when-cross-origin" target="_blank" rel="noopener noreferrer">${text}</a>`
 }
 
-export type PostMarkdownAttributes = {
-  title: string
-  intro?: string
-  date: string
-  author: string
-  nickname: string
-  hidden?: boolean
-}
-
 // Removes first 10 characters from the string (i.e. 2023-10-07-)
 export const getSlugFromFilename = (filename: string) => filename.substring(11)
 export const getDateFromFilename = (filename: string) => filename.substring(0, 10)

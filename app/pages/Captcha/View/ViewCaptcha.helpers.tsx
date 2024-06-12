@@ -13,8 +13,6 @@ import {
 import dayjs from 'dayjs'
 import { area, bar } from 'billboard.js'
 import _map from 'lodash/map'
-import _split from 'lodash/split'
-import _replace from 'lodash/replace'
 import _size from 'lodash/size'
 
 import {
@@ -30,12 +28,6 @@ import * as d3 from 'd3'
 import { nFormatter } from 'utils/generic'
 
 const PANELS_ORDER = ['cc', 'br', 'os', 'dv']
-
-const getExportFilename = (prefix: string) => {
-  // turn something like 2022-03-02T19:31:00.100Z into 2022-03-02
-  const date = _split(_replace(_split(new Date().toISOString(), '.')[0], /:/g, '-'), 'T')[0]
-  return `${prefix}-${date}.zip`
-}
 
 const CHART_METRICS_MAPPING = {
   results: 'results',
@@ -236,7 +228,6 @@ export {
   validTimeBacket,
   noRegionPeriods,
   getSettings,
-  getExportFilename,
   getColumns,
   CHART_METRICS_MAPPING,
   PANELS_ORDER,

@@ -35,11 +35,7 @@ export interface IOverallPerformanceObject {
   networkChange: number
 }
 
-export interface IOverallPerformance {
-  [key: string]: IOverallPerformanceObject
-}
-
-export interface IUserShareProject {
+interface IUserShareProject {
   email: string
 }
 

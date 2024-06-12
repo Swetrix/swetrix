@@ -391,7 +391,7 @@ export const isSelfhosted = Boolean(isBrowser ? window.REMIX_ENV?.SELFHOSTED : p
 export const API_URL = isSelfhosted || !isStaging ? PRODUCTION_API_URL : STAGING_API_URL
 export const AIAPI_URL = isBrowser ? window.REMIX_ENV?.AIAPI_URL : process.env.AIAPI_URL
 export const CDN_URL = isBrowser ? window.REMIX_ENV?.CDN_URL : process.env.CDN_URL
-export const NODE_ENV = isBrowser ? window.REMIX_ENV?.NODE_ENV : process.env.NODE_ENV
+const NODE_ENV = isBrowser ? window.REMIX_ENV?.NODE_ENV : process.env.NODE_ENV
 
 export const isDevelopment = !NODE_ENV || NODE_ENV === 'development'
 
@@ -447,7 +447,6 @@ export const TOKEN: string = 'access_token'
 export const REFRESH_TOKEN: string = 'refresh_token'
 
 // LocalStorage
-export const PAGE_FORCE_REFRESHED = 'page-force-refreshed'
 export const PROJECTS_PROTECTED = 'projects_protected'
 export const IS_ACTIVE_COMPARE = 'is-active-compare'
 
@@ -889,11 +888,6 @@ export const TRIAL_DAYS: number = 14
 export const chartTypes = Object.freeze({
   line: 'line',
   bar: 'bar',
-})
-
-export const SSO_ACTIONS = Object.freeze({
-  LINK: 'link',
-  AUTH: 'auth',
 })
 
 export const SSO_PROVIDERS = Object.freeze({

@@ -102,12 +102,6 @@ const AddFunnel = ({ openFunnelSettings }: IAddFunnel): JSX.Element => {
   )
 }
 
-/**
- * Component to render a list of funnels.
- *
- * @param {string} name - Row name to override country name with.
- * @returns {JSX.Element}
- */
 const FunnelsList = ({
   funnels,
   openFunnelSettings,

@@ -362,7 +362,7 @@ const ProfileMenu = ({
                           <MenuItem key={lng}>
                             <span
                               className='block cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-600'
-                              role='MenuItem'
+                              role='menuitem'
                               tabIndex={0}
                               onClick={() => onLanguageChange(lng)}
                             >
@@ -961,7 +961,7 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                             <MenuItem key={lng}>
                               <span
                                 className='block cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-600'
-                                role='MenuItem'
+                                role='menuitem'
                                 tabIndex={0}
                                 onClick={() => onLanguageChange(lng)}
                               >

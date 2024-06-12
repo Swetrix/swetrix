@@ -110,16 +110,7 @@ interface IFilters {
   tnMapping: Record<string, string>
 }
 
-/**
- * This component is used for rendering the filter panel.
- *
- * @param {array} filters - Active filters.
- * @param {function} onRemoveFilter - Callback to remove a filter.
- * @param {function} onChangeExclusive - Callback to change the exclusive status of a filter.
- * @param {object} tnMapping - Mapping of column names to translated names.
- * @returns {JSX.Element}
- */
-export const Filters = ({ filters, onRemoveFilter, onChangeExclusive, tnMapping }: IFilters) => {
+const Filters = ({ filters, onRemoveFilter, onChangeExclusive, tnMapping }: IFilters) => {
   const {
     t,
     i18n: { language },

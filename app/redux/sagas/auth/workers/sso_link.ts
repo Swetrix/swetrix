@@ -12,7 +12,7 @@ const AUTH_WINDOW_HEIGHT = 800
 
 const HASH_CHECK_FREQUENCY = 1000 // 1 second
 
-export interface ISSOLink {
+interface ISSOLink {
   payload: {
     callback: (isSuccess: boolean) => void
     t: typeof i18next.t

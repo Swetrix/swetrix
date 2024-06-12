@@ -5,19 +5,8 @@ import _split from 'lodash/split'
 import _startsWith from 'lodash/startsWith'
 import { TITLE_SUFFIX, SUPPORTED_THEMES, ThemeType } from 'redux/constants'
 
-export const hasAuthCookies = (request: Request) => {
-  const cookie = request.headers.get('Cookie')
-  const accessToken = cookie?.match(/(?<=access_token=)[^;]*/)?.[0]
-  const refreshToken = cookie?.match(/(?<=refresh_token=)[^;]*/)?.[0]
-
-  return accessToken && refreshToken
-}
-
 /**
  * Function detects theme based on user's browser hints and cookies
- *
- * @param request
- * @returns [theme, storeToCookie]
  */
 export function detectTheme(request: Request): [ThemeType, boolean] {
   // Stage 1: Check if theme is set via `theme` query param
@@ -47,22 +36,10 @@ export function detectTheme(request: Request): [ThemeType, boolean] {
   return ['light', false]
 }
 
-/**
- * Function detects theme based on the query
- *
- * @param request
- * @returns boolean
- */
 export function isEmbedded(request: Request): boolean {
   return new URL(request.url).searchParams.get('embedded') === 'true'
 }
 
-/**
- * Function returns project tabs from query
- *
- * @param request
- * @returns string[]
- */
 export function getProjectTabs(request: Request): string[] {
   const tabs = new URL(request.url).searchParams.get('tabs')
 
@@ -73,17 +50,11 @@ export function getProjectTabs(request: Request): string[] {
   return _split(tabs, ',')
 }
 
-/**
- * Function returns password from query
- *
- * @param request
- * @returns boolean
- */
 export function getProjectPassword(request: Request): string | null {
   return new URL(request.url).searchParams.get('password')
 }
 
-export function getAccessToken(request: Request): string | null {
+function getAccessToken(request: Request): string | null {
   const cookie = request.headers.get('Cookie')
   const accessToken = cookie?.match(/(?<=access_token=)[^;]*/)?.[0]
 

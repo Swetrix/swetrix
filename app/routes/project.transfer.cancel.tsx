@@ -1,4 +1,4 @@
-import TransferProjectConfirm from 'pages/Project/Settings/TransferProject/TransferProjectConfirm'
+import TransferProjectReject from 'pages/Project/Settings/TransferProject/TransferProjectReject'
 import type { SitemapFunction } from 'remix-sitemap'
 
 export const sitemap: SitemapFunction = () => ({
@@ -6,5 +6,5 @@ export const sitemap: SitemapFunction = () => ({
 })
 
 export default function Index() {
-  return <TransferProjectConfirm />
+  return <TransferProjectReject />
 }

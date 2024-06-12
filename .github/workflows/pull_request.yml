@@ -37,3 +37,6 @@ jobs:
 
       - name: TypeScript validation
         run: npm run typecheck
+
+      - name: Knip validation
+        run: npm run knip

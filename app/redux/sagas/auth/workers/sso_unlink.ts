@@ -9,7 +9,7 @@ import { alertsActions } from 'redux/reducers/alerts'
 import { SSO_PROVIDERS } from 'redux/constants'
 const { unlinkSSO, authMe } = require('api')
 
-export interface ISSOUnlink {
+interface ISSOUnlink {
   payload: {
     provider: string
     t: typeof i18next.t
