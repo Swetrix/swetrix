@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
 import { area, bar } from 'billboard.js'
+import type { ChartOptions } from 'billboard.js'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
 
@@ -66,9 +67,9 @@ const getSettings = (
   },
   applyRegions: boolean,
   timeFormat: string,
-  rotateXAxias: boolean,
+  rotateXAxis: boolean,
   chartType: string,
-) => {
+): ChartOptions => {
   const xAxisSize = _size(chart.x)
   let regions
 
@@ -108,6 +109,7 @@ const getSettings = (
       colors: {
         results: '#2563EB',
       },
+      // @ts-expect-error
       regions,
     },
     transition: {
@@ -122,7 +124,8 @@ const getSettings = (
         clipPath: false,
         tick: {
           fit: true,
-          rotate: rotateXAxias ? 45 : 0,
+          rotate: rotateXAxis ? 45 : 0,
+          // @ts-expect-error
           format:
             timeFormat === TimeFormat['24-hour']
               ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x)
@@ -166,13 +169,14 @@ const getSettings = (
         only: xAxisSize > 1,
       },
       pattern: ['circle'],
-      r: 3,
+      r: 2,
     },
     legend: {
-      usePoint: true,
       item: {
         tile: {
+          type: 'circle',
           width: 10,
+          r: 3,
         },
       },
     },
@@ -180,7 +184,7 @@ const getSettings = (
       linearGradient: true,
     },
     padding: {
-      right: rotateXAxias && 35,
+      right: rotateXAxis ? 35 : 0,
     },
     bindto: '#captchaChart',
   }
