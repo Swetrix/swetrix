@@ -455,14 +455,12 @@ export const MIN_FUNNEL_STEPS = 2
 export const MAX_FUNNEL_STEPS = 10
 
 // List of languages with translations available
-export const whitelist: string[] = ['en', 'uk', 'pl', 'de', 'sv', 'el']
+export const whitelist: string[] = ['en', 'uk', 'pl', 'de']
 export const whitelistWithCC = {
   en: 'en-GB',
   uk: 'uk-UA',
   pl: 'pl-PL',
   de: 'de-DE',
-  sv: 'sv-SE',
-  el: 'el-GR',
 }
 export const defaultLanguage: string = 'en'
 export const languages: IStringObject = {
@@ -470,8 +468,6 @@ export const languages: IStringObject = {
   uk: 'Українська',
   pl: 'Polski',
   de: 'Deutsch',
-  sv: 'Svenska',
-  el: 'Ελληνικά',
 }
 
 export const languageFlag: IStringObject = {
@@ -479,13 +475,10 @@ export const languageFlag: IStringObject = {
   uk: 'UA',
   pl: 'PL',
   de: 'DE',
-  sv: 'SE',
-  el: 'GR',
 }
 
 export const paddleLanguageMapping: IStringObject = {
   uk: 'en',
-  el: 'en',
 }
 
 // dashboard && projects
