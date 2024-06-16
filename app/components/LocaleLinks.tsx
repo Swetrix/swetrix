@@ -41,10 +41,21 @@ const getAlternateLinks = (location: Location) => {
   }
 }
 
+const NO_ALTERNATE_LINKS = [/^\/blog/i]
+
+const getShouldBeIgnored = (location: Location) => {
+  return NO_ALTERNATE_LINKS.some((regex) => regex.test(location.pathname))
+}
+
 export const LocaleLinks = () => {
   const location = useLocation()
 
+  const shouldBeIgnored = useMemo(() => getShouldBeIgnored(location), [location])
   const altLinks = useMemo(() => getAlternateLinks(location), [location])
+
+  if (shouldBeIgnored) {
+    return
+  }
 
   return (
     <>
