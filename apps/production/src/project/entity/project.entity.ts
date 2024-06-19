@@ -15,6 +15,7 @@ import { ExtensionToProject } from '../../marketplace/extensions/entities/extens
 import { ProjectSubscriber } from './project-subscriber.entity'
 import { Funnel } from './funnel.entity'
 import { CAPTCHA_SECRET_KEY_LENGTH } from '../../common/constants'
+import { ViewEntity } from '../../e-commerce/views/entities/view.entity'
 
 // In case of modifying some properties here add them to the GDPR data export email template
 @Entity()
@@ -113,4 +114,6 @@ export class Project {
 
   @Column('boolean', { default: false })
   isArchived: boolean
+  @OneToMany(() => ViewEntity, view => view.id)
+  views: ViewEntity[]
 }
