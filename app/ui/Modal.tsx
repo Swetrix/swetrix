@@ -134,7 +134,7 @@ const Modal = ({
                     </div>
                     {!closeText && (
                       <XMarkIcon
-                        className='h-6 w-6 cursor-pointer text-gray-700 hover:text-gray-500 dark:text-gray-200 dark:hover:text-gray-300'
+                        className='size-6 cursor-pointer stroke-2 text-gray-700 hover:text-gray-500 dark:text-gray-200 dark:hover:text-gray-300'
                         onClick={(e) => {
                           e.preventDefault()
                           e.stopPropagation()

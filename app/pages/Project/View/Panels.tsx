@@ -40,12 +40,12 @@ import Sort from 'ui/icons/Sort'
 import Modal from 'ui/Modal'
 import Button from 'ui/Button'
 import Chart from 'ui/Chart'
-import Loader from 'ui/Loader'
 import { PROJECT_TABS } from 'redux/constants'
 import { IEntry } from 'redux/models/IEntry'
 import InteractiveMap from './components/InteractiveMap'
 import UserFlow from './components/UserFlow'
 import { iconClassName } from './ViewProject.helpers'
+import Spin from 'ui/icons/Spin'
 
 const ENTRIES_PER_PANEL = 5
 const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 6
@@ -318,12 +318,10 @@ interface IKVTable {
   data: any
   t: any
   uniques: number
-  loading: boolean
 }
 
-const KVTable = ({ data, t, uniques, loading }: IKVTable) => {
-  // @ts-ignore
-  const processed: any[] = useMemo(() => {
+const KVTable = ({ data, t, uniques }: IKVTable) => {
+  const processed = useMemo(() => {
     return _reduce(
       data,
       (acc: any, curr: any) => {
@@ -342,28 +340,20 @@ const KVTable = ({ data, t, uniques, loading }: IKVTable) => {
     )
   }, [data])
 
-  if (loading) {
-    return (
-      <div className='flex w-full items-center justify-center pb-10 pt-5'>
-        <Loader />
-      </div>
-    )
-  }
-
   if (_isEmpty(data)) {
     return <p className='mb-2 text-gray-600 dark:text-gray-200'>{t('project.noData')}</p>
   }
 
   return _map(processed, (value, key) => {
     return (
-      <table key={key} className='mb-2 w-full table-fixed'>
+      <table key={key} className='mb-4 w-full border-separate border-spacing-y-1'>
         <thead>
           <tr className='text-gray-600 dark:text-gray-200'>
-            <th className='flex w-2/5 items-center text-left sm:w-4/6'>{key}</th>
+            <th className='flex w-2/5 items-center pl-2 text-left sm:w-4/6'>{key}</th>
             <th className='w-[30%] sm:w-1/6'>
               <p className='flex items-center justify-end'>{t('project.quantity')}</p>
             </th>
-            <th className='w-[30%] sm:w-1/6'>
+            <th className='w-[30%] pr-2 sm:w-1/6'>
               <p className='flex items-center justify-end'>{t('project.conversion')}</p>
             </th>
           </tr>
@@ -372,14 +362,14 @@ const KVTable = ({ data, t, uniques, loading }: IKVTable) => {
           {_map(value, ({ value: nestedValue, count }) => (
             <tr
               key={nestedValue}
-              className='group py-3 text-gray-900 hover:bg-gray-100 dark:text-gray-50 hover:dark:bg-slate-700'
+              className='group py-3 text-gray-900 even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700'
             >
-              <td className='flex items-center text-left'>{nestedValue}</td>
-              <td className='text-right'>
+              <td className='flex items-center py-1 pl-2 text-left'>{nestedValue}</td>
+              <td className='py-1 text-right'>
                 {count}
                 &nbsp;&nbsp;
               </td>
-              <td className='text-right'>{uniques === 0 ? 100 : _round((count / uniques) * 100, 2)}%</td>
+              <td className='py-1 pr-2 text-right'>{uniques === 0 ? 100 : _round((count / uniques) * 100, 2)}%</td>
             </tr>
           ))}
         </tbody>
@@ -391,7 +381,7 @@ const KVTable = ({ data, t, uniques, loading }: IKVTable) => {
 // Tabs with custom events like submit form, press button, go to the link rate etc.
 const CustomEvents = ({ customs, chartData, onFilter, t, customTabs = [], getCustomEventMetadata }: ICustomEvents) => {
   const [page, setPage] = useState(0)
-  const [modal, setModal] = useState(false)
+  const [detailsOpened, setDetailsOpened] = useState(false)
   const [activeEvents, setActiveEvents] = useState<any>({})
   const [loadingEvents, setLoadingEvents] = useState<any>({})
   const [eventsMetadata, setEventsMetadata] = useState<any>({})
@@ -507,9 +497,13 @@ const CustomEvents = ({ customs, chartData, onFilter, t, customTabs = [], getCus
   }
 
   const onModalClose = () => {
-    setModal(false)
-    setActiveEvents({})
-    setEventsMetadata({})
+    setDetailsOpened(false)
+
+    // a timeout is needed to prevent the flicker of data fields in the modal when closing
+    setTimeout(() => {
+      setActiveEvents({})
+      setEventsMetadata({})
+    }, 300)
   }
 
   const onSortBy = (label: string) => {
@@ -556,6 +550,95 @@ const CustomEvents = ({ customs, chartData, onFilter, t, customTabs = [], getCus
     }
   }, [chartData, customsEventsData, t]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const CustomEventsTable = () => (
+    <div className='overflow-y-auto'>
+      <table className='w-full border-separate border-spacing-y-1'>
+        <thead>
+          <tr className='text-base text-gray-900 dark:text-gray-50'>
+            <th
+              className='flex w-2/5 cursor-pointer items-center pl-2 text-left hover:opacity-90 sm:w-4/6'
+              onClick={() => onSortBy('event')}
+            >
+              {t('project.event')}
+              <Sort
+                className='ml-1'
+                sortByAscend={sort.label === 'event' && sort.sortByAscend}
+                sortByDescend={sort.label === 'event' && sort.sortByDescend}
+              />
+            </th>
+            <th className='w-[30%] sm:w-1/6'>
+              <p
+                className='flex cursor-pointer items-center justify-end hover:opacity-90'
+                onClick={() => onSortBy('quantity')}
+              >
+                {t('project.quantity')}
+                <Sort
+                  className='ml-1'
+                  sortByAscend={sort.label === 'quantity' && sort.sortByAscend}
+                  sortByDescend={sort.label === 'quantity' && sort.sortByDescend}
+                />
+                &nbsp;&nbsp;
+              </p>
+            </th>
+            <th className='w-[30%] pr-2 sm:w-1/6'>
+              <p
+                className='flex cursor-pointer items-center justify-end hover:opacity-90'
+                onClick={() => onSortBy('conversion')}
+              >
+                {t('project.conversion')}
+                <Sort
+                  className='ml-1'
+                  sortByAscend={sort.label === 'conversion' && sort.sortByAscend}
+                  sortByDescend={sort.label === 'conversion' && sort.sortByDescend}
+                />
+              </p>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {_map(keysToDisplay, (ev) => (
+            <Fragment key={ev}>
+              <tr
+                className={cx(
+                  'group cursor-pointer text-base text-gray-900 even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700',
+                  {
+                    'animate-pulse bg-gray-100 dark:bg-slate-700': loadingEvents[ev],
+                  },
+                )}
+                onClick={toggleEventMetadata(ev)}
+              >
+                <td className='flex items-center py-1 text-left'>
+                  {loadingEvents[ev] ? (
+                    <Spin className='ml-1 mr-2' />
+                  ) : activeEvents[ev] ? (
+                    <ChevronUpIcon className='h-5 w-auto pl-1 pr-2 text-gray-500 hover:opacity-80 dark:text-gray-300' />
+                  ) : (
+                    <ChevronDownIcon className='h-5 w-auto pl-1 pr-2 text-gray-500 hover:opacity-80 dark:text-gray-300' />
+                  )}
+                  {ev}
+                </td>
+                <td className='py-1 text-right'>
+                  {customsEventsData[ev]}
+                  &nbsp;&nbsp;
+                </td>
+                <td className='py-1 pr-2 text-right'>
+                  {uniques === 0 ? 100 : _round((customsEventsData[ev] / uniques) * 100, 2)}%
+                </td>
+              </tr>
+              {activeEvents[ev] && !loadingEvents[ev] && (
+                <tr>
+                  <td className='pl-9' colSpan={3}>
+                    <KVTable data={eventsMetadata[ev]} t={t} uniques={uniques} />
+                  </td>
+                </tr>
+              )}
+            </Fragment>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+
   // for showing chart circle of stats a data
   if (activeFragment === 1 && !_isEmpty(chartData)) {
     return (
@@ -564,7 +647,7 @@ const CustomEvents = ({ customs, chartData, onFilter, t, customTabs = [], getCus
         type='ce'
         setActiveFragment={setActiveFragment}
         activeFragment={activeFragment}
-        onExpandClick={() => setModal(true)}
+        onExpandClick={() => setDetailsOpened(true)}
       >
         {_isEmpty(chartData) ? (
           <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
@@ -573,87 +656,9 @@ const CustomEvents = ({ customs, chartData, onFilter, t, customTabs = [], getCus
         )}
         <Modal
           onClose={onModalClose}
-          isOpened={modal}
+          isOpened={detailsOpened}
           title={t('project.customEv')}
-          message={
-            <table className='w-full table-fixed'>
-              <thead>
-                <tr className='text-base text-gray-900 dark:text-gray-50'>
-                  <th
-                    className='flex w-2/5 cursor-pointer items-center text-left hover:opacity-90 sm:w-4/6'
-                    onClick={() => onSortBy('event')}
-                  >
-                    {t('project.event')}
-                    <Sort
-                      className='ml-1'
-                      sortByAscend={sort.label === 'event' && sort.sortByAscend}
-                      sortByDescend={sort.label === 'event' && sort.sortByDescend}
-                    />
-                  </th>
-                  <th className='w-[30%] sm:w-1/6'>
-                    <p
-                      className='flex cursor-pointer items-center justify-end hover:opacity-90'
-                      onClick={() => onSortBy('quantity')}
-                    >
-                      {t('project.quantity')}
-                      <Sort
-                        className='ml-1'
-                        sortByAscend={sort.label === 'quantity' && sort.sortByAscend}
-                        sortByDescend={sort.label === 'quantity' && sort.sortByDescend}
-                      />
-                      &nbsp;&nbsp;
-                    </p>
-                  </th>
-                  <th className='w-[30%] sm:w-1/6'>
-                    <p
-                      className='flex cursor-pointer items-center justify-end hover:opacity-90'
-                      onClick={() => onSortBy('conversion')}
-                    >
-                      {t('project.conversion')}
-                      <Sort
-                        className='ml-1'
-                        sortByAscend={sort.label === 'conversion' && sort.sortByAscend}
-                        sortByDescend={sort.label === 'conversion' && sort.sortByDescend}
-                      />
-                    </p>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {_map(keysToDisplay, (ev) => (
-                  <Fragment key={ev}>
-                    <tr
-                      className='group cursor-pointer py-1 text-base text-gray-900 hover:bg-gray-100 dark:text-gray-50 hover:dark:bg-slate-700'
-                      onClick={toggleEventMetadata(ev)}
-                    >
-                      <td className='flex items-center text-left'>
-                        {activeEvents[ev] ? (
-                          <ChevronUpIcon className='h-5 w-auto px-2 text-gray-500 hover:opacity-80 dark:text-gray-300' />
-                        ) : (
-                          <ChevronDownIcon className='h-5 w-auto px-2 text-gray-500 hover:opacity-80 dark:text-gray-300' />
-                        )}
-                        {ev}
-                      </td>
-                      <td className='text-right'>
-                        {customsEventsData[ev]}
-                        &nbsp;&nbsp;
-                      </td>
-                      <td className='text-right'>
-                        {uniques === 0 ? 100 : _round((customsEventsData[ev] / uniques) * 100, 2)}%
-                      </td>
-                    </tr>
-                    {activeEvents[ev] && (
-                      <tr>
-                        <td className='pl-9' colSpan={3}>
-                          <KVTable data={eventsMetadata[ev]} t={t} uniques={uniques} loading={loadingEvents[ev]} />
-                        </td>
-                      </tr>
-                    )}
-                  </Fragment>
-                ))}
-              </tbody>
-            </table>
-          }
+          message={<CustomEventsTable />}
           size='large'
         />
       </PanelContainer>
@@ -688,7 +693,7 @@ const CustomEvents = ({ customs, chartData, onFilter, t, customTabs = [], getCus
       type='ce'
       setActiveFragment={setActiveFragment}
       activeFragment={activeFragment}
-      onExpandClick={() => setModal(true)}
+      onExpandClick={() => setDetailsOpened(true)}
     >
       <table className='table-fixed'>
         <thead>
@@ -802,87 +807,9 @@ const CustomEvents = ({ customs, chartData, onFilter, t, customTabs = [], getCus
       )}
       <Modal
         onClose={onModalClose}
-        isOpened={modal}
+        isOpened={detailsOpened}
         title={t('project.customEv')}
-        message={
-          <table className='w-full table-fixed'>
-            <thead>
-              <tr className='text-base text-gray-900 dark:text-gray-50'>
-                <th
-                  className='flex w-2/5 cursor-pointer items-center text-left hover:opacity-90 sm:w-4/6'
-                  onClick={() => onSortBy('event')}
-                >
-                  {t('project.event')}
-                  <Sort
-                    className='ml-1'
-                    sortByAscend={sort.label === 'event' && sort.sortByAscend}
-                    sortByDescend={sort.label === 'event' && sort.sortByDescend}
-                  />
-                </th>
-                <th className='w-[30%] sm:w-1/6'>
-                  <p
-                    className='flex cursor-pointer items-center justify-end hover:opacity-90'
-                    onClick={() => onSortBy('quantity')}
-                  >
-                    {t('project.quantity')}
-                    <Sort
-                      className='ml-1'
-                      sortByAscend={sort.label === 'quantity' && sort.sortByAscend}
-                      sortByDescend={sort.label === 'quantity' && sort.sortByDescend}
-                    />
-                    &nbsp;&nbsp;
-                  </p>
-                </th>
-                <th className='w-[30%] sm:w-1/6'>
-                  <p
-                    className='flex cursor-pointer items-center justify-end hover:opacity-90'
-                    onClick={() => onSortBy('conversion')}
-                  >
-                    {t('project.conversion')}
-                    <Sort
-                      className='ml-1'
-                      sortByAscend={sort.label === 'conversion' && sort.sortByAscend}
-                      sortByDescend={sort.label === 'conversion' && sort.sortByDescend}
-                    />
-                  </p>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {_map(keysToDisplay, (ev) => (
-                <Fragment key={ev}>
-                  <tr
-                    className='group cursor-pointer py-1 text-base text-gray-900 hover:bg-gray-100 dark:text-gray-50 hover:dark:bg-slate-700'
-                    onClick={toggleEventMetadata(ev)}
-                  >
-                    <td className='flex items-center text-left'>
-                      {activeEvents[ev] ? (
-                        <ChevronUpIcon className='h-5 w-auto px-2 text-gray-500 hover:opacity-80 dark:text-gray-300' />
-                      ) : (
-                        <ChevronDownIcon className='h-5 w-auto px-2 text-gray-500 hover:opacity-80 dark:text-gray-300' />
-                      )}
-                      {ev}
-                    </td>
-                    <td className='text-right'>
-                      {customsEventsData[ev]}
-                      &nbsp;&nbsp;
-                    </td>
-                    <td className='text-right'>
-                      {uniques === 0 ? 100 : _round((customsEventsData[ev] / uniques) * 100, 2)}%
-                    </td>
-                  </tr>
-                  {activeEvents[ev] && (
-                    <tr>
-                      <td className='pl-9' colSpan={3}>
-                        <KVTable data={eventsMetadata[ev]} t={t} uniques={uniques} loading={loadingEvents[ev]} />
-                      </td>
-                    </tr>
-                  )}
-                </Fragment>
-              ))}
-            </tbody>
-          </table>
-        }
+        message={<CustomEventsTable />}
         size='large'
       />
     </PanelContainer>
