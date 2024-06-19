@@ -1279,4 +1279,8 @@ export class ProjectService {
   async updateProject(id: string, data: Partial<Project>) {
     await this.projectsRepository.update({ id }, data)
   }
+  
+  async findProject(id:string){
+    return await this.projectsRepository.findOne({id})
+  }
 }
