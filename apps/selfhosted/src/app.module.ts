@@ -11,6 +11,7 @@ import { TaskManagerModule } from './task-manager/task-manager.module'
 import { PingModule } from './ping/ping.module'
 import { getI18nConfig } from './configs'
 import { AuthModule } from './auth/auth.module'
+import { AppController } from './app.controller'
 
 const imports = [
   ConfigModule.forRoot({
@@ -32,5 +33,6 @@ const imports = [
 
 @Module({
   imports,
+  controllers: [AppController],
 })
 export class AppModule {}
