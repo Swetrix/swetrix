@@ -38,7 +38,10 @@
     "incorrectPassword": "Incorrect password, please try again.",
     "funnelCreated": "The funnel has been created",
     "funnelUpdated": "The funnel has been updated",
-    "funnelDeleted": "The funnel has been deleted"
+    "funnelDeleted": "The funnel has been deleted",
+    "errorCode": "Error code: {{error}}",
+    "updateErrorStatusFailed": "Error occured while updating error status",
+    "errorStatusUpdated": "Error status has been updated"
   },
   "common": {
     "features": "Funkcje",
@@ -92,7 +95,9 @@
     "nothingFound": "Nothing found",
     "oneMember": "1 Member",
     "xMembers": "{{number}} Members",
-    "general": "General"
+    "general": "General",
+    "fixIt": "Fix it",
+    "bookADemo": "Book an enterprise demo"
   },
   "performance": {
     "slogan": "End user <span>performance monitoring</span> to deliver fast websites.",
@@ -113,6 +118,23 @@
     "privacy": {
       "title": "Privacy-first, easy to use",
       "desc": "Swetrix is built with a privacy-first and transparent approach. We do not use cookies or collect personal information from our users. There's no cross-site or cross-device tracking. No data is ever sold to advertisers or anyone else.\nThe Swetrix dashboard is very intuitive to use, giving you real-time data and a clear view of your website. There are no layers of menus, no need to export your data into custom reports to understand it properly."
+    }
+  },
+  "errors": {
+    "slogan": "End user <span>error tracking</span> tool to deliver bug-free experiences.",
+    "description": "Focus on making beautiful apps, and we will let you know if something goes wrong.",
+    "fast": {
+      "title": "Deliver bug-free experiences",
+      "desc": "Everyone hates bugs, so in addition to <indexUrl>traffic</indexUrl> and <perfUrl>performance</perfUrl> analytics, Swetrix allows you to monitor your website errors to quickly resolve them. Easily set up error monitoring with a <oneLC>one line of code</oneLC>, so you can focus on building your applications, not hunting for bugs.",
+      "list": [
+        "Get a bird's eye insights on what kind of errors are present on your website",
+        "View specific error details and aggregated data by geolocation, browser, device type, page and other metrics",
+        "Understand if the bug is new or regressed, making it easier to fix"
+      ]
+    },
+    "track": {
+      "title": "Track all errors with one tool",
+      "desc": "With Swetrix, you can track exactly what kind of errors your users are experiencing and when. We also give you insight into which browsers, operating systems, devices and more, making it even easier to resolve issues."
     }
   },
   "main": {
@@ -299,6 +321,9 @@
     "desc": "Swetrix is an ethical, open source and completely cookie-less alternative to Google Analytics. It allows you to understand your users' behaviour, monitor your website performance, track your marketing campaigns and much more. All without invading your users' privacy!",
     "cookieDetails": "If you click on the buttons above, a cookie will be stored for {{days}} days to reward the person who referred you and give you {{discount}}% off your first bill.",
     "buttons": "Click on these buttons to receive {{discount}}% off your first bill!"
+  },
+  "unsubscribe": {
+    "success": "You've unsubscribed from analytics email reports"
   },
   "auth": {
     "recovery": {
@@ -502,6 +527,7 @@
   "dashboard": {
     "newProject": "Nowy projekt",
     "newFunnel": "New funnel",
+    "reloadPage": "Reload page",
     "newCaptchaProject": "Nowy projekt CAPTCHA",
     "verifyEmailTitle": "Proszę najpierw zweryfikować adres e-mail",
     "verifyEmailDesc": "Aby zacząć korzystać z naszego serwisu i tworzyć swoje projekty, musisz najpierw potwierdzić swój adres e-mail.\n\nNa podany podczas rejestracji adres e-mail został wysłany link do potwierdzenia konta, jeśli nie został dostarczony - możesz poprosić o ponowne przesłanie linku w ustawieniach konta.",
@@ -518,6 +544,9 @@
     "disabled": "Wyłączone",
     "pageviews": "Odsłony",
     "captchaEvents": "CAPTCHA events",
+    "firstSeen": "First seen",
+    "lastSeen": "Last seen",
+    "atFile": "At {{filename}}, line {{lineno}}, column {{colno}}",
     "unique": "Unikalne wyświetlenia",
     "createdAt": "Utworzono dnia",
     "inc": "Wzrost o",
@@ -536,6 +565,10 @@
     "performance": "Wydajność",
     "funnels": "Funnels",
     "sessions": "Sessions",
+    "xOccurrences": "{{x}} occurrences",
+    "errors": "Errors",
+    "xPageviews": "{{x}} pageviews",
+    "onePageview": "1 pageview",
     "alerts": "Alerty",
     "alertsDesc": "Automated alerts is a powerful tool that allows you to run automated tasks when specific events occur.\nWe can automatically monitor your project for traffic spikes and notify you via Telegram.",
     "funnelsDesc": "Funnels is a powerful tool that allows you to track the conversion rate of your users through a series of steps.\nThe analysis provided by the marketing funnel gives you the ability to discover potential problems, improve your website, and boost your conversion rate.",
@@ -560,13 +593,15 @@
   "alert": {
     "create": "Utwórz alert",
     "customEvent": "Custom event name",
-    "add": "Dodaj alert",
+    "add": "Add alert",
     "delete": "Usuń alert",
     "noNameError": "Please enter a name for the alert.",
     "queryValueError": "Please fill threshold and the query value has to be a number.",
     "noIntegration": "Nie skonfigurowałeś jeszcze integracji. Utwórz ją w swoich <url>ustawieniach konta</url>.",
-    "noNotification": "Brak ustawionych kanałów powiadomień",
+    "noNotificationChannel": "You do not have a notification channel set up, please set it up to be notified when one of your alerts is triggered.",
     "lastTriggered": "Ostatnio uruchomione",
+    "lastTriggeredOn": "Last triggered on {{date}}",
+    "notYetTriggered": "Not yet triggered",
     "never": "Nigdy",
     "qDelete": "Usunąć alert?",
     "settingsOf": "Ustawienia {{name}}",
@@ -594,6 +629,13 @@
       "custom_events": "Custom events"
     }
   },
+  "error": {
+    "status": {
+      "active": "Active",
+      "resolved": "Resolved",
+      "regressed": "Regressed"
+    }
+  },
   "notFoundPage": {
     "title": "Strona nie znaleziona",
     "description": "Przepraszamy, nie mogliśmy znaleźć strony, której szukasz.\nProszę sprawdzić adres URL w pasku adresu i spróbować ponownie.",
@@ -619,10 +661,16 @@
     "exportData": "Eksportuj dane",
     "asCSV": "Jako CSV",
     "noEvTitle": "Brak zdarzeń",
+    "noErrorDetails": "No error details",
+    "noErrorDesc": "This error does not exist or has not occurred within the specified time frame.",
+    "noSessionDetails": "No session details",
+    "noSessionDesc": "We could not find a session with the specified session ID.",
     "showAll": "Pokaż wszystkie wyświetlenia",
     "trendlineUnique": "Linia trendu unikalnych odwiedzających",
     "backToFunnels": "Back to funnels list",
     "backToSessions": "Back to sessions list",
+    "backToErrors": "Back to errors list",
+    "occurrences": "Occurrences",
     "visitPage": "Visit {{page}}",
     "visitors": "Visitors",
     "events": "Events",
@@ -642,6 +690,10 @@
     "waiting": {
       "title": "Waiting for your first pageview",
       "desc": "We're waiting for your first pageview! If your integration is set up correctly, you should see it within 1 minute.\n<snippet>Click here</snippet> to view your JavaScript tracking code.\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
+    },
+    "waitingError": {
+      "title": "Waiting for your first error.. hopefully not :)",
+      "desc": "We're waiting for your first error event! If your integration is set up correctly, you should see it within 1 minute when it happens.\n<howto>Click here</howto> to learn how to set up error tracking for your website.\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
     },
     "trendlineTotal": "Linia trendu odsłon witryny",
     "noEvContent": "No events have been recorded for the specified period, please try a different period.",
@@ -697,6 +749,10 @@
     "exportImgError": "Nie udało się wyeksportować danych jako obraz",
     "codeExample": "Lub wstaw poniższy kod do swojej strony internetowej, aby śledzić zdarzenia:",
     "metricVis": "Wizualizacja metryczna",
+    "filters": "Filters",
+    "showResolved": "Show resolved",
+    "resolve": "Resolve",
+    "markAsActive": "Mark as active",
     "refreshStats": "Refresh stats",
     "barChart": "Bar chart",
     "lineChart": "Line chart",
@@ -711,14 +767,14 @@
       "settings": "Ustawienia",
       "name": "Nazwa projektu",
       "sharableLink": "Sharable link",
-      "sharableDesc": "Used to share your dashboard with others, only available if you make your dashboard public or password protected.",
+      "sharableDesc": "To share your dashboard with others, only available if you make your dashboard public or password protected.",
       "pid": "ID projektu",
       "origins": "Dozwolone źródła",
       "originsHint": "Lista źródeł (domen), które mogą używać skryptu z twoim identyfikatorem projektu, oddzielonych przecinkami.\nPozostaw puste, aby zezwolić na wszystkie źródła (ustawienie domyślne).\nPrzykład: cornell.edu, app.example.com, *.gov.ua",
       "enabled": "Aktywny projekt",
-      "public": "Publiczny Panel",
+      "public": "Public dashboard",
       "enabledHint": "Wyłączone projekty nie będą zliczać żadnych nowo przychodzących zdarzeń ani odsłon.\nNadal będziesz miał dostęp do analityki projektu w panelu.",
-      "publicHint": "Zaznaczając to, każdy w Internecie (w tym Google) będzie mógł zobaczyć Panel tego projektu.\nTylko administrator projektu może edytować ustawienia.",
+      "publicHint": "By checking this, anyone on the Internet (including Google) would be able to see this project's dashboard.\nOnly the project administrator can edit the settings.",
       "createHint": "*będziesz mógł skonfigurować swój projekt dokładniej po jego utworzeniu",
       "delete": "Usuń projekt",
       "reset": "Zresetuj projekt",
@@ -771,8 +827,8 @@
         "filtersPlaceholder": "Select filters",
         "noFilters": "No filters selected or no data for the selected filter type"
       },
-      "protected": "Password protected Dashboard",
-      "protectedHint": "You can make your Dashboard public & password protected. This way, only people who know the password will be able to access it.",
+      "protected": "Password protected",
+      "protectedHint": "You can protect your password. That way, people who know the password can access it through a shareable link.",
       "password": "Dashboard password"
     },
     "captcha": {
@@ -820,6 +876,7 @@
     "pageviews": "Pageview events: {{quantity}} ({{percentage}}%)",
     "customEvents": "Custom events: {{quantity}} ({{percentage}}%)",
     "captcha": "CAPTCHA events: {{quantity}} ({{percentage}}%)",
+    "errors": "Error events: {{quantity}} ({{percentage}}%)",
     "gotoUsage": "Go to plan usage",
     "confirmNewPlan": "Confirm your new subscription plan",
     "previewLoadingError": "An error occured while loading the pricing preview, please try again later.\nIf the problem persists, please contact us at <mail>{{email}}</mail>.\nYou can still change your plan, but you won't be able to see the pricing preview at the moment, sorry for that.",
@@ -916,11 +973,14 @@
     "cancelDesc": "Po anulowaniu subskrypcji żadne nowe zdarzenia nie będą zbierane przez Swetrix dla Twoich projektów.\nBędziesz mógł powrócić do aktualnego planu w dowolnym momencie.\nJeśli masz jakieś pytania, zawsze możesz wysłać do nas wiadomość na adres {{email}}."
   },
   "contact": {
-    "howTo": "Masz jakieś pytania? Jest kilka sposobów, aby się z nami skontaktować:",
-    "ways": {
-      "email": "Możesz wysłać nam e-mail na adres <mail>{{email}}</mail>",
-      "twitter": "Tweetuj lub napisz do nas na <url>{{twitter}}</url>",
-      "discord": "Dołącz do naszego serwera Discord, obserwując <url>ten link</url>"
+    "description": "You can reach us at <mail>{{email}}</mail>, tweet us at <twitter>{{twitterHandle}}</twitter> or talk to us via our <discord>Discord</discord> community. We aim to respond as soon as possible, usually within a day.",
+    "docs": {
+      "title": "Documentation",
+      "desc": "Learn how to integrate Swetrix into your application and find answers to the most common questions"
+    },
+    "demo": {
+      "title": "Book a demo call",
+      "desc": "Book a demo with our team to see how Swetrix can solve your problems"
     }
   },
   "beta": {
@@ -961,7 +1021,7 @@
     "dashboard": "Panel",
     "docs": "Dokumentacja",
     "billing": "Płatności",
-    "contact": "Kontakt",
+    "contact": "Have something to ask?",
     "changelog": "Lista zmian",
     "main": "Ultimate open-source web analytics to satisfy all your needs",
     "press": "Media i prasa",
@@ -969,13 +1029,35 @@
     "open": "Open startup",
     "passwordProtected": "This project is password protected",
     "confirm": "Check your inbox",
-    "performance": "End user performance monitoring to deliver fast websites"
+    "performance": "End user performance monitoring to deliver fast websites",
+    "errors": "End user error tracking tool to deliver bug-free experiences"
   },
   "header": {
     "switchTheme": "Motyw przełącznika",
     "dark": "Ciemne",
     "light": "Light",
-    "signedInAs": "Podpisany jako"
+    "signedInAs": "Podpisany jako",
+    "watchDemo": "Watch demo",
+    "contactSales": "Contact sales",
+    "solutions": {
+      "title": "Solutions",
+      "analytics": {
+        "title": "Analytics",
+        "desc": "Monitor your site's traffic with privacy in mind"
+      },
+      "errors": {
+        "title": "Error tracking",
+        "desc": "Deliver bug-free experiences to your users"
+      },
+      "captcha": {
+        "title": "CAPTCHA",
+        "desc": "Protect your site from bots with privacy-focused captcha"
+      },
+      "performance": {
+        "title": "Performance monitoring",
+        "desc": "Analyse your sites key speed metrics"
+      }
+    }
   },
   "footer": {
     "slogan": "Najlepsze aplikacje potrzebują najlepszych usług.",

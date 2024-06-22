@@ -38,7 +38,10 @@
     "incorrectPassword": "Хибний пароль, спробуйте ще.",
     "funnelCreated": "The funnel has been created",
     "funnelUpdated": "The funnel has been updated",
-    "funnelDeleted": "The funnel has been deleted"
+    "funnelDeleted": "The funnel has been deleted",
+    "errorCode": "Код помилки: {{error}}",
+    "updateErrorStatusFailed": "Error occured while updating error status",
+    "errorStatusUpdated": "Error status has been updated"
   },
   "common": {
     "features": "Функціонал",
@@ -56,8 +59,8 @@
     "confirm": "Підтвердити",
     "amount": "Сума",
     "date": "Дата",
-    "success": "Success",
-    "info": "Info",
+    "success": "Успіх",
+    "info": "Інфо",
     "error": "Помилка",
     "close": "Закрити",
     "cancel": "Відмінити",
@@ -89,10 +92,12 @@
     "transferring": "Перенесення",
     "link": "Прив’язати",
     "unlink": "Відвʼязати",
-    "nothingFound": "Nothing found",
-    "oneMember": "1 Member",
-    "xMembers": "{{number}} Members",
-    "general": "General"
+    "nothingFound": "Нічого не знайдено",
+    "oneMember": "1 учасник",
+    "xMembers": "{{number}} учасників",
+    "general": "Загальні",
+    "fixIt": "Виправити",
+    "bookADemo": "Забронювати корпоративне демо"
   },
   "performance": {
     "slogan": "End user <span>performance monitoring</span> to deliver fast websites.",
@@ -113,6 +118,23 @@
     "privacy": {
       "title": "Privacy-first, easy to use",
       "desc": "Swetrix is built with a privacy-first and transparent approach. We do not use cookies or collect personal information from our users. There's no cross-site or cross-device tracking. No data is ever sold to advertisers or anyone else.\nThe Swetrix dashboard is very intuitive to use, giving you real-time data and a clear view of your website. There are no layers of menus, no need to export your data into custom reports to understand it properly."
+    }
+  },
+  "errors": {
+    "slogan": "End user <span>error tracking</span> tool to deliver bug-free experiences.",
+    "description": "Focus on making beautiful apps, and we will let you know if something goes wrong.",
+    "fast": {
+      "title": "Deliver bug-free experiences",
+      "desc": "Everyone hates bugs, so in addition to <indexUrl>traffic</indexUrl> and <perfUrl>performance</perfUrl> analytics, Swetrix allows you to monitor your website errors to quickly resolve them. Easily set up error monitoring with a <oneLC>one line of code</oneLC>, so you can focus on building your applications, not hunting for bugs.",
+      "list": [
+        "Get a bird's eye insights on what kind of errors are present on your website",
+        "View specific error details and aggregated data by geolocation, browser, device type, page and other metrics",
+        "Understand if the bug is new or regressed, making it easier to fix"
+      ]
+    },
+    "track": {
+      "title": "Track all errors with one tool",
+      "desc": "With Swetrix, you can track exactly what kind of errors your users are experiencing and when. We also give you insight into which browsers, operating systems, devices and more, making it even easier to resolve issues."
     }
   },
   "main": {
@@ -285,7 +307,7 @@
       "gdpr": "GDPR-сумісний",
       "usfl": "Потік користувача",
       "funnels": "Воронки",
-      "sessionAnalysis": "Session analysis",
+      "sessionAnalysis": "Аналіз сесій",
       "alrt": "Користувацькі сповіщення",
       "pbld": "Публічні проєкти",
       "shad": "Спільні проєкти",
@@ -299,6 +321,9 @@
     "desc": "Swetrix is an ethical, open source and completely cookie-less alternative to Google Analytics. It allows you to understand your users' behaviour, monitor your website performance, track your marketing campaigns and much more. All without invading your users' privacy!",
     "cookieDetails": "If you click on the buttons above, a cookie will be stored for {{days}} days to reward the person who referred you and give you {{discount}}% off your first bill.",
     "buttons": "Click on these buttons to receive {{discount}}% off your first bill!"
+  },
+  "unsubscribe": {
+    "success": "You've unsubscribed from analytics email reports"
   },
   "auth": {
     "recovery": {
@@ -502,6 +527,7 @@
   "dashboard": {
     "newProject": "Новий проєкт",
     "newFunnel": "New funnel",
+    "reloadPage": "Reload page",
     "newCaptchaProject": "Новий CAPTCHA проєкт",
     "verifyEmailTitle": "Будь ласка, спочатку підтвердіть вашу ел. адресу",
     "verifyEmailDesc": "Щоб почати користуватися нашим сервісом і створювати свої проєкти, вам спочатку потрібно підтвердити свою адресу електронної пошти.\n\nНа адресу електронної пошти, вказану вами при реєстрації, було відправлене посилання для підтвердження акаунту, якщо воно не була доставлене - ви можете запросити посилання повторно в налаштуваннях вашого облікового запису.",
@@ -518,6 +544,9 @@
     "disabled": "Деактивований",
     "pageviews": "Переглядів",
     "captchaEvents": "CAPTCHA events",
+    "firstSeen": "First seen",
+    "lastSeen": "Last seen",
+    "atFile": "At {{filename}}, line {{lineno}}, column {{colno}}",
     "unique": "Унікальних відвідувань",
     "createdAt": "Створений",
     "inc": "Збільшилось на",
@@ -536,6 +565,10 @@
     "performance": "Продуктивність",
     "funnels": "Воронки",
     "sessions": "Sessions",
+    "xOccurrences": "{{x}} occurrences",
+    "errors": "Errors",
+    "xPageviews": "{{x}} pageviews",
+    "onePageview": "1 pageview",
     "alerts": "Сповіщення",
     "alertsDesc": "Automated alerts is a powerful tool that allows you to run automated tasks when specific events occur.\nWe can automatically monitor your project for traffic spikes and notify you via Telegram.",
     "funnelsDesc": "Funnels is a powerful tool that allows you to track the conversion rate of your users through a series of steps.\nThe analysis provided by the marketing funnel gives you the ability to discover potential problems, improve your website, and boost your conversion rate.",
@@ -560,13 +593,15 @@
   "alert": {
     "create": "Створити сповіщення",
     "customEvent": "Custom event name",
-    "add": "Додати сповіщення",
+    "add": "Add alert",
     "delete": "Видалити сповіщення",
     "noNameError": "Будь ласка, введіть назву для оповіщення.",
     "queryValueError": "Будь ласка, введіть поріг і значення запиту має бути числом.",
     "noIntegration": "Ви ще не налаштували інтеграції. Додайте її в <url>налаштуваннях акаунту</url>.",
-    "noNotification": "Канали сповіщень не налаштовано",
+    "noNotificationChannel": "You do not have a notification channel set up, please set it up to be notified when one of your alerts is triggered.",
     "lastTriggered": "Останнє спрацьовування",
+    "lastTriggeredOn": "Last triggered on {{date}}",
+    "notYetTriggered": "Not yet triggered",
     "never": "Ніколи",
     "qDelete": "Видалити сповіщення?",
     "settingsOf": "Налаштування {{name}}",
@@ -594,6 +629,13 @@
       "custom_events": "Custom events"
     }
   },
+  "error": {
+    "status": {
+      "active": "Active",
+      "resolved": "Resolved",
+      "regressed": "Regressed"
+    }
+  },
   "notFoundPage": {
     "title": "Сторінку не знайдено",
     "description": "На жаль, ми не змогли знайти сторінку, яку ви шукаєте.\nБудь ласка, перевірте URL-адресу у рядку адреси та спробуйте знову.",
@@ -619,10 +661,16 @@
     "exportData": "Експорт даних",
     "asCSV": "Як CSV",
     "noEvTitle": "Поки що подій немає",
+    "noErrorDetails": "No error details",
+    "noErrorDesc": "This error does not exist or has not occurred within the specified time frame.",
+    "noSessionDetails": "No session details",
+    "noSessionDesc": "We could not find a session with the specified session ID.",
     "showAll": "Показати всі перегляди",
     "trendlineUnique": "Тренд унікальних відвідувань",
     "backToFunnels": "Повернутись до переліку воронок",
     "backToSessions": "Back to sessions list",
+    "backToErrors": "Back to errors list",
+    "occurrences": "Occurrences",
     "visitPage": "Visit {{page}}",
     "visitors": "Visitors",
     "events": "Events",
@@ -642,6 +690,10 @@
     "waiting": {
       "title": "Waiting for your first pageview",
       "desc": "We're waiting for your first pageview! If your integration is set up correctly, you should see it within 1 minute.\n<snippet>Click here</snippet> to view your JavaScript tracking code.\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
+    },
+    "waitingError": {
+      "title": "Waiting for your first error.. hopefully not :)",
+      "desc": "We're waiting for your first error event! If your integration is set up correctly, you should see it within 1 minute when it happens.\n<howto>Click here</howto> to learn how to set up error tracking for your website.\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
     },
     "trendlineTotal": "Тренд кількості переглядів",
     "noEvContent": "No events have been recorded for the specified period, please try a different period.",
@@ -697,6 +749,10 @@
     "exportImgError": "Не вдалося експортувати дані як зображення",
     "codeExample": "Або вставте наступний код на ваш вебсайт, щоб відстежувати ваші події:",
     "metricVis": "Візуалізація метрик",
+    "filters": "Filters",
+    "showResolved": "Show resolved",
+    "resolve": "Resolve",
+    "markAsActive": "Mark as active",
     "refreshStats": "Оновити статистику",
     "barChart": "Гістограма",
     "lineChart": "Лінійний графік",
@@ -711,14 +767,14 @@
       "settings": "Налаштування",
       "name": "Назва проєкту",
       "sharableLink": "Sharable link",
-      "sharableDesc": "Used to share your dashboard with others, only available if you make your dashboard public or password protected.",
+      "sharableDesc": "To share your dashboard with others, only available if you make your dashboard public or password protected.",
       "pid": "Ідентифікатор",
       "origins": "Дозволені джерела",
       "originsHint": "Розділений комами список дозволених джерел (доменів), яким дозволено використовувати ідентифікатора вашого проєкту.\nЗалиште порожнім, щоб дозволити всі джерела (іншими словами - вебсайти; налаштування за замовчуванням).\nНаприклад: cornell.edu, app.example.com, *.gov.ua",
       "enabled": "Проєкт є активним",
-      "public": "Проєкт є публічним",
+      "public": "Public dashboard",
       "enabledHint": "Нові вхідні події або перегляди сторінок не враховуються для деактивованих проєктів.\nНезалежно від налаштування, ви, як і раніше, зможете отримати доступ до аналітики проєкту в панелі керування.",
-      "publicHint": "Відмічаючи це, будь-хто в Інтернеті (включаючи Google) зможе побачити статистику цього проєкту.\nТільки адміністратор проєкту може редагувати його налаштування.",
+      "publicHint": "By checking this, anyone on the Internet (including Google) would be able to see this project's dashboard.\nOnly the project administrator can edit the settings.",
       "createHint": "*ви зможете більш ретельно налаштувати свій проєкт після його створення",
       "delete": "Видалити проєкт",
       "reset": "Скинути проєкт",
@@ -771,8 +827,8 @@
         "filtersPlaceholder": "Обрати фільтри",
         "noFilters": "Немає вибраних фільтрів або немає даних для вибраного типу фільтра"
       },
-      "protected": "Панель захищених паролем",
-      "protectedHint": "Ви можете зробити вашу панель загальнодоступною для користувачів. Таким чином, лише люди, які знають пароль, зможуть отримати до неї доступ.",
+      "protected": "Password protected",
+      "protectedHint": "You can protect your password. That way, people who know the password can access it through a shareable link.",
       "password": "Пароль меню налаштувань"
     },
     "captcha": {
@@ -820,6 +876,7 @@
     "pageviews": "Події розбивка сторінки: {{quantity}} ({{percentage}}%)",
     "customEvents": "Користувацькі події: {{quantity}} ({{percentage}}%)",
     "captcha": "CAPTCHA подій: {{quantity}} ({{percentage}}%)",
+    "errors": "Error events: {{quantity}} ({{percentage}}%)",
     "gotoUsage": "Перейти до використання плану",
     "confirmNewPlan": "Підтвердження нового тарифного плану",
     "previewLoadingError": "Виникла помилка під час завантаження попереднього перегляду цін, будь ласка, повторіть спробу пізніше.\nЯкщо проблема не зникне, будь ласка, зв'яжіться з нами за адресою <mail>{{email}}</mail>.\nВи все ще можете змінити свій тарифний план, але на цю мить ви не зможете побачити попередній перегляд цін, вибачте за це.",
@@ -916,11 +973,14 @@
     "cancelDesc": "Після скасування підписки нові події не будуть збиратись у ваших проєктах Swetrix.\nВи зможете повернутися до поточного тарифу в будь-який час.\nЯкщо у вас виникли будь-які запитання, ви завжди можете написати нам на адресу {{email}}."
   },
   "contact": {
-    "howTo": "Хочете щось запитати? Є декілька способів зв'язатися з нами:",
-    "ways": {
-      "email": "Ви можете надіслати нам листа за адресою <mail>{{email}}</mail>",
-      "twitter": "Твітнути чи надіслати нам повідомлення на <url>{{twitter}}</url>",
-      "discord": "Приєднатися до нашого Discord сервера, перейшовши за <url>цим посиланням</url>"
+    "description": "You can reach us at <mail>{{email}}</mail>, tweet us at <twitter>{{twitterHandle}}</twitter> or talk to us via our <discord>Discord</discord> community. We aim to respond as soon as possible, usually within a day.",
+    "docs": {
+      "title": "Documentation",
+      "desc": "Learn how to integrate Swetrix into your application and find answers to the most common questions"
+    },
+    "demo": {
+      "title": "Book a demo call",
+      "desc": "Book a demo with our team to see how Swetrix can solve your problems"
     }
   },
   "beta": {
@@ -961,7 +1021,7 @@
     "dashboard": "Панель керування",
     "docs": "Документація",
     "billing": "Ціни та тарифи",
-    "contact": "Зворотний зв'язок",
+    "contact": "Have something to ask?",
     "changelog": "Історія змін",
     "main": "Ultimate open-source web analytics to satisfy all your needs",
     "press": "Медіа та преса",
@@ -969,13 +1029,35 @@
     "open": "Open startup",
     "passwordProtected": "Цей проект захищений паролем",
     "confirm": "Check your inbox",
-    "performance": "End user performance monitoring to deliver fast websites"
+    "performance": "End user performance monitoring to deliver fast websites",
+    "errors": "End user error tracking tool to deliver bug-free experiences"
   },
   "header": {
     "switchTheme": "Змінити тему",
     "dark": "Темна",
     "light": "Світла",
-    "signedInAs": "Авторизований як"
+    "signedInAs": "Авторизований як",
+    "watchDemo": "Watch demo",
+    "contactSales": "Contact sales",
+    "solutions": {
+      "title": "Solutions",
+      "analytics": {
+        "title": "Analytics",
+        "desc": "Monitor your site's traffic with privacy in mind"
+      },
+      "errors": {
+        "title": "Error tracking",
+        "desc": "Deliver bug-free experiences to your users"
+      },
+      "captcha": {
+        "title": "CAPTCHA",
+        "desc": "Protect your site from bots with privacy-focused captcha"
+      },
+      "performance": {
+        "title": "Performance monitoring",
+        "desc": "Analyse your sites key speed metrics"
+      }
+    }
   },
   "footer": {
     "slogan": "Найкращі додатки потребують найкращих сервісів.",

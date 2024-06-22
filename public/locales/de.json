@@ -38,7 +38,10 @@
     "incorrectPassword": "Falsches Passwort, bitte versuchen Sie es erneut.",
     "funnelCreated": "Der Trichter wurde erstellt",
     "funnelUpdated": "Der Trichter wurde aktualisiert",
-    "funnelDeleted": "Der Trichter wurde gelöscht"
+    "funnelDeleted": "Der Trichter wurde gelöscht",
+    "errorCode": "Fehlercode: {{error}}",
+    "updateErrorStatusFailed": "Fehler beim Aktualisieren des Fehlerstatus",
+    "errorStatusUpdated": "Fehlerstatus wurde aktualisiert"
   },
   "common": {
     "features": "Funktionen",
@@ -92,27 +95,46 @@
     "nothingFound": "Nichts gefunden",
     "oneMember": "1 Mitglied",
     "xMembers": "{{number}} Mitglieder",
-    "general": "General"
+    "general": "Allgemeines",
+    "fixIt": "Fixieren",
+    "bookADemo": "Enterprise-Demo buchen"
   },
   "performance": {
-    "slogan": "End user <span>performance monitoring</span> to deliver fast websites.",
-    "description": "Deliver a flawless experience to your users, and we will let you know if your site is fast enough.",
+    "slogan": "Endbenutzer <span>Leistungsüberwachung</span> um schnelle Webseiten zu liefern.",
+    "description": "Bieten Sie Ihren Benutzern eine einwandfreie Erfahrung und wir werden Sie darüber informieren, ob Ihre Website schnell genug ist.",
     "fast": {
-      "title": "Everyone loves a fast website",
-      "desc": "People love fast websites, so in addition to <indexUrl>traffic analytics</indexUrl>, Swetrix allows you to analyse your website speed and monitor other performance metrics based on real traffic from your users.\nUsers are more likely to <wpostatsUrl>abandon your website</wpostatsUrl> if it takes too long to load, stay ahead of these problems and measure insights from real interactions.",
+      "title": "Jeder liebt eine schnelle Webseite",
+      "desc": "Die Leute lieben schnelle Webseiten, also zusätzlich zu <indexUrl>Verkehrsanalyse</indexUrl>, Mit Swetrix können Sie die Geschwindigkeit Ihrer Website analysieren und andere Leistungsmerkmale anhand des realen Datenverkehrs Ihrer Nutzer überwachen.\nBenutzer werden eher <wpostatsUrl>Ihre Webseite verlassen</wpostatsUrl>, wenn es zu lange dauert, um sie zu laden bleiben Sie diesen Problemen voraus und messen Sie Einsichten aus realen Interaktionen.",
       "list": [
-        "Measure which pages are taking too long to load",
-        "Aggregate performance data by geolocation, browser, device type, page and other metrics",
-        "Compare site speed to previous periods to analyse potential problems or improvements"
+        "Messen Sie, welche Seiten zu lange dauern, um sie zu laden",
+        "Leistungsdaten nach Geolocation, Browser, Gerätetyp, Seite und anderen Metriken zusammenfassen",
+        "Vergleichen Sie die Seitengeschwindigkeit mit früheren Zeiträumen, um potenzielle Probleme oder Verbesserungen zu analysieren"
       ]
     },
     "metrics": {
-      "title": "Analyse all key metrics in one tool",
-      "desc": "With Swetrix you can measure key metrics such as overall page load time, detailed breakdowns by TTFB, DNS, TLS resolution time and other metrics. Split the data into different percentiles to see how well your site performs for people with fast and slow internet connections."
+      "title": "Alle Schlüsselmetriken in einem Werkzeug analysieren",
+      "desc": "Mit Swetrix können Sie Schlüsselmetriken wie die Gesamtladezeit, detaillierte Abstände nach TTFB, DNS, TLS Auflösungszeit und anderen Metriken messen. Spalten Sie die Daten in verschiedene Perzentile, um zu sehen, wie gut Ihre Website für Menschen mit schnellen und langsamen Internetverbindungen funktioniert."
     },
     "privacy": {
-      "title": "Privacy-first, easy to use",
-      "desc": "Swetrix is built with a privacy-first and transparent approach. We do not use cookies or collect personal information from our users. There's no cross-site or cross-device tracking. No data is ever sold to advertisers or anyone else.\nThe Swetrix dashboard is very intuitive to use, giving you real-time data and a clear view of your website. There are no layers of menus, no need to export your data into custom reports to understand it properly."
+      "title": "Privatsphäre-zuerst, einfach zu bedienen",
+      "desc": "Swetrix wurde mit einem ersten und transparenten Ansatz aufgebaut. Wir verwenden keine Cookies oder sammeln personenbezogene Daten von unseren Benutzern. Es gibt keine Site-übergreifende oder geräteübergreifende Verfolgung. Keine Daten werden jemals an Werbetreibende oder andere Personen verkauft.\nDas Swetrix-Dashboard ist sehr intuitiv zu bedienen und gibt dir Echtzeitdaten und einen klaren Blick auf deine Website. Es gibt keine Ebenen von Menüs, keine Notwendigkeit, Ihre Daten in benutzerdefinierte Berichte zu exportieren, um sie richtig zu verstehen."
+    }
+  },
+  "errors": {
+    "slogan": "Endbenutzer <span>Fehler bei der Verfolgung von</span> Werkzeug, um fehlerfreie Erfahrungen zu liefern.",
+    "description": "Konzentrieren Sie sich auf die Erstellung schöner Apps, und wir werden Sie informieren, wenn etwas schief geht.",
+    "fast": {
+      "title": "Fehlerfreie Erfahrungen liefern",
+      "desc": "Jeder hasst Fehler, also zusätzlich zu <indexUrl>Traffic</indexUrl> und <perfUrl>Performance</perfUrl> Analytik, Mit Swetrix können Sie Ihre Website-Fehler überwachen, um diese schnell zu beheben. Richten Sie die Fehlerüberwachung mit <oneLC>einer Codezeile</oneLC> ein, damit Sie sich auf die Entwicklung Ihrer Anwendungen konzentrieren können, anstatt nach Fehlern zu suchen.",
+      "list": [
+        "Erhalten Sie einen Einblick aus der Vogelperspektive, welche Art von Fehlern auf Ihrer Website vorhanden sind",
+        "Zeige spezifische Fehlerdetails und aggregierte Daten nach Geolokation, Browser, Gerätetyp, Seite und anderen Metriken",
+        "Verstehen, ob der Fehler neu oder regressiert ist, was es einfacher macht zu beheben"
+      ]
+    },
+    "track": {
+      "title": "Alle Fehler mit einem Werkzeug verfolgen",
+      "desc": "Mit Swetrix können Sie genau verfolgen, welche Art von Fehlern Ihre Benutzer haben und wann. Wir geben Ihnen auch einen Einblick in die Browser, Betriebssysteme, Geräte und vieles mehr, was es noch einfacher macht, Probleme zu lösen."
     }
   },
   "main": {
@@ -285,7 +307,7 @@
       "gdpr": "GDPR-kompatibel",
       "usfl": "Benutzerfluss",
       "funnels": "Trichter",
-      "sessionAnalysis": "Session analysis",
+      "sessionAnalysis": "Sitzungsanalyse",
       "alrt": "Eigene Alarme",
       "pbld": "Öffentliche Dashboards",
       "shad": "Dashboard-Freigabe",
@@ -299,6 +321,9 @@
     "desc": "Swetrix ist eine ethische, quelloffene und komplett Cookieless Alternative zu Google Analytics. Es ermöglicht Ihnen, das Verhalten Ihrer Nutzer zu verstehen, die Leistung Ihrer Website zu überwachen, Ihre Marketing-Kampagnen zu verfolgen und vieles mehr. Alles ohne die Privatsphäre Ihrer Nutzer zu verletzen!",
     "cookieDetails": "Wenn Sie auf die Schaltflächen oben klicken, ein Cookie wird für {{days}} Tage gespeichert, um die Person, die Sie verwiesen hat, zu belohnen und Ihnen {{discount}}% Rabatt auf Ihre erste Rechnung zu geben.",
     "buttons": "Klicken Sie auf diese Schaltflächen, um {{discount}}% auf Ihre erste Rechnung zu erhalten!"
+  },
+  "unsubscribe": {
+    "success": "Sie haben sich von analytischen E-Mail-Berichten abgemeldet"
   },
   "auth": {
     "recovery": {
@@ -331,19 +356,19 @@
       "alreadyAMember": "Bereits Mitglied? <url>Anmelden</url>"
     },
     "confirm": {
-      "title": "Check your inbox",
-      "linkSent": "We've sent an account confirmation link to {{email}}, please click the link to confirm your email address.",
-      "spam": "Can't see the email? Please check your spam folder.",
-      "wrongEmail": "Wrong email? <url>Create a new account.</url>"
+      "title": "Sehen Sie in ihren Posteingang",
+      "linkSent": "Wir haben einen Bestätigungslink an {{email}} gesendet. Bitte klicken Sie auf den Link, um Ihre E-Mail-Adresse zu bestätigen.",
+      "spam": "Kann die E-Mail nicht sehen? Bitte überprüfen Sie Ihren Spam-Ordner.",
+      "wrongEmail": "Falsche E-Mail? <url>Erstelle ein neues Konto.</url>"
     },
     "verification": {
       "success": "Deine E-Mail wurde erfolgreich verifiziert!"
     },
     "socialisation": {
-      "authSuccess": "Authentication successful",
-      "failed": "Authentication failed",
-      "failedDesc": "An error has occurred while authenticating through a third party service, please try again or contact support.",
-      "successDesc": "You are now authenticated through a 3rd party service and can safely close this page if it didn't close automatically.",
+      "authSuccess": "Authentifizierung erfolgreich",
+      "failed": "Authentifizierung fehlgeschlagen",
+      "failedDesc": "Bei der Authentifizierung über einen Drittdienst ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut oder kontaktieren Sie den Support.",
+      "successDesc": "Sie sind jetzt über einen Drittdienst-Dienst authentifiziert und können diese Seite sicher schließen, wenn sie nicht automatisch geschlossen wurde.",
       "orSingUpWith": "oder registrieren mit"
     },
     "common": {
@@ -502,13 +527,14 @@
   "dashboard": {
     "newProject": "Neues Projekt",
     "newFunnel": "Neuer Trichter",
+    "reloadPage": "Seite neu laden",
     "newCaptchaProject": "Neues CAPTCHA Projekt",
     "verifyEmailTitle": "Bitte bestätigen Sie zuerst die E-Mail-Adresse.",
     "verifyEmailDesc": "Um unseren Dienst nutzen und Ihre Projekte erstellen zu können, müssen Sie zunächst Ihre E-Mail-Adresse bestätigen.\n\nEin Link zur Bestätigung Ihres Kontos wurde an die E-Mail-Adresse geschickt, die Sie bei der Registrierung angegeben haben. Wenn er nicht zugestellt wurde, können Sie den Link in Ihren Kontoeinstellungen erneut anfordern.",
     "lowEventsTitle": "Sie haben keine Events mehr!",
     "lowEventsDesc": "Sie haben für diesen Monat mehr als 85% des Eventkontingents ihres Abonnements verwendet.\nFalls Sie ihren gebuchten Kontigent noch diesen Monat überschreiten sollten, werden alle weiteren Events nicht mehr getrackt.\nUm dies zu vermeiden, empfehlen wir Ihnen, Ihr Abo auf der Rechnungsseite hochzustufen.",
-    "accountLocked": "Your account has been temporarily suspended due to a billing issue.",
-    "accountLockedTitle": "Account temporarily suspended",
+    "accountLocked": "Ihr Konto wurde aufgrund eines Rechnungsproblems vorübergehend gesperrt.",
+    "accountLockedTitle": "Konto vorübergehend gesperrt",
     "eventsXPercUsed": "Sie haben für diesen Monat mehr als {{amount}}% ihres verfügbaren Event-Kontingents für ihr Abonnement verbraucht.",
     "noProjects": "Sie haben noch keine Projekte erstellt",
     "createProject": "Erstellen Sie hier ein neues Projekt, um unseren Dienst zu nutzen",
@@ -518,6 +544,9 @@
     "disabled": "Deaktiviert",
     "pageviews": "Seitenaufrufe",
     "captchaEvents": "CAPTCHA Ereignisse",
+    "firstSeen": "Zuerst gesehen",
+    "lastSeen": "Zuletzt gesehen",
+    "atFile": "Bei {{filename}}, Zeile {{lineno}}, Spalte {{colno}}",
     "unique": "Einzigartige Ansichten",
     "createdAt": "Erstellt am",
     "inc": "Gestiegen um",
@@ -536,6 +565,10 @@
     "performance": "Leistung",
     "funnels": "Trichter",
     "sessions": "Sitzungen",
+    "xOccurrences": "{{x}} Vorkommen",
+    "errors": "Fehler",
+    "xPageviews": "{{x}} Seitenaufrufe",
+    "onePageview": "1 Seitenaufruf",
     "alerts": "Alarme",
     "alertsDesc": "Automatisierte Alarme sind ein leistungsstarkes Tool, mit dem Sie automatisierte Aufgaben ausführen können, wenn bestimmte Ereignisse auftreten.\nWir können Ihr Projekt automatisch auf Stacheln überwachen und Sie per Telegram benachrichtigen.",
     "funnelsDesc": "Trichter ist ein leistungsfähiges Tool, mit dem Sie die Konversionsrate Ihrer Benutzer durch eine Reihe von Schritten verfolgen können.\nDie Analyse des Marketing-Trichters gibt Ihnen die Möglichkeit, potenzielle Probleme zu entdecken, Ihre Website zu verbessern und Ihre Konversionsrate zu erhöhen.",
@@ -544,7 +577,7 @@
     "network": "Netzwerk",
     "timing": "Zeitliche Aufschlüsselung",
     "timingFull": "Zeitliche Aufschlüsselung (vollständig)",
-    "allocation": "Load time allocation",
+    "allocation": "Zeitzuordnung laden",
     "dns": "DNS",
     "conn": "Verbindung",
     "tls": "TLS-Einrichtung",
@@ -553,9 +586,9 @@
     "pageLoad": "Ladezeit der Seite",
     "render": "Browser Rendern",
     "response": "Antwortzeit",
-    "average": "Average",
+    "average": "Durchschnitt",
     "median": "Median",
-    "xPercentile": "{{x}}th percentile"
+    "xPercentile": "{{x}} Perzentil"
   },
   "alert": {
     "create": "Alarm einrichten",
@@ -565,8 +598,10 @@
     "noNameError": "Bitte benennen Sie die Benachrichtigung.",
     "queryValueError": "Bitte geben Sie den Grenzwert ein und der Abfragewert muss eine Zahl sein.",
     "noIntegration": "Sie haben noch keine Integration konfiguriert. Erstellen Sie eine in Ihren <url>Kontoeinstellungen</url>.",
-    "noNotification": "Keine Benachrichtigungskanäle festgelegt",
+    "noNotificationChannel": "Sie haben keinen Benachrichtigungskanal eingerichtet. Bitte richten Sie ihn ein, um benachrichtigt zu werden, wenn einer Ihrer Alarme ausgelöst wird.",
     "lastTriggered": "Zuletzt ausgelöst",
+    "lastTriggeredOn": "Zuletzt ausgelöst am {{date}}",
+    "notYetTriggered": "Noch nicht ausgelöst",
     "never": "Nie",
     "qDelete": "Diesen Alarm löschen?",
     "settingsOf": "Einstellungen von {{name}}",
@@ -594,6 +629,13 @@
       "custom_events": "Eigene Ereignisse"
     }
   },
+  "error": {
+    "status": {
+      "active": "Aktiv",
+      "resolved": "Gelöst",
+      "regressed": "Gesperrt"
+    }
+  },
   "notFoundPage": {
     "title": "Seite nicht gefunden",
     "description": "Leider konnten wir die gesuchte Seite nicht finden.\nBitte überprüfen Sie die URL in der Adressleiste und versuchen Sie es erneut.",
@@ -619,32 +661,42 @@
     "exportData": "Daten exportieren",
     "asCSV": "Als CSV",
     "noEvTitle": "Noch keine Tracking-Events",
+    "noErrorDetails": "Keine Fehlerdetails",
+    "noErrorDesc": "Dieser Fehler existiert nicht oder ist nicht innerhalb des angegebenen Zeitrahmens aufgetreten.",
+    "noSessionDetails": "Keine Sitzungsdetails",
+    "noSessionDesc": "Wir konnten keine Sitzung mit der angegebenen Sitzungs-ID finden.",
     "showAll": "Alle Ansichten anzeigen",
     "trendlineUnique": "Einzigartige Besucher Trendlinie",
     "backToFunnels": "Zurück zur Trichelliste",
     "backToSessions": "Zurück zur Liste der Sitzungen",
+    "backToErrors": "Zurück zur Fehlerliste",
+    "occurrences": "Vorkommen",
     "visitPage": "{{page}} Besuchen",
     "visitors": "Besucher",
     "events": "Ereignisse",
     "dropoff": "Dropoff",
     "neverEnteredTheFunnel": "Nie den Trichter betreten",
     "locked": {
-      "title": "Dashboard locked",
-      "descExceedingTier": "This dashboard is locked because your traffic has exceeded your subscription plan.\nIn order to continue using Swetrix and have access to your stats, you need to upgrade your subscription plan to reflect your usage.",
-      "descTialEnded": "This dashboard is locked because your trial ended.\nIn order to continue using Swetrix and have access to your stats, you need to subscribe to one of our tiers.",
-      "descPaymentFailed": "This dashboard is locked because there was a problem with your last Swetrix subscription payment.\nIn order to continue using Swetrix and have access to your stats, you need to update / confirm your payment details.",
-      "descSharedProject": "This dashboard is locked due to a billing issue of the project owner.\nIn order to continue using Swetrix and have access to the stats, the billing issue must be resolved first.",
-      "descGenericIssue": "This dashboard has been locked and is currently unavailable, please come back later or contact the project owner to resolve the issue.",
-      "descSubCancelled": "This dashboard has been locked because you've cancelled your subscription.\nIn order to continue using Swetrix and have access to your stats, you need to have an active subscription.",
-      "resolve": "We're still counting your stats and we haven't deleted any of your data. Once you have updated your payment information, your dashboard access will be restored immediately.",
-      "manageSubscription": "Manage subscription"
+      "title": "Dashboard gesperrt",
+      "descExceedingTier": "Dieses Dashboard ist gesperrt, da Ihr Traffic Ihr Abonnement überschritten hat.\nUm Swetrix weiter zu nutzen und Zugriff auf deine Statistiken zu haben, musst du dein Abonnement aktualisieren, um deine Nutzung zu berücksichtigen.",
+      "descTialEnded": "Dieses Dashboard ist gesperrt, weil deine Testversion beendet ist.\nUm Swetrix weiterhin zu verwenden und Zugriff auf deine Statistiken zu haben, musst du dich für eine unserer Stufen anmelden.",
+      "descPaymentFailed": "Dieses Dashboard ist gesperrt, da es ein Problem mit deiner letzten Swetrix-Abonnementzahlung gab.\nUm Swetrix weiter zu nutzen und Zugriff auf deine Statistiken zu haben, musst du deine Zahlungsinformationen aktualisieren / bestätigen.",
+      "descSharedProject": "Dieses Dashboard ist aufgrund einer Rechnungsproblematik des Projektbesitzers gesperrt.\nUm Swetrix weiterhin zu verwenden und Zugriff auf die Statistiken zu haben, muss das Problem der Abrechnung zuerst gelöst werden.",
+      "descGenericIssue": "Dieses Dashboard wurde gesperrt und ist derzeit nicht verfügbar. Bitte kommen Sie später zurück oder wenden Sie sich an den Projektbesitzer, um das Problem zu lösen.",
+      "descSubCancelled": "Dieses Dashboard wurde gesperrt, weil Sie Ihr Abonnement gekündigt haben.\nUm Swetrix weiter zu verwenden und Zugriff auf deine Statistiken zu haben, musst du ein aktives Abonnement haben.",
+      "resolve": "Wir zählen noch deine Statistiken und haben keine deiner Daten gelöscht. Sobald Sie Ihre Zahlungsinformationen aktualisiert haben, wird Ihr Dashboard-Zugriff sofort wiederhergestellt.",
+      "manageSubscription": "Abonnement verwalten"
     },
     "waiting": {
-      "title": "Waiting for your first pageview",
-      "desc": "We're waiting for your first pageview! If your integration is set up correctly, you should see it within 1 minute.\n<snippet>Click here</snippet> to view your JavaScript tracking code.\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
+      "title": "Warten auf Ihre erste Seitenansicht",
+      "desc": "Wir warten auf Ihre erste Seitenansicht! Wenn Ihre Integration korrekt eingerichtet ist, sollten Sie sie innerhalb einer Minute sehen.\n<snippet>Klicken Sie hier</snippet> um Ihren JavaScript-Tracking-Code anzuzeigen.\nFunktioniert immer noch nicht? Versuchen Sie <turl>Fehlerbehebung</turl> Ihrer Integration oder <curl>kontaktieren Sie uns</curl> für Hilfe bei Ihrer Einrichtung."
+    },
+    "waitingError": {
+      "title": "Warte auf Ihren ersten Fehler... hoffentlich nicht :)",
+      "desc": "Wir warten auf dein erstes Fehler-Ereigniss! Wenn deine Integration korrekt eingerichtet ist, solltest du sie innerhalb einer Minute sehen, wenn dies geschieht.\n<howto>Klicken Sie hier</howto> um zu erfahren, wie Sie Fehlerverfolgung für Ihre Website einrichten.\nFunktioniert immer noch nicht? Versuchen Sie <turl>Fehlerbehebung</turl> Ihrer Integration oder <curl>kontaktieren Sie uns</curl> für Hilfe bei Ihrer Einrichtung."
     },
     "trendlineTotal": "Seitenansichten Trendlinie",
-    "noEvContent": "No events have been recorded for the specified period, please try a different period.",
+    "noEvContent": "Für den angegebenen Zeitraum wurden keine Ereignisse erfasst. Bitte versuchen Sie einen anderen Zeitraum.",
     "noCaptchaEv": "Für den angegebenen Zeitraum wurden keine Ereignisse erfasst.\nWenn Sie CAPTCHA noch nicht eingerichtet haben, können Sie sich unsere <url>Docs</url> anschauen, um es einfach in Ihre App zu integrieren.",
     "mapping": {
       "cc": "Land",
@@ -697,6 +749,10 @@
     "exportImgError": "Exportieren der Daten als Bild fehlgeschlagen",
     "codeExample": "Oder fügen Sie den folgenden Code in Ihre Website ein, um Ihre Events zu tracken:",
     "metricVis": "Visualisierung von Metriken",
+    "filters": "Filtern",
+    "showResolved": "Aufgelöste anzeigen",
+    "resolve": "Auflösen",
+    "markAsActive": "Als aktiv markieren",
     "refreshStats": "Statistiken aktualisieren",
     "barChart": "Balkendiagramm",
     "lineChart": "Liniendiagramm",
@@ -710,15 +766,15 @@
       "create": "Neues Projekt erstellen",
       "settings": "Einstellungen von",
       "name": "Projektname",
-      "sharableLink": "Sharable link",
-      "sharableDesc": "Used to share your dashboard with others, only available if you make your dashboard public or password protected.",
+      "sharableLink": "Teilbarer Link",
+      "sharableDesc": "Um Ihr Dashboard mit anderen zu teilen, nur verfügbar, wenn Sie Ihr Dashboard öffentlich oder passwortgeschützt machen.",
       "pid": "Projekt-ID",
       "origins": "Allowed-Origins",
       "originsHint": "Eine kommaseparierte Liste von Allowed-Origins (Herkunftsdomänen), die Ihre Project-ID in ihrem Tracking-Script verwenden dürfen.\nLassen Sie das Feld leer, um alle Herkünfte zuzulassen (Standardeinstellung).\nBeispiel: cornell.edu, app.example.com, *.gov.ua",
       "enabled": "Projekt aktiviert",
-      "public": "Das Dashboard ist öffentlich",
+      "public": "Öffentliches Dashboard",
       "enabledHint": "Deaktivierte Projekte zählen keine neuen Tracking-Events oder Seitenaufrufe.\nSie können weiterhin auf die bisherigen Analysen des Projekts im Dashboard zugreifen.",
-      "publicHint": "Wenn Sie diese Option aktivieren, kann jeder im Internet (einschließlich Google) das Dashboard dieses Projekts sehen. Nur der Projektadministrator kann die Einstellungen bearbeiten.",
+      "publicHint": "Wenn Sie dies überprüfen, wäre jeder im Internet (einschließlich Google) in der Lage, das Dashboard dieses Projekts zu sehen.\nNur der Projektadministrator kann die Einstellungen ändern.",
       "createHint": "*Sie können Ihr Projekt im Anschluss an die Erstellung noch weiter einrichten.",
       "delete": "Projekt löschen",
       "reset": "Projekt zurücksetzen",
@@ -771,8 +827,8 @@
         "filtersPlaceholder": "Filter auswählen",
         "noFilters": "Keine Filter ausgewählt oder keine Daten für den ausgewählten Filtertyp"
       },
-      "protected": "Passwortgeschütztes Dashboard",
-      "protectedHint": "Sie können Ihr Dashboard öffentlich und passwortgeschützt machen. Auf diese Weise können nur Personen, die das Passwort kennen, darauf zugreifen.",
+      "protected": "Passwortgeschützt",
+      "protectedHint": "Sie können Ihr Passwort schützen. Auf diese Weise können Personen, die das Passwort kennen, über einen teilbaren Link darauf zugreifen.",
       "password": "Dashboard-Passwort"
     },
     "captcha": {
@@ -820,6 +876,7 @@
     "pageviews": "Seitenansicht-Ereignisse: {{quantity}} ({{percentage}}%)",
     "customEvents": "Eigene Ereignisse: {{quantity}} ({{percentage}}%)",
     "captcha": "CAPTCHA Ereignisse: {{quantity}} ({{percentage}}%)",
+    "errors": "Fehlerereignisse: {{quantity}} ({{percentage}}%)",
     "gotoUsage": "Zur Nutzung des Plans gehen",
     "confirmNewPlan": "Bestätigen Sie Ihr neues Abonnement",
     "previewLoadingError": "Beim Laden der Preisvorschau ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.\nWenn das Problem weiterhin besteht, kontaktieren Sie uns bitte unter <mail>{{email}}</mail>.\nSie können Ihren Plan noch ändern, aber Sie werden die Preisliste im Moment nicht sehen können, entschuldigen Sie das.",
@@ -834,7 +891,7 @@
     "selectPlan": "Wählen Sie einen Abonnementplan aus, um das volle Swetrix Potenzial zu enthüllen.",
     "changePlan": "Sie können Ihr Abonnement hier jederzeit ändern oder kündigen.",
     "membersNotification": "Seitenansichten, benutzerdefinierte Ereignisse und CAPTCHA-Vervollständigung werden gegen die Grenze des Abonnements des Kontoinhabers gezählt. Personen, die Sie in Ihre Projekte einladen benötigen kein Abonnement.",
-    "xMonthsFree": "{{amount}} months free"
+    "xMonthsFree": "{{amount}} Monate kostenlos"
   },
   "modals": {
     "paidFeature": {
@@ -842,9 +899,9 @@
       "desc": "Wir entschuldigen uns für die Unannehmlichkeiten, aber Sie müssen ein kostenpflichtiges Abo abschließen, um diese Funktion nutzen zu können.\n\nWir wissen, dass Sie vielleicht noch nicht bereit sind, ein kostenpflichtiges Abonnement abzuschließen, aber wenn Sie ein Abonnement abschließen, haben Sie nicht nur Zugang zu dieser Funktion, sondern auch zu allen anderen kostenpflichtigen Funktionen, höhere Limits für die monatlichen Besuchszahlen und die Anzahl der zur Verfügung stehenden Websites. Außerdem unterstützen Sie das Wachstum eines kleinen Unternehmens :)"
     },
     "trackingSnippet": {
-      "title": "Add a Swetrix tracking code to your website",
-      "add": "Add the following snippet into the <bsect></bsect> section of your site.",
-      "docs": "Check our <pdocs>our documentation</pdocs> for details and more integration guides."
+      "title": "Fügen Sie Ihrer Website einen Swetrix-Tracking-Code hinzu",
+      "add": "Fügen Sie folgendes Snippet in den <bsect></bsect> Bereich Ihrer Website ein.",
+      "docs": "Lesen Sie unsere <pdocs>Dokumentation</pdocs> für Details und weitere Integrationsanleitungen."
     },
     "forecast": {
       "title": "Traffic-Prognose",
@@ -859,9 +916,9 @@
       "addStep": "Noch einen Schritt hinzufügen"
     },
     "shortcuts": {
-      "title": "Keyboard shortcuts",
-      "timebuckets": "Timebuckets selection",
-      "tabs": "Tabs switching"
+      "title": "Tastaturkurzbefehle",
+      "timebuckets": "Zeitfenster Auswahl",
+      "tabs": "Tabs wechseln"
     }
   },
   "pricing": {
@@ -916,11 +973,14 @@
     "cancelDesc": "Nachdem Sie Ihr Abonnement gekündigt haben, werden von Swetrix keine neuen Events mehr für Ihre Projekte gesammelt.\nSie können jederzeit zu Ihrem aktuellen Abonnement zurückkehren.\nWenn Sie Fragen haben, können Sie uns jederzeit eine E-Mail an {{email}} schicken."
   },
   "contact": {
-    "howTo": "Haben Sie noch Fragen? Es gibt verschiedene Möglichkeiten, wie Sie uns erreichen können:",
-    "ways": {
-      "email": "Sie können uns eine E-Mail an <mail>{{email}}</mail> schicken",
-      "twitter": "Twittern oder schreiben Sie uns auf<url>{{twitter}}</url>",
-      "discord": "Treten Sie unserem <url>Discord-Server</url> bei"
+    "description": "Sie erreichen uns unter <mail>{{email}}</mail>, tweet uns auf <twitter>{{twitterHandle}}</twitter> oder rede mit uns über unsere <discord>Discord</discord> Community. Wir sind bestrebt, so schnell wie möglich zu antworten, in der Regel innerhalb eines Tages.",
+    "docs": {
+      "title": "Dokumentation",
+      "desc": "Lernen Sie, wie Sie Swetrix in Ihre Anwendung integrieren und Antworten auf die häufigsten Fragen finden"
+    },
+    "demo": {
+      "title": "Demo-Anruf buchen",
+      "desc": "Buchen Sie eine Demo bei unserem Team, um zu sehen, wie Swetrix Ihre Probleme lösen kann"
     }
   },
   "beta": {
@@ -961,21 +1021,43 @@
     "dashboard": "Dashboard",
     "docs": "Dokumentation",
     "billing": "Rechnung",
-    "contact": "Kontakt",
+    "contact": "Haben Sie etwas zu fragen?",
     "changelog": "Neuerungen",
     "main": "Ultimative Open-Source-Web-Analytics um alle Ihre Wünsche zu befriedigen",
     "press": "Medien & Presse",
     "socialisation": "Social-Login",
     "open": "Open startup",
     "passwordProtected": "Dieses Projekt ist passwortgeschützt",
-    "confirm": "Check your inbox",
-    "performance": "End user performance monitoring to deliver fast websites"
+    "confirm": "Sehen Sie in ihren Posteingang",
+    "performance": "Endbenutzer Leistungsüberwachung um schnelle Webseiten zu liefern",
+    "errors": "Endbenutzer Fehler bei der Verfolgung von Werkzeug, um fehlerfreie Erfahrungen zu liefern"
   },
   "header": {
     "switchTheme": "Design wechseln",
     "dark": "Dunkel",
     "light": "Hell",
-    "signedInAs": "Angemeldet als"
+    "signedInAs": "Angemeldet als",
+    "watchDemo": "Demo ansehen",
+    "contactSales": "Kontakt zur Verkaufsabteilung",
+    "solutions": {
+      "title": "Lösungen",
+      "analytics": {
+        "title": "Analytik",
+        "desc": "Überwachen Sie den Datenverkehr Ihrer Website unter Berücksichtigung des Datenschutzes"
+      },
+      "errors": {
+        "title": "Fehlerverfolgung",
+        "desc": "Bieten Sie Ihren Benutzern fehlerfreie Erfahrungen"
+      },
+      "captcha": {
+        "title": "CAPTCHA",
+        "desc": "Schützen Sie Ihre Website vor Bots mit datenschutzfreundlichem Captcha"
+      },
+      "performance": {
+        "title": "Leistungsüberwachung",
+        "desc": "Analysieren Sie Ihre Seiten Schlüsselgeschwindigkeits-Metriken"
+      }
+    }
   },
   "footer": {
     "slogan": "Die besten Apps brauchen den besten Service.",
@@ -1008,6 +1090,6 @@
     "open": "Open startup",
     "about": "Über uns",
     "features": "Funktionen",
-    "imprint": "Imprint"
+    "imprint": "Impressum"
   }
 }
