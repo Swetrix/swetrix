@@ -50,6 +50,7 @@ import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
 import { AnalyticsGET_DTO, ChartRenderMode } from './dto/getData.dto'
 import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
+import { GetPagePropertyMeta } from './dto/get-page-property-meta.dto'
 import { GetUserFlowDTO } from './dto/getUserFlow.dto'
 import { GetFunnelsDTO } from './dto/getFunnels.dto'
 import { AppLoggerService } from '../logger/logger.service'
@@ -122,9 +123,11 @@ const analyticsDTO = (
   cc: string,
   rg: string,
   ct: string,
+  keys: string[],
+  values: string[],
   sdur: number | string,
   unique: number,
-): Array<string | number> => {
+): Array<string | number | string[]> => {
   return [
     psid,
     sid,
@@ -142,6 +145,8 @@ const analyticsDTO = (
     cc,
     rg,
     ct,
+    keys,
+    values,
     sdur,
     unique,
     dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
@@ -600,6 +605,31 @@ export class AnalyticsController {
     await this.analyticsService.checkBillingAccess(pid)
 
     return this.analyticsService.getCustomEventMetadata(data)
+  }
+
+  @Get('property')
+  @Auth([], true, true)
+  async getPagePropertyMetadata(
+    @Query() data: GetPagePropertyMeta,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<IAggregatedMetadata[]> {
+    const { pid, period } = data
+    this.analyticsService.validatePID(pid)
+
+    if (!_isEmpty(period)) {
+      this.analyticsService.validatePeriod(period)
+    }
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    return this.analyticsService.getPagePropertyMeta(data)
   }
 
   @Get('filters')
@@ -1424,6 +1454,8 @@ export class AnalyticsController {
       country,
       region,
       city,
+      _keys(logDTO.meta),
+      _values(logDTO.meta),
       0,
       Number(unique),
     )
@@ -1538,6 +1570,8 @@ export class AnalyticsController {
       country,
       region,
       city,
+      [],
+      [],
       0,
       Number(unique),
     )

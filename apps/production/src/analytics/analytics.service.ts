@@ -93,6 +93,7 @@ import {
   PerfMeasure,
 } from './interfaces'
 import { ErrorDTO } from './dto/error.dto'
+import { GetPagePropertyMeta } from './dto/get-page-property-meta.dto'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -2936,6 +2937,79 @@ export class AnalyticsService {
       return result as IAggregatedMetadata[]
     } catch (reason) {
       console.error(`[ERROR](getCustomEventMetadata): ${reason}`)
+      throw new InternalServerErrorException(
+        'Something went wrong. Please, try again later.',
+      )
+    }
+  }
+
+  async getPagePropertyMeta(
+    data: GetPagePropertyMeta,
+  ): Promise<IAggregatedMetadata[]> {
+    const {
+      pid,
+      period,
+      timeBucket,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE,
+      property,
+    } = data
+
+    let newTimebucket = timeBucket
+
+    let diff
+
+    if (period === 'all') {
+      const res = await this.getTimeBucketForAllTime(pid, period, timezone)
+
+      diff = res.diff
+      // eslint-disable-next-line prefer-destructuring
+      newTimebucket = _includes(res.timeBucket, timeBucket)
+        ? timeBucket
+        : res.timeBucket[0]
+    }
+
+    this.validateTimebucket(newTimebucket)
+
+    const safeTimezone = this.getSafeTimezone(timezone)
+    const { groupFromUTC, groupToUTC } = this.getGroupFromTo(
+      from,
+      to,
+      newTimebucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    // TODO: FILTERS
+    const query = `
+      SELECT 
+        meta.key AS key, 
+        meta.value AS value,
+        count() AS count
+      FROM analytics
+      ARRAY JOIN meta.key, meta.value
+      WHERE pid = {pid:FixedString(12)}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        AND meta.key = {property:String}
+      GROUP BY key, value
+    `
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+        property,
+      },
+    }
+
+    try {
+      const result = await clickhouse.query(query, paramsData).toPromise()
+      return result as IAggregatedMetadata[]
+    } catch (reason) {
+      console.error(`[ERROR](getPagePropertyMeta): ${reason}`)
       throw new InternalServerErrorException(
         'Something went wrong. Please, try again later.',
       )
