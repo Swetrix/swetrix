@@ -16,6 +16,7 @@ module.exports = {
           'integrations/wix',
           'integrations/ghost',
           'integrations/django',
+          'integrations/google-tag-manager',
           'integrations/sveltekit',
         ],
       },
