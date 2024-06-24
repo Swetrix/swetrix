@@ -81,3 +81,7 @@ You can also refer to our detailed [tracking script reference](/swetrix-js-refer
 After setting up the Swetrix analytics tag, go to your website and visit some pages.
 
 Within a minute you should be able to see new pageviews being added to your project's dahsboard.
+
+:::note
+Google Tag Manager adds extra complexity to your website. The Swetrix tracking script is lightweight in itself and it's recommended to use it directly. Also, GTM is blocked by many adblockers, so using it may be less reliable.
+:::
