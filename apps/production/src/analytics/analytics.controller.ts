@@ -28,6 +28,8 @@ import {
   ForbiddenException,
   Response,
   Header,
+  ConflictException,
+  NotFoundException,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import * as UAParser from 'ua-parser-js'
@@ -90,6 +92,7 @@ import { GetErrorsDto } from './dto/get-errors.dto'
 import { GetErrorDTO } from './dto/get-error.dto'
 import { PatchStatusDTO } from './dto/patch-status.dto'
 import { ProjectService } from '../project/project.service'
+import { ProjectsViewsRepository } from '../project/repositories/projects-views.repository'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mysql = require('mysql2')
@@ -368,6 +371,7 @@ export class AnalyticsController {
     private readonly analyticsService: AnalyticsService,
     private readonly logger: AppLoggerService,
     private readonly projectService: ProjectService,
+    private readonly projectsViewsRepository: ProjectsViewsRepository,
   ) {}
 
   @Get()
@@ -387,6 +391,7 @@ export class AnalyticsController {
       filters,
       timezone = DEFAULT_TIMEZONE,
       mode = ChartRenderMode.PERIODICAL,
+      viewId,
     } = data
     this.analyticsService.validatePID(pid)
 
@@ -401,6 +406,20 @@ export class AnalyticsController {
     )
 
     await this.analyticsService.checkBillingAccess(pid)
+
+    // TODO make it smarter
+    if (
+      viewId &&
+      (period || timeBucket || from || to || filters || timezone || mode)
+    ) {
+      throw new ConflictException('Cannot specify both viewId and filters.')
+    }
+
+    const view = await this.projectsViewsRepository.findView(viewId)
+
+    if (pid !== view.projectId) {
+      throw new NotFoundException('View not found.')
+    }
 
     let newTimebucket = timeBucket
     let allowedTumebucketForPeriodAll
