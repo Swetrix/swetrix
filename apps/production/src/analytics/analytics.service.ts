@@ -2867,16 +2867,30 @@ export class AnalyticsService {
     filtersQuery: string,
     params: object,
   ): Promise<object> {
-    const query = `SELECT meta.key AS property, count() FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY property`
+    const query = `
+      SELECT
+        meta.key AS property,
+        count()
+      FROM  analytics
+      WHERE pid = {pid:FixedString(12)}
+        ${filtersQuery}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+      GROUP BY property`
     const result = {}
 
-    const rawCustoms = <Array<PropertiesCHResponse>>(
+    const rawProperties = <Array<PropertiesCHResponse>>(
       await clickhouse.query(query, params).toPromise()
     )
-    const size = _size(rawCustoms)
+    const size = _size(rawProperties)
 
     for (let i = 0; i < size; ++i) {
-      const { property, 'count()': c } = rawCustoms[i]
+      const { property: propertyArr, 'count()': c } = rawProperties[i]
+      const [property] = propertyArr
+
+      if (!property) {
+        continue
+      }
+
       result[property] = c
     }
 
