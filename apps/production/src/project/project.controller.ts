@@ -106,7 +106,7 @@ import { ProjectViewEntity } from './entity/project-view.entity'
 import { ProjectIdDto } from './dto/project-id.dto'
 import { CreateProjectViewDto } from './dto/create-project-view.dto'
 import { UpdateProjectViewDto } from './dto/update-project-view.dto'
-import { ProjectViewIdDto } from './dto/project-view-id.dto'
+import { ProjectViewIdsDto } from './dto/project-view-ids.dto'
 
 const PROJECTS_MAXIMUM = 50
 
@@ -1974,7 +1974,7 @@ export class ProjectController {
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async updateProjectView(
-    @Param() params: ProjectIdDto & ProjectViewIdDto,
+    @Param() params: ProjectViewIdsDto,
     @Body() body: UpdateProjectViewDto,
     @CurrentUserId() userId: string,
   ) {
@@ -2017,7 +2017,7 @@ export class ProjectController {
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async deleteProjectView(
-    @Param() params: ProjectIdDto & ProjectViewIdDto,
+    @Param() params: ProjectViewIdsDto,
     @CurrentUserId() userId: string,
   ) {
     const project = await this.projectService.findProject(params.projectId, [
