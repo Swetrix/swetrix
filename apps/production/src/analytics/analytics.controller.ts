@@ -438,14 +438,11 @@ export class AnalyticsController {
         diff,
       )
 
-    let queryCustoms = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
     let subQuery = `FROM ${
       isCaptcha ? 'captcha' : 'analytics'
     } WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
 
     if (customEVFilterApplied && !isCaptcha) {
-      queryCustoms = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
-
       subQuery = `FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
     }
 
@@ -494,14 +491,20 @@ export class AnalyticsController {
       }
     }
 
-    const customs = await this.analyticsService.processCustomEV(
-      queryCustoms,
+    const customs = await this.analyticsService.getCustomEvents(
+      filtersQuery,
+      paramsData,
+    )
+
+    const properties = await this.analyticsService.getPageProperties(
+      filtersQuery,
       paramsData,
     )
 
     return {
       ...result,
       customs,
+      properties,
       appliedFilters,
       timeBucket: allowedTumebucketForPeriodAll,
     }

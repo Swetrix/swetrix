@@ -91,6 +91,7 @@ import {
   IOverallPerformance,
   IPageflow,
   PerfMeasure,
+  PropertiesCHResponse,
 } from './interfaces'
 import { ErrorDTO } from './dto/error.dto'
 import { GetPagePropertyMeta } from './dto/get-page-property-meta.dto'
@@ -2845,7 +2846,8 @@ export class AnalyticsService {
     })
   }
 
-  async processCustomEV(query: string, params: object): Promise<object> {
+  async getCustomEvents(filtersQuery: string, params: object): Promise<object> {
+    const query = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
     const result = {}
 
     const rawCustoms = <Array<CustomsCHResponse>>(
@@ -2856,6 +2858,26 @@ export class AnalyticsService {
     for (let i = 0; i < size; ++i) {
       const { ev, 'count()': c } = rawCustoms[i]
       result[ev] = c
+    }
+
+    return result
+  }
+
+  async getPageProperties(
+    filtersQuery: string,
+    params: object,
+  ): Promise<object> {
+    const query = `SELECT meta.key AS property, count() FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY property`
+    const result = {}
+
+    const rawCustoms = <Array<PropertiesCHResponse>>(
+      await clickhouse.query(query, params).toPromise()
+    )
+    const size = _size(rawCustoms)
+
+    for (let i = 0; i < size; ++i) {
+      const { property, 'count()': c } = rawCustoms[i]
+      result[property] = c
     }
 
     return result

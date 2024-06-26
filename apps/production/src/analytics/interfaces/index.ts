@@ -42,6 +42,12 @@ export interface CustomsCHResponse {
   index: number
 }
 
+export interface PropertiesCHResponse {
+  property: string
+  'count()': number
+  index: number
+}
+
 export interface CustomsCHAggregatedResponse {
   year: number
   month: number
