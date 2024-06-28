@@ -55,6 +55,7 @@ import {
   REDIS_USERS_COUNT_KEY,
   REDIS_PROJECTS_COUNT_KEY,
   REDIS_EVENTS_COUNT_KEY,
+  TRAFFIC_METAKEY_COLUMNS,
 } from '../common/constants'
 import {
   calculateRelativePercentage,
@@ -912,9 +913,13 @@ export class AnalyticsService {
           return prev
         }
 
-        if (column === 'ev') {
+        // ev:key -> custom event metadata
+        if (column === 'ev' || column === 'ev:key') {
           customEVFilterApplied = true
-        } else if (!_includes(SUPPORTED_COLUMNS, column)) {
+        } else if (
+          !_includes(SUPPORTED_COLUMNS, column) &&
+          !_includes(TRAFFIC_METAKEY_COLUMNS, column)
+        ) {
           throw new UnprocessableEntityException(
             `The provided filter (${column}) is not supported`,
           )
@@ -969,16 +974,34 @@ export class AnalyticsService {
         }
 
         const { filter, isExclusive } = converted[column][f]
+        let sqlColumn = column
+        let isArrayDataset = false
+
+        if (column === 'ev:key' || column === 'tag:key') {
+          sqlColumn = 'meta.key'
+          isArrayDataset = true
+        }
+
+        if (column === 'ev:value' || column === 'tag:value') {
+          sqlColumn = 'meta.value'
+          isArrayDataset = true
+        }
 
         const param = `qf_${col}_${f}`
 
+        // TODO: In future I will add contains / not contains filters as well via ILIKE operator
+
         if (filter === null) {
-          query += `${column} IS ${isExclusive ? 'NOT' : ''} NULL`
+          query += isArrayDataset
+            ? ''
+            : `${sqlColumn} IS ${isExclusive ? 'NOT' : ''} NULL`
           params[param] = filter
           continue
         }
 
-        query += `${isExclusive ? 'NOT ' : ''}${column} = {${param}:String}`
+        query += isArrayDataset
+          ? `indexOf(${sqlColumn}, {${param}:String}) ${isExclusive ? '=' : '>'} 0`
+          : `${isExclusive ? 'NOT ' : ''}${sqlColumn} = {${param}:String}`
 
         params[param] = filter
       }

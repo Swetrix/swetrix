@@ -427,6 +427,8 @@ export class AnalyticsController {
         isCaptcha ? DataType.CAPTCHA : DataType.ANALYTICS,
       )
 
+    console.log('filters:', filtersQuery)
+
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo, groupFromUTC, groupToUTC } =
       this.analyticsService.getGroupFromTo(
@@ -496,10 +498,14 @@ export class AnalyticsController {
       paramsData,
     )
 
-    const properties = await this.analyticsService.getPageProperties(
-      filtersQuery,
-      paramsData,
-    )
+    let properties = {}
+
+    if (!customEVFilterApplied) {
+      properties = await this.analyticsService.getPageProperties(
+        filtersQuery,
+        paramsData,
+      )
+    }
 
     return {
       ...result,
