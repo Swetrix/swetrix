@@ -622,7 +622,7 @@ export class AnalyticsController {
     @Query() data: GetPagePropertyMeta,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
-  ): Promise<IAggregatedMetadata[]> {
+  ): Promise<ReturnType<typeof this.analyticsService.getPagePropertyMeta>> {
     const { pid, period } = data
     this.analyticsService.validatePID(pid)
 

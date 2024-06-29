@@ -9,6 +9,7 @@ export class GetCustomEventMetadata extends PickType(AnalyticsGET_DTO, [
   'to',
   'filters',
   'timezone',
+  'filters',
 ] as const) {
   event: string
 }

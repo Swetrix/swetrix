@@ -3019,9 +3019,10 @@ export class AnalyticsService {
     }
   }
 
-  async getPagePropertyMeta(
-    data: GetPagePropertyMeta,
-  ): Promise<IAggregatedMetadata[]> {
+  async getPagePropertyMeta(data: GetPagePropertyMeta): Promise<{
+    result: IAggregatedMetadata[]
+    appliedFilters: GetFiltersQuery[2]
+  }> {
     const {
       pid,
       period,
@@ -3030,11 +3031,23 @@ export class AnalyticsService {
       to,
       timezone = DEFAULT_TIMEZONE,
       property,
+      filters,
     } = data
 
     let newTimebucket = timeBucket
 
     let diff
+
+    const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
+      this.getFiltersQuery(filters, DataType.ANALYTICS)
+
+    // We cannot make a query to customEV table using analytics table properties
+    if (customEVFilterApplied) {
+      return {
+        result: [],
+        appliedFilters,
+      }
+    }
 
     if (period === 'all') {
       const res = await this.getTimeBucketForAllTime(pid, period, timezone)
@@ -3058,19 +3071,29 @@ export class AnalyticsService {
       diff,
     )
 
-    // TODO: FILTERS
     const query = `
       SELECT 
         meta.key AS key, 
         meta.value AS value,
         count() AS count
-      FROM analytics
+      FROM (
+        SELECT
+          meta.key,
+          meta.value
+        FROM
+          analytics
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND indexOf(meta.key, {property:String}) > 0
+          ${filtersQuery}
+      )
       ARRAY JOIN meta.key, meta.value
-      WHERE pid = {pid:FixedString(12)}
-        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-        AND meta.key = {property:String}
+      WHERE meta.key = {property:String}
       GROUP BY key, value
     `
+
+    console.log('query:', query)
 
     const paramsData = {
       params: {
@@ -3078,12 +3101,18 @@ export class AnalyticsService {
         groupFrom: groupFromUTC,
         groupTo: groupToUTC,
         property,
+        ...filtersParams,
       },
     }
 
     try {
-      const result = await clickhouse.query(query, paramsData).toPromise()
-      return result as IAggregatedMetadata[]
+      const result = (await clickhouse
+        .query(query, paramsData)
+        .toPromise()) as IAggregatedMetadata[]
+      return {
+        result,
+        appliedFilters,
+      }
     } catch (reason) {
       console.error(`[ERROR](getPagePropertyMeta): ${reason}`)
       throw new InternalServerErrorException(

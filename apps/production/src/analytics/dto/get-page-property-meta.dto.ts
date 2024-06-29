@@ -9,6 +9,7 @@ export class GetPagePropertyMeta extends PickType(AnalyticsGET_DTO, [
   'to',
   'filters',
   'timezone',
+  'filters',
 ] as const) {
   property: string
 }
