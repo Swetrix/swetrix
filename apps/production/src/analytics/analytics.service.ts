@@ -9,6 +9,7 @@ import * as _toUpper from 'lodash/toUpper'
 import * as _head from 'lodash/head'
 import * as _join from 'lodash/join'
 import * as _isArray from 'lodash/isArray'
+import * as _startsWith from 'lodash/startsWith'
 import * as _sortBy from 'lodash/sortBy'
 import * as _reduce from 'lodash/reduce'
 import * as _keys from 'lodash/keys'
@@ -914,11 +915,17 @@ export class AnalyticsService {
         }
 
         // ev:key -> custom event metadata
-        if (column === 'ev' || column === 'ev:key') {
+        // ev:key: -> custom event metadata, but we want to check if some meta.key's meta.value equals to a specific value
+        if (
+          column === 'ev' ||
+          column === 'ev:key' ||
+          _startsWith(column, 'ev:key:')
+        ) {
           customEVFilterApplied = true
         } else if (
           !_includes(SUPPORTED_COLUMNS, column) &&
-          !_includes(TRAFFIC_METAKEY_COLUMNS, column)
+          !_includes(TRAFFIC_METAKEY_COLUMNS, column) &&
+          !_startsWith(column, 'tag:key:')
         ) {
           throw new UnprocessableEntityException(
             `The provided filter (${column}) is not supported`,
@@ -965,7 +972,7 @@ export class AnalyticsService {
     const columns = _keys(converted)
 
     for (let col = 0; col < _size(columns); ++col) {
-      const column = columns[col]
+      const column: string = columns[col]
       query += ' AND ('
 
       for (let f = 0; f < _size(converted[column]); ++f) {
@@ -977,17 +984,30 @@ export class AnalyticsService {
         let sqlColumn = column
         let isArrayDataset = false
 
+        const param = `qf_${col}_${f}`
+        params[param] = filter
+
+        // when we want to filter meta.value for a specific meta.key
+        if (_startsWith(column, 'ev:key:') || _startsWith(column, 'tag:key:')) {
+          const key = column.replace(/^ev:key:/, '').replace(/^tag:key:/, '')
+          const keyParam = `qfk_${col}_${f}`
+          params[keyParam] = key
+
+          query += `indexOf(meta.key, {${keyParam}:String}) > 0 AND meta.value[indexOf(meta.key, {${keyParam}:String})] ${isExclusive ? '!= ' : '='} {${param}:String}`
+          continue
+        }
+
+        // meta.key filters for page properties and custom event metadata
+        // e.g. article "author" (property)
         if (column === 'ev:key' || column === 'tag:key') {
           sqlColumn = 'meta.key'
           isArrayDataset = true
-        }
-
-        if (column === 'ev:value' || column === 'tag:value') {
+          // meta.value filters for page properties and custom event metadata
+          // e.g. "Andrii" ("author" value)
+        } else if (column === 'ev:value' || column === 'tag:value') {
           sqlColumn = 'meta.value'
           isArrayDataset = true
         }
-
-        const param = `qf_${col}_${f}`
 
         // TODO: In future I will add contains / not contains filters as well via ILIKE operator
 
@@ -995,15 +1015,12 @@ export class AnalyticsService {
           query += isArrayDataset
             ? ''
             : `${sqlColumn} IS ${isExclusive ? 'NOT' : ''} NULL`
-          params[param] = filter
           continue
         }
 
         query += isArrayDataset
           ? `indexOf(${sqlColumn}, {${param}:String}) ${isExclusive ? '=' : '>'} 0`
           : `${isExclusive ? 'NOT ' : ''}${sqlColumn} = {${param}:String}`
-
-        params[param] = filter
       }
 
       query += ')'
