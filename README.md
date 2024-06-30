@@ -1,4 +1,7 @@
-<img src="https://swetrix.com/assets/logo_blue.png" alt="" height="80" />
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://swetrix.com/assets/logo_white.png">
+  <img alt="" src="https://swetrix.com/assets/logo_blue.png" height="80">
+</picture>
 
 # `@swetrix/node` - Swetrix NodeJS integration
 
@@ -26,9 +29,9 @@ Options object is the following (it's similar to what the main Swetrix tracking 
 ```typescript
 export interface LibOptions {
   /**
-   * When set to `true`, all tracking logs will be printed to console and localhost events will be sent to server.
+   * When set to `true`, all tracking logs will be printed to console.
    */
-  debug?: boolean
+  devMode?: boolean
 
   /**
    * When set to `true`, the tracking library won't send any data to server.
@@ -46,12 +49,6 @@ export interface LibOptions {
    * This param is useful when tracking single-page landing websites.
    */
   unique?: boolean
-
-  /** A list of Regular Expressions or string pathes to ignore. */
-  ignore?: Array<string | RegExp>
-  
-  /** Do not send paths from ignore list to API. If set to `false`, the page view information will be sent to the Swetrix API, but the page will be displayed as a 'Redacted page' in the dashboard. */
-  doNotAnonymise?: boolean
 }
 ```
 
@@ -108,6 +105,11 @@ export interface TrackPageViewOptions {
 
   /** An object with performance metrics related to the page load. See Performance metrics for more details */
   perf?: PerformanceMetrics
+
+  /** Pageview-related metadata object with string values. */
+  meta?: {
+    [key: string]: string
+  }
 }
 
 export interface PerformanceMetrics {
@@ -181,6 +183,73 @@ export interface TrackEventOptions {
 
   /** A campaign of the event (e.g. utm_campaign GET parameter) */
   ca?: string
+
+  /** Event-related metadata object with string values. */
+  meta?: {
+    [key: string]: string
+  }
+}
+```
+
+
+## Tracking errors
+You can also track error events by calling `trackError` function, the syntax is similar to tracking pageviews:
+```javascript
+swetrix.trackError('192.155.52.12', 'Mozilla/5.0 (Windows NT 10.0; rv:109.0) Gecko/20100101 Firefox/116.0', {
+  name: 'ParseError',
+  message: 'Malformed input',
+  lineno: 1520,
+  colno: 26,
+  filename: 'https://example.com/broken.js',
+})
+```
+
+This function accepts 3 arguments:
+ - Client IP address
+ - Client user agent
+ - Error object
+
+The error object is described by the following interface:
+```typescript
+export interface TrackErrorOptions {
+  /**
+   * Error name (e.g. ParseError).
+   */
+  name: string
+
+  /**
+   * Error message (e.g. Malformed input).
+   */
+  message: string | null | undefined
+
+  /**
+   * On what line in your code did the error occur (e.g. 1520)
+   */
+  lineno: number | null | undefined
+
+  /**
+   * On what column in your code did the error occur (e.g. 26)
+   */
+  colno: number | null | undefined
+
+  /**
+   * In what file did the error occur (e.g. https://example.com/broken.js)
+   */
+  filename: string | null | undefined
+
+  // --------------
+  // Additionally, it also accepts 3 parameters from the TrackPageViewOptions interface:
+
+  /**
+   * Visitor's timezone (used as a backup in case IP geolocation fails). I.e. if it's set to Europe/Kiev and IP geolocation fails, we will set the country of this entry to Ukraine)
+   */
+  tz?: string
+
+  /** A locale of the user (e.g. en-US or uk-UA) */
+  lc?: string
+
+  /** A page to record the pageview event for (e.g. /home). All our scripts send the pg string with a slash (/) at the beginning, it's not a requirement but it's best to do the same so the data would be consistent when used together with our official scripts */
+  pg?: string
 }
 ```
 
