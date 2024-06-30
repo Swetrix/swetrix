@@ -11,6 +11,9 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "incremental": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "inlineSources": true,
+
+    "sourceRoot": "/"
   }
 }
