@@ -56,6 +56,8 @@ const isDevelopment = process.env.NODE_ENV === 'development'
 
 const SELFHOSTED_EMAIL = process.env.EMAIL
 const SELFHOSTED_PASSWORD = process.env.PASSWORD
+const SELFHOSTED_API_KEY = process.env.API_KEY
+const SELFHOSTED_API_AUTH_ENABLED = !!SELFHOSTED_API_KEY
 const UUIDV5_NAMESPACE = '912c64c1-73fd-42b6-859f-785f839a9f68'
 const DEFAULT_SELFHOSTED_UUID = 'deadbeef-dead-beef-dead-beefdeadbeef'
 
@@ -78,6 +80,7 @@ const REDIS_LOG_CUSTOM_CACHE_KEY = 'log_custom_cache_v3'
 const REDIS_SESSION_SALT_KEY = 'log_salt' // is updated every 24 hours
 const REDIS_USERS_COUNT_KEY = 'stats:users_count'
 const REDIS_PROJECTS_COUNT_KEY = 'stats:projects_count'
+const REDIS_LOG_ERROR_CACHE_KEY = 'log_error_cache'
 
 // 3600 sec -> 1 hour
 const redisProjectCacheTimeout = 3600
@@ -107,7 +110,12 @@ const TRAFFIC_COLUMNS = [
   'ca',
 ]
 
+const ALL_COLUMNS = [...TRAFFIC_COLUMNS, 'ev']
+
+const TRAFFIC_METAKEY_COLUMNS = ['tag:key', 'tag:value']
+
 const PERFORMANCE_COLUMNS = ['cc', 'rg', 'ct', 'pg', 'dv', 'br']
+const ERROR_COLUMNS = ['pg', 'dv', 'br', 'os', 'lc', 'cc', 'rg', 'ct']
 
 const NUMBER_JWT_REFRESH_TOKEN_LIFETIME = Number(JWT_REFRESH_TOKEN_LIFETIME)
 const NUMBER_JWT_ACCESS_TOKEN_LIFETIME = Number(JWT_ACCESS_TOKEN_LIFETIME)
@@ -122,11 +130,14 @@ export {
   REDIS_LOG_DATA_CACHE_KEY,
   REDIS_LOG_CAPTCHA_CACHE_KEY,
   REDIS_LOG_CUSTOM_CACHE_KEY,
+  TRAFFIC_METAKEY_COLUMNS,
   REDIS_SESSION_SALT_KEY,
   HEARTBEAT_SID_LIFE_TIME,
   UUIDV5_NAMESPACE,
   SELFHOSTED_EMAIL,
   SELFHOSTED_PASSWORD,
+  SELFHOSTED_API_KEY,
+  SELFHOSTED_API_AUTH_ENABLED,
   SELFHOSTED_UUID,
   REDIS_USERS_COUNT_KEY,
   REDIS_PROJECTS_COUNT_KEY,
@@ -143,4 +154,8 @@ export {
   isProxiedByCloudflare,
   MIN_PAGES_IN_FUNNEL,
   MAX_PAGES_IN_FUNNEL,
+  ERROR_COLUMNS,
+  REDIS_LOG_ERROR_CACHE_KEY,
+  PID_REGEX,
+  ALL_COLUMNS,
 }

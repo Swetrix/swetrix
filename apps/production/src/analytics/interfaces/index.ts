@@ -42,6 +42,12 @@ export interface CustomsCHResponse {
   index: number
 }
 
+export interface PropertiesCHResponse {
+  property: string
+  'count()': number
+  index: number
+}
+
 export interface CustomsCHAggregatedResponse {
   year: number
   month: number
@@ -183,6 +189,14 @@ export interface IPageflow {
   type: 'pageview' | 'event'
   value: string
   created: string
+}
+
+export interface IPageProperty {
+  [key: string]: number
+}
+
+export interface ICustomEvent {
+  [key: string]: number
 }
 
 export type PerfMeasure = 'average' | 'median' | 'p95' | 'quantiles'

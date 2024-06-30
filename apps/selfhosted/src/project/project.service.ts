@@ -18,6 +18,7 @@ import * as _isNull from 'lodash/isNull'
 import * as _split from 'lodash/split'
 import * as _trim from 'lodash/trim'
 import * as _reduce from 'lodash/reduce'
+import { compareSync } from 'bcrypt'
 
 import { Project } from './entity/project.entity'
 import { ProjectDTO } from './dto/project.dto'
@@ -31,6 +32,8 @@ import {
   redisProjectCacheTimeout,
 } from '../common/constants'
 import { getProjectsClickhouse } from '../common/utils'
+import { MAX_PROJECT_PASSWORD_LENGTH, UpdateProjectDto } from './dto'
+import { Funnel } from './entity/funnel.entity'
 
 // A list of characters that can be used in a Project ID
 const LEGAL_PID_CHARACTERS =
@@ -79,7 +82,22 @@ export class ProjectService {
     return project
   }
 
-  allowedToView(project: Project, uid: string | null): void {
+  allowedToView(
+    project: Project,
+    uid: string | null,
+    password?: string | null,
+  ): void {
+    if (project.isPasswordProtected && password) {
+      if (
+        _size(password) <= MAX_PROJECT_PASSWORD_LENGTH &&
+        compareSync(password, project.passwordHash)
+      ) {
+        return null
+      }
+
+      throw new ConflictException('Incorrect password')
+    }
+
     if (project.public || uid) {
       return null
     }
@@ -99,9 +117,11 @@ export class ProjectService {
     }
   }
 
-  async getPIDsWhereAnalyticsDataExists(projectIds: string[]) {
+  async getPIDsWhereAnalyticsDataExists(
+    projectIds: string[],
+  ): Promise<string[]> {
     if (_isEmpty(projectIds)) {
-      return {}
+      return []
     }
 
     const params = _reduce(
@@ -156,6 +176,50 @@ export class ProjectService {
     return _map(result, ({ pid }) => pid)
   }
 
+  async getPIDsWhereErrorsDataExists(projectIds: string[]): Promise<string[]> {
+    if (_isEmpty(projectIds)) {
+      return []
+    }
+
+    const params = _reduce(
+      projectIds,
+      (acc, curr, index) => ({
+        ...acc,
+        [`pid_${index}`]: curr,
+      }),
+      {},
+    )
+
+    const pids = _join(
+      _map(params, (val, key) => `{${key}:FixedString(12)}`),
+      ',',
+    )
+
+    const query = `
+      SELECT
+        pid,
+        CASE
+          WHEN EXISTS (
+            SELECT 1
+            FROM errors
+            WHERE pid IN (${pids})
+          )
+          THEN 1
+          ELSE 0
+        END AS exists
+      FROM
+      (
+        SELECT DISTINCT pid
+        FROM errors
+        WHERE pid IN (${pids})
+      );
+    `
+
+    const result: any = await clickhouse.query(query, { params }).toPromise()
+
+    return _map(result, ({ pid }) => pid)
+  }
+
   async removeDataFromClickhouse(
     pid: string,
     from: string,
@@ -186,6 +250,7 @@ export class ProjectService {
     const updProject = { ...project }
     updProject.active = Number(updProject.active)
     updProject.public = Number(updProject.public)
+    updProject.isPasswordProtected = Number(updProject.isPasswordProtected)
 
     if (!_isNull(updProject.origins)) {
       updProject.origins = _isString(updProject.origins)
@@ -206,6 +271,7 @@ export class ProjectService {
     const updProject = { ...project }
     updProject.active = Boolean(updProject.active)
     updProject.public = Boolean(updProject.public)
+    updProject.isPasswordProtected = Boolean(updProject.isPasswordProtected)
 
     updProject.origins = _isNull(updProject.origins)
       ? []
@@ -218,7 +284,38 @@ export class ProjectService {
     return updProject
   }
 
-  validateProject(projectDTO: ProjectDTO, creatingProject = false) {
+  formatFunnelToClickhouse(funnel: Funnel): any {
+    const updFunnel = { ...funnel }
+    updFunnel.name = _trim(funnel.name)
+    updFunnel.steps = _isString(updFunnel.steps)
+      ? updFunnel.steps
+      : _join(updFunnel.steps, ',')
+
+    return updFunnel
+  }
+
+  formatFunnelsFromClickhouse(funnels: any[]): Funnel[] {
+    if (_isEmpty(funnels)) {
+      return []
+    }
+
+    return _map(funnels, this.formatFunnelFromClickhouse)
+  }
+
+  formatFunnelFromClickhouse(funnel: any): Funnel {
+    const updFunnel = { ...funnel }
+
+    updFunnel.steps = _isNull(updFunnel.steps)
+      ? []
+      : _split(updFunnel.steps, ',')
+
+    return updFunnel
+  }
+
+  validateProject(
+    projectDTO: ProjectDTO | UpdateProjectDto,
+    creatingProject = false,
+  ) {
     if (_size(projectDTO.name) > 50)
       throw new UnprocessableEntityException('The project name is too long')
 

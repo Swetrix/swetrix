@@ -96,6 +96,7 @@ const DEFAULT_USAGE_INFO = {
   traffic: 0,
   customEvents: 0,
   captcha: 0,
+  errors: 0,
 }
 
 export const deleteProjectRedis = async (id: string) => {
@@ -672,31 +673,34 @@ export class ProjectService {
         return 0
       }
 
-      const countEVQuery = `SELECT COUNT() FROM analytics WHERE pid IN (${_join(
-        _map(pids, el => `'${el.id}'`),
-        ',',
-      )}) AND created BETWEEN '${monthStart}' AND '${monthEnd}'`
-      const countCustomEVQuery = `SELECT COUNT() FROM customEV WHERE pid IN (${_join(
-        _map(pids, el => `'${el.id}'`),
-        ',',
-      )}) AND created BETWEEN '${monthStart}' AND '${monthEnd}'`
-      const countCaptchaQuery = `SELECT COUNT() FROM captcha WHERE pid IN (${_join(
-        _map(pids, el => `'${el.id}'`),
-        ',',
-      )}) AND created BETWEEN '${monthStart}' AND '${monthEnd}'`
+      const selector = `
+        WHERE pid IN (${_join(
+          _map(pids, el => `'${el.id}'`),
+          ',',
+        )})
+        AND created BETWEEN '${monthStart}' AND '${monthEnd}'
+      `
+
+      const countEVQuery = `SELECT count() FROM analytics ${selector}`
+      const countCustomEVQuery = `SELECT count() FROM customEV ${selector}`
+      const countCaptchaQuery = `SELECT count() FROM captcha ${selector}`
+      const countErrorsQuery = `SELECT count() FROM errors ${selector}`
 
       const promises = [
         clickhouse.query(countEVQuery).toPromise(),
         clickhouse.query(countCustomEVQuery).toPromise(),
         clickhouse.query(countCaptchaQuery).toPromise(),
+        clickhouse.query(countErrorsQuery).toPromise(),
       ]
 
-      const [pageviews, customEvents, captcha] = await Promise.all(promises)
+      const [pageviews, customEvents, captcha, errors] =
+        await Promise.all(promises)
 
       count =
         pageviews[0]['count()'] +
         customEvents[0]['count()'] +
-        captcha[0]['count()']
+        captcha[0]['count()'] +
+        errors[0]['count()']
 
       await redis.set(countKey, `${count}`, 'EX', redisProjectCountCacheTimeout)
     } else {
@@ -734,39 +738,42 @@ export class ProjectService {
         return DEFAULT_USAGE_INFO
       }
 
-      const countEVQuery = `SELECT COUNT() FROM analytics WHERE pid IN (${_join(
-        _map(pids, el => `'${el.id}'`),
-        ',',
-      )}) AND created BETWEEN '${monthStart}' AND '${monthEnd}'`
-      const countCustomEVQuery = `SELECT COUNT() FROM customEV WHERE pid IN (${_join(
-        _map(pids, el => `'${el.id}'`),
-        ',',
-      )}) AND created BETWEEN '${monthStart}' AND '${monthEnd}'`
-      const countCaptchaQuery = `SELECT COUNT() FROM captcha WHERE pid IN (${_join(
-        _map(pids, el => `'${el.id}'`),
-        ',',
-      )}) AND created BETWEEN '${monthStart}' AND '${monthEnd}'`
+      const selector = `
+        WHERE pid IN (${_join(
+          _map(pids, el => `'${el.id}'`),
+          ',',
+        )})
+        AND created BETWEEN '${monthStart}' AND '${monthEnd}'
+      `
+
+      const countEVQuery = `SELECT count() FROM analytics ${selector}`
+      const countCustomEVQuery = `SELECT count() FROM customEV ${selector}`
+      const countCaptchaQuery = `SELECT count() FROM captcha ${selector}`
+      const countErrorsQuery = `SELECT count() FROM errors ${selector}`
 
       const promises = [
         clickhouse.query(countEVQuery).toPromise(),
         clickhouse.query(countCustomEVQuery).toPromise(),
         clickhouse.query(countCaptchaQuery).toPromise(),
+        clickhouse.query(countErrorsQuery).toPromise(),
       ]
 
-      const [rawTraffic, rawCustomEvents, rawCaptcha] =
+      const [rawTraffic, rawCustomEvents, rawCaptcha, rawErrors] =
         await Promise.all(promises)
 
       const traffic = rawTraffic[0]['count()']
       const customEvents = rawCustomEvents[0]['count()']
       const captcha = rawCaptcha[0]['count()']
+      const errors = rawErrors[0]['count()']
 
-      const total = traffic + customEvents + captcha
+      const total = traffic + customEvents + captcha + errors
 
       info = {
         total,
         traffic,
         customEvents,
         captcha,
+        errors,
       }
 
       await redis.set(
@@ -827,12 +834,15 @@ export class ProjectService {
         id: projectId,
         admin: { id: userId },
       },
+      relations: ['admin'],
     })
   }
 
-  async getPIDsWhereAnalyticsDataExists(projectIds: string[]) {
+  async getPIDsWhereAnalyticsDataExists(
+    projectIds: string[],
+  ): Promise<string[]> {
     if (_isEmpty(projectIds)) {
-      return {}
+      return []
     }
 
     const params = _reduce(
@@ -879,6 +889,50 @@ export class ProjectService {
           FROM customEV
           WHERE pid IN (${pids})
         ) AS t
+      );
+    `
+
+    const result: any = await clickhouse.query(query, { params }).toPromise()
+
+    return _map(result, ({ pid }) => pid)
+  }
+
+  async getPIDsWhereErrorsDataExists(projectIds: string[]): Promise<string[]> {
+    if (_isEmpty(projectIds)) {
+      return []
+    }
+
+    const params = _reduce(
+      projectIds,
+      (acc, curr, index) => ({
+        ...acc,
+        [`pid_${index}`]: curr,
+      }),
+      {},
+    )
+
+    const pids = _join(
+      _map(params, (val, key) => `{${key}:FixedString(12)}`),
+      ',',
+    )
+
+    const query = `
+      SELECT
+        pid,
+        CASE
+          WHEN EXISTS (
+            SELECT 1
+            FROM errors
+            WHERE pid IN (${pids})
+          )
+          THEN 1
+          ELSE 0
+        END AS exists
+      FROM
+      (
+        SELECT DISTINCT pid
+        FROM errors
+        WHERE pid IN (${pids})
       );
     `
 

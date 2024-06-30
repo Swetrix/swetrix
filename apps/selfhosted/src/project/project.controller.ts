@@ -11,16 +11,24 @@ import {
   BadRequestException,
   HttpCode,
   NotFoundException,
+  Headers,
+  UnauthorizedException,
+  Patch,
 } from '@nestjs/common'
+import { v4 as uuidv4 } from 'uuid'
 import { ApiTags, ApiQuery, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _map from 'lodash/map'
 import * as _trim from 'lodash/trim'
 import * as _size from 'lodash/size'
 import * as _split from 'lodash/split'
+import * as _isBoolean from 'lodash/isBoolean'
+import * as _omit from 'lodash/omit'
+import * as _reduce from 'lodash/reduce'
 import * as _head from 'lodash/head'
 import * as _includes from 'lodash/includes'
 import * as dayjs from 'dayjs'
+import { hash } from 'bcrypt'
 
 import { JwtAccessTokenGuard } from '../auth/guards'
 import { Auth } from '../auth/decorators'
@@ -36,7 +44,13 @@ import { RolesGuard } from '../auth/guards/roles.guard'
 import { Pagination } from '../common/pagination/pagination'
 import { Project } from './entity/project.entity'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
-import { ProjectDTO, CreateProjectDTO } from './dto'
+import {
+  ProjectDTO,
+  CreateProjectDTO,
+  UpdateProjectDto,
+  FunnelCreateDTO,
+  FunnelUpdateDTO,
+} from './dto'
 import { AppLoggerService } from '../logger/logger.service'
 import { isValidPID, clickhouse } from '../common/constants'
 import {
@@ -44,7 +58,12 @@ import {
   createProjectClickhouse,
   updateProjectClickhouse,
   deleteProjectClickhouse,
+  getFunnelsClickhouse,
+  deleteFunnelClickhouse,
+  createFunnelClickhouse,
+  updateFunnelClickhouse,
 } from '../common/utils'
+import { Funnel } from './entity/funnel.entity'
 
 @ApiTags('Project')
 @Controller('project')
@@ -57,18 +76,18 @@ export class ProjectController {
   @Get('/')
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
-  @ApiQuery({ name: 'isCaptcha', required: false, type: Boolean })
-  @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
+  @ApiQuery({ name: 'search', required: false, type: String })
   @ApiResponse({ status: 200, type: [Project] })
   @Auth([UserType.CUSTOMER, UserType.ADMIN], true)
   async get(
     @CurrentUserId() userId: string,
     @Query('take') take: number | undefined,
     @Query('skip') skip: number | undefined,
+    @Query('search') search: string | undefined,
   ): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /project')
 
-    const chResults = await getProjectsClickhouse()
+    const chResults = await getProjectsClickhouse(null, search)
     const formatted = _map(chResults, this.projectService.formatFromClickhouse)
 
     const pidsWithData =
@@ -76,11 +95,44 @@ export class ProjectController {
         _map(formatted, ({ id }) => id),
       )
 
+    const pidsWithErrorData =
+      await this.projectService.getPIDsWhereErrorsDataExists(
+        _map(formatted, ({ id }) => id),
+      )
+
+    const funnelsData = await Promise.allSettled(
+      pidsWithData.map(async pid => {
+        return {
+          pid,
+          data: await getFunnelsClickhouse(pid),
+        }
+      }),
+    )
+
+    const funnelsMap = _reduce(
+      funnelsData,
+      (acc, { status, value }) => {
+        if (status !== 'fulfilled') {
+          return acc
+        }
+
+        return {
+          ...acc,
+          [value.pid]: this.projectService.formatFunnelsFromClickhouse(
+            value.data,
+          ),
+        }
+      },
+      {},
+    )
+
     const results = _map(formatted, p => ({
-      ...p,
+      ..._omit(p, ['passwordHash']),
+      funnels: funnelsMap[p.id],
       isOwner: true,
       isLocked: false,
       isDataExists: _includes(pidsWithData, p?.id),
+      isErrorDataExists: _includes(pidsWithErrorData, p?.id),
     }))
 
     return {
@@ -160,6 +212,155 @@ export class ProjectController {
       this.logger.error(e)
       return 'Error while resetting your project'
     }
+  }
+
+  @Post('/funnel')
+  @ApiResponse({ status: 201 })
+  @Auth([], true)
+  async createFunnel(
+    @Body() funnelDTO: FunnelCreateDTO,
+    @CurrentUserId() userId: string,
+  ): Promise<any> {
+    this.logger.log({ funnelDTO, userId }, 'POST /project/funnel')
+
+    if (!userId) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
+    const project = getProjectsClickhouse(funnelDTO.pid)
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const funnel = new Funnel()
+    funnel.id = uuidv4()
+    funnel.name = funnelDTO.name
+    funnel.steps = _map(funnelDTO.steps, _trim)
+    funnel.projectId = funnelDTO.pid
+
+    const formatted = this.projectService.formatFunnelToClickhouse(funnel)
+
+    await createFunnelClickhouse(formatted)
+
+    return {
+      ...funnel,
+      pid: funnelDTO.pid,
+      project: _omit(this.projectService.formatFromClickhouse(project), [
+        'passwordHash',
+      ]),
+    }
+  }
+
+  @Patch('/funnel')
+  @ApiResponse({ status: 200 })
+  @Auth([], true)
+  async updateFunnel(
+    @Body() funnelDTO: FunnelUpdateDTO,
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
+    this.logger.log({ funnelDTO, userId }, 'PATCH /project/funnel')
+
+    if (!userId) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
+    const project = getProjectsClickhouse(funnelDTO.pid)
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const oldFunnel = this.projectService.formatFunnelFromClickhouse(
+      await getFunnelsClickhouse(funnelDTO.pid, funnelDTO.id),
+    )
+
+    if (!oldFunnel) {
+      throw new NotFoundException('Funnel not found.')
+    }
+
+    await updateFunnelClickhouse(
+      this.projectService.formatFunnelToClickhouse({
+        id: funnelDTO.id,
+        name: funnelDTO.name,
+        steps: funnelDTO.steps,
+      } as Funnel),
+    )
+  }
+
+  @Delete('/funnel/:id/:pid')
+  @ApiResponse({ status: 200 })
+  @Auth([], true)
+  async deleteFunnel(
+    @Param('id') id: string,
+    @Param('pid') pid: string,
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
+    this.logger.log({ id, userId }, 'PATCH /project/funnel')
+
+    if (!userId) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
+    const oldFunnel = getFunnelsClickhouse(pid, id)
+
+    if (!oldFunnel) {
+      throw new NotFoundException('Funnel not found.')
+    }
+
+    await deleteFunnelClickhouse(id)
+  }
+
+  @Get('/funnels/:pid')
+  @ApiResponse({ status: 200 })
+  @Auth([], true)
+  async getFunnels(
+    @Param('pid') pid: string,
+    @CurrentUserId() userId: string,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<any> {
+    this.logger.log({ pid, userId }, 'PATCH /project/funnel')
+
+    if (!userId) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
+    const project = await getProjectsClickhouse(pid)
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    this.projectService.allowedToView(project, userId, headers['x-password'])
+
+    return this.projectService.formatFunnelsFromClickhouse(
+      await getFunnelsClickhouse(pid),
+    )
+  }
+
+  @Get('password/:projectId')
+  @Auth([], true, true)
+  @ApiResponse({ status: 200, type: Project })
+  async checkPassword(
+    @Param('projectId') projectId: string,
+    @CurrentUserId() userId: string,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<boolean> {
+    this.logger.log({ projectId }, 'GET /project/password/:projectId')
+
+    const project = await getProjectsClickhouse(projectId)
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    try {
+      this.projectService.allowedToView(project, userId, headers['x-password'])
+    } catch {
+      return false
+    }
+
+    return true
   }
 
   @Delete('/partially/:pid')
@@ -253,7 +454,7 @@ export class ProjectController {
   @ApiResponse({ status: 200, type: Project })
   async update(
     @Param('id') id: string,
-    @Body() projectDTO: ProjectDTO,
+    @Body() projectDTO: UpdateProjectDto,
     @CurrentUserId() uid: string,
   ): Promise<any> {
     this.logger.log({ projectDTO, uid, id }, 'PUT /project/:id')
@@ -264,11 +465,37 @@ export class ProjectController {
       throw new NotFoundException()
     }
 
-    project.active = projectDTO.active
-    project.origins = _map(projectDTO.origins, _trim)
-    project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim)
-    project.name = projectDTO.name
-    project.public = projectDTO.public
+    if (_isBoolean(projectDTO.public)) {
+      project.public = projectDTO.public
+    }
+
+    if (_isBoolean(projectDTO.active)) {
+      project.active = projectDTO.active
+    }
+
+    if (projectDTO.origins) {
+      project.origins = _map(projectDTO.origins, _trim)
+    }
+
+    if (projectDTO.ipBlacklist) {
+      project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim)
+    }
+
+    if (projectDTO.name) {
+      project.name = _trim(projectDTO.name)
+    }
+
+    if (_isBoolean(projectDTO.isPasswordProtected)) {
+      if (projectDTO.isPasswordProtected) {
+        if (projectDTO.password) {
+          project.isPasswordProtected = true
+          project.passwordHash = await hash(projectDTO.password, 10)
+        }
+      } else {
+        project.isPasswordProtected = false
+        project.passwordHash = null
+      }
+    }
 
     await updateProjectClickhouse(
       this.projectService.formatToClickhouse(project),
@@ -277,7 +504,7 @@ export class ProjectController {
     // await updateProjectRedis(id, project)
     await deleteProjectRedis(id)
 
-    return project
+    return _omit(project, ['passwordHash'])
   }
 
   @Get('/:id')
@@ -286,6 +513,7 @@ export class ProjectController {
   async getOne(
     @Param('id') id: string,
     @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
   ): Promise<Project | object> {
     this.logger.log({ id }, 'GET /project/:id')
     if (!isValidPID(id)) {
@@ -300,15 +528,30 @@ export class ProjectController {
       throw new NotFoundException('Project was not found in the database')
     }
 
-    this.projectService.allowedToView(project, uid)
+    if (project.isPasswordProtected && _isEmpty(headers['x-password'])) {
+      return {
+        isPasswordProtected: true,
+        id: project.id,
+      }
+    }
+
+    this.projectService.allowedToView(project, uid, headers['x-password'])
 
     const isDataExists = !_isEmpty(
       await this.projectService.getPIDsWhereAnalyticsDataExists([id]),
     )
 
+    const isErrorDataExists = !_isEmpty(
+      await this.projectService.getPIDsWhereErrorsDataExists([id]),
+    )
+
+    const funnels = await getFunnelsClickhouse(id)
+
     return this.projectService.formatFromClickhouse({
-      ...project,
+      ..._omit(project, ['passwordHash']),
+      funnels: this.projectService.formatFunnelsFromClickhouse(funnels),
       isDataExists,
+      isErrorDataExists,
     })
   }
 }

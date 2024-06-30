@@ -1,10 +1,6 @@
 import { applyDecorators, SetMetadata, UseGuards } from '@nestjs/common'
-import {
-  JwtAccessTokenGuard,
-  MultiAuthGuard,
-  RolesGuard,
-} from 'src/auth/guards'
-import { UserType } from 'src/user/entities/user.entity'
+import { JwtAccessTokenGuard, MultiAuthGuard, RolesGuard } from '../guards'
+import { UserType } from '../../user/entities/user.entity'
 import { ROLES_KEY } from './roles.decorator'
 
 export const IS_OPTIONAL_AUTH_KEY = 'isOptionalAuth'

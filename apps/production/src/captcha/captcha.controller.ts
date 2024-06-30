@@ -4,12 +4,7 @@ import {
   Body,
   UseGuards,
   ForbiddenException,
-  InternalServerErrorException,
   Headers,
-  Request,
-  Req,
-  Response,
-  Res,
   Ip,
   HttpCode,
 } from '@nestjs/common'
@@ -17,14 +12,12 @@ import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 
 import { AppLoggerService } from '../logger/logger.service'
-import { CAPTCHA_COOKIE_KEY } from '../common/constants'
 import { getIPFromHeaders } from '../common/utils'
-import { CaptchaService, DUMMY_PIDS, isDummyPID } from './captcha.service'
+import { CaptchaService, DUMMY_PIDS } from './captcha.service'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { ManualDTO } from './dtos/manual.dto'
 import { ValidateDTO } from './dtos/validate.dto'
-import { AutomaticDTO } from './dtos/automatic.dto'
 import { GenerateDTO, DEFAULT_THEME } from './dtos/generate.dto'
 
 dayjs.extend(utc)
@@ -53,15 +46,13 @@ export class CaptchaController {
     return this.captchaService.generateCaptcha(theme)
   }
 
-  @Post('/verify-manual')
+  @Post('/verify')
   @HttpCode(200)
   @UseGuards(BotDetectionGuard)
   @BotDetection()
-  async verifyManual(
+  async verify(
     @Body() manualDTO: ManualDTO,
-    @Req() request: Request,
     @Headers() headers,
-    @Res({ passthrough: true }) response: Response,
     @Ip() reqIP,
   ): Promise<any> {
     this.logger.log({ manualDTO }, 'POST /captcha/verify-manual')
@@ -69,8 +60,6 @@ export class CaptchaController {
     const { 'user-agent': userAgent } = headers
     // todo: add origin checks
 
-    // @ts-ignore
-    const tokenCookie = request?.cookies?.[CAPTCHA_COOKIE_KEY]
     const { code, hash, pid } = manualDTO
 
     await this.captchaService.validatePIDForCAPTCHA(pid)
@@ -78,7 +67,7 @@ export class CaptchaController {
     const timestamp = dayjs.utc().unix()
 
     // For dummy (test) PIDs
-    if (pid === DUMMY_PIDS.MANUAL_PASS) {
+    if (pid === DUMMY_PIDS.ALWAYS_PASS) {
       const dummyToken = this.captchaService.generateDummyToken()
       return {
         success: true,
@@ -96,32 +85,7 @@ export class CaptchaController {
       throw new ForbiddenException('Incorrect captcha')
     }
 
-    let decrypted
-
-    try {
-      decrypted = await this.captchaService.decryptTokenCaptcha(tokenCookie)
-    } catch (e) {
-      decrypted = {
-        manuallyVerified: 0,
-        automaticallyVerified: 0,
-      }
-    }
-
-    const token = await this.captchaService.generateToken(
-      pid,
-      hash,
-      timestamp,
-      false,
-    )
-
-    const { manuallyVerified, automaticallyVerified } =
-      this.captchaService.incrementManuallyVerified(decrypted)
-
-    const newTokenCookie = this.captchaService.getTokenCaptcha(
-      manuallyVerified,
-      automaticallyVerified,
-    )
-    this.captchaService.setTokenCookie(response, newTokenCookie)
+    const token = await this.captchaService.generateToken(pid, hash, timestamp)
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
@@ -139,116 +103,6 @@ export class CaptchaController {
       timestamp,
       hash,
       pid,
-    }
-  }
-
-  @Post('/verify')
-  @HttpCode(200)
-  @UseGuards(BotDetectionGuard)
-  @BotDetection()
-  async autoVerifiable(
-    @Body() automaticDTO: AutomaticDTO,
-    @Req() request: Request,
-    @Headers() headers,
-    @Res({ passthrough: true }) response: Response,
-    @Ip() reqIP,
-  ): Promise<any> {
-    this.logger.log(automaticDTO, 'POST /captcha/verify')
-
-    const { 'user-agent': userAgent } = headers
-    // todo: add origin checks
-
-    const { pid } = automaticDTO
-
-    await this.captchaService.validatePIDForCAPTCHA(pid)
-
-    // @ts-ignore
-    let tokenCookie = request?.cookies?.[CAPTCHA_COOKIE_KEY]
-
-    let verifiable
-
-    try {
-      verifiable = await this.captchaService.autoVerifiable(pid, tokenCookie)
-    } catch (e) {
-      // Either there was no cookie or the cookie was invalid
-      let newTokenCookie
-
-      if (
-        isDummyPID(pid) &&
-        (pid !== DUMMY_PIDS.AUTO_PASS || pid === DUMMY_PIDS.ALWAYS_FAIL)
-      ) {
-        throw new ForbiddenException('Captcha required')
-      }
-
-      // Set a new cookie
-      try {
-        newTokenCookie = this.captchaService.getTokenCaptcha()
-      } catch (reason) {
-        console.error(reason)
-        throw new InternalServerErrorException(
-          'Could not generate a captcha cookie',
-        )
-      }
-
-      tokenCookie = newTokenCookie
-
-      this.captchaService.setTokenCookie(response, newTokenCookie)
-    }
-
-    if (!verifiable) {
-      throw new ForbiddenException('Captcha required')
-    }
-
-    let decrypted
-
-    const timestamp = dayjs.utc().unix()
-    const token = await this.captchaService.generateToken(
-      pid,
-      null,
-      timestamp,
-      true,
-    )
-
-    if (pid === DUMMY_PIDS.AUTO_PASS) {
-      return {
-        success: true,
-        token,
-        timestamp,
-        hash: null,
-      }
-    }
-
-    try {
-      decrypted = await this.captchaService.decryptTokenCaptcha(tokenCookie)
-    } catch (e) {
-      throw new InternalServerErrorException('Could not decrypt captcha cookie')
-    }
-
-    const { manuallyVerified, automaticallyVerified } =
-      this.captchaService.incrementAutomaticallyVerified(decrypted)
-
-    const newTokenCookie = this.captchaService.getTokenCaptcha(
-      manuallyVerified,
-      automaticallyVerified,
-    )
-
-    this.captchaService.setTokenCookie(response, newTokenCookie)
-
-    const ip = getIPFromHeaders(headers) || reqIP || ''
-
-    await this.captchaService.logCaptchaPass(
-      pid,
-      userAgent,
-      timestamp,
-      false,
-      ip,
-    )
-
-    return {
-      success: true,
-      token,
-      timestamp,
-      hash: null,
     }
   }
 

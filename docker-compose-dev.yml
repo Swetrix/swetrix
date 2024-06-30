@@ -1,11 +1,11 @@
 version: '3.8'
 services:
   redis:
-    image: redis:7.0.11-alpine
+    image: redis:7.2-alpine
     ports:
       - 6379:6379
   clickhouse:
-    image: clickhouse/clickhouse-server:23.4.2.11-alpine
+    image: clickhouse/clickhouse-server:23.8-alpine
     environment:
       CLICKHOUSE_DB: 'analytics'
     ports:

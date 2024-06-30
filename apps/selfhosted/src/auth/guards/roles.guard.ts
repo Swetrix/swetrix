@@ -3,8 +3,8 @@ import { Reflector } from '@nestjs/core'
 import { ExtractJwt } from 'passport-jwt'
 import { verify } from 'jsonwebtoken'
 
-import { UserType } from 'src/user/entities/user.entity'
-import { JWT_ACCESS_TOKEN_SECRET } from 'src/common/constants'
+import { UserType } from '../../user/entities/user.entity'
+import { JWT_ACCESS_TOKEN_SECRET } from '../../common/constants'
 import { ROLES_KEY } from '../decorators'
 
 @Injectable()

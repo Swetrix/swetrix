@@ -10,6 +10,7 @@ import * as _keys from 'lodash/keys'
 import * as _toNumber from 'lodash/toNumber'
 import * as _split from 'lodash/split'
 import * as _isEmpty from 'lodash/isEmpty'
+import * as _isNil from 'lodash/isNil'
 import * as _head from 'lodash/head'
 import * as _round from 'lodash/round'
 import * as _size from 'lodash/size'
@@ -28,19 +29,24 @@ import {
 } from './constants'
 import { DEFAULT_TIMEZONE, TimeFormat } from '../user/entities/user.entity'
 import { Project } from '../project/entity/project.entity'
+import { Funnel } from '../project/entity/funnel.entity'
 
 dayjs.extend(utc)
 
 const RATE_LIMIT_REQUESTS_AMOUNT = 3
 const RATE_LIMIT_TIMEOUT = 86400 // 24 hours
 
-const allowedToUpdateKeys = [
+const ALLOWED_KEYS = [
   'name',
   'origins',
   'ipBlacklist',
   'active',
   'public',
+  'isPasswordProtected',
+  'passwordHash',
 ]
+
+const ALLOWED_FUNNEL_KEYS = ['name', 'steps']
 
 const getRateLimitHash = (ipOrApiKey: string, salt = '') =>
   `rl:${hash(`${ipOrApiKey}${salt}`).toString('hex')}`
@@ -65,9 +71,105 @@ const checkRateLimit = async (
   await redis.set(rlHash, 1 + rlCount, 'EX', reqTimeout)
 }
 
-const getProjectsClickhouse = async (id = null) => {
+const getFunnelsClickhouse = async (projectId: string, funnelId = null) => {
+  const paramsData = {
+    params: {
+      projectId,
+      funnelId,
+    },
+  }
+
+  if (!funnelId) {
+    const query =
+      'SELECT * FROM funnel WHERE projectId = {projectId:FixedString(12)}'
+    return clickhouse.query(query, paramsData).toPromise()
+  }
+
+  const query = `
+    SELECT
+      *
+    FROM funnel
+    WHERE
+      projectId = {projectId:FixedString(12)}
+      AND id = {funnelId:String}`
+
+  const funnel = await clickhouse.query(query, paramsData).toPromise()
+
+  if (_isEmpty(funnel)) {
+    throw new NotFoundException(
+      `Funnel ${funnelId} was not found in the database`,
+    )
+  }
+
+  return _head(funnel)
+}
+
+const updateFunnelClickhouse = async (funnel: any) => {
+  const filtered = _reduce(
+    _filter(_keys(funnel), key => ALLOWED_FUNNEL_KEYS.includes(key)),
+    (obj, key) => {
+      obj[key] = funnel[key]
+      return obj
+    },
+    {},
+  )
+  const columns = _keys(filtered)
+  const values = _values(filtered)
+  const query = `ALTER table funnel UPDATE ${_join(
+    _map(columns, (col, id) => `${col}='${values[id]}'`),
+    ', ',
+  )} WHERE id='${funnel.id}'`
+
+  return clickhouse.query(query).toPromise()
+}
+
+const deleteFunnelClickhouse = async (id: string) => {
+  const paramsData = {
+    params: {
+      id,
+    },
+  }
+
+  const query = `ALTER table funnel DELETE WHERE id = {id:String}`
+  return clickhouse.query(query, paramsData).toPromise()
+}
+
+const createFunnelClickhouse = async (funnel: Partial<Funnel>) => {
+  const paramsData = {
+    params: {
+      ...funnel,
+    },
+  }
+
+  const query = `INSERT INTO funnel (*) VALUES ({id:String},{name:String},{steps:String},{projectId:FixedString(12)},'${dayjs
+    .utc()
+    .format('YYYY-MM-DD HH:mm:ss')}')`
+
+  return clickhouse.query(query, paramsData).toPromise()
+}
+
+const getProjectsClickhouse = async (id = null, search: string = null) => {
   if (!id) {
-    const query = 'SELECT * FROM project;'
+    if (search) {
+      const paramsData = {
+        params: {
+          search: `%${search}%`,
+        },
+      }
+
+      const query = `
+        SELECT
+          *
+        FROM project
+        WHERE
+          name ILIKE {search:String} OR
+          id ILIKE {search:String}
+        ORDER BY created ASC`
+
+      return clickhouse.query(query, paramsData).toPromise()
+    }
+
+    const query = 'SELECT * FROM project ORDER BY created ASC;'
     return clickhouse.query(query).toPromise()
   }
 
@@ -87,9 +189,9 @@ const getProjectsClickhouse = async (id = null) => {
   return _head(project)
 }
 
-const updateProjectClickhouse = async (project: object) => {
+const updateProjectClickhouse = async (project: any) => {
   const filtered = _reduce(
-    _filter(_keys(project), key => allowedToUpdateKeys.includes(key)),
+    _filter(_keys(project), key => ALLOWED_KEYS.includes(key)),
     (obj, key) => {
       obj[key] = project[key]
       return obj
@@ -98,11 +200,9 @@ const updateProjectClickhouse = async (project: object) => {
   )
   const columns = _keys(filtered)
   const values = _values(filtered)
-  // @ts-ignore
   const query = `ALTER table project UPDATE ${_join(
     _map(columns, (col, id) => `${col}='${values[id]}'`),
     ', ',
-    // @ts-ignore
   )} WHERE id='${project.id}'`
   return clickhouse.query(query).toPromise()
 }
@@ -129,9 +229,15 @@ const calculateRelativePercentage = (
   return _round((1 - newVal / oldVal) * -100, round)
 }
 
-const deleteProjectClickhouse = async id => {
-  const query = `ALTER table project DELETE WHERE id='${id}'`
-  return clickhouse.query(query).toPromise()
+const deleteProjectClickhouse = async (id: string) => {
+  const paramsData = {
+    params: {
+      id,
+    },
+  }
+
+  const query = `ALTER table project DELETE WHERE id = {id:FixedString(12)}`
+  return clickhouse.query(query, paramsData).toPromise()
 }
 
 const createProjectClickhouse = async (project: Partial<Project>) => {
@@ -140,9 +246,9 @@ const createProjectClickhouse = async (project: Partial<Project>) => {
       ...project,
     },
   }
-  const query = `INSERT INTO project (*) VALUES ({id:FixedString(12)},{name:String},'', '',1,0,'${dayjs
-    .utc()
-    .format('YYYY-MM-DD HH:mm:ss')}')`
+  const created = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+  const query = `INSERT INTO project (*) VALUES ({id:FixedString(12)},{name:String},'','',1,0,0,NULL,'${created}')`
+
   return clickhouse.query(query, paramsData).toPromise()
 }
 
@@ -261,17 +367,17 @@ const updateUserClickhouse = async (user: IClickhouseUser) => {
   let query = 'ALTER table sfuser UPDATE '
   let separator = ''
 
-  if (user.timezone) {
+  if (!_isNil(user.timezone)) {
     query += `${separator}timezone={timezone:String}`
     separator = ', '
   }
 
-  if (user.timeFormat) {
+  if (!_isNil(user.timeFormat)) {
     query += `${separator}timeFormat={timeFormat:String}`
     separator = ', '
   }
 
-  if (user.showLiveVisitorsInTitle) {
+  if (!_isNil(user.showLiveVisitorsInTitle)) {
     query += `${separator}showLiveVisitorsInTitle={showLiveVisitorsInTitle:Int8}`
     separator = ', '
   }
@@ -385,4 +491,8 @@ export {
   getGeoDetails,
   getIPFromHeaders,
   sumArrays,
+  getFunnelsClickhouse,
+  updateFunnelClickhouse,
+  deleteFunnelClickhouse,
+  createFunnelClickhouse,
 }

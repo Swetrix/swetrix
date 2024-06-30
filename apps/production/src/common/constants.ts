@@ -79,6 +79,7 @@ const REDIS_LOG_DATA_CACHE_KEY = 'log_cache'
 const REDIS_LOG_CAPTCHA_CACHE_KEY = 'log:captcha'
 const REDIS_LOG_PERF_CACHE_KEY = 'perf_cache'
 const REDIS_LOG_CUSTOM_CACHE_KEY = 'log_custom_cache_v3'
+const REDIS_LOG_ERROR_CACHE_KEY = 'log_error_cache'
 const REDIS_SESSION_SALT_KEY = 'log_salt' // is updated every 24 hours
 const REDIS_USERS_COUNT_KEY = 'stats:users_count'
 const REDIS_PROJECTS_COUNT_KEY = 'stats:projects_count'
@@ -87,7 +88,6 @@ const REDIS_SSO_UUID = 'sso:uuid'
 
 // Captcha service
 const { CAPTCHA_SALT } = process.env
-const { CAPTCHA_ENCRYPTION_KEY } = process.env
 
 // 3600 sec -> 1 hour
 const redisProjectCacheTimeout = 3600
@@ -114,7 +114,6 @@ const SEND_WARNING_AT_PERC = 85
 
 const PROJECT_INVITE_EXPIRE = 48
 
-const CAPTCHA_COOKIE_KEY = 'swetrix-captcha-token'
 const CAPTCHA_TOKEN_LIFETIME = 300 // seconds (5 minutes).
 const CAPTCHA_SECRET_KEY_LENGTH = 50
 
@@ -144,6 +143,10 @@ const TRAFFIC_COLUMNS = [
   'me',
   'ca',
 ]
+
+const TRAFFIC_METAKEY_COLUMNS = ['tag:key', 'tag:value']
+
+const ERROR_COLUMNS = ['pg', 'dv', 'br', 'os', 'lc', 'cc', 'rg', 'ct']
 
 const ALL_COLUMNS = [...TRAFFIC_COLUMNS, 'ev']
 
@@ -214,11 +217,9 @@ export {
   ORIGINS_REGEX,
   REDIS_LOG_PERF_CACHE_KEY,
   CAPTCHA_SALT,
-  CAPTCHA_ENCRYPTION_KEY,
   EMAIL_ACTION_ENCRYPTION_KEY,
   isDevelopment,
   getRedisCaptchaKey,
-  CAPTCHA_COOKIE_KEY,
   CAPTCHA_TOKEN_LIFETIME,
   CAPTCHA_SECRET_KEY_LENGTH,
   PRODUCTION_ORIGIN,
@@ -229,7 +230,9 @@ export {
   getRedisUserUsageInfoKey,
   redisUserUsageinfoCacheTimeout,
   TRAFFIC_COLUMNS,
+  TRAFFIC_METAKEY_COLUMNS,
   CAPTCHA_COLUMNS,
+  ERROR_COLUMNS,
   PERFORMANCE_COLUMNS,
   sentryIgnoreErrors,
   isProxiedByCloudflare,
@@ -243,4 +246,6 @@ export {
   BLOG_POSTS_ROOT,
   TRAFFIC_SPIKE_ALLOWED_PERCENTAGE,
   AFFILIATE_CUT,
+  REDIS_LOG_ERROR_CACHE_KEY,
+  PID_REGEX,
 }

@@ -173,11 +173,17 @@ export class ProjectController {
         _map(paginated.results, ({ id }) => id),
       )
 
+    const pidsWithErrorData =
+      await this.projectService.getPIDsWhereErrorsDataExists(
+        _map(paginated.results, ({ id }) => id),
+      )
+
     paginated.results = _map(paginated.results, p => ({
       ...p,
       isOwner: true,
       isLocked: !!user?.dashboardBlockReason,
       isDataExists: _includes(pidsWithData, p?.id),
+      isErrorDataExists: _includes(pidsWithErrorData, p?.id),
     }))
 
     return {
@@ -250,6 +256,11 @@ export class ProjectController {
         _map(paginated.results, ({ project }) => project.id),
       )
 
+    const pidsWithErrorData =
+      await this.projectService.getPIDsWhereErrorsDataExists(
+        _map(paginated.results, ({ project }) => project.id),
+      )
+
     paginated.results = _map(paginated.results, share => {
       const project = processProjectUser(share.project)
 
@@ -261,6 +272,7 @@ export class ProjectController {
           passwordHash: undefined,
           isLocked: !!share?.project?.admin?.dashboardBlockReason,
           isDataExists: _includes(pidsWithData, share?.project?.id),
+          isErrorDataExists: _includes(pidsWithErrorData, share?.project?.id),
         },
       }
     })
@@ -549,7 +561,7 @@ export class ProjectController {
   async updateFunnel(
     @Body() funnelDTO: FunnelUpdateDTO,
     @CurrentUserId() userId: string,
-  ): Promise<any> {
+  ): Promise<void> {
     this.logger.log({ funnelDTO, userId }, 'PATCH /project/funnel')
 
     if (!userId) {
@@ -609,7 +621,7 @@ export class ProjectController {
       throw new NotFoundException('Funnel not found.')
     }
 
-    return this.projectService.updateFunnel({
+    await this.projectService.updateFunnel({
       id: funnelDTO.id,
       name: funnelDTO.name,
       steps: funnelDTO.steps,
@@ -1840,11 +1852,16 @@ export class ProjectController {
       await this.projectService.getPIDsWhereAnalyticsDataExists([id]),
     )
 
+    const isErrorDataExists = !_isEmpty(
+      await this.projectService.getPIDsWhereErrorsDataExists([id]),
+    )
+
     return {
       ..._omit(project, ['admin', 'passwordHash', 'share']),
       isOwner: uid === project.admin?.id,
       isLocked: !!project.admin?.dashboardBlockReason,
       isDataExists,
+      isErrorDataExists,
     }
   }
 }

@@ -15,6 +15,7 @@ import {
   JWT_ACCESS_TOKEN_SECRET,
   JWT_ACCESS_TOKEN_LIFETIME,
   JWT_REFRESH_TOKEN_LIFETIME,
+  SELFHOSTED_API_KEY,
 } from '../common/constants'
 import { getSelfhostedUser, SelfhostedUser } from '../user/entities/user.entity'
 
@@ -110,5 +111,9 @@ export class AuthService {
 
   async logout(userId: string, refreshToken: string) {
     await deleteRefreshTokenClickhouse(userId, refreshToken)
+  }
+
+  isApiKeyValid(apiKey: string): boolean {
+    return apiKey === SELFHOSTED_API_KEY
   }
 }

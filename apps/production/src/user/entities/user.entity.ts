@@ -53,7 +53,7 @@ export const ACCOUNT_PLANS = {
   },
   [PlanCode.trial]: {
     id: PlanCode.trial,
-    monthlyUsageLimit: 100000,
+    monthlyUsageLimit: 10000000,
     maxAlerts: 50,
     legacy: false,
   },

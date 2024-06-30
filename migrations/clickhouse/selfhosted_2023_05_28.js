@@ -7,7 +7,7 @@ const queries = [
   (
     id String,
     timezone Nullable(String),
-    timeFormat Nullable(String)
+    timeFormat Nullable(String),
     showLiveVisitorsInTitle Int8
   )
   ENGINE = MergeTree()

@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty } from 'class-validator'
+import { IsNotEmpty, IsObject, IsOptional, Validate } from 'class-validator'
+
+import {
+  MAX_METADATA_KEYS,
+  MAX_METADATA_VALUE_LENGTH,
+  MetadataKeysQuantity,
+  MetadataSizeLimit,
+} from './events.dto'
 
 export class PageviewsDTO {
   @ApiProperty({
@@ -88,4 +95,21 @@ export class PageviewsDTO {
     page_load: number
     ttfb: number
   }
+
+  @ApiProperty({
+    example: {
+      affiliate: 'Yes',
+      protocol: 'HTTPS',
+    },
+    description: 'Event-related metadata object with string values',
+  })
+  @IsOptional()
+  @IsObject()
+  @Validate(MetadataKeysQuantity, {
+    message: `Metadata object can't have more than ${MAX_METADATA_KEYS} keys`,
+  })
+  @Validate(MetadataSizeLimit, {
+    message: `Metadata object can't have values with total length more than ${MAX_METADATA_VALUE_LENGTH} characters`,
+  })
+  meta?: Record<string, string>
 }

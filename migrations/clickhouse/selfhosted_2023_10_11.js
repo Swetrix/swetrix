@@ -1,7 +1,7 @@
 const { queriesRunner, dbName } = require('./setup')
 
 const queries = [
-  // Added 'showLiveVisitorsInTitle' column
+  // Made 'showLiveVisitorsInTitle' column nullable
   `DROP TABLE IF EXISTS ${dbName}.sfuser_temp`,
   `CREATE TABLE IF NOT EXISTS ${dbName}.sfuser_temp
   (

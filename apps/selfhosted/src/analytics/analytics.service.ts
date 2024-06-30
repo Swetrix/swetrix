@@ -14,6 +14,7 @@ import * as _last from 'lodash/last'
 import * as _some from 'lodash/some'
 import * as _find from 'lodash/find'
 import * as _isArray from 'lodash/isArray'
+import * as _startsWith from 'lodash/startsWith'
 import * as _reduce from 'lodash/reduce'
 import * as _keys from 'lodash/keys'
 import * as _now from 'lodash/now'
@@ -45,8 +46,17 @@ import {
   REDIS_SESSION_SALT_KEY,
   TRAFFIC_COLUMNS,
   PERFORMANCE_COLUMNS,
+  ERROR_COLUMNS,
+  MIN_PAGES_IN_FUNNEL,
+  MAX_PAGES_IN_FUNNEL,
+  ALL_COLUMNS,
+  TRAFFIC_METAKEY_COLUMNS,
 } from '../common/constants'
-import { millisecondsToSeconds, sumArrays } from '../common/utils'
+import {
+  getFunnelsClickhouse,
+  millisecondsToSeconds,
+  sumArrays,
+} from '../common/utils'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
 import { ProjectService } from '../project/project.service'
@@ -75,7 +85,12 @@ import {
   IOverallPerformance,
   IPageflow,
   PerfMeasure,
+  PropertiesCHResponse,
+  IPageProperty,
+  ICustomEvent,
 } from './interfaces'
+import { ErrorDTO } from './dto/error.dto'
+import { GetPagePropertyMetaDTO } from './dto/get-page-property-meta.dto'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -253,7 +268,7 @@ const generateParamsQuery = (
   subQuery: string,
   customEVFilterApplied: boolean,
   isPageInclusiveFilterSet: boolean,
-  isPerformance?: boolean,
+  type: 'traffic' | 'performance' | 'errors',
   measure?: PerfMeasure,
 ): string => {
   let columns = [`${col} as name`]
@@ -266,7 +281,7 @@ const generateParamsQuery = (
 
   const columnsQuery = columns.join(', ')
 
-  if (isPerformance) {
+  if (type === 'performance') {
     const processedMeasure = measure === 'quantiles' ? 'median' : measure
 
     const fn = MEASURES_MAP[processedMeasure]
@@ -276,6 +291,10 @@ const generateParamsQuery = (
     }
 
     return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
+  }
+
+  if (type === 'errors') {
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
   }
 
   if (customEVFilterApplied) {
@@ -326,9 +345,13 @@ const isValidOrigin = (origins: string[], origin: string) => {
 export class AnalyticsService {
   constructor(private readonly projectService: ProjectService) {}
 
-  async checkProjectAccess(pid: string, uid: string | null): Promise<void> {
+  async checkProjectAccess(
+    pid: string,
+    uid: string | null,
+    password: string | null,
+  ): Promise<void> {
     const project = await this.projectService.getRedisProject(pid)
-    this.projectService.allowedToView(project, uid)
+    this.projectService.allowedToView(project, uid, password)
   }
 
   checkOrigin(project: Project, origin: string): void {
@@ -379,9 +402,9 @@ export class AnalyticsService {
   }
 
   async validate(
-    logDTO: PageviewsDTO | EventsDTO,
+    logDTO: PageviewsDTO | EventsDTO | ErrorDTO,
     origin: string,
-    type: 'custom' | 'log' = 'log',
+    type: 'custom' | 'log' | 'error' = 'log',
     ip?: string,
   ): Promise<string | null> {
     if (_isEmpty(logDTO)) {
@@ -437,6 +460,22 @@ export class AnalyticsService {
     this.checkOrigin(project, origin)
 
     return null
+  }
+
+  async getErrorsFilters(pid: string, type: string): Promise<Array<string>> {
+    if (!_includes(ERROR_COLUMNS, type)) {
+      throw new UnprocessableEntityException(
+        `The provided type (${type}) is incorrect`,
+      )
+    }
+
+    const query = `SELECT ${type} FROM errors WHERE pid={pid:FixedString(12)} AND ${type} IS NOT NULL GROUP BY ${type}`
+
+    const results = await clickhouse
+      .query(query, { params: { pid } })
+      .toPromise()
+
+    return _map(results, type)
   }
 
   getDataTypeColumns(dataType: DataType): string[] {
@@ -683,6 +722,62 @@ export class AnalyticsService {
     }
   }
 
+  async getPagesArray(
+    rawPages?: string,
+    funnelId?: string,
+    projectId?: string,
+  ): Promise<string[]> {
+    if (funnelId && projectId) {
+      const funnel = this.projectService.formatFunnelFromClickhouse(
+        await getFunnelsClickhouse(projectId, funnelId),
+      )
+
+      if (!funnel || _isEmpty(funnel)) {
+        throw new UnprocessableEntityException(
+          'The provided funnelId is incorrect',
+        )
+      }
+
+      return funnel.steps
+    }
+
+    try {
+      const pages = JSON.parse(rawPages)
+
+      if (!_isArray(pages)) {
+        throw new UnprocessableEntityException(
+          'An array of pages has to be provided as a pages param',
+        )
+      }
+
+      const size = _size(pages)
+
+      if (size < MIN_PAGES_IN_FUNNEL) {
+        throw new UnprocessableEntityException(
+          `A minimum of ${MIN_PAGES_IN_FUNNEL} pages or events has to be provided`,
+        )
+      }
+
+      if (size > MAX_PAGES_IN_FUNNEL) {
+        throw new UnprocessableEntityException(
+          `A maximum of ${MAX_PAGES_IN_FUNNEL} pages or events can be provided`,
+        )
+      }
+
+      if (_some(pages, page => !_isString(page))) {
+        throw new UnprocessableEntityException(
+          'Pages array must contain string values only',
+        )
+      }
+
+      return pages
+    } catch (e) {
+      throw new UnprocessableEntityException(
+        'Cannot process the provided array of pages',
+      )
+    }
+  }
+
   async getTimeBucketForAllTime(
     pid: string,
     period: string,
@@ -709,7 +804,7 @@ export class AnalyticsService {
     let diff = null
 
     if (from && to) {
-      diff = dayjs(to).diff(dayjs(from?.[0].created || to), 'days')
+      diff = dayjs(to).diff(dayjs(from?.[0]?.created || to), 'days')
 
       const tbMap = _find(timeBucketToDays, ({ lt }) => diff <= lt)
 
@@ -795,9 +890,19 @@ export class AnalyticsService {
           return prev
         }
 
-        if (column === 'ev') {
+        // ev:key -> custom event metadata
+        // ev:key: -> custom event metadata, but we want to check if some meta.key's meta.value equals to a specific value
+        if (
+          column === 'ev' ||
+          column === 'ev:key' ||
+          _startsWith(column, 'ev:key:')
+        ) {
           customEVFilterApplied = true
-        } else if (!_includes(SUPPORTED_COLUMNS, column)) {
+        } else if (
+          !_includes(SUPPORTED_COLUMNS, column) &&
+          !_includes(TRAFFIC_METAKEY_COLUMNS, column) &&
+          !_startsWith(column, 'tag:key:')
+        ) {
           throw new UnprocessableEntityException(
             `The provided filter (${column}) is not supported`,
           )
@@ -805,24 +910,28 @@ export class AnalyticsService {
 
         const res = []
 
+        // commented encodeURIComponent lines of code to support filtering for pages like /product/[id]
+        // until I find a more suitable solution for that later
         if (_isArray(filter)) {
           for (const f of filter) {
-            let encoded = f
+            // let encoded = f
 
-            if (column === 'pg' && f !== null) {
-              encoded = _replace(encodeURIComponent(f), /%2F/g, '/')
-            }
+            // if (column === 'pg' && f !== null) {
+            //   encoded = _replace(encodeURIComponent(f), /%2F/g, '/')
+            // }
 
-            res.push({ filter: encoded, isExclusive })
+            // res.push({ filter: encoded, isExclusive })
+            res.push({ filter: f, isExclusive })
           }
         } else {
-          let encoded = filter
+          // let encoded = filter
 
-          if (column === 'pg' && filter !== null) {
-            encoded = _replace(encodeURIComponent(filter), /%2F/g, '/')
-          }
+          // if (column === 'pg' && filter !== null) {
+          //   encoded = _replace(encodeURIComponent(filter), /%2F/g, '/')
+          // }
 
-          res.push({ filter: encoded, isExclusive })
+          // res.push({ filter: encoded, isExclusive })
+          res.push({ filter, isExclusive })
         }
 
         if (prev[column]) {
@@ -839,7 +948,7 @@ export class AnalyticsService {
     const columns = _keys(converted)
 
     for (let col = 0; col < _size(columns); ++col) {
-      const column = columns[col]
+      const column: string = columns[col]
       query += ' AND ('
 
       for (let f = 0; f < _size(converted[column]); ++f) {
@@ -848,18 +957,46 @@ export class AnalyticsService {
         }
 
         const { filter, isExclusive } = converted[column][f]
+        let sqlColumn = column
+        let isArrayDataset = false
 
         const param = `qf_${col}_${f}`
+        params[param] = filter
 
-        if (filter === null) {
-          query += `${column} IS ${isExclusive ? 'NOT' : ''} NULL`
-          params[param] = filter
+        // when we want to filter meta.value for a specific meta.key
+        if (_startsWith(column, 'ev:key:') || _startsWith(column, 'tag:key:')) {
+          const key = column.replace(/^ev:key:/, '').replace(/^tag:key:/, '')
+          const keyParam = `qfk_${col}_${f}`
+          params[keyParam] = key
+
+          query += `indexOf(meta.key, {${keyParam}:String}) > 0 AND meta.value[indexOf(meta.key, {${keyParam}:String})] ${isExclusive ? '!= ' : '='} {${param}:String}`
           continue
         }
 
-        query += `${isExclusive ? 'NOT ' : ''}${column} = {${param}:String}`
+        // meta.key filters for page properties and custom event metadata
+        // e.g. article "author" (property)
+        if (column === 'ev:key' || column === 'tag:key') {
+          sqlColumn = 'meta.key'
+          isArrayDataset = true
+          // meta.value filters for page properties and custom event metadata
+          // e.g. "Andrii" ("author" value)
+        } else if (column === 'ev:value' || column === 'tag:value') {
+          sqlColumn = 'meta.value'
+          isArrayDataset = true
+        }
 
-        params[param] = filter
+        // TODO: In future I will add contains / not contains filters as well via ILIKE operator
+
+        if (filter === null) {
+          query += isArrayDataset
+            ? ''
+            : `${sqlColumn} IS ${isExclusive ? 'NOT' : ''} NULL`
+          continue
+        }
+
+        query += isArrayDataset
+          ? `indexOf(${sqlColumn}, {${param}:String}) ${isExclusive ? '=' : '>'} 0`
+          : `${isExclusive ? 'NOT ' : ''}${sqlColumn} = {${param}:String}`
       }
 
       query += ')'
@@ -910,7 +1047,7 @@ export class AnalyticsService {
       let dropoff = 0
       let eventsPerc = 100
       let eventsPercStep = 100
-      let dropoffPerc = 0
+      let dropoffPercStep = 0
 
       if (index > 0) {
         const prev = data[index - 1]
@@ -918,7 +1055,7 @@ export class AnalyticsService {
         dropoff = prev.c - row.c
         eventsPerc = _round((row.c / data[0].c) * 100, 2)
         eventsPercStep = _round((row.c / prev.c) * 100, 2)
-        dropoffPerc = _round((dropoff / prev.c) * 100, 2)
+        dropoffPercStep = _round((dropoff / prev.c) * 100, 2)
       }
 
       return {
@@ -927,7 +1064,7 @@ export class AnalyticsService {
         eventsPerc,
         eventsPercStep,
         dropoff,
-        dropoffPerc,
+        dropoffPercStep,
       }
     })
 
@@ -1082,13 +1219,13 @@ export class AnalyticsService {
     // eslint-disable-next-line
     let _to: string
 
-    if (_isEmpty(period) || period === 'custom') {
+    if (_isEmpty(period) || ['today', 'yesterday', 'custom'].includes(period)) {
       const safeTimezone = this.getSafeTimezone(timezone)
 
       const { groupFrom, groupTo } = this.getGroupFromTo(
         from,
         to,
-        null,
+        ['today', 'yesterday'].includes(period) ? TimeBucketType.HOUR : null,
         period,
         safeTimezone,
       )
@@ -1464,13 +1601,19 @@ export class AnalyticsService {
   }
 
   async getFilters(pid: string, type: string): Promise<Array<string>> {
-    if (!_includes(TRAFFIC_COLUMNS, type)) {
+    if (!_includes(ALL_COLUMNS, type)) {
       throw new UnprocessableEntityException(
         `The provided type (${type}) is incorrect`,
       )
     }
 
-    const query = `SELECT ${type} FROM analytics WHERE pid={pid:FixedString(12)} AND ${type} IS NOT NULL GROUP BY ${type}`
+    let query = `SELECT ${type} FROM analytics WHERE pid={pid:FixedString(12)} AND ${type} IS NOT NULL GROUP BY ${type}`
+
+    if (type === 'ev') {
+      query =
+        'SELECT ev FROM customEV WHERE pid={pid:FixedString(12)} AND ev IS NOT NULL GROUP BY ev'
+    }
+
     const results = await clickhouse
       .query(query, { params: { pid } })
       .toPromise()
@@ -1483,25 +1626,30 @@ export class AnalyticsService {
     subQuery: string,
     customEVFilterApplied: boolean,
     paramsData: any,
-    isPerformance: boolean,
+    type: 'traffic' | 'performance' | 'errors',
     measure?: PerfMeasure,
   ): Promise<any> {
     const params = {}
 
     // We need this to display all the pageview related data (e.g. country, browser) when user applies an inclusive filter on the Page column
-    const isPageInclusiveFilterSet = isPerformance
-      ? false
-      : !_isEmpty(
-          _find(
-            parsedFilters,
-            filter => filter.column === 'pg' && !filter.isExclusive,
-          ),
-        )
+    const isPageInclusiveFilterSet =
+      type === 'performance'
+        ? false
+        : !_isEmpty(
+            _find(
+              parsedFilters,
+              filter => filter.column === 'pg' && !filter.isExclusive,
+            ),
+          )
 
     let columns = TRAFFIC_COLUMNS
 
-    if (isPerformance) {
+    if (type === 'performance') {
       columns = PERFORMANCE_COLUMNS
+    }
+
+    if (type === 'errors') {
+      columns = ERROR_COLUMNS
     }
 
     const paramsPromises = _map(columns, async col => {
@@ -1510,7 +1658,7 @@ export class AnalyticsService {
         subQuery,
         customEVFilterApplied,
         isPageInclusiveFilterSet,
-        isPerformance,
+        type,
         measure,
       )
       const res = await clickhouse.query(query, paramsData).toPromise()
@@ -1768,6 +1916,35 @@ export class AnalyticsService {
     return baseQuery
   }
 
+  generateSessionAggregationQuery(
+    timeBucket: TimeBucketType,
+    filtersQuery: string,
+  ): string {
+    const timeBucketFunc = timeBucketConversion[timeBucket]
+    const [selector, groupBy] = this.getGroupSubquery(timeBucket)
+
+    const baseQuery = `
+      SELECT
+        ${selector},
+        avg(sdur) as sdur,
+        count() as pageviews,
+        countIf(unique=1) as uniques
+      FROM (
+        SELECT *,
+          ${timeBucketFunc}(created) as tz_created
+        FROM analytics
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
+      ) as subquery
+      GROUP BY ${groupBy}
+      ORDER BY ${groupBy}
+    `
+
+    return baseQuery
+  }
+
   generateCustomEventsAggregationQuery(
     timeBucket: TimeBucketType,
     filtersQuery: string,
@@ -1909,6 +2086,44 @@ export class AnalyticsService {
     }
   }
 
+  generateErrorsAggregationQuery(
+    timeBucket: TimeBucketType,
+    filtersQuery: string,
+    mode: ChartRenderMode,
+  ): string {
+    const timeBucketFunc = timeBucketConversion[timeBucket]
+    const [selector, groupBy] = this.getGroupSubquery(timeBucket)
+
+    const baseQuery = `
+      SELECT
+        ${selector},
+        count() as count
+      FROM (
+        SELECT pg, dv, br, os, lc, cc, rg, ct,
+          ${timeBucketFunc}(created) as tz_created
+        FROM errors
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
+      ) as subquery
+      GROUP BY ${groupBy}
+      ORDER BY ${groupBy}
+    `
+
+    if (mode === ChartRenderMode.CUMULATIVE) {
+      return `
+        SELECT
+          *,
+          sum(pageviews) OVER (ORDER BY ${groupBy}) as pageviews,
+          sum(uniques) OVER (ORDER BY ${groupBy}) as uniques
+        FROM (${baseQuery})
+      `
+    }
+
+    return baseQuery
+  }
+
   async groupByTimeBucket(
     timeBucket: TimeBucketType,
     from: string,
@@ -1936,7 +2151,7 @@ export class AnalyticsService {
 
         if (!_some(_values(params), val => !_isEmpty(val))) {
           throw new BadRequestException(
-            'The are no parameters for the specified time frames',
+            'There are no parameters for the specified time frames',
           )
         }
       })(),
@@ -1978,7 +2193,7 @@ export class AnalyticsService {
       subQuery,
       customEVFilterApplied,
       paramsData,
-      false,
+      'traffic',
     )
   }
 
@@ -2042,6 +2257,197 @@ export class AnalyticsService {
         uniques,
         sdur,
       },
+    })
+  }
+
+  extractErrorsChartData(result, x: string[]): any {
+    const count = Array(x.length).fill(0)
+
+    for (let row = 0; row < _size(result); ++row) {
+      const dateString = this.generateDateString(result[row])
+
+      const index = x.indexOf(dateString)
+
+      if (index !== -1) {
+        count[index] = result[row].count
+      }
+    }
+
+    return {
+      count,
+    }
+  }
+
+  generateUTCXAxis(
+    timeBucket: TimeBucketType,
+    from: string,
+    to: string,
+  ): {
+    x: string[]
+    format: string
+  } {
+    const iterateTo = dayjs.utc(to)
+    let djsFrom = dayjs.utc(from)
+
+    let format
+
+    switch (timeBucket) {
+      case TimeBucketType.MINUTE:
+      case TimeBucketType.HOUR:
+        format = 'YYYY-MM-DD HH:mm:ss'
+        break
+
+      case TimeBucketType.DAY:
+        format = 'YYYY-MM-DD'
+        break
+
+      case TimeBucketType.MONTH:
+        format = 'YYYY-MM'
+        break
+
+      case TimeBucketType.YEAR:
+        format = 'YYYY'
+        break
+
+      default:
+        throw new BadRequestException(
+          `The provided time bucket (${timeBucket}) is incorrect`,
+        )
+    }
+
+    const x = []
+
+    while (djsFrom.isSameOrBefore(iterateTo, timeBucket)) {
+      x.push(djsFrom.format(format))
+      djsFrom = djsFrom.add(1, timeBucket)
+    }
+
+    return {
+      x,
+      format,
+    }
+  }
+
+  shiftToTimezone(x: string[], timezone: string, format: string): string[] {
+    return _map(x, (date: string) =>
+      dayjs.utc(date).tz(timezone).format(format),
+    )
+  }
+
+  async groupSessionChartByTimeBucket(
+    timeBucket: TimeBucketType,
+    from: string,
+    to: string,
+    filtersQuery: string,
+    paramsData: any,
+    safeTimezone: string,
+  ): Promise<object | void> {
+    const { x, format } = this.generateUTCXAxis(timeBucket, from, to)
+
+    // if (false) {
+    //   const query = this.generateCustomEventsAggregationQuery(
+    //     timeBucket,
+    //     filtersQuery,
+    //     safeTimezone,
+    //     ChartRenderMode.PERIODICAL,
+    //   )
+
+    //   const result = <Array<TrafficCEFilterCHResponse>>(
+    //     await clickhouse.query(query, paramsData).toPromise()
+    //   )
+
+    //   const uniques =
+    //     this.extractCustomEventsChartData(result, xShifted)?._unknown_event ||
+    //     []
+
+    //   const sdur = Array(_size(xShifted)).fill(0)
+
+    //   return Promise.resolve({
+    //     chart: {
+    //       x: xShifted,
+    //       visits: uniques,
+    //       uniques,
+    //       sdur,
+    //     },
+    //   })
+    // }
+
+    const query = this.generateSessionAggregationQuery(timeBucket, filtersQuery)
+
+    const result = <Array<TrafficCHResponse>>(
+      await clickhouse.query(query, paramsData).toPromise()
+    )
+
+    const { visits, uniques, sdur } = this.extractChartData(result, x)
+
+    return Promise.resolve({
+      chart: {
+        x: this.shiftToTimezone(x, safeTimezone, format),
+        visits,
+        uniques,
+        sdur,
+      },
+    })
+  }
+
+  async groupErrorsByTimeBucket(
+    timeBucket: TimeBucketType,
+    from: string,
+    to: string,
+    subQuery: string,
+    filtersQuery: string,
+    paramsData: object,
+    safeTimezone: string,
+    mode: ChartRenderMode,
+  ): Promise<object | void> {
+    let params: unknown = {}
+    let chart: unknown = {}
+
+    const promises = [
+      // Params
+      (async () => {
+        params = await this.generateParams(
+          null,
+          subQuery,
+          false,
+          paramsData,
+          'errors',
+        )
+
+        if (!_some(_values(params), val => !_isEmpty(val))) {
+          throw new BadRequestException(
+            'There are no error details for specified time frame',
+          )
+        }
+      })(),
+
+      // Chart data
+      (async () => {
+        const { x, format } = this.generateUTCXAxis(timeBucket, from, to)
+
+        const query = this.generateErrorsAggregationQuery(
+          timeBucket,
+          filtersQuery,
+          mode,
+        )
+
+        const result = <Array<TrafficCEFilterCHResponse>>(
+          await clickhouse.query(query, paramsData).toPromise()
+        )
+        const { count } = this.extractErrorsChartData(result, x)
+
+        chart = {
+          x: this.shiftToTimezone(x, safeTimezone, format),
+          occurrences: count,
+        }
+      })(),
+    ]
+
+    await Promise.all(promises)
+
+    return Promise.resolve({
+      params,
+      chart,
     })
   }
 
@@ -2145,13 +2551,13 @@ export class AnalyticsService {
           subQuery,
           false,
           paramsData,
-          true,
+          'performance',
           measure,
         )
 
         if (!_some(_values(params), val => !_isEmpty(val))) {
           throw new BadRequestException(
-            'The are no parameters for the specified time frames',
+            'There are no parameters for the specified time frames',
           )
         }
       })(),
@@ -2178,7 +2584,11 @@ export class AnalyticsService {
     })
   }
 
-  async processCustomEV(query: string, params: object): Promise<object> {
+  async getCustomEvents(
+    filtersQuery: string,
+    params: object,
+  ): Promise<ICustomEvent> {
+    const query = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
     const result = {}
 
     const rawCustoms = <Array<CustomsCHResponse>>(
@@ -2206,15 +2616,51 @@ export class AnalyticsService {
     }
   }
 
-  async getCustomEventMetadata(
-    data: GetCustomEventMetadata,
-  ): Promise<IAggregatedMetadata[]> {
+  async getPageProperties(
+    filtersQuery: string,
+    params: object,
+  ): Promise<IPageProperty> {
+    const query = `
+      SELECT
+        meta.key AS property,
+        count()
+      FROM  analytics
+      WHERE pid = {pid:FixedString(12)}
+        ${filtersQuery}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+      GROUP BY property`
+    const result = {}
+
+    const rawProperties = <Array<PropertiesCHResponse>>(
+      await clickhouse.query(query, params).toPromise()
+    )
+    const size = _size(rawProperties)
+
+    for (let i = 0; i < size; ++i) {
+      const { property: propertyArr, 'count()': c } = rawProperties[i]
+      const [property] = propertyArr
+
+      if (!property) {
+        continue
+      }
+
+      result[property] = c
+    }
+
+    return result
+  }
+
+  async getCustomEventMetadata(data: GetCustomEventMetadata): Promise<{
+    result: IAggregatedMetadata[]
+    appliedFilters: GetFiltersQuery[2]
+  }> {
     const {
       pid,
       period,
       timeBucket,
       from,
       to,
+      filters,
       timezone = DEFAULT_TIMEZONE,
       event,
     } = data
@@ -2222,6 +2668,11 @@ export class AnalyticsService {
     let newTimebucket = timeBucket
 
     let diff
+
+    const [filtersQuery, filtersParams, appliedFilters] = this.getFiltersQuery(
+      filters,
+      DataType.ANALYTICS,
+    )
 
     if (period === 'all') {
       const res = await this.getTimeBucketForAllTime(pid, period, timezone)
@@ -2245,16 +2696,26 @@ export class AnalyticsService {
       diff,
     )
 
-    const query = `SELECT 
-      meta.key AS key, 
-      meta.value AS value,
-      count() AS count
-    FROM customEV
-    ARRAY JOIN meta.key, meta.value
-    WHERE pid = {pid:FixedString(12)}
-      AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-      AND ev = {event:String}
-    GROUP BY key, value`
+    const query = `
+      SELECT 
+        meta.key AS key, 
+        meta.value AS value,
+        count() AS count
+      FROM (
+        SELECT
+          meta.key,
+          meta.value
+        FROM
+          customEV
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND ev = {event:String}
+          ${filtersQuery}
+      )
+      ARRAY JOIN meta.key, meta.value
+      GROUP BY key, value
+    `
 
     const paramsData = {
       params: {
@@ -2262,14 +2723,122 @@ export class AnalyticsService {
         groupFrom: groupFromUTC,
         groupTo: groupToUTC,
         event,
+        ...filtersParams,
       },
     }
 
     try {
-      const result = await clickhouse.query(query, paramsData).toPromise()
-      return result as IAggregatedMetadata[]
+      const result = (await clickhouse
+        .query(query, paramsData)
+        .toPromise()) as IAggregatedMetadata[]
+
+      return {
+        result,
+        appliedFilters,
+      }
     } catch (reason) {
       console.error(`[ERROR](getCustomEventMetadata): ${reason}`)
+      throw new InternalServerErrorException(
+        'Something went wrong. Please, try again later.',
+      )
+    }
+  }
+
+  async getPagePropertyMeta(data: GetPagePropertyMetaDTO): Promise<{
+    result: IAggregatedMetadata[]
+    appliedFilters: GetFiltersQuery[2]
+  }> {
+    const {
+      pid,
+      period,
+      timeBucket,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE,
+      property,
+      filters,
+    } = data
+
+    let newTimebucket = timeBucket
+
+    let diff
+
+    const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
+      this.getFiltersQuery(filters, DataType.ANALYTICS)
+
+    // We cannot make a query to customEV table using analytics table properties
+    if (customEVFilterApplied) {
+      return {
+        result: [],
+        appliedFilters,
+      }
+    }
+
+    if (period === 'all') {
+      const res = await this.getTimeBucketForAllTime(pid, period, timezone)
+
+      diff = res.diff
+      // eslint-disable-next-line prefer-destructuring
+      newTimebucket = _includes(res.timeBucket, timeBucket)
+        ? timeBucket
+        : res.timeBucket[0]
+    }
+
+    this.validateTimebucket(newTimebucket)
+
+    const safeTimezone = this.getSafeTimezone(timezone)
+    const { groupFromUTC, groupToUTC } = this.getGroupFromTo(
+      from,
+      to,
+      newTimebucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const query = `
+      SELECT 
+        meta.key AS key, 
+        meta.value AS value,
+        count() AS count
+      FROM (
+        SELECT
+          meta.key,
+          meta.value
+        FROM
+          analytics
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND indexOf(meta.key, {property:String}) > 0
+          ${filtersQuery}
+      )
+      ARRAY JOIN meta.key, meta.value
+      WHERE meta.key = {property:String}
+      GROUP BY key, value
+    `
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+        property,
+        ...filtersParams,
+      },
+    }
+
+    try {
+      const result = (await clickhouse
+        .query(query, paramsData)
+        .toPromise()) as IAggregatedMetadata[]
+
+      return {
+        result,
+        appliedFilters,
+      }
+    } catch (reason) {
+      console.error(`[ERROR](getPagePropertyMeta): ${reason}`)
       throw new InternalServerErrorException(
         'Something went wrong. Please, try again later.',
       )
@@ -2354,7 +2923,7 @@ export class AnalyticsService {
         SELECT
           'pageview' AS type,
           pg AS value,
-          created
+          toTimeZone(analytics.created, '${safeTimezone}') AS created
         FROM analytics
         WHERE
           pid = {pid:FixedString(12)}
@@ -2365,7 +2934,7 @@ export class AnalyticsService {
         SELECT
           'event' AS type,
           ev AS value,
-          created
+          toTimeZone(customEV.created, '${safeTimezone}') AS created
         FROM customEV
         WHERE
           pid = {pid:FixedString(12)}
@@ -2422,10 +2991,14 @@ export class AnalyticsService {
     let timeBucket = null
 
     if (!_isEmpty(pages)) {
-      const from = dayjs(pages[0].created)
+      const from = dayjs
+        .tz(pages[0].created, safeTimezone)
+        .utc()
         .startOf('minute')
         .format('YYYY-MM-DD HH:mm:ss')
-      const to = dayjs(pages[_size(pages) - 1].created)
+      const to = dayjs
+        .tz(pages[_size(pages) - 1].created, safeTimezone)
+        .utc()
         .endOf('minute')
         .format('YYYY-MM-DD HH:mm:ss')
 
@@ -2435,7 +3008,7 @@ export class AnalyticsService {
           ? TimeBucketType.HOUR
           : TimeBucketType.MINUTE
 
-      const groupedChart = await this.groupChartByTimeBucket(
+      const groupedChart = await this.groupSessionChartByTimeBucket(
         timeBucket,
         from,
         to,
@@ -2448,8 +3021,6 @@ export class AnalyticsService {
           },
         },
         safeTimezone,
-        false,
-        ChartRenderMode.PERIODICAL,
       )
 
       // @ts-ignore
@@ -2467,9 +3038,6 @@ export class AnalyticsService {
     skip = 0,
     customEVFilterApplied = false,
   ): Promise<object | void> {
-    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
-    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
-
     const analyticsSubquery = `
       SELECT
         isNotNull(sid) AS active,
@@ -2477,12 +3045,12 @@ export class AnalyticsService {
         cc,
         os,
         br,
-        created
+        toTimeZone(analytics.created, '${safeTimezone}') AS created
       FROM analytics
       WHERE
         pid = {pid:FixedString(12)}
         AND psid IS NOT NULL
-        AND created BETWEEN ${tzFromDate} AND ${tzToDate}
+        AND analytics.created BETWEEN {groupFrom:String} AND {groupTo:String}
         ${filtersQuery}
     `
 
@@ -2493,12 +3061,12 @@ export class AnalyticsService {
         cc,
         os,
         br,
-        created
+        toTimeZone(customEV.created, '${safeTimezone}') AS created
       FROM customEV
       WHERE
         pid = {pid:FixedString(12)}
         AND psid IS NOT NULL
-        AND created BETWEEN ${tzFromDate} AND ${tzToDate}
+        AND customEV.created BETWEEN {groupFrom:String} AND {groupTo:String}
         ${filtersQuery}
     `
 
@@ -2524,6 +3092,230 @@ export class AnalyticsService {
     const result = await clickhouse.query(query, paramsData).toPromise()
 
     return result
+  }
+
+  async getErrorsList(
+    options: string,
+    filtersQuery: string,
+    paramsData: object,
+    safeTimezone: string,
+    take = 30,
+    skip = 0,
+  ): Promise<object | void> {
+    let parsedOptions: {
+      showResolved?: boolean
+    } = {}
+
+    try {
+      parsedOptions = JSON.parse(options)
+    } catch (reason) {
+      console.error('[getErrorsList] Failed to parse options:', options)
+    }
+
+    const query = `
+      SELECT
+        eid,
+        any(name) as name,
+        any(message) as message,
+        any(filename) as filename,
+        count(*) as count,
+        max(created) as last_seen,
+        status.status
+      FROM (
+        SELECT eid, name, message, filename, toTimeZone(errors.created, '${safeTimezone}') AS created
+        FROM errors
+        WHERE pid = {pid:FixedString(12)}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          ${filtersQuery}
+      ) AS errors
+      LEFT JOIN (
+        SELECT
+          eid,
+          argMax(status, updated) AS status
+        FROM error_statuses
+        WHERE pid = {pid:FixedString(12)}
+        GROUP BY eid
+      ) AS status ON errors.eid = status.eid
+      ${
+        parsedOptions?.showResolved
+          ? ''
+          : "WHERE status.status = 'active' OR status.status = 'regressed'"
+      }
+      GROUP BY errors.eid, status.status
+      ORDER BY last_seen DESC
+      LIMIT ${take}
+      OFFSET ${skip};
+    `
+
+    const result = await clickhouse.query(query, paramsData).toPromise()
+
+    return result
+  }
+
+  async getErrorDetails(
+    pid: string,
+    eid: string,
+    safeTimezone: string,
+    groupFrom: string,
+    groupTo: string,
+    timeBucket: any,
+  ): Promise<any> {
+    const queryErrorDetails = `
+      SELECT
+        subquery.eid,
+        any(subquery.name) AS name,
+        any(subquery.message) AS message,
+        any(subquery.filename) AS filename,
+        any(subquery.colno) AS colno,
+        any(subquery.lineno) AS lineno,
+        count(*) AS count,
+        status.status
+      FROM (
+        SELECT
+          eid,
+          name,
+          message,
+          filename,
+          colno,
+          lineno
+        FROM errors
+        WHERE pid = {pid:FixedString(12)}
+          AND eid = {eid:FixedString(32)}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+      ) AS subquery
+      LEFT JOIN (
+        SELECT
+          eid,
+          argMax(status, updated) AS status
+        FROM error_statuses
+        WHERE pid = {pid:FixedString(12)}
+          AND eid = {eid:FixedString(32)}
+        GROUP BY eid
+      ) AS status ON subquery.eid = status.eid
+      GROUP BY subquery.eid, status.status;
+    `
+
+    const queryFirstLastSeen = `
+      SELECT
+        max(created) AS last_seen,
+        min(created) AS first_seen
+      FROM errors
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND eid = {eid:FixedString(32)};
+    `
+
+    const paramsData = {
+      params: {
+        pid,
+        eid,
+        groupFrom,
+        groupTo,
+      },
+    }
+
+    const details = (
+      await clickhouse.query(queryErrorDetails, paramsData).toPromise()
+    )[0]
+
+    const occurenceDetails = (
+      await clickhouse.query(queryFirstLastSeen, paramsData).toPromise()
+    )[0]
+
+    const groupedChart = await this.groupErrorsByTimeBucket(
+      timeBucket,
+      groupFrom,
+      groupTo,
+      `FROM errors WHERE eid = {eid:FixedString(32)} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`,
+      'AND eid = {eid:FixedString(32)}',
+      paramsData,
+      safeTimezone,
+      ChartRenderMode.PERIODICAL,
+    )
+
+    return {
+      details: {
+        ...details,
+        ...occurenceDetails,
+      },
+      ...groupedChart,
+      timeBucket,
+    }
+  }
+
+  getErrorID(errorDTO: ErrorDTO): string {
+    const { name, message, colno, lineno, filename } = errorDTO
+
+    return hash(`${name}${message}${colno}${lineno}${filename}`, {
+      length: 16,
+    }).toString('hex')
+  }
+
+  async validateEIDs(eids: string[], pid: string) {
+    const params = _reduce(
+      eids,
+      (acc, curr, index) => ({
+        ...acc,
+        [`e_${index}`]: curr,
+      }),
+      {},
+    )
+
+    const query = `SELECT count(DISTINCT eid) as count FROM errors WHERE pid = {pid:FixedString(12)} AND eid IN (${_map(
+      params,
+      (val, key) => `{${key}:FixedString(32)}`,
+    ).join(', ')})`
+
+    let result
+
+    try {
+      ;[result] = await clickhouse
+        .query(query, { params: { ...params, pid } })
+        .toPromise()
+    } catch (reason) {
+      console.error('validateEIDs - clickhouse request error')
+      console.error(reason)
+      throw new InternalServerErrorException(
+        'Error occured while validating error IDs',
+      )
+    }
+
+    if (result.count !== _size(eids)) {
+      throw new UnprocessableEntityException(
+        'Some of the error IDs you provided are not valid (do not exist in our database)',
+      )
+    }
+  }
+
+  async updateEIDStatus(
+    eids: string[],
+    status: 'resolved' | 'active',
+    pid: string,
+  ) {
+    const params = _reduce(
+      eids,
+      (acc, curr, index) => ({
+        ...acc,
+        [`e_${index}`]: curr,
+      }),
+      {},
+    )
+
+    const query = `INSERT INTO error_statuses (eid, pid, status) VALUES ${_map(
+      params,
+      (val, key) =>
+        `({${key}:FixedString(32)}, {pid:FixedString(12)}, '${status}')`,
+    ).join(', ')}`
+
+    try {
+      await clickhouse.query(query, { params: { ...params, pid } }).toPromise()
+    } catch (reason) {
+      console.error('Error at PATCH error-status:')
+      console.error(reason)
+      throw new InternalServerErrorException(
+        'Error occured while updating error status',
+      )
+    }
   }
 
   async getOnlineCountByProjectId(projectId: string) {

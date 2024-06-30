@@ -57,6 +57,7 @@ import {
   PAYPAL_CLIENT_SECRET,
   TRAFFIC_SPIKE_ALLOWED_PERCENTAGE,
   isDevelopment,
+  REDIS_LOG_ERROR_CACHE_KEY,
 } from '../common/constants'
 import { CHPlanUsage } from './interfaces'
 import { getRandomTip } from '../common/utils'
@@ -102,7 +103,7 @@ const getQueryCondition = (condition: QueryCondition): string => {
   return ''
 }
 
-// TODO: Check custom events & CAPTCHA events as well
+// TODO: Check custom events, CAPTCHA events and errors as well
 const generatePlanUsageQuery = (
   users: User[],
   getDate: (user?: User) => string,
@@ -309,7 +310,8 @@ export class TaskManagerService {
     const promises = _map(users, async user => {
       const { id, email, projects } = user
 
-      if (_isEmpty(projects) || _isNull(projects)) {
+      // todo: move _size(projects) to query
+      if (_isEmpty(projects) || _isNull(projects) || _size(projects) > 50) {
         return
       }
 
@@ -412,6 +414,7 @@ export class TaskManagerService {
     const customData = await redis.lrange(REDIS_LOG_CUSTOM_CACHE_KEY, 0, -1)
     const perfData = await redis.lrange(REDIS_LOG_PERF_CACHE_KEY, 0, -1)
     const captchaData = await redis.lrange(REDIS_LOG_CAPTCHA_CACHE_KEY, 0, -1)
+    const errorData = await redis.lrange(REDIS_LOG_ERROR_CACHE_KEY, 0, -1)
 
     if (!_isEmpty(data)) {
       await redis.del(REDIS_LOG_DATA_CACHE_KEY)
@@ -448,6 +451,19 @@ export class TaskManagerService {
       }
     }
 
+    if (!_isEmpty(errorData)) {
+      await redis.del(REDIS_LOG_ERROR_CACHE_KEY)
+      const query = `INSERT INTO errors (*) VALUES ${_join(errorData, ',')}`
+
+      try {
+        await clickhouse.query(query).toPromise()
+      } catch (e) {
+        console.error(
+          `[CRON WORKER] Error whilst saving error events data: ${e}`,
+        )
+      }
+    }
+
     if (!_isEmpty(perfData)) {
       await redis.del(REDIS_LOG_PERF_CACHE_KEY)
 
@@ -474,7 +490,7 @@ export class TaskManagerService {
       await this.userService.find({
         where: {
           isActive: true,
-          planCode: Not(PlanCode.none),
+          planCode: Not(In([PlanCode.none, PlanCode.trial])),
           planExceedContactedAt: MoreThan(sevenDaysAgo),
           dashboardBlockReason: IsNull(),
           isAccountBillingSuspended: false,
@@ -535,7 +551,7 @@ export class TaskManagerService {
       await this.userService.find({
         where: {
           isActive: true,
-          planCode: Not(PlanCode.none),
+          planCode: Not(In([PlanCode.none, PlanCode.trial])),
           planExceedContactedAt: IsNull(),
           dashboardBlockReason: IsNull(),
           isAccountBillingSuspended: false,
