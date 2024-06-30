@@ -112,6 +112,8 @@ const TRAFFIC_COLUMNS = [
 
 const ALL_COLUMNS = [...TRAFFIC_COLUMNS, 'ev']
 
+const TRAFFIC_METAKEY_COLUMNS = ['tag:key', 'tag:value']
+
 const PERFORMANCE_COLUMNS = ['cc', 'rg', 'ct', 'pg', 'dv', 'br']
 const ERROR_COLUMNS = ['pg', 'dv', 'br', 'os', 'lc', 'cc', 'rg', 'ct']
 
@@ -128,6 +130,7 @@ export {
   REDIS_LOG_DATA_CACHE_KEY,
   REDIS_LOG_CAPTCHA_CACHE_KEY,
   REDIS_LOG_CUSTOM_CACHE_KEY,
+  TRAFFIC_METAKEY_COLUMNS,
   REDIS_SESSION_SALT_KEY,
   HEARTBEAT_SID_LIFE_TIME,
   UUIDV5_NAMESPACE,

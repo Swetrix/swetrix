@@ -10,11 +10,11 @@ import {
   Validate,
 } from 'class-validator'
 
-const MAX_METADATA_KEYS = 20
-const MAX_METADATA_VALUE_LENGTH = 1000
+export const MAX_METADATA_KEYS = 20
+export const MAX_METADATA_VALUE_LENGTH = 1000
 
 @ValidatorConstraint()
-class MetadataSizeLimit implements ValidatorConstraintInterface {
+export class MetadataSizeLimit implements ValidatorConstraintInterface {
   validate(metadata: Record<string, string>) {
     const values = _values(metadata)
     let totalSize = 0
@@ -31,7 +31,7 @@ class MetadataSizeLimit implements ValidatorConstraintInterface {
 }
 
 @ValidatorConstraint()
-class MetadataKeysQuantity implements ValidatorConstraintInterface {
+export class MetadataKeysQuantity implements ValidatorConstraintInterface {
   validate(metadata: Record<string, string>) {
     return _keys(metadata).length <= MAX_METADATA_KEYS
   }
