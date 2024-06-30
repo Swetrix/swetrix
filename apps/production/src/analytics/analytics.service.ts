@@ -2949,15 +2949,17 @@ export class AnalyticsService {
     }
   }
 
-  async getCustomEventMetadata(
-    data: GetCustomEventMetadata,
-  ): Promise<IAggregatedMetadata[]> {
+  async getCustomEventMetadata(data: GetCustomEventMetadata): Promise<{
+    result: IAggregatedMetadata[]
+    appliedFilters: GetFiltersQuery[2]
+  }> {
     const {
       pid,
       period,
       timeBucket,
       from,
       to,
+      filters,
       timezone = DEFAULT_TIMEZONE,
       event,
     } = data
@@ -2965,6 +2967,17 @@ export class AnalyticsService {
     let newTimebucket = timeBucket
 
     let diff
+
+    const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
+      this.getFiltersQuery(filters, DataType.ANALYTICS)
+
+    // We cannot make a query to customEV table using analytics table properties
+    if (customEVFilterApplied) {
+      return {
+        result: [],
+        appliedFilters,
+      }
+    }
 
     if (period === 'all') {
       const res = await this.getTimeBucketForAllTime(pid, period, timezone)
@@ -2988,16 +3001,27 @@ export class AnalyticsService {
       diff,
     )
 
-    const query = `SELECT 
-      meta.key AS key, 
-      meta.value AS value,
-      count() AS count
-    FROM customEV
-    ARRAY JOIN meta.key, meta.value
-    WHERE pid = {pid:FixedString(12)}
-      AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-      AND ev = {event:String}
-    GROUP BY key, value`
+    const query = `
+      SELECT 
+        meta.key AS key, 
+        meta.value AS value,
+        count() AS count
+      FROM (
+        SELECT
+          meta.key,
+          meta.value
+        FROM
+          customEV
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND indexOf(meta.key, {event:String}) > 0
+          ${filtersQuery}
+      )
+      ARRAY JOIN meta.key, meta.value
+      WHERE meta.key = {event:String}
+      GROUP BY key, value
+    `
 
     const paramsData = {
       params: {
@@ -3005,12 +3029,19 @@ export class AnalyticsService {
         groupFrom: groupFromUTC,
         groupTo: groupToUTC,
         event,
+        ...filtersParams,
       },
     }
 
     try {
-      const result = await clickhouse.query(query, paramsData).toPromise()
-      return result as IAggregatedMetadata[]
+      const result = (await clickhouse
+        .query(query, paramsData)
+        .toPromise()) as IAggregatedMetadata[]
+
+      return {
+        result,
+        appliedFilters,
+      }
     } catch (reason) {
       console.error(`[ERROR](getCustomEventMetadata): ${reason}`)
       throw new InternalServerErrorException(
@@ -3093,8 +3124,6 @@ export class AnalyticsService {
       GROUP BY key, value
     `
 
-    console.log('query:', query)
-
     const paramsData = {
       params: {
         pid,
@@ -3109,6 +3138,7 @@ export class AnalyticsService {
       const result = (await clickhouse
         .query(query, paramsData)
         .toPromise()) as IAggregatedMetadata[]
+
       return {
         result,
         appliedFilters,

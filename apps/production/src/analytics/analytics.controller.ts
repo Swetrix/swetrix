@@ -597,7 +597,7 @@ export class AnalyticsController {
     @Query() data: GetCustomEventMetadata,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
-  ): Promise<IAggregatedMetadata[]> {
+  ): Promise<ReturnType<typeof this.analyticsService.getCustomEventMetadata>> {
     const { pid, period } = data
     this.analyticsService.validatePID(pid)
 
