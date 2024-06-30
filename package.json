@@ -11,7 +11,7 @@
     "refresh-submodules": "git submodule foreach git pull",
     "init-submodules": "git submodule update --init --recursive",
     "prebuild": "rimraf dist",
-    "build": "npm run refresh-submodules && nest build production && mv apps/production/dist dist",
+    "build": "npm run refresh-submodules && nest build production && mv apps/production/dist dist && npm run sentry:sourcemaps",
     "build:selfhosted": "npm run prebuild && nest build selfhosted && mv apps/selfhosted/dist dist && npm run postbuild",
     "postbuild": "cp .env dist/.env",
     "format": "prettier --write \"apps/selfhosted/src/**/*.ts\" \"apps/production/src/**/*.ts\"",
@@ -23,7 +23,8 @@
     "start:prod": "npm run clickhouse:initialise && cross-env NODE_ENV=production node dist/main",
     "lint": "eslint \"{apps/production/src,apps/selfhosted/src}/**/*.ts\"",
     "lint:fix": "eslint \"{apps/production/src,apps/selfhosted/src}/**/*.ts\" --fix",
-    "find-deadcode": "ts-prune"
+    "find-deadcode": "ts-prune",
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org my-org-f6 --project swetrix-api ./dist && sentry-cli sourcemaps upload --org my-org-f6 --project swetrix-api ./dist"
   },
   "dependencies": {
     "@faker-js/faker": "^8.4.1",
@@ -41,6 +42,7 @@
     "@nestjs/terminus": "^10.2.3",
     "@nestjs/typeorm": "^10.0.1",
     "@paypal/payouts-sdk": "^1.1.1",
+    "@sentry/cli": "^2.32.1",
     "@sentry/nestjs": "^8.13.0",
     "@sentry/profiling-node": "^8.13.0",
     "axios": "^1.6.8",
@@ -142,5 +144,8 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "resolutions": {
+    "string-width": "4.2.3"
   }
 }

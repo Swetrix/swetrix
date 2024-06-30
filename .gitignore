@@ -41,3 +41,6 @@ yarn.lock
 *.mmdb.gz
 
 .env.prod
+
+# Sentry Config File
+.sentryclirc
