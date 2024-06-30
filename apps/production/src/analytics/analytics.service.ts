@@ -98,7 +98,7 @@ import {
   ICustomEvent,
 } from './interfaces'
 import { ErrorDTO } from './dto/error.dto'
-import { GetPagePropertyMeta } from './dto/get-page-property-meta.dto'
+import { GetPagePropertyMetaDTO } from './dto/get-page-property-meta.dto'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -3048,7 +3048,7 @@ export class AnalyticsService {
     }
   }
 
-  async getPagePropertyMeta(data: GetPagePropertyMeta): Promise<{
+  async getPagePropertyMeta(data: GetPagePropertyMetaDTO): Promise<{
     result: IAggregatedMetadata[]
     appliedFilters: GetFiltersQuery[2]
   }> {

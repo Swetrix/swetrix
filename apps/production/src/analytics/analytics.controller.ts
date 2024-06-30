@@ -50,7 +50,7 @@ import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
 import { AnalyticsGET_DTO, ChartRenderMode } from './dto/getData.dto'
 import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
-import { GetPagePropertyMeta } from './dto/get-page-property-meta.dto'
+import { GetPagePropertyMetaDTO } from './dto/get-page-property-meta.dto'
 import { GetUserFlowDTO } from './dto/getUserFlow.dto'
 import { GetFunnelsDTO } from './dto/getFunnels.dto'
 import { AppLoggerService } from '../logger/logger.service'
@@ -617,7 +617,7 @@ export class AnalyticsController {
   @Get('property')
   @Auth([], true, true)
   async getPagePropertyMetadata(
-    @Query() data: GetPagePropertyMeta,
+    @Query() data: GetPagePropertyMetaDTO,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ): Promise<ReturnType<typeof this.analyticsService.getPagePropertyMeta>> {
