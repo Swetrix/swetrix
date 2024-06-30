@@ -50,6 +50,7 @@ import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
 import { AnalyticsGET_DTO, ChartRenderMode } from './dto/getData.dto'
 import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
+import { GetPagePropertyMetaDTO } from './dto/get-page-property-meta.dto'
 import { GetUserFlowDTO } from './dto/getUserFlow.dto'
 import { GetFunnelsDTO } from './dto/getFunnels.dto'
 import { AppLoggerService } from '../logger/logger.service'
@@ -76,9 +77,9 @@ import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { GetCustomEventsDto } from './dto/get-custom-events.dto'
 import { GetFiltersDto } from './dto/get-filters.dto'
 import {
-  IAggregatedMetadata,
   IFunnel,
   IGetFunnel,
+  IPageProperty,
   IUserFlow,
   PerfMeasure,
 } from './interfaces'
@@ -122,9 +123,11 @@ const analyticsDTO = (
   cc: string,
   rg: string,
   ct: string,
+  keys: string[],
+  values: string[],
   sdur: number | string,
   unique: number,
-): Array<string | number> => {
+): Array<string | number | string[]> => {
   return [
     psid,
     sid,
@@ -142,6 +145,8 @@ const analyticsDTO = (
     cc,
     rg,
     ct,
+    keys,
+    values,
     sdur,
     unique,
     dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
@@ -433,14 +438,11 @@ export class AnalyticsController {
         diff,
       )
 
-    let queryCustoms = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
     let subQuery = `FROM ${
       isCaptcha ? 'captcha' : 'analytics'
     } WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
 
     if (customEVFilterApplied && !isCaptcha) {
-      queryCustoms = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
-
       subQuery = `FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
     }
 
@@ -489,14 +491,24 @@ export class AnalyticsController {
       }
     }
 
-    const customs = await this.analyticsService.processCustomEV(
-      queryCustoms,
+    const customs = await this.analyticsService.getCustomEvents(
+      filtersQuery,
       paramsData,
     )
+
+    let properties: IPageProperty = {}
+
+    if (!customEVFilterApplied) {
+      properties = await this.analyticsService.getPageProperties(
+        filtersQuery,
+        paramsData,
+      )
+    }
 
     return {
       ...result,
       customs,
+      properties,
       appliedFilters,
       timeBucket: allowedTumebucketForPeriodAll,
     }
@@ -583,7 +595,7 @@ export class AnalyticsController {
     @Query() data: GetCustomEventMetadata,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
-  ): Promise<IAggregatedMetadata[]> {
+  ): Promise<ReturnType<typeof this.analyticsService.getCustomEventMetadata>> {
     const { pid, period } = data
     this.analyticsService.validatePID(pid)
 
@@ -600,6 +612,31 @@ export class AnalyticsController {
     await this.analyticsService.checkBillingAccess(pid)
 
     return this.analyticsService.getCustomEventMetadata(data)
+  }
+
+  @Get('property')
+  @Auth([], true, true)
+  async getPagePropertyMetadata(
+    @Query() data: GetPagePropertyMetaDTO,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<ReturnType<typeof this.analyticsService.getPagePropertyMeta>> {
+    const { pid, period } = data
+    this.analyticsService.validatePID(pid)
+
+    if (!_isEmpty(period)) {
+      this.analyticsService.validatePeriod(period)
+    }
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    return this.analyticsService.getPagePropertyMeta(data)
   }
 
   @Get('filters')
@@ -1424,6 +1461,8 @@ export class AnalyticsController {
       country,
       region,
       city,
+      _keys(logDTO.meta),
+      _values(logDTO.meta),
       0,
       Number(unique),
     )
@@ -1538,6 +1577,8 @@ export class AnalyticsController {
       country,
       region,
       city,
+      [],
+      [],
       0,
       Number(unique),
     )

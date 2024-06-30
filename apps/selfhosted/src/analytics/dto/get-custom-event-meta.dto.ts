@@ -1,4 +1,5 @@
-import { PickType } from '@nestjs/swagger'
+import { ApiProperty, PickType } from '@nestjs/swagger'
+import { IsNotEmpty, IsString } from 'class-validator'
 import { AnalyticsGET_DTO } from './getData.dto'
 
 export class GetCustomEventMetadata extends PickType(AnalyticsGET_DTO, [
@@ -9,6 +10,10 @@ export class GetCustomEventMetadata extends PickType(AnalyticsGET_DTO, [
   'to',
   'filters',
   'timezone',
+  'filters',
 ] as const) {
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
   event: string
 }

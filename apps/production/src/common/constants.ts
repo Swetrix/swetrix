@@ -144,6 +144,8 @@ const TRAFFIC_COLUMNS = [
   'ca',
 ]
 
+const TRAFFIC_METAKEY_COLUMNS = ['tag:key', 'tag:value']
+
 const ERROR_COLUMNS = ['pg', 'dv', 'br', 'os', 'lc', 'cc', 'rg', 'ct']
 
 const ALL_COLUMNS = [...TRAFFIC_COLUMNS, 'ev']
@@ -228,6 +230,7 @@ export {
   getRedisUserUsageInfoKey,
   redisUserUsageinfoCacheTimeout,
   TRAFFIC_COLUMNS,
+  TRAFFIC_METAKEY_COLUMNS,
   CAPTCHA_COLUMNS,
   ERROR_COLUMNS,
   PERFORMANCE_COLUMNS,

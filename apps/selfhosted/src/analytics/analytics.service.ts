@@ -14,6 +14,7 @@ import * as _last from 'lodash/last'
 import * as _some from 'lodash/some'
 import * as _find from 'lodash/find'
 import * as _isArray from 'lodash/isArray'
+import * as _startsWith from 'lodash/startsWith'
 import * as _reduce from 'lodash/reduce'
 import * as _keys from 'lodash/keys'
 import * as _now from 'lodash/now'
@@ -49,6 +50,7 @@ import {
   MIN_PAGES_IN_FUNNEL,
   MAX_PAGES_IN_FUNNEL,
   ALL_COLUMNS,
+  TRAFFIC_METAKEY_COLUMNS,
 } from '../common/constants'
 import {
   getFunnelsClickhouse,
@@ -83,8 +85,12 @@ import {
   IOverallPerformance,
   IPageflow,
   PerfMeasure,
+  PropertiesCHResponse,
+  IPageProperty,
+  ICustomEvent,
 } from './interfaces'
 import { ErrorDTO } from './dto/error.dto'
+import { GetPagePropertyMetaDTO } from './dto/get-page-property-meta.dto'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -884,9 +890,19 @@ export class AnalyticsService {
           return prev
         }
 
-        if (column === 'ev') {
+        // ev:key -> custom event metadata
+        // ev:key: -> custom event metadata, but we want to check if some meta.key's meta.value equals to a specific value
+        if (
+          column === 'ev' ||
+          column === 'ev:key' ||
+          _startsWith(column, 'ev:key:')
+        ) {
           customEVFilterApplied = true
-        } else if (!_includes(SUPPORTED_COLUMNS, column)) {
+        } else if (
+          !_includes(SUPPORTED_COLUMNS, column) &&
+          !_includes(TRAFFIC_METAKEY_COLUMNS, column) &&
+          !_startsWith(column, 'tag:key:')
+        ) {
           throw new UnprocessableEntityException(
             `The provided filter (${column}) is not supported`,
           )
@@ -894,24 +910,28 @@ export class AnalyticsService {
 
         const res = []
 
+        // commented encodeURIComponent lines of code to support filtering for pages like /product/[id]
+        // until I find a more suitable solution for that later
         if (_isArray(filter)) {
           for (const f of filter) {
-            let encoded = f
+            // let encoded = f
 
-            if (column === 'pg' && f !== null) {
-              encoded = _replace(encodeURIComponent(f), /%2F/g, '/')
-            }
+            // if (column === 'pg' && f !== null) {
+            //   encoded = _replace(encodeURIComponent(f), /%2F/g, '/')
+            // }
 
-            res.push({ filter: encoded, isExclusive })
+            // res.push({ filter: encoded, isExclusive })
+            res.push({ filter: f, isExclusive })
           }
         } else {
-          let encoded = filter
+          // let encoded = filter
 
-          if (column === 'pg' && filter !== null) {
-            encoded = _replace(encodeURIComponent(filter), /%2F/g, '/')
-          }
+          // if (column === 'pg' && filter !== null) {
+          //   encoded = _replace(encodeURIComponent(filter), /%2F/g, '/')
+          // }
 
-          res.push({ filter: encoded, isExclusive })
+          // res.push({ filter: encoded, isExclusive })
+          res.push({ filter, isExclusive })
         }
 
         if (prev[column]) {
@@ -928,7 +948,7 @@ export class AnalyticsService {
     const columns = _keys(converted)
 
     for (let col = 0; col < _size(columns); ++col) {
-      const column = columns[col]
+      const column: string = columns[col]
       query += ' AND ('
 
       for (let f = 0; f < _size(converted[column]); ++f) {
@@ -937,18 +957,46 @@ export class AnalyticsService {
         }
 
         const { filter, isExclusive } = converted[column][f]
+        let sqlColumn = column
+        let isArrayDataset = false
 
         const param = `qf_${col}_${f}`
+        params[param] = filter
 
-        if (filter === null) {
-          query += `${column} IS ${isExclusive ? 'NOT' : ''} NULL`
-          params[param] = filter
+        // when we want to filter meta.value for a specific meta.key
+        if (_startsWith(column, 'ev:key:') || _startsWith(column, 'tag:key:')) {
+          const key = column.replace(/^ev:key:/, '').replace(/^tag:key:/, '')
+          const keyParam = `qfk_${col}_${f}`
+          params[keyParam] = key
+
+          query += `indexOf(meta.key, {${keyParam}:String}) > 0 AND meta.value[indexOf(meta.key, {${keyParam}:String})] ${isExclusive ? '!= ' : '='} {${param}:String}`
           continue
         }
 
-        query += `${isExclusive ? 'NOT ' : ''}${column} = {${param}:String}`
+        // meta.key filters for page properties and custom event metadata
+        // e.g. article "author" (property)
+        if (column === 'ev:key' || column === 'tag:key') {
+          sqlColumn = 'meta.key'
+          isArrayDataset = true
+          // meta.value filters for page properties and custom event metadata
+          // e.g. "Andrii" ("author" value)
+        } else if (column === 'ev:value' || column === 'tag:value') {
+          sqlColumn = 'meta.value'
+          isArrayDataset = true
+        }
 
-        params[param] = filter
+        // TODO: In future I will add contains / not contains filters as well via ILIKE operator
+
+        if (filter === null) {
+          query += isArrayDataset
+            ? ''
+            : `${sqlColumn} IS ${isExclusive ? 'NOT' : ''} NULL`
+          continue
+        }
+
+        query += isArrayDataset
+          ? `indexOf(${sqlColumn}, {${param}:String}) ${isExclusive ? '=' : '>'} 0`
+          : `${isExclusive ? 'NOT ' : ''}${sqlColumn} = {${param}:String}`
       }
 
       query += ')'
@@ -2536,7 +2584,11 @@ export class AnalyticsService {
     })
   }
 
-  async processCustomEV(query: string, params: object): Promise<object> {
+  async getCustomEvents(
+    filtersQuery: string,
+    params: object,
+  ): Promise<ICustomEvent> {
+    const query = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
     const result = {}
 
     const rawCustoms = <Array<CustomsCHResponse>>(
@@ -2564,15 +2616,51 @@ export class AnalyticsService {
     }
   }
 
-  async getCustomEventMetadata(
-    data: GetCustomEventMetadata,
-  ): Promise<IAggregatedMetadata[]> {
+  async getPageProperties(
+    filtersQuery: string,
+    params: object,
+  ): Promise<IPageProperty> {
+    const query = `
+      SELECT
+        meta.key AS property,
+        count()
+      FROM  analytics
+      WHERE pid = {pid:FixedString(12)}
+        ${filtersQuery}
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+      GROUP BY property`
+    const result = {}
+
+    const rawProperties = <Array<PropertiesCHResponse>>(
+      await clickhouse.query(query, params).toPromise()
+    )
+    const size = _size(rawProperties)
+
+    for (let i = 0; i < size; ++i) {
+      const { property: propertyArr, 'count()': c } = rawProperties[i]
+      const [property] = propertyArr
+
+      if (!property) {
+        continue
+      }
+
+      result[property] = c
+    }
+
+    return result
+  }
+
+  async getCustomEventMetadata(data: GetCustomEventMetadata): Promise<{
+    result: IAggregatedMetadata[]
+    appliedFilters: GetFiltersQuery[2]
+  }> {
     const {
       pid,
       period,
       timeBucket,
       from,
       to,
+      filters,
       timezone = DEFAULT_TIMEZONE,
       event,
     } = data
@@ -2580,6 +2668,11 @@ export class AnalyticsService {
     let newTimebucket = timeBucket
 
     let diff
+
+    const [filtersQuery, filtersParams, appliedFilters] = this.getFiltersQuery(
+      filters,
+      DataType.ANALYTICS,
+    )
 
     if (period === 'all') {
       const res = await this.getTimeBucketForAllTime(pid, period, timezone)
@@ -2603,16 +2696,26 @@ export class AnalyticsService {
       diff,
     )
 
-    const query = `SELECT 
-      meta.key AS key, 
-      meta.value AS value,
-      count() AS count
-    FROM customEV
-    ARRAY JOIN meta.key, meta.value
-    WHERE pid = {pid:FixedString(12)}
-      AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-      AND ev = {event:String}
-    GROUP BY key, value`
+    const query = `
+      SELECT 
+        meta.key AS key, 
+        meta.value AS value,
+        count() AS count
+      FROM (
+        SELECT
+          meta.key,
+          meta.value
+        FROM
+          customEV
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND ev = {event:String}
+          ${filtersQuery}
+      )
+      ARRAY JOIN meta.key, meta.value
+      GROUP BY key, value
+    `
 
     const paramsData = {
       params: {
@@ -2620,14 +2723,122 @@ export class AnalyticsService {
         groupFrom: groupFromUTC,
         groupTo: groupToUTC,
         event,
+        ...filtersParams,
       },
     }
 
     try {
-      const result = await clickhouse.query(query, paramsData).toPromise()
-      return result as IAggregatedMetadata[]
+      const result = (await clickhouse
+        .query(query, paramsData)
+        .toPromise()) as IAggregatedMetadata[]
+
+      return {
+        result,
+        appliedFilters,
+      }
     } catch (reason) {
       console.error(`[ERROR](getCustomEventMetadata): ${reason}`)
+      throw new InternalServerErrorException(
+        'Something went wrong. Please, try again later.',
+      )
+    }
+  }
+
+  async getPagePropertyMeta(data: GetPagePropertyMetaDTO): Promise<{
+    result: IAggregatedMetadata[]
+    appliedFilters: GetFiltersQuery[2]
+  }> {
+    const {
+      pid,
+      period,
+      timeBucket,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE,
+      property,
+      filters,
+    } = data
+
+    let newTimebucket = timeBucket
+
+    let diff
+
+    const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
+      this.getFiltersQuery(filters, DataType.ANALYTICS)
+
+    // We cannot make a query to customEV table using analytics table properties
+    if (customEVFilterApplied) {
+      return {
+        result: [],
+        appliedFilters,
+      }
+    }
+
+    if (period === 'all') {
+      const res = await this.getTimeBucketForAllTime(pid, period, timezone)
+
+      diff = res.diff
+      // eslint-disable-next-line prefer-destructuring
+      newTimebucket = _includes(res.timeBucket, timeBucket)
+        ? timeBucket
+        : res.timeBucket[0]
+    }
+
+    this.validateTimebucket(newTimebucket)
+
+    const safeTimezone = this.getSafeTimezone(timezone)
+    const { groupFromUTC, groupToUTC } = this.getGroupFromTo(
+      from,
+      to,
+      newTimebucket,
+      period,
+      safeTimezone,
+      diff,
+    )
+
+    const query = `
+      SELECT 
+        meta.key AS key, 
+        meta.value AS value,
+        count() AS count
+      FROM (
+        SELECT
+          meta.key,
+          meta.value
+        FROM
+          analytics
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND indexOf(meta.key, {property:String}) > 0
+          ${filtersQuery}
+      )
+      ARRAY JOIN meta.key, meta.value
+      WHERE meta.key = {property:String}
+      GROUP BY key, value
+    `
+
+    const paramsData = {
+      params: {
+        pid,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+        property,
+        ...filtersParams,
+      },
+    }
+
+    try {
+      const result = (await clickhouse
+        .query(query, paramsData)
+        .toPromise()) as IAggregatedMetadata[]
+
+      return {
+        result,
+        appliedFilters,
+      }
+    } catch (reason) {
+      console.error(`[ERROR](getPagePropertyMeta): ${reason}`)
       throw new InternalServerErrorException(
         'Something went wrong. Please, try again later.',
       )

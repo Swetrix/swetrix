@@ -49,6 +49,7 @@ import { EventsDTO } from './dto/events.dto'
 import { AnalyticsGET_DTO, ChartRenderMode } from './dto/getData.dto'
 import { GetFiltersDto } from './dto/get-filters.dto'
 import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
+import { GetPagePropertyMetaDTO } from './dto/get-page-property-meta.dto'
 import { GetUserFlowDTO } from './dto/getUserFlow.dto'
 import { GetFunnelsDTO } from './dto/getFunnels.dto'
 import { AppLoggerService } from '../logger/logger.service'
@@ -71,9 +72,9 @@ import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { GetCustomEventsDto } from './dto/get-custom-events.dto'
 import {
-  IAggregatedMetadata,
   IFunnel,
   IGetFunnel,
+  IPageProperty,
   IUserFlow,
   PerfMeasure,
 } from './interfaces'
@@ -117,9 +118,11 @@ const analyticsDTO = (
   cc: string,
   rg: string,
   ct: string,
+  keys: string[],
+  values: string[],
   sdur: number | string,
   unique: number,
-): Array<string | number> => {
+): Array<string | number | string[]> => {
   return [
     psid,
     sid,
@@ -137,6 +140,8 @@ const analyticsDTO = (
     cc,
     rg,
     ct,
+    keys,
+    values,
     sdur,
     unique,
     dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
@@ -422,12 +427,9 @@ export class AnalyticsController {
         diff,
       )
 
-    let queryCustoms = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
     let subQuery = `FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
 
     if (customEVFilterApplied) {
-      queryCustoms = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
-
       subQuery = `FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
     }
 
@@ -453,14 +455,24 @@ export class AnalyticsController {
       mode,
     )
 
-    const customs = await this.analyticsService.processCustomEV(
-      queryCustoms,
+    const customs = await this.analyticsService.getCustomEvents(
+      filtersQuery,
       paramsData,
     )
+
+    let properties: IPageProperty = {}
+
+    if (!customEVFilterApplied) {
+      properties = await this.analyticsService.getPageProperties(
+        filtersQuery,
+        paramsData,
+      )
+    }
 
     return {
       ...result,
       customs,
+      properties,
       appliedFilters: parsedFilters,
       timeBucket: allowedTumebucketForPeriodAll,
     }
@@ -545,7 +557,7 @@ export class AnalyticsController {
     @Query() data: GetCustomEventMetadata,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
-  ): Promise<IAggregatedMetadata[]> {
+  ): Promise<ReturnType<typeof this.analyticsService.getCustomEventMetadata>> {
     const { pid, period } = data
     this.analyticsService.validatePID(pid)
 
@@ -560,6 +572,29 @@ export class AnalyticsController {
     )
 
     return this.analyticsService.getCustomEventMetadata(data)
+  }
+
+  @Get('property')
+  @Auth([], true, true)
+  async getPagePropertyMetadata(
+    @Query() data: GetPagePropertyMetaDTO,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<ReturnType<typeof this.analyticsService.getPagePropertyMeta>> {
+    const { pid, period } = data
+    this.analyticsService.validatePID(pid)
+
+    if (!_isEmpty(period)) {
+      this.analyticsService.validatePeriod(period)
+    }
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    return this.analyticsService.getPagePropertyMeta(data)
   }
 
   @Get('filters')
@@ -1193,6 +1228,8 @@ export class AnalyticsController {
       country,
       region,
       city,
+      _keys(logDTO.meta),
+      _values(logDTO.meta),
       0,
       Number(unique),
     )
@@ -1306,6 +1343,8 @@ export class AnalyticsController {
       city,
       region,
       country,
+      [],
+      [],
       0,
       Number(unique),
     )
