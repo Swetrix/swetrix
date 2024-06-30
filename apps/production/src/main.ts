@@ -1,35 +1,17 @@
-import { NestFactory, BaseExceptionFilter, HttpAdapterHost } from '@nestjs/core'
+import './instrument'
+
+import { NestFactory } from '@nestjs/core'
 import { ValidationPipe, VersioningType } from '@nestjs/common'
 import * as cookieParser from 'cookie-parser'
 import * as bodyParser from 'body-parser'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import { getBotToken } from 'nestjs-telegraf'
 
-import { ConfigService } from '@nestjs/config'
-import * as Sentry from '@sentry/node'
-import { isDevelopment, sentryIgnoreErrors } from './common/constants'
+import { isDevelopment } from './common/constants'
 import { AppModule } from './app.module'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
-
-  const configService = app.get(ConfigService)
-
-  const isSentryEnabled = configService.get<boolean>('SENTRY_ENABLED')
-
-  if (isSentryEnabled) {
-    const isProduction = configService.get<string>('NODE_ENV') === 'production'
-
-    Sentry.init({
-      dsn: configService.get<string>('SENTRY_DSN'),
-      tracesSampleRate: isProduction ? 0.2 : 1.0,
-      ignoreErrors: sentryIgnoreErrors,
-    })
-
-    const { httpAdapter } = app.get(HttpAdapterHost)
-
-    Sentry.setupNestErrorHandler(app, new BaseExceptionFilter(httpAdapter))
-  }
 
   app.use(cookieParser())
   app.useGlobalPipes(new ValidationPipe())
