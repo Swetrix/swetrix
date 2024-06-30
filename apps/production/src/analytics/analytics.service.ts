@@ -2968,16 +2968,10 @@ export class AnalyticsService {
 
     let diff
 
-    const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
-      this.getFiltersQuery(filters, DataType.ANALYTICS)
-
-    // We cannot make a query to customEV table using analytics table properties
-    if (customEVFilterApplied) {
-      return {
-        result: [],
-        appliedFilters,
-      }
-    }
+    const [filtersQuery, filtersParams, appliedFilters] = this.getFiltersQuery(
+      filters,
+      DataType.ANALYTICS,
+    )
 
     if (period === 'all') {
       const res = await this.getTimeBucketForAllTime(pid, period, timezone)
@@ -3015,11 +3009,10 @@ export class AnalyticsService {
         WHERE
           pid = {pid:FixedString(12)}
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-          AND indexOf(meta.key, {event:String}) > 0
+          AND ev = {event:String}
           ${filtersQuery}
       )
       ARRAY JOIN meta.key, meta.value
-      WHERE meta.key = {event:String}
       GROUP BY key, value
     `
 
