@@ -94,6 +94,8 @@ import {
   IPageflow,
   PerfMeasure,
   PropertiesCHResponse,
+  IPageProperty,
+  ICustomEvent,
 } from './interfaces'
 import { ErrorDTO } from './dto/error.dto'
 import { GetPagePropertyMeta } from './dto/get-page-property-meta.dto'
@@ -2886,7 +2888,10 @@ export class AnalyticsService {
     })
   }
 
-  async getCustomEvents(filtersQuery: string, params: object): Promise<object> {
+  async getCustomEvents(
+    filtersQuery: string,
+    params: object,
+  ): Promise<ICustomEvent> {
     const query = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
     const result = {}
 
@@ -2906,7 +2911,7 @@ export class AnalyticsService {
   async getPageProperties(
     filtersQuery: string,
     params: object,
-  ): Promise<object> {
+  ): Promise<IPageProperty> {
     const query = `
       SELECT
         meta.key AS property,

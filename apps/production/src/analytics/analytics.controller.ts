@@ -76,7 +76,13 @@ import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { GetCustomEventsDto } from './dto/get-custom-events.dto'
 import { GetFiltersDto } from './dto/get-filters.dto'
-import { IFunnel, IGetFunnel, IUserFlow, PerfMeasure } from './interfaces'
+import {
+  IFunnel,
+  IGetFunnel,
+  IPageProperty,
+  IUserFlow,
+  PerfMeasure,
+} from './interfaces'
 import { GetSessionsDto } from './dto/get-sessions.dto'
 import { GetSessionDto } from './dto/get-session.dto'
 import { ErrorDTO } from './dto/error.dto'
@@ -490,7 +496,7 @@ export class AnalyticsController {
       paramsData,
     )
 
-    let properties = {}
+    let properties: IPageProperty = {}
 
     if (!customEVFilterApplied) {
       properties = await this.analyticsService.getPageProperties(

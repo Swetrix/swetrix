@@ -191,4 +191,12 @@ export interface IPageflow {
   created: string
 }
 
+export interface IPageProperty {
+  [key: string]: number
+}
+
+export interface ICustomEvent {
+  [key: string]: number
+}
+
 export type PerfMeasure = 'average' | 'median' | 'p95' | 'quantiles'
