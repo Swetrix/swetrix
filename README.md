@@ -1,4 +1,8 @@
-<img src="https://swetrix.com/assets/logo_blue.png" alt="" height="80" />
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://swetrix.com/assets/logo_white.png">
+  <img alt="" src="https://swetrix.com/assets/logo_blue.png" height="80">
+</picture>
+<br /><br />
 
 [![JSDelivr hits](https://data.jsdelivr.com/v1/package/gh/Swetrix/swetrix-js/badge?style=rounded)](https://data.jsdelivr.com/v1/package/gh/Swetrix/swetrix-js/stats)
 [![Package size](https://img.shields.io/bundlephobia/minzip/swetrix)](https://bundlephobia.com/api/size?package=swetrix)
