@@ -31,7 +31,7 @@ import {
   ConflictException,
   NotFoundException,
 } from '@nestjs/common'
-import { ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import * as UAParser from 'ua-parser-js'
 import * as isbot from 'isbot'
 
@@ -93,6 +93,7 @@ import { GetErrorDTO } from './dto/get-error.dto'
 import { PatchStatusDTO } from './dto/patch-status.dto'
 import { ProjectService } from '../project/project.service'
 import { ProjectsViewsRepository } from '../project/repositories/projects-views.repository'
+import { ProjectViewCustomEventMetaValueType } from '../project/entity/project-view-custom-event.entity'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mysql = require('mysql2')
@@ -374,6 +375,7 @@ export class AnalyticsController {
     private readonly projectsViewsRepository: ProjectsViewsRepository,
   ) {}
 
+  @ApiBearerAuth()
   @Get()
   @Auth([], true, true)
   async getData(
@@ -407,7 +409,6 @@ export class AnalyticsController {
 
     await this.analyticsService.checkBillingAccess(pid)
 
-    // TODO make it smarter
     if (viewId && filters) {
       throw new ConflictException('Cannot specify both viewId and filters.')
     }
@@ -418,6 +419,66 @@ export class AnalyticsController {
       throw new NotFoundException('View not found.')
     }
 
+    this.logger.debug(`VIEW and CUSTOM EVENTS ${JSON.stringify(view)}`)
+
+    const customEvents = view.customEvents.map(event => ({
+      customEventName: event.customEventName,
+      metaKey: event.metaKey,
+      metaValue: event.metaValue,
+      metaValueType: event.metaValueType,
+    }))
+
+    const metaKeys = customEvents.map(event => event.metaKey)
+
+    const query = `
+    SELECT
+      key,
+      sum(
+        CASE
+          ${customEvents
+            .map(
+              event => `
+            WHEN key = '${event.metaKey}' THEN ${
+              event.metaValueType ===
+              ProjectViewCustomEventMetaValueType.INTEGER
+                ? 'toInt32OrZero(value)'
+                : 'toFloat32OrZero(value)'
+            }
+          `,
+            )
+            .join('')}
+          ELSE 0
+        END
+      ) AS sum,
+      avg(
+        CASE
+          ${customEvents
+            .map(
+              event => `
+            WHEN key = '${event.metaKey}' THEN ${
+              event.metaValueType ===
+              ProjectViewCustomEventMetaValueType.INTEGER
+                ? 'toInt32OrZero(value)'
+                : 'toFloat32OrZero(value)'
+            }
+          `,
+            )
+            .join('')}
+          ELSE 0
+        END
+      ) AS avg
+    FROM customEV
+    ARRAY JOIN meta.key AS key, meta.value AS value
+    WHERE pid = {pid:String} AND key IN (${metaKeys.map(key => `'${key}'`).join(', ')})
+    GROUP BY key
+  `
+    this.logger.debug(`QUERY= ${query}`)
+    const metaResult = await clickhouse
+      .query(query, { params: { pid } })
+      .toPromise()
+
+    this.logger.debug(`RESULT= ${JSON.stringify(metaResult)}`)
+  
     let newTimebucket = timeBucket
     let allowedTumebucketForPeriodAll
 
@@ -529,6 +590,7 @@ export class AnalyticsController {
       properties,
       appliedFilters,
       timeBucket: allowedTumebucketForPeriodAll,
+      meta: metaResult
     }
   }
 
