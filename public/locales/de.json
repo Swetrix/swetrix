@@ -643,6 +643,7 @@
     "support": "Support kontaktieren"
   },
   "project": {
+    "metadata": "Metadaten",
     "search": "Suche",
     "loadMore": "Mehr laden",
     "unknownCountry": "Unbekanntes Land",
@@ -712,6 +713,18 @@
       "me": "UTM Medium",
       "ca": "UTM Campaign"
     },
+    "metamapping": {
+      "ev": {
+        "key": "Event-Schlüssel",
+        "value": "Ereignis-Wert",
+        "dynamicKey": "Event-Schlüssel \"{{key}}\""
+      },
+      "tag": {
+        "key": "Eigenschaft",
+        "value": "Eigenschaft-Wert",
+        "dynamicKey": "Eigenschaft \"{{key}}\""
+      }
+    },
     "redactedPage": "Gespeicherte Seite",
     "noData": "Keine Daten vorhanden",
     "overview": "Übersicht",
@@ -723,6 +736,8 @@
     "conversion": "Konversionsrate",
     "ratio": "Verhältnis",
     "customEv": "benutzerdefinierte Tracking-Events",
+    "properties": "Eigenschaften",
+    "property": "Eigenschaft",
     "noParamData": "Noch keine Daten für diesen Parameter vorhanden.",
     "conflictMetric": "Die von Ihnen ausgewählte Metrik steht im Widerspruch zu einer anderen bereits ausgewählten Metrik",
     "prev": "Zurück",
