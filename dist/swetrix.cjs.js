@@ -292,25 +292,16 @@ var Lib = /** @class */ (function () {
         var perf = this.getPerformanceStats();
         var prev = this.getPreviousPage();
         this.activePage = pg;
-        this.submitPageView(pg, prev, unique, perf, true);
+        this.submitPageView({ pg: pg, prev: prev }, unique, perf, true);
     };
-    Lib.prototype.submitPageView = function (pg, prev, unique, perf, evokeCallback) {
+    Lib.prototype.submitPageView = function (payload, unique, perf, evokeCallback) {
         var _a;
         var privateData = {
             pid: this.projectID,
             perf: perf,
             unique: unique,
         };
-        var pvPayload = {
-            lc: getLocale(),
-            tz: getTimezone(),
-            ref: getReferrer(),
-            so: getUTMSource(),
-            me: getUTMMedium(),
-            ca: getUTMCampaign(),
-            pg: pg,
-            prev: prev,
-        };
+        var pvPayload = __assign({ lc: getLocale(), tz: getTimezone(), ref: getReferrer(), so: getUTMSource(), me: getUTMMedium(), ca: getUTMCampaign() }, payload);
         if (evokeCallback && ((_a = this.pageViewsOptions) === null || _a === void 0 ? void 0 : _a.callback)) {
             var callbackResult = this.pageViewsOptions.callback(pvPayload);
             if (callbackResult === false) {
@@ -396,12 +387,10 @@ function trackViews(options) {
     });
 }
 /**
- * With this function you are able to track any custom events you want.
- * You should never send any identifiable data (like User ID, email, session cookie, etc.) as an event name.
- * The total number of track calls and their conversion rate will be saved.
+ * This function is used to set up automatic error events tracking.
+ * It set's up an error listener, and whenever an error happens, it gets tracked.
  *
- * @param {PageViewsOptions} options The options related to the custom event.
- * @returns {PageActions} The actions related to the tracking. Used to stop tracking pages.
+ * @returns {ErrorActions} The actions related to the tracking. Used to stop tracking errors.
  */
 function trackErrors(options) {
     if (!exports.LIB_INSTANCE) {
@@ -425,18 +414,25 @@ function trackError(payload) {
  * This function is used to manually track a page view event.
  * It's useful if your application uses esoteric routing which is not supported by Swetrix by default.
  *
- * @param path Path of the page to track (this will be sent to the Swetrix API and displayed in the dashboard).
+ * @deprecated This function is deprecated and will be removed soon, please use the `pageview` instead.
+ * @param pg Path of the page to track (this will be sent to the Swetrix API and displayed in the dashboard).
  * @param prev Path of the previous page.
  * @param unique If set to `true`, only 1 event with the same ID will be saved per user session.
  * @returns void
  */
-function trackPageview(path, prev, unique) {
+function trackPageview(pg, prev, unique) {
     if (!exports.LIB_INSTANCE)
         return;
-    exports.LIB_INSTANCE.submitPageView(path, prev || null, Boolean(unique), {});
+    exports.LIB_INSTANCE.submitPageView({ pg: pg, prev: prev || null }, Boolean(unique), {});
+}
+function pageview(options) {
+    if (!exports.LIB_INSTANCE)
+        return;
+    exports.LIB_INSTANCE.submitPageView(options.payload, Boolean(options.unique), {});
 }
 
 exports.init = init;
+exports.pageview = pageview;
 exports.track = track;
 exports.trackError = trackError;
 exports.trackErrors = trackErrors;

@@ -50,12 +50,10 @@ export function trackViews(options) {
     });
 }
 /**
- * With this function you are able to track any custom events you want.
- * You should never send any identifiable data (like User ID, email, session cookie, etc.) as an event name.
- * The total number of track calls and their conversion rate will be saved.
+ * This function is used to set up automatic error events tracking.
+ * It set's up an error listener, and whenever an error happens, it gets tracked.
  *
- * @param {PageViewsOptions} options The options related to the custom event.
- * @returns {PageActions} The actions related to the tracking. Used to stop tracking pages.
+ * @returns {ErrorActions} The actions related to the tracking. Used to stop tracking errors.
  */
 export function trackErrors(options) {
     if (!LIB_INSTANCE) {
@@ -79,14 +77,20 @@ export function trackError(payload) {
  * This function is used to manually track a page view event.
  * It's useful if your application uses esoteric routing which is not supported by Swetrix by default.
  *
- * @param path Path of the page to track (this will be sent to the Swetrix API and displayed in the dashboard).
+ * @deprecated This function is deprecated and will be removed soon, please use the `pageview` instead.
+ * @param pg Path of the page to track (this will be sent to the Swetrix API and displayed in the dashboard).
  * @param prev Path of the previous page.
  * @param unique If set to `true`, only 1 event with the same ID will be saved per user session.
  * @returns void
  */
-export function trackPageview(path, prev, unique) {
+export function trackPageview(pg, prev, unique) {
     if (!LIB_INSTANCE)
         return;
-    LIB_INSTANCE.submitPageView(path, prev || null, Boolean(unique), {});
+    LIB_INSTANCE.submitPageView({ pg, prev: prev || null }, Boolean(unique), {});
+}
+export function pageview(options) {
+    if (!LIB_INSTANCE)
+        return;
+    LIB_INSTANCE.submitPageView(options.payload, Boolean(options.unique), {});
 }
 //# sourceMappingURL=index.js.map

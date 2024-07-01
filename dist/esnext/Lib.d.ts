@@ -34,6 +34,10 @@ export interface IPageViewPayload {
     ca: string | undefined;
     pg: string | null | undefined;
     prev: string | null | undefined;
+    /** Pageview-related metadata object with string values. */
+    meta?: {
+        [key: string]: string;
+    };
 }
 export interface IErrorEventPayload {
     name: string;
@@ -143,7 +147,7 @@ export declare class Lib {
     private trackPathChange;
     private getPreviousPage;
     private trackPage;
-    submitPageView(pg: string, prev: string | null | undefined, unique: boolean, perf: IPerfPayload | {}, evokeCallback?: boolean): void;
+    submitPageView(payload: Partial<IPageViewPayload>, unique: boolean, perf: IPerfPayload | {}, evokeCallback?: boolean): void;
     private canTrack;
     private sendRequest;
 }

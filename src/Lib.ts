@@ -55,6 +55,11 @@ export interface IPageViewPayload {
   ca: string | undefined
   pg: string | null | undefined
   prev: string | null | undefined
+
+  /** Pageview-related metadata object with string values. */
+  meta?: {
+    [key: string]: string
+  }
 }
 
 // Partial user-editable error payload
@@ -415,12 +420,11 @@ export class Lib {
     const prev = this.getPreviousPage()
 
     this.activePage = pg
-    this.submitPageView(pg, prev, unique, perf, true)
+    this.submitPageView({ pg, prev }, unique, perf, true)
   }
 
   submitPageView(
-    pg: string,
-    prev: string | null | undefined,
+    payload: Partial<IPageViewPayload>,
     unique: boolean,
     perf: IPerfPayload | {},
     evokeCallback?: boolean,
@@ -430,6 +434,7 @@ export class Lib {
       perf,
       unique,
     }
+
     const pvPayload = {
       lc: getLocale(),
       tz: getTimezone(),
@@ -437,12 +442,11 @@ export class Lib {
       so: getUTMSource(),
       me: getUTMMedium(),
       ca: getUTMCampaign(),
-      pg,
-      prev,
+      ...payload,
     }
 
     if (evokeCallback && this.pageViewsOptions?.callback) {
-      const callbackResult = this.pageViewsOptions.callback(pvPayload)
+      const callbackResult = this.pageViewsOptions.callback(pvPayload as IPageViewPayload)
 
       if (callbackResult === false) {
         return
