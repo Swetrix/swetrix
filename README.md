@@ -1,4 +1,8 @@
-<img src="/public/assets/logo_blue.png" alt="" height="80" />
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="/public/assets/logo_white.png">
+  <img alt="" src="/public/assets/logo_blue.png" height="80">
+</picture>
+<br /><br />
 
 [![Dockerhub pulls](https://img.shields.io/docker/pulls/swetrix/swetrix-fe.svg?style=flat)](https://hub.docker.com/r/swetrix/swetrix-fe)
 [![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/swetrix/swetrix-fe/issues)
