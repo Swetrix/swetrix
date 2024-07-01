@@ -20,6 +20,7 @@ import _map from 'lodash/map'
 import _split from 'lodash/split'
 import _replace from 'lodash/replace'
 import _isEmpty from 'lodash/isEmpty'
+import _some from 'lodash/some'
 import _startsWith from 'lodash/startsWith'
 import _keys from 'lodash/keys'
 import _size from 'lodash/size'
@@ -1446,7 +1447,40 @@ const getSettingsPerf = (
 
 const validTimeBacket = ['hour', 'day', 'week', 'month']
 const validPeriods = ['custom', 'today', 'yesterday', '1d', '7d', '4w', '3M', '12M', '24M']
-const validFilters = ['cc', 'rg', 'ct', 'pg', 'lc', 'ref', 'dv', 'br', 'os', 'so', 'me', 'ca', 'ev']
+const validFilters = [
+  'cc',
+  'rg',
+  'ct',
+  'pg',
+  'lc',
+  'ref',
+  'dv',
+  'br',
+  'os',
+  'so',
+  'me',
+  'ca',
+  'ev',
+  'tag:key',
+  'tag:value',
+  'ev:key',
+  'ev:value',
+]
+// dynamic filters is when a filter column starts with a specific value and is followed by some arbitrary string
+// this is done to build a connnection between dynamic column and value (e.g. for custom event metadata or page properties)
+const validDynamicFilters = ['ev:key:', 'tag:key:']
+
+const isFilterValid = (filter: string, checkDynamicFilters = false) => {
+  if (_includes(validFilters, filter)) {
+    return true
+  }
+
+  if (checkDynamicFilters && _some(validDynamicFilters, (prefix) => _startsWith(filter, prefix))) {
+    return true
+  }
+
+  return false
+}
 
 export const filterInvalidViewPrefs = (prefs: any): any => {
   const pids = _keys(prefs)
@@ -1491,6 +1525,10 @@ const typeNameMapping = (t: typeof i18next.t) => ({
   ca: t('project.mapping.ca'),
   ev: t('project.event'),
   userFlow: t('main.competitiveFeatures.usfl'),
+  'tag:key': t('project.metamapping.tag.key'),
+  'tag:value': t('project.metamapping.tag.value'),
+  'ev:key': t('project.metamapping.ev.key'),
+  'ev:value': t('project.metamapping.ev.value'),
 })
 
 const iconClassName = 'w-6 h-6'
@@ -1576,7 +1614,7 @@ export {
   getFormatDate,
   panelIconMapping,
   typeNameMapping,
-  validFilters,
+  isFilterValid,
   validPeriods,
   validTimeBacket,
   noRegionPeriods,

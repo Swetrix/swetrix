@@ -137,15 +137,15 @@ import {
   getErrors,
   getError,
   updateErrorStatus,
+  getPropertyMetadata,
 } from 'api'
 import { getChartPrediction } from 'api/ai'
-import { Panel, CustomEvents } from './Panels'
+import { Panel, Metadata } from './Panels'
 import {
   onCSVExportClick,
   getFormatDate,
   panelIconMapping,
   typeNameMapping,
-  validFilters,
   validPeriods,
   validTimeBacket,
   noRegionPeriods,
@@ -164,6 +164,7 @@ import {
   SHORTCUTS_TIMEBUCKETS_LISTENERS,
   CHART_MEASURES_MAPPING_PERF,
   ERROR_FILTERS_MAPPING,
+  isFilterValid,
 } from './ViewProject.helpers'
 import CCRow from './components/CCRow'
 import FunnelsList from './components/FunnelsList'
@@ -192,6 +193,7 @@ import { IError } from './interfaces/error'
 import NoErrorDetails from './components/NoErrorDetails'
 import WaitingForAnError from './components/WaitingForAnError'
 import NoSessionDetails from './components/NoSessionDetails'
+import { ICustoms, IParams, IProperties, ITrafficLogResponse } from './interfaces/traffic'
 const SwetrixSDK = require('@swetrix/sdk')
 
 const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
@@ -351,9 +353,15 @@ const ViewProject = ({
   // similar areFiltersParsed and areFiltersPerfParsed but using for timeBucket
   const [areTimeBucketParsed, setAreTimeBucketParsed] = useState<boolean>(false)
 
-  // panelsData is a data used for components <Panels /> and <CustomEvents />,
+  // panelsData is a data used for components <Panels /> and <Metadata />,
   // also using for logic with custom events on chart and export data like csv
-  const [panelsData, setPanelsData] = useState<any>({})
+  const [panelsData, setPanelsData] = useState<{
+    types: (keyof IParams)[]
+    data: IParams
+    customs: ICustoms
+    properties: IProperties
+    // @ts-expect-error
+  }>({})
   const [overall, setOverall] = useState<Partial<IOverallObject>>({})
   const [overallPerformance, setOverallPerformance] = useState<Partial<IOverallPerformanceObject>>({})
   // isPanelsDataEmpty is a true we are display components <NoEvents /> and do not show dropdowns with activeChartMetrics
@@ -1176,15 +1184,12 @@ const ViewProject = ({
 
     setDataLoading(true)
     try {
-      let data: {
-        timeBucket?: any
-        chart?: any
-        params?: any
-        customs?: any
-        appliedFilters?: any
+      let data: ITrafficLogResponse & {
         overall?: IOverallObject
       }
-      let dataCompare
+      let dataCompare: ITrafficLogResponse & {
+        overall?: IOverallObject
+      }
       let key = ''
       let keyCompare = ''
       let from
@@ -1264,6 +1269,7 @@ const ViewProject = ({
           }
         }
 
+        // @ts-expect-error
         setProjectCache(id, dataCompare, keyCompare)
       }
 
@@ -1362,19 +1368,21 @@ const ViewProject = ({
         return
       }
 
-      const { chart, params, customs, appliedFilters } = data
+      const { chart, params, customs, properties, appliedFilters } = data
       let newTimebucket = timeBucket
       sdkInstance?._emitEvent('load', sdkData)
 
       if (period === KEY_FOR_ALL_TIME && !_isEmpty(data.timeBucket)) {
-        // eslint-disable-next-line prefer-destructuring
+        // @ts-expect-error
         newTimebucket = _includes(data.timeBucket, timeBucket) ? timeBucket : data.timeBucket[0]
+        // @ts-expect-error
         setPeriodPairs((prev) => {
           // find in prev state period === KEY_FOR_ALL_TIME and change tbs
           const newPeriodPairs = _map(prev, (item) => {
             if (item.period === KEY_FOR_ALL_TIME) {
               return {
                 ...item,
+                // @ts-expect-error
                 tbs: data.timeBucket.length > 2 ? [data.timeBucket[0], data.timeBucket[1]] : data.timeBucket,
               }
             }
@@ -1386,14 +1394,18 @@ const ViewProject = ({
       }
 
       if (!_isEmpty(appliedFilters)) {
+        // @ts-expect-error
         setFilters(appliedFilters)
       }
 
+      // @ts-expect-error
       if (!_isEmpty(dataCompare)) {
+        // @ts-expect-error
         if (!_isEmpty(dataCompare?.chart)) {
           setDataChartCompare(dataCompare.chart)
         }
 
+        // @ts-expect-error
         if (!_isEmpty(dataCompare?.overall)) {
           setOverallCompare(dataCompare.overall)
         }
@@ -1413,6 +1425,7 @@ const ViewProject = ({
           rotateXAxis,
           chartType,
           customEventsChart,
+          // @ts-expect-error
           dataCompare?.chart,
         )
         setChartData(chart)
@@ -1421,6 +1434,7 @@ const ViewProject = ({
           types: _keys(params),
           data: params,
           customs,
+          properties,
         })
 
         if (activeTab === PROJECT_TABS.traffic) {
@@ -1461,6 +1475,24 @@ const ViewProject = ({
     }
 
     return getCustomEventsMetadata(id, event, timeBucket, period, '', '', timezone, projectPassword)
+  }
+
+  const _getPropertyMetadata = async (event: string) => {
+    if (period === 'custom' && dateRange) {
+      return getPropertyMetadata(
+        id,
+        event,
+        timeBucket,
+        '',
+        getFormatDate(dateRange[0]),
+        getFormatDate(dateRange[1]),
+        filters,
+        timezone,
+        projectPassword,
+      )
+    }
+
+    return getPropertyMetadata(id, event, timeBucket, period, '', '', filters, timezone, projectPassword)
   }
 
   const loadError = useCallback(
@@ -2060,7 +2092,7 @@ const ViewProject = ({
   )
 
   // this funtion is used for requesting the data from the API when the filter is changed
-  const filterHandler = (column: string, filter: any, isExclusive = false) => {
+  const filterHandler = async (column: string, filter: any, isExclusive = false) => {
     let newFilters
     let newFiltersPerf
     let newFiltersSessions
@@ -2170,9 +2202,9 @@ const ViewProject = ({
 
     sdkInstance?._emitEvent('filtersupdate', newFilters)
     if (activeTab === PROJECT_TABS.performance) {
-      loadAnalyticsPerf(true, newFiltersPerf)
+      await loadAnalyticsPerf(true, newFiltersPerf)
     } else if (activeTab === PROJECT_TABS.traffic) {
-      loadAnalytics(true, newFilters)
+      await loadAnalytics(true, newFilters)
     }
   }
 
@@ -2712,7 +2744,7 @@ const ViewProject = ({
 
           const keyPerf = _replace(key, '_perf', '')
 
-          if (!_includes(validFilters, keyPerf)) {
+          if (!isFilterValid(keyPerf)) {
             return
           }
 
@@ -2736,7 +2768,7 @@ const ViewProject = ({
         const initialFilters: any[] = []
         // eslint-disable-next-line lodash/prefer-lodash-method
         searchParams.forEach((value, key) => {
-          if (!_includes(validFilters, key)) {
+          if (!isFilterValid(key, true)) {
             return
           }
 
@@ -2768,7 +2800,7 @@ const ViewProject = ({
 
         const keySess = _replace(key, '_sess', '')
 
-        if (!_includes(validFilters, keySess)) {
+        if (!isFilterValid(keySess)) {
           return
         }
 
@@ -2802,7 +2834,7 @@ const ViewProject = ({
 
         const keyErr = _replace(key, '_err', '')
 
-        if (!_includes(validFilters, keyErr)) {
+        if (!isFilterValid(keyErr)) {
           return
         }
 
@@ -3218,21 +3250,42 @@ const ViewProject = ({
     return conflicted
   }
 
-  // resetFilters using for reset filters and update url. Also using for components <NoEvents />
-  // its need for fix bug: when you select filter and you have not data and you can not reset filters
-  const resetFilters = () => {
-    // @ts-ignore
+  const cleanURLFilters = () => {
+    // @ts-expect-error
     const url = new URL(window.location)
     const { searchParams } = url
-    // eslint-disable-next-line lodash/prefer-lodash-method
-    searchParams.forEach((value, key) => {
-      if (!_includes(validFilters, key)) {
-        return
+
+    for (const [key] of Array.from(searchParams.entries())) {
+      if (!isFilterValid(key, true)) {
+        continue
       }
       searchParams.delete(key)
-    })
+    }
+
     const { pathname, search } = url
+
     navigate(`${pathname}${search}`)
+  }
+
+  const resetActiveTabFilters = () => {
+    cleanURLFilters()
+
+    if (activeTab === PROJECT_TABS.traffic) {
+      setFilters([])
+      loadAnalytics(true, [])
+    } else if (activeTab === PROJECT_TABS.performance) {
+      setFiltersPerf([])
+      loadAnalyticsPerf(true, [])
+    } else if (activeTab === PROJECT_TABS.sessions) {
+      setFiltersSessions([])
+    } else if (activeTab === PROJECT_TABS.errors) {
+      setFiltersErrors([])
+    }
+  }
+
+  const resetFilters = () => {
+    cleanURLFilters()
+
     setFilters([])
     setFiltersPerf([])
     setFiltersSessions([])
@@ -4086,6 +4139,7 @@ const ViewProject = ({
                     onRemoveFilter={filterHandler}
                     onChangeExclusive={onChangeExclusive}
                     tnMapping={tnMapping}
+                    resetFilters={resetActiveTabFilters}
                   />
                   {(sessionsLoading === null || sessionsLoading) && _isEmpty(sessions) && <Loader />}
                   {typeof sessionsLoading === 'boolean' && !sessionsLoading && _isEmpty(sessions) && (
@@ -4158,6 +4212,7 @@ const ViewProject = ({
                     onRemoveFilter={filterHandler}
                     onChangeExclusive={onChangeExclusive}
                     tnMapping={tnMapping}
+                    resetFilters={resetActiveTabFilters}
                   />
                   {(errorsLoading === null || errorsLoading) && _isEmpty(errors) && <Loader />}
                   {typeof errorsLoading === 'boolean' && !errorsLoading && _isEmpty(errors) && (
@@ -4238,7 +4293,6 @@ const ViewProject = ({
                           return (
                             <Panel
                               projectPassword={projectPassword}
-                              t={t}
                               key={countryActiveTab}
                               icon={panelIcon}
                               id={countryActiveTab}
@@ -4279,7 +4333,6 @@ const ViewProject = ({
                           return (
                             <Panel
                               projectPassword={projectPassword}
-                              t={t}
                               key={type}
                               icon={panelIcon}
                               id={type}
@@ -4327,7 +4380,6 @@ const ViewProject = ({
                           return (
                             <Panel
                               projectPassword={projectPassword}
-                              t={t}
                               key={type}
                               icon={panelIcon}
                               id={type}
@@ -4344,7 +4396,6 @@ const ViewProject = ({
                           return (
                             <Panel
                               projectPassword={projectPassword}
-                              t={t}
                               key={type}
                               activeTab={activeTab}
                               icon={panelIcon}
@@ -4361,7 +4412,6 @@ const ViewProject = ({
                           return (
                             <Panel
                               projectPassword={projectPassword}
-                              t={t}
                               key={type}
                               icon={panelIcon}
                               id={type}
@@ -4401,7 +4451,6 @@ const ViewProject = ({
                           return (
                             <Panel
                               projectPassword={projectPassword}
-                              t={t}
                               key={type}
                               icon={panelIcon}
                               id={type}
@@ -4419,7 +4468,6 @@ const ViewProject = ({
                         return (
                           <Panel
                             projectPassword={projectPassword}
-                            t={t}
                             key={type}
                             icon={panelIcon}
                             id={type}
@@ -4468,6 +4516,7 @@ const ViewProject = ({
                     onRemoveFilter={filterHandler}
                     onChangeExclusive={onChangeExclusive}
                     tnMapping={tnMapping}
+                    resetFilters={resetActiveTabFilters}
                   />
                   {dataLoading && (
                     <div className='static mt-4 !bg-transparent' id='loader'>
@@ -4501,7 +4550,6 @@ const ViewProject = ({
                           return (
                             <Panel
                               projectPassword={projectPassword}
-                              t={t}
                               key={countryActiveTab}
                               icon={panelIcon}
                               id={countryActiveTab}
@@ -4543,7 +4591,6 @@ const ViewProject = ({
                           return (
                             <Panel
                               projectPassword={projectPassword}
-                              t={t}
                               key={type}
                               icon={panelIcon}
                               id={type}
@@ -4592,7 +4639,6 @@ const ViewProject = ({
                           return (
                             <Panel
                               projectPassword={projectPassword}
-                              t={t}
                               key={type}
                               icon={panelIcon}
                               id={type}
@@ -4610,7 +4656,6 @@ const ViewProject = ({
                           return (
                             <Panel
                               projectPassword={projectPassword}
-                              t={t}
                               key={type}
                               activeTab={activeTab}
                               icon={panelIcon}
@@ -4628,7 +4673,6 @@ const ViewProject = ({
                           return (
                             <Panel
                               projectPassword={projectPassword}
-                              t={t}
                               key={type}
                               icon={panelIcon}
                               id={type}
@@ -4649,7 +4693,6 @@ const ViewProject = ({
                           return (
                             <Panel
                               projectPassword={projectPassword}
-                              t={t}
                               key={utmActiveTab}
                               icon={panelIcon}
                               id={utmActiveTab}
@@ -4668,7 +4711,6 @@ const ViewProject = ({
                           return (
                             <Panel
                               projectPassword={projectPassword}
-                              t={t}
                               key={type}
                               icon={panelIcon}
                               id={type}
@@ -4709,7 +4751,6 @@ const ViewProject = ({
                           return (
                             <Panel
                               projectPassword={projectPassword}
-                              t={t}
                               key={type}
                               icon={panelIcon}
                               id={type}
@@ -4728,7 +4769,6 @@ const ViewProject = ({
                         return (
                           <Panel
                             projectPassword={projectPassword}
-                            t={t}
                             key={type}
                             icon={panelIcon}
                             id={type}
@@ -4740,16 +4780,16 @@ const ViewProject = ({
                           />
                         )
                       })}
-                    {!_isEmpty(panelsData.customs) && (
-                      <CustomEvents
-                        t={t}
-                        customs={panelsData.customs}
-                        onFilter={filterHandler}
-                        chartData={chartData}
-                        customTabs={_filter(customPanelTabs, (tab) => tab.panelID === 'ce')}
-                        getCustomEventMetadata={getCustomEventMetadata}
-                      />
-                    )}
+                    <Metadata
+                      customs={panelsData.customs}
+                      properties={panelsData.properties}
+                      filters={filters}
+                      onFilter={filterHandler}
+                      chartData={chartData}
+                      customTabs={_filter(customPanelTabs, (tab) => tab.panelID === 'ce')}
+                      getCustomEventMetadata={getCustomEventMetadata}
+                      getPropertyMetadata={_getPropertyMetadata}
+                    />
                   </div>
                 </div>
               )}
@@ -4774,6 +4814,7 @@ const ViewProject = ({
                     onRemoveFilter={filterHandler}
                     onChangeExclusive={onChangeExclusive}
                     tnMapping={tnMapping}
+                    resetFilters={resetActiveTabFilters}
                   />
                   {dataLoading && (
                     <div className='static mt-4 !bg-transparent' id='loader'>
@@ -4807,7 +4848,6 @@ const ViewProject = ({
                           return (
                             <Panel
                               projectPassword={projectPassword}
-                              t={t}
                               key={countryActiveTab}
                               icon={panelIcon}
                               id={countryActiveTab}
@@ -4827,7 +4867,6 @@ const ViewProject = ({
                           return (
                             <Panel
                               projectPassword={projectPassword}
-                              t={t}
                               key={type}
                               icon={panelIcon}
                               id={type}
@@ -4847,7 +4886,6 @@ const ViewProject = ({
                           return (
                             <Panel
                               projectPassword={projectPassword}
-                              t={t}
                               key={type}
                               icon={panelIcon}
                               id={type}
@@ -4895,7 +4933,6 @@ const ViewProject = ({
                           return (
                             <Panel
                               projectPassword={projectPassword}
-                              t={t}
                               key={type}
                               icon={panelIcon}
                               id={type}
@@ -4914,7 +4951,6 @@ const ViewProject = ({
                         return (
                           <Panel
                             projectPassword={projectPassword}
-                            t={t}
                             key={type}
                             icon={panelIcon}
                             id={type}

@@ -4,13 +4,10 @@ import _isEmpty from 'lodash/isEmpty'
 
 import Button from 'ui/Button'
 import { DOCS_CAPTCHA_URL } from 'redux/constants'
+import { IFilter } from 'pages/Project/View/interfaces/traffic'
 
 interface INoEvents {
-  filters: {
-    column: string
-    filter: string
-    isExclusive: boolean
-  }[]
+  filters: IFilter[]
   resetFilters: () => void
 }
 

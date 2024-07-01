@@ -13,6 +13,7 @@ import { FILTERS_PANELS_ORDER, ERRORS_FILTERS_PANELS_ORDER } from 'redux/constan
 import countries from 'utils/isoCountries'
 import { getFilters, getErrorsFilters } from 'api'
 import { Filter } from './Filters'
+import { IFilter } from '../interfaces/traffic'
 
 interface ISearchFilters {
   projectPassword?: string
@@ -27,11 +28,7 @@ interface ISearchFilters {
   showModal: boolean
   setShowModal: (show: boolean) => void
   tnMapping: Record<string, string>
-  filters: {
-    column: string
-    filter: string
-    isExclusive: boolean
-  }[]
+  filters: IFilter[]
   type: 'traffic' | 'errors'
 }
 

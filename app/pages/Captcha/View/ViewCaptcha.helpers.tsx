@@ -223,7 +223,6 @@ const getFormatDate = (date: Date) => {
 }
 
 export {
-  iconClassName,
   getFormatDate,
   panelIconMapping,
   typeNameMapping,

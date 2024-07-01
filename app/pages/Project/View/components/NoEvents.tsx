@@ -3,13 +3,10 @@ import { useTranslation } from 'react-i18next'
 import _isEmpty from 'lodash/isEmpty'
 
 import Button from 'ui/Button'
+import { IFilter } from '../interfaces/traffic'
 
 interface INoEvents {
-  filters: {
-    column: string
-    filter: string
-    isExclusive: boolean
-  }[]
+  filters: IFilter[]
   resetFilters: () => void
 }
 

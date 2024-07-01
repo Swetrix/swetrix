@@ -635,6 +635,7 @@
     "support": "Contact support"
   },
   "project": {
+    "metadata": "Metadata",
     "search": "Search",
     "loadMore": "Load more",
     "unknownCountry": "Unknown country",
@@ -704,6 +705,18 @@
       "me": "UTM Medium",
       "ca": "UTM Campaign"
     },
+    "metamapping": {
+      "ev": {
+        "key": "Event key",
+        "value": "Event value",
+        "dynamicKey": "Event key \"{{key}}\""
+      },
+      "tag": {
+        "key": "Property",
+        "value": "Property value",
+        "dynamicKey": "Property \"{{key}}\""
+      }
+    },
     "redactedPage": "Redacted page",
     "noData": "No data to display",
     "overview": "Overview",
@@ -715,6 +728,8 @@
     "conversion": "Conversion",
     "ratio": "Ratio",
     "customEv": "Custom events",
+    "properties": "Properties",
+    "property": "Property",
     "noParamData": "No data for this parameter yet",
     "conflictMetric": "The metric you selected conflicts with an already selected one",
     "prev": "Previous",
