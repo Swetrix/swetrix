@@ -29,6 +29,7 @@ import {
   ApiBearerAuth,
   ApiOkResponse,
   ApiOperation,
+  ApiNoContentResponse,
 } from '@nestjs/swagger'
 import { ILike } from 'typeorm'
 import * as _isEmpty from 'lodash/isEmpty'
@@ -1911,5 +1912,45 @@ export class ProjectController {
     })
 
     return this.projectService.findOne(params.projectId)
+  }
+
+  @ApiOperation({ summary: 'Unarchive project' })
+  @ApiNoContentResponse()
+  @ApiBearerAuth()
+  @Delete(':projectId/archive')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Auth([], true, true)
+  async unarchiveProject(
+    @Param() params: ProjectIdDto,
+    @CurrentUserId() userId: string,
+  ) {
+    const project = await this.projectService.findOneWhere(
+      { id: params.projectId },
+      { relations: ['admin'] },
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const user = await this.userService.findOneWithRelations(userId, [
+      'projects',
+    ])
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    if (!project.isArchived) {
+      throw new ConflictException('Project is unarchived.')
+    }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
+
+    await this.projectService.updateProject(params.projectId, {
+      isArchived: !project.isArchived,
+    })
+
+    return await this.projectService.findOne(params.projectId)
   }
 }
