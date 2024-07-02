@@ -13,6 +13,113 @@ const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 // Date format: YYYY-MM-DD
 const changelog = [
   {
+    date: '2024-07-01',
+    changes: [
+      'Added support for page properties (pageview metadata).',
+      'Added support for filtering of custom events / pageview metadata keys and values.',
+    ],
+  },
+  {
+    date: '2024-06-16',
+    changes: ['Removed support for Greek and Swedish languages.'],
+  },
+  {
+    date: '2024-06-03',
+    changes: ['Fixed flickering when users refreshed sessions view page.'],
+  },
+  {
+    date: '2024-05-26',
+    changes: ['Improved billboard.js chart styles.'],
+  },
+  {
+    date: '2024-05-24',
+    changes: [
+      'Fixed a crash which happened when users selected Bar chart view and refreshed the page.',
+      'Refactored and redesigned several UI components used within Swetrix website.',
+    ],
+  },
+  {
+    date: '2024-05-11',
+    changes: [
+      'Fixed loading indicators for sessions / errors pages.',
+      'Fixed incorrect icon colours for the error page.',
+      'Removed russian language from the list of our supported locales.',
+      'Fixed broken "Load more" feature for the sessions page.',
+      'Improved the CAPTCHA analytics dashboard UI and fixed a few minor issues.',
+      'Added support for 12/24 hour time notation for the sessions page.',
+    ],
+  },
+  {
+    date: '2024-05-06',
+    changes: [
+      <>
+        Introducing:{' '}
+        <Link
+          to={routes.errorTracking}
+          className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+        >
+          Client-side error tracking
+        </Link>
+        . Now you can analyse what kind or errors happen on your website, when they happen and how often. All of that
+        within convenient and easy-to-use Swetrix dashboard.
+      </>,
+    ],
+  },
+  {
+    date: '2024-03-26',
+    changes: [
+      'Introduced new "Load time allocation" metric to the Performance page.',
+      'Added a selector for performance aggregation function. Now you can choose between average, median and 95th quantile data aggregation.',
+    ],
+  },
+  {
+    date: '2024-03-11',
+    changes: [
+      'When creating a new project, you will now get an individual, copy-pastable tracking code to add to your website (instead of looking for it in our documentation).',
+      'Overall website UI and UX improvements.',
+    ],
+  },
+  {
+    date: '2024-02-19',
+    changes: ['Added Hotkeys feature to the analytics dashboard page.'],
+  },
+  {
+    date: '2024-02-16',
+    changes: [
+      'Fixed a bug when some modals where not closable.',
+      'Session analysis: sessions can be opened in a new tab now.',
+      'Reworked billing system and introduced the concept of locked dashboards. Now, instead of completely disregarding all incoming events in case of payment failure, ending trial or something like that, we will accept the events, but limit account functionalities until the issue is resolved.',
+    ],
+  },
+  {
+    date: '2024-01-10',
+    changes: [
+      'Removed % from panels on the Performance tab.',
+      'Displaying human readable locales (e.g. Polish (Poland) instead of pl-PL) in dashboard.',
+    ],
+  },
+  {
+    date: '2023-12-22',
+    changes: [
+      'Added sessions overview (clickstream) feature. Now you can inspect sessions, see the pageflow and analyse what custom events occured within a session.',
+    ],
+  },
+  {
+    date: '2023-11-17',
+    changes: [
+      'Redesigned dashboard page UI.',
+      'Fixed an issue with broken birds eye view for custom events.',
+      'Displaying + and - for value changes for bounce rate and session duration metrics.',
+    ],
+  },
+  {
+    date: '2023-10-20',
+    changes: [
+      'Added funnels feature.',
+      'Fixed a bug which caused signed in users to be redirected on a password-protected project page.',
+    ],
+  },
+  {
     date: '2023-10-17',
     changes: ['Added support for cumulative mode visualisation.'],
   },
@@ -320,12 +427,12 @@ const Changelog = (): JSX.Element => {
       <div className='mx-auto w-11/12 whitespace-pre-line px-4 pb-16 pt-12 sm:px-6 md:w-4/5 lg:px-8'>
         <h1 className='text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>{t('titles.changelog')}</h1>
 
-        <div className='relative mt-10 sm:ml-[calc(2rem+1px)] sm:pb-12  md:ml-[calc(3.5rem+1px)] lg:ml-[calc(11rem)]'>
+        <div className='relative mt-10 sm:ml-[calc(2rem+1px)] sm:pb-12 md:ml-[calc(3.5rem+1px)] lg:ml-[calc(11rem)]'>
           <div className='absolute bottom-0 right-full top-3 mr-7 hidden w-px bg-slate-200 dark:bg-slate-700 sm:block md:mr-[3.25rem]' />
           <div className='space-y-16'>
             {_map(changelog, (item) => {
-              const date = dayjs(item.date).format('YYYY-MM-DDT00:00:00.000Z')
-              const displayDate = dayjs(item.date).locale('en').format('MMM DD, YYYY')
+              const date = dayjs.utc(item.date).format('YYYY-MM-DDT00:00:00.000Z')
+              const displayDate = dayjs.utc(item.date).locale('en').format('MMM DD, YYYY')
 
               return (
                 <div key={item.date} className='group relative'>
@@ -344,7 +451,7 @@ const Changelog = (): JSX.Element => {
                     />
                   </svg>
                   <div className='relative'>
-                    <ul className='dark:prose-dark prose prose-slate relative top-7 mb-4 mt-2 line-clamp-2 list-disc text-base text-gray-900 prose-a:relative prose-a:z-10 dark:text-gray-50 lg:top-0 lg:block'>
+                    <ul className='dark:prose-dark prose prose-slate relative top-7 mb-4 mt-2 list-disc text-base text-gray-900 prose-a:relative prose-a:z-10 dark:text-gray-50 lg:top-0 lg:block'>
                       {_map(item.changes, (change) => (
                         // @ts-ignore
                         <li key={change} className='whitespace-pre-line'>
