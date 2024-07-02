@@ -22,7 +22,14 @@ import {
   UnauthorizedException,
 } from '@nestjs/common'
 import { Response } from 'express'
-import { ApiTags, ApiQuery, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
+import {
+  ApiTags,
+  ApiQuery,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+} from '@nestjs/swagger'
 import { ILike } from 'typeorm'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _map from 'lodash/map'
@@ -91,6 +98,7 @@ import {
   FunnelCreateDTO,
   FunnelUpdateDTO,
 } from './dto'
+import { ProjectIdDto } from './dto/project-id.dto'
 
 const PROJECTS_MAXIMUM = 50
 
@@ -1863,5 +1871,45 @@ export class ProjectController {
       isDataExists,
       isErrorDataExists,
     }
+  }
+
+  @ApiOperation({ summary: 'Archive project' })
+  @ApiOkResponse({ type: Project })
+  @ApiBearerAuth()
+  @Post(':projectId/archive')
+  @HttpCode(HttpStatus.OK)
+  @Auth([], true, true)
+  async archiveProject(
+    @Param() params: ProjectIdDto,
+    @CurrentUserId() userId: string,
+  ) {
+    const project = await this.projectService.findOneWhere(
+      { id: params.projectId },
+      { relations: ['admin'] },
+    )
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const user = await this.userService.findOneWithRelations(userId, [
+      'projects',
+    ])
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
+
+    if (project.isArchived) {
+      throw new ConflictException('Project is already archived.')
+    }
+
+    await this.projectService.updateProject(params.projectId, {
+      isArchived: !project.isArchived,
+    })
+
+    return this.projectService.findOne(params.projectId)
   }
 }
