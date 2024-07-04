@@ -202,11 +202,11 @@ export class Lib {
             return;
         this.pageData.path = pg;
         const perf = this.getPerformanceStats();
-        const prev = this.getPreviousPage();
         this.activePage = pg;
-        this.submitPageView({ pg, prev }, unique, perf, true);
+        this.submitPageView({ pg }, unique, perf, true);
     }
     submitPageView(payload, unique, perf, evokeCallback) {
+        const prev = this.getPreviousPage();
         const privateData = {
             pid: this.projectID,
             perf,
@@ -219,6 +219,7 @@ export class Lib {
             so: getUTMSource(),
             me: getUTMMedium(),
             ca: getUTMCampaign(),
+            prev,
             ...payload,
         };
         if (evokeCallback && this.pageViewsOptions?.callback) {

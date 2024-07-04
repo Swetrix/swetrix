@@ -54,3 +54,4 @@ export interface IPageviewOptions {
     unique?: boolean;
 }
 export declare function pageview(options: IPageviewOptions): void;
+export { LibOptions, TrackEventOptions, PageViewsOptions, ErrorOptions, PageActions, ErrorActions, IErrorEventPayload, IPageViewPayload, };

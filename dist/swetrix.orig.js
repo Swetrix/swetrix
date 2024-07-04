@@ -292,18 +292,18 @@
                 return;
             this.pageData.path = pg;
             var perf = this.getPerformanceStats();
-            var prev = this.getPreviousPage();
             this.activePage = pg;
-            this.submitPageView({ pg: pg, prev: prev }, unique, perf, true);
+            this.submitPageView({ pg: pg }, unique, perf, true);
         };
         Lib.prototype.submitPageView = function (payload, unique, perf, evokeCallback) {
             var _a;
+            var prev = this.getPreviousPage();
             var privateData = {
                 pid: this.projectID,
                 perf: perf,
                 unique: unique,
             };
-            var pvPayload = __assign({ lc: getLocale(), tz: getTimezone(), ref: getReferrer(), so: getUTMSource(), me: getUTMMedium(), ca: getUTMCampaign() }, payload);
+            var pvPayload = __assign({ lc: getLocale(), tz: getTimezone(), ref: getReferrer(), so: getUTMSource(), me: getUTMMedium(), ca: getUTMCampaign(), prev: prev }, payload);
             if (evokeCallback && ((_a = this.pageViewsOptions) === null || _a === void 0 ? void 0 : _a.callback)) {
                 var callbackResult = this.pageViewsOptions.callback(pvPayload);
                 if (callbackResult === false) {
