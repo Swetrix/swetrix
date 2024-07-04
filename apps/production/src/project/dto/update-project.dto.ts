@@ -1,8 +1,8 @@
+import { IsBoolean, IsOptional } from 'class-validator'
 import { IntersectionType, PartialType } from '@nestjs/mapped-types'
 import { ApiProperty } from '@nestjs/swagger'
 import { ProjectDTO } from './project.dto'
 import { ProjectPasswordDto } from './project-password.dto'
-import { IsBoolean, IsOptional } from 'class-validator'
 
 export class UpdateProjectDto extends IntersectionType(
   PartialType(ProjectDTO),
@@ -24,10 +24,11 @@ export class UpdateProjectDto extends IntersectionType(
 
   @ApiProperty({
     required: false,
-    description: "When true, the incoming data will not be gathered for this project"})
-  
+    description:
+      'When true, the incoming data will not be gathered for this project',
+    default: false,
+  })
   @IsBoolean()
   @IsOptional()
   isArchived?: boolean
-
 }

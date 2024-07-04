@@ -28,8 +28,9 @@ import {
   ForbiddenException,
   Response,
   Header,
+  ConflictException,
 } from '@nestjs/common'
-import { ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import * as UAParser from 'ua-parser-js'
 import * as isbot from 'isbot'
 
@@ -89,6 +90,7 @@ import { ErrorDTO } from './dto/error.dto'
 import { GetErrorsDto } from './dto/get-errors.dto'
 import { GetErrorDTO } from './dto/get-error.dto'
 import { PatchStatusDTO } from './dto/patch-status.dto'
+import { ProjectService } from '../project/project.service'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mysql = require('mysql2')
@@ -366,6 +368,7 @@ export class AnalyticsController {
   constructor(
     private readonly analyticsService: AnalyticsService,
     private readonly logger: AppLoggerService,
+    private readonly projectService: ProjectService,
   ) {}
 
   @Get()
@@ -1215,6 +1218,7 @@ export class AnalyticsController {
   }
 
   // Log error event
+  @ApiBearerAuth()
   @Post('error')
   @UseGuards(BotDetectionGuard)
   @BotDetection()
@@ -1224,6 +1228,15 @@ export class AnalyticsController {
     @Headers() headers,
     @Ip() reqIP,
   ): Promise<any> {
+    const project = await this.projectService.getProjectById(errorDTO.pid)
+
+    if (!project || project.isArchived) {
+      const message = !project
+        ? 'Project is not found.'
+        : 'Project is archived.'
+      throw new ConflictException(message)
+    }
+
     const { 'user-agent': userAgent, origin } = headers
 
     const ip = getIPFromHeaders(headers, true) || reqIP || ''
@@ -1298,6 +1311,7 @@ export class AnalyticsController {
   }
 
   // Log custom event
+  @ApiBearerAuth()
   @Post('custom')
   @UseGuards(BotDetectionGuard)
   @BotDetection()
@@ -1307,6 +1321,15 @@ export class AnalyticsController {
     @Headers() headers,
     @Ip() reqIP,
   ): Promise<any> {
+    const project = await this.projectService.getProjectById(eventsDTO.pid)
+
+    if (!project || project.isArchived) {
+      const message = !project
+        ? 'Project is not found.'
+        : 'Project is archived.'
+      throw new ConflictException(message)
+    }
+
     const { 'user-agent': userAgent, origin } = headers
 
     const ip = getIPFromHeaders(headers, true) || reqIP || ''
@@ -1378,6 +1401,7 @@ export class AnalyticsController {
     }
   }
 
+  @ApiBearerAuth()
   @Post('hb')
   @UseGuards(BotDetectionGuard)
   @BotDetection()
@@ -1387,6 +1411,15 @@ export class AnalyticsController {
     @Headers() headers,
     @Ip() reqIP,
   ): Promise<any> {
+    const project = await this.projectService.getProjectById(logDTO.pid)
+
+    if (!project || project.isArchived) {
+      const message = !project
+        ? 'Project is not found.'
+        : 'Project is archived.'
+      throw new ConflictException(message)
+    }
+
     const { 'user-agent': userAgent } = headers
     const { pid } = logDTO
     const ip = getIPFromHeaders(headers, true) || reqIP || ''
@@ -1407,6 +1440,7 @@ export class AnalyticsController {
   }
 
   // Log pageview event
+  @ApiBearerAuth()
   @Post()
   @UseGuards(BotDetectionGuard)
   @BotDetection()
@@ -1416,6 +1450,15 @@ export class AnalyticsController {
     @Headers() headers,
     @Ip() reqIP,
   ): Promise<any> {
+    const project = await this.projectService.getProjectById(logDTO.pid)
+
+    if (!project || project.isArchived) {
+      const message = !project
+        ? 'Project is not found.'
+        : 'Project is archived.'
+      throw new ConflictException(message)
+    }
+
     const { 'user-agent': userAgent, origin } = headers
 
     const ip = getIPFromHeaders(headers, true) || reqIP || ''

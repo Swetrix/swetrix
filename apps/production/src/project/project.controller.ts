@@ -22,15 +22,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common'
 import { Response } from 'express'
-import {
-  ApiTags,
-  ApiQuery,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiOkResponse,
-  ApiOperation,
-  ApiNoContentResponse,
-} from '@nestjs/swagger'
+import { ApiTags, ApiQuery, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
 import { ILike } from 'typeorm'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _map from 'lodash/map'
@@ -1714,6 +1706,7 @@ export class ProjectController {
     res.send(html)
   }
 
+  @ApiBearerAuth()
   @Put('/:id')
   @HttpCode(200)
   @Auth([], true)
@@ -1752,7 +1745,7 @@ export class ProjectController {
       project.active = projectDTO.active
     }
 
-    if (projectDTO.isArchived) {
+    if (_isBoolean(projectDTO.isArchived)) {
       project.isArchived = projectDTO.isArchived
     }
 
@@ -1876,5 +1869,4 @@ export class ProjectController {
       isErrorDataExists,
     }
   }
-
 }
