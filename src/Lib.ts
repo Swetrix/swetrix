@@ -417,10 +417,8 @@ export class Lib {
 
     const perf = this.getPerformanceStats()
 
-    const prev = this.getPreviousPage()
-
     this.activePage = pg
-    this.submitPageView({ pg, prev }, unique, perf, true)
+    this.submitPageView({ pg }, unique, perf, true)
   }
 
   submitPageView(
@@ -429,6 +427,7 @@ export class Lib {
     perf: IPerfPayload | {},
     evokeCallback?: boolean,
   ): void {
+    const prev = this.getPreviousPage()
     const privateData = {
       pid: this.projectID,
       perf,
@@ -442,6 +441,7 @@ export class Lib {
       so: getUTMSource(),
       me: getUTMMedium(),
       ca: getUTMCampaign(),
+      prev,
       ...payload,
     }
 
