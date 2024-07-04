@@ -119,3 +119,14 @@ export function pageview(options: IPageviewOptions): void {
 
   LIB_INSTANCE.submitPageView(options.payload, Boolean(options.unique), {})
 }
+
+export {
+  LibOptions,
+  TrackEventOptions,
+  PageViewsOptions,
+  ErrorOptions,
+  PageActions,
+  ErrorActions,
+  IErrorEventPayload,
+  IPageViewPayload,
+}
