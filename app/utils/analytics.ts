@@ -104,53 +104,71 @@ Swetrix.init(SWETRIX_PID, {
   devMode: isDevelopment,
 })
 
-const trackViews = () => {
-  if (!isSelfhosted) {
-    Swetrix.trackViews({
-      callback: ({ pg, prev, ref }) => {
-        const result = {
-          pg,
-          prev,
-          ref,
-        }
+const BLOG_PAGE_REGEX = /^\/blog\/.+$/
 
-        result.pg = getNewPath(pg)
-        result.prev = getNewPath(prev)
-
-        if (checkIgnore(ref, REFS_TO_IGNORE)) {
-          result.ref = undefined
-        }
-
-        return result
-      },
-      heartbeatOnBackground: true,
-    })
+export const trackViews = () => {
+  if (isSelfhosted) {
+    return
   }
+
+  Swetrix.trackViews({
+    callback: ({ pg, prev, ref }) => {
+      const result = {
+        pg,
+        prev,
+        ref,
+      }
+
+      if (pg && BLOG_PAGE_REGEX.test(pg)) {
+        return false
+      }
+
+      result.pg = getNewPath(pg)
+      result.prev = getNewPath(prev)
+
+      if (checkIgnore(ref, REFS_TO_IGNORE)) {
+        result.ref = undefined
+      }
+
+      return result
+    },
+    heartbeatOnBackground: true,
+  })
 }
 
-const trackErrors = () => {
-  if (!isSelfhosted) {
-    Swetrix.trackErrors({
-      callback: ({ message, pg }) => {
-        if (_includes(message, 'Minified React error')) {
-          return false
-        }
-
-        return {
-          pg: getNewPath(pg),
-        }
-      },
-    })
+export const trackPageview = (options: Swetrix.IPageviewOptions) => {
+  if (isSelfhosted) {
+    return
   }
+
+  Swetrix.pageview(options)
 }
 
-const trackCustom = (ev: string, meta?: any) => {
-  if (!isSelfhosted) {
-    Swetrix.track({
-      ev,
-      meta,
-    })
+export const trackErrors = () => {
+  if (isSelfhosted) {
+    return
   }
+
+  Swetrix.trackErrors({
+    callback: ({ message, pg }) => {
+      if (_includes(message, 'Minified React error')) {
+        return false
+      }
+
+      return {
+        pg: getNewPath(pg),
+      }
+    },
+  })
 }
 
-export { trackViews, trackCustom, trackErrors }
+export const trackCustom = (ev: string, meta?: Swetrix.TrackEventOptions['meta']) => {
+  if (isSelfhosted) {
+    return
+  }
+
+  Swetrix.track({
+    ev,
+    meta,
+  })
+}

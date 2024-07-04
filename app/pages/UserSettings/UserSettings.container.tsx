@@ -49,7 +49,9 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
             }),
           ),
         () => {
-          trackCustom('ACCOUNT_DELETED')
+          trackCustom('ACCOUNT_DELETED', {
+            reason_stated: deletionFeedback ? 'true' : 'false',
+          })
           onSuccess()
         },
         deletionFeedback,

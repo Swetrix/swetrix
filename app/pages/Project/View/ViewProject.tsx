@@ -194,6 +194,7 @@ import NoErrorDetails from './components/NoErrorDetails'
 import WaitingForAnError from './components/WaitingForAnError'
 import NoSessionDetails from './components/NoSessionDetails'
 import { ICustoms, IParams, IProperties, ITrafficLogResponse } from './interfaces/traffic'
+import { trackCustom } from 'utils/analytics'
 const SwetrixSDK = require('@swetrix/sdk')
 
 const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
@@ -2490,6 +2491,7 @@ const ViewProject = ({
     }
 
     try {
+      trackCustom('TRAFFIC_FORECAST')
       const result = await getChartPrediction(chartData, periodToForecast, timeBucket)
       const transformed = transformAIChartData(result)
       setProjectForcastCache(id, transformed, key)
@@ -3715,6 +3717,10 @@ const ViewProject = ({
 
                                       return
                                     }
+
+                                    trackCustom('DASHBOARD_EXPORT', {
+                                      type: item.label === t('project.asCSV') ? 'csv' : 'extension',
+                                    })
 
                                     item.onClick(panelsData, t)
                                   }}

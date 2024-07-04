@@ -1,6 +1,7 @@
-import React from 'react'
-import { Link, useLoaderData } from '@remix-run/react'
+import React, { useEffect } from 'react'
+import { Link, useLoaderData, useLocation } from '@remix-run/react'
 import NotFound from 'pages/NotFound'
+import { trackPageview } from 'utils/analytics'
 
 interface IPost {
   slug: string
@@ -14,7 +15,23 @@ interface IPost {
 }
 
 export default function PostSlug() {
+  const location = useLocation()
   const post = useLoaderData() as IPost
+
+  useEffect(() => {
+    const meta = post.author
+      ? {
+          author: post.author,
+        }
+      : undefined
+
+    trackPageview({
+      payload: {
+        pg: location.pathname,
+        meta,
+      },
+    })
+  }, [post, location])
 
   if (!post) {
     return <NotFound />
