@@ -99,7 +99,6 @@ import {
   FunnelCreateDTO,
   FunnelUpdateDTO,
 } from './dto'
-import { ProjectIdDto } from './dto/project-id.dto'
 
 const PROJECTS_MAXIMUM = 50
 
@@ -1753,6 +1752,10 @@ export class ProjectController {
       project.active = projectDTO.active
     }
 
+    if (projectDTO.isArchived) {
+      project.isArchived = projectDTO.isArchived
+    }
+
     if (projectDTO.origins) {
       project.origins = _map(projectDTO.origins, _trim)
     }
@@ -1874,83 +1877,4 @@ export class ProjectController {
     }
   }
 
-  @ApiOperation({ summary: 'Archive project' })
-  @ApiOkResponse({ type: Project })
-  @ApiBearerAuth()
-  @Post(':projectId/archive')
-  @HttpCode(HttpStatus.OK)
-  @Auth([], true, true)
-  async archiveProject(
-    @Param() params: ProjectIdDto,
-    @CurrentUserId() userId: string,
-  ) {
-    const project = await this.projectService.findOneWhere(
-      { id: params.projectId },
-      { relations: ['admin'] },
-    )
-
-    if (!project) {
-      throw new NotFoundException('Project not found.')
-    }
-
-    const user = await this.userService.findOneWithRelations(userId, [
-      'projects',
-    ])
-
-    if (!user) {
-      throw new NotFoundException('User not found.')
-    }
-
-    this.projectService.allowedToManage(project, userId, user.roles)
-
-    if (project.isArchived) {
-      throw new ConflictException('Project is already archived.')
-    }
-
-    await this.projectService.updateProject(params.projectId, {
-      isArchived: !project.isArchived,
-    })
-
-    return this.projectService.findOne(params.projectId)
-  }
-
-  @ApiOperation({ summary: 'Unarchive project' })
-  @ApiNoContentResponse()
-  @ApiBearerAuth()
-  @Delete(':projectId/archive')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @Auth([], true, true)
-  async unarchiveProject(
-    @Param() params: ProjectIdDto,
-    @CurrentUserId() userId: string,
-  ) {
-    const project = await this.projectService.findOneWhere(
-      { id: params.projectId },
-      { relations: ['admin'] },
-    )
-
-    if (!project) {
-      throw new NotFoundException('Project not found.')
-    }
-
-    const user = await this.userService.findOneWithRelations(userId, [
-      'projects',
-    ])
-
-    if (!user) {
-      throw new NotFoundException('User not found.')
-    }
-
-    if (!project.isArchived) {
-      throw new ConflictException('Project is unarchived.')
-    }
-
-    this.projectService.allowedToManage(project, userId, user.roles)
-
-    await this.projectService.updateProject(params.projectId, {
-      isArchived: !project.isArchived,
-    })
-
-    return await this.projectService.findOne(params.projectId)
-  }
 }
