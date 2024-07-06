@@ -1821,10 +1821,12 @@ export class ProjectController {
     await this.projectService.deleteShare(shareId)
   }
 
+  @ApiBearerAuth()
   @Get('/:id')
   @Auth([], true, true)
   @ApiResponse({ status: 200, type: Project })
   async getOne(
+    @Query('showArchived') showArchived: string | undefined,
     @Param('id') id: string,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
@@ -1852,6 +1854,14 @@ export class ProjectController {
     }
 
     this.projectService.allowedToView(project, uid, headers['x-password'])
+
+    const isShowArchived = showArchived === 'true'
+
+    if (project.isArchived && !isShowArchived) {
+      throw new ConflictException(
+        'Project is archived and showArchived is false.',
+      )
+    }
 
     const isDataExists = !_isEmpty(
       await this.projectService.getPIDsWhereAnalyticsDataExists([id]),
