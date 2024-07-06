@@ -120,7 +120,7 @@ export class ProjectController {
   @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
   @ApiQuery({ name: 'search', required: false, type: String })
   @ApiResponse({ status: 200, type: [Project] })
-  @Auth([UserType.CUSTOMER, UserType.ADMIN], true)
+  @Auth([], true)
   async get(
     @CurrentUserId() userId: string,
     @Query('take') take: number | undefined,
