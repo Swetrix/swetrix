@@ -361,7 +361,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
               <p className='mb-6 mt-6 text-gray-600 dark:text-gray-400'>{t('main.coreFeatures.desc')}</p>
               <a
                 href={LIVE_DEMO_URL}
-                className='flex items-center border-0 font-bold text-indigo-700 hover:underline dark:text-indigo-400'
+                className='flex max-w-max items-center border-0 font-bold text-indigo-700 hover:underline dark:text-indigo-400'
                 target='_blank'
                 rel='noopener noreferrer'
                 aria-label={`${t('common.liveDemo')} (opens in a new tab)`}
@@ -380,7 +380,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
               <p className='mb-6 text-gray-600 dark:text-gray-400'>{t('main.marketplace.desc2')}</p>
               <a
                 href={MARKETPLACE_URL}
-                className='flex items-center border-0 font-bold text-indigo-700 hover:underline dark:text-indigo-400'
+                className='flex max-w-max items-center border-0 font-bold text-indigo-700 hover:underline dark:text-indigo-400'
                 target='_blank'
                 rel='noopener noreferrer'
                 aria-label='Swetrix Marketplace (opens in a new tab)'
@@ -424,7 +424,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
               {/* mt-7 because mb-4 in upper component + mt-7 = 11. mb-11 is used for spacing the links in other sections. */}
               <Link
                 to={routesPath.privacy}
-                className='mt-7 flex items-center border-0 font-bold text-indigo-700 hover:underline dark:text-indigo-400'
+                className='mt-7 flex max-w-max items-center border-0 font-bold text-indigo-700 hover:underline dark:text-indigo-400'
                 aria-label={t('footer.pp')}
               >
                 {t('main.dataProtection')}
