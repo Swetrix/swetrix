@@ -18,9 +18,9 @@ const Panel = ({ href, title, description }: IPanel) => (
     rel='noopener noreferrer'
     className='relative block rounded-2xl border border-gray-300/80 bg-gray-100 p-10 hover:bg-gray-200 dark:border-slate-900/80 dark:bg-slate-800/80 dark:hover:bg-slate-800'
   >
-    <ArrowTopRightOnSquareIcon className='absolute right-5 top-5 h-5 w-5 text-gray-900' />
-    <h3 className='text-lg font-semibold leading-7 text-gray-900'>{title}</h3>
-    <p className='mt-3 text-sm leading-6 text-gray-600'>{description}</p>
+    <ArrowTopRightOnSquareIcon className='absolute right-5 top-5 h-5 w-5 text-gray-900 dark:text-gray-100' />
+    <h3 className='text-lg font-semibold leading-7 text-gray-900 dark:text-gray-100'>{title}</h3>
+    <p className='mt-3 text-sm leading-6 text-gray-600 dark:text-gray-200'>{description}</p>
   </a>
 )
 
