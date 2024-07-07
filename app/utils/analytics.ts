@@ -57,8 +57,8 @@ const PATHS_REPLACEMENT_MAP = [
     replacement: '/projects/[id]/alerts/create',
   },
   {
-    regex: /\/projects\/([^/]+)\/subsribers\/invite/i,
-    replacement: '/projects/[id]/subsribers/invite',
+    regex: /\/projects\/([^/]+)\/subscribers\/invite/i,
+    replacement: '/projects/[id]/subscribers/invite',
   },
   {
     regex: /\/projects\/([^/]+)\/alerts\/settings/i,
