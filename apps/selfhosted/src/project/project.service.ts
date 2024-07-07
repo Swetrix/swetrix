@@ -312,6 +312,31 @@ export class ProjectService {
     return updFunnel
   }
 
+  validateOrigins(projectDTO: ProjectDTO | UpdateProjectDto) {
+    if (_size(_join(projectDTO.origins, ',')) > 300)
+      throw new UnprocessableEntityException(
+        'The list of allowed origins has to be smaller than 300 symbols',
+      )
+
+    _map(projectDTO.origins, host => {
+      if (!ORIGINS_REGEX.test(_trim(host))) {
+        throw new ConflictException(`Host ${host} is not correct`)
+      }
+    })
+  }
+
+  validateIPBlacklist(projectDTO: ProjectDTO | UpdateProjectDto) {
+    if (_size(_join(projectDTO.ipBlacklist, ',')) > 300)
+      throw new UnprocessableEntityException(
+        'The list of allowed blacklisted IP addresses must be less than 300 characters.',
+      )
+    _map(projectDTO.ipBlacklist, ip => {
+      if (!net.isIP(_trim(ip)) && !IP_REGEX.test(_trim(ip))) {
+        throw new ConflictException(`IP address ${ip} is not correct`)
+      }
+    })
+  }
+
   validateProject(
     projectDTO: ProjectDTO | UpdateProjectDto,
     creatingProject = false,
@@ -323,29 +348,12 @@ export class ProjectService {
       return
     }
 
-    if (!isValidPID(projectDTO.id))
+    if (projectDTO?.id && !isValidPID(projectDTO.id))
       throw new UnprocessableEntityException(
         'The provided Project ID (pid) is incorrect',
       )
-    if (_size(_join(projectDTO.origins, ',')) > 300)
-      throw new UnprocessableEntityException(
-        'The list of allowed origins has to be smaller than 300 symbols',
-      )
-    if (_size(_join(projectDTO.ipBlacklist, ',')) > 300)
-      throw new UnprocessableEntityException(
-        'The list of allowed blacklisted IP addresses must be less than 300 characters.',
-      )
 
-    _map(projectDTO.origins, host => {
-      if (!ORIGINS_REGEX.test(_trim(host))) {
-        throw new ConflictException(`Host ${host} is not correct`)
-      }
-    })
-
-    _map(projectDTO.ipBlacklist, ip => {
-      if (!net.isIP(_trim(ip)) && !IP_REGEX.test(_trim(ip))) {
-        throw new ConflictException(`IP address ${ip} is not correct`)
-      }
-    })
+    this.validateOrigins(projectDTO)
+    this.validateIPBlacklist(projectDTO)
   }
 }

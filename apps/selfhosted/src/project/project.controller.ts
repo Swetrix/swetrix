@@ -475,10 +475,14 @@ export class ProjectController {
 
     if (projectDTO.origins) {
       project.origins = _map(projectDTO.origins, _trim)
+    } else {
+      project.origins = []
     }
 
     if (projectDTO.ipBlacklist) {
       project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim)
+    } else {
+      project.ipBlacklist = []
     }
 
     if (projectDTO.name) {
