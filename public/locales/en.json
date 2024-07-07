@@ -835,7 +835,7 @@
         "noFilters": "No filters selected or no data for the selected filter type"
       },
       "protected": "Password protected",
-      "protectedHint": "You can protect your password. That way, people who know the password can access it through a shareable link.",
+      "protectedHint": "You can protect your project with a password. That way, people who know the password can access it through a shareable link.",
       "password": "Dashboard password"
     },
     "captcha": {
