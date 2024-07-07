@@ -7,8 +7,8 @@
     "cancelSubFirst": "Будь ласка, спочатку скасуйте оплачувану підписку",
     "accountDeleted": "Ваш акаунт було видалено",
     "accountDeleteError": "Помилка при видаленні вашого акаунту",
-    "updatedPeriodEmailReports": "User's email reports period has been updated",
-    "updatedPeriodEmailReportsError": "Error occurred while updating user's email reports period",
+    "updatedPeriodEmailReports": "Період email звітів користувача був оновлений",
+    "updatedPeriodEmailReportsError": "Виникла помилка при оновленні періоду користувацьких звітів",
     "roleUpdated": "Роль користувача була змінена",
     "roleUpdateError": "Сталася помилка під час зміни ролі користувача",
     "userInvited": "Користувач був запрошений до вашого проєкту",
@@ -16,7 +16,7 @@
     "userRemoved": "Користувач був видалений з вашого проєкту",
     "userRemoveError": "Сталася помилка під час видалення користувача з вашого проєкту",
     "quitProjectError": "Сталася помилка при виході з проєкту",
-    "payoutInfoError": "Something went wrong whilst requesting payouts information",
+    "payoutInfoError": "Щось пішло не так під час запиту інформації про виплати",
     "quitProject": "Ви покинули проєкт",
     "acceptInvitationError": "Помилка під час прийняття запрошення до проєкту",
     "acceptInvitation": "Запрошення до проєкту було прийнято",
@@ -36,12 +36,12 @@
     "socialAccountUninked": "Обліковий запис Swetrix був відвʼязаний від вашого обраного провайдера",
     "enterPassword": "Будь ласка, введіть пароль",
     "incorrectPassword": "Хибний пароль, спробуйте ще.",
-    "funnelCreated": "The funnel has been created",
-    "funnelUpdated": "The funnel has been updated",
-    "funnelDeleted": "The funnel has been deleted",
+    "funnelCreated": "Воронка була створена",
+    "funnelUpdated": "Воронка була оновлена",
+    "funnelDeleted": "Воронка видалена",
     "errorCode": "Код помилки: {{error}}",
-    "updateErrorStatusFailed": "Error occured while updating error status",
-    "errorStatusUpdated": "Error status has been updated"
+    "updateErrorStatusFailed": "Сталася помилка під час оновлення статусу помилки",
+    "errorStatusUpdated": "Статус помилки був оновлений"
   },
   "common": {
     "features": "Функціонал",
@@ -100,41 +100,41 @@
     "bookADemo": "Забронювати корпоративне демо"
   },
   "performance": {
-    "slogan": "End user <span>performance monitoring</span> to deliver fast websites.",
-    "description": "Deliver a flawless experience to your users, and we will let you know if your site is fast enough.",
+    "slogan": "<span>Моніторинг ефективності</span> для створення швидких вебсайтів.",
+    "description": "Надайте користувачам бездоганний досвід, але ми повідомимо вас, чи ваш сайт достатньо швидкий.",
     "fast": {
-      "title": "Everyone loves a fast website",
-      "desc": "People love fast websites, so in addition to <indexUrl>traffic analytics</indexUrl>, Swetrix allows you to analyse your website speed and monitor other performance metrics based on real traffic from your users.\nUsers are more likely to <wpostatsUrl>abandon your website</wpostatsUrl> if it takes too long to load, stay ahead of these problems and measure insights from real interactions.",
+      "title": "Всі люблять швидкий сайт",
+      "desc": "Люди люблять швидкі вебсайти, тому на додаток до <indexUrl>аналітики трафіку</indexUrl>, Swetrix дозволяє аналізувати швидкість вашого веб-сайту і відстежувати інші показники продуктивності на основі реального трафіку від ваших користувачів.\nКористувачі з більшою ймовірністю <wpostatsUrl>покидають ваш сайт</wpostatsUrl>, якщо він завантажується занадто довго, залишайтеся попереду цих проблем і вимірюйте показники з реальних взаємодій.",
       "list": [
-        "Measure which pages are taking too long to load",
-        "Aggregate performance data by geolocation, browser, device type, page and other metrics",
-        "Compare site speed to previous periods to analyse potential problems or improvements"
+        "Вимірюйте, які сторінки завантажуються занадто довго",
+        "Агрегуйте дані про швидкість за геолокацією, браузером, типом пристрою, сторінкою та іншими метриками",
+        "Порівнюйте швидкість сайту з попередніми періодами, щоб проаналізувати потенційні проблеми або покращення"
       ]
     },
     "metrics": {
-      "title": "Analyse all key metrics in one tool",
-      "desc": "With Swetrix you can measure key metrics such as overall page load time, detailed breakdowns by TTFB, DNS, TLS resolution time and other metrics. Split the data into different percentiles to see how well your site performs for people with fast and slow internet connections."
+      "title": "Аналізуйте всі ключові метрики в одному інструменті",
+      "desc": "За допомогою Swetrix ви можете вимірювати такі ключові показники, як загальний час завантаження сторінки, детальну розбивку за TTFB, DNS, час дозволу TLS та інші показники. Розділіть дані на різні процентилі, щоб побачити, наскільки добре ваш сайт працює для людей зі швидким і повільним інтернет-з'єднанням."
     },
     "privacy": {
-      "title": "Privacy-first, easy to use",
-      "desc": "Swetrix is built with a privacy-first and transparent approach. We do not use cookies or collect personal information from our users. There's no cross-site or cross-device tracking. No data is ever sold to advertisers or anyone else.\nThe Swetrix dashboard is very intuitive to use, giving you real-time data and a clear view of your website. There are no layers of menus, no need to export your data into custom reports to understand it properly."
+      "title": "Фокус на приватність та легкості використання",
+      "desc": "Swetrix побудований на основі прозорого підходу, що ставить конфіденційність на перше місце. Ми не використовуємо файли cookie та не збираємо особисту інформацію від наших користувачів. Ми не відстежуємо переходи між сайтами та пристроями. Жодні дані ніколи не продаються рекламодавцям або будь-кому іншому.\nІнформаційна панель Swetrix дуже інтуїтивно зрозуміла у використанні, надаючи вам дані в режимі реального часу і чітке уявлення про ваш сайт. Тут немає шарів меню, немає необхідності експортувати дані в спеціальні звіти, щоб зрозуміти їх належним чином."
     }
   },
   "errors": {
-    "slogan": "End user <span>error tracking</span> tool to deliver bug-free experiences.",
-    "description": "Focus on making beautiful apps, and we will let you know if something goes wrong.",
+    "slogan": "Інструмент <span>відстеження помилок</span> для забезпечення бездоганної роботи сайту.",
+    "description": "Зосередьтеся на створенні гарних додатків, а ми дамо вам знати, якщо щось піде не так.",
     "fast": {
-      "title": "Deliver bug-free experiences",
-      "desc": "Everyone hates bugs, so in addition to <indexUrl>traffic</indexUrl> and <perfUrl>performance</perfUrl> analytics, Swetrix allows you to monitor your website errors to quickly resolve them. Easily set up error monitoring with a <oneLC>one line of code</oneLC>, so you can focus on building your applications, not hunting for bugs.",
+      "title": "Забезпечуйте роботу без помилок",
+      "desc": "Всі ненавидять помилки, тому на додаток до аналітики <indexUrl>трафіку</indexUrl> і <perfUrl>швидкості</perfUrl>, Swetrix дозволяє відстежувати помилки вашого сайту, щоб швидко їх усунути. Легко налаштуйте моніторинг помилок за допомогою <oneLC>одного рядка коду</oneLC>, щоб ви могли зосередитися на створенні своїх додатків, а не на пошуку помилок.",
       "list": [
-        "Get a bird's eye insights on what kind of errors are present on your website",
-        "View specific error details and aggregated data by geolocation, browser, device type, page and other metrics",
-        "Understand if the bug is new or regressed, making it easier to fix"
+        "Отримайте уявлення з висоти пташиного польоту про те, які помилки присутні на вашому сайті",
+        "Переглядайте деталі конкретних помилок та агреговані дані за геолокацією, браузером, типом пристрою, сторінкою та іншими метриками",
+        "Розуміння того, чи є помилка новою або регресивною, що полегшує її виправлення"
       ]
     },
     "track": {
-      "title": "Track all errors with one tool",
-      "desc": "With Swetrix, you can track exactly what kind of errors your users are experiencing and when. We also give you insight into which browsers, operating systems, devices and more, making it even easier to resolve issues."
+      "title": "Відстежуйте всі помилки одним інструментом",
+      "desc": "За допомогою Swetrix ви можете точно відстежувати, з якими саме помилками стикаються ваші користувачі та коли. Ми також надаємо вам інформацію про те, які браузери, операційні системи, пристрої та багато іншого, що робить розв'язання проблем ще простішим."
     }
   },
   "main": {
@@ -148,7 +148,7 @@
     "techDetails": "Хочете дізнатись більше технічних деталей?",
     "lookAtDocs": "Детальніше на сторінках документації та функціоналу.",
     "readyToStart": "Готові почати?",
-    "metric": "Metric",
+    "metric": "Метрика",
     "coreFeatures": {
       "title": "Основні функції аналітики",
       "desc": "Потужна та проста аналітика для відображення всіх необхідних метрик. Без використання Cookies. Не потрібно бути статистиком, щоб зрозуміти нашу аналітику."
@@ -318,12 +318,12 @@
     }
   },
   "referral": {
-    "desc": "Swetrix is an ethical, open source and completely cookie-less alternative to Google Analytics. It allows you to understand your users' behaviour, monitor your website performance, track your marketing campaigns and much more. All without invading your users' privacy!",
-    "cookieDetails": "If you click on the buttons above, a cookie will be stored for {{days}} days to reward the person who referred you and give you {{discount}}% off your first bill.",
-    "buttons": "Click on these buttons to receive {{discount}}% off your first bill!"
+    "desc": "Swetrix - це етична, з відкритим вихідним кодом і повністю без файлів cookie альтернатива Google Analytics. Він дозволяє вам розуміти поведінку ваших користувачів, контролювати продуктивність вашого сайту, відстежувати маркетингові кампанії та багато іншого. І все це без втручання в приватне життя ваших користувачів!",
+    "cookieDetails": "Якщо ви натиснете на кнопки вище, файл cookie буде зберігатися протягом {{days}} днів, щоб винагородити особу, яка вас запросила, і надати вам {{discount}}% знижку на ваш перший рахунок.",
+    "buttons": "Натисніть на ці кнопки, щоб отримати {{discount}}% знижку на ваш перший рахунок!"
   },
   "unsubscribe": {
-    "success": "You've unsubscribed from analytics email reports"
+    "success": "Ви відписалися від аналітичних email-звітів"
   },
   "auth": {
     "recovery": {
@@ -344,7 +344,7 @@
       "2faDesc": "Відкрийте додаток двофакторної автентифікації на своєму пристрої, щоб переглянути ваш код автентифікації та підтвердити вашу особу.\nВи також можете використовувати резервний код.",
       "2faUnavailable": "Не маєте доступу до 2FA?\n<ctl>Зверніться до служби підтримки</ctl>.",
       "6digitCode": "6-значний код автентифікації",
-      "notAMember": "Not a member? <url>Start a {{amount}} day free trial</url>"
+      "notAMember": "Не є користувачем? <url>Почніть {{amount}} днів безкоштовної пробної версії</url>"
     },
     "signup": {
       "button": "Зареєструватись",
@@ -353,22 +353,22 @@
       "create": "Реєстрація",
       "trial": "Розпочніть безплатну {{amount}}-ти денну пробну версію",
       "noCC": "Не потрібна кредитна картка.",
-      "alreadyAMember": "Already a member? <url>Sign in</url>"
+      "alreadyAMember": "Вже зареєстровані? <url>Увійдіть</url>"
     },
     "confirm": {
-      "title": "Check your inbox",
-      "linkSent": "We've sent an account confirmation link to {{email}}, please click the link to confirm your email address.",
-      "spam": "Can't see the email? Please check your spam folder.",
-      "wrongEmail": "Wrong email? <url>Create a new account.</url>"
+      "title": "Перевірте вашу поштову скриньку",
+      "linkSent": "Ми надіслали посилання для підтвердження облікового запису на {{email}}, будь ласка, перейдіть за посиланням, щоб підтвердити вашу електронну адресу.",
+      "spam": "Не бачите листа? Перевірте папку спам.",
+      "wrongEmail": "Не та електронна адреса? <url>Створіть новий акаунт.</url>"
     },
     "verification": {
       "success": "Ваша електронна адреса була підтверджена!"
     },
     "socialisation": {
-      "authSuccess": "Authentication successful",
-      "failed": "Authentication failed",
-      "failedDesc": "An error has occurred while authenticating through a third party service, please try again or contact support.",
-      "successDesc": "You are now authenticated through a 3rd party service and can safely close this page if it didn't close automatically.",
+      "authSuccess": "Автентифікація успішна",
+      "failed": "Помилка автентифікації",
+      "failedDesc": "Сталася помилка під час автентифікації через сторонній сервіс. Будь ласка, спробуйте ще раз або зверніться до служби підтримки.",
+      "successDesc": "Ви були авторизовані через сторонній сервіс і можете закрити цю сторінку, якщо вона не закрилася автоматично.",
       "orSingUpWith": "або увійти через"
     },
     "common": {
@@ -486,55 +486,55 @@
     "showVisitorsInTitle": "Показати живих відвідувачів сторінки в заголовку",
     "uiSettings": "Налаштування інтерфейсу користувача",
     "passwordChangeWarningModal": {
-      "title": "You're about to change your password",
-      "body": "You're about to change your password, this will log you out from all devices (including this one) and you will need to log in again with your new password."
+      "title": "Ви збираєтеся змінити свій пароль",
+      "body": "Ви збираєтесь змінити свій пароль. Ця дія розлогінить вас зі всіх пристроїв (включаючи цей) і вам буде необхідно авторизуватись знову з новим паролем."
     },
     "referral": {
-      "title": "Referral program",
-      "desc": "Referral program allows you to earn money by inviting new users to Swetrix.\nYou will receive a part of the subscription fee paid by the invited user and will be able to withdraw it to your PayPal account. Learn more about the referral program at <url>Swetrix Referral Program</url> documentation page.",
-      "referralLink": "Referral link",
-      "payoutEmail": "Referral payout email address",
-      "payoutEmailDesc": "We will send your referral payouts via PayPal to this email address each month. Double check that it is correct.",
-      "payoutEmailUpdated": "Payout email address has been updated",
-      "yourReferralLink": "Your referral link",
-      "referralLinkDesc": "This is your referral link, you can share it with your friends and earn money for each user that signs up and buys a paid plan using it.",
-      "generateRefLink": "Generate referral link",
-      "referralStats": "Referral statistics",
-      "activeReferrals": "Active referrals",
-      "trial": "Trial referrals",
-      "trialDesc": "Trial users referred by you",
-      "active": "Active referrals",
-      "activeDesc": "Paid subsribers referred by you",
-      "paid": "Paid",
-      "paidDesc": "Total amount paid to you",
-      "nextPayout": "Next payout",
-      "nextPayoutDesc": "How much you will get paid next time",
-      "pending": "Pending",
-      "pendingDesc": "Amount of money pending to be paid to you. It takes {{days}} days for the funds to become available.",
+      "title": "Реферальна програма",
+      "desc": "Реферальна програма дозволяє вам заробляти гроші, запрошуючи нових користувачів до Swetrix.\nВи будете отримувати частину плати, сплаченої запрошеним користувачем, і зможете вивести її на свій рахунок PayPal. Дізнайтеся більше про реферальну програму на сторінці документації <url>Swetrix Referral Program</url>.",
+      "referralLink": "Реферальне посилання",
+      "payoutEmail": "Електронна адреса для виплат",
+      "payoutEmailDesc": "Ми щомісяця будем відправляти ваші реферальні виплати через PayPal на цю адресу електронної пошти. Переконайтесь, що вона правильна.",
+      "payoutEmailUpdated": "Email адресу виплати оновлено",
+      "yourReferralLink": "Ваше реферальне посилання",
+      "referralLinkDesc": "Це ваше реферальне посилання, ви можете поділитися ним з друзями та заробляти гроші за кожного користувача, який зареєструється і придбає платний тарифний план.",
+      "generateRefLink": "Створити реферальне посилання",
+      "referralStats": "Реферальна статистика",
+      "activeReferrals": "Активні реферали",
+      "trial": "Пробні реферали",
+      "trialDesc": "Пробні користувачі, яких ви запросили",
+      "active": "Активні реферали",
+      "activeDesc": "Платні підписники, приведені вами",
+      "paid": "Сплачено",
+      "paidDesc": "Загальна сума сплачена вам",
+      "nextPayout": "Наступна виплата",
+      "nextPayoutDesc": "Скільки ви отримаєте наступного разу",
+      "pending": "Очікування",
+      "pendingDesc": "Сума грошей, що очікує на виплату. Кошти стануть доступними через {{days}} днів.",
       "activeReferralsTable": {
-        "plan": "Referral tier",
-        "yourCut": "Your cut",
-        "yourCutDesc": "You will receive {{amount}}% of the subscription fee paid by the user after all fees. Currently our merchant provider charges us {{fee}} per transaction.",
-        "registrationDate": "Registration date"
+        "plan": "Тариф реферала",
+        "yourCut": "Ваша доля",
+        "yourCutDesc": "Ви отримаєте {{amount}}% плати за підписку, оплачену користувачем після всіх комісій. В даний час наш постачальник стягую комісію {{fee}} за транзакцію.",
+        "registrationDate": "Дата реєстрації"
       }
     }
   },
   "alertsSettings": {
-    "alertCreated": "The alert has been created",
-    "alertUpdated": "The alert has been updated",
-    "alertDeleted": "The alert has been deleted"
+    "alertCreated": "Сповіщення було створено",
+    "alertUpdated": "Сповіщення було оновлено",
+    "alertDeleted": "Сповіщення видалено"
   },
   "dashboard": {
     "newProject": "Новий проєкт",
-    "newFunnel": "New funnel",
-    "reloadPage": "Reload page",
+    "newFunnel": "Нова воронка",
+    "reloadPage": "Оновити сторінку",
     "newCaptchaProject": "Новий CAPTCHA проєкт",
     "verifyEmailTitle": "Будь ласка, спочатку підтвердіть вашу ел. адресу",
     "verifyEmailDesc": "Щоб почати користуватися нашим сервісом і створювати свої проєкти, вам спочатку потрібно підтвердити свою адресу електронної пошти.\n\nНа адресу електронної пошти, вказану вами при реєстрації, було відправлене посилання для підтвердження акаунту, якщо воно не була доставлене - ви можете запросити посилання повторно в налаштуваннях вашого облікового запису.",
     "lowEventsTitle": "У вас закінчуються події!",
     "lowEventsDesc": "Ви використали понад 85% доступних подій в вашому тарифному плані за цей місяць.\nЦе означає, що якщо ви використаєте 100% доступних подій до кінця місяця, весь наступний трафік не буде збережений.\nЩоб уникнути цього, рекомендуємо підвищити тариф на сторінці Тарифи.",
-    "accountLocked": "Your account has been temporarily suspended due to a billing issue.",
-    "accountLockedTitle": "Account temporarily suspended",
+    "accountLocked": "Ваш обліковий запис тимчасово призупинено через проблему з оплатою.",
+    "accountLockedTitle": "Обліковий запис тимчасово призупинено",
     "eventsXPercUsed": "Ви використали понад {{amount}}% доступних подій вашого тарифу за цей місяць.",
     "noProjects": "Ви не створили жодного проєкту",
     "createProject": "Створіть новий проєкт тут, щоб почати користуватися нашим сервісом",
@@ -543,16 +543,16 @@
     "shared": "Спільний",
     "disabled": "Деактивований",
     "pageviews": "Переглядів",
-    "captchaEvents": "CAPTCHA events",
-    "firstSeen": "First seen",
-    "lastSeen": "Last seen",
-    "atFile": "At {{filename}}, line {{lineno}}, column {{colno}}",
+    "captchaEvents": "CAPTCHA події",
+    "firstSeen": "Вперше побачено",
+    "lastSeen": "В останнє побачено",
+    "atFile": "В {{filename}}, рядок {{lineno}}, стовпець {{colno}}",
     "unique": "Унікальних відвідувань",
     "createdAt": "Створений",
     "inc": "Збільшилось на",
     "dec": "Зменшилось на",
     "liveVisitors": "Користувачів онлайн",
-    "xLiveVisitors": "{{amount}} live visitors",
+    "xLiveVisitors": "{{amount}} користувачів онлайн",
     "live": "Наживо",
     "bounceRate": "Показник відмов",
     "viewsPerUnique": "Переглядів на сесію",
@@ -560,24 +560,24 @@
     "invitationFor": "Запрошення до {{project}}",
     "invitationDesc": "Ви були запрошені приєднатися до проєкту {{project}}.\nВи можете або прийняти запрошення тут, або відхилити його в налаштуваннях облікового запису.",
     "sessionDuration": "Тривалість сесії",
-    "cumulativeMode": "Cumulative mode",
+    "cumulativeMode": "Кумулятивний режим",
     "traffic": "Трафік",
     "performance": "Продуктивність",
     "funnels": "Воронки",
-    "sessions": "Sessions",
-    "xOccurrences": "{{x}} occurrences",
-    "errors": "Errors",
-    "xPageviews": "{{x}} pageviews",
-    "onePageview": "1 pageview",
+    "sessions": "Сесії",
+    "xOccurrences": "{{x}} випадків",
+    "errors": "Помилки",
+    "xPageviews": "{{x}} переглядів сторінок",
+    "onePageview": "1 перегляд сторінки",
     "alerts": "Сповіщення",
-    "alertsDesc": "Automated alerts is a powerful tool that allows you to run automated tasks when specific events occur.\nWe can automatically monitor your project for traffic spikes and notify you via Telegram.",
-    "funnelsDesc": "Funnels is a powerful tool that allows you to track the conversion rate of your users through a series of steps.\nThe analysis provided by the marketing funnel gives you the ability to discover potential problems, improve your website, and boost your conversion rate.",
+    "alertsDesc": "Автоматизовані сповіщення - це потужний інструмент, який дозволяє вам виконувати автоматизовані завдання коли виконуються певні умови.\nМи можемо автоматично стежити за вашим проєктом на наявність спайків трафіку і повідомляти вас через Telegram.",
+    "funnelsDesc": "Воронки – це потужний інструмент, що дозволяє вам відстежувати коефіцієнт конверсії ваших користувачів через ряд кроків.\nАналіз, наданий маркетинговою воронкою, дає вам можливість виявити потенційні проблеми, покращити ваш сайт та підвищити якість конвертації.",
     "frontend": "Фронтенд",
     "backend": "Бекенд",
     "network": "Мережа",
     "timing": "Розбиття часу",
     "timingFull": "Розбиття часу (повне)",
-    "allocation": "Load time allocation",
+    "allocation": "Розподіл часу завантаження",
     "dns": "DNS",
     "conn": "З'єднання",
     "tls": "TLS підключення",
@@ -586,22 +586,22 @@
     "pageLoad": "Час завантаження сторінки",
     "render": "Візуалізація браузером",
     "response": "Час відгуку",
-    "average": "Average",
-    "median": "Median",
-    "xPercentile": "{{x}}th percentile"
+    "average": "Середнє",
+    "median": "Медіана",
+    "xPercentile": "{{x}}й перцентиль"
   },
   "alert": {
     "create": "Створити сповіщення",
-    "customEvent": "Custom event name",
-    "add": "Add alert",
+    "customEvent": "Назва користувацької події",
+    "add": "Додати оповіщення",
     "delete": "Видалити сповіщення",
     "noNameError": "Будь ласка, введіть назву для оповіщення.",
     "queryValueError": "Будь ласка, введіть поріг і значення запиту має бути числом.",
     "noIntegration": "Ви ще не налаштували інтеграції. Додайте її в <url>налаштуваннях акаунту</url>.",
-    "noNotificationChannel": "You do not have a notification channel set up, please set it up to be notified when one of your alerts is triggered.",
+    "noNotificationChannel": "У вас немає налаштованого каналу сповіщень, будь ласка, налаштуйте його, щоб бути повідомленим про спрацьовування ваших сповіщень.",
     "lastTriggered": "Останнє спрацьовування",
-    "lastTriggeredOn": "Last triggered on {{date}}",
-    "notYetTriggered": "Not yet triggered",
+    "lastTriggeredOn": "В останнє спрацьовано {{date}}",
+    "notYetTriggered": "Ще не спрацьовано",
     "never": "Ніколи",
     "qDelete": "Видалити сповіщення?",
     "settingsOf": "Налаштування {{name}}",
@@ -626,14 +626,14 @@
       "page_views": "Перегляди сторінок",
       "unique_page_views": "Унікальні сесії",
       "online_users": "Користувачі онлайн",
-      "custom_events": "Custom events"
+      "custom_events": "Користувацькі події"
     }
   },
   "error": {
     "status": {
-      "active": "Active",
-      "resolved": "Resolved",
-      "regressed": "Regressed"
+      "active": "Активна",
+      "resolved": "Вирішена",
+      "regressed": "Регресія"
     }
   },
   "notFoundPage": {
@@ -643,61 +643,61 @@
     "support": "Зв'язатися з підтримкою"
   },
   "project": {
-    "metadata": "Metadata",
+    "metadata": "Метадані",
     "search": "Пошук",
-    "loadMore": "Load more",
-    "unknownCountry": "Unknown country",
-    "selectCategory": "Select category to filter",
-    "currentFilters": "Currently applied filters",
-    "newFilters": "New filters",
+    "loadMore": "Завантажити ще",
+    "unknownCountry": "Невідома країна",
+    "selectCategory": "Виберіть категорію для фільтрування",
+    "currentFilters": "Застосовані фільтри",
+    "newFilters": "Нові фільтри",
     "advancedFilters": "Розширені фільтри",
     "applyFilters": "Застосувати фільтри",
-    "lookingForMore": "Looking for more?",
+    "lookingForMore": "Шукаєте більше?",
     "overrideCurrentlyFilters": "Перевизначити застосовані фільтри",
     "noExist": "Обраний проєкт не існує",
     "geo": "Геолокація",
-    "campaigns": "Campaigns",
-    "pageviewX": "Pageview <value>{{x}}</value>",
-    "eventX": "Event <value>{{x}}</value>",
+    "campaigns": "Кампанії",
+    "pageviewX": "Перегляд сторінки <value>{{x}}</value>",
+    "eventX": "Подія <value>{{x}}</value>",
     "exportData": "Експорт даних",
     "asCSV": "Як CSV",
     "noEvTitle": "Поки що подій немає",
-    "noErrorDetails": "No error details",
-    "noErrorDesc": "This error does not exist or has not occurred within the specified time frame.",
-    "noSessionDetails": "No session details",
-    "noSessionDesc": "We could not find a session with the specified session ID.",
+    "noErrorDetails": "Немає деталей про помилку",
+    "noErrorDesc": "Ця помилка не існує або не існує в зазначеному часовому проміжку.",
+    "noSessionDetails": "Немає інформації про сесію",
+    "noSessionDesc": "Ми не змогли знайти сесію з зазначеним ідентифікатором сесії.",
     "showAll": "Показати всі перегляди",
     "trendlineUnique": "Тренд унікальних відвідувань",
     "backToFunnels": "Повернутись до переліку воронок",
-    "backToSessions": "Back to sessions list",
-    "backToErrors": "Back to errors list",
-    "occurrences": "Occurrences",
-    "visitPage": "Visit {{page}}",
-    "visitors": "Visitors",
-    "events": "Events",
-    "dropoff": "Dropoff",
-    "neverEnteredTheFunnel": "Never entered the funnel",
+    "backToSessions": "Назад до списку сесій",
+    "backToErrors": "Назад до списку помилок",
+    "occurrences": "Випадки",
+    "visitPage": "Перегляд {{page}}",
+    "visitors": "Перегляди",
+    "events": "Події",
+    "dropoff": "Випадання",
+    "neverEnteredTheFunnel": "Ніколи не попав у воронку",
     "locked": {
-      "title": "Dashboard locked",
-      "descExceedingTier": "This dashboard is locked because your traffic has exceeded your subscription plan.\nIn order to continue using Swetrix and have access to your stats, you need to upgrade your subscription plan to reflect your usage.",
-      "descTialEnded": "This dashboard is locked because your trial ended.\nIn order to continue using Swetrix and have access to your stats, you need to subscribe to one of our tiers.",
-      "descPaymentFailed": "This dashboard is locked because there was a problem with your last Swetrix subscription payment.\nIn order to continue using Swetrix and have access to your stats, you need to update / confirm your payment details.",
-      "descSharedProject": "This dashboard is locked due to a billing issue of the project owner.\nIn order to continue using Swetrix and have access to the stats, the billing issue must be resolved first.",
-      "descGenericIssue": "This dashboard has been locked and is currently unavailable, please come back later or contact the project owner to resolve the issue.",
-      "descSubCancelled": "This dashboard has been locked because you've cancelled your subscription.\nIn order to continue using Swetrix and have access to your stats, you need to have an active subscription.",
-      "resolve": "We're still counting your stats and we haven't deleted any of your data. Once you have updated your payment information, your dashboard access will be restored immediately.",
-      "manageSubscription": "Manage subscription"
+      "title": "Панель заблоковано",
+      "descExceedingTier": "Ця панель заблокована, оскільки ваш трафік перевищив тарифний план.\nДля того, щоб продовжити використання Swetrix і мати доступ до вашої статистики, вам необхідно оновити план підписки який відображає ваше використання.",
+      "descTialEnded": "Ця панель заблокована, оскільки закінчився випробувальний період.\nДля того, щоб продовжити використання Swetrix і мати доступ до вашої статистики, вам необхідно підписатися на один з наших тарифних планів.",
+      "descPaymentFailed": "Ця панель заблокована, оскільки сталася проблема із останньою оплатою підписки.\nДля того, щоб продовжити використання Swetrix і мати доступ до вашої статистики, вам необхідно оновити / підтвердити платіжні реквізити.",
+      "descSharedProject": "Ця панель заблокована через проблему з платежем власника проєкту.\nЩоб продовжити використання Swetrix і мати доступ до статистики, необхідно спочатку вирішити проблему з платежем.",
+      "descGenericIssue": "Ця панель була заблокована і на цей час недоступна, будь ласка, поверніться пізніше або зв'яжіться з власником проєкту для розв'язання проблеми.",
+      "descSubCancelled": "Цю панель було заблоковано, оскільки ви скасували підписку.\nДля того, щоб продовжити використання Swetrix і мати доступ до вашої статистики Вам необхідно мати активну підписку на один з наших тарифних планів.",
+      "resolve": "Ми все ще рахуємо вашу статистику і не видалили жодних даних. Після оновлення платіжної інформації, доступ до панелі буде негайно відновлено.",
+      "manageSubscription": "Керування підпискою"
     },
     "waiting": {
-      "title": "Waiting for your first pageview",
-      "desc": "We're waiting for your first pageview! If your integration is set up correctly, you should see it within 1 minute.\n<snippet>Click here</snippet> to view your JavaScript tracking code.\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
+      "title": "Очікування першого перегляду сторінки",
+      "desc": "Ми чекаємо на ваш перший перегляд сторінки! Якщо вашу інтеграцію налаштовано правильно, ви побачите його протягом 1 хвилини.\n<snippet>Натисніть тут</snippet>, щоб переглянути код відстеження JavaScript.\nВсе ще не працює? Спробуйте <turl>вирішення проблем</turl> вашої інтеграції або <curl>зверніться до нас</curl> за допомогою з налаштуванням."
     },
     "waitingError": {
-      "title": "Waiting for your first error.. hopefully not :)",
-      "desc": "We're waiting for your first error event! If your integration is set up correctly, you should see it within 1 minute when it happens.\n<howto>Click here</howto> to learn how to set up error tracking for your website.\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
+      "title": "Очікування першої помилки.. Сподіваємося, що ні :)",
+      "desc": "Чекаємо на вашу першу подію помилки! Якщо ваша інтеграція налаштована правильно, ви побачите її протягом 1 хвилини, коли вона трапиться.\n<howto>Клікніть тут</howto>, щоб дізнатися, як налаштувати відстеження помилок для вашого сайту.\nВсе ще не працює? Спробуйте <turl>вирішення проблем</turl> вашої інтеграції або <curl>зверніться до нас</curl> за допомогою з налаштуванням."
     },
     "trendlineTotal": "Тренд кількості переглядів",
-    "noEvContent": "No events have been recorded for the specified period, please try a different period.",
+    "noEvContent": "За вказаний період не було зафіксовано жодної події, будь ласка, спробуйте інший період.",
     "noCaptchaEv": "За вказаний період часу не було зафіксовано жодної події.\nЯкщо ви ще не інтегрували віджет CAPTCHA в ваш вебсайт, ви можете ознайомитися з <url>документацією</url>, щоб легко це зробити.",
     "mapping": {
       "cc": "Країна",
@@ -715,29 +715,29 @@
     },
     "metamapping": {
       "ev": {
-        "key": "Event key",
-        "value": "Event value",
-        "dynamicKey": "Event key \"{{key}}\""
+        "key": "Ключ події",
+        "value": "Значення події",
+        "dynamicKey": "Ключ події \"{{key}}\""
       },
       "tag": {
-        "key": "Property",
-        "value": "Property value",
-        "dynamicKey": "Property \"{{key}}\""
+        "key": "Властивість",
+        "value": "Значення властивості",
+        "dynamicKey": "Властивість \"{{key}}\""
       }
     },
-    "redactedPage": "Redacted page",
-    "noData": "No data to display",
+    "redactedPage": "Прихована сторінка",
+    "noData": "Немає даних для відображення",
     "overview": "Огляд",
     "weeklyStats": "Тижнева статистика",
     "statsFor": "Статистика за",
     "event": "Подія",
-    "value": "Value",
+    "value": "Значення",
     "quantity": "Кількість",
     "conversion": "Конверсія",
     "ratio": "Пропорція",
     "customEv": "Користувацькі події",
-    "properties": "Properties",
-    "property": "Property",
+    "properties": "Властивості",
+    "property": "Властивість",
     "noParamData": "Поки що немає даних за цим параметром",
     "conflictMetric": "Метрика, яку ви вибрали, конфліктує з уже обраною",
     "prev": "Назад",
@@ -764,10 +764,10 @@
     "exportImgError": "Не вдалося експортувати дані як зображення",
     "codeExample": "Або вставте наступний код на ваш вебсайт, щоб відстежувати ваші події:",
     "metricVis": "Візуалізація метрик",
-    "filters": "Filters",
-    "showResolved": "Show resolved",
-    "resolve": "Resolve",
-    "markAsActive": "Mark as active",
+    "filters": "Фільтри",
+    "showResolved": "Показати вирішені",
+    "resolve": "Вирішити",
+    "markAsActive": "Позначити як активну",
     "refreshStats": "Оновити статистику",
     "barChart": "Гістограма",
     "lineChart": "Лінійний графік",
@@ -781,15 +781,15 @@
       "create": "Створити новий проєкт",
       "settings": "Налаштування",
       "name": "Назва проєкту",
-      "sharableLink": "Sharable link",
-      "sharableDesc": "To share your dashboard with others, only available if you make your dashboard public or password protected.",
+      "sharableLink": "Публічне посилання",
+      "sharableDesc": "Використовується для можливості ділення панеллю з іншими. Ця функція доступна якщо ви зробите вашу панель публічною або захищену паролем.",
       "pid": "Ідентифікатор",
       "origins": "Дозволені джерела",
       "originsHint": "Розділений комами список дозволених джерел (доменів), яким дозволено використовувати ідентифікатора вашого проєкту.\nЗалиште порожнім, щоб дозволити всі джерела (іншими словами - вебсайти; налаштування за замовчуванням).\nНаприклад: cornell.edu, app.example.com, *.gov.ua",
       "enabled": "Проєкт є активним",
-      "public": "Public dashboard",
+      "public": "Публічна панель проєкту",
       "enabledHint": "Нові вхідні події або перегляди сторінок не враховуються для деактивованих проєктів.\nНезалежно від налаштування, ви, як і раніше, зможете отримати доступ до аналітики проєкту в панелі керування.",
-      "publicHint": "By checking this, anyone on the Internet (including Google) would be able to see this project's dashboard.\nOnly the project administrator can edit the settings.",
+      "publicHint": "Відмічаючи це, будь-хто в Інтернеті (включаючи Google) зможе побачити статистику цього проєкту.\nТільки адміністратор проєкту може редагувати його налаштування.",
       "createHint": "*ви зможете більш ретельно налаштувати свій проєкт після його створення",
       "delete": "Видалити проєкт",
       "reset": "Скинути проєкт",
@@ -842,8 +842,8 @@
         "filtersPlaceholder": "Обрати фільтри",
         "noFilters": "Немає вибраних фільтрів або немає даних для вибраного типу фільтра"
       },
-      "protected": "Password protected",
-      "protectedHint": "You can protect your password. That way, people who know the password can access it through a shareable link.",
+      "protected": "Захищено паролем",
+      "protectedHint": "Ви можете захистити свій проєкт паролем. Таким чином, люди, які знають пароль, зможуть отримати доступ до нього за посиланням, яким можна поділитися.",
       "password": "Пароль меню налаштувань"
     },
     "captcha": {
@@ -876,10 +876,10 @@
   "billing": {
     "title": "Ціни та тарифи",
     "desc": "Якщо вам потрібно обробляти більше трафіку, вам, ймовірно, доведеться підвищити тарифний план.\nНижче наведений перелік доступних тарифних планів. Ніяких прихованих платежів та іншого, все чітко і прозоро!",
-    "contact": "Do you have more than {{amount}} million events per month? <url>Get in touch</url> to discuss your needs!",
+    "contact": "Необхідно відстежувати понад {{amount}} мільйонів подій в місяць? <url>Зв'яжіться з нами</url>, щоб обговорити деталі!",
     "update": "Оновити реквізити оплати",
     "nextBillDate": "Наступна розрахункова дата:",
-    "nextBillDateIs": "Your next bill date is {{date}}",
+    "nextBillDateIs": "Наступна дата оплати {{date}}",
     "trialEnds": "Пробний період закінчується {{date}}",
     "cancelSub": "Скасувати підписку",
     "noSubWarning": "У вас немає активної підписки.\nНові дані аналітики не будуть зберігатися в нашій базі даних. Ви все ще можете переглянути дані, зібрані до того, як підписка була скасована.",
@@ -891,7 +891,7 @@
     "pageviews": "Події розбивка сторінки: {{quantity}} ({{percentage}}%)",
     "customEvents": "Користувацькі події: {{quantity}} ({{percentage}}%)",
     "captcha": "CAPTCHA подій: {{quantity}} ({{percentage}}%)",
-    "errors": "Error events: {{quantity}} ({{percentage}}%)",
+    "errors": "Помилки: {{quantity}} ({{percentage}}%)",
     "gotoUsage": "Перейти до використання плану",
     "confirmNewPlan": "Підтвердження нового тарифного плану",
     "previewLoadingError": "Виникла помилка під час завантаження попереднього перегляду цін, будь ласка, повторіть спробу пізніше.\nЯкщо проблема не зникне, будь ласка, зв'яжіться з нами за адресою <mail>{{email}}</mail>.\nВи все ще можете змінити свій тарифний план, але на цю мить ви не зможете побачити попередній перегляд цін, вибачте за це.",
@@ -899,14 +899,14 @@
     "dueNowDescription": "Вам буде нараховано суму протягом останніх днів з поточного оплаченого періоду.",
     "negativePayment": "Від'ємне значення \"Сума\" означає, що у вас буде кредитний залишок у розмірі {{currency}}{{dueNowAmount}}. Вам буде виставлено рахунок у {{currency}}0.00 на {{dueNowDate}}. Після того, як кредитний баланс буде вичерпано, ваш періодичний рахунок становитиме {{currency}}{{nextPaymentAmount}} кожного розрахункового циклу вашого плану підписки.",
     "nextPayment": "Наступний платіж",
-    "subscription": "Subscription",
-    "planUsageDesc": "The plan usage shows the number of events (page views, custom events, CAPTCHA completions) that you have used for the current month.",
-    "xofy": "{{x}} of {{y}}",
-    "resetDate": "The plan usage resets on the first day of each month.",
-    "selectPlan": "Select a subscription plan to unveil full Swetrix potential.",
-    "changePlan": "You can change or cancel your subscription plan at any time here.",
-    "membersNotification": "Pageviews, custom events and CAPTCHA completions are counted towards the limit of the subscription of the account owner. People you invite into your projects don't need a subscription.",
-    "xMonthsFree": "{{amount}} months free"
+    "subscription": "Підписка",
+    "planUsageDesc": "Використання плану показує кількість подій (переглядів сторінок, користувацьких подій, заповнень CAPTCHA), які ви використали за поточний місяць.",
+    "xofy": "{{x}} з {{y}}",
+    "resetDate": "Використання тарифного плану обнуляється в перший день кожного місяця.",
+    "selectPlan": "Виберіть тарифний план, щоб розкрити весь потенціал Swetrix.",
+    "changePlan": "Ви можете змінити або скасувати свій план підписки в будь-який час тут.",
+    "membersNotification": "Перегляди сторінок, користувацькі та CAPTCHA події зараховуються до ліміту підписки власника акаунта. Люди, яких ви запрошуєте до своїх проєктів, не потребують підписки.",
+    "xMonthsFree": "{{amount}} місяців безкоштовно"
   },
   "modals": {
     "paidFeature": {
@@ -914,9 +914,9 @@
       "desc": "Ми вибачаємося за незручності, але ви повинні підписатися на платний план, щоб використовувати цю функцію.\n\nМи розуміємо, що ви можете бути ще не готові купити платну підписку, але, купуючи її, ви отримаєте не тільки доступ до цього функціоналу, а й багато інших бонусів, наприклад, доступ до всіх інших платних функцій, вищі обмеження за відвідуваннями на місяць і кількістю доступних вебсайтів, а також підтримаєте зростання малого бізнесу :)"
     },
     "trackingSnippet": {
-      "title": "Add a Swetrix tracking code to your website",
-      "add": "Add the following snippet into the <bsect></bsect> section of your site.",
-      "docs": "Check our <pdocs>our documentation</pdocs> for details and more integration guides."
+      "title": "Додайте код відстеження Swetrix на свій сайт",
+      "add": "Додайте наступний фрагмент до розділу <bsect></bsect> вашого сайту.",
+      "docs": "Перегляньте нашу <pdocs>документацію</pdocs> для отримання детальної інформації та інших посібників з інтеграції."
     },
     "forecast": {
       "title": "Прогноз трафіку",
@@ -931,14 +931,14 @@
       "addStep": "Додати ще один крок"
     },
     "shortcuts": {
-      "title": "Keyboard shortcuts",
-      "timebuckets": "Timebuckets selection",
-      "tabs": "Tabs switching"
+      "title": "Комбінації клавіш",
+      "timebuckets": "Вибір часових інтервалів",
+      "tabs": "Перемикання вкладок"
     }
   },
   "pricing": {
-    "title": "Simple, traffic-based pricing",
-    "adv": "Try Swetrix on your website for {{amount}} days - completely free of charge.\nNo credit card required. No strings attached.",
+    "title": "Просте ціноутворення на основі трафіку",
+    "adv": "Спробуйте Swetrix на своєму сайті протягом {{amount}} днів - абсолютно безкоштовно.\nКредитна картка не потрібна. Ніяких зобов'язань.",
     "currentPlan": "Поточний тариф",
     "free": "Безплатно",
     "legacy": "Застарілий",
@@ -946,14 +946,14 @@
     "perYear": "рік",
     "yourPlan": "Ваш тариф",
     "downgrade": "Понизити",
-    "selectPlan": "Select plan:",
+    "selectPlan": "Оберіть план:",
     "upgrade": "Підвищити",
     "whatIncl": "Що включено",
-    "monthlyBilling": "Monthly",
-    "yearlyBilling": "Yearly",
+    "monthlyBilling": "Щомісяця",
+    "yearlyBilling": "Щороку",
     "switchToMonthly": "Перемикнутися на щомісячний платіж",
-    "frequency": "Payment frequency",
-    "eventPerMonth": "Events per month",
+    "frequency": "Частота оплати",
+    "eventPerMonth": "Подій в місяць",
     "switchToYearly": "Перемикнутися на щорічний платіж",
     "xTrialDaysLeft": "Залишилось {{amount}} пробних днів",
     "trialEnded": "Пробний період закінчився",
@@ -988,14 +988,14 @@
     "cancelDesc": "Після скасування підписки нові події не будуть збиратись у ваших проєктах Swetrix.\nВи зможете повернутися до поточного тарифу в будь-який час.\nЯкщо у вас виникли будь-які запитання, ви завжди можете написати нам на адресу {{email}}."
   },
   "contact": {
-    "description": "You can reach us at <mail>{{email}}</mail>, tweet us at <twitter>{{twitterHandle}}</twitter> or talk to us via our <discord>Discord</discord> community. We aim to respond as soon as possible, usually within a day.",
+    "description": "Ви можете зв'язатися з нами за адресою <mail>{{email}}</mail>, написати нам на <twitter>{{twitterHandle}}</twitter> або поспілкуватися через нашу спільноту <discord>Discord</discord>. Ми намагаємося відповісти якомога швидше, зазвичай протягом дня.",
     "docs": {
-      "title": "Documentation",
-      "desc": "Learn how to integrate Swetrix into your application and find answers to the most common questions"
+      "title": "Документація",
+      "desc": "Дізнайтеся, як інтегрувати Swetrix у ваш додаток і знайти відповіді на найбільш поширені запитання"
     },
     "demo": {
-      "title": "Book a demo call",
-      "desc": "Book a demo with our team to see how Swetrix can solve your problems"
+      "title": "Забронювати демонстрацію",
+      "desc": "Забронюйте демонстрацію з нашою командою, щоб побачити як Swetrix може розв'язати ваші проблеми"
     }
   },
   "beta": {
@@ -1014,7 +1014,7 @@
     }
   },
   "open": {
-    "desc": "Swetrix is an Open Startup, we share our metrics, such as revenue, losses, amount of users, etc. with the public.",
+    "desc": "Swetrix - це відкритий стартап, ми ділимося з громадськістю нашими показниками, такими як дохід, збитки, кількість користувачів тощо.",
     "updated": "Ця сторінка регулярно оновлюється.",
     "finance": {
       "title": "Фінансові метрики",
@@ -1036,41 +1036,41 @@
     "dashboard": "Панель керування",
     "docs": "Документація",
     "billing": "Ціни та тарифи",
-    "contact": "Have something to ask?",
+    "contact": "Маєте що запитати?",
     "changelog": "Історія змін",
-    "main": "Ultimate open-source web analytics to satisfy all your needs",
+    "main": "Найкращий сервіс веб аналітики для задоволення всіх ваших потреб",
     "press": "Медіа та преса",
     "socialisation": "Соціалізація",
     "open": "Open startup",
     "passwordProtected": "Цей проект захищений паролем",
-    "confirm": "Check your inbox",
-    "performance": "End user performance monitoring to deliver fast websites",
-    "errors": "End user error tracking tool to deliver bug-free experiences"
+    "confirm": "Перевірте вашу поштову скриньку",
+    "performance": "Моніторинг ефективності для створення швидких вебсайтів",
+    "errors": "Інструмент відстеження помилок для забезпечення бездоганної роботи"
   },
   "header": {
     "switchTheme": "Змінити тему",
     "dark": "Темна",
     "light": "Світла",
     "signedInAs": "Авторизований як",
-    "watchDemo": "Watch demo",
-    "contactSales": "Contact sales",
+    "watchDemo": "Переглянути демо",
+    "contactSales": "Звʼязатися з нами",
     "solutions": {
-      "title": "Solutions",
+      "title": "Рішення",
       "analytics": {
-        "title": "Analytics",
-        "desc": "Monitor your site's traffic with privacy in mind"
+        "title": "Аналітика",
+        "desc": "Відстежуйте трафік вашого сайту з урахуванням приватності"
       },
       "errors": {
-        "title": "Error tracking",
-        "desc": "Deliver bug-free experiences to your users"
+        "title": "Відстеження помилок",
+        "desc": "Надавайте користувачам послуги без помилок"
       },
       "captcha": {
         "title": "CAPTCHA",
-        "desc": "Protect your site from bots with privacy-focused captcha"
+        "desc": "Захистіть свій сайт від ботів за допомогою CAPTCHA, орієнтованої на приватність"
       },
       "performance": {
-        "title": "Performance monitoring",
-        "desc": "Analyse your sites key speed metrics"
+        "title": "Моніторинг швидкості",
+        "desc": "Аналізуйте ключові показники швидкості ваших сайтів"
       }
     }
   },
@@ -1105,6 +1105,6 @@
     "open": "Open startup",
     "about": "Про нас",
     "features": "Можливості",
-    "imprint": "Imprint"
+    "imprint": "Контактні дані"
   }
 }

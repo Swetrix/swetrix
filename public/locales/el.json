@@ -504,7 +504,7 @@
       "trial": "Trial referrals",
       "trialDesc": "Trial users referred by you",
       "active": "Active referrals",
-      "activeDesc": "Paid subsribers referred by you",
+      "activeDesc": "Paid subscribers referred by you",
       "paid": "Paid",
       "paidDesc": "Total amount paid to you",
       "nextPayout": "Next payout",
@@ -843,7 +843,7 @@
         "noFilters": "No filters selected or no data for the selected filter type"
       },
       "protected": "Password protected",
-      "protectedHint": "You can protect your password. That way, people who know the password can access it through a shareable link.",
+      "protectedHint": "You can protect your project with a password. That way, people who know the password can access it through a shareable link.",
       "password": "Dashboard password"
     },
     "captcha": {

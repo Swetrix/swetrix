@@ -504,7 +504,7 @@
       "trial": "Testempfehlungen",
       "trialDesc": "Testnutzer von Ihnen empfohlen",
       "active": "Aktive Empfehlungen",
-      "activeDesc": "Bezahlte Subsriber von dir verwiesen",
+      "activeDesc": "Bezahlte Abonnenten von Ihnen empfohlen",
       "paid": "Bezahlt",
       "paidDesc": "Gesamtbetrag an Sie bezahlt",
       "nextPayout": "Nächste Auszahlung",
@@ -843,7 +843,7 @@
         "noFilters": "Keine Filter ausgewählt oder keine Daten für den ausgewählten Filtertyp"
       },
       "protected": "Passwortgeschützt",
-      "protectedHint": "Sie können Ihr Passwort schützen. Auf diese Weise können Personen, die das Passwort kennen, über einen teilbaren Link darauf zugreifen.",
+      "protectedHint": "Sie können Ihr Projekt mit einem Passwort schützen. Auf diese Weise können Personen, die das Passwort kennen, über einen teilbaren Link darauf zugreifen.",
       "password": "Dashboard-Passwort"
     },
     "captcha": {
