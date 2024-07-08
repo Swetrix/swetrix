@@ -475,7 +475,7 @@ export class AnalyticsController {
     const metaResult = await clickhouse
       .query(query, { params: { pid } })
       .toPromise()
-  
+
     let newTimebucket = timeBucket
     let allowedTumebucketForPeriodAll
 
@@ -587,7 +587,7 @@ export class AnalyticsController {
       properties,
       appliedFilters,
       timeBucket: allowedTumebucketForPeriodAll,
-      meta: metaResult
+      meta: metaResult,
     }
   }
 
