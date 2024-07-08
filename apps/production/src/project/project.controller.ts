@@ -1900,6 +1900,36 @@ export class ProjectController {
     }
   }
 
+  @ApiOperation({ summary: 'Get project view' })
+  @ApiOkResponse({ type: ProjectViewEntity })
+  @ApiBearerAuth()
+  @Get(':projectId/views/:viewId')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async getProjectView(
+    @Param() params: ProjectViewIdsDto,
+    @CurrentUserId() userId: string
+  ){
+    const project = await this.projectService.findProject(params.projectId, [
+      'admin',
+      'share',
+    ])
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const user = await this.userService.findUserV2(userId, ['roles'])
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
+    return this.projectsViewsRepository.findProjectView(params.projectId, params.viewId)
+    
+  }
+
   @ApiOperation({ summary: 'Create project view' })
   @ApiOkResponse({ type: ProjectViewEntity })
   @ApiBearerAuth()
