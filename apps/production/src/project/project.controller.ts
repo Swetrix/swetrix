@@ -20,6 +20,8 @@ import {
   ConflictException,
   Res,
   UnauthorizedException,
+  ParseBoolPipe,
+  DefaultValuePipe,
 } from '@nestjs/common'
 import { Response } from 'express'
 import { ApiTags, ApiQuery, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
@@ -113,12 +115,14 @@ export class ProjectController {
     private readonly mailerService: MailerService,
   ) {}
 
+  @ApiBearerAuth()
   @Get('/')
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
   @ApiQuery({ name: 'isCaptcha', required: false, type: Boolean })
   @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
   @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'showArchived', required: false, type: Boolean })
   @ApiResponse({ status: 200, type: [Project] })
   @Auth([UserType.CUSTOMER, UserType.ADMIN], true)
   async get(
@@ -127,6 +131,8 @@ export class ProjectController {
     @Query('skip') skip: number | undefined,
     @Query('isCaptcha') isCaptchaStr: string | undefined,
     @Query('search') search: string | undefined,
+    @Query('showArchived', new DefaultValuePipe(false), ParseBoolPipe)
+    showArchived?: boolean,
   ): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /project')
     const isCaptcha = isCaptchaStr === 'true'
@@ -163,7 +169,10 @@ export class ProjectController {
     }
 
     const [paginated, totalMonthlyEvents, user] = await Promise.all([
-      this.projectService.paginate({ take, skip }, where),
+      this.projectService.paginate(
+        { take, skip },
+        { ...where, isArchived: showArchived },
+      ),
       this.projectService.getRedisCount(userId),
       this.userService.findOne(userId),
     ])
@@ -1826,7 +1835,6 @@ export class ProjectController {
   @Auth([], true, true)
   @ApiResponse({ status: 200, type: Project })
   async getOne(
-    @Query('showArchived') showArchived: string | undefined,
     @Param('id') id: string,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
@@ -1854,14 +1862,6 @@ export class ProjectController {
     }
 
     this.projectService.allowedToView(project, uid, headers['x-password'])
-
-    const isShowArchived = showArchived === 'true'
-
-    if (project.isArchived && !isShowArchived) {
-      throw new ConflictException(
-        'Project is archived and showArchived is false.',
-      )
-    }
 
     const isDataExists = !_isEmpty(
       await this.projectService.getPIDsWhereAnalyticsDataExists([id]),
