@@ -85,7 +85,10 @@ export class CreateProjectViewDto {
   type: ProjectViewType
 
   @ApiProperty({ description: 'Page the user viewed (/hello)', nullable: true })
-  @Matches(/^\/[a-zA-Z0-9-_\/\[\]]*$/, { message: 'Invalid URL path format for pg' })
+  /* eslint-disable-next-line */
+  @Matches(/^\/[a-zA-Z0-9-_\/\[\]]*$/, {
+    message: 'Invalid URL path format for pg',
+  })
   @IsOptional()
   pg?: string
 
@@ -120,12 +123,15 @@ export class CreateProjectViewDto {
   lc?: string
 
   @ApiProperty({
-    description: 'Referrer (site from which the user came to the site using Swetrix)',
+    description:
+      'Referrer (site from which the user came to the site using Swetrix)',
     nullable: true,
   })
-  @Matches(/^(https?:\/\/)?([a-zA-Z0-9.-]+)(:[0-9]{1,5})?(\/.*)?$/, { message: 'Invalid referrer URL format' })
+  @Matches(/^(https?:\/\/)?([a-zA-Z0-9.-]+)(:[0-9]{1,5})?(\/.*)?$/, {
+    message: 'Invalid referrer URL format',
+  })
   @IsOptional()
-  ref?: string;
+  ref?: string
 
   @ApiProperty({ description: 'UTM source', nullable: true })
   @MaxLength(100)

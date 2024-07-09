@@ -1908,8 +1908,8 @@ export class ProjectController {
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async getProjectView(
     @Param() params: ProjectViewIdsDto,
-    @CurrentUserId() userId: string
-  ){
+    @CurrentUserId() userId: string,
+  ) {
     const project = await this.projectService.findProject(params.projectId, [
       'admin',
       'share',
@@ -1926,8 +1926,10 @@ export class ProjectController {
     }
 
     this.projectService.allowedToManage(project, userId, user.roles)
-    return this.projectsViewsRepository.findProjectView(params.projectId, params.viewId)
-    
+    return this.projectsViewsRepository.findProjectView(
+      params.projectId,
+      params.viewId,
+    )
   }
 
   @ApiOperation({ summary: 'Create project view' })
