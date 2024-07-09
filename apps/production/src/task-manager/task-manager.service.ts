@@ -63,6 +63,7 @@ import { CHPlanUsage } from './interfaces'
 import { getRandomTip } from '../common/utils'
 import { AppLoggerService } from '../logger/logger.service'
 import { DiscordService } from '../integrations/discord/discord.service'
+import { SlackService } from '../integrations/slack/slack.service'
 
 dayjs.extend(utc)
 
@@ -264,6 +265,7 @@ export class TaskManagerService {
     private readonly payoutsService: PayoutsService,
     private readonly configService: ConfigService,
     private readonly discordService: DiscordService,
+    private readonly slackService: SlackService,
   ) {}
 
   generateUnsubscribeUrl(
@@ -1132,10 +1134,17 @@ export class TaskManagerService {
             parse_mode: 'Markdown',
           })
         }
-        
+
         if (project.admin.discordWebhookUrl) {
           await this.discordService.sendWebhook(
             project.admin.discordWebhookUrl,
+            text,
+          )
+        }
+
+        if (project.admin.slackWebhookUrl) {
+          await this.slackService.sendWebhook(
+            project.admin.slackWebhookUrl,
             text,
           )
         }
