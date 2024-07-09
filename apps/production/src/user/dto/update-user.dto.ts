@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsEmail } from 'class-validator'
+import { IsEmail, IsOptional, IsString, Matches } from 'class-validator'
 import { TimeFormat } from '../entities/user.entity'
 
 export class UpdateUserProfileDTO {
@@ -21,4 +21,21 @@ export class UpdateUserProfileDTO {
 
   @ApiProperty({ example: '24-hour', enum: TimeFormat })
   timeFormat: string
+
+  @ApiProperty({ required: false, nullable: true })
+  @Matches(
+    /^https:\/\/hooks\.slack\.com\/services\/[A-Z0-9]{8}\/[A-Z0-9]{8}\/[A-Za-z0-9]{24}$/,
+    { message: 'Invalid Slack Webhook URL' },
+  )
+  @IsString()
+  @IsOptional()
+  slackWebhookUrl?: string | null
+
+  @ApiProperty({ required: false, nullable: true })
+  @Matches(/^https:\/\/discord\.com\/api\/webhooks\/\d+\/[A-Za-z0-9_-]+$/, {
+    message: 'Invalid Discord Webhook URL',
+  })
+  @IsString()
+  @IsOptional()
+  discordWebhookUrl?: string | null
 }
