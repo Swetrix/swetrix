@@ -24,7 +24,7 @@ export class UpdateUserProfileDTO {
 
   @ApiProperty({ required: false, nullable: true })
   @Matches(
-    /^https:\/\/hooks\.slack\.com\/services\/[A-Z0-9]{8}\/[A-Z0-9]{8}\/[A-Za-z0-9]{24}$/,
+    /^https:\/\/hooks\.slack\.com\/services\/T[a-zA-Z0-9_]{8,10}\/B[a-zA-Z0-9_]{8,10}\/[a-zA-Z0-9_]{24}$/,
     { message: 'Invalid Slack Webhook URL' },
   )
   @IsString()
