@@ -1034,6 +1034,7 @@ export class TaskManagerService {
       }
 
       const online = await this.analyticsService.getOnlineUserCount(project.id)
+      const text =  `🔔 Alert *${alert.name}* got triggered!\nYour project *${project.name}* has *${online}* online users right now!`
 
       if (online >= alert.queryValue) {
         // @ts-ignore
@@ -1043,10 +1044,23 @@ export class TaskManagerService {
         if (project.admin && project.admin.isTelegramChatIdConfirmed) {
           this.telegramService.addMessage(
             project.admin.telegramChatId,
-            `🔔 Alert *${alert.name}* got triggered!\nYour project *${project.name}* has *${online}* online users right now!`,
+            text,
             {
               parse_mode: 'Markdown',
             },
+          )
+        }
+        if (project.admin.discordWebhookUrl) {
+          await this.discordService.sendWebhook(
+            project.admin.discordWebhookUrl,
+            text,
+          )
+        }
+
+        if (project.admin.slackWebhookUrl) {
+          await this.slackService.sendWebhook(
+            project.admin.slackWebhookUrl,
+            text,
           )
         }
       }
