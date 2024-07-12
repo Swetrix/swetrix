@@ -77,6 +77,7 @@ import {
 import { IUsageInfo, IMetaInfo } from './interfaces'
 import { ReportFrequency } from '../project/enums'
 import { CreateUserWebhookDto } from './dto/create-user-webhook.dto'
+import { UpdateUserWebhookDto } from './dto/update-user-webhook.dto'
 
 dayjs.extend(utc)
 
@@ -150,6 +151,50 @@ export class UserController {
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async getMyWebhooks(@CurrentUserId() userId: string) {
     return this.userService.findUserWebhooks(userId)
+  }
+
+  @ApiBearerAuth()
+  @Patch('/me/webhooks:webhookId')
+  @HttpCode(201)
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async updateWebhook(
+    @CurrentUserId() userId: string,
+    @Param('webhookId') webhookId: string,
+    @Body() updateUserWebhookDto: UpdateUserWebhookDto,
+  ) {
+    const webhook = await this.userService.findUserWebhookByUserIdAndWebhookId(
+      userId,
+      webhookId,
+    )
+
+    if (!webhook) {
+      throw new ConflictException('Webhook does not exist.')
+    }
+
+    await this.userService.updateUserWebhook(webhookId, updateUserWebhookDto)
+    return { message: 'Webhook updated successfully' }
+  }
+
+  @ApiBearerAuth()
+  @Delete('/me/webhooks:webhookId')
+  @HttpCode(200)
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async deleteWebhook(
+    @CurrentUserId() userId: string,
+    @Param('webhookId') webhookId: string,
+  ) {
+    const webhook = await this.userService.findUserWebhookByUserIdAndWebhookId(
+      userId,
+      webhookId,
+    )
+    if (!webhook) {
+      throw new ConflictException('Webhook does not exist.')
+    }
+
+    await this.userService.deleteUserWebhook(webhookId)
+    return { message: 'Webhook deleted successfully' }
   }
 
   @ApiBearerAuth()

@@ -608,6 +608,15 @@ export class UserService {
     })
   }
 
+  async findUserWebhookByUserIdAndWebhookId(
+    userId: string,
+    webhookId: string,
+  ): Promise<UserWebhookEntity> {
+    return this.usersWebhooksRepository.findOne({
+      where: { userId, id: webhookId },
+    })
+  }
+
   async createUserWebhook(
     webhook: Pick<UserWebhookEntity, 'userId' | 'name' | 'url'>,
   ) {
@@ -619,5 +628,9 @@ export class UserService {
     webhook: Partial<Pick<UserWebhookEntity, 'name' | 'url'>>,
   ) {
     return this.usersWebhooksRepository.update(id, webhook)
+  }
+
+  async deleteUserWebhook(id: string) {
+    return this.usersWebhooksRepository.delete({ id })
   }
 }
