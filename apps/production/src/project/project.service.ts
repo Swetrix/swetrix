@@ -1280,7 +1280,7 @@ export class ProjectService {
     await this.projectsRepository.update({ id }, data)
   }
   
-  async findProject(id:string){
-    return await this.projectsRepository.findOne({id})
+  async findProject(id: string, relations: string[]) {
+    return this.projectsRepository.findOne({ relations, where: { id } })
   }
 }
