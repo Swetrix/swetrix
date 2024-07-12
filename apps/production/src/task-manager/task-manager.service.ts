@@ -1044,48 +1044,52 @@ export class TaskManagerService {
         await this.alertService.update(alert.id, {
           lastTriggered: new Date(),
         })
-      if (project.admin && project.admin.isTelegramChatIdConfirmed) {
-        this.telegramService.addMessage(project.admin.telegramChatId, text, {
-          parse_mode: 'Markdown',
-        })
-      }
-      if (project.admin.discordWebhookUrl) {
-        await this.discordService.sendWebhook(
-          project.admin.discordWebhookUrl,
-          text,
-        )
-      }
+        if (project.admin && project.admin.isTelegramChatIdConfirmed) {
+          this.telegramService.addMessage(project.admin.telegramChatId, text, {
+            parse_mode: 'Markdown',
+          })
+        }
+        if (project.admin.discordWebhookUrl) {
+          await this.discordService.sendWebhook(
+            project.admin.discordWebhookUrl,
+            text,
+          )
+        }
 
-      if (project.admin.slackWebhookUrl) {
-        await this.slackService.sendWebhook(project.admin.slackWebhookUrl, text)
-      }
+        if (project.admin.slackWebhookUrl) {
+          await this.slackService.sendWebhook(
+            project.admin.slackWebhookUrl,
+            text,
+          )
+        }
 
-      if (project.admin.webhooks) {
-        for (const webhook of project.admin.webhooks) {
-          if (webhook.url !== null) {
-            try {
-              const payload = {
-                event: 'user.alert.online-users',
-                data: {
-                  alertName: alert.name,
-                  projectName: project.name,
-                  count: online,
-                },
+        if (project.admin.webhooks) {
+          for (const webhook of project.admin.webhooks) {
+            if (webhook.url !== null) {
+              try {
+                const payload = {
+                  event: 'user.alert.online-users',
+                  data: {
+                    alertName: alert.name,
+                    projectName: project.name,
+                    count: online,
+                  },
+                }
+                // eslint-disable-next-line
+                await firstValueFrom(
+                  this.httpService.post(webhook.url, payload),
+                )
+              } catch (error) {
+                this.userService.update(webhook.id, { url: null })
+                this.mailerService.sendEmail(
+                  project.admin.email,
+                  LetterTemplate.CustomWebhookFailedSendAlert,
+                  { webhookName: webhook.name },
+                )
               }
-              // eslint-disable-next-line
-              await firstValueFrom(this.httpService.post(webhook.url, payload))
-            } catch (error) {
-              this.userService.update(webhook.id, { url: null })
-              this.mailerService.sendEmail(
-                project.admin.email,
-                LetterTemplate.CustomWebhookFailedSendAlert,
-                { webhookName: webhook.name },
-              )
             }
           }
         }
-      }
-
       }
     })
 
@@ -1152,66 +1156,70 @@ export class TaskManagerService {
           lastTriggered: new Date(),
         })
 
-      const queryMetric =
-        alert.queryMetric === QueryMetric.CUSTOM_EVENTS
-          ? 'custom events'
-          : alert.queryMetric === QueryMetric.UNIQUE_PAGE_VIEWS
-            ? 'unique page views'
-            : 'page views'
-      const text = `🔔 Alert *${alert.name}* got triggered!\nYour project *${
-        project.name
-      }* has had *${count}*${
-        alert.queryMetric === QueryMetric.CUSTOM_EVENTS
-          ? ` "${alert.queryCustomEvent}"`
-          : ''
-      } ${queryMetric} in the last ${getQueryTimeString(alert.queryTime)}!`
+        const queryMetric =
+          alert.queryMetric === QueryMetric.CUSTOM_EVENTS
+            ? 'custom events'
+            : alert.queryMetric === QueryMetric.UNIQUE_PAGE_VIEWS
+              ? 'unique page views'
+              : 'page views'
+        const text = `🔔 Alert *${alert.name}* got triggered!\nYour project *${
+          project.name
+        }* has had *${count}*${
+          alert.queryMetric === QueryMetric.CUSTOM_EVENTS
+            ? ` "${alert.queryCustomEvent}"`
+            : ''
+        } ${queryMetric} in the last ${getQueryTimeString(alert.queryTime)}!`
 
-      if (project.admin && project.admin.isTelegramChatIdConfirmed) {
-        this.telegramService.addMessage(project.admin.telegramChatId, text, {
-          parse_mode: 'Markdown',
-        })
-      }
+        if (project.admin && project.admin.isTelegramChatIdConfirmed) {
+          this.telegramService.addMessage(project.admin.telegramChatId, text, {
+            parse_mode: 'Markdown',
+          })
+        }
 
-      if (project.admin.discordWebhookUrl) {
-        await this.discordService.sendWebhook(
-          project.admin.discordWebhookUrl,
-          text,
-        )
-      }
+        if (project.admin.discordWebhookUrl) {
+          await this.discordService.sendWebhook(
+            project.admin.discordWebhookUrl,
+            text,
+          )
+        }
 
-      if (project.admin.slackWebhookUrl) {
-        await this.slackService.sendWebhook(project.admin.slackWebhookUrl, text)
-      }
+        if (project.admin.slackWebhookUrl) {
+          await this.slackService.sendWebhook(
+            project.admin.slackWebhookUrl,
+            text,
+          )
+        }
 
-      if (project.admin.webhooks) {
-        for (const webhook of project.admin.webhooks) {
-          if (webhook.url !== null) {
-            try {
-              const payload = {
-                event: 'user.alert.metrics',
-                data: {
-                  alertName: alert.name,
-                  projectName: project.name,
-                  count,
-                  queryMetric: alert.queryMetric,
-                  queryCustomEvent: alert.queryCustomEvent,
-                  queryTime: getQueryTimeString(alert.qeryTime),
-                },
+        if (project.admin.webhooks) {
+          for (const webhook of project.admin.webhooks) {
+            if (webhook.url !== null) {
+              try {
+                const payload = {
+                  event: 'user.alert.metrics',
+                  data: {
+                    alertName: alert.name,
+                    projectName: project.name,
+                    count,
+                    queryMetric: alert.queryMetric,
+                    queryCustomEvent: alert.queryCustomEvent,
+                    queryTime: getQueryTimeString(alert.qeryTime),
+                  },
+                }
+                // eslint-disable-next-line
+                await firstValueFrom(
+                  this.httpService.post(webhook.url, payload),
+                )
+              } catch (error) {
+                this.userService.update(webhook.id, { url: null })
+                this.mailerService.sendEmail(
+                  project.admin.email,
+                  LetterTemplate.CustomWebhookFailedSendAlert,
+                  { webhookName: webhook.name },
+                )
               }
-              // eslint-disable-next-line
-              await firstValueFrom(this.httpService.post(webhook.url, payload))
-            } catch (error) {
-              this.userService.update(webhook.id, { url: null })
-              this.mailerService.sendEmail(
-                project.admin.email,
-                LetterTemplate.CustomWebhookFailedSendAlert,
-                { webhookName: webhook.name },
-              )
             }
           }
         }
-      }
-
       }
     })
 
