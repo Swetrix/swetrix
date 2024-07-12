@@ -1,4 +1,8 @@
-Please describe your changes using the checklist below.
+<!-- Please describe your changes using the checklist below. -->
+
+<!-- URL of the ticket at https://github.com/Swetrix/roadmap -->
+<!-- if there's no ticket for this task, just write N/A -->
+### Ticket (if applicable)
 
 ### Self-hosted support
 - [ ] Your feature is implemented for the selfhosted version of Swetrix
