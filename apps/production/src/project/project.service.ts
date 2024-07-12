@@ -1279,7 +1279,7 @@ export class ProjectService {
   async updateProject(id: string, data: Partial<Project>) {
     await this.projectsRepository.update({ id }, data)
   }
-  
+
   async findProject(id: string, relations: string[]) {
     return this.projectsRepository.findOne({ relations, where: { id } })
   }

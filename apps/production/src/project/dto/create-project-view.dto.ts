@@ -7,16 +7,17 @@ import {
   MaxLength,
   MinLength,
   IsLocale,
-  IsISO31661Alpha2,
   ValidateNested,
+  registerDecorator,
+  ValidationOptions,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+  isISO31661Alpha2,
 } from 'class-validator'
+
 import { ApiProperty } from '@nestjs/swagger'
 import { ProjectViewType } from '../entity/project-view.entity'
 import { ProjectViewCustomEventMetaValueType } from '../entity/project-view-custom-event.entity'
-
-import { registerDecorator, ValidationOptions, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator'
-import { isISO31661Alpha2 } from 'class-validator'
-
 
 // This can be updated by the customer request.
 // In case we find out that ``cc`` may have any other values, just extend the ``allowedValues`` defined below
@@ -25,9 +26,10 @@ import { isISO31661Alpha2 } from 'class-validator'
 const allowedValues = ['T1', 'XX']
 
 @ValidatorConstraint({ async: false })
-export class IsISO31661Alpha2OrCustomConstraint implements ValidatorConstraintInterface {
+export class IsISO31661Alpha2OrCustomConstraint
+  implements ValidatorConstraintInterface
+{
   validate(value: any) {
-
     return isISO31661Alpha2(value) || allowedValues.includes(value)
   }
 
@@ -36,11 +38,14 @@ export class IsISO31661Alpha2OrCustomConstraint implements ValidatorConstraintIn
   }
 }
 
-export function IsISO31661Alpha2OrCustom(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+export function IsISO31661Alpha2OrCustom(
+  validationOptions?: ValidationOptions,
+) {
+  return function closure(object: object, propertyName: string) {
+    // changed from Object to object
     registerDecorator({
       target: object.constructor,
-      propertyName: propertyName,
+      propertyName,
       options: validationOptions,
       constraints: [],
       validator: IsISO31661Alpha2OrCustomConstraint,
