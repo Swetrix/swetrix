@@ -418,8 +418,6 @@ export class AnalyticsController {
       throw new NotFoundException('View not found.')
     }
 
-    this.logger.debug(`VIEW and CUSTOM EVENTS ${JSON.stringify(view)}`)
-
     const customEvents = view.customEvents.map(event => ({
       customEventName: event.customEventName,
       metaKey: event.metaKey,
