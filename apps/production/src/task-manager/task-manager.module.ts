@@ -1,3 +1,4 @@
+import { HttpModule } from '@nestjs/axios'
 import { Module, forwardRef } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { AlertModule } from '../alert/alert.module'
@@ -29,6 +30,7 @@ import { SlackModule } from '../integrations/slack/slack.module'
     PayoutsModule,
     DiscordModule,
     SlackModule,
+    HttpModule,
   ],
   providers: [TaskManagerService, TelegramService],
   exports: [TaskManagerService],
