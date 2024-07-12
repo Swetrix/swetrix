@@ -76,6 +76,7 @@ import {
 } from '../common/utils'
 import { IUsageInfo, IMetaInfo } from './interfaces'
 import { ReportFrequency } from '../project/enums'
+import { CreateUserWebhookDto } from './dto/create-user-webhook.dto'
 
 dayjs.extend(utc)
 
@@ -116,6 +117,39 @@ export class UserController {
     user.sharedProjects = sharedProjects
 
     return user
+  }
+
+  @ApiBearerAuth()
+  @Post('/me/webhooks')
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async createWebhook(
+    @CurrentUserId() userId: string,
+    @Body() createUserWebhookDto: CreateUserWebhookDto,
+  ) {
+    const webhook = await this.userService.findUserWebhookByUserIdAndUrl(
+      userId,
+      createUserWebhookDto.url,
+    )
+
+    if (webhook) {
+      throw new ConflictException('Webhook already exists.')
+    }
+    this.logger.debug(`Body ${JSON.stringify(createUserWebhookDto)}`)
+
+    return this.userService.createUserWebhook({
+      userId,
+      name: createUserWebhookDto.name,
+      url: createUserWebhookDto.url,
+    })
+  }
+
+  @ApiBearerAuth()
+  @Get('/me/webhooks')
+  @UseGuards(RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async getMyWebhooks(@CurrentUserId() userId: string) {
+    return this.userService.findUserWebhooks(userId)
   }
 
   @ApiBearerAuth()
