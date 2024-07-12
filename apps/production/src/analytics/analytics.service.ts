@@ -3670,4 +3670,52 @@ export class AnalyticsService {
       events,
     }
   }
+
+  async getMetaResult(
+    pid: string,
+    metaKeys: string[],
+    customEvents: {
+      customEventName: string
+      metaKey: string
+      metaValue: string
+      metaValueType: string
+    }[],
+  ) {
+    const casesSum = customEvents
+      .map(
+        event => `
+      WHEN key = '${event.metaKey}' THEN ${
+        event.metaValueType === 'INTEGER'
+          ? 'toInt32OrZero(value)'
+          : 'toFloat32OrZero(value)'
+      }
+    `,
+      )
+      .join(' ')
+
+    const casesAvg = customEvents
+      .map(
+        event => `
+      WHEN key = '${event.metaKey}' THEN ${
+        event.metaValueType === 'INTEGER'
+          ? 'toInt32OrZero(value)'
+          : 'toFloat32OrZero(value)'
+      }
+    `,
+      )
+      .join(' ')
+
+    const query = `
+      SELECT
+        key,
+        sum(CASE ${casesSum} ELSE 0 END) AS sum,
+        avg(CASE ${casesAvg} ELSE 0 END) AS avg
+      FROM customEV
+      ARRAY JOIN meta.key AS key, meta.value AS value
+      WHERE pid = {pid:String} AND key IN (${metaKeys.map(key => `'${key}'`).join(', ')})
+      GROUP BY key
+    `
+
+    return clickhouse.query(query, { params: { pid } }).toPromise()
+  }
 }

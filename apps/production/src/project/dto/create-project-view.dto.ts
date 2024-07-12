@@ -14,33 +14,38 @@ import { ApiProperty } from '@nestjs/swagger'
 import { ProjectViewType } from '../entity/project-view.entity'
 import { ProjectViewCustomEventMetaValueType } from '../entity/project-view-custom-event.entity'
 
-export enum OperatingSystem {
-  Windows = 'Windows',
-  MacOS = 'Mac OS',
-  Android = 'Android',
-  iOS = 'iOS',
-  Linux = 'Linux',
-  Ubuntu = 'Ubuntu',
-  ChromiumOS = 'Chromium OS',
-  Fedora = 'Fedora',
-  FreeBSD = 'FreeBSD',
-  Tizen = 'Tizen',
+import { registerDecorator, ValidationOptions, ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator'
+import { isISO31661Alpha2 } from 'class-validator'
+
+
+// This can be updated by the customer request.
+// In case we find out that ``cc`` may have any other values, just extend the ``allowedValues`` defined below
+// Current implementation is for ``Cloudflare``
+
+const allowedValues = ['T1', 'XX']
+
+@ValidatorConstraint({ async: false })
+export class IsISO31661Alpha2OrCustomConstraint implements ValidatorConstraintInterface {
+  validate(value: any) {
+
+    return isISO31661Alpha2(value) || allowedValues.includes(value)
+  }
+
+  defaultMessage() {
+    return `cc must be a valid ISO 3166-1 alpha-2 country code or one of the following: ${allowedValues}`
+  }
 }
 
-export enum Browser {
-  Chrome = 'Chrome',
-  Firefox = 'Firefox',
-  MobileSafari = 'Mobile Safari',
-  Safari = 'Safari',
-  SamsungBrowser = 'Samsung Browser',
-}
-
-export enum Device {
-  Desktop = 'Desktop',
-  Mobile = 'Mobile',
-  Tablet = 'Tablet',
-  Wearable = 'Wearable',
-  SmartTV = 'Smarttv',
+export function IsISO31661Alpha2OrCustom(validationOptions?: ValidationOptions) {
+  return function (object: Object, propertyName: string) {
+    registerDecorator({
+      target: object.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      constraints: [],
+      validator: IsISO31661Alpha2OrCustomConstraint,
+    })
+  }
 }
 
 export class ProjectViewCustomEventDto {
@@ -103,17 +108,17 @@ export class CreateProjectViewDto {
     description: 'User device (mobile, desktop, tablet, etc.)',
     nullable: true,
   })
-  @IsEnum(Device)
+  @IsString()
   @IsOptional()
   dv?: string
 
   @ApiProperty({ description: 'Browser', nullable: true })
-  @IsEnum(Browser)
+  @IsString()
   @IsOptional()
   br?: string
 
   @ApiProperty({ description: 'Operating system', nullable: true })
-  @IsEnum(OperatingSystem)
+  @IsString()
   @IsOptional()
   os?: string
 
@@ -155,7 +160,7 @@ export class CreateProjectViewDto {
   ca?: string
 
   @ApiProperty({ description: 'Country code', nullable: true })
-  @IsISO31661Alpha2()
+  @IsISO31661Alpha2OrCustom()
   @IsNotEmpty()
   cc: string
 

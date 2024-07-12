@@ -93,7 +93,6 @@ import { GetErrorDTO } from './dto/get-error.dto'
 import { PatchStatusDTO } from './dto/patch-status.dto'
 import { ProjectService } from '../project/project.service'
 import { ProjectsViewsRepository } from '../project/repositories/projects-views.repository'
-import { ProjectViewCustomEventMetaValueType } from '../project/entity/project-view-custom-event.entity'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mysql = require('mysql2')
@@ -429,52 +428,11 @@ export class AnalyticsController {
     }))
 
     const metaKeys = customEvents.map(event => event.metaKey)
-
-    const query = `
-    SELECT
-      key,
-      sum(
-        CASE
-          ${customEvents
-            .map(
-              event => `
-            WHEN key = '${event.metaKey}' THEN ${
-              event.metaValueType ===
-              ProjectViewCustomEventMetaValueType.INTEGER
-                ? 'toInt32OrZero(value)'
-                : 'toFloat32OrZero(value)'
-            }
-          `,
-            )
-            .join('')}
-          ELSE 0
-        END
-      ) AS sum,
-      avg(
-        CASE
-          ${customEvents
-            .map(
-              event => `
-            WHEN key = '${event.metaKey}' THEN ${
-              event.metaValueType ===
-              ProjectViewCustomEventMetaValueType.INTEGER
-                ? 'toInt32OrZero(value)'
-                : 'toFloat32OrZero(value)'
-            }
-          `,
-            )
-            .join('')}
-          ELSE 0
-        END
-      ) AS avg
-    FROM customEV
-    ARRAY JOIN meta.key AS key, meta.value AS value
-    WHERE pid = {pid:String} AND key IN (${metaKeys.map(key => `'${key}'`).join(', ')})
-    GROUP BY key
-  `
-    const metaResult = await clickhouse
-      .query(query, { params: { pid } })
-      .toPromise()
+    const metaResult = await this.analyticsService.getMetaResult(
+      pid,
+      metaKeys,
+      customEvents,
+    )
 
     let newTimebucket = timeBucket
     let allowedTumebucketForPeriodAll

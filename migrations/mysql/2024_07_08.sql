@@ -18,8 +18,8 @@ CREATE TABLE projects_views (
     ct VARCHAR(255) NULL,
     createdAt DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     updatedAt DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
-    CONSTRAINT fk_project FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE CASCADE
-);
+    FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE CASCADE  
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
 CREATE TABLE projects_views_custom_events (
@@ -31,5 +31,6 @@ CREATE TABLE projects_views_custom_events (
     metaValueType ENUM('string', 'integer', 'float') NOT NULL DEFAULT 'string',
     createdAt DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
     updatedAt DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
-    CONSTRAINT fk_view FOREIGN KEY (viewId) REFERENCES projects_views(id) ON DELETE CASCADE
-);
+    FOREIGN KEY (viewId) REFERENCES projects_views(id) ON DELETE CASCADE
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
