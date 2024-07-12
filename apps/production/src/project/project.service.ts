@@ -1275,4 +1275,8 @@ export class ProjectService {
 
     return count
   }
+
+  async updateProject(id: string, data: Partial<Project>) {
+    await this.projectsRepository.update({ id }, data)
+  }
 }

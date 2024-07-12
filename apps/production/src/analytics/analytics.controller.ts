@@ -89,6 +89,7 @@ import { ErrorDTO } from './dto/error.dto'
 import { GetErrorsDto } from './dto/get-errors.dto'
 import { GetErrorDTO } from './dto/get-error.dto'
 import { PatchStatusDTO } from './dto/patch-status.dto'
+import { ProjectService } from '../project/project.service'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mysql = require('mysql2')
@@ -366,6 +367,7 @@ export class AnalyticsController {
   constructor(
     private readonly analyticsService: AnalyticsService,
     private readonly logger: AppLoggerService,
+    private readonly projectService: ProjectService,
   ) {}
 
   @Get()

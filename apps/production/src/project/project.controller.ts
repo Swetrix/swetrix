@@ -20,6 +20,8 @@ import {
   ConflictException,
   Res,
   UnauthorizedException,
+  ParseBoolPipe,
+  DefaultValuePipe,
 } from '@nestjs/common'
 import { Response } from 'express'
 import { ApiTags, ApiQuery, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
@@ -113,12 +115,14 @@ export class ProjectController {
     private readonly mailerService: MailerService,
   ) {}
 
+  @ApiBearerAuth()
   @Get('/')
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
   @ApiQuery({ name: 'isCaptcha', required: false, type: Boolean })
   @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
   @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'showArchived', required: false, type: Boolean })
   @ApiResponse({ status: 200, type: [Project] })
   @Auth([], true)
   async get(
@@ -127,6 +131,8 @@ export class ProjectController {
     @Query('skip') skip: number | undefined,
     @Query('isCaptcha') isCaptchaStr: string | undefined,
     @Query('search') search: string | undefined,
+    @Query('showArchived', new DefaultValuePipe(false), ParseBoolPipe)
+    showArchived?: boolean,
   ): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /project')
     const isCaptcha = isCaptchaStr === 'true'
@@ -163,7 +169,10 @@ export class ProjectController {
     }
 
     const [paginated, totalMonthlyEvents, user] = await Promise.all([
-      this.projectService.paginate({ take, skip }, where),
+      this.projectService.paginate(
+        { take, skip },
+        { ...where, isArchived: showArchived },
+      ),
       this.projectService.getRedisCount(userId),
       this.userService.findOne(userId),
     ])
@@ -1706,6 +1715,7 @@ export class ProjectController {
     res.send(html)
   }
 
+  @ApiBearerAuth()
   @Put('/:id')
   @HttpCode(200)
   @Auth([], true)
@@ -1742,6 +1752,10 @@ export class ProjectController {
 
     if (_isBoolean(projectDTO.active)) {
       project.active = projectDTO.active
+    }
+
+    if (_isBoolean(projectDTO.isArchived)) {
+      project.isArchived = projectDTO.isArchived
     }
 
     if (projectDTO.origins) {
@@ -1820,6 +1834,7 @@ export class ProjectController {
     await this.projectService.deleteShare(shareId)
   }
 
+  @ApiBearerAuth()
   @Get('/:id')
   @Auth([], true, true)
   @ApiResponse({ status: 200, type: Project })
