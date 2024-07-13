@@ -229,6 +229,24 @@ export const getPageMeta = (t: typeof i18next.t, url?: string, _pathname?: strin
       }
       break
 
+    case routes.forMarketers:
+      result = {
+        title: t('titles.forMarketers'),
+      }
+      break
+
+    case routes.forStartups:
+      result = {
+        title: t('titles.forStartups'),
+      }
+      break
+
+    case routes.forSmallBusinesses:
+      result = {
+        title: t('titles.forSmbs'),
+      }
+      break
+
     default:
       break
   }
