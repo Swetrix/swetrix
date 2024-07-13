@@ -134,9 +134,8 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
           <div className='relative mx-auto min-h-[740px] pb-5 pt-10 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
             <div className='relative z-20 flex flex-row content-between justify-center lg:justify-start 2xl:mr-[14vw] 2xl:justify-center'>
               <div className='relative px-4 text-left lg:mr-14 lg:mt-0'>
-                <h1 className='max-w-2xl text-3xl font-extrabold text-slate-900 dark:text-white sm:text-5xl sm:leading-none md:text-5xl lg:text-5xl xl:text-6xl xl:leading-[110%]'>
+                <h1 className='max-w-2xl text-4xl font-extrabold text-slate-900 dark:text-white sm:text-5xl sm:leading-none md:text-5xl lg:text-5xl xl:text-6xl xl:leading-[110%]'>
                   <Trans
-                    // @ts-ignore
                     t={t}
                     i18nKey='main.slogan'
                     components={{
@@ -367,7 +366,6 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                     <div className='border-t border-gray-200 bg-transparent py-6 dark:border-slate-700'>
                       <p className='text-xs leading-5 text-gray-600 dark:text-gray-100'>
                         <Trans
-                          // @ts-ignore
                           t={t}
                           i18nKey='main.signupTerms'
                           components={{
@@ -416,7 +414,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
         {/* Core features section */}
         <section className='relative bg-white pb-14 pt-14 dark:bg-slate-900'>
           <BackgroundSvg theme={theme} className='absolute -left-8' type='shapes' />
-          <div className='relative mx-auto w-fit text-3xl font-extrabold text-slate-900 sm:text-5xl'>
+          <div className='relative mx-auto w-fit text-4xl font-extrabold text-slate-900 sm:text-5xl'>
             <h2 className='relative z-20 dark:text-white'>{t('main.coreFeaturesBlock')}</h2>
             <BackgroundSvg
               theme={theme}
@@ -436,7 +434,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                 index: number,
               ) => (
                 <div key={item.name} className='h-64 w-[416px] px-7 py-11 text-center'>
-                  <span className='text-3xl font-semibold text-indigo-500'>{1 + index}</span>
+                  <span className='text-4xl font-semibold text-indigo-500'>{1 + index}</span>
                   <div className='mt-2'>
                     <h2 className='mx-auto mb-3 max-w-[300px] whitespace-pre-line text-xl font-semibold text-slate-900 dark:text-white'>
                       {item.name}
@@ -452,7 +450,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
         {/* end Core features section */}
         {/* section supports */}
         <section className='relative bg-white px-3 pt-24 dark:bg-slate-900 sm:px-5'>
-          <h2 className='sm:ext-5xl mx-auto w-fit text-center text-3xl font-bold text-slate-900 dark:text-white'>
+          <h2 className='sm:ext-5xl mx-auto w-fit text-center text-4xl font-bold text-slate-900 dark:text-white'>
             {t('main.supports')}
           </h2>
           <div className='mx-auto mt-20 grid w-full max-w-7xl grid-cols-3 items-center justify-between justify-items-center gap-x-4 gap-y-10 sm:grid-cols-4 md:grid-cols-6 lg:gap-x-10 lg:gap-y-16'>
@@ -492,7 +490,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
               <rect width='100%' height='100%' strokeWidth={0} fill='url(#rect-pattern-2)' />
             </svg>
             <section className='relative z-20 mx-auto max-w-7xl px-3'>
-              <h2 className='mx-auto mt-20 w-full max-w-lg text-center text-3xl font-extrabold text-slate-900 dark:text-white sm:text-5xl'>
+              <h2 className='mx-auto mt-20 w-full max-w-lg text-center text-4xl font-extrabold text-slate-900 dark:text-white sm:text-5xl'>
                 {t('main.marketplaceBlock')}
               </h2>
               <div className='grid grid-cols-1 justify-between justify-items-center gap-y-10 pb-36 pt-20 text-slate-900 dark:text-white sm:grid-cols-2 sm:gap-y-24 md:grid-cols-3'>
@@ -556,7 +554,6 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
             <section className='relative z-20 px-3'>
               <h2 className='mx-auto mb-5 mt-20 h-8 w-full max-w-prose text-center text-3xl font-extrabold text-slate-900 dark:text-white sm:text-5xl'>
                 <Trans
-                  // @ts-ignore
                   t={t}
                   i18nKey='main.whyUseSwetrix'
                   components={{
@@ -662,9 +659,8 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
             />
           </picture>
           <div className='w-full max-w-lg lg:ml-5'>
-            <h2 className='text-3xl font-extrabold text-slate-900 dark:text-white md:text-4xl'>
+            <h2 className='text-4xl font-extrabold text-slate-900 dark:text-white md:text-4xl'>
               <Trans
-                // @ts-ignore
                 t={t}
                 i18nKey='main.opensourceAdv'
                 components={{
@@ -708,7 +704,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
           </div>
           <div className='mx-auto w-full max-w-5xl px-3'>
             <div className='mx-auto w-full max-w-prose'>
-              <h2 className='text-center text-3xl font-extrabold text-gray-900 dark:text-white md:text-4xl'>
+              <h2 className='text-center text-4xl font-extrabold text-gray-900 dark:text-white md:text-4xl'>
                 {t('main.peopleLoveSwetrix')}
               </h2>
               <p className='mx-auto mt-5 max-w-prose text-center text-xl text-gray-600 dark:text-gray-200'>
