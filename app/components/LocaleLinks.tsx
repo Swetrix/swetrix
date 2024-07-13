@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useLocation, Location } from '@remix-run/react'
 import { whitelist, whitelistWithCC, MAIN_URL } from 'redux/constants'
 import _map from 'lodash/map'
+import _some from 'lodash/some'
 
 const getUrlFromLocation = (location: Location) => {
   const { pathname, hash, search } = location
@@ -44,7 +45,7 @@ const getAlternateLinks = (location: Location) => {
 const NO_ALTERNATE_LINKS = [/^\/blog/i]
 
 const getShouldBeIgnored = (location: Location) => {
-  return NO_ALTERNATE_LINKS.some((regex) => regex.test(location.pathname))
+  return _some(NO_ALTERNATE_LINKS, (regex) => regex.test(location.pathname))
 }
 
 export const LocaleLinks = () => {
