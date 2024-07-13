@@ -2,7 +2,7 @@ import React from 'react'
 import { Link, useParams } from '@remix-run/react'
 import { useSelector } from 'react-redux'
 import { useTranslation, Trans } from 'react-i18next'
-import { ArrowSmallRightIcon } from '@heroicons/react/24/outline'
+import { ArrowRightIcon } from '@heroicons/react/20/solid'
 
 import { StateType } from 'redux/store/index'
 import Header from 'components/Header'
@@ -87,7 +87,7 @@ const ReferralPage = ({ ssrTheme }: IReferralPage): JSX.Element => {
                     aria-label={t('titles.signup')}
                   >
                     <span className='mr-1 text-base font-semibold'>{t('common.getStarted')}</span>
-                    <ArrowSmallRightIcon className='mt-[1px] h-4 w-5' />
+                    <ArrowRightIcon className='mt-[1px] h-4 w-5' />
                   </Link>
                   <Link
                     to={`/ref/${id}/index#core-analytics`}

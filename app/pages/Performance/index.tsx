@@ -3,7 +3,8 @@ import React, { memo } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { ClientOnly } from 'remix-utils/client-only'
-import { ArrowTopRightOnSquareIcon, ArrowSmallRightIcon, ChevronRightIcon } from '@heroicons/react/24/solid'
+import { ArrowTopRightOnSquareIcon, ChevronRightIcon } from '@heroicons/react/24/solid'
+import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
 
@@ -143,7 +144,7 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
                     aria-label={t('titles.signup')}
                   >
                     <span className='mr-1 text-base font-semibold'>{t('common.getStarted')}</span>
-                    <ArrowSmallRightIcon className='mt-[1px] h-4 w-5' />
+                    <ArrowRightIcon className='mt-[1px] h-4 w-5' />
                   </Link>
                   <a
                     href={PERFORMANCE_LIVE_DEMO_URL}

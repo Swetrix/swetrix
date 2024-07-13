@@ -4,12 +4,7 @@ import { useTranslation, Trans } from 'react-i18next'
 import cx from 'clsx'
 import { useSelector } from 'react-redux'
 import { ClientOnly } from 'remix-utils/client-only'
-import {
-  ArrowTopRightOnSquareIcon,
-  ArrowSmallRightIcon,
-  CheckCircleIcon,
-  ChevronRightIcon,
-} from '@heroicons/react/24/solid'
+import { ArrowTopRightOnSquareIcon, CheckCircleIcon, ChevronRightIcon } from '@heroicons/react/24/solid'
 import {
   CodeBracketIcon,
   PuzzlePieceIcon,
@@ -17,6 +12,7 @@ import {
   ArrowsPointingOutIcon,
   LightBulbIcon,
   ArrowTrendingUpIcon,
+  ArrowRightIcon,
 } from '@heroicons/react/20/solid'
 import { TypeAnimation } from 'react-type-animation'
 import _map from 'lodash/map'
@@ -181,7 +177,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                     aria-label={t('titles.signup')}
                   >
                     <span className='mr-1 text-base font-semibold'>{t('common.getStarted')}</span>
-                    <ArrowSmallRightIcon className='mt-[1px] h-4 w-5' />
+                    <ArrowRightIcon className='mt-[1px] h-4 w-5' />
                   </Link>
                   <a
                     href={LIVE_DEMO_URL}
@@ -201,7 +197,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                   aria-label={`${t('common.bookADemo')} (opens in a new tab)`}
                 >
                   <span className='text-base font-semibold'>{t('common.bookADemo')}</span>
-                  <ArrowSmallRightIcon className='mt-[1px] h-4 w-5' />
+                  <ArrowRightIcon className='mt-[1px] h-4 w-5' />
                 </a>
               </div>
               <div className='hidden max-w-md lg:block xl:max-w-lg'>
@@ -269,7 +265,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                 aria-label={`${t('common.liveDemo')} (opens in a new tab)`}
               >
                 {t('common.liveDemo')}
-                <ArrowSmallRightIcon className='mt-[1px] h-4 w-5' />
+                <ArrowRightIcon className='mt-[1px] h-4 w-5' />
               </a>
             </div>
           </section>
@@ -288,7 +284,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                 aria-label='Swetrix Marketplace (opens in a new tab)'
               >
                 {t('main.visitAddons')}
-                <ArrowSmallRightIcon className='mt-[1px] h-4 w-5' />
+                <ArrowRightIcon className='mt-[1px] h-4 w-5' />
               </a>
             </div>
             <img
@@ -330,7 +326,7 @@ const Main: React.FC<IMain> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
                 aria-label={t('footer.pp')}
               >
                 {t('main.dataProtection')}
-                <ArrowSmallRightIcon className='mt-[1px] h-4 w-5' />
+                <ArrowRightIcon className='mt-[1px] h-4 w-5' />
               </Link>
             </div>
           </section>

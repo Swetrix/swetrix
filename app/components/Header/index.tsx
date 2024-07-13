@@ -22,7 +22,6 @@ import {
   Bars3Icon,
   XMarkIcon,
   ChevronDownIcon,
-  ArrowSmallRightIcon,
   ChartPieIcon,
   PlayCircleIcon,
   PhoneIcon,
@@ -30,6 +29,7 @@ import {
   FaceSmileIcon,
   PuzzlePieceIcon,
 } from '@heroicons/react/24/outline'
+import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
@@ -740,7 +740,7 @@ const NotAuthedHeader = ({
                   className='flex items-center text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
                 >
                   {t('auth.common.signin')}
-                  <ArrowSmallRightIcon className='ml-1 mt-[1px] h-4 w-4 stroke-2' />
+                  <ArrowRightIcon className='ml-1 mt-[1px] h-4 w-4 stroke-2' />
                 </Link>
               </>
             )}
