@@ -13,6 +13,7 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
   isISO31661Alpha2,
+  IsUrl,
 } from 'class-validator'
 
 import { ApiProperty } from '@nestjs/swagger'
@@ -137,9 +138,7 @@ export class CreateProjectViewDto {
       'Referrer (site from which the user came to the site using Swetrix)',
     nullable: true,
   })
-  @Matches(/^(https?:\/\/)?([a-zA-Z0-9.-]+)(:[0-9]{1,5})?(\/.*)?$/, {
-    message: 'Invalid referrer URL format',
-  })
+  @IsUrl()
   @IsOptional()
   ref?: string
 
@@ -173,13 +172,11 @@ export class CreateProjectViewDto {
   @MaxLength(100)
   @MinLength(1)
   @IsString()
-  @IsString()
   rg?: string
 
   @ApiProperty({ description: 'City (Berlin, London, etc.)', nullable: true })
   @MaxLength(100)
   @MinLength(1)
-  @IsString()
   @IsString()
   ct?: string
 

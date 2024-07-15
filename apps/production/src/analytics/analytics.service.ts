@@ -3705,6 +3705,8 @@ export class AnalyticsService {
       )
       .join(' ')
 
+    const metaKeysMapped = metaKeys.map(key => `'${key}'`).join(', ')
+
     const query = `
       SELECT
         key,
@@ -3712,7 +3714,7 @@ export class AnalyticsService {
         avg(CASE ${casesAvg} ELSE 0 END) AS avg
       FROM customEV
       ARRAY JOIN meta.key AS key, meta.value AS value
-      WHERE pid = {pid:String} AND key IN (${metaKeys.map(key => `'${key}'`).join(', ')})
+      WHERE pid = {pid:String} AND key IN (${metaKeysMapped})
       GROUP BY key
     `
 
