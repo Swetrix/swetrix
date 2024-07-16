@@ -296,11 +296,13 @@ const FeatureGallery = ({ theme }: { theme: 'dark' | 'light' }) => {
           </a>
         </div>
         <img
-          className='mt-8 md:ml-5 md:mt-0 md:w-[450px] lg:w-[32rem]'
+          src={
+            theme === 'dark' ? '/assets/marketplace_extensions_dark.png' : '/assets/marketplace_extensions_light.png'
+          }
+          className='mt-3 md:mr-3 md:mt-0 md:w-[450px] lg:w-[640px]'
           width='450'
-          height='253'
-          src='/assets/teardown.svg'
-          alt='Marketplace'
+          height='320'
+          alt='Marketplace illustration'
         />
       </section>
       <section className='m-auto flex max-w-7xl flex-col-reverse items-center md:flex-row md:items-start md:justify-between'>
