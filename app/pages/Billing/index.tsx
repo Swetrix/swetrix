@@ -27,7 +27,7 @@ import MultiProgress from 'ui/MultiProgress'
 import Tooltip from 'ui/Tooltip'
 import { IUser } from 'redux/models/IUser'
 import UIActions from 'redux/reducers/ui'
-import Pricing from '../MainPage/Pricing'
+import Pricing from '../../components/marketing/Pricing'
 import DashboardLockedBanner from 'components/DashboardLockedBanner'
 
 dayjs.extend(utc)

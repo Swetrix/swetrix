@@ -16,8 +16,8 @@ import { StateType } from 'redux/store/index'
 import BackgroundSvg from 'ui/icons/BackgroundSvg'
 
 import Header from 'components/Header'
-import Pricing from '../MainPage/Pricing'
-import { DitchGoogle } from 'pages/MainPage/DitchGoogle'
+import Pricing from '../../components/marketing/Pricing'
+import { DitchGoogle } from 'components/marketing/DitchGoogle'
 
 const Lines = (): JSX.Element => (
   <div className='pointer-events-none relative'>

@@ -13,8 +13,8 @@ import Header from 'components/Header'
 import { getAccessToken } from 'utils/accessToken'
 
 import _map from 'lodash/map'
-import { ComparisonTable } from 'pages/MainPage/ComparisonTable'
-import { DitchGoogle } from 'pages/MainPage/DitchGoogle'
+import { ComparisonTable } from 'components/marketing/ComparisonTable'
+import { DitchGoogle } from 'components/marketing/DitchGoogle'
 
 interface LoaderProps {
   theme: 'dark' | 'light'

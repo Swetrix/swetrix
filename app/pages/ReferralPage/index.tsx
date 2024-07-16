@@ -7,7 +7,7 @@ import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { StateType } from 'redux/store/index'
 import Header from 'components/Header'
 import routes from 'routesPath'
-import { Lines } from 'pages/MainPage'
+import { Lines } from 'components/marketing/Lines'
 
 import { isBrowser, REFERRAL_COOKIE_DAYS, REFERRAL_DISCOUNT } from 'redux/constants'
 
