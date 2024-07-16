@@ -16,8 +16,8 @@ import { StateType } from 'redux/store/index'
 import BackgroundSvg from 'ui/icons/BackgroundSvg'
 
 import Header from 'components/Header'
-import Pricing from '../MainPage/Pricing'
-import { DitchGoogle } from 'pages/MainPage/DitchGoogle'
+import Pricing from '../../components/marketing/Pricing'
+import { DitchGoogle } from 'components/marketing/DitchGoogle'
 
 const Lines = (): JSX.Element => (
   <div className='pointer-events-none relative'>
@@ -143,7 +143,7 @@ const ErrorTracking: React.FC<IErrorTracking> = ({ ssrTheme, ssrAuthenticated })
                     className='flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white shadow-sm ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600 sm:mr-6 sm:max-w-[210px]'
                     aria-label={t('titles.signup')}
                   >
-                    <span className='mr-1 text-base font-semibold'>{t('common.getStarted')}</span>
+                    <span className='mr-1 text-base font-semibold'>{t('main.startAFreeTrial')}</span>
                     <ArrowRightIcon className='mt-[1px] h-4 w-5' />
                   </Link>
                   <a
