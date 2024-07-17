@@ -1,36 +1,36 @@
-CREATE TABLE projects_views (
-    id CHAR(36) PRIMARY KEY,
-    projectId CHAR(36) NOT NULL,
-    name VARCHAR(255) NOT NULL,
-    type ENUM('traffic', 'performance') NOT NULL,
-    pg VARCHAR(255) NULL,
-    ev VARCHAR(255) NOT NULL,
-    dv VARCHAR(255) NULL,
-    br VARCHAR(255) NULL,
-    os VARCHAR(255) NULL,
-    lc VARCHAR(255) NULL,
-    ref VARCHAR(255) NULL,
-    so VARCHAR(255) NULL,
-    me VARCHAR(255) NULL,
-    ca VARCHAR(255) NULL,
-    cc VARCHAR(2) NULL,
-    rg VARCHAR(255) NULL,
-    ct VARCHAR(255) NULL,
-    createdAt DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-    updatedAt DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
-    FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE CASCADE  
+CREATE TABLE `projects_views` (
+  `id` varchar(36) NOT NULL,
+  `projectId` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `type` enum('traffic','performance') NOT NULL,
+  `pg` varchar(255) NOT NULL,
+  `ev` varchar(255) NOT NULL,
+  `dv` varchar(255) DEFAULT NULL,
+  `br` varchar(255) DEFAULT NULL,
+  `os` varchar(255) DEFAULT NULL,
+  `lc` varchar(255) DEFAULT NULL,
+  `ref` varchar(255) DEFAULT NULL,
+  `so` varchar(255) DEFAULT NULL,
+  `me` varchar(255) DEFAULT NULL,
+  `ca` varchar(255) DEFAULT NULL,
+  `cc` varchar(2) DEFAULT NULL,
+  `rg` varchar(255) DEFAULT NULL,
+  `ct` varchar(255) DEFAULT NULL,
+  `createdAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `updatedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`projectId`) REFERENCES `project` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-
-CREATE TABLE projects_views_custom_events (
-    id VARCHAR(36) PRIMARY KEY DEFAULT uuid_generate_v4(),
-    viewId VARCHAR(255) NOT NULL,
-    customEventName VARCHAR(255) NOT NULL,
-    metaKey VARCHAR(255) NOT NULL,
-    metaValue VARCHAR(255) NOT NULL,
-    metaValueType ENUM('string', 'integer', 'float') NOT NULL DEFAULT 'string',
-    createdAt DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-    updatedAt DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
-    FOREIGN KEY (viewId) REFERENCES projects_views(id) ON DELETE CASCADE
+CREATE TABLE `projects_views_custom_events` (
+  `id` varchar(36) NOT NULL,
+  `viewId` varchar(255) NOT NULL,
+  `customEventName` varchar(255) NOT NULL,
+  `metaKey` varchar(255) NOT NULL,
+  `metaValue` varchar(255) NOT NULL,
+  `metaValueType` enum('string','integer','float') NOT NULL DEFAULT 'string',
+  `createdAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `updatedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`id`),
+FOREIGN KEY (`viewId`) REFERENCES `projects_views` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
