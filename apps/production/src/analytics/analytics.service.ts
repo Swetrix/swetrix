@@ -3741,5 +3741,4 @@ export class AnalyticsService {
       )
     }
   }
-
 }
