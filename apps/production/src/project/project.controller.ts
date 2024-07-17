@@ -24,7 +24,15 @@ import {
   DefaultValuePipe,
 } from '@nestjs/common'
 import { Response } from 'express'
-import { ApiTags, ApiQuery, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
+import {
+  ApiTags,
+  ApiQuery,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiOkResponse,
+  ApiNoContentResponse,
+} from '@nestjs/swagger'
 import { ILike } from 'typeorm'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _map from 'lodash/map'
@@ -93,6 +101,12 @@ import {
   FunnelCreateDTO,
   FunnelUpdateDTO,
 } from './dto'
+import { ProjectsViewsRepository } from './repositories/projects-views.repository'
+import { ProjectViewEntity } from './entity/project-view.entity'
+import { ProjectIdDto } from './dto/project-id.dto'
+import { CreateProjectViewDto } from './dto/create-project-view.dto'
+import { UpdateProjectViewDto } from './dto/update-project-view.dto'
+import { ProjectViewIdsDto } from './dto/project-view-ids.dto'
 
 const PROJECTS_MAXIMUM = 50
 
@@ -113,6 +127,7 @@ export class ProjectController {
     private readonly logger: AppLoggerService,
     private readonly actionTokensService: ActionTokensService,
     private readonly mailerService: MailerService,
+    private readonly projectsViewsRepository: ProjectsViewsRepository,
   ) {}
 
   @ApiBearerAuth()
@@ -387,6 +402,7 @@ export class ProjectController {
     }
   }
 
+  @ApiBearerAuth()
   @Post('/')
   @ApiResponse({ status: 201, type: Project })
   @Auth([], true)
@@ -1882,5 +1898,186 @@ export class ProjectController {
       isDataExists,
       isErrorDataExists,
     }
+  }
+
+  @ApiOperation({ summary: 'Get project view' })
+  @ApiOkResponse({ type: ProjectViewEntity })
+  @ApiBearerAuth()
+  @Get(':projectId/views/:viewId')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async getProjectView(
+    @Param() params: ProjectViewIdsDto,
+    @CurrentUserId() userId: string,
+  ) {
+    const project = await this.projectService.findProject(params.projectId, [
+      'admin',
+      'share',
+    ])
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const user = await this.userService.findUserV2(userId, ['roles'])
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
+    return this.projectsViewsRepository.findProjectView(
+      params.projectId,
+      params.viewId,
+    )
+  }
+
+  @ApiOperation({ summary: 'Create project view' })
+  @ApiOkResponse({ type: ProjectViewEntity })
+  @ApiBearerAuth()
+  @Post(':projectId/views')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async createProjectView(
+    @Param() params: ProjectIdDto,
+    @Body() body: CreateProjectViewDto,
+    @CurrentUserId() userId: string,
+  ) {
+    const project = await this.projectService.findProject(params.projectId, [
+      'admin',
+      'share',
+    ])
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const user = await this.userService.findUserV2(userId, ['roles'])
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
+
+    const createdProjectView =
+      await this.projectsViewsRepository.createProjectView(
+        params.projectId,
+        body,
+      )
+
+    return _omit(createdProjectView, ['project'])
+  }
+
+  @ApiOperation({ summary: 'Get project views' })
+  @ApiOkResponse({ type: ProjectViewEntity })
+  @ApiBearerAuth()
+  @Get(':projectId/views')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async getProjectViews(
+    @Param() params: ProjectIdDto,
+    @CurrentUserId() userId: string,
+  ) {
+    const project = await this.projectService.findProject(params.projectId, [
+      'admin',
+      'share',
+    ])
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const user = await this.userService.findUserV2(userId, ['roles'])
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
+
+    return this.projectsViewsRepository.findViews(params.projectId)
+  }
+
+  @ApiOperation({ summary: 'Update project view' })
+  @ApiOkResponse({ type: ProjectViewEntity })
+  @ApiBearerAuth()
+  @Patch(':projectId/views/:viewId')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async updateProjectView(
+    @Param() params: ProjectViewIdsDto,
+    @Body() body: UpdateProjectViewDto,
+    @CurrentUserId() userId: string,
+  ) {
+    const project = await this.projectService.findProject(params.projectId, [
+      'admin',
+      'share',
+    ])
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const user = await this.userService.findUserV2(userId, ['roles'])
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
+
+    const view = await this.projectsViewsRepository.findProjectView(
+      params.projectId,
+      params.viewId,
+    )
+
+    if (!view) {
+      throw new NotFoundException('View not found.')
+    }
+
+    await this.projectsViewsRepository.updateProjectView(params.viewId, body)
+
+    return this.projectsViewsRepository.findView(params.viewId)
+  }
+
+  @ApiOperation({ summary: 'Delete project view' })
+  @ApiNoContentResponse()
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Delete(':projectId/views/:viewId')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async deleteProjectView(
+    @Param() params: ProjectViewIdsDto,
+    @CurrentUserId() userId: string,
+  ) {
+    const project = await this.projectService.findProject(params.projectId, [
+      'admin',
+      'share',
+    ])
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const user = await this.userService.findUserV2(userId, ['roles'])
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
+
+    const view = await this.projectsViewsRepository.findProjectView(
+      params.projectId,
+      params.viewId,
+    )
+
+    if (!view) {
+      throw new NotFoundException('View not found.')
+    }
+
+    await this.projectsViewsRepository.deleteProjectView(params.viewId)
   }
 }

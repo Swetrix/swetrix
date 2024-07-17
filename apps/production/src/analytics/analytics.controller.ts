@@ -28,8 +28,10 @@ import {
   ForbiddenException,
   Response,
   Header,
+  ConflictException,
+  NotFoundException,
 } from '@nestjs/common'
-import { ApiTags } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import * as UAParser from 'ua-parser-js'
 import * as isbot from 'isbot'
 
@@ -90,6 +92,7 @@ import { GetErrorsDto } from './dto/get-errors.dto'
 import { GetErrorDTO } from './dto/get-error.dto'
 import { PatchStatusDTO } from './dto/patch-status.dto'
 import { ProjectService } from '../project/project.service'
+import { ProjectsViewsRepository } from '../project/repositories/projects-views.repository'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mysql = require('mysql2')
@@ -368,8 +371,10 @@ export class AnalyticsController {
     private readonly analyticsService: AnalyticsService,
     private readonly logger: AppLoggerService,
     private readonly projectService: ProjectService,
+    private readonly projectsViewsRepository: ProjectsViewsRepository,
   ) {}
 
+  @ApiBearerAuth()
   @Get()
   @Auth([], true, true)
   async getData(
@@ -387,6 +392,7 @@ export class AnalyticsController {
       filters,
       timezone = DEFAULT_TIMEZONE,
       mode = ChartRenderMode.PERIODICAL,
+      viewId,
     } = data
     this.analyticsService.validatePID(pid)
 
@@ -401,6 +407,30 @@ export class AnalyticsController {
     )
 
     await this.analyticsService.checkBillingAccess(pid)
+
+    if (viewId && filters) {
+      throw new ConflictException('Cannot specify both viewId and filters.')
+    }
+
+    const view = await this.projectsViewsRepository.findProjectView(pid, viewId)
+
+    if (!view) {
+      throw new NotFoundException('View not found.')
+    }
+
+    const customEvents = view.customEvents.map(event => ({
+      customEventName: event.customEventName,
+      metaKey: event.metaKey,
+      metaValue: event.metaValue,
+      metaValueType: event.metaValueType,
+    }))
+
+    const metaKeys = customEvents.map(event => event.metaKey)
+    const metaResult = await this.analyticsService.getMetaResult(
+      pid,
+      metaKeys,
+      customEvents,
+    )
 
     let newTimebucket = timeBucket
     let allowedTumebucketForPeriodAll
@@ -513,6 +543,7 @@ export class AnalyticsController {
       properties,
       appliedFilters,
       timeBucket: allowedTumebucketForPeriodAll,
+      meta: metaResult,
     }
   }
 
