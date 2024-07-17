@@ -285,13 +285,15 @@
     "ukrSupport": "Unterstützen Sie die ukrainische Armee im Kampf gegen die russische Invasion.",
     "slogan": "<span>Ultimative Open-Source-Web-Analytics</span> um alle Ihre Wünsche zu befriedigen.",
     "trackEveryMetric": "Analytik sollte so sein: GDPR-konform, leicht und einfach zu bedienen.",
-    "description": "Swetrix ist eine Cookieless Alternative von Google Analytics, die die Privatsphäre Ihrer Nutzer nicht verletzt.",
+    "description": "Swetrix is a cookieless Google Analytics alternative that does not invade your users' privacy. It's perfect for <0>marketers</0>, <1>start-ups</1>, <2>small businesses</2> and virtually any type of business!",
+    "trustedBy": "Trusted by governments, NGOs and innovative enterprises",
     "start": "Kostenlos beginnen",
     "signup": "Jetzt gratis registrieren!",
     "signupTerms": "Mit der Anmeldung akzeptieren Sie unsere <tos>Allgemeinen Geschäftsbedingungen</tos> und unsere <pp>Datenschutzerklärung</pp>.",
     "techDetails": "Möchten Sie weitere technische Details erfahren?",
     "lookAtDocs": "Sehen Sie sich doch mal die Dokumentation und die Live Demo an.",
     "readyToStart": "Sind Sie bereit los zu legen?",
+    "startAFreeTrial": "Start a free trial",
     "metric": "Metrisch",
     "coreFeatures": {
       "title": "Kern-Analysefunktionen",
@@ -404,25 +406,6 @@
     "whyPeopleLoveSwetrix": "Swetrix ist ein ethischer und leistungsstarker Dienst. Hunderte von Menschen haben bereits den Wechsel von Google Analytics und anderen Alternativen gemacht.",
     "marketplaceBlock": "Marktplatz- und Erweiterungsfunktionen",
     "coreFeaturesBlock": "Kernfunktionen",
-    "testimonials": "Kundenmeinungen",
-    "peopleUseSwetrix": "Hunderte von Menschen verwenden Swetrix bereits als Webanalyselösung",
-    "lTestimonials": [
-      {
-        "name": "Alex",
-        "role": "Startup-Gründer",
-        "desc": "Wir verwenden für unser Projekt mehrere Analysesysteme, um die genauesten Daten zu erhalten.\nFür Webanalytik haben wir Swetrix als Lösung gewählt, bei der das Team ständig neue Verbesserungen und Funktionen vornimmt."
-      },
-      {
-        "name": "Michael",
-        "role": "Kleinunternehmer",
-        "desc": "Im Geschäftsleben muss ich verstehen, wie sich Kunden auf einer Website verhalten und warum sie mein Produkt kaufen oder nicht kaufen.\nSwetrix gibt mir die notwendigen Daten und wertvolle Einblicke, um meine Website-Besucher zu verstehen und mir zu helfen, den Umsatz zu steigern."
-      },
-      {
-        "name": "Rachel",
-        "role": "Vorstand eines Non-Profit-Unternehmens",
-        "desc": "Ich arbeite an einem ziemlich großen Projekt, und wir müssen die DPR-Abkommen und eine Reihe anderer Anforderungen erfüllen.\nWir arbeiten mit großen Unternehmen auf der ganzen Welt und Besucher unserer Ressourcen wollen sehen, dass wir ihnen treu sind aber gleichzeitig unsere Abteilung in die Lage versetzen, die Umstellung auf der Website zu erhöhen und wertvolle Einblicke zu erhalten, um neue Produktideen zu testen.\nDiese Aufgaben werden von Swetrix vollständig gelöst."
-      }
-    ],
     "opensourceAdv": "Vorteile der Verwendung von <url>Open-Source-</url>",
     "opensource": [
       {
