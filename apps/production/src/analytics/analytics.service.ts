@@ -99,6 +99,7 @@ import {
 } from './interfaces'
 import { ErrorDTO } from './dto/error.dto'
 import { GetPagePropertyMetaDTO } from './dto/get-page-property-meta.dto'
+import { ProjectViewCustomEventMetaValueType } from '../project/entity/project-view-custom-event.entity'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -3681,31 +3682,42 @@ export class AnalyticsService {
       metaValueType: string
     }[],
   ) {
+    const params = {
+      pid,
+      ..._reduce(
+        metaKeys,
+        (acc, key, index) => ({ ...acc, [`metaKey_${index}`]: key }),
+        {},
+      ),
+    }
+
     const casesSum = customEvents
       .map(
-        event => `
-      WHEN key = '${event.metaKey}' THEN ${
-        event.metaValueType === 'INTEGER'
-          ? 'toInt32OrZero(value)'
-          : 'toFloat32OrZero(value)'
-      }
-    `,
+        (event, index) => `
+        WHEN key = {metaKey_${index}:String} THEN ${
+          event.metaValueType === ProjectViewCustomEventMetaValueType.INTEGER
+            ? 'toInt32OrZero(value)'
+            : 'toFloat32OrZero(value)'
+        }
+      `,
       )
       .join(' ')
 
     const casesAvg = customEvents
       .map(
-        event => `
-      WHEN key = '${event.metaKey}' THEN ${
-        event.metaValueType === 'INTEGER'
-          ? 'toInt32OrZero(value)'
-          : 'toFloat32OrZero(value)'
-      }
-    `,
+        (event, index) => `
+        WHEN key = {metaKey_${index}:String} THEN ${
+          event.metaValueType === ProjectViewCustomEventMetaValueType.INTEGER
+            ? 'toInt32OrZero(value)'
+            : 'toFloat32OrZero(value)'
+        }
+      `,
       )
       .join(' ')
 
-    const metaKeysMapped = metaKeys.map(key => `'${key}'`).join(', ')
+    const metaKeysParams = metaKeys
+      .map((_, index) => `{metaKey_${index}:String}`)
+      .join(', ')
 
     const query = `
       SELECT
@@ -3714,10 +3726,20 @@ export class AnalyticsService {
         avg(CASE ${casesAvg} ELSE 0 END) AS avg
       FROM customEV
       ARRAY JOIN meta.key AS key, meta.value AS value
-      WHERE pid = {pid:String} AND key IN (${metaKeysMapped})
+      WHERE pid = {pid:FixedString(12)} AND key IN (${metaKeysParams})
       GROUP BY key
     `
 
-    return clickhouse.query(query, { params: { pid } }).toPromise()
+    try {
+      const result = await clickhouse.query(query, { params }).toPromise()
+      return result
+    } catch (reason) {
+      console.error('[ERROR] (getMetaResult) - Clickhouse query error:')
+      console.error(reason)
+      throw new InternalServerErrorException(
+        'Error occurred while fetching meta results',
+      )
+    }
   }
+
 }
