@@ -7,7 +7,7 @@ import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { StateType } from 'redux/store/index'
 import Header from 'components/Header'
 import routes from 'routesPath'
-import { Lines } from 'pages/MainPage'
+import { Lines } from 'components/marketing/Lines'
 
 import { isBrowser, REFERRAL_COOKIE_DAYS, REFERRAL_DISCOUNT } from 'redux/constants'
 
@@ -86,7 +86,7 @@ const ReferralPage = ({ ssrTheme }: IReferralPage): JSX.Element => {
                     className='flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white shadow-sm ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600 sm:mr-6 sm:max-w-[210px]'
                     aria-label={t('titles.signup')}
                   >
-                    <span className='mr-1 text-base font-semibold'>{t('common.getStarted')}</span>
+                    <span className='mr-1 text-base font-semibold'>{t('main.startAFreeTrial')}</span>
                     <ArrowRightIcon className='mt-[1px] h-4 w-5' />
                   </Link>
                   <Link
