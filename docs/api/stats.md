@@ -474,23 +474,26 @@ curl 'https://api.swetrix.com/v1/log/meta?pid=YOUR_PROJECT_ID&timeBucket=day&per
 ```
 
 ```json title="Response"
-[
-  {
-    "key": "Affiliate",
-    "value": "Yes",
-    "count": 1
-  },
-  {
-    "key": "Affiliate",
-    "value": "No",
-    "count": 4
-  },
-  {
-    "key": "OtherMetadata",
-    "value": "AnyString",
-    "count": 12
-  }
-]
+{
+  "result": [
+    {
+      "key": "Affiliate",
+      "value": "Yes",
+      "count": 1
+    },
+    {
+      "key": "Affiliate",
+      "value": "No",
+      "count": 4
+    },
+    {
+      "key": "OtherMetadata",
+      "value": "AnyString",
+      "count": 12
+    }
+  ],
+  "appliedFilters": []
+}
 ```
 
 #### Parameters
@@ -499,6 +502,45 @@ The parameters are the same as for the [`/log` endpoint](#get-v1log), except add
 **event**
 
 The name of the custom event to return metadata for.
+
+
+### GET /v1/log/property
+This endpoint returns an array of page tags for a particular custom property. For example, if you have a blog, you may want to pass some properties, such as "author", to our API along with your pageviews. The 'author' property can have multiple values, such as 'John', 'Tom' or 'Andrew'. You can then aggregate on these properties.
+
+```bash
+curl 'https://api.swetrix.com/v1/log/property?pid=YOUR_PROJECT_ID&timeBucket=day&period=7d&property=author'\
+  -H "X-Api-Key: ${SWETRIX_API_KEY}"
+```
+
+```json title="Response"
+{
+  "result": [
+    {
+      "key": "author",
+      "value": "Andrew",
+      "count": 17
+    },
+    {
+      "key": "author",
+      "value": "John",
+      "count": 8
+    },
+    {
+      "key": "author",
+      "value": "Tom",
+      "count": 3
+    }
+  ],
+  "appliedFilters": []
+}
+```
+
+#### Parameters
+The parameters are the same as for the [`/log` endpoint](#get-v1log), except additionally you must pass the following:
+
+**property**
+
+The name of the property (tag) to return details for.
 
 ### GET /v1/log/sessions
 This endpoint returns an array of individual sessions.
