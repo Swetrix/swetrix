@@ -412,25 +412,32 @@ export class AnalyticsController {
       throw new ConflictException('Cannot specify both viewId and filters.')
     }
 
-    const view = await this.projectsViewsRepository.findProjectView(pid, viewId)
+    let meta: Awaited<ReturnType<typeof this.analyticsService.getMetaResult>>
 
-    if (!view) {
-      throw new NotFoundException('View not found.')
+    if (viewId) {
+      const view = await this.projectsViewsRepository.findProjectView(
+        pid,
+        viewId,
+      )
+
+      if (!view) {
+        throw new NotFoundException('View not found.')
+      }
+
+      const customEvents = view.customEvents.map(event => ({
+        customEventName: event.customEventName,
+        metaKey: event.metaKey,
+        metaValue: event.metaValue,
+        metaValueType: event.metaValueType,
+      }))
+
+      const metaKeys = customEvents.map(event => event.metaKey)
+      meta = await this.analyticsService.getMetaResult(
+        pid,
+        metaKeys,
+        customEvents,
+      )
     }
-
-    const customEvents = view.customEvents.map(event => ({
-      customEventName: event.customEventName,
-      metaKey: event.metaKey,
-      metaValue: event.metaValue,
-      metaValueType: event.metaValueType,
-    }))
-
-    const metaKeys = customEvents.map(event => event.metaKey)
-    const metaResult = await this.analyticsService.getMetaResult(
-      pid,
-      metaKeys,
-      customEvents,
-    )
 
     let newTimebucket = timeBucket
     let allowedTumebucketForPeriodAll
@@ -543,7 +550,7 @@ export class AnalyticsController {
       properties,
       appliedFilters,
       timeBucket: allowedTumebucketForPeriodAll,
-      meta: metaResult,
+      meta,
     }
   }
 
