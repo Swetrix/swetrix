@@ -22,7 +22,8 @@ If you have special needs for more requests, please contact us to request more c
 - **hour** - 1 hour;
 - **day** - 1 day;
 - **week** - 1 week;
-- **month** - 1 month.
+- **month** - 1 month;
+- **year** - 1 year.
 
 ### Periods
 - **today** - today (i.e. the time starting from 12:00 AM of the current day);
