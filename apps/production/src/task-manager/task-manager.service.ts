@@ -928,6 +928,9 @@ export class TaskManagerService {
       await this.mailerService.sendEmail(
         email,
         LetterTemplate.TrialEndsTomorrow,
+        {
+          url: 'https://swetrix.com/billing',
+        },
       )
     })
 
@@ -986,7 +989,9 @@ export class TaskManagerService {
         dashboardBlockReason: DashboardBlockReason.trial_ended,
         // trialEndDate: null,
       })
-      await this.mailerService.sendEmail(email, LetterTemplate.TrialExpired)
+      await this.mailerService.sendEmail(email, LetterTemplate.TrialExpired, {
+        url: 'https://swetrix.com/billing',
+      })
       await this.projectService.clearProjectsRedisCache(id)
     })
 
