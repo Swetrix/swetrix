@@ -27,6 +27,7 @@
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org my-org-f6 --project swetrix-api ./dist && sentry-cli sourcemaps upload --org my-org-f6 --project swetrix-api ./dist"
   },
   "dependencies": {
+    "@clickhouse/client": "^1.4.0",
     "@faker-js/faker": "^8.4.1",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/axios": "^3.0.2",
