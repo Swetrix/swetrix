@@ -1,48 +1,45 @@
-const { ClickHouse } = require('clickhouse')
-const _ = require('lodash')
+/* eslint-disable @typescript-eslint/no-var-requires */
+
+const { createClient } = require('@clickhouse/client')
 const chalk = require('chalk')
 require('dotenv').config()
 
-const clickhouse = new ClickHouse({
-  url: process.env.CLICKHOUSE_HOST,
-  port: _.toNumber(process.env.CLICKHOUSE_PORT),
-  debug: false,
-  basicAuth: {
-    username: process.env.CLICKHOUSE_USER,
-    password: process.env.CLICKHOUSE_PASSWORD,
-  },
-  isUseGzip: false,
-  format: 'json',
-  raw: false,
-  config: {
-    session_timeout: 60,
-    output_format_json_quote_64bit_integers: 0,
-    enable_http_compression: 0,
-    database: process.env.CLICKHOUSE_DATABASE,
-    log_queries: 0,
-  },
-})
-
-const clickhouseNoDatabase = new ClickHouse({
-  url: process.env.CLICKHOUSE_HOST,
-  port: _.toNumber(process.env.CLICKHOUSE_PORT),
-  debug: false,
-  basicAuth: {
-    username: process.env.CLICKHOUSE_USER,
-    password: process.env.CLICKHOUSE_PASSWORD,
-  },
-  isUseGzip: false,
-  format: 'json',
-  raw: false,
-  config: {
-    session_timeout: 60,
+const clickhouse = createClient({
+  host: `${process.env.CLICKHOUSE_HOST}:${process.env.CLICKHOUSE_PORT}`,
+  username: process.env.CLICKHOUSE_USER,
+  password: process.env.CLICKHOUSE_PASSWORD,
+  database: process.env.CLICKHOUSE_DATABASE,
+  request_timeout: 60000, // 1 minute
+  clickhouse_settings: {
+    connect_timeout: 60000,
+    date_time_output_format: 'iso',
+    max_download_buffer_size: (10 * 1024 * 1024).toString(),
+    max_download_threads: 32,
+    max_execution_time: 60000,
     output_format_json_quote_64bit_integers: 0,
     enable_http_compression: 0,
     log_queries: 0,
   },
 })
 
-const databaselessQueriesRunner = async (queries) => {
+const clickhouseNoDatabase = createClient({
+  host: `${process.env.CLICKHOUSE_HOST}:${process.env.CLICKHOUSE_PORT}`,
+  username: process.env.CLICKHOUSE_USER,
+  password: process.env.CLICKHOUSE_PASSWORD,
+  request_timeout: 60000, // 1 minute
+  clickhouse_settings: {
+    connect_timeout: 60000,
+    date_time_output_format: 'iso',
+    max_download_buffer_size: (10 * 1024 * 1024).toString(),
+    max_download_threads: 32,
+    max_execution_time: 60000,
+    output_format_json_quote_64bit_integers: 0,
+    enable_http_compression: 0,
+    log_queries: 0,
+  },
+})
+
+const databaselessQueriesRunner = async queries => {
   let failed = false
   for (const query of queries) {
     if (failed) {
@@ -51,7 +48,10 @@ const databaselessQueriesRunner = async (queries) => {
 
     if (query) {
       try {
-        await clickhouseNoDatabase.query(query).toPromise()
+        // eslint-disable-next-line no-await-in-loop
+        await clickhouseNoDatabase.query({
+          query,
+        })
         console.log(chalk.green('Query OK: '), query)
       } catch (error) {
         console.error(chalk.red('Query ERROR: '), query)
@@ -72,7 +72,10 @@ const queriesRunner = async (queries, log = true) => {
 
     if (query) {
       try {
-        await clickhouse.query(query).toPromise()
+        // eslint-disable-next-line no-await-in-loop
+        await clickhouse.query({
+          query,
+        })
 
         if (log) {
           console.log(chalk.green('Query OK: '), query)
