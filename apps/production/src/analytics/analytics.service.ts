@@ -826,7 +826,7 @@ export class AnalyticsService {
     const { data: from } = await clickhouse
       .query({
         query:
-          'SELECT created FROM analytics where pid = {pid:FixedString(12)} ORDER BY created ASC LIMIT 1',
+          'SELECT created FROM analytics WHERE pid = {pid:FixedString(12)} ORDER BY created ASC LIMIT 1',
         query_params: { pid },
       })
       .then(res => res.json<{ created?: string }>())
@@ -1004,7 +1004,9 @@ export class AnalyticsService {
           const keyParam = `qfk_${col}_${f}`
           params[keyParam] = key
 
-          query += `indexOf(meta.key, {${keyParam}:String}) > 0 AND meta.value[indexOf(meta.key, {${keyParam}:String})] ${isExclusive ? '!= ' : '='} {${param}:String}`
+          query += `indexOf(meta.key, {${keyParam}:String}) > 0 AND meta.value[indexOf(meta.key, {${keyParam}:String})] ${
+            isExclusive ? '!= ' : '='
+          } {${param}:String}`
           continue
         }
 
@@ -1030,7 +1032,9 @@ export class AnalyticsService {
         }
 
         query += isArrayDataset
-          ? `indexOf(${sqlColumn}, {${param}:String}) ${isExclusive ? '=' : '>'} 0`
+          ? `indexOf(${sqlColumn}, {${param}:String}) ${
+              isExclusive ? '=' : '>'
+            } 0`
           : `${isExclusive ? 'NOT ' : ''}${sqlColumn} = {${param}:String}`
       }
 
@@ -3344,6 +3348,7 @@ export class AnalyticsService {
           query_params: paramsData.params,
         })
         .then(resultSet => resultSet.json())
+        .then(({ data }) => data)
     )[0]
 
     if (!details) {
@@ -3365,6 +3370,7 @@ export class AnalyticsService {
             query_params: paramsData.params,
           })
           .then(resultSet => resultSet.json())
+          .then(({ data }) => data)
       )[0]
     }
 
@@ -3611,7 +3617,8 @@ export class AnalyticsService {
           query: queryErrorDetails,
           query_params: paramsData.params,
         })
-        .then(resultSet => resultSet.json())
+        .then(resultSet => resultSet.json<any>())
+        .then(({ data }) => data)
     )[0]
 
     const occurenceDetails = (
@@ -3620,7 +3627,8 @@ export class AnalyticsService {
           query: queryFirstLastSeen,
           query_params: paramsData.params,
         })
-        .then(resultSet => resultSet.json())
+        .then(resultSet => resultSet.json<any>())
+        .then(({ data }) => data)
     )[0]
 
     const groupedChart = await this.groupErrorsByTimeBucket(
@@ -3678,6 +3686,7 @@ export class AnalyticsService {
             query_params: { ...params, pid },
           })
           .then(resultSet => resultSet.json())
+          .then(({ data }) => data)
       )[0]
     } catch (reason) {
       console.error('validateEIDs - clickhouse request error')
