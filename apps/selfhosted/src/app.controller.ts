@@ -1,4 +1,5 @@
-import { Get, Controller } from '@nestjs/common'
+import { Get, Controller, OnApplicationShutdown } from '@nestjs/common'
+import { clickhouse } from './common/integrations/clickhouse'
 
 const DEPLOYMENT_INFORMATION = {
   name: 'Swetrix API',
@@ -8,7 +9,11 @@ const DEPLOYMENT_INFORMATION = {
 }
 
 @Controller()
-export class AppController {
+export class AppController implements OnApplicationShutdown {
+  async onApplicationShutdown(): Promise<void> {
+    await clickhouse.close()
+  }
+
   @Get()
   root(): any {
     return DEPLOYMENT_INFORMATION
