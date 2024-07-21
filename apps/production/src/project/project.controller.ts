@@ -33,7 +33,7 @@ import {
   ApiOkResponse,
   ApiNoContentResponse,
 } from '@nestjs/swagger'
-import { ILike } from 'typeorm'
+import { FindConditions, ILike } from 'typeorm'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _map from 'lodash/map'
 import * as _trim from 'lodash/trim'
@@ -152,7 +152,9 @@ export class ProjectController {
     this.logger.log({ userId, take, skip }, 'GET /project')
     const isCaptcha = isCaptchaStr === 'true'
 
-    let where: any
+    let where: FindConditions<
+      Project & (Project & { admin?: string })[] & { admin?: string }
+    >
 
     if (search) {
       where = [
@@ -161,6 +163,7 @@ export class ProjectController {
           isCaptchaProject: isCaptcha,
           isAnalyticsProject: !isCaptcha,
           name: ILike(`%${search}%`),
+          isArchived: showArchived,
           // name: ILike(`%${mysql.escape(search).slice(1, 0).slice(0, -1)}%`),
         },
         {
@@ -168,6 +171,7 @@ export class ProjectController {
           isCaptchaProject: isCaptcha,
           isAnalyticsProject: !isCaptcha,
           id: ILike(`%${search}%`),
+          isArchived: showArchived,
           // id: ILike(`%${mysql.escape(search).slice(1, 0).slice(0, -1)}%`),
         },
       ]
@@ -181,13 +185,14 @@ export class ProjectController {
       } else {
         where.isAnalyticsProject = true
       }
+
+      if (showArchived) {
+        where.isArchived = true
+      }
     }
 
     const [paginated, totalMonthlyEvents, user] = await Promise.all([
-      this.projectService.paginate(
-        { take, skip },
-        { ...where, isArchived: showArchived },
-      ),
+      this.projectService.paginate({ take, skip }, where),
       this.projectService.getRedisCount(userId),
       this.userService.findOne(userId),
     ])
