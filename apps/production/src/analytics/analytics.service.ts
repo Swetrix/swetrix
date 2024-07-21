@@ -44,7 +44,6 @@ import {
   redis,
   isValidPID,
   UNIQUE_SESSION_LIFE_TIME,
-  clickhouse,
   REDIS_SESSION_SALT_KEY,
   TRAFFIC_COLUMNS,
   ALL_COLUMNS,
@@ -58,6 +57,7 @@ import {
   REDIS_EVENTS_COUNT_KEY,
   TRAFFIC_METAKEY_COLUMNS,
 } from '../common/constants'
+import { clickhouse } from '../common/integrations/clickhouse'
 import {
   calculateRelativePercentage,
   millisecondsToSeconds,
@@ -662,7 +662,10 @@ export class AnalyticsService {
     return { nodes, links }
   }
 
-  async getUserFlow(params: unknown, filtersQuery: string): Promise<IUserFlow> {
+  async getUserFlow(
+    params: Record<string, unknown>,
+    filtersQuery: string,
+  ): Promise<IUserFlow> {
     const query = `
       SELECT
         pg AS source,
@@ -679,11 +682,14 @@ export class AnalyticsService {
         prev
     `
 
-    const results = <IUserFlowLink[]>(
-      await clickhouse.query(query, { params }).toPromise()
-    )
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: params,
+      })
+      .then(res => res.json<IUserFlowLink>())
 
-    if (_isEmpty(results)) {
+    if (_isEmpty(data)) {
       const empty = { nodes: [], links: [] }
       return {
         ascending: empty,
@@ -694,7 +700,7 @@ export class AnalyticsService {
     const ascendingLinks: IUserFlowLink[] = []
     const descendingLinks: IUserFlowLink[] = []
 
-    this.removeCyclicDependencies(results).forEach((row: any) => {
+    this.removeCyclicDependencies(data).forEach((row: any) => {
       const link: IUserFlowLink = {
         source: row.source,
         target: row.target,
@@ -817,12 +823,14 @@ export class AnalyticsService {
       return null
     }
 
-    const from: any = await clickhouse
-      .query(
-        'SELECT created FROM analytics where pid = {pid:FixedString(12)} ORDER BY created ASC LIMIT 1',
-        { params: { pid } },
-      )
-      .toPromise()
+    const { data: from } = await clickhouse
+      .query({
+        query:
+          'SELECT created FROM analytics where pid = {pid:FixedString(12)} ORDER BY created ASC LIMIT 1',
+        query_params: { pid },
+      })
+      .then(res => res.json<{ created?: string }>())
+
     const to = _includes(GMT_0_TIMEZONES, safeTimezone)
       ? dayjs.utc()
       : dayjs().tz(safeTimezone)
@@ -1196,20 +1204,18 @@ export class AnalyticsService {
       ORDER BY level DESC;
     `
 
-    const result = <Array<IFunnelCHResponse>>(
-      await clickhouse
-        .query(query, { params: { ...params, ...pageParams } })
-        .toPromise()
-    )
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { ...params, ...pageParams },
+      })
+      .then(resultSet => resultSet.json<IFunnelCHResponse>())
 
-    if (_isEmpty(result)) {
+    if (_isEmpty(data)) {
       return this.generateEmptyFunnel(pages)
     }
 
-    return this.formatFunnel(
-      _reverse(this.backfillFunnel(result, pages)),
-      pages,
-    )
+    return this.formatFunnel(_reverse(this.backfillFunnel(data, pages)), pages)
   }
 
   async getTotalPageviews(
@@ -1224,13 +1230,15 @@ export class AnalyticsService {
       WHERE pid = {pid:FixedString(12)}
       AND created BETWEEN {groupFrom:String} AND {groupTo:String}
     `
-    const result = <{ c: number }[]>(
-      await clickhouse
-        .query(query, { params: { pid, groupFrom, groupTo } })
-        .toPromise()
-    )
 
-    return result[0]?.c || 0
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: { pid, groupFrom, groupTo },
+      })
+      .then(resultSet => resultSet.json<{ c: number }>())
+
+    return data[0]?.c || 0
   }
 
   async getCaptchaSummary(
@@ -1281,20 +1289,21 @@ export class AnalyticsService {
       try {
         if (period === 'all') {
           const queryAll = `SELECT count(*) AS all FROM captcha WHERE pid = {pid:FixedString(12)} ${filtersQuery}`
-          const rawResult = <Array<Partial<BirdseyeCHResponse>>>await clickhouse
-            .query(queryAll, {
-              params: { pid, ...filtersParams },
+          const { data } = await clickhouse
+            .query({
+              query: queryAll,
+              query_params: { pid, ...filtersParams },
             })
-            .toPromise()
+            .then(resultSet => resultSet.json<Partial<BirdseyeCHResponse>>())
 
           result[pid] = {
             current: {
-              all: rawResult[0].all,
+              all: data[0].all,
             },
             previous: {
               all: 0,
             },
-            change: rawResult[0].all,
+            change: data[0].all,
           }
           return
         }
@@ -1329,9 +1338,10 @@ export class AnalyticsService {
 
         const query = `${queryCurrent} UNION ALL ${queryPrevious}`
 
-        let rawResult = <Array<Partial<BirdseyeCHResponse>>>await clickhouse
-          .query(query, {
-            params: {
+        let { data } = await clickhouse
+          .query({
+            query,
+            query_params: {
               pid,
               periodFormatted,
               periodSubtracted,
@@ -1339,12 +1349,12 @@ export class AnalyticsService {
               ...filtersParams,
             },
           })
-          .toPromise()
+          .then(resultSet => resultSet.json<Partial<BirdseyeCHResponse>>())
 
-        rawResult = _sortBy(rawResult, 'sortOrder')
+        data = _sortBy(data, 'sortOrder')
 
-        const currentPeriod = rawResult[0]
-        const previousPeriod = rawResult[1]
+        const currentPeriod = data[0]
+        const previousPeriod = data[1]
 
         result[pid] = {
           current: {
@@ -1439,27 +1449,28 @@ export class AnalyticsService {
             queryAll = `SELECT count(*) AS all FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery}`
           }
 
-          const rawResult = <Array<BirdseyeCHResponse>>await clickhouse
-            .query(queryAll, {
-              params: { pid, ...filtersParams },
+          const { data } = await clickhouse
+            .query({
+              query: queryAll,
+              query_params: {
+                pid,
+                ...filtersParams,
+              },
             })
-            .toPromise()
+            .then(resultSet => resultSet.json<BirdseyeCHResponse>())
 
           let bounceRate = 0
 
-          if (rawResult[0].all > 0 && !customEVFilterApplied) {
-            bounceRate = _round(
-              (rawResult[0].unique * 100) / rawResult[0].all,
-              1,
-            )
+          if (data[0].all > 0 && !customEVFilterApplied) {
+            bounceRate = _round((data[0].unique * 100) / data[0].all, 1)
           }
 
           result[pid] = {
             current: {
-              all: rawResult[0].all,
-              unique: rawResult[0].unique,
+              all: data[0].all,
+              unique: data[0].unique,
               bounceRate,
-              sdur: rawResult[0].sdur,
+              sdur: data[0].sdur,
             },
             previous: {
               all: 0,
@@ -1467,10 +1478,10 @@ export class AnalyticsService {
               bounceRate: 0,
               sdur: 0,
             },
-            change: rawResult[0].all,
-            uniqueChange: rawResult[0].unique,
+            change: data[0].all,
+            uniqueChange: data[0].unique,
             bounceRateChange: bounceRate,
-            sdurChange: rawResult[0].sdur,
+            sdurChange: data[0].sdur,
             customEVFilterApplied,
           }
           return
@@ -1511,9 +1522,10 @@ export class AnalyticsService {
 
         const query = `${queryCurrent} UNION ALL ${queryPrevious}`
 
-        let rawResult = <Array<BirdseyeCHResponse>>await clickhouse
-          .query(query, {
-            params: {
+        let { data } = await clickhouse
+          .query({
+            query,
+            query_params: {
               pid,
               periodFormatted,
               periodSubtracted,
@@ -1521,12 +1533,12 @@ export class AnalyticsService {
               ...filtersParams,
             },
           })
-          .toPromise()
+          .then(resultSet => resultSet.json<BirdseyeCHResponse>())
 
-        rawResult = _sortBy(rawResult, 'sortOrder')
+        data = _sortBy(data, 'sortOrder')
 
-        const currentPeriod = rawResult[0]
-        const previousPeriod = rawResult[1]
+        const currentPeriod = data[0]
+        const previousPeriod = data[1]
 
         let bounceRate = 0
         let prevBounceRate = 0
@@ -1635,26 +1647,24 @@ export class AnalyticsService {
       try {
         if (period === 'all') {
           const queryAll = `SELECT ${columnSelectors} FROM performance WHERE pid = {pid:FixedString(12)} ${filtersQuery}`
-          const rawResult = <Array<Partial<PerformanceCHResponse>>>(
-            await clickhouse
-              .query(queryAll, {
-                params: { pid, ...filtersParams },
-              })
-              .toPromise()
-          )
+
+          const { data } = await clickhouse
+            .query({
+              query: queryAll,
+              query_params: {
+                pid,
+                ...filtersParams,
+              },
+            })
+            .then(resultSet => resultSet.json<Partial<PerformanceCHResponse>>())
 
           result[pid] = {
             current: {
-              frontend: millisecondsToSeconds(
-                rawResult[0].render + rawResult[0].domLoad,
-              ),
+              frontend: millisecondsToSeconds(data[0].render + data[0].domLoad),
               network: millisecondsToSeconds(
-                rawResult[0].dns +
-                  rawResult[0].tls +
-                  rawResult[0].conn +
-                  rawResult[0].response,
+                data[0].dns + data[0].tls + data[0].conn + data[0].response,
               ),
-              backend: millisecondsToSeconds(rawResult[0].ttfb),
+              backend: millisecondsToSeconds(data[0].ttfb),
             },
             previous: {
               frontend: 0,
@@ -1662,15 +1672,12 @@ export class AnalyticsService {
               backend: 0,
             },
             frontendChange: millisecondsToSeconds(
-              rawResult[0].render + rawResult[0].domLoad,
+              data[0].render + data[0].domLoad,
             ),
             networkChange: millisecondsToSeconds(
-              rawResult[0].dns +
-                rawResult[0].tls +
-                rawResult[0].conn +
-                rawResult[0].response,
+              data[0].dns + data[0].tls + data[0].conn + data[0].response,
             ),
-            backendChange: millisecondsToSeconds(rawResult[0].ttfb),
+            backendChange: millisecondsToSeconds(data[0].ttfb),
           }
           return
         }
@@ -1705,9 +1712,10 @@ export class AnalyticsService {
 
         const query = `${queryCurrent} UNION ALL ${queryPrevious}`
 
-        let rawResult = <Array<Partial<PerformanceCHResponse>>>await clickhouse
-          .query(query, {
-            params: {
+        let { data } = await clickhouse
+          .query({
+            query,
+            query_params: {
               pid,
               periodFormatted,
               periodSubtracted,
@@ -1715,12 +1723,12 @@ export class AnalyticsService {
               ...filtersParams,
             },
           })
-          .toPromise()
+          .then(resultSet => resultSet.json<Partial<PerformanceCHResponse>>())
 
-        rawResult = _sortBy(rawResult, 'sortOrder')
+        data = _sortBy(data, 'sortOrder')
 
-        const currentPeriod = rawResult[0]
-        const previousPeriod = rawResult[1]
+        const currentPeriod = data[0]
+        const previousPeriod = data[1]
 
         result[pid] = {
           current: {
@@ -1796,11 +1804,16 @@ export class AnalyticsService {
       query = `SELECT ${type} FROM customEV WHERE pid={pid:FixedString(12)} AND ${type} IS NOT NULL GROUP BY ${type}`
     }
 
-    const results = await clickhouse
-      .query(query, { params: { pid } })
-      .toPromise()
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: {
+          pid,
+        },
+      })
+      .then(resultSet => resultSet.json())
 
-    return _map(results, type)
+    return _map(data, type)
   }
 
   async getErrorsFilters(pid: string, type: string): Promise<Array<string>> {
@@ -1812,11 +1825,16 @@ export class AnalyticsService {
 
     const query = `SELECT ${type} FROM errors WHERE pid={pid:FixedString(12)} AND ${type} IS NOT NULL GROUP BY ${type}`
 
-    const results = await clickhouse
-      .query(query, { params: { pid } })
-      .toPromise()
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: {
+          pid,
+        },
+      })
+      .then(resultSet => resultSet.json())
 
-    return _map(results, type)
+    return _map(data, type)
   }
 
   async generateParams(
@@ -1862,9 +1880,15 @@ export class AnalyticsService {
         type,
         measure,
       )
-      const res = await clickhouse.query(query, paramsData).toPromise()
 
-      params[col] = res
+      const { data } = await clickhouse
+        .query({
+          query,
+          query_params: paramsData.params,
+        })
+        .then(resultSet => resultSet.json())
+
+      params[col] = data
     })
 
     await Promise.all(paramsPromises)
@@ -2422,13 +2446,15 @@ export class AnalyticsService {
         mode,
       )
 
-      const result = <Array<TrafficCEFilterCHResponse>>(
-        await clickhouse.query(query, paramsData).toPromise()
-      )
+      const { data } = await clickhouse
+        .query({
+          query,
+          query_params: paramsData.params,
+        })
+        .then(resultSet => resultSet.json<TrafficCEFilterCHResponse>())
 
       const uniques =
-        this.extractCustomEventsChartData(result, xShifted)?._unknown_event ||
-        []
+        this.extractCustomEventsChartData(data, xShifted)?._unknown_event || []
 
       const sdur = Array(_size(xShifted)).fill(0)
 
@@ -2449,11 +2475,14 @@ export class AnalyticsService {
       mode,
     )
 
-    const result = <Array<TrafficCHResponse>>(
-      await clickhouse.query(query, paramsData).toPromise()
-    )
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: paramsData.params,
+      })
+      .then(resultSet => resultSet.json<TrafficCHResponse>())
 
-    const { visits, uniques, sdur } = this.extractChartData(result, xShifted)
+    const { visits, uniques, sdur } = this.extractChartData(data, xShifted)
 
     return Promise.resolve({
       chart: {
@@ -2539,9 +2568,12 @@ export class AnalyticsService {
     //     ChartRenderMode.PERIODICAL,
     //   )
 
-    //   const result = <Array<TrafficCEFilterCHResponse>>(
-    //     await clickhouse.query(query, paramsData).toPromise()
-    //   )
+    //   const { data } = await clickhouse
+    //     .query({
+    //       query,
+    //       query_params: paramsData.params,
+    //     })
+    //     .then(resultSet => resultSet.json<TrafficCEFilterCHResponse>())
 
     //   const uniques =
     //     this.extractCustomEventsChartData(result, xShifted)?._unknown_event ||
@@ -2561,11 +2593,14 @@ export class AnalyticsService {
 
     const query = this.generateSessionAggregationQuery(timeBucket, filtersQuery)
 
-    const result = <Array<TrafficCHResponse>>(
-      await clickhouse.query(query, paramsData).toPromise()
-    )
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: paramsData.params,
+      })
+      .then(resultSet => resultSet.json<TrafficCHResponse>())
 
-    const { visits, uniques, sdur } = this.extractChartData(result, x)
+    const { visits, uniques, sdur } = this.extractChartData(data, x)
 
     return Promise.resolve({
       chart: {
@@ -2601,7 +2636,7 @@ export class AnalyticsService {
     to: string,
     subQuery: string,
     filtersQuery: string,
-    paramsData: object,
+    paramsData: any,
     safeTimezone: string,
     mode: ChartRenderMode,
   ): Promise<object | void> {
@@ -2642,10 +2677,13 @@ export class AnalyticsService {
           mode,
         )
 
-        const result = <Array<TrafficCEFilterCHResponse>>(
-          await clickhouse.query(query, paramsData).toPromise()
-        )
-        const { count } = this.extractCaptchaChartData(result, xShifted)
+        const { data } = await clickhouse
+          .query({
+            query,
+            query_params: paramsData.params,
+          })
+          .then(resultSet => resultSet.json<TrafficCEFilterCHResponse>())
+        const { count } = this.extractCaptchaChartData(data, xShifted)
 
         chart = {
           x: xShifted,
@@ -2668,7 +2706,7 @@ export class AnalyticsService {
     to: string,
     subQuery: string,
     filtersQuery: string,
-    paramsData: object,
+    paramsData: any,
     safeTimezone: string,
     mode: ChartRenderMode,
   ): Promise<object | void> {
@@ -2703,10 +2741,13 @@ export class AnalyticsService {
           mode,
         )
 
-        const result = <Array<TrafficCEFilterCHResponse>>(
-          await clickhouse.query(query, paramsData).toPromise()
-        )
-        const { count } = this.extractCaptchaChartData(result, x)
+        const { data } = await clickhouse
+          .query({
+            query,
+            query_params: paramsData.params,
+          })
+          .then(resultSet => resultSet.json<TrafficCEFilterCHResponse>())
+        const { count } = this.extractCaptchaChartData(data, x)
 
         chart = {
           x: this.shiftToTimezone(x, safeTimezone, format),
@@ -2797,7 +2838,7 @@ export class AnalyticsService {
     from: string,
     to: string,
     filtersQuery: string,
-    paramsData: object,
+    paramsData: any,
     safeTimezone: string,
     measure: PerfMeasure,
   ) {
@@ -2810,11 +2851,16 @@ export class AnalyticsService {
         safeTimezone,
       )
 
-      const result = await clickhouse.query(query, paramsData).toPromise()
+      const { data } = await clickhouse
+        .query({
+          query,
+          query_params: paramsData.params,
+        })
+        .then(resultSet => resultSet.json())
 
       return {
         x: xShifted,
-        ...this.extractPerformanceQuantilesData(result, xShifted),
+        ...this.extractPerformanceQuantilesData(data, xShifted),
       }
     }
 
@@ -2825,13 +2871,16 @@ export class AnalyticsService {
       measure,
     )
 
-    const result = <Array<PerformanceCHResponse>>(
-      await clickhouse.query(query, paramsData).toPromise()
-    )
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: paramsData.params,
+      })
+      .then(resultSet => resultSet.json<PerformanceCHResponse>())
 
     return {
       x: xShifted,
-      ...this.extractPerformanceChartData(result, xShifted),
+      ...this.extractPerformanceChartData(data, xShifted),
     }
   }
 
@@ -2841,7 +2890,7 @@ export class AnalyticsService {
     to: string,
     subQuery: string,
     filtersQuery: string,
-    paramsData: object,
+    paramsData: any,
     safeTimezone: string,
     measure: PerfMeasure,
   ): Promise<object | void> {
@@ -2891,18 +2940,21 @@ export class AnalyticsService {
 
   async getCustomEvents(
     filtersQuery: string,
-    params: object,
+    params: any,
   ): Promise<ICustomEvent> {
     const query = `SELECT ev, count() FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String} GROUP BY ev`
     const result = {}
 
-    const rawCustoms = <Array<CustomsCHResponse>>(
-      await clickhouse.query(query, params).toPromise()
-    )
-    const size = _size(rawCustoms)
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: params.params,
+      })
+      .then(resultSet => resultSet.json<CustomsCHResponse>())
+    const size = _size(data)
 
     for (let i = 0; i < size; ++i) {
-      const { ev, 'count()': c } = rawCustoms[i]
+      const { ev, 'count()': c } = data[i]
       result[ev] = c
     }
 
@@ -2911,7 +2963,7 @@ export class AnalyticsService {
 
   async getPageProperties(
     filtersQuery: string,
-    params: object,
+    params: any,
   ): Promise<IPageProperty> {
     const query = `
       SELECT
@@ -2924,13 +2976,16 @@ export class AnalyticsService {
       GROUP BY property`
     const result = {}
 
-    const rawProperties = <Array<PropertiesCHResponse>>(
-      await clickhouse.query(query, params).toPromise()
-    )
-    const size = _size(rawProperties)
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: params.params,
+      })
+      .then(resultSet => resultSet.json<PropertiesCHResponse>())
+    const size = _size(data)
 
     for (let i = 0; i < size; ++i) {
-      const { property: propertyArr, 'count()': c } = rawProperties[i]
+      const { property: propertyArr, 'count()': c } = data[i]
       const [property] = propertyArr
 
       if (!property) {
@@ -3033,9 +3088,12 @@ export class AnalyticsService {
     }
 
     try {
-      const result = (await clickhouse
-        .query(query, paramsData)
-        .toPromise()) as IAggregatedMetadata[]
+      const { data: result } = await clickhouse
+        .query({
+          query,
+          query_params: paramsData.params,
+        })
+        .then(resultSet => resultSet.json<IAggregatedMetadata>())
 
       return {
         result,
@@ -3134,9 +3192,12 @@ export class AnalyticsService {
     }
 
     try {
-      const result = (await clickhouse
-        .query(query, paramsData)
-        .toPromise()) as IAggregatedMetadata[]
+      const { data: result } = await clickhouse
+        .query({
+          query,
+          query_params: paramsData.params,
+        })
+        .then(resultSet => resultSet.json<IAggregatedMetadata>())
 
       return {
         result,
@@ -3160,7 +3221,7 @@ export class AnalyticsService {
     from: string,
     to: string,
     filtersQuery: string,
-    paramsData: object,
+    paramsData: any,
     safeTimezone: string,
   ): Promise<object | void> {
     const { xShifted } = this.generateXAxis(timeBucket, from, to, safeTimezone)
@@ -3188,11 +3249,14 @@ export class AnalyticsService {
       ORDER BY ${groupBy}
       `
 
-    const result = <Array<CustomsCHAggregatedResponse>>(
-      await clickhouse.query(query, paramsData).toPromise()
-    )
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: paramsData.params,
+      })
+      .then(resultSet => resultSet.json<CustomsCHAggregatedResponse>())
 
-    const events = this.extractCustomEventsChartData(result, xShifted)
+    const events = this.extractCustomEventsChartData(data, xShifted)
 
     return Promise.resolve({
       chart: {
@@ -3266,11 +3330,20 @@ export class AnalyticsService {
       },
     }
 
-    const pages = <IPageflow[]>(
-      await clickhouse.query(queryPages, paramsData).toPromise()
-    )
+    const { data: pages } = await clickhouse
+      .query({
+        query: queryPages,
+        query_params: paramsData.params,
+      })
+      .then(resultSet => resultSet.json<IPageflow>())
+
     let details = (
-      await clickhouse.query(querySessionDetails, paramsData).toPromise()
+      await clickhouse
+        .query({
+          query: querySessionDetails,
+          query_params: paramsData.params,
+        })
+        .then(resultSet => resultSet.json())
     )[0]
 
     if (!details) {
@@ -3287,8 +3360,11 @@ export class AnalyticsService {
       // eslint-disable-next-line prefer-destructuring
       details = (
         await clickhouse
-          .query(querySessionDetailsBackup, paramsData)
-          .toPromise()
+          .query({
+            query: querySessionDetailsBackup,
+            query_params: paramsData.params,
+          })
+          .then(resultSet => resultSet.json())
       )[0]
     }
 
@@ -3337,7 +3413,7 @@ export class AnalyticsService {
 
   async getSessionsList(
     filtersQuery: string,
-    paramsData: object,
+    paramsData: any,
     safeTimezone: string,
     take = 30,
     skip = 0,
@@ -3394,15 +3470,20 @@ export class AnalyticsService {
       OFFSET ${skip}
     `
 
-    const result = await clickhouse.query(query, paramsData).toPromise()
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: paramsData.params,
+      })
+      .then(resultSet => resultSet.json())
 
-    return result
+    return data
   }
 
   async getErrorsList(
     options: string,
     filtersQuery: string,
-    paramsData: object,
+    paramsData: any,
     safeTimezone: string,
     take = 30,
     skip = 0,
@@ -3452,9 +3533,14 @@ export class AnalyticsService {
       OFFSET ${skip};
     `
 
-    const result = await clickhouse.query(query, paramsData).toPromise()
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: paramsData.params,
+      })
+      .then(resultSet => resultSet.json())
 
-    return result
+    return data
   }
 
   async getErrorDetails(
@@ -3520,11 +3606,21 @@ export class AnalyticsService {
     }
 
     const details = (
-      await clickhouse.query(queryErrorDetails, paramsData).toPromise()
+      await clickhouse
+        .query({
+          query: queryErrorDetails,
+          query_params: paramsData.params,
+        })
+        .then(resultSet => resultSet.json())
     )[0]
 
     const occurenceDetails = (
-      await clickhouse.query(queryFirstLastSeen, paramsData).toPromise()
+      await clickhouse
+        .query({
+          query: queryFirstLastSeen,
+          query_params: paramsData.params,
+        })
+        .then(resultSet => resultSet.json())
     )[0]
 
     const groupedChart = await this.groupErrorsByTimeBucket(
@@ -3574,9 +3670,15 @@ export class AnalyticsService {
     let result
 
     try {
-      ;[result] = await clickhouse
-        .query(query, { params: { ...params, pid } })
-        .toPromise()
+      // eslint-disable-next-line prefer-destructuring
+      result = (
+        await clickhouse
+          .query({
+            query,
+            query_params: { ...params, pid },
+          })
+          .then(resultSet => resultSet.json())
+      )[0]
     } catch (reason) {
       console.error('validateEIDs - clickhouse request error')
       console.error(reason)
@@ -3613,7 +3715,13 @@ export class AnalyticsService {
     ).join(', ')}`
 
     try {
-      await clickhouse.query(query, { params: { ...params, pid } }).toPromise()
+      await clickhouse.query({
+        query,
+        query_params: {
+          ...params,
+          pid,
+        },
+      })
     } catch (reason) {
       console.error('Error at PATCH error-status:')
       console.error(reason)
@@ -3657,9 +3765,14 @@ export class AnalyticsService {
 
     const users = await this.userService.count()
     const projects = await this.projectService.count()
-    const results = await clickhouse.query(query).toPromise()
+    const { data } = await clickhouse
+      .query({
+        query,
+      })
+      .then(resultSet => resultSet.json())
+
     // @ts-expect-error
-    const events = results.reduce((total, row) => total + row.count, 0)
+    const events = data.reduce((total, row) => total + row.count, 0) as number
 
     await redis.set(REDIS_USERS_COUNT_KEY, users, 'EX', 630)
     await redis.set(REDIS_PROJECTS_COUNT_KEY, projects, 'EX', 630)
@@ -3731,8 +3844,12 @@ export class AnalyticsService {
     `
 
     try {
-      const result = await clickhouse.query(query, { params }).toPromise()
-      return result
+      return await clickhouse
+        .query({
+          query,
+          query_params: params,
+        })
+        .then(resultSet => resultSet.json())
     } catch (reason) {
       console.error('[ERROR] (getMetaResult) - Clickhouse query error:')
       console.error(reason)
