@@ -1,4 +1,58 @@
-import { createClient } from '@clickhouse/client'
+import type {
+  Logger as _CHLogger,
+  LogParams,
+  ErrorLogParams,
+} from '@clickhouse/client'
+import { createClient, ClickHouseLogLevel } from '@clickhouse/client'
+import { Logger } from '@nestjs/common'
+
+export class CHLogger implements _CHLogger {
+  debug({ module, message, args }: LogParams): void {
+    Logger.debug({
+      type: '@clickhouse/client',
+      module,
+      message,
+      ...args,
+    })
+  }
+
+  trace({ module, message, args }: LogParams) {
+    Logger.log({
+      type: '@clickhouse/client',
+      module,
+      message,
+      ...args,
+    })
+  }
+
+  info({ module, message, args }: LogParams): void {
+    Logger.log({
+      type: '@clickhouse/client',
+      module,
+      message,
+      ...args,
+    })
+  }
+
+  warn({ module, message, args }: LogParams): void {
+    Logger.warn({
+      type: '@clickhouse/client',
+      module,
+      message,
+      ...args,
+    })
+  }
+
+  error({ module, message, args, err }: ErrorLogParams): void {
+    Logger.error({
+      type: '@clickhouse/client',
+      module,
+      message,
+      ...args,
+      err,
+    })
+  }
+}
 
 const clickhouse = createClient({
   url: `${process.env.CLICKHOUSE_HOST}:${process.env.CLICKHOUSE_PORT}`,
@@ -15,6 +69,10 @@ const clickhouse = createClient({
     output_format_json_quote_64bit_integers: 0,
     enable_http_compression: 0,
     log_queries: 0,
+  },
+  log: {
+    LoggerClass: CHLogger,
+    level: ClickHouseLogLevel.INFO,
   },
 })
 
