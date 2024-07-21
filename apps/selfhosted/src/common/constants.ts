@@ -1,4 +1,3 @@
-import { ClickHouse } from 'clickhouse'
 import Redis from 'ioredis'
 import * as _toNumber from 'lodash/toNumber'
 
@@ -6,8 +5,6 @@ import { getSelfhostedUUID } from './utils'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config()
-
-const { CLICKHOUSE_DATABASE } = process.env
 
 const redis = new Redis(
   _toNumber(process.env.REDIS_PORT),
@@ -22,26 +19,6 @@ const redis = new Redis(
 redis.defineCommand('countKeysByPattern', {
   numberOfKeys: 0,
   lua: "return #redis.call('keys', ARGV[1])",
-})
-
-const clickhouse = new ClickHouse({
-  url: process.env.CLICKHOUSE_HOST,
-  port: _toNumber(process.env.CLICKHOUSE_PORT),
-  debug: false,
-  basicAuth: {
-    username: process.env.CLICKHOUSE_USER,
-    password: process.env.CLICKHOUSE_PASSWORD,
-  },
-  isUseGzip: false,
-  format: 'json',
-  raw: false,
-  config: {
-    session_timeout: 60,
-    output_format_json_quote_64bit_integers: 0,
-    enable_http_compression: 0,
-    database: CLICKHOUSE_DATABASE,
-    log_queries: 0,
-  },
 })
 
 const {
@@ -121,7 +98,6 @@ const NUMBER_JWT_REFRESH_TOKEN_LIFETIME = Number(JWT_REFRESH_TOKEN_LIFETIME)
 const NUMBER_JWT_ACCESS_TOKEN_LIFETIME = Number(JWT_ACCESS_TOKEN_LIFETIME)
 
 export {
-  clickhouse,
   redis,
   isValidPID,
   getRedisProjectKey,

@@ -10,7 +10,6 @@ import * as _map from 'lodash/map'
 import * as _now from 'lodash/now'
 
 import {
-  clickhouse,
   redis,
   REDIS_LOG_DATA_CACHE_KEY,
   REDIS_LOG_CUSTOM_CACHE_KEY,
@@ -19,6 +18,7 @@ import {
   REDIS_LOG_CAPTCHA_CACHE_KEY,
   REDIS_LOG_ERROR_CACHE_KEY,
 } from '../common/constants'
+import { clickhouse } from '../common/integrations/clickhouse'
 import { AppLoggerService } from '../logger/logger.service'
 
 dayjs.extend(utc)
@@ -39,7 +39,9 @@ export class TaskManagerService {
       await redis.del(REDIS_LOG_DATA_CACHE_KEY)
       const query = `INSERT INTO analytics (*) VALUES ${_join(data, ',')}`
       try {
-        await clickhouse.query(query).toPromise()
+        await clickhouse.query({
+          query,
+        })
       } catch (e) {
         console.error(`[CRON WORKER] Error whilst saving log data: ${e}`)
       }
@@ -49,7 +51,9 @@ export class TaskManagerService {
       await redis.del(REDIS_LOG_CAPTCHA_CACHE_KEY)
       const query = `INSERT INTO captcha (*) VALUES ${_join(captchaData, ',')}`
       try {
-        await clickhouse.query(query).toPromise()
+        await clickhouse.query({
+          query,
+        })
       } catch (e) {
         console.error(
           `[CRON WORKER] Error whilst saving CAPTCHA log data: ${e}`,
@@ -62,7 +66,9 @@ export class TaskManagerService {
       const query = `INSERT INTO customEV (*) VALUES ${_join(customData, ',')}`
 
       try {
-        await clickhouse.query(query).toPromise()
+        await clickhouse.query({
+          query,
+        })
       } catch (e) {
         console.error(
           `[CRON WORKER] Error whilst saving custom events data: ${e}`,
@@ -75,7 +81,9 @@ export class TaskManagerService {
       const query = `INSERT INTO errors (*) VALUES ${_join(errorData, ',')}`
 
       try {
-        await clickhouse.query(query).toPromise()
+        await clickhouse.query({
+          query,
+        })
       } catch (e) {
         console.error(
           `[CRON WORKER] Error whilst saving error events data: ${e}`,
@@ -89,7 +97,9 @@ export class TaskManagerService {
       const query = `INSERT INTO performance (*) VALUES ${_join(perfData, ',')}`
 
       try {
-        await clickhouse.query(query).toPromise()
+        await clickhouse.query({
+          query,
+        })
       } catch (e) {
         console.error(
           `[CRON WORKER] Error whilst saving performance data: ${e}`,
@@ -111,7 +121,9 @@ export class TaskManagerService {
       .subtract(20, 'm')
       .format('YYYY-MM-DD HH:mm:ss')}'`
 
-    await clickhouse.query(delSidQuery).toPromise()
+    await clickhouse.query({
+      query: delSidQuery,
+    })
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -148,7 +160,9 @@ export class TaskManagerService {
         ([key]) => `'${key.split(':')[1]}'`,
       ).join(',')})`
 
-      await clickhouse.query(setSdurQuery).toPromise()
+      await clickhouse.query({
+        query: setSdurQuery,
+      })
     }
   }
 
@@ -163,7 +177,9 @@ export class TaskManagerService {
     ]
 
     const promises = _map(queries, async query => {
-      await clickhouse.query(query).toPromise()
+      await clickhouse.query({
+        query,
+      })
     })
 
     await Promise.allSettled(promises).catch(reason => {

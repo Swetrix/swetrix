@@ -60,9 +60,9 @@ import {
   REDIS_LOG_CUSTOM_CACHE_KEY,
   HEARTBEAT_SID_LIFE_TIME,
   REDIS_SESSION_SALT_KEY,
-  clickhouse,
   REDIS_LOG_ERROR_CACHE_KEY,
 } from '../common/constants'
+import { clickhouse } from '../common/integrations/clickhouse'
 import {
   checkRateLimit,
   getGeoDetails,
@@ -1031,11 +1031,11 @@ export class AnalyticsController {
   @Get('liveVisitors')
   @Auth([], true, true)
   async getLiveVisitors(
-    @Query() data,
+    @Query() queryParams,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ): Promise<object> {
-    const { pid } = data
+    const { pid } = queryParams
 
     this.analyticsService.validatePID(pid)
     await this.analyticsService.checkProjectAccess(
@@ -1055,8 +1055,12 @@ export class AnalyticsController {
     const query = `SELECT sid, dv, br, os, cc FROM analytics WHERE sid IN (${sids
       .map(el => `'${el}'`)
       .join(',')})`
-    const result = await clickhouse.query(query).toPromise()
-    const processed = _map(_uniqBy(result, 'sid'), el =>
+    const { data } = await clickhouse
+      .query({
+        query,
+      })
+      .then(resultSet => resultSet.json())
+    const processed = _map(_uniqBy(data, 'sid'), el =>
       _pick(el, ['dv', 'br', 'os', 'cc']),
     )
 

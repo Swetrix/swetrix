@@ -25,12 +25,12 @@ import { ProjectDTO } from './dto/project.dto'
 import {
   isValidPID,
   redis,
-  clickhouse,
   IP_REGEX,
   ORIGINS_REGEX,
   getRedisProjectKey,
   redisProjectCacheTimeout,
 } from '../common/constants'
+import { clickhouse } from '../common/integrations/clickhouse'
 import { getProjectsClickhouse } from '../common/utils'
 import { MAX_PROJECT_PASSWORD_LENGTH, UpdateProjectDto } from './dto'
 import { Funnel } from './entity/funnel.entity'
@@ -171,9 +171,14 @@ export class ProjectService {
       );
     `
 
-    const result: any = await clickhouse.query(query, { params }).toPromise()
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: params,
+      })
+      .then(resultSet => resultSet.json())
 
-    return _map(result, ({ pid }) => pid)
+    return _map(data, ({ pid }) => pid)
   }
 
   async getPIDsWhereErrorsDataExists(projectIds: string[]): Promise<string[]> {
@@ -215,9 +220,14 @@ export class ProjectService {
       );
     `
 
-    const result: any = await clickhouse.query(query, { params }).toPromise()
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: params,
+      })
+      .then(resultSet => resultSet.json())
 
-    return _map(result, ({ pid }) => pid)
+    return _map(data, ({ pid }) => pid)
   }
 
   async removeDataFromClickhouse(
@@ -239,11 +249,18 @@ export class ProjectService {
       },
     }
 
-    await Promise.all([
-      clickhouse.query(queryAnalytics, params).toPromise(),
-      clickhouse.query(queryCustomEvents, params).toPromise(),
-      clickhouse.query(queryPerformance, params).toPromise(),
-    ])
+    await clickhouse.query({
+      query: queryAnalytics,
+      query_params: params,
+    })
+    await clickhouse.query({
+      query: queryCustomEvents,
+      query_params: params,
+    })
+    await clickhouse.query({
+      query: queryPerformance,
+      query_params: params,
+    })
   }
 
   formatToClickhouse(project: any): object {
