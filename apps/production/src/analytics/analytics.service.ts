@@ -3708,28 +3708,24 @@ export class AnalyticsService {
     status: 'resolved' | 'active',
     pid: string,
   ) {
-    const params = _reduce(
+    const values = _reduce(
       eids,
-      (acc, curr, index) => ({
+      (acc, curr) => [
         ...acc,
-        [`e_${index}`]: curr,
-      }),
-      {},
-    )
-
-    const query = `INSERT INTO error_statuses (eid, pid, status) VALUES ${_map(
-      params,
-      (val, key) =>
-        `({${key}:FixedString(32)}, {pid:FixedString(12)}, '${status}')`,
-    ).join(', ')}`
-
-    try {
-      await clickhouse.query({
-        query,
-        query_params: {
-          ...params,
+        {
+          eid: curr,
+          status,
           pid,
         },
+      ],
+      [],
+    )
+
+    try {
+      await clickhouse.insert({
+        table: 'error_statuses',
+        format: 'JSONEachRow',
+        values: [values],
       })
     } catch (reason) {
       console.error('Error at PATCH error-status:')

@@ -156,18 +156,21 @@ const deleteFunnelClickhouse = async (id: string) => {
 }
 
 const createFunnelClickhouse = async (funnel: Partial<Funnel>) => {
-  const query = `INSERT INTO funnel (*) VALUES ({id:String},{name:String},{steps:String},{projectId:FixedString(12)},'${dayjs
-    .utc()
-    .format('YYYY-MM-DD HH:mm:ss')}')`
+  const { id, name, steps, projectId } = funnel
 
-  const { data } = await clickhouse
-    .query({
-      query,
-      query_params: funnel,
-    })
-    .then(resultSet => resultSet.json())
-
-  return data
+  await clickhouse.insert({
+    table: 'funnel',
+    format: 'JSONEachRow',
+    values: [
+      {
+        id,
+        name,
+        steps,
+        projectId,
+        created: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
+      },
+    ],
+  })
 }
 
 const getProjectsClickhouse = async (id = null, search: string = null) => {
@@ -287,37 +290,41 @@ const deleteProjectClickhouse = async (id: string) => {
 }
 
 const createProjectClickhouse = async (project: Partial<Project>) => {
-  const created = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-  const query = `INSERT INTO project (*) VALUES ({id:FixedString(12)},{name:String},'','',1,0,0,NULL,'${created}')`
+  const { id, name } = project
 
-  const { data } = await clickhouse
-    .query({
-      query,
-      query_params: project,
-    })
-    .then(resultSet => resultSet.json())
-
-  return data
+  await clickhouse.insert({
+    table: 'project',
+    format: 'JSONEachRow',
+    values: [
+      {
+        id,
+        name,
+        origins: '',
+        ipBlacklist: '',
+        active: 1,
+        public: 0,
+        isPasswordProtected: 0,
+        passwordHash: null,
+        created: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
+      },
+    ],
+  })
 }
 
 const saveRefreshTokenClickhouse = async (
   userId: string,
   refreshToken: string,
 ) => {
-  const query =
-    'INSERT INTO refresh_token (*) VALUES ({userId:String},{refreshToken:String})'
-
-  const { data } = await clickhouse
-    .query({
-      query,
-      query_params: {
+  await clickhouse.insert({
+    table: 'refresh_token',
+    format: 'JSONEachRow',
+    values: [
+      {
         userId,
         refreshToken,
       },
-    })
-    .then(resultSet => resultSet.json())
-
-  return data
+    ],
+  })
 }
 
 const findRefreshTokenClickhouse = async (
@@ -368,19 +375,20 @@ interface IClickhouseUser {
 const CLICKHOUSE_SETTINGS_ID = 'sfuser'
 
 const createUserClickhouse = async (user: IClickhouseUser) => {
-  const query = `INSERT INTO sfuser (*) VALUES ({id:String},{timezone:String},{timeFormat:String},{showLiveVisitorsInTitle:Int8})`
+  const { timezone, timeFormat, showLiveVisitorsInTitle } = user
 
-  const { data } = await clickhouse
-    .query({
-      query,
-      query_params: {
-        ...user,
+  await clickhouse.insert({
+    table: 'sfuser',
+    format: 'JSONEachRow',
+    values: [
+      {
         id: CLICKHOUSE_SETTINGS_ID,
+        timezone,
+        timeFormat,
+        showLiveVisitorsInTitle,
       },
-    })
-    .then(resultSet => resultSet.json())
-
-  return data
+    ],
+  })
 }
 
 const getUserClickhouse = async () => {
