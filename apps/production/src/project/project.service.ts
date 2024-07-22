@@ -42,7 +42,6 @@ import {
   redisProjectCountCacheTimeout,
   getRedisUserCountKey,
   redis,
-  clickhouse,
   IP_REGEX,
   ORIGINS_REGEX,
   getRedisProjectKey,
@@ -54,6 +53,7 @@ import {
   TRAFFIC_COLUMNS,
   EMAIL_ACTION_ENCRYPTION_KEY,
 } from '../common/constants'
+import { clickhouse } from '../common/integrations/clickhouse'
 import { IUsageInfoRedis } from '../user/interfaces'
 import { ProjectSubscriber, Funnel } from './entity'
 import { AddSubscriberType } from './types'
@@ -571,7 +571,10 @@ export class ProjectService {
 
     query += ')'
 
-    await clickhouse.query(query, { params }).toPromise()
+    await clickhouse.query({
+      query,
+      query_params: params,
+    })
   }
 
   async removeDataFromClickhouse(
@@ -585,6 +588,10 @@ export class ProjectService {
       'ALTER TABLE customEV DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
     const queryPerformance =
       'ALTER TABLE performance DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
+    const queryErrors =
+      'ALTER TABLE errors DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
+    const queryErrorStatuses =
+      'ALTER TABLE error_statuses DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
     const params = {
       params: {
         pid,
@@ -594,9 +601,26 @@ export class ProjectService {
     }
 
     await Promise.all([
-      clickhouse.query(queryAnalytics, params).toPromise(),
-      clickhouse.query(queryCustomEvents, params).toPromise(),
-      clickhouse.query(queryPerformance, params).toPromise(),
+      clickhouse.query({
+        query: queryAnalytics,
+        query_params: params,
+      }),
+      clickhouse.query({
+        query: queryCustomEvents,
+        query_params: params,
+      }),
+      clickhouse.query({
+        query: queryPerformance,
+        query_params: params,
+      }),
+      clickhouse.query({
+        query: queryErrors,
+        query_params: params,
+      }),
+      clickhouse.query({
+        query: queryErrorStatuses,
+        query_params: params,
+      }),
     ])
   }
 
@@ -686,15 +710,26 @@ export class ProjectService {
       const countCaptchaQuery = `SELECT count() FROM captcha ${selector}`
       const countErrorsQuery = `SELECT count() FROM errors ${selector}`
 
-      const promises = [
-        clickhouse.query(countEVQuery).toPromise(),
-        clickhouse.query(countCustomEVQuery).toPromise(),
-        clickhouse.query(countCaptchaQuery).toPromise(),
-        clickhouse.query(countErrorsQuery).toPromise(),
-      ]
-
-      const [pageviews, customEvents, captcha, errors] =
-        await Promise.all(promises)
+      const { data: pageviews } = await clickhouse
+        .query({
+          query: countEVQuery,
+        })
+        .then(resultSet => resultSet.json())
+      const { data: customEvents } = await clickhouse
+        .query({
+          query: countCustomEVQuery,
+        })
+        .then(resultSet => resultSet.json())
+      const { data: captcha } = await clickhouse
+        .query({
+          query: countCaptchaQuery,
+        })
+        .then(resultSet => resultSet.json())
+      const { data: errors } = await clickhouse
+        .query({
+          query: countErrorsQuery,
+        })
+        .then(resultSet => resultSet.json())
 
       count =
         pageviews[0]['count()'] +
@@ -751,15 +786,26 @@ export class ProjectService {
       const countCaptchaQuery = `SELECT count() FROM captcha ${selector}`
       const countErrorsQuery = `SELECT count() FROM errors ${selector}`
 
-      const promises = [
-        clickhouse.query(countEVQuery).toPromise(),
-        clickhouse.query(countCustomEVQuery).toPromise(),
-        clickhouse.query(countCaptchaQuery).toPromise(),
-        clickhouse.query(countErrorsQuery).toPromise(),
-      ]
-
-      const [rawTraffic, rawCustomEvents, rawCaptcha, rawErrors] =
-        await Promise.all(promises)
+      const { data: rawTraffic } = await clickhouse
+        .query({
+          query: countEVQuery,
+        })
+        .then(resultSet => resultSet.json())
+      const { data: rawCustomEvents } = await clickhouse
+        .query({
+          query: countCustomEVQuery,
+        })
+        .then(resultSet => resultSet.json())
+      const { data: rawCaptcha } = await clickhouse
+        .query({
+          query: countCaptchaQuery,
+        })
+        .then(resultSet => resultSet.json())
+      const { data: rawErrors } = await clickhouse
+        .query({
+          query: countErrorsQuery,
+        })
+        .then(resultSet => resultSet.json())
 
       const traffic = rawTraffic[0]['count()']
       const customEvents = rawCustomEvents[0]['count()']
@@ -892,9 +938,14 @@ export class ProjectService {
       );
     `
 
-    const result: any = await clickhouse.query(query, { params }).toPromise()
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: params,
+      })
+      .then(resultSet => resultSet.json())
 
-    return _map(result, ({ pid }) => pid)
+    return _map(data, ({ pid }) => pid)
   }
 
   async getPIDsWhereErrorsDataExists(projectIds: string[]): Promise<string[]> {
@@ -936,9 +987,14 @@ export class ProjectService {
       );
     `
 
-    const result: any = await clickhouse.query(query, { params }).toPromise()
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: params,
+      })
+      .then(resultSet => resultSet.json())
 
-    return _map(result, ({ pid }) => pid)
+    return _map(data, ({ pid }) => pid)
   }
 
   async getSubscriberByEmail(projectId: string, email: string) {
@@ -1264,8 +1320,14 @@ export class ProjectService {
     let count = 0
 
     try {
-      const result = await clickhouse.query(query, { params }).toPromise()
-      count = result[0]['count()']
+      const { data } = await clickhouse
+        .query({
+          query,
+          query_params: params,
+        })
+        .then(resultSet => resultSet.json())
+
+      count = data[0]['count()']
     } catch (reason) {
       console.error(
         '[ERROR](project service -> countVisitorsFromTo) Error while counting visitors',

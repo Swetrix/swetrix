@@ -3,11 +3,8 @@ import * as _isArray from 'lodash/isArray'
 import * as _toNumber from 'lodash/toNumber'
 import * as _pick from 'lodash/pick'
 import * as _includes from 'lodash/includes'
-import * as _keys from 'lodash/keys'
-import * as _values from 'lodash/values'
 import * as _map from 'lodash/map'
 import * as _uniqBy from 'lodash/uniqBy'
-import * as _round from 'lodash/round'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as dayjsTimezone from 'dayjs/plugin/timezone'
@@ -57,18 +54,14 @@ import { GetUserFlowDTO } from './dto/getUserFlow.dto'
 import { GetFunnelsDTO } from './dto/getFunnels.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import {
-  REDIS_LOG_DATA_CACHE_KEY,
-  REDIS_LOG_PERF_CACHE_KEY,
   redis,
-  REDIS_LOG_CUSTOM_CACHE_KEY,
   HEARTBEAT_SID_LIFE_TIME,
   REDIS_USERS_COUNT_KEY,
   REDIS_PROJECTS_COUNT_KEY,
   REDIS_EVENTS_COUNT_KEY,
   REDIS_SESSION_SALT_KEY,
-  clickhouse,
-  REDIS_LOG_ERROR_CACHE_KEY,
 } from '../common/constants'
+import { clickhouse } from '../common/integrations/clickhouse'
 import {
   checkRateLimit,
   getGeoDetails,
@@ -91,11 +84,13 @@ import { ErrorDTO } from './dto/error.dto'
 import { GetErrorsDto } from './dto/get-errors.dto'
 import { GetErrorDTO } from './dto/get-error.dto'
 import { PatchStatusDTO } from './dto/patch-status.dto'
-import { ProjectService } from '../project/project.service'
 import { ProjectsViewsRepository } from '../project/repositories/projects-views.repository'
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const mysql = require('mysql2')
+import {
+  customEventTransformer,
+  errorEventTransformer,
+  performanceTransformer,
+  trafficTransformer,
+} from './utils/transformers'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -109,177 +104,6 @@ const getSessionKeyCustom = (
   ev: string,
   salt = '',
 ) => `cses_${hash(`${ua}${ip}${pid}${ev}${salt}`).toString('hex')}`
-
-const analyticsDTO = (
-  psid: string,
-  sid: string,
-  pid: string,
-  pg: string,
-  prev: string,
-  dv: string,
-  br: string,
-  os: string,
-  lc: string,
-  ref: string,
-  so: string,
-  me: string,
-  ca: string,
-  cc: string,
-  rg: string,
-  ct: string,
-  keys: string[],
-  values: string[],
-  sdur: number | string,
-  unique: number,
-): Array<string | number | string[]> => {
-  return [
-    psid,
-    sid,
-    pid,
-    pg,
-    prev,
-    dv,
-    br,
-    os,
-    lc,
-    ref,
-    so,
-    me,
-    ca,
-    cc,
-    rg,
-    ct,
-    keys,
-    values,
-    sdur,
-    unique,
-    dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
-  ]
-}
-
-const performanceDTO = (
-  pid: string,
-  pg: string,
-  dv: string,
-  br: string,
-  cc: string,
-  rg: string,
-  ct: string,
-  dns: number,
-  tls: number,
-  conn: number,
-  response: number,
-  render: number,
-  domLoad: number,
-  pageLoad: number,
-  ttfb: number,
-): Array<string | number> => {
-  return [
-    pid,
-    pg,
-    dv,
-    br,
-    cc,
-    rg,
-    ct,
-    _round(dns),
-    _round(tls),
-    _round(conn),
-    _round(response),
-    _round(render),
-    _round(domLoad),
-    _round(pageLoad),
-    _round(ttfb),
-    dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
-  ]
-}
-
-const customLogDTO = (
-  psid: string,
-  pid: string,
-  ev: string,
-  pg: string,
-  dv: string,
-  br: string,
-  os: string,
-  lc: string,
-  ref: string,
-  so: string,
-  me: string,
-  ca: string,
-  cc: string,
-  rg: string,
-  ct: string,
-  keys: string[],
-  values: string[],
-): Array<string | number | string[]> => {
-  return [
-    psid,
-    pid,
-    ev,
-    pg,
-    dv,
-    br,
-    os,
-    lc,
-    ref,
-    so,
-    me,
-    ca,
-    cc,
-    rg,
-    ct,
-    keys,
-    values,
-    dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
-  ]
-}
-
-const errorLogDTO = (
-  eid: string,
-  pid: string,
-  pg: string,
-  dv: string,
-  br: string,
-  os: string,
-  lc: string,
-  cc: string,
-  rg: string,
-  ct: string,
-  name: string,
-  message: string,
-  lineno: number,
-  colno: number,
-  filename: string,
-): Array<string | number | string[]> => {
-  return [
-    eid,
-    pid,
-    pg,
-    dv,
-    br,
-    os,
-    lc,
-    cc,
-    rg,
-    ct,
-    name,
-    message,
-    lineno,
-    colno,
-    filename,
-    dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
-  ]
-}
-
-export const getElValue = el => {
-  if (_isArray(el)) {
-    return `[${_map(el, getElValue).join(',')}]`
-  }
-
-  if (el === undefined || el === null || el === 'NULL') return 'NULL'
-  return mysql.escape(el)
-}
 
 // Performance object validator: none of the values cannot be bigger than 1000 * 60 * 5 (5 minutes) and are >= 0
 const MAX_PERFORMANCE_VALUE = 1000 * 60 * 5
@@ -370,7 +194,6 @@ export class AnalyticsController {
   constructor(
     private readonly analyticsService: AnalyticsService,
     private readonly logger: AppLoggerService,
-    private readonly projectService: ProjectService,
     private readonly projectsViewsRepository: ProjectsViewsRepository,
   ) {}
 
@@ -1220,11 +1043,11 @@ export class AnalyticsController {
   @Get('liveVisitors')
   @Auth([], true, true)
   async getLiveVisitors(
-    @Query() data,
+    @Query() queryParams,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ): Promise<object> {
-    const { pid } = data
+    const { pid } = queryParams
 
     this.analyticsService.validatePID(pid)
     await this.analyticsService.checkProjectAccess(
@@ -1246,8 +1069,10 @@ export class AnalyticsController {
     const query = `SELECT sid, dv, br, os, cc FROM analytics WHERE sid IN (${sids
       .map(el => `'${el}'`)
       .join(',')})`
-    const result = await clickhouse.query(query).toPromise()
-    const processed = _map(_uniqBy(result, 'sid'), el =>
+    const { data } = await clickhouse
+      .query({ query })
+      .then(resultSet => resultSet.json())
+    const processed = _map(_uniqBy(data, 'sid'), el =>
       _pick(el, ['dv', 'br', 'os', 'cc']),
     )
 
@@ -1283,7 +1108,7 @@ export class AnalyticsController {
 
     const { name, message, lineno, colno, filename } = errorDTO
 
-    const dto = errorLogDTO(
+    const transformed = errorEventTransformer(
       this.analyticsService.getErrorID(errorDTO),
       errorDTO.pid,
       errorDTO.pg,
@@ -1302,8 +1127,14 @@ export class AnalyticsController {
     )
 
     try {
-      const values = `(${dto.map(getElValue).join(',')})`
-      await redis.rpush(REDIS_LOG_ERROR_CACHE_KEY, values)
+      await clickhouse.insert({
+        table: 'errors',
+        format: 'JSONEachRow',
+        values: [transformed],
+        clickhouse_settings: {
+          async_insert: 1,
+        },
+      })
     } catch (e) {
       this.logger.error(e)
       throw new InternalServerErrorException(
@@ -1387,7 +1218,7 @@ export class AnalyticsController {
     const sessionHash = getSessionKey(ip, userAgent, eventsDTO.pid, salt)
     const [, psid] = await this.analyticsService.isUnique(sessionHash)
 
-    const dto = customLogDTO(
+    const transformed = customEventTransformer(
       psid,
       eventsDTO.pid,
       eventsDTO.ev,
@@ -1403,13 +1234,18 @@ export class AnalyticsController {
       country,
       region,
       city,
-      _keys(eventsDTO.meta),
-      _values(eventsDTO.meta),
+      eventsDTO.meta,
     )
 
     try {
-      const values = `(${dto.map(getElValue).join(',')})`
-      await redis.rpush(REDIS_LOG_CUSTOM_CACHE_KEY, values)
+      await clickhouse.insert({
+        table: 'customEV',
+        format: 'JSONEachRow',
+        values: [transformed],
+        clickhouse_settings: {
+          async_insert: 1,
+        },
+      })
     } catch (e) {
       this.logger.error(e)
       throw new InternalServerErrorException(
@@ -1474,17 +1310,13 @@ export class AnalyticsController {
       )
     }
 
-    const {
-      city = 'NULL',
-      region = 'NULL',
-      country = 'NULL',
-    } = getGeoDetails(ip, logDTO.tz)
+    const { city, region, country } = getGeoDetails(ip, logDTO.tz)
     const ua = UAParser(userAgent)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
     const os = ua.os.name
 
-    const dto = analyticsDTO(
+    const transformed = trafficTransformer(
       psid,
       sessionHash,
       logDTO.pid,
@@ -1501,13 +1333,12 @@ export class AnalyticsController {
       country,
       region,
       city,
-      _keys(logDTO.meta),
-      _values(logDTO.meta),
+      logDTO.meta,
       0,
       Number(unique),
     )
 
-    let perfDTO: Array<string | number> = []
+    let perfTransformed = null
 
     if (!_isEmpty(logDTO.perf) && isPerformanceValid(logDTO.perf)) {
       const {
@@ -1521,7 +1352,7 @@ export class AnalyticsController {
         ttfb,
       } = logDTO.perf
 
-      perfDTO = performanceDTO(
+      perfTransformed = performanceTransformer(
         logDTO.pid,
         logDTO.pg,
         dv,
@@ -1540,14 +1371,25 @@ export class AnalyticsController {
       )
     }
 
-    const values = `(${dto.map(getElValue).join(',')})`
-
     try {
-      await redis.rpush(REDIS_LOG_DATA_CACHE_KEY, values)
+      await clickhouse.insert({
+        table: 'analytics',
+        format: 'JSONEachRow',
+        values: [transformed],
+        clickhouse_settings: {
+          async_insert: 1,
+        },
+      })
 
-      if (!_isEmpty(perfDTO)) {
-        const perfValues = `(${perfDTO.map(getElValue).join(',')})`
-        await redis.rpush(REDIS_LOG_PERF_CACHE_KEY, perfValues)
+      if (!_isEmpty(perfTransformed)) {
+        await clickhouse.insert({
+          table: 'performance',
+          format: 'JSONEachRow',
+          values: [perfTransformed],
+          clickhouse_settings: {
+            async_insert: 1,
+          },
+        })
       }
     } catch (e) {
       this.logger.error(e)
@@ -1600,32 +1442,37 @@ export class AnalyticsController {
     const br = ua.browser.name
     const os = ua.os.name
 
-    const dto = analyticsDTO(
+    const transformed = trafficTransformer(
       psid,
       sessionHash,
       logDTO.pid,
-      'NULL',
-      'NULL',
+      null,
+      null,
       dv,
       br,
       os,
-      'NULL',
-      'NULL',
-      'NULL',
-      'NULL',
-      'NULL',
+      null,
+      null,
+      null,
+      null,
+      null,
       country,
       region,
       city,
-      [],
-      [],
+      null,
       0,
       Number(unique),
     )
 
-    const values = `(${dto.map(getElValue).join(',')})`
     try {
-      await redis.rpush(REDIS_LOG_DATA_CACHE_KEY, values)
+      await clickhouse.insert({
+        table: 'analytics',
+        format: 'JSONEachRow',
+        values: [transformed],
+        clickhouse_settings: {
+          async_insert: 1,
+        },
+      })
     } catch (e) {
       this.logger.error(e)
     }
