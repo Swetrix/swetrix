@@ -48,6 +48,8 @@ import * as _find from 'lodash/find'
 import * as dayjs from 'dayjs'
 
 import { hash } from 'bcrypt'
+import { InjectMetric } from '@willsoto/nestjs-prometheus'
+import { Counter, Gauge } from 'prom-client'
 import { JwtAccessTokenGuard } from '../auth/guards'
 import { Auth, Public } from '../auth/decorators'
 import { isValidDate } from '../analytics/analytics.service'
@@ -128,6 +130,20 @@ export class ProjectController {
     private readonly actionTokensService: ActionTokensService,
     private readonly mailerService: MailerService,
     private readonly projectsViewsRepository: ProjectsViewsRepository,
+
+    @InjectMetric('generated_og_images')
+    private readonly generatedOgImages: Counter<string>,
+    @InjectMetric('project_count')
+    private readonly projectCount: Gauge<string>,
+
+    @InjectMetric('funnel_count')
+    private readonly funnelCount: Gauge<string>,
+
+    @InjectMetric('project_share_count')
+    private readonly projectShareCount: Gauge<string>,
+
+    @InjectMetric('project_view_count')
+    private readonly projectViewCount: Gauge<string>,
   ) {}
 
   @ApiBearerAuth()
@@ -518,6 +534,7 @@ export class ProjectController {
 
       await this.userService.create(user)
 
+      this.projectCount.inc()
       return _omit(newProject, ['passwordHash'])
     } catch (reason) {
       console.error('[ERROR] Failed to create a new project:')
@@ -577,6 +594,7 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, userId, user.roles)
 
+    this.funnelCount.inc()
     return this.projectService.createFunnel(project.id, funnelDTO)
   }
 
@@ -690,6 +708,7 @@ export class ProjectController {
     }
 
     await this.projectService.deleteFunnel(id)
+    this.funnelCount.dec()
   }
 
   @Get('/funnels/:pid')
@@ -1101,6 +1120,7 @@ export class ProjectController {
 
       // todo: maybe the update project should be used here instead of delete?
       await deleteProjectRedis(pid)
+      this.projectShareCount.inc()
       return processProjectUser(updatedProject)
     } catch (e) {
       console.error(
@@ -1562,6 +1582,7 @@ export class ProjectController {
       await clickhouse.query(query1).toPromise()
       await clickhouse.query(query2).toPromise()
       await deleteProjectRedis(id)
+      this.projectCount.dec()
     } catch (e) {
       this.logger.error(e)
       return 'Error while deleting your project'
@@ -1848,6 +1869,7 @@ export class ProjectController {
 
     await deleteProjectRedis(pid)
     await this.projectService.deleteShare(shareId)
+    this.projectShareCount.dec()
   }
 
   @ApiBearerAuth()
@@ -1966,6 +1988,7 @@ export class ProjectController {
         body,
       )
 
+    this.projectViewCount.inc()
     return _omit(createdProjectView, ['project'])
   }
 
@@ -2079,5 +2102,6 @@ export class ProjectController {
     }
 
     await this.projectsViewsRepository.deleteProjectView(params.viewId)
+    this.projectViewCount.dec()
   }
 }
