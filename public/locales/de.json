@@ -285,15 +285,15 @@
     "ukrSupport": "Unterstützen Sie die ukrainische Armee im Kampf gegen die russische Invasion.",
     "slogan": "<span>Ultimative Open-Source-Web-Analytics</span> um alle Ihre Wünsche zu befriedigen.",
     "trackEveryMetric": "Analytik sollte so sein: GDPR-konform, leicht und einfach zu bedienen.",
-    "description": "Swetrix is a cookieless Google Analytics alternative that does not invade your users' privacy. It's perfect for <0>marketers</0>, <1>start-ups</1>, <2>small businesses</2> and virtually any type of business!",
-    "trustedBy": "Trusted by governments, NGOs and innovative enterprises",
+    "description": "Swetrix ist eine kochfreie Google Analytics-Alternative, die nicht in die Privatsphäre Ihrer Nutzer eindringt. Es ist perfekt für <0>Vermarkter</0>, <1>Start-ups</1>, <2>kleine Unternehmen</2> und praktisch alle Arten von Geschäften!",
+    "trustedBy": "Von Regierungen, NGOs und innovativen Unternehmen anerkannt",
     "start": "Kostenlos beginnen",
     "signup": "Jetzt gratis registrieren!",
     "signupTerms": "Mit der Anmeldung akzeptieren Sie unsere <tos>Allgemeinen Geschäftsbedingungen</tos> und unsere <pp>Datenschutzerklärung</pp>.",
     "techDetails": "Möchten Sie weitere technische Details erfahren?",
     "lookAtDocs": "Sehen Sie sich doch mal die Dokumentation und die Live Demo an.",
     "readyToStart": "Sind Sie bereit los zu legen?",
-    "startAFreeTrial": "Start a free trial",
+    "startAFreeTrial": "Kostenlos testen",
     "metric": "Metrisch",
     "coreFeatures": {
       "title": "Kern-Analysefunktionen",
@@ -1173,9 +1173,9 @@
     "confirm": "Sehen Sie in ihren Posteingang",
     "performance": "Endbenutzer Leistungsüberwachung um schnelle Webseiten zu liefern",
     "errors": "Endbenutzer Fehler bei der Verfolgung von Werkzeug, um fehlerfreie Erfahrungen zu liefern",
-    "forMarketers": "For marketers",
-    "forSmbs": "For small businesses",
-    "forStartups": "For startups"
+    "forMarketers": "Für Vermarkter",
+    "forSmbs": "Für kleine Unternehmen",
+    "forStartups": "Für Start-ups"
   },
   "header": {
     "switchTheme": "Design wechseln",
