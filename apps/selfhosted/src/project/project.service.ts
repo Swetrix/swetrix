@@ -241,6 +241,10 @@ export class ProjectService {
       'ALTER TABLE customEV DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
     const queryPerformance =
       'ALTER TABLE performance DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
+    const queryErrors =
+      'ALTER TABLE errors DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
+    const queryErrorStatuses =
+      'ALTER TABLE error_statuses DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
     const params = {
       params: {
         pid,
@@ -249,18 +253,28 @@ export class ProjectService {
       },
     }
 
-    await clickhouse.query({
-      query: queryAnalytics,
-      query_params: params,
-    })
-    await clickhouse.query({
-      query: queryCustomEvents,
-      query_params: params,
-    })
-    await clickhouse.query({
-      query: queryPerformance,
-      query_params: params,
-    })
+    await Promise.all([
+      clickhouse.query({
+        query: queryAnalytics,
+        query_params: params,
+      }),
+      clickhouse.query({
+        query: queryCustomEvents,
+        query_params: params,
+      }),
+      clickhouse.query({
+        query: queryPerformance,
+        query_params: params,
+      }),
+      clickhouse.query({
+        query: queryErrors,
+        query_params: params,
+      }),
+      clickhouse.query({
+        query: queryErrorStatuses,
+        query_params: params,
+      }),
+    ])
   }
 
   formatToClickhouse(project: any): object {
