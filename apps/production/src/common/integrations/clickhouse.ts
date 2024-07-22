@@ -69,6 +69,11 @@ const clickhouse = createClient({
     output_format_json_quote_64bit_integers: 0,
     enable_http_compression: 0,
     log_queries: 0,
+
+    // Used for analytics & captcha stuff.
+    // https://clickhouse.com/docs/en/optimize/asynchronous-inserts
+    wait_for_async_insert: 0, // Return ACK (await) when row was added to the buffer, not flushed to the database
+    async_insert_busy_timeout_ms: 15000, // 15 seconds; this is how long the buffer will be kept before writing stuff into the database
   },
   log: {
     LoggerClass: CHLogger,

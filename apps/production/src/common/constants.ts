@@ -50,11 +50,6 @@ const getRedisUserCountKey = (uid: string) => `user_c_${uid}`
 const getRedisUserUsageInfoKey = (uid: string) => `user_ui_${uid}`
 const getRedisCaptchaKey = (token: string) => `captcha_${hash(token)}`
 
-const REDIS_LOG_DATA_CACHE_KEY = 'log_cache'
-const REDIS_LOG_CAPTCHA_CACHE_KEY = 'log:captcha'
-const REDIS_LOG_PERF_CACHE_KEY = 'perf_cache'
-const REDIS_LOG_CUSTOM_CACHE_KEY = 'log_custom_cache_v3'
-const REDIS_LOG_ERROR_CACHE_KEY = 'log_error_cache'
 const REDIS_SESSION_SALT_KEY = 'log_salt' // is updated every 24 hours
 const REDIS_USERS_COUNT_KEY = 'stats:users_count'
 const REDIS_PROJECTS_COUNT_KEY = 'stats:projects_count'
@@ -173,12 +168,9 @@ export {
   getRedisProjectKey,
   redisProjectCacheTimeout,
   UNIQUE_SESSION_LIFE_TIME,
-  REDIS_LOG_DATA_CACHE_KEY,
-  REDIS_LOG_CAPTCHA_CACHE_KEY,
   GDPR_EXPORT_TIMEFRAME,
   getRedisUserCountKey,
   redisProjectCountCacheTimeout,
-  REDIS_LOG_CUSTOM_CACHE_KEY,
   REDIS_SESSION_SALT_KEY,
   HEARTBEAT_SID_LIFE_TIME,
   REDIS_USERS_COUNT_KEY,
@@ -189,7 +181,6 @@ export {
   TWO_FACTOR_AUTHENTICATION_APP_NAME,
   IP_REGEX,
   ORIGINS_REGEX,
-  REDIS_LOG_PERF_CACHE_KEY,
   CAPTCHA_SALT,
   EMAIL_ACTION_ENCRYPTION_KEY,
   isDevelopment,
@@ -220,6 +211,5 @@ export {
   BLOG_POSTS_ROOT,
   TRAFFIC_SPIKE_ALLOWED_PERCENTAGE,
   AFFILIATE_CUT,
-  REDIS_LOG_ERROR_CACHE_KEY,
   PID_REGEX,
 }

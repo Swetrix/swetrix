@@ -8,7 +8,6 @@ import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _isNull from 'lodash/isNull'
-import * as _join from 'lodash/join'
 import * as _size from 'lodash/size'
 import * as _map from 'lodash/map'
 import * as _now from 'lodash/now'
@@ -44,19 +43,14 @@ import {
 } from '../user/entities/user.entity'
 import {
   redis,
-  REDIS_LOG_DATA_CACHE_KEY,
-  REDIS_LOG_CUSTOM_CACHE_KEY,
   REDIS_SESSION_SALT_KEY,
-  REDIS_LOG_PERF_CACHE_KEY,
   SEND_WARNING_AT_PERC,
   PROJECT_INVITE_EXPIRE,
-  REDIS_LOG_CAPTCHA_CACHE_KEY,
   JWT_REFRESH_TOKEN_LIFETIME,
   PAYPAL_CLIENT_ID,
   PAYPAL_CLIENT_SECRET,
   TRAFFIC_SPIKE_ALLOWED_PERCENTAGE,
   isDevelopment,
-  REDIS_LOG_ERROR_CACHE_KEY,
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
 import { CHPlanUsage } from './interfaces'
@@ -406,87 +400,6 @@ export class TaskManagerService {
         `[CRON WORKER](handleSubscriberReports) Frequency: ${reportFrequency}; Error: ${reason}`,
       )
     })
-  }
-
-  @Cron(CronExpression.EVERY_MINUTE)
-  async saveLogData(): Promise<void> {
-    const data = await redis.lrange(REDIS_LOG_DATA_CACHE_KEY, 0, -1)
-    const customData = await redis.lrange(REDIS_LOG_CUSTOM_CACHE_KEY, 0, -1)
-    const perfData = await redis.lrange(REDIS_LOG_PERF_CACHE_KEY, 0, -1)
-    const captchaData = await redis.lrange(REDIS_LOG_CAPTCHA_CACHE_KEY, 0, -1)
-    const errorData = await redis.lrange(REDIS_LOG_ERROR_CACHE_KEY, 0, -1)
-
-    if (!_isEmpty(data)) {
-      await redis.del(REDIS_LOG_DATA_CACHE_KEY)
-      const query = `INSERT INTO analytics (*) VALUES ${_join(data, ',')}`
-      try {
-        await clickhouse.query({
-          query,
-        })
-      } catch (e) {
-        console.error(`[CRON WORKER] Error whilst saving log data: ${e}`)
-      }
-    }
-
-    if (!_isEmpty(captchaData)) {
-      await redis.del(REDIS_LOG_CAPTCHA_CACHE_KEY)
-      const query = `INSERT INTO captcha (*) VALUES ${_join(captchaData, ',')}`
-      try {
-        await clickhouse.query({
-          query,
-        })
-      } catch (e) {
-        console.error(
-          `[CRON WORKER] Error whilst saving CAPTCHA log data: ${e}`,
-        )
-      }
-    }
-
-    if (!_isEmpty(customData)) {
-      await redis.del(REDIS_LOG_CUSTOM_CACHE_KEY)
-      const query = `INSERT INTO customEV (*) VALUES ${_join(customData, ',')}`
-
-      try {
-        await clickhouse.query({
-          query,
-        })
-      } catch (e) {
-        console.error(
-          `[CRON WORKER] Error whilst saving custom events data: ${e}`,
-        )
-      }
-    }
-
-    if (!_isEmpty(errorData)) {
-      await redis.del(REDIS_LOG_ERROR_CACHE_KEY)
-      const query = `INSERT INTO errors (*) VALUES ${_join(errorData, ',')}`
-
-      try {
-        await clickhouse.query({
-          query,
-        })
-      } catch (e) {
-        console.error(
-          `[CRON WORKER] Error whilst saving error events data: ${e}`,
-        )
-      }
-    }
-
-    if (!_isEmpty(perfData)) {
-      await redis.del(REDIS_LOG_PERF_CACHE_KEY)
-
-      const query = `INSERT INTO performance (*) VALUES ${_join(perfData, ',')}`
-
-      try {
-        await clickhouse.query({
-          query,
-        })
-      } catch (e) {
-        console.error(
-          `[CRON WORKER] Error whilst saving performance data: ${e}`,
-        )
-      }
-    }
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_5PM)

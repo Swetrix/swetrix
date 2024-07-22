@@ -49,7 +49,7 @@ const databaselessQueriesRunner = async queries => {
     if (query) {
       try {
         // eslint-disable-next-line no-await-in-loop
-        await clickhouseNoDatabase.query({
+        await clickhouseNoDatabase.command({
           query,
         })
         console.log(chalk.green('Query OK: '), query)
@@ -73,7 +73,7 @@ const queriesRunner = async (queries, log = true) => {
     if (query) {
       try {
         // eslint-disable-next-line no-await-in-loop
-        await clickhouse.query({
+        await clickhouse.command({
           query,
         })
 

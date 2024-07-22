@@ -50,14 +50,9 @@ const isValidPID = (pid: string) => PID_REGEX.test(pid)
 // redis keys
 const getRedisProjectKey = (pid: string) => `pid_${pid}`
 
-const REDIS_LOG_DATA_CACHE_KEY = 'log_cache_v2'
-const REDIS_LOG_CAPTCHA_CACHE_KEY = 'log:captcha'
-const REDIS_LOG_PERF_CACHE_KEY = 'perf_cache'
-const REDIS_LOG_CUSTOM_CACHE_KEY = 'log_custom_cache_v3'
 const REDIS_SESSION_SALT_KEY = 'log_salt' // is updated every 24 hours
 const REDIS_USERS_COUNT_KEY = 'stats:users_count'
 const REDIS_PROJECTS_COUNT_KEY = 'stats:projects_count'
-const REDIS_LOG_ERROR_CACHE_KEY = 'log_error_cache'
 
 // 3600 sec -> 1 hour
 const redisProjectCacheTimeout = 3600
@@ -103,9 +98,6 @@ export {
   getRedisProjectKey,
   redisProjectCacheTimeout,
   UNIQUE_SESSION_LIFE_TIME,
-  REDIS_LOG_DATA_CACHE_KEY,
-  REDIS_LOG_CAPTCHA_CACHE_KEY,
-  REDIS_LOG_CUSTOM_CACHE_KEY,
   TRAFFIC_METAKEY_COLUMNS,
   REDIS_SESSION_SALT_KEY,
   HEARTBEAT_SID_LIFE_TIME,
@@ -119,7 +111,6 @@ export {
   REDIS_PROJECTS_COUNT_KEY,
   IP_REGEX,
   ORIGINS_REGEX,
-  REDIS_LOG_PERF_CACHE_KEY,
   isDevelopment,
   DEFAULT_SELFHOSTED_UUID,
   JWT_ACCESS_TOKEN_SECRET,
@@ -131,7 +122,6 @@ export {
   MIN_PAGES_IN_FUNNEL,
   MAX_PAGES_IN_FUNNEL,
   ERROR_COLUMNS,
-  REDIS_LOG_ERROR_CACHE_KEY,
   PID_REGEX,
   ALL_COLUMNS,
 }
