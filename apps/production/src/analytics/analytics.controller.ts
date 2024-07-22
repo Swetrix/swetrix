@@ -93,6 +93,8 @@ import { GetErrorDTO } from './dto/get-error.dto'
 import { PatchStatusDTO } from './dto/patch-status.dto'
 import { ProjectService } from '../project/project.service'
 import { ProjectsViewsRepository } from '../project/repositories/projects-views.repository'
+import { InjectMetric } from '@willsoto/nestjs-prometheus'
+import { Counter } from 'prom-client'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const mysql = require('mysql2')
@@ -372,6 +374,16 @@ export class AnalyticsController {
     private readonly logger: AppLoggerService,
     private readonly projectService: ProjectService,
     private readonly projectsViewsRepository: ProjectsViewsRepository,
+    
+    @InjectMetric('log_analytics_count')
+    private readonly logAnalyticsCount: Counter<string>,
+
+    @InjectMetric('log_error_count')
+    private readonly logErrorCount: Counter<string>,
+
+    @InjectMetric('log_custom_count')
+    private readonly logCustomCount: Counter<string>,
+    
   ) {}
 
   @ApiBearerAuth()
@@ -1297,6 +1309,8 @@ export class AnalyticsController {
     try {
       const values = `(${dto.map(getElValue).join(',')})`
       await redis.rpush(REDIS_LOG_ERROR_CACHE_KEY, values)
+
+      this.logErrorCount.inc()
     } catch (e) {
       this.logger.error(e)
       throw new InternalServerErrorException(
@@ -1358,7 +1372,8 @@ export class AnalyticsController {
         salt,
       )
       const [unique] = await this.analyticsService.isUnique(sessionHash)
-
+      
+      this.logCustomCount.inc()
       if (!unique) {
         throw new ForbiddenException(
           'The unique option provided, while the custom event have already been created for this session',
@@ -1541,6 +1556,8 @@ export class AnalyticsController {
       if (!_isEmpty(perfDTO)) {
         const perfValues = `(${perfDTO.map(getElValue).join(',')})`
         await redis.rpush(REDIS_LOG_PERF_CACHE_KEY, perfValues)
+
+        this.logAnalyticsCount.inc()
       }
     } catch (e) {
       this.logger.error(e)
