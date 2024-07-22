@@ -1,5 +1,6 @@
 import * as _keys from 'lodash/keys'
 import * as _values from 'lodash/values'
+import * as _some from 'lodash/some'
 import { ApiProperty } from '@nestjs/swagger'
 import {
   IsNotEmpty,
@@ -34,6 +35,15 @@ export class MetadataSizeLimit implements ValidatorConstraintInterface {
 export class MetadataKeysQuantity implements ValidatorConstraintInterface {
   validate(metadata: Record<string, string>) {
     return _keys(metadata).length <= MAX_METADATA_KEYS
+  }
+}
+
+@ValidatorConstraint()
+export class MetadataValueType implements ValidatorConstraintInterface {
+  validate(metadata: Record<string, string>) {
+    const values = _values(metadata)
+
+    return !_some(values, value => typeof value !== 'string')
   }
 }
 
@@ -114,6 +124,9 @@ export class EventsDTO {
   @IsObject()
   @Validate(MetadataKeysQuantity, {
     message: `Metadata object can't have more than ${MAX_METADATA_KEYS} keys`,
+  })
+  @Validate(MetadataValueType, {
+    message: 'All of metadata object values must be strings',
   })
   @Validate(MetadataSizeLimit, {
     message: `Metadata object can't have values with total length more than ${MAX_METADATA_VALUE_LENGTH} characters`,
