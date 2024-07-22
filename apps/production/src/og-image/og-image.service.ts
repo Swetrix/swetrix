@@ -185,7 +185,7 @@ export class OgImageService {
     const html = this.getOgHTML(title)
 
     const browser = await puppeteer.launch({
-      headless: 'new',
+      headless: true,
       args: browserArgs,
       defaultViewport: {
         width: 1200,

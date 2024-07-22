@@ -1264,7 +1264,7 @@ export class ProjectService {
     const html = this.getOgHTML(name, desc)
 
     const browser = await puppeteer.launch({
-      headless: 'new',
+      headless: true,
       args: browserArgs,
       defaultViewport: {
         width: 1200,

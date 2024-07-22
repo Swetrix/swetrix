@@ -26,7 +26,7 @@ import {
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import * as UAParser from 'ua-parser-js'
-import * as isbot from 'isbot'
+import { isbot } from 'isbot'
 
 import { OptionalJwtAccessTokenGuard } from '../auth/guards'
 import { Auth, Public } from '../auth/decorators'

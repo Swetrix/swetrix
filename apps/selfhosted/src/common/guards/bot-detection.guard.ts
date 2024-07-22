@@ -5,7 +5,7 @@ import {
   Injectable,
 } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
-import * as isbot from 'isbot'
+import { isbot } from 'isbot'
 import { IS_BOT_DETECTION_ENABLED } from '../decorators/bot-detection.decorator'
 
 @Injectable()
