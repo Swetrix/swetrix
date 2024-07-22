@@ -8,6 +8,7 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 import HTTPBackend from 'i18next-http-backend'
 import { getInitialNamespaces } from 'remix-i18next/client'
 import i18n from './i18n'
+import { I18N_CACHE_BREAKER } from 'redux/constants'
 
 async function hydrate() {
   await i18next
@@ -17,7 +18,7 @@ async function hydrate() {
     .init({
       ...i18n,
       ns: getInitialNamespaces(),
-      backend: { loadPath: '/locales/{{lng}}.json' },
+      backend: { loadPath: `/locales/{{lng}}.json?cv=${I18N_CACHE_BREAKER}` },
       detection: {
         order: ['htmlTag'],
         caches: ['cookie'],

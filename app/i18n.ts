@@ -1,7 +1,7 @@
 import { InitOptions } from 'i18next'
 import _includes from 'lodash/includes'
 
-import { defaultLanguage, whitelist } from 'redux/constants'
+import { defaultLanguage, I18N_CACHE_BREAKER, whitelist } from 'redux/constants'
 
 const genericConfig: InitOptions = {
   supportedLngs: whitelist,
@@ -9,7 +9,7 @@ const genericConfig: InitOptions = {
   defaultNS: 'common',
   react: { useSuspense: false },
   backend: {
-    loadPath: '/locales/{{lng}}.json',
+    loadPath: `/locales/{{lng}}.json?cv=${I18N_CACHE_BREAKER}`,
   },
   interpolation: {
     escapeValue: false,

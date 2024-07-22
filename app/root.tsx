@@ -13,7 +13,7 @@ import {
   useRouteError,
 } from '@remix-run/react'
 import { store } from 'redux/store'
-import { isBrowser, CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted } from 'redux/constants'
+import { isBrowser, CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted, I18N_CACHE_BREAKER } from 'redux/constants'
 import { getCookie, generateCookieString } from 'utils/cookie'
 import { ExclamationTriangleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 import { Provider } from 'react-redux'
@@ -251,7 +251,7 @@ export default function App() {
         <LocaleLinks />
         <link
           rel='preload'
-          href={`/locales/${locale}.json`}
+          href={`/locales/${locale}.json?cv=${I18N_CACHE_BREAKER}`}
           as='fetch'
           type='application/json'
           crossOrigin='anonymous'

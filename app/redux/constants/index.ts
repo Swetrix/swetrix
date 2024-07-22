@@ -481,6 +481,10 @@ export const paddleLanguageMapping: IStringObject = {
   uk: 'en',
 }
 
+// Increase this counter every time some major change is done within localisation files
+// This will prevent cached version or raw locale strings being displayed in production
+export const I18N_CACHE_BREAKER = 1
+
 // dashboard && projects
 
 export const roles: string[] = ['admin', 'viewer']
