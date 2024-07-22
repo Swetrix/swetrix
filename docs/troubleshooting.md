@@ -23,7 +23,7 @@ You should also check the "Network" tab to see if the script is loaded correctly
 <img alt="Browser Network tab" src={useBaseUrl('img/swetrix-network-tab.png')} />
 
 ## Visits are not appearing in the Dashboard
-Don't worry if you don't see any visits in the dashboard right away. There may be a small delay (up to 1 minute) before they appear. That's because we cache the data for a short period of time to reduce the load on our servers, instead of sending it to the database right away.
+Don't worry if you don't see any visits in the dashboard right away. There may be a small delay (up to 10 seconds) before they appear. That's because we cache the data for a short period of time to reduce the load on our servers, instead of sending it to the database right away.
 
 In case you don't see any visits even after a delay, make sure you don't have an ad-blocker or a similar extension active, as it may interfere with the script. Try visiting your website in a different browser or device to see if the issue persists.
 
