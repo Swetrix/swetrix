@@ -17,6 +17,7 @@ interface IInput {
   disabled?: boolean
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void
   isBeta?: boolean
+  maxLength?: number
 }
 
 const Input = ({
@@ -32,6 +33,7 @@ const Input = ({
   disabled,
   onKeyDown,
   isBeta,
+  maxLength,
 }: IInput): JSX.Element => {
   const isError = !_isEmpty(error)
 
@@ -48,6 +50,7 @@ const Input = ({
       <HeadlessInput
         type={type}
         value={value}
+        maxLength={maxLength}
         name={name}
         onChange={onChange}
         onKeyDown={onKeyDown}
