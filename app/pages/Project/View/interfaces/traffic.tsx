@@ -4,6 +4,27 @@ export interface IFilter {
   isExclusive: boolean
 }
 
+export enum ProjectViewCustomEventMetaValueType {
+  STRING = 'string',
+  INTEGER = 'integer',
+  FLOAT = 'float',
+}
+
+export interface IProjectViewCustomEvent {
+  id: string
+  customEventName: string
+  metaKey: string
+  metaValue: string
+  metaValueType: ProjectViewCustomEventMetaValueType
+}
+
+export interface IProjectView {
+  id: string
+  name: string
+  filters?: IFilter[]
+  customEvents?: IProjectViewCustomEvent[]
+}
+
 interface IParam {
   name: string
   count: number
