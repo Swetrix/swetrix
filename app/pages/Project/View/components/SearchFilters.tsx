@@ -4,6 +4,7 @@ import _isEmpty from 'lodash/isEmpty'
 import _reduce from 'lodash/reduce'
 import _filter from 'lodash/filter'
 import _map from 'lodash/map'
+import _find from 'lodash/find'
 
 import Modal from 'ui/Modal'
 import Checkbox from 'ui/Checkbox'
@@ -17,13 +18,7 @@ import { IFilter } from '../interfaces/traffic'
 
 interface ISearchFilters {
   projectPassword?: string
-  setProjectFilter: (
-    filter: {
-      column: string
-      filter: string[]
-    }[],
-    override: boolean,
-  ) => void
+  setProjectFilter: (filters: IFilter[], override: boolean) => void
   pid: string
   showModal: boolean
   setShowModal: (show: boolean) => void
@@ -42,21 +37,6 @@ const getLabelToTypeMap = (t: any, type: 'traffic' | 'errors') =>
     {},
   )
 
-interface IActiveFilter {
-  column: string
-  filter: string[]
-}
-
-const formatFilters = (filters: any): IActiveFilter[] => {
-  const formatted: IActiveFilter[] = []
-
-  _map(filters, (filter, column) => {
-    formatted.push({ column, filter })
-  })
-
-  return formatted
-}
-
 const SearchFilters = ({
   setProjectFilter,
   pid,
@@ -71,10 +51,10 @@ const SearchFilters = ({
     t,
     i18n: { language },
   } = useTranslation('common')
-  const [filterType, setFilterType] = useState<string>('')
+  const [filterType, setFilterType] = useState('')
   const [searchList, setSearchList] = useState<any[]>([])
-  const [activeFilters, setActiveFilters] = useState<any>({})
-  const [override, setOverride] = useState<boolean>(false)
+  const [activeFilters, setActiveFilters] = useState<IFilter[]>([])
+  const [override, setOverride] = useState(false)
 
   const labelToTypeMap = useMemo(() => getLabelToTypeMap(t, type), [t, type])
 
@@ -101,11 +81,34 @@ const SearchFilters = ({
     getFiltersList(filterType)
   }, [filterType, showModal, getFiltersList])
 
+  const onItemSelect = (item: string) => {
+    let processedItem = item
+
+    if (filterType === 'cc') {
+      processedItem = countries.getAlpha2Code(item, language) as string
+    }
+
+    const itemExists = _find(activeFilters, ({ column, filter }) => filter === processedItem && column === filterType)
+
+    if (itemExists) {
+      return
+    }
+
+    setActiveFilters((prevFilters: any) => [
+      ...prevFilters,
+      {
+        column: filterType,
+        filter: processedItem,
+        isExclusive: false,
+      },
+    ])
+  }
+
   const closeModal = () => {
     setShowModal(false)
     setTimeout(() => {
       setFilterType('')
-      setActiveFilters({})
+      setActiveFilters([])
       setOverride(false)
     }, 300)
   }
@@ -114,7 +117,7 @@ const SearchFilters = ({
     <Modal
       onClose={closeModal}
       onSubmit={() => {
-        setProjectFilter(formatFilters(activeFilters), override)
+        setProjectFilter(activeFilters, override)
         closeModal()
       }}
       submitText={t('project.applyFilters')}
@@ -137,8 +140,6 @@ const SearchFilters = ({
               {_map(filters, ({ column, filter, isExclusive }) => (
                 <Filter
                   key={`${column}-${filter}`}
-                  t={t}
-                  language={language}
                   onChangeExclusive={() => {}}
                   onRemoveFilter={() => {}}
                   isExclusive={isExclusive}
@@ -153,7 +154,7 @@ const SearchFilters = ({
           )}
           {filterType && !_isEmpty(searchList) && (
             <>
-              <p className='mt-5 text-sm font-medium text-gray-700 dark:text-gray-200'>{t('project.newFilters')}</p>
+              <p className='mt-5 text-sm font-medium text-gray-700 dark:text-gray-200'>{t('project.filters')}</p>
               <Combobox
                 items={searchList}
                 labelExtractor={(item) => {
@@ -163,57 +164,55 @@ const SearchFilters = ({
 
                   return item
                 }}
-                onSelect={(item: any) => {
-                  const processedItem = filterType === 'cc' ? (countries.getAlpha2Code(item, language) as string) : item
-
-                  setActiveFilters((prevFilters: any) => ({
-                    ...prevFilters,
-                    [filterType]: [...(prevFilters[filterType] || []), processedItem],
-                  }))
-                }}
+                onSelect={onItemSelect}
                 placeholder={t('project.settings.reseted.filtersPlaceholder')}
               />
-              {_map(activeFilters, (filter, column) => {
-                return _map(filter, (item) => (
-                  <Filter
-                    key={`${column}-${item}`}
-                    t={t}
-                    onRemoveFilter={(removeColumn, removeFilter) => {
-                      setActiveFilters((prevFilters: any) => {
-                        const filteredColumn = _filter(
-                          prevFilters[removeColumn],
-                          (item: string) => item !== removeFilter,
-                        )
-
-                        if (_isEmpty(filteredColumn)) {
-                          return _filter(prevFilters, (_, key) => key !== removeColumn)
-                        }
-
-                        return {
-                          ...prevFilters,
-                          [removeColumn]: filteredColumn,
-                        }
-                      })
-                    }}
-                    language={language}
-                    onChangeExclusive={() => {}}
-                    isExclusive={false}
-                    canChangeExclusive={false}
-                    column={column}
-                    filter={item}
-                    tnMapping={tnMapping}
-                    removable
-                  />
-                ))
-              })}
-              <Checkbox
-                checked={Boolean(override)}
-                onChange={setOverride}
-                name='overrideCurrentlyFilters'
-                className='mt-4'
-                label={t('project.overrideCurrentlyFilters')}
-              />
             </>
+          )}
+          <div className='mt-2'>
+            {_map(activeFilters, ({ filter, column, isExclusive }) => (
+              <Filter
+                key={`${column}-${filter}`}
+                onRemoveFilter={(removeColumn, removeFilter) => {
+                  setActiveFilters((prevFilters: any) => {
+                    return _filter(
+                      prevFilters,
+                      ({ column, filter }) => filter !== removeFilter || column !== removeColumn,
+                    )
+                  })
+                }}
+                onChangeExclusive={(columnToChange: string, filterToChange: string, isExclusive: boolean) => {
+                  setActiveFilters((prevFilters: any) => {
+                    return _map(prevFilters, (item) => {
+                      if (item.column === columnToChange && item.filter === filterToChange) {
+                        return {
+                          column: columnToChange,
+                          filter: filterToChange,
+                          isExclusive,
+                        }
+                      }
+
+                      return item
+                    })
+                  })
+                }}
+                isExclusive={isExclusive}
+                column={column}
+                filter={filter}
+                tnMapping={tnMapping}
+                canChangeExclusive
+                removable
+              />
+            ))}
+          </div>
+          {!_isEmpty(activeFilters) && (
+            <Checkbox
+              checked={Boolean(override)}
+              onChange={setOverride}
+              name='overrideCurrentlyFilters'
+              className='mt-4'
+              label={t('project.overrideCurrentlyFilters')}
+            />
           )}
         </div>
       }
