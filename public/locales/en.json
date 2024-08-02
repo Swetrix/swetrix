@@ -41,7 +41,9 @@
     "funnelDeleted": "The funnel has been deleted",
     "errorCode": "Error code: {{error}}",
     "updateErrorStatusFailed": "Error occured while updating error status",
-    "errorStatusUpdated": "Error status has been updated"
+    "errorStatusUpdated": "Error status has been updated",
+    "enterViewName": "Please enter a view name",
+    "viewDeleted": "View has been deleted"
   },
   "common": {
     "features": "Features",
@@ -772,11 +774,23 @@
   "project": {
     "metadata": "Metadata",
     "search": "Search",
+    "views": "Views",
+    "viewName": "View name",
+    "addAView": "Add a view",
     "loadMore": "Load more",
     "unknownCountry": "Unknown country",
     "selectCategory": "Select category to filter",
+    "selectCategoryOptional": "Select category to filter (optional)",
+    "customEventsAndMetrics": "Custom events and metrics (optional)",
+    "addAMetric": "Add a metric",
+    "customEvent": "Custom event",
+    "customMetricType": "Custom metric type",
+    "metaValueType": {
+      "decimal": "Decimal",
+      "integer": "Integer",
+      "text": "Text"
+    },
     "currentFilters": "Currently applied filters",
-    "newFilters": "New filters",
     "advancedFilters": "Advanced filters",
     "applyFilters": "Apply filters",
     "lookingForMore": "Looking for more?",
