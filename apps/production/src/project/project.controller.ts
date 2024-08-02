@@ -1948,6 +1948,7 @@ export class ProjectController {
   async getProjectView(
     @Param() params: ProjectViewIdsDto,
     @CurrentUserId() userId: string,
+    @Headers() headers: { 'x-password'?: string },
   ) {
     const project = await this.projectService.findProject(params.projectId, [
       'admin',
@@ -1964,7 +1965,8 @@ export class ProjectController {
       throw new NotFoundException('User not found.')
     }
 
-    this.projectService.allowedToManage(project, userId, user.roles)
+    this.projectService.allowedToView(project, userId, headers['x-password'])
+
     return this.projectsViewsRepository.findProjectView(
       params.projectId,
       params.viewId,
@@ -2000,10 +2002,12 @@ export class ProjectController {
     this.projectService.allowedToManage(project, userId, user.roles)
 
     const createdProjectView =
-      await this.projectsViewsRepository.createProjectView(
-        params.projectId,
-        body,
-      )
+      await this.projectsViewsRepository.createProjectView(params.projectId, {
+        ...body,
+        filters: JSON.stringify(
+          this.projectService.filterUnsupportedColumns(body.filters),
+        ),
+      })
 
     return _omit(createdProjectView, ['project'])
   }
@@ -2017,6 +2021,7 @@ export class ProjectController {
   async getProjectViews(
     @Param() params: ProjectIdDto,
     @CurrentUserId() userId: string,
+    @Headers() headers: { 'x-password'?: string },
   ) {
     const project = await this.projectService.findProject(params.projectId, [
       'admin',
@@ -2033,7 +2038,7 @@ export class ProjectController {
       throw new NotFoundException('User not found.')
     }
 
-    this.projectService.allowedToManage(project, userId, user.roles)
+    this.projectService.allowedToView(project, userId, headers['x-password'])
 
     return this.projectsViewsRepository.findViews(params.projectId)
   }
@@ -2075,7 +2080,12 @@ export class ProjectController {
       throw new NotFoundException('View not found.')
     }
 
-    await this.projectsViewsRepository.updateProjectView(params.viewId, body)
+    await this.projectsViewsRepository.updateProjectView(params.viewId, {
+      ...body,
+      filters: JSON.stringify(
+        this.projectService.filterUnsupportedColumns(body.filters),
+      ),
+    })
 
     return this.projectsViewsRepository.findView(params.viewId)
   }
