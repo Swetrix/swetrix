@@ -35,12 +35,15 @@ export class ProjectsViewsRepository {
     })
 
     if (data.customEvents) {
-      const customEventPromises = data.customEvents.map(customEvent =>
-        this.projectViewCustomEventsRepository.save({
+      const customEventPromises = data.customEvents.map(customEvent => {
+        // @ts-expect-error - mass assignment
+        delete customEvent.id
+
+        return this.projectViewCustomEventsRepository.save({
           viewId: view.id,
           ...customEvent,
-        }),
-      )
+        })
+      })
       await Promise.all(customEventPromises)
     }
 
