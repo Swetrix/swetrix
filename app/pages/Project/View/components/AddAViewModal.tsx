@@ -191,6 +191,10 @@ const AddAViewModal = ({
       setActiveFilters(defaultView.filters)
     }
 
+    if (defaultView.customEvents) {
+      setCustomEvents(defaultView.customEvents)
+    }
+
     setName(defaultView.name)
   }, [defaultView])
 
@@ -254,10 +258,10 @@ const AddAViewModal = ({
     try {
       // updating an existing view
       if (defaultView?.id) {
-        await updateProjectView(pid, defaultView?.id, name, activeFilters)
+        await updateProjectView(pid, defaultView?.id, name, activeFilters, customEvents)
       } else {
         // crating a new one
-        await createProjectView(pid, name, 'traffic', activeFilters)
+        await createProjectView(pid, name, 'traffic', activeFilters, customEvents)
       }
     } catch (reason) {
       console.error('[ERROR] onViewCreate:', reason)

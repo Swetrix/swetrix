@@ -18,7 +18,7 @@ import { IProject, IOverall, IProjectNames } from 'redux/models/IProject'
 import { IAlerts } from 'redux/models/IAlerts'
 import { ISharedProject } from 'redux/models/ISharedProject'
 import { ISubscribers } from 'redux/models/ISubscribers'
-import { IFilter } from 'pages/Project/View/interfaces/traffic'
+import { IFilter, IProjectViewCustomEvent } from 'pages/Project/View/interfaces/traffic'
 
 const debug = Debug('swetrix:api')
 
@@ -629,18 +629,30 @@ export const getProjectViews = (pid: string, password: string | undefined = '') 
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const createProjectView = (pid: string, name: string, type: 'traffic' | 'performance', filters: IFilter[]) =>
+export const createProjectView = (
+  pid: string,
+  name: string,
+  type: 'traffic' | 'performance',
+  filters: IFilter[],
+  customEvents: Partial<IProjectViewCustomEvent>[],
+) =>
   api
-    .post(`project/${pid}/views`, { name, type, filters })
+    .post(`project/${pid}/views`, { name, type, filters, customEvents })
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const updateProjectView = (pid: string, viewId: string, name: string, filters: IFilter[]) =>
+export const updateProjectView = (
+  pid: string,
+  viewId: string,
+  name: string,
+  filters: IFilter[],
+  customEvents: Partial<IProjectViewCustomEvent>[],
+) =>
   api
-    .patch(`project/${pid}/views/${viewId}`, { name, filters })
+    .patch(`project/${pid}/views/${viewId}`, { name, filters, customEvents })
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
