@@ -51,6 +51,8 @@ async function bootstrap() {
     next()
   })
 
+  app.enableShutdownHooks()
+
   await app.listen(5005)
 }
 bootstrap()

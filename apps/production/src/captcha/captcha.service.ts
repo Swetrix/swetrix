@@ -4,7 +4,6 @@ import * as svgCaptcha from 'svg-captcha'
 import * as CryptoJS from 'crypto-js'
 import * as _toLower from 'lodash/toLower'
 import * as UAParser from 'ua-parser-js'
-import * as _map from 'lodash/map'
 import * as _values from 'lodash/values'
 import * as _includes from 'lodash/includes'
 import * as dayjs from 'dayjs'
@@ -14,15 +13,15 @@ import { ProjectService } from '../project/project.service'
 import { AppLoggerService } from '../logger/logger.service'
 import {
   redis,
-  REDIS_LOG_CAPTCHA_CACHE_KEY,
   isValidPID,
   getRedisCaptchaKey,
   CAPTCHA_SALT,
   CAPTCHA_TOKEN_LIFETIME,
 } from '../common/constants'
 import { getGeoDetails } from '../common/utils'
-import { getElValue } from '../analytics/analytics.controller'
 import { GeneratedCaptcha } from './interfaces/generated-captcha'
+import { captchaTransformer } from './utils/transformers'
+import { clickhouse } from '../common/integrations/clickhouse'
 
 dayjs.extend(utc)
 
@@ -65,26 +64,6 @@ const isTokenAlreadyUsed = async (token: string): Promise<boolean> => {
   return false
 }
 
-const captchaDTO = (
-  pid: string,
-  dv: string,
-  br: string,
-  os: string,
-  cc: string,
-  isManual: boolean,
-  timestamp: number,
-): Array<string | number> => {
-  return [
-    pid,
-    dv,
-    br,
-    os,
-    cc,
-    isManual ? 1 : 0,
-    dayjs.unix(timestamp).format('YYYY-MM-DD HH:mm:ss'),
-  ]
-}
-
 @Injectable()
 export class CaptchaService {
   constructor(
@@ -124,7 +103,6 @@ export class CaptchaService {
     pid: string,
     userAgent: string,
     timestamp: number,
-    isManual: boolean,
     ip: string,
   ): Promise<void> {
     const ua = UAParser(userAgent)
@@ -132,12 +110,18 @@ export class CaptchaService {
     const br = ua.browser.name
     const os = ua.os.name
 
-    const { country = 'NULL' } = getGeoDetails(ip)
-    const dto = captchaDTO(pid, dv, br, os, country, isManual, timestamp)
-    const values = `(${_map(dto, getElValue).join(',')})`
+    const { country } = getGeoDetails(ip)
+    const transformed = captchaTransformer(pid, dv, br, os, country, timestamp)
 
     try {
-      await redis.rpush(REDIS_LOG_CAPTCHA_CACHE_KEY, values)
+      await clickhouse.insert({
+        table: 'errors',
+        format: 'JSONEachRow',
+        values: [transformed],
+        clickhouse_settings: {
+          async_insert: 1,
+        },
+      })
     } catch (e) {
       this.logger.error(`[CaptchaService -> logCaptchaPass] ${e}`)
     }

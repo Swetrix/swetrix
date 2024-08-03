@@ -19,7 +19,6 @@ import * as utc from 'dayjs/plugin/utc'
 import * as _map from 'lodash/map'
 
 import {
-  clickhouse,
   redis,
   DEFAULT_SELFHOSTED_UUID,
   SELFHOSTED_EMAIL,
@@ -27,6 +26,7 @@ import {
   isDevelopment,
   isProxiedByCloudflare,
 } from './constants'
+import { clickhouse } from './integrations/clickhouse'
 import { DEFAULT_TIMEZONE, TimeFormat } from '../user/entities/user.entity'
 import { Project } from '../project/entity/project.entity'
 import { Funnel } from '../project/entity/funnel.entity'
@@ -72,17 +72,23 @@ const checkRateLimit = async (
 }
 
 const getFunnelsClickhouse = async (projectId: string, funnelId = null) => {
-  const paramsData = {
-    params: {
-      projectId,
-      funnelId,
-    },
+  const queryParams = {
+    projectId,
+    funnelId,
   }
 
   if (!funnelId) {
     const query =
       'SELECT * FROM funnel WHERE projectId = {projectId:FixedString(12)}'
-    return clickhouse.query(query, paramsData).toPromise()
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: queryParams,
+      })
+      .then(resultSet => resultSet.json())
+
+    return data
   }
 
   const query = `
@@ -93,15 +99,20 @@ const getFunnelsClickhouse = async (projectId: string, funnelId = null) => {
       projectId = {projectId:FixedString(12)}
       AND id = {funnelId:String}`
 
-  const funnel = await clickhouse.query(query, paramsData).toPromise()
+  const { data } = await clickhouse
+    .query({
+      query,
+      query_params: queryParams,
+    })
+    .then(resultSet => resultSet.json())
 
-  if (_isEmpty(funnel)) {
+  if (_isEmpty(data)) {
     throw new NotFoundException(
       `Funnel ${funnelId} was not found in the database`,
     )
   }
 
-  return _head(funnel)
+  return _head(data)
 }
 
 const updateFunnelClickhouse = async (funnel: any) => {
@@ -120,43 +131,51 @@ const updateFunnelClickhouse = async (funnel: any) => {
     ', ',
   )} WHERE id='${funnel.id}'`
 
-  return clickhouse.query(query).toPromise()
+  const { data } = await clickhouse
+    .query({
+      query,
+    })
+    .then(resultSet => resultSet.json())
+
+  return data
 }
 
 const deleteFunnelClickhouse = async (id: string) => {
-  const paramsData = {
-    params: {
-      id,
-    },
-  }
-
   const query = `ALTER table funnel DELETE WHERE id = {id:String}`
-  return clickhouse.query(query, paramsData).toPromise()
+
+  const { data } = await clickhouse
+    .query({
+      query,
+      query_params: {
+        id,
+      },
+    })
+    .then(resultSet => resultSet.json())
+
+  return data
 }
 
 const createFunnelClickhouse = async (funnel: Partial<Funnel>) => {
-  const paramsData = {
-    params: {
-      ...funnel,
-    },
-  }
+  const { id, name, steps, projectId } = funnel
 
-  const query = `INSERT INTO funnel (*) VALUES ({id:String},{name:String},{steps:String},{projectId:FixedString(12)},'${dayjs
-    .utc()
-    .format('YYYY-MM-DD HH:mm:ss')}')`
-
-  return clickhouse.query(query, paramsData).toPromise()
+  await clickhouse.insert({
+    table: 'funnel',
+    format: 'JSONEachRow',
+    values: [
+      {
+        id,
+        name,
+        steps,
+        projectId,
+        created: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
+      },
+    ],
+  })
 }
 
 const getProjectsClickhouse = async (id = null, search: string = null) => {
   if (!id) {
     if (search) {
-      const paramsData = {
-        params: {
-          search: `%${search}%`,
-        },
-      }
-
       const query = `
         SELECT
           *
@@ -164,29 +183,48 @@ const getProjectsClickhouse = async (id = null, search: string = null) => {
         WHERE
           name ILIKE {search:String} OR
           id ILIKE {search:String}
-        ORDER BY created ASC`
+        ORDER BY created ASC
+      `
 
-      return clickhouse.query(query, paramsData).toPromise()
+      const { data } = await clickhouse
+        .query({
+          query,
+          query_params: {
+            search: `%${search}%`,
+          },
+        })
+        .then(resultSet => resultSet.json())
+
+      return data
     }
 
     const query = 'SELECT * FROM project ORDER BY created ASC;'
-    return clickhouse.query(query).toPromise()
-  }
 
-  const paramsData = {
-    params: {
-      id,
-    },
+    const { data } = await clickhouse
+      .query({
+        query,
+      })
+      .then(resultSet => resultSet.json())
+
+    return data
   }
 
   const query = `SELECT * FROM project WHERE id = {id:FixedString(12)};`
-  const project = await clickhouse.query(query, paramsData).toPromise()
 
-  if (_isEmpty(project)) {
+  const { data } = await clickhouse
+    .query({
+      query,
+      query_params: {
+        id,
+      },
+    })
+    .then(resultSet => resultSet.json())
+
+  if (_isEmpty(data)) {
     throw new NotFoundException(`Project ${id} was not found in the database`)
   }
 
-  return _head(project)
+  return _head(data)
 }
 
 const updateProjectClickhouse = async (project: any) => {
@@ -204,7 +242,14 @@ const updateProjectClickhouse = async (project: any) => {
     _map(columns, (col, id) => `${col}='${values[id]}'`),
     ', ',
   )} WHERE id='${project.id}'`
-  return clickhouse.query(query).toPromise()
+
+  const { data } = await clickhouse
+    .query({
+      query,
+    })
+    .then(resultSet => resultSet.json())
+
+  return data
 }
 
 /**
@@ -230,71 +275,95 @@ const calculateRelativePercentage = (
 }
 
 const deleteProjectClickhouse = async (id: string) => {
-  const paramsData = {
-    params: {
-      id,
-    },
-  }
-
   const query = `ALTER table project DELETE WHERE id = {id:FixedString(12)}`
-  return clickhouse.query(query, paramsData).toPromise()
+
+  const { data } = await clickhouse
+    .query({
+      query,
+      query_params: {
+        id,
+      },
+    })
+    .then(resultSet => resultSet.json())
+
+  return data
 }
 
 const createProjectClickhouse = async (project: Partial<Project>) => {
-  const paramsData = {
-    params: {
-      ...project,
-    },
-  }
-  const created = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-  const query = `INSERT INTO project (*) VALUES ({id:FixedString(12)},{name:String},'','',1,0,0,NULL,'${created}')`
+  const { id, name } = project
 
-  return clickhouse.query(query, paramsData).toPromise()
+  await clickhouse.insert({
+    table: 'project',
+    format: 'JSONEachRow',
+    values: [
+      {
+        id,
+        name,
+        origins: '',
+        ipBlacklist: '',
+        active: 1,
+        public: 0,
+        isPasswordProtected: 0,
+        passwordHash: null,
+        created: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
+      },
+    ],
+  })
 }
 
 const saveRefreshTokenClickhouse = async (
   userId: string,
   refreshToken: string,
 ) => {
-  const paramsData = {
-    params: {
-      userId,
-      refreshToken,
-    },
-  }
-  const query =
-    'INSERT INTO refresh_token (*) VALUES ({userId:String},{refreshToken:String})'
-
-  return clickhouse.query(query, paramsData).toPromise()
+  await clickhouse.insert({
+    table: 'refresh_token',
+    format: 'JSONEachRow',
+    values: [
+      {
+        userId,
+        refreshToken,
+      },
+    ],
+  })
 }
 
 const findRefreshTokenClickhouse = async (
   userId: string,
   refreshToken: string,
 ) => {
-  const paramsData = {
-    params: {
-      userId,
-      refreshToken,
-    },
-  }
   const query =
     'SELECT * FROM refresh_token WHERE userId = {userId:String} AND refreshToken = {refreshToken:String}'
-  return clickhouse.query(query, paramsData).toPromise()
+
+  const { data } = await clickhouse
+    .query({
+      query,
+      query_params: {
+        userId,
+        refreshToken,
+      },
+    })
+    .then(resultSet => resultSet.json())
+
+  return data
 }
 
 const deleteRefreshTokenClickhouse = async (
   userId: string,
   refreshToken: string,
 ) => {
-  const paramsData = {
-    params: {
-      userId,
-      refreshToken,
-    },
-  }
   const query = `ALTER table refresh_token DELETE WHERE userId = {userId:String} AND refreshToken = {refreshToken:String}`
-  return clickhouse.query(query, paramsData).toPromise()
+
+  const { data } = await clickhouse
+    .query({
+      query,
+      query_params: {
+        userId,
+        refreshToken,
+      },
+    })
+    .then(resultSet => resultSet.json())
+
+  return data
 }
 
 interface IClickhouseUser {
@@ -306,29 +375,36 @@ interface IClickhouseUser {
 const CLICKHOUSE_SETTINGS_ID = 'sfuser'
 
 const createUserClickhouse = async (user: IClickhouseUser) => {
-  const paramsData = {
-    params: {
-      ...user,
-      id: CLICKHOUSE_SETTINGS_ID,
-    },
-  }
+  const { timezone, timeFormat, showLiveVisitorsInTitle } = user
 
-  const query = `INSERT INTO sfuser (*) VALUES ({id:String},{timezone:String},{timeFormat:String},{showLiveVisitorsInTitle:Int8})`
-
-  return clickhouse.query(query, paramsData).toPromise()
+  await clickhouse.insert({
+    table: 'sfuser',
+    format: 'JSONEachRow',
+    values: [
+      {
+        id: CLICKHOUSE_SETTINGS_ID,
+        timezone,
+        timeFormat,
+        showLiveVisitorsInTitle,
+      },
+    ],
+  })
 }
 
 const getUserClickhouse = async () => {
-  const paramsData = {
-    params: {
-      id: CLICKHOUSE_SETTINGS_ID,
-    },
-  }
-
   const query = `SELECT * FROM sfuser WHERE id = {id:String}`
 
   try {
-    return (await clickhouse.query(query, paramsData).toPromise())[0] || {}
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: {
+          id: CLICKHOUSE_SETTINGS_ID,
+        },
+      })
+      .then(resultSet => resultSet.json())
+
+    return data[0] || {}
   } catch {
     return {}
   }
@@ -338,8 +414,13 @@ const userClickhouseExists = async () => {
   const query = `SELECT * FROM sfuser WHERE id = '${CLICKHOUSE_SETTINGS_ID}'`
 
   try {
-    const result = await clickhouse.query(query).toPromise()
-    return !_isEmpty(result)
+    const { data } = await clickhouse
+      .query({
+        query,
+      })
+      .then(resultSet => resultSet.json())
+
+    return !_isEmpty(data)
   } catch {
     return false
   }
@@ -355,13 +436,6 @@ const updateUserClickhouse = async (user: IClickhouseUser) => {
       showLiveVisitorsInTitle: 0,
       ...user,
     })
-  }
-
-  const paramsData = {
-    params: {
-      ...user,
-      id: CLICKHOUSE_SETTINGS_ID,
-    },
   }
 
   let query = 'ALTER table sfuser UPDATE '
@@ -384,7 +458,17 @@ const updateUserClickhouse = async (user: IClickhouseUser) => {
 
   query += ` WHERE id={id:String}`
 
-  return clickhouse.query(query, paramsData).toPromise()
+  const { data } = await clickhouse
+    .query({
+      query,
+      query_params: {
+        ...user,
+        id: CLICKHOUSE_SETTINGS_ID,
+      },
+    })
+    .then(resultSet => resultSet.json())
+
+  return data
 }
 
 const millisecondsToSeconds = (milliseconds: number) => milliseconds / 1000

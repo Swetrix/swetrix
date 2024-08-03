@@ -3,22 +3,12 @@ import { Cron, CronExpression } from '@nestjs/schedule'
 import * as bcrypt from 'bcrypt'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
-import * as _isEmpty from 'lodash/isEmpty'
-import * as _join from 'lodash/join'
 import * as _size from 'lodash/size'
 import * as _map from 'lodash/map'
 import * as _now from 'lodash/now'
 
-import {
-  clickhouse,
-  redis,
-  REDIS_LOG_DATA_CACHE_KEY,
-  REDIS_LOG_CUSTOM_CACHE_KEY,
-  REDIS_SESSION_SALT_KEY,
-  REDIS_LOG_PERF_CACHE_KEY,
-  REDIS_LOG_CAPTCHA_CACHE_KEY,
-  REDIS_LOG_ERROR_CACHE_KEY,
-} from '../common/constants'
+import { redis, REDIS_SESSION_SALT_KEY } from '../common/constants'
+import { clickhouse } from '../common/integrations/clickhouse'
 import { AppLoggerService } from '../logger/logger.service'
 
 dayjs.extend(utc)
@@ -26,77 +16,6 @@ dayjs.extend(utc)
 @Injectable()
 export class TaskManagerService {
   constructor(private readonly logger: AppLoggerService) {}
-
-  @Cron(CronExpression.EVERY_MINUTE)
-  async saveLogData(): Promise<void> {
-    const data = await redis.lrange(REDIS_LOG_DATA_CACHE_KEY, 0, -1)
-    const customData = await redis.lrange(REDIS_LOG_CUSTOM_CACHE_KEY, 0, -1)
-    const perfData = await redis.lrange(REDIS_LOG_PERF_CACHE_KEY, 0, -1)
-    const captchaData = await redis.lrange(REDIS_LOG_CAPTCHA_CACHE_KEY, 0, -1)
-    const errorData = await redis.lrange(REDIS_LOG_ERROR_CACHE_KEY, 0, -1)
-
-    if (!_isEmpty(data)) {
-      await redis.del(REDIS_LOG_DATA_CACHE_KEY)
-      const query = `INSERT INTO analytics (*) VALUES ${_join(data, ',')}`
-      try {
-        await clickhouse.query(query).toPromise()
-      } catch (e) {
-        console.error(`[CRON WORKER] Error whilst saving log data: ${e}`)
-      }
-    }
-
-    if (!_isEmpty(captchaData)) {
-      await redis.del(REDIS_LOG_CAPTCHA_CACHE_KEY)
-      const query = `INSERT INTO captcha (*) VALUES ${_join(captchaData, ',')}`
-      try {
-        await clickhouse.query(query).toPromise()
-      } catch (e) {
-        console.error(
-          `[CRON WORKER] Error whilst saving CAPTCHA log data: ${e}`,
-        )
-      }
-    }
-
-    if (!_isEmpty(customData)) {
-      await redis.del(REDIS_LOG_CUSTOM_CACHE_KEY)
-      const query = `INSERT INTO customEV (*) VALUES ${_join(customData, ',')}`
-
-      try {
-        await clickhouse.query(query).toPromise()
-      } catch (e) {
-        console.error(
-          `[CRON WORKER] Error whilst saving custom events data: ${e}`,
-        )
-      }
-    }
-
-    if (!_isEmpty(errorData)) {
-      await redis.del(REDIS_LOG_ERROR_CACHE_KEY)
-      const query = `INSERT INTO errors (*) VALUES ${_join(errorData, ',')}`
-
-      try {
-        await clickhouse.query(query).toPromise()
-      } catch (e) {
-        console.error(
-          `[CRON WORKER] Error whilst saving error events data: ${e}`,
-        )
-      }
-    }
-
-    if (!_isEmpty(perfData)) {
-      await redis.del(REDIS_LOG_PERF_CACHE_KEY)
-
-      const query = `INSERT INTO performance (*) VALUES ${_join(perfData, ',')}`
-
-      try {
-        await clickhouse.query(query).toPromise()
-      } catch (e) {
-        console.error(
-          `[CRON WORKER] Error whilst saving performance data: ${e}`,
-        )
-      }
-    }
-  }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async generateSessionSalt(): Promise<void> {
@@ -111,7 +30,9 @@ export class TaskManagerService {
       .subtract(20, 'm')
       .format('YYYY-MM-DD HH:mm:ss')}'`
 
-    await clickhouse.query(delSidQuery).toPromise()
+    await clickhouse.query({
+      query: delSidQuery,
+    })
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -148,7 +69,9 @@ export class TaskManagerService {
         ([key]) => `'${key.split(':')[1]}'`,
       ).join(',')})`
 
-      await clickhouse.query(setSdurQuery).toPromise()
+      await clickhouse.query({
+        query: setSdurQuery,
+      })
     }
   }
 
@@ -163,7 +86,9 @@ export class TaskManagerService {
     ]
 
     const promises = _map(queries, async query => {
-      await clickhouse.query(query).toPromise()
+      await clickhouse.query({
+        query,
+      })
     })
 
     await Promise.allSettled(promises).catch(reason => {

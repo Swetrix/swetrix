@@ -52,7 +52,8 @@ import {
   FunnelUpdateDTO,
 } from './dto'
 import { AppLoggerService } from '../logger/logger.service'
-import { isValidPID, clickhouse } from '../common/constants'
+import { isValidPID } from '../common/constants'
+import { clickhouse } from '../common/integrations/clickhouse'
 import {
   getProjectsClickhouse,
   createProjectClickhouse,
@@ -201,12 +202,13 @@ export class ProjectController {
       )
     }
 
-    const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
-    const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
-
     try {
-      await clickhouse.query(query1).toPromise()
-      await clickhouse.query(query2).toPromise()
+      await clickhouse.query({
+        query: `ALTER table analytics DELETE WHERE pid='${id}'`,
+      })
+      await clickhouse.query({
+        query: `ALTER table customEV DELETE WHERE pid='${id}'`,
+      })
       return 'Project resetted successfully'
     } catch (e) {
       this.logger.error(e)
@@ -433,12 +435,13 @@ export class ProjectController {
 
     await deleteProjectClickhouse(id)
 
-    const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
-    const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
-
     try {
-      await clickhouse.query(query1).toPromise()
-      await clickhouse.query(query2).toPromise()
+      await clickhouse.query({
+        query: `ALTER table analytics DELETE WHERE pid='${id}'`,
+      })
+      await clickhouse.query({
+        query: `ALTER table customEV DELETE WHERE pid='${id}'`,
+      })
       return 'Project deleted successfully'
     } catch (e) {
       this.logger.error(e)

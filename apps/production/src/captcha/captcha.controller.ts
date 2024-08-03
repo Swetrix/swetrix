@@ -96,13 +96,7 @@ export class CaptchaController {
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    await this.captchaService.logCaptchaPass(
-      pid,
-      userAgent,
-      timestamp,
-      true,
-      ip,
-    )
+    await this.captchaService.logCaptchaPass(pid, userAgent, timestamp, ip)
 
     this.verifiedCaptchaCount.inc()
     return {

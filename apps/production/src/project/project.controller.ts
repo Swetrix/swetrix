@@ -33,7 +33,7 @@ import {
   ApiOkResponse,
   ApiNoContentResponse,
 } from '@nestjs/swagger'
-import { ILike } from 'typeorm'
+import { FindConditions, ILike } from 'typeorm'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _map from 'lodash/map'
 import * as _trim from 'lodash/trim'
@@ -74,13 +74,13 @@ import { UserService } from '../user/user.service'
 import { AppLoggerService } from '../logger/logger.service'
 import {
   isValidPID,
-  clickhouse,
   PROJECT_INVITE_EXPIRE,
   CAPTCHA_SECRET_KEY_LENGTH,
   isDevelopment,
   PRODUCTION_ORIGIN,
   MAX_FUNNELS,
 } from '../common/constants'
+import { clickhouse } from '../common/integrations/clickhouse'
 import { generateRandomString } from '../common/utils'
 import {
   AddSubscriberParamsDto,
@@ -168,7 +168,9 @@ export class ProjectController {
     this.logger.log({ userId, take, skip }, 'GET /project')
     const isCaptcha = isCaptchaStr === 'true'
 
-    let where: any
+    let where: FindConditions<
+      Project & (Project & { admin?: string })[] & { admin?: string }
+    >
 
     if (search) {
       where = [
@@ -177,6 +179,7 @@ export class ProjectController {
           isCaptchaProject: isCaptcha,
           isAnalyticsProject: !isCaptcha,
           name: ILike(`%${search}%`),
+          isArchived: showArchived,
           // name: ILike(`%${mysql.escape(search).slice(1, 0).slice(0, -1)}%`),
         },
         {
@@ -184,6 +187,7 @@ export class ProjectController {
           isCaptchaProject: isCaptcha,
           isAnalyticsProject: !isCaptcha,
           id: ILike(`%${search}%`),
+          isArchived: showArchived,
           // id: ILike(`%${mysql.escape(search).slice(1, 0).slice(0, -1)}%`),
         },
       ]
@@ -197,13 +201,14 @@ export class ProjectController {
       } else {
         where.isAnalyticsProject = true
       }
+
+      if (showArchived) {
+        where.isArchived = true
+      }
     }
 
     const [paginated, totalMonthlyEvents, user] = await Promise.all([
-      this.projectService.paginate(
-        { take, skip },
-        { ...where, isArchived: showArchived },
-      ),
+      this.projectService.paginate({ take, skip }, where),
       this.projectService.getRedisCount(userId),
       this.userService.findOne(userId),
     ])
@@ -768,12 +773,25 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, uid, user.roles)
 
-    const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
-    const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
+    const queries = [
+      'ALTER table analytics DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER table customEV DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER table performance DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER table errors DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER table error_statuses DELETE WHERE pid={pid:FixedString(12)}',
+    ]
 
     try {
-      await clickhouse.query(query1).toPromise()
-      await clickhouse.query(query2).toPromise()
+      const promises = _map(queries, async query =>
+        clickhouse.query({
+          query,
+          query_params: {
+            pid: id,
+          },
+        }),
+      )
+
+      await Promise.all(promises)
       return 'Project resetted successfully'
     } catch (e) {
       this.logger.error(e)
@@ -798,8 +816,6 @@ export class ProjectController {
       )
     }
 
-    const query = `ALTER table captcha DELETE WHERE pid='${id}'`
-
     const user = await this.userService.findOne(uid)
     const project = await this.projectService.findOneWhere(
       { id },
@@ -816,7 +832,12 @@ export class ProjectController {
     this.projectService.allowedToManage(project, uid, user.roles)
 
     try {
-      await clickhouse.query(query).toPromise()
+      await clickhouse.query({
+        query: 'ALTER table captcha DELETE WHERE pid={pid:FixedString(12)}',
+        query_params: {
+          pid: id,
+        },
+      })
       return 'CAPTCHA project resetted successfully'
     } catch (e) {
       this.logger.error(e)
@@ -896,10 +917,13 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, uid, user.roles)
 
-    const query = `ALTER table captcha DELETE WHERE pid='${id}'`
-
     try {
-      await clickhouse.query(query).toPromise()
+      await clickhouse.query({
+        query: 'ALTER table captcha DELETE WHERE pid={pid:FixedString(12)}',
+        query_params: {
+          pid: id,
+        },
+      })
 
       project.captchaSecretKey = null
       project.isCaptchaEnabled = false
@@ -1575,12 +1599,27 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, uid, user.roles)
 
-    const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
-    const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
+    const queries = [
+      'ALTER table analytics DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER table customEV DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER table performance DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER table errors DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER table error_statuses DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER table captcha DELETE WHERE pid={pid:FixedString(12)}',
+    ]
 
     try {
-      await clickhouse.query(query1).toPromise()
-      await clickhouse.query(query2).toPromise()
+      const promises = _map(queries, async query =>
+        clickhouse.query({
+          query,
+          query_params: {
+            pid: id,
+          },
+        }),
+      )
+
+      await Promise.all(promises)
+
       await deleteProjectRedis(id)
       this.projectCount.dec()
     } catch (e) {
