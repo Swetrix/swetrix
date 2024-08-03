@@ -11,7 +11,6 @@ import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _isNull from 'lodash/isNull'
-import * as _join from 'lodash/join'
 import * as _size from 'lodash/size'
 import * as _map from 'lodash/map'
 import * as _now from 'lodash/now'
@@ -46,22 +45,17 @@ import {
   DashboardBlockReason,
 } from '../user/entities/user.entity'
 import {
-  clickhouse,
   redis,
-  REDIS_LOG_DATA_CACHE_KEY,
-  REDIS_LOG_CUSTOM_CACHE_KEY,
   REDIS_SESSION_SALT_KEY,
-  REDIS_LOG_PERF_CACHE_KEY,
   SEND_WARNING_AT_PERC,
   PROJECT_INVITE_EXPIRE,
-  REDIS_LOG_CAPTCHA_CACHE_KEY,
   JWT_REFRESH_TOKEN_LIFETIME,
   PAYPAL_CLIENT_ID,
   PAYPAL_CLIENT_SECRET,
   TRAFFIC_SPIKE_ALLOWED_PERCENTAGE,
   isDevelopment,
-  REDIS_LOG_ERROR_CACHE_KEY,
 } from '../common/constants'
+import { clickhouse } from '../common/integrations/clickhouse'
 import { CHPlanUsage } from './interfaces'
 import { getRandomTip } from '../common/utils'
 import { AppLoggerService } from '../logger/logger.service'
@@ -416,77 +410,6 @@ export class TaskManagerService {
     })
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
-  async saveLogData(): Promise<void> {
-    const data = await redis.lrange(REDIS_LOG_DATA_CACHE_KEY, 0, -1)
-    const customData = await redis.lrange(REDIS_LOG_CUSTOM_CACHE_KEY, 0, -1)
-    const perfData = await redis.lrange(REDIS_LOG_PERF_CACHE_KEY, 0, -1)
-    const captchaData = await redis.lrange(REDIS_LOG_CAPTCHA_CACHE_KEY, 0, -1)
-    const errorData = await redis.lrange(REDIS_LOG_ERROR_CACHE_KEY, 0, -1)
-
-    if (!_isEmpty(data)) {
-      await redis.del(REDIS_LOG_DATA_CACHE_KEY)
-      const query = `INSERT INTO analytics (*) VALUES ${_join(data, ',')}`
-      try {
-        await clickhouse.query(query).toPromise()
-      } catch (e) {
-        console.error(`[CRON WORKER] Error whilst saving log data: ${e}`)
-      }
-    }
-
-    if (!_isEmpty(captchaData)) {
-      await redis.del(REDIS_LOG_CAPTCHA_CACHE_KEY)
-      const query = `INSERT INTO captcha (*) VALUES ${_join(captchaData, ',')}`
-      try {
-        await clickhouse.query(query).toPromise()
-      } catch (e) {
-        console.error(
-          `[CRON WORKER] Error whilst saving CAPTCHA log data: ${e}`,
-        )
-      }
-    }
-
-    if (!_isEmpty(customData)) {
-      await redis.del(REDIS_LOG_CUSTOM_CACHE_KEY)
-      const query = `INSERT INTO customEV (*) VALUES ${_join(customData, ',')}`
-
-      try {
-        await clickhouse.query(query).toPromise()
-      } catch (e) {
-        console.error(
-          `[CRON WORKER] Error whilst saving custom events data: ${e}`,
-        )
-      }
-    }
-
-    if (!_isEmpty(errorData)) {
-      await redis.del(REDIS_LOG_ERROR_CACHE_KEY)
-      const query = `INSERT INTO errors (*) VALUES ${_join(errorData, ',')}`
-
-      try {
-        await clickhouse.query(query).toPromise()
-      } catch (e) {
-        console.error(
-          `[CRON WORKER] Error whilst saving error events data: ${e}`,
-        )
-      }
-    }
-
-    if (!_isEmpty(perfData)) {
-      await redis.del(REDIS_LOG_PERF_CACHE_KEY)
-
-      const query = `INSERT INTO performance (*) VALUES ${_join(perfData, ',')}`
-
-      try {
-        await clickhouse.query(query).toPromise()
-      } catch (e) {
-        console.error(
-          `[CRON WORKER] Error whilst saving performance data: ${e}`,
-        )
-      }
-    }
-  }
-
   @Cron(CronExpression.EVERY_DAY_AT_5PM)
   async lockDashboards(): Promise<void> {
     const sevenDaysAgo = dayjs
@@ -517,9 +440,11 @@ export class TaskManagerService {
       dayjs.utc(user.planExceedContactedAt).format('YYYY-MM-01'),
     )
 
-    const monthlyUsage = <CHPlanUsage[]>(
-      await clickhouse.query(monthlyUsageQuery).toPromise()
-    )
+    const { data: monthlyUsage } = await clickhouse
+      .query({
+        query: monthlyUsageQuery,
+      })
+      .then(resultSet => resultSet.json<CHPlanUsage>())
 
     const exceedingUserIds = getUserIDsThatExceedPlanUsage(users, monthlyUsage)
 
@@ -579,9 +504,11 @@ export class TaskManagerService {
     const thisMonthDate = dayjs.utc().format('YYYY-MM-01')
     const thisMonthQuery = generatePlanUsageQuery(users, () => thisMonthDate)
 
-    const thisMonthUsage = <CHPlanUsage[]>(
-      await clickhouse.query(thisMonthQuery).toPromise()
-    )
+    const { data: thisMonthUsage } = await clickhouse
+      .query({
+        query: thisMonthQuery,
+      })
+      .then(resultSet => resultSet.json<CHPlanUsage>())
 
     const exceedingUsers = getUsersThatExceedPlanUsage(users, thisMonthUsage)
 
@@ -635,9 +562,11 @@ export class TaskManagerService {
       () => lastMonthDate,
     )
 
-    const lastMonthUsage = <CHPlanUsage[]>(
-      await clickhouse.query(lastMonthQuery).toPromise()
-    )
+    const { data: lastMonthUsage } = await clickhouse
+      .query({
+        query: lastMonthQuery,
+      })
+      .then(resultSet => resultSet.json<CHPlanUsage>())
 
     const continuousExceedingUsers = getUsersThatExceedContinuously(users, [
       // the order should be kept like this
@@ -772,7 +701,9 @@ export class TaskManagerService {
       .subtract(20, 'm')
       .format('YYYY-MM-DD HH:mm:ss')}'`
 
-    await clickhouse.query(delSidQuery).toPromise()
+    await clickhouse.query({
+      query: delSidQuery,
+    })
   }
 
   // EVERY SUNDAY AT 2:30 AM
@@ -850,7 +781,9 @@ export class TaskManagerService {
         ([key]) => `'${key.split(':')[1]}'`,
       ).join(',')})`
 
-      await clickhouse.query(setSdurQuery).toPromise()
+      await clickhouse.query({
+        query: setSdurQuery,
+      })
     }
   }
 
@@ -936,6 +869,9 @@ export class TaskManagerService {
       await this.mailerService.sendEmail(
         email,
         LetterTemplate.TrialEndsTomorrow,
+        {
+          url: 'https://swetrix.com/billing',
+        },
       )
     })
 
@@ -994,7 +930,9 @@ export class TaskManagerService {
         dashboardBlockReason: DashboardBlockReason.trial_ended,
         // trialEndDate: null,
       })
-      await this.mailerService.sendEmail(email, LetterTemplate.TrialExpired)
+      await this.mailerService.sendEmail(email, LetterTemplate.TrialExpired, {
+        url: 'https://swetrix.com/billing',
+      })
       await this.projectService.clearProjectsRedisCache(id)
     })
 
@@ -1146,7 +1084,13 @@ export class TaskManagerService {
       const params = {
         ev: alert.queryCustomEvent,
       }
-      const queryResult = await clickhouse.query(query, { params }).toPromise()
+
+      const { data: queryResult } = await clickhouse
+        .query({
+          query,
+          query_params: params,
+        })
+        .then(resultSet => resultSet.json())
 
       const count = Number(queryResult[0]['count()'])
 
@@ -1321,7 +1265,9 @@ export class TaskManagerService {
     ]
 
     const promises = _map(queries, async query => {
-      await clickhouse.query(query).toPromise()
+      await clickhouse.query({
+        query,
+      })
     })
 
     await Promise.allSettled(promises).catch(reason => {
@@ -1410,30 +1356,33 @@ export class TaskManagerService {
       const queryCaptcha = `SELECT count() FROM captcha WHERE pid IN (${pidsStringified}) AND created BETWEEN '${nineWeeksAgo}' AND '${now}'`
       const queryCustomEvents = `SELECT count() FROM customEV WHERE pid IN (${pidsStringified}) AND created BETWEEN '${nineWeeksAgo}' AND '${now}'`
 
-      const hasAnalyticsActivity =
-        Number(
-          (await clickhouse.query(queryAnalytics).toPromise())[0]['count()'],
-        ) > 0
+      const { data: analyticsResult } = await clickhouse
+        .query({
+          query: queryAnalytics,
+        })
+        .then(resultSet => resultSet.json<{ 'count()': number }>())
 
-      if (hasAnalyticsActivity) {
+      if (analyticsResult[0]['count()'] > 0) {
         return
       }
 
-      const hasCaptchaActivity =
-        Number(
-          (await clickhouse.query(queryCaptcha).toPromise())[0]['count()'],
-        ) > 0
+      const { data: captchaResult } = await clickhouse
+        .query({
+          query: queryCaptcha,
+        })
+        .then(resultSet => resultSet.json<{ 'count()': number }>())
 
-      if (hasCaptchaActivity) {
+      if (captchaResult[0]['count()'] > 0) {
         return
       }
 
-      const hasCustomEventsActivity =
-        Number(
-          (await clickhouse.query(queryCustomEvents).toPromise())[0]['count()'],
-        ) > 0
+      const { data: customEventsResult } = await clickhouse
+        .query({
+          query: queryCustomEvents,
+        })
+        .then(resultSet => resultSet.json<{ 'count()': number }>())
 
-      if (hasCustomEventsActivity) {
+      if (customEventsResult[0]['count()'] > 0) {
         return
       }
 

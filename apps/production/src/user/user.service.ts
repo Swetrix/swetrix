@@ -633,4 +633,8 @@ export class UserService {
   async deleteUserWebhook(id: string) {
     return this.usersWebhooksRepository.delete({ id })
   }
+
+  async findUserV2(id: string, select?: (keyof User)[]) {
+    return this.usersRepository.findOne({ select, where: { id } })
+  }
 }

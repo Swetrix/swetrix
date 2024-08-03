@@ -25,12 +25,12 @@ import { ProjectDTO } from './dto/project.dto'
 import {
   isValidPID,
   redis,
-  clickhouse,
   IP_REGEX,
   ORIGINS_REGEX,
   getRedisProjectKey,
   redisProjectCacheTimeout,
 } from '../common/constants'
+import { clickhouse } from '../common/integrations/clickhouse'
 import { getProjectsClickhouse } from '../common/utils'
 import { MAX_PROJECT_PASSWORD_LENGTH, UpdateProjectDto } from './dto'
 import { Funnel } from './entity/funnel.entity'
@@ -171,9 +171,14 @@ export class ProjectService {
       );
     `
 
-    const result: any = await clickhouse.query(query, { params }).toPromise()
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: params,
+      })
+      .then(resultSet => resultSet.json())
 
-    return _map(result, ({ pid }) => pid)
+    return _map(data, ({ pid }) => pid)
   }
 
   async getPIDsWhereErrorsDataExists(projectIds: string[]): Promise<string[]> {
@@ -215,9 +220,14 @@ export class ProjectService {
       );
     `
 
-    const result: any = await clickhouse.query(query, { params }).toPromise()
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: params,
+      })
+      .then(resultSet => resultSet.json())
 
-    return _map(result, ({ pid }) => pid)
+    return _map(data, ({ pid }) => pid)
   }
 
   async removeDataFromClickhouse(
@@ -231,6 +241,10 @@ export class ProjectService {
       'ALTER TABLE customEV DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
     const queryPerformance =
       'ALTER TABLE performance DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
+    const queryErrors =
+      'ALTER TABLE errors DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
+    const queryErrorStatuses =
+      'ALTER TABLE error_statuses DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
     const params = {
       params: {
         pid,
@@ -240,9 +254,26 @@ export class ProjectService {
     }
 
     await Promise.all([
-      clickhouse.query(queryAnalytics, params).toPromise(),
-      clickhouse.query(queryCustomEvents, params).toPromise(),
-      clickhouse.query(queryPerformance, params).toPromise(),
+      clickhouse.query({
+        query: queryAnalytics,
+        query_params: params,
+      }),
+      clickhouse.query({
+        query: queryCustomEvents,
+        query_params: params,
+      }),
+      clickhouse.query({
+        query: queryPerformance,
+        query_params: params,
+      }),
+      clickhouse.query({
+        query: queryErrors,
+        query_params: params,
+      }),
+      clickhouse.query({
+        query: queryErrorStatuses,
+        query_params: params,
+      }),
     ])
   }
 

@@ -24,8 +24,16 @@ import {
   DefaultValuePipe,
 } from '@nestjs/common'
 import { Response } from 'express'
-import { ApiTags, ApiQuery, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
-import { ILike } from 'typeorm'
+import {
+  ApiTags,
+  ApiQuery,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiOkResponse,
+  ApiNoContentResponse,
+} from '@nestjs/swagger'
+import { FindConditions, ILike } from 'typeorm'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _map from 'lodash/map'
 import * as _trim from 'lodash/trim'
@@ -64,13 +72,13 @@ import { UserService } from '../user/user.service'
 import { AppLoggerService } from '../logger/logger.service'
 import {
   isValidPID,
-  clickhouse,
   PROJECT_INVITE_EXPIRE,
   CAPTCHA_SECRET_KEY_LENGTH,
   isDevelopment,
   PRODUCTION_ORIGIN,
   MAX_FUNNELS,
 } from '../common/constants'
+import { clickhouse } from '../common/integrations/clickhouse'
 import { generateRandomString } from '../common/utils'
 import {
   AddSubscriberParamsDto,
@@ -93,6 +101,12 @@ import {
   FunnelCreateDTO,
   FunnelUpdateDTO,
 } from './dto'
+import { ProjectsViewsRepository } from './repositories/projects-views.repository'
+import { ProjectViewEntity } from './entity/project-view.entity'
+import { ProjectIdDto } from './dto/project-id.dto'
+import { CreateProjectViewDto } from './dto/create-project-view.dto'
+import { UpdateProjectViewDto } from './dto/update-project-view.dto'
+import { ProjectViewIdsDto } from './dto/project-view-ids.dto'
 
 const PROJECTS_MAXIMUM = 50
 
@@ -113,6 +127,7 @@ export class ProjectController {
     private readonly logger: AppLoggerService,
     private readonly actionTokensService: ActionTokensService,
     private readonly mailerService: MailerService,
+    private readonly projectsViewsRepository: ProjectsViewsRepository,
   ) {}
 
   @ApiBearerAuth()
@@ -137,7 +152,9 @@ export class ProjectController {
     this.logger.log({ userId, take, skip }, 'GET /project')
     const isCaptcha = isCaptchaStr === 'true'
 
-    let where: any
+    let where: FindConditions<
+      Project & (Project & { admin?: string })[] & { admin?: string }
+    >
 
     if (search) {
       where = [
@@ -146,6 +163,7 @@ export class ProjectController {
           isCaptchaProject: isCaptcha,
           isAnalyticsProject: !isCaptcha,
           name: ILike(`%${search}%`),
+          isArchived: showArchived,
           // name: ILike(`%${mysql.escape(search).slice(1, 0).slice(0, -1)}%`),
         },
         {
@@ -153,6 +171,7 @@ export class ProjectController {
           isCaptchaProject: isCaptcha,
           isAnalyticsProject: !isCaptcha,
           id: ILike(`%${search}%`),
+          isArchived: showArchived,
           // id: ILike(`%${mysql.escape(search).slice(1, 0).slice(0, -1)}%`),
         },
       ]
@@ -166,13 +185,14 @@ export class ProjectController {
       } else {
         where.isAnalyticsProject = true
       }
+
+      if (showArchived) {
+        where.isArchived = true
+      }
     }
 
     const [paginated, totalMonthlyEvents, user] = await Promise.all([
-      this.projectService.paginate(
-        { take, skip },
-        { ...where, isArchived: showArchived },
-      ),
+      this.projectService.paginate({ take, skip }, where),
       this.projectService.getRedisCount(userId),
       this.userService.findOne(userId),
     ])
@@ -387,6 +407,7 @@ export class ProjectController {
     }
   }
 
+  @ApiBearerAuth()
   @Post('/')
   @ApiResponse({ status: 201, type: Project })
   @Auth([], true)
@@ -733,12 +754,25 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, uid, user.roles)
 
-    const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
-    const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
+    const queries = [
+      'ALTER table analytics DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER table customEV DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER table performance DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER table errors DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER table error_statuses DELETE WHERE pid={pid:FixedString(12)}',
+    ]
 
     try {
-      await clickhouse.query(query1).toPromise()
-      await clickhouse.query(query2).toPromise()
+      const promises = _map(queries, async query =>
+        clickhouse.query({
+          query,
+          query_params: {
+            pid: id,
+          },
+        }),
+      )
+
+      await Promise.all(promises)
       return 'Project resetted successfully'
     } catch (e) {
       this.logger.error(e)
@@ -763,8 +797,6 @@ export class ProjectController {
       )
     }
 
-    const query = `ALTER table captcha DELETE WHERE pid='${id}'`
-
     const user = await this.userService.findOne(uid)
     const project = await this.projectService.findOneWhere(
       { id },
@@ -781,7 +813,12 @@ export class ProjectController {
     this.projectService.allowedToManage(project, uid, user.roles)
 
     try {
-      await clickhouse.query(query).toPromise()
+      await clickhouse.query({
+        query: 'ALTER table captcha DELETE WHERE pid={pid:FixedString(12)}',
+        query_params: {
+          pid: id,
+        },
+      })
       return 'CAPTCHA project resetted successfully'
     } catch (e) {
       this.logger.error(e)
@@ -861,10 +898,13 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, uid, user.roles)
 
-    const query = `ALTER table captcha DELETE WHERE pid='${id}'`
-
     try {
-      await clickhouse.query(query).toPromise()
+      await clickhouse.query({
+        query: 'ALTER table captcha DELETE WHERE pid={pid:FixedString(12)}',
+        query_params: {
+          pid: id,
+        },
+      })
 
       project.captchaSecretKey = null
       project.isCaptchaEnabled = false
@@ -1539,12 +1579,27 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, uid, user.roles)
 
-    const query1 = `ALTER table analytics DELETE WHERE pid='${id}'`
-    const query2 = `ALTER table customEV DELETE WHERE pid='${id}'`
+    const queries = [
+      'ALTER table analytics DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER table customEV DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER table performance DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER table errors DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER table error_statuses DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER table captcha DELETE WHERE pid={pid:FixedString(12)}',
+    ]
 
     try {
-      await clickhouse.query(query1).toPromise()
-      await clickhouse.query(query2).toPromise()
+      const promises = _map(queries, async query =>
+        clickhouse.query({
+          query,
+          query_params: {
+            pid: id,
+          },
+        }),
+      )
+
+      await Promise.all(promises)
+
       await deleteProjectRedis(id)
     } catch (e) {
       this.logger.error(e)
@@ -1882,5 +1937,186 @@ export class ProjectController {
       isDataExists,
       isErrorDataExists,
     }
+  }
+
+  @ApiOperation({ summary: 'Get project view' })
+  @ApiOkResponse({ type: ProjectViewEntity })
+  @ApiBearerAuth()
+  @Get(':projectId/views/:viewId')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async getProjectView(
+    @Param() params: ProjectViewIdsDto,
+    @CurrentUserId() userId: string,
+  ) {
+    const project = await this.projectService.findProject(params.projectId, [
+      'admin',
+      'share',
+    ])
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const user = await this.userService.findUserV2(userId, ['roles'])
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
+    return this.projectsViewsRepository.findProjectView(
+      params.projectId,
+      params.viewId,
+    )
+  }
+
+  @ApiOperation({ summary: 'Create project view' })
+  @ApiOkResponse({ type: ProjectViewEntity })
+  @ApiBearerAuth()
+  @Post(':projectId/views')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async createProjectView(
+    @Param() params: ProjectIdDto,
+    @Body() body: CreateProjectViewDto,
+    @CurrentUserId() userId: string,
+  ) {
+    const project = await this.projectService.findProject(params.projectId, [
+      'admin',
+      'share',
+    ])
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const user = await this.userService.findUserV2(userId, ['roles'])
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
+
+    const createdProjectView =
+      await this.projectsViewsRepository.createProjectView(
+        params.projectId,
+        body,
+      )
+
+    return _omit(createdProjectView, ['project'])
+  }
+
+  @ApiOperation({ summary: 'Get project views' })
+  @ApiOkResponse({ type: ProjectViewEntity })
+  @ApiBearerAuth()
+  @Get(':projectId/views')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async getProjectViews(
+    @Param() params: ProjectIdDto,
+    @CurrentUserId() userId: string,
+  ) {
+    const project = await this.projectService.findProject(params.projectId, [
+      'admin',
+      'share',
+    ])
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const user = await this.userService.findUserV2(userId, ['roles'])
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
+
+    return this.projectsViewsRepository.findViews(params.projectId)
+  }
+
+  @ApiOperation({ summary: 'Update project view' })
+  @ApiOkResponse({ type: ProjectViewEntity })
+  @ApiBearerAuth()
+  @Patch(':projectId/views/:viewId')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async updateProjectView(
+    @Param() params: ProjectViewIdsDto,
+    @Body() body: UpdateProjectViewDto,
+    @CurrentUserId() userId: string,
+  ) {
+    const project = await this.projectService.findProject(params.projectId, [
+      'admin',
+      'share',
+    ])
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const user = await this.userService.findUserV2(userId, ['roles'])
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
+
+    const view = await this.projectsViewsRepository.findProjectView(
+      params.projectId,
+      params.viewId,
+    )
+
+    if (!view) {
+      throw new NotFoundException('View not found.')
+    }
+
+    await this.projectsViewsRepository.updateProjectView(params.viewId, body)
+
+    return this.projectsViewsRepository.findView(params.viewId)
+  }
+
+  @ApiOperation({ summary: 'Delete project view' })
+  @ApiNoContentResponse()
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Delete(':projectId/views/:viewId')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async deleteProjectView(
+    @Param() params: ProjectViewIdsDto,
+    @CurrentUserId() userId: string,
+  ) {
+    const project = await this.projectService.findProject(params.projectId, [
+      'admin',
+      'share',
+    ])
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const user = await this.userService.findUserV2(userId, ['roles'])
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
+
+    const view = await this.projectsViewsRepository.findProjectView(
+      params.projectId,
+      params.viewId,
+    )
+
+    if (!view) {
+      throw new NotFoundException('View not found.')
+    }
+
+    await this.projectsViewsRepository.deleteProjectView(params.viewId)
   }
 }

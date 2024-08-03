@@ -51,10 +51,10 @@ import {
 import { Pagination } from '../common/pagination/pagination'
 import {
   GDPR_EXPORT_TIMEFRAME,
-  clickhouse,
   isDevelopment,
   PRODUCTION_ORIGIN,
 } from '../common/constants'
+import { clickhouse } from '../common/integrations/clickhouse'
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { UpdateUserProfileDTO } from './dto/update-user.dto'
 import { IChangePlanDTO } from './dto/change-plan.dto'
@@ -400,20 +400,26 @@ export class UserController {
           _map(user.projects, el => `'${el.id}'`),
           ',',
         )
-        const query1 = `ALTER table analytics DELETE WHERE pid IN (${pids})`
-        const query2 = `ALTER table customEV DELETE WHERE pid IN (${pids})`
-        const query3 = `ALTER table performance DELETE WHERE pid IN (${pids})`
-        const query4 = `ALTER table errors DELETE WHERE pid IN (${pids})`
-        const query5 = `ALTER table error_statuses DELETE WHERE pid IN (${pids})`
-        const query6 = `ALTER table captcha DELETE WHERE pid IN (${pids})`
+
+        const queries = [
+          `ALTER table analytics DELETE WHERE pid IN (${pids})`,
+          `ALTER table customEV DELETE WHERE pid IN (${pids})`,
+          `ALTER table performance DELETE WHERE pid IN (${pids})`,
+          `ALTER table errors DELETE WHERE pid IN (${pids})`,
+          `ALTER table error_statuses DELETE WHERE pid IN (${pids})`,
+          `ALTER table captcha DELETE WHERE pid IN (${pids})`,
+        ]
+
         await this.projectService.deleteMultiple(pids)
-        await clickhouse.query(query1).toPromise()
-        await clickhouse.query(query2).toPromise()
-        await clickhouse.query(query3).toPromise()
-        await clickhouse.query(query4).toPromise()
-        await clickhouse.query(query5).toPromise()
-        await clickhouse.query(query6).toPromise()
+
+        const promises = _map(queries, async query =>
+          clickhouse.query({
+            query,
+          }),
+        )
+        await Promise.all(promises)
       }
+      await this.actionTokensService.deleteMultiple(`userId="${id}"`)
       await this.userService.delete(id)
 
       return 'accountDeleted'
@@ -449,19 +455,21 @@ export class UserController {
           _map(user.projects, el => `'${el.id}'`),
           ',',
         )
-        const query1 = `ALTER table analytics DELETE WHERE pid IN (${pids})`
-        const query2 = `ALTER table customEV DELETE WHERE pid IN (${pids})`
-        const query3 = `ALTER table performance DELETE WHERE pid IN (${pids})`
-        const query4 = `ALTER table errors DELETE WHERE pid IN (${pids})`
-        const query5 = `ALTER table error_statuses DELETE WHERE pid IN (${pids})`
-        const query6 = `ALTER table captcha DELETE WHERE pid IN (${pids})`
+        const queries = [
+          `ALTER table analytics DELETE WHERE pid IN (${pids})`,
+          `ALTER table customEV DELETE WHERE pid IN (${pids})`,
+          `ALTER table performance DELETE WHERE pid IN (${pids})`,
+          `ALTER table errors DELETE WHERE pid IN (${pids})`,
+          `ALTER table error_statuses DELETE WHERE pid IN (${pids})`,
+          `ALTER table captcha DELETE WHERE pid IN (${pids})`,
+        ]
         await this.projectService.deleteMultiple(pids)
-        await clickhouse.query(query1).toPromise()
-        await clickhouse.query(query2).toPromise()
-        await clickhouse.query(query3).toPromise()
-        await clickhouse.query(query4).toPromise()
-        await clickhouse.query(query5).toPromise()
-        await clickhouse.query(query6).toPromise()
+        const promises = _map(queries, async query =>
+          clickhouse.query({
+            query,
+          }),
+        )
+        await Promise.all(promises)
       }
       await this.actionTokensService.deleteMultiple(`userId="${id}"`)
       await this.userService.delete(id)
