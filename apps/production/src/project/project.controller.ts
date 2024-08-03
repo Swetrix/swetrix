@@ -107,6 +107,7 @@ import { ProjectIdDto } from './dto/project-id.dto'
 import { CreateProjectViewDto } from './dto/create-project-view.dto'
 import { UpdateProjectViewDto } from './dto/update-project-view.dto'
 import { ProjectViewIdsDto } from './dto/project-view-ids.dto'
+import { TimeFrameQueryEnumDTO } from './dto/get-prediction-query.dto'
 
 const PROJECTS_MAXIMUM = 50
 
@@ -2118,5 +2119,41 @@ export class ProjectController {
     }
 
     await this.projectsViewsRepository.deleteProjectView(params.viewId)
+  }
+
+  @ApiOperation({ summary: 'Get AI prediction' })
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @Get(':projectId/predict')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async getAiPrediction(
+    @Param() params: ProjectIdDto,
+    @Query() query: TimeFrameQueryEnumDTO,
+    @CurrentUserId() userId: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const project = await this.projectService.findProject(params.projectId, [
+      'admin',
+      'share',
+    ])
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const user = await this.userService.findUserV2(userId, ['roles'])
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    this.projectService.allowedToView(project, userId, headers['x-password'])
+    // TODO add caching
+
+    return this.projectService.sendPredictAiRequest(
+      params.projectId,
+      query.timeframe,
+    )
   }
 }

@@ -1,5 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
+import { HttpModule } from '@nestjs/axios'
+import { ConfigModule, ConfigService } from '@nestjs/config'
 
 import { ProjectService } from './project.service'
 import { ProjectController } from './project.controller'
@@ -23,6 +25,13 @@ import { ProjectViewCustomEventEntity } from './entity/project-view-custom-event
       ProjectViewCustomEventEntity,
     ]),
     forwardRef(() => UserModule),
+    HttpModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        baseURL: configService.get('AI_URL'),
+      }),
+    }),
     AppLoggerModule,
     ActionTokensModule,
     MailerModule,
