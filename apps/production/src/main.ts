@@ -67,6 +67,8 @@ async function bootstrap() {
     app.use(bot.webhookCallback(process.env.TELEGRAM_WEBHOOK_PATH))
   }
 
+  app.enableShutdownHooks()
+
   await app.listen(5005)
 }
 bootstrap()

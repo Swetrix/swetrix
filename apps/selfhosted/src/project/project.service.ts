@@ -25,12 +25,12 @@ import { ProjectDTO } from './dto/project.dto'
 import {
   isValidPID,
   redis,
-  clickhouse,
   IP_REGEX,
   ORIGINS_REGEX,
   getRedisProjectKey,
   redisProjectCacheTimeout,
 } from '../common/constants'
+import { clickhouse } from '../common/integrations/clickhouse'
 import { getProjectsClickhouse } from '../common/utils'
 import { MAX_PROJECT_PASSWORD_LENGTH, UpdateProjectDto } from './dto'
 import { Funnel } from './entity/funnel.entity'
@@ -171,9 +171,14 @@ export class ProjectService {
       );
     `
 
-    const result: any = await clickhouse.query(query, { params }).toPromise()
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: params,
+      })
+      .then(resultSet => resultSet.json())
 
-    return _map(result, ({ pid }) => pid)
+    return _map(data, ({ pid }) => pid)
   }
 
   async getPIDsWhereErrorsDataExists(projectIds: string[]): Promise<string[]> {
@@ -215,9 +220,14 @@ export class ProjectService {
       );
     `
 
-    const result: any = await clickhouse.query(query, { params }).toPromise()
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: params,
+      })
+      .then(resultSet => resultSet.json())
 
-    return _map(result, ({ pid }) => pid)
+    return _map(data, ({ pid }) => pid)
   }
 
   async removeDataFromClickhouse(
@@ -231,6 +241,10 @@ export class ProjectService {
       'ALTER TABLE customEV DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
     const queryPerformance =
       'ALTER TABLE performance DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
+    const queryErrors =
+      'ALTER TABLE errors DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
+    const queryErrorStatuses =
+      'ALTER TABLE error_statuses DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
     const params = {
       params: {
         pid,
@@ -240,9 +254,26 @@ export class ProjectService {
     }
 
     await Promise.all([
-      clickhouse.query(queryAnalytics, params).toPromise(),
-      clickhouse.query(queryCustomEvents, params).toPromise(),
-      clickhouse.query(queryPerformance, params).toPromise(),
+      clickhouse.query({
+        query: queryAnalytics,
+        query_params: params,
+      }),
+      clickhouse.query({
+        query: queryCustomEvents,
+        query_params: params,
+      }),
+      clickhouse.query({
+        query: queryPerformance,
+        query_params: params,
+      }),
+      clickhouse.query({
+        query: queryErrors,
+        query_params: params,
+      }),
+      clickhouse.query({
+        query: queryErrorStatuses,
+        query_params: params,
+      }),
     ])
   }
 
@@ -312,6 +343,31 @@ export class ProjectService {
     return updFunnel
   }
 
+  validateOrigins(projectDTO: ProjectDTO | UpdateProjectDto) {
+    if (_size(_join(projectDTO.origins, ',')) > 300)
+      throw new UnprocessableEntityException(
+        'The list of allowed origins has to be smaller than 300 symbols',
+      )
+
+    _map(projectDTO.origins, host => {
+      if (!ORIGINS_REGEX.test(_trim(host))) {
+        throw new ConflictException(`Host ${host} is not correct`)
+      }
+    })
+  }
+
+  validateIPBlacklist(projectDTO: ProjectDTO | UpdateProjectDto) {
+    if (_size(_join(projectDTO.ipBlacklist, ',')) > 300)
+      throw new UnprocessableEntityException(
+        'The list of allowed blacklisted IP addresses must be less than 300 characters.',
+      )
+    _map(projectDTO.ipBlacklist, ip => {
+      if (!net.isIP(_trim(ip)) && !IP_REGEX.test(_trim(ip))) {
+        throw new ConflictException(`IP address ${ip} is not correct`)
+      }
+    })
+  }
+
   validateProject(
     projectDTO: ProjectDTO | UpdateProjectDto,
     creatingProject = false,
@@ -323,29 +379,12 @@ export class ProjectService {
       return
     }
 
-    if (!isValidPID(projectDTO.id))
+    if (projectDTO?.id && !isValidPID(projectDTO.id))
       throw new UnprocessableEntityException(
         'The provided Project ID (pid) is incorrect',
       )
-    if (_size(_join(projectDTO.origins, ',')) > 300)
-      throw new UnprocessableEntityException(
-        'The list of allowed origins has to be smaller than 300 symbols',
-      )
-    if (_size(_join(projectDTO.ipBlacklist, ',')) > 300)
-      throw new UnprocessableEntityException(
-        'The list of allowed blacklisted IP addresses must be less than 300 characters.',
-      )
 
-    _map(projectDTO.origins, host => {
-      if (!ORIGINS_REGEX.test(_trim(host))) {
-        throw new ConflictException(`Host ${host} is not correct`)
-      }
-    })
-
-    _map(projectDTO.ipBlacklist, ip => {
-      if (!net.isIP(_trim(ip)) && !IP_REGEX.test(_trim(ip))) {
-        throw new ConflictException(`IP address ${ip} is not correct`)
-      }
-    })
+    this.validateOrigins(projectDTO)
+    this.validateIPBlacklist(projectDTO)
   }
 }

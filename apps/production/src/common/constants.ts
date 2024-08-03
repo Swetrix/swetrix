@@ -1,4 +1,3 @@
-import { ClickHouse } from 'clickhouse'
 import Redis from 'ioredis'
 import * as path from 'path'
 import { hash } from 'blake3'
@@ -7,12 +6,8 @@ import * as _toNumber from 'lodash/toNumber'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config()
 
-const {
-  CLICKHOUSE_DATABASE,
-  PAYPAL_CLIENT_ID,
-  PAYPAL_CLIENT_SECRET,
-  EMAIL_ACTION_ENCRYPTION_KEY,
-} = process.env
+const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, EMAIL_ACTION_ENCRYPTION_KEY } =
+  process.env
 
 const redis = new Redis(
   _toNumber(process.env.REDIS_PORT),
@@ -27,26 +22,6 @@ const redis = new Redis(
 redis.defineCommand('countKeysByPattern', {
   numberOfKeys: 0,
   lua: "return #redis.call('keys', ARGV[1])",
-})
-
-const clickhouse = new ClickHouse({
-  url: process.env.CLICKHOUSE_HOST,
-  port: _toNumber(process.env.CLICKHOUSE_PORT),
-  debug: false,
-  basicAuth: {
-    username: process.env.CLICKHOUSE_USER,
-    password: process.env.CLICKHOUSE_PASSWORD,
-  },
-  isUseGzip: false,
-  format: 'json',
-  raw: false,
-  config: {
-    session_timeout: 60,
-    output_format_json_quote_64bit_integers: 0,
-    enable_http_compression: 0,
-    database: CLICKHOUSE_DATABASE,
-    log_queries: 0,
-  },
 })
 
 const {
@@ -75,11 +50,6 @@ const getRedisUserCountKey = (uid: string) => `user_c_${uid}`
 const getRedisUserUsageInfoKey = (uid: string) => `user_ui_${uid}`
 const getRedisCaptchaKey = (token: string) => `captcha_${hash(token)}`
 
-const REDIS_LOG_DATA_CACHE_KEY = 'log_cache'
-const REDIS_LOG_CAPTCHA_CACHE_KEY = 'log:captcha'
-const REDIS_LOG_PERF_CACHE_KEY = 'perf_cache'
-const REDIS_LOG_CUSTOM_CACHE_KEY = 'log_custom_cache_v3'
-const REDIS_LOG_ERROR_CACHE_KEY = 'log_error_cache'
 const REDIS_SESSION_SALT_KEY = 'log_salt' // is updated every 24 hours
 const REDIS_USERS_COUNT_KEY = 'stats:users_count'
 const REDIS_PROJECTS_COUNT_KEY = 'stats:projects_count'
@@ -193,18 +163,14 @@ const NUMBER_JWT_ACCESS_TOKEN_LIFETIME = Number(JWT_ACCESS_TOKEN_LIFETIME)
 const MAX_FUNNELS = 100
 
 export {
-  clickhouse,
   redis,
   isValidPID,
   getRedisProjectKey,
   redisProjectCacheTimeout,
   UNIQUE_SESSION_LIFE_TIME,
-  REDIS_LOG_DATA_CACHE_KEY,
-  REDIS_LOG_CAPTCHA_CACHE_KEY,
   GDPR_EXPORT_TIMEFRAME,
   getRedisUserCountKey,
   redisProjectCountCacheTimeout,
-  REDIS_LOG_CUSTOM_CACHE_KEY,
   REDIS_SESSION_SALT_KEY,
   HEARTBEAT_SID_LIFE_TIME,
   REDIS_USERS_COUNT_KEY,
@@ -215,7 +181,6 @@ export {
   TWO_FACTOR_AUTHENTICATION_APP_NAME,
   IP_REGEX,
   ORIGINS_REGEX,
-  REDIS_LOG_PERF_CACHE_KEY,
   CAPTCHA_SALT,
   EMAIL_ACTION_ENCRYPTION_KEY,
   isDevelopment,
@@ -246,6 +211,5 @@ export {
   BLOG_POSTS_ROOT,
   TRAFFIC_SPIKE_ALLOWED_PERCENTAGE,
   AFFILIATE_CUT,
-  REDIS_LOG_ERROR_CACHE_KEY,
   PID_REGEX,
 }

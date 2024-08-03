@@ -5,6 +5,7 @@ import {
   MAX_METADATA_KEYS,
   MAX_METADATA_VALUE_LENGTH,
   MetadataKeysQuantity,
+  MetadataValueType,
   MetadataSizeLimit,
 } from './events.dto'
 
@@ -107,6 +108,9 @@ export class PageviewsDTO {
   @IsObject()
   @Validate(MetadataKeysQuantity, {
     message: `Metadata object can't have more than ${MAX_METADATA_KEYS} keys`,
+  })
+  @Validate(MetadataValueType, {
+    message: 'All of metadata object values must be strings',
   })
   @Validate(MetadataSizeLimit, {
     message: `Metadata object can't have values with total length more than ${MAX_METADATA_VALUE_LENGTH} characters`,
