@@ -113,11 +113,12 @@ const EditMetric = ({ metric, onChange, onDelete, errors, setErrors }: IEditMetr
         }}
         error={errors[`${metric.id}_customEventName`]}
       />
-      <div className='mt-2 flex items-center justify-between'>
+      <div className='mt-3 flex items-start justify-between'>
         <Input
           className='w-[48%]'
           maxLength={100}
-          label={t('project.metrics.optinalEventKey')}
+          label={t('project.metrics.optinalEventKey.title')}
+          hint={t('project.metrics.optinalEventKey.description')}
           value={metric.metaKey}
           onChange={({ target }) => {
             setErrors((prev) => ({
@@ -131,7 +132,8 @@ const EditMetric = ({ metric, onChange, onDelete, errors, setErrors }: IEditMetr
         <Input
           className='w-[48%]'
           maxLength={100}
-          label={t('project.metrics.optinalEventValue')}
+          label={t('project.metrics.optinalEventValue.title')}
+          hint={t('project.metrics.optinalEventValue.description')}
           value={metric.metaValue}
           onChange={({ target }) => {
             setErrors((prev) => ({
@@ -143,11 +145,12 @@ const EditMetric = ({ metric, onChange, onDelete, errors, setErrors }: IEditMetr
           error={errors[`${metric.id}_metaValue`]}
         />
       </div>
-      <div className='mt-2 flex items-center justify-between'>
+      <div className='mt-3 flex items-start justify-between'>
         <Input
           className='w-[48%]'
           maxLength={100}
-          label={t('project.metrics.metricKey')}
+          label={t('project.metrics.metricKey.title')}
+          hint={t('project.metrics.metricKey.description')}
           value={metric.metricKey}
           onChange={({ target }) => {
             setErrors((prev) => ({
@@ -168,7 +171,8 @@ const EditMetric = ({ metric, onChange, onDelete, errors, setErrors }: IEditMetr
 
               onChange('metaValueType', key)
             }}
-            label={t('project.metrics.metricType')}
+            label={t('project.metrics.metricType.title')}
+            hint={t('project.metrics.metricType.description')}
             title={activeCustomEventType}
             capitalise
           />
