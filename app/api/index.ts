@@ -358,7 +358,8 @@ export const getProjectData = (
   pid: string,
   tb: string = 'hour',
   period: string = '1d',
-  filters: any[] = [],
+  filters: IFilter[] = [],
+  metrics: IProjectViewCustomEvent[] = [],
   from: string = '',
   to: string = '',
   timezone: string = '',
@@ -367,7 +368,7 @@ export const getProjectData = (
 ) =>
   api
     .get(
-      `log?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(
+      `log?pid=${pid}&timeBucket=${tb}&period=${period}&metrics=${JSON.stringify(metrics)}&filters=${JSON.stringify(
         filters,
       )}&from=${from}&to=${to}&timezone=${timezone}&mode=${mode}`,
       {

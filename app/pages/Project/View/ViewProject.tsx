@@ -179,7 +179,7 @@ import SearchFilters from './components/SearchFilters'
 import Filters from './components/Filters'
 import LiveVisitorsDropdown from './components/LiveVisitorsDropdown'
 import CountryDropdown from './components/CountryDropdown'
-import MetricCards from './components/MetricCards'
+import MetricCards, { MetricCard } from './components/MetricCards'
 import PerformanceMetricCards from './components/PerformanceMetricCards'
 import ProjectAlertsView from '../Alerts/View'
 import UTMDropdown from './components/UTMDropdown'
@@ -198,9 +198,19 @@ import { IError } from './interfaces/error'
 import NoErrorDetails from './components/NoErrorDetails'
 import WaitingForAnError from './components/WaitingForAnError'
 import NoSessionDetails from './components/NoSessionDetails'
-import { ICustoms, IFilter, IParams, IProjectView, IProperties, ITrafficLogResponse } from './interfaces/traffic'
+import {
+  ICustoms,
+  IFilter,
+  IMetric,
+  IParams,
+  IProjectView,
+  IProjectViewCustomEvent,
+  IProperties,
+  ITrafficLogResponse,
+} from './interfaces/traffic'
 import { trackCustom } from 'utils/analytics'
 import AddAViewModal from './components/AddAViewModal'
+import CustomMetrics from './components/CustomMetrics'
 const SwetrixSDK = require('@swetrix/sdk')
 
 const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
@@ -367,6 +377,7 @@ const ViewProject = ({
     data: IParams
     customs: ICustoms
     properties: IProperties
+    meta?: IMetric[]
     // @ts-expect-error
   }>({})
   const [overall, setOverall] = useState<Partial<IOverallObject>>({})
@@ -420,6 +431,7 @@ const ViewProject = ({
     () => !_some({ ...activeChartMetrics, ...activeChartMetricsCustomEvents }, (value) => value),
     [activeChartMetrics, activeChartMetricsCustomEvents],
   )
+  const [customMetrics, setCustomMetrics] = useState<IProjectViewCustomEvent[]>([])
   const [filters, setFilters] = useState<IFilter[]>([])
   const [filtersPerf, setFiltersPerf] = useState<IFilter[]>([])
   const [filtersSessions, setFiltersSessions] = useState<IFilter[]>([])
@@ -1227,7 +1239,11 @@ const ViewProject = ({
   }
 
   // loadAnalytics is a function for load data for chart from api
-  const loadAnalytics = async (forced = false, newFilters: any[] | null = null) => {
+  const loadAnalytics = async (
+    forced = false,
+    newFilters: IFilter[] | null = null,
+    newMetrics: IProjectViewCustomEvent[] | null = null,
+  ) => {
     if (!forced && (isLoading || _isEmpty(project) || dataLoading)) {
       return
     }
@@ -1344,6 +1360,7 @@ const ViewProject = ({
             timeBucket,
             '',
             newFilters || filters,
+            newMetrics || customMetrics,
             from,
             to,
             timezone,
@@ -1368,6 +1385,7 @@ const ViewProject = ({
             timeBucket,
             period,
             newFilters || filters,
+            newMetrics || customMetrics,
             '',
             '',
             timezone,
@@ -1418,7 +1436,7 @@ const ViewProject = ({
         return
       }
 
-      const { chart, params, customs, properties, appliedFilters } = data
+      const { chart, params, customs, properties, appliedFilters, meta } = data
       let newTimebucket = timeBucket
       sdkInstance?._emitEvent('load', sdkData)
 
@@ -1485,6 +1503,7 @@ const ViewProject = ({
           data: params,
           customs,
           properties,
+          meta,
         })
 
         if (activeTab === PROJECT_TABS.traffic) {
@@ -2387,6 +2406,15 @@ const ViewProject = ({
 
     resetSessions()
     resetErrors()
+  }
+
+  const onCustomMetric = (metrics: IProjectViewCustomEvent[]) => {
+    if (activeTab !== PROJECT_TABS.traffic) {
+      return
+    }
+
+    setCustomMetrics(metrics)
+    loadAnalytics(true, null, metrics)
   }
 
   // this function is used for requesting the data from the API when the exclusive filter is changed
@@ -3790,6 +3818,10 @@ const ViewProject = ({
                                   if (item.filters && !_isEmpty(item.filters)) {
                                     onFilterSearch(item.filters, true)
                                   }
+
+                                  if (item.customEvents && !_isEmpty(item.customEvents)) {
+                                    onCustomMetric(item.customEvents)
+                                  }
                                 }}
                                 chevron='mini'
                                 buttonClassName='!p-2 rounded-md hover:bg-white hover:shadow-sm dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200'
@@ -4614,11 +4646,20 @@ const ViewProject = ({
               {activeTab === PROJECT_TABS.traffic && (
                 <div className={cx('pt-2', { hidden: isPanelsDataEmpty || analyticsLoading })}>
                   {!_isEmpty(overall) && (
-                    <MetricCards
-                      overall={overall}
-                      overallCompare={overallCompare}
-                      activePeriodCompare={activePeriodCompare}
-                    />
+                    <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
+                      <MetricCards
+                        overall={overall}
+                        overallCompare={overallCompare}
+                        activePeriodCompare={activePeriodCompare}
+                      />
+                      {!_isEmpty(panelsData.meta) &&
+                        _map(panelsData.meta, ({ key, sum, avg }) => (
+                          <React.Fragment key={key}>
+                            <MetricCard label={t('project.metrics.xAvg', { x: key })} value={avg} />
+                            <MetricCard label={t('project.metrics.xTotal', { x: key })} value={sum} />
+                          </React.Fragment>
+                        ))}
+                    </div>
                   )}
                   <div
                     className={cx('h-80', {
@@ -4634,6 +4675,7 @@ const ViewProject = ({
                     tnMapping={tnMapping}
                     resetFilters={resetActiveTabFilters}
                   />
+                  <CustomMetrics metrics={customMetrics} onRemoveMetric={() => {}} resetMetrics={() => {}} />
                   {dataLoading && (
                     <div className='static mt-4 !bg-transparent' id='loader'>
                       <div className='loader-head dark:!bg-slate-800'>
