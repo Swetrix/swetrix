@@ -43,6 +43,7 @@
     "updateErrorStatusFailed": "Error occured while updating error status",
     "errorStatusUpdated": "Error status has been updated",
     "enterViewName": "Please enter a view name",
+    "inputCannotBeEmpty": "This input field must not be empty",
     "viewDeleted": "View has been deleted"
   },
   "common": {

@@ -5,6 +5,7 @@ import _reduce from 'lodash/reduce'
 import _filter from 'lodash/filter'
 import _map from 'lodash/map'
 import _find from 'lodash/find'
+import _size from 'lodash/size'
 
 import Modal from 'ui/Modal'
 import Select from 'ui/Select'
@@ -56,10 +57,12 @@ const InlineButton = ({ text, onClick }: { text: string; onClick: () => void }) 
 interface IEditMetric {
   metric: Partial<IProjectViewCustomEvent>
   onChange: (key: keyof IProjectViewCustomEvent, value: any) => void
+  errors: AddAViewModalErrors
+  setErrors: React.Dispatch<React.SetStateAction<AddAViewModalErrors>>
   onDelete: () => void
 }
 
-const EditMetric = ({ metric, onChange, onDelete }: IEditMetric) => {
+const EditMetric = ({ metric, onChange, onDelete, errors, setErrors }: IEditMetric) => {
   const { t } = useTranslation('common')
 
   const customEventTypes = useMemo(
@@ -99,38 +102,61 @@ const EditMetric = ({ metric, onChange, onDelete }: IEditMetric) => {
             />
           </p>
         }
+        maxLength={100}
         value={metric.customEventName}
         onChange={({ target }) => {
+          setErrors((prev) => ({
+            ...prev,
+            [`${metric.id}_customEventName`]: '',
+          }))
           onChange('customEventName', target.value)
         }}
-        // error={errors.name}
+        error={errors[`${metric.id}_customEventName`]}
       />
       <div className='mt-2 flex items-center justify-between'>
         <Input
           className='w-[48%]'
+          maxLength={100}
           label={t('project.metrics.optinalEventKey')}
           value={metric.metaKey}
           onChange={({ target }) => {
+            setErrors((prev) => ({
+              ...prev,
+              [`${metric.id}_metaKey`]: '',
+            }))
             onChange('metaKey', target.value)
           }}
+          error={errors[`${metric.id}_metaKey`]}
         />
         <Input
           className='w-[48%]'
+          maxLength={100}
           label={t('project.metrics.optinalEventValue')}
           value={metric.metaValue}
           onChange={({ target }) => {
+            setErrors((prev) => ({
+              ...prev,
+              [`${metric.id}_metaValue`]: '',
+            }))
             onChange('metaValue', target.value)
           }}
+          error={errors[`${metric.id}_metaValue`]}
         />
       </div>
       <div className='mt-2 flex items-center justify-between'>
         <Input
           className='w-[48%]'
+          maxLength={100}
           label={t('project.metrics.metricKey')}
           value={metric.metricKey}
           onChange={({ target }) => {
+            setErrors((prev) => ({
+              ...prev,
+              [`${metric.id}_metricKey`]: '',
+            }))
             onChange('metricKey', target.value)
           }}
+          error={errors[`${metric.id}_metricKey`]}
         />
         <div className='w-[48%]'>
           <Select
@@ -159,6 +185,11 @@ const EMPTY_CUSTOM_EVENT: Partial<IProjectViewCustomEvent> = {
   metaValueType: ProjectViewCustomEventMetaValueType.FLOAT,
 }
 
+interface AddAViewModalErrors {
+  name?: string
+  [key: `${string}_${keyof IProjectViewCustomEvent}`]: string | undefined
+}
+
 const AddAViewModal = ({
   onSubmit,
   pid,
@@ -179,9 +210,7 @@ const AddAViewModal = ({
   const [activeFilters, setActiveFilters] = useState<IFilter[]>(defaultView?.filters || [])
   const [customEvents, setCustomEvents] = useState<Partial<IProjectViewCustomEvent>[]>(defaultView?.customEvents || [])
   const [isViewSubmitting, setIsViewSubmitting] = useState(false)
-  const [errors, setErrors] = useState<{
-    name?: string
-  }>({})
+  const [errors, setErrors] = useState<AddAViewModalErrors>({})
 
   const labelToTypeMap = useMemo(() => getLabelToTypeMap(t), [t])
 
@@ -252,6 +281,34 @@ const AddAViewModal = ({
     ])
   }
 
+  const validateCustomMetrics = () => {
+    let valid = true
+    const metricErrors: AddAViewModalErrors = {}
+
+    for (let i = 0; i < _size(customEvents); ++i) {
+      const { id, customEventName, metricKey } = customEvents[i]
+
+      if (!customEventName) {
+        metricErrors[`${id}_customEventName`] = t('apiNotifications.inputCannotBeEmpty')
+        valid = false
+      }
+
+      if (!metricKey) {
+        metricErrors[`${id}_metricKey`] = t('apiNotifications.inputCannotBeEmpty')
+        valid = false
+      }
+    }
+
+    if (!_isEmpty(metricErrors)) {
+      setErrors((prev) => ({
+        ...prev,
+        ...metricErrors,
+      }))
+    }
+
+    return valid
+  }
+
   const onViewCreate = async () => {
     if (isViewSubmitting) {
       return
@@ -262,6 +319,10 @@ const AddAViewModal = ({
         ...prev,
         name: t('apiNotifications.enterViewName'),
       }))
+      return
+    }
+
+    if (!validateCustomMetrics()) {
       return
     }
 
@@ -383,6 +444,8 @@ const AddAViewModal = ({
               <EditMetric
                 key={ev.id}
                 metric={ev}
+                setErrors={setErrors}
+                errors={errors}
                 onChange={(key, value) => {
                   setCustomEvents((prev) =>
                     _map(prev, (item) => {
