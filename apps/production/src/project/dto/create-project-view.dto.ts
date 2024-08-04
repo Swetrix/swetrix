@@ -23,17 +23,22 @@ export class ProjectViewCustomEventDto {
 
   @ApiProperty()
   @MaxLength(100)
-  @MinLength(1)
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   metaKey: string
+
+  @ApiProperty()
+  @MaxLength(100)
+  @IsString()
+  @IsOptional()
+  metaValue: string
 
   @ApiProperty()
   @MaxLength(100)
   @MinLength(1)
   @IsString()
   @IsNotEmpty()
-  metaValue: string
+  metricKey: string
 
   @ApiProperty({ enum: ProjectViewCustomEventMetaValueType })
   @IsEnum(ProjectViewCustomEventMetaValueType)
