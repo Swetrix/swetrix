@@ -285,9 +285,17 @@ const AddAViewModal = ({
     ])
   }
 
-  const validateCustomMetrics = () => {
+  const validateCustomMetricsAndName = () => {
     let valid = true
     const metricErrors: AddAViewModalErrors = {}
+
+    if (!name) {
+      setErrors((prev) => ({
+        ...prev,
+        name: t('apiNotifications.enterViewName'),
+      }))
+      valid = false
+    }
 
     for (let i = 0; i < _size(customEvents); ++i) {
       const { id, customEventName, metricKey } = customEvents[i]
@@ -318,15 +326,7 @@ const AddAViewModal = ({
       return
     }
 
-    if (!name) {
-      setErrors((prev) => ({
-        ...prev,
-        name: t('apiNotifications.enterViewName'),
-      }))
-      return
-    }
-
-    if (!validateCustomMetrics()) {
+    if (!validateCustomMetricsAndName()) {
       return
     }
 
