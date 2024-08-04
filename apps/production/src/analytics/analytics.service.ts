@@ -3806,8 +3806,19 @@ export class AnalyticsService {
     }
   }
 
-  async getMetaResult(pid: string, customEvents: ProjectViewCustomEventDto[]) {
-    const metaKeys = customEvents.map(event => event.metaKey)
+  async getMetaResult(
+    pid: string,
+    customEvents: ProjectViewCustomEventDto[],
+    filtersQuery: string,
+    paramsData: any,
+  ) {
+    const nonStringCustomEvents = _filter(
+      customEvents,
+      event =>
+        event.metaValueType !== ProjectViewCustomEventMetaValueType.STRING,
+    )
+
+    const metaKeys = nonStringCustomEvents.map(event => event.metaKey)
     const params = {
       pid,
       ..._reduce(
@@ -3815,9 +3826,10 @@ export class AnalyticsService {
         (acc, key, index) => ({ ...acc, [`metaKey_${index}`]: key }),
         {},
       ),
+      ...paramsData.params,
     }
 
-    const casesSum = customEvents
+    const casesSum = nonStringCustomEvents
       .map(
         (event, index) => `
         WHEN key = {metaKey_${index}:String} THEN ${
@@ -3829,7 +3841,7 @@ export class AnalyticsService {
       )
       .join(' ')
 
-    const casesAvg = customEvents
+    const casesAvg = nonStringCustomEvents
       .map(
         (event, index) => `
         WHEN key = {metaKey_${index}:String} THEN ${
@@ -3845,6 +3857,12 @@ export class AnalyticsService {
       .map((_, index) => `{metaKey_${index}:String}`)
       .join(', ')
 
+    /*
+      query += `indexOf(meta.key, {${keyParam}:String}) > 0 AND meta.value[indexOf(meta.key, {${keyParam}:String})] ${
+            isExclusive ? '!= ' : '='
+          } {${param}:String}`
+    */
+
     const query = `
       SELECT
         key,
@@ -3852,7 +3870,11 @@ export class AnalyticsService {
         avg(CASE ${casesAvg} ELSE 0 END) AS avg
       FROM customEV
       ARRAY JOIN meta.key AS key, meta.value AS value
-      WHERE pid = {pid:FixedString(12)} AND key IN (${metaKeysParams})
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND key IN (${metaKeysParams})
+        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        ${filtersQuery}
       GROUP BY key
     `
 

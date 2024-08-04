@@ -342,7 +342,12 @@ export class AnalyticsController {
       console.log('parsedMetrics:', parsedMetrics)
 
       if (!_isEmpty(parsedMetrics)) {
-        meta = await this.analyticsService.getMetaResult(pid, parsedMetrics)
+        meta = await this.analyticsService.getMetaResult(
+          pid,
+          parsedMetrics,
+          filtersQuery,
+          paramsData,
+        )
       }
     }
 
