@@ -2125,8 +2125,7 @@ export class ProjectController {
   @ApiBearerAuth()
   @HttpCode(HttpStatus.OK)
   @Get(':projectId/predict')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth([], true, true)
   async getAiPrediction(
     @Param() params: ProjectIdDto,
     @Query() query: TimeFrameQueryEnumDTO,
