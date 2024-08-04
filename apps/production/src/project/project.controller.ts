@@ -2141,12 +2141,6 @@ export class ProjectController {
       throw new NotFoundException('Project not found.')
     }
 
-    const user = await this.userService.findUserV2(userId, ['roles'])
-
-    if (!user) {
-      throw new NotFoundException('User not found.')
-    }
-
     this.projectService.allowedToView(project, userId, headers['x-password'])
     // TODO add caching
 
