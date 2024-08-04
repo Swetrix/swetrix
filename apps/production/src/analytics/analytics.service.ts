@@ -100,6 +100,7 @@ import {
 import { ErrorDTO } from './dto/error.dto'
 import { GetPagePropertyMetaDTO } from './dto/get-page-property-meta.dto'
 import { ProjectViewCustomEventMetaValueType } from '../project/entity/project-view-custom-event.entity'
+import { ProjectViewCustomEventDto } from '../project/dto/create-project-view.dto'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -877,6 +878,21 @@ export class AnalyticsService {
       },
       [],
     )
+  }
+
+  parseMetrics(metrics: string): ProjectViewCustomEventDto[] {
+    if (metrics === '""' || _isEmpty(metrics)) {
+      return []
+    }
+
+    try {
+      return JSON.parse(metrics)
+    } catch {
+      console.error(
+        `[ERROR] parseMetrics: Cannot parse the metrics array: ${metrics}`,
+      )
+      return []
+    }
   }
 
   // returns SQL filters query in a format like 'AND col=value AND ...'
@@ -3790,16 +3806,8 @@ export class AnalyticsService {
     }
   }
 
-  async getMetaResult(
-    pid: string,
-    metaKeys: string[],
-    customEvents: {
-      customEventName: string
-      metaKey: string
-      metaValue: string
-      metaValueType: string
-    }[],
-  ) {
+  async getMetaResult(pid: string, customEvents: ProjectViewCustomEventDto[]) {
+    const metaKeys = customEvents.map(event => event.metaKey)
     const params = {
       pid,
       ..._reduce(
@@ -3849,12 +3857,14 @@ export class AnalyticsService {
     `
 
     try {
-      return await clickhouse
+      const { data } = await clickhouse
         .query({
           query,
           query_params: params,
         })
         .then(resultSet => resultSet.json())
+
+      return data
     } catch (reason) {
       console.error('[ERROR] (getMetaResult) - Clickhouse query error:')
       console.error(reason)

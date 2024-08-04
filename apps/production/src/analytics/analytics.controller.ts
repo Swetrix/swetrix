@@ -84,7 +84,6 @@ import { ErrorDTO } from './dto/error.dto'
 import { GetErrorsDto } from './dto/get-errors.dto'
 import { GetErrorDTO } from './dto/get-error.dto'
 import { PatchStatusDTO } from './dto/patch-status.dto'
-import { ProjectsViewsRepository } from '../project/repositories/projects-views.repository'
 import {
   customEventTransformer,
   errorEventTransformer,
@@ -194,7 +193,6 @@ export class AnalyticsController {
   constructor(
     private readonly analyticsService: AnalyticsService,
     private readonly logger: AppLoggerService,
-    private readonly projectsViewsRepository: ProjectsViewsRepository,
   ) {}
 
   @ApiBearerAuth()
@@ -215,7 +213,7 @@ export class AnalyticsController {
       filters,
       timezone = DEFAULT_TIMEZONE,
       mode = ChartRenderMode.PERIODICAL,
-      viewId,
+      metrics,
     } = data
     this.analyticsService.validatePID(pid)
 
@@ -230,37 +228,6 @@ export class AnalyticsController {
     )
 
     await this.analyticsService.checkBillingAccess(pid)
-
-    if (viewId && filters) {
-      throw new ConflictException('Cannot specify both viewId and filters.')
-    }
-
-    let meta: Awaited<ReturnType<typeof this.analyticsService.getMetaResult>>
-
-    if (viewId) {
-      const view = await this.projectsViewsRepository.findProjectView(
-        pid,
-        viewId,
-      )
-
-      if (!view) {
-        throw new NotFoundException('View not found.')
-      }
-
-      const customEvents = view.customEvents.map(event => ({
-        customEventName: event.customEventName,
-        metaKey: event.metaKey,
-        metaValue: event.metaValue,
-        metaValueType: event.metaValueType,
-      }))
-
-      const metaKeys = customEvents.map(event => event.metaKey)
-      meta = await this.analyticsService.getMetaResult(
-        pid,
-        metaKeys,
-        customEvents,
-      )
-    }
 
     let newTimebucket = timeBucket
     let allowedTumebucketForPeriodAll
@@ -365,6 +332,18 @@ export class AnalyticsController {
         filtersQuery,
         paramsData,
       )
+    }
+
+    let meta: Awaited<ReturnType<typeof this.analyticsService.getMetaResult>>
+
+    if (!isCaptcha) {
+      const parsedMetrics = this.analyticsService.parseMetrics(metrics)
+
+      console.log('parsedMetrics:', parsedMetrics)
+
+      if (!_isEmpty(parsedMetrics)) {
+        meta = await this.analyticsService.getMetaResult(pid, parsedMetrics)
+      }
     }
 
     return {
