@@ -107,34 +107,46 @@ const EditMetric = ({ metric, onChange, onDelete }: IEditMetric) => {
       />
       <div className='mt-2 flex items-center justify-between'>
         <Input
-          label={t('project.metamapping.ev.key')}
+          className='w-[48%]'
+          label={t('project.metrics.optinalEventKey')}
           value={metric.metaKey}
           onChange={({ target }) => {
             onChange('metaKey', target.value)
           }}
         />
         <Input
-          label={t('project.metamapping.ev.value')}
+          className='w-[48%]'
+          label={t('project.metrics.optinalEventValue')}
           value={metric.metaValue}
           onChange={({ target }) => {
             onChange('metaValue', target.value)
           }}
         />
       </div>
-      <div className='mt-2'>
-        <Select
-          items={customEventTypes}
-          keyExtractor={(item) => item.key}
-          labelExtractor={(item) => item.label}
-          onSelect={(selectedLabel) => {
-            const key = _find(customEventTypes, ({ label }) => label === selectedLabel)?.key
-
-            onChange('metaValueType', key)
+      <div className='mt-2 flex items-center justify-between'>
+        <Input
+          className='w-[48%]'
+          label={t('project.metrics.metricKey')}
+          value={metric.metricKey}
+          onChange={({ target }) => {
+            onChange('metricKey', target.value)
           }}
-          label={t('project.customMetricType')}
-          title={activeCustomEventType}
-          capitalise
         />
+        <div className='w-[48%]'>
+          <Select
+            items={customEventTypes}
+            keyExtractor={(item) => item.key}
+            labelExtractor={(item) => item.label}
+            onSelect={(selectedLabel) => {
+              const key = _find(customEventTypes, ({ label }) => label === selectedLabel)?.key
+
+              onChange('metaValueType', key)
+            }}
+            label={t('project.metrics.metricType')}
+            title={activeCustomEventType}
+            capitalise
+          />
+        </div>
       </div>
     </div>
   )

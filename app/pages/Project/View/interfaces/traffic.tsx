@@ -13,8 +13,9 @@ export enum ProjectViewCustomEventMetaValueType {
 export interface IProjectViewCustomEvent {
   id: string
   customEventName: string
-  metaKey: string
-  metaValue: string
+  metaKey?: string
+  metaValue?: string
+  metricKey: string
   metaValueType: ProjectViewCustomEventMetaValueType
 }
 
@@ -42,6 +43,12 @@ export interface IProperties {
   [key: string]: number
 }
 
+export interface IMetric {
+  key: string
+  sum: number
+  avg: number
+}
+
 export interface ITrafficLogResponse {
   params?: IParams
   chart?: {
@@ -54,4 +61,5 @@ export interface ITrafficLogResponse {
   properties: IProperties
   appliedFilters?: IFilter[]
   timeBucket?: string[]
+  meta?: IMetric[]
 }

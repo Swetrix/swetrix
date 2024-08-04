@@ -784,7 +784,14 @@
     "customEventsAndMetrics": "Custom events and metrics (optional)",
     "addAMetric": "Add a metric",
     "customEvent": "Custom event",
-    "customMetricType": "Custom metric type",
+    "metrics": {
+      "xAvg": "\"{{x}}\" average",
+      "xTotal": "\"{{x}}\" total",
+      "metricKey": "Custom metric key",
+      "metricType": "Custom metric type",
+      "optinalEventKey": "Event key (optional)",
+      "optinalEventValue": "Event value (optional)"
+    },
     "metaValueType": {
       "decimal": "Decimal",
       "integer": "Integer",
