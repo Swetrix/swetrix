@@ -1944,8 +1944,7 @@ export class ProjectController {
   @ApiOkResponse({ type: ProjectViewEntity })
   @ApiBearerAuth()
   @Get(':projectId/views/:viewId')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth([], true, true)
   async getProjectView(
     @Param() params: ProjectViewIdsDto,
     @CurrentUserId() userId: string,
@@ -1958,12 +1957,6 @@ export class ProjectController {
 
     if (!project) {
       throw new NotFoundException('Project not found.')
-    }
-
-    const user = await this.userService.findUserV2(userId, ['roles'])
-
-    if (!user) {
-      throw new NotFoundException('User not found.')
     }
 
     this.projectService.allowedToView(project, userId, headers['x-password'])
@@ -2019,8 +2012,7 @@ export class ProjectController {
   @ApiOkResponse({ type: ProjectViewEntity })
   @ApiBearerAuth()
   @Get(':projectId/views')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth([], true, true)
   async getProjectViews(
     @Param() params: ProjectIdDto,
     @CurrentUserId() userId: string,
@@ -2033,12 +2025,6 @@ export class ProjectController {
 
     if (!project) {
       throw new NotFoundException('Project not found.')
-    }
-
-    const user = await this.userService.findUserV2(userId, ['roles'])
-
-    if (!user) {
-      throw new NotFoundException('User not found.')
     }
 
     this.projectService.allowedToView(project, userId, headers['x-password'])
