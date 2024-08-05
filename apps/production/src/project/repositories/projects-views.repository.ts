@@ -35,8 +35,6 @@ export class ProjectsViewsRepository {
       ...data,
     })
 
-    console.log('createProjectView:', data)
-
     if (data.customEvents) {
       const customEventPromises = data.customEvents.map(customEvent => {
         return this.projectViewCustomEventsRepository.save({
