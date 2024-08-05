@@ -3783,14 +3783,30 @@ const ViewProject = ({
                                 header={t('project.views')}
                                 onClick={() => loadProjectViews()}
                                 loading={projectViewsLoading || projectViewsLoading === null}
-                                items={[
-                                  ...projectViews,
-                                  {
-                                    id: 'add-a-view',
-                                    name: t('project.addAView'),
-                                    createView: true,
-                                  },
-                                ]}
+                                selectItemClassName={
+                                  !allowedToManage &&
+                                  !(projectViewsLoading || projectViewsLoading === null) &&
+                                  _isEmpty(projectViews)
+                                    ? 'block px-4 py-2 text-sm text-gray-700 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50'
+                                    : undefined
+                                }
+                                items={_filter(
+                                  [
+                                    ...projectViews,
+                                    allowedToManage && {
+                                      id: 'add-a-view',
+                                      name: t('project.addAView'),
+                                      createView: true,
+                                    },
+                                    !allowedToManage &&
+                                      _isEmpty(projectViews) && {
+                                        id: 'no-views',
+                                        name: t('project.noViewsYet'),
+                                        notClickable: true,
+                                      },
+                                  ],
+                                  (x) => !!x,
+                                )}
                                 title={[<BookmarkIcon key='bookmark-icon' className='h-5 w-5 stroke-2' />]}
                                 labelExtractor={(item, close) => {
                                   // @ts-expect-error
@@ -3798,30 +3814,39 @@ const ViewProject = ({
                                     return item.name
                                   }
 
+                                  console.log('projectViews:', projectViews)
+                                  console.log('_isEmpty(projectViews):', _isEmpty(projectViews))
+
+                                  if (item.id === 'no-views') {
+                                    return <span className='text-gray-600 dark:text-gray-200'>{item.name}</span>
+                                  }
+
                                   return (
                                     <span className='flex items-center justify-between space-x-4'>
                                       <span>{item.name}</span>
-                                      <span className='flex space-x-2'>
-                                        <PencilIcon
-                                          className='size-4 hover:text-gray-900 dark:hover:text-gray-50'
-                                          onClick={(e) => {
-                                            e.stopPropagation()
-                                            setProjectViewToUpdate(item)
-                                            close()
-                                            setIsAddAViewOpened(true)
-                                          }}
-                                        />
-                                        <TrashIcon
-                                          className={cx('size-4 hover:text-gray-900 dark:hover:text-gray-50', {
-                                            'cursor-not-allowed': projectViewDeleting,
-                                          })}
-                                          onClick={(e) => {
-                                            e.stopPropagation()
-                                            close()
-                                            onProjectViewDelete(item.id)
-                                          }}
-                                        />
-                                      </span>
+                                      {allowedToManage && (
+                                        <span className='flex space-x-2'>
+                                          <PencilIcon
+                                            className='size-4 hover:text-gray-900 dark:hover:text-gray-50'
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              setProjectViewToUpdate(item)
+                                              close()
+                                              setIsAddAViewOpened(true)
+                                            }}
+                                          />
+                                          <TrashIcon
+                                            className={cx('size-4 hover:text-gray-900 dark:hover:text-gray-50', {
+                                              'cursor-not-allowed': projectViewDeleting,
+                                            })}
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              close()
+                                              onProjectViewDelete(item.id)
+                                            }}
+                                          />
+                                        </span>
+                                      )}
                                     </span>
                                   )
                                 }}
