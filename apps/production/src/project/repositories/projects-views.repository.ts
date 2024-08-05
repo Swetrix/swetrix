@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import * as _map from 'lodash/map'
+import * as _isEmpty from 'lodash/isEmpty'
 import { ProjectViewEntity } from '../entity/project-view.entity'
 import { CreateProjectViewDto, Filter } from '../dto/create-project-view.dto'
 import { UpdateProjectViewDto } from '../dto/update-project-view.dto'
@@ -38,12 +39,13 @@ export class ProjectsViewsRepository {
 
     if (data.customEvents) {
       const customEventPromises = data.customEvents.map(customEvent => {
-        // @ts-expect-error - mass assignment
-        delete customEvent.id
-
         return this.projectViewCustomEventsRepository.save({
           viewId: view.id,
-          ...customEvent,
+          customEventName: customEvent.customEventName,
+          metaKey: customEvent.metaKey,
+          metaValue: customEvent.metaValue,
+          metaValueType: customEvent.metaValueType,
+          metricKey: customEvent.metricKey,
         })
       })
       await Promise.all(customEventPromises)
@@ -98,10 +100,35 @@ export class ProjectsViewsRepository {
     id: string,
     data: Omit<UpdateProjectViewDto, 'filters'> & { filters: string },
   ) {
-    await this.viewsRepository.update({ id }, data)
+    // doing this instead of calling .update() method to prevent
+    // "Error: Cannot query across one-to-many for property customEvents"
+    const entity = await this.viewsRepository.findOne({
+      where: { id },
+      relations: ['customEvents'],
+    })
+
+    Object.assign(entity, data)
+
+    await this.viewsRepository.save(entity)
+
+    if (!_isEmpty(entity.customEvents)) {
+      const customEventPromises = entity.customEvents.map(customEvent => {
+        return this.projectViewCustomEventsRepository.save({
+          id: customEvent.id,
+          viewId: id,
+          customEventName: customEvent.customEventName,
+          metaKey: customEvent.metaKey,
+          metaValue: customEvent.metaValue,
+          metaValueType: customEvent.metaValueType,
+          metricKey: customEvent.metricKey,
+        })
+      })
+      await Promise.all(customEventPromises)
+    }
   }
 
   async deleteProjectView(id: string) {
+    await this.projectViewCustomEventsRepository.delete({ viewId: id })
     await this.viewsRepository.delete({ id })
   }
 }

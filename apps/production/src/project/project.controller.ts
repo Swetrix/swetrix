@@ -2003,7 +2003,9 @@ export class ProjectController {
 
     const createdProjectView =
       await this.projectsViewsRepository.createProjectView(params.projectId, {
-        ...body,
+        type: body.type,
+        customEvents: body.customEvents,
+        name: body.name,
         filters: JSON.stringify(
           this.projectService.filterUnsupportedColumns(body.filters),
         ),
@@ -2081,7 +2083,8 @@ export class ProjectController {
     }
 
     await this.projectsViewsRepository.updateProjectView(params.viewId, {
-      ...body,
+      name: body.name,
+      customEvents: body.customEvents,
       filters: JSON.stringify(
         this.projectService.filterUnsupportedColumns(body.filters),
       ),
