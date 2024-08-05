@@ -803,7 +803,11 @@
       "optinalEventValue": {
         "title": "Event value (optional)",
         "description": "Custom event metadata value to filter (for example, \"GBP\")."
-      }
+      },
+      "filterNoKV": "For \"{{customEventName}}\" aggregate \"{{metricKey}}\"",
+      "filterK": "For \"{{customEventName}}\" aggregate \"{{metricKey}}\" where any key is \"{{metaKey}}\"",
+      "filterV": "For \"{{customEventName}}\" aggregate \"{{metricKey}}\" where any value is \"{{metaValue}}\"",
+      "filterKV": "For \"{{customEventName}}\" aggregate \"{{metricKey}}\" where key \"{{metaKey}}\" is \"{{metaValue}}\""
     },
     "metaValueType": {
       "decimal": "Decimal",

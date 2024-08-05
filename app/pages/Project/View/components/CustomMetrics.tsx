@@ -1,120 +1,73 @@
-import { FunnelIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import React, { memo } from 'react'
-import cx from 'clsx'
-import _truncate from 'lodash/truncate'
+import { ScaleIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import React, { memo, useMemo } from 'react'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
-import _startsWith from 'lodash/startsWith'
-import _replace from 'lodash/replace'
 import { useTranslation } from 'react-i18next'
 
-import countries from 'utils/isoCountries'
-import { getLocaleDisplayName } from 'utils/generic'
 import { IProjectViewCustomEvent } from '../interfaces/traffic'
 
-interface IFilter {
-  column: string
-  filter: string
-  isExclusive: boolean
-  // eslint-disable-next-line no-shadow
-  onRemoveFilter: (column: string, filter: string) => void
-  // eslint-disable-next-line no-shadow
-  onChangeExclusive: (column: string, filter: string, isExclusive: boolean) => void
-  tnMapping: Record<string, string>
-  canChangeExclusive?: boolean
-  removable?: boolean
+interface ICustomMetric {
+  metric: IProjectViewCustomEvent
+  onRemove: () => void
 }
 
-export const Filter = ({
-  column,
-  filter,
-  isExclusive,
-  onRemoveFilter,
-  onChangeExclusive,
-  tnMapping,
-  canChangeExclusive,
-  removable,
-}: IFilter): JSX.Element => {
-  const {
-    t,
-    i18n: { language },
-  } = useTranslation('common')
+const CustomMetric = ({ metric, onRemove }: ICustomMetric): JSX.Element => {
+  const { t } = useTranslation('common')
 
-  let displayColumn = tnMapping[column]
-  let displayFilter = filter
+  const displayValue = useMemo(() => {
+    const { customEventName, metaKey, metaValue, metricKey } = metric
 
-  if (column === 'cc') {
-    displayFilter = countries.getName(filter, language) as string
-  }
+    if (metaKey && metaValue) {
+      return t('project.metrics.filterKV', {
+        customEventName,
+        metaKey,
+        metaValue,
+        metricKey,
+      })
+    }
 
-  if (column === 'pg') {
-    displayFilter = filter || t('project.redactedPage')
-  }
+    if (metaKey) {
+      return t('project.metrics.filterK', {
+        customEventName,
+        metaKey,
+        metricKey,
+      })
+    }
 
-  if (column === 'lc') {
-    displayFilter = getLocaleDisplayName(displayFilter, language)
-  }
+    if (metaValue) {
+      return t('project.metrics.filterV', {
+        customEventName,
+        metaValue,
+        metricKey,
+      })
+    }
 
-  if (_startsWith(column, 'ev:key:')) {
-    const key = _replace(column, /^ev:key:/, '')
-    displayColumn = t('project.metamapping.ev.dynamicKey', {
-      key,
+    return t('project.metrics.filterNoKV', {
+      customEventName,
+      metricKey,
     })
-  }
-
-  if (_startsWith(column, 'tag:key:')) {
-    const key = _replace(column, /^tag:key:/, '')
-    displayColumn = t('project.metamapping.tag.dynamicKey', {
-      key,
-    })
-  }
-
-  const truncatedFilter = _truncate(displayFilter)
+  }, [t, metric])
 
   return (
-    <span
-      title={truncatedFilter === displayFilter ? undefined : displayFilter}
-      className={cx(
-        'm-1 inline-flex items-center rounded-md bg-gray-50 py-0.5 pl-2.5 pr-1 text-sm font-medium text-gray-800 dark:bg-slate-800 dark:text-gray-50',
-        {
-          'pr-2': !removable,
-        },
-      )}
-    >
-      {displayColumn}
-      &nbsp;
-      {canChangeExclusive ? (
-        <span
-          className='cursor-pointer border-b-2 border-dotted border-blue-400 text-blue-400'
-          onClick={() => onChangeExclusive(column, filter, !isExclusive)}
-        >
-          {t(`common.${isExclusive ? 'isNot' : 'is'}`)}
-        </span>
-      ) : (
-        <span>{t(`common.${isExclusive ? 'isNot' : 'is'}`)}</span>
-      )}
-      &nbsp; &quot;
-      {truncatedFilter}
-      &quot;
-      {removable && (
-        <button
-          onClick={() => onRemoveFilter(column, filter)}
-          type='button'
-          className='ml-0.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-gray-800 hover:bg-gray-300 hover:text-gray-900 focus:bg-gray-300 focus:text-gray-900 focus:outline-none dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300 dark:focus:bg-gray-800 dark:focus:text-gray-300 '
-        >
-          <span className='sr-only'>Remove filter</span>
-          <svg className='h-2 w-2' stroke='currentColor' fill='none' viewBox='0 0 8 8'>
-            <path strokeLinecap='round' strokeWidth='1.5' d='M1 1l6 6m0-6L1 7' />
-          </svg>
-        </button>
-      )}
+    <span className='m-1 inline-flex items-center rounded-md bg-gray-50 py-0.5 pl-2.5 pr-1 text-sm font-medium text-gray-800 dark:bg-slate-800 dark:text-gray-50'>
+      {displayValue}
+      <button
+        onClick={onRemove}
+        type='button'
+        className='ml-0.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-gray-800 hover:bg-gray-300 hover:text-gray-900 focus:bg-gray-300 focus:text-gray-900 focus:outline-none dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300 dark:focus:bg-gray-800 dark:focus:text-gray-300 '
+      >
+        <span className='sr-only'>Remove filter</span>
+        <svg className='h-2 w-2' stroke='currentColor' fill='none' viewBox='0 0 8 8'>
+          <path strokeLinecap='round' strokeWidth='1.5' d='M1 1l6 6m0-6L1 7' />
+        </svg>
+      </button>
     </span>
   )
 }
 
 interface IFilters {
   metrics: IProjectViewCustomEvent[]
-  onRemoveMetric: (column: string, filter: string) => void
+  onRemoveMetric: (id: IProjectViewCustomEvent['id']) => void
   resetMetrics: () => void
 }
 
@@ -124,13 +77,19 @@ const CustomMetrics = ({ metrics, onRemoveMetric, resetMetrics }: IFilters) => {
   }
 
   return (
-    <div className='flex items-center justify-between rounded-md bg-slate-200 p-1 shadow dark:border dark:border-slate-800/50 dark:bg-slate-800/25'>
+    <div className='mt-2 flex items-center justify-between rounded-md bg-slate-200 p-1 shadow dark:border dark:border-slate-800/50 dark:bg-slate-800/25'>
       <div className=' flex items-center'>
-        <FunnelIcon className='box-content size-6 flex-shrink-0 px-1 text-gray-700 dark:text-gray-200' />
+        <ScaleIcon className='box-content size-6 flex-shrink-0 px-1 text-gray-700 dark:text-gray-200' />
         <div className='flex flex-wrap'>
-          {_map(metrics, (props) => {
-            return <div key={JSON.stringify(props)}>{JSON.stringify(props)}</div>
-          })}
+          {_map(metrics, (metric) => (
+            <CustomMetric
+              key={metric.id}
+              metric={metric}
+              onRemove={() => {
+                onRemoveMetric(metric.id)
+              }}
+            />
+          ))}
         </div>
       </div>
       <XMarkIcon

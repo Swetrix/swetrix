@@ -43,10 +43,15 @@ export interface IProperties {
   [key: string]: number
 }
 
-export interface IMetric {
-  key: string
+interface IMetric {
   sum: number
   avg: number
+}
+
+export interface ITrafficMeta {
+  key: string
+  current: IMetric
+  previous: IMetric
 }
 
 export interface ITrafficLogResponse {
@@ -61,5 +66,5 @@ export interface ITrafficLogResponse {
   properties: IProperties
   appliedFilters?: IFilter[]
   timeBucket?: string[]
-  meta?: IMetric[]
+  meta?: ITrafficMeta[]
 }

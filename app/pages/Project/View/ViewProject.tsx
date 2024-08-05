@@ -51,7 +51,7 @@ import { withProjectProtected } from 'hoc/projectProtected'
 
 import { periodToCompareDate } from 'utils/compareConvertDate'
 
-import { getTimeFromSeconds, getStringFromTime, getLocaleDisplayName } from 'utils/generic'
+import { getTimeFromSeconds, getStringFromTime, getLocaleDisplayName, nLocaleFormatter } from 'utils/generic'
 import { getItem, setItem, removeItem } from 'utils/localstorage'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
@@ -201,7 +201,7 @@ import NoSessionDetails from './components/NoSessionDetails'
 import {
   ICustoms,
   IFilter,
-  IMetric,
+  ITrafficMeta,
   IParams,
   IProjectView,
   IProjectViewCustomEvent,
@@ -377,7 +377,7 @@ const ViewProject = ({
     data: IParams
     customs: ICustoms
     properties: IProperties
-    meta?: IMetric[]
+    meta?: ITrafficMeta[]
     // @ts-expect-error
   }>({})
   const [overall, setOverall] = useState<Partial<IOverallObject>>({})
@@ -2415,6 +2415,26 @@ const ViewProject = ({
 
     setCustomMetrics(metrics)
     loadAnalytics(true, null, metrics)
+  }
+
+  const onRemoveCustomMetric = (metricId: IProjectViewCustomEvent['id']) => {
+    if (activeTab !== PROJECT_TABS.traffic) {
+      return
+    }
+
+    const newMetrics = _filter(customMetrics, (metric) => metric.id !== metricId)
+
+    setCustomMetrics(newMetrics)
+    loadAnalytics(true, null, newMetrics)
+  }
+
+  const resetCustomMetrics = () => {
+    if (activeTab !== PROJECT_TABS.traffic) {
+      return
+    }
+
+    setCustomMetrics([])
+    loadAnalytics(true, null, [])
   }
 
   // this function is used for requesting the data from the API when the exclusive filter is changed
@@ -4653,10 +4673,26 @@ const ViewProject = ({
                         activePeriodCompare={activePeriodCompare}
                       />
                       {!_isEmpty(panelsData.meta) &&
-                        _map(panelsData.meta, ({ key, sum, avg }) => (
+                        _map(panelsData.meta, ({ key, current, previous }) => (
                           <React.Fragment key={key}>
-                            <MetricCard label={t('project.metrics.xAvg', { x: key })} value={avg} />
-                            <MetricCard label={t('project.metrics.xTotal', { x: key })} value={sum} />
+                            <MetricCard
+                              label={t('project.metrics.xAvg', { x: key })}
+                              value={current.avg}
+                              change={current.avg - previous.avg}
+                              goodChangeDirection='down'
+                              valueMapper={(value, type) =>
+                                `${type === 'badge' && value > 0 ? '+' : ''}${nLocaleFormatter(value)}`
+                              }
+                            />
+                            <MetricCard
+                              label={t('project.metrics.xTotal', { x: key })}
+                              value={current.sum}
+                              change={current.sum - previous.sum}
+                              goodChangeDirection='down'
+                              valueMapper={(value, type) =>
+                                `${type === 'badge' && value > 0 ? '+' : ''}${nLocaleFormatter(value)}`
+                              }
+                            />
                           </React.Fragment>
                         ))}
                     </div>
@@ -4675,7 +4711,11 @@ const ViewProject = ({
                     tnMapping={tnMapping}
                     resetFilters={resetActiveTabFilters}
                   />
-                  <CustomMetrics metrics={customMetrics} onRemoveMetric={() => {}} resetMetrics={() => {}} />
+                  <CustomMetrics
+                    metrics={customMetrics}
+                    onRemoveMetric={(id) => onRemoveCustomMetric(id)}
+                    resetMetrics={resetCustomMetrics}
+                  />
                   {dataLoading && (
                     <div className='static mt-4 !bg-transparent' id='loader'>
                       <div className='loader-head dark:!bg-slate-800'>

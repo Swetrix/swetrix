@@ -194,6 +194,8 @@ interface AddAViewModalErrors {
   [key: `${string}_${keyof IProjectViewCustomEvent}`]: string | undefined
 }
 
+const MAX_METRICS_IN_VIEW = 3
+
 const AddAViewModal = ({
   onSubmit,
   pid,
@@ -470,12 +472,14 @@ const AddAViewModal = ({
               />
             ))}
           </div>
-          <InlineButton
-            text={t('project.addAMetric')}
-            onClick={() => {
-              setCustomEvents((prev) => [...prev, { ...EMPTY_CUSTOM_EVENT, id: Math.random().toString() }])
-            }}
-          />
+          {customEvents.length < MAX_METRICS_IN_VIEW && (
+            <InlineButton
+              text={t('project.addAMetric')}
+              onClick={() => {
+                setCustomEvents((prev) => [...prev, { ...EMPTY_CUSTOM_EVENT, id: Math.random().toString() }])
+              }}
+            />
+          )}
         </div>
       }
       submitType='regular'
