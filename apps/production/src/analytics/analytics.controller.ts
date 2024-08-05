@@ -3,6 +3,7 @@ import * as _isArray from 'lodash/isArray'
 import * as _toNumber from 'lodash/toNumber'
 import * as _pick from 'lodash/pick'
 import * as _includes from 'lodash/includes'
+import * as _size from 'lodash/size'
 import * as _map from 'lodash/map'
 import * as _uniqBy from 'lodash/uniqBy'
 import * as dayjs from 'dayjs'
@@ -25,8 +26,6 @@ import {
   ForbiddenException,
   Response,
   Header,
-  ConflictException,
-  NotFoundException,
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import * as UAParser from 'ua-parser-js'
@@ -90,6 +89,10 @@ import {
   performanceTransformer,
   trafficTransformer,
 } from './utils/transformers'
+import {
+  MAX_METRICS_IN_VIEW,
+  ProjectViewCustomEventDto,
+} from '../project/dto/create-project-view.dto'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -229,6 +232,18 @@ export class AnalyticsController {
 
     await this.analyticsService.checkBillingAccess(pid)
 
+    let parsedMetrics: ProjectViewCustomEventDto[]
+
+    if (!isCaptcha) {
+      parsedMetrics = this.analyticsService.parseMetrics(metrics)
+
+      if (_size(parsedMetrics) > MAX_METRICS_IN_VIEW) {
+        throw new BadRequestException(
+          `The maximum number of metrics within one request is ${MAX_METRICS_IN_VIEW}`,
+        )
+      }
+    }
+
     let newTimebucket = timeBucket
     let allowedTumebucketForPeriodAll
 
@@ -334,21 +349,19 @@ export class AnalyticsController {
       )
     }
 
-    let meta: Awaited<ReturnType<typeof this.analyticsService.getMetaResult>>
+    let meta: Awaited<ReturnType<typeof this.analyticsService.getMetaResults>>
 
-    if (!isCaptcha) {
-      const parsedMetrics = this.analyticsService.parseMetrics(metrics)
-
-      console.log('parsedMetrics:', parsedMetrics)
-
-      if (!_isEmpty(parsedMetrics)) {
-        meta = await this.analyticsService.getMetaResult(
-          pid,
-          parsedMetrics,
-          filtersQuery,
-          paramsData,
-        )
-      }
+    if (!_isEmpty(parsedMetrics)) {
+      meta = await this.analyticsService.getMetaResults(
+        pid,
+        parsedMetrics,
+        filtersQuery,
+        paramsData,
+        timezone,
+        period,
+        from,
+        to,
+      )
     }
 
     return {

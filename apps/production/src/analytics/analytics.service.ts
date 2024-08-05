@@ -3806,87 +3806,202 @@ export class AnalyticsService {
     }
   }
 
-  async getMetaResult(
+  async getMetaResults(
     pid: string,
     customEvents: ProjectViewCustomEventDto[],
     filtersQuery: string,
     paramsData: any,
+    timezone: string,
+    period?: string,
+    from?: string,
+    to?: string,
   ) {
-    const nonStringCustomEvents = _filter(
-      customEvents,
-      event =>
-        event.metaValueType !== ProjectViewCustomEventMetaValueType.STRING,
-    )
+    // eslint-disable-next-line
+    let _from = from
+    // eslint-disable-next-line
+    let _to = to
 
-    const metaKeys = nonStringCustomEvents.map(event => event.metaKey)
-    const params = {
-      pid,
-      ..._reduce(
-        metaKeys,
-        (acc, key, index) => ({ ...acc, [`metaKey_${index}`]: key }),
-        {},
-      ),
-      ...paramsData.params,
+    if (_isEmpty(period) || ['today', 'yesterday', 'custom'].includes(period)) {
+      const safeTimezone = this.getSafeTimezone(timezone)
+
+      const { groupFrom, groupTo } = this.getGroupFromTo(
+        from,
+        to,
+        ['today', 'yesterday'].includes(period) ? TimeBucketType.HOUR : null,
+        period,
+        safeTimezone,
+      )
+
+      _from = groupFrom
+      _to = groupTo
     }
 
-    const casesSum = nonStringCustomEvents
-      .map(
-        (event, index) => `
-        WHEN key = {metaKey_${index}:String} THEN ${
-          event.metaValueType === ProjectViewCustomEventMetaValueType.INTEGER
-            ? 'toInt32OrZero(value)'
-            : 'toFloat32OrZero(value)'
-        }
-      `,
-      )
-      .join(' ')
+    const results = []
 
-    const casesAvg = nonStringCustomEvents
-      .map(
-        (event, index) => `
-        WHEN key = {metaKey_${index}:String} THEN ${
-          event.metaValueType === ProjectViewCustomEventMetaValueType.INTEGER
-            ? 'toInt32OrZero(value)'
-            : 'toFloat32OrZero(value)'
-        }
-      `,
-      )
-      .join(' ')
+    await Promise.all(
+      customEvents.map(async event => {
+        const result = await this.getMetaResult(
+          pid,
+          event,
+          filtersQuery,
+          paramsData,
+          period,
+          _from,
+          _to,
+        )
+        results.push(result)
+      }),
+    )
 
-    const metaKeysParams = metaKeys
-      .map((_, index) => `{metaKey_${index}:String}`)
-      .join(', ')
+    return results.filter(r => !!r)
+  }
 
-    /*
-      query += `indexOf(meta.key, {${keyParam}:String}) > 0 AND meta.value[indexOf(meta.key, {${keyParam}:String})] ${
-            isExclusive ? '!= ' : '='
-          } {${param}:String}`
-    */
+  async getMetaResult(
+    pid: string,
+    metric: ProjectViewCustomEventDto,
+    filtersQuery: string,
+    paramsData: any,
+    period?: string,
+    from?: string,
+    to?: string,
+  ) {
+    if (metric.metaValueType === ProjectViewCustomEventMetaValueType.STRING) {
+      return undefined
+    }
 
-    const query = `
+    const paramsKeys = ['customEventName', 'metaKey', 'metaValue', 'metricKey']
+
+    const aggFunction =
+      metric.metaValueType === ProjectViewCustomEventMetaValueType.INTEGER
+        ? 'toInt32OrZero(value)'
+        : 'toFloat32OrZero(value)'
+
+    let kvQuery = ''
+
+    if (metric.metaKey && metric.metaValue) {
+      kvQuery = `AND (
+        indexOf(meta.key, {metaKey:String}) > 0
+        AND meta.value[indexOf(meta.key, {metaKey:String})] = {metaValue:String}
+      )`
+    } else if (metric.metaKey) {
+      kvQuery = `AND indexOf(meta.key, {metaKey:String}) > 0`
+    } else if (metric.metaValue) {
+      kvQuery = `AND indexOf(meta.value, {metaValue:String}) > 0`
+    }
+
+    const queryCurrent = `
       SELECT
+        1 AS sortOrder,
         key,
-        sum(CASE ${casesSum} ELSE 0 END) AS sum,
-        avg(CASE ${casesAvg} ELSE 0 END) AS avg
+        round(sum(${aggFunction}), 2) AS sum,
+        round(avg(${aggFunction}), 2) AS avg
       FROM customEV
       ARRAY JOIN meta.key AS key, meta.value AS value
       WHERE
         pid = {pid:FixedString(12)}
-        AND key IN (${metaKeysParams})
-        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        AND key = {metricKey:String}
+        AND ev = {customEventName:String}
+        AND created BETWEEN {periodFormatted:String} AND {now:String}
+        ${kvQuery}
         ${filtersQuery}
       GROUP BY key
     `
 
+    const queryPrevious = `
+      SELECT
+        2 AS sortOrder,
+        key,
+        round(sum(${aggFunction}), 2) AS sum,
+        round(avg(${aggFunction}), 2) AS avg
+      FROM customEV
+      ARRAY JOIN meta.key AS key, meta.value AS value
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND key = {metricKey:String}
+        AND ev = {customEventName:String}
+        AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}
+        ${kvQuery}
+        ${filtersQuery}
+      GROUP BY key
+    `
+
+    let now
+    let periodFormatted
+    let periodSubtracted
+
+    if (period !== 'all') {
+      if (from && to) {
+        // diff may be 0 (when selecting data for 1 day), so let's make it 1 to grab some data for the prev day as well
+        const diff = dayjs(to).diff(dayjs(from), 'days') || 1
+
+        now = to
+        periodFormatted = from
+        periodSubtracted = dayjs(from)
+          .subtract(diff, 'days')
+          .format('YYYY-MM-DD HH:mm:ss')
+      } else {
+        const amountToSubtract = parseInt(period, 10)
+        const unit = _replace(period, /[0-9]/g, '')
+
+        now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+        const periodRaw = dayjs.utc().subtract(amountToSubtract, unit)
+        periodFormatted = periodRaw.format('YYYY-MM-DD HH:mm:ss')
+        periodSubtracted = periodRaw
+          .subtract(amountToSubtract, unit)
+          .format('YYYY-MM-DD HH:mm:ss')
+      }
+    }
+
+    const params = {
+      pid,
+      ...paramsKeys.reduce(
+        (acc, curr) => ({
+          ...acc,
+          [curr]: metric[curr],
+        }),
+        {},
+      ),
+      now,
+      periodFormatted,
+      periodSubtracted,
+      ...paramsData.params,
+    }
+
     try {
-      const { data } = await clickhouse
+      let { data } = await clickhouse
         .query({
-          query,
+          query: `${queryCurrent} UNION ALL ${queryPrevious}`,
           query_params: params,
         })
-        .then(resultSet => resultSet.json())
+        .then(resultSet =>
+          resultSet.json<{
+            sortOrder: 1 | 2
+            key: string
+            sum: number
+            avg: number
+          }>(),
+        )
 
-      return data
+      data = _sortBy(data, 'sortOrder')
+
+      const currentPeriod = data[0]
+      const previousPeriod = data[1]
+
+      if (!currentPeriod) {
+        return undefined
+      }
+
+      return {
+        key: currentPeriod.key,
+        current: {
+          sum: currentPeriod.sum || 0,
+          avg: currentPeriod.avg || 0,
+        },
+        previous: {
+          sum: previousPeriod?.sum || 0,
+          avg: previousPeriod?.avg || 0,
+        },
+      }
     } catch (reason) {
       console.error('[ERROR] (getMetaResult) - Clickhouse query error:')
       console.error(reason)
