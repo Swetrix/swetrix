@@ -1,4 +1,5 @@
 import {
+  ArrayMaxSize,
   IsEnum,
   IsNotEmpty,
   IsOptional,
@@ -52,6 +53,8 @@ export interface Filter {
   isExclusive: boolean
 }
 
+export const MAX_METRICS_IN_VIEW = 3
+
 export class CreateProjectViewDto {
   @ApiProperty()
   @MaxLength(20)
@@ -81,5 +84,6 @@ export class CreateProjectViewDto {
   })
   @ValidateNested()
   @IsOptional()
+  @ArrayMaxSize(MAX_METRICS_IN_VIEW)
   customEvents?: ProjectViewCustomEventDto[]
 }
