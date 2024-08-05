@@ -1357,7 +1357,7 @@ export class ProjectService {
   async sendPredictAiRequest(id: string, timeframe: TimeFrameQueryEnum) {
     try {
       const { data } = await firstValueFrom(
-        this.httpService.get('/predict', {
+        this.httpService.get('/predict/', {
           params: { pid: id, timeframe },
         }),
       )
