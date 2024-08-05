@@ -107,7 +107,6 @@ import { ProjectIdDto } from './dto/project-id.dto'
 import { CreateProjectViewDto } from './dto/create-project-view.dto'
 import { UpdateProjectViewDto } from './dto/update-project-view.dto'
 import { ProjectViewIdsDto } from './dto/project-view-ids.dto'
-import { TimeFrameQueryEnumDTO } from './dto/get-prediction-query.dto'
 
 const PROJECTS_MAXIMUM = 50
 
@@ -2128,7 +2127,6 @@ export class ProjectController {
   @Auth([], true, true)
   async getAiPrediction(
     @Param() params: ProjectIdDto,
-    @Query() query: TimeFrameQueryEnumDTO,
     @CurrentUserId() userId: string,
     @Headers() headers: { 'x-password'?: string },
   ) {
@@ -2146,7 +2144,6 @@ export class ProjectController {
 
     return this.projectService.sendPredictAiRequest(
       params.projectId,
-      query.timeframe,
     )
   }
 }
