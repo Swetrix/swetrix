@@ -6,6 +6,7 @@ import {
   UnprocessableEntityException,
   InternalServerErrorException,
   ConflictException,
+  NotFoundException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
@@ -26,6 +27,9 @@ import * as _reduce from 'lodash/reduce'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import { compareSync } from 'bcrypt'
+import { firstValueFrom } from 'rxjs'
+import { HttpService } from '@nestjs/axios'
+import { AxiosError } from 'axios'
 
 import { UserService } from '../user/user.service'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
@@ -72,6 +76,8 @@ import { ReportFrequency } from './enums'
 import { nFormatter } from '../common/utils'
 import { browserArgs } from '../og-image/og-image.service'
 import { CreateProjectViewDto } from './dto/create-project-view.dto'
+import { TimeFrameQueryEnum } from './dto/get-prediction-query.dto'
+import { AppLoggerService } from '../logger/logger.service'
 
 dayjs.extend(utc)
 
@@ -290,6 +296,8 @@ export class ProjectService {
     private readonly funnelRepository: Repository<Funnel>,
     private readonly actionTokens: ActionTokensService,
     private readonly mailerService: MailerService,
+    private readonly httpService: HttpService,
+    private readonly logger: AppLoggerService,
   ) {}
 
   async getRedisProject(pid: string): Promise<Project | null> {
@@ -1363,5 +1371,26 @@ export class ProjectService {
         _includes(ALL_COLUMNS, column) ||
         _includes(TRAFFIC_METAKEY_COLUMNS, column),
     )
+  }
+
+  async sendPredictAiRequest(id: string, timeframe: TimeFrameQueryEnum) {
+    try {
+      const { data } = await firstValueFrom(
+        this.httpService.get('/predict/', {
+          params: { pid: id, timeframe },
+        }),
+      )
+      return data
+    } catch (error) {
+      if (error instanceof AxiosError && error.response?.status === 404) {
+        throw new NotFoundException(
+          'Data not found. Prediction is not available for this timeframe.',
+        )
+      }
+      this.logger.error(
+        `Error receiving prediction from AI service: ${error.message}`,
+      )
+      return null
+    }
   }
 }
