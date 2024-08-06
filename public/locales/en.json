@@ -41,7 +41,10 @@
     "funnelDeleted": "The funnel has been deleted",
     "errorCode": "Error code: {{error}}",
     "updateErrorStatusFailed": "Error occured while updating error status",
-    "errorStatusUpdated": "Error status has been updated"
+    "errorStatusUpdated": "Error status has been updated",
+    "enterViewName": "Please enter a view name",
+    "inputCannotBeEmpty": "This input field must not be empty",
+    "viewDeleted": "View has been deleted"
   },
   "common": {
     "features": "Features",
@@ -772,11 +775,47 @@
   "project": {
     "metadata": "Metadata",
     "search": "Search",
+    "views": "Views",
+    "viewName": "View name",
+    "addAView": "Add a view",
     "loadMore": "Load more",
     "unknownCountry": "Unknown country",
     "selectCategory": "Select category to filter",
+    "selectCategoryOptional": "Select category to filter (optional)",
+    "customEventsAndMetrics": "Custom events and metrics (optional)",
+    "addAMetric": "Add a metric",
+    "customEvent": "Custom event",
+    "metrics": {
+      "xAvg": "\"{{x}}\" average",
+      "xTotal": "\"{{x}}\" total",
+      "metricKey": {
+        "title": "Custom metric key",
+        "description": "Metadata key to aggregate (for example, \"amount\")."
+      },
+      "metricType": {
+        "title": "Custom metric type",
+        "description": "Specifies how to interpret the custom metric value. For example, Decimal will convert \"15.99\" to 15.99, while Integer will interpret it as 15."
+      },
+      "optinalEventKey": {
+        "title": "Event key (optional)",
+        "description": "Custom event metadata key to filter (for example, \"currency\")."
+      },
+      "optinalEventValue": {
+        "title": "Event value (optional)",
+        "description": "Custom event metadata value to filter (for example, \"GBP\")."
+      },
+      "filterNoKV": "For \"{{customEventName}}\" aggregate \"{{metricKey}}\"",
+      "filterK": "For \"{{customEventName}}\" aggregate \"{{metricKey}}\" where any key is \"{{metaKey}}\"",
+      "filterV": "For \"{{customEventName}}\" aggregate \"{{metricKey}}\" where any value is \"{{metaValue}}\"",
+      "filterKV": "For \"{{customEventName}}\" aggregate \"{{metricKey}}\" where key \"{{metaKey}}\" is \"{{metaValue}}\""
+    },
+    "noViewsYet": "No views yet",
+    "metaValueType": {
+      "decimal": "Decimal",
+      "integer": "Integer",
+      "text": "Text"
+    },
     "currentFilters": "Currently applied filters",
-    "newFilters": "New filters",
     "advancedFilters": "Advanced filters",
     "applyFilters": "Apply filters",
     "lookingForMore": "Looking for more?",

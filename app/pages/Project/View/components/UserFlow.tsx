@@ -10,6 +10,7 @@ import _isEmpty from 'lodash/isEmpty'
 import { getUserFlowCacheKey } from 'redux/constants'
 import { getUserFlow } from 'api'
 import Loader from 'ui/Loader'
+import { IFilter } from '../interfaces/traffic'
 
 const mapStateToProps = (state: StateType) => ({
   userFlowAscendingCache: state.ui.cache.userFlowAscending,
@@ -65,7 +66,7 @@ interface IJSXUserFlow {
   setUserFlowDescending: (data: IUserFlow, id: string, pd: string, fltr: any) => void
   generateError: (message: string) => void
   t: typeof i18next.t
-  filters: string[]
+  filters: IFilter[]
   setReversed: () => void
   projectPassword?: string
 }

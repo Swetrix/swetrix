@@ -21,6 +21,14 @@ export const nFormatter = (num: any, digits = 1) => {
   return item ? _replace((num / item.value).toFixed(digits), rx, '$1') + item.symbol : '0'
 }
 
+export const nLocaleFormatter = (num: number): string => {
+  if (!Intl.NumberFormat) {
+    return num.toString()
+  }
+
+  return new Intl.NumberFormat().format(num)
+}
+
 // returns something like [123, 'k'], [5.5, 'M'], [425, null]
 export const nFormatterSeparated = (num: any, digits = 1) => {
   const item = _find(formatterLookup.slice().reverse(), ({ value }) => num >= value)

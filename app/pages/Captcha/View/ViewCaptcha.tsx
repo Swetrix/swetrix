@@ -690,7 +690,7 @@ const ViewCaptcha = ({
                     title={[<ArrowDownTrayIcon key='download-icon' className='h-5 w-5' />]}
                     labelExtractor={(item) => item.label}
                     keyExtractor={(item) => item.label}
-                    onSelect={(item) => item.onClick(panelsData, t)}
+                    onSelect={(item) => item.onClick()}
                     className={cx('mr-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
                     chevron='mini'
                     buttonClassName='!p-2 rounded-md hover:bg-white hover:shadow-sm dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200'

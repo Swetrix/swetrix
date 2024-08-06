@@ -45,7 +45,7 @@ const TBPeriodSelector = ({
     <Popover className='relative'>
       {({ open }) => (
         <>
-          <PopoverButton className='group inline-flex w-full px-3 py-2 text-sm font-medium text-gray-700 outline-none dark:text-gray-50 md:px-4'>
+          <PopoverButton className='group inline-flex w-full px-2.5 py-2 text-sm font-medium text-gray-700 outline-none dark:text-gray-50 md:px-4'>
             <CalendarDaysIcon className='mr-1 h-5 w-5' />
             <span>{title}</span>
             <ChevronDownIcon

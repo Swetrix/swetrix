@@ -18,6 +18,7 @@ import { IProject, IOverall, IProjectNames } from 'redux/models/IProject'
 import { IAlerts } from 'redux/models/IAlerts'
 import { ISharedProject } from 'redux/models/ISharedProject'
 import { ISubscribers } from 'redux/models/ISubscribers'
+import { IFilter, IProjectViewCustomEvent } from 'pages/Project/View/interfaces/traffic'
 
 const debug = Debug('swetrix:api')
 
@@ -357,7 +358,8 @@ export const getProjectData = (
   pid: string,
   tb: string = 'hour',
   period: string = '1d',
-  filters: string[] = [],
+  filters: IFilter[] = [],
+  metrics: IProjectViewCustomEvent[] = [],
   from: string = '',
   to: string = '',
   timezone: string = '',
@@ -366,7 +368,7 @@ export const getProjectData = (
 ) =>
   api
     .get(
-      `log?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(
+      `log?pid=${pid}&timeBucket=${tb}&period=${period}&metrics=${JSON.stringify(metrics)}&filters=${JSON.stringify(
         filters,
       )}&from=${from}&to=${to}&timezone=${timezone}&mode=${mode}`,
       {
@@ -413,7 +415,7 @@ export const getPropertyMetadata = (
   period: string = '1d',
   from: string = '',
   to: string = '',
-  filters: string[] = [],
+  filters: any[] = [],
   timezone: string = '',
   password: string | undefined = '',
 ) =>
@@ -438,7 +440,7 @@ export const getProjectCompareData = (
   pid: string,
   tb: string = 'hour',
   period: string = '3d',
-  filters: string[] = [],
+  filters: any[] = [],
   from: string = '',
   to: string = '',
   timezone: string = '',
@@ -466,7 +468,7 @@ export const getPerfData = (
   pid: string,
   tb: string = 'hour',
   period: string = '3d',
-  filters: string[] = [],
+  filters: any[] = [],
   from: string = '',
   to: string = '',
   timezone: string = '',
@@ -493,7 +495,7 @@ export const getPerfData = (
 export const getSessions = (
   pid: string,
   period: string = '3d',
-  filters: string[] = [],
+  filters: any[] = [],
   from: string = '',
   to: string = '',
   take: number = 30,
@@ -521,7 +523,7 @@ export const getSessions = (
 export const getErrors = (
   pid: string,
   period: string = '3d',
-  filters: string[] = [],
+  filters: any[] = [],
   options: any = {},
   from: string = '',
   to: string = '',
@@ -615,11 +617,63 @@ export const getFunnels = (pid: string, password: string | undefined = '') =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
+export const getProjectViews = (pid: string, password: string | undefined = '') =>
+  api
+    .get(`project/${pid}/views`, {
+      headers: {
+        'x-password': password,
+      },
+    })
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const createProjectView = (
+  pid: string,
+  name: string,
+  type: 'traffic' | 'performance',
+  filters: IFilter[],
+  customEvents: Partial<IProjectViewCustomEvent>[],
+) =>
+  api
+    .post(`project/${pid}/views`, { name, type, filters, customEvents })
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const updateProjectView = (
+  pid: string,
+  viewId: string,
+  name: string,
+  filters: IFilter[],
+  customEvents: Partial<IProjectViewCustomEvent>[],
+) =>
+  api
+    .patch(`project/${pid}/views/${viewId}`, { name, filters, customEvents })
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const deleteProjectView = (pid: string, viewId: string) =>
+  api
+    .delete(`project/${pid}/views/${viewId}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
 export const getCaptchaData = (
   pid: string,
   tb: string = 'hour',
   period: string = '3d',
-  filters: string[] = [],
+  filters: any[] = [],
   from: string = '',
   to: string = '',
 ) =>
@@ -1034,7 +1088,7 @@ export const getProjectDataCustomEvents = (
   pid: string,
   tb: string = 'hour',
   period: string = '3d',
-  filters: string[] = [],
+  filters: any[] = [],
   from: string = '',
   to: string = '',
   timezone: string = '',
@@ -1172,7 +1226,7 @@ export const getUserFlow = (
   pid: string,
   tb: string = 'hour',
   period: string = '3d',
-  filters: string[] = [],
+  filters: any[] = [],
   from: string = '',
   to: string = '',
   timezone: string = '',

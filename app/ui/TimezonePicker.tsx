@@ -88,6 +88,7 @@ const TimezoneSelect = ({ value, onChange }: ITimezoneSelect): JSX.Element => {
       className='w-full'
       items={options}
       labelExtractor={labelExtractor}
+      // @ts-expect-error
       keyExtractor={keyExtractor}
       onSelect={handleChange}
       capitalise

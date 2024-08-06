@@ -48,7 +48,7 @@ import { iconClassName } from './ViewProject.helpers'
 import Spin from 'ui/icons/Spin'
 import { useTranslation } from 'react-i18next'
 import CustomEventsDropdown from './components/CustomEventsDropdown'
-import { ICustoms, IProperties } from './interfaces/traffic'
+import { ICustoms, IFilter, IProperties } from './interfaces/traffic'
 
 const ENTRIES_PER_PANEL = 5
 const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 6
@@ -306,7 +306,7 @@ interface IMetadata {
   customs: ICustoms
   properties: IProperties
   chartData: any
-  filters: any[]
+  filters: IFilter[]
   onFilter: (column: string, filter: any, isExclusive?: boolean) => Promise<void>
   getCustomEventMetadata: (event: string) => Promise<any>
   getPropertyMetadata: (property: string) => Promise<any>
@@ -1313,7 +1313,7 @@ interface IPanel {
   timezone?: string | null
   activeTab?: string
   onFragmentChange?: (arg: number) => void
-  filters?: string[]
+  filters?: IFilter[]
   projectPassword?: string
 }
 

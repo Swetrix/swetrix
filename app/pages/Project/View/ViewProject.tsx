@@ -18,6 +18,9 @@ import {
   GlobeAltIcon,
   UsersIcon,
   BugAntIcon,
+  BookmarkIcon,
+  TrashIcon,
+  PencilIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -48,7 +51,7 @@ import { withProjectProtected } from 'hoc/projectProtected'
 
 import { periodToCompareDate } from 'utils/compareConvertDate'
 
-import { getTimeFromSeconds, getStringFromTime, getLocaleDisplayName } from 'utils/generic'
+import { getTimeFromSeconds, getStringFromTime, getLocaleDisplayName, nLocaleFormatter } from 'utils/generic'
 import { getItem, setItem, removeItem } from 'utils/localstorage'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
@@ -138,6 +141,8 @@ import {
   getError,
   updateErrorStatus,
   getPropertyMetadata,
+  getProjectViews,
+  deleteProjectView,
 } from 'api'
 import { getChartPrediction } from 'api/ai'
 import { Panel, Metadata } from './Panels'
@@ -174,7 +179,7 @@ import SearchFilters from './components/SearchFilters'
 import Filters from './components/Filters'
 import LiveVisitorsDropdown from './components/LiveVisitorsDropdown'
 import CountryDropdown from './components/CountryDropdown'
-import MetricCards from './components/MetricCards'
+import MetricCards, { MetricCard } from './components/MetricCards'
 import PerformanceMetricCards from './components/PerformanceMetricCards'
 import ProjectAlertsView from '../Alerts/View'
 import UTMDropdown from './components/UTMDropdown'
@@ -193,8 +198,19 @@ import { IError } from './interfaces/error'
 import NoErrorDetails from './components/NoErrorDetails'
 import WaitingForAnError from './components/WaitingForAnError'
 import NoSessionDetails from './components/NoSessionDetails'
-import { ICustoms, IParams, IProperties, ITrafficLogResponse } from './interfaces/traffic'
+import {
+  ICustoms,
+  IFilter,
+  ITrafficMeta,
+  IParams,
+  IProjectView,
+  IProjectViewCustomEvent,
+  IProperties,
+  ITrafficLogResponse,
+} from './interfaces/traffic'
 import { trackCustom } from 'utils/analytics'
+import AddAViewModal from './components/AddAViewModal'
+import CustomMetrics from './components/CustomMetrics'
 const SwetrixSDK = require('@swetrix/sdk')
 
 const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
@@ -346,13 +362,13 @@ const ViewProject = ({
   // areFiltersParsed used for check filters is parsed from url. If we have query params in url, we parse it and set to state
   // when areFiltersParsed and areFiltersPerfParsed changed we call loadAnalytics or loadAnalyticsPerf and other func for load data
   // all state with Parsed in name is used for parse query params from url
-  const [areFiltersParsed, setAreFiltersParsed] = useState<boolean>(false)
+  const [areFiltersParsed, setAreFiltersParsed] = useState(false)
   // similar areFiltersParsed but using for activeTab === 'performance'
-  const [areFiltersPerfParsed, setAreFiltersPerfParsed] = useState<boolean>(false)
+  const [areFiltersPerfParsed, setAreFiltersPerfParsed] = useState(false)
   // similar areFiltersParsed and areFiltersPerfParsed but using for period
-  const [arePeriodParsed, setArePeriodParsed] = useState<boolean>(false)
+  const [arePeriodParsed, setArePeriodParsed] = useState(false)
   // similar areFiltersParsed and areFiltersPerfParsed but using for timeBucket
-  const [areTimeBucketParsed, setAreTimeBucketParsed] = useState<boolean>(false)
+  const [areTimeBucketParsed, setAreTimeBucketParsed] = useState(false)
 
   // panelsData is a data used for components <Panels /> and <Metadata />,
   // also using for logic with custom events on chart and export data like csv
@@ -361,16 +377,18 @@ const ViewProject = ({
     data: IParams
     customs: ICustoms
     properties: IProperties
+    meta?: ITrafficMeta[]
     // @ts-expect-error
   }>({})
   const [overall, setOverall] = useState<Partial<IOverallObject>>({})
   const [overallPerformance, setOverallPerformance] = useState<Partial<IOverallPerformanceObject>>({})
   // isPanelsDataEmpty is a true we are display components <NoEvents /> and do not show dropdowns with activeChartMetrics
-  const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState<boolean>(false)
-  const [isForecastOpened, setIsForecastOpened] = useState<boolean>(false)
-  const [isNewFunnelOpened, setIsNewFunnelOpened] = useState<boolean>(false)
+  const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
+  const [isForecastOpened, setIsForecastOpened] = useState(false)
+  const [isNewFunnelOpened, setIsNewFunnelOpened] = useState(false)
+  const [isAddAViewOpened, setIsAddAViewOpened] = useState(false)
   // analyticsLoading is a boolean for show loader on chart
-  const [analyticsLoading, setAnalyticsLoading] = useState<boolean>(true)
+  const [analyticsLoading, setAnalyticsLoading] = useState(true)
   // period using for logic with update data on chart. Set when user change period in dropdown and when we parse query params from url
   const [period, setPeriod] = useState<string>(
     projectViewPrefs ? projectViewPrefs[id]?.period || periodPairs[4].period : periodPairs[4].period,
@@ -413,14 +431,12 @@ const ViewProject = ({
     () => !_some({ ...activeChartMetrics, ...activeChartMetricsCustomEvents }, (value) => value),
     [activeChartMetrics, activeChartMetricsCustomEvents],
   )
-  // filters - when we change filters we loading new data from api, update query url and update chart
-  const [filters, setFilters] = useState<any[]>([])
-  // similar filters but using for performance tab
-  const [filtersPerf, setFiltersPerf] = useState<any[]>([])
-  // similar filters but using for the sessions tab
-  const [filtersSessions, setFiltersSessions] = useState<any[]>([])
+  const [customMetrics, setCustomMetrics] = useState<IProjectViewCustomEvent[]>([])
+  const [filters, setFilters] = useState<IFilter[]>([])
+  const [filtersPerf, setFiltersPerf] = useState<IFilter[]>([])
+  const [filtersSessions, setFiltersSessions] = useState<IFilter[]>([])
   const [areFiltersSessionsParsed, setAreFiltersSessionsParsed] = useState<boolean>(false)
-  const [filtersErrors, setFiltersErrors] = useState<any[]>([])
+  const [filtersErrors, setFiltersErrors] = useState<IFilter[]>([])
   const [areFiltersErrorsParsed, setAreFiltersErrorsParsed] = useState<boolean>(false)
 
   // isLoading is a true when we loading data from api
@@ -470,7 +486,52 @@ const ViewProject = ({
   const [funnelToEdit, setFunnelToEdit] = useState<IFunnel | undefined>(undefined)
   const [funnelActionLoading, setFunnelActionLoading] = useState<boolean>(false)
 
+  // null -> not loaded yet
+  const [projectViews, setProjectViews] = useState<IProjectView[]>([])
+  const [projectViewsLoading, setProjectViewsLoading] = useState<boolean | null>(null) //  // null - not loaded, true - loading, false - loaded
+  const [projectViewDeleting, setProjectViewDeleting] = useState(false)
+  const [projectViewToUpdate, setProjectViewToUpdate] = useState<IProjectView | undefined>()
+
   const mode = activeChartMetrics[CHART_METRICS_MAPPING.cumulativeMode] ? 'cumulative' : 'periodical'
+
+  const loadProjectViews = async (forced?: boolean) => {
+    if (!forced && projectViewsLoading !== null) {
+      return
+    }
+
+    setProjectViewsLoading(true)
+
+    try {
+      const views = await getProjectViews(id, projectPassword)
+      setProjectViews(views)
+    } catch (reason: any) {
+      console.error('[ERROR] (loadProjectViews)', reason)
+      showError(reason)
+    }
+
+    setProjectViewsLoading(false)
+  }
+
+  const onProjectViewDelete = async (viewId: string) => {
+    if (projectViewDeleting) {
+      return
+    }
+
+    setProjectViewDeleting(true)
+
+    try {
+      await deleteProjectView(id, viewId)
+    } catch (reason: any) {
+      console.error('[ERROR] (deleteProjectView)', reason)
+      showError(reason)
+      setProjectViewDeleting(false)
+      return
+    }
+
+    generateAlert(t('apiNotifications.viewDeleted'), 'success')
+    await loadProjectViews(true)
+    setProjectViewDeleting(false)
+  }
 
   const onFunnelCreate = async (name: string, steps: string[]) => {
     if (funnelActionLoading) {
@@ -949,7 +1010,7 @@ const ViewProject = ({
   // activeTabLabel is a label for active tab. Using for title in dropdown
   const activeTabLabel = useMemo(() => _find(tabs, (tab) => tab.id === activeTab)?.label, [tabs, activeTab])
 
-  const switchTrafficChartMetric = (pairID: string, conflicts: string[]) => {
+  const switchTrafficChartMetric = (pairID: string, conflicts?: string[]) => {
     if (isConflicted(conflicts)) {
       generateAlert(t('project.conflictMetric'), 'error')
       return
@@ -1178,7 +1239,11 @@ const ViewProject = ({
   }
 
   // loadAnalytics is a function for load data for chart from api
-  const loadAnalytics = async (forced = false, newFilters: any[] | null = null) => {
+  const loadAnalytics = async (
+    forced = false,
+    newFilters: IFilter[] | null = null,
+    newMetrics: IProjectViewCustomEvent[] | null = null,
+  ) => {
     if (!forced && (isLoading || _isEmpty(project) || dataLoading)) {
       return
     }
@@ -1295,6 +1360,7 @@ const ViewProject = ({
             timeBucket,
             '',
             newFilters || filters,
+            newMetrics || customMetrics,
             from,
             to,
             timezone,
@@ -1319,6 +1385,7 @@ const ViewProject = ({
             timeBucket,
             period,
             newFilters || filters,
+            newMetrics || customMetrics,
             '',
             '',
             timezone,
@@ -1369,7 +1436,7 @@ const ViewProject = ({
         return
       }
 
-      const { chart, params, customs, properties, appliedFilters } = data
+      const { chart, params, customs, properties, appliedFilters, meta } = data
       let newTimebucket = timeBucket
       sdkInstance?._emitEvent('load', sdkData)
 
@@ -1436,6 +1503,7 @@ const ViewProject = ({
           data: params,
           customs,
           properties,
+          meta,
         })
 
         if (activeTab === PROJECT_TABS.traffic) {
@@ -2209,17 +2277,11 @@ const ViewProject = ({
     }
   }
 
-  const onFilterSearch = (
-    items: {
-      column: string
-      filter: string[]
-    }[],
-    override: boolean,
-  ) => {
+  const onFilterSearch = (items: IFilter[], override: boolean) => {
     const newFilters = _filter(items, (item) => {
       return !_isEmpty(item.filter)
     })
-    // @ts-ignore
+    // @ts-expect-error
     const url = new URL(window.location)
 
     if (activeTab === PROJECT_TABS.performance) {
@@ -2344,6 +2406,35 @@ const ViewProject = ({
 
     resetSessions()
     resetErrors()
+  }
+
+  const onCustomMetric = (metrics: IProjectViewCustomEvent[]) => {
+    if (activeTab !== PROJECT_TABS.traffic) {
+      return
+    }
+
+    setCustomMetrics(metrics)
+    loadAnalytics(true, null, metrics)
+  }
+
+  const onRemoveCustomMetric = (metricId: IProjectViewCustomEvent['id']) => {
+    if (activeTab !== PROJECT_TABS.traffic) {
+      return
+    }
+
+    const newMetrics = _filter(customMetrics, (metric) => metric.id !== metricId)
+
+    setCustomMetrics(newMetrics)
+    loadAnalytics(true, null, newMetrics)
+  }
+
+  const resetCustomMetrics = () => {
+    if (activeTab !== PROJECT_TABS.traffic) {
+      return
+    }
+
+    setCustomMetrics([])
+    loadAnalytics(true, null, [])
   }
 
   // this function is used for requesting the data from the API when the exclusive filter is changed
@@ -3242,14 +3333,15 @@ const ViewProject = ({
   }, [])
 
   // check for conflicts in chart metrics in dropdown if conflicted disable some column of dropdown
-  const isConflicted = (conflicts: string[]) => {
-    const conflicted =
-      conflicts &&
-      _some(conflicts, (conflict) => {
-        const conflictPair = _find(chartMetrics, (metric) => metric.id === conflict)
-        return conflictPair && conflictPair.active
-      })
-    return conflicted
+  const isConflicted = (conflicts?: string[]) => {
+    if (!conflicts) {
+      return false
+    }
+
+    return _some(conflicts, (conflict) => {
+      const conflictPair = _find(chartMetrics, (metric) => metric.id === conflict)
+      return conflictPair && conflictPair.active
+    })
   }
 
   const cleanURLFilters = () => {
@@ -3686,6 +3778,101 @@ const ViewProject = ({
                                 <MagnifyingGlassIcon className='h-5 w-5 stroke-2 text-gray-700 dark:text-gray-50' />
                               </button>
                             </div>
+                            {activeTab === PROJECT_TABS.traffic && (
+                              <Dropdown
+                                header={t('project.views')}
+                                onClick={() => loadProjectViews()}
+                                loading={projectViewsLoading || projectViewsLoading === null}
+                                selectItemClassName={
+                                  !allowedToManage &&
+                                  !(projectViewsLoading || projectViewsLoading === null) &&
+                                  _isEmpty(projectViews)
+                                    ? 'block px-4 py-2 text-sm text-gray-700 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50'
+                                    : undefined
+                                }
+                                items={_filter(
+                                  [
+                                    ...projectViews,
+                                    allowedToManage && {
+                                      id: 'add-a-view',
+                                      name: t('project.addAView'),
+                                      createView: true,
+                                    },
+                                    !allowedToManage &&
+                                      _isEmpty(projectViews) && {
+                                        id: 'no-views',
+                                        name: t('project.noViewsYet'),
+                                        notClickable: true,
+                                      },
+                                  ],
+                                  (x) => !!x,
+                                )}
+                                title={[<BookmarkIcon key='bookmark-icon' className='h-5 w-5 stroke-2' />]}
+                                labelExtractor={(item, close) => {
+                                  // @ts-expect-error
+                                  if (item.createView) {
+                                    return item.name
+                                  }
+
+                                  console.log('projectViews:', projectViews)
+                                  console.log('_isEmpty(projectViews):', _isEmpty(projectViews))
+
+                                  if (item.id === 'no-views') {
+                                    return <span className='text-gray-600 dark:text-gray-200'>{item.name}</span>
+                                  }
+
+                                  return (
+                                    <span className='flex items-center justify-between space-x-4'>
+                                      <span>{item.name}</span>
+                                      {allowedToManage && (
+                                        <span className='flex space-x-2'>
+                                          <PencilIcon
+                                            className='size-4 hover:text-gray-900 dark:hover:text-gray-50'
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              setProjectViewToUpdate(item)
+                                              close()
+                                              setIsAddAViewOpened(true)
+                                            }}
+                                          />
+                                          <TrashIcon
+                                            className={cx('size-4 hover:text-gray-900 dark:hover:text-gray-50', {
+                                              'cursor-not-allowed': projectViewDeleting,
+                                            })}
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              close()
+                                              onProjectViewDelete(item.id)
+                                            }}
+                                          />
+                                        </span>
+                                      )}
+                                    </span>
+                                  )
+                                }}
+                                keyExtractor={(item) => item.id}
+                                onSelect={(item: IProjectView, e) => {
+                                  // @ts-expect-error
+                                  if (item.createView) {
+                                    e?.stopPropagation()
+                                    setIsAddAViewOpened(true)
+
+                                    return
+                                  }
+
+                                  if (item.filters && !_isEmpty(item.filters)) {
+                                    onFilterSearch(item.filters, true)
+                                  }
+
+                                  if (item.customEvents && !_isEmpty(item.customEvents)) {
+                                    onCustomMetric(item.customEvents)
+                                  }
+                                }}
+                                chevron='mini'
+                                buttonClassName='!p-2 rounded-md hover:bg-white hover:shadow-sm dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200'
+                                headless
+                              />
+                            )}
                             {activeTab !== PROJECT_TABS.funnels &&
                               activeTab !== PROJECT_TABS.sessions &&
                               activeTab !== PROJECT_TABS.errors && (
@@ -3703,12 +3890,8 @@ const ViewProject = ({
                                     ],
                                     (el) => !!el,
                                   )}
-                                  title={[<ArrowDownTrayIcon key='download-icon' className='h-5 w-5' />]}
-                                  labelExtractor={(item) => {
-                                    const { label } = item
-
-                                    return label
-                                  }}
+                                  title={[<ArrowDownTrayIcon key='download-icon' className='h-5 w-5 stroke-2' />]}
+                                  labelExtractor={(item) => item.label}
                                   keyExtractor={(item) => item.label}
                                   onSelect={(item, e) => {
                                     if (item.lookingForMore) {
@@ -3853,6 +4036,7 @@ const ViewProject = ({
                                 />
                               )
                             }}
+                            buttonClassName='!px-2.5'
                             selectItemClassName='group text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 block text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'
                             keyExtractor={(pair) => pair.id}
                             onSelect={({ id: pairID, conflicts }) => {
@@ -3912,6 +4096,7 @@ const ViewProject = ({
                                 />
                               )
                             }}
+                            buttonClassName='!px-2.5'
                             selectItemClassName='group text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 block text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'
                             keyExtractor={(pair) => pair.id}
                             onSelect={({ id: pairID }) => {
@@ -3953,6 +4138,7 @@ const ViewProject = ({
                             onSelect={({ id: pairID }) => {
                               setActiveChartMetricsPerf(pairID)
                             }}
+                            buttonClassName='!px-2.5'
                             chevron='mini'
                             headless
                           />
@@ -3972,6 +4158,7 @@ const ViewProject = ({
                             onSelect={({ id: pairID }) => {
                               onMeasureChange(pairID)
                             }}
+                            buttonClassName='!px-2.5'
                             chevron='mini'
                             headless
                           />
@@ -4504,11 +4691,36 @@ const ViewProject = ({
               {activeTab === PROJECT_TABS.traffic && (
                 <div className={cx('pt-2', { hidden: isPanelsDataEmpty || analyticsLoading })}>
                   {!_isEmpty(overall) && (
-                    <MetricCards
-                      overall={overall}
-                      overallCompare={overallCompare}
-                      activePeriodCompare={activePeriodCompare}
-                    />
+                    <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
+                      <MetricCards
+                        overall={overall}
+                        overallCompare={overallCompare}
+                        activePeriodCompare={activePeriodCompare}
+                      />
+                      {!_isEmpty(panelsData.meta) &&
+                        _map(panelsData.meta, ({ key, current, previous }) => (
+                          <React.Fragment key={key}>
+                            <MetricCard
+                              label={t('project.metrics.xAvg', { x: key })}
+                              value={current.avg}
+                              change={current.avg - previous.avg}
+                              goodChangeDirection='down'
+                              valueMapper={(value, type) =>
+                                `${type === 'badge' && value > 0 ? '+' : ''}${nLocaleFormatter(value)}`
+                              }
+                            />
+                            <MetricCard
+                              label={t('project.metrics.xTotal', { x: key })}
+                              value={current.sum}
+                              change={current.sum - previous.sum}
+                              goodChangeDirection='down'
+                              valueMapper={(value, type) =>
+                                `${type === 'badge' && value > 0 ? '+' : ''}${nLocaleFormatter(value)}`
+                              }
+                            />
+                          </React.Fragment>
+                        ))}
+                    </div>
                   )}
                   <div
                     className={cx('h-80', {
@@ -4523,6 +4735,11 @@ const ViewProject = ({
                     onChangeExclusive={onChangeExclusive}
                     tnMapping={tnMapping}
                     resetFilters={resetActiveTabFilters}
+                  />
+                  <CustomMetrics
+                    metrics={customMetrics}
+                    onRemoveMetric={(id) => onRemoveCustomMetric(id)}
+                    resetMetrics={resetCustomMetrics}
                   />
                   {dataLoading && (
                     <div className='static mt-4 !bg-transparent' id='loader'>
@@ -5036,6 +5253,23 @@ const ViewProject = ({
                     ? filtersErrors
                     : filters
             }
+          />
+          <AddAViewModal
+            projectPassword={projectPassword}
+            showModal={isAddAViewOpened}
+            setShowModal={(show) => {
+              setIsAddAViewOpened(show)
+              setProjectViewToUpdate(undefined)
+            }}
+            onSubmit={() => {
+              setProjectViews([])
+              setProjectViewsLoading(null)
+              setProjectViewToUpdate(undefined)
+            }}
+            defaultView={projectViewToUpdate}
+            showError={showError}
+            pid={id}
+            tnMapping={tnMapping}
           />
           {!embedded && <Footer authenticated={authenticated} minimal showDBIPMessage />}
         </>

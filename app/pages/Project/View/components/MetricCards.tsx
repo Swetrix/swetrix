@@ -174,21 +174,19 @@ const MetricCards = ({ overall, overallCompare, activePeriodCompare }: IMetricCa
 
   if (overall.customEVFilterApplied) {
     return (
-      <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
-        <MetricCard
-          label={t('project.events')}
-          value={overall.current?.all}
-          change={allChange}
-          type='percent'
-          goodChangeDirection='down'
-          valueMapper={(value, type) => `${type === 'badge' && value > 0 ? '+' : ''}${nFormatter(value, 1)}`}
-        />
-      </div>
+      <MetricCard
+        label={t('project.events')}
+        value={overall.current?.all}
+        change={allChange}
+        type='percent'
+        goodChangeDirection='down'
+        valueMapper={(value, type) => `${type === 'badge' && value > 0 ? '+' : ''}${nFormatter(value, 1)}`}
+      />
     )
   }
 
   return (
-    <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
+    <>
       <MetricCard
         label={t('dashboard.unique')}
         value={overall.current?.unique}
@@ -222,7 +220,7 @@ const MetricCards = ({ overall, overallCompare, activePeriodCompare }: IMetricCa
           `${type === 'badge' && value > 0 ? '+' : ''}${getStringFromTime(getTimeFromSeconds(value))}`
         }
       />
-    </div>
+    </>
   )
 }
 

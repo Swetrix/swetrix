@@ -1,6 +1,5 @@
 import { FunnelIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import React, { memo } from 'react'
-import type i18next from 'i18next'
 import cx from 'clsx'
 import _truncate from 'lodash/truncate'
 import _isEmpty from 'lodash/isEmpty'
@@ -21,16 +20,10 @@ interface IFilter {
   // eslint-disable-next-line no-shadow
   onChangeExclusive: (column: string, filter: string, isExclusive: boolean) => void
   tnMapping: Record<string, string>
-  language: string
-  t: typeof i18next.t
   canChangeExclusive?: boolean
   removable?: boolean
 }
 
-/**
- * This component is used for showing the filter in panel
- * @returns {JSX.Element}
- */
 export const Filter = ({
   column,
   filter,
@@ -38,11 +31,14 @@ export const Filter = ({
   onRemoveFilter,
   onChangeExclusive,
   tnMapping,
-  language,
-  t,
   canChangeExclusive,
   removable,
 }: IFilter): JSX.Element => {
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
+
   let displayColumn = tnMapping[column]
   let displayFilter = filter
 
@@ -130,11 +126,6 @@ interface IFilters {
 }
 
 const Filters = ({ filters, onRemoveFilter, onChangeExclusive, tnMapping, resetFilters }: IFilters) => {
-  const {
-    t,
-    i18n: { language },
-  } = useTranslation('common')
-
   if (_isEmpty(filters)) {
     return null
   }
@@ -153,8 +144,6 @@ const Filters = ({ filters, onRemoveFilter, onChangeExclusive, tnMapping, resetF
                 key={key}
                 onRemoveFilter={onRemoveFilter}
                 onChangeExclusive={onChangeExclusive}
-                language={language}
-                t={t}
                 tnMapping={tnMapping}
                 canChangeExclusive
                 removable
