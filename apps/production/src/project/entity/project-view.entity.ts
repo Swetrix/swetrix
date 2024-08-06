@@ -36,7 +36,7 @@ export class ProjectViewEntity {
   type: ProjectViewType
 
   @ApiProperty()
-  @Column('varchar')
+  @Column('text')
   filters: string | null
 
   @ApiProperty()
