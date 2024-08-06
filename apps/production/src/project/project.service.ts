@@ -76,7 +76,6 @@ import { ReportFrequency } from './enums'
 import { nFormatter } from '../common/utils'
 import { browserArgs } from '../og-image/og-image.service'
 import { CreateProjectViewDto } from './dto/create-project-view.dto'
-import { TimeFrameQueryEnum } from './dto/get-prediction-query.dto'
 import { AppLoggerService } from '../logger/logger.service'
 
 dayjs.extend(utc)
@@ -1373,11 +1372,11 @@ export class ProjectService {
     )
   }
 
-  async sendPredictAiRequest(id: string, timeframe: TimeFrameQueryEnum) {
+  async sendPredictAiRequest(id: string) {
     try {
       const { data } = await firstValueFrom(
         this.httpService.get('/predict/', {
-          params: { pid: id, timeframe },
+          params: { pid: id },
         }),
       )
       return data
