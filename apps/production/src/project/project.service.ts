@@ -21,6 +21,7 @@ import * as _map from 'lodash/map'
 import * as _pick from 'lodash/pick'
 import * as _trim from 'lodash/trim'
 import * as _findIndex from 'lodash/findIndex'
+import * as _filter from 'lodash/filter'
 import * as _includes from 'lodash/includes'
 import * as _reduce from 'lodash/reduce'
 import * as dayjs from 'dayjs'
@@ -56,6 +57,8 @@ import {
   redisUserUsageinfoCacheTimeout,
   TRAFFIC_COLUMNS,
   EMAIL_ACTION_ENCRYPTION_KEY,
+  ALL_COLUMNS,
+  TRAFFIC_METAKEY_COLUMNS,
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
 import { IUsageInfoRedis } from '../user/interfaces'
@@ -72,6 +75,7 @@ import {
 import { ReportFrequency } from './enums'
 import { nFormatter } from '../common/utils'
 import { browserArgs } from '../og-image/og-image.service'
+import { CreateProjectViewDto } from './dto/create-project-view.dto'
 import { AppLoggerService } from '../logger/logger.service'
 
 dayjs.extend(utc)
@@ -1351,6 +1355,21 @@ export class ProjectService {
 
   async findProject(id: string, relations: string[]) {
     return this.projectsRepository.findOne({ relations, where: { id } })
+  }
+
+  filterUnsupportedColumns(
+    filters: CreateProjectViewDto['filters'],
+  ): CreateProjectViewDto['filters'] {
+    if (!filters) {
+      return []
+    }
+
+    return _filter(
+      filters,
+      ({ column }) =>
+        _includes(ALL_COLUMNS, column) ||
+        _includes(TRAFFIC_METAKEY_COLUMNS, column),
+    )
   }
 
   async sendPredictAiRequest(id: string) {

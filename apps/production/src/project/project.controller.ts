@@ -1943,11 +1943,11 @@ export class ProjectController {
   @ApiOkResponse({ type: ProjectViewEntity })
   @ApiBearerAuth()
   @Get(':projectId/views/:viewId')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth([], true, true)
   async getProjectView(
     @Param() params: ProjectViewIdsDto,
     @CurrentUserId() userId: string,
+    @Headers() headers: { 'x-password'?: string },
   ) {
     const project = await this.projectService.findProject(params.projectId, [
       'admin',
@@ -1958,13 +1958,8 @@ export class ProjectController {
       throw new NotFoundException('Project not found.')
     }
 
-    const user = await this.userService.findUserV2(userId, ['roles'])
+    this.projectService.allowedToView(project, userId, headers['x-password'])
 
-    if (!user) {
-      throw new NotFoundException('User not found.')
-    }
-
-    this.projectService.allowedToManage(project, userId, user.roles)
     return this.projectsViewsRepository.findProjectView(
       params.projectId,
       params.viewId,
@@ -2000,10 +1995,14 @@ export class ProjectController {
     this.projectService.allowedToManage(project, userId, user.roles)
 
     const createdProjectView =
-      await this.projectsViewsRepository.createProjectView(
-        params.projectId,
-        body,
-      )
+      await this.projectsViewsRepository.createProjectView(params.projectId, {
+        type: body.type,
+        customEvents: body.customEvents,
+        name: body.name,
+        filters: JSON.stringify(
+          this.projectService.filterUnsupportedColumns(body.filters),
+        ),
+      })
 
     return _omit(createdProjectView, ['project'])
   }
@@ -2012,11 +2011,11 @@ export class ProjectController {
   @ApiOkResponse({ type: ProjectViewEntity })
   @ApiBearerAuth()
   @Get(':projectId/views')
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth([], true, true)
   async getProjectViews(
     @Param() params: ProjectIdDto,
     @CurrentUserId() userId: string,
+    @Headers() headers: { 'x-password'?: string },
   ) {
     const project = await this.projectService.findProject(params.projectId, [
       'admin',
@@ -2027,13 +2026,7 @@ export class ProjectController {
       throw new NotFoundException('Project not found.')
     }
 
-    const user = await this.userService.findUserV2(userId, ['roles'])
-
-    if (!user) {
-      throw new NotFoundException('User not found.')
-    }
-
-    this.projectService.allowedToManage(project, userId, user.roles)
+    this.projectService.allowedToView(project, userId, headers['x-password'])
 
     return this.projectsViewsRepository.findViews(params.projectId)
   }
@@ -2075,7 +2068,13 @@ export class ProjectController {
       throw new NotFoundException('View not found.')
     }
 
-    await this.projectsViewsRepository.updateProjectView(params.viewId, body)
+    await this.projectsViewsRepository.updateProjectView(params.viewId, {
+      name: body.name,
+      customEvents: body.customEvents,
+      filters: JSON.stringify(
+        this.projectService.filterUnsupportedColumns(body.filters),
+      ),
+    })
 
     return this.projectsViewsRepository.findView(params.viewId)
   }
