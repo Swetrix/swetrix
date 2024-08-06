@@ -2001,6 +2001,8 @@ export class ProjectController {
         name: body.name,
         filters: JSON.stringify(
           this.projectService.filterUnsupportedColumns(body.filters),
+          null,
+          2,
         ),
       })
 
@@ -2073,6 +2075,8 @@ export class ProjectController {
       customEvents: body.customEvents,
       filters: JSON.stringify(
         this.projectService.filterUnsupportedColumns(body.filters),
+        null,
+        2,
       ),
     })
 
