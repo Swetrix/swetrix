@@ -2141,8 +2141,6 @@ export class ProjectController {
     this.projectService.allowedToView(project, userId, headers['x-password'])
     // TODO add caching
 
-    return this.projectService.sendPredictAiRequest(
-      params.projectId,
-    )
+    return this.projectService.sendPredictAiRequest(params.projectId)
   }
 }
