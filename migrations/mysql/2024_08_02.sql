@@ -1,5 +1,5 @@
-DROP TABLE projects_views;
 DROP TABLE projects_views_custom_events;
+DROP TABLE projects_views;
 
 CREATE TABLE `projects_views` (
   `id` varchar(36) NOT NULL,
