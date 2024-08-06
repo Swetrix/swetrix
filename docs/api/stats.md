@@ -54,9 +54,9 @@ Filters are used to aggregate data by specific parameters. For example, you can 
 'Filter' is an object with the following structure:
 ```json
 {
-  "column":"cc",
-  "filter":"GB",
-  "isExclusive":false
+  "column": "cc",
+  "filter": "GB",
+  "isExclusive": false
 }
 ```
 
@@ -68,6 +68,28 @@ Filters are used to aggregate data by specific parameters. For example, you can 
 The mode parameter specifies how the data is aggregated. Possible values are:
 - **periodic** - data is aggregated by the specified time bucket (e.g. by day, week, etc.);
 - **cumulative** - data is aggregated cumulatively (e.g. the number of visits for the current day is the sum of the number of visits for all previous days and the current day).
+
+### Metrics
+Metrics are a set of rules that allow you to aggregate your custom events as decimals or integers. They're extremely useful for e-commerce platforms, allowing you to calculate your sales, for example.
+This parameter is only supported for [traffic analytics](#get-v1log) endpoint.
+
+'Metric' is an object with the following structure:
+```json
+{
+  "customEventName": "sale",
+  "metaKey": "currency",
+  "metaValue": "USD",
+  "metricKey": "amount",
+  "metaValueType": "float"
+}
+```
+
+Where:
+1. `customEventName` (required): is the name of the custom event you want to apply your metric to.
+2. `metaKey` (optional): Custom event metadata key to filter (for example, "currency").
+3. `metaValue` (optional): Custom event metadata value to filter (for example, "GBP").
+4. `metricKey` (required): Metadata key to aggregate (for example, "amount").
+5. `metaValueType` (required): Specifies how to interpret the custom metric value. For example, `float` will convert "15.99" to 15.99, while `integer` will interpret it as 15. (supported values are: `integer`, `float`. If set to `string`, the whole metric will be ignored.)
 
 ## Endpoints
 ### GET /v1/log
@@ -160,6 +182,28 @@ An array of [filter objects](#filters).
 **mode**
 
 [Mode](#mode) used to aggregate the data. The default is `periodic`.
+<hr />
+
+**metrics**
+
+An optional array of [metric objects](#metrics), with up to 3 metrics allowed. If the `metrics` array is provided and it's valid, it will be calculated on the backend and an additional field called `meta` will be returned in the response.
+
+The `filters` and `timezone` parameters provided within the same request are also used when calculating custom metrics. 
+
+The `meta` is an array of objects like:
+```javascript
+{
+  "key": "amount", // equals to "metricKey" provided
+  "current": { // for the current period or from / to pair
+    "sum": 100, // the sum of all custom metrics
+    "avg": 20, // the averae of all custom metrics
+  },
+  "previous": { // for the previous period of the same length as the current one
+    "sum": 80,
+    "avg": 30,
+  },
+}
+```
 <hr />
 
 ### GET /v1/log/performance
