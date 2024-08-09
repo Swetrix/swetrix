@@ -35,10 +35,10 @@ export function init(pid: string, options?: LibOptions): Lib {
  *
  * @param {TrackEventOptions} event The options related to the custom event.
  */
-export function track(event: TrackEventOptions): void {
+export async function track(event: TrackEventOptions): Promise<void> {
   if (!LIB_INSTANCE) return
 
-  LIB_INSTANCE.track(event)
+  await LIB_INSTANCE.track(event)
 }
 
 /**

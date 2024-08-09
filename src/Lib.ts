@@ -261,7 +261,7 @@ export class Lib {
     this.sendRequest('error', errorPayload)
   }
 
-  track(event: TrackEventOptions): void {
+  async track(event: TrackEventOptions): Promise<void> {
     if (!this.canTrack()) {
       return
     }
@@ -277,7 +277,7 @@ export class Lib {
       me: getUTMMedium(),
       ca: getUTMCampaign(),
     }
-    this.sendRequest('custom', data)
+    await this.sendRequest('custom', data)
   }
 
   trackPageViews(options?: PageViewsOptions): PageActions {
@@ -476,11 +476,14 @@ export class Lib {
     return true
   }
 
-  private sendRequest(path: string, body: object): void {
+  private async sendRequest(path: string, body: object): Promise<void> {
     const host = this.options?.apiURL || DEFAULT_API_HOST
-    const req = new XMLHttpRequest()
-    req.open('POST', `${host}/${path}`, true)
-    req.setRequestHeader('Content-Type', 'application/json')
-    req.send(JSON.stringify(body))
+    await fetch(`${host}/${path}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    })
   }
 }

@@ -20,10 +20,10 @@ export function init(pid, options) {
  *
  * @param {TrackEventOptions} event The options related to the custom event.
  */
-export function track(event) {
+export async function track(event) {
     if (!LIB_INSTANCE)
         return;
-    LIB_INSTANCE.track(event);
+    await LIB_INSTANCE.track(event);
 }
 /**
  * With this function you are able to automatically track pageviews across your application.

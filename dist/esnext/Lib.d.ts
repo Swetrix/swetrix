@@ -140,7 +140,7 @@ export declare class Lib {
     captureError(event: ErrorEvent): void;
     trackErrors(options?: ErrorOptions): ErrorActions;
     submitError(payload: IErrorEventPayload, evokeCallback?: boolean): void;
-    track(event: TrackEventOptions): void;
+    track(event: TrackEventOptions): Promise<void>;
     trackPageViews(options?: PageViewsOptions): PageActions;
     getPerformanceStats(): IPerfPayload | {};
     private heartbeat;

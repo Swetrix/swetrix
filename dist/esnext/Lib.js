@@ -75,7 +75,7 @@ export class Lib {
         Object.assign(errorPayload, privateData);
         this.sendRequest('error', errorPayload);
     }
-    track(event) {
+    async track(event) {
         if (!this.canTrack()) {
             return;
         }
@@ -90,7 +90,7 @@ export class Lib {
             me: getUTMMedium(),
             ca: getUTMCampaign(),
         };
-        this.sendRequest('custom', data);
+        await this.sendRequest('custom', data);
     }
     trackPageViews(options) {
         if (!this.canTrack()) {
@@ -244,12 +244,15 @@ export class Lib {
         }
         return true;
     }
-    sendRequest(path, body) {
+    async sendRequest(path, body) {
         const host = this.options?.apiURL || DEFAULT_API_HOST;
-        const req = new XMLHttpRequest();
-        req.open('POST', `${host}/${path}`, true);
-        req.setRequestHeader('Content-Type', 'application/json');
-        req.send(JSON.stringify(body));
+        await fetch(`${host}/${path}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+        });
     }
 }
 //# sourceMappingURL=Lib.js.map

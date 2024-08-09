@@ -15,7 +15,7 @@ export declare function init(pid: string, options?: LibOptions): Lib;
  *
  * @param {TrackEventOptions} event The options related to the custom event.
  */
-export declare function track(event: TrackEventOptions): void;
+export declare function track(event: TrackEventOptions): Promise<void>;
 /**
  * With this function you are able to automatically track pageviews across your application.
  *
