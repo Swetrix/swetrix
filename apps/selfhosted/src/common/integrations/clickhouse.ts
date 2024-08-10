@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { createClient } from '@clickhouse/client'
 
 const clickhouse = createClient({
