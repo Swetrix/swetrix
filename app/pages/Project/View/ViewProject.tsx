@@ -3814,9 +3814,6 @@ const ViewProject = ({
                                     return item.name
                                   }
 
-                                  console.log('projectViews:', projectViews)
-                                  console.log('_isEmpty(projectViews):', _isEmpty(projectViews))
-
                                   if (item.id === 'no-views') {
                                     return <span className='text-gray-600 dark:text-gray-200'>{item.name}</span>
                                   }

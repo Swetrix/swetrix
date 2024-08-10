@@ -88,9 +88,7 @@ const ProjectProtectedPassword = ({
             password: t('apiNotifications.incorrectPassword'),
           })
         })
-        .catch((err) => {
-          console.log(err)
-        })
+        .catch(console.error)
         .finally(() => {
           setIsLoading(false)
         })

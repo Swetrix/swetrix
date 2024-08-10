@@ -353,9 +353,7 @@ const CaptchaSettings = ({
       .then((res) => {
         setAllProjectsNames(res)
       })
-      .catch((e) => {
-        console.log(e)
-      })
+      .catch(console.error)
   }
 
   useEffect(() => {
