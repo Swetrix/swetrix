@@ -4,6 +4,7 @@ import * as _pick from 'lodash/pick'
 import * as _map from 'lodash/map'
 import * as _uniqBy from 'lodash/uniqBy'
 import * as _includes from 'lodash/includes'
+import * as _size from 'lodash/size'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as dayjsTimezone from 'dayjs/plugin/timezone'
@@ -83,6 +84,10 @@ import {
   performanceTransformer,
   trafficTransformer,
 } from './utils/transformers'
+import {
+  MAX_METRICS_IN_VIEW,
+  ProjectViewCustomEventDto,
+} from '../project/dto/create-project-view.dto'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -204,6 +209,7 @@ export class AnalyticsController {
       filters,
       timezone = DEFAULT_TIMEZONE,
       mode = ChartRenderMode.PERIODICAL,
+      metrics,
     } = data
     this.analyticsService.validatePID(pid)
 
@@ -216,6 +222,14 @@ export class AnalyticsController {
       uid,
       headers['x-password'],
     )
+
+    const parsedMetrics = this.analyticsService.parseMetrics(metrics)
+
+    if (_size(parsedMetrics) > MAX_METRICS_IN_VIEW) {
+      throw new BadRequestException(
+        `The maximum number of metrics within one request is ${MAX_METRICS_IN_VIEW}`,
+      )
+    }
 
     let newTimebucket = timeBucket
     let allowedTumebucketForPeriodAll
@@ -294,12 +308,28 @@ export class AnalyticsController {
       )
     }
 
+    let meta: Awaited<ReturnType<typeof this.analyticsService.getMetaResults>>
+
+    if (!_isEmpty(parsedMetrics)) {
+      meta = await this.analyticsService.getMetaResults(
+        pid,
+        parsedMetrics,
+        filtersQuery,
+        paramsData,
+        timezone,
+        period,
+        from,
+        to,
+      )
+    }
+
     return {
       ...result,
       customs,
       properties,
       appliedFilters: parsedFilters,
       timeBucket: allowedTumebucketForPeriodAll,
+      meta,
     }
   }
 

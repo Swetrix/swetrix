@@ -12,6 +12,8 @@ import * as _isEmpty from 'lodash/isEmpty'
 import * as _isString from 'lodash/isString'
 import * as _size from 'lodash/size'
 import * as _join from 'lodash/join'
+import * as _filter from 'lodash/filter'
+import * as _includes from 'lodash/includes'
 import * as _find from 'lodash/find'
 import * as _map from 'lodash/map'
 import * as _isNull from 'lodash/isNull'
@@ -29,11 +31,20 @@ import {
   ORIGINS_REGEX,
   getRedisProjectKey,
   redisProjectCacheTimeout,
+  ALL_COLUMNS,
+  TRAFFIC_METAKEY_COLUMNS,
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
 import { getProjectsClickhouse } from '../common/utils'
 import { MAX_PROJECT_PASSWORD_LENGTH, UpdateProjectDto } from './dto'
 import { Funnel } from './entity/funnel.entity'
+import { ProjectViewEntity } from './entity/project-view.entity'
+import {
+  CreateProjectViewDto,
+  Filter,
+  ProjectViewCustomEventDto,
+} from './dto/create-project-view.dto'
+import { ProjectViewCustomEventEntity } from './entity/project-view-custom-event.entity'
 
 // A list of characters that can be used in a Project ID
 const LEGAL_PID_CHARACTERS =
@@ -313,6 +324,97 @@ export class ProjectService {
       : _split(updProject.ipBlacklist, ',')
 
     return updProject
+  }
+
+  filterUnsupportedColumns(
+    filters: CreateProjectViewDto['filters'],
+  ): CreateProjectViewDto['filters'] {
+    if (!filters) {
+      return []
+    }
+
+    return _filter(
+      filters,
+      ({ column }) =>
+        _includes(ALL_COLUMNS, column) ||
+        _includes(TRAFFIC_METAKEY_COLUMNS, column),
+    )
+  }
+
+  formatCustomEventToClickhose(
+    viewId: string,
+    customEvent: ProjectViewCustomEventEntity | ProjectViewCustomEventDto,
+  ) {
+    if (!customEvent) {
+      return null
+    }
+
+    return {
+      viewId,
+      // @ts-expect-error
+      id: customEvent.id,
+      customEventName: customEvent.customEventName,
+      metaKey: customEvent.metaKey || null,
+      metaValue: customEvent.metaValue || null,
+      metaValueType: customEvent.metaValueType,
+      metricKey: customEvent.metricKey,
+    }
+  }
+
+  formatCustomEventsToClickhouse(
+    viewId: string,
+    customEvents: ProjectViewCustomEventEntity[] | ProjectViewCustomEventDto[],
+  ) {
+    if (_isEmpty(customEvents)) {
+      return []
+    }
+
+    return _map(customEvents, customEvent =>
+      this.formatCustomEventToClickhose(viewId, customEvent),
+    )
+  }
+
+  formatViewToClickhouse(
+    view: (ProjectViewEntity | CreateProjectViewDto) & {
+      id: string
+      projectId: string
+    },
+  ) {
+    const { id, projectId, type, customEvents, name, filters } = view
+
+    return {
+      id,
+      projectId,
+      type,
+      customEvents: this.formatCustomEventsToClickhouse(id, customEvents),
+      name,
+      filters: JSON.stringify(
+        this.filterUnsupportedColumns(filters as Filter[]),
+        null,
+        2,
+      ),
+    }
+  }
+
+  formatViewsFromClickhouse(views: any[]): ProjectViewEntity[] {
+    if (_isEmpty(views)) {
+      return []
+    }
+
+    return _map(views, this.formatViewFromClickhouse)
+  }
+
+  formatViewFromClickhouse(view: any): ProjectViewEntity {
+    const updView = { ...view }
+    updView.name = _trim(updView.name)
+    updView.filters = JSON.parse(view.filters)
+    updView.customEvents = _map(view.customEvents, customEvent => ({
+      ...customEvent,
+      createdAt: '1970-01-01T00:00:00.000Z',
+      updatedAt: '1970-01-01T00:00:00.000Z',
+    }))
+
+    return updView
   }
 
   formatFunnelToClickhouse(funnel: Funnel): any {

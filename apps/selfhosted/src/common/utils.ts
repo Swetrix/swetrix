@@ -30,6 +30,7 @@ import { clickhouse } from './integrations/clickhouse'
 import { DEFAULT_TIMEZONE, TimeFormat } from '../user/entities/user.entity'
 import { Project } from '../project/entity/project.entity'
 import { Funnel } from '../project/entity/funnel.entity'
+import { ProjectViewEntity } from '../project/entity/project-view.entity'
 
 dayjs.extend(utc)
 
@@ -131,28 +132,20 @@ const updateFunnelClickhouse = async (funnel: any) => {
     ', ',
   )} WHERE id='${funnel.id}'`
 
-  const { data } = await clickhouse
-    .query({
-      query,
-    })
-    .then(resultSet => resultSet.json())
-
-  return data
+  await clickhouse.command({
+    query,
+  })
 }
 
 const deleteFunnelClickhouse = async (id: string) => {
   const query = `ALTER table funnel DELETE WHERE id = {id:String}`
 
-  const { data } = await clickhouse
-    .query({
-      query,
-      query_params: {
-        id,
-      },
-    })
-    .then(resultSet => resultSet.json())
-
-  return data
+  await clickhouse.command({
+    query,
+    query_params: {
+      id,
+    },
+  })
 }
 
 const createFunnelClickhouse = async (funnel: Partial<Funnel>) => {
@@ -243,13 +236,9 @@ const updateProjectClickhouse = async (project: any) => {
     ', ',
   )} WHERE id='${project.id}'`
 
-  const { data } = await clickhouse
-    .query({
-      query,
-    })
-    .then(resultSet => resultSet.json())
-
-  return data
+  await clickhouse.command({
+    query,
+  })
 }
 
 /**
@@ -277,16 +266,12 @@ const calculateRelativePercentage = (
 const deleteProjectClickhouse = async (id: string) => {
   const query = `ALTER table project DELETE WHERE id = {id:FixedString(12)}`
 
-  const { data } = await clickhouse
-    .query({
-      query,
-      query_params: {
-        id,
-      },
-    })
-    .then(resultSet => resultSet.json())
-
-  return data
+  await clickhouse.command({
+    query,
+    query_params: {
+      id,
+    },
+  })
 }
 
 const createProjectClickhouse = async (project: Partial<Project>) => {
@@ -353,17 +338,13 @@ const deleteRefreshTokenClickhouse = async (
 ) => {
   const query = `ALTER table refresh_token DELETE WHERE userId = {userId:String} AND refreshToken = {refreshToken:String}`
 
-  const { data } = await clickhouse
-    .query({
-      query,
-      query_params: {
-        userId,
-        refreshToken,
-      },
-    })
-    .then(resultSet => resultSet.json())
-
-  return data
+  await clickhouse.command({
+    query,
+    query_params: {
+      userId,
+      refreshToken,
+    },
+  })
 }
 
 interface IClickhouseUser {
@@ -458,17 +439,224 @@ const updateUserClickhouse = async (user: IClickhouseUser) => {
 
   query += ` WHERE id={id:String}`
 
-  const { data } = await clickhouse
-    .query({
-      query,
-      query_params: {
-        ...user,
-        id: CLICKHOUSE_SETTINGS_ID,
-      },
-    })
-    .then(resultSet => resultSet.json())
+  await clickhouse.command({
+    query,
+    query_params: {
+      ...user,
+      id: CLICKHOUSE_SETTINGS_ID,
+    },
+  })
+}
 
-  return data
+const findProjectViewCustomEventsClickhouse = async (viewId: string) => {
+  try {
+    const { data } = await clickhouse
+      .query({
+        query:
+          'SELECT * FROM projects_views_custom_events WHERE viewId = {viewId:FixedString(36)}',
+        query_params: {
+          viewId,
+        },
+      })
+      .then(resultSet => resultSet.json())
+
+    return data
+  } catch {
+    return []
+  }
+}
+
+const doesProjectViewExistClickhouse = async (
+  projectId: string,
+  id: string,
+): Promise<boolean> => {
+  try {
+    const { data } = await clickhouse
+      .query({
+        query: `
+          SELECT
+            count(*) AS count
+          FROM
+            project_views
+          WHERE
+            id = {id:FixedString(36)}
+            AND projectId = {projectId:FixedString(12)}
+          `,
+        query_params: {
+          id,
+          projectId,
+        },
+      })
+      .then(resultSet => resultSet.json<{ count: number }>())
+
+    if (_isEmpty(data)) {
+      return false
+    }
+
+    return data[0]?.count > 0
+  } catch {
+    return false
+  }
+}
+
+const findProjectViewClickhouse = async (id: string, projectId: string) => {
+  try {
+    const { data } = await clickhouse
+      .query({
+        query: `
+          SELECT
+            *
+          FROM
+            project_views
+          WHERE
+            id = {id:FixedString(36)}
+            AND projectId = {projectId:FixedString(12)}
+          `,
+        query_params: {
+          id,
+          projectId,
+        },
+      })
+      .then(resultSet => resultSet.json())
+
+    if (_isEmpty(data)) {
+      return null
+    }
+
+    const view: any = data[0]
+    const customEvents = await findProjectViewCustomEventsClickhouse(id)
+
+    return {
+      ...view,
+      customEvents,
+    }
+  } catch {
+    return null
+  }
+}
+
+const findProjectViewsClickhouse = async (projectId: string) => {
+  try {
+    const { data } = await clickhouse
+      .query({
+        query: `
+          SELECT
+            *
+          FROM
+            project_views
+          WHERE
+            projectId = {projectId:FixedString(12)}
+          `,
+        query_params: {
+          projectId,
+        },
+      })
+      .then(resultSet => resultSet.json())
+
+    if (_isEmpty(data)) {
+      return []
+    }
+
+    const result = []
+
+    for (let i = 0; i < _size(data); ++i) {
+      const view: any = data[i]
+      // eslint-disable-next-line no-await-in-loop
+      const customEvents = await findProjectViewCustomEventsClickhouse(view.id)
+
+      result.push({
+        ...view,
+        customEvents,
+      })
+    }
+
+    return result
+  } catch {
+    return []
+  }
+}
+
+const deleteProjectViewClickhouse = async (id: string) => {
+  const query = `ALTER TABLE project_views DELETE WHERE id = {id:FixedString(36)}`
+
+  await clickhouse.command({
+    query,
+    query_params: {
+      id,
+    },
+  })
+}
+
+const deleteCustomMetricsClickhouse = async (viewId: string) => {
+  const query = `ALTER TABLE projects_views_custom_events DELETE WHERE viewId = {viewId:FixedString(36)}`
+
+  await clickhouse.command({
+    query,
+    query_params: {
+      viewId,
+    },
+  })
+}
+
+const createProjectViewClickhouse = async (
+  view: Partial<ProjectViewEntity>,
+) => {
+  const { id, projectId, name, type, filters, customEvents } = view
+
+  const createdAt = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+
+  await clickhouse.insert({
+    table: 'project_views',
+    format: 'JSONEachRow',
+    values: [
+      {
+        id,
+        projectId,
+        name,
+        type,
+        filters,
+        createdAt,
+        updatedAt: createdAt,
+      },
+    ],
+  })
+
+  if (!_isEmpty(customEvents)) {
+    await clickhouse.insert({
+      table: 'projects_views_custom_events',
+      format: 'JSONEachRow',
+      values: customEvents,
+    })
+  }
+}
+
+const updateProjectViewClickhouse = async (viewId: string, view: any) => {
+  await clickhouse.command({
+    query: `
+      ALTER TABLE
+        project_views
+      UPDATE
+        name={name:String},
+        filters={filters:String}
+      WHERE
+        id={viewId:String}
+    `,
+    query_params: {
+      name: view.name,
+      filters: view.filters,
+      viewId,
+    },
+  })
+
+  await deleteCustomMetricsClickhouse(viewId)
+
+  if (!_isEmpty(view.customEvents)) {
+    await clickhouse.insert({
+      table: 'projects_views_custom_events',
+      format: 'JSONEachRow',
+      values: view.customEvents,
+    })
+  }
 }
 
 const millisecondsToSeconds = (milliseconds: number) => milliseconds / 1000
@@ -579,4 +767,10 @@ export {
   updateFunnelClickhouse,
   deleteFunnelClickhouse,
   createFunnelClickhouse,
+  findProjectViewClickhouse,
+  deleteProjectViewClickhouse,
+  findProjectViewsClickhouse,
+  createProjectViewClickhouse,
+  doesProjectViewExistClickhouse,
+  updateProjectViewClickhouse,
 }
