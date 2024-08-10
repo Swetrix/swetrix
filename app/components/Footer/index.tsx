@@ -21,7 +21,7 @@ import {
   DISCORD_URL,
   CAPTCHA_URL,
 } from 'redux/constants'
-import routesPath from 'routesPath'
+import routesPath from 'utils/routes'
 
 const navigation = {
   company: [

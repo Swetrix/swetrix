@@ -17,7 +17,7 @@ import { trackCustom } from 'utils/analytics'
 import { useAppDispatch } from 'redux/store'
 import GoogleAuth from 'components/GoogleAuth'
 import GithubAuth from 'components/GithubAuth'
-import routes from 'routesPath'
+import routes from 'utils/routes'
 
 interface ISignUpForm {
   email: string

@@ -5,7 +5,7 @@ import _toUpper from 'lodash/toUpper'
 // import { MAIN_URL } from 'redux/constants'
 import { getPageMeta } from 'utils/server'
 import { getOgImageUrl } from 'redux/constants'
-import routes from 'routesPath'
+import routes from 'utils/routes'
 
 export const SEO = () => {
   const {

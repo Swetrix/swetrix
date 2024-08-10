@@ -46,7 +46,7 @@ import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
 import FlatPicker from 'ui/Flatpicker'
-import routes from 'routesPath'
+import routes from 'utils/routes'
 import { getProject, getCaptchaData } from 'api'
 import { Panel } from 'pages/Project/View/Panels'
 import {

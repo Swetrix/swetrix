@@ -22,7 +22,7 @@ import { TypeAnimation } from 'react-type-animation'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
 
-import routesPath from 'routesPath'
+import routesPath from 'utils/routes'
 import { getAccessToken } from 'utils/accessToken'
 import { nFormatterSeparated } from 'utils/generic'
 import { GITHUB_URL, MARKETPLACE_URL, LIVE_DEMO_URL, BOOK_A_CALL_URL, isBrowser, isSelfhosted } from 'redux/constants'

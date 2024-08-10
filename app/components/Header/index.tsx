@@ -39,7 +39,7 @@ import _includes from 'lodash/includes'
 import _startsWith from 'lodash/startsWith'
 import cx, { clsx } from 'clsx'
 
-import routes from 'routesPath'
+import routes from 'utils/routes'
 import { authActions } from 'redux/reducers/auth'
 import sagaActions from 'redux/sagas/actions'
 import UIActions from 'redux/reducers/ui'

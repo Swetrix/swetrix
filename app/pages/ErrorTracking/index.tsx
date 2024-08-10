@@ -8,7 +8,7 @@ import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
 
-import routesPath from 'routesPath'
+import routesPath from 'utils/routes'
 import { getAccessToken } from 'utils/accessToken'
 import { nFormatterSeparated } from 'utils/generic'
 import { ERROR_TRACKING_LIVE_DEMO_URL, isBrowser } from 'redux/constants'

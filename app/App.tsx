@@ -20,7 +20,7 @@ import { errorsActions } from 'redux/reducers/errors'
 import { alertsActions } from 'redux/reducers/alerts'
 import { StateType, useAppDispatch } from 'redux/store'
 import { isBrowser } from 'redux/constants'
-import routesPath from 'routesPath'
+import routesPath from 'utils/routes'
 import { getPageMeta } from 'utils/server'
 import { authMe } from './api'
 

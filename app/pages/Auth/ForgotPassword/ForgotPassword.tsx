@@ -6,7 +6,7 @@ import _isEmpty from 'lodash/isEmpty'
 
 import { forgotPassword } from 'api'
 import { withAuthentication, auth } from 'hoc/protected'
-import routes from 'routesPath'
+import routes from 'utils/routes'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
 import { TRIAL_DAYS } from 'redux/constants'

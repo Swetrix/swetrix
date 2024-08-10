@@ -1,5 +1,5 @@
 import type i18next from 'i18next'
-import routes from 'routesPath'
+import routes from 'utils/routes'
 import _includes from 'lodash/includes'
 import _split from 'lodash/split'
 import _startsWith from 'lodash/startsWith'

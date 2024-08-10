@@ -4,7 +4,7 @@ import { Link } from '@remix-run/react'
 import { IUser, DashboardBlockReason } from 'redux/models/IUser'
 import { IProjectForShared } from 'redux/models/ISharedProject'
 import { useTranslation } from 'react-i18next'
-import routes from 'routesPath'
+import routes from 'utils/routes'
 
 interface ILockedDashboard {
   user?: IUser

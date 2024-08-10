@@ -4,7 +4,7 @@ import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { StateType } from 'redux/store'
 import { BOOK_A_CALL_URL, DISCORD_URL, isBrowser, LIVE_DEMO_URL, TWITTER_URL } from 'redux/constants'
-import routesPath from 'routesPath'
+import routesPath from 'utils/routes'
 
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'

@@ -27,7 +27,7 @@ import Select from 'ui/Select'
 import { withAuthentication, auth } from 'hoc/protected'
 import Loader from 'ui/Loader'
 import { Badge } from 'ui/Badge'
-import routes from 'routesPath'
+import routes from 'utils/routes'
 import { nFormatter, calculateRelativePercentage } from 'utils/generic'
 import {
   isSelfhosted,

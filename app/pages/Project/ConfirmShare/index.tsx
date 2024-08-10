@@ -7,7 +7,7 @@ import _split from 'lodash/split'
 
 import sagaActions from 'redux/sagas/actions'
 import Loader from 'ui/Loader'
-import routes from 'routesPath'
+import routes from 'utils/routes'
 import { AppDispatch } from 'redux/store'
 
 const ConfirmShare = () => {

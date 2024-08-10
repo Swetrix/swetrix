@@ -7,7 +7,7 @@ import _isEmpty from 'lodash/isEmpty'
 
 import { createNewPassword } from 'api'
 import { withAuthentication, auth } from 'hoc/protected'
-import routes from 'routesPath'
+import routes from 'utils/routes'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
 import { isValidPassword, MIN_PASSWORD_CHARS, MAX_PASSWORD_CHARS } from 'utils/validator'

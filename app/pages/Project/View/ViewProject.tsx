@@ -116,7 +116,7 @@ import BarChart from 'ui/icons/BarChart'
 import Forecast from 'modals/Forecast'
 import NewFunnel from 'modals/NewFunnel'
 import ViewProjectHotkeys from 'modals/ViewProjectHotkeys'
-import routes from 'routesPath'
+import routes from 'utils/routes'
 import Header from 'components/Header'
 import Footer from 'components/Footer'
 import {

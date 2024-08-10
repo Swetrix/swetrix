@@ -2,7 +2,7 @@ import React from 'react'
 import { Link } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 
-import routes from 'routesPath'
+import routes from 'utils/routes'
 
 const NotFound = (): JSX.Element => {
   const { t } = useTranslation('common')

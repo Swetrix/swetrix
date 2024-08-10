@@ -3,7 +3,7 @@ import { Link } from '@remix-run/react'
 import { IUser } from 'redux/models/IUser'
 import { IProjectForShared } from 'redux/models/ISharedProject'
 import { useTranslation, Trans } from 'react-i18next'
-import routes from 'routesPath'
+import routes from 'utils/routes'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import TrackingSnippet from 'modals/TrackingSnippet'
 

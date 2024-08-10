@@ -33,7 +33,7 @@ import Checkbox from 'ui/Checkbox'
 import Modal from 'ui/Modal'
 import Select from 'ui/Select'
 import { trackCustom } from 'utils/analytics'
-import routes from 'routesPath'
+import routes from 'utils/routes'
 import { ICaptchaProject, IProject, IProjectNames } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 

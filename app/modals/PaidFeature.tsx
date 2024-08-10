@@ -3,7 +3,7 @@ import { useNavigate } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 
 import Modal from 'ui/Modal'
-import routes from 'routesPath'
+import routes from 'utils/routes'
 
 interface IPaidFeature {
   onClose: () => void

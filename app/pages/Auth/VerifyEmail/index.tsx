@@ -8,7 +8,7 @@ import _isArray from 'lodash/isArray'
 
 import sagaActions from 'redux/sagas/actions'
 import Loader from 'ui/Loader'
-import routes from 'routesPath'
+import routes from 'utils/routes'
 
 const VerifyEmail = (): JSX.Element => {
   const { t } = useTranslation('common')

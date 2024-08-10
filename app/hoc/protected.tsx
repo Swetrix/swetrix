@@ -4,7 +4,7 @@ import { useNavigate } from '@remix-run/react'
 
 import { getAccessToken } from 'utils/accessToken'
 import { StateType } from 'redux/store'
-import routes from 'routesPath'
+import routes from 'utils/routes'
 
 type AuthParamType = {
   shouldBeAuthenticated: boolean

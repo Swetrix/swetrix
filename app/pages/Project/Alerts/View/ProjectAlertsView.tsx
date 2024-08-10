@@ -18,7 +18,7 @@ import {
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline'
 
-import routes from 'routesPath'
+import routes from 'utils/routes'
 import Button from 'ui/Button'
 import Modal from 'ui/Modal'
 import PaidFeature from 'modals/PaidFeature'

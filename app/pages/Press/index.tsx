@@ -3,7 +3,7 @@ import React from 'react'
 import { Link } from '@remix-run/react'
 import { useTranslation, Trans } from 'react-i18next'
 
-import routes from 'routesPath'
+import routes from 'utils/routes'
 
 const FONT_INTER_URL = 'https://rsms.me/inter/'
 const FONT_NAME = 'Inter'

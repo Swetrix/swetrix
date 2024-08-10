@@ -6,7 +6,7 @@ import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import Loader from 'ui/Loader'
 
 import { confirmTransferProject } from 'api'
-import routes from 'routesPath'
+import routes from 'utils/routes'
 
 const TransferProjectConfirm = (): JSX.Element => {
   const { t } = useTranslation('common')

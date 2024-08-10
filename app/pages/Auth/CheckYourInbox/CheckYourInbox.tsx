@@ -9,7 +9,7 @@ import { withAuthentication } from 'hoc/protected'
 import { authActions } from 'redux/reducers/auth'
 import sagaActions from 'redux/sagas/actions'
 import { StateType, useAppDispatch } from 'redux/store'
-import routes from 'routesPath'
+import routes from 'utils/routes'
 
 const CheckYourInbox = (): JSX.Element => {
   const { t } = useTranslation('common')

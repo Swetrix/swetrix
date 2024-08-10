@@ -50,7 +50,7 @@ import TimezonePicker from 'ui/TimezonePicker'
 import Textarea from 'ui/Textarea'
 import Loader from 'ui/Loader'
 import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS } from 'utils/validator'
-import routes from 'routesPath'
+import routes from 'utils/routes'
 import { trackCustom } from 'utils/analytics'
 import { getCookie, setCookie } from 'utils/cookie'
 import {

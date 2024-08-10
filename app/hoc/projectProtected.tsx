@@ -4,7 +4,7 @@ import { useNavigate, useParams } from '@remix-run/react'
 import _find from 'lodash/find'
 import _replace from 'lodash/replace'
 import { StateType } from 'redux/store'
-import routes from 'routesPath'
+import routes from 'utils/routes'
 
 type PropsType = {
   [key: string]: any

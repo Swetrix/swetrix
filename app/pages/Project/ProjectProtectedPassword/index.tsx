@@ -6,7 +6,7 @@ import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
 import _replace from 'lodash/replace'
 
-import routes from 'routesPath'
+import routes from 'utils/routes'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
 import { checkPassword } from 'api'

@@ -6,7 +6,7 @@ import dayjs from 'dayjs'
 import { Link } from '@remix-run/react'
 
 import { SWETRIX_VS_GOOGLE, DOCS_URL, CAPTCHA_URL, DOCS_CAPTCHA_URL } from 'redux/constants'
-import routes from 'routesPath'
+import routes from 'utils/routes'
 
 const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 

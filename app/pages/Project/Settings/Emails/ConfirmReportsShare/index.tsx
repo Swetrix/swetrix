@@ -6,7 +6,7 @@ import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import Loader from 'ui/Loader'
 
 import { confirmSubscriberInvite } from 'api'
-import routes from 'routesPath'
+import routes from 'utils/routes'
 
 const ConfirmReportsShare = (): JSX.Element => {
   const { t } = useTranslation('common')

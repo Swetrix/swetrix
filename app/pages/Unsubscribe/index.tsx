@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux'
 import { StateType } from 'redux/store'
 import { unsubscribeFromEmailReports, unsubscribeFromEmailReports3rdParty } from 'api'
 import Loader from 'ui/Loader'
-import routes from 'routesPath'
+import routes from 'utils/routes'
 
 interface IUnsubscribe {
   type: 'user-reports' | '3rdparty'

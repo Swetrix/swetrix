@@ -8,7 +8,7 @@ import _replace from 'lodash/replace'
 import { processSSOToken } from 'api'
 import { SSO_PROVIDERS } from 'redux/constants'
 import Loader from 'ui/Loader'
-import routes from 'routesPath'
+import routes from 'utils/routes'
 
 const Socialised = (): JSX.Element => {
   const { t } = useTranslation('common')
