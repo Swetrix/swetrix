@@ -14,9 +14,18 @@ import {
   Headers,
   UnauthorizedException,
   Patch,
+  HttpStatus,
 } from '@nestjs/common'
 import { v4 as uuidv4 } from 'uuid'
-import { ApiTags, ApiQuery, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
+import {
+  ApiTags,
+  ApiQuery,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiOkResponse,
+  ApiNoContentResponse,
+} from '@nestjs/swagger'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _map from 'lodash/map'
 import * as _trim from 'lodash/trim'
@@ -61,8 +70,19 @@ import {
   deleteFunnelClickhouse,
   createFunnelClickhouse,
   updateFunnelClickhouse,
+  findProjectViewClickhouse,
+  deleteProjectViewClickhouse,
+  createProjectViewClickhouse,
+  findProjectViewsClickhouse,
+  doesProjectViewExistClickhouse,
+  updateProjectViewClickhouse,
 } from '../common/utils'
 import { Funnel } from './entity/funnel.entity'
+import { ProjectViewEntity } from './entity/project-view.entity'
+import { ProjectViewIdsDto } from './dto/project-view-ids.dto'
+import { ProjectIdDto } from './dto/project-id.dto'
+import { CreateProjectViewDto } from './dto/create-project-view.dto'
+import { UpdateProjectViewDto } from './dto/update-project-view.dto'
 
 @ApiTags('Project')
 @Controller(['project', 'v1/project'])
@@ -85,8 +105,6 @@ export class ProjectController {
     @Query('search') search: string | undefined,
   ): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /project')
-
-    console.log('hello !!! GET PROJECT')
 
     const chResults = await getProjectsClickhouse(null, search)
     const formatted = _map(chResults, this.projectService.formatFromClickhouse)
@@ -554,5 +572,166 @@ export class ProjectController {
       isDataExists,
       isErrorDataExists,
     })
+  }
+
+  @ApiOperation({ summary: 'Get project view' })
+  @ApiOkResponse({ type: ProjectViewEntity })
+  @ApiBearerAuth()
+  @Get(':projectId/views/:viewId')
+  @Auth([], true, true)
+  async getProjectView(
+    @Param() params: ProjectViewIdsDto,
+    @CurrentUserId() userId: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const project = await getProjectsClickhouse(params.projectId)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project was not found in the database')
+    }
+
+    this.projectService.allowedToView(project, userId, headers['x-password'])
+
+    return findProjectViewClickhouse(params.projectId, params.viewId)
+  }
+
+  @ApiOperation({ summary: 'Create project view' })
+  @ApiOkResponse({ type: ProjectViewEntity })
+  @ApiBearerAuth()
+  @Post(':projectId/views')
+  @Auth([], true)
+  async createProjectView(
+    @Param() params: ProjectIdDto,
+    @Body() body: CreateProjectViewDto,
+    @CurrentUserId() userId: string,
+  ) {
+    if (!userId) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
+    const project = await getProjectsClickhouse(params.projectId)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project was not found in the database')
+    }
+
+    const viewId = uuidv4()
+
+    const { customEvents } = body
+
+    if (!_isEmpty(customEvents)) {
+      for (let i = 0; i < _size(customEvents); ++i) {
+        const customEvent = customEvents[i]
+
+        customEvents[i] = {
+          ...customEvent,
+          // @ts-expect-error
+          id: uuidv4(),
+        }
+      }
+    }
+
+    await createProjectViewClickhouse(
+      this.projectService.formatViewToClickhouse({
+        ...body,
+        customEvents,
+        id: viewId,
+        projectId: params.projectId,
+      }),
+    )
+
+    const view = await findProjectViewClickhouse(viewId, params.projectId)
+
+    return this.projectService.formatViewFromClickhouse(view)
+  }
+
+  @ApiOperation({ summary: 'Get project views' })
+  @ApiOkResponse({ type: ProjectViewEntity })
+  @ApiBearerAuth()
+  @Get(':projectId/views')
+  @Auth([], true, true)
+  async getProjectViews(
+    @Param() params: ProjectIdDto,
+    @CurrentUserId() userId: string,
+    @Headers() headers: { 'x-password'?: string },
+  ) {
+    const project = await getProjectsClickhouse(params.projectId)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project was not found in the database')
+    }
+
+    this.projectService.allowedToView(project, userId, headers['x-password'])
+
+    const views = await findProjectViewsClickhouse(params.projectId)
+
+    return this.projectService.formatViewsFromClickhouse(views)
+  }
+
+  @ApiOperation({ summary: 'Update project view' })
+  @ApiOkResponse({ type: ProjectViewEntity })
+  @ApiBearerAuth()
+  @Patch(':projectId/views/:viewId')
+  @Auth([], true)
+  async updateProjectView(
+    @Param() params: ProjectViewIdsDto,
+    @Body() body: UpdateProjectViewDto,
+    @CurrentUserId() userId: string,
+  ) {
+    if (!userId) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
+    const viewExists = await doesProjectViewExistClickhouse(
+      params.projectId,
+      params.viewId,
+    )
+
+    if (!viewExists) {
+      throw new NotFoundException('View not found.')
+    }
+
+    await updateProjectViewClickhouse(
+      params.viewId,
+      // @ts-expect-error
+      this.projectService.formatViewToClickhouse({
+        ...body,
+        id: params.viewId,
+        projectId: params.projectId,
+      }),
+    )
+
+    const view = await findProjectViewClickhouse(
+      params.viewId,
+      params.projectId,
+    )
+
+    return this.projectService.formatViewFromClickhouse(view)
+  }
+
+  @ApiOperation({ summary: 'Delete project view' })
+  @ApiNoContentResponse()
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @Delete(':projectId/views/:viewId')
+  @Auth([], true)
+  async deleteProjectView(
+    @Param() params: ProjectViewIdsDto,
+    @CurrentUserId() userId: string,
+  ) {
+    if (!userId) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
+    const viewExists = await doesProjectViewExistClickhouse(
+      params.projectId,
+      params.viewId,
+    )
+
+    if (!viewExists) {
+      throw new NotFoundException('View not found.')
+    }
+
+    await deleteProjectViewClickhouse(params.viewId)
   }
 }
