@@ -38,8 +38,6 @@ import {
   deleteProjectRedis,
   generateProjectId,
 } from './project.service'
-import { UserType } from '../user/entities/user.entity'
-import { Roles } from '../auth/decorators/roles.decorator'
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { Pagination } from '../common/pagination/pagination'
 import { Project } from './entity/project.entity'
@@ -67,7 +65,7 @@ import {
 import { Funnel } from './entity/funnel.entity'
 
 @ApiTags('Project')
-@Controller('project')
+@Controller(['project', 'v1/project'])
 export class ProjectController {
   constructor(
     private readonly projectService: ProjectService,
@@ -79,7 +77,7 @@ export class ProjectController {
   @ApiQuery({ name: 'skip', required: false })
   @ApiQuery({ name: 'search', required: false, type: String })
   @ApiResponse({ status: 200, type: [Project] })
-  @Auth([UserType.CUSTOMER, UserType.ADMIN], true)
+  @Auth([], true)
   async get(
     @CurrentUserId() userId: string,
     @Query('take') take: number | undefined,
@@ -87,6 +85,8 @@ export class ProjectController {
     @Query('search') search: string | undefined,
   ): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /project')
+
+    console.log('hello !!! GET PROJECT')
 
     const chResults = await getProjectsClickhouse(null, search)
     const formatted = _map(chResults, this.projectService.formatFromClickhouse)
@@ -146,7 +146,7 @@ export class ProjectController {
 
   @Get('/names')
   @ApiResponse({ status: 200, type: [Project] })
-  @Auth([UserType.CUSTOMER, UserType.ADMIN], true)
+  @Auth([], true)
   async getNames(@CurrentUserId() userId: string): Promise<Project[]> {
     this.logger.log({ userId }, 'GET /project/names')
 
@@ -158,8 +158,7 @@ export class ProjectController {
   @ApiBearerAuth()
   @Post('/')
   @ApiResponse({ status: 201, type: Project })
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth([], true)
   async create(
     @Body() projectDTO: CreateProjectDTO,
     @CurrentUserId() userId: string,
@@ -188,8 +187,7 @@ export class ProjectController {
   @ApiBearerAuth()
   @Delete('/reset/:id')
   @HttpCode(204)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth([], true)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async reset(
     @Param('id') id: string,
@@ -382,7 +380,7 @@ export class ProjectController {
   })
   @ApiResponse({ status: 200 })
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Auth([UserType.ADMIN, UserType.CUSTOMER])
+  @Auth([], true)
   async deletePartially(
     @Param('pid') pid: string,
     @Query('from') from: string,
@@ -416,11 +414,9 @@ export class ProjectController {
     await this.projectService.removeDataFromClickhouse(pid, from, to)
   }
 
-  @ApiBearerAuth()
   @Delete('/:id')
   @HttpCode(204)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth([], true)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async delete(
     @Param('id') id: string,
@@ -449,11 +445,9 @@ export class ProjectController {
     }
   }
 
-  @ApiBearerAuth()
   @Put('/:id')
   @HttpCode(200)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth([], true)
   @ApiResponse({ status: 200, type: Project })
   async update(
     @Param('id') id: string,
