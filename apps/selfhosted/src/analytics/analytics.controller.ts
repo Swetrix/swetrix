@@ -84,10 +84,7 @@ import {
   performanceTransformer,
   trafficTransformer,
 } from './utils/transformers'
-import {
-  MAX_METRICS_IN_VIEW,
-  ProjectViewCustomEventDto,
-} from '../project/dto/create-project-view.dto'
+import { MAX_METRICS_IN_VIEW } from '../project/dto/create-project-view.dto'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
