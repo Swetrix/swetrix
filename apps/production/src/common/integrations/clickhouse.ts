@@ -77,7 +77,7 @@ const clickhouse = createClient({
   },
   log: {
     LoggerClass: CHLogger,
-    level: ClickHouseLogLevel.INFO,
+    level: ClickHouseLogLevel.ERROR,
   },
 })
 
