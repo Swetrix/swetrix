@@ -29,6 +29,8 @@ import { compareSync } from 'bcrypt'
 import { firstValueFrom } from 'rxjs'
 import { HttpService } from '@nestjs/axios'
 import { AxiosError } from 'axios'
+import { InjectQueue } from '@nestjs/bull'
+import { Queue } from 'bullmq'
 
 import { UserService } from '../user/user.service'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
@@ -74,6 +76,11 @@ import { nFormatter } from '../common/utils'
 import { browserArgs } from '../og-image/og-image.service'
 import { TimeFrameQueryEnum } from './dto/get-prediction-query.dto'
 import { AppLoggerService } from '../logger/logger.service'
+import { CreateMonitorHttpRequestDTO } from './dto/create-monitor.dto'
+import { CreateMonitorGroupDto } from './dto/create-monitor-group.dto'
+import { MonitorGroupEntity } from './entity/monitor-group.entity'
+import { UpdateMonitorGroupDto } from './dto/update-monitor-group.dto'
+import { MonitorEntity } from './entity/monitor.entity'
 
 dayjs.extend(utc)
 
@@ -290,10 +297,15 @@ export class ProjectService {
     private readonly projectSubscriberRepository: Repository<ProjectSubscriber>,
     @InjectRepository(Funnel)
     private readonly funnelRepository: Repository<Funnel>,
+    @InjectRepository(MonitorGroupEntity)
+    private readonly monitorGroupRepository: Repository<MonitorGroupEntity>,
+    @InjectRepository(MonitorEntity)
+    private readonly monitorRepository: Repository<MonitorEntity>,
     private readonly actionTokens: ActionTokensService,
     private readonly mailerService: MailerService,
     private readonly httpService: HttpService,
     private readonly logger: AppLoggerService,
+    @InjectQueue('monitor') private monitorQueue: Queue,
   ) {}
 
   async getRedisProject(pid: string): Promise<Project | null> {
@@ -1373,5 +1385,107 @@ export class ProjectService {
       )
       return null
     }
+  }
+
+  // Monitoring
+  async createMonitorGroup(
+    projectId: string,
+    createMonitorGroupDto: CreateMonitorGroupDto,
+  ) {
+    return this.monitorGroupRepository.save({
+      ...createMonitorGroupDto,
+      project: { id: projectId },
+    })
+  }
+
+  // Get all monitor groups for a specific project
+  async getMonitorGroupsByProjectId(
+    projectId: string,
+  ): Promise<MonitorGroupEntity[]> {
+    return this.monitorGroupRepository.find({
+      where: { project: { id: projectId } },
+    })
+  }
+
+  // Get a monitor group by ID
+  async getMonitorGroupById(
+    projectId: string,
+    monitorGroupId: string,
+  ): Promise<MonitorGroupEntity> {
+    return this.monitorGroupRepository.findOne({
+      where: { id: monitorGroupId, project: { id: projectId } },
+    })
+  }
+
+  // Update a monitor group
+  async updateMonitorGroup(
+    projectId: string,
+    monitorGroupId: string,
+    updateMonitorGroupDto: UpdateMonitorGroupDto,
+  ): Promise<any> {
+    await this.monitorGroupRepository.update(
+      { id: monitorGroupId, project: { id: projectId } },
+      updateMonitorGroupDto,
+    )
+    // await this.monitorGroupRepository.update(monitorGroupId, updateMonitorGroupDto)
+  }
+
+  // Delete a monitor group
+  async deleteMonitorGroup(
+    projectId: string,
+    monitorGroupId: string,
+  ): Promise<void> {
+    await this.monitorGroupRepository.delete({
+      id: monitorGroupId,
+      project: { id: projectId },
+    })
+  }
+
+  async findMonitorGroupByProjectIdAndName(
+    projectId: string,
+    name: string,
+  ): Promise<MonitorGroupEntity | undefined> {
+    return this.monitorGroupRepository.findOne({
+      where: {
+        name,
+        project: { id: projectId },
+      },
+    })
+  }
+
+  async findMonitorGroup(
+    id: string,
+    projectId: string,
+  ): Promise<MonitorGroupEntity | undefined> {
+    return this.monitorGroupRepository.findOne({
+      where: {
+        id,
+        project: { id: projectId },
+      },
+    })
+  }
+
+  // Add a monitor to a monitor group
+  async createMonitor(
+    createMonitorHttpRequestDto: CreateMonitorHttpRequestDTO,
+    group: string,
+  ): Promise<MonitorEntity> {
+    const monitor = this.monitorRepository.create({
+      ...createMonitorHttpRequestDto,
+      group: { id: group },
+    })
+
+    return this.monitorRepository.save(monitor)
+  }
+
+  async sendHttpRequest(
+    monitorHttpRequestDto: CreateMonitorHttpRequestDTO,
+    monitorID: string,
+  ) {
+    // TODO crete interface for that stuff
+    await this.monitorQueue.add('http-request', monitorHttpRequestDto, {
+      repeat: { every: monitorHttpRequestDto.interval },
+      jobId: monitorID,
+    })
   }
 }

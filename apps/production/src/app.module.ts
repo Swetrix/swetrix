@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config'
 import { ScheduleModule } from '@nestjs/schedule'
 import { NestjsFormDataModule } from 'nestjs-form-data'
 import { MailerModule as NodeMailerModule } from '@nestjs-modules/mailer'
+import { BullModule } from '@nestjs/bull'
 
 import { I18nModule } from 'nestjs-i18n'
 import { UserModule } from './user/user.module'
@@ -56,8 +57,14 @@ const modules = [
     username: process.env.MYSQL_USER,
     password: process.env.MYSQL_ROOT_PASSWORD,
     database: process.env.MYSQL_DATABASE,
-    synchronize: false, // process.env.NODE_ENV !== 'production',
+    synchronize: true, // process.env.NODE_ENV !== 'production',
     entities: [`${__dirname}/**/*.entity{.ts,.js}`],
+  }),
+  BullModule.forRoot({
+    redis: {
+      host: 'localhost',
+      port: 6379,
+    },
   }),
   I18nModule.forRootAsync(getI18nConfig()),
   ScheduleModule.forRoot(),
