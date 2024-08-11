@@ -81,7 +81,7 @@ const clickhouse = createClient({
     level:
       process.env.DEBUG_MODE === 'true'
         ? ClickHouseLogLevel.DEBUG
-        : ClickHouseLogLevel.OFF,
+        : ClickHouseLogLevel.ERROR,
   },
 })
 
