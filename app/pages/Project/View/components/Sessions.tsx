@@ -78,7 +78,7 @@ const Session = ({ session, onClick, timeFormat }: ISessionComponent) => {
         </div>
         <div className='flex shrink-0 items-center gap-x-4'>
           <div className='hidden sm:flex sm:flex-col sm:items-end'>
-            <p className='text-sm leading-6 text-gray-900  dark:text-gray-50'>{pageviewCount}</p>
+            <p className='text-sm leading-6 text-gray-900 dark:text-gray-50'>{pageviewCount}</p>
           </div>
           <ChevronRightIcon className='h-5 w-5 flex-none text-gray-400' aria-hidden='true' />
         </div>

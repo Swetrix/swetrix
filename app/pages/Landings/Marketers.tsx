@@ -77,7 +77,7 @@ const Marketers = () => {
           <ArrowTopRightOnSquareIcon className='ml-1 hidden h-4 w-4 text-slate-800 dark:text-white md:block' />
         </div>
         <div className='relative mx-auto min-h-[740px] pb-5 pt-10 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
-          <div className='relative z-20 flex flex-col  content-between justify-center'>
+          <div className='relative z-20 flex flex-col content-between justify-center'>
             <div className='relative mx-auto flex flex-col px-4 text-left'>
               <h1 className='mx-auto max-w-4xl text-center text-4xl font-extrabold text-slate-900 dark:text-white sm:text-5xl sm:leading-none md:text-5xl lg:text-5xl xl:text-6xl xl:leading-[110%]'>
                 <Trans
@@ -85,7 +85,7 @@ const Marketers = () => {
                   i18nKey='marketers.slogan'
                   components={{
                     span: (
-                      <span className='bg-gradient-to-r  from-indigo-700 to-pink-700 bg-clip-text text-transparent dark:from-indigo-600 dark:to-indigo-400' />
+                      <span className='bg-gradient-to-r from-indigo-700 to-pink-700 bg-clip-text text-transparent dark:from-indigo-600 dark:to-indigo-400' />
                     ),
                   }}
                 />

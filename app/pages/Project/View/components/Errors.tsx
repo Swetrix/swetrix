@@ -101,7 +101,7 @@ const ErrorItem = ({ error, onClick, className }: IErrorItem) => {
         </div>
         <div className='flex shrink-0 items-center gap-x-4'>
           <div className='hidden sm:flex sm:flex-col sm:items-end'>
-            <p className='text-sm leading-6 text-gray-900  dark:text-gray-50'>
+            <p className='text-sm leading-6 text-gray-900 dark:text-gray-50'>
               {t('dashboard.xOccurrences', {
                 x: error.count,
               })}

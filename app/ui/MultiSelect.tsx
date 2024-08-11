@@ -46,7 +46,7 @@ const MultiSelect = ({
               setSelected(!selected)
             }}
           >
-            <div className='w-ful my-2 flex rounded border bg-white p-1 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700 '>
+            <div className='w-ful my-2 flex rounded border bg-white p-1 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'>
               <div className='flex flex-auto flex-wrap'>
                 {!_isEmpty(label) ? (
                   _map(label, (item) => (
@@ -104,7 +104,7 @@ const MultiSelect = ({
                     strokeWidth='2'
                     strokeLinecap='round'
                     strokeLinejoin='round'
-                    className=' h-4 w-4 rotate-180'
+                    className='h-4 w-4 rotate-180'
                   >
                     <polyline points='18 15 12 9 6 15' />
                   </svg>
@@ -113,7 +113,7 @@ const MultiSelect = ({
             </div>
           </div>
           {selected && (
-            <div className=' top-100 lef-0 max-h-select z-40 max-h-[200px] w-full overflow-y-auto overflow-x-hidden rounded bg-white shadow dark:bg-slate-800'>
+            <div className='top-100 lef-0 max-h-select z-40 max-h-[200px] w-full overflow-y-auto overflow-x-hidden rounded bg-white shadow dark:bg-slate-800'>
               <div className='flex w-full flex-col'>
                 {onSearch && (
                   <div className='relative w-full cursor-pointer rounded-t border-b border-gray-100 hover:bg-indigo-100 dark:border-slate-700 dark:hover:bg-slate-700'>

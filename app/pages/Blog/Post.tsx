@@ -39,7 +39,7 @@ export default function PostSlug() {
 
   return (
     <div className='bg-gray-50 text-gray-700 dark:bg-slate-900 dark:text-gray-300'>
-      <div className=' mx-auto max-w-[52rem] px-4 pb-28 sm:px-6 md:px-8 lg:max-w-6xl xl:px-12'>
+      <div className='mx-auto max-w-[52rem] px-4 pb-28 sm:px-6 md:px-8 lg:max-w-6xl xl:px-12'>
         <div className='overflow-hidden'>
           <div className='max-w-8xl mx-auto'>
             <div className='flex px-4 pb-10 pt-8 lg:px-8'>
@@ -68,7 +68,7 @@ export default function PostSlug() {
             <div className='mx-auto max-w-3xl pb-28'>
               <main className='bg-gray-50 dark:bg-slate-900'>
                 <article className='relative pt-10'>
-                  <h1 className='text-2xl font-extrabold tracking-tight text-slate-900 dark:text-slate-200 md:text-3xl '>
+                  <h1 className='text-2xl font-extrabold tracking-tight text-slate-900 dark:text-slate-200 md:text-3xl'>
                     {post.title}
                   </h1>
                   <div className='text-sm leading-6'>

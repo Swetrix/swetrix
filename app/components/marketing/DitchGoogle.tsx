@@ -53,7 +53,7 @@ export const DitchGoogle = ({ screenshot: { light, dark }, theme }: IDitchGoogle
               <ArrowRightIcon className='mt-[1px] h-4 w-5' />
             </Link>
           </div>
-          <div className='block h-[450px] max-w-md md:rounded-md md:shadow-[8px_8px_10px_3px] xl:max-w-lg '>
+          <div className='block h-[450px] max-w-md md:rounded-md md:shadow-[8px_8px_10px_3px] xl:max-w-lg'>
             <img
               className='min-h-[600px] min-w-[880px] rounded-xl ring-1 ring-gray-900/10'
               width='1760'

@@ -54,7 +54,7 @@ const CustomMetric = ({ metric, onRemove }: ICustomMetric): JSX.Element => {
       <button
         onClick={onRemove}
         type='button'
-        className='ml-0.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-gray-800 hover:bg-gray-300 hover:text-gray-900 focus:bg-gray-300 focus:text-gray-900 focus:outline-none dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300 dark:focus:bg-gray-800 dark:focus:text-gray-300 '
+        className='ml-0.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-gray-800 hover:bg-gray-300 hover:text-gray-900 focus:bg-gray-300 focus:text-gray-900 focus:outline-none dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300 dark:focus:bg-gray-800 dark:focus:text-gray-300'
       >
         <span className='sr-only'>Remove filter</span>
         <svg className='h-2 w-2' stroke='currentColor' fill='none' viewBox='0 0 8 8'>
@@ -78,7 +78,7 @@ const CustomMetrics = ({ metrics, onRemoveMetric, resetMetrics }: IFilters) => {
 
   return (
     <div className='mt-2 flex items-center justify-between rounded-md bg-slate-200 p-1 shadow dark:border dark:border-slate-800/50 dark:bg-slate-800/25'>
-      <div className=' flex items-center'>
+      <div className='flex items-center'>
         <ScaleIcon className='box-content size-6 flex-shrink-0 px-1 text-gray-700 dark:text-gray-200' />
         <div className='flex flex-wrap'>
           {_map(metrics, (metric) => (
