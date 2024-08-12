@@ -12,7 +12,7 @@ import { Type } from 'class-transformer'
 import { ApiProperty } from '@nestjs/swagger'
 
 // Enums for HTTP Methods and Status Codes
-enum HttpMethodEnum {
+export enum HttpMethodEnum {
   GET = 'GET',
   POST = 'POST',
   PUT = 'PUT',
@@ -41,8 +41,13 @@ export enum HttpStatusCodeEnum {
   GATEWAY_TIMEOUT = 504,
 }
 
+export enum HttpType {
+  HTTP = 'HTTP',
+  HTTPS = 'HTTPS',
+}
+
 // DTO for HTTP Options
-class HttpOptions {
+export class HttpOptions {
   @IsArray()
   @IsEnum(HttpMethodEnum, { each: true })
   method: HttpMethodEnum[]
@@ -59,8 +64,8 @@ class HttpOptions {
 // Main DTO for Monitor Request
 export class CreateMonitorHttpRequestDTO {
   @ApiProperty()
-  @IsEnum(['HTTP', 'HTTPS'])
-  monitorType: 'HTTP' | 'HTTPS'
+  @IsEnum(HttpType)
+  type: HttpType
 
   @ApiProperty()
   @IsString()

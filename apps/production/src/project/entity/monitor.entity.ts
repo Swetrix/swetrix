@@ -6,37 +6,48 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm'
+import { ApiProperty } from '@nestjs/swagger'
 import { MonitorGroupEntity } from './monitor-group.entity'
 
 @Entity('monitor')
 export class MonitorEntity {
-  @PrimaryGeneratedColumn()
-  id: number
+  @ApiProperty()
+  @PrimaryGeneratedColumn('uuid')
+  id: string
 
+  @ApiProperty()
   @Column({ type: 'varchar' })
   type: string
 
+  @ApiProperty()
   @Column({ type: 'varchar' })
   name: string
 
+  @ApiProperty()
   @Column({ type: 'varchar' })
   url: string
 
+  @ApiProperty()
   @Column({ type: 'int' })
   interval: number
 
+  @ApiProperty()
   @Column({ type: 'int' })
   retries: number
 
+  @ApiProperty()
   @Column({ type: 'int' })
   retryInterval: number
 
+  @ApiProperty()
   @Column({ type: 'int' })
   timeout: number
 
+  @ApiProperty()
   @Column({ type: 'json' })
   acceptedStatusCodes: number[]
 
+  @ApiProperty()
   @Column({ type: 'text', nullable: true })
   description: string | null
 
@@ -45,9 +56,19 @@ export class MonitorEntity {
   })
   group: MonitorGroupEntity
 
+  @ApiProperty()
   @CreateDateColumn()
   createdAt: Date
 
+  @ApiProperty()
   @UpdateDateColumn()
   updatedAt: Date
+
+  @ApiProperty()
+  @Column({ type: 'json', nullable: true })
+  httpOptions: {
+    method: string[]
+    body?: Record<string, unknown>
+    headers?: Record<string, string>
+  }
 }

@@ -81,6 +81,8 @@ import { CreateMonitorGroupDto } from './dto/create-monitor-group.dto'
 import { MonitorGroupEntity } from './entity/monitor-group.entity'
 import { UpdateMonitorGroupDto } from './dto/update-monitor-group.dto'
 import { MonitorEntity } from './entity/monitor.entity'
+import { UpdateMonitorHttpRequestDTO } from './dto/update-monitor.dto'
+import { HttpRequestOptions } from './interfaces/http-request-options.interface'
 
 dayjs.extend(utc)
 
@@ -1478,14 +1480,50 @@ export class ProjectService {
     return this.monitorRepository.save(monitor)
   }
 
+  async getMonitor(monitorId: string) {
+    return this.monitorRepository.findOne({
+      where: {
+        id: monitorId,
+      },
+    })
+  }
+
+  // Update a monitor group
+  async updateMonitor(
+    monitorGroupId: string,
+    updateMonitorHttpRequestDto: UpdateMonitorHttpRequestDTO,
+  ): Promise<any> {
+    await this.monitorRepository.update(
+      { id: monitorGroupId },
+      updateMonitorHttpRequestDto,
+    )
+  }
+
+  async deleteMonitor(monitorId: string): Promise<any> {
+    return this.monitorRepository.delete(monitorId)
+  }
+
   async sendHttpRequest(
-    monitorHttpRequestDto: CreateMonitorHttpRequestDTO,
     monitorID: string,
+    monitorHttpRequestDto: HttpRequestOptions,
   ) {
     // TODO crete interface for that stuff
     await this.monitorQueue.add('http-request', monitorHttpRequestDto, {
       repeat: { every: monitorHttpRequestDto.interval },
       jobId: monitorID,
     })
+  }
+
+  async updateHttpRequest(
+    monitorID: string,
+    updatedHttpRequestDto: HttpRequestOptions,
+  ): Promise<void> {
+    await this.deleteHttpRequest(monitorID)
+
+    await this.sendHttpRequest(monitorID, updatedHttpRequestDto)
+  }
+
+  async deleteHttpRequest(monitorID: string) {
+    await this.monitorQueue.remove(monitorID)
   }
 }

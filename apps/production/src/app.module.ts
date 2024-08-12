@@ -57,7 +57,7 @@ const modules = [
     username: process.env.MYSQL_USER,
     password: process.env.MYSQL_ROOT_PASSWORD,
     database: process.env.MYSQL_DATABASE,
-    synchronize: true, // process.env.NODE_ENV !== 'production',
+    synchronize: false, // process.env.NODE_ENV !== 'production',
     entities: [`${__dirname}/**/*.entity{.ts,.js}`],
   }),
   BullModule.forRoot({
