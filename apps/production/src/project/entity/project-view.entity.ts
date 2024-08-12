@@ -36,56 +36,8 @@ export class ProjectViewEntity {
   type: ProjectViewType
 
   @ApiProperty()
-  @Column('varchar')
-  pg: string | null
-
-  @ApiProperty()
-  @Column('varchar')
-  ev: string
-
-  @ApiProperty()
-  @Column('varchar', { nullable: true })
-  dv: string | null
-
-  @ApiProperty()
-  @Column('varchar', { nullable: true })
-  br: string | null
-
-  @ApiProperty()
-  @Column('varchar', { nullable: true })
-  os: string | null
-
-  @ApiProperty()
-  @Column('varchar', { nullable: true })
-  lc: string | null
-
-  @ApiProperty()
-  @Column('varchar', { nullable: true })
-  ref: string | null
-
-  @ApiProperty()
-  @Column('varchar', { nullable: true })
-  so: string | null
-
-  @ApiProperty()
-  @Column('varchar', { nullable: true })
-  me: string | null
-
-  @ApiProperty()
-  @Column('varchar', { nullable: true })
-  ca: string | null
-
-  @ApiProperty()
-  @Column('varchar', { length: 2, nullable: true })
-  cc: string
-
-  @ApiProperty()
-  @Column('varchar', { nullable: true })
-  rg: string | null
-
-  @ApiProperty()
-  @Column('varchar', { nullable: true })
-  ct: string | null
+  @Column('text')
+  filters: string | null
 
   @ApiProperty()
   @CreateDateColumn()

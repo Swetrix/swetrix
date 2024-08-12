@@ -19,6 +19,8 @@ import * as _includes from 'lodash/includes'
 import * as _toNumber from 'lodash/toNumber'
 import * as _reduce from 'lodash/reduce'
 import * as _filter from 'lodash/filter'
+import { HttpService } from '@nestjs/axios'
+import { firstValueFrom } from 'rxjs'
 
 import { AlertService } from '../alert/alert.service'
 import { QueryCondition, QueryMetric, QueryTime } from '../alert/dto/alert.dto'
@@ -944,12 +946,29 @@ export class TaskManagerService {
   @Cron(CronExpression.EVERY_5_MINUTES)
   async checkOnlineUsersAlerts(): Promise<void> {
     const projects = await this.projectService.findWhere(
-      {
-        admin: {
-          planCode: Not(PlanCode.none),
-          dashboardBlockReason: IsNull(),
+      [
+        {
+          admin: {
+            isTelegramChatIdConfirmed: true,
+            planCode: Not(PlanCode.none),
+            dashboardBlockReason: IsNull(),
+          },
         },
-      },
+        {
+          admin: {
+            slackWebhookUrl: Not(IsNull()),
+            planCode: Not(PlanCode.none),
+            dashboardBlockReason: IsNull(),
+          },
+        },
+        {
+          admin: {
+            discordWebhookUrl: Not(IsNull()),
+            planCode: Not(PlanCode.none),
+            dashboardBlockReason: IsNull(),
+          },
+        },
+      ],
       ['admin', 'admin.webhooks'],
     )
 
@@ -1519,5 +1538,27 @@ export class TaskManagerService {
         transactionId: response.result?.batch_header?.payout_batch_id,
       },
     )
+  }
+
+  @Cron(CronExpression.EVERY_WEEK)
+  async sendTrainingAiRequest(): Promise<void> {
+    try {
+      await firstValueFrom(this.httpService.post('/run_training/'))
+    } catch (error) {
+      this.logger.error(
+        `Error triggering training on the AI service: ${error.message}`,
+      )
+    }
+  }
+
+  @Cron(CronExpression.EVERY_HOUR)
+  async sendPredictAiRequest(): Promise<void> {
+    try {
+      await firstValueFrom(this.httpService.post('/run_prediction/'))
+    } catch (error) {
+      this.logger.error(
+        `Error triggering prediction from AI service: ${error.message}`,
+      )
+    }
   }
 }

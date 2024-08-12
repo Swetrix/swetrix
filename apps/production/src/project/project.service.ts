@@ -6,6 +6,7 @@ import {
   UnprocessableEntityException,
   InternalServerErrorException,
   ConflictException,
+  NotFoundException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
@@ -20,11 +21,15 @@ import * as _map from 'lodash/map'
 import * as _pick from 'lodash/pick'
 import * as _trim from 'lodash/trim'
 import * as _findIndex from 'lodash/findIndex'
+import * as _filter from 'lodash/filter'
 import * as _includes from 'lodash/includes'
 import * as _reduce from 'lodash/reduce'
 import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import { compareSync } from 'bcrypt'
+import { firstValueFrom } from 'rxjs'
+import { HttpService } from '@nestjs/axios'
+import { AxiosError } from 'axios'
 
 import { UserService } from '../user/user.service'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
@@ -52,6 +57,8 @@ import {
   redisUserUsageinfoCacheTimeout,
   TRAFFIC_COLUMNS,
   EMAIL_ACTION_ENCRYPTION_KEY,
+  ALL_COLUMNS,
+  TRAFFIC_METAKEY_COLUMNS,
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
 import { IUsageInfoRedis } from '../user/interfaces'
@@ -68,6 +75,8 @@ import {
 import { ReportFrequency } from './enums'
 import { nFormatter } from '../common/utils'
 import { browserArgs } from '../og-image/og-image.service'
+import { CreateProjectViewDto } from './dto/create-project-view.dto'
+import { AppLoggerService } from '../logger/logger.service'
 
 dayjs.extend(utc)
 
@@ -286,6 +295,8 @@ export class ProjectService {
     private readonly funnelRepository: Repository<Funnel>,
     private readonly actionTokens: ActionTokensService,
     private readonly mailerService: MailerService,
+    private readonly httpService: HttpService,
+    private readonly logger: AppLoggerService,
   ) {}
 
   async getRedisProject(pid: string): Promise<Project | null> {
@@ -456,7 +467,7 @@ export class ProjectService {
   }
 
   findWhere(
-    where: Record<string, unknown>,
+    where: Record<string, unknown> | Record<string, unknown>[],
     relations?: string[],
   ): Promise<Project[]> {
     return this.projectsRepository.find({ where, relations })
@@ -1344,5 +1355,41 @@ export class ProjectService {
 
   async findProject(id: string, relations: string[]) {
     return this.projectsRepository.findOne({ relations, where: { id } })
+  }
+
+  filterUnsupportedColumns(
+    filters: CreateProjectViewDto['filters'],
+  ): CreateProjectViewDto['filters'] {
+    if (!filters) {
+      return []
+    }
+
+    return _filter(
+      filters,
+      ({ column }) =>
+        _includes(ALL_COLUMNS, column) ||
+        _includes(TRAFFIC_METAKEY_COLUMNS, column),
+    )
+  }
+
+  async sendPredictAiRequest(id: string) {
+    try {
+      const { data } = await firstValueFrom(
+        this.httpService.get('/predict/', {
+          params: { pid: id },
+        }),
+      )
+      return data
+    } catch (error) {
+      if (error instanceof AxiosError && error.response?.status === 404) {
+        throw new NotFoundException(
+          'Data not found. Prediction is not available for this timeframe.',
+        )
+      }
+      this.logger.error(
+        `Error receiving prediction from AI service: ${error.message}`,
+      )
+      return null
+    }
   }
 }

@@ -2,9 +2,7 @@ import Redis from 'ioredis'
 import * as path from 'path'
 import { hash } from 'blake3'
 import * as _toNumber from 'lodash/toNumber'
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-require('dotenv').config()
+import 'dotenv/config'
 
 const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, EMAIL_ACTION_ENCRYPTION_KEY } =
   process.env
