@@ -51,7 +51,6 @@
     "prettier-plugin-tailwindcss": "^0.6.6",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-flagkit": "^2.0.4",
     "react-flatpickr": "^3.10.13",
     "react-hotkeys-hook": "^4.5.0",
     "react-i18next": "^15.0.1",
