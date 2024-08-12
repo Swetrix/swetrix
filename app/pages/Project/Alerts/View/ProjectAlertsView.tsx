@@ -214,7 +214,13 @@ const ProjectAlerts = ({ projectId }: IProjectAlerts): JSX.Element => {
   }, [t])
 
   const isIntegrationLinked = useMemo(() => {
-    return !_isEmpty(user) && user.telegramChatId && user.isTelegramChatIdConfirmed
+    if (_isEmpty(user)) {
+      return false
+    }
+
+    return Boolean(
+      (user.telegramChatId && user.isTelegramChatIdConfirmed) || user.slackWebhookUrl || user.discordWebhookUrl,
+    )
   }, [user])
 
   const handleNewAlert = () => {
