@@ -943,13 +943,29 @@ export class TaskManagerService {
   @Cron(CronExpression.EVERY_5_MINUTES)
   async checkOnlineUsersAlerts(): Promise<void> {
     const projects = await this.projectService.findWhere(
-      {
-        admin: {
-          isTelegramChatIdConfirmed: true,
-          planCode: Not(PlanCode.none),
-          dashboardBlockReason: IsNull(),
+      [
+        {
+          admin: {
+            isTelegramChatIdConfirmed: true,
+            planCode: Not(PlanCode.none),
+            dashboardBlockReason: IsNull(),
+          },
         },
-      },
+        {
+          admin: {
+            slackWebhookUrl: Not(IsNull()),
+            planCode: Not(PlanCode.none),
+            dashboardBlockReason: IsNull(),
+          },
+        },
+        {
+          admin: {
+            discordWebhookUrl: Not(IsNull()),
+            planCode: Not(PlanCode.none),
+            dashboardBlockReason: IsNull(),
+          },
+        },
+      ],
       ['admin'],
     )
 

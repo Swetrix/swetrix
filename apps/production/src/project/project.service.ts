@@ -467,7 +467,7 @@ export class ProjectService {
   }
 
   findWhere(
-    where: Record<string, unknown>,
+    where: Record<string, unknown> | Record<string, unknown>[],
     relations?: string[],
   ): Promise<Project[]> {
     return this.projectsRepository.find({ where, relations })
