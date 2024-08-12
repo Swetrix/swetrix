@@ -58,6 +58,8 @@ import { clickhouse } from '../common/integrations/clickhouse'
 import { CHPlanUsage } from './interfaces'
 import { getRandomTip } from '../common/utils'
 import { AppLoggerService } from '../logger/logger.service'
+import { DiscordService } from '../integrations/discord/discord.service'
+import { SlackService } from '../integrations/slack/slack.service'
 
 dayjs.extend(utc)
 
@@ -258,6 +260,8 @@ export class TaskManagerService {
     private readonly telegramService: TelegramService,
     private readonly payoutsService: PayoutsService,
     private readonly configService: ConfigService,
+    private readonly discordService: DiscordService,
+    private readonly slackService: SlackService,
     private readonly httpService: HttpService,
   ) {}
 
@@ -971,6 +975,7 @@ export class TaskManagerService {
       }
 
       const online = await this.analyticsService.getOnlineUserCount(project.id)
+      const text = `🔔 Alert *${alert.name}* got triggered!\nYour project *${project.name}* has *${online}* online users right now!`
 
       if (online >= alert.queryValue) {
         // @ts-ignore
@@ -978,12 +983,21 @@ export class TaskManagerService {
           lastTriggered: new Date(),
         })
         if (project.admin && project.admin.isTelegramChatIdConfirmed) {
-          this.telegramService.addMessage(
-            project.admin.telegramChatId,
-            `🔔 Alert *${alert.name}* got triggered!\nYour project *${project.name}* has *${online}* online users right now!`,
-            {
-              parse_mode: 'Markdown',
-            },
+          this.telegramService.addMessage(project.admin.telegramChatId, text, {
+            parse_mode: 'Markdown',
+          })
+        }
+        if (project.admin.discordWebhookUrl) {
+          await this.discordService.sendWebhook(
+            project.admin.discordWebhookUrl,
+            text,
+          )
+        }
+
+        if (project.admin.slackWebhookUrl) {
+          await this.slackService.sendWebhook(
+            project.admin.slackWebhookUrl,
+            text,
           )
         }
       }
@@ -1001,7 +1015,6 @@ export class TaskManagerService {
     const projects = await this.projectService.findWhere(
       {
         admin: {
-          isTelegramChatIdConfirmed: true,
           planCode: Not(PlanCode.none),
           dashboardBlockReason: IsNull(),
         },
@@ -1077,6 +1090,20 @@ export class TaskManagerService {
           this.telegramService.addMessage(project.admin.telegramChatId, text, {
             parse_mode: 'Markdown',
           })
+        }
+
+        if (project.admin.discordWebhookUrl) {
+          await this.discordService.sendWebhook(
+            project.admin.discordWebhookUrl,
+            text,
+          )
+        }
+
+        if (project.admin.slackWebhookUrl) {
+          await this.slackService.sendWebhook(
+            project.admin.slackWebhookUrl,
+            text,
+          )
         }
       }
     })
