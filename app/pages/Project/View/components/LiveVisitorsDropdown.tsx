@@ -4,10 +4,10 @@ import { useTranslation } from 'react-i18next'
 // @ts-ignore
 import OutsideClickHandler from 'react-outside-click-handler'
 import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import Flag from 'react-flagkit'
 
 import { getLiveVisitorsInfo, IGetLiveVisitorsInfo } from 'api'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
+import Flag from 'ui/Flag'
 
 interface ILiveVisitorsDropdown {
   live: number | string

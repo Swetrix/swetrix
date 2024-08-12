@@ -4,7 +4,6 @@ import React, { memo, Fragment, useMemo, useState } from 'react'
 import { Link } from '@remix-run/react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
-import Flag from 'react-flagkit'
 import i18next from 'i18next'
 import {
   Popover,
@@ -54,6 +53,7 @@ import {
   CAPTCHA_URL,
 } from 'redux/constants'
 import Dropdown from 'ui/Dropdown'
+import Flag from 'ui/Flag'
 import { IUser } from 'redux/models/IUser'
 import { useAppDispatch, StateType } from 'redux/store'
 

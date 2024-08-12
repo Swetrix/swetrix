@@ -2,7 +2,7 @@ import React, { memo } from 'react'
 import { Link } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import _map from 'lodash/map'
-import Flag from 'react-flagkit'
+import Flag from 'ui/Flag'
 
 import {
   isSelfhosted,
