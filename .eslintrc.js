@@ -4,10 +4,7 @@ module.exports = {
     project: 'tsconfig.json',
     sourceType: 'module',
   },
-  plugins: [
-    '@typescript-eslint/eslint-plugin',
-    'lodash',
-  ],
+  plugins: ['@typescript-eslint/eslint-plugin', 'lodash'],
   extends: [
     'airbnb-base',
     'airbnb-typescript/base',
@@ -28,6 +25,8 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-namespace': 'off',
     '@typescript-eslint/ban-ts-comment': 'off',
+    '@typescript-eslint/lines-between-class-members': 'off',
+    '@typescript-eslint/no-throw-literal': 'off',
     'lodash/prefer-lodash-method': 'off', // disabled because lodash considers some of the typeorm methods as unsafe
     // 'lodash/prefer-lodash-method': 'warn',
     'no-param-reassign': 'off',
@@ -52,9 +51,12 @@ module.exports = {
     'max-classes-per-file': 'off',
     '@typescript-eslint/no-unused-vars': 'off', // disabled in favour of no-unused-vars
     'no-unused-vars': 'warn',
-    'semi': [
+    '@typescript-eslint/no-empty-object-type': [
       'error',
-      'never'
-    ]
+      {
+        allowInterfaces: 'with-single-extends',
+      },
+    ],
+    semi: ['error', 'never'],
   },
-};
+}

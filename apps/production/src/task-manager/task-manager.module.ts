@@ -1,3 +1,5 @@
+import { HttpModule } from '@nestjs/axios'
+import { ConfigModule, ConfigService } from '@nestjs/config'
 import { Module, forwardRef } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { AlertModule } from '../alert/alert.module'
@@ -23,6 +25,13 @@ import { SlackModule } from '../integrations/slack/slack.module'
     ActionTokensModule,
     AlertModule,
     forwardRef(() => AnalyticsModule),
+    HttpModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        baseURL: configService.get('AI_URL'),
+      }),
+    }),
     ExtensionsModule,
     AppLoggerModule,
     TypeOrmModule.forFeature([Message]),

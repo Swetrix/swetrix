@@ -30,12 +30,20 @@ export class ProjectViewCustomEventEntity {
   customEventName: string
 
   @ApiProperty()
-  @Column('varchar')
+  @Column('varchar', {
+    nullable: true,
+  })
   metaKey: string
 
   @ApiProperty()
-  @Column('varchar')
+  @Column('varchar', {
+    nullable: true,
+  })
   metaValue: string
+
+  @ApiProperty()
+  @Column('varchar')
+  metricKey: string
 
   @ApiProperty()
   @Column('enum', {
