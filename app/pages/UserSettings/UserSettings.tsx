@@ -374,7 +374,7 @@ const UserSettings = ({
     }
   }
 
-  const handleIntegrationSave = (data: any, callback = () => {}) => {
+  const handleIntegrationSave = (data: any, callback: (isSuccess: boolean) => void = () => {}) => {
     setBeenSubmitted(true)
 
     if (validated) {

@@ -23,6 +23,7 @@
     "subscriptionUpdated": "Your subscription has been updated",
     "generate2FAError": "Error occurred while generating 2FA code",
     "integrationRemovalError": "Error occurred while removing the integration",
+    "integrationSaveError": "Failed to save integration, make sure you've entered a valid input",
     "enterACorrectNumber": "Please enter a correct number",
     "numberCantBeNegative": "The number cannot be negative",
     "forecastNumberCantBeBigger": "The forecast number cannot be bigger than {{max}} for the selected frequency",
@@ -593,7 +594,12 @@
     "integrationsDesc": "Integrations can be used to connect your favourite messengers to Swetrix and receive updates such as notifications, reports or alerts directly.",
     "integrationsList": {
       "telegram": "Receive notifications directly into a Telegram bot.",
-      "tgHint": "Write a message to <url>{{username}}</url> to get your chat ID. This bot will be used later to send you notifications or alerts."
+      "slack": "Receive notifications in any Slack channel via webhook.",
+      "discord": "Receive notifications in any Discord channel via webhook.",
+      "tgHint": "Write a message to <url>{{username}}</url> to get your chat ID. This bot will be used later to send you notifications or alerts.",
+      "slackHint": "We use Slack incoming webhooks to send notifications into your Slack communication channels. Please create a Slack app and <url>an incoming webhook</url> and paste it into the input field below.",
+      "discordHint": "We use Discord webhooks to send you notifications. Please <url>create a Discord webhook</url> and paste it into the input field below.",
+      "webhookUrl": "Webhook URL"
     },
     "socialisations": "Socialisations",
     "socialisationsDesc": "Socialisation feature allows you to link 3rd party accounts (like Google or Twitter) to your Swetrix account and use them to sign in to Swetrix.",

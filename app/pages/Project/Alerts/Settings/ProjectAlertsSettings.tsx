@@ -74,7 +74,13 @@ const ProjectAlertsSettings = ({
   const [showModal, setShowModal] = useState<boolean>(false)
 
   const isIntegrationLinked = useMemo(() => {
-    return !_isEmpty(user) && user.telegramChatId && user.isTelegramChatIdConfirmed
+    if (_isEmpty(user)) {
+      return false
+    }
+
+    return Boolean(
+      (user.telegramChatId && user.isTelegramChatIdConfirmed) || user.slackWebhookUrl || user.discordWebhookUrl,
+    )
   }, [user])
 
   const queryTimeTMapping: {
@@ -256,7 +262,6 @@ const ProjectAlertsSettings = ({
           <div className='mt-2 flex items-center whitespace-pre-wrap rounded bg-blue-50 px-5 py-3 text-base dark:bg-slate-800 dark:text-gray-50'>
             <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
             <Trans
-              // @ts-ignore
               t={t}
               i18nKey='alert.noIntegration'
               components={{
