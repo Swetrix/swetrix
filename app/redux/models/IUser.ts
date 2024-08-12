@@ -32,6 +32,8 @@ export interface IUser {
   nextBillDate: string | null
   cancellationEffectiveDate: string | null
   apiKey: string | null
+  slackWebhookUrl: string | null
+  discordWebhookUrl: string | null
   telegramChatId: string | null
   isTelegramChatIdConfirmed: boolean
   timeFormat: string

@@ -8,6 +8,8 @@ import { CheckCircleIcon, XCircleIcon, ClockIcon } from '@heroicons/react/24/sol
 import Input from 'ui/Input'
 import Button from 'ui/Button'
 import Telegram from 'ui/icons/Telegram'
+import Slack from 'ui/icons/Slack'
+import Discord from 'ui/icons/Discord'
 import { removeTgIntegration } from 'api'
 import { IUser } from 'redux/models/IUser'
 
@@ -25,10 +27,25 @@ const getAvailableIntegrations = (
     description: t('profileSettings.integrationsList.telegram'),
     Icon: Telegram,
   },
+  {
+    name: 'Slack',
+    key: 'slack',
+    description: t('profileSettings.integrationsList.slack'),
+    Icon: Slack,
+  },
+  {
+    name: 'Discord',
+    key: 'discord',
+    description: t('profileSettings.integrationsList.discord'),
+    Icon: Discord,
+  },
 ]
 
-const TG_BOT_URL: string = 'https://t.me/swetrixbot'
-const TG_BOT_USERNAME: string = '@swetrixbot'
+const TG_BOT_URL = 'https://t.me/swetrixbot'
+const TG_BOT_USERNAME = '@swetrixbot'
+
+const SLACK_WEBHOOKS_HELP = 'https://api.slack.com/messaging/webhooks'
+const DISCORD_WEBHOOKS_HELP = 'https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks'
 
 const Integrations = ({
   user,
@@ -38,13 +55,13 @@ const Integrations = ({
 }: {
   user: IUser
   updateUserData: (data: Partial<IUser>) => void
-  handleIntegrationSave: (data: Partial<IUser>, cb: () => void) => void
+  handleIntegrationSave: (data: Partial<IUser>, cb: (isSuccess: boolean) => void) => void
   genericError: (message: string) => void
 }) => {
   const { t } = useTranslation('common')
   const available = getAvailableIntegrations(t)
   const [integrationConfigurating, setIntegrationConfigurating] = useState<string | null>(null)
-  const [tgChatId, setTgChatId] = useState<string | null>(null)
+  const [integrationInput, setIntegrationInput] = useState<string | null>(null)
   const [isIntegrationLoading, setIsIntegrationLoading] = useState<boolean>(false)
   const [isRemovalLoading, setIsRemovalLoading] = useState<boolean>(false)
 
@@ -53,19 +70,55 @@ const Integrations = ({
   }
 
   const addIntegration = (key: string) => () => {
-    if (isIntegrationLoading) {
+    if (isIntegrationLoading || !integrationInput) {
       return
     }
 
-    if (key === 'telegram' && tgChatId) {
-      setIsIntegrationLoading(true)
+    setIsIntegrationLoading(true)
+
+    if (key === 'telegram') {
       handleIntegrationSave(
         {
-          telegramChatId: tgChatId,
+          telegramChatId: integrationInput,
         },
         () => {
           setIsIntegrationLoading(false)
           setIntegrationConfigurating(null)
+          setIntegrationInput(null)
+        },
+      )
+    }
+
+    if (key === 'slack') {
+      handleIntegrationSave(
+        {
+          slackWebhookUrl: integrationInput,
+        },
+        (isSuccess: boolean) => {
+          if (!isSuccess) {
+            genericError(t('apiNotifications.integrationSaveError'))
+          }
+
+          setIsIntegrationLoading(false)
+          setIntegrationConfigurating(null)
+          setIntegrationInput(null)
+        },
+      )
+    }
+
+    if (key === 'discord') {
+      handleIntegrationSave(
+        {
+          discordWebhookUrl: integrationInput,
+        },
+        (isSuccess: boolean) => {
+          if (!isSuccess) {
+            genericError(t('apiNotifications.integrationSaveError'))
+          }
+
+          setIsIntegrationLoading(false)
+          setIntegrationConfigurating(null)
+          setIntegrationInput(null)
         },
       )
     }
@@ -80,6 +133,22 @@ const Integrations = ({
       }
     }
 
+    if (key === 'discord') {
+      return {
+        connected: user.discordWebhookUrl,
+        confirmed: user.discordWebhookUrl,
+        id: null,
+      }
+    }
+
+    if (key === 'slack') {
+      return {
+        connected: user.slackWebhookUrl,
+        confirmed: user.slackWebhookUrl,
+        id: null,
+      }
+    }
+
     return {}
   }
 
@@ -88,9 +157,9 @@ const Integrations = ({
       return
     }
 
-    if (key === 'telegram') {
-      setIsRemovalLoading(true)
+    setIsRemovalLoading(true)
 
+    if (key === 'telegram') {
       try {
         if (user.telegramChatId) {
           await removeTgIntegration(user.telegramChatId)
@@ -101,15 +170,52 @@ const Integrations = ({
           isTelegramChatIdConfirmed: false,
           telegramChatId: null,
         })
-      } catch (e) {
-        if (_isString(e)) {
-          genericError(e)
+      } catch (reason) {
+        if (_isString(reason)) {
+          genericError(reason)
         } else {
           genericError(t('apiNotifications.integrationRemovalError'))
         }
-        console.error(`[ERROR] Failed to remove TG integration: ${e}`)
+        console.error(`[ERROR] Failed to remove TG integration: ${reason}`)
       }
+
       setIsRemovalLoading(false)
+    }
+
+    if (key === 'slack') {
+      handleIntegrationSave(
+        {
+          slackWebhookUrl: null,
+        },
+        (isSuccess: boolean) => {
+          if (!isSuccess) {
+            genericError(t('apiNotifications.integrationRemovalError'))
+          }
+
+          updateUserData({
+            slackWebhookUrl: null,
+          })
+          setIsRemovalLoading(false)
+        },
+      )
+    }
+
+    if (key === 'discord') {
+      handleIntegrationSave(
+        {
+          discordWebhookUrl: null,
+        },
+        (isSuccess: boolean) => {
+          if (!isSuccess) {
+            genericError(t('apiNotifications.integrationRemovalError'))
+          }
+
+          updateUserData({
+            discordWebhookUrl: null,
+          })
+          setIsRemovalLoading(false)
+        },
+      )
     }
   }
 
@@ -117,12 +223,19 @@ const Integrations = ({
     if (integrationConfigurating === 'telegram') {
       return (
         <>
-          <Button className='mb-2 mt-2' onClick={() => setIntegrationConfigurating(null)} primary small>
+          <Button
+            className='mb-2 mt-2'
+            onClick={() => {
+              setIntegrationInput(null)
+              setIntegrationConfigurating(null)
+            }}
+            primary
+            small
+          >
             {t('common.goBack')}
           </Button>
           <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
             <Trans
-              // @ts-ignore
               t={t}
               i18nKey='profileSettings.integrationsList.tgHint'
               components={{
@@ -141,17 +254,122 @@ const Integrations = ({
               }}
             />
           </p>
-          <div className='mt-4 flex items-center'>
+          <div className='mt-4 flex items-end'>
             <Input
               label={t('profileSettings.chatID')}
-              value={tgChatId || ''}
-              placeholder={t('profileSettings.chatID')}
+              value={integrationInput || ''}
               className='sm:col-span-3'
-              onChange={(e) => setTgChatId(e.target.value)}
+              onChange={(e) => setIntegrationInput(e.target.value)}
               disabled={isIntegrationLoading}
             />
             <Button
-              className='ml-2 mt-4'
+              className='ml-2 py-2.5'
+              onClick={addIntegration(integrationConfigurating)}
+              loading={isIntegrationLoading}
+              primary
+              large
+            >
+              {t('common.enable')}
+            </Button>
+          </div>
+        </>
+      )
+    }
+
+    if (integrationConfigurating === 'slack') {
+      return (
+        <>
+          <Button
+            className='mb-2 mt-2'
+            onClick={() => {
+              setIntegrationInput(null)
+              setIntegrationConfigurating(null)
+            }}
+            primary
+            small
+          >
+            {t('common.goBack')}
+          </Button>
+          <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
+            <Trans
+              t={t}
+              i18nKey='profileSettings.integrationsList.slackHint'
+              components={{
+                // eslint-disable-next-line jsx-a11y/anchor-has-content
+                url: (
+                  <a
+                    href={SLACK_WEBHOOKS_HELP}
+                    className='text-blue-600 hover:underline'
+                    target='_blank'
+                    rel='noreferrer noopener'
+                  />
+                ),
+              }}
+            />
+          </p>
+          <div className='mt-4 flex items-end'>
+            <Input
+              label={t('profileSettings.integrationsList.webhookUrl')}
+              value={integrationInput || ''}
+              className='sm:col-span-3'
+              onChange={(e) => setIntegrationInput(e.target.value)}
+              disabled={isIntegrationLoading}
+            />
+            <Button
+              className='ml-2 py-2.5'
+              onClick={addIntegration(integrationConfigurating)}
+              loading={isIntegrationLoading}
+              primary
+              large
+            >
+              {t('common.enable')}
+            </Button>
+          </div>
+        </>
+      )
+    }
+
+    if (integrationConfigurating === 'discord') {
+      return (
+        <>
+          <Button
+            className='mb-2 mt-2'
+            onClick={() => {
+              setIntegrationInput(null)
+              setIntegrationConfigurating(null)
+            }}
+            primary
+            small
+          >
+            {t('common.goBack')}
+          </Button>
+          <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
+            <Trans
+              t={t}
+              i18nKey='profileSettings.integrationsList.discordHint'
+              components={{
+                // eslint-disable-next-line jsx-a11y/anchor-has-content
+                url: (
+                  <a
+                    href={DISCORD_WEBHOOKS_HELP}
+                    className='text-blue-600 hover:underline'
+                    target='_blank'
+                    rel='noreferrer noopener'
+                  />
+                ),
+              }}
+            />
+          </p>
+          <div className='mt-4 flex items-end'>
+            <Input
+              label={t('profileSettings.integrationsList.webhookUrl')}
+              value={integrationInput || ''}
+              className='sm:col-span-3'
+              onChange={(e) => setIntegrationInput(e.target.value)}
+              disabled={isIntegrationLoading}
+            />
+            <Button
+              className='ml-2 py-2.5'
               onClick={addIntegration(integrationConfigurating)}
               loading={isIntegrationLoading}
               primary
@@ -177,55 +395,50 @@ const Integrations = ({
             const status = connected ? (confirmed ? 'connected' : 'pending') : 'notConnected'
 
             return (
-              <li key={key}>
-                <div className='items-center px-1 py-4 sm:flex sm:px-6'>
-                  <div className='flex min-w-0 flex-1 items-center'>
-                    <div className='hidden flex-shrink-0 sm:block'>
-                      <Icon className='h-12 max-h-12 w-12 max-w-12 rounded-full' />
+              <li key={key} className='items-center px-1 py-4 sm:flex sm:px-6'>
+                <div className='flex min-w-0 flex-1 items-center'>
+                  <div className='hidden flex-shrink-0 sm:block'>
+                    <Icon className='size-12 max-h-12 max-w-12' />
+                  </div>
+                  <div className='min-w-0 flex-1 px-2 sm:px-4 md:grid md:grid-cols-2 md:gap-4'>
+                    <div>
+                      <p className='text-md font-medium text-gray-800 dark:text-gray-50'>{name}</p>
+                      <p className='mt-2 flex items-center text-sm text-gray-500 dark:text-gray-100'>
+                        <span>{description}</span>
+                      </p>
                     </div>
-                    <div className='min-w-0 flex-1 px-2 sm:px-4 md:grid md:grid-cols-2 md:gap-4'>
-                      <div>
-                        <p className='text-md font-medium text-gray-800 dark:text-gray-50'>{name}</p>
-                        <p className='mt-2 flex items-center text-sm text-gray-500 dark:text-gray-100'>
-                          <span>{description}</span>
+                    <div>
+                      {id && (
+                        <p className='text-sm text-gray-900 dark:text-gray-50'>
+                          {t('profileSettings.chatID')}
+                          {`: ${id}`}
                         </p>
-                      </div>
-                      <div>
-                        {id && (
-                          <p className='text-sm text-gray-900 dark:text-gray-50'>
-                            {t('profileSettings.chatID')}
-                            {`: ${id}`}
-                          </p>
+                      )}
+                      <p className='mt-2 flex items-center text-sm text-gray-500 dark:text-gray-100'>
+                        {status === 'notConnected' && (
+                          <XCircleIcon className='mr-1.5 h-5 w-5 flex-shrink-0 text-red-400' aria-hidden='true' />
                         )}
-                        <p className='mt-2 flex items-center text-sm text-gray-500 dark:text-gray-100'>
-                          {status === 'notConnected' && (
-                            <XCircleIcon className='mr-1.5 h-5 w-5 flex-shrink-0 text-red-400' aria-hidden='true' />
-                          )}
-                          {status === 'pending' && (
-                            <ClockIcon className='mr-1.5 h-5 w-5 flex-shrink-0 text-yellow-400' aria-hidden='true' />
-                          )}
-                          {status === 'connected' && (
-                            <CheckCircleIcon
-                              className='mr-1.5 h-5 w-5 flex-shrink-0 text-green-400'
-                              aria-hidden='true'
-                            />
-                          )}
-                          {t(`common.${status}`)}
-                        </p>
-                      </div>
+                        {status === 'pending' && (
+                          <ClockIcon className='mr-1.5 h-5 w-5 flex-shrink-0 text-yellow-400' aria-hidden='true' />
+                        )}
+                        {status === 'connected' && (
+                          <CheckCircleIcon className='mr-1.5 h-5 w-5 flex-shrink-0 text-green-400' aria-hidden='true' />
+                        )}
+                        {t(`common.${status}`)}
+                      </p>
                     </div>
                   </div>
-                  <div className='mt-2 flex justify-center sm:mt-0 sm:block'>
-                    {connected ? (
-                      <Button onClick={() => removeIntegration(key)} small danger>
-                        {t('profileSettings.removeIntegration')}
-                      </Button>
-                    ) : (
-                      <Button onClick={setupIntegration(key)} small primary>
-                        {t('profileSettings.addIntegration')}
-                      </Button>
-                    )}
-                  </div>
+                </div>
+                <div className='mt-2 flex justify-center sm:mt-0 sm:block'>
+                  {connected ? (
+                    <Button onClick={() => removeIntegration(key)} small danger>
+                      {t('profileSettings.removeIntegration')}
+                    </Button>
+                  ) : (
+                    <Button onClick={setupIntegration(key)} small primary>
+                      {t('profileSettings.addIntegration')}
+                    </Button>
+                  )}
                 </div>
               </li>
             )
