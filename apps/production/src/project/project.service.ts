@@ -1508,10 +1508,14 @@ export class ProjectService {
     monitorHttpRequestDto: HttpRequestOptions,
   ) {
     // TODO crete interface for that stuff
-    await this.monitorQueue.add('http-request', monitorHttpRequestDto, {
-      repeat: { every: monitorHttpRequestDto.interval },
-      jobId: monitorID,
-    })
+    await this.monitorQueue.add(
+      'http-request',
+      { ...monitorHttpRequestDto, monitorID },
+      {
+        repeat: { every: monitorHttpRequestDto.interval * 1000 },
+        jobId: monitorID,
+      },
+    )
   }
 
   async updateHttpRequest(
@@ -1520,7 +1524,10 @@ export class ProjectService {
   ): Promise<void> {
     await this.deleteHttpRequest(monitorID)
 
-    await this.sendHttpRequest(monitorID, updatedHttpRequestDto)
+    await this.sendHttpRequest(monitorID, {
+      ...updatedHttpRequestDto,
+      timeout: updatedHttpRequestDto.timeout * 1000,
+    })
   }
 
   async deleteHttpRequest(monitorID: string) {

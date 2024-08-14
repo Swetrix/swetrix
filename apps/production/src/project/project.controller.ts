@@ -2382,7 +2382,10 @@ export class ProjectController {
     )
 
     // Create a job in service for sending httpRequest
-    await this.projectService.sendHttpRequest(monitor.id, monitor)
+    await this.projectService.sendHttpRequest(monitor.id, {
+      ...monitor,
+      timeout: monitor.timeout * 1000,
+    })
   }
 
   @ApiOperation({ summary: 'Get monitor for the project' })
@@ -2422,11 +2425,7 @@ export class ProjectController {
       throw new NotFoundException('Monitor group not found.')
     }
 
-    const monitor = await this.projectService.getMonitor(
-      monitorId,
-      monitorGroup.id,
-      project.id,
-    )
+    const monitor = await this.projectService.getMonitor(monitorId)
 
     if (!monitor) {
       throw new NotFoundException('Monitor not found.')
@@ -2473,11 +2472,7 @@ export class ProjectController {
       throw new NotFoundException('Monitor group not found.')
     }
 
-    const monitor = await this.projectService.getMonitor(
-      monitorId,
-      monitorGroup.id,
-      project.id,
-    )
+    const monitor = await this.projectService.getMonitor(monitorId)
 
     if (!monitor) {
       throw new NotFoundException('Monitor not found.')
@@ -2528,11 +2523,7 @@ export class ProjectController {
       throw new NotFoundException('Monitor group not found.')
     }
 
-    const monitor = await this.projectService.getMonitor(
-      monitorId,
-      monitorGroup.id,
-      project.id,
-    )
+    const monitor = await this.projectService.getMonitor(monitorId)
 
     if (!monitor) {
       throw new NotFoundException('Monitor not found.')
