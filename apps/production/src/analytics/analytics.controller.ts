@@ -9,6 +9,7 @@ import * as dayjs from 'dayjs'
 import * as utc from 'dayjs/plugin/utc'
 import * as dayjsTimezone from 'dayjs/plugin/timezone'
 import { hash } from 'blake3'
+import { ApiOperation, ApiOkResponse } from '@nestjs/swagger'
 import {
   Controller,
   Body,
@@ -52,6 +53,7 @@ import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
 import { GetPagePropertyMetaDTO } from './dto/get-page-property-meta.dto'
 import { GetUserFlowDTO } from './dto/getUserFlow.dto'
 import { GetFunnelsDTO } from './dto/getFunnels.dto'
+import { ProjectService } from '../project/project.service'
 import { AppLoggerService } from '../logger/logger.service'
 import {
   redis,
@@ -79,6 +81,7 @@ import {
   PerfMeasure,
 } from './interfaces'
 import { GetSessionsDto } from './dto/get-sessions.dto'
+import {GetMonitorDataDto} from './dto/get-monitor-data.dto'
 import { GetSessionDto } from './dto/get-session.dto'
 import { ErrorDTO } from './dto/error.dto'
 import { GetErrorsDto } from './dto/get-errors.dto'
@@ -195,6 +198,7 @@ export class AnalyticsController {
     private readonly analyticsService: AnalyticsService,
     private readonly logger: AppLoggerService,
     private readonly projectsViewsRepository: ProjectsViewsRepository,
+    private readonly projectService: ProjectService,
   ) {}
 
   @ApiBearerAuth()
@@ -1566,6 +1570,105 @@ export class AnalyticsController {
       appliedFilters,
       take,
       skip,
+    }
+  }
+
+
+  @ApiOperation({ summary: 'Get monitor data' })
+  @ApiBearerAuth()
+  @ApiOkResponse({ description: 'Monitor data retrieved successfully' })
+  @Get(
+    'monitor-data',
+  )
+  @Auth([], true, true)
+  public async getMonitorData(
+    @Query() parameters: GetMonitorDataDto,
+    @CurrentUserId() userId: string,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<any & { chart: any }> {
+    const {
+      pid,
+      // monitorGroupId,
+      monitorId,
+      period,
+      timeBucket,
+      from,
+      to,
+      timezone,
+    } = parameters
+
+
+    // TODO: CHECK THAT MONITOR GROUP BELONGS TO THE PROVIDED PID
+    this.analyticsService.validatePID(pid)
+
+    if (!_isEmpty(period)) {
+      this.analyticsService.validatePeriod(period)
+    }
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      userId,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    let newTimebucket = timeBucket
+    let allowedTumebucketForPeriodAll
+
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.getTimeBucketForAllTime(
+        pid,
+        period,
+        timezone,
+      )
+
+      diff = res.diff
+      // eslint-disable-next-line prefer-destructuring
+      newTimebucket = _includes(res.timeBucket, timeBucket)
+        ? timeBucket
+        : res.timeBucket[0]
+      allowedTumebucketForPeriodAll = res.timeBucket
+    }
+
+    this.analyticsService.validateTimebucket(newTimebucket)
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFrom, groupTo, groupFromUTC, groupToUTC } =
+      this.analyticsService.getGroupFromTo(
+        from,
+        to,
+        newTimebucket,
+        period,
+        safeTimezone,
+        diff,
+      )
+    // TODO change to Uint64; filters.
+    let subQuery = 'FROM monitor_responses WHERE monitorID = {monitorId:FixedString(36)} AND created BETWEEN {groupFrom:String} AND {groupTo:String}'
+    const paramsData = {
+      params: {
+        monitorId,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+      },
+    }
+
+    // RETURN avg(responseTime) as avgResponseTime AS WELL
+    // BY GROUPS LIKE 0-100, 100-200, 200-500, 500-1000, etc.
+    const result = await this.analyticsService.groupMonitorResponsesByTimeBucket(
+      newTimebucket,
+      groupFrom,
+      groupTo,
+      subQuery,
+      paramsData,
+      safeTimezone,
+    )
+
+    return {
+      ...result,
+      timeBucket: allowedTumebucketForPeriodAll,
     }
   }
 

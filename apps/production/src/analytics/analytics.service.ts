@@ -46,6 +46,7 @@ import {
   UNIQUE_SESSION_LIFE_TIME,
   REDIS_SESSION_SALT_KEY,
   TRAFFIC_COLUMNS,
+  UPTIME_COLUMNS,
   ALL_COLUMNS,
   CAPTCHA_COLUMNS,
   ERROR_COLUMNS,
@@ -277,7 +278,7 @@ const generateParamsQuery = (
   subQuery: string,
   customEVFilterApplied: boolean,
   isPageInclusiveFilterSet: boolean,
-  type: 'traffic' | 'performance' | 'captcha' | 'errors',
+  type: 'traffic' | 'performance' | 'captcha' | 'errors' | 'uptime',
   measure?: PerfMeasure,
 ): string => {
   let columns = [`${col} as name`]
@@ -307,6 +308,10 @@ const generateParamsQuery = (
   }
 
   if (type === 'captcha') {
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
+  }
+
+  if (type === 'uptime') {
     return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
   }
 
@@ -1846,7 +1851,7 @@ export class AnalyticsService {
     subQuery: string,
     customEVFilterApplied: boolean,
     paramsData: any,
-    type: 'traffic' | 'performance' | 'captcha' | 'errors',
+    type: 'traffic' | 'performance' | 'captcha' | 'errors' | 'uptime',
     measure?: PerfMeasure,
   ): Promise<any> {
     const params = {}
@@ -1873,6 +1878,10 @@ export class AnalyticsService {
 
     if (type === 'performance') {
       columns = PERFORMANCE_COLUMNS
+    }
+
+    if (type === 'uptime') {
+      columns = UPTIME_COLUMNS
     }
 
     const paramsPromises = _map(columns, async col => {
@@ -2357,6 +2366,29 @@ export class AnalyticsService {
     return baseQuery
   }
 
+  generateMonitorResponsesAggregationQuery(timeBucket: TimeBucketType): string {
+    const timeBucketFunc = timeBucketConversion[timeBucket]
+    const [selector, groupBy] = this.getGroupSubquery(timeBucket)
+
+    const baseQuery = `
+      SELECT
+        ${selector},
+        count() as count
+      FROM (
+        SELECT region, statusCode,
+          ${timeBucketFunc}(created) as tz_created
+        FROM monitor_responses
+        WHERE
+          monitorID = {monitorId:FixedString(36)}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+      ) as subquery
+      GROUP BY ${groupBy}
+      ORDER BY ${groupBy}
+    `
+
+    return baseQuery
+  }
+
   async groupByTimeBucket(
     timeBucket: TimeBucketType,
     from: string,
@@ -2756,6 +2788,66 @@ export class AnalyticsService {
         chart = {
           x: this.shiftToTimezone(x, safeTimezone, format),
           occurrences: count,
+        }
+      })(),
+    ]
+
+    await Promise.all(promises)
+
+    return Promise.resolve({
+      params,
+      chart,
+    })
+  }
+
+  async groupMonitorResponsesByTimeBucket(
+    timeBucket: TimeBucketType,
+    from: string,
+    to: string,
+    subQuery: string,
+    paramsData: any,
+    safeTimezone: string,
+  ): Promise<object | void> {
+    let params: unknown = {}
+    let chart: unknown = {}
+
+    const promises = [
+      // Params
+      (async () => {
+        params = await this.generateParams(
+          null,
+          subQuery,
+          false,
+          paramsData,
+          'uptime',
+        )
+
+        if (!_some(_values(params), val => !_isEmpty(val))) {
+          throw new BadRequestException(
+            'There are no uptime details for specified time frame',
+          )
+        }
+      })(),
+
+      // Chart data
+      (async () => {
+        const { x, format } = this.generateUTCXAxis(timeBucket, from, to)
+
+        const query = this.generateMonitorResponsesAggregationQuery(timeBucket)
+
+        const { data } = await clickhouse
+          .query({
+            query,
+            query_params: paramsData.params,
+          })
+          // TODO: TYPE
+          .then(resultSet => resultSet.json<any>())
+        const { count } = this.extractCaptchaChartData(data, x)
+
+        chart = {
+          // todo: other stuff
+          x: this.shiftToTimezone(x, safeTimezone, format),
+          count,
         }
       })(),
     ]

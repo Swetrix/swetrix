@@ -1485,6 +1485,7 @@ export class ProjectService {
       where: {
         id: monitorId,
       },
+      relations: ['group', 'group.project', 'group.project.admin'],
     })
   }
 
@@ -1531,6 +1532,9 @@ export class ProjectService {
   }
 
   async deleteHttpRequest(monitorID: string) {
-    await this.monitorQueue.remove(monitorID)
+    const job = await this.monitorQueue.getJob(monitorID)
+    if (job) {
+      await job.remove()
+    }
   }
 }

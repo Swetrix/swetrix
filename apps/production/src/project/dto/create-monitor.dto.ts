@@ -97,10 +97,6 @@ export class CreateMonitorHttpRequestDTO {
   acceptedStatusCodes: HttpStatusCodeEnum[]
 
   @ApiProperty()
-  @IsString()
-  groupName: string
-
-  @ApiProperty()
   @IsOptional()
   @IsString()
   description?: string
