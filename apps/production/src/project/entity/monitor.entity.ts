@@ -12,8 +12,8 @@ import { MonitorGroupEntity } from './monitor-group.entity'
 @Entity('monitor')
 export class MonitorEntity {
   @ApiProperty()
-  @PrimaryGeneratedColumn('uuid')
-  id: string
+  @PrimaryGeneratedColumn('increment', { type: 'bigint' })
+  id: number
 
   @ApiProperty()
   @Column({ type: 'varchar' })

@@ -22,7 +22,7 @@ export class GetMonitorDataDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  monitorId: string
+  monitorId: number
 
   @ApiProperty()
   @IsNotEmpty()

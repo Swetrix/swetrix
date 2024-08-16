@@ -2396,7 +2396,7 @@ export class ProjectController {
   public async getMonitor(
     @Param() { projectId }: ProjectIdDto,
     @Param() { monitorGroupId }: MonitorGroupIdDto,
-    @Param('monitorId') monitorId: string,
+    @Param('monitorId') monitorId: number,
     @CurrentUserId() userId: string,
   ): Promise<MonitorEntity> {
     const project = await this.projectService.findProject(projectId, [
@@ -2442,7 +2442,7 @@ export class ProjectController {
   public async updateMonitor(
     @Param() { projectId }: ProjectIdDto,
     @Param() { monitorGroupId }: MonitorGroupIdDto,
-    @Param('monitorId') monitorId: string,
+    @Param('monitorId') monitorId: number,
     @Body() body: UpdateMonitorHttpRequestDTO,
     @CurrentUserId() userId: string,
   ): Promise<MonitorEntity> {
@@ -2495,7 +2495,7 @@ export class ProjectController {
   public async deleteMonitor(
     @Param() { projectId }: ProjectIdDto,
     @Param() { monitorGroupId }: MonitorGroupIdDto,
-    @Param('monitorId') monitorId: string,
+    @Param('monitorId') monitorId: number,
     @CurrentUserId() userId: string,
   ): Promise<void> {
     const project = await this.projectService.findProject(projectId, [

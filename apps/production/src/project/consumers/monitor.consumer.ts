@@ -21,7 +21,7 @@ export class MonitorConsumer {
 
   @Process('http-request')
   async httpRequestProcess(
-    job: Job<CreateMonitorHttpRequestDTO & { monitorID: string }>,
+    job: Job<CreateMonitorHttpRequestDTO & { monitorId: number }>,
   ): Promise<any> {
     this.logger.debug(`Consumer works ${JSON.stringify(job.data)}`)
     const res: {
@@ -32,7 +32,7 @@ export class MonitorConsumer {
     } = await firstValueFrom(this.monitorService.send('http-request', job.data))
     this.logger.debug(`Consumer works ${JSON.stringify(res)}`)
 
-    const monitor = await this.projectService.getMonitor(job.data.monitorID)
+    const monitor = await this.projectService.getMonitor(job.data.monitorId)
 
     if (!monitor.acceptedStatusCodes.includes(res.statusCode)) {
       // await this.mailerService.sed(monitor.group.project.admin.email, 'fuck')
@@ -52,7 +52,7 @@ export class MonitorConsumer {
         format: 'JSONEachRow',
         values: [
           {
-            monitorID: job.data.monitorID,
+            monitorId: job.data.monitorId,
             region: res.region,
             responseTime: res.responseTime,
             timestamp: res.timestamp,

@@ -2379,7 +2379,7 @@ export class AnalyticsService {
           ${timeBucketFunc}(created) as tz_created
         FROM monitor_responses
         WHERE
-          monitorID = {monitorId:FixedString(36)}
+          monitorId = {monitorId:UInt64}
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
       ) as subquery
       GROUP BY ${groupBy}

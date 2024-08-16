@@ -1480,7 +1480,7 @@ export class ProjectService {
     return this.monitorRepository.save(monitor)
   }
 
-  async getMonitor(monitorId: string) {
+  async getMonitor(monitorId: number) {
     return this.monitorRepository.findOne({
       where: {
         id: monitorId,
@@ -1491,48 +1491,50 @@ export class ProjectService {
 
   // Update a monitor group
   async updateMonitor(
-    monitorGroupId: string,
+    monitorId: number,
     updateMonitorHttpRequestDto: UpdateMonitorHttpRequestDTO,
   ): Promise<any> {
     await this.monitorRepository.update(
-      { id: monitorGroupId },
+      { id: monitorId },
       updateMonitorHttpRequestDto,
     )
   }
 
-  async deleteMonitor(monitorId: string): Promise<any> {
+  async deleteMonitor(monitorId: number): Promise<any> {
     return this.monitorRepository.delete(monitorId)
   }
 
   async sendHttpRequest(
-    monitorID: string,
+    monitorId: number,
     monitorHttpRequestDto: HttpRequestOptions,
   ) {
     // TODO crete interface for that stuff
     await this.monitorQueue.add(
       'http-request',
-      { ...monitorHttpRequestDto, monitorID },
+      { ...monitorHttpRequestDto, monitorId },
       {
         repeat: { every: monitorHttpRequestDto.interval * 1000 },
-        jobId: monitorID,
+        jobId: monitorId.toString(),
       },
     )
   }
 
   async updateHttpRequest(
-    monitorID: string,
+    monitorId: number,
     updatedHttpRequestDto: HttpRequestOptions,
   ): Promise<void> {
-    await this.deleteHttpRequest(monitorID)
+    await this.deleteHttpRequest(monitorId)
 
-    await this.sendHttpRequest(monitorID, {
+    await this.sendHttpRequest(monitorId, {
       ...updatedHttpRequestDto,
       timeout: updatedHttpRequestDto.timeout * 1000,
     })
   }
 
-  async deleteHttpRequest(monitorID: string) {
-    const job = await this.monitorQueue.getJob(monitorID)
+  async deleteHttpRequest(monitorId: number) {
+    const job = await this.monitorQueue.getJob(monitorId.toString())
+    this.logger.debug(`Job ${JSON.stringify(job)}`)
+    this.logger.debug(`Monitor Id: ${monitorId.toString()}`)
     if (job) {
       await job.remove()
     }

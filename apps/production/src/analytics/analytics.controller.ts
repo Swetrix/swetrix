@@ -81,7 +81,7 @@ import {
   PerfMeasure,
 } from './interfaces'
 import { GetSessionsDto } from './dto/get-sessions.dto'
-import {GetMonitorDataDto} from './dto/get-monitor-data.dto'
+import { GetMonitorDataDto } from './dto/get-monitor-data.dto'
 import { GetSessionDto } from './dto/get-session.dto'
 import { ErrorDTO } from './dto/error.dto'
 import { GetErrorsDto } from './dto/get-errors.dto'
@@ -1573,13 +1573,10 @@ export class AnalyticsController {
     }
   }
 
-
   @ApiOperation({ summary: 'Get monitor data' })
   @ApiBearerAuth()
   @ApiOkResponse({ description: 'Monitor data retrieved successfully' })
-  @Get(
-    'monitor-data',
-  )
+  @Get('monitor-data')
   @Auth([], true, true)
   public async getMonitorData(
     @Query() parameters: GetMonitorDataDto,
@@ -1596,7 +1593,6 @@ export class AnalyticsController {
       to,
       timezone,
     } = parameters
-
 
     // TODO: CHECK THAT MONITOR GROUP BELONGS TO THE PROVIDED PID
     this.analyticsService.validatePID(pid)
@@ -1646,7 +1642,8 @@ export class AnalyticsController {
         diff,
       )
     // TODO change to Uint64; filters.
-    let subQuery = 'FROM monitor_responses WHERE monitorID = {monitorId:FixedString(36)} AND created BETWEEN {groupFrom:String} AND {groupTo:String}'
+    const subQuery =
+      'FROM monitor_responses WHERE monitorId = {monitorId:UInt64} AND created BETWEEN {groupFrom:String} AND {groupTo:String}'
     const paramsData = {
       params: {
         monitorId,
@@ -1657,14 +1654,15 @@ export class AnalyticsController {
 
     // RETURN avg(responseTime) as avgResponseTime AS WELL
     // BY GROUPS LIKE 0-100, 100-200, 200-500, 500-1000, etc.
-    const result = await this.analyticsService.groupMonitorResponsesByTimeBucket(
-      newTimebucket,
-      groupFrom,
-      groupTo,
-      subQuery,
-      paramsData,
-      safeTimezone,
-    )
+    const result =
+      await this.analyticsService.groupMonitorResponsesByTimeBucket(
+        newTimebucket,
+        groupFrom,
+        groupTo,
+        subQuery,
+        paramsData,
+        safeTimezone,
+      )
 
     return {
       ...result,

@@ -140,7 +140,7 @@ const CLICKHOUSE_INIT_QUERIES = [
 
   `CREATE TABLE IF NOT EXISTS ${dbName}.monitor_responses
   (
-    monitorID FixedString(36),         
+    monitorId UInt64,         
     region LowCardinality(Nullable(String)),
     responseTime UInt32,
     timestamp UInt32,              
@@ -149,7 +149,7 @@ const CLICKHOUSE_INIT_QUERIES = [
   )
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
-  ORDER BY (monitorID, created);`,
+  ORDER BY (monitorId, created);`,
 ]
 
 const initialiseDatabase = async () => {
