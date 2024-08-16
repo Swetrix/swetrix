@@ -1,6 +1,6 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="/public/assets/logo_white.png">
-  <img alt="" src="/public/assets/logo_blue.png" height="80">
+  <source media="(prefers-color-scheme: dark)" srcset="https://swetrix.com/assets/logo_white.png">
+  <img alt="" src="https://swetrix.com/assets/logo_blue.png" height="80">
 </picture>
 <br /><br />
 
