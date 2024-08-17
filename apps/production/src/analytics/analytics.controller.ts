@@ -3,6 +3,7 @@ import * as _isArray from 'lodash/isArray'
 import * as _toNumber from 'lodash/toNumber'
 import * as _pick from 'lodash/pick'
 import * as _includes from 'lodash/includes'
+import * as _size from 'lodash/size'
 import * as _map from 'lodash/map'
 import * as _uniqBy from 'lodash/uniqBy'
 import * as dayjs from 'dayjs'
@@ -31,8 +32,6 @@ import {
   ForbiddenException,
   Response,
   Header,
-  ConflictException,
-  NotFoundException,
 } from '@nestjs/common'
 import * as UAParser from 'ua-parser-js'
 import { isbot } from 'isbot'
@@ -91,7 +90,6 @@ import { ErrorDTO } from './dto/error.dto'
 import { GetErrorsDto } from './dto/get-errors.dto'
 import { GetErrorDTO } from './dto/get-error.dto'
 import { PatchStatusDTO } from './dto/patch-status.dto'
-import { ProjectsViewsRepository } from '../project/repositories/projects-views.repository'
 import {
   customEventTransformer,
   errorEventTransformer,
@@ -99,6 +97,10 @@ import {
   trafficTransformer,
 } from './utils/transformers'
 import { GetUptimeBirdseyeDto } from './dto/get-uptime-birdseye.dto'
+import {
+  MAX_METRICS_IN_VIEW,
+  ProjectViewCustomEventDto,
+} from '../project/dto/create-project-view.dto'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -234,7 +236,6 @@ export class AnalyticsController {
   constructor(
     private readonly analyticsService: AnalyticsService,
     private readonly logger: AppLoggerService,
-    private readonly projectsViewsRepository: ProjectsViewsRepository,
     private readonly projectService: ProjectService,
   ) {}
 
@@ -256,7 +257,7 @@ export class AnalyticsController {
       filters,
       timezone = DEFAULT_TIMEZONE,
       mode = ChartRenderMode.PERIODICAL,
-      viewId,
+      metrics,
     } = data
     this.analyticsService.validatePID(pid)
 
@@ -272,35 +273,16 @@ export class AnalyticsController {
 
     await this.analyticsService.checkBillingAccess(pid)
 
-    if (viewId && filters) {
-      throw new ConflictException('Cannot specify both viewId and filters.')
-    }
+    let parsedMetrics: ProjectViewCustomEventDto[]
 
-    let meta: Awaited<ReturnType<typeof this.analyticsService.getMetaResult>>
+    if (!isCaptcha) {
+      parsedMetrics = this.analyticsService.parseMetrics(metrics)
 
-    if (viewId) {
-      const view = await this.projectsViewsRepository.findProjectView(
-        pid,
-        viewId,
-      )
-
-      if (!view) {
-        throw new NotFoundException('View not found.')
+      if (_size(parsedMetrics) > MAX_METRICS_IN_VIEW) {
+        throw new BadRequestException(
+          `The maximum number of metrics within one request is ${MAX_METRICS_IN_VIEW}`,
+        )
       }
-
-      const customEvents = view.customEvents.map(event => ({
-        customEventName: event.customEventName,
-        metaKey: event.metaKey,
-        metaValue: event.metaValue,
-        metaValueType: event.metaValueType,
-      }))
-
-      const metaKeys = customEvents.map(event => event.metaKey)
-      meta = await this.analyticsService.getMetaResult(
-        pid,
-        metaKeys,
-        customEvents,
-      )
     }
 
     let newTimebucket = timeBucket
@@ -405,6 +387,21 @@ export class AnalyticsController {
       properties = await this.analyticsService.getPageProperties(
         filtersQuery,
         paramsData,
+      )
+    }
+
+    let meta: Awaited<ReturnType<typeof this.analyticsService.getMetaResults>>
+
+    if (!_isEmpty(parsedMetrics)) {
+      meta = await this.analyticsService.getMetaResults(
+        pid,
+        parsedMetrics,
+        filtersQuery,
+        paramsData,
+        timezone,
+        period,
+        from,
+        to,
       )
     }
 

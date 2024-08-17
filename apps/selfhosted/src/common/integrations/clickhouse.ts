@@ -1,4 +1,59 @@
-import { createClient } from '@clickhouse/client'
+import type {
+  Logger as _CHLogger,
+  LogParams,
+  ErrorLogParams,
+} from '@clickhouse/client'
+import { createClient, ClickHouseLogLevel } from '@clickhouse/client'
+import { Logger } from '@nestjs/common'
+import 'dotenv/config'
+
+export class CHLogger implements _CHLogger {
+  debug({ module, message, args }: LogParams): void {
+    Logger.debug({
+      type: '@clickhouse/client',
+      module,
+      message,
+      ...args,
+    })
+  }
+
+  trace({ module, message, args }: LogParams) {
+    Logger.log({
+      type: '@clickhouse/client',
+      module,
+      message,
+      ...args,
+    })
+  }
+
+  info({ module, message, args }: LogParams): void {
+    Logger.log({
+      type: '@clickhouse/client',
+      module,
+      message,
+      ...args,
+    })
+  }
+
+  warn({ module, message, args }: LogParams): void {
+    Logger.warn({
+      type: '@clickhouse/client',
+      module,
+      message,
+      ...args,
+    })
+  }
+
+  error({ module, message, args, err }: ErrorLogParams): void {
+    Logger.error({
+      type: '@clickhouse/client',
+      module,
+      message,
+      ...args,
+      err,
+    })
+  }
+}
 
 const clickhouse = createClient({
   url: `${process.env.CLICKHOUSE_HOST}:${process.env.CLICKHOUSE_PORT}`,
@@ -20,6 +75,13 @@ const clickhouse = createClient({
     // https://clickhouse.com/docs/en/optimize/asynchronous-inserts
     wait_for_async_insert: 0, // Return ACK (await) when row was added to the buffer, not flushed to the database
     async_insert_busy_timeout_ms: 15000, // 15 seconds; this is how long the buffer will be kept before writing stuff into the database
+  },
+  log: {
+    LoggerClass: CHLogger,
+    level:
+      process.env.DEBUG_MODE === 'true'
+        ? ClickHouseLogLevel.DEBUG
+        : ClickHouseLogLevel.ERROR,
   },
 })
 
