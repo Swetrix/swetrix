@@ -9,7 +9,7 @@ import {
   NotFoundException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { FindOneOptions, Repository } from 'typeorm'
 import { customAlphabet } from 'nanoid'
 import handlebars from 'handlebars'
 import puppeteer from 'puppeteer'
@@ -1389,18 +1389,17 @@ export class ProjectService {
     }
   }
 
-  // Monitoring
-  async createMonitorGroup(
-    projectId: string,
-    createMonitorGroupDto: CreateMonitorGroupDto,
-  ) {
-    return this.monitorGroupRepository.save({
-      ...createMonitorGroupDto,
+  async createMonitorGroup(projectId: string, { name }: CreateMonitorGroupDto) {
+    const group = this.monitorGroupRepository.create({
+      name,
       project: { id: projectId },
     })
+
+    await this.monitorGroupRepository.save(group)
+
+    return group
   }
 
-  // Get all monitor groups for a specific project
   async getMonitorGroupsByProjectId(
     projectId: string,
   ): Promise<MonitorGroupEntity[]> {
@@ -1409,7 +1408,6 @@ export class ProjectService {
     })
   }
 
-  // Get a monitor group by ID
   async getMonitorGroupById(
     projectId: string,
     monitorGroupId: string,
@@ -1432,7 +1430,6 @@ export class ProjectService {
     // await this.monitorGroupRepository.update(monitorGroupId, updateMonitorGroupDto)
   }
 
-  // Delete a monitor group
   async deleteMonitorGroup(
     projectId: string,
     monitorGroupId: string,
@@ -1458,22 +1455,63 @@ export class ProjectService {
   async findMonitorGroup(
     id: string,
     projectId: string,
+    options?: Omit<FindOneOptions<MonitorGroupEntity>, 'where'>,
   ): Promise<MonitorGroupEntity | undefined> {
     return this.monitorGroupRepository.findOne({
       where: {
         id,
         project: { id: projectId },
       },
+      ...options,
     })
   }
 
-  // Add a monitor to a monitor group
-  async createMonitor(
-    createMonitorHttpRequestDto: CreateMonitorHttpRequestDTO,
+  async findMonitorById(
+    id: string,
+    groupId: string,
+    projectId: string,
+    options?: Omit<FindOneOptions<MonitorEntity>, 'where'>,
+  ): Promise<MonitorEntity | undefined> {
+    return this.monitorRepository.findOne({
+      where: {
+        id,
+        group: {
+          id: groupId,
+          project: {
+            id: projectId,
+          },
+        },
+      },
+      ...options,
+    })
+  }
+
+  async createMonitorInGroup(
+    {
+      type,
+      name,
+      url,
+      interval,
+      retries,
+      retryInterval,
+      timeout,
+      acceptedStatusCodes,
+      description,
+      httpOptions,
+    }: CreateMonitorHttpRequestDTO,
     group: string,
   ): Promise<MonitorEntity> {
     const monitor = this.monitorRepository.create({
-      ...createMonitorHttpRequestDto,
+      type,
+      name,
+      url,
+      interval,
+      retries,
+      retryInterval,
+      timeout,
+      acceptedStatusCodes,
+      description,
+      httpOptions,
       group: { id: group },
     })
 
@@ -1489,14 +1527,35 @@ export class ProjectService {
     })
   }
 
-  // Update a monitor group
   async updateMonitor(
     monitorId: number,
-    updateMonitorHttpRequestDto: UpdateMonitorHttpRequestDTO,
+    {
+      type,
+      name,
+      url,
+      interval,
+      retries,
+      retryInterval,
+      timeout,
+      acceptedStatusCodes,
+      description,
+      httpOptions,
+    }: UpdateMonitorHttpRequestDTO,
   ): Promise<any> {
     await this.monitorRepository.update(
       { id: monitorId },
-      updateMonitorHttpRequestDto,
+      {
+        type,
+        name,
+        url,
+        interval,
+        retries,
+        retryInterval,
+        timeout,
+        acceptedStatusCodes,
+        description,
+        httpOptions,
+      },
     )
   }
 
@@ -1533,8 +1592,6 @@ export class ProjectService {
 
   async deleteHttpRequest(monitorId: number) {
     const job = await this.monitorQueue.getJob(monitorId.toString())
-    this.logger.debug(`Job ${JSON.stringify(job)}`)
-    this.logger.debug(`Monitor Id: ${monitorId.toString()}`)
     if (job) {
       await job.remove()
     }

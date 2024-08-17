@@ -121,8 +121,7 @@ const metaInfoJson = {
   },
   [LetterTemplate.UptimeMonitoringFailure]: {
     subject: {
-      en: () =>
-        '[ACTION REQUIRED] Your Swetrix uptime has resulted in an error',
+      en: (p: Params) => `Monitor "${p.monitorName}" is down`,
     },
   },
 }

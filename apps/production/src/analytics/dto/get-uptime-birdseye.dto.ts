@@ -1,16 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty } from 'class-validator'
+import { IsArray, IsNotEmpty, IsOptional } from 'class-validator'
 import { DEFAULT_TIMEZONE } from '../../user/entities/user.entity'
-import { TimeBucketType } from './getData.dto'
 
-export class GetMonitorDataDto {
+export class GetUptimeBirdseyeDto {
   @ApiProperty()
   @IsNotEmpty()
   pid: string
 
-  @ApiProperty()
-  @IsNotEmpty()
-  monitorId: number
+  @ApiProperty({ required: false })
+  @IsOptional()
+  monitorId?: number
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsArray()
+  monitorIds?: number[]
 
   @ApiProperty()
   @IsNotEmpty()
@@ -18,10 +22,6 @@ export class GetMonitorDataDto {
 
   @ApiProperty()
   period: string
-
-  @ApiProperty({ enum: TimeBucketType })
-  @IsNotEmpty()
-  timeBucket: TimeBucketType
 
   @ApiProperty({ required: false })
   from: string

@@ -1,3 +1,4 @@
+import * as _toNumber from 'lodash/toNumber'
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { ConfigModule } from '@nestjs/config'
@@ -57,13 +58,15 @@ const modules = [
     username: process.env.MYSQL_USER,
     password: process.env.MYSQL_ROOT_PASSWORD,
     database: process.env.MYSQL_DATABASE,
-    synchronize: true, // process.env.NODE_ENV !== 'production',
+    synchronize: false, // process.env.NODE_ENV !== 'production',
     entities: [`${__dirname}/**/*.entity{.ts,.js}`],
   }),
   BullModule.forRoot({
     redis: {
-      host: 'localhost',
-      port: 6379,
+      host: process.env.REDIS_HOST,
+      port: _toNumber(process.env.REDIS_PORT),
+      username: process.env.REDIS_USER,
+      password: process.env.REDIS_PASSWORD,
     },
   }),
   I18nModule.forRootAsync(getI18nConfig()),

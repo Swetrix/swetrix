@@ -2157,7 +2157,6 @@ export class ProjectController {
     )
   }
 
-  // TODO monitor here
   @ApiOperation({ summary: 'Create monitor group' })
   @ApiBearerAuth()
   @ApiOkResponse({ type: MonitorGroupEntity })
@@ -2168,8 +2167,6 @@ export class ProjectController {
     @Body() body: CreateMonitorGroupDto,
     @CurrentUserId() userId: string,
   ): Promise<MonitorGroupEntity> {
-    this.logger.debug(`Creating monitor group: ${body.name}`)
-
     const project = await this.projectService.findProject(projectId, [
       'admin',
       'share',
@@ -2343,12 +2340,7 @@ export class ProjectController {
     @Param() { monitorGroupId }: MonitorGroupIdDto,
     @Body() body: CreateMonitorHttpRequestDTO,
     @CurrentUserId() userId: string,
-  ): Promise<void> {
-    // CREATE A MONITOR JOB HERE AS A SEPARATE PARALLEL PROCESS\
-    this.logger.debug(`Request is send: ${'type'}`)
-    this.logger.debug(`projectId: ${projectId}`)
-    this.logger.debug(`monitorGroupId: ${monitorGroupId}`)
-
+  ): Promise<MonitorEntity> {
     const project = await this.projectService.findProject(projectId, [
       'admin',
       'share',
@@ -2370,13 +2362,12 @@ export class ProjectController {
       monitorGroupId,
       projectId,
     )
-    this.logger.debug(`monitorGroup: ${JSON.stringify(monitorGroup)}`)
 
     if (!monitorGroup) {
       throw new NotFoundException('Monitor group not found.')
     }
 
-    const monitor = await this.projectService.createMonitor(
+    const monitor = await this.projectService.createMonitorInGroup(
       body,
       monitorGroup.id,
     )
@@ -2386,6 +2377,8 @@ export class ProjectController {
       ...monitor,
       timeout: monitor.timeout * 1000,
     })
+
+    return monitor
   }
 
   @ApiOperation({ summary: 'Get monitor for the project' })
@@ -2531,7 +2524,5 @@ export class ProjectController {
 
     this.projectService.deleteMonitor(monitorId)
     this.projectService.deleteHttpRequest(monitorId)
-
-    this.logger.debug(`Monitor with ID ${monitorId} deleted successfully.`)
   }
 }

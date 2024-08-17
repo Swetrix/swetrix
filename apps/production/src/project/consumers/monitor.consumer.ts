@@ -23,28 +23,31 @@ export class MonitorConsumer {
   async httpRequestProcess(
     job: Job<CreateMonitorHttpRequestDTO & { monitorId: number }>,
   ): Promise<any> {
-    this.logger.debug(`Consumer works ${JSON.stringify(job.data)}`)
     const res: {
       responseTime: number
       statusCode: number
       timestamp: number
       region: string
     } = await firstValueFrom(this.monitorService.send('http-request', job.data))
-    this.logger.debug(`Consumer works ${JSON.stringify(res)}`)
 
     const monitor = await this.projectService.getMonitor(job.data.monitorId)
 
     if (!monitor.acceptedStatusCodes.includes(res.statusCode)) {
-      // await this.mailerService.sed(monitor.group.project.admin.email, 'fuck')
-      await this.mailerService.sendEmail(
-        monitor.group.project.admin.email,
-        LetterTemplate.UptimeMonitoringFailure,
-      )
+      try {
+        await this.mailerService.sendEmail(
+          monitor.group.project.admin.email,
+          LetterTemplate.UptimeMonitoringFailure,
+          {
+            projectName: monitor.group.project.name,
+            monitorName: monitor.name,
+            groupName: monitor.group.name,
+          },
+        )
+      } catch (reason) {
+        console.error('Monitor failure: sendEmail action failed')
+        console.error(reason)
+      }
     }
-    // this.logger.debug(`Monitor ${JSON.stringify(monitor)}`)
-
-    // this.logger.debug(`1`)
-    //
 
     try {
       await clickhouse.insert({

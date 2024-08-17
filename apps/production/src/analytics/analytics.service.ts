@@ -37,6 +37,7 @@ import {
   HttpStatus,
   UnprocessableEntityException,
   PreconditionFailedException,
+  ForbiddenException,
 } from '@nestjs/common'
 
 import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
@@ -97,6 +98,7 @@ import {
   PropertiesCHResponse,
   IPageProperty,
   ICustomEvent,
+  BirdseyeCHUptimeResponse,
 } from './interfaces'
 import { ErrorDTO } from './dto/error.dto'
 import { GetPagePropertyMetaDTO } from './dto/get-page-property-meta.dto'
@@ -389,6 +391,25 @@ export class AnalyticsService {
         'The account that owns this site is currently suspended, this is because of a billing issue. Please resolve the issue to continue.',
         HttpStatus.PAYMENT_REQUIRED,
       )
+    }
+  }
+
+  async checkUptimeAccess(
+    pid: string,
+    monitorGroupId: string,
+    monitorId: number,
+  ) {
+    const monitor = await this.projectService.findMonitorById(
+      monitorId as unknown as string,
+      monitorGroupId,
+      pid,
+      {
+        relations: ['group'],
+      },
+    )
+
+    if (!monitor) {
+      throw new ForbiddenException('You are not allowed to view this project')
     }
   }
 
@@ -1373,6 +1394,173 @@ export class AnalyticsService {
             all: previousPeriod.all,
           },
           change: currentPeriod.all - previousPeriod.all,
+        }
+      } catch {
+        throw new InternalServerErrorException(
+          "Can't process the provided PID. Please, try again later.",
+        )
+      }
+    })
+
+    await Promise.all(promises)
+
+    return result
+  }
+
+  async getUptimeSummary(
+    monitorIds: number[],
+    period?: string,
+    from?: string,
+    to?: string,
+    timezone?: string,
+  ): Promise<IOverallCaptcha> {
+    // eslint-disable-next-line
+    let _from: string
+    // eslint-disable-next-line
+    let _to: string
+
+    if (_isEmpty(period) || ['today', 'yesterday', 'custom'].includes(period)) {
+      const safeTimezone = this.getSafeTimezone(timezone)
+
+      const { groupFrom, groupTo } = this.getGroupFromTo(
+        from,
+        to,
+        ['today', 'yesterday'].includes(period) ? TimeBucketType.HOUR : null,
+        period,
+        safeTimezone,
+      )
+
+      _from = groupFrom
+      _to = groupTo
+    } else {
+      this.validatePeriod(period)
+    }
+
+    const result = {}
+
+    const promises = monitorIds.map(async monitorId => {
+      try {
+        if (period === 'all') {
+          const queryAll = `
+            SELECT
+              coalesce(divide(avg(responseTime), 1000), 0) as avg,
+              coalesce(divide(max(responseTime), 1000), 0) as max,
+              coalesce(divide(min(responseTime), 1000), 0) as min
+            FROM
+              monitor_responses
+            WHERE
+              monitorId={monitorId:UInt64}
+          `
+
+          const { data } = await clickhouse
+            .query({
+              query: queryAll,
+              query_params: { monitorId },
+            })
+            .then(resultSet => resultSet.json<BirdseyeCHUptimeResponse>())
+
+          result[monitorId] = {
+            current: {
+              avg: data[0].avg,
+              min: data[0].min,
+              max: data[0].max,
+            },
+            previous: {
+              avg: 0,
+              min: 0,
+              max: 0,
+            },
+            avgChange: data[0].avg,
+            minChange: data[0].min,
+            maxChange: data[0].max,
+          }
+          return
+        }
+
+        let now: string
+        let periodFormatted: string
+        let periodSubtracted: string
+
+        if (_from && _to) {
+          // diff may be 0 (when selecting data for 1 day), so let's make it 1 to grab some data for the prev day as well
+          const diff = dayjs(_to).diff(dayjs(_from), 'days') || 1
+
+          now = _to
+          periodFormatted = _from
+          periodSubtracted = dayjs(_from)
+            .subtract(diff, 'days')
+            .format('YYYY-MM-DD HH:mm:ss')
+        } else {
+          const amountToSubtract = parseInt(period, 10)
+          const unit = _replace(period, /[0-9]/g, '')
+
+          now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
+          const periodRaw = dayjs.utc().subtract(amountToSubtract, unit)
+          periodFormatted = periodRaw.format('YYYY-MM-DD HH:mm:ss')
+          periodSubtracted = periodRaw
+            .subtract(amountToSubtract, unit)
+            .format('YYYY-MM-DD HH:mm:ss')
+        }
+
+        const queryCurrent = `
+          SELECT
+            1 AS sortOrder,
+            coalesce(divide(avg(responseTime), 1000), 0) as avg,
+            coalesce(divide(max(responseTime), 1000), 0) as max,
+            coalesce(divide(min(responseTime), 1000), 0) as min
+          FROM
+            monitor_responses
+          WHERE
+            monitorId={monitorId:UInt64}
+            AND created BETWEEN {periodFormatted:String} AND {now:String}
+        `
+
+        const queryPrevious = `
+          SELECT
+            2 AS sortOrder,
+            coalesce(divide(avg(responseTime), 1000), 0) as avg,
+            coalesce(divide(max(responseTime), 1000), 0) as max,
+            coalesce(divide(min(responseTime), 1000), 0) as min
+          FROM
+            monitor_responses
+          WHERE
+            monitorId={monitorId:UInt64}
+            AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}
+        `
+
+        const query = `${queryCurrent} UNION ALL ${queryPrevious}`
+
+        let { data } = await clickhouse
+          .query({
+            query,
+            query_params: {
+              monitorId,
+              periodFormatted,
+              periodSubtracted,
+              now,
+            },
+          })
+          .then(resultSet => resultSet.json<BirdseyeCHUptimeResponse>())
+
+        data = _sortBy(data, 'sortOrder')
+
+        const currentPeriod = data[0]
+        const previousPeriod = data[1]
+
+        result[monitorId] = {
+          current: {
+            avg: currentPeriod.avg,
+            min: currentPeriod.min,
+            max: currentPeriod.max,
+          },
+          previous: {
+            avg: previousPeriod.avg || 0,
+            min: previousPeriod.min,
+            max: previousPeriod.max,
+          },
+          avgChange: currentPeriod.avg - previousPeriod.avg,
+          minChange: currentPeriod.min - previousPeriod.min,
+          maxChange: currentPeriod.max - previousPeriod.max,
         }
       } catch {
         throw new InternalServerErrorException(
