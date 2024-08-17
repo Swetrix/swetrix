@@ -119,6 +119,11 @@ const metaInfoJson = {
         '[ACTION REQUIRED] Your Swetrix dashboard has been locked due to a payment issue',
     },
   },
+  [LetterTemplate.UptimeMonitoringFailure]: {
+    subject: {
+      en: (p: Params) => `Monitor "${p.monitorName}" is down`,
+    },
+  },
 }
 
 interface Params {

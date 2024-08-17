@@ -9,7 +9,7 @@ import {
   NotFoundException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { FindOneOptions, Repository } from 'typeorm'
 import { customAlphabet } from 'nanoid'
 import handlebars from 'handlebars'
 import puppeteer from 'puppeteer'
@@ -30,6 +30,8 @@ import { compareSync } from 'bcrypt'
 import { firstValueFrom } from 'rxjs'
 import { HttpService } from '@nestjs/axios'
 import { AxiosError } from 'axios'
+import { InjectQueue } from '@nestjs/bull'
+import { Queue } from 'bullmq'
 
 import { UserService } from '../user/user.service'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
@@ -77,6 +79,13 @@ import { nFormatter } from '../common/utils'
 import { browserArgs } from '../og-image/og-image.service'
 import { CreateProjectViewDto } from './dto/create-project-view.dto'
 import { AppLoggerService } from '../logger/logger.service'
+import { CreateMonitorHttpRequestDTO } from './dto/create-monitor.dto'
+import { CreateMonitorGroupDto } from './dto/create-monitor-group.dto'
+import { MonitorGroupEntity } from './entity/monitor-group.entity'
+import { UpdateMonitorGroupDto } from './dto/update-monitor-group.dto'
+import { MonitorEntity } from './entity/monitor.entity'
+import { UpdateMonitorHttpRequestDTO } from './dto/update-monitor.dto'
+import { HttpRequestOptions } from './interfaces/http-request-options.interface'
 
 dayjs.extend(utc)
 
@@ -293,10 +302,15 @@ export class ProjectService {
     private readonly projectSubscriberRepository: Repository<ProjectSubscriber>,
     @InjectRepository(Funnel)
     private readonly funnelRepository: Repository<Funnel>,
+    @InjectRepository(MonitorGroupEntity)
+    private readonly monitorGroupRepository: Repository<MonitorGroupEntity>,
+    @InjectRepository(MonitorEntity)
+    private readonly monitorRepository: Repository<MonitorEntity>,
     private readonly actionTokens: ActionTokensService,
     private readonly mailerService: MailerService,
     private readonly httpService: HttpService,
     private readonly logger: AppLoggerService,
+    @InjectQueue('monitor') private monitorQueue: Queue,
   ) {}
 
   async getRedisProject(pid: string): Promise<Project | null> {
@@ -1390,6 +1404,214 @@ export class ProjectService {
         `Error receiving prediction from AI service: ${error.message}`,
       )
       return null
+    }
+  }
+
+  async createMonitorGroup(projectId: string, { name }: CreateMonitorGroupDto) {
+    const group = this.monitorGroupRepository.create({
+      name,
+      project: { id: projectId },
+    })
+
+    await this.monitorGroupRepository.save(group)
+
+    return group
+  }
+
+  async getMonitorGroupsByProjectId(
+    projectId: string,
+  ): Promise<MonitorGroupEntity[]> {
+    return this.monitorGroupRepository.find({
+      where: { project: { id: projectId } },
+    })
+  }
+
+  async getMonitorGroupById(
+    projectId: string,
+    monitorGroupId: string,
+  ): Promise<MonitorGroupEntity> {
+    return this.monitorGroupRepository.findOne({
+      where: { id: monitorGroupId, project: { id: projectId } },
+    })
+  }
+
+  // Update a monitor group
+  async updateMonitorGroup(
+    projectId: string,
+    monitorGroupId: string,
+    updateMonitorGroupDto: UpdateMonitorGroupDto,
+  ): Promise<any> {
+    await this.monitorGroupRepository.update(
+      { id: monitorGroupId, project: { id: projectId } },
+      updateMonitorGroupDto,
+    )
+    // await this.monitorGroupRepository.update(monitorGroupId, updateMonitorGroupDto)
+  }
+
+  async deleteMonitorGroup(
+    projectId: string,
+    monitorGroupId: string,
+  ): Promise<void> {
+    await this.monitorGroupRepository.delete({
+      id: monitorGroupId,
+      project: { id: projectId },
+    })
+  }
+
+  async findMonitorGroupByProjectIdAndName(
+    projectId: string,
+    name: string,
+  ): Promise<MonitorGroupEntity | undefined> {
+    return this.monitorGroupRepository.findOne({
+      where: {
+        name,
+        project: { id: projectId },
+      },
+    })
+  }
+
+  async findMonitorGroup(
+    id: string,
+    projectId: string,
+    options?: Omit<FindOneOptions<MonitorGroupEntity>, 'where'>,
+  ): Promise<MonitorGroupEntity | undefined> {
+    return this.monitorGroupRepository.findOne({
+      where: {
+        id,
+        project: { id: projectId },
+      },
+      ...options,
+    })
+  }
+
+  async findMonitorById(
+    id: string,
+    groupId: string,
+    projectId: string,
+    options?: Omit<FindOneOptions<MonitorEntity>, 'where'>,
+  ): Promise<MonitorEntity | undefined> {
+    return this.monitorRepository.findOne({
+      where: {
+        id,
+        group: {
+          id: groupId,
+          project: {
+            id: projectId,
+          },
+        },
+      },
+      ...options,
+    })
+  }
+
+  async createMonitorInGroup(
+    {
+      type,
+      name,
+      url,
+      interval,
+      retries,
+      retryInterval,
+      timeout,
+      acceptedStatusCodes,
+      description,
+      httpOptions,
+    }: CreateMonitorHttpRequestDTO,
+    group: string,
+  ): Promise<MonitorEntity> {
+    const monitor = this.monitorRepository.create({
+      type,
+      name,
+      url,
+      interval,
+      retries,
+      retryInterval,
+      timeout,
+      acceptedStatusCodes,
+      description,
+      httpOptions,
+      group: { id: group },
+    })
+
+    return this.monitorRepository.save(monitor)
+  }
+
+  async getMonitor(monitorId: number) {
+    return this.monitorRepository.findOne({
+      where: {
+        id: monitorId,
+      },
+      relations: ['group', 'group.project', 'group.project.admin'],
+    })
+  }
+
+  async updateMonitor(
+    monitorId: number,
+    {
+      type,
+      name,
+      url,
+      interval,
+      retries,
+      retryInterval,
+      timeout,
+      acceptedStatusCodes,
+      description,
+      httpOptions,
+    }: UpdateMonitorHttpRequestDTO,
+  ): Promise<any> {
+    await this.monitorRepository.update(
+      { id: monitorId },
+      {
+        type,
+        name,
+        url,
+        interval,
+        retries,
+        retryInterval,
+        timeout,
+        acceptedStatusCodes,
+        description,
+        httpOptions,
+      },
+    )
+  }
+
+  async deleteMonitor(monitorId: number): Promise<any> {
+    return this.monitorRepository.delete(monitorId)
+  }
+
+  async sendHttpRequest(
+    monitorId: number,
+    monitorHttpRequestDto: HttpRequestOptions,
+  ) {
+    // TODO crete interface for that stuff
+    await this.monitorQueue.add(
+      'http-request',
+      { ...monitorHttpRequestDto, monitorId },
+      {
+        repeat: { every: monitorHttpRequestDto.interval * 1000 },
+        jobId: monitorId.toString(),
+      },
+    )
+  }
+
+  async updateHttpRequest(
+    monitorId: number,
+    updatedHttpRequestDto: HttpRequestOptions,
+  ): Promise<void> {
+    await this.deleteHttpRequest(monitorId)
+
+    await this.sendHttpRequest(monitorId, {
+      ...updatedHttpRequestDto,
+      timeout: updatedHttpRequestDto.timeout * 1000,
+    })
+  }
+
+  async deleteHttpRequest(monitorId: number) {
+    const job = await this.monitorQueue.getJob(monitorId.toString())
+    if (job) {
+      await job.remove()
     }
   }
 }

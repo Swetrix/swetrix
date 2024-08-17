@@ -1,9 +1,11 @@
+import * as _toNumber from 'lodash/toNumber'
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { ConfigModule } from '@nestjs/config'
 import { ScheduleModule } from '@nestjs/schedule'
 import { NestjsFormDataModule } from 'nestjs-form-data'
 import { MailerModule as NodeMailerModule } from '@nestjs-modules/mailer'
+import { BullModule } from '@nestjs/bull'
 
 import { I18nModule } from 'nestjs-i18n'
 import { UserModule } from './user/user.module'
@@ -58,6 +60,14 @@ const modules = [
     database: process.env.MYSQL_DATABASE,
     synchronize: false, // process.env.NODE_ENV !== 'production',
     entities: [`${__dirname}/**/*.entity{.ts,.js}`],
+  }),
+  BullModule.forRoot({
+    redis: {
+      host: process.env.REDIS_HOST,
+      port: _toNumber(process.env.REDIS_PORT),
+      username: process.env.REDIS_USER,
+      password: process.env.REDIS_PASSWORD,
+    },
   }),
   I18nModule.forRootAsync(getI18nConfig()),
   ScheduleModule.forRoot(),

@@ -11,6 +11,12 @@ import * as utc from 'dayjs/plugin/utc'
 import * as dayjsTimezone from 'dayjs/plugin/timezone'
 import { hash } from 'blake3'
 import {
+  ApiOperation,
+  ApiOkResponse,
+  ApiBearerAuth,
+  ApiTags,
+} from '@nestjs/swagger'
+import {
   Controller,
   Body,
   Query,
@@ -27,7 +33,6 @@ import {
   Response,
   Header,
 } from '@nestjs/common'
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import * as UAParser from 'ua-parser-js'
 import { isbot } from 'isbot'
 
@@ -51,6 +56,7 @@ import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
 import { GetPagePropertyMetaDTO } from './dto/get-page-property-meta.dto'
 import { GetUserFlowDTO } from './dto/getUserFlow.dto'
 import { GetFunnelsDTO } from './dto/getFunnels.dto'
+import { ProjectService } from '../project/project.service'
 import { AppLoggerService } from '../logger/logger.service'
 import {
   redis,
@@ -78,6 +84,7 @@ import {
   PerfMeasure,
 } from './interfaces'
 import { GetSessionsDto } from './dto/get-sessions.dto'
+import { GetMonitorDataDto } from './dto/get-monitor-data.dto'
 import { GetSessionDto } from './dto/get-session.dto'
 import { ErrorDTO } from './dto/error.dto'
 import { GetErrorsDto } from './dto/get-errors.dto'
@@ -89,6 +96,7 @@ import {
   performanceTransformer,
   trafficTransformer,
 } from './utils/transformers'
+import { GetUptimeBirdseyeDto } from './dto/get-uptime-birdseye.dto'
 import {
   MAX_METRICS_IN_VIEW,
   ProjectViewCustomEventDto,
@@ -162,6 +170,38 @@ const getPIDsArray = (pids, pid) => {
   return pids
 }
 
+const getMonitorIdsArray = (monitorIds, monitorId) => {
+  const idsEmpty = _isEmpty(monitorIds)
+  const idEmpty = _isEmpty(monitorId)
+  if (idsEmpty && idEmpty)
+    throw new BadRequestException(
+      'An array of Monitor IDs (monitorIds) or a Monitor ID (monitorId) has to be provided',
+    )
+  else if (!idsEmpty && !idEmpty)
+    throw new BadRequestException(
+      'Please provide either an array of Monitor IDs (monitorIds) or a Monitor ID (monitorId), but not both',
+    )
+  else if (!idEmpty) {
+    monitorIds = JSON.stringify([monitorId])
+  }
+
+  try {
+    monitorIds = JSON.parse(monitorIds)
+  } catch (e) {
+    throw new UnprocessableEntityException(
+      "Cannot process the provided array of Monitor ID's",
+    )
+  }
+
+  if (!_isArray(monitorIds)) {
+    throw new UnprocessableEntityException(
+      "An array of Monitor ID's has to be provided as a 'monitorIds' param",
+    )
+  }
+
+  return monitorIds
+}
+
 const getEIDsArray = (eids, eid) => {
   const eidsEmpty = _isEmpty(eids)
   const eidEmpty = _isEmpty(eid)
@@ -196,6 +236,7 @@ export class AnalyticsController {
   constructor(
     private readonly analyticsService: AnalyticsService,
     private readonly logger: AppLoggerService,
+    private readonly projectService: ProjectService,
   ) {}
 
   @ApiBearerAuth()
@@ -1563,6 +1604,158 @@ export class AnalyticsController {
       appliedFilters,
       take,
       skip,
+    }
+  }
+
+  @Get('monitor-data/birdseye')
+  @Auth([], true, true)
+  async getUptimeBirdseye(
+    @Query() parameters: GetUptimeBirdseyeDto,
+    @CurrentUserId() uid: string,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<any> {
+    const {
+      pid,
+      monitorGroupId,
+      monitorId,
+      monitorIds,
+      period,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE,
+    } = parameters
+
+    this.analyticsService.validatePID(pid)
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      uid,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    const idsArray = getMonitorIdsArray(monitorIds, monitorId)
+
+    const validationPromises = _map(idsArray, async currentId => {
+      await this.analyticsService.checkUptimeAccess(
+        pid,
+        monitorGroupId,
+        currentId,
+      )
+    })
+
+    await Promise.all(validationPromises)
+
+    return this.analyticsService.getUptimeSummary(
+      idsArray,
+      period,
+      from,
+      to,
+      timezone,
+    )
+  }
+
+  @ApiOperation({ summary: 'Get monitor data' })
+  @ApiBearerAuth()
+  @ApiOkResponse({ description: 'Monitor data retrieved successfully' })
+  @Get('monitor-data')
+  @Auth([], true, true)
+  public async getMonitorData(
+    @Query() parameters: GetMonitorDataDto,
+    @CurrentUserId() userId: string,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<any & { chart: any }> {
+    const {
+      pid,
+      monitorGroupId,
+      monitorId,
+      period,
+      timeBucket,
+      from,
+      to,
+      timezone = DEFAULT_TIMEZONE,
+    } = parameters
+
+    // TODO: CHECK THAT MONITOR GROUP BELONGS TO THE PROVIDED PID
+    this.analyticsService.validatePID(pid)
+
+    if (!_isEmpty(period)) {
+      this.analyticsService.validatePeriod(period)
+    }
+
+    await this.analyticsService.checkProjectAccess(
+      pid,
+      userId,
+      headers['x-password'],
+    )
+
+    await this.analyticsService.checkBillingAccess(pid)
+
+    await this.analyticsService.checkUptimeAccess(
+      pid,
+      monitorGroupId,
+      monitorId,
+    )
+
+    let newTimebucket = timeBucket
+    let allowedTumebucketForPeriodAll
+
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.getTimeBucketForAllTime(
+        pid,
+        period,
+        timezone,
+      )
+
+      diff = res.diff
+      // eslint-disable-next-line prefer-destructuring
+      newTimebucket = _includes(res.timeBucket, timeBucket)
+        ? timeBucket
+        : res.timeBucket[0]
+      allowedTumebucketForPeriodAll = res.timeBucket
+    }
+
+    this.analyticsService.validateTimebucket(newTimebucket)
+
+    const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
+    const { groupFrom, groupTo, groupFromUTC, groupToUTC } =
+      this.analyticsService.getGroupFromTo(
+        from,
+        to,
+        newTimebucket,
+        period,
+        safeTimezone,
+        diff,
+      )
+    // TODO change to Uint64; filters.
+    const subQuery =
+      'FROM monitor_responses WHERE monitorId = {monitorId:UInt64} AND created BETWEEN {groupFrom:String} AND {groupTo:String}'
+    const paramsData = {
+      params: {
+        monitorId,
+        groupFrom: groupFromUTC,
+        groupTo: groupToUTC,
+      },
+    }
+
+    // RETURN avg(responseTime) as avgResponseTime AS WELL
+    // BY GROUPS LIKE 0-100, 100-200, 200-500, 500-1000, etc.
+    const result =
+      await this.analyticsService.groupMonitorResponsesByTimeBucket(
+        newTimebucket,
+        groupFrom,
+        groupTo,
+        subQuery,
+        paramsData,
+        safeTimezone,
+      )
+
+    return {
+      ...result,
+      timeBucket: allowedTumebucketForPeriodAll,
     }
   }
 

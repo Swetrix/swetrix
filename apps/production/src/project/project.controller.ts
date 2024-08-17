@@ -107,6 +107,14 @@ import { ProjectIdDto } from './dto/project-id.dto'
 import { CreateProjectViewDto } from './dto/create-project-view.dto'
 import { UpdateProjectViewDto } from './dto/update-project-view.dto'
 import { ProjectViewIdsDto } from './dto/project-view-ids.dto'
+import { TimeFrameQueryEnumDTO } from './dto/get-prediction-query.dto'
+import { CreateMonitorHttpRequestDTO } from './dto/create-monitor.dto'
+import { MonitorEntity } from './entity/monitor.entity'
+import { MonitorGroupEntity } from './entity/monitor-group.entity'
+import { CreateMonitorGroupDto } from './dto/create-monitor-group.dto'
+import { UpdateMonitorGroupDto } from './dto/update-monitor-group.dto'
+import { MonitorGroupIdDto } from './dto/monitor-group-id.dto'
+import { UpdateMonitorHttpRequestDTO } from './dto/update-monitor.dto'
 
 const PROJECTS_MAXIMUM = 50
 
@@ -2146,5 +2154,374 @@ export class ProjectController {
     // TODO add caching
 
     return this.projectService.sendPredictAiRequest(params.projectId)
+  }
+
+  @ApiOperation({ summary: 'Create monitor group' })
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: MonitorGroupEntity })
+  @Post(':projectId/monitor-groups')
+  @Auth([], true, true)
+  public async createMonitorGroup(
+    @Param() { projectId }: ProjectIdDto,
+    @Body() body: CreateMonitorGroupDto,
+    @CurrentUserId() userId: string,
+  ): Promise<MonitorGroupEntity> {
+    const project = await this.projectService.findProject(projectId, [
+      'admin',
+      'share',
+    ])
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const user = await this.userService.findUserV2(userId, ['roles'])
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
+
+    const monitorGroup =
+      await this.projectService.findMonitorGroupByProjectIdAndName(
+        projectId,
+        body.name,
+      )
+    if (monitorGroup) {
+      throw new ConflictException('Monitor group exists.')
+    }
+
+    return this.projectService.createMonitorGroup(projectId, body)
+  }
+
+  @ApiOperation({ summary: 'Get all monitor groups for a project' })
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: [MonitorGroupEntity] })
+  @Get(':projectId/monitor-groups')
+  @Auth([], true, true)
+  async getMonitorGroups(
+    @Param() { projectId }: ProjectIdDto,
+    @CurrentUserId() userId: string,
+  ): Promise<MonitorGroupEntity[]> {
+    const project = await this.projectService.findProject(projectId, [
+      'admin',
+      'share',
+    ])
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const user = await this.userService.findUserV2(userId, ['roles'])
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
+
+    const monitorGroup =
+      await this.projectService.getMonitorGroupsByProjectId(projectId)
+
+    return monitorGroup
+  }
+
+  @ApiOperation({ summary: 'Get monitor group by ID' })
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: MonitorGroupEntity })
+  @Get(':projectId/monitor-groups/:monitorGroupId')
+  @Auth([], true, true)
+  async getMonitorGroup(
+    @Param() { projectId }: ProjectIdDto,
+    @Param() { monitorGroupId }: MonitorGroupIdDto,
+    @CurrentUserId() userId: string,
+  ): Promise<MonitorGroupEntity> {
+    const project = await this.projectService.findProject(projectId, [
+      'admin',
+      'share',
+    ])
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const user = await this.userService.findUserV2(userId, ['roles'])
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
+
+    const monitorGroup = await this.projectService.findMonitorGroup(
+      projectId,
+      monitorGroupId,
+    )
+    if (!monitorGroup) {
+      throw new NotFoundException('Monitor group not found.')
+    }
+
+    return monitorGroup
+  }
+
+  @ApiOperation({ summary: 'Update monitor group' })
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: MonitorGroupEntity })
+  @Put(':projectId/monitor-groups/:monitorGroupId')
+  @Auth([], true, true)
+  async updateMonitorGroup(
+    @Param() { projectId }: ProjectIdDto,
+    @Param() { monitorGroupId }: MonitorGroupIdDto,
+    @Body() updateMonitorGroupDto: UpdateMonitorGroupDto,
+    @CurrentUserId() userId: string,
+  ): Promise<MonitorGroupEntity> {
+    const project = await this.projectService.findProject(projectId, [
+      'admin',
+      'share',
+    ])
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const user = await this.userService.findUserV2(userId, ['roles'])
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
+
+    return this.projectService.updateMonitorGroup(
+      projectId,
+      monitorGroupId,
+      updateMonitorGroupDto,
+    )
+  }
+
+  @ApiOperation({ summary: 'Delete monitor group' })
+  @ApiBearerAuth()
+  @Delete(':projectId/monitor-groups/:monitorGroupId')
+  @Auth([], true, true)
+  async deleteMonitorGroup(
+    @Param() { projectId }: ProjectIdDto,
+    @Param() { monitorGroupId }: MonitorGroupIdDto,
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
+    const project = await this.projectService.findProject(projectId, [
+      'admin',
+      'share',
+    ])
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const user = await this.userService.findUserV2(userId, ['roles'])
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
+
+    return this.projectService.deleteMonitorGroup(projectId, monitorGroupId)
+  }
+
+  @ApiOperation({ summary: 'Create monitor for the project' })
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: MonitorEntity })
+  @Post(':projectId/monitor-groups/:monitorGroupId/monitor')
+  @Auth([], true, true)
+  public async createMonitor(
+    @Param() { projectId }: ProjectIdDto,
+    @Param() { monitorGroupId }: MonitorGroupIdDto,
+    @Body() body: CreateMonitorHttpRequestDTO,
+    @CurrentUserId() userId: string,
+  ): Promise<MonitorEntity> {
+    const project = await this.projectService.findProject(projectId, [
+      'admin',
+      'share',
+    ])
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const user = await this.userService.findUserV2(userId, ['roles'])
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
+
+    const monitorGroup = await this.projectService.findMonitorGroup(
+      monitorGroupId,
+      projectId,
+    )
+
+    if (!monitorGroup) {
+      throw new NotFoundException('Monitor group not found.')
+    }
+
+    const monitor = await this.projectService.createMonitorInGroup(
+      body,
+      monitorGroup.id,
+    )
+
+    // Create a job in service for sending httpRequest
+    await this.projectService.sendHttpRequest(monitor.id, {
+      ...monitor,
+      timeout: monitor.timeout * 1000,
+    })
+
+    return monitor
+  }
+
+  @ApiOperation({ summary: 'Get monitor for the project' })
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: MonitorEntity })
+  @Get(':projectId/monitor-groups/:monitorGroupId/monitor/:monitorId')
+  @Auth([], true, true)
+  public async getMonitor(
+    @Param() { projectId }: ProjectIdDto,
+    @Param() { monitorGroupId }: MonitorGroupIdDto,
+    @Param('monitorId') monitorId: number,
+    @CurrentUserId() userId: string,
+  ): Promise<MonitorEntity> {
+    const project = await this.projectService.findProject(projectId, [
+      'admin',
+      'share',
+    ])
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const user = await this.userService.findUserV2(userId, ['roles'])
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
+
+    const monitorGroup = await this.projectService.findMonitorGroup(
+      monitorGroupId,
+      projectId,
+    )
+
+    if (!monitorGroup) {
+      throw new NotFoundException('Monitor group not found.')
+    }
+
+    const monitor = await this.projectService.getMonitor(monitorId)
+
+    if (!monitor) {
+      throw new NotFoundException('Monitor not found.')
+    }
+
+    return monitor
+  }
+
+  @ApiOperation({ summary: 'Update monitor for the project' })
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: MonitorEntity })
+  @Patch(':projectId/monitor-groups/:monitorGroupId/monitor/:monitorId')
+  @Auth([], true, true)
+  public async updateMonitor(
+    @Param() { projectId }: ProjectIdDto,
+    @Param() { monitorGroupId }: MonitorGroupIdDto,
+    @Param('monitorId') monitorId: number,
+    @Body() body: UpdateMonitorHttpRequestDTO,
+    @CurrentUserId() userId: string,
+  ): Promise<MonitorEntity> {
+    const project = await this.projectService.findProject(projectId, [
+      'admin',
+      'share',
+    ])
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    const user = await this.userService.findUserV2(userId, ['roles'])
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
+
+    const monitorGroup = await this.projectService.findMonitorGroup(
+      monitorGroupId,
+      projectId,
+    )
+
+    if (!monitorGroup) {
+      throw new NotFoundException('Monitor group not found.')
+    }
+
+    const monitor = await this.projectService.getMonitor(monitorId)
+
+    if (!monitor) {
+      throw new NotFoundException('Monitor not found.')
+    }
+
+    const updatedMonitor = await this.projectService.updateMonitor(
+      monitorId,
+      body,
+    )
+
+    await this.projectService.updateHttpRequest(monitor.id, monitor)
+    return updatedMonitor
+  }
+
+  @ApiOperation({ summary: 'Delete monitor from the project' })
+  @ApiBearerAuth()
+  @ApiOkResponse({ description: 'Monitor deleted successfully' })
+  @Delete(':projectId/monitor-groups/:monitorGroupId/monitor/:monitorId')
+  @Auth([], true, true)
+  public async deleteMonitor(
+    @Param() { projectId }: ProjectIdDto,
+    @Param() { monitorGroupId }: MonitorGroupIdDto,
+    @Param('monitorId') monitorId: number,
+    @CurrentUserId() userId: string,
+  ): Promise<void> {
+    const project = await this.projectService.findProject(projectId, [
+      'admin',
+      'share',
+    ])
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+    const user = await this.userService.findUserV2(userId, ['roles'])
+
+    if (!user) {
+      throw new NotFoundException('User not found.')
+    }
+
+    this.projectService.allowedToManage(project, userId, user.roles)
+
+    const monitorGroup = await this.projectService.findMonitorGroup(
+      monitorGroupId,
+      projectId,
+    )
+
+    if (!monitorGroup) {
+      throw new NotFoundException('Monitor group not found.')
+    }
+
+    const monitor = await this.projectService.getMonitor(monitorId)
+
+    if (!monitor) {
+      throw new NotFoundException('Monitor not found.')
+    }
+
+    this.projectService.deleteMonitor(monitorId)
+    this.projectService.deleteHttpRequest(monitorId)
   }
 }
