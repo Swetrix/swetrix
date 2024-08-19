@@ -28,6 +28,8 @@ import { useTranslation } from 'react-i18next'
 import { useHotkeys } from 'react-hotkeys-hook'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
+import _reduce from 'lodash/reduce'
+import _split from 'lodash/split'
 import _includes from 'lodash/includes'
 import _last from 'lodash/last'
 import _isEmpty from 'lodash/isEmpty'
@@ -143,6 +145,7 @@ import {
   getPropertyMetadata,
   getProjectViews,
   deleteProjectView,
+  getDetailsPrediction,
 } from 'api'
 import { getChartPrediction } from 'api/ai'
 import { Panel, Metadata } from './Panels'
@@ -211,6 +214,7 @@ import {
 import { trackCustom } from 'utils/analytics'
 import AddAViewModal from './components/AddAViewModal'
 import CustomMetrics from './components/CustomMetrics'
+import { AIProcessedResponse, AIResponse } from './interfaces/ai'
 const SwetrixSDK = require('@swetrix/sdk')
 
 const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
@@ -492,6 +496,38 @@ const ViewProject = ({
   const [projectViewDeleting, setProjectViewDeleting] = useState(false)
   const [projectViewToUpdate, setProjectViewToUpdate] = useState<IProjectView | undefined>()
 
+  // AI stuff
+  const [forecasedChartData, setForecasedChartData] = useState({})
+  const [isInAIDetailsMode, setIsInAIDetailsMode] = useState(false)
+  const [aiDetails, setAiDetails] = useState<AIProcessedResponse | null>(null)
+  const [activeAiDetail, setActiveAIDetail] = useState<keyof AIResponse | null>(null)
+
+  const sortedAIKeys = useMemo(() => {
+    if (!aiDetails) {
+      return []
+    }
+
+    const hours = _map(aiDetails, (_, key) => parseInt(_split(key, '_')[1], 10)).sort((a, b) => a - b)
+
+    return _map(hours, (hour) => {
+      const key = `next_${hour}_hour` as keyof AIResponse
+
+      if (hour === 1) {
+        return {
+          key,
+          label: t('project.nextOneHour'),
+        }
+      }
+
+      return {
+        key,
+        label: t('project.nextXHours', {
+          x: hour,
+        }),
+      }
+    })
+  }, [aiDetails, t])
+
   const mode = activeChartMetrics[CHART_METRICS_MAPPING.cumulativeMode] ? 'cumulative' : 'periodical'
 
   const loadProjectViews = async (forced?: boolean) => {
@@ -618,11 +654,6 @@ const ViewProject = ({
   }
   // pgActiveFragment is a active fragment for pagination
   const [pgActiveFragment, setPgActiveFragment] = useState<number>(0)
-
-  // TODO: THIS SHOULD BE MOVED TO REDUCERS WITH CACHE FUNCTIONALITY
-  // I PUT IT HERE JUST TO SEE IF IT WORKS WELL
-  // forecastData is a data for forecast chart
-  const [forecasedChartData, setForecasedChartData] = useState<any>({})
 
   // Used to switch between Country, Region and City tabs
   const [countryActiveTab, setCountryActiveTab] = useState<'cc' | 'rg' | 'ct'>('cc')
@@ -2564,14 +2595,7 @@ const ViewProject = ({
     setIsForecastOpened(true)
   }
 
-  // onForecastSubmit is a function for submit forecast modal
-  const onForecastSubmit = async (periodToForecast: string) => {
-    if (isSelfhosted) {
-      return
-    }
-
-    setIsForecastOpened(false)
-    setDataLoading(true)
+  const forecastChart = async (periodToForecast: string) => {
     const key = getProjectForcastCacheKey(period, timeBucket, periodToForecast, filters)
     const data = cache[id][key]
 
@@ -2582,16 +2606,78 @@ const ViewProject = ({
     }
 
     try {
-      trackCustom('TRAFFIC_FORECAST')
       const result = await getChartPrediction(chartData, periodToForecast, timeBucket)
       const transformed = transformAIChartData(result)
       setProjectForcastCache(id, transformed, key)
       setForecasedChartData(transformed)
-    } catch (e) {
-      console.error(`[onForecastSubmit] Error: ${e}`)
+    } catch (reason) {
+      console.error(`[forecastChart] Error: ${reason}`)
+    }
+  }
+
+  const forecastDetails = async () => {
+    try {
+      const data = await getDetailsPrediction(project.id, projectPassword)
+
+      if (_isEmpty(data)) {
+        throw new Error('getDetailsPrediction returned an empty object')
+      }
+
+      const result: AIProcessedResponse = {}
+
+      const dataKeys = _keys(data) as (keyof AIResponse)[]
+
+      for (let i = 0; i < dataKeys.length; ++i) {
+        const dataKey = dataKeys[i]
+
+        const processed = _reduce(
+          data[dataKey],
+          (prev, curr, key) => {
+            return {
+              ...prev,
+              [key]: _map(_keys(curr), (key) => ({
+                name: key,
+                count: curr?.[key] || 0,
+              })),
+            }
+          },
+          {},
+        )
+
+        result[dataKey] = processed
+      }
+
+      setAiDetails(result)
+      setActiveAIDetail(_keys(data)[0] as keyof AIResponse)
+      setIsInAIDetailsMode(true)
+    } catch (reason) {
+      console.error(`[forecastDetails] Error: ${reason}`)
+      showError(t('apiNotifications.noAIForecastAvailable'))
+    }
+  }
+
+  const onForecastSubmit = async (type: 'chart' | 'details', options: any = {}) => {
+    if (isSelfhosted) {
+      return
+    }
+
+    setIsForecastOpened(false)
+    setDataLoading(true)
+
+    if (type === 'chart') {
+      const { period: periodToForecast } = options
+      await forecastChart(periodToForecast)
+    }
+
+    if (type === 'details') {
+      await forecastDetails()
     }
 
     setDataLoading(false)
+
+    trackCustom('TRAFFIC_FORECAST', {
+      type,
+    })
   }
 
   useEffect(() => {
@@ -3543,49 +3629,75 @@ const ViewProject = ({
         />
       </div>
       <div className='hidden sm:block'>
-        <div>
-          <nav className='-mb-px flex space-x-4 overflow-x-auto' aria-label='Tabs'>
-            {_map(tabs, (tab) => {
-              const isCurrent = tab.id === activeTab
-              const isSettings = tab.id === 'settings'
+        <nav className='-mb-px flex space-x-4 overflow-x-auto' aria-label='Tabs'>
+          {_map(tabs, (tab) => {
+            const isCurrent = tab.id === activeTab
+            const isSettings = tab.id === 'settings'
 
-              const onClick = isSettings
-                ? openSettingsHandler
-                : () => {
-                    setProjectTab(tab.id)
-                    setActiveTab(tab.id)
-                  }
+            const onClick = isSettings
+              ? openSettingsHandler
+              : () => {
+                  setProjectTab(tab.id)
+                  setActiveTab(tab.id)
+                }
 
-              return (
-                <div
-                  key={tab.id}
-                  onClick={onClick}
+            return (
+              <div
+                key={tab.id}
+                onClick={onClick}
+                className={cx(
+                  'text-md group inline-flex cursor-pointer items-center whitespace-nowrap border-b-2 px-1 py-2 font-bold',
+                  {
+                    'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50': isCurrent,
+                    'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
+                      !isCurrent,
+                  },
+                )}
+                aria-current={isCurrent ? 'page' : undefined}
+              >
+                <tab.icon
                   className={cx(
-                    'text-md group inline-flex cursor-pointer items-center whitespace-nowrap border-b-2 px-1 py-2 font-bold',
-                    {
-                      'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50': isCurrent,
-                      'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
-                        !isCurrent,
-                    },
+                    isCurrent
+                      ? 'text-slate-900 dark:text-gray-50'
+                      : 'text-gray-500 group-hover:text-gray-500 dark:text-gray-400 dark:group-hover:text-gray-300',
+                    '-ml-0.5 mr-2 h-5 w-5',
                   )}
-                  aria-current={isCurrent ? 'page' : undefined}
-                >
-                  <tab.icon
-                    className={cx(
-                      isCurrent
-                        ? 'text-slate-900 dark:text-gray-50'
-                        : 'text-gray-500 group-hover:text-gray-500 dark:text-gray-400 dark:group-hover:text-gray-300',
-                      '-ml-0.5 mr-2 h-5 w-5',
-                    )}
-                    aria-hidden='true'
-                  />
-                  <span>{tab.label}</span>
-                </div>
-              )
-            })}
-          </nav>
-        </div>
+                  aria-hidden='true'
+                />
+                <span>{tab.label}</span>
+              </div>
+            )
+          })}
+        </nav>
       </div>
+    </div>
+  )
+
+  const AITabsSelector = () => (
+    <div className='-mb-px flex space-x-4 overflow-x-auto' aria-label='Tabs'>
+      {_map(sortedAIKeys, ({ key, label }) => {
+        const isCurrent = activeAiDetail === key
+
+        return (
+          <div
+            key={key}
+            onClick={() => {
+              setActiveAIDetail(key)
+            }}
+            className={cx(
+              'text-md group inline-flex cursor-pointer items-center whitespace-nowrap border-b-2 px-1 py-2 font-bold',
+              {
+                'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50': isCurrent,
+                'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
+                  !isCurrent,
+              },
+            )}
+            aria-current={isCurrent}
+          >
+            <span>{label}</span>
+          </div>
+        )
+      })}
     </div>
   )
 
@@ -3692,9 +3804,27 @@ const ViewProject = ({
               })}
               ref={dashboardRef}
             >
-              {/* Tabs selector */}
-              <TabsSelector />
-              {activeTab !== PROJECT_TABS.alerts &&
+              {isInAIDetailsMode ? (
+                <>
+                  <button
+                    onClick={() => {
+                      setIsInAIDetailsMode(false)
+                      setAiDetails(null)
+                      setActiveAIDetail(null)
+                    }}
+                    className='mx-auto mb-4 mt-2 flex items-center text-base font-normal text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100 lg:mx-0 lg:mt-0'
+                  >
+                    <ChevronLeftIcon className='h-4 w-4' />
+                    {t('project.exitForecastingMode')}
+                  </button>
+                  <AITabsSelector />
+                  <span className='mt-6 text-sm'>{t('project.aiDetailsDesc')}</span>
+                </>
+              ) : (
+                <TabsSelector />
+              )}
+              {!isInAIDetailsMode &&
+                activeTab !== PROJECT_TABS.alerts &&
                 (activeTab !== PROJECT_TABS.sessions || !activePSID) &&
                 (activeFunnel || activeTab !== PROJECT_TABS.funnels) && (
                   <>
@@ -4687,7 +4817,7 @@ const ViewProject = ({
               )}
               {activeTab === PROJECT_TABS.traffic && (
                 <div className={cx('pt-2', { hidden: isPanelsDataEmpty || analyticsLoading })}>
-                  {!_isEmpty(overall) && (
+                  {!isInAIDetailsMode && !_isEmpty(overall) && (
                     <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
                       <MetricCards
                         overall={overall}
@@ -4721,23 +4851,27 @@ const ViewProject = ({
                   )}
                   <div
                     className={cx('h-80', {
-                      hidden: checkIfAllMetricsAreDisabled,
+                      hidden: checkIfAllMetricsAreDisabled || isInAIDetailsMode,
                     })}
                   >
                     <div className='mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible' id='dataChart' />
                   </div>
-                  <Filters
-                    filters={filters}
-                    onRemoveFilter={filterHandler}
-                    onChangeExclusive={onChangeExclusive}
-                    tnMapping={tnMapping}
-                    resetFilters={resetActiveTabFilters}
-                  />
-                  <CustomMetrics
-                    metrics={customMetrics}
-                    onRemoveMetric={(id) => onRemoveCustomMetric(id)}
-                    resetMetrics={resetCustomMetrics}
-                  />
+                  {!isInAIDetailsMode && (
+                    <>
+                      <Filters
+                        filters={filters}
+                        onRemoveFilter={filterHandler}
+                        onChangeExclusive={onChangeExclusive}
+                        tnMapping={tnMapping}
+                        resetFilters={resetActiveTabFilters}
+                      />
+                      <CustomMetrics
+                        metrics={customMetrics}
+                        onRemoveMetric={(id) => onRemoveCustomMetric(id)}
+                        resetMetrics={resetCustomMetrics}
+                      />
+                    </>
+                  )}
                   {dataLoading && (
                     <div className='static mt-4 !bg-transparent' id='loader'>
                       <div className='loader-head dark:!bg-slate-800'>
@@ -4753,6 +4887,8 @@ const ViewProject = ({
                         // @ts-ignore
                         const panelIcon = panelIconMapping[type]
                         const customTabs = _filter(customPanelTabs, (tab) => tab.panelID === type)
+
+                        const dataSource = isInAIDetailsMode ? aiDetails?.[activeAiDetail!] || {} : panelsData.data
 
                         if (type === 'cc') {
                           const ccPanelName = tnMapping[countryActiveTab]
@@ -4776,7 +4912,7 @@ const ViewProject = ({
                               onFilter={filterHandler}
                               activeTab={activeTab}
                               name={<CountryDropdown onSelect={setCountryActiveTab} title={ccPanelName} />}
-                              data={panelsData.data[countryActiveTab]}
+                              data={dataSource[countryActiveTab]}
                               customTabs={customTabs}
                               rowMapper={rowMapper}
                             />
@@ -4817,7 +4953,7 @@ const ViewProject = ({
                               activeTab={activeTab}
                               onFilter={filterHandler}
                               name={panelName}
-                              data={panelsData.data[type]}
+                              data={dataSource[type]}
                               customTabs={customTabs}
                               rowMapper={rowMapper}
                             />
@@ -4865,7 +5001,7 @@ const ViewProject = ({
                               activeTab={activeTab}
                               onFilter={filterHandler}
                               name={panelName}
-                              data={panelsData.data[type]}
+                              data={dataSource[type]}
                               customTabs={customTabs}
                               rowMapper={rowMapper}
                             />
@@ -4882,7 +5018,7 @@ const ViewProject = ({
                               id={type}
                               onFilter={filterHandler}
                               name={panelName}
-                              data={panelsData.data[type]}
+                              data={dataSource[type]}
                               customTabs={customTabs}
                               capitalize
                             />
@@ -4899,7 +5035,7 @@ const ViewProject = ({
                               onFilter={filterHandler}
                               name={panelName}
                               activeTab={activeTab}
-                              data={panelsData.data[type]}
+                              data={dataSource[type]}
                               customTabs={customTabs}
                               // @ts-ignore
                               rowMapper={({ name: entryName }) => <RefRow rowName={entryName} />}
@@ -4919,7 +5055,7 @@ const ViewProject = ({
                               activeTab={activeTab}
                               onFilter={filterHandler}
                               name={<UTMDropdown onSelect={setUtmActiveTab} title={ccPanelName} />}
-                              data={panelsData.data[utmActiveTab]}
+                              data={dataSource[utmActiveTab]}
                               customTabs={customTabs}
                               // @ts-ignore
                               rowMapper={({ name: entryName }) => decodeURIComponent(entryName)}
@@ -4953,7 +5089,7 @@ const ViewProject = ({
                                 return decodedUri
                               }}
                               name={pgPanelNameMapping[pgActiveFragment]}
-                              data={panelsData.data[type]}
+                              data={dataSource[type]}
                               customTabs={customTabs}
                               period={period}
                               activeTab={activeTab}
@@ -4977,7 +5113,7 @@ const ViewProject = ({
                               activeTab={activeTab}
                               onFilter={filterHandler}
                               name={panelName}
-                              data={panelsData.data[type]}
+                              data={dataSource[type]}
                               rowMapper={({ name: entryName }: { name: string }) =>
                                 getLocaleDisplayName(entryName, language)
                               }
@@ -4995,12 +5131,12 @@ const ViewProject = ({
                             activeTab={activeTab}
                             onFilter={filterHandler}
                             name={panelName}
-                            data={panelsData.data[type]}
+                            data={dataSource[type]}
                             customTabs={customTabs}
                           />
                         )
                       })}
-                    {!_isEmpty(panelsData.data) && (
+                    {!isInAIDetailsMode && !_isEmpty(panelsData.data) && (
                       <Metadata
                         customs={panelsData.customs}
                         properties={panelsData.properties}

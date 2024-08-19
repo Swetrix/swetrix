@@ -19,6 +19,7 @@ import { IAlerts } from 'redux/models/IAlerts'
 import { ISharedProject } from 'redux/models/ISharedProject'
 import { ISubscribers } from 'redux/models/ISubscribers'
 import { IFilter, IProjectViewCustomEvent } from 'pages/Project/View/interfaces/traffic'
+import { AIResponse } from 'pages/Project/View/interfaces/ai'
 
 const debug = Debug('swetrix:api')
 
@@ -1425,6 +1426,19 @@ export const updateErrorStatus = (pid: string, status: 'resolved' | 'active', ei
   api
     .patch('log/error-status', { pid, eid, eids, status })
     .then((response): any => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getDetailsPrediction = (pid: string, password: string | undefined = ''): Promise<AIResponse> =>
+  api
+    .get(`project/${pid}/predict`, {
+      headers: {
+        'x-password': password,
+      },
+    })
+    .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
