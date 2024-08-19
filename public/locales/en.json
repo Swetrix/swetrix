@@ -784,7 +784,7 @@
     "nextOneHour": "Next 1 hour",
     "nextXHours": "Next {{x}} hours",
     "exitForecastingMode": "Exit forecasting mode",
-    "aiDetailsDesc": "The buttons above allow you to see an estimate of what kind of traffic you can expect in the next X hours.",
+    "aiDetailsDesc": "The buttons above allow you to see an estimate of what kind of traffic you can expect within an hour in the next X hours.",
     "search": "Search",
     "views": "Views",
     "viewName": "View name",
