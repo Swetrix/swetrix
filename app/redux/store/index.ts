@@ -11,6 +11,7 @@ import projectsSlice from '../reducers/ui/projects'
 import alertsProjectsSlice from '../reducers/ui/alerts'
 import themeSlice from '../reducers/ui/theme'
 import cacheSlice from '../reducers/ui/cache'
+import monitorsSlice from '../reducers/ui/monitors'
 
 const rootReducer = combineReducers({
   auth: authSlice,
@@ -22,6 +23,7 @@ const rootReducer = combineReducers({
     alerts: alertsProjectsSlice,
     theme: themeSlice,
     cache: cacheSlice,
+    monitors: monitorsSlice,
   }),
 })
 

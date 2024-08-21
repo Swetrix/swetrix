@@ -548,6 +548,7 @@ const PRODUCTION_PROJECT_TABS: IStringObject = {
   sessions: 'sessions',
   errors: 'errors',
   alerts: 'alerts',
+  uptime: 'uptime',
 }
 
 export const PROJECT_TABS = isSelfhosted ? SELFHOSTED_PROJECT_TABS : PRODUCTION_PROJECT_TABS
@@ -659,6 +660,8 @@ export const PLAN_LIMITS = {
         yearly: 0,
       },
     },
+    maxAlerts: 0,
+    maxMonitors: 0,
   },
   free: {
     index: 0, // 'downgrade' or 'upgrade' logic depends on this
@@ -679,6 +682,8 @@ export const PLAN_LIMITS = {
         yearly: 0,
       },
     },
+    maxAlerts: 1,
+    maxMonitors: 1,
   },
   trial: {
     index: 0, // 'downgrade' or 'upgrade' logic depends on this
@@ -699,6 +704,8 @@ export const PLAN_LIMITS = {
         yearly: 0,
       },
     },
+    maxAlerts: 50,
+    maxMonitors: 20,
   },
   hobby: {
     index: 1, // 'downgrade' or 'upgrade' logic depends on this
@@ -721,6 +728,8 @@ export const PLAN_LIMITS = {
     },
     pid: 813694, // Plan ID
     ypid: 813695, // Plan ID - Yearly billing
+    maxAlerts: 50,
+    maxMonitors: 20,
   },
   freelancer: {
     index: 2, // 'downgrade' or 'upgrade' logic depends on this
@@ -743,6 +752,8 @@ export const PLAN_LIMITS = {
     },
     pid: 752316, // Plan ID
     ypid: 776469, // Plan ID - Yearly billing
+    maxAlerts: 50,
+    maxMonitors: 20,
   },
   '200k': {
     index: 3, // 'downgrade' or 'upgrade' logic depends on this
@@ -765,6 +776,8 @@ export const PLAN_LIMITS = {
     },
     pid: 854654, // Plan ID
     ypid: 854655, // Plan ID - Yearly billing
+    maxAlerts: 50,
+    maxMonitors: 20,
   },
   '500k': {
     index: 4, // 'downgrade' or 'upgrade' logic depends on this
@@ -787,6 +800,8 @@ export const PLAN_LIMITS = {
     },
     pid: 854656, // Plan ID
     ypid: 854657, // Plan ID - Yearly billing
+    maxAlerts: 50,
+    maxMonitors: 20,
   },
   startup: {
     index: 5, // 'downgrade' or 'upgrade' logic depends on this
@@ -809,6 +824,8 @@ export const PLAN_LIMITS = {
     },
     pid: 752317,
     ypid: 776470,
+    maxAlerts: 50,
+    maxMonitors: 20,
   },
   '2m': {
     index: 6, // 'downgrade' or 'upgrade' logic depends on this
@@ -831,6 +848,8 @@ export const PLAN_LIMITS = {
     },
     pid: 854663,
     ypid: 854664,
+    maxAlerts: 50,
+    maxMonitors: 20,
   },
   enterprise: {
     index: 7, // 'downgrade' or 'upgrade' logic depends on this
@@ -853,6 +872,8 @@ export const PLAN_LIMITS = {
     },
     pid: 752318,
     ypid: 776471,
+    maxAlerts: 50,
+    maxMonitors: 20,
   },
   '10m': {
     index: 8, // 'downgrade' or 'upgrade' logic depends on this
@@ -875,6 +896,8 @@ export const PLAN_LIMITS = {
     },
     pid: 854665,
     ypid: 854666,
+    maxAlerts: 50,
+    maxMonitors: 20,
   },
 }
 

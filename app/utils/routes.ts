@@ -28,6 +28,8 @@ const routes = Object.freeze({
   about: '/about',
   create_alert: '/projects/:pid/alerts/create',
   alert_settings: '/projects/:pid/alerts/settings/:id',
+  create_uptime: '/projects/:pid/uptime/create',
+  uptime_settings: '/projects/:pid/uptime/settings/:id',
   press: '/press',
   transfer_confirm: '/project/transfer/confirm',
   transfer_reject: '/project/transfer/cancel',

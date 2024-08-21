@@ -21,6 +21,7 @@ import {
   BookmarkIcon,
   TrashIcon,
   PencilIcon,
+  ClockIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -182,6 +183,7 @@ import CountryDropdown from './components/CountryDropdown'
 import MetricCards, { MetricCard } from './components/MetricCards'
 import PerformanceMetricCards from './components/PerformanceMetricCards'
 import ProjectAlertsView from '../Alerts/View'
+import Uptime from '../uptime/View'
 import UTMDropdown from './components/UTMDropdown'
 import TBPeriodSelector from './components/TBPeriodSelector'
 import { ISession } from './interfaces/session'
@@ -578,7 +580,7 @@ const ViewProject = ({
     try {
       const funnels = await getFunnels(id, projectPassword)
 
-      await updateProject(id, {
+      updateProject(id, {
         funnels,
       })
     } catch (reason: any) {
@@ -942,7 +944,6 @@ const ViewProject = ({
     [t],
   )
 
-  // tabs is a tabs for project
   const tabs: {
     id: string
     label: string
@@ -996,6 +997,11 @@ const ViewProject = ({
         id: PROJECT_TABS.alerts,
         label: t('dashboard.alerts'),
         icon: BellIcon,
+      },
+      {
+        id: PROJECT_TABS.uptime,
+        label: t('dashboard.uptime'),
+        icon: ClockIcon,
       },
       ...adminTabs,
     ]
@@ -3695,6 +3701,7 @@ const ViewProject = ({
               {/* Tabs selector */}
               <TabsSelector />
               {activeTab !== PROJECT_TABS.alerts &&
+                activeTab !== PROJECT_TABS.uptime &&
                 (activeTab !== PROJECT_TABS.sessions || !activePSID) &&
                 (activeFunnel || activeTab !== PROJECT_TABS.funnels) && (
                   <>
@@ -3870,45 +3877,43 @@ const ViewProject = ({
                                 headless
                               />
                             )}
-                            {activeTab !== PROJECT_TABS.funnels &&
-                              activeTab !== PROJECT_TABS.sessions &&
-                              activeTab !== PROJECT_TABS.errors && (
-                                <Dropdown
-                                  header={t('project.exportData')}
-                                  items={_filter(
-                                    [
-                                      ...exportTypes,
-                                      ...customExportTypes,
-                                      !isSelfhosted && {
-                                        label: t('project.lookingForMore'),
-                                        lookingForMore: true,
-                                        onClick: () => {},
-                                      },
-                                    ],
-                                    (el) => !!el,
-                                  )}
-                                  title={[<ArrowDownTrayIcon key='download-icon' className='h-5 w-5 stroke-2' />]}
-                                  labelExtractor={(item) => item.label}
-                                  keyExtractor={(item) => item.label}
-                                  onSelect={(item, e) => {
-                                    if (item.lookingForMore) {
-                                      e?.stopPropagation()
-                                      window.open(MARKETPLACE_URL, '_blank')
+                            {_includes([PROJECT_TABS.traffic, PROJECT_TABS.performance], activeTab) && (
+                              <Dropdown
+                                header={t('project.exportData')}
+                                items={_filter(
+                                  [
+                                    ...exportTypes,
+                                    ...customExportTypes,
+                                    !isSelfhosted && {
+                                      label: t('project.lookingForMore'),
+                                      lookingForMore: true,
+                                      onClick: () => {},
+                                    },
+                                  ],
+                                  (el) => !!el,
+                                )}
+                                title={[<ArrowDownTrayIcon key='download-icon' className='h-5 w-5 stroke-2' />]}
+                                labelExtractor={(item) => item.label}
+                                keyExtractor={(item) => item.label}
+                                onSelect={(item, e) => {
+                                  if (item.lookingForMore) {
+                                    e?.stopPropagation()
+                                    window.open(MARKETPLACE_URL, '_blank')
 
-                                      return
-                                    }
+                                    return
+                                  }
 
-                                    trackCustom('DASHBOARD_EXPORT', {
-                                      type: item.label === t('project.asCSV') ? 'csv' : 'extension',
-                                    })
+                                  trackCustom('DASHBOARD_EXPORT', {
+                                    type: item.label === t('project.asCSV') ? 'csv' : 'extension',
+                                  })
 
-                                    item.onClick(panelsData, t)
-                                  }}
-                                  chevron='mini'
-                                  buttonClassName='!p-2 rounded-md hover:bg-white hover:shadow-sm dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200'
-                                  headless
-                                />
-                              )}
+                                  item.onClick(panelsData, t)
+                                }}
+                                chevron='mini'
+                                buttonClassName='!p-2 rounded-md hover:bg-white hover:shadow-sm dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200'
+                                headless
+                              />
+                            )}
                             <div
                               className={cx(
                                 'space-x-2 border-gray-200 dark:border-gray-600 sm:mr-3 lg:border-x lg:px-3',
@@ -4675,6 +4680,9 @@ const ViewProject = ({
               )}
               {activeTab === PROJECT_TABS.alerts && !isSharedProject && project?.isOwner && authenticated && (
                 <ProjectAlertsView projectId={id} />
+              )}
+              {activeTab === PROJECT_TABS.uptime && !isSharedProject && project?.isOwner && authenticated && (
+                <Uptime projectId={id} />
               )}
               {analyticsLoading && (activeTab === PROJECT_TABS.traffic || activeTab === PROJECT_TABS.performance) && (
                 <Loader />

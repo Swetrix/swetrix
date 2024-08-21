@@ -661,6 +661,7 @@
     "alertDeleted": "The alert has been deleted"
   },
   "dashboard": {
+    "uptime": "Uptime",
     "newProject": "New project",
     "newFunnel": "New funnel",
     "reloadPage": "Reload page",
@@ -708,6 +709,7 @@
     "alerts": "Alerts",
     "alertsDesc": "Automated alerts is a powerful tool that allows you to run automated tasks when specific events occur.\nWe can automatically monitor your project for traffic spikes and notify you via Telegram.",
     "funnelsDesc": "Funnels is a powerful tool that allows you to track the conversion rate of your users through a series of steps.\nThe analysis provided by the marketing funnel gives you the ability to discover potential problems, improve your website, and boost your conversion rate.",
+    "uptimeDesc": "Swetrix uptime is a powerful tool that allows you to monitor the uptime of your websites.\nThe analysis provided by the uptime gives you the ability to discover potential problems before your customers notice them.",
     "frontend": "Frontend",
     "backend": "Backend",
     "network": "Network",
@@ -725,6 +727,15 @@
     "average": "Average",
     "median": "Median",
     "xPercentile": "{{x}}th percentile"
+  },
+  "monitor": {
+    "create": "Create a monitor",
+    "delete": "Delete monitor",
+    "monitorCreated": "Uptime monitor created",
+    "monitorUpdated": "Uptime monitor has been updated",
+    "monitorDeleted": "Uptime monitor deleted",
+    "qDelete": "Delete the monitor?",
+    "deleteHint": "This action is irreversible.\nThe uptime monitor and all the data related to it will be deleted from our servers."
   },
   "alert": {
     "create": "Create an alert",

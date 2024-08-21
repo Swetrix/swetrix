@@ -984,6 +984,15 @@ export const deleteAlert = (id: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
+export const deleteMonitor = (pid: string, id: string) =>
+  api
+    .delete(`project/${pid}/monitor/${id}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
 export const reGenerateCaptchaSecretKey = (pid: string) =>
   api
     .post(`project/secret-gen/${pid}`)
