@@ -1,59 +1,63 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams, useLocation, Link } from '@remix-run/react'
-import { useTranslation, Trans } from 'react-i18next'
+import { useNavigate, useLocation } from '@remix-run/react'
+import { useTranslation } from 'react-i18next'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
 import _replace from 'lodash/replace'
-import _find from 'lodash/find'
+import _join from 'lodash/join'
 import _split from 'lodash/split'
+import _find from 'lodash/find'
+import _map from 'lodash/map'
 import _keys from 'lodash/keys'
 import _filter from 'lodash/filter'
-import _reduce from 'lodash/reduce'
-import _values from 'lodash/values'
-import _findKey from 'lodash/findKey'
-import _toNumber from 'lodash/toNumber'
 import { clsx as cx } from 'clsx'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
-import Checkbox from 'ui/Checkbox'
 import Modal from 'ui/Modal'
-import { PROJECT_TABS, QUERY_CONDITION, QUERY_METRIC, QUERY_TIME } from 'redux/constants'
-import { createAlert, updateAlert, deleteAlert, ICreateAlert } from 'api'
+import { PROJECT_TABS } from 'redux/constants'
+import { createMonitor, updateMonitor, deleteMonitor, ICreateMonitor } from 'api'
 import { withAuthentication, auth } from 'hoc/protected'
 import routes from 'utils/routes'
-import Select from 'ui/Select'
-import { IAlerts } from 'redux/models/IAlerts'
+import { Monitor } from 'redux/models/Uptime'
 import { useDispatch, useSelector } from 'react-redux'
 import { StateType } from 'redux/store'
 import { errorsActions } from 'redux/reducers/errors'
 import { alertsActions } from 'redux/reducers/alerts'
 import UIActions from 'redux/reducers/ui'
+import { useRequiredParams } from 'hooks/useRequiredParams'
+import Select from 'ui/Select'
 
-const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
+const MONITOR_TYPES = ['HTTP']
 
 const UptimeSettings = (): JSX.Element => {
-  const { alerts, total } = useSelector((state: StateType) => state.ui.alerts)
-  const { user, loading } = useSelector((state: StateType) => state.auth)
+  const { monitors, total } = useSelector((state: StateType) => state.ui.monitors)
 
   const dispatch = useDispatch()
 
   const navigate = useNavigate()
-  const { id, pid } = useParams()
+  const { id, pid } = useRequiredParams<{ id: string; pid: string }>()
   const { pathname } = useLocation()
   const { t } = useTranslation('common')
-  const isSettings: boolean =
-    !_isEmpty(id) && _replace(_replace(routes.alert_settings, ':id', id as string), ':pid', pid as string) === pathname
-  const alert = useMemo(() => _find(alerts, { id }), [alerts, id])
-  const [form, setForm] = useState<Partial<IAlerts>>({
-    pid,
+  const isSettings =
+    !_isEmpty(id) && _replace(_replace(routes.uptime_settings, ':id', id as string), ':pid', pid as string) === pathname
+  const monitor = useMemo(() => _find(monitors, { id }), [monitors, id])
+  const [form, setForm] = useState<
+    Partial<Omit<Monitor, 'acceptedStatusCodes'>> & {
+      acceptedStatusCodes: string
+    }
+  >({
+    type: 'HTTP',
+    projectId: pid,
     name: '',
-    queryTime: QUERY_TIME.LAST_1_HOUR,
-    queryCondition: QUERY_CONDITION.GREATER_THAN,
-    queryMetric: QUERY_METRIC.PAGE_VIEWS,
-    active: true,
-    queryCustomEvent: '',
+    url: '',
+    interval: 60,
+    retries: 3,
+    retryInterval: 60,
+    timeout: 30,
+    acceptedStatusCodes: '200',
+    description: '',
   })
   const [validated, setValidated] = useState<boolean>(false)
   const [errors, setErrors] = useState<{
@@ -64,86 +68,17 @@ const UptimeSettings = (): JSX.Element => {
 
   const showError = (message: string) => dispatch(errorsActions.genericError({ message }))
   const generateAlerts = (message: string) => dispatch(alertsActions.generateAlerts({ message, type: 'success' }))
-  const setProjectAlerts = (alerts: IAlerts[]) => dispatch(UIActions.setProjectAlerts(alerts))
-  const setProjectAlertsTotal = (total: number) => dispatch(UIActions.setProjectAlertsTotal({ total }))
-
-  const isIntegrationLinked = useMemo(() => {
-    if (_isEmpty(user)) {
-      return false
-    }
-
-    return Boolean(
-      (user.telegramChatId && user.isTelegramChatIdConfirmed) || user.slackWebhookUrl || user.discordWebhookUrl,
-    )
-  }, [user])
-
-  const queryTimeTMapping: {
-    [key: string]: string
-  } = useMemo(() => {
-    const values = _values(QUERY_TIME)
-
-    return _reduce(
-      values,
-      (prev, curr) => {
-        const [, amount, metric] = _split(curr, '_')
-        let translated
-
-        if (metric === 'minutes') {
-          translated = t('alert.xMinutes', { amount })
-        }
-
-        if (metric === 'hour') {
-          translated = t('alert.xHour', { amount })
-        }
-
-        if (metric === 'hours') {
-          translated = t('alert.xHours', { amount })
-        }
-
-        return {
-          ...prev,
-          [curr]: translated,
-        }
-      },
-      {},
-    )
-  }, [t])
-
-  const queryConditionTMapping: {
-    [key: string]: string
-  } = useMemo(() => {
-    const values = _values(QUERY_CONDITION)
-
-    return _reduce(
-      values,
-      (prev, curr) => ({
-        ...prev,
-        [curr]: t(`alert.conditions.${curr}`),
-      }),
-      {},
-    )
-  }, [t])
-
-  const queryMetricTMapping: {
-    [key: string]: string
-  } = useMemo(() => {
-    const values = _values(QUERY_METRIC)
-
-    return _reduce(
-      values,
-      (prev, curr) => ({
-        ...prev,
-        [curr]: t(`alert.metrics.${curr}`),
-      }),
-      {},
-    )
-  }, [t])
+  const setMonitors = (monitors: Monitor[]) => dispatch(UIActions.setMonitors(monitors))
+  const setMonitorsTotal = (total: number) => dispatch(UIActions.setMonitorsTotal({ total }))
 
   useEffect(() => {
-    if (!_isEmpty(alert)) {
-      setForm(alert)
+    if (!_isEmpty(monitor)) {
+      setForm({
+        ...monitor,
+        acceptedStatusCodes: _join(monitor.acceptedStatusCodes, ','),
+      })
     }
-  }, [alert])
+  }, [monitor])
 
   const validate = () => {
     const allErrors: {
@@ -154,38 +89,30 @@ const UptimeSettings = (): JSX.Element => {
       allErrors.name = t('alert.noNameError')
     }
 
-    if (form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS && _isEmpty(form.queryCustomEvent)) {
-      allErrors.queryCustomEvent = t('alert.noCustomEventError')
-    }
-
-    if (Number.isNaN(_toNumber(form.queryValue))) {
-      allErrors.queryValue = t('alert.queryValueError')
-    }
-
     const valid = _isEmpty(_keys(allErrors))
 
     setErrors(allErrors)
     setValidated(valid)
   }
 
-  const onSubmit = (data: Partial<IAlerts>) => {
+  const onSubmit = (data: Partial<Monitor>) => {
     if (isSettings) {
-      updateAlert(id as string, data)
+      updateMonitor(pid, id, data)
         .then((res) => {
-          navigate(`/projects/${pid}?tab=${PROJECT_TABS.alerts}`)
-          setProjectAlerts([..._filter(alerts, (a) => a.id !== id), res])
-          generateAlerts(t('alertsSettings.alertUpdated'))
+          navigate(`/projects/${pid}?tab=${PROJECT_TABS.uptime}`)
+          setMonitors([..._filter(monitors, (a) => a.id !== id), res])
+          generateAlerts(t('monitor.monitorUpdated'))
         })
         .catch((err) => {
           showError(err.message || err || 'Something went wrong')
         })
     } else {
-      createAlert(data as ICreateAlert)
+      createMonitor(pid, data as ICreateMonitor)
         .then((res) => {
-          navigate(`/projects/${pid}?tab=${PROJECT_TABS.alerts}`)
-          setProjectAlerts([...alerts, res])
-          setProjectAlertsTotal(total + 1)
-          generateAlerts(t('alertsSettings.alertCreated'))
+          navigate(`/projects/${pid}?tab=${PROJECT_TABS.uptime}`)
+          setMonitors([...monitors, res])
+          setMonitorsTotal(total + 1)
+          generateAlerts(t('monitor.monitorCreated'))
         })
         .catch((err) => {
           showError(err.message || err || 'Something went wrong')
@@ -199,12 +126,12 @@ const UptimeSettings = (): JSX.Element => {
       return
     }
 
-    deleteAlert(id)
+    deleteMonitor(pid, id)
       .then(() => {
-        setProjectAlerts(_filter(alerts, (a) => a.id !== id))
-        setProjectAlertsTotal(total - 1)
-        navigate(`/projects/${pid}?tab=${PROJECT_TABS.alerts}`)
-        generateAlerts(t('alertsSettings.alertDeleted'))
+        setMonitors(_filter(monitors, (a) => a.id !== id))
+        setMonitorsTotal(total - 1)
+        navigate(`/projects/${pid}?tab=${PROJECT_TABS.uptime}`)
+        generateAlerts(t('monitor.monitorDeleted'))
       })
       .catch((err) => {
         showError(err.message || err || 'Something went wrong')
@@ -212,7 +139,7 @@ const UptimeSettings = (): JSX.Element => {
   }
 
   const onCancel = () => {
-    navigate(`/projects/${pid}?tab=${PROJECT_TABS.alerts}`)
+    navigate(`/projects/${pid}?tab=${PROJECT_TABS.uptime}`)
   }
 
   useEffect(() => {
@@ -234,15 +161,18 @@ const UptimeSettings = (): JSX.Element => {
     setBeenSubmitted(true)
 
     if (validated) {
-      onSubmit(form)
+      onSubmit({
+        ...form,
+        acceptedStatusCodes: _map(_split(form.acceptedStatusCodes, ','), (code) => parseInt(code, 10)),
+      })
     }
   }
 
   const title = isSettings
-    ? t('alert.settingsOf', {
+    ? t('monitor.settingsOf', {
         name: form.name,
       })
-    : t('alert.create')
+    : t('monitor.create')
 
   return (
     <div
@@ -252,118 +182,92 @@ const UptimeSettings = (): JSX.Element => {
     >
       <form className='mx-auto w-full max-w-7xl' onSubmit={handleSubmit}>
         <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{title}</h2>
-        {!loading && !isIntegrationLinked && (
-          <div className='mt-2 flex items-center whitespace-pre-wrap rounded bg-blue-50 px-5 py-3 text-base dark:bg-slate-800 dark:text-gray-50'>
-            <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
-            <Trans
-              t={t}
-              i18nKey='alert.noIntegration'
-              components={{
-                // eslint-disable-next-line jsx-a11y/anchor-has-content
-                url: <Link to={INTEGRATIONS_LINK} className='text-blue-600 hover:underline dark:text-blue-500' />,
-              }}
-            />
-          </div>
-        )}
         <Input
           name='name'
-          label={t('alert.name')}
+          label={t('monitor.form.name')}
           value={form.name || ''}
-          placeholder={t('alert.name')}
           className='mt-4'
           onChange={handleInput}
           error={beenSubmitted ? errors.name : null}
         />
-        <Checkbox
-          checked={Boolean(form.active)}
-          onChange={(checked) =>
-            setForm((prev) => ({
-              ...prev,
-              active: checked,
-            }))
-          }
-          name='active'
-          className='mt-4'
-          label={t('alert.enabled')}
-          hint={t('alert.enabledHint')}
-        />
         <div className='mt-4'>
           <Select
-            id='queryMetric'
-            label={t('alert.metric')}
-            items={_values(queryMetricTMapping)}
-            title={form.queryMetric ? queryMetricTMapping[form.queryMetric] : ''}
+            id='type'
+            label={t('monitor.form.type')}
+            items={MONITOR_TYPES}
+            title={form.type}
             onSelect={(item) => {
-              const key = _findKey(queryMetricTMapping, (predicate) => predicate === item)
-
-              setForm((prevForm) => ({
-                ...prevForm,
-                queryMetric: key,
-              }))
-            }}
-            capitalise
-          />
-        </div>
-        {form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS && (
-          <Input
-            name='queryCustomEvent'
-            label={t('alert.customEvent')}
-            value={form.queryCustomEvent || ''}
-            placeholder={t('alert.customEvent')}
-            className='mt-4'
-            onChange={handleInput}
-            error={beenSubmitted ? errors.queryCustomEvent : null}
-          />
-        )}
-        <div className='mt-4'>
-          <Select
-            id='queryCondition'
-            label={t('alert.condition')}
-            items={_values(queryConditionTMapping)}
-            title={form.queryCondition ? queryConditionTMapping[form.queryCondition] : ''}
-            onSelect={(item) => {
-              const key = _findKey(queryConditionTMapping, (predicate) => predicate === item)
-
-              setForm((prevForm) => ({
-                ...prevForm,
-                queryCondition: key,
+              setForm((prev) => ({
+                ...prev,
+                type: item,
               }))
             }}
             capitalise
           />
         </div>
         <Input
-          name='queryValue'
-          label={t('alert.threshold')}
-          value={form.queryValue || ''}
-          placeholder='10'
+          name='url'
+          label={t('monitor.form.url')}
+          value={form.url || ''}
           className='mt-4'
           onChange={handleInput}
-          error={beenSubmitted ? errors.queryValue : null}
+          error={beenSubmitted ? errors.url : null}
         />
-        <div className='mt-4'>
-          <Select
-            id='queryTime'
-            label={t('alert.time')}
-            items={_values(queryTimeTMapping)}
-            title={form.queryTime ? queryTimeTMapping[form.queryTime] : ''}
-            onSelect={(item) => {
-              const key = _findKey(queryTimeTMapping, (predicate) => predicate === item)
+        <Input
+          name='interval'
+          label={t('monitor.form.interval')}
+          value={form.interval || ''}
+          className='mt-4'
+          onChange={handleInput}
+          error={beenSubmitted ? errors.interval : null}
+        />
+        <Input
+          name='retries'
+          label={t('monitor.form.retries')}
+          value={form.retries || ''}
+          className='mt-4'
+          onChange={handleInput}
+          error={beenSubmitted ? errors.retries : null}
+        />
+        <Input
+          name='retryInterval'
+          label={t('monitor.form.retryInterval')}
+          value={form.retryInterval || ''}
+          className='mt-4'
+          onChange={handleInput}
+          error={beenSubmitted ? errors.retryInterval : null}
+        />
+        <Input
+          name='timeout'
+          label={t('monitor.form.timeout')}
+          value={form.timeout || ''}
+          className='mt-4'
+          onChange={handleInput}
+          error={beenSubmitted ? errors.timeout : null}
+        />
+        <Input
+          name='acceptedStatusCodes'
+          label={t('monitor.form.acceptedStatusCodes')}
+          value={form.acceptedStatusCodes || ''}
+          className='mt-4'
+          onChange={handleInput}
+          error={beenSubmitted ? errors.acceptedStatusCodes : null}
+        />
+        <Input
+          name='description'
+          label={t('monitor.form.description')}
+          value={form.description || ''}
+          className='mt-4'
+          onChange={handleInput}
+          error={beenSubmitted ? errors.description : null}
+        />
 
-              setForm((prevForm) => ({
-                ...prevForm,
-                queryTime: key,
-              }))
-            }}
-            capitalise
-          />
-        </div>
         {isSettings ? (
           <div className='mt-5 flex items-center justify-between'>
             <Button onClick={() => setShowModal(true)} danger semiSmall>
               <>
                 <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
-                {t('alert.delete')}
+                {t('monitor.delete')}
               </>
             </Button>
             <div className='flex items-center justify-between'>
@@ -399,10 +303,10 @@ const UptimeSettings = (): JSX.Element => {
       <Modal
         onClose={() => setShowModal(false)}
         onSubmit={onDelete}
-        submitText={t('alert.delete')}
+        submitText={t('monitor.delete')}
         closeText={t('common.close')}
-        title={t('alert.qDelete')}
-        message={t('alert.deleteHint')}
+        title={t('monitor.qDelete')}
+        message={t('monitor.deleteHint')}
         submitType='danger'
         type='error'
         isOpened={showModal}

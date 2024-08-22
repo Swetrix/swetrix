@@ -19,6 +19,7 @@ import { IAlerts } from 'redux/models/IAlerts'
 import { ISharedProject } from 'redux/models/ISharedProject'
 import { ISubscribers } from 'redux/models/ISubscribers'
 import { IFilter, IProjectViewCustomEvent } from 'pages/Project/View/interfaces/traffic'
+import { Monitor } from 'redux/models/Uptime'
 
 const debug = Debug('swetrix:api')
 
@@ -979,6 +980,26 @@ export const deleteAlert = (id: string) =>
   api
     .delete(`alert/${id}`)
     .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export interface ICreateMonitor extends Omit<Monitor, 'id' | 'createdAt' | 'updatedAt'> {}
+
+export const createMonitor = (pid: string, data: ICreateMonitor) =>
+  api
+    .post(`project/${pid}/monitor`, data)
+    .then((response): Monitor => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const updateMonitor = (pid: string, id: string, data: Partial<Monitor>) =>
+  api
+    .patch(`project/${pid}/monitor/${id}`, data)
+    .then((response): Monitor => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message

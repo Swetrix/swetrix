@@ -533,15 +533,15 @@ export const tabsForDashboard: IDashboardTabs[] = [
   },
 ]
 
-const SELFHOSTED_PROJECT_TABS: IStringObject = {
+const SELFHOSTED_PROJECT_TABS = {
   traffic: 'traffic',
   performance: 'performance',
   funnels: 'funnels',
   sessions: 'sessions',
   errors: 'errors',
-}
+} as const
 
-const PRODUCTION_PROJECT_TABS: IStringObject = {
+const PRODUCTION_PROJECT_TABS = {
   traffic: 'traffic',
   performance: 'performance',
   funnels: 'funnels',
@@ -549,9 +549,11 @@ const PRODUCTION_PROJECT_TABS: IStringObject = {
   errors: 'errors',
   alerts: 'alerts',
   uptime: 'uptime',
-}
+} as const
 
-export const PROJECT_TABS = isSelfhosted ? SELFHOSTED_PROJECT_TABS : PRODUCTION_PROJECT_TABS
+export const PROJECT_TABS = (
+  isSelfhosted ? SELFHOSTED_PROJECT_TABS : PRODUCTION_PROJECT_TABS
+) as typeof PRODUCTION_PROJECT_TABS
 
 export const DASHBOARD_TABS: IStringObject = {
   owned: 'owned',
