@@ -592,7 +592,8 @@ export const THEME_TYPE: IStringObject = {
   christmas: 'christmas',
 }
 
-export const DEFAULT_ALERTS_TAKE: number = 100
+export const DEFAULT_ALERTS_TAKE = 100
+export const DEFAULT_MONITORS_TAKE = 100
 
 const EUR = {
   symbol: '€',

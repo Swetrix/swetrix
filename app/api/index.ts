@@ -11,7 +11,7 @@ import { authActions } from 'redux/reducers/auth'
 import sagaActions from 'redux/sagas/actions'
 import { getAccessToken, removeAccessToken, setAccessToken } from 'utils/accessToken'
 import { getRefreshToken, removeRefreshToken } from 'utils/refreshToken'
-import { DEFAULT_ALERTS_TAKE, API_URL } from 'redux/constants'
+import { DEFAULT_ALERTS_TAKE, API_URL, DEFAULT_MONITORS_TAKE } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { IAuth } from 'redux/models/IAuth'
 import { IProject, IOverall, IProjectNames } from 'redux/models/IProject'
@@ -986,6 +986,23 @@ export const deleteAlert = (id: string) =>
     })
 
 export interface ICreateMonitor extends Omit<Monitor, 'id' | 'createdAt' | 'updatedAt'> {}
+
+export const getAllMonitors = (take: number = DEFAULT_MONITORS_TAKE, skip: number = 0) =>
+  api
+    .get(`project/monitors?take=${take}&skip=${skip}`)
+    .then(
+      (
+        response,
+      ): {
+        results: Monitor[]
+        total: number
+        page_total: number
+      } => response.data,
+    )
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
 
 export const createMonitor = (pid: string, data: ICreateMonitor) =>
   api

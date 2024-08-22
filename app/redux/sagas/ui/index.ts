@@ -12,27 +12,27 @@ import loadUsageinfo from './load_usageinfo'
 import logout from './logout'
 import loadSharedProjects from './load_shared_projects'
 import loadProjectAlerts from './load_alerts'
+import loadMonitors from './load_monitors'
 
 function* mainUISaga() {
   yield fork(initialise)
   yield fork(liveVisitors)
   yield fork(isEventsAvailable)
   yield fork(generalStats)
-  // @ts-ignore
+  // @ts-expect-error
   yield takeEvery(sagaTypes.LOAD_PROJECTS, loadProjects)
-  // @is-ignore
   yield takeEvery(sagaTypes.LOAD_METAINFO, loadMetainfo)
-  // @is-ignore
   yield takeEvery(sagaTypes.LOAD_USAGEINFO, loadUsageinfo)
-  // @ts-ignore
+  // @ts-expect-error
   yield takeEvery(sagaTypes.LOAD_SHARED_PROJECTS, loadSharedProjects)
   yield takeEvery(sagaTypes.LOAD_EXTENSIONS, loadExtensions)
-  // @ts-ignore
   yield takeEvery(sagaTypes.LOGOUT, logout)
-  // @ts-ignore
+  // @ts-expect-error
   yield takeLatest(sagaTypes.SHARE_VERIFY_ASYNC, shareVerify)
-  // @ts-ignore
+  // @ts-expect-error
   yield takeLatest(sagaTypes.LOAD_PROJECT_ALERTS, loadProjectAlerts)
+  // @ts-expect-error
+  yield takeLatest(sagaTypes.LOAD_MONITORS, loadMonitors)
 }
 
 export default mainUISaga

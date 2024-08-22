@@ -3,7 +3,7 @@ import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
 import _replace from 'lodash/replace'
 import _filter from 'lodash/filter'
-import { useNavigate } from '@remix-run/react'
+import { Link, useNavigate } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -35,51 +35,52 @@ import { Monitor } from 'redux/models/Uptime'
 interface IMonitorCard {
   monitor: Monitor
   deleteMonitor: (id: string) => void
-  openMonitor: (id: string) => void
 }
 
-const MonitorCard = ({ monitor, openMonitor, deleteMonitor }: IMonitorCard): JSX.Element => {
+const MonitorCard = ({ monitor, deleteMonitor }: IMonitorCard): JSX.Element => {
   const { t } = useTranslation()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   return (
     <>
-      <li
-        onClick={() => openMonitor(monitor.id)}
-        className='min-h-[120px] cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 dark:border-slate-800/25 dark:bg-[#162032] dark:hover:bg-slate-800'
-      >
-        <div className='px-4 py-4'>
-          <div className='flex justify-between'>
-            <div>
-              <p className='flex items-center gap-x-2 text-lg text-slate-900 dark:text-gray-50'>
-                <span className='font-semibold'>{monitor.name}</span>
-                {/* <Separator />
+      <Link to={_replace(_replace(routes.uptime_settings, ':pid', monitor.projectId), ':id', monitor.id)}>
+        <li className='min-h-[120px] cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 dark:border-slate-800/25 dark:bg-[#162032] dark:hover:bg-slate-800'>
+          <div className='px-4 py-4'>
+            <div className='flex justify-between'>
+              <div>
+                <p className='flex items-center gap-x-2 text-lg text-slate-900 dark:text-gray-50'>
+                  <span className='font-semibold'>{monitor.name}</span>
+                  {/* <Separator />
                 <span>{queryMetric}</span> */}
-              </p>
-            </div>
-            <div className='flex gap-2'>
-              <AdjustmentsVerticalIcon
-                role='button'
-                aria-label={t('common.settings')}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  openMonitor(monitor.id)
-                }}
-                className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500'
-              />
-              <TrashIcon
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setShowDeleteModal(true)
-                }}
-                role='button'
-                aria-label={t('common.delete')}
-                className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500'
-              />
+                </p>
+              </div>
+              <div className='flex gap-2'>
+                <Link
+                  to={_replace(_replace(routes.uptime_settings, ':pid', monitor.projectId), ':id', monitor.id)}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                  }}
+                >
+                  <AdjustmentsVerticalIcon
+                    role='button'
+                    aria-label={t('common.settings')}
+                    className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500'
+                  />
+                </Link>
+                <TrashIcon
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setShowDeleteModal(true)
+                  }}
+                  role='button'
+                  aria-label={t('common.delete')}
+                  className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500'
+                />
+              </div>
             </div>
           </div>
-        </div>
-      </li>
+        </li>
+      </Link>
       <Modal
         onClose={() => setShowDeleteModal(false)}
         onSubmit={() => deleteMonitor(monitor.id)}
@@ -202,14 +203,7 @@ const Uptime = ({ projectId }: UptimeProps): JSX.Element => {
         {!loading && !_isEmpty(projectMonitors) && (
           <ul className='mt-4 grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
             {_map(projectMonitors, (monitor) => (
-              <MonitorCard
-                key={monitor.id}
-                monitor={monitor}
-                openMonitor={(id) => {
-                  navigate(_replace(_replace(routes.uptime_settings, ':pid', projectId), ':id', id))
-                }}
-                deleteMonitor={onDelete}
-              />
+              <MonitorCard key={monitor.id} monitor={monitor} deleteMonitor={onDelete} />
             ))}
             <AddMonitor handleNewMonitor={handleNewMonitor} isLimitReached={isLimitReached} />
           </ul>

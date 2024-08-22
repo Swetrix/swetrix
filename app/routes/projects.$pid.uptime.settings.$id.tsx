@@ -1,5 +1,5 @@
-import ProjectAlertsSettings from 'pages/Project/Alerts/Settings'
+import UptimeSettings from 'pages/Project/uptime/Settings'
 
 export default function Index() {
-  return <ProjectAlertsSettings />
+  return <UptimeSettings />
 }
