@@ -16,7 +16,7 @@ import { ProjectSubscriber } from './project-subscriber.entity'
 import { Funnel } from './funnel.entity'
 import { CAPTCHA_SECRET_KEY_LENGTH } from '../../common/constants'
 import { ProjectViewEntity } from './project-view.entity'
-import { MonitorGroupEntity } from './monitor-group.entity'
+import { MonitorEntity } from './monitor.entity'
 
 // In case of modifying some properties here add them to the GDPR data export email template
 @Entity()
@@ -119,6 +119,6 @@ export class Project {
   @OneToMany(() => ProjectViewEntity, projectView => projectView.id)
   views: ProjectViewEntity[]
 
-  @OneToMany(() => MonitorGroupEntity, monitorGroup => monitorGroup.id)
-  monitorsGroups: MonitorGroupEntity[]
+  @OneToMany(() => MonitorEntity, monitor => monitor.id)
+  monitors: MonitorEntity[]
 }

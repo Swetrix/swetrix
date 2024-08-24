@@ -16,7 +16,6 @@ import { ProjectsViewsRepository } from './repositories/projects-views.repositor
 import { ProjectViewEntity } from './entity/project-view.entity'
 import { ProjectViewCustomEventEntity } from './entity/project-view-custom-event.entity'
 import { MonitorConsumer } from './consumers/monitor.consumer'
-import { MonitorGroupEntity } from './entity/monitor-group.entity'
 import { MonitorEntity } from './entity/monitor.entity'
 
 @Module({
@@ -28,7 +27,6 @@ import { MonitorEntity } from './entity/monitor.entity'
       Funnel,
       ProjectViewEntity,
       ProjectViewCustomEventEntity,
-      MonitorGroupEntity,
       MonitorEntity,
     ]),
     forwardRef(() => UserModule),

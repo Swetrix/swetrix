@@ -35,12 +35,11 @@ export class MonitorConsumer {
     if (!monitor.acceptedStatusCodes.includes(res.statusCode)) {
       try {
         await this.mailerService.sendEmail(
-          monitor.group.project.admin.email,
+          monitor.project.admin.email,
           LetterTemplate.UptimeMonitoringFailure,
           {
-            projectName: monitor.group.project.name,
+            projectName: monitor.project.name,
             monitorName: monitor.name,
-            groupName: monitor.group.name,
           },
         )
       } catch (reason) {

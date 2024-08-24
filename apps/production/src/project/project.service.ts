@@ -80,9 +80,6 @@ import { browserArgs } from '../og-image/og-image.service'
 import { CreateProjectViewDto } from './dto/create-project-view.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import { CreateMonitorHttpRequestDTO } from './dto/create-monitor.dto'
-import { CreateMonitorGroupDto } from './dto/create-monitor-group.dto'
-import { MonitorGroupEntity } from './entity/monitor-group.entity'
-import { UpdateMonitorGroupDto } from './dto/update-monitor-group.dto'
 import { MonitorEntity } from './entity/monitor.entity'
 import { UpdateMonitorHttpRequestDTO } from './dto/update-monitor.dto'
 import { HttpRequestOptions } from './interfaces/http-request-options.interface'
@@ -302,8 +299,6 @@ export class ProjectService {
     private readonly projectSubscriberRepository: Repository<ProjectSubscriber>,
     @InjectRepository(Funnel)
     private readonly funnelRepository: Repository<Funnel>,
-    @InjectRepository(MonitorGroupEntity)
-    private readonly monitorGroupRepository: Repository<MonitorGroupEntity>,
     @InjectRepository(MonitorEntity)
     private readonly monitorRepository: Repository<MonitorEntity>,
     private readonly actionTokens: ActionTokensService,
@@ -1407,104 +1402,23 @@ export class ProjectService {
     }
   }
 
-  async createMonitorGroup(projectId: string, { name }: CreateMonitorGroupDto) {
-    const group = this.monitorGroupRepository.create({
-      name,
-      project: { id: projectId },
-    })
-
-    await this.monitorGroupRepository.save(group)
-
-    return group
-  }
-
-  async getMonitorGroupsByProjectId(
-    projectId: string,
-  ): Promise<MonitorGroupEntity[]> {
-    return this.monitorGroupRepository.find({
-      where: { project: { id: projectId } },
-    })
-  }
-
-  async getMonitorGroupById(
-    projectId: string,
-    monitorGroupId: string,
-  ): Promise<MonitorGroupEntity> {
-    return this.monitorGroupRepository.findOne({
-      where: { id: monitorGroupId, project: { id: projectId } },
-    })
-  }
-
-  // Update a monitor group
-  async updateMonitorGroup(
-    projectId: string,
-    monitorGroupId: string,
-    updateMonitorGroupDto: UpdateMonitorGroupDto,
-  ): Promise<any> {
-    await this.monitorGroupRepository.update(
-      { id: monitorGroupId, project: { id: projectId } },
-      updateMonitorGroupDto,
-    )
-    // await this.monitorGroupRepository.update(monitorGroupId, updateMonitorGroupDto)
-  }
-
-  async deleteMonitorGroup(
-    projectId: string,
-    monitorGroupId: string,
-  ): Promise<void> {
-    await this.monitorGroupRepository.delete({
-      id: monitorGroupId,
-      project: { id: projectId },
-    })
-  }
-
-  async findMonitorGroupByProjectIdAndName(
-    projectId: string,
-    name: string,
-  ): Promise<MonitorGroupEntity | undefined> {
-    return this.monitorGroupRepository.findOne({
-      where: {
-        name,
-        project: { id: projectId },
-      },
-    })
-  }
-
-  async findMonitorGroup(
-    id: string,
-    projectId: string,
-    options?: Omit<FindOneOptions<MonitorGroupEntity>, 'where'>,
-  ): Promise<MonitorGroupEntity | undefined> {
-    return this.monitorGroupRepository.findOne({
-      where: {
-        id,
-        project: { id: projectId },
-      },
-      ...options,
-    })
-  }
-
   async findMonitorById(
     id: string,
-    groupId: string,
     projectId: string,
     options?: Omit<FindOneOptions<MonitorEntity>, 'where'>,
   ): Promise<MonitorEntity | undefined> {
     return this.monitorRepository.findOne({
       where: {
         id,
-        group: {
-          id: groupId,
-          project: {
-            id: projectId,
-          },
+        project: {
+          id: projectId,
         },
       },
       ...options,
     })
   }
 
-  async createMonitorInGroup(
+  async createMonitor(
     {
       type,
       name,
@@ -1517,7 +1431,7 @@ export class ProjectService {
       description,
       httpOptions,
     }: CreateMonitorHttpRequestDTO,
-    group: string,
+    projectId: string,
   ): Promise<MonitorEntity> {
     const monitor = this.monitorRepository.create({
       type,
@@ -1530,7 +1444,7 @@ export class ProjectService {
       acceptedStatusCodes,
       description,
       httpOptions,
-      group: { id: group },
+      project: { id: projectId },
     })
 
     return this.monitorRepository.save(monitor)
@@ -1542,6 +1456,26 @@ export class ProjectService {
         id: monitorId,
       },
       relations: ['group', 'group.project', 'group.project.admin'],
+    })
+  }
+
+  async paginateMonitors(
+    options: PaginationOptionsInterface,
+    where: Record<string, unknown> | undefined,
+  ): Promise<Pagination<MonitorEntity>> {
+    const [results, total] = await this.monitorRepository.findAndCount({
+      take: options.take || 100,
+      skip: options.skip || 0,
+      where,
+      order: {
+        name: 'ASC',
+      },
+      relations: ['project'],
+    })
+
+    return new Pagination<MonitorEntity>({
+      results,
+      total,
     })
   }
 

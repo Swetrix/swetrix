@@ -7,7 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm'
 import { ApiProperty } from '@nestjs/swagger'
-import { MonitorGroupEntity } from './monitor-group.entity'
+import { Project } from './project.entity'
 
 @Entity('monitor')
 export class MonitorEntity {
@@ -51,10 +51,10 @@ export class MonitorEntity {
   @Column({ type: 'text', nullable: true })
   description: string | null
 
-  @ManyToOne(() => MonitorGroupEntity, group => group.monitors, {
+  @ManyToOne(() => Project, project => project.monitors, {
     onDelete: 'CASCADE',
   })
-  group: MonitorGroupEntity
+  project: Project
 
   @ApiProperty()
   @CreateDateColumn()

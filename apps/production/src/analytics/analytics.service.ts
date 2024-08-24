@@ -395,18 +395,10 @@ export class AnalyticsService {
     }
   }
 
-  async checkUptimeAccess(
-    pid: string,
-    monitorGroupId: string,
-    monitorId: number,
-  ) {
+  async checkUptimeAccess(pid: string, monitorId: number) {
     const monitor = await this.projectService.findMonitorById(
       monitorId as unknown as string,
-      monitorGroupId,
       pid,
-      {
-        relations: ['group'],
-      },
     )
 
     if (!monitor) {

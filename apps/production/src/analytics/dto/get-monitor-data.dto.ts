@@ -13,10 +13,6 @@ export class GetMonitorDataDto {
   monitorId: number
 
   @ApiProperty()
-  @IsNotEmpty()
-  monitorGroupId: string
-
-  @ApiProperty()
   period: string
 
   @ApiProperty({ enum: TimeBucketType })

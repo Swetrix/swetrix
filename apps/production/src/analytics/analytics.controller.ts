@@ -1616,7 +1616,6 @@ export class AnalyticsController {
   ): Promise<any> {
     const {
       pid,
-      monitorGroupId,
       monitorId,
       monitorIds,
       period,
@@ -1638,11 +1637,7 @@ export class AnalyticsController {
     const idsArray = getMonitorIdsArray(monitorIds, monitorId)
 
     const validationPromises = _map(idsArray, async currentId => {
-      await this.analyticsService.checkUptimeAccess(
-        pid,
-        monitorGroupId,
-        currentId,
-      )
+      await this.analyticsService.checkUptimeAccess(pid, currentId)
     })
 
     await Promise.all(validationPromises)
@@ -1668,7 +1663,6 @@ export class AnalyticsController {
   ): Promise<any & { chart: any }> {
     const {
       pid,
-      monitorGroupId,
       monitorId,
       period,
       timeBucket,
@@ -1677,7 +1671,6 @@ export class AnalyticsController {
       timezone = DEFAULT_TIMEZONE,
     } = parameters
 
-    // TODO: CHECK THAT MONITOR GROUP BELONGS TO THE PROVIDED PID
     this.analyticsService.validatePID(pid)
 
     if (!_isEmpty(period)) {
@@ -1692,11 +1685,7 @@ export class AnalyticsController {
 
     await this.analyticsService.checkBillingAccess(pid)
 
-    await this.analyticsService.checkUptimeAccess(
-      pid,
-      monitorGroupId,
-      monitorId,
-    )
+    await this.analyticsService.checkUptimeAccess(pid, monitorId)
 
     let newTimebucket = timeBucket
     let allowedTumebucketForPeriodAll

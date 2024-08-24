@@ -17,10 +17,6 @@ export class GetUptimeBirdseyeDto {
   monitorIds?: number[]
 
   @ApiProperty()
-  @IsNotEmpty()
-  monitorGroupId: string
-
-  @ApiProperty()
   period: string
 
   @ApiProperty({ required: false })
