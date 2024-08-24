@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsArray, IsNotEmpty, IsOptional } from 'class-validator'
+import { IsNotEmpty, IsOptional } from 'class-validator'
 import { DEFAULT_TIMEZONE } from '../../user/entities/user.entity'
 
 export class GetUptimeBirdseyeDto {
@@ -11,10 +11,9 @@ export class GetUptimeBirdseyeDto {
   @IsOptional()
   monitorId?: number
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, isArray: true })
   @IsOptional()
-  @IsArray()
-  monitorIds?: number[]
+  monitorIds?: number[] | string[]
 
   @ApiProperty()
   period: string
