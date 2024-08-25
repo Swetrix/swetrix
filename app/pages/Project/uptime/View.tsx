@@ -322,6 +322,7 @@ const Uptime = (): JSX.Element => {
     if (activeMonitor) {
       loadMonitorData(activeMonitor.monitor)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period, dateRange, timeBucket])
 
   if (activeMonitor) {
