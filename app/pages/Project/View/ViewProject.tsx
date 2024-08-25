@@ -3679,7 +3679,7 @@ const ViewProject = ({
     )
   }
 
-  if (!project.isDataExists && activeTab !== PROJECT_TABS.errors && !analyticsLoading) {
+  if (!project.isDataExists && !_includes([PROJECT_TABS.errors, PROJECT_TABS.uptime], activeTab) && !analyticsLoading) {
     return (
       <>
         {!embedded && <Header ssrTheme={ssrTheme} authenticated={authenticated} />}
@@ -4752,9 +4752,7 @@ const ViewProject = ({
                 {activeTab === PROJECT_TABS.alerts && !isSharedProject && project?.isOwner && authenticated && (
                   <ProjectAlertsView projectId={id} />
                 )}
-                {activeTab === PROJECT_TABS.uptime && !isSharedProject && project?.isOwner && authenticated && (
-                  <Uptime />
-                )}
+                {activeTab === PROJECT_TABS.uptime && <Uptime />}
                 {analyticsLoading && (activeTab === PROJECT_TABS.traffic || activeTab === PROJECT_TABS.performance) && (
                   <Loader />
                 )}

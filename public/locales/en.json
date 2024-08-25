@@ -738,6 +738,8 @@
     "monitorDeleted": "Uptime monitor deleted",
     "qDelete": "Delete the monitor?",
     "deleteHint": "This action is irreversible.\nThe uptime monitor and all the data related to it will be deleted from our servers.",
+    "noEvents": "No monitor events found",
+    "noEventsDesc": "No events have been recorded for the specified period, please try a different period.",
     "form": {
       "name": "Monitor name",
       "type": "Monitor type",

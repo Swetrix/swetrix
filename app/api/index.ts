@@ -1004,6 +1004,23 @@ export const getAllMonitors = (take: number = DEFAULT_MONITORS_TAKE, skip: numbe
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
+export const getProjectMonitors = (projectId: string, take: number = DEFAULT_MONITORS_TAKE, skip: number = 0) =>
+  api
+    .get(`project/${projectId}/monitors?take=${take}&skip=${skip}`)
+    .then(
+      (
+        response,
+      ): {
+        results: Monitor[]
+        total: number
+        page_total: number
+      } => response.data,
+    )
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
 export const getMonitorOverallStats = (
   pid: string,
   monitorIds: string[],

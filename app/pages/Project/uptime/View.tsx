@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import bb from 'billboard.js'
 import cx from 'clsx'
 import _map from 'lodash/map'
@@ -27,13 +27,14 @@ import { PLAN_LIMITS, tbPeriodPairs, UPTIME_PERIOD_PAIRS } from 'redux/constants
 import UIActions from 'redux/reducers/ui'
 import { alertsActions } from 'redux/reducers/alerts'
 import { errorsActions } from 'redux/reducers/errors'
-import { deleteMonitor as deleteMonitorApi, getMonitorOverallStats, getMonitorStats } from 'api'
+import { deleteMonitor as deleteMonitorApi, getMonitorOverallStats, getMonitorStats, getProjectMonitors } from 'api'
 import { StateType } from 'redux/store'
 import { Monitor, MonitorOverallObject } from 'redux/models/Uptime'
 import { useViewProjectContext } from '../View/ViewProject'
 import { getFormatDate, getSettingsUptime } from '../View/ViewProject.helpers'
 import TBPeriodSelector from '../View/components/TBPeriodSelector'
 import { MetricCardsUptime } from '../View/components/MetricCards'
+import NoMonitorEvents from './components/NoMonitorDetails'
 
 // const Separator = () => (
 //   <svg viewBox='0 0 2 2' className='h-0.5 w-0.5 flex-none fill-gray-400'>
@@ -162,7 +163,8 @@ const Uptime = (): JSX.Element => {
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState<boolean>(false)
   const [activeMonitor, setActiveMonitor] = useState<{
     monitor: Monitor
-    overall: MonitorOverallObject
+    overall?: MonitorOverallObject
+    isFailed?: boolean
   } | null>(null)
   const [isMonitorLoading, setIsMonitorLoading] = useState(false)
   const navigate = useNavigate()
@@ -172,10 +174,27 @@ const Uptime = (): JSX.Element => {
   const limits = PLAN_LIMITS[user?.planCode] || PLAN_LIMITS.trial
   const isLimitReached = authenticated && total >= limits?.maxMonitors
 
-  const projectMonitors = useMemo(() => {
-    if (loading) return []
-    return _filter(monitors, (monitor) => monitor.projectId === projectId)
-  }, [projectId, monitors, loading])
+  const [projectMonitors, setProjectMonitors] = useState<Monitor[]>([])
+  const [monitorFilterLoaded, setMonitorFilterLoaded] = useState(false)
+
+  useEffect(() => {
+    if (loading || !_isEmpty(projectMonitors) || monitorFilterLoaded) {
+      return
+    }
+
+    const filteredMonitors = _filter(monitors, (monitor) => monitor.projectId === projectId)
+
+    if (!_isEmpty(filteredMonitors)) {
+      setProjectMonitors(filteredMonitors)
+      setMonitorFilterLoaded(true)
+      return
+    }
+
+    getProjectMonitors(projectId).then(({ results }) => {
+      setProjectMonitors(results)
+      setMonitorFilterLoaded(true)
+    })
+  }, [projectId, monitors, loading, projectMonitors, monitorFilterLoaded])
 
   const handleNewMonitor = () => {
     if (isLimitReached) {
@@ -224,7 +243,7 @@ const Uptime = (): JSX.Element => {
 
   const loadMonitorData = useCallback(
     async (monitor: Monitor) => {
-      if (isMonitorLoading || !projectId || isLoading) {
+      if (!monitorFilterLoaded || isMonitorLoading || !projectId || isLoading) {
         return
       }
 
@@ -258,6 +277,7 @@ const Uptime = (): JSX.Element => {
         setActiveMonitor({
           monitor,
           overall: overallStats[monitor.id],
+          isFailed: false,
         })
 
         const { chart } = monitorStats
@@ -272,6 +292,10 @@ const Uptime = (): JSX.Element => {
 
         setIsMonitorLoading(false)
       } catch (reason) {
+        setActiveMonitor({
+          monitor,
+          isFailed: true,
+        })
         setIsMonitorLoading(false)
 
         console.error('[ERROR](loadMonitorData) Loading monitor data failed')
@@ -284,6 +308,7 @@ const Uptime = (): JSX.Element => {
       period,
       dateRange,
       isLoading,
+      monitorFilterLoaded,
       isMonitorLoading,
       projectId,
       timeBucket,
@@ -343,12 +368,16 @@ const Uptime = (): JSX.Element => {
           <ChevronLeftIcon className='h-4 w-4' />
           {t('monitor.backToMonitors')}
         </button>
-        <div className='pt-2'>
-          <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
-            <MetricCardsUptime overall={activeMonitor?.overall} />
+        {activeMonitor.isFailed ? (
+          <NoMonitorEvents />
+        ) : (
+          <div className='pt-2'>
+            <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
+              <MetricCardsUptime overall={activeMonitor.overall!} />
+            </div>
+            <div className='mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible' id='avgResponseUptimeChart' />
           </div>
-          <div className='mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible' id='avgResponseUptimeChart' />
-        </div>
+        )}
       </>
     )
   }
@@ -356,28 +385,38 @@ const Uptime = (): JSX.Element => {
   return (
     <div>
       <div className='mt-4'>
-        {loading && <div>{t('common.loading')}</div>}
-        {!loading && _isEmpty(projectMonitors) && (
+        {(loading || !monitorFilterLoaded) && <div>{t('common.loading')}</div>}
+        {!loading && monitorFilterLoaded && _isEmpty(projectMonitors) && (
           <div className='mt-5 rounded-xl bg-gray-700 p-5'>
             <div className='flex items-center text-gray-50'>
               <ClockIcon className='mr-2 h-8 w-8' />
               <p className='text-3xl font-bold'>{t('dashboard.uptime')}</p>
             </div>
             <p className='mt-2 whitespace-pre-wrap text-lg text-gray-100'>{t('dashboard.uptimeDesc')}</p>
-            <Button
-              onClick={handleNewMonitor}
-              className='mt-6 rounded-md border border-transparent bg-white px-3 py-2 text-base font-medium text-gray-700 hover:bg-indigo-50 md:px-4'
-              secondary
-              large
-            >
-              <>
-                {isLimitReached && <CurrencyDollarIcon className='mr-1 h-5 w-5' />}
-                {t('monitor.create')}
-              </>
-            </Button>
+            {authenticated ? (
+              <Button
+                onClick={handleNewMonitor}
+                className='mt-6 rounded-md border border-transparent bg-white px-3 py-2 text-base font-medium text-gray-700 hover:bg-indigo-50 md:px-4'
+                secondary
+                large
+              >
+                <>
+                  {isLimitReached && <CurrencyDollarIcon className='mr-1 h-5 w-5' />}
+                  {t('monitor.create')}
+                </>
+              </Button>
+            ) : (
+              <Link
+                to={routes.signup}
+                className='mt-6 inline-block select-none rounded-md border border-transparent bg-white px-3 py-2 text-base font-medium text-gray-700 hover:bg-indigo-50'
+                aria-label={t('titles.signup')}
+              >
+                {t('common.getStarted')}
+              </Link>
+            )}
           </div>
         )}
-        {!loading && !_isEmpty(projectMonitors) && (
+        {!loading && monitorFilterLoaded && !_isEmpty(projectMonitors) && (
           <ul className='mt-4 grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
             {_map(projectMonitors, (monitor) => (
               <MonitorCard key={monitor.id} monitor={monitor} deleteMonitor={onDelete} onClick={loadMonitorData} />
