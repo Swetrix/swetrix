@@ -318,6 +318,12 @@ const Uptime = (): JSX.Element => {
     ],
   )
 
+  useEffect(() => {
+    if (activeMonitor) {
+      loadMonitorData(activeMonitor.monitor)
+    }
+  }, [period, dateRange, timeBucket])
+
   if (activeMonitor) {
     return (
       <>
@@ -369,13 +375,31 @@ const Uptime = (): JSX.Element => {
           {t('monitor.backToMonitors')}
         </button>
         {activeMonitor.isFailed ? (
-          <NoMonitorEvents />
+          <>
+            <NoMonitorEvents />
+            {isMonitorLoading && (
+              <div className='static mt-4 !bg-transparent' id='loader'>
+                <div className='loader-head dark:!bg-slate-800'>
+                  <div className='first dark:!bg-slate-600' />
+                  <div className='second dark:!bg-slate-600' />
+                </div>
+              </div>
+            )}
+          </>
         ) : (
           <div className='pt-2'>
             <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
               <MetricCardsUptime overall={activeMonitor.overall!} />
             </div>
             <div className='mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible' id='avgResponseUptimeChart' />
+            {isMonitorLoading && (
+              <div className='static mt-4 !bg-transparent' id='loader'>
+                <div className='loader-head dark:!bg-slate-800'>
+                  <div className='first dark:!bg-slate-600' />
+                  <div className='second dark:!bg-slate-600' />
+                </div>
+              </div>
+            )}
           </div>
         )}
       </>
