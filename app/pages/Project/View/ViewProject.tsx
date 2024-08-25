@@ -13,7 +13,7 @@ import React, {
 } from 'react'
 import { ClientOnly } from 'remix-utils/client-only'
 import useSize from 'hooks/useSize'
-import { useNavigate, useParams, Link } from '@remix-run/react'
+import { useNavigate, Link } from '@remix-run/react'
 import bb from 'billboard.js'
 import {
   ArrowDownTrayIcon,
@@ -223,6 +223,7 @@ import {
 import { trackCustom } from 'utils/analytics'
 import AddAViewModal from './components/AddAViewModal'
 import CustomMetrics from './components/CustomMetrics'
+import { useRequiredParams } from 'hooks/useRequiredParams'
 const SwetrixSDK = require('@swetrix/sdk')
 
 const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
@@ -374,13 +375,7 @@ const ViewProject = ({
   // dashboardRef is a ref for dashboard div
   const dashboardRef = useRef<HTMLDivElement>(null)
 
-  // { id } is a project id from url
-  // @ts-ignore
-  const {
-    id,
-  }: {
-    id: string
-  } = useParams()
+  const { id } = useRequiredParams<{ id: string }>()
   // history is a history from react-router-dom
   const navigate = useNavigate()
 
@@ -1044,20 +1039,20 @@ const ViewProject = ({
         label: t('dashboard.alerts'),
         icon: BellIcon,
       },
-      {
+      ['79eF2Z9rNNvv', 'STEzHcB1rALV'].includes(id) && {
         id: PROJECT_TABS.uptime,
         label: t('dashboard.uptime'),
         icon: ClockIcon,
       },
       ...adminTabs,
-    ]
+    ].filter((x) => !!x)
 
     if (projectQueryTabs && projectQueryTabs.length) {
       return _filter(newTabs, (tab) => _includes(projectQueryTabs, tab.id))
     }
 
     return newTabs
-  }, [t, projectQueryTabs, allowedToManage])
+  }, [t, id, projectQueryTabs, allowedToManage])
 
   // activeTabLabel is a label for active tab. Using for title in dropdown
   const activeTabLabel = useMemo(() => _find(tabs, (tab) => tab.id === activeTab)?.label, [tabs, activeTab])
