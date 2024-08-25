@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { ChangeEvent, ChangeEventHandler, useEffect, useId, useMemo, useState } from 'react'
 import { useNavigate, useLocation } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
@@ -9,6 +9,8 @@ import _replace from 'lodash/replace'
 import _join from 'lodash/join'
 import _split from 'lodash/split'
 import _find from 'lodash/find'
+import _includes from 'lodash/includes'
+import _isNaN from 'lodash/isNaN'
 import _map from 'lodash/map'
 import _keys from 'lodash/keys'
 import _filter from 'lodash/filter'
@@ -28,8 +30,120 @@ import { alertsActions } from 'redux/reducers/alerts'
 import UIActions from 'redux/reducers/ui'
 import { useRequiredParams } from 'hooks/useRequiredParams'
 import Select from 'ui/Select'
+import { formatTime } from 'utils/date'
+import { isValidUrl } from 'utils/validator'
 
 const MONITOR_TYPES = ['HTTP']
+
+const INTERVALS_IN_SECONDS = [
+  30, // 30 seconds
+  60, // 1 minute
+  120, // 2 minutes
+  180, // 3 minutes
+  300, // 5 minutes
+  600, // 10 minutes
+  900, // 15 minutes
+  1200, // 20 minutes
+  1800, // 30 minutes
+  2700, // 45 minutes
+  3600, // 1 hour
+  7200, // 2 hours
+  10800, // 3 hours
+  21600, // 6 hours
+  43200, // 12 hours
+  57600, // 16 hours
+  72000, // 20 hours
+  86400, // 24 hours
+]
+
+const INTERVALS_ALLOWED_DATALIST = [30, 60, 300, 1800, 3600, 21600, 86400]
+
+const getIntervalDisplayName = (interval: number, language: string, style: Intl.RelativeTimeFormatStyle = 'short') => {
+  let displayName
+
+  if (interval < 60) {
+    displayName = formatTime(interval, 'second', language, style)
+  } else if (interval < 3600) {
+    displayName = formatTime(interval / 60, 'minute', language, style)
+  } else {
+    displayName = formatTime(interval / 3600, 'hour', language, style)
+  }
+
+  return displayName
+}
+
+interface IntervalSelectorProps {
+  value?: number
+  onChange: ChangeEventHandler<HTMLInputElement>
+  label: string
+  hint: string
+  name: string
+}
+
+const IntervalSelector = ({ value, onChange, label, hint, name }: IntervalSelectorProps) => {
+  const id = useId()
+  const {
+    i18n: { language },
+  } = useTranslation('common')
+
+  const handleChange = (ev: ChangeEvent<HTMLInputElement>) => {
+    const { value, name } = ev.target
+
+    onChange({
+      // @ts-expect-error
+      target: {
+        name,
+        value: INTERVALS_IN_SECONDS[Number(value)].toString(),
+      },
+    })
+  }
+
+  return (
+    <div className='mt-4'>
+      <Input
+        list={id}
+        name={name}
+        label={label}
+        hint={hint}
+        hintPosition='top'
+        type='range'
+        min='0'
+        max={INTERVALS_IN_SECONDS.length - 1}
+        value={value ? INTERVALS_IN_SECONDS.indexOf(Number(value)) : 4}
+        classes={{
+          input: 'arrows-handle mt-4 h-2 w-full rounded-full bg-gray-200 dark:bg-slate-600',
+        }}
+        onChange={handleChange}
+      />
+      <datalist
+        style={{
+          writingMode: 'vertical-lr',
+        }}
+        className='flex w-full flex-col justify-between'
+        id={id}
+      >
+        {_map(INTERVALS_IN_SECONDS, (interval, index) => {
+          if (!_includes(INTERVALS_ALLOWED_DATALIST, interval)) {
+            return <option key={interval} value={index} />
+          }
+
+          const displayName = getIntervalDisplayName(interval, language)
+
+          return (
+            <option
+              className='mt-4 text-sm lg:mt-0 lg:-rotate-90 lg:text-center'
+              key={interval}
+              value={index}
+              label={displayName}
+            />
+          )
+        })}
+      </datalist>
+    </div>
+  )
+}
+
+const MAX_RETRIES = 100
 
 const UptimeSettings = (): JSX.Element => {
   const { monitors, total } = useSelector((state: StateType) => state.ui.monitors)
@@ -39,7 +153,10 @@ const UptimeSettings = (): JSX.Element => {
   const navigate = useNavigate()
   const { id, pid } = useRequiredParams<{ id: string; pid: string }>()
   const { pathname } = useLocation()
-  const { t } = useTranslation('common')
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
   const isSettings =
     !_isEmpty(id) && _replace(_replace(routes.uptime_settings, ':id', id as string), ':pid', pid as string) === pathname
   const monitor = useMemo(() => _find(monitors, { id }), [monitors, id])
@@ -87,6 +204,45 @@ const UptimeSettings = (): JSX.Element => {
 
     if (_isEmpty(form.name) || _size(form.name) < 3) {
       allErrors.name = t('alert.noNameError')
+    }
+
+    if (_isEmpty(form.url)) {
+      allErrors.url = t('apiNotifications.inputCannotBeEmpty')
+    }
+
+    if (!isValidUrl(form.url!)) {
+      allErrors.url = t('monitor.error.urlInvalid')
+    }
+
+    const retries = Number(form.retries)
+
+    if (_isNaN(retries)) {
+      allErrors.retries = t('apiNotifications.enterACorrectNumber')
+    }
+
+    if (retries <= 0) {
+      allErrors.retries = t('apiNotifications.numberCantBeNegative')
+    }
+
+    if (retries > MAX_RETRIES) {
+      allErrors.retries = t('apiNotifications.numberCantBeBigger', {
+        max: MAX_RETRIES,
+      })
+    }
+
+    const acceptedStatusCodes = _split(form.acceptedStatusCodes, ',')
+
+    if (_isEmpty(acceptedStatusCodes)) {
+      allErrors.acceptedStatusCodes = t('apiNotifications.inputCannotBeEmpty')
+    }
+
+    if (
+      acceptedStatusCodes.some((statusCode) => {
+        const trimmedStatusCode = Number(statusCode.trim())
+        return !_isNaN(trimmedStatusCode) && trimmedStatusCode >= 100 && trimmedStatusCode <= 599
+      })
+    ) {
+      allErrors.acceptedStatusCodes = t('monitor.error.acceptedStatusCodesNotValid')
     }
 
     const valid = _isEmpty(_keys(allErrors))
@@ -213,33 +369,37 @@ const UptimeSettings = (): JSX.Element => {
           onChange={handleInput}
           error={beenSubmitted ? errors.url : null}
         />
-        <Input
+        <IntervalSelector
           name='interval'
           label={t('monitor.form.interval')}
-          value={form.interval || ''}
-          className='mt-4'
+          hint={t('monitor.form.intervalHint', {
+            intervalTranslated: getIntervalDisplayName(Number(form.interval), language, 'long'),
+          })}
+          value={form.interval}
           onChange={handleInput}
-          error={beenSubmitted ? errors.interval : null}
         />
         <Input
           name='retries'
           label={t('monitor.form.retries')}
-          value={form.retries || ''}
+          hint={t('monitor.form.retriesHint', { retries: form.retries || 'N/A' })}
+          value={form.retries}
           className='mt-4'
           onChange={handleInput}
           error={beenSubmitted ? errors.retries : null}
         />
-        <Input
+        <IntervalSelector
           name='retryInterval'
           label={t('monitor.form.retryInterval')}
-          value={form.retryInterval || ''}
-          className='mt-4'
+          hint={t('monitor.form.retryIntervalHint', {
+            retryIntervalTranslated: getIntervalDisplayName(Number(form.retryInterval), language, 'long'),
+          })}
+          value={form.retryInterval}
           onChange={handleInput}
-          error={beenSubmitted ? errors.retryInterval : null}
         />
         <Input
           name='timeout'
           label={t('monitor.form.timeout')}
+          hint={t('monitor.form.timeoutHint', { x: form.timeout || 'N/A' })}
           value={form.timeout || ''}
           className='mt-4'
           onChange={handleInput}
@@ -252,14 +412,6 @@ const UptimeSettings = (): JSX.Element => {
           className='mt-4'
           onChange={handleInput}
           error={beenSubmitted ? errors.acceptedStatusCodes : null}
-        />
-        <Input
-          name='description'
-          label={t('monitor.form.description')}
-          value={form.description || ''}
-          className='mt-4'
-          onChange={handleInput}
-          error={beenSubmitted ? errors.description : null}
         />
 
         {isSettings ? (
