@@ -3022,26 +3022,26 @@ export class AnalyticsService {
     paramsData: any,
     safeTimezone: string,
   ): Promise<object | void> {
-    let params: unknown = {}
+    const params: unknown = {}
     let chart: unknown = {}
 
     const promises = [
       // Params
-      (async () => {
-        params = await this.generateParams(
-          null,
-          subQuery,
-          false,
-          paramsData,
-          'uptime',
-        )
+      // (async () => {
+      //   params = await this.generateParams(
+      //     null,
+      //     subQuery,
+      //     false,
+      //     paramsData,
+      //     'uptime',
+      //   )
 
-        if (!_some(_values(params), val => !_isEmpty(val))) {
-          throw new BadRequestException(
-            'There are no uptime details for specified time frame',
-          )
-        }
-      })(),
+      //   if (!_some(_values(params), val => !_isEmpty(val))) {
+      //     throw new BadRequestException(
+      //       'There are no uptime details for specified time frame',
+      //     )
+      //   }
+      // })(),
 
       // Chart data
       (async () => {
