@@ -240,6 +240,8 @@ interface ViewProjectContextType {
   period: string
   activePeriod: ITBPeriodPairs | undefined
   periodPairs: ITBPeriodPairs[]
+  timeFormat: '12-hour' | '24-hour'
+  size: ReturnType<typeof useSize>[1]
 
   // Functions
   setDateRange: Dispatch<SetStateAction<Date[] | null>>
@@ -686,7 +688,7 @@ const ViewProject = ({
   // @ts-expect-error
   const timeFormat = useMemo<'12-hour' | '24-hour'>(() => user.timeFormat || TimeFormat['12-hour'], [user])
   // ref, size using for logic with responsive chart
-  const [ref, size] = useSize() as any
+  const [ref, size] = useSize()
   // rotateXAxias using for logic with responsive chart
   const rotateXAxis = useMemo(() => size.width > 0 && size.width < 500, [size])
   // customEventsChartData is a data for custom events on a chart
@@ -3738,6 +3740,8 @@ const ViewProject = ({
             period,
             activePeriod,
             periodPairs,
+            timeFormat,
+            size,
 
             // Functions
             setDateRange,
