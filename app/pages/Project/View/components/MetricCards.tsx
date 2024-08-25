@@ -11,6 +11,7 @@ import { nFormatter, getStringFromTime, getTimeFromSeconds } from 'utils/generic
 import { IOverallObject } from 'redux/models/IProject'
 import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { Badge } from 'ui/Badge'
+import { MonitorOverallObject } from 'redux/models/Uptime'
 
 interface IMetricCard {
   label: string
@@ -157,7 +158,7 @@ interface IMetricCards {
   activePeriodCompare?: string
 }
 
-const MetricCards = ({ overall, overallCompare, activePeriodCompare }: IMetricCards) => {
+export const MetricCards = memo(({ overall, overallCompare, activePeriodCompare }: IMetricCards) => {
   const { t } = useTranslation('common')
 
   let uniqueChange = overall.uniqueChange
@@ -222,6 +223,47 @@ const MetricCards = ({ overall, overallCompare, activePeriodCompare }: IMetricCa
       />
     </>
   )
+})
+
+interface IMetricCardsUptime {
+  overall: MonitorOverallObject
 }
 
-export default memo(MetricCards)
+export const MetricCardsUptime = memo(({ overall }: IMetricCardsUptime) => {
+  const { t } = useTranslation()
+
+  return (
+    <>
+      <MetricCard
+        label={t('monitor.metrics.avg')}
+        value={overall.current.avg}
+        change={overall.avgChange}
+        goodChangeDirection='up'
+        valueMapper={(value, type) =>
+          `${type === 'badge' && value > 0 ? '+' : ''}${getStringFromTime(getTimeFromSeconds(value), true)}`
+        }
+      />
+      <MetricCard
+        label={t('monitor.metrics.min')}
+        value={overall.current.min}
+        change={overall.minChange}
+        goodChangeDirection='up'
+        valueMapper={(value, type) =>
+          `${type === 'badge' && value > 0 ? '+' : ''}${getStringFromTime(getTimeFromSeconds(value), true)}`
+        }
+      />
+      <MetricCard
+        label={t('monitor.metrics.max')}
+        value={overall.current.max}
+        change={overall.maxChange}
+        goodChangeDirection='up'
+        valueMapper={(value, type) =>
+          `${type === 'badge' && value > 0 ? '+' : ''}${getStringFromTime(getTimeFromSeconds(value), true)}`
+        }
+      />
+    </>
+  )
+})
+
+MetricCards.displayName = 'MetricCards'
+MetricCardsUptime.displayName = 'MetricCardsUptime'
