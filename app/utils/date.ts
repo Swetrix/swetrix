@@ -27,6 +27,20 @@ const formatTimeAgo = (date, language?: string) => {
   }
 }
 
+export const formatTime = (
+  value: number,
+  unit: Intl.RelativeTimeFormatUnit,
+  language = 'en',
+  style: Intl.RelativeTimeFormatStyle = 'short',
+) => {
+  const rtf = new Intl.RelativeTimeFormat(language, { numeric: 'always', style })
+
+  const formatted = rtf.format(value, unit)
+
+  // Remove the 'in' prefix (and it's alternatives in other languages)
+  return formatted.replace(/^.*?(\d+)/, '$1').trim()
+}
+
 export const getRelativeDateIfPossible = (date: string, language?: string) => {
   if (!Intl?.RelativeTimeFormat) {
     return new Date(date).toLocaleDateString(language, {
