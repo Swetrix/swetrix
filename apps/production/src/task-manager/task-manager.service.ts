@@ -1489,7 +1489,8 @@ export class TaskManagerService {
     }
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  // Every week at 01:00 AM
+  @Cron('0 1 * * 0')
   async sendPredictAiRequest(): Promise<void> {
     try {
       await firstValueFrom(this.httpService.post('/run_prediction/'))
