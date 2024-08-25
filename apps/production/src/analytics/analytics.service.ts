@@ -2569,7 +2569,7 @@ export class AnalyticsService {
     const baseQuery = `
       SELECT
         ${selector},
-        avg(responseTime) as avgResponseTime
+        round(divide(avg(responseTime), 1000), 2) as avgResponseTime
       FROM (
         SELECT responseTime,
           ${timeBucketFunc}(created) as tz_created
