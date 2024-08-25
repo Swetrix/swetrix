@@ -747,6 +747,12 @@
       "timeout": "Monitor timeout",
       "acceptedStatusCodes": "Monitor accepted status codes (comma-separated)",
       "description": "Monitor description"
+    },
+    "backToMonitors": "Back to monitors list",
+    "metrics": {
+      "avg": "Avg. response time",
+      "min": "Min. response time",
+      "max": "Max. response time"
     }
   },
   "alert": {

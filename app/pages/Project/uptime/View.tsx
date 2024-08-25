@@ -1,6 +1,8 @@
-import React, { useMemo, memo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import cx from 'clsx'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
+import _includes from 'lodash/includes'
 import _replace from 'lodash/replace'
 import _filter from 'lodash/filter'
 import { Link, useNavigate } from '@remix-run/react'
@@ -12,19 +14,25 @@ import {
   TrashIcon,
   PlusCircleIcon,
   ClockIcon,
+  ArrowPathIcon,
+  ChevronLeftIcon,
 } from '@heroicons/react/24/outline'
 
 import routes from 'utils/routes'
 import Button from 'ui/Button'
 import Modal from 'ui/Modal'
 import PaidFeature from 'modals/PaidFeature'
-import { PLAN_LIMITS } from 'redux/constants'
+import { PLAN_LIMITS, tbPeriodPairs, UPTIME_PERIOD_PAIRS } from 'redux/constants'
 import UIActions from 'redux/reducers/ui'
 import { alertsActions } from 'redux/reducers/alerts'
 import { errorsActions } from 'redux/reducers/errors'
-import { deleteMonitor as deleteMonitorApi } from 'api'
+import { deleteMonitor as deleteMonitorApi, getMonitorOverallStats } from 'api'
 import { StateType } from 'redux/store'
-import { Monitor } from 'redux/models/Uptime'
+import { Monitor, MonitorOverallObject } from 'redux/models/Uptime'
+import { useViewProjectContext } from '../View/ViewProject'
+import { getFormatDate } from '../View/ViewProject.helpers'
+import TBPeriodSelector from '../View/components/TBPeriodSelector'
+import { MetricCardsUptime } from '../View/components/MetricCards'
 
 // const Separator = () => (
 //   <svg viewBox='0 0 2 2' className='h-0.5 w-0.5 flex-none fill-gray-400'>
@@ -35,15 +43,16 @@ import { Monitor } from 'redux/models/Uptime'
 interface IMonitorCard {
   monitor: Monitor
   deleteMonitor: (id: string) => void
+  onClick: (monitor: Monitor) => void
 }
 
-const MonitorCard = ({ monitor, deleteMonitor }: IMonitorCard): JSX.Element => {
+const MonitorCard = ({ monitor, deleteMonitor, onClick }: IMonitorCard): JSX.Element => {
   const { t } = useTranslation()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   return (
     <>
-      <Link to={_replace(_replace(routes.uptime_settings, ':pid', monitor.projectId), ':id', monitor.id)}>
+      <div onClick={() => onClick(monitor)} role='button' tabIndex={0}>
         <li className='min-h-[120px] cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 dark:border-slate-800/25 dark:bg-[#162032] dark:hover:bg-slate-800'>
           <div className='px-4 py-4'>
             <div className='flex justify-between'>
@@ -80,7 +89,7 @@ const MonitorCard = ({ monitor, deleteMonitor }: IMonitorCard): JSX.Element => {
             </div>
           </div>
         </li>
-      </Link>
+      </div>
       <Modal
         onClose={() => setShowDeleteModal(false)}
         onSubmit={() => deleteMonitor(monitor.id)}
@@ -123,16 +132,36 @@ const AddMonitor = ({ handleNewMonitor, isLimitReached }: AddMonitorProps): JSX.
   )
 }
 
-interface UptimeProps {
-  projectId: string
-}
-
-const Uptime = ({ projectId }: UptimeProps): JSX.Element => {
-  const { t } = useTranslation()
+const Uptime = (): JSX.Element => {
+  const {
+    projectId,
+    isLoading,
+    dateRange,
+    timeBucket,
+    period,
+    timezone,
+    projectPassword,
+    refCalendar,
+    setDateRange,
+    updatePeriod,
+    setPeriodPairs,
+    activePeriod,
+    updateTimebucket,
+    periodPairs,
+  } = useViewProjectContext()
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation()
   const dispatch = useDispatch()
   const { loading, total, monitors } = useSelector((state: StateType) => state.ui.monitors)
   const { user, authenticated } = useSelector((state: StateType) => state.auth)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState<boolean>(false)
+  const [activeMonitor, setActiveMonitor] = useState<{
+    monitor: Monitor
+    overall: MonitorOverallObject
+  } | null>(null)
+  const [isMonitorLoading, setIsMonitorLoading] = useState(false)
   const navigate = useNavigate()
 
   const limits = PLAN_LIMITS[user?.planCode] || PLAN_LIMITS.trial
@@ -151,6 +180,11 @@ const Uptime = ({ projectId }: UptimeProps): JSX.Element => {
 
     navigate(_replace(routes.create_uptime, ':pid', projectId))
   }
+
+  const allowedPeriodPairs = useMemo(
+    () => _filter(periodPairs, (el) => _includes(UPTIME_PERIOD_PAIRS, el.period)),
+    [periodPairs],
+  )
 
   const onDelete = async (id: string) => {
     try {
@@ -174,6 +208,123 @@ const Uptime = ({ projectId }: UptimeProps): JSX.Element => {
         }),
       )
     }
+  }
+
+  const loadMonitorData = useCallback(
+    async (monitor: Monitor) => {
+      if (isMonitorLoading || !projectId || isLoading) {
+        return
+      }
+
+      setIsMonitorLoading(true)
+
+      try {
+        let overallStats
+        let from
+        let to
+
+        if (dateRange) {
+          from = getFormatDate(dateRange[0])
+          to = getFormatDate(dateRange[1])
+        }
+
+        if (period === 'custom' && dateRange) {
+          overallStats = await getMonitorOverallStats(
+            projectId,
+            [monitor.id],
+            period,
+            from,
+            to,
+            timezone,
+            projectPassword,
+          )
+        } else {
+          overallStats = await getMonitorOverallStats(
+            projectId,
+            [monitor.id],
+            period,
+            '',
+            '',
+            timezone,
+            projectPassword,
+          )
+        }
+
+        console.log(overallStats)
+
+        setActiveMonitor({
+          monitor,
+          overall: overallStats[monitor.id],
+        })
+
+        setIsMonitorLoading(false)
+      } catch (reason) {
+        setIsMonitorLoading(false)
+
+        console.error('[ERROR](loadMonitorData) Loading monitor data failed')
+        console.error(reason)
+      }
+    },
+    [projectPassword, timezone, period, dateRange, isLoading, isMonitorLoading, projectId],
+  )
+
+  if (activeMonitor) {
+    return (
+      <>
+        <div className='mt-2 flex flex-col items-center justify-between lg:flex-row lg:items-start'>
+          <div className='flex flex-wrap items-center space-x-5'>
+            <h2 className='break-words break-all text-xl font-bold text-gray-900 dark:text-gray-50'>
+              {activeMonitor.monitor.name}
+            </h2>
+          </div>
+          <div className='mx-auto mt-3 flex w-full max-w-[420px] flex-wrap items-center justify-center gap-y-1 space-x-2 sm:mx-0 sm:w-auto sm:max-w-none sm:flex-nowrap sm:justify-between lg:mt-0'>
+            <button
+              type='button'
+              title={t('project.refreshStats')}
+              onClick={() => loadMonitorData(activeMonitor.monitor)}
+              className={cx(
+                'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                {
+                  'cursor-not-allowed opacity-50': isLoading || isMonitorLoading,
+                },
+              )}
+            >
+              <ArrowPathIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
+            </button>
+            <TBPeriodSelector
+              activePeriod={activePeriod}
+              updateTimebucket={updateTimebucket}
+              timeBucket={timeBucket}
+              items={allowedPeriodPairs}
+              title={activePeriod?.label}
+              onSelect={(pair) => {
+                if (pair.isCustomDate) {
+                  setTimeout(() => {
+                    refCalendar.current.openCalendar()
+                  }, 100)
+                } else {
+                  setPeriodPairs(tbPeriodPairs(t, undefined, undefined, language))
+                  setDateRange(null)
+                  updatePeriod(pair)
+                }
+              }}
+            />
+          </div>
+        </div>
+        <button
+          onClick={() => setActiveMonitor(null)}
+          className='mx-auto mb-4 mt-2 flex items-center text-base font-normal text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100 lg:mx-0 lg:mt-0'
+        >
+          <ChevronLeftIcon className='h-4 w-4' />
+          {t('monitor.backToMonitors')}
+        </button>
+        <div className='pt-2'>
+          <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
+            <MetricCardsUptime overall={activeMonitor?.overall} />
+          </div>
+        </div>
+      </>
+    )
   }
 
   return (
@@ -203,7 +354,7 @@ const Uptime = ({ projectId }: UptimeProps): JSX.Element => {
         {!loading && !_isEmpty(projectMonitors) && (
           <ul className='mt-4 grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
             {_map(projectMonitors, (monitor) => (
-              <MonitorCard key={monitor.id} monitor={monitor} deleteMonitor={onDelete} />
+              <MonitorCard key={monitor.id} monitor={monitor} deleteMonitor={onDelete} onClick={loadMonitorData} />
             ))}
             <AddMonitor handleNewMonitor={handleNewMonitor} isLimitReached={isLimitReached} />
           </ul>
@@ -214,4 +365,4 @@ const Uptime = ({ projectId }: UptimeProps): JSX.Element => {
   )
 }
 
-export default memo(Uptime) as typeof Uptime
+export default Uptime
