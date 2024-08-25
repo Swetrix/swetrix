@@ -1469,18 +1469,18 @@ export class AnalyticsService {
 
           result[monitorId] = {
             current: {
-              avg: data[0].avg,
-              min: data[0].min,
-              max: data[0].max,
+              avg: data[0].avg || 0,
+              min: data[0].min || 0,
+              max: data[0].max || 0,
             },
             previous: {
               avg: 0,
               min: 0,
               max: 0,
             },
-            avgChange: data[0].avg,
-            minChange: data[0].min,
-            maxChange: data[0].max,
+            avgChange: data[0].avg || 0,
+            minChange: data[0].min || 0,
+            maxChange: data[0].max || 0,
           }
           return
         }
@@ -1557,14 +1557,14 @@ export class AnalyticsService {
 
         result[monitorId] = {
           current: {
-            avg: currentPeriod.avg,
-            min: currentPeriod.min,
-            max: currentPeriod.max,
+            avg: currentPeriod.avg || 0,
+            min: currentPeriod.min || 0,
+            max: currentPeriod.max || 0,
           },
           previous: {
             avg: previousPeriod.avg || 0,
-            min: previousPeriod.min,
-            max: previousPeriod.max,
+            min: previousPeriod.min || 0,
+            max: previousPeriod.max || 0,
           },
           avgChange: currentPeriod.avg - previousPeriod.avg,
           minChange: currentPeriod.min - previousPeriod.min,
