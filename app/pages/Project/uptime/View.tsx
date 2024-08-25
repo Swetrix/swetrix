@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react'
+import bb from 'billboard.js'
 import cx from 'clsx'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
@@ -26,11 +27,11 @@ import { PLAN_LIMITS, tbPeriodPairs, UPTIME_PERIOD_PAIRS } from 'redux/constants
 import UIActions from 'redux/reducers/ui'
 import { alertsActions } from 'redux/reducers/alerts'
 import { errorsActions } from 'redux/reducers/errors'
-import { deleteMonitor as deleteMonitorApi, getMonitorOverallStats } from 'api'
+import { deleteMonitor as deleteMonitorApi, getMonitorOverallStats, getMonitorStats } from 'api'
 import { StateType } from 'redux/store'
 import { Monitor, MonitorOverallObject } from 'redux/models/Uptime'
 import { useViewProjectContext } from '../View/ViewProject'
-import { getFormatDate } from '../View/ViewProject.helpers'
+import { getFormatDate, getSettingsUptime } from '../View/ViewProject.helpers'
 import TBPeriodSelector from '../View/components/TBPeriodSelector'
 import { MetricCardsUptime } from '../View/components/MetricCards'
 
@@ -148,6 +149,8 @@ const Uptime = (): JSX.Element => {
     activePeriod,
     updateTimebucket,
     periodPairs,
+    size,
+    timeFormat,
   } = useViewProjectContext()
   const {
     t,
@@ -163,6 +166,8 @@ const Uptime = (): JSX.Element => {
   } | null>(null)
   const [isMonitorLoading, setIsMonitorLoading] = useState(false)
   const navigate = useNavigate()
+
+  const rotateXAxis = useMemo(() => size.width > 0 && size.width < 500, [size])
 
   const limits = PLAN_LIMITS[user?.planCode] || PLAN_LIMITS.trial
   const isLimitReached = authenticated && total >= limits?.maxMonitors
@@ -210,6 +215,13 @@ const Uptime = (): JSX.Element => {
     }
   }
 
+  const bbDataNames = useMemo(
+    () => ({
+      avgResponseTime: t('monitor.metrics.avg'),
+    }),
+    [t],
+  )
+
   const loadMonitorData = useCallback(
     async (monitor: Monitor) => {
       if (isMonitorLoading || !projectId || isLoading) {
@@ -220,6 +232,7 @@ const Uptime = (): JSX.Element => {
 
       try {
         let overallStats
+        let monitorStats
         let from
         let to
 
@@ -229,33 +242,33 @@ const Uptime = (): JSX.Element => {
         }
 
         if (period === 'custom' && dateRange) {
-          overallStats = await getMonitorOverallStats(
-            projectId,
-            [monitor.id],
-            period,
-            from,
-            to,
-            timezone,
-            projectPassword,
-          )
+          // eslint-disable-next-line no-extra-semi, @typescript-eslint/no-extra-semi
+          ;[overallStats, monitorStats] = await Promise.all([
+            getMonitorOverallStats(projectId, [monitor.id], period, from, to, timezone, projectPassword),
+            getMonitorStats(projectId, monitor.id, period, timeBucket, from, to, timezone, projectPassword),
+          ])
         } else {
-          overallStats = await getMonitorOverallStats(
-            projectId,
-            [monitor.id],
-            period,
-            '',
-            '',
-            timezone,
-            projectPassword,
-          )
+          // eslint-disable-next-line no-extra-semi, @typescript-eslint/no-extra-semi
+          ;[overallStats, monitorStats] = await Promise.all([
+            getMonitorOverallStats(projectId, [monitor.id], period, '', '', timezone, projectPassword),
+            getMonitorStats(projectId, monitor.id, period, timeBucket, '', '', timezone, projectPassword),
+          ])
         }
-
-        console.log(overallStats)
 
         setActiveMonitor({
           monitor,
           overall: overallStats[monitor.id],
         })
+
+        const { chart } = monitorStats
+
+        setTimeout(() => {
+          // todo: chart type
+          const bbSettings = getSettingsUptime(chart, timeBucket, timeFormat, rotateXAxis, 'line')
+
+          const generate = bb.generate(bbSettings)
+          generate.data.names(bbDataNames)
+        }, 100)
 
         setIsMonitorLoading(false)
       } catch (reason) {
@@ -265,7 +278,19 @@ const Uptime = (): JSX.Element => {
         console.error(reason)
       }
     },
-    [projectPassword, timezone, period, dateRange, isLoading, isMonitorLoading, projectId],
+    [
+      projectPassword,
+      timezone,
+      period,
+      dateRange,
+      isLoading,
+      isMonitorLoading,
+      projectId,
+      timeBucket,
+      rotateXAxis,
+      bbDataNames,
+      timeFormat,
+    ],
   )
 
   if (activeMonitor) {
@@ -322,6 +347,7 @@ const Uptime = (): JSX.Element => {
           <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
             <MetricCardsUptime overall={activeMonitor?.overall} />
           </div>
+          <div className='mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible' id='avgResponseUptimeChart' />
         </div>
       </>
     )

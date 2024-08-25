@@ -179,6 +179,10 @@ html.light .bb-xgrid-focus {
   stroke: #709775 !important;
 }
 
+.bb-target-avgResponseTime .bb-bar {
+  stroke: #709775 !important;
+}
+
 @media (max-width: 640px) {
   .custom-space-x-style > :not([hidden]) ~ :not([hidden]) {
     --tw-space-x-reverse: 0 !important;
