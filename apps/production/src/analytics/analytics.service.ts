@@ -2569,9 +2569,9 @@ export class AnalyticsService {
     const baseQuery = `
       SELECT
         ${selector},
-        count() as count
+        avg(responseTime) as avgResponseTime
       FROM (
-        SELECT region, statusCode,
+        SELECT responseTime,
           ${timeBucketFunc}(created) as tz_created
         FROM monitor_responses
         WHERE
@@ -2862,6 +2862,24 @@ export class AnalyticsService {
     }
   }
 
+  extractUptimeChartData(result, x: string[]): any {
+    const avgResponseTime = Array(x.length).fill(0)
+
+    for (let row = 0; row < _size(result); ++row) {
+      const dateString = this.generateDateString(result[row])
+
+      const index = x.indexOf(dateString)
+
+      if (index !== -1) {
+        avgResponseTime[index] = result[row].avgResponseTime
+      }
+    }
+
+    return {
+      avgResponseTime,
+    }
+  }
+
   async groupCaptchaByTimeBucket(
     timeBucket: TimeBucketType,
     from: string,
@@ -3038,7 +3056,7 @@ export class AnalyticsService {
           })
           // TODO: TYPE
           .then(resultSet => resultSet.json<any>())
-        const { count } = this.extractCaptchaChartData(data, x)
+        const { count } = this.extractUptimeChartData(data, x)
 
         chart = {
           // todo: other stuff
