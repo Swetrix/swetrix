@@ -1,5 +1,16 @@
 /* eslint-disable react/no-unstable-nested-components, react/display-name */
-import React, { useState, useEffect, useMemo, memo, useRef, useCallback } from 'react'
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  memo,
+  useRef,
+  useCallback,
+  createContext,
+  useContext,
+  SetStateAction,
+  Dispatch,
+} from 'react'
 import { ClientOnly } from 'remix-utils/client-only'
 import useSize from 'hooks/useSize'
 import { useNavigate, useParams, Link } from '@remix-run/react'
@@ -180,7 +191,7 @@ import SearchFilters from './components/SearchFilters'
 import Filters from './components/Filters'
 import LiveVisitorsDropdown from './components/LiveVisitorsDropdown'
 import CountryDropdown from './components/CountryDropdown'
-import MetricCards, { MetricCard } from './components/MetricCards'
+import { MetricCard, MetricCards } from './components/MetricCards'
 import PerformanceMetricCards from './components/PerformanceMetricCards'
 import ProjectAlertsView from '../Alerts/View'
 import Uptime from '../uptime/View'
@@ -218,6 +229,40 @@ const SwetrixSDK = require('@swetrix/sdk')
 const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
 const SESSIONS_TAKE = 30
 const ERRORS_TAKE = 30
+
+interface ViewProjectContextType {
+  // States
+  projectId: string
+  projectPassword: string
+  timezone: string
+  dateRange: Date[] | null
+  isLoading: boolean
+  timeBucket: string
+  period: string
+  activePeriod: ITBPeriodPairs | undefined
+  periodPairs: ITBPeriodPairs[]
+
+  // Functions
+  setDateRange: Dispatch<SetStateAction<Date[] | null>>
+  updatePeriod: (newPeriod: { period: string; label?: string }) => void
+  updateTimebucket: (newTimebucket: string) => void
+  setPeriodPairs: Dispatch<SetStateAction<ITBPeriodPairs[]>>
+
+  // Refs
+  refCalendar: React.MutableRefObject<any>
+}
+
+const ViewProjectContext = createContext<ViewProjectContextType | undefined>(undefined)
+
+export const useViewProjectContext = () => {
+  const context = useContext(ViewProjectContext)
+
+  if (context === undefined) {
+    throw new Error('useViewProjectContext must be used within a ViewProjectContextProvider')
+  }
+
+  return context
+}
 
 interface IViewProject {
   projects: IProject[]
@@ -348,7 +393,7 @@ const ViewProject = ({
     [projects, id, sharedProjects],
   )
 
-  const projectPassword: string = useMemo(
+  const projectPassword = useMemo(
     () => password[id] || (getItem(PROJECTS_PROTECTED)?.[id] as string) || queryPassword || '',
     [id, password, queryPassword],
   )
@@ -1631,7 +1676,7 @@ const ViewProject = ({
   useEffect(() => {
     const url = new URL(window.location.toString())
     const { searchParams } = url
-    const tab = searchParams.get('tab') as string
+    const tab = searchParams.get('tab') as keyof typeof PROJECT_TABS
 
     if (PROJECT_TABS[tab]) {
       setActiveTab(tab)
@@ -3682,641 +3727,620 @@ const ViewProject = ({
   return (
     <ClientOnly>
       {() => (
-        <>
-          {!embedded && <Header ssrTheme={ssrTheme} authenticated={authenticated} />}
-          <EventsRunningOutBanner />
-          <div
-            ref={ref}
-            className={cx('bg-gray-50 dark:bg-slate-900', {
-              'min-h-[100vh]': analyticsLoading && embedded,
-            })}
-          >
+        <ViewProjectContext.Provider
+          value={{
+            // States
+            projectId: project?.id,
+            projectPassword,
+            timezone,
+            dateRange,
+            isLoading,
+            timeBucket,
+            period,
+            activePeriod,
+            periodPairs,
+
+            // Functions
+            setDateRange,
+            updatePeriod,
+            updateTimebucket,
+            setPeriodPairs,
+
+            // Refs
+            refCalendar,
+          }}
+        >
+          <>
+            {!embedded && <Header ssrTheme={ssrTheme} authenticated={authenticated} />}
+            <EventsRunningOutBanner />
             <div
-              className={cx('mx-auto w-full max-w-[1584px] px-2 py-6 sm:px-4 lg:px-8', {
-                'min-h-min-footer': !embedded,
-                'min-h-[100vh]': embedded,
+              ref={ref}
+              className={cx('bg-gray-50 dark:bg-slate-900', {
+                'min-h-[100vh]': analyticsLoading && embedded,
               })}
-              ref={dashboardRef}
             >
-              {/* Tabs selector */}
-              <TabsSelector />
-              {activeTab !== PROJECT_TABS.alerts &&
-                activeTab !== PROJECT_TABS.uptime &&
-                (activeTab !== PROJECT_TABS.sessions || !activePSID) &&
-                (activeFunnel || activeTab !== PROJECT_TABS.funnels) && (
-                  <>
-                    <div className='mt-2 flex flex-col items-center justify-between lg:flex-row lg:items-start'>
-                      <div className='flex flex-wrap items-center space-x-5'>
-                        <h2 className='break-words break-all text-xl font-bold text-gray-900 dark:text-gray-50'>
-                          {/* If tab is funnels - then display a funnel name, otherwise a project name */}
-                          {activeTab === PROJECT_TABS.funnels ? activeFunnel?.name : name}
-                        </h2>
-                        {activeTab !== PROJECT_TABS.funnels && (
-                          <LiveVisitorsDropdown
-                            projectId={project.id}
-                            live={liveStats[id]}
-                            projectPassword={projectPassword}
-                          />
-                        )}
-                      </div>
-                      <div className='mx-auto mt-3 flex w-full max-w-[420px] flex-wrap items-center justify-center gap-y-1 space-x-2 sm:mx-0 sm:w-auto sm:max-w-none sm:flex-nowrap sm:justify-between lg:mt-0'>
-                        {activeTab !== PROJECT_TABS.funnels && (
-                          <>
-                            <div>
-                              <button
-                                type='button'
-                                title={t('project.refreshStats')}
-                                onClick={refreshStats}
-                                className={cx(
-                                  'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
-                                  {
-                                    'cursor-not-allowed opacity-50': isLoading || dataLoading,
-                                  },
-                                )}
-                              >
-                                <ArrowPathIcon className='h-5 w-5 stroke-2 text-gray-700 dark:text-gray-50' />
-                              </button>
-                            </div>
-                            {!isSelfhosted && !isActiveCompare && (
+              <div
+                className={cx('mx-auto w-full max-w-[1584px] px-2 py-6 sm:px-4 lg:px-8', {
+                  'min-h-min-footer': !embedded,
+                  'min-h-[100vh]': embedded,
+                })}
+                ref={dashboardRef}
+              >
+                {/* Tabs selector */}
+                <TabsSelector />
+                {activeTab !== PROJECT_TABS.alerts &&
+                  activeTab !== PROJECT_TABS.uptime &&
+                  (activeTab !== PROJECT_TABS.sessions || !activePSID) &&
+                  (activeFunnel || activeTab !== PROJECT_TABS.funnels) && (
+                    <>
+                      <div className='mt-2 flex flex-col items-center justify-between lg:flex-row lg:items-start'>
+                        <div className='flex flex-wrap items-center space-x-5'>
+                          <h2 className='break-words break-all text-xl font-bold text-gray-900 dark:text-gray-50'>
+                            {/* If tab is funnels - then display a funnel name, otherwise a project name */}
+                            {activeTab === PROJECT_TABS.funnels ? activeFunnel?.name : name}
+                          </h2>
+                          {activeTab !== PROJECT_TABS.funnels && (
+                            <LiveVisitorsDropdown
+                              projectId={project.id}
+                              live={liveStats[id]}
+                              projectPassword={projectPassword}
+                            />
+                          )}
+                        </div>
+                        <div className='mx-auto mt-3 flex w-full max-w-[420px] flex-wrap items-center justify-center gap-y-1 space-x-2 sm:mx-0 sm:w-auto sm:max-w-none sm:flex-nowrap sm:justify-between lg:mt-0'>
+                          {activeTab !== PROJECT_TABS.funnels && (
+                            <>
+                              <div>
+                                <button
+                                  type='button'
+                                  title={t('project.refreshStats')}
+                                  onClick={refreshStats}
+                                  className={cx(
+                                    'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                                    {
+                                      'cursor-not-allowed opacity-50': isLoading || dataLoading,
+                                    },
+                                  )}
+                                >
+                                  <ArrowPathIcon className='h-5 w-5 stroke-2 text-gray-700 dark:text-gray-50' />
+                                </button>
+                              </div>
+                              {!isSelfhosted && !isActiveCompare && (
+                                <div
+                                  className={cx({
+                                    hidden: activeTab !== PROJECT_TABS.traffic || _isEmpty(chartData),
+                                  })}
+                                >
+                                  <button
+                                    type='button'
+                                    title={t('modals.forecast.title')}
+                                    onClick={onForecastOpen}
+                                    disabled={!_isEmpty(filters)}
+                                    className={cx(
+                                      'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                                      {
+                                        'cursor-not-allowed opacity-50': isLoading || dataLoading || !_isEmpty(filters),
+                                        '!border !border-gray-300 !bg-gray-200 dark:!border-gray-500 dark:!bg-gray-600':
+                                          !_isEmpty(forecasedChartData),
+                                      },
+                                    )}
+                                  >
+                                    <Robot
+                                      theme={_theme}
+                                      containerClassName='w-5 h-5'
+                                      className='stroke-2 text-gray-700 dark:text-gray-50'
+                                    />
+                                  </button>
+                                </div>
+                              )}
                               <div
-                                className={cx({
-                                  hidden: activeTab !== PROJECT_TABS.traffic || _isEmpty(chartData),
+                                className={cx('border-gray-200 dark:border-gray-600', {
+                                  'lg:border-r': activeTab === PROJECT_TABS.funnels,
+                                  hidden: activeTab === PROJECT_TABS.errors && activeError,
                                 })}
                               >
                                 <button
                                   type='button'
-                                  title={t('modals.forecast.title')}
-                                  onClick={onForecastOpen}
-                                  disabled={!_isEmpty(filters)}
+                                  title={t('project.search')}
+                                  onClick={() => setShowFiltersSearch(true)}
                                   className={cx(
                                     'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                                     {
-                                      'cursor-not-allowed opacity-50': isLoading || dataLoading || !_isEmpty(filters),
-                                      '!border !border-gray-300 !bg-gray-200 dark:!border-gray-500 dark:!bg-gray-600':
-                                        !_isEmpty(forecasedChartData),
+                                      'cursor-not-allowed opacity-50': isLoading || dataLoading,
                                     },
                                   )}
                                 >
-                                  <Robot
-                                    theme={_theme}
-                                    containerClassName='w-5 h-5'
-                                    className='stroke-2 text-gray-700 dark:text-gray-50'
-                                  />
+                                  <MagnifyingGlassIcon className='h-5 w-5 stroke-2 text-gray-700 dark:text-gray-50' />
                                 </button>
                               </div>
-                            )}
-                            <div
-                              className={cx('border-gray-200 dark:border-gray-600', {
-                                'lg:border-r': activeTab === PROJECT_TABS.funnels,
-                                hidden: activeTab === PROJECT_TABS.errors && activeError,
-                              })}
-                            >
-                              <button
-                                type='button'
-                                title={t('project.search')}
-                                onClick={() => setShowFiltersSearch(true)}
-                                className={cx(
-                                  'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
-                                  {
-                                    'cursor-not-allowed opacity-50': isLoading || dataLoading,
-                                  },
-                                )}
-                              >
-                                <MagnifyingGlassIcon className='h-5 w-5 stroke-2 text-gray-700 dark:text-gray-50' />
-                              </button>
-                            </div>
-                            {activeTab === PROJECT_TABS.traffic && (
-                              <Dropdown
-                                header={t('project.views')}
-                                onClick={() => loadProjectViews()}
-                                loading={projectViewsLoading || projectViewsLoading === null}
-                                selectItemClassName={
-                                  !allowedToManage &&
-                                  !(projectViewsLoading || projectViewsLoading === null) &&
-                                  _isEmpty(projectViews)
-                                    ? 'block px-4 py-2 text-sm text-gray-700 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50'
-                                    : undefined
-                                }
-                                items={_filter(
-                                  [
-                                    ...projectViews,
-                                    allowedToManage && {
-                                      id: 'add-a-view',
-                                      name: t('project.addAView'),
-                                      createView: true,
-                                    },
+                              {activeTab === PROJECT_TABS.traffic && (
+                                <Dropdown
+                                  header={t('project.views')}
+                                  onClick={() => loadProjectViews()}
+                                  loading={projectViewsLoading || projectViewsLoading === null}
+                                  selectItemClassName={
                                     !allowedToManage &&
-                                      _isEmpty(projectViews) && {
-                                        id: 'no-views',
-                                        name: t('project.noViewsYet'),
-                                        notClickable: true,
+                                    !(projectViewsLoading || projectViewsLoading === null) &&
+                                    _isEmpty(projectViews)
+                                      ? 'block px-4 py-2 text-sm text-gray-700 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50'
+                                      : undefined
+                                  }
+                                  items={_filter(
+                                    [
+                                      ...projectViews,
+                                      allowedToManage && {
+                                        id: 'add-a-view',
+                                        name: t('project.addAView'),
+                                        createView: true,
                                       },
-                                  ],
-                                  (x) => !!x,
-                                )}
-                                title={[<BookmarkIcon key='bookmark-icon' className='h-5 w-5 stroke-2' />]}
-                                labelExtractor={(item, close) => {
-                                  // @ts-expect-error
-                                  if (item.createView) {
-                                    return item.name
-                                  }
+                                      !allowedToManage &&
+                                        _isEmpty(projectViews) && {
+                                          id: 'no-views',
+                                          name: t('project.noViewsYet'),
+                                          notClickable: true,
+                                        },
+                                    ],
+                                    (x) => !!x,
+                                  )}
+                                  title={[<BookmarkIcon key='bookmark-icon' className='h-5 w-5 stroke-2' />]}
+                                  labelExtractor={(item, close) => {
+                                    // @ts-expect-error
+                                    if (item.createView) {
+                                      return item.name
+                                    }
 
-                                  if (item.id === 'no-views') {
-                                    return <span className='text-gray-600 dark:text-gray-200'>{item.name}</span>
-                                  }
+                                    if (item.id === 'no-views') {
+                                      return <span className='text-gray-600 dark:text-gray-200'>{item.name}</span>
+                                    }
 
-                                  return (
-                                    <span className='flex items-center justify-between space-x-4'>
-                                      <span>{item.name}</span>
-                                      {allowedToManage && (
-                                        <span className='flex space-x-2'>
-                                          <PencilIcon
-                                            className='size-4 hover:text-gray-900 dark:hover:text-gray-50'
-                                            onClick={(e) => {
-                                              e.stopPropagation()
-                                              setProjectViewToUpdate(item)
-                                              close()
-                                              setIsAddAViewOpened(true)
-                                            }}
-                                          />
-                                          <TrashIcon
-                                            className={cx('size-4 hover:text-gray-900 dark:hover:text-gray-50', {
-                                              'cursor-not-allowed': projectViewDeleting,
-                                            })}
-                                            onClick={(e) => {
-                                              e.stopPropagation()
-                                              close()
-                                              onProjectViewDelete(item.id)
-                                            }}
-                                          />
-                                        </span>
-                                      )}
-                                    </span>
-                                  )
-                                }}
-                                keyExtractor={(item) => item.id}
-                                onSelect={(item: IProjectView, e) => {
-                                  // @ts-expect-error
-                                  if (item.createView) {
-                                    e?.stopPropagation()
-                                    setIsAddAViewOpened(true)
+                                    return (
+                                      <span className='flex items-center justify-between space-x-4'>
+                                        <span>{item.name}</span>
+                                        {allowedToManage && (
+                                          <span className='flex space-x-2'>
+                                            <PencilIcon
+                                              className='size-4 hover:text-gray-900 dark:hover:text-gray-50'
+                                              onClick={(e) => {
+                                                e.stopPropagation()
+                                                setProjectViewToUpdate(item)
+                                                close()
+                                                setIsAddAViewOpened(true)
+                                              }}
+                                            />
+                                            <TrashIcon
+                                              className={cx('size-4 hover:text-gray-900 dark:hover:text-gray-50', {
+                                                'cursor-not-allowed': projectViewDeleting,
+                                              })}
+                                              onClick={(e) => {
+                                                e.stopPropagation()
+                                                close()
+                                                onProjectViewDelete(item.id)
+                                              }}
+                                            />
+                                          </span>
+                                        )}
+                                      </span>
+                                    )
+                                  }}
+                                  keyExtractor={(item) => item.id}
+                                  onSelect={(item: IProjectView, e) => {
+                                    // @ts-expect-error
+                                    if (item.createView) {
+                                      e?.stopPropagation()
+                                      setIsAddAViewOpened(true)
 
-                                    return
-                                  }
+                                      return
+                                    }
 
-                                  if (item.filters && !_isEmpty(item.filters)) {
-                                    onFilterSearch(item.filters, true)
-                                  }
+                                    if (item.filters && !_isEmpty(item.filters)) {
+                                      onFilterSearch(item.filters, true)
+                                    }
 
-                                  if (item.customEvents && !_isEmpty(item.customEvents)) {
-                                    onCustomMetric(item.customEvents)
-                                  }
-                                }}
-                                chevron='mini'
-                                buttonClassName='!p-2 rounded-md hover:bg-white hover:shadow-sm dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200'
-                                headless
-                              />
-                            )}
-                            {_includes([PROJECT_TABS.traffic, PROJECT_TABS.performance], activeTab) && (
-                              <Dropdown
-                                header={t('project.exportData')}
-                                items={_filter(
-                                  [
-                                    ...exportTypes,
-                                    ...customExportTypes,
-                                    !isSelfhosted && {
-                                      label: t('project.lookingForMore'),
-                                      lookingForMore: true,
-                                      onClick: () => {},
-                                    },
-                                  ],
-                                  (el) => !!el,
-                                )}
-                                title={[<ArrowDownTrayIcon key='download-icon' className='h-5 w-5 stroke-2' />]}
-                                labelExtractor={(item) => item.label}
-                                keyExtractor={(item) => item.label}
-                                onSelect={(item, e) => {
-                                  if (item.lookingForMore) {
-                                    e?.stopPropagation()
-                                    window.open(MARKETPLACE_URL, '_blank')
-
-                                    return
-                                  }
-
-                                  trackCustom('DASHBOARD_EXPORT', {
-                                    type: item.label === t('project.asCSV') ? 'csv' : 'extension',
-                                  })
-
-                                  item.onClick(panelsData, t)
-                                }}
-                                chevron='mini'
-                                buttonClassName='!p-2 rounded-md hover:bg-white hover:shadow-sm dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200'
-                                headless
-                              />
-                            )}
-                            <div
-                              className={cx(
-                                'space-x-2 border-gray-200 dark:border-gray-600 sm:mr-3 lg:border-x lg:px-3',
-                                {
-                                  hidden:
-                                    isPanelsDataEmpty ||
-                                    analyticsLoading ||
-                                    checkIfAllMetricsAreDisabled ||
-                                    activeTab === PROJECT_TABS.sessions ||
-                                    activeTab === PROJECT_TABS.errors,
-                                },
+                                    if (item.customEvents && !_isEmpty(item.customEvents)) {
+                                      onCustomMetric(item.customEvents)
+                                    }
+                                  }}
+                                  chevron='mini'
+                                  buttonClassName='!p-2 rounded-md hover:bg-white hover:shadow-sm dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200'
+                                  headless
+                                />
                               )}
-                            >
-                              <button
-                                type='button'
-                                title={t('project.barChart')}
-                                onClick={() => setChartTypeOnClick(chartTypes.bar)}
+                              {_includes([PROJECT_TABS.traffic, PROJECT_TABS.performance], activeTab) && (
+                                <Dropdown
+                                  header={t('project.exportData')}
+                                  items={_filter(
+                                    [
+                                      ...exportTypes,
+                                      ...customExportTypes,
+                                      !isSelfhosted && {
+                                        label: t('project.lookingForMore'),
+                                        lookingForMore: true,
+                                        onClick: () => {},
+                                      },
+                                    ],
+                                    (el) => !!el,
+                                  )}
+                                  title={[<ArrowDownTrayIcon key='download-icon' className='h-5 w-5 stroke-2' />]}
+                                  labelExtractor={(item) => item.label}
+                                  keyExtractor={(item) => item.label}
+                                  onSelect={(item, e) => {
+                                    if (item.lookingForMore) {
+                                      e?.stopPropagation()
+                                      window.open(MARKETPLACE_URL, '_blank')
+
+                                      return
+                                    }
+
+                                    trackCustom('DASHBOARD_EXPORT', {
+                                      type: item.label === t('project.asCSV') ? 'csv' : 'extension',
+                                    })
+
+                                    item.onClick(panelsData, t)
+                                  }}
+                                  chevron='mini'
+                                  buttonClassName='!p-2 rounded-md hover:bg-white hover:shadow-sm dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200'
+                                  headless
+                                />
+                              )}
+                              <div
                                 className={cx(
-                                  'relative rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                                  'space-x-2 border-gray-200 dark:border-gray-600 sm:mr-3 lg:border-x lg:px-3',
                                   {
-                                    'bg-white stroke-white shadow-sm dark:bg-slate-800 dark:stroke-slate-800':
-                                      chartType === chartTypes.bar,
-                                    'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200':
-                                      chartType !== chartTypes.bar,
+                                    hidden:
+                                      isPanelsDataEmpty ||
+                                      analyticsLoading ||
+                                      checkIfAllMetricsAreDisabled ||
+                                      activeTab === PROJECT_TABS.sessions ||
+                                      activeTab === PROJECT_TABS.errors,
                                   },
                                 )}
                               >
-                                <BarChart className='h-5 w-5 [&_path]:stroke-[3.5%]' />
-                              </button>
-                              <button
-                                type='button'
-                                title={t('project.lineChart')}
-                                onClick={() => setChartTypeOnClick(chartTypes.line)}
-                                className={cx(
-                                  'relative rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
-                                  {
-                                    'bg-white stroke-white shadow-sm dark:bg-slate-800 dark:stroke-slate-800':
-                                      chartType === chartTypes.line,
-                                    'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200':
-                                      chartType !== chartTypes.line,
-                                  },
-                                )}
-                              >
-                                <LineChart className='h-5 w-5 [&_path]:stroke-[3.5%]' />
-                              </button>
-                            </div>
-                          </>
-                        )}
-                        {activeTab === PROJECT_TABS.traffic && !isPanelsDataEmpty && (
-                          <Dropdown
-                            items={
-                              isActiveCompare
-                                ? _filter(chartMetrics, (el) => {
-                                    return !_includes(FILTER_CHART_METRICS_MAPPING_FOR_COMPARE, el.id)
-                                  })
-                                : chartMetrics
-                            }
-                            title={t('project.metricVis')}
-                            labelExtractor={(pair) => {
-                              const { label, id: pairID, active, conflicts } = pair
+                                <button
+                                  type='button'
+                                  title={t('project.barChart')}
+                                  onClick={() => setChartTypeOnClick(chartTypes.bar)}
+                                  className={cx(
+                                    'relative rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                                    {
+                                      'bg-white stroke-white shadow-sm dark:bg-slate-800 dark:stroke-slate-800':
+                                        chartType === chartTypes.bar,
+                                      'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200':
+                                        chartType !== chartTypes.bar,
+                                    },
+                                  )}
+                                >
+                                  <BarChart className='h-5 w-5 [&_path]:stroke-[3.5%]' />
+                                </button>
+                                <button
+                                  type='button'
+                                  title={t('project.lineChart')}
+                                  onClick={() => setChartTypeOnClick(chartTypes.line)}
+                                  className={cx(
+                                    'relative rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                                    {
+                                      'bg-white stroke-white shadow-sm dark:bg-slate-800 dark:stroke-slate-800':
+                                        chartType === chartTypes.line,
+                                      'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200':
+                                        chartType !== chartTypes.line,
+                                    },
+                                  )}
+                                >
+                                  <LineChart className='h-5 w-5 [&_path]:stroke-[3.5%]' />
+                                </button>
+                              </div>
+                            </>
+                          )}
+                          {activeTab === PROJECT_TABS.traffic && !isPanelsDataEmpty && (
+                            <Dropdown
+                              items={
+                                isActiveCompare
+                                  ? _filter(chartMetrics, (el) => {
+                                      return !_includes(FILTER_CHART_METRICS_MAPPING_FOR_COMPARE, el.id)
+                                    })
+                                  : chartMetrics
+                              }
+                              title={t('project.metricVis')}
+                              labelExtractor={(pair) => {
+                                const { label, id: pairID, active, conflicts } = pair
 
-                              const conflicted = isConflicted(conflicts)
+                                const conflicted = isConflicted(conflicts)
 
-                              if (pairID === CHART_METRICS_MAPPING.customEvents) {
-                                if (_isEmpty(panelsData.customs)) {
+                                if (pairID === CHART_METRICS_MAPPING.customEvents) {
+                                  if (_isEmpty(panelsData.customs)) {
+                                    return (
+                                      <span className='flex cursor-not-allowed items-center px-4 py-2'>
+                                        <NoSymbolIcon className='mr-1 h-5 w-5' />
+                                        {label}
+                                      </span>
+                                    )
+                                  }
+
                                   return (
-                                    <span className='flex cursor-not-allowed items-center px-4 py-2'>
-                                      <NoSymbolIcon className='mr-1 h-5 w-5' />
-                                      {label}
-                                    </span>
+                                    <Dropdown
+                                      menuItemsClassName='max-w-[300px] max-h-[300px] overflow-auto'
+                                      items={chartMetricsCustomEvents}
+                                      title={label}
+                                      labelExtractor={(event) => (
+                                        <Checkbox
+                                          className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
+                                          label={
+                                            _size(event.label) > CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH ? (
+                                              <span title={event.label}>
+                                                {_truncate(event.label, {
+                                                  length: CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH,
+                                                })}
+                                              </span>
+                                            ) : (
+                                              event.label
+                                            )
+                                          }
+                                          onChange={() => {
+                                            switchCustomEventChart(event.id)
+                                          }}
+                                          checked={event.active}
+                                        />
+                                      )}
+                                      buttonClassName='group-hover:bg-gray-200 dark:group-hover:bg-slate-700 px-4 py-2 inline-flex w-full bg-white text-sm font-medium text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800'
+                                      keyExtractor={(event) => event.id}
+                                      onSelect={(event, e) => {
+                                        e?.stopPropagation()
+                                        e?.preventDefault()
+
+                                        switchCustomEventChart(event.id)
+                                      }}
+                                      chevron='mini'
+                                      headless
+                                    />
                                   )
                                 }
 
                                 return (
-                                  <Dropdown
-                                    menuItemsClassName='max-w-[300px] max-h-[300px] overflow-auto'
-                                    items={chartMetricsCustomEvents}
-                                    title={label}
-                                    labelExtractor={(event) => (
-                                      <Checkbox
-                                        className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
-                                        label={
-                                          _size(event.label) > CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH ? (
-                                            <span title={event.label}>
-                                              {_truncate(event.label, {
-                                                length: CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH,
-                                              })}
-                                            </span>
-                                          ) : (
-                                            event.label
-                                          )
-                                        }
-                                        onChange={() => {
-                                          switchCustomEventChart(event.id)
-                                        }}
-                                        checked={event.active}
-                                      />
-                                    )}
-                                    buttonClassName='group-hover:bg-gray-200 dark:group-hover:bg-slate-700 px-4 py-2 inline-flex w-full bg-white text-sm font-medium text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800'
-                                    keyExtractor={(event) => event.id}
-                                    onSelect={(event, e) => {
-                                      e?.stopPropagation()
-                                      e?.preventDefault()
-
-                                      switchCustomEventChart(event.id)
+                                  <Checkbox
+                                    className={cx('px-4 py-2', { hidden: isPanelsDataEmpty || analyticsLoading })}
+                                    label={label}
+                                    disabled={conflicted}
+                                    checked={active}
+                                    onChange={() => {
+                                      switchTrafficChartMetric(pairID, conflicts)
                                     }}
-                                    chevron='mini'
-                                    headless
                                   />
                                 )
-                              }
-
-                              return (
-                                <Checkbox
-                                  className={cx('px-4 py-2', { hidden: isPanelsDataEmpty || analyticsLoading })}
-                                  label={label}
-                                  disabled={conflicted}
-                                  checked={active}
-                                  onChange={() => {
-                                    switchTrafficChartMetric(pairID, conflicts)
-                                  }}
-                                />
-                              )
-                            }}
-                            buttonClassName='!px-2.5'
-                            selectItemClassName='group text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 block text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'
-                            keyExtractor={(pair) => pair.id}
-                            onSelect={({ id: pairID, conflicts }) => {
-                              switchTrafficChartMetric(pairID, conflicts)
-                            }}
-                            chevron='mini'
-                            headless
-                          />
-                        )}
-                        {activeTab === PROJECT_TABS.errors &&
-                          allowedToManage &&
-                          activeError &&
-                          activeError?.details?.status !== 'resolved' && (
-                            <button
-                              type='button'
-                              disabled={errorStatusUpdating}
-                              onClick={markErrorAsResolved}
-                              className={cx('p-2 text-sm font-medium text-gray-700 dark:text-gray-50', {
-                                'cursor-not-allowed': isLoading || errorLoading,
-                                'opacity-50': errorLoading && !errorStatusUpdating,
-                                'animate-pulse cursor-not-allowed': errorStatusUpdating,
-                              })}
-                            >
-                              {t('project.resolve')}
-                            </button>
-                          )}
-                        {activeTab === PROJECT_TABS.errors &&
-                          allowedToManage &&
-                          activeError &&
-                          activeError?.details?.status === 'resolved' && (
-                            <button
-                              type='button'
-                              disabled={errorStatusUpdating}
-                              onClick={markErrorAsActive}
-                              className={cx('p-2 text-sm font-medium text-gray-700 dark:text-gray-50', {
-                                'cursor-not-allowed': isLoading || errorLoading,
-                                'opacity-50': errorLoading && !errorStatusUpdating,
-                                'animate-pulse cursor-not-allowed': errorStatusUpdating,
-                              })}
-                            >
-                              {t('project.markAsActive')}
-                            </button>
-                          )}
-                        {activeTab === PROJECT_TABS.errors && !activeError && (
-                          <Dropdown
-                            items={errorFilters}
-                            title={t('project.filters')}
-                            labelExtractor={(pair) => {
-                              const { label, active, id: pairID } = pair
-
-                              return (
-                                <Checkbox
-                                  className='px-4 py-2'
-                                  label={label}
-                                  checked={active}
-                                  onChange={() => switchActiveErrorFilter(pairID)}
-                                />
-                              )
-                            }}
-                            buttonClassName='!px-2.5'
-                            selectItemClassName='group text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 block text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'
-                            keyExtractor={(pair) => pair.id}
-                            onSelect={({ id: pairID }) => {
-                              switchActiveErrorFilter(pairID)
-                            }}
-                            chevron='mini'
-                            headless
-                          />
-                        )}
-                        {activeTab === PROJECT_TABS.funnels && (
-                          <button
-                            type='button'
-                            title={t('project.refreshStats')}
-                            onClick={refreshStats}
-                            className={cx(
-                              'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
-                              {
-                                'cursor-not-allowed opacity-50': isLoading || dataLoading,
-                              },
-                            )}
-                          >
-                            <ArrowPathIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
-                          </button>
-                        )}
-                        {activeTab === PROJECT_TABS.performance && !isPanelsDataEmptyPerf && (
-                          <Dropdown
-                            items={chartMetricsPerf}
-                            className='min-w-[170px] xs:min-w-0'
-                            title={
-                              <p>
-                                {
-                                  _find(chartMetricsPerf, ({ id: chartId }) => chartId === activeChartMetricsPerf)
-                                    ?.label
-                                }
-                              </p>
-                            }
-                            labelExtractor={(pair) => pair.label}
-                            keyExtractor={(pair) => pair.id}
-                            onSelect={({ id: pairID }) => {
-                              setActiveChartMetricsPerf(pairID)
-                            }}
-                            buttonClassName='!px-2.5'
-                            chevron='mini'
-                            headless
-                          />
-                        )}
-                        {activeTab === PROJECT_TABS.performance && !isPanelsDataEmptyPerf && (
-                          <Dropdown
-                            disabled={activeChartMetricsPerf === CHART_METRICS_MAPPING_PERF.quantiles}
-                            items={chartMeasuresPerf}
-                            className='min-w-[170px] xs:min-w-0'
-                            title={
-                              <p>
-                                {_find(chartMeasuresPerf, ({ id: chartId }) => chartId === activePerfMeasure)?.label}
-                              </p>
-                            }
-                            labelExtractor={(pair) => pair.label}
-                            keyExtractor={(pair) => pair.id}
-                            onSelect={({ id: pairID }) => {
-                              onMeasureChange(pairID)
-                            }}
-                            buttonClassName='!px-2.5'
-                            chevron='mini'
-                            headless
-                          />
-                        )}
-                        <TBPeriodSelector
-                          classes={{
-                            timeBucket: activeTab === PROJECT_TABS.errors && !activeEID ? 'hidden' : '',
-                          }}
-                          activePeriod={activePeriod}
-                          updateTimebucket={updateTimebucket}
-                          timeBucket={timeBucket}
-                          items={timeBucketSelectorItems}
-                          title={activePeriod?.label}
-                          onSelect={(pair) => {
-                            if (pair.period === PERIOD_PAIRS_COMPARE.COMPARE) {
-                              if (activeTab === PROJECT_TABS.alerts) {
-                                return
-                              }
-
-                              if (isActiveCompare) {
-                                compareDisable()
-                              } else {
-                                setIsActiveCompare(true)
-                              }
-
-                              return
-                            }
-
-                            if (pair.isCustomDate) {
-                              setTimeout(() => {
-                                // @ts-ignore
-                                refCalendar.current.openCalendar()
-                              }, 100)
-                            } else {
-                              setPeriodPairs(tbPeriodPairs(t, undefined, undefined, language))
-                              setDateRange(null)
-                              updatePeriod(pair)
-                            }
-                          }}
-                        />
-                        {isActiveCompare && activeTab !== PROJECT_TABS.errors && (
-                          <>
-                            <div className='text-md mx-2 whitespace-pre-line font-medium text-gray-600 dark:text-gray-200'>
-                              vs
-                            </div>
-                            <Dropdown
-                              items={periodPairsCompare}
-                              title={activeDropdownLabelCompare}
-                              labelExtractor={(pair) => pair.label}
-                              keyExtractor={(pair) => pair.label}
-                              onSelect={(pair) => {
-                                if (pair.period === PERIOD_PAIRS_COMPARE.DISABLE) {
-                                  compareDisable()
-                                  return
-                                }
-
-                                if (pair.period === PERIOD_PAIRS_COMPARE.CUSTOM) {
-                                  setTimeout(() => {
-                                    // @ts-ignore
-                                    refCalendarCompare.current.openCalendar()
-                                  }, 100)
-                                } else {
-                                  setPeriodPairsCompare(tbPeriodPairsCompare(t, undefined, language))
-                                  setDateRangeCompare(null)
-                                  setActivePeriodCompare(pair.period)
-                                }
+                              }}
+                              buttonClassName='!px-2.5'
+                              selectItemClassName='group text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 block text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'
+                              keyExtractor={(pair) => pair.id}
+                              onSelect={({ id: pairID, conflicts }) => {
+                                switchTrafficChartMetric(pairID, conflicts)
                               }}
                               chevron='mini'
                               headless
                             />
-                          </>
-                        )}
-                        <FlatPicker
-                          className='!mx-0'
-                          ref={refCalendar}
-                          onChange={setDateRange}
-                          value={dateRange || []}
-                          maxDateMonths={MAX_MONTHS_IN_PAST}
-                          maxRange={0}
-                        />
-                        <FlatPicker
-                          className='!mx-0'
-                          ref={refCalendarCompare}
-                          onChange={(date) => {
-                            setDateRangeCompare(date)
-                            setActivePeriodCompare(PERIOD_PAIRS_COMPARE.CUSTOM)
-                            setPeriodPairsCompare(tbPeriodPairsCompare(t, date, language))
-                          }}
-                          value={dateRangeCompare || []}
-                          maxDateMonths={MAX_MONTHS_IN_PAST}
-                          maxRange={maxRangeCompare}
-                        />
-                      </div>
-                    </div>
-                    {activeTab === PROJECT_TABS.funnels && (
-                      <button
-                        onClick={() => setActiveFunnel(null)}
-                        className='mx-auto mb-4 mt-2 flex items-center text-base font-normal text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100 lg:mx-0 lg:mt-0'
-                      >
-                        <ChevronLeftIcon className='h-4 w-4' />
-                        {t('project.backToFunnels')}
-                      </button>
-                    )}
-                  </>
-                )}
-              {activeTab === PROJECT_TABS.alerts && (isSharedProject || !project?.isOwner || !authenticated) && (
-                <div className='mt-5 rounded-xl bg-gray-700 p-5'>
-                  <div className='flex items-center text-gray-50'>
-                    <BellIcon className='mr-2 h-8 w-8' />
-                    <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>
-                  </div>
-                  <p className='mt-2 whitespace-pre-wrap text-lg text-gray-100'>{t('dashboard.alertsDesc')}</p>
-                  <Link
-                    to={routes.signup}
-                    className='mt-6 inline-block select-none rounded-md border border-transparent bg-white px-3 py-2 text-base font-medium text-gray-700 hover:bg-indigo-50'
-                    aria-label={t('titles.signup')}
-                  >
-                    {t('common.getStarted')}
-                  </Link>
-                </div>
-              )}
-              {activeTab === PROJECT_TABS.funnels && !activeFunnel && !_isEmpty(project.funnels) && (
-                <FunnelsList
-                  openFunnelSettings={(funnel?: IFunnel) => {
-                    if (funnel) {
-                      setFunnelToEdit(funnel)
-                      setIsNewFunnelOpened(true)
-                      return
-                    }
+                          )}
+                          {activeTab === PROJECT_TABS.errors &&
+                            allowedToManage &&
+                            activeError &&
+                            activeError?.details?.status !== 'resolved' && (
+                              <button
+                                type='button'
+                                disabled={errorStatusUpdating}
+                                onClick={markErrorAsResolved}
+                                className={cx('p-2 text-sm font-medium text-gray-700 dark:text-gray-50', {
+                                  'cursor-not-allowed': isLoading || errorLoading,
+                                  'opacity-50': errorLoading && !errorStatusUpdating,
+                                  'animate-pulse cursor-not-allowed': errorStatusUpdating,
+                                })}
+                              >
+                                {t('project.resolve')}
+                              </button>
+                            )}
+                          {activeTab === PROJECT_TABS.errors &&
+                            allowedToManage &&
+                            activeError &&
+                            activeError?.details?.status === 'resolved' && (
+                              <button
+                                type='button'
+                                disabled={errorStatusUpdating}
+                                onClick={markErrorAsActive}
+                                className={cx('p-2 text-sm font-medium text-gray-700 dark:text-gray-50', {
+                                  'cursor-not-allowed': isLoading || errorLoading,
+                                  'opacity-50': errorLoading && !errorStatusUpdating,
+                                  'animate-pulse cursor-not-allowed': errorStatusUpdating,
+                                })}
+                              >
+                                {t('project.markAsActive')}
+                              </button>
+                            )}
+                          {activeTab === PROJECT_TABS.errors && !activeError && (
+                            <Dropdown
+                              items={errorFilters}
+                              title={t('project.filters')}
+                              labelExtractor={(pair) => {
+                                const { label, active, id: pairID } = pair
 
-                    setIsNewFunnelOpened(true)
-                  }}
-                  openFunnel={setActiveFunnel}
-                  funnels={project.funnels}
-                  deleteFunnel={onFunnelDelete}
-                  loading={funnelActionLoading}
-                  authenticated={authenticated}
-                  allowedToManage={allowedToManage}
-                />
-              )}
-              {activeTab === PROJECT_TABS.funnels && !activeFunnel && _isEmpty(project.funnels) && (
-                <div className='mt-5 rounded-xl bg-gray-700 p-5'>
-                  <div className='flex items-center text-gray-50'>
-                    <FunnelIcon className='mr-2 h-8 w-8' />
-                    <p className='text-3xl font-bold'>{t('dashboard.funnels')}</p>
-                  </div>
-                  <p className='mt-2 whitespace-pre-wrap text-lg text-gray-100'>{t('dashboard.funnelsDesc')}</p>
-                  {authenticated ? (
-                    <button
-                      type='button'
-                      onClick={() => setIsNewFunnelOpened(true)}
-                      className='mt-6 inline-block select-none rounded-md border border-transparent bg-white px-3 py-2 text-base font-medium text-gray-700 hover:bg-indigo-50'
-                    >
-                      {t('dashboard.newFunnel')}
-                    </button>
-                  ) : (
+                                return (
+                                  <Checkbox
+                                    className='px-4 py-2'
+                                    label={label}
+                                    checked={active}
+                                    onChange={() => switchActiveErrorFilter(pairID)}
+                                  />
+                                )
+                              }}
+                              buttonClassName='!px-2.5'
+                              selectItemClassName='group text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 block text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'
+                              keyExtractor={(pair) => pair.id}
+                              onSelect={({ id: pairID }) => {
+                                switchActiveErrorFilter(pairID)
+                              }}
+                              chevron='mini'
+                              headless
+                            />
+                          )}
+                          {activeTab === PROJECT_TABS.funnels && (
+                            <button
+                              type='button'
+                              title={t('project.refreshStats')}
+                              onClick={refreshStats}
+                              className={cx(
+                                'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                                {
+                                  'cursor-not-allowed opacity-50': isLoading || dataLoading,
+                                },
+                              )}
+                            >
+                              <ArrowPathIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
+                            </button>
+                          )}
+                          {activeTab === PROJECT_TABS.performance && !isPanelsDataEmptyPerf && (
+                            <Dropdown
+                              items={chartMetricsPerf}
+                              className='min-w-[170px] xs:min-w-0'
+                              title={
+                                <p>
+                                  {
+                                    _find(chartMetricsPerf, ({ id: chartId }) => chartId === activeChartMetricsPerf)
+                                      ?.label
+                                  }
+                                </p>
+                              }
+                              labelExtractor={(pair) => pair.label}
+                              keyExtractor={(pair) => pair.id}
+                              onSelect={({ id: pairID }) => {
+                                setActiveChartMetricsPerf(pairID)
+                              }}
+                              buttonClassName='!px-2.5'
+                              chevron='mini'
+                              headless
+                            />
+                          )}
+                          {activeTab === PROJECT_TABS.performance && !isPanelsDataEmptyPerf && (
+                            <Dropdown
+                              disabled={activeChartMetricsPerf === CHART_METRICS_MAPPING_PERF.quantiles}
+                              items={chartMeasuresPerf}
+                              className='min-w-[170px] xs:min-w-0'
+                              title={
+                                <p>
+                                  {_find(chartMeasuresPerf, ({ id: chartId }) => chartId === activePerfMeasure)?.label}
+                                </p>
+                              }
+                              labelExtractor={(pair) => pair.label}
+                              keyExtractor={(pair) => pair.id}
+                              onSelect={({ id: pairID }) => {
+                                onMeasureChange(pairID)
+                              }}
+                              buttonClassName='!px-2.5'
+                              chevron='mini'
+                              headless
+                            />
+                          )}
+                          <TBPeriodSelector
+                            classes={{
+                              timeBucket: activeTab === PROJECT_TABS.errors && !activeEID ? 'hidden' : '',
+                            }}
+                            activePeriod={activePeriod}
+                            updateTimebucket={updateTimebucket}
+                            timeBucket={timeBucket}
+                            items={timeBucketSelectorItems}
+                            title={activePeriod?.label}
+                            onSelect={(pair) => {
+                              if (pair.period === PERIOD_PAIRS_COMPARE.COMPARE) {
+                                if (activeTab === PROJECT_TABS.alerts) {
+                                  return
+                                }
+
+                                if (isActiveCompare) {
+                                  compareDisable()
+                                } else {
+                                  setIsActiveCompare(true)
+                                }
+
+                                return
+                              }
+
+                              if (pair.isCustomDate) {
+                                setTimeout(() => {
+                                  // @ts-ignore
+                                  refCalendar.current.openCalendar()
+                                }, 100)
+                              } else {
+                                setPeriodPairs(tbPeriodPairs(t, undefined, undefined, language))
+                                setDateRange(null)
+                                updatePeriod(pair)
+                              }
+                            }}
+                          />
+                          {isActiveCompare && activeTab !== PROJECT_TABS.errors && (
+                            <>
+                              <div className='text-md mx-2 whitespace-pre-line font-medium text-gray-600 dark:text-gray-200'>
+                                vs
+                              </div>
+                              <Dropdown
+                                items={periodPairsCompare}
+                                title={activeDropdownLabelCompare}
+                                labelExtractor={(pair) => pair.label}
+                                keyExtractor={(pair) => pair.label}
+                                onSelect={(pair) => {
+                                  if (pair.period === PERIOD_PAIRS_COMPARE.DISABLE) {
+                                    compareDisable()
+                                    return
+                                  }
+
+                                  if (pair.period === PERIOD_PAIRS_COMPARE.CUSTOM) {
+                                    setTimeout(() => {
+                                      // @ts-ignore
+                                      refCalendarCompare.current.openCalendar()
+                                    }, 100)
+                                  } else {
+                                    setPeriodPairsCompare(tbPeriodPairsCompare(t, undefined, language))
+                                    setDateRangeCompare(null)
+                                    setActivePeriodCompare(pair.period)
+                                  }
+                                }}
+                                chevron='mini'
+                                headless
+                              />
+                            </>
+                          )}
+                          <FlatPicker
+                            className='!mx-0'
+                            ref={refCalendar}
+                            onChange={setDateRange}
+                            value={dateRange || []}
+                            maxDateMonths={MAX_MONTHS_IN_PAST}
+                            maxRange={0}
+                          />
+                          <FlatPicker
+                            className='!mx-0'
+                            ref={refCalendarCompare}
+                            onChange={(date) => {
+                              setDateRangeCompare(date)
+                              setActivePeriodCompare(PERIOD_PAIRS_COMPARE.CUSTOM)
+                              setPeriodPairsCompare(tbPeriodPairsCompare(t, date, language))
+                            }}
+                            value={dateRangeCompare || []}
+                            maxDateMonths={MAX_MONTHS_IN_PAST}
+                            maxRange={maxRangeCompare}
+                          />
+                        </div>
+                      </div>
+                      {activeTab === PROJECT_TABS.funnels && (
+                        <button
+                          onClick={() => setActiveFunnel(null)}
+                          className='mx-auto mb-4 mt-2 flex items-center text-base font-normal text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100 lg:mx-0 lg:mt-0'
+                        >
+                          <ChevronLeftIcon className='h-4 w-4' />
+                          {t('project.backToFunnels')}
+                        </button>
+                      )}
+                    </>
+                  )}
+                {activeTab === PROJECT_TABS.alerts && (isSharedProject || !project?.isOwner || !authenticated) && (
+                  <div className='mt-5 rounded-xl bg-gray-700 p-5'>
+                    <div className='flex items-center text-gray-50'>
+                      <BellIcon className='mr-2 h-8 w-8' />
+                      <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>
+                    </div>
+                    <p className='mt-2 whitespace-pre-wrap text-lg text-gray-100'>{t('dashboard.alertsDesc')}</p>
                     <Link
                       to={routes.signup}
                       className='mt-6 inline-block select-none rounded-md border border-transparent bg-white px-3 py-2 text-base font-medium text-gray-700 hover:bg-indigo-50'
@@ -4324,827 +4348,245 @@ const ViewProject = ({
                     >
                       {t('common.getStarted')}
                     </Link>
-                  )}
-                </div>
-              )}
-              {activeTab === PROJECT_TABS.sessions && !activePSID && (
-                <>
-                  <Filters
-                    filters={filtersSessions}
-                    onRemoveFilter={filterHandler}
-                    onChangeExclusive={onChangeExclusive}
-                    tnMapping={tnMapping}
-                    resetFilters={resetActiveTabFilters}
-                  />
-                  {(sessionsLoading === null || sessionsLoading) && _isEmpty(sessions) && <Loader />}
-                  {typeof sessionsLoading === 'boolean' && !sessionsLoading && _isEmpty(sessions) && (
-                    <NoEvents filters={filters} resetFilters={resetFilters} />
-                  )}
-                  <Sessions
-                    sessions={sessions}
-                    onClick={(psid) => {
-                      setActivePSID(psid)
-                    }}
-                    timeFormat={timeFormat}
-                  />
-                  {canLoadMoreSessions && (
-                    <button
-                      type='button'
-                      title={t('project.refreshStats')}
-                      onClick={() => loadSessions()}
-                      className={cx(
-                        'relative mx-auto mt-2 flex items-center rounded-md bg-gray-50 p-2 text-sm font-medium text-gray-700 hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
-                        {
-                          'cursor-not-allowed opacity-50': sessionsLoading || sessionsLoading === null,
-                          hidden: sessionsLoading && _isEmpty(sessions),
-                        },
-                      )}
-                    >
-                      <ArrowDownTrayIcon className='mr-2 h-5 w-5' />
-                      {t('project.loadMore')}
-                    </button>
-                  )}
-                </>
-              )}
-              {activeTab === PROJECT_TABS.sessions && activePSID && (
-                <>
-                  <button
-                    onClick={() => {
-                      setActiveSession(null)
-                      setActivePSID(null)
-                      const url = new URL(window.location.href)
-                      url.searchParams.delete('psid')
-                      window.history.pushState({}, '', url.toString())
-                    }}
-                    className='mx-auto mb-4 mt-2 flex items-center text-base font-normal text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100 lg:mx-0'
-                  >
-                    <ChevronLeftIcon className='h-4 w-4' />
-                    {t('project.backToSessions')}
-                  </button>
-                  {activeSession?.details && <SessionDetails details={activeSession?.details} />}
-                  {!_isEmpty(activeSession?.chart) && (
-                    <SessionChart
-                      chart={activeSession?.chart}
-                      timeBucket={activeSession?.timeBucket}
-                      timeFormat={timeFormat}
-                      rotateXAxis={rotateXAxis}
-                      chartType={chartType}
-                      dataNames={dataNames}
-                    />
-                  )}
-                  <Pageflow pages={activeSession?.pages} timeFormat={timeFormat} />
-                  {_isEmpty(activeSession) && sessionLoading && <Loader />}
-                  {activeSession !== null &&
-                    _isEmpty(activeSession?.chart) &&
-                    _isEmpty(activeSession?.pages) &&
-                    !sessionLoading && <NoSessionDetails />}
-                </>
-              )}
-              {activeTab === PROJECT_TABS.errors && !activeEID && (
-                <>
-                  <Filters
-                    filters={filtersErrors}
-                    onRemoveFilter={filterHandler}
-                    onChangeExclusive={onChangeExclusive}
-                    tnMapping={tnMapping}
-                    resetFilters={resetActiveTabFilters}
-                  />
-                  {(errorsLoading === null || errorsLoading) && _isEmpty(errors) && <Loader />}
-                  {typeof errorsLoading === 'boolean' && !errorsLoading && _isEmpty(errors) && (
-                    <NoEvents filters={filtersErrors} resetFilters={resetFilters} />
-                  )}
-                  <Errors
-                    errors={errors}
-                    onClick={(eidToLoad) => {
-                      setActiveEID(eidToLoad)
-                      setErrorLoading(true)
-                    }}
-                  />
-                  {canLoadMoreErrors && (
-                    <button
-                      type='button'
-                      title={t('project.refreshStats')}
-                      onClick={() => loadErrors()}
-                      className={cx(
-                        'relative mx-auto mt-2 flex items-center rounded-md bg-gray-50 p-2 text-sm font-medium text-gray-700 hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
-                        {
-                          'cursor-not-allowed opacity-50': errorsLoading,
-                          hidden: errorsLoading && _isEmpty(errors),
-                        },
-                      )}
-                    >
-                      <ArrowDownTrayIcon className='mr-2 h-5 w-5' />
-                      {t('project.loadMore')}
-                    </button>
-                  )}
-                </>
-              )}
-              {activeTab === PROJECT_TABS.errors && activeEID && (
-                <>
-                  <button
-                    onClick={() => {
-                      setActiveError(null)
-                      setActiveEID(null)
-                      const url = new URL(window.location.href)
-                      url.searchParams.delete('eid')
-                      window.history.pushState({}, '', url.toString())
-                    }}
-                    className='mx-auto mb-4 mt-2 flex items-center text-base font-normal text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100 lg:mx-0 lg:mt-0'
-                  >
-                    <ChevronLeftIcon className='h-4 w-4' />
-                    {t('project.backToErrors')}
-                  </button>
-                  {activeError?.details && <ErrorDetails details={activeError.details} />}
-                  {activeError?.chart && (
-                    <ErrorChart
-                      chart={activeError?.chart}
-                      timeBucket={activeError?.timeBucket}
-                      timeFormat={timeFormat}
-                      rotateXAxis={rotateXAxis}
-                      chartType={chartType}
-                      dataNames={dataNames}
-                    />
-                  )}
-                  <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
-                    {!_isEmpty(activeError?.params) &&
-                      _map(ERROR_PANELS_ORDER, (type: keyof typeof tnMapping) => {
-                        const panelName = tnMapping[type]
-                        // @ts-ignore
-                        const panelIcon = panelIconMapping[type]
-
-                        if (type === 'cc') {
-                          const ccPanelName = tnMapping[countryActiveTab]
-
-                          const rowMapper = (entry: ICountryEntry) => {
-                            const { name: entryName, cc } = entry
-
-                            if (cc) {
-                              return <CCRow cc={cc} name={entryName} language={language} />
-                            }
-
-                            return <CCRow cc={entryName} language={language} />
-                          }
-
-                          return (
-                            <Panel
-                              projectPassword={projectPassword}
-                              key={countryActiveTab}
-                              icon={panelIcon}
-                              id={countryActiveTab}
-                              onFilter={filterHandler}
-                              activeTab={activeTab}
-                              name={<CountryDropdown onSelect={setCountryActiveTab} title={ccPanelName} />}
-                              data={activeError.params[countryActiveTab]}
-                              rowMapper={rowMapper}
-                            />
-                          )
-                        }
-
-                        if (type === 'br') {
-                          const rowMapper = (entry: any) => {
-                            const { name: entryName } = entry
-                            // @ts-ignore
-                            const logoUrl = BROWSER_LOGO_MAP[entryName]
-
-                            if (!logoUrl) {
-                              return (
-                                <>
-                                  <GlobeAltIcon className='h-5 w-5' />
-                                  &nbsp;
-                                  {entryName}
-                                </>
-                              )
-                            }
-
-                            return (
-                              <>
-                                <img src={logoUrl} className='h-5 w-5' alt='' />
-                                &nbsp;
-                                {entryName}
-                              </>
-                            )
-                          }
-
-                          return (
-                            <Panel
-                              projectPassword={projectPassword}
-                              key={type}
-                              icon={panelIcon}
-                              id={type}
-                              activeTab={activeTab}
-                              onFilter={filterHandler}
-                              name={panelName}
-                              data={activeError.params[type]}
-                              rowMapper={rowMapper}
-                            />
-                          )
-                        }
-
-                        if (type === 'os') {
-                          const rowMapper = (entry: any) => {
-                            const { name: entryName } = entry
-                            // @ts-ignore
-                            const logoPathLight = OS_LOGO_MAP[entryName]
-                            // @ts-ignore
-                            const logoPathDark = OS_LOGO_MAP_DARK[entryName]
-
-                            let logoPath = _theme === 'dark' ? logoPathDark : logoPathLight
-                            logoPath ||= logoPathLight
-
-                            if (!logoPath) {
-                              return (
-                                <>
-                                  <GlobeAltIcon className='h-5 w-5' />
-                                  &nbsp;
-                                  {entryName}
-                                </>
-                              )
-                            }
-
-                            const logoUrl = `/${logoPath}`
-
-                            return (
-                              <>
-                                <img src={logoUrl} className='h-5 w-5 dark:fill-gray-50' alt='' />
-                                &nbsp;
-                                {entryName}
-                              </>
-                            )
-                          }
-
-                          return (
-                            <Panel
-                              projectPassword={projectPassword}
-                              key={type}
-                              icon={panelIcon}
-                              id={type}
-                              activeTab={activeTab}
-                              onFilter={filterHandler}
-                              name={panelName}
-                              data={activeError.params[type]}
-                              rowMapper={rowMapper}
-                            />
-                          )
-                        }
-
-                        if (type === 'dv') {
-                          return (
-                            <Panel
-                              projectPassword={projectPassword}
-                              key={type}
-                              activeTab={activeTab}
-                              icon={panelIcon}
-                              id={type}
-                              onFilter={filterHandler}
-                              name={panelName}
-                              data={activeError.params[type]}
-                              capitalize
-                            />
-                          )
-                        }
-
-                        if (type === 'pg') {
-                          return (
-                            <Panel
-                              projectPassword={projectPassword}
-                              key={type}
-                              icon={panelIcon}
-                              id={type}
-                              onFilter={filterHandler}
-                              onFragmentChange={setPgActiveFragment}
-                              // @ts-ignore
-                              rowMapper={({ name: entryName }) => {
-                                if (!entryName) {
-                                  return _toUpper(t('project.redactedPage'))
-                                }
-
-                                let decodedUri = entryName as string
-
-                                try {
-                                  decodedUri = decodeURIComponent(entryName)
-                                } catch (_) {
-                                  // do nothing
-                                }
-
-                                return decodedUri
-                              }}
-                              name={pgPanelNameMapping[pgActiveFragment]}
-                              data={activeError.params[type]}
-                              period={period}
-                              activeTab={activeTab}
-                              pid={id}
-                              timeBucket={timeBucket}
-                              filters={filters}
-                              from={dateRange ? getFormatDate(dateRange[0]) : null}
-                              to={dateRange ? getFormatDate(dateRange[1]) : null}
-                              timezone={timezone}
-                            />
-                          )
-                        }
-
-                        if (type === 'lc') {
-                          return (
-                            <Panel
-                              projectPassword={projectPassword}
-                              key={type}
-                              icon={panelIcon}
-                              id={type}
-                              activeTab={activeTab}
-                              onFilter={filterHandler}
-                              name={panelName}
-                              data={activeError.params[type]}
-                              rowMapper={({ name: entryName }: { name: string }) =>
-                                getLocaleDisplayName(entryName, language)
-                              }
-                            />
-                          )
-                        }
-
-                        return (
-                          <Panel
-                            projectPassword={projectPassword}
-                            key={type}
-                            icon={panelIcon}
-                            id={type}
-                            activeTab={activeTab}
-                            onFilter={filterHandler}
-                            name={panelName}
-                            data={activeError.params[type]}
-                          />
-                        )
-                      })}
                   </div>
-                  {_isEmpty(activeError) && errorLoading && <Loader />}
-                  {!errorLoading && _isEmpty(activeError) && <NoErrorDetails />}
-                </>
-              )}
-              {activeTab === PROJECT_TABS.alerts && !isSharedProject && project?.isOwner && authenticated && (
-                <ProjectAlertsView projectId={id} />
-              )}
-              {activeTab === PROJECT_TABS.uptime && !isSharedProject && project?.isOwner && authenticated && (
-                <Uptime projectId={id} />
-              )}
-              {analyticsLoading && (activeTab === PROJECT_TABS.traffic || activeTab === PROJECT_TABS.performance) && (
-                <Loader />
-              )}
-              {isPanelsDataEmpty && activeTab === PROJECT_TABS.traffic && (
-                <NoEvents filters={filters} resetFilters={resetFilters} />
-              )}
-              {isPanelsDataEmptyPerf && activeTab === PROJECT_TABS.performance && (
-                <NoEvents filters={filtersPerf} resetFilters={resetFilters} />
-              )}
-              {activeTab === PROJECT_TABS.traffic && (
-                <div className={cx('pt-2', { hidden: isPanelsDataEmpty || analyticsLoading })}>
-                  {!_isEmpty(overall) && (
-                    <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
-                      <MetricCards
-                        overall={overall}
-                        overallCompare={overallCompare}
-                        activePeriodCompare={activePeriodCompare}
-                      />
-                      {!_isEmpty(panelsData.meta) &&
-                        _map(panelsData.meta, ({ key, current, previous }) => (
-                          <React.Fragment key={key}>
-                            <MetricCard
-                              label={t('project.metrics.xAvg', { x: key })}
-                              value={current.avg}
-                              change={current.avg - previous.avg}
-                              goodChangeDirection='down'
-                              valueMapper={(value, type) =>
-                                `${type === 'badge' && value > 0 ? '+' : ''}${nLocaleFormatter(value)}`
-                              }
-                            />
-                            <MetricCard
-                              label={t('project.metrics.xTotal', { x: key })}
-                              value={current.sum}
-                              change={current.sum - previous.sum}
-                              goodChangeDirection='down'
-                              valueMapper={(value, type) =>
-                                `${type === 'badge' && value > 0 ? '+' : ''}${nLocaleFormatter(value)}`
-                              }
-                            />
-                          </React.Fragment>
-                        ))}
-                    </div>
-                  )}
-                  <div
-                    className={cx('h-80', {
-                      hidden: checkIfAllMetricsAreDisabled,
-                    })}
-                  >
-                    <div className='mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible' id='dataChart' />
-                  </div>
-                  <Filters
-                    filters={filters}
-                    onRemoveFilter={filterHandler}
-                    onChangeExclusive={onChangeExclusive}
-                    tnMapping={tnMapping}
-                    resetFilters={resetActiveTabFilters}
+                )}
+                {activeTab === PROJECT_TABS.funnels && !activeFunnel && !_isEmpty(project.funnels) && (
+                  <FunnelsList
+                    openFunnelSettings={(funnel?: IFunnel) => {
+                      if (funnel) {
+                        setFunnelToEdit(funnel)
+                        setIsNewFunnelOpened(true)
+                        return
+                      }
+
+                      setIsNewFunnelOpened(true)
+                    }}
+                    openFunnel={setActiveFunnel}
+                    funnels={project.funnels}
+                    deleteFunnel={onFunnelDelete}
+                    loading={funnelActionLoading}
+                    authenticated={authenticated}
+                    allowedToManage={allowedToManage}
                   />
-                  <CustomMetrics
-                    metrics={customMetrics}
-                    onRemoveMetric={(id) => onRemoveCustomMetric(id)}
-                    resetMetrics={resetCustomMetrics}
-                  />
-                  {dataLoading && (
-                    <div className='static mt-4 !bg-transparent' id='loader'>
-                      <div className='loader-head dark:!bg-slate-800'>
-                        <div className='first dark:!bg-slate-600' />
-                        <div className='second dark:!bg-slate-600' />
-                      </div>
+                )}
+                {activeTab === PROJECT_TABS.funnels && !activeFunnel && _isEmpty(project.funnels) && (
+                  <div className='mt-5 rounded-xl bg-gray-700 p-5'>
+                    <div className='flex items-center text-gray-50'>
+                      <FunnelIcon className='mr-2 h-8 w-8' />
+                      <p className='text-3xl font-bold'>{t('dashboard.funnels')}</p>
                     </div>
-                  )}
-                  <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
-                    {!_isEmpty(panelsData.types) &&
-                      _map(TRAFFIC_PANELS_ORDER, (type: keyof typeof tnMapping) => {
-                        const panelName = tnMapping[type]
-                        // @ts-ignore
-                        const panelIcon = panelIconMapping[type]
-                        const customTabs = _filter(customPanelTabs, (tab) => tab.panelID === type)
-
-                        if (type === 'cc') {
-                          const ccPanelName = tnMapping[countryActiveTab]
-
-                          const rowMapper = (entry: ICountryEntry) => {
-                            const { name: entryName, cc } = entry
-
-                            if (cc) {
-                              return <CCRow cc={cc} name={entryName} language={language} />
-                            }
-
-                            return <CCRow cc={entryName} language={language} />
-                          }
-
-                          return (
-                            <Panel
-                              projectPassword={projectPassword}
-                              key={countryActiveTab}
-                              icon={panelIcon}
-                              id={countryActiveTab}
-                              onFilter={filterHandler}
-                              activeTab={activeTab}
-                              name={<CountryDropdown onSelect={setCountryActiveTab} title={ccPanelName} />}
-                              data={panelsData.data[countryActiveTab]}
-                              customTabs={customTabs}
-                              rowMapper={rowMapper}
-                            />
-                          )
-                        }
-
-                        if (type === 'br') {
-                          const rowMapper = (entry: any) => {
-                            const { name: entryName } = entry
-                            // @ts-ignore
-                            const logoUrl = BROWSER_LOGO_MAP[entryName]
-
-                            if (!logoUrl) {
-                              return (
-                                <>
-                                  <GlobeAltIcon className='h-5 w-5' />
-                                  &nbsp;
-                                  {entryName}
-                                </>
-                              )
-                            }
-
-                            return (
-                              <>
-                                <img src={logoUrl} className='h-5 w-5' alt='' />
-                                &nbsp;
-                                {entryName}
-                              </>
-                            )
-                          }
-
-                          return (
-                            <Panel
-                              projectPassword={projectPassword}
-                              key={type}
-                              icon={panelIcon}
-                              id={type}
-                              activeTab={activeTab}
-                              onFilter={filterHandler}
-                              name={panelName}
-                              data={panelsData.data[type]}
-                              customTabs={customTabs}
-                              rowMapper={rowMapper}
-                            />
-                          )
-                        }
-
-                        if (type === 'os') {
-                          const rowMapper = (entry: any) => {
-                            const { name: entryName } = entry
-                            // @ts-ignore
-                            const logoPathLight = OS_LOGO_MAP[entryName]
-                            // @ts-ignore
-                            const logoPathDark = OS_LOGO_MAP_DARK[entryName]
-
-                            let logoPath = _theme === 'dark' ? logoPathDark : logoPathLight
-                            logoPath ||= logoPathLight
-
-                            if (!logoPath) {
-                              return (
-                                <>
-                                  <GlobeAltIcon className='h-5 w-5' />
-                                  &nbsp;
-                                  {entryName}
-                                </>
-                              )
-                            }
-
-                            const logoUrl = `/${logoPath}`
-
-                            return (
-                              <>
-                                <img src={logoUrl} className='h-5 w-5 dark:fill-gray-50' alt='' />
-                                &nbsp;
-                                {entryName}
-                              </>
-                            )
-                          }
-
-                          return (
-                            <Panel
-                              projectPassword={projectPassword}
-                              key={type}
-                              icon={panelIcon}
-                              id={type}
-                              activeTab={activeTab}
-                              onFilter={filterHandler}
-                              name={panelName}
-                              data={panelsData.data[type]}
-                              customTabs={customTabs}
-                              rowMapper={rowMapper}
-                            />
-                          )
-                        }
-
-                        if (type === 'dv') {
-                          return (
-                            <Panel
-                              projectPassword={projectPassword}
-                              key={type}
-                              activeTab={activeTab}
-                              icon={panelIcon}
-                              id={type}
-                              onFilter={filterHandler}
-                              name={panelName}
-                              data={panelsData.data[type]}
-                              customTabs={customTabs}
-                              capitalize
-                            />
-                          )
-                        }
-
-                        if (type === 'ref') {
-                          return (
-                            <Panel
-                              projectPassword={projectPassword}
-                              key={type}
-                              icon={panelIcon}
-                              id={type}
-                              onFilter={filterHandler}
-                              name={panelName}
-                              activeTab={activeTab}
-                              data={panelsData.data[type]}
-                              customTabs={customTabs}
-                              // @ts-ignore
-                              rowMapper={({ name: entryName }) => <RefRow rowName={entryName} />}
-                            />
-                          )
-                        }
-
-                        if (type === 'so') {
-                          const ccPanelName = tnMapping[utmActiveTab]
-
-                          return (
-                            <Panel
-                              projectPassword={projectPassword}
-                              key={utmActiveTab}
-                              icon={panelIcon}
-                              id={utmActiveTab}
-                              activeTab={activeTab}
-                              onFilter={filterHandler}
-                              name={<UTMDropdown onSelect={setUtmActiveTab} title={ccPanelName} />}
-                              data={panelsData.data[utmActiveTab]}
-                              customTabs={customTabs}
-                              // @ts-ignore
-                              rowMapper={({ name: entryName }) => decodeURIComponent(entryName)}
-                            />
-                          )
-                        }
-
-                        if (type === 'pg') {
-                          return (
-                            <Panel
-                              projectPassword={projectPassword}
-                              key={type}
-                              icon={panelIcon}
-                              id={type}
-                              onFilter={filterHandler}
-                              onFragmentChange={setPgActiveFragment}
-                              // @ts-ignore
-                              rowMapper={({ name: entryName }) => {
-                                if (!entryName) {
-                                  return _toUpper(t('project.redactedPage'))
-                                }
-
-                                let decodedUri = entryName as string
-
-                                try {
-                                  decodedUri = decodeURIComponent(entryName)
-                                } catch (_) {
-                                  // do nothing
-                                }
-
-                                return decodedUri
-                              }}
-                              name={pgPanelNameMapping[pgActiveFragment]}
-                              data={panelsData.data[type]}
-                              customTabs={customTabs}
-                              period={period}
-                              activeTab={activeTab}
-                              pid={id}
-                              timeBucket={timeBucket}
-                              filters={filters}
-                              from={dateRange ? getFormatDate(dateRange[0]) : null}
-                              to={dateRange ? getFormatDate(dateRange[1]) : null}
-                              timezone={timezone}
-                            />
-                          )
-                        }
-
-                        if (type === 'lc') {
-                          return (
-                            <Panel
-                              projectPassword={projectPassword}
-                              key={type}
-                              icon={panelIcon}
-                              id={type}
-                              activeTab={activeTab}
-                              onFilter={filterHandler}
-                              name={panelName}
-                              data={panelsData.data[type]}
-                              rowMapper={({ name: entryName }: { name: string }) =>
-                                getLocaleDisplayName(entryName, language)
-                              }
-                              customTabs={customTabs}
-                            />
-                          )
-                        }
-
-                        return (
-                          <Panel
-                            projectPassword={projectPassword}
-                            key={type}
-                            icon={panelIcon}
-                            id={type}
-                            activeTab={activeTab}
-                            onFilter={filterHandler}
-                            name={panelName}
-                            data={panelsData.data[type]}
-                            customTabs={customTabs}
-                          />
-                        )
-                      })}
-                    {!_isEmpty(panelsData.data) && (
-                      <Metadata
-                        customs={panelsData.customs}
-                        properties={panelsData.properties}
-                        filters={filters}
-                        onFilter={filterHandler}
-                        chartData={chartData}
-                        customTabs={_filter(customPanelTabs, (tab) => tab.panelID === 'ce')}
-                        getCustomEventMetadata={getCustomEventMetadata}
-                        getPropertyMetadata={_getPropertyMetadata}
-                      />
+                    <p className='mt-2 whitespace-pre-wrap text-lg text-gray-100'>{t('dashboard.funnelsDesc')}</p>
+                    {authenticated ? (
+                      <button
+                        type='button'
+                        onClick={() => setIsNewFunnelOpened(true)}
+                        className='mt-6 inline-block select-none rounded-md border border-transparent bg-white px-3 py-2 text-base font-medium text-gray-700 hover:bg-indigo-50'
+                      >
+                        {t('dashboard.newFunnel')}
+                      </button>
+                    ) : (
+                      <Link
+                        to={routes.signup}
+                        className='mt-6 inline-block select-none rounded-md border border-transparent bg-white px-3 py-2 text-base font-medium text-gray-700 hover:bg-indigo-50'
+                        aria-label={t('titles.signup')}
+                      >
+                        {t('common.getStarted')}
+                      </Link>
                     )}
                   </div>
-                </div>
-              )}
-              {activeTab === PROJECT_TABS.performance && (
-                <div className={cx('pt-8 md:pt-4', { hidden: isPanelsDataEmptyPerf || analyticsLoading })}>
-                  {!_isEmpty(overallPerformance) && (
-                    <PerformanceMetricCards
-                      overall={overallPerformance}
-                      overallCompare={overallPerformanceCompare}
-                      activePeriodCompare={activePeriodCompare}
+                )}
+                {activeTab === PROJECT_TABS.sessions && !activePSID && (
+                  <>
+                    <Filters
+                      filters={filtersSessions}
+                      onRemoveFilter={filterHandler}
+                      onChangeExclusive={onChangeExclusive}
+                      tnMapping={tnMapping}
+                      resetFilters={resetActiveTabFilters}
                     />
-                  )}
-                  <div
-                    className={cx('h-80', {
-                      hidden: checkIfAllMetricsAreDisabled,
-                    })}
-                  >
-                    <div className='h-80 [&_svg]:!overflow-visible' id='dataChart' />
-                  </div>
-                  <Filters
-                    filters={filtersPerf}
-                    onRemoveFilter={filterHandler}
-                    onChangeExclusive={onChangeExclusive}
-                    tnMapping={tnMapping}
-                    resetFilters={resetActiveTabFilters}
-                  />
-                  {dataLoading && (
-                    <div className='static mt-4 !bg-transparent' id='loader'>
-                      <div className='loader-head dark:!bg-slate-800'>
-                        <div className='first dark:!bg-slate-600' />
-                        <div className='second dark:!bg-slate-600' />
-                      </div>
-                    </div>
-                  )}
-                  <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
-                    {!_isEmpty(panelsDataPerf.types) &&
-                      _map(PERFORMANCE_PANELS_ORDER, (type: keyof typeof tnMapping) => {
-                        const panelName = tnMapping[type]
-                        // @ts-ignore
-                        const panelIcon = panelIconMapping[type]
-                        const customTabs = _filter(customPanelTabs, (tab) => tab.panelID === type)
+                    {(sessionsLoading === null || sessionsLoading) && _isEmpty(sessions) && <Loader />}
+                    {typeof sessionsLoading === 'boolean' && !sessionsLoading && _isEmpty(sessions) && (
+                      <NoEvents filters={filters} resetFilters={resetFilters} />
+                    )}
+                    <Sessions
+                      sessions={sessions}
+                      onClick={(psid) => {
+                        setActivePSID(psid)
+                      }}
+                      timeFormat={timeFormat}
+                    />
+                    {canLoadMoreSessions && (
+                      <button
+                        type='button'
+                        title={t('project.refreshStats')}
+                        onClick={() => loadSessions()}
+                        className={cx(
+                          'relative mx-auto mt-2 flex items-center rounded-md bg-gray-50 p-2 text-sm font-medium text-gray-700 hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                          {
+                            'cursor-not-allowed opacity-50': sessionsLoading || sessionsLoading === null,
+                            hidden: sessionsLoading && _isEmpty(sessions),
+                          },
+                        )}
+                      >
+                        <ArrowDownTrayIcon className='mr-2 h-5 w-5' />
+                        {t('project.loadMore')}
+                      </button>
+                    )}
+                  </>
+                )}
+                {activeTab === PROJECT_TABS.sessions && activePSID && (
+                  <>
+                    <button
+                      onClick={() => {
+                        setActiveSession(null)
+                        setActivePSID(null)
+                        const url = new URL(window.location.href)
+                        url.searchParams.delete('psid')
+                        window.history.pushState({}, '', url.toString())
+                      }}
+                      className='mx-auto mb-4 mt-2 flex items-center text-base font-normal text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100 lg:mx-0'
+                    >
+                      <ChevronLeftIcon className='h-4 w-4' />
+                      {t('project.backToSessions')}
+                    </button>
+                    {activeSession?.details && <SessionDetails details={activeSession?.details} />}
+                    {!_isEmpty(activeSession?.chart) && (
+                      <SessionChart
+                        chart={activeSession?.chart}
+                        timeBucket={activeSession?.timeBucket}
+                        timeFormat={timeFormat}
+                        rotateXAxis={rotateXAxis}
+                        chartType={chartType}
+                        dataNames={dataNames}
+                      />
+                    )}
+                    <Pageflow pages={activeSession?.pages} timeFormat={timeFormat} />
+                    {_isEmpty(activeSession) && sessionLoading && <Loader />}
+                    {activeSession !== null &&
+                      _isEmpty(activeSession?.chart) &&
+                      _isEmpty(activeSession?.pages) &&
+                      !sessionLoading && <NoSessionDetails />}
+                  </>
+                )}
+                {activeTab === PROJECT_TABS.errors && !activeEID && (
+                  <>
+                    <Filters
+                      filters={filtersErrors}
+                      onRemoveFilter={filterHandler}
+                      onChangeExclusive={onChangeExclusive}
+                      tnMapping={tnMapping}
+                      resetFilters={resetActiveTabFilters}
+                    />
+                    {(errorsLoading === null || errorsLoading) && _isEmpty(errors) && <Loader />}
+                    {typeof errorsLoading === 'boolean' && !errorsLoading && _isEmpty(errors) && (
+                      <NoEvents filters={filtersErrors} resetFilters={resetFilters} />
+                    )}
+                    <Errors
+                      errors={errors}
+                      onClick={(eidToLoad) => {
+                        setActiveEID(eidToLoad)
+                        setErrorLoading(true)
+                      }}
+                    />
+                    {canLoadMoreErrors && (
+                      <button
+                        type='button'
+                        title={t('project.refreshStats')}
+                        onClick={() => loadErrors()}
+                        className={cx(
+                          'relative mx-auto mt-2 flex items-center rounded-md bg-gray-50 p-2 text-sm font-medium text-gray-700 hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                          {
+                            'cursor-not-allowed opacity-50': errorsLoading,
+                            hidden: errorsLoading && _isEmpty(errors),
+                          },
+                        )}
+                      >
+                        <ArrowDownTrayIcon className='mr-2 h-5 w-5' />
+                        {t('project.loadMore')}
+                      </button>
+                    )}
+                  </>
+                )}
+                {activeTab === PROJECT_TABS.errors && activeEID && (
+                  <>
+                    <button
+                      onClick={() => {
+                        setActiveError(null)
+                        setActiveEID(null)
+                        const url = new URL(window.location.href)
+                        url.searchParams.delete('eid')
+                        window.history.pushState({}, '', url.toString())
+                      }}
+                      className='mx-auto mb-4 mt-2 flex items-center text-base font-normal text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100 lg:mx-0 lg:mt-0'
+                    >
+                      <ChevronLeftIcon className='h-4 w-4' />
+                      {t('project.backToErrors')}
+                    </button>
+                    {activeError?.details && <ErrorDetails details={activeError.details} />}
+                    {activeError?.chart && (
+                      <ErrorChart
+                        chart={activeError?.chart}
+                        timeBucket={activeError?.timeBucket}
+                        timeFormat={timeFormat}
+                        rotateXAxis={rotateXAxis}
+                        chartType={chartType}
+                        dataNames={dataNames}
+                      />
+                    )}
+                    <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
+                      {!_isEmpty(activeError?.params) &&
+                        _map(ERROR_PANELS_ORDER, (type: keyof typeof tnMapping) => {
+                          const panelName = tnMapping[type]
+                          // @ts-ignore
+                          const panelIcon = panelIconMapping[type]
 
-                        if (type === 'cc') {
-                          const ccPanelName = tnMapping[countryActiveTab]
+                          if (type === 'cc') {
+                            const ccPanelName = tnMapping[countryActiveTab]
 
-                          const rowMapper = (entry: ICountryEntry) => {
-                            const { name: entryName, cc } = entry
+                            const rowMapper = (entry: ICountryEntry) => {
+                              const { name: entryName, cc } = entry
 
-                            if (cc) {
-                              return <CCRow cc={cc} name={entryName} language={language} />
+                              if (cc) {
+                                return <CCRow cc={cc} name={entryName} language={language} />
+                              }
+
+                              return <CCRow cc={entryName} language={language} />
                             }
 
-                            return <CCRow cc={entryName} language={language} />
+                            return (
+                              <Panel
+                                projectPassword={projectPassword}
+                                key={countryActiveTab}
+                                icon={panelIcon}
+                                id={countryActiveTab}
+                                onFilter={filterHandler}
+                                activeTab={activeTab}
+                                name={<CountryDropdown onSelect={setCountryActiveTab} title={ccPanelName} />}
+                                data={activeError.params[countryActiveTab]}
+                                rowMapper={rowMapper}
+                              />
+                            )
                           }
 
-                          return (
-                            <Panel
-                              projectPassword={projectPassword}
-                              key={countryActiveTab}
-                              icon={panelIcon}
-                              id={countryActiveTab}
-                              onFilter={filterHandler}
-                              name={<CountryDropdown onSelect={setCountryActiveTab} title={ccPanelName} />}
-                              activeTab={activeTab}
-                              data={panelsDataPerf.data[countryActiveTab]}
-                              customTabs={customTabs}
-                              rowMapper={rowMapper}
+                          if (type === 'br') {
+                            const rowMapper = (entry: any) => {
+                              const { name: entryName } = entry
                               // @ts-ignore
-                              valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
-                            />
-                          )
-                        }
+                              const logoUrl = BROWSER_LOGO_MAP[entryName]
 
-                        if (type === 'dv') {
-                          return (
-                            <Panel
-                              projectPassword={projectPassword}
-                              key={type}
-                              icon={panelIcon}
-                              id={type}
-                              onFilter={filterHandler}
-                              name={panelName}
-                              activeTab={activeTab}
-                              data={panelsDataPerf.data[type]}
-                              customTabs={customTabs}
-                              // @ts-ignore
-                              valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
-                              capitalize
-                            />
-                          )
-                        }
+                              if (!logoUrl) {
+                                return (
+                                  <>
+                                    <GlobeAltIcon className='h-5 w-5' />
+                                    &nbsp;
+                                    {entryName}
+                                  </>
+                                )
+                              }
 
-                        if (type === 'pg') {
-                          return (
-                            <Panel
-                              projectPassword={projectPassword}
-                              key={type}
-                              icon={panelIcon}
-                              id={type}
-                              activeTab={activeTab}
-                              onFilter={filterHandler}
-                              name={panelName}
-                              data={panelsDataPerf.data[type]}
-                              customTabs={customTabs}
-                              // @ts-ignore
-                              valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
-                              // @ts-ignore
-                              rowMapper={({ name: entryName }) => {
-                                // todo: add uppercase
-                                return entryName || t('project.redactedPage')
-                              }}
-                            />
-                          )
-                        }
-
-                        if (type === 'br') {
-                          const rowMapper = (entry: any) => {
-                            const { name: entryName } = entry
-                            // @ts-ignore
-                            const logoUrl = BROWSER_LOGO_MAP[entryName]
-
-                            if (!logoUrl) {
                               return (
                                 <>
-                                  <GlobeAltIcon className='h-5 w-5' />
+                                  <img src={logoUrl} className='h-5 w-5' alt='' />
                                   &nbsp;
                                   {entryName}
                                 </>
@@ -5152,11 +4594,655 @@ const ViewProject = ({
                             }
 
                             return (
-                              <>
-                                <img src={logoUrl} className='h-5 w-5' alt='' />
-                                &nbsp;
-                                {entryName}
-                              </>
+                              <Panel
+                                projectPassword={projectPassword}
+                                key={type}
+                                icon={panelIcon}
+                                id={type}
+                                activeTab={activeTab}
+                                onFilter={filterHandler}
+                                name={panelName}
+                                data={activeError.params[type]}
+                                rowMapper={rowMapper}
+                              />
+                            )
+                          }
+
+                          if (type === 'os') {
+                            const rowMapper = (entry: any) => {
+                              const { name: entryName } = entry
+                              // @ts-ignore
+                              const logoPathLight = OS_LOGO_MAP[entryName]
+                              // @ts-ignore
+                              const logoPathDark = OS_LOGO_MAP_DARK[entryName]
+
+                              let logoPath = _theme === 'dark' ? logoPathDark : logoPathLight
+                              logoPath ||= logoPathLight
+
+                              if (!logoPath) {
+                                return (
+                                  <>
+                                    <GlobeAltIcon className='h-5 w-5' />
+                                    &nbsp;
+                                    {entryName}
+                                  </>
+                                )
+                              }
+
+                              const logoUrl = `/${logoPath}`
+
+                              return (
+                                <>
+                                  <img src={logoUrl} className='h-5 w-5 dark:fill-gray-50' alt='' />
+                                  &nbsp;
+                                  {entryName}
+                                </>
+                              )
+                            }
+
+                            return (
+                              <Panel
+                                projectPassword={projectPassword}
+                                key={type}
+                                icon={panelIcon}
+                                id={type}
+                                activeTab={activeTab}
+                                onFilter={filterHandler}
+                                name={panelName}
+                                data={activeError.params[type]}
+                                rowMapper={rowMapper}
+                              />
+                            )
+                          }
+
+                          if (type === 'dv') {
+                            return (
+                              <Panel
+                                projectPassword={projectPassword}
+                                key={type}
+                                activeTab={activeTab}
+                                icon={panelIcon}
+                                id={type}
+                                onFilter={filterHandler}
+                                name={panelName}
+                                data={activeError.params[type]}
+                                capitalize
+                              />
+                            )
+                          }
+
+                          if (type === 'pg') {
+                            return (
+                              <Panel
+                                projectPassword={projectPassword}
+                                key={type}
+                                icon={panelIcon}
+                                id={type}
+                                onFilter={filterHandler}
+                                onFragmentChange={setPgActiveFragment}
+                                // @ts-ignore
+                                rowMapper={({ name: entryName }) => {
+                                  if (!entryName) {
+                                    return _toUpper(t('project.redactedPage'))
+                                  }
+
+                                  let decodedUri = entryName as string
+
+                                  try {
+                                    decodedUri = decodeURIComponent(entryName)
+                                  } catch (_) {
+                                    // do nothing
+                                  }
+
+                                  return decodedUri
+                                }}
+                                name={pgPanelNameMapping[pgActiveFragment]}
+                                data={activeError.params[type]}
+                                period={period}
+                                activeTab={activeTab}
+                                pid={id}
+                                timeBucket={timeBucket}
+                                filters={filters}
+                                from={dateRange ? getFormatDate(dateRange[0]) : null}
+                                to={dateRange ? getFormatDate(dateRange[1]) : null}
+                                timezone={timezone}
+                              />
+                            )
+                          }
+
+                          if (type === 'lc') {
+                            return (
+                              <Panel
+                                projectPassword={projectPassword}
+                                key={type}
+                                icon={panelIcon}
+                                id={type}
+                                activeTab={activeTab}
+                                onFilter={filterHandler}
+                                name={panelName}
+                                data={activeError.params[type]}
+                                rowMapper={({ name: entryName }: { name: string }) =>
+                                  getLocaleDisplayName(entryName, language)
+                                }
+                              />
+                            )
+                          }
+
+                          return (
+                            <Panel
+                              projectPassword={projectPassword}
+                              key={type}
+                              icon={panelIcon}
+                              id={type}
+                              activeTab={activeTab}
+                              onFilter={filterHandler}
+                              name={panelName}
+                              data={activeError.params[type]}
+                            />
+                          )
+                        })}
+                    </div>
+                    {_isEmpty(activeError) && errorLoading && <Loader />}
+                    {!errorLoading && _isEmpty(activeError) && <NoErrorDetails />}
+                  </>
+                )}
+                {activeTab === PROJECT_TABS.alerts && !isSharedProject && project?.isOwner && authenticated && (
+                  <ProjectAlertsView projectId={id} />
+                )}
+                {activeTab === PROJECT_TABS.uptime && !isSharedProject && project?.isOwner && authenticated && (
+                  <Uptime />
+                )}
+                {analyticsLoading && (activeTab === PROJECT_TABS.traffic || activeTab === PROJECT_TABS.performance) && (
+                  <Loader />
+                )}
+                {isPanelsDataEmpty && activeTab === PROJECT_TABS.traffic && (
+                  <NoEvents filters={filters} resetFilters={resetFilters} />
+                )}
+                {isPanelsDataEmptyPerf && activeTab === PROJECT_TABS.performance && (
+                  <NoEvents filters={filtersPerf} resetFilters={resetFilters} />
+                )}
+                {activeTab === PROJECT_TABS.traffic && (
+                  <div className={cx('pt-2', { hidden: isPanelsDataEmpty || analyticsLoading })}>
+                    {!_isEmpty(overall) && (
+                      <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
+                        <MetricCards
+                          overall={overall}
+                          overallCompare={overallCompare}
+                          activePeriodCompare={activePeriodCompare}
+                        />
+                        {!_isEmpty(panelsData.meta) &&
+                          _map(panelsData.meta, ({ key, current, previous }) => (
+                            <React.Fragment key={key}>
+                              <MetricCard
+                                label={t('project.metrics.xAvg', { x: key })}
+                                value={current.avg}
+                                change={current.avg - previous.avg}
+                                goodChangeDirection='down'
+                                valueMapper={(value, type) =>
+                                  `${type === 'badge' && value > 0 ? '+' : ''}${nLocaleFormatter(value)}`
+                                }
+                              />
+                              <MetricCard
+                                label={t('project.metrics.xTotal', { x: key })}
+                                value={current.sum}
+                                change={current.sum - previous.sum}
+                                goodChangeDirection='down'
+                                valueMapper={(value, type) =>
+                                  `${type === 'badge' && value > 0 ? '+' : ''}${nLocaleFormatter(value)}`
+                                }
+                              />
+                            </React.Fragment>
+                          ))}
+                      </div>
+                    )}
+                    <div
+                      className={cx('h-80', {
+                        hidden: checkIfAllMetricsAreDisabled,
+                      })}
+                    >
+                      <div className='mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible' id='dataChart' />
+                    </div>
+                    <Filters
+                      filters={filters}
+                      onRemoveFilter={filterHandler}
+                      onChangeExclusive={onChangeExclusive}
+                      tnMapping={tnMapping}
+                      resetFilters={resetActiveTabFilters}
+                    />
+                    <CustomMetrics
+                      metrics={customMetrics}
+                      onRemoveMetric={(id) => onRemoveCustomMetric(id)}
+                      resetMetrics={resetCustomMetrics}
+                    />
+                    {dataLoading && (
+                      <div className='static mt-4 !bg-transparent' id='loader'>
+                        <div className='loader-head dark:!bg-slate-800'>
+                          <div className='first dark:!bg-slate-600' />
+                          <div className='second dark:!bg-slate-600' />
+                        </div>
+                      </div>
+                    )}
+                    <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
+                      {!_isEmpty(panelsData.types) &&
+                        _map(TRAFFIC_PANELS_ORDER, (type: keyof typeof tnMapping) => {
+                          const panelName = tnMapping[type]
+                          // @ts-ignore
+                          const panelIcon = panelIconMapping[type]
+                          const customTabs = _filter(customPanelTabs, (tab) => tab.panelID === type)
+
+                          if (type === 'cc') {
+                            const ccPanelName = tnMapping[countryActiveTab]
+
+                            const rowMapper = (entry: ICountryEntry) => {
+                              const { name: entryName, cc } = entry
+
+                              if (cc) {
+                                return <CCRow cc={cc} name={entryName} language={language} />
+                              }
+
+                              return <CCRow cc={entryName} language={language} />
+                            }
+
+                            return (
+                              <Panel
+                                projectPassword={projectPassword}
+                                key={countryActiveTab}
+                                icon={panelIcon}
+                                id={countryActiveTab}
+                                onFilter={filterHandler}
+                                activeTab={activeTab}
+                                name={<CountryDropdown onSelect={setCountryActiveTab} title={ccPanelName} />}
+                                data={panelsData.data[countryActiveTab]}
+                                customTabs={customTabs}
+                                rowMapper={rowMapper}
+                              />
+                            )
+                          }
+
+                          if (type === 'br') {
+                            const rowMapper = (entry: any) => {
+                              const { name: entryName } = entry
+                              // @ts-ignore
+                              const logoUrl = BROWSER_LOGO_MAP[entryName]
+
+                              if (!logoUrl) {
+                                return (
+                                  <>
+                                    <GlobeAltIcon className='h-5 w-5' />
+                                    &nbsp;
+                                    {entryName}
+                                  </>
+                                )
+                              }
+
+                              return (
+                                <>
+                                  <img src={logoUrl} className='h-5 w-5' alt='' />
+                                  &nbsp;
+                                  {entryName}
+                                </>
+                              )
+                            }
+
+                            return (
+                              <Panel
+                                projectPassword={projectPassword}
+                                key={type}
+                                icon={panelIcon}
+                                id={type}
+                                activeTab={activeTab}
+                                onFilter={filterHandler}
+                                name={panelName}
+                                data={panelsData.data[type]}
+                                customTabs={customTabs}
+                                rowMapper={rowMapper}
+                              />
+                            )
+                          }
+
+                          if (type === 'os') {
+                            const rowMapper = (entry: any) => {
+                              const { name: entryName } = entry
+                              // @ts-ignore
+                              const logoPathLight = OS_LOGO_MAP[entryName]
+                              // @ts-ignore
+                              const logoPathDark = OS_LOGO_MAP_DARK[entryName]
+
+                              let logoPath = _theme === 'dark' ? logoPathDark : logoPathLight
+                              logoPath ||= logoPathLight
+
+                              if (!logoPath) {
+                                return (
+                                  <>
+                                    <GlobeAltIcon className='h-5 w-5' />
+                                    &nbsp;
+                                    {entryName}
+                                  </>
+                                )
+                              }
+
+                              const logoUrl = `/${logoPath}`
+
+                              return (
+                                <>
+                                  <img src={logoUrl} className='h-5 w-5 dark:fill-gray-50' alt='' />
+                                  &nbsp;
+                                  {entryName}
+                                </>
+                              )
+                            }
+
+                            return (
+                              <Panel
+                                projectPassword={projectPassword}
+                                key={type}
+                                icon={panelIcon}
+                                id={type}
+                                activeTab={activeTab}
+                                onFilter={filterHandler}
+                                name={panelName}
+                                data={panelsData.data[type]}
+                                customTabs={customTabs}
+                                rowMapper={rowMapper}
+                              />
+                            )
+                          }
+
+                          if (type === 'dv') {
+                            return (
+                              <Panel
+                                projectPassword={projectPassword}
+                                key={type}
+                                activeTab={activeTab}
+                                icon={panelIcon}
+                                id={type}
+                                onFilter={filterHandler}
+                                name={panelName}
+                                data={panelsData.data[type]}
+                                customTabs={customTabs}
+                                capitalize
+                              />
+                            )
+                          }
+
+                          if (type === 'ref') {
+                            return (
+                              <Panel
+                                projectPassword={projectPassword}
+                                key={type}
+                                icon={panelIcon}
+                                id={type}
+                                onFilter={filterHandler}
+                                name={panelName}
+                                activeTab={activeTab}
+                                data={panelsData.data[type]}
+                                customTabs={customTabs}
+                                // @ts-ignore
+                                rowMapper={({ name: entryName }) => <RefRow rowName={entryName} />}
+                              />
+                            )
+                          }
+
+                          if (type === 'so') {
+                            const ccPanelName = tnMapping[utmActiveTab]
+
+                            return (
+                              <Panel
+                                projectPassword={projectPassword}
+                                key={utmActiveTab}
+                                icon={panelIcon}
+                                id={utmActiveTab}
+                                activeTab={activeTab}
+                                onFilter={filterHandler}
+                                name={<UTMDropdown onSelect={setUtmActiveTab} title={ccPanelName} />}
+                                data={panelsData.data[utmActiveTab]}
+                                customTabs={customTabs}
+                                // @ts-ignore
+                                rowMapper={({ name: entryName }) => decodeURIComponent(entryName)}
+                              />
+                            )
+                          }
+
+                          if (type === 'pg') {
+                            return (
+                              <Panel
+                                projectPassword={projectPassword}
+                                key={type}
+                                icon={panelIcon}
+                                id={type}
+                                onFilter={filterHandler}
+                                onFragmentChange={setPgActiveFragment}
+                                // @ts-ignore
+                                rowMapper={({ name: entryName }) => {
+                                  if (!entryName) {
+                                    return _toUpper(t('project.redactedPage'))
+                                  }
+
+                                  let decodedUri = entryName as string
+
+                                  try {
+                                    decodedUri = decodeURIComponent(entryName)
+                                  } catch (_) {
+                                    // do nothing
+                                  }
+
+                                  return decodedUri
+                                }}
+                                name={pgPanelNameMapping[pgActiveFragment]}
+                                data={panelsData.data[type]}
+                                customTabs={customTabs}
+                                period={period}
+                                activeTab={activeTab}
+                                pid={id}
+                                timeBucket={timeBucket}
+                                filters={filters}
+                                from={dateRange ? getFormatDate(dateRange[0]) : null}
+                                to={dateRange ? getFormatDate(dateRange[1]) : null}
+                                timezone={timezone}
+                              />
+                            )
+                          }
+
+                          if (type === 'lc') {
+                            return (
+                              <Panel
+                                projectPassword={projectPassword}
+                                key={type}
+                                icon={panelIcon}
+                                id={type}
+                                activeTab={activeTab}
+                                onFilter={filterHandler}
+                                name={panelName}
+                                data={panelsData.data[type]}
+                                rowMapper={({ name: entryName }: { name: string }) =>
+                                  getLocaleDisplayName(entryName, language)
+                                }
+                                customTabs={customTabs}
+                              />
+                            )
+                          }
+
+                          return (
+                            <Panel
+                              projectPassword={projectPassword}
+                              key={type}
+                              icon={panelIcon}
+                              id={type}
+                              activeTab={activeTab}
+                              onFilter={filterHandler}
+                              name={panelName}
+                              data={panelsData.data[type]}
+                              customTabs={customTabs}
+                            />
+                          )
+                        })}
+                      {!_isEmpty(panelsData.data) && (
+                        <Metadata
+                          customs={panelsData.customs}
+                          properties={panelsData.properties}
+                          filters={filters}
+                          onFilter={filterHandler}
+                          chartData={chartData}
+                          customTabs={_filter(customPanelTabs, (tab) => tab.panelID === 'ce')}
+                          getCustomEventMetadata={getCustomEventMetadata}
+                          getPropertyMetadata={_getPropertyMetadata}
+                        />
+                      )}
+                    </div>
+                  </div>
+                )}
+                {activeTab === PROJECT_TABS.performance && (
+                  <div className={cx('pt-8 md:pt-4', { hidden: isPanelsDataEmptyPerf || analyticsLoading })}>
+                    {!_isEmpty(overallPerformance) && (
+                      <PerformanceMetricCards
+                        overall={overallPerformance}
+                        overallCompare={overallPerformanceCompare}
+                        activePeriodCompare={activePeriodCompare}
+                      />
+                    )}
+                    <div
+                      className={cx('h-80', {
+                        hidden: checkIfAllMetricsAreDisabled,
+                      })}
+                    >
+                      <div className='h-80 [&_svg]:!overflow-visible' id='dataChart' />
+                    </div>
+                    <Filters
+                      filters={filtersPerf}
+                      onRemoveFilter={filterHandler}
+                      onChangeExclusive={onChangeExclusive}
+                      tnMapping={tnMapping}
+                      resetFilters={resetActiveTabFilters}
+                    />
+                    {dataLoading && (
+                      <div className='static mt-4 !bg-transparent' id='loader'>
+                        <div className='loader-head dark:!bg-slate-800'>
+                          <div className='first dark:!bg-slate-600' />
+                          <div className='second dark:!bg-slate-600' />
+                        </div>
+                      </div>
+                    )}
+                    <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
+                      {!_isEmpty(panelsDataPerf.types) &&
+                        _map(PERFORMANCE_PANELS_ORDER, (type: keyof typeof tnMapping) => {
+                          const panelName = tnMapping[type]
+                          // @ts-ignore
+                          const panelIcon = panelIconMapping[type]
+                          const customTabs = _filter(customPanelTabs, (tab) => tab.panelID === type)
+
+                          if (type === 'cc') {
+                            const ccPanelName = tnMapping[countryActiveTab]
+
+                            const rowMapper = (entry: ICountryEntry) => {
+                              const { name: entryName, cc } = entry
+
+                              if (cc) {
+                                return <CCRow cc={cc} name={entryName} language={language} />
+                              }
+
+                              return <CCRow cc={entryName} language={language} />
+                            }
+
+                            return (
+                              <Panel
+                                projectPassword={projectPassword}
+                                key={countryActiveTab}
+                                icon={panelIcon}
+                                id={countryActiveTab}
+                                onFilter={filterHandler}
+                                name={<CountryDropdown onSelect={setCountryActiveTab} title={ccPanelName} />}
+                                activeTab={activeTab}
+                                data={panelsDataPerf.data[countryActiveTab]}
+                                customTabs={customTabs}
+                                rowMapper={rowMapper}
+                                // @ts-ignore
+                                valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
+                              />
+                            )
+                          }
+
+                          if (type === 'dv') {
+                            return (
+                              <Panel
+                                projectPassword={projectPassword}
+                                key={type}
+                                icon={panelIcon}
+                                id={type}
+                                onFilter={filterHandler}
+                                name={panelName}
+                                activeTab={activeTab}
+                                data={panelsDataPerf.data[type]}
+                                customTabs={customTabs}
+                                // @ts-ignore
+                                valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
+                                capitalize
+                              />
+                            )
+                          }
+
+                          if (type === 'pg') {
+                            return (
+                              <Panel
+                                projectPassword={projectPassword}
+                                key={type}
+                                icon={panelIcon}
+                                id={type}
+                                activeTab={activeTab}
+                                onFilter={filterHandler}
+                                name={panelName}
+                                data={panelsDataPerf.data[type]}
+                                customTabs={customTabs}
+                                // @ts-ignore
+                                valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
+                                // @ts-ignore
+                                rowMapper={({ name: entryName }) => {
+                                  // todo: add uppercase
+                                  return entryName || t('project.redactedPage')
+                                }}
+                              />
+                            )
+                          }
+
+                          if (type === 'br') {
+                            const rowMapper = (entry: any) => {
+                              const { name: entryName } = entry
+                              // @ts-ignore
+                              const logoUrl = BROWSER_LOGO_MAP[entryName]
+
+                              if (!logoUrl) {
+                                return (
+                                  <>
+                                    <GlobeAltIcon className='h-5 w-5' />
+                                    &nbsp;
+                                    {entryName}
+                                  </>
+                                )
+                              }
+
+                              return (
+                                <>
+                                  <img src={logoUrl} className='h-5 w-5' alt='' />
+                                  &nbsp;
+                                  {entryName}
+                                </>
+                              )
+                            }
+
+                            return (
+                              <Panel
+                                projectPassword={projectPassword}
+                                key={type}
+                                icon={panelIcon}
+                                id={type}
+                                activeTab={activeTab}
+                                onFilter={filterHandler}
+                                name={panelName}
+                                data={panelsDataPerf.data[type]}
+                                customTabs={customTabs}
+                                // @ts-ignore
+                                valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
+                                rowMapper={rowMapper}
+                              />
                             )
                           }
 
@@ -5173,113 +5259,96 @@ const ViewProject = ({
                               customTabs={customTabs}
                               // @ts-ignore
                               valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
-                              rowMapper={rowMapper}
                             />
                           )
-                        }
-
-                        return (
-                          <Panel
-                            projectPassword={projectPassword}
-                            key={type}
-                            icon={panelIcon}
-                            id={type}
-                            activeTab={activeTab}
-                            onFilter={filterHandler}
-                            name={panelName}
-                            data={panelsDataPerf.data[type]}
-                            customTabs={customTabs}
-                            // @ts-ignore
-                            valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
-                          />
-                        )
-                      })}
-                  </div>
-                </div>
-              )}
-              {activeTab === PROJECT_TABS.funnels && (
-                <div className={cx('pt-4 md:pt-0', { hidden: !activeFunnel || analyticsLoading })}>
-                  <div className='h-80'>
-                    <div className='mt-5 h-80 md:mt-0' id='dataChart' />
-                  </div>
-                  {dataLoading && (
-                    <div className='static mt-4 !bg-transparent' id='loader'>
-                      <div className='loader-head dark:!bg-slate-800'>
-                        <div className='first dark:!bg-slate-600' />
-                        <div className='second dark:!bg-slate-600' />
-                      </div>
+                        })}
                     </div>
-                  )}
-                </div>
-              )}
+                  </div>
+                )}
+                {activeTab === PROJECT_TABS.funnels && (
+                  <div className={cx('pt-4 md:pt-0', { hidden: !activeFunnel || analyticsLoading })}>
+                    <div className='h-80'>
+                      <div className='mt-5 h-80 md:mt-0' id='dataChart' />
+                    </div>
+                    {dataLoading && (
+                      <div className='static mt-4 !bg-transparent' id='loader'>
+                        <div className='loader-head dark:!bg-slate-800'>
+                          <div className='first dark:!bg-slate-600' />
+                          <div className='second dark:!bg-slate-600' />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-          <Forecast
-            isOpened={isForecastOpened}
-            onClose={() => setIsForecastOpened(false)}
-            onSubmit={onForecastSubmit}
-            activeTB={t(`project.${timeBucket}`)}
-            tb={timeBucket}
-          />
-          <ViewProjectHotkeys isOpened={isHotkeysHelpOpened} onClose={() => setIsHotkeysHelpOpened(false)} />
-          <NewFunnel
-            project={project}
-            projectPassword={projectPassword}
-            pid={id}
-            funnel={funnelToEdit}
-            isOpened={isNewFunnelOpened}
-            allowedToManage={allowedToManage}
-            onClose={() => {
-              setIsNewFunnelOpened(false)
-              setFunnelToEdit(undefined)
-            }}
-            onSubmit={async (name: string, steps: string[]) => {
-              if (funnelToEdit) {
-                await onFunnelEdit(funnelToEdit.id, name, steps)
-                return
-              }
+            <Forecast
+              isOpened={isForecastOpened}
+              onClose={() => setIsForecastOpened(false)}
+              onSubmit={onForecastSubmit}
+              activeTB={t(`project.${timeBucket}`)}
+              tb={timeBucket}
+            />
+            <ViewProjectHotkeys isOpened={isHotkeysHelpOpened} onClose={() => setIsHotkeysHelpOpened(false)} />
+            <NewFunnel
+              project={project}
+              projectPassword={projectPassword}
+              pid={id}
+              funnel={funnelToEdit}
+              isOpened={isNewFunnelOpened}
+              allowedToManage={allowedToManage}
+              onClose={() => {
+                setIsNewFunnelOpened(false)
+                setFunnelToEdit(undefined)
+              }}
+              onSubmit={async (name: string, steps: string[]) => {
+                if (funnelToEdit) {
+                  await onFunnelEdit(funnelToEdit.id, name, steps)
+                  return
+                }
 
-              await onFunnelCreate(name, steps)
-            }}
-            loading={funnelActionLoading}
-          />
-          <SearchFilters
-            type={activeTab === PROJECT_TABS.errors ? 'errors' : 'traffic'}
-            projectPassword={projectPassword}
-            showModal={showFiltersSearch}
-            setShowModal={setShowFiltersSearch}
-            setProjectFilter={onFilterSearch}
-            pid={id}
-            tnMapping={tnMapping}
-            filters={
-              activeTab === PROJECT_TABS.performance
-                ? filtersPerf
-                : activeTab === PROJECT_TABS.sessions
-                  ? filtersSessions
-                  : activeTab === PROJECT_TABS.errors
-                    ? filtersErrors
-                    : filters
-            }
-          />
-          <AddAViewModal
-            projectPassword={projectPassword}
-            showModal={isAddAViewOpened}
-            setShowModal={(show) => {
-              setIsAddAViewOpened(show)
-              setProjectViewToUpdate(undefined)
-            }}
-            onSubmit={() => {
-              setProjectViews([])
-              setProjectViewsLoading(null)
-              setProjectViewToUpdate(undefined)
-            }}
-            defaultView={projectViewToUpdate}
-            showError={showError}
-            pid={id}
-            tnMapping={tnMapping}
-          />
-          {!embedded && <Footer authenticated={authenticated} minimal showDBIPMessage />}
-        </>
+                await onFunnelCreate(name, steps)
+              }}
+              loading={funnelActionLoading}
+            />
+            <SearchFilters
+              type={activeTab === PROJECT_TABS.errors ? 'errors' : 'traffic'}
+              projectPassword={projectPassword}
+              showModal={showFiltersSearch}
+              setShowModal={setShowFiltersSearch}
+              setProjectFilter={onFilterSearch}
+              pid={id}
+              tnMapping={tnMapping}
+              filters={
+                activeTab === PROJECT_TABS.performance
+                  ? filtersPerf
+                  : activeTab === PROJECT_TABS.sessions
+                    ? filtersSessions
+                    : activeTab === PROJECT_TABS.errors
+                      ? filtersErrors
+                      : filters
+              }
+            />
+            <AddAViewModal
+              projectPassword={projectPassword}
+              showModal={isAddAViewOpened}
+              setShowModal={(show) => {
+                setIsAddAViewOpened(show)
+                setProjectViewToUpdate(undefined)
+              }}
+              onSubmit={() => {
+                setProjectViews([])
+                setProjectViewsLoading(null)
+                setProjectViewToUpdate(undefined)
+              }}
+              defaultView={projectViewToUpdate}
+              showError={showError}
+              pid={id}
+              tnMapping={tnMapping}
+            />
+            {!embedded && <Footer authenticated={authenticated} minimal showDBIPMessage />}
+          </>
+        </ViewProjectContext.Provider>
       )}
     </ClientOnly>
   )
