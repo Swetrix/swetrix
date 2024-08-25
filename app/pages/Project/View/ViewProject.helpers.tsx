@@ -1276,7 +1276,8 @@ const getSettingsUptime = (
       },
       y: {
         tick: {
-          format: (d: number) => nFormatter(d, 1),
+          // @ts-expect-error
+          format: (d: string) => getStringFromTime(getTimeFromSeconds(d), true),
         },
         show: true,
         inner: true,
@@ -1299,7 +1300,7 @@ const getSettingsUptime = (
                 <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
                 <span>${el.name}</span>
               </div>
-              <span class='pl-4'>${el.value}</span>
+              <span class='pl-4'>${getStringFromTime(getTimeFromSeconds(el.value), true)}</span>
             </li>
             `,
           ).join('')}`
