@@ -33,7 +33,7 @@ import {
   ApiOkResponse,
   ApiNoContentResponse,
 } from '@nestjs/swagger'
-import { FindConditions, ILike, In } from 'typeorm'
+import { Equal, FindConditions, ILike, In } from 'typeorm'
 import * as _isEmpty from 'lodash/isEmpty'
 import * as _map from 'lodash/map'
 import * as _trim from 'lodash/trim'
@@ -1892,7 +1892,7 @@ export class ProjectController {
     await this.projectService.deleteShare(shareId)
   }
 
-  @ApiOperation({ summary: 'Get monitors for the project' })
+  @ApiOperation({ summary: 'Get monitors for all user projects' })
   @ApiBearerAuth()
   @ApiOkResponse({ type: MonitorEntity })
   @Get('/monitors')
@@ -2189,6 +2189,47 @@ export class ProjectController {
     // TODO add caching
 
     return this.projectService.sendPredictAiRequest(params.projectId)
+  }
+
+  @ApiOperation({ summary: 'Get monitors for a project' })
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: MonitorEntity })
+  @Get(':projectId/monitors')
+  @Auth([], true, true)
+  public async getProjectMonitors(
+    @Param() { projectId }: ProjectIdDto,
+    @CurrentUserId() userId: string,
+    @Query('take') take: number | undefined,
+    @Query('skip') skip: number | undefined,
+    @Headers() headers: { 'x-password'?: string },
+  ): Promise<Pagination<MonitorEntity>> {
+    this.logger.log({ userId, take, skip }, 'GET /project/:projectId/monitors')
+
+    const project = await this.projectService.findProject(projectId, [
+      'admin',
+      'share',
+    ])
+
+    if (!project) {
+      throw new NotFoundException('Project not found.')
+    }
+
+    this.projectService.allowedToView(project, userId, headers['x-password'])
+
+    const result = await this.projectService.paginateMonitors(
+      {
+        take,
+        skip,
+      },
+      { project: Equal(project.id) },
+    )
+
+    result.results = _map(result.results, monitor => ({
+      ..._omit(monitor, ['project']),
+      projectId: monitor.project.id,
+    }))
+
+    return result
   }
 
   @ApiOperation({ summary: 'Create monitor for the project' })
