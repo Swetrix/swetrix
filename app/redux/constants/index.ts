@@ -203,6 +203,7 @@ export const FILTERS_PERIOD_PAIRS = ['1h', '1d', '7d', '4w', '3M', '12M', 'custo
 export const ERROR_PERIOD_PAIRS = ['1h', '1d', '7d', '4w', '3M', '12M']
 
 export const FUNNELS_PERIOD_PAIRS = ['1h', '1d', '7d', '4w', '3M', '12M', 'custom']
+export const UPTIME_PERIOD_PAIRS = ['1h', '1d', '7d', '4w', '3M', '12M', 'custom']
 
 export const tbPeriodPairsCompare = (
   t: Function,
