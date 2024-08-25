@@ -1030,6 +1030,31 @@ export const getMonitorOverallStats = (
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
+export const getMonitorStats = (
+  pid: string,
+  monitorId: string,
+  period: string = '1d',
+  timeBucket: string = 'hour',
+  from: string = '',
+  to: string = '',
+  timezone: string = '',
+  password: string | undefined = '',
+) =>
+  api
+    .get(
+      `log/monitor-data?pid=${pid}&monitorId=${monitorId}&timeBucket=${timeBucket}&period=${period}&from=${from}&to=${to}&timezone=${timezone}`,
+      {
+        headers: {
+          'x-password': password,
+        },
+      },
+    )
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
 export const createMonitor = (pid: string, data: ICreateMonitor) =>
   api
     .post(`project/${pid}/monitor`, data)
