@@ -3056,12 +3056,11 @@ export class AnalyticsService {
           })
           // TODO: TYPE
           .then(resultSet => resultSet.json<any>())
-        const { count } = this.extractUptimeChartData(data, x)
+        const { avgResponseTime } = this.extractUptimeChartData(data, x)
 
         chart = {
-          // todo: other stuff
           x: this.shiftToTimezone(x, safeTimezone, format),
-          count,
+          avgResponseTime,
         }
       })(),
     ]
