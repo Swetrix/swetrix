@@ -19,7 +19,7 @@ import { IAlerts } from 'redux/models/IAlerts'
 import { ISharedProject } from 'redux/models/ISharedProject'
 import { ISubscribers } from 'redux/models/ISubscribers'
 import { IFilter, IProjectViewCustomEvent } from 'pages/Project/View/interfaces/traffic'
-import { Monitor } from 'redux/models/Uptime'
+import { Monitor, MonitorOverall } from 'redux/models/Uptime'
 
 const debug = Debug('swetrix:api')
 
@@ -999,6 +999,32 @@ export const getAllMonitors = (take: number = DEFAULT_MONITORS_TAKE, skip: numbe
         page_total: number
       } => response.data,
     )
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getMonitorOverallStats = (
+  pid: string,
+  monitorIds: string[],
+  period: string,
+  from = '',
+  to = '',
+  timezone = 'Etc/GMT',
+  password?: string,
+) =>
+  api
+    .get(
+      `log/monitor-data/birdseye?pid=${pid}&monitorIds=[${_map(monitorIds, (pid) => `"${pid}"`).join(
+        ',',
+      )}]&period=${period}&from=${from}&to=${to}&timezone=${timezone}`,
+      {
+        headers: {
+          'x-password': password,
+        },
+      },
+    )
+    .then((response): MonitorOverall => response.data)
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
