@@ -302,7 +302,7 @@ export class TaskManagerService {
     const now = dayjs.utc().format('DD.MM.YYYY')
     const timeAgo = dayjs
       .utc()
-      // @ts-ignore
+      // @ts-expect-error
       .subtract(...params.dayjsParams)
       .format('DD.MM.YYYY')
     const date = `${timeAgo} - ${now}`
@@ -364,7 +364,7 @@ export class TaskManagerService {
     const now = dayjs.utc().format('DD.MM.YYYY')
     const timeAgo = dayjs
       .utc()
-      // @ts-ignore
+      // @ts-expect-error
       .subtract(...params.dayjsParams)
       .format('DD.MM.YYYY')
     const date = `${timeAgo} - ${now}`
@@ -994,7 +994,7 @@ export class TaskManagerService {
       const text = `🔔 Alert *${alert.name}* got triggered!\nYour project *${project.name}* has *${online}* online users right now!`
 
       if (online >= alert.queryValue) {
-        // @ts-ignore
+        // @ts-expect-error
         await this.alertService.update(alert.id, {
           lastTriggered: new Date(),
         })
@@ -1083,7 +1083,7 @@ export class TaskManagerService {
       const count = Number(queryResult[0]['count()'])
 
       if (count >= alert.queryValue) {
-        // @ts-ignore
+        // @ts-expect-error
         await this.alertService.update(alert.id, {
           lastTriggered: new Date(),
         })
