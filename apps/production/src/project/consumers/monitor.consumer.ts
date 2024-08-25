@@ -7,7 +7,7 @@ import { CreateMonitorHttpRequestDTO } from '../dto/create-monitor.dto'
 import { clickhouse } from '../../common/integrations/clickhouse'
 import { ProjectService } from '../project.service'
 import { MailerService } from '../../mailer/mailer.service'
-import { LetterTemplate } from '../../mailer/letter'
+// import { LetterTemplate } from '../../mailer/letter'
 
 @Processor('monitor')
 export class MonitorConsumer {
@@ -30,23 +30,24 @@ export class MonitorConsumer {
       region: string
     } = await firstValueFrom(this.monitorService.send('http-request', job.data))
 
-    const monitor = await this.projectService.getMonitor(job.data.monitorId)
+    // const monitor = await this.projectService.getMonitor(job.data.monitorId)
 
-    if (!monitor.acceptedStatusCodes.includes(res.statusCode)) {
-      try {
-        await this.mailerService.sendEmail(
-          monitor.project.admin.email,
-          LetterTemplate.UptimeMonitoringFailure,
-          {
-            projectName: monitor.project.name,
-            monitorName: monitor.name,
-          },
-        )
-      } catch (reason) {
-        console.error('Monitor failure: sendEmail action failed')
-        console.error(reason)
-      }
-    }
+    // TODO: Don't send emails yet as we need to configure a system when we can send only 1 email on downtime and on uptime, not on every failed request
+    // if (!monitor.acceptedStatusCodes.includes(res.statusCode)) {
+    //   try {
+    //     await this.mailerService.sendEmail(
+    //       monitor.project.admin.email,
+    //       LetterTemplate.UptimeMonitoringFailure,
+    //       {
+    //         projectName: monitor.project.name,
+    //         monitorName: monitor.name,
+    //       },
+    //     )
+    //   } catch (reason) {
+    //     console.error('Monitor failure: sendEmail action failed')
+    //     console.error(reason)
+    //   }
+    // }
 
     try {
       await clickhouse.insert({
