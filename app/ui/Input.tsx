@@ -7,35 +7,31 @@ import Beta from 'ui/Beta'
 interface IInput {
   label?: string | JSX.Element
   hint?: string | JSX.Element
-  placeholder?: string
-  type?: string
-  name?: string
   className?: string
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
   error?: string | null | boolean
-  value?: string | number
   disabled?: boolean
-  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void
   isBeta?: boolean
-  maxLength?: number
+  hintPosition?: 'top' | 'bottom'
+  classes?: {
+    input?: string
+  }
 }
+
+// TODO: Merge className and classes
 
 const Input = ({
   label,
   hint,
-  placeholder,
-  type = 'text',
-  name,
   className,
-  onChange,
   error,
-  value,
   disabled,
-  onKeyDown,
   isBeta,
-  maxLength,
-}: IInput): JSX.Element => {
+  classes,
+  hintPosition = 'bottom',
+  ...rest
+}: IInput & React.InputHTMLAttributes<HTMLInputElement>): JSX.Element => {
   const isError = !_isEmpty(error)
+  const type = rest.type || 'text'
 
   return (
     <Field as='div' className={className}>
@@ -47,26 +43,25 @@ const Input = ({
           </div>
         )}
       </Label>
+      {hint && hintPosition === 'top' && (
+        <Description className='mt-1 whitespace-pre-line text-sm text-gray-500 dark:text-gray-300'>{hint}</Description>
+      )}
       <HeadlessInput
         type={type}
-        value={value}
-        maxLength={maxLength}
-        name={name}
-        onChange={onChange}
-        onKeyDown={onKeyDown}
         className={cx(
           'block w-full rounded-md border-gray-300 shadow-sm dark:border-slate-800/25 dark:bg-slate-800 dark:text-gray-50 dark:placeholder-gray-400 sm:text-sm',
           {
             'text-red-900 placeholder-red-300 ring-1 ring-red-600': isError,
             'cursor-text': disabled,
           },
+          classes?.input,
         )}
-        placeholder={placeholder}
         disabled={disabled}
         invalid={isError}
+        {...rest}
       />
       {isError && <p className='mt-2 text-sm text-red-600 dark:text-red-500'>{error}</p>}
-      {hint && (
+      {hint && hintPosition === 'bottom' && (
         <Description className='mt-2 whitespace-pre-line text-sm text-gray-500 dark:text-gray-300'>{hint}</Description>
       )}
     </Field>
