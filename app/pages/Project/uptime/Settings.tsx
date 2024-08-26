@@ -239,7 +239,7 @@ const UptimeSettings = (): JSX.Element => {
     if (
       acceptedStatusCodes.some((statusCode) => {
         const trimmedStatusCode = Number(statusCode.trim())
-        return !_isNaN(trimmedStatusCode) && trimmedStatusCode >= 100 && trimmedStatusCode <= 599
+        return _isNaN(trimmedStatusCode) || trimmedStatusCode < 100 || trimmedStatusCode > 599
       })
     ) {
       allErrors.acceptedStatusCodes = t('monitor.error.acceptedStatusCodesNotValid')
