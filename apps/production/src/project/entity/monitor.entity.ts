@@ -67,7 +67,7 @@ export class MonitorEntity {
   @ApiProperty()
   @Column({ type: 'json', nullable: true })
   httpOptions: {
-    method: string[]
+    method: string
     body?: Record<string, unknown>
     headers?: Record<string, string>
   }

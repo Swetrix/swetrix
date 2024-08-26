@@ -49,8 +49,8 @@ export enum HttpType {
 // DTO for HTTP Options
 export class HttpOptions {
   @IsArray()
-  @IsEnum(HttpMethodEnum, { each: true })
-  method: HttpMethodEnum[]
+  @IsEnum(HttpMethodEnum)
+  method: HttpMethodEnum
 
   @IsOptional()
   @IsObject()
