@@ -7,7 +7,7 @@ export interface HttpRequestOptions {
   timeout: number
   acceptedStatusCodes: number[]
   httpOptions: {
-    method: string[]
+    method: string
     body?: Record<string, unknown>
     headers?: Record<string, string>
   }
