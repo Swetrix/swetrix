@@ -1455,7 +1455,7 @@ export class ProjectService {
       where: {
         id: monitorId,
       },
-      relations: ['group', 'group.project', 'group.project.admin'],
+      relations: ['project'],
     })
   }
 
