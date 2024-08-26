@@ -7,10 +7,24 @@ export enum DashboardBlockReason {
   'subscription_cancelled' = 'subscription_cancelled',
 }
 
+enum PlanCode {
+  none = 'none',
+  free = 'free',
+  trial = 'trial',
+  hobby = 'hobby',
+  freelancer = 'freelancer',
+  '200k' = '200k',
+  '500k' = '500k',
+  startup = 'startup',
+  '2m' = '2m',
+  enterprise = 'enterprise',
+  '10m' = '10m',
+}
+
 export interface IUser {
   id: string
   roles: string[]
-  planCode: string
+  planCode: PlanCode
   nickname: string
   email: string
   isActive: boolean

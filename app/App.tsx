@@ -101,6 +101,7 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
     !_endsWith(pathname, '/subscribers/invite') &&
     !_endsWith(pathname, '/subscribers/invite') &&
     !_includes(pathname, '/alerts/') &&
+    !_includes(pathname, '/uptime/') &&
     !_includes(pathname, '/settings/')
 
   const routesWithOutHeader = [

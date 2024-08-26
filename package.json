@@ -84,7 +84,7 @@
         "error",
         "prefer-single"
       ],
-      "lodash/prefer-lodash-method": "warn",
+      "lodash/prefer-lodash-method": "off",
       "comma-dangle": [
         "warn",
         "always-multiline"

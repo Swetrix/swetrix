@@ -3,6 +3,7 @@ import { cacheActions } from './cache'
 import { miscActions } from './misc'
 import { projectsActions } from './projects'
 import { themeActions } from './theme'
+import { monitorActions } from './monitors'
 
 const UIActions = {
   ...alertsActions,
@@ -10,6 +11,7 @@ const UIActions = {
   ...miscActions,
   ...projectsActions,
   ...themeActions,
+  ...monitorActions,
 }
 
 export default UIActions

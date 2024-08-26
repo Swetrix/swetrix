@@ -21,6 +21,7 @@ export default function* initialise() {
       yield put(sagaActions.loadProjectsCaptcha())
       yield put(sagaActions.loadExtensions())
       yield put(sagaActions.loadProjectAlerts())
+      yield put(sagaActions.loadMonitors())
     }
 
     if (!isSelfhosted) {
