@@ -44,6 +44,7 @@ export default function* singinWorker({ payload: { credentials, callback } }: IS
     yield put(sagaActions.loadSharedProjects())
     yield put(sagaActions.loadProjectsCaptcha())
     yield put(sagaActions.loadProjectAlerts())
+    yield put(sagaActions.loadMonitors())
     callback(true, false)
   } catch (error) {
     // @ts-ignore

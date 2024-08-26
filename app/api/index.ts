@@ -11,7 +11,7 @@ import { authActions } from 'redux/reducers/auth'
 import sagaActions from 'redux/sagas/actions'
 import { getAccessToken, removeAccessToken, setAccessToken } from 'utils/accessToken'
 import { getRefreshToken, removeRefreshToken } from 'utils/refreshToken'
-import { DEFAULT_ALERTS_TAKE, API_URL } from 'redux/constants'
+import { DEFAULT_ALERTS_TAKE, API_URL, DEFAULT_MONITORS_TAKE } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { IAuth } from 'redux/models/IAuth'
 import { IProject, IOverall, IProjectNames } from 'redux/models/IProject'
@@ -20,6 +20,7 @@ import { ISharedProject } from 'redux/models/ISharedProject'
 import { ISubscribers } from 'redux/models/ISubscribers'
 import { IFilter, IProjectViewCustomEvent } from 'pages/Project/View/interfaces/traffic'
 import { AIResponse } from 'pages/Project/View/interfaces/ai'
+import { Monitor, MonitorOverall } from 'redux/models/Uptime'
 
 const debug = Debug('swetrix:api')
 
@@ -979,6 +980,120 @@ export const updateAlert = (id: string, data: Partial<IAlerts>) =>
 export const deleteAlert = (id: string) =>
   api
     .delete(`alert/${id}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export interface ICreateMonitor extends Omit<Monitor, 'id' | 'createdAt' | 'updatedAt'> {}
+
+export const getAllMonitors = (take: number = DEFAULT_MONITORS_TAKE, skip: number = 0) =>
+  api
+    .get(`project/monitors?take=${take}&skip=${skip}`)
+    .then(
+      (
+        response,
+      ): {
+        results: Monitor[]
+        total: number
+        page_total: number
+      } => response.data,
+    )
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getProjectMonitors = (projectId: string, take: number = DEFAULT_MONITORS_TAKE, skip: number = 0) =>
+  api
+    .get(`project/${projectId}/monitors?take=${take}&skip=${skip}`)
+    .then(
+      (
+        response,
+      ): {
+        results: Monitor[]
+        total: number
+        page_total: number
+      } => response.data,
+    )
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getMonitorOverallStats = (
+  pid: string,
+  monitorIds: string[],
+  period: string,
+  from = '',
+  to = '',
+  timezone = 'Etc/GMT',
+  password?: string,
+) =>
+  api
+    .get(
+      `log/monitor-data/birdseye?pid=${pid}&monitorIds=[${_map(monitorIds, (pid) => `"${pid}"`).join(
+        ',',
+      )}]&period=${period}&from=${from}&to=${to}&timezone=${timezone}`,
+      {
+        headers: {
+          'x-password': password,
+        },
+      },
+    )
+    .then((response): MonitorOverall => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getMonitorStats = (
+  pid: string,
+  monitorId: string,
+  period: string = '1d',
+  timeBucket: string = 'hour',
+  from: string = '',
+  to: string = '',
+  timezone: string = '',
+  password: string | undefined = '',
+) =>
+  api
+    .get(
+      `log/monitor-data?pid=${pid}&monitorId=${monitorId}&timeBucket=${timeBucket}&period=${period}&from=${from}&to=${to}&timezone=${timezone}`,
+      {
+        headers: {
+          'x-password': password,
+        },
+      },
+    )
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const createMonitor = (pid: string, data: ICreateMonitor) =>
+  api
+    .post(`project/${pid}/monitor`, data)
+    .then((response): Monitor => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const updateMonitor = (pid: string, id: string, data: Partial<Monitor>) =>
+  api
+    .patch(`project/${pid}/monitor/${id}`, data)
+    .then((response): Monitor => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const deleteMonitor = (pid: string, id: string) =>
+  api
+    .delete(`project/${pid}/monitor/${id}`)
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)

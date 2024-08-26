@@ -189,7 +189,6 @@ const ProjectAlerts = ({ projectId }: IProjectAlerts): JSX.Element => {
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState<boolean>(false)
   const navigate = useNavigate()
 
-  // @ts-ignore
   const limits = PLAN_LIMITS[user?.planCode] || PLAN_LIMITS.trial
   const isLimitReached = authenticated && total >= limits?.maxAlerts
 

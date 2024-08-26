@@ -78,6 +78,7 @@ export default function* ssoAuth({ payload: { callback, dontRemember, t, provide
         yield put(sagaActions.loadSharedProjects())
         yield put(sagaActions.loadProjectsCaptcha())
         yield put(sagaActions.loadProjectAlerts())
+        yield put(sagaActions.loadMonitors())
         yield put(authActions.finishLoading())
         callback(true, false)
         return

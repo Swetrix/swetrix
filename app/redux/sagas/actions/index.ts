@@ -38,6 +38,11 @@ const loadProjectAlerts = (take?: number, skip?: number) => ({
   payload: { take, skip },
 })
 
+const loadMonitors = (take?: number, skip?: number) => ({
+  type: types.LOAD_MONITORS,
+  payload: { take, skip },
+})
+
 const loginAsync = (
   credentials: {
     email: string
@@ -191,6 +196,7 @@ const sagaActions = {
   loadMetainfo,
   loadUsageinfo,
   updateShowLiveVisitorsInTitle,
+  loadMonitors,
 }
 
 export default sagaActions

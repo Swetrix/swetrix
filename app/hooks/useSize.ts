@@ -1,8 +1,9 @@
 /* eslint-disable consistent-return */
+import type { MutableRefObject } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import _get from 'lodash/get'
 
-export default () => {
+const useSize = (): [MutableRefObject<null>, { width: number; height: number }] => {
   const [size, setSize] = useState({
     width: 0,
     height: 0,
@@ -28,3 +29,5 @@ export default () => {
 
   return [ref, size]
 }
+
+export default useSize

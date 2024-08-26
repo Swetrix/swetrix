@@ -50,6 +50,7 @@ export default function* signupWorder({
     yield put(sagaActions.loadProjects())
     yield put(sagaActions.loadSharedProjects())
     yield put(sagaActions.loadProjectAlerts())
+    yield put(sagaActions.loadMonitors())
     callback(true)
   } catch (error: unknown) {
     // @ts-ignore
