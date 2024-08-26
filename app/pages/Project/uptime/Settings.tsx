@@ -90,10 +90,10 @@ const IntervalSelector = ({ value, onChange, label, hint, name }: IntervalSelect
     const { value, name } = ev.target
 
     onChange({
-      // @ts-expect-error
       target: {
         name,
-        value: INTERVALS_IN_SECONDS[Number(value)].toString(),
+        // @ts-expect-error
+        value: INTERVALS_IN_SECONDS[Number(value)],
       },
     })
   }
