@@ -484,7 +484,7 @@ export const paddleLanguageMapping: IStringObject = {
 
 // Increase this counter every time some major change is done within localisation files
 // This will prevent cached version or raw locale strings being displayed in production
-export const I18N_CACHE_BREAKER = 3
+export const I18N_CACHE_BREAKER = 4
 
 // dashboard && projects
 

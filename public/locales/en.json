@@ -46,7 +46,8 @@
     "errorStatusUpdated": "Error status has been updated",
     "enterViewName": "Please enter a view name",
     "inputCannotBeEmpty": "This input field must not be empty",
-    "viewDeleted": "View has been deleted"
+    "viewDeleted": "View has been deleted",
+    "noAIForecastAvailable": "AI forecast is not available for this project yet"
   },
   "common": {
     "features": "Features",
@@ -820,6 +821,10 @@
   },
   "project": {
     "metadata": "Metadata",
+    "nextOneHour": "Next 1 hour",
+    "nextXHours": "Next {{x}} hours",
+    "exitForecastingMode": "Exit forecasting mode",
+    "aiDetailsDesc": "The buttons above allow you to see an estimate of what kind of traffic you can expect within an hour in the next X hours.",
     "search": "Search",
     "views": "Views",
     "viewName": "View name",
@@ -1132,8 +1137,11 @@
     },
     "forecast": {
       "title": "Traffic forecast",
-      "desc": "This is a rough estimate of how much traffic you can expect to get on your website, based on Swetrix AI models.",
-      "input": "The quantity of '{{frequency}}' you want to forecast"
+      "desc": "This type of forecast gives you a rough estimate on the main graph of how much traffic you can expect to get to your website.",
+      "detailsDesc": "This type of forecast provides you with a more flexible prediction, showing you what type of users (from what country, browser, locale, etc.) and how many of them you can expect to visit within your chosen timeframe.\n\nIt may not be available for newly created or low traffic sites, as we train our prediction models regularly and such sites may not be included in the training dataset.\n\nIf you wish to continue with this type of forecast, please press 'Continue'.",
+      "input": "The quantity of '{{frequency}}' you want to forecast",
+      "chart": "Chart forecast",
+      "details": "Details forecast"
     },
     "funnels": {
       "addTitle": "Add funnel",
