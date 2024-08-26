@@ -247,6 +247,7 @@ interface ViewProjectContextType {
   periodPairs: ITBPeriodPairs[]
   timeFormat: '12-hour' | '24-hour'
   size: ReturnType<typeof useSize>[1]
+  allowedToManage: boolean
 
   // Functions
   setDateRange: Dispatch<SetStateAction<Date[] | null>>
@@ -3849,6 +3850,7 @@ const ViewProject = ({
             periodPairs,
             timeFormat,
             size,
+            allowedToManage,
 
             // Functions
             setDateRange,

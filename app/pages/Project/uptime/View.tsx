@@ -46,9 +46,10 @@ interface IMonitorCard {
   monitor: Monitor
   deleteMonitor: (id: string) => void
   onClick: (monitor: Monitor) => void
+  allowedToManage: boolean
 }
 
-const MonitorCard = ({ monitor, deleteMonitor, onClick }: IMonitorCard): JSX.Element => {
+const MonitorCard = ({ monitor, deleteMonitor, onClick, allowedToManage }: IMonitorCard): JSX.Element => {
   const { t } = useTranslation()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
@@ -65,29 +66,31 @@ const MonitorCard = ({ monitor, deleteMonitor, onClick }: IMonitorCard): JSX.Ele
                 <span>{queryMetric}</span> */}
                 </p>
               </div>
-              <div className='flex gap-2'>
-                <Link
-                  to={_replace(_replace(routes.uptime_settings, ':pid', monitor.projectId), ':id', monitor.id)}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                  }}
-                >
-                  <AdjustmentsVerticalIcon
+              {allowedToManage && (
+                <div className='flex gap-2'>
+                  <Link
+                    to={_replace(_replace(routes.uptime_settings, ':pid', monitor.projectId), ':id', monitor.id)}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                    }}
+                  >
+                    <AdjustmentsVerticalIcon
+                      role='button'
+                      aria-label={t('common.settings')}
+                      className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500'
+                    />
+                  </Link>
+                  <TrashIcon
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setShowDeleteModal(true)
+                    }}
                     role='button'
-                    aria-label={t('common.settings')}
+                    aria-label={t('common.delete')}
                     className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500'
                   />
-                </Link>
-                <TrashIcon
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setShowDeleteModal(true)
-                  }}
-                  role='button'
-                  aria-label={t('common.delete')}
-                  className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500'
-                />
-              </div>
+                </div>
+              )}
             </div>
           </div>
         </li>
@@ -152,6 +155,7 @@ const Uptime = (): JSX.Element => {
     periodPairs,
     size,
     timeFormat,
+    allowedToManage,
   } = useViewProjectContext()
   const {
     t,
@@ -444,7 +448,13 @@ const Uptime = (): JSX.Element => {
         {!loading && monitorFilterLoaded && !_isEmpty(projectMonitors) && (
           <ul className='mt-4 grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
             {_map(projectMonitors, (monitor) => (
-              <MonitorCard key={monitor.id} monitor={monitor} deleteMonitor={onDelete} onClick={loadMonitorData} />
+              <MonitorCard
+                allowedToManage={allowedToManage}
+                key={monitor.id}
+                monitor={monitor}
+                deleteMonitor={onDelete}
+                onClick={loadMonitorData}
+              />
             ))}
             <AddMonitor handleNewMonitor={handleNewMonitor} isLimitReached={isLimitReached} />
           </ul>
