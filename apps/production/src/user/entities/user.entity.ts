@@ -38,6 +38,15 @@ export enum DashboardBlockReason {
   'subscription_cancelled' = 'subscription_cancelled',
 }
 
+interface PlanSignature {
+  id: PlanCode
+  monthlyUsageLimit: number
+  maxAlerts: number
+  legacy: boolean
+  pid?: string
+  ypid?: string
+}
+
 export const ACCOUNT_PLANS = {
   [PlanCode.none]: {
     id: PlanCode.none,
@@ -123,19 +132,23 @@ export const ACCOUNT_PLANS = {
   },
 }
 
-export const getNextPlan = (planCode: PlanCode) => {
+export const getNextPlan = (planCode: PlanCode): PlanSignature | undefined => {
   const currentLimit = ACCOUNT_PLANS[planCode].monthlyUsageLimit
 
   let nextPlan
 
-  Object.values(ACCOUNT_PLANS).some(plan => {
-    if (plan.monthlyUsageLimit > currentLimit) {
-      nextPlan = plan
-      return true
-    }
+  Object.values(ACCOUNT_PLANS)
+    .filter(
+      plan => ![PlanCode.free, PlanCode.trial, PlanCode.none].includes(plan.id),
+    )
+    .some(plan => {
+      if (plan.monthlyUsageLimit > currentLimit) {
+        nextPlan = plan
+        return true
+      }
 
-    return false
-  })
+      return false
+    })
 
   return nextPlan
 }

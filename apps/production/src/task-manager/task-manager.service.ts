@@ -458,7 +458,7 @@ export class TaskManagerService {
           hitPercentageLimit: _includes(exceedingUserIds, user.id),
           percentageLimit: TRAFFIC_SPIKE_ALLOWED_PERCENTAGE * 100,
           billingUrl: 'https://swetrix.com/billing',
-          suggestedPlanLimit,
+          suggestedPlanLimit: suggestedPlanLimit?.monthlyUsageLimit,
         }
 
         await this.mailerService.sendEmail(
@@ -525,7 +525,7 @@ export class TaskManagerService {
           thisMonthUsage: usage,
           percentageLimit: TRAFFIC_SPIKE_ALLOWED_PERCENTAGE * 100,
           billingUrl: 'https://swetrix.com/billing',
-          suggestedPlanLimit,
+          suggestedPlanLimit: suggestedPlanLimit?.monthlyUsageLimit,
         }
 
         await this.mailerService.sendEmail(
@@ -592,7 +592,7 @@ export class TaskManagerService {
             lastMonthUsage: userLastMonthUsage,
             percentageLimit: TRAFFIC_SPIKE_ALLOWED_PERCENTAGE * 100,
             billingUrl: 'https://swetrix.com/billing',
-            suggestedPlanLimit,
+            suggestedPlanLimit: suggestedPlanLimit?.monthlyUsageLimit,
           }
 
           await this.mailerService.sendEmail(
