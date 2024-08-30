@@ -670,9 +670,9 @@ const getSelfhostedUUID = (): string => {
 }
 
 interface IPGeoDetails {
-  country?: string
-  region?: string
-  city?: string
+  country: string | null
+  region: string | null
+  city: string | null
 }
 
 const getGeoDetails = (
@@ -680,27 +680,12 @@ const getGeoDetails = (
   tz?: string,
   headers?: unknown,
 ): IPGeoDetails => {
-  // TODO: Add support for DBIP for self-hosted
-
   // Stage 1: Using IP address based geo lookup
-  // const data = lookup.get(ip)
-
-  // const country = data?.country?.iso_code
-  // // TODO: Add city overrides, for example, Colinton -> Edinburgh, etc.
-  // const city = data?.city?.names?.en
-  // const region = data?.subdivisions?.[0]?.names?.en
-
-  // if (country) {
-  //   return {
-  //     country,
-  //     city,
-  //     region,
-  //   }
-  // }
+  // TODO: Add support for DBIP for self-hosted
 
   // Stage 2: If Cloudflare is enabled, use their headers
   if (isProxiedByCloudflare && headers?.['cf-ipcountry'] !== 'XX') {
-    return headers['cf-ipcountry']
+    return headers['cf-ipcountry'] || null
   }
 
   // Stage 3: Using timezone based geo lookup as a fallback

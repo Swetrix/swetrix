@@ -960,11 +960,7 @@ export class AnalyticsController {
     const br = ua.browser.name
     const os = ua.os.name
 
-    const {
-      city = 'NULL',
-      region = 'NULL',
-      country = 'NULL',
-    } = getGeoDetails(ip, eventsDTO.tz, headers)
+    const { city, region, country } = getGeoDetails(ip, eventsDTO.tz, headers)
 
     const sessionHash = getSessionKey(ip, userAgent, eventsDTO.pid, salt)
     const [, psid] = await this.analyticsService.isUnique(sessionHash)
@@ -1061,11 +1057,7 @@ export class AnalyticsController {
       )
     }
 
-    const {
-      city = 'NULL',
-      region = 'NULL',
-      country = 'NULL',
-    } = getGeoDetails(ip, logDTO.tz, headers)
+    const { city, region, country } = getGeoDetails(ip, logDTO.tz, headers)
 
     const ua = UAParser(userAgent)
     const dv = ua.device.type || 'desktop'
@@ -1192,11 +1184,7 @@ export class AnalyticsController {
     const br = ua.browser.name
     const os = ua.os.name
 
-    const {
-      city = 'NULL',
-      region = 'NULL',
-      country = 'NULL',
-    } = getGeoDetails(ip, null, headers)
+    const { city, region, country } = getGeoDetails(ip, null, headers)
 
     const transformed = trafficTransformer(
       psid,
@@ -1495,11 +1483,7 @@ export class AnalyticsController {
 
     await this.analyticsService.validate(errorDTO, origin, 'error', ip)
 
-    const {
-      city = 'NULL',
-      region = 'NULL',
-      country = 'NULL',
-    } = getGeoDetails(ip, errorDTO.tz)
+    const { city, region, country } = getGeoDetails(ip, errorDTO.tz)
 
     const ua = UAParser(userAgent)
     const dv = ua.device.type || 'desktop'

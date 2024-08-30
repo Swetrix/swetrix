@@ -496,7 +496,7 @@ export class AnalyticsService {
 
         logDTO.lc = _join(lcParted, '-')
       } else {
-        logDTO.lc = 'NULL'
+        logDTO.lc = null
       }
     }
 

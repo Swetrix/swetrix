@@ -164,10 +164,10 @@ const generateAnalyticsData = async (pid, rowCount, from, to) => {
   for (let i = 0; i < rowCount; ++i) {
     const record = [
       0, // psid
-      'NULL', // sid
+      null, // sid
       pid,
       faker.helpers.arrayElement(PAGES), // pg
-      'NULL', // prev
+      null, // prev
       faker.helpers.arrayElement(DEVICES), // dv
       faker.helpers.arrayElement(BROWSERS), // br
       faker.helpers.arrayElement(OS), // os

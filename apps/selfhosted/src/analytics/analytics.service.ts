@@ -409,6 +409,8 @@ export class AnalyticsService {
     type: 'custom' | 'log' | 'error' = 'log',
     ip?: string,
   ): Promise<string | null> {
+    console.log('validate!')
+    console.log('req origin:', origin)
     if (_isEmpty(logDTO)) {
       throw new BadRequestException('The request cannot be empty')
     }
@@ -445,7 +447,7 @@ export class AnalyticsService {
 
         logDTO.lc = _join(lcParted, '-')
       } else {
-        logDTO.lc = 'NULL'
+        logDTO.lc = null
       }
     }
 

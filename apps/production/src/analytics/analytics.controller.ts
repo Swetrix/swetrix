@@ -1133,11 +1133,7 @@ export class AnalyticsController {
 
     await this.analyticsService.validate(errorDTO, origin, 'error', ip)
 
-    const {
-      city = 'NULL',
-      region = 'NULL',
-      country = 'NULL',
-    } = getGeoDetails(ip, errorDTO.tz)
+    const { city, region, country } = getGeoDetails(ip, errorDTO.tz)
 
     const ua = UAParser(userAgent)
     const dv = ua.device.type || 'desktop'
@@ -1242,11 +1238,7 @@ export class AnalyticsController {
       }
     }
 
-    const {
-      city = 'NULL',
-      region = 'NULL',
-      country = 'NULL',
-    } = getGeoDetails(ip, eventsDTO.tz)
+    const { city, region, country } = getGeoDetails(ip, eventsDTO.tz)
 
     const ua = UAParser(userAgent)
     const dv = ua.device.type || 'desktop'
@@ -1470,11 +1462,7 @@ export class AnalyticsController {
 
     await this.analyticsService.processInteractionSD(sessionHash, logDTO.pid)
 
-    const {
-      city = 'NULL',
-      region = 'NULL',
-      country = 'NULL',
-    } = getGeoDetails(ip)
+    const { city, region, country } = getGeoDetails(ip)
     const ua = UAParser(userAgent)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name

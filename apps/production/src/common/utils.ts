@@ -185,19 +185,19 @@ if (fs.existsSync(PRODUCTION_GEOIP_DB_PATH)) {
 }
 
 interface IPGeoDetails {
-  country?: string
-  region?: string
-  city?: string
+  country: string | null
+  region: string | null
+  city: string | null
 }
 
 const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
   // Stage 1: Using IP address based geo lookup
   const data = lookup.get(ip)
 
-  const country = data?.country?.iso_code
+  const country = data?.country?.iso_code || null
   // TODO: Add city overrides, for example, Colinton -> Edinburgh, etc.
-  const city = data?.city?.names?.en
-  const region = data?.subdivisions?.[0]?.names?.en
+  const city = data?.city?.names?.en || null
+  const region = data?.subdivisions?.[0]?.names?.en || null
 
   if (country) {
     return {
