@@ -1483,7 +1483,7 @@ export class AnalyticsController {
 
     await this.analyticsService.validate(errorDTO, origin, 'error', ip)
 
-    const { city, region, country } = getGeoDetails(ip, errorDTO.tz)
+    const { city, region, country } = getGeoDetails(ip, errorDTO.tz, headers)
 
     const ua = UAParser(userAgent)
     const dv = ua.device.type || 'desktop'
