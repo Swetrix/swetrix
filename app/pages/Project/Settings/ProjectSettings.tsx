@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, memo } from 'react'
 import type i18next from 'i18next'
+import { toast } from 'sonner'
 import { useNavigate, useParams } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
@@ -249,15 +250,10 @@ interface IForm extends Partial<IProject> {
 const DEFAULT_PROJECT_NAME = 'Untitled Project'
 
 interface IProjectSettings {
-  updateProjectFailed: (message: string) => void
-  generateAlerts: (message: string) => void
-  projectDeleted: (message: string) => void
-  deleteProjectFailed: (message: string) => void
   loadProjects: (shared: boolean, skip: number) => void
   isLoading: boolean
   isLoadingShared: boolean
   projects: IProject[]
-  showError: (message: string) => void
   removeProject: (pid: string, shared: boolean) => void
   user: IUser
   isSharedProject: boolean
@@ -270,15 +266,10 @@ interface IProjectSettings {
 }
 
 const ProjectSettings = ({
-  updateProjectFailed,
-  generateAlerts,
-  projectDeleted,
-  deleteProjectFailed,
   loadProjects,
   isLoading,
   isLoadingShared,
   projects,
-  showError,
   removeProject,
   user,
   isSharedProject,
@@ -349,13 +340,13 @@ const ProjectSettings = ({
     }
 
     if (!user.isActive && !isSelfhosted) {
-      showError(t('project.settings.verify'))
+      toast.error(t('project.settings.verify'))
       navigate(routes.dashboard)
     }
 
     if (!isLoading && !isLoadingShared && !projectDeleting) {
       if (_isEmpty(project) || project?.uiHidden) {
-        showError(t('project.noExist'))
+        toast.error(t('project.noExist'))
         navigate(routes.dashboard)
       } else {
         setForm({
@@ -366,7 +357,7 @@ const ProjectSettings = ({
         setInitialised(true)
       }
     }
-  }, [user, project, initialised, isLoading, navigate, showError, projectDeleting, t, authLoading, isLoadingShared])
+  }, [user, project, initialised, isLoading, navigate, projectDeleting, t, authLoading, isLoadingShared])
 
   const onSubmit = async (data: IForm) => {
     if (!projectSaving) {
@@ -389,11 +380,11 @@ const ProjectSettings = ({
           ipBlacklist: _isEmpty(data.ipBlacklist) ? null : _split(data.ipBlacklist, ','),
         }
         await updateProject(id, formalisedData as Partial<IProject>)
-        generateAlerts(t('project.settings.updated'))
+        toast.success(t('project.settings.updated'))
 
         loadProjects(isSharedProject, paginationSkip)
-      } catch (reason) {
-        updateProjectFailed(reason as string)
+      } catch (reason: any) {
+        toast.error(reason)
       } finally {
         setProjectSaving(false)
       }
@@ -407,10 +398,10 @@ const ProjectSettings = ({
       try {
         await deleteProject(id)
         removeProject(id, isSharedProject)
-        projectDeleted(t('project.settings.deleted'))
+        toast.success(t('project.settings.deleted'))
         navigate(routes.dashboard)
-      } catch (e) {
-        deleteProjectFailed(e as string)
+      } catch (reason: any) {
+        toast.error(reason)
       } finally {
         setProjectDeleting(false)
       }
@@ -424,7 +415,7 @@ const ProjectSettings = ({
       try {
         if (tab === tabDeleteDataModal[1].name) {
           if (_isEmpty(dateRange)) {
-            deleteProjectFailed(t('project.settings.noDateRange'))
+            toast.error(t('project.settings.noDateRange'))
             setProjectResetting(false)
             return
           }
@@ -434,7 +425,7 @@ const ProjectSettings = ({
           })
         } else if (tab === tabDeleteDataModal[2].name) {
           if (_isEmpty(activeFilter)) {
-            deleteProjectFailed(t('project.settings.noFilters'))
+            toast.error(t('project.settings.noFilters'))
             setProjectResetting(false)
             return
           }
@@ -444,10 +435,10 @@ const ProjectSettings = ({
           await resetProject(id)
         }
         deleteProjectCache(id)
-        projectDeleted(t('project.settings.resetted'))
+        toast.success(t('project.settings.resetted'))
         navigate(routes.dashboard)
-      } catch (e) {
-        deleteProjectFailed(e as string)
+      } catch (reason: any) {
+        toast.error(reason)
       } finally {
         setProjectResetting(false)
       }
@@ -515,11 +506,11 @@ const ProjectSettings = ({
   const onTransfer = async () => {
     await transferProject(id, transferEmail)
       .then(() => {
-        generateAlerts(t('apiNotifications.transferRequestSent'))
+        toast.success(t('apiNotifications.transferRequestSent'))
         navigate(routes.dashboard)
       })
-      .catch((e) => {
-        showError(e as string)
+      .catch((reason) => {
+        toast.error(reason)
       })
       .finally(() => {
         setShowTransfer(false)

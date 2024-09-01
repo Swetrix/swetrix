@@ -1,9 +1,7 @@
 import { connect } from 'react-redux'
-import { errorsActions } from 'redux/reducers/errors'
 import UIActions from 'redux/reducers/ui'
 import sagaActions from 'redux/sagas/actions'
 import { authActions } from 'redux/reducers/auth'
-import { alertsActions } from 'redux/reducers/alerts'
 import { StateType, AppDispatch } from 'redux/store'
 import { IProject } from 'redux/models/IProject'
 import { ISharedProject } from 'redux/models/ISharedProject'
@@ -28,13 +26,6 @@ const mapStateToProps = (state: StateType) => ({
 })
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
-  deleteProjectFailed: (message: string) => {
-    dispatch(
-      errorsActions.deleteProjectFailed({
-        message,
-      }),
-    )
-  },
   setProjectsShareData: (data: IProject | ISharedProject, id: string, shared?: boolean) => {
     dispatch(
       UIActions.setProjectsShareData({
@@ -49,20 +40,6 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
       authActions.setUserShareData({
         data,
         id,
-      }),
-    )
-  },
-  userSharedUpdate: (message: string) => {
-    dispatch(
-      alertsActions.userSharedUpdate({
-        message,
-      }),
-    )
-  },
-  sharedProjectError: (message: string) => {
-    dispatch(
-      errorsActions.sharedProjectFailed({
-        message,
       }),
     )
   },

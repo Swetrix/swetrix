@@ -19,11 +19,8 @@ import { ExclamationTriangleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroic
 import { Provider } from 'react-redux'
 import clsx from 'clsx'
 import _replace from 'lodash/replace'
-// @ts-ignore
-import { transitions, positions, Provider as AlertProvider } from '@blaumaus/react-alert'
 import BillboardCss from 'billboard.js/dist/billboard.min.css'
 
-import AlertTemplate from 'ui/Alert'
 import { trackViews, trackErrors } from 'utils/analytics'
 import { useChangeLanguage } from 'remix-i18next/react'
 import { useTranslation } from 'react-i18next'
@@ -49,13 +46,6 @@ declare global {
     // Set by Docker for self-hosted
     env: any
   }
-}
-
-const options = {
-  position: positions.BOTTOM_RIGHT,
-  timeout: 8000,
-  offset: '30px',
-  transition: transitions.SCALE,
 }
 
 if (isBrowser && process.env.NODE_ENV !== 'production') {
@@ -270,9 +260,7 @@ export default function App() {
         })}
       >
         <Provider store={store}>
-          <AlertProvider template={AlertTemplate} {...options}>
-            <AppWrapper ssrTheme={theme} ssrAuthenticated={isAuthed} />
-          </AlertProvider>
+          <AppWrapper ssrTheme={theme} ssrAuthenticated={isAuthed} />
         </Provider>
         <ScrollRestoration />
         <Scripts />

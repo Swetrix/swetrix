@@ -2,6 +2,7 @@ import React, { useState, useEffect, memo } from 'react'
 import { useNavigate } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
+import { toast } from 'sonner'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
 import _keys from 'lodash/keys'
@@ -17,8 +18,6 @@ import { trackCustom } from 'utils/analytics'
 import routes from 'utils/routes'
 import { useAppDispatch, StateType } from 'redux/store'
 import sagaActions from 'redux/sagas/actions'
-import { alertsActions } from 'redux/reducers/alerts'
-import { errorsActions } from 'redux/reducers/errors'
 
 const MAX_NAME_LENGTH = 50
 
@@ -48,11 +47,7 @@ const NewProject = () => {
     }
 
     if (!user.isActive && !isSelfhosted) {
-      dispatch(
-        errorsActions.genericError({
-          message: t('project.settings.verify'),
-        }),
-      )
+      toast.error(t('project.settings.verify'))
       navigate(routes.dashboard)
     }
   }, [user, navigate, dispatch, t, loading])
@@ -66,20 +61,11 @@ const NewProject = () => {
         })
         trackCustom('PROJECT_CREATED')
         navigate(routes.dashboard)
-        dispatch(
-          alertsActions.generateAlerts({
-            message: t('project.settings.created'),
-            type: 'success',
-          }),
-        )
+        toast.success(t('project.settings.created'))
 
         _dispatch(sagaActions.loadProjects(dashboardPaginationPage * ENTRIES_PER_PAGE_DASHBOARD))
-      } catch (reason) {
-        dispatch(
-          errorsActions.createNewProjectFailed({
-            message: reason as string,
-          }),
-        )
+      } catch (reason: any) {
+        toast.error(reason)
       } finally {
         setProjectSaving(false)
       }

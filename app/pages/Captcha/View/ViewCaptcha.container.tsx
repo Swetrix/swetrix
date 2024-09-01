@@ -1,5 +1,4 @@
 import { connect } from 'react-redux'
-import { errorsActions } from 'redux/reducers/errors'
 import UIActions from 'redux/reducers/ui'
 import { StateType, AppDispatch } from 'redux/store'
 
@@ -18,13 +17,6 @@ const mapStateToProps = (state: StateType) => ({
 })
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
-  showError: (message: string) => {
-    dispatch(
-      errorsActions.genericError({
-        message,
-      }),
-    )
-  },
   setProjectCache: (pid: string, data: any, key: string) => {
     dispatch(
       UIActions.setCaptchaProjectCache({

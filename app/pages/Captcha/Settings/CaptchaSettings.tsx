@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, memo, useRef } from 'react'
 import { useNavigate, useParams } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
@@ -65,15 +66,9 @@ interface IForm extends Partial<ICaptchaProject> {
 }
 
 interface ICaptchaSettings {
-  updateProjectFailed: (error: string) => void
-  createNewProjectFailed: (error: string) => void
-  newProject: (message: string) => void
-  projectDeleted: (message: string) => void
-  deleteProjectFailed: (error: string) => void
   loadProjects: () => void
   isLoading: boolean
   projects: ICaptchaProject[]
-  showError: (error: string) => void
   removeProject: (pid: string) => void
   user: IUser
   deleteProjectCache: (pid: string) => void
@@ -83,15 +78,9 @@ interface ICaptchaSettings {
 }
 
 const CaptchaSettings = ({
-  updateProjectFailed,
-  createNewProjectFailed,
-  newProject,
-  projectDeleted,
-  deleteProjectFailed,
   loadProjects,
   isLoading,
   projects,
-  showError,
   removeProject,
   user,
   deleteProjectCache,
@@ -144,13 +133,13 @@ const CaptchaSettings = ({
     }
 
     if (!user.isActive && !isSelfhosted) {
-      showError(t('project.captcha.settings.verify'))
+      toast.error(t('project.captcha.settings.verify'))
       navigate(routes.dashboard)
     }
 
     if (!isLoading && isSettings && !projectDeleting) {
       if (_isEmpty(project) || project?.uiHidden) {
-        showError(t('project.captcha.noExist'))
+        toast.error(t('project.captcha.noExist'))
         navigate(routes.dashboard)
       } else {
         setForm({
@@ -160,7 +149,7 @@ const CaptchaSettings = ({
         })
       }
     }
-  }, [user, project, isLoading, isSettings, navigate, showError, projectDeleting, t, loading])
+  }, [user, project, isLoading, isSettings, navigate, projectDeleting, t, loading])
 
   const onSubmit = async (data: IForm) => {
     if (!projectSaving) {
@@ -184,11 +173,11 @@ const CaptchaSettings = ({
         }
         if (isSettings) {
           await updateProject(id, formalisedData as ICaptchaProject)
-          newProject(t('project.settings.updated'))
+          toast.success(t('project.settings.updated'))
         } else {
           if (tab === tabForInheritance) {
             if (_isEmpty(reuseProjectId)) {
-              showError('Select projects')
+              toast.error('Select projects')
               return
             }
             await createCaptchaInherited(formalisedData.id)
@@ -199,17 +188,13 @@ const CaptchaSettings = ({
             })
           }
           trackCustom('CAPTCHA_CREATED')
-          newProject(t('project.settings.created'))
+          toast.success(t('project.settings.created'))
         }
 
         loadProjects()
         navigate(routes.dashboard)
-      } catch (e) {
-        if (isSettings) {
-          updateProjectFailed(e as string)
-        } else {
-          createNewProjectFailed(e as string)
-        }
+      } catch (reason: any) {
+        toast.error(reason)
       } finally {
         setProjectSaving(false)
       }
@@ -223,10 +208,10 @@ const CaptchaSettings = ({
       try {
         await deleteCaptchaProject(id)
         removeProject(id)
-        projectDeleted(t('project.settings.deleted'))
+        toast.success(t('project.settings.deleted'))
         navigate(routes.dashboard)
-      } catch (e) {
-        deleteProjectFailed(e as string)
+      } catch (reason: any) {
+        toast.error(reason)
       } finally {
         setProjectDeleting(false)
       }
@@ -240,10 +225,10 @@ const CaptchaSettings = ({
       try {
         await resetCaptchaProject(id)
         deleteProjectCache(id)
-        projectDeleted(t('project.settings.resetted'))
+        toast.success(t('project.settings.resetted'))
         navigate(routes.dashboard)
-      } catch (e) {
-        deleteProjectFailed(e as string)
+      } catch (reason: any) {
+        toast.error(reason)
       } finally {
         setProjectResetting(false)
       }
@@ -303,7 +288,7 @@ const CaptchaSettings = ({
       )
 
       if (_isEmpty(data)) {
-        showError('Select project or select corect project')
+        toast.error('Please select a project')
       }
 
       onSubmit({ ...(data as IForm), isCaptcha: true })
@@ -332,8 +317,8 @@ const CaptchaSettings = ({
     try {
       const res = await reGenerateCaptchaSecretKey(id)
       setCaptchaSecretKey(res)
-    } catch (e) {
-      showError(e as string)
+    } catch (reason: any) {
+      toast.error(reason)
     }
   }
 

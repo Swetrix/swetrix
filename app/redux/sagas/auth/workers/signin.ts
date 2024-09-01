@@ -1,8 +1,8 @@
 import { call, put } from 'redux-saga/effects'
 import _isObject from 'lodash/isPlainObject'
 import _omit from 'lodash/omit'
+import { toast } from 'sonner'
 import { authActions } from 'redux/reducers/auth'
-import { errorsActions } from 'redux/reducers/errors'
 
 import UIActions from 'redux/reducers/ui'
 import { setAccessToken } from 'utils/accessToken'
@@ -46,14 +46,10 @@ export default function* singinWorker({ payload: { credentials, callback } }: IS
     yield put(sagaActions.loadProjectAlerts())
     yield put(sagaActions.loadMonitors())
     callback(true, false)
-  } catch (error) {
-    // @ts-ignore
+  } catch (error: any) {
     const err = _isObject(error) ? error.message : error
-    yield put(
-      errorsActions.loginFailed({
-        message: err || 'apiNotifications.somethingWentWrong',
-      }),
-    )
+
+    toast.error(err || 'apiNotifications.somethingWentWrong')
     callback(false, false)
   } finally {
     yield put(authActions.finishLoading())

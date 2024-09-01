@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams, useLocation, Link } from '@remix-run/react'
 import { useTranslation, Trans } from 'react-i18next'
+import { toast } from 'sonner'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 
 import _isEmpty from 'lodash/isEmpty'
@@ -32,22 +33,18 @@ const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 interface IProjectAlertsSettings {
   alerts: IAlerts[]
   setProjectAlerts: (item: IAlerts[]) => void
-  showError: (message: string) => void
   user: IUser
   setProjectAlertsTotal: (num: number) => void
   total: number
-  generateAlerts: (message: string) => void
   loading: boolean
 }
 
 const ProjectAlertsSettings = ({
   alerts,
   setProjectAlerts,
-  showError,
   user,
   setProjectAlertsTotal,
   total,
-  generateAlerts,
   loading,
 }: IProjectAlertsSettings): JSX.Element => {
   const navigate = useNavigate()
@@ -180,10 +177,10 @@ const ProjectAlertsSettings = ({
         .then((res) => {
           navigate(`/projects/${pid}?tab=${PROJECT_TABS.alerts}`)
           setProjectAlerts([..._filter(alerts, (a) => a.id !== id), res])
-          generateAlerts(t('alertsSettings.alertUpdated'))
+          toast.success(t('alertsSettings.alertUpdated'))
         })
-        .catch((err) => {
-          showError(err.message || err || 'Something went wrong')
+        .catch((reason) => {
+          toast.error(reason.message || reason || 'Something went wrong')
         })
     } else {
       createAlert(data as ICreateAlert)
@@ -191,17 +188,17 @@ const ProjectAlertsSettings = ({
           navigate(`/projects/${pid}?tab=${PROJECT_TABS.alerts}`)
           setProjectAlerts([...alerts, res])
           setProjectAlertsTotal(total + 1)
-          generateAlerts(t('alertsSettings.alertCreated'))
+          toast.success(t('alertsSettings.alertCreated'))
         })
-        .catch((err) => {
-          showError(err.message || err || 'Something went wrong')
+        .catch((reason) => {
+          toast.error(reason.message || reason || 'Something went wrong')
         })
     }
   }
 
   const onDelete = () => {
     if (!id) {
-      showError('Something went wrong')
+      toast.error('Something went wrong')
       return
     }
 
@@ -210,10 +207,10 @@ const ProjectAlertsSettings = ({
         setProjectAlerts(_filter(alerts, (a) => a.id !== id))
         setProjectAlertsTotal(total - 1)
         navigate(`/projects/${pid}?tab=${PROJECT_TABS.alerts}`)
-        generateAlerts(t('alertsSettings.alertDeleted'))
+        toast.success(t('alertsSettings.alertDeleted'))
       })
-      .catch((err) => {
-        showError(err.message || err || 'Something went wrong')
+      .catch((reason) => {
+        toast.error(reason.message || reason || 'Something went wrong')
       })
   }
 

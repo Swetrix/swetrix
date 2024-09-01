@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react'
 import type i18next from 'i18next'
+import React, { useState, useEffect, useRef } from 'react'
+import { toast } from 'sonner'
 import { ChevronDownIcon, CheckIcon } from '@heroicons/react/24/solid'
 import { TrashIcon, UserPlusIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline'
 import { useTranslation } from 'react-i18next'
@@ -37,9 +38,7 @@ interface IUsersList {
   share?: IShareOwnerProject[]
   setProjectShareData: (item: Partial<IProject>, id: string, shared: boolean) => void
   pid: string
-  updateProjectFailed: (message: string) => void
   language: string
-  roleUpdatedNotification: (email: string, role?: string) => void
   authedUserEmail: string | undefined
   isSharedProject: boolean
 }
@@ -51,9 +50,7 @@ const UsersList = ({
   share,
   setProjectShareData,
   pid,
-  updateProjectFailed,
   language,
-  roleUpdatedNotification,
   authedUserEmail,
   isSharedProject,
 }: IUsersList) => {
@@ -73,10 +70,10 @@ const UsersList = ({
         return itShare
       })
       setProjectShareData({ share: newShared }, pid, isSharedProject)
-      roleUpdatedNotification(t('apiNotifications.roleUpdated'))
-    } catch (e) {
-      console.error(`[ERROR] Error while updating user's role: ${e}`)
-      updateProjectFailed(t('apiNotifications.roleUpdateError'))
+      toast.success(t('apiNotifications.roleUpdated'))
+    } catch (reason) {
+      console.error(`[ERROR] Error while updating user's role: ${reason}`)
+      toast.error(t('apiNotifications.roleUpdateError'))
     }
 
     setOpen(false)
@@ -178,11 +175,7 @@ const UsersList = ({
 
 interface IPeopleProps {
   project: IProject
-  updateProjectFailed: (error: string) => void
   setProjectShareData: (data: Partial<IProject>, projectId: string, share?: boolean) => void
-  roleUpdatedNotification: (email: string, role?: string) => void
-  inviteUserNotification: (email: string, type?: string) => void
-  removeUserNotification: (email: string) => void
   isPaidTierUsed: boolean
   user: IUser
   isSharedProject: boolean
@@ -190,11 +183,7 @@ interface IPeopleProps {
 
 const People: React.FunctionComponent<IPeopleProps> = ({
   project,
-  updateProjectFailed,
   setProjectShareData,
-  roleUpdatedNotification,
-  inviteUserNotification,
-  removeUserNotification,
   isPaidTierUsed,
   user: currentUser,
   isSharedProject,
@@ -260,10 +249,10 @@ const People: React.FunctionComponent<IPeopleProps> = ({
     try {
       const results = await shareProject(id, { email: form.email, role: form.role })
       setProjectShareData({ share: results.share }, id)
-      inviteUserNotification(t('apiNotifications.userInvited'))
+      toast.success(t('apiNotifications.userInvited'))
     } catch (e) {
       console.error(`[ERROR] Error while inviting a user: ${e}`)
-      inviteUserNotification(t('apiNotifications.userInviteError'), 'error')
+      toast.error(t('apiNotifications.userInviteError'))
     }
 
     // a timeout is needed to prevent the flicker of data fields in the modal when closing
@@ -302,10 +291,10 @@ const People: React.FunctionComponent<IPeopleProps> = ({
         (s) => s,
       )
       setProjectShareData({ share: newShared }, id)
-      removeUserNotification(t('apiNotifications.userRemoved'))
-    } catch (e) {
-      console.error(`[ERROR] Error while deleting a user: ${e}`)
-      updateProjectFailed(t('apiNotifications.userRemoveError'))
+      toast.success(t('apiNotifications.userRemoved'))
+    } catch (reason) {
+      console.error(`[ERROR] Error while deleting a user: ${reason}`)
+      toast.error(t('apiNotifications.userRemoveError'))
     }
   }
 
@@ -362,8 +351,6 @@ const People: React.FunctionComponent<IPeopleProps> = ({
                           language={language}
                           share={project.share}
                           setProjectShareData={setProjectShareData}
-                          updateProjectFailed={updateProjectFailed}
-                          roleUpdatedNotification={roleUpdatedNotification}
                           pid={id}
                           authedUserEmail={currentUser?.email}
                           isSharedProject={isSharedProject}

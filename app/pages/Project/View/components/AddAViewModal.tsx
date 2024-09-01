@@ -6,6 +6,7 @@ import _filter from 'lodash/filter'
 import _map from 'lodash/map'
 import _find from 'lodash/find'
 import _size from 'lodash/size'
+import { toast } from 'sonner'
 
 import Modal from 'ui/Modal'
 import Select from 'ui/Select'
@@ -30,7 +31,6 @@ interface IAddAViewModal {
   showModal: boolean
   setShowModal: (show: boolean) => void
   tnMapping: Record<string, string>
-  showError: (message: string) => void
   defaultView?: IProjectView
 }
 
@@ -203,7 +203,6 @@ const AddAViewModal = ({
   setShowModal,
   tnMapping,
   projectPassword,
-  showError,
   defaultView,
 }: IAddAViewModal) => {
   const {
@@ -344,7 +343,7 @@ const AddAViewModal = ({
       }
     } catch (reason) {
       console.error('[ERROR] onViewCreate:', reason)
-      showError(t('apiNotifications.somethingWentWrong'))
+      toast.error(t('apiNotifications.somethingWentWrong'))
     }
 
     setIsViewSubmitting(false)

@@ -1,6 +1,6 @@
 import { call, put } from 'redux-saga/effects'
 import { authActions } from 'redux/reducers/auth'
-import { errorsActions } from 'redux/reducers/errors'
+import { toast } from 'sonner'
 
 import { setAccessToken } from 'utils/accessToken'
 import { setRefreshToken } from 'utils/refreshToken'
@@ -52,11 +52,10 @@ export default function* signupWorder({
     yield put(sagaActions.loadProjectAlerts())
     yield put(sagaActions.loadMonitors())
     callback(true)
-  } catch (error: unknown) {
-    // @ts-ignore
+  } catch (error: any) {
     const message = error.message || (typeof error === 'string' ? error : error[0])
-    // @ts-ignore
-    yield put(errorsActions.signupFailed(message || 'apiNotifications.somethingWentWrong'))
+
+    toast.error(message)
     callback(false)
   } finally {
     yield put(authActions.finishLoading())

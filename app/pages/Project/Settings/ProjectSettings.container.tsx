@@ -1,8 +1,6 @@
 import { connect } from 'react-redux'
 import UIActions from 'redux/reducers/ui'
 import sagaActions from 'redux/sagas/actions'
-import { alertsActions } from 'redux/reducers/alerts'
-import { errorsActions } from 'redux/reducers/errors'
 import { StateType, AppDispatch } from 'redux/store'
 
 import { tabForSharedProject } from 'redux/constants'
@@ -21,36 +19,6 @@ const mapStateToProps = (state: StateType) => ({
 })
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
-  updateProjectFailed: (message: string) => {
-    dispatch(
-      errorsActions.updateProjectFailed({
-        message,
-      }),
-    )
-  },
-  generateAlerts: (message: string) => {
-    dispatch(
-      alertsActions.generateAlerts({
-        message,
-        type: 'success',
-      }),
-    )
-  },
-  projectDeleted: (message: string) => {
-    dispatch(
-      alertsActions.generateAlerts({
-        message,
-        type: 'success',
-      }),
-    )
-  },
-  deleteProjectFailed: (message: string) => {
-    dispatch(
-      errorsActions.deleteProjectFailed({
-        message,
-      }),
-    )
-  },
   loadProjects: (shared: boolean, skip: number) => {
     if (shared) {
       dispatch(sagaActions.loadSharedProjects(skip))
@@ -70,13 +38,6 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
     dispatch(
       UIActions.deleteProjectCache({
         pid,
-      }),
-    )
-  },
-  showError: (message: string) => {
-    dispatch(
-      errorsActions.genericError({
-        message,
       }),
     )
   },

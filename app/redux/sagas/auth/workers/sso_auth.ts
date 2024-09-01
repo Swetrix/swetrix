@@ -1,8 +1,8 @@
 import { call, put, delay } from 'redux-saga/effects'
 import type i18next from 'i18next'
+import { toast } from 'sonner'
 
 import { authActions } from 'redux/reducers/auth'
-import { errorsActions } from 'redux/reducers/errors'
 import { setAccessToken } from 'utils/accessToken'
 import { setRefreshToken } from 'utils/refreshToken'
 import { openBrowserWindow } from 'utils/generic'
@@ -29,11 +29,7 @@ export default function* ssoAuth({ payload: { callback, dontRemember, t, provide
   const authWindow = openBrowserWindow('', AUTH_WINDOW_WIDTH, AUTH_WINDOW_HEIGHT)
 
   if (!authWindow) {
-    yield put(
-      errorsActions.loginFailed({
-        message: t('apiNotifications.socialisationAuthGenericError'),
-      }),
-    )
+    toast.error(t('apiNotifications.socialisationAuthGenericError'))
     callback(false, false)
     return
   }
@@ -91,11 +87,7 @@ export default function* ssoAuth({ payload: { callback, dontRemember, t, provide
       }
     }
   } catch (reason) {
-    yield put(
-      errorsActions.loginFailed({
-        message: t('apiNotifications.socialisationAuthGenericError'),
-      }),
-    )
+    toast.error(t('apiNotifications.socialisationAuthGenericError'))
     callback(false, false)
   }
 }

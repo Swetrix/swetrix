@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react'
 import type i18next from 'i18next'
+import React, { useState, useEffect, useRef } from 'react'
+import { toast } from 'sonner'
 import { TrashIcon, InboxStackIcon, ChevronDownIcon, CheckIcon } from '@heroicons/react/24/outline'
 import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
@@ -120,9 +121,7 @@ const EmailList = ({
   onRemove,
   t,
   setEmails,
-  emailFailed,
   language,
-  reportTypeNotifiction,
 }: {
   data: {
     id: string
@@ -135,9 +134,7 @@ const EmailList = ({
   onRemove: (id: string) => void
   t: typeof i18next.t
   setEmails: (value: ISubscribers[] | ((prevVar: ISubscribers[]) => ISubscribers[])) => void
-  emailFailed: (message: string) => void
   language: string
-  reportTypeNotifiction: (message: string) => void
 }) => {
   const [open, setOpen] = useState<boolean>(false)
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false)
@@ -157,10 +154,10 @@ const EmailList = ({
         })
         return newEmails
       })
-      reportTypeNotifiction(t('apiNotifications.updatedPeriodEmailReports'))
-    } catch (e) {
-      console.error(`[ERROR] Error while updating user's role: ${e}`)
-      emailFailed(t('apiNotifications.updatedPeriodEmailReportsError'))
+      toast.success(t('apiNotifications.updatedPeriodEmailReports'))
+    } catch (reason: any) {
+      console.error(`[ERROR] Error while updating user's role: ${reason}`)
+      toast.error(t('apiNotifications.updatedPeriodEmailReportsError'))
     }
 
     setOpen(false)
@@ -264,21 +261,7 @@ const NoSubscribers = ({ t }: { t: typeof i18next.t }): JSX.Element => (
   </div>
 )
 
-const Emails = ({
-  emailFailed,
-  addEmail,
-  removeEmail,
-  projectId,
-  projectName,
-  reportTypeNotifiction,
-}: {
-  emailFailed: (message: string, type?: string) => void
-  addEmail: (message: string, type?: string) => void
-  removeEmail: (message: string) => void
-  projectId: string
-  projectName: string
-  reportTypeNotifiction: (message: string, type?: string) => void
-}): JSX.Element => {
+const Emails = ({ projectId, projectName }: { projectId: string; projectName: string }): JSX.Element => {
   const [showModal, setShowModal] = useState<boolean>(false)
   const {
     t,
@@ -363,10 +346,10 @@ const Emails = ({
     try {
       const results = await addSubscriber(projectId, { reportFrequency: form.reportFrequency, email: form.email })
       setEmails([...emails, results])
-      addEmail(t('apiNotifications.userInvited'))
+      toast.success(t('apiNotifications.userInvited'))
     } catch (e) {
       console.error(`[ERROR] Error while inviting a user: ${e}`)
-      addEmail(t('apiNotifications.userInviteError'), 'error')
+      toast.error(t('apiNotifications.userInviteError'))
     }
 
     // a timeout is needed to prevent the flicker of data fields in the modal when closing
@@ -397,10 +380,10 @@ const Emails = ({
       await removeSubscriber(projectId, email)
       const results = _filter(emails, (s) => s.id !== email)
       setEmails(results)
-      removeEmail(t('apiNotifications.emailDelete'))
-    } catch (e) {
-      console.error(`[ERROR] Error while deleting a email: ${e}`)
-      emailFailed(t('apiNotifications.emailDeleteError'))
+      toast.success(t('apiNotifications.emailDelete'))
+    } catch (reason: any) {
+      console.error(`[ERROR] Error while deleting a email: ${reason}`)
+      toast.error(t('apiNotifications.emailDeleteError'))
     }
   }
 
@@ -457,8 +440,6 @@ const Emails = ({
                           t={t}
                           language={language}
                           setEmails={setEmails}
-                          emailFailed={emailFailed}
-                          reportTypeNotifiction={reportTypeNotifiction}
                         />
                       ))}
                     </tbody>

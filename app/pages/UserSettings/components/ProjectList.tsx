@@ -1,5 +1,6 @@
 import React, { memo, useState } from 'react'
 import dayjs from 'dayjs'
+import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
 
 import Button from 'ui/Button'
@@ -13,16 +14,12 @@ const ProjectList = ({
   removeProject,
   setProjectsShareData,
   setUserShareData,
-  userSharedUpdate,
-  sharedProjectError,
 }: {
   item: ISharedProject
   removeShareProject: (id: string) => void
   removeProject: (id: string) => void
   setProjectsShareData: (data: Partial<ISharedProject>, id: string, shared?: boolean) => void
   setUserShareData: (data: Partial<ISharedProject>, id: string) => void
-  userSharedUpdate: (message: string) => void
-  sharedProjectError: (message: string) => void
 }): JSX.Element => {
   const {
     t,
@@ -37,10 +34,10 @@ const ProjectList = ({
       await deleteShareProject(pid)
       removeShareProject(pid)
       removeProject(project.id)
-      userSharedUpdate(t('apiNotifications.quitProject'))
-    } catch (e) {
-      console.error(`[ERROR] Error while quitting project: ${e}`)
-      sharedProjectError(t('apiNotifications.quitProjectError'))
+      toast.success(t('apiNotifications.quitProject'))
+    } catch (reason) {
+      console.error(`[ERROR] Error while quitting project: ${reason}`)
+      toast.error(t('apiNotifications.quitProjectError'))
     }
   }
 
@@ -49,10 +46,10 @@ const ProjectList = ({
       await acceptShareProject(id)
       setProjectsShareData({ confirmed: true }, project.id)
       setUserShareData({ confirmed: true }, id)
-      userSharedUpdate(t('apiNotifications.acceptInvitation'))
+      toast.success(t('apiNotifications.acceptInvitation'))
     } catch (e) {
       console.error(`[ERROR] Error while accepting project invitation: ${e}`)
-      sharedProjectError(t('apiNotifications.acceptInvitationError'))
+      toast.error(t('apiNotifications.acceptInvitationError'))
     }
   }
 

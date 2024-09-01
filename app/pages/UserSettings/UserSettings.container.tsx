@@ -1,9 +1,8 @@
 import { connect } from 'react-redux'
+import { toast } from 'sonner'
 import type i18next from 'i18next'
 import UIActions from 'redux/reducers/ui'
-import { errorsActions } from 'redux/reducers/errors'
 import { authActions } from 'redux/reducers/auth'
-import { alertsActions } from 'redux/reducers/alerts'
 import { trackCustom } from 'utils/analytics'
 import { StateType, AppDispatch } from 'redux/store'
 import sagaActions from 'redux/sagas/actions'
@@ -26,13 +25,6 @@ const mapStateToProps = (state: StateType) => {
 }
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
-  onGDPRExportFailed: (message: string) => {
-    dispatch(
-      errorsActions.genericError({
-        message,
-      }),
-    )
-  },
   onDelete: (
     t: typeof i18next.t,
     deletionFeedback: string,
@@ -42,12 +34,7 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
   ) => {
     dispatch(
       sagaActions.deleteAccountAsync(
-        (error: string) =>
-          dispatch(
-            errorsActions.deleteAccountFailed({
-              message: error,
-            }),
-          ),
+        (error: string) => toast.error(error),
         () => {
           trackCustom('ACCOUNT_DELETED', {
             reason_stated: deletionFeedback ? 'true' : 'false',
@@ -65,33 +52,11 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
   onDeleteProjectCache: () => {
     dispatch(UIActions.deleteProjectCache({}))
   },
-  userSharedUpdate: (message: string) => {
-    dispatch(
-      alertsActions.userSharedUpdate({
-        message,
-        type: 'success',
-      }),
-    )
-  },
   setCache: (key: string, value: any) => {
     dispatch(
       UIActions.setCache({
         key,
         value,
-      }),
-    )
-  },
-  sharedProjectError: (message: string) => {
-    dispatch(
-      errorsActions.sharedProjectFailed({
-        message,
-      }),
-    )
-  },
-  genericError: (message: string) => {
-    dispatch(
-      errorsActions.genericError({
-        message,
       }),
     )
   },
@@ -123,21 +88,6 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
       }),
     )
   },
-  updateProfileFailed: (message: string) => {
-    dispatch(
-      errorsActions.updateUserProfileFailed({
-        message,
-      }),
-    )
-  },
-  accountUpdated: (message: string) => {
-    dispatch(
-      alertsActions.accountUpdated({
-        message,
-        type: 'success',
-      }),
-    )
-  },
   updateUserProfileAsync: (
     data: Partial<IUser>,
     successMessage: string,
@@ -146,12 +96,7 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
     dispatch(
       sagaActions.updateUserProfileAsync(data, (res: any) => {
         if (res) {
-          dispatch(
-            alertsActions.accountUpdated({
-              message: successMessage,
-              type: 'success',
-            }),
-          )
+          toast.success(successMessage)
         }
         callback(res)
       }),

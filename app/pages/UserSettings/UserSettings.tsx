@@ -4,6 +4,7 @@ import type i18next from 'i18next'
 import { useNavigate } from '@remix-run/react'
 import { ClientOnly } from 'remix-utils/client-only'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import _size from 'lodash/size'
 import _isEmpty from 'lodash/isEmpty'
 import _isNull from 'lodash/isNull'
@@ -125,14 +126,8 @@ interface IProps {
   removeShareProject: (id: string) => void
   setUserShareData: (data: Partial<ISharedProject>, id: string) => void
   setProjectsShareData: (data: Partial<ISharedProject>, id: string) => void
-  userSharedUpdate: (message: string) => void
-  sharedProjectError: (message: string) => void
   updateUserData: (data: Partial<IUser>) => void
-  genericError: (message: string) => void
-  onGDPRExportFailed: (message: string) => void
-  updateProfileFailed: (message: string) => void
   updateUserProfileAsync: (data: IUser, successMessage: string, callback?: (isSuccess: boolean) => void) => void
-  accountUpdated: (t: string) => void
   setAPIKey: (key: string | null) => void
   user: IUser
   dontRemember: boolean
@@ -162,14 +157,8 @@ const UserSettings = ({
   removeShareProject,
   setUserShareData,
   setProjectsShareData,
-  userSharedUpdate,
-  sharedProjectError,
   updateUserData,
-  genericError,
-  onGDPRExportFailed,
-  updateProfileFailed,
   updateUserProfileAsync,
-  accountUpdated,
   setAPIKey,
   user,
   dontRemember,
@@ -346,11 +335,11 @@ const UserSettings = ({
       setSettingUpdating(false)
 
       if (isSuccess) {
-        accountUpdated(t('profileSettings.updated'))
+        toast.success(t('profileSettings.updated'))
         return
       }
 
-      genericError(t('apiNotifications.somethingWentWrong'))
+      toast.error(t('apiNotifications.somethingWentWrong'))
     })
   }
 
@@ -366,9 +355,9 @@ const UserSettings = ({
       updateUserData({
         receiveLoginNotifications: checked,
       })
-      accountUpdated(t('profileSettings.updated'))
+      toast.success(t('profileSettings.updated'))
     } catch {
-      genericError(t('apiNotifications.somethingWentWrong'))
+      toast.error(t('apiNotifications.somethingWentWrong'))
     } finally {
       setSettingUpdating(false)
     }
@@ -439,7 +428,7 @@ const UserSettings = ({
         getCookie(GDPR_REQUEST) ||
         (!_isNull(exportedAt) && !dayjs().isAfter(dayjs.utc(exportedAt).add(GDPR_EXPORT_TIMEFRAME, 'day'), 'day'))
       ) {
-        onGDPRExportFailed(
+        toast.error(
           t('profileSettings.tryAgainInXDays', {
             amount: GDPR_EXPORT_TIMEFRAME,
           }),
@@ -449,16 +438,16 @@ const UserSettings = ({
       await exportUserData()
 
       trackCustom('GDPR_EXPORT')
-      accountUpdated(t('profileSettings.reportSent'))
+      toast.success(t('profileSettings.reportSent'))
       setCookie(GDPR_REQUEST, true, 1209600) // setting cookie for 14 days
-    } catch (e) {
-      updateProfileFailed(e as string)
+    } catch (reason: any) {
+      toast.error(reason)
     }
   }
 
   const onEmailConfirm = async (errorCallback: any) => {
     if (getCookie(CONFIRMATION_TIMEOUT)) {
-      updateProfileFailed(t('profileSettings.confTimeout'))
+      toast.error(t('profileSettings.confTimeout'))
       return
     }
 
@@ -467,12 +456,12 @@ const UserSettings = ({
 
       if (res) {
         setCookie(CONFIRMATION_TIMEOUT, true, 600)
-        accountUpdated(t('profileSettings.confSent'))
+        toast.success(t('profileSettings.confSent'))
       } else {
         errorCallback(t('profileSettings.noConfLeft'))
       }
-    } catch (e) {
-      updateProfileFailed(e as string)
+    } catch (reason: any) {
+      toast.error(reason)
     }
   }
 
@@ -480,8 +469,8 @@ const UserSettings = ({
     try {
       const res = await generateApiKey()
       setAPIKey(res.apiKey)
-    } catch (e) {
-      updateProfileFailed(e as string)
+    } catch (reason: any) {
+      toast.error(reason)
     }
   }
 
@@ -489,19 +478,10 @@ const UserSettings = ({
     try {
       await deleteApiKey()
       setAPIKey(null)
-    } catch (e) {
-      updateProfileFailed(e as string)
+    } catch (reason: any) {
+      toast.error(reason)
     }
   }
-
-  // const setAsyncThemeType = async (theme) => {
-  //   try {
-  //     await setTheme(theme)
-  //     setThemeType(theme)
-  //   } catch (e) {
-  //     updateProfileFailed(e)
-  //   }
-  // }
 
   const setAsyncTimeFormat = async () => {
     setBeenSubmitted(true)
@@ -717,12 +697,7 @@ const UserSettings = ({
                       <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
                         {t('profileSettings.2fa')}
                       </h3>
-                      <TwoFA
-                        user={user}
-                        dontRemember={dontRemember}
-                        updateUserData={updateUserData}
-                        genericError={genericError}
-                      />
+                      <TwoFA user={user} dontRemember={dontRemember} updateUserData={updateUserData} />
 
                       {/* Socialisations setup */}
                       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
@@ -732,13 +707,7 @@ const UserSettings = ({
                       >
                         {t('profileSettings.socialisations')}
                       </h3>
-                      <Socialisations
-                        user={user}
-                        genericError={genericError}
-                        linkSSO={linkSSO}
-                        unlinkSSO={unlinkSSO}
-                        theme={theme}
-                      />
+                      <Socialisations user={user} linkSSO={linkSSO} unlinkSSO={unlinkSSO} theme={theme} />
 
                       {/* Shared projects setting */}
                       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
@@ -784,8 +753,6 @@ const UserSettings = ({
                                           removeShareProject={removeShareProject}
                                           setUserShareData={setUserShareData}
                                           setProjectsShareData={setProjectsShareData}
-                                          userSharedUpdate={userSharedUpdate}
-                                          sharedProjectError={sharedProjectError}
                                         />
                                       ))}
                                     </tbody>
@@ -937,7 +904,6 @@ const UserSettings = ({
                         user={user}
                         updateUserData={updateUserData}
                         handleIntegrationSave={handleIntegrationSave}
-                        genericError={genericError}
                       />
                       {user.isTelegramChatIdConfirmed && (
                         <Checkbox
@@ -966,12 +932,10 @@ const UserSettings = ({
                   </h3>
                   <Referral
                     user={user}
-                    genericError={genericError}
                     updateUserData={updateUserData}
                     referralStatistics={referralStatistics}
                     activeReferrals={activeReferrals}
                     setCache={setCache}
-                    accountUpdated={accountUpdated}
                   />
                 </>
               )

@@ -3,6 +3,7 @@ import type i18next from 'i18next'
 import { useTranslation } from 'react-i18next'
 import _map from 'lodash/map'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
+import { toast } from 'sonner'
 
 import Button from 'ui/Button'
 import Google from 'ui/icons/GoogleG'
@@ -51,11 +52,10 @@ interface ISocialisations {
   user: IUser
   linkSSO: (t: typeof i18next.t, callback: (e: any) => void, provider: string) => void
   unlinkSSO: (t: typeof i18next.t, callback: (e: any) => void, provider: string) => void
-  genericError: (message: string) => void
   theme: string
 }
 
-const Socialisations = ({ user, linkSSO, unlinkSSO, genericError, theme }: ISocialisations) => {
+const Socialisations = ({ user, linkSSO, unlinkSSO, theme }: ISocialisations) => {
   const { t } = useTranslation('common')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -125,7 +125,7 @@ const Socialisations = ({ user, linkSSO, unlinkSSO, genericError, theme }: ISoci
                   </div>
                   <div className='mt-2 flex justify-center sm:mt-0 sm:block'>
                     {connected && !unlinkable && (
-                      <Button onClick={() => genericError(t('profileSettings.cantUnlinkSocialisation'))} small danger>
+                      <Button onClick={() => toast.error(t('profileSettings.cantUnlinkSocialisation'))} small danger>
                         {t('common.unlink')}
                       </Button>
                     )}

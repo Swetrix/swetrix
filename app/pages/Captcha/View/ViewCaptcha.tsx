@@ -1,5 +1,6 @@
 /* eslint-disable react/no-unstable-nested-components, react/display-name */
 import React, { useState, useEffect, useMemo, memo, useRef } from 'react'
+import { toast } from 'sonner'
 import useSize from 'hooks/useSize'
 import { useNavigate, useParams } from '@remix-run/react'
 import { ClientOnly } from 'remix-utils/client-only'
@@ -77,7 +78,6 @@ const PageLoader = () => (
 interface IViewCaptcha {
   projects: ICaptchaProject[]
   isLoading: boolean
-  showError: (message: string) => void
   cache: any
   setProjectCache: (pid: string, data: any, key: string) => void
   projectViewPrefs: any
@@ -93,7 +93,6 @@ interface IViewCaptcha {
 const ViewCaptcha = ({
   projects,
   isLoading: _isLoading,
-  showError,
   cache,
   setProjectCache,
   projectViewPrefs,
@@ -210,7 +209,7 @@ const ViewCaptcha = ({
   })
 
   const onErrorLoading = () => {
-    showError(t('project.noExist'))
+    toast.error(t('project.noExist'))
     navigate(routes.dashboard)
   }
 

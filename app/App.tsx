@@ -2,8 +2,6 @@ import React, { useEffect } from 'react'
 import { useLocation, Outlet } from '@remix-run/react'
 import { useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
-// @ts-ignore
-import { useAlert } from '@blaumaus/react-alert'
 import _some from 'lodash/some'
 import _includes from 'lodash/includes'
 import _startsWith from 'lodash/startsWith'
@@ -13,11 +11,10 @@ import 'dayjs/locale/uk'
 import Header from 'components/Header'
 import Footer from 'components/Footer'
 
+import { Toaster } from 'sonner'
 import { getAccessToken } from 'utils/accessToken'
 import { authActions } from 'redux/reducers/auth'
 import sagaActions from 'redux/sagas/actions'
-import { errorsActions } from 'redux/reducers/errors'
-import { alertsActions } from 'redux/reducers/alerts'
 import { StateType, useAppDispatch } from 'redux/store'
 import { isBrowser } from 'redux/constants'
 import routesPath from 'utils/routes'
@@ -37,13 +34,12 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
   const dispatch = useAppDispatch()
   const { pathname } = useLocation()
   const { t } = useTranslation('common')
-  const alert = useAlert()
   const { loading } = useSelector((state: StateType) => state.auth)
   const reduxAuthenticated = useSelector((state: StateType) => state.auth.authenticated)
-  const { error } = useSelector((state: StateType) => state.errors)
-  const { message, type } = useSelector((state: StateType) => state.alerts)
+  const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
   const accessToken = getAccessToken()
   const authenticated = isBrowser ? (loading ? !!accessToken : reduxAuthenticated) : ssrAuthenticated
+  const theme = isBrowser ? reduxTheme : ssrTheme
 
   // prettier-ignore
   useEffect(() => {
@@ -61,27 +57,6 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
       dispatch(authActions.finishLoading())
     })()
   }, [reduxAuthenticated]) // eslint-disable-line
-
-  useEffect(() => {
-    if (error) {
-      alert.error(error.toString(), {
-        onClose: () => {
-          dispatch(errorsActions.clearErrors())
-        },
-      })
-    }
-  }, [error]) // eslint-disable-line
-
-  useEffect(() => {
-    if (message && type) {
-      alert.show(message.toString(), {
-        type,
-        onClose: () => {
-          dispatch(alertsActions.clearAlerts())
-        },
-      })
-    }
-  }, [message, type]) // eslint-disable-line
 
   useEffect(() => {
     if (_some(TITLE_BLACKLIST, (page) => _startsWith(pathname, page))) {
@@ -114,12 +89,17 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
   ]
 
   return (
-    // eslint-disable-next-line react/jsx-no-useless-fragment
     <>
       {!_includes(routesWithOutHeader, pathname) && !isReferralPage && !isProjectViewPage && (
         <Header ssrTheme={ssrTheme} authenticated={authenticated} />
       )}
       <Outlet />
+      <Toaster
+        theme={theme}
+        toastOptions={{
+          duration: 5000,
+        }}
+      />
       {!isReferralPage && !isProjectViewPage && <Footer minimal={isMinimalFooter} authenticated={authenticated} />}
     </>
   )
