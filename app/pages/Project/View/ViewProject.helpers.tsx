@@ -1121,7 +1121,7 @@ const getSettingsFunnels = (funnel: IAnalyticsFunnel[], totalPageviews: number, 
     },
     tooltip: {
       contents: (items: any, _: any, __: any, color: any) => {
-        const { index } = items[0]
+        const { index = 0 } = items[0] || {}
         const step = funnel[index]
         const stepTitle = values[index]
         const prevStepTitle = values[index - 1]
