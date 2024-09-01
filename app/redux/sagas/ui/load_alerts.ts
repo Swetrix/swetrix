@@ -1,8 +1,8 @@
 import { put, call } from 'redux-saga/effects'
+import { toast } from 'sonner'
 import Debug from 'debug'
 import _isString from 'lodash/isString'
 import UIActions from 'redux/reducers/ui'
-import { errorsActions } from 'redux/reducers/errors'
 import { DEFAULT_ALERTS_TAKE, isSelfhosted } from 'redux/constants'
 const { getAlerts } = require('api')
 
@@ -28,11 +28,7 @@ export default function* loadProjectAlerts({ payload: { take = DEFAULT_ALERTS_TA
   } catch (e: unknown) {
     const { message } = e as { message: string }
     if (_isString(message)) {
-      yield put(
-        errorsActions.setError({
-          message,
-        }),
-      )
+      toast.error(message)
     }
     debug('failed to load extensions: %s', message)
   } finally {

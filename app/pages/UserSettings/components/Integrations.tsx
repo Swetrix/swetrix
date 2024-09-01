@@ -4,6 +4,7 @@ import { useTranslation, Trans } from 'react-i18next'
 import _map from 'lodash/map'
 import _isString from 'lodash/isString'
 import { CheckCircleIcon, XCircleIcon, ClockIcon } from '@heroicons/react/24/solid'
+import { toast } from 'sonner'
 
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -51,12 +52,10 @@ const Integrations = ({
   user,
   updateUserData,
   handleIntegrationSave,
-  genericError,
 }: {
   user: IUser
   updateUserData: (data: Partial<IUser>) => void
   handleIntegrationSave: (data: Partial<IUser>, cb: (isSuccess: boolean) => void) => void
-  genericError: (message: string) => void
 }) => {
   const { t } = useTranslation('common')
   const available = getAvailableIntegrations(t)
@@ -96,7 +95,7 @@ const Integrations = ({
         },
         (isSuccess: boolean) => {
           if (!isSuccess) {
-            genericError(t('apiNotifications.integrationSaveError'))
+            toast.error(t('apiNotifications.integrationSaveError'))
           }
 
           setIsIntegrationLoading(false)
@@ -113,7 +112,7 @@ const Integrations = ({
         },
         (isSuccess: boolean) => {
           if (!isSuccess) {
-            genericError(t('apiNotifications.integrationSaveError'))
+            toast.error(t('apiNotifications.integrationSaveError'))
           }
 
           setIsIntegrationLoading(false)
@@ -172,9 +171,9 @@ const Integrations = ({
         })
       } catch (reason) {
         if (_isString(reason)) {
-          genericError(reason)
+          toast.error(reason)
         } else {
-          genericError(t('apiNotifications.integrationRemovalError'))
+          toast.error(t('apiNotifications.integrationRemovalError'))
         }
         console.error(`[ERROR] Failed to remove TG integration: ${reason}`)
       }
@@ -189,7 +188,7 @@ const Integrations = ({
         },
         (isSuccess: boolean) => {
           if (!isSuccess) {
-            genericError(t('apiNotifications.integrationRemovalError'))
+            toast.error(t('apiNotifications.integrationRemovalError'))
           }
 
           updateUserData({
@@ -207,7 +206,7 @@ const Integrations = ({
         },
         (isSuccess: boolean) => {
           if (!isSuccess) {
-            genericError(t('apiNotifications.integrationRemovalError'))
+            toast.error(t('apiNotifications.integrationRemovalError'))
           }
 
           updateUserData({

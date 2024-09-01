@@ -1,7 +1,7 @@
 import { call, put } from 'redux-saga/effects'
+import { toast } from 'sonner'
 
 import { authActions } from 'redux/reducers/auth'
-import { errorsActions } from 'redux/reducers/errors'
 import { IUser } from '../../../models/IUser'
 const { changeUserDetails } = require('api')
 
@@ -19,14 +19,8 @@ export default function* updateUserProfileWorker({
 
     yield put(authActions.updateUserProfileSuccess(user))
     isSuccess = true
-  } catch (e: unknown) {
-    const error = e as { message: string } | string[] | string
-    yield put(
-      errorsActions.updateUserProfileFailed({
-        // @ts-ignore
-        message: error?.message || (typeof error === 'string' ? error : error[0]),
-      }),
-    )
+  } catch (reason: any) {
+    toast.error(reason?.message || (typeof reason === 'string' ? reason : reason[0]))
   } finally {
     yield put(authActions.finishLoading())
     callback(isSuccess)

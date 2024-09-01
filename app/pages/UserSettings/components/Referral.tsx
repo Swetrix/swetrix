@@ -4,6 +4,7 @@ import { ClipboardDocumentIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
+import { toast } from 'sonner'
 
 import { generateRefCode, getPayoutsInfo, getReferrals, setPaypalEmail } from 'api'
 import Tooltip from 'ui/Tooltip'
@@ -26,23 +27,13 @@ import { isValidEmail } from 'utils/validator'
 
 interface IReferral {
   user: IUser
-  genericError: (message: string) => void
   updateUserData: (data: Partial<IUser>) => void
   setCache: (key: string, value: any) => void
   activeReferrals: any[]
   referralStatistics: any
-  accountUpdated: (t: string) => void
 }
 
-const Referral = ({
-  user,
-  genericError,
-  updateUserData,
-  referralStatistics,
-  activeReferrals,
-  setCache,
-  accountUpdated,
-}: IReferral) => {
+const Referral = ({ user, updateUserData, referralStatistics, activeReferrals, setCache }: IReferral) => {
   const {
     t,
     i18n: { language },
@@ -72,7 +63,7 @@ const Referral = ({
         setCache('referralStatistics', info)
       } catch (reason) {
         console.error('[Referral][getRefStats] Something went wrong whilst requesting payouts information', reason)
-        genericError(t('apiNotifications.payoutInfoError'))
+        toast.error(t('apiNotifications.payoutInfoError'))
       }
     }
 
@@ -82,7 +73,7 @@ const Referral = ({
         setCache('activeReferrals', info)
       } catch (reason) {
         console.error('[Referral][getActiveReferrals] Something went wrong whilst requesting active referrals', reason)
-        genericError(t('apiNotifications.payoutInfoError'))
+        toast.error(t('apiNotifications.payoutInfoError'))
       }
     }
 
@@ -95,7 +86,7 @@ const Referral = ({
       setActiveReferralsRequested(true)
       getActiveReferrals()
     }
-  }, [referralStatistics, referralStatsRequested, setCache, genericError, activeReferralsRequested, activeReferrals, t])
+  }, [referralStatistics, referralStatsRequested, setCache, activeReferralsRequested, activeReferrals, t])
 
   const onRefCodeGenerate = async () => {
     if (refCodeGenerating || user.refCode) {
@@ -109,8 +100,8 @@ const Referral = ({
       updateUserData({
         refCode,
       })
-    } catch (e) {
-      genericError(t('apiNotifications.somethingWentWrong'))
+    } catch {
+      toast.error(t('apiNotifications.somethingWentWrong'))
     } finally {
       setRefCodeGenerating(false)
     }
@@ -138,10 +129,10 @@ const Referral = ({
       updateUserData({
         paypalPaymentsEmail: paypalEmailAddress,
       })
-      accountUpdated(t('profileSettings.referral.payoutEmailUpdated'))
+      toast.success(t('profileSettings.referral.payoutEmailUpdated'))
     } catch (reason) {
       console.error('[Referral][updatePaypalEmail] Something went wrong whilst updating paypal email', reason)
-      genericError(t('apiNotifications.somethingWentWrong'))
+      toast.error(t('apiNotifications.somethingWentWrong'))
     }
 
     setIsPaypalEmailLoading(false)

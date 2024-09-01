@@ -1,3 +1,3 @@
-import CreateNewPassword from './CreateNewPassword.container'
+import CreateNewPassword from './CreateNewPassword'
 
 export default CreateNewPassword

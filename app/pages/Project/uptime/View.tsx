@@ -18,6 +18,7 @@ import {
   ArrowPathIcon,
   ChevronLeftIcon,
 } from '@heroicons/react/24/outline'
+import { toast } from 'sonner'
 
 import routes from 'utils/routes'
 import Button from 'ui/Button'
@@ -25,8 +26,6 @@ import Modal from 'ui/Modal'
 import PaidFeature from 'modals/PaidFeature'
 import { PLAN_LIMITS, tbPeriodPairs, UPTIME_PERIOD_PAIRS } from 'redux/constants'
 import UIActions from 'redux/reducers/ui'
-import { alertsActions } from 'redux/reducers/alerts'
-import { errorsActions } from 'redux/reducers/errors'
 import { deleteMonitor as deleteMonitorApi, getMonitorOverallStats, getMonitorStats, getProjectMonitors } from 'api'
 import { StateType } from 'redux/store'
 import { Monitor, MonitorOverallObject } from 'redux/models/Uptime'
@@ -223,18 +222,9 @@ const Uptime = (): JSX.Element => {
           total: total - 1,
         }),
       )
-      dispatch(
-        alertsActions.generateAlerts({
-          message: t('monitor.monitorDeleted'),
-          type: 'success',
-        }),
-      )
+      toast.success(t('monitor.monitorDeleted'))
     } catch (reason: any) {
-      dispatch(
-        errorsActions.genericError({
-          message: reason?.response?.data?.message || reason?.message || 'Something went wrong',
-        }),
-      )
+      toast.error(reason?.response?.data?.message || reason?.message || 'Something went wrong')
     }
   }
 

@@ -3,6 +3,7 @@ import { Link, useNavigate } from '@remix-run/react'
 import { useTranslation, Trans } from 'react-i18next'
 import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
+import { toast } from 'sonner'
 
 import { forgotPassword } from 'api'
 import { withAuthentication, auth } from 'hoc/protected'
@@ -12,13 +13,7 @@ import Button from 'ui/Button'
 import { TRIAL_DAYS } from 'redux/constants'
 import { isValidEmail } from 'utils/validator'
 
-const ForgotPassword = ({
-  createNewPasswordFailed,
-  newPassword,
-}: {
-  createNewPasswordFailed: (e: string) => void
-  newPassword: (message: string) => void
-}): JSX.Element => {
+const ForgotPassword = () => {
   const { t } = useTranslation('common')
   const navigate = useNavigate()
   const [form, setForm] = useState<{
@@ -59,10 +54,10 @@ const ForgotPassword = ({
       try {
         await forgotPassword(data)
 
-        newPassword(t('auth.forgot.sent'))
+        toast.success(t('auth.forgot.sent'))
         navigate(routes.main)
       } catch (e: any) {
-        createNewPasswordFailed(e.toString())
+        toast.error(e.toString())
       } finally {
         setIsLoading(false)
       }

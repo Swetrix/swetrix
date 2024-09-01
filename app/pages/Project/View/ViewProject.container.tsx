@@ -1,8 +1,6 @@
 import { connect } from 'react-redux'
-import { errorsActions } from 'redux/reducers/errors'
 import UIActions from 'redux/reducers/ui'
 import { tabForSharedProject } from 'redux/constants'
-import { alertsActions } from 'redux/reducers/alerts'
 import { StateType, AppDispatch } from 'redux/store'
 import { IProject } from 'redux/models/IProject'
 import { ISharedProject } from 'redux/models/ISharedProject'
@@ -54,13 +52,6 @@ const mapStateToProps = (state: StateType) => {
 }
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
-  showError: (message: string) => {
-    dispatch(
-      errorsActions.genericError({
-        message,
-      }),
-    )
-  },
   setProjectCache: (pid: string, data: any, key: string) => {
     dispatch(
       UIActions.setProjectCache({
@@ -126,14 +117,6 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
       UIActions.setLiveStatsProject({
         id,
         count,
-      }),
-    )
-  },
-  generateAlert: (message: string, type: string) => {
-    dispatch(
-      alertsActions.generateAlerts({
-        message,
-        type,
       }),
     )
   },

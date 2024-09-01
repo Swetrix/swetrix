@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react'
 import type i18next from 'i18next'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { ResponsiveSankey } from '@nivo/sankey'
 import { connect } from 'react-redux'
 import { StateType, AppDispatch } from 'redux/store'
 import UIActions from 'redux/reducers/ui'
-import { errorsActions } from 'redux/reducers/errors'
 import { IUserFlow } from 'redux/models/IUserFlow'
 import _isEmpty from 'lodash/isEmpty'
 import { getUserFlowCacheKey } from 'redux/constants'
@@ -39,13 +39,6 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
       }),
     )
   },
-  generateError: (message: string) => {
-    dispatch(
-      errorsActions.genericError({
-        message,
-      }),
-    )
-  },
 })
 
 interface IJSXUserFlow {
@@ -64,7 +57,6 @@ interface IJSXUserFlow {
   isReversed?: boolean
   setUserFlowAscending: (data: IUserFlow, id: string, pd: string, fltr: any) => void
   setUserFlowDescending: (data: IUserFlow, id: string, pd: string, fltr: any) => void
-  generateError: (message: string) => void
   t: typeof i18next.t
   filters: IFilter[]
   setReversed: () => void
@@ -85,7 +77,6 @@ const UserFlow = ({
   isReversed,
   setUserFlowAscending,
   setUserFlowDescending,
-  generateError,
   t,
   projectPassword,
 }: IJSXUserFlow) => {
@@ -104,7 +95,7 @@ const UserFlow = ({
         setUserFlowDescending(descending, pid, period, filters)
       })
       .catch((err: Error) => {
-        generateError(err.message)
+        toast.error(err.message)
       })
       .finally(() => {
         setIsLoading(false)

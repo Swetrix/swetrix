@@ -1,9 +1,8 @@
-import { call, put, delay } from 'redux-saga/effects'
 import type i18next from 'i18next'
+import { call, put, delay } from 'redux-saga/effects'
+import { toast } from 'sonner'
 
 import { authActions } from 'redux/reducers/auth'
-import { errorsActions } from 'redux/reducers/errors'
-import { alertsActions } from 'redux/reducers/alerts'
 import { openBrowserWindow } from 'utils/generic'
 const { linkBySSOHash, generateSSOAuthURL, authMe } = require('api')
 
@@ -24,11 +23,7 @@ export default function* ssoLink({ payload: { callback, t, provider } }: ISSOLin
   const authWindow = openBrowserWindow('', AUTH_WINDOW_WIDTH, AUTH_WINDOW_HEIGHT)
 
   if (!authWindow) {
-    yield put(
-      errorsActions.loginFailed({
-        message: t('apiNotifications.socialisationGenericError'),
-      }),
-    )
+    toast.error(t('apiNotifications.socialisationGenericError'))
     callback(false)
     return
   }
@@ -53,12 +48,7 @@ export default function* ssoLink({ payload: { callback, t, provider } }: ISSOLin
         const user = yield call(authMe)
         yield put(authActions.loginSuccessful(user))
 
-        yield put(
-          alertsActions.generateAlerts({
-            message: t('apiNotifications.socialAccountLinked'),
-            type: 'success',
-          }),
-        )
+        toast.success(t('apiNotifications.socialAccountLinked'))
 
         callback(true)
         return
@@ -71,11 +61,7 @@ export default function* ssoLink({ payload: { callback, t, provider } }: ISSOLin
       }
     }
   } catch (reason) {
-    yield put(
-      errorsActions.loginFailed({
-        message: t('apiNotifications.socialisationGenericError'),
-      }),
-    )
+    toast.error(t('apiNotifications.socialisationGenericError'))
     callback(false)
   }
 }

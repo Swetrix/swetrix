@@ -24,9 +24,8 @@ import { withAuthentication, auth } from 'hoc/protected'
 import routes from 'utils/routes'
 import { Monitor } from 'redux/models/Uptime'
 import { useDispatch, useSelector } from 'react-redux'
+import { toast } from 'sonner'
 import { StateType } from 'redux/store'
-import { errorsActions } from 'redux/reducers/errors'
-import { alertsActions } from 'redux/reducers/alerts'
 import UIActions from 'redux/reducers/ui'
 import { useRequiredParams } from 'hooks/useRequiredParams'
 import Select from 'ui/Select'
@@ -183,8 +182,6 @@ const UptimeSettings = (): JSX.Element => {
   const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
   const [showModal, setShowModal] = useState<boolean>(false)
 
-  const showError = (message: string) => dispatch(errorsActions.genericError({ message }))
-  const generateAlerts = (message: string) => dispatch(alertsActions.generateAlerts({ message, type: 'success' }))
   const setMonitors = (monitors: Monitor[]) => dispatch(UIActions.setMonitors(monitors))
   const setMonitorsTotal = (total: number) => dispatch(UIActions.setMonitorsTotal({ total }))
 
@@ -257,10 +254,10 @@ const UptimeSettings = (): JSX.Element => {
         .then((res) => {
           navigate(`/projects/${pid}?tab=${PROJECT_TABS.uptime}`)
           setMonitors([..._filter(monitors, (a) => a.id !== id), res])
-          generateAlerts(t('monitor.monitorUpdated'))
+          toast.success(t('monitor.monitorUpdated'))
         })
         .catch((err) => {
-          showError(err.message || err || 'Something went wrong')
+          toast.error(err.message || err || 'Something went wrong')
         })
     } else {
       createMonitor(pid, data as ICreateMonitor)
@@ -268,17 +265,17 @@ const UptimeSettings = (): JSX.Element => {
           navigate(`/projects/${pid}?tab=${PROJECT_TABS.uptime}`)
           setMonitors([...monitors, res])
           setMonitorsTotal(total + 1)
-          generateAlerts(t('monitor.monitorCreated'))
+          toast.success(t('monitor.monitorCreated'))
         })
         .catch((err) => {
-          showError(err.message || err || 'Something went wrong')
+          toast.error(err.message || err || 'Something went wrong')
         })
     }
   }
 
   const onDelete = () => {
     if (!id) {
-      showError('Something went wrong')
+      toast.error('Something went wrong')
       return
     }
 
@@ -287,10 +284,10 @@ const UptimeSettings = (): JSX.Element => {
         setMonitors(_filter(monitors, (a) => a.id !== id))
         setMonitorsTotal(total - 1)
         navigate(`/projects/${pid}?tab=${PROJECT_TABS.uptime}`)
-        generateAlerts(t('monitor.monitorDeleted'))
+        toast.success(t('monitor.monitorDeleted'))
       })
       .catch((err) => {
-        showError(err.message || err || 'Something went wrong')
+        toast.error(err.message || err || 'Something went wrong')
       })
   }
 

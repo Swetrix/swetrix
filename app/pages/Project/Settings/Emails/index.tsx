@@ -1,3 +1,3 @@
-import Emails from './Emails.container'
+import Emails from './Emails'
 
 export default Emails

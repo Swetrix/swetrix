@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
 import _isNull from 'lodash/isNull'
 import _isString from 'lodash/isString'
+import { toast } from 'sonner'
 
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -16,12 +17,10 @@ const TwoFA = ({
   user,
   dontRemember,
   updateUserData,
-  genericError,
 }: {
   user: IUser
   dontRemember: boolean
   updateUserData: (data: Partial<IUser>) => void
-  genericError: (message: string) => void
 }): JSX.Element => {
   const { t } = useTranslation('common')
   const [twoFAConfigurating, setTwoFAConfigurating] = useState<boolean>(false)
@@ -52,13 +51,13 @@ const TwoFA = ({
         const result = await generate2FA()
         setTwoFAConfigurating(true)
         setTwoFAConfigData(result)
-      } catch (e) {
-        if (_isString(e)) {
-          genericError(e)
+      } catch (reason) {
+        if (_isString(reason)) {
+          toast.error(reason)
         } else {
-          genericError(t('apiNotifications.generate2FAError'))
+          toast.error(t('apiNotifications.generate2FAError'))
         }
-        console.error(`[ERROR] Failed to generate 2FA: ${e}`)
+        console.error(`[ERROR] Failed to generate 2FA: ${reason}`)
         setTwoFAConfigurating(false)
         setTwoFAConfigData({})
       }
@@ -77,9 +76,9 @@ const TwoFA = ({
         setAccessToken(accessToken, dontRemember)
         updateUserData({ isTwoFactorAuthenticationEnabled: true })
         setTwoFARecovery(twoFactorRecoveryCode)
-      } catch (e) {
-        if (_isString(e)) {
-          genericError(e)
+      } catch (reason) {
+        if (_isString(reason)) {
+          toast.error(reason)
         }
         setTwoFACodeError(t('profileSettings.invalid2fa'))
       }
@@ -96,9 +95,9 @@ const TwoFA = ({
       try {
         await disable2FA(twoFACode)
         updateUserData({ isTwoFactorAuthenticationEnabled: false })
-      } catch (e) {
-        if (_isString(e)) {
-          genericError(e)
+      } catch (reason) {
+        if (_isString(reason)) {
+          toast.error(reason)
         }
         setTwoFACodeError(t('profileSettings.invalid2fa'))
       }

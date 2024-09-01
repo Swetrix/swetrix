@@ -1,5 +1,6 @@
 import React, { memo, useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate } from '@remix-run/react'
+import { toast } from 'sonner'
 import type i18next from 'i18next'
 import { ClientOnly } from 'remix-utils/client-only'
 import cx from 'clsx'
@@ -60,13 +61,10 @@ interface IProjectCard {
   isPublic?: boolean
   confirmed?: boolean
   id: string
-  deleteProjectFailed: (message: string) => void
   sharedProjects: ISharedProject[]
   setProjectsShareData: (data: Partial<ISharedProject>, id: string, shared?: boolean) => void
   setUserShareData: (data: Partial<ISharedProject>, id: string) => void
   shared?: boolean
-  userSharedUpdate: (message: string) => void
-  sharedProjectError: (message: string) => void
   captcha?: boolean
   isTransferring?: boolean
   getRole?: (id: string) => string | null
@@ -124,19 +122,16 @@ const ProjectCard = ({
   isPublic,
   confirmed,
   id,
-  deleteProjectFailed,
   sharedProjects,
   setProjectsShareData,
   setUserShareData,
   shared,
-  userSharedUpdate,
-  sharedProjectError,
   captcha,
   isTransferring,
   type,
   getRole,
   members,
-}: IProjectCard): JSX.Element => {
+}: IProjectCard) => {
   const [showInviteModal, setShowInviteModal] = useState(false)
   const role = useMemo(() => getRole && getRole(id), [getRole, id])
   const navigate = useNavigate()
@@ -152,11 +147,9 @@ const ProjectCard = ({
       await acceptShareProject(pid)
       setProjectsShareData({ confirmed: true }, id, true)
       setUserShareData({ confirmed: true }, pid)
-      userSharedUpdate(t('apiNotifications.acceptInvitation'))
-    } catch (e) {
-      sharedProjectError(t('apiNotifications.acceptInvitationError'))
-      // @ts-ignore
-      deleteProjectFailed(e)
+      toast.success(t('apiNotifications.acceptInvitation'))
+    } catch (reason: any) {
+      toast.error(t('apiNotifications.acceptInvitationError'))
     }
   }
 
@@ -312,11 +305,8 @@ interface DashboardProps {
   isLoading: boolean
   error: string
   user: IUser
-  deleteProjectFailed: (error: string) => void
   setProjectsShareData: (data: Partial<ISharedProject>) => void
   setUserShareData: (data: Partial<ISharedProject>) => void
-  userSharedUpdate: (message: string) => void
-  sharedProjectError: (error: string) => void
   loadProjects: (take: number, skip: number, search: string) => void
   loadSharedProjects: (take: number, skip: number, search: string) => void
   total: number
@@ -342,11 +332,8 @@ const Dashboard = ({
   isLoading,
   error,
   user,
-  deleteProjectFailed,
   setProjectsShareData,
   setUserShareData,
-  userSharedUpdate,
-  sharedProjectError,
   loadProjects,
   loadSharedProjects,
   total,
@@ -669,11 +656,8 @@ const Dashboard = ({
                                   birdseye={birdseye}
                                   live={_isNumber(liveStats[id]) ? liveStats[id] : 'N/A'}
                                   setUserShareData={() => {}}
-                                  deleteProjectFailed={() => {}}
-                                  userSharedUpdate={() => {}}
                                   sharedProjects={[]}
                                   setProjectsShareData={() => {}}
-                                  sharedProjectError={() => {}}
                                   isTransferring={isTransferring}
                                   confirmed
                                 />
@@ -709,12 +693,9 @@ const Dashboard = ({
                                   isPublic={isPublic}
                                   birdseye={birdseye}
                                   live={_isNumber(liveStats[id]) ? liveStats[id] : 'N/A'}
-                                  deleteProjectFailed={() => {}}
                                   sharedProjects={[]}
                                   setProjectsShareData={() => {}}
                                   setUserShareData={() => {}}
-                                  userSharedUpdate={() => {}}
-                                  sharedProjectError={() => {}}
                                   confirmed
                                 />
                               ),
@@ -754,11 +735,8 @@ const Dashboard = ({
                                       birdseye={birdseye}
                                       live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
                                       setUserShareData={() => {}}
-                                      deleteProjectFailed={() => {}}
                                       sharedProjects={[]}
                                       setProjectsShareData={() => {}}
-                                      userSharedUpdate={() => {}}
-                                      sharedProjectError={() => {}}
                                     />
                                   )
                                 }
@@ -780,9 +758,6 @@ const Dashboard = ({
                                     setProjectsShareData={setProjectsShareData}
                                     setUserShareData={setUserShareData}
                                     live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
-                                    userSharedUpdate={userSharedUpdate}
-                                    sharedProjectError={sharedProjectError}
-                                    deleteProjectFailed={deleteProjectFailed}
                                   />
                                 )
                               },

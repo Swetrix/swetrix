@@ -60,6 +60,7 @@ import _every from 'lodash/every'
 import _size from 'lodash/size'
 import _truncate from 'lodash/truncate'
 import _isString from 'lodash/isString'
+import { toast } from 'sonner'
 
 import { withProjectProtected } from 'hoc/projectProtected'
 
@@ -275,7 +276,6 @@ interface IViewProject {
   projects: IProject[]
   extensions: any
   isLoading: boolean
-  showError: (message: string) => void
   cache: any
   cachePerf: any
   setProjectCache: (pid: string, data: any, key: string) => void
@@ -289,7 +289,6 @@ interface IViewProject {
   setProjectViewPrefs: (pid: string, period: string, timeBucket: string, rangeDate?: Date[]) => void
   setPublicProject: (project: Partial<IProject | ISharedProject>) => void
   setLiveStatsForProject: (id: string, count: number) => void
-  generateAlert: (message: string, type: string) => void
   setProjectCachePerf: (pid: string, data: any, key: string) => void
   setProjectForcastCache: (pid: string, data: any, key: string) => void
   authenticated: boolean
@@ -321,7 +320,6 @@ interface IViewProject {
 const ViewProject = ({
   projects,
   isLoading: _isLoading,
-  showError,
   cache,
   cachePerf,
   setProjectCache,
@@ -334,7 +332,6 @@ const ViewProject = ({
   user,
   sharedProjects,
   extensions,
-  generateAlert,
   setProjectCachePerf,
   projectTab,
   setProjectTab,
@@ -586,7 +583,7 @@ const ViewProject = ({
       setProjectViews(views)
     } catch (reason: any) {
       console.error('[ERROR] (loadProjectViews)', reason)
-      showError(reason)
+      toast.error(reason)
     }
 
     setProjectViewsLoading(false)
@@ -603,12 +600,12 @@ const ViewProject = ({
       await deleteProjectView(id, viewId)
     } catch (reason: any) {
       console.error('[ERROR] (deleteProjectView)', reason)
-      showError(reason)
+      toast.error(reason)
       setProjectViewDeleting(false)
       return
     }
 
-    generateAlert(t('apiNotifications.viewDeleted'), 'success')
+    toast.success(t('apiNotifications.viewDeleted'))
     await loadProjectViews(true)
     setProjectViewDeleting(false)
   }
@@ -624,7 +621,7 @@ const ViewProject = ({
       await addFunnel(id, name, steps)
     } catch (reason: any) {
       console.error('[ERROR] (onFunnelCreate)(addFunnel)', reason)
-      showError(reason)
+      toast.error(reason)
     }
 
     try {
@@ -637,7 +634,7 @@ const ViewProject = ({
       console.error('[ERROR] (onFunnelCreate)(getFunnels)', reason)
     }
 
-    generateAlert(t('apiNotifications.funnelCreated'), 'success')
+    toast.success(t('apiNotifications.funnelCreated'))
     setFunnelActionLoading(false)
   }
 
@@ -652,7 +649,7 @@ const ViewProject = ({
       await updateFunnel(funnelId, id, name, steps)
     } catch (reason: any) {
       console.error('[ERROR] (onFunnelEdit)(updateFunnel)', reason)
-      showError(reason)
+      toast.error(reason)
     }
 
     try {
@@ -665,7 +662,7 @@ const ViewProject = ({
       console.error('[ERROR] (onFunnelCreate)(getFunnels)', reason)
     }
 
-    generateAlert(t('apiNotifications.funnelUpdated'), 'success')
+    toast.success(t('apiNotifications.funnelUpdated'))
     setFunnelActionLoading(false)
   }
 
@@ -680,7 +677,7 @@ const ViewProject = ({
       await deleteFunnel(funnelId, id)
     } catch (reason: any) {
       console.error('[ERROR] (onFunnelDelete)(deleteFunnel)', reason)
-      showError(reason)
+      toast.error(reason)
     }
 
     try {
@@ -693,7 +690,7 @@ const ViewProject = ({
       console.error('[ERROR] (onFunnelCreate)(getFunnels)', reason)
     }
 
-    generateAlert(t('apiNotifications.funnelDeleted'), 'success')
+    toast.success(t('apiNotifications.funnelDeleted'))
     setFunnelActionLoading(false)
   }
   // pgActiveFragment is a active fragment for pagination
@@ -1091,7 +1088,7 @@ const ViewProject = ({
 
   const switchTrafficChartMetric = (pairID: string, conflicts?: string[]) => {
     if (isConflicted(conflicts)) {
-      generateAlert(t('project.conflictMetric'), 'error')
+      toast.error(t('project.conflictMetric'))
       return
     }
 
@@ -1154,12 +1151,12 @@ const ViewProject = ({
       updateStatusInErrors('resolved')
     } catch (reason) {
       console.error('[markErrorAsResolved]', reason)
-      generateAlert(t('apiNotifications.updateErrorStatusFailed'), 'error')
+      toast.error(t('apiNotifications.updateErrorStatusFailed'))
       setErrorStatusUpdating(false)
       return
     }
 
-    generateAlert(t('apiNotifications.errorStatusUpdated'), 'success')
+    toast.success(t('apiNotifications.errorStatusUpdated'))
     setErrorStatusUpdating(false)
   }
 
@@ -1176,12 +1173,12 @@ const ViewProject = ({
       updateStatusInErrors('active')
     } catch (reason) {
       console.error('[markErrorAsResolved]', reason)
-      generateAlert(t('apiNotifications.updateErrorStatusFailed'), 'error')
+      toast.error(t('apiNotifications.updateErrorStatusFailed'))
       setErrorStatusUpdating(false)
       return
     }
 
-    generateAlert(t('apiNotifications.errorStatusUpdated'), 'success')
+    toast.success(t('apiNotifications.errorStatusUpdated'))
     setErrorStatusUpdating(false)
   }
 
@@ -1197,7 +1194,7 @@ const ViewProject = ({
           return
         }
 
-        showError(t('apiNotifications.incorrectPassword'))
+        toast.error(t('apiNotifications.incorrectPassword'))
         navigate({
           pathname: _replace(routes.project_protected_password, ':id', id),
           search: `?theme=${ssrTheme}&embedded=${embedded}`,
@@ -1207,7 +1204,7 @@ const ViewProject = ({
       return
     }
 
-    showError(t('project.noExist'))
+    toast.error(t('project.noExist'))
     navigate(routes.dashboard)
   }
 
@@ -1367,7 +1364,7 @@ const ViewProject = ({
             toCompare = getFormatDate(dateRangeCompare[1])
             keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket, mode, newFilters || filters)
           } else {
-            showError(t('project.compareDateRangeError'))
+            toast.error(t('project.compareDateRangeError'))
             compareDisable()
           }
         } else {
@@ -1675,11 +1672,11 @@ const ViewProject = ({
         const message = _isEmpty(reason.data?.message) ? reason.data : reason.data.message
 
         console.error('[ERROR] (loadError)(getError)', message)
-        showError(message)
+        toast.error(message)
       }
       setErrorLoading(false)
     },
-    [dateRange, id, period, projectPassword, showError, timezone],
+    [dateRange, id, period, projectPassword, timezone],
   )
 
   const loadSession = async (psid: string) => {
@@ -1695,7 +1692,7 @@ const ViewProject = ({
       setActiveSession(session)
     } catch (reason: any) {
       console.error('[ERROR] (loadSession)(getSession)', reason)
-      showError(reason) // todo: error message i18n
+      toast.error(reason)
     }
 
     setSessionLoading(false)
@@ -1951,7 +1948,7 @@ const ViewProject = ({
               measure,
             )
           } else {
-            showError(t('project.compareDateRangeError'))
+            toast.error(t('project.compareDateRangeError'))
             compareDisable()
           }
         } else {
@@ -2700,7 +2697,7 @@ const ViewProject = ({
       setIsInAIDetailsMode(true)
     } catch (reason) {
       console.error(`[forecastDetails] Error: ${reason}`)
-      showError(t('apiNotifications.noAIForecastAvailable'))
+      toast.error(t('apiNotifications.noAIForecastAvailable'))
     }
   }
 
@@ -5476,7 +5473,6 @@ const ViewProject = ({
                 setProjectViewToUpdate(undefined)
               }}
               defaultView={projectViewToUpdate}
-              showError={showError}
               pid={id}
               tnMapping={tnMapping}
             />

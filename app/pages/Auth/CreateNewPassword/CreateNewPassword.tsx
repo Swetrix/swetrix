@@ -4,6 +4,7 @@ import { useTranslation, Trans } from 'react-i18next'
 import _size from 'lodash/size'
 import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
+import { toast } from 'sonner'
 
 import { createNewPassword } from 'api'
 import { withAuthentication, auth } from 'hoc/protected'
@@ -17,13 +18,7 @@ interface FormSubmitData {
   repeat: string
 }
 
-const CreateNewPassword = ({
-  createNewPasswordFailed,
-  newPassword,
-}: {
-  createNewPasswordFailed: (e: string) => void
-  newPassword: (message: string) => void
-}): JSX.Element => {
+const CreateNewPassword = () => {
   const { t } = useTranslation('common')
   const navigate = useNavigate()
   const { id } = useParams()
@@ -74,10 +69,10 @@ const CreateNewPassword = ({
         const { password } = data
         await createNewPassword(id as string, password)
 
-        newPassword(t('auth.recovery.updated'))
+        toast.success(t('auth.recovery.updated'))
         navigate(routes.signin)
       } catch (e: any) {
-        createNewPasswordFailed(e.toString())
+        toast.error(e.toString())
       } finally {
         setIsLoading(false)
       }

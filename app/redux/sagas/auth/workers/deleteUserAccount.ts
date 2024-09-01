@@ -1,8 +1,8 @@
 import { call, put } from 'redux-saga/effects'
 import type i18next from 'i18next'
+import { toast } from 'sonner'
 
 import { authActions } from 'redux/reducers/auth'
-import { alertsActions } from 'redux/reducers/alerts'
 const { deleteUser } = require('api')
 
 export default function* deleteUserAccountWorker({
@@ -19,12 +19,7 @@ export default function* deleteUserAccountWorker({
     yield call(deleteUser, deletionFeedback)
     yield call(successCallback)
     yield put(authActions.deleteAccountSuccess())
-    yield put(
-      alertsActions.accountDeleted({
-        message: t('apiNotifications.accountDeleted'),
-        type: 'success',
-      }),
-    )
+    toast.success(t('apiNotifications.accountDeleted'))
   } catch (error) {
     let message
 

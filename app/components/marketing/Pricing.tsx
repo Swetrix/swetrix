@@ -12,6 +12,7 @@ import _includes from 'lodash/includes'
 import { Trans } from 'react-i18next'
 import { RadioGroup } from '@headlessui/react'
 import cx from 'clsx'
+import { toast } from 'sonner'
 
 import Modal from 'ui/Modal'
 import Button from 'ui/Button'
@@ -25,8 +26,6 @@ import {
   STANDARD_PLANS,
   TRIAL_DAYS,
 } from 'redux/constants'
-import { errorsActions } from 'redux/reducers/errors'
-import { alertsActions } from 'redux/reducers/alerts'
 import { authActions } from 'redux/reducers/auth'
 import sagaActions from 'redux/sagas/actions'
 import { authMe, previewSubscriptionUpdate, changeSubscriptionPlan } from 'api'
@@ -116,11 +115,7 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
             dispatch(sagaActions.logout(false, false))
           }
 
-          dispatch(
-            alertsActions.accountUpdated({
-              message: t('apiNotifications.subscriptionUpdated'),
-            }),
-          )
+          toast.success(t('apiNotifications.subscriptionUpdated'))
         }, 3000)
         setPlanCodeLoading(null)
         setDowngradeTo(null)
@@ -140,11 +135,7 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
       setSubUpdatePreview(preview)
     } catch (reason) {
       console.error('[ERROR] An error occured while loading subscription update pricing preview:', reason)
-      dispatch(
-        errorsActions.genericError({
-          message: 'An error occured while loading subscription update pricing preview',
-        }),
-      )
+      toast.error('An error occured while loading subscription update pricing preview')
       setSubUpdatePreview(false)
     }
   }
@@ -166,11 +157,7 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
 
       // @ts-ignore
       if (!window.Paddle) {
-        dispatch(
-          errorsActions.genericError({
-            message: 'Payment script has not yet loaded! Please, try again.',
-          }),
-        )
+        toast.error('Payment script has not yet loaded! Please, try again.')
         setPlanCodeLoading(null)
         return
       }
@@ -222,19 +209,11 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
         dispatch(sagaActions.logout(false, false))
       }
 
-      dispatch(
-        alertsActions.accountUpdated({
-          message: t('apiNotifications.subscriptionUpdated'),
-        }),
-      )
+      toast.success(t('apiNotifications.subscriptionUpdated'))
       closeUpdateModal(true)
     } catch (reason) {
       console.error('[ERROR] An error occured while updating subscription:', reason)
-      dispatch(
-        errorsActions.genericError({
-          message: 'An error occured while updating subscription',
-        }),
-      )
+      toast.error('An error occured while updating subscription')
       closeUpdateModal(true)
     }
   }

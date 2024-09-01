@@ -5,6 +5,7 @@ import { useTranslation, Trans } from 'react-i18next'
 import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
 import _isString from 'lodash/isString'
+import { toast } from 'sonner'
 
 import GoogleAuth from 'components/GoogleAuth'
 import GithubAuth from 'components/GithubAuth'
@@ -36,12 +37,11 @@ interface ISignin {
     callback: (result: boolean, twoFARequired: boolean) => void,
   ) => void
   loginSuccess: (user: IUser) => void
-  loginFailed: (error: string) => void
   authSSO: (provider: string, dontRemember: boolean, t: typeof i18next.t, callback: (res: any) => void) => void
   ssrTheme: string
 }
 
-const Signin = ({ login, loginSuccess, loginFailed, authSSO, ssrTheme }: ISignin): JSX.Element => {
+const Signin = ({ login, loginSuccess, authSSO, ssrTheme }: ISignin): JSX.Element => {
   const { t } = useTranslation('common')
   const [form, setForm] = useState<ISigninForm>({
     email: '',
@@ -121,7 +121,7 @@ const Signin = ({ login, loginSuccess, loginFailed, authSSO, ssrTheme }: ISignin
         loginSuccess(user)
       } catch (err) {
         if (_isString(err)) {
-          loginFailed(err)
+          toast.error(err)
         }
         console.error(`[ERROR] Failed to authenticate with 2FA: ${err}`)
         setTwoFACodeError(t('profileSettings.invalid2fa'))
