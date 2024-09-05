@@ -39,12 +39,12 @@ server {
   # Setting the path to /log is optional, you can replace it with anything you want, like /proxy, /endpoint, etc.
   # Some aggressive adblockers may block requests to paths like /analytics, /collect, /log, etc.
   location = /log {
-    proxy_set_header Host              $host;
-    proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-    proxy_buffering                    on;
-    proxy_pass_request_headers         on;
-    proxy_pass $swetrix_log_url;
+    proxy_set_header Host                  $host;
+    proxy_set_header X-Client-IP-Address   $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto     $scheme;
+    proxy_buffering                        on;
+    proxy_pass_request_headers             on;
+    proxy_pass                             $swetrix_log_url;
   }
 }
 ```
