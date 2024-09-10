@@ -68,6 +68,18 @@ export class PageviewsDTO {
   ca?: string
 
   @ApiProperty({
+    example: 'running+shoes',
+    description: 'utm_term URL parameter',
+  })
+  te?: string
+
+  @ApiProperty({
+    example: 'logolink',
+    description: 'utm_content URL parameter',
+  })
+  co?: string
+
+  @ApiProperty({
     example: false,
     description: 'If true, only unique events will be saved',
   })

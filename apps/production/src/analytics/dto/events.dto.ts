@@ -114,6 +114,18 @@ export class EventsDTO {
   ca?: string
 
   @ApiProperty({
+    example: 'running+shoes',
+    description: 'utm_term URL parameter',
+  })
+  te?: string
+
+  @ApiProperty({
+    example: 'logolink',
+    description: 'utm_content URL parameter',
+  })
+  co?: string
+
+  @ApiProperty({
     example: {
       affiliate: 'Yes',
       protocol: 'HTTPS',

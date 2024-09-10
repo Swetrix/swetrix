@@ -78,6 +78,8 @@ const TRAFFIC_COLUMNS = [
   'so',
   'me',
   'ca',
+  'te',
+  'co',
 ]
 
 const ALL_COLUMNS = [...TRAFFIC_COLUMNS, 'ev']

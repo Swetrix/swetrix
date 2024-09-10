@@ -110,6 +110,8 @@ const TRAFFIC_COLUMNS = [
   'so',
   'me',
   'ca',
+  'te',
+  'co',
 ]
 
 const UPTIME_COLUMNS = ['region', 'statusCode']
