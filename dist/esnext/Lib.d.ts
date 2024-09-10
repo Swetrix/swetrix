@@ -32,6 +32,8 @@ export interface IPageViewPayload {
     so: string | undefined;
     me: string | undefined;
     ca: string | undefined;
+    te: string | undefined;
+    co: string | undefined;
     pg: string | null | undefined;
     prev: string | null | undefined;
     /** Pageview-related metadata object with string values. */
