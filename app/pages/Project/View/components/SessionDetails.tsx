@@ -46,6 +46,14 @@ export const SessionDetails = ({ details }: ISessionDetailsComponent) => {
       label: t('project.mapping.ca'),
       value: details.ca || 'N/A',
     },
+    {
+      label: t('project.mapping.te'),
+      value: details.te || 'N/A',
+    },
+    {
+      label: t('project.mapping.co'),
+      value: details.co || 'N/A',
+    },
   ]
 
   return (

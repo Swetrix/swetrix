@@ -17,6 +17,8 @@ export interface ISessionDetails {
   so: string | null
   me: string | null
   ca: string | null
+  te: string | null
+  co: string | null
   rg: string | null
   ct: string | null
   dv: string | null

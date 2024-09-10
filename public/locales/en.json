@@ -928,7 +928,9 @@
       "os": "OS name",
       "so": "UTM Source",
       "me": "UTM Medium",
-      "ca": "UTM Campaign"
+      "ca": "UTM Campaign",
+      "te": "UTM Term",
+      "co": "UTM Content"
     },
     "metamapping": {
       "ev": {

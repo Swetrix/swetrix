@@ -23,8 +23,10 @@
     "subscriptionUpdated": "Your subscription has been updated",
     "generate2FAError": "Error occurred while generating 2FA code",
     "integrationRemovalError": "Error occurred while removing the integration",
+    "integrationSaveError": "Failed to save integration, make sure you've entered a valid input",
     "enterACorrectNumber": "Please enter a correct number",
     "numberCantBeNegative": "The number cannot be negative",
+    "numberCantBeBigger": "The number cannot be bigger than {{max}}",
     "forecastNumberCantBeBigger": "The forecast number cannot be bigger than {{max}} for the selected frequency",
     "invalidToken": "Invalid token",
     "transferRequestSent": "Transfer request sent",
@@ -41,7 +43,11 @@
     "funnelDeleted": "The funnel has been deleted",
     "errorCode": "Error code: {{error}}",
     "updateErrorStatusFailed": "Error occured while updating error status",
-    "errorStatusUpdated": "Error status has been updated"
+    "errorStatusUpdated": "Error status has been updated",
+    "enterViewName": "Please enter a view name",
+    "inputCannotBeEmpty": "This input field must not be empty",
+    "viewDeleted": "View has been deleted",
+    "noAIForecastAvailable": "AI forecast is not available for this project yet"
   },
   "common": {
     "features": "Funktioner",
@@ -590,7 +596,12 @@
     "integrationsDesc": "Integrations can be used to connect your favourite messengers to Swetrix and receive updates such as notifications, reports or alerts directly.",
     "integrationsList": {
       "telegram": "Receive notifications directly into a Telegram bot.",
-      "tgHint": "Write a message to <url>{{username}}</url> to get your chat ID. This bot will be used later to send you notifications or alerts."
+      "slack": "Receive notifications in any Slack channel via webhook.",
+      "discord": "Receive notifications in any Discord channel via webhook.",
+      "tgHint": "Write a message to <url>{{username}}</url> to get your chat ID. This bot will be used later to send you notifications or alerts.",
+      "slackHint": "We use Slack incoming webhooks to send notifications into your Slack communication channels. Please create a Slack app and <url>an incoming webhook</url> and paste it into the input field below.",
+      "discordHint": "We use Discord webhooks to send you notifications. Please <url>create a Discord webhook</url> and paste it into the input field below.",
+      "webhookUrl": "Webhook URL"
     },
     "socialisations": "Socialisations",
     "socialisationsDesc": "Socialisation feature allows you to link 3rd party accounts (like Google or Twitter) to your Swetrix account and use them to sign in to Swetrix.",
@@ -652,6 +663,7 @@
     "alertDeleted": "The alert has been deleted"
   },
   "dashboard": {
+    "uptime": "Uptime",
     "newProject": "Nytt projekt",
     "newFunnel": "New funnel",
     "reloadPage": "Reload page",
@@ -699,6 +711,7 @@
     "alerts": "Alerts",
     "alertsDesc": "Automated alerts is a powerful tool that allows you to run automated tasks when specific events occur.\nWe can automatically monitor your project for traffic spikes and notify you via Telegram.",
     "funnelsDesc": "Funnels is a powerful tool that allows you to track the conversion rate of your users through a series of steps.\nThe analysis provided by the marketing funnel gives you the ability to discover potential problems, improve your website, and boost your conversion rate.",
+    "uptimeDesc": "Swetrix uptime is a powerful tool that allows you to monitor the uptime of your websites.\nThe analysis provided by the uptime gives you the ability to discover potential problems before your customers notice them.",
     "frontend": "Frontend",
     "backend": "Backend",
     "network": "Network",
@@ -716,6 +729,43 @@
     "average": "Average",
     "median": "Median",
     "xPercentile": "{{x}}th percentile"
+  },
+  "monitor": {
+    "create": "Create a monitor",
+    "settingsOf": "Settings of {{name}}",
+    "delete": "Delete monitor",
+    "monitorCreated": "Uptime monitor created",
+    "monitorUpdated": "Uptime monitor has been updated",
+    "monitorDeleted": "Uptime monitor deleted",
+    "qDelete": "Delete the monitor?",
+    "deleteHint": "This action is irreversible.\nThe uptime monitor and all the data related to it will be deleted from our servers.",
+    "noEvents": "No monitor events found",
+    "noEventsDesc": "No events have been recorded for the specified period, please try a different period.",
+    "form": {
+      "name": "Monitor name",
+      "type": "Monitor type",
+      "url": "URL to monitor",
+      "interval": "Monitor interval",
+      "intervalHint": "We will check the URL every {{intervalTranslated}}",
+      "retries": "Monitor retries",
+      "retriesHint": "We will retry the URL {{retries}} times before marking it as failed",
+      "retryInterval": "Monitor retry interval",
+      "retryIntervalHint": "We will retry the URL every {{retryIntervalTranslated}}",
+      "timeout": "Monitor timeout",
+      "timeoutHint": "We will cancel the request to the URL if it takes longer than {{x}} seconds and mark it as failed",
+      "acceptedStatusCodes": "Monitor accepted status codes (comma-separated)",
+      "description": "Monitor description"
+    },
+    "error": {
+      "urlInvalid": "Please enter a valid URL",
+      "acceptedStatusCodesNotValid": "Some of the values provided are not valid HTTP status codes"
+    },
+    "backToMonitors": "Back to monitors list",
+    "metrics": {
+      "avg": "Avg. response time",
+      "min": "Min. response time",
+      "max": "Max. response time"
+    }
   },
   "alert": {
     "create": "Create an alert",
@@ -771,12 +821,52 @@
   },
   "project": {
     "metadata": "Metadata",
+    "nextOneHour": "Next 1 hour",
+    "nextXHours": "Next {{x}} hours",
+    "exitForecastingMode": "Exit forecasting mode",
+    "aiDetailsDesc": "The buttons above allow you to see an estimate of what kind of traffic you can expect within an hour in the next X hours.",
     "search": "Search",
+    "views": "Views",
+    "viewName": "View name",
+    "addAView": "Add a view",
     "loadMore": "Load more",
     "unknownCountry": "Unknown country",
     "selectCategory": "Select category to filter",
+    "selectCategoryOptional": "Select category to filter (optional)",
+    "customEventsAndMetrics": "Custom events and metrics (optional)",
+    "addAMetric": "Add a metric",
+    "customEvent": "Custom event",
+    "metrics": {
+      "xAvg": "\"{{x}}\" average",
+      "xTotal": "\"{{x}}\" total",
+      "metricKey": {
+        "title": "Custom metric key",
+        "description": "Metadata key to aggregate (for example, \"amount\")."
+      },
+      "metricType": {
+        "title": "Custom metric type",
+        "description": "Specifies how to interpret the custom metric value. For example, Decimal will convert \"15.99\" to 15.99, while Integer will interpret it as 15."
+      },
+      "optinalEventKey": {
+        "title": "Event key (optional)",
+        "description": "Custom event metadata key to filter (for example, \"currency\")."
+      },
+      "optinalEventValue": {
+        "title": "Event value (optional)",
+        "description": "Custom event metadata value to filter (for example, \"GBP\")."
+      },
+      "filterNoKV": "For \"{{customEventName}}\" aggregate \"{{metricKey}}\"",
+      "filterK": "For \"{{customEventName}}\" aggregate \"{{metricKey}}\" where any key is \"{{metaKey}}\"",
+      "filterV": "For \"{{customEventName}}\" aggregate \"{{metricKey}}\" where any value is \"{{metaValue}}\"",
+      "filterKV": "For \"{{customEventName}}\" aggregate \"{{metricKey}}\" where key \"{{metaKey}}\" is \"{{metaValue}}\""
+    },
+    "noViewsYet": "No views yet",
+    "metaValueType": {
+      "decimal": "Decimal",
+      "integer": "Integer",
+      "text": "Text"
+    },
     "currentFilters": "Currently applied filters",
-    "newFilters": "New filters",
     "advancedFilters": "Advanced filters",
     "applyFilters": "Apply filters",
     "lookingForMore": "Looking for more?",
@@ -838,7 +928,9 @@
       "os": "OS-namn",
       "so": "UTM Source",
       "me": "UTM Medium",
-      "ca": "UTM Campaign"
+      "ca": "UTM Campaign",
+      "te": "UTM Term",
+      "co": "UTM Content"
     },
     "metamapping": {
       "ev": {
@@ -1047,8 +1139,11 @@
     },
     "forecast": {
       "title": "Traffic forecast",
-      "desc": "This is a rough estimate of how much traffic you can expect to get on your website, based on Swetrix AI models.",
-      "input": "The quantity of '{{frequency}}' you want to forecast"
+      "desc": "This type of forecast gives you a rough estimate on the main graph of how much traffic you can expect to get to your website.",
+      "detailsDesc": "This type of forecast provides you with a more flexible prediction, showing you what type of users (from what country, browser, locale, etc.) and how many of them you can expect to visit within your chosen timeframe.\n\nIt may not be available for newly created or low traffic sites, as we train our prediction models regularly and such sites may not be included in the training dataset.\n\nIf you wish to continue with this type of forecast, please press 'Continue'.",
+      "input": "The quantity of '{{frequency}}' you want to forecast",
+      "chart": "Chart forecast",
+      "details": "Details forecast"
     },
     "funnels": {
       "addTitle": "Add funnel",

@@ -23,6 +23,14 @@ const OPTIONS = [
     label: 'project.mapping.ca',
     value: 'ca',
   },
+  {
+    label: 'project.mapping.te',
+    value: 'te',
+  },
+  {
+    label: 'project.mapping.co',
+    value: 'co',
+  },
 ]
 
 const UTMDropdown = ({ onSelect, title }: IUTMDropdown): JSX.Element => {

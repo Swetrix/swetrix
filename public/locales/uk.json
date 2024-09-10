@@ -23,8 +23,10 @@
     "subscriptionUpdated": "Ваша підписка була оновлена",
     "generate2FAError": "Сталася помилка під час генерації 2FA-коду",
     "integrationRemovalError": "Сталася помилка під час видалення інтеграції",
+    "integrationSaveError": "Failed to save integration, make sure you've entered a valid input",
     "enterACorrectNumber": "Будь ласка, введіть коректне число",
     "numberCantBeNegative": "Число не може бути від'ємним",
+    "numberCantBeBigger": "The number cannot be bigger than {{max}}",
     "forecastNumberCantBeBigger": "Кількість прогнозу не може бути більшим {{max}} для обраної частоти",
     "invalidToken": "Недійсний токен",
     "transferRequestSent": "Запит на передачу проєкту надіслано",
@@ -41,7 +43,11 @@
     "funnelDeleted": "Воронка видалена",
     "errorCode": "Код помилки: {{error}}",
     "updateErrorStatusFailed": "Сталася помилка під час оновлення статусу помилки",
-    "errorStatusUpdated": "Статус помилки був оновлений"
+    "errorStatusUpdated": "Статус помилки був оновлений",
+    "enterViewName": "Please enter a view name",
+    "inputCannotBeEmpty": "This input field must not be empty",
+    "viewDeleted": "View has been deleted",
+    "noAIForecastAvailable": "AI forecast is not available for this project yet"
   },
   "common": {
     "features": "Функціонал",
@@ -590,7 +596,12 @@
     "integrationsDesc": "Інтеграція можна використовувати для підʼєднання ваших улюблених месенджерів до Swetrix і безпосередньо отримувати різні сповіщення чи звіти.",
     "integrationsList": {
       "telegram": "Отримуйте сповіщення безпосередньо до Telegram бота.",
-      "tgHint": "Напишіть повідомлення <url>{{username}}</url>, щоб отримати ID вашого чату. Цей бот також буде використовуватися пізніше, щоб відправляти вам сповіщення чи звіти."
+      "slack": "Receive notifications in any Slack channel via webhook.",
+      "discord": "Receive notifications in any Discord channel via webhook.",
+      "tgHint": "Напишіть повідомлення <url>{{username}}</url>, щоб отримати ID вашого чату. Цей бот також буде використовуватися пізніше, щоб відправляти вам сповіщення чи звіти.",
+      "slackHint": "We use Slack incoming webhooks to send notifications into your Slack communication channels. Please create a Slack app and <url>an incoming webhook</url> and paste it into the input field below.",
+      "discordHint": "We use Discord webhooks to send you notifications. Please <url>create a Discord webhook</url> and paste it into the input field below.",
+      "webhookUrl": "Webhook URL"
     },
     "socialisations": "Соціалізації",
     "socialisationsDesc": "Функція соціалізації дозволяє зв'язати сторонні облікові записи (наприклад, Google або Twitter) з вашим обліковим записом Swetrix і використовувати їх для входу до Swetrix.",
@@ -652,6 +663,7 @@
     "alertDeleted": "Сповіщення видалено"
   },
   "dashboard": {
+    "uptime": "Uptime",
     "newProject": "Новий проєкт",
     "newFunnel": "Нова воронка",
     "reloadPage": "Оновити сторінку",
@@ -699,6 +711,7 @@
     "alerts": "Сповіщення",
     "alertsDesc": "Автоматизовані сповіщення - це потужний інструмент, який дозволяє вам виконувати автоматизовані завдання коли виконуються певні умови.\nМи можемо автоматично стежити за вашим проєктом на наявність спайків трафіку і повідомляти вас через Telegram.",
     "funnelsDesc": "Воронки – це потужний інструмент, що дозволяє вам відстежувати коефіцієнт конверсії ваших користувачів через ряд кроків.\nАналіз, наданий маркетинговою воронкою, дає вам можливість виявити потенційні проблеми, покращити ваш сайт та підвищити якість конвертації.",
+    "uptimeDesc": "Swetrix uptime is a powerful tool that allows you to monitor the uptime of your websites.\nThe analysis provided by the uptime gives you the ability to discover potential problems before your customers notice them.",
     "frontend": "Фронтенд",
     "backend": "Бекенд",
     "network": "Мережа",
@@ -716,6 +729,43 @@
     "average": "Середнє",
     "median": "Медіана",
     "xPercentile": "{{x}}й перцентиль"
+  },
+  "monitor": {
+    "create": "Create a monitor",
+    "settingsOf": "Settings of {{name}}",
+    "delete": "Delete monitor",
+    "monitorCreated": "Uptime monitor created",
+    "monitorUpdated": "Uptime monitor has been updated",
+    "monitorDeleted": "Uptime monitor deleted",
+    "qDelete": "Delete the monitor?",
+    "deleteHint": "This action is irreversible.\nThe uptime monitor and all the data related to it will be deleted from our servers.",
+    "noEvents": "No monitor events found",
+    "noEventsDesc": "No events have been recorded for the specified period, please try a different period.",
+    "form": {
+      "name": "Monitor name",
+      "type": "Monitor type",
+      "url": "URL to monitor",
+      "interval": "Monitor interval",
+      "intervalHint": "We will check the URL every {{intervalTranslated}}",
+      "retries": "Monitor retries",
+      "retriesHint": "We will retry the URL {{retries}} times before marking it as failed",
+      "retryInterval": "Monitor retry interval",
+      "retryIntervalHint": "We will retry the URL every {{retryIntervalTranslated}}",
+      "timeout": "Monitor timeout",
+      "timeoutHint": "We will cancel the request to the URL if it takes longer than {{x}} seconds and mark it as failed",
+      "acceptedStatusCodes": "Monitor accepted status codes (comma-separated)",
+      "description": "Monitor description"
+    },
+    "error": {
+      "urlInvalid": "Please enter a valid URL",
+      "acceptedStatusCodesNotValid": "Some of the values provided are not valid HTTP status codes"
+    },
+    "backToMonitors": "Back to monitors list",
+    "metrics": {
+      "avg": "Avg. response time",
+      "min": "Min. response time",
+      "max": "Max. response time"
+    }
   },
   "alert": {
     "create": "Створити сповіщення",
@@ -771,12 +821,52 @@
   },
   "project": {
     "metadata": "Метадані",
+    "nextOneHour": "Next 1 hour",
+    "nextXHours": "Next {{x}} hours",
+    "exitForecastingMode": "Exit forecasting mode",
+    "aiDetailsDesc": "The buttons above allow you to see an estimate of what kind of traffic you can expect within an hour in the next X hours.",
     "search": "Пошук",
+    "views": "Views",
+    "viewName": "View name",
+    "addAView": "Add a view",
     "loadMore": "Завантажити ще",
     "unknownCountry": "Невідома країна",
     "selectCategory": "Виберіть категорію для фільтрування",
+    "selectCategoryOptional": "Select category to filter (optional)",
+    "customEventsAndMetrics": "Custom events and metrics (optional)",
+    "addAMetric": "Add a metric",
+    "customEvent": "Custom event",
+    "metrics": {
+      "xAvg": "\"{{x}}\" average",
+      "xTotal": "\"{{x}}\" total",
+      "metricKey": {
+        "title": "Custom metric key",
+        "description": "Metadata key to aggregate (for example, \"amount\")."
+      },
+      "metricType": {
+        "title": "Custom metric type",
+        "description": "Specifies how to interpret the custom metric value. For example, Decimal will convert \"15.99\" to 15.99, while Integer will interpret it as 15."
+      },
+      "optinalEventKey": {
+        "title": "Event key (optional)",
+        "description": "Custom event metadata key to filter (for example, \"currency\")."
+      },
+      "optinalEventValue": {
+        "title": "Event value (optional)",
+        "description": "Custom event metadata value to filter (for example, \"GBP\")."
+      },
+      "filterNoKV": "For \"{{customEventName}}\" aggregate \"{{metricKey}}\"",
+      "filterK": "For \"{{customEventName}}\" aggregate \"{{metricKey}}\" where any key is \"{{metaKey}}\"",
+      "filterV": "For \"{{customEventName}}\" aggregate \"{{metricKey}}\" where any value is \"{{metaValue}}\"",
+      "filterKV": "For \"{{customEventName}}\" aggregate \"{{metricKey}}\" where key \"{{metaKey}}\" is \"{{metaValue}}\""
+    },
+    "noViewsYet": "No views yet",
+    "metaValueType": {
+      "decimal": "Decimal",
+      "integer": "Integer",
+      "text": "Text"
+    },
     "currentFilters": "Застосовані фільтри",
-    "newFilters": "Нові фільтри",
     "advancedFilters": "Розширені фільтри",
     "applyFilters": "Застосувати фільтри",
     "lookingForMore": "Шукаєте більше?",
@@ -838,7 +928,9 @@
       "os": "Операційна система",
       "so": "UTM Source",
       "me": "UTM Medium",
-      "ca": "UTM Campaign"
+      "ca": "UTM Campaign",
+      "te": "UTM Term",
+      "co": "UTM Content"
     },
     "metamapping": {
       "ev": {
@@ -1047,8 +1139,11 @@
     },
     "forecast": {
       "title": "Прогноз трафіку",
-      "desc": "Це приблизна оцінка того, на який трафік ви можете розраховувати на вашому вебсайті. Дані вираховуються на основі моделей Swetrix AI.",
-      "input": "Кількість '{{frequency}}', яку ви хочете прогнозувати"
+      "desc": "This type of forecast gives you a rough estimate on the main graph of how much traffic you can expect to get to your website.",
+      "detailsDesc": "This type of forecast provides you with a more flexible prediction, showing you what type of users (from what country, browser, locale, etc.) and how many of them you can expect to visit within your chosen timeframe.\n\nIt may not be available for newly created or low traffic sites, as we train our prediction models regularly and such sites may not be included in the training dataset.\n\nIf you wish to continue with this type of forecast, please press 'Continue'.",
+      "input": "Кількість '{{frequency}}', яку ви хочете прогнозувати",
+      "chart": "Chart forecast",
+      "details": "Details forecast"
     },
     "funnels": {
       "addTitle": "Додати воронку",

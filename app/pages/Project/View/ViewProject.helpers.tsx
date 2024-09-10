@@ -1651,6 +1651,8 @@ const typeNameMapping = (t: typeof i18next.t) => ({
   so: t('project.mapping.so'),
   me: t('project.mapping.me'),
   ca: t('project.mapping.ca'),
+  te: t('project.mapping.te'),
+  co: t('project.mapping.co'),
   ev: t('project.event'),
   userFlow: t('main.competitiveFeatures.usfl'),
   'tag:key': t('project.metamapping.tag.key'),
