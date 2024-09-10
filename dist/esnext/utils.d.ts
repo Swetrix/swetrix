@@ -11,6 +11,8 @@ export declare const getReferrer: () => string | undefined;
 export declare const getUTMSource: () => string | undefined;
 export declare const getUTMMedium: () => string | undefined;
 export declare const getUTMCampaign: () => string | undefined;
+export declare const getUTMTerm: () => string | undefined;
+export declare const getUTMContent: () => string | undefined;
 /**
  * Function used to track the current page (path) of the application.
  * Will work in cases where the path looks like:

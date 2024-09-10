@@ -1,4 +1,4 @@
-import { isInBrowser, isLocalhost, isAutomated, getLocale, getTimezone, getReferrer, getUTMCampaign, getUTMMedium, getUTMSource, getPath, } from './utils';
+import { isInBrowser, isLocalhost, isAutomated, getLocale, getTimezone, getReferrer, getUTMCampaign, getUTMMedium, getUTMSource, getUTMTerm, getUTMContent, getPath, } from './utils';
 export const defaultActions = {
     stop() { },
 };
@@ -89,6 +89,8 @@ export class Lib {
             so: getUTMSource(),
             me: getUTMMedium(),
             ca: getUTMCampaign(),
+            te: getUTMTerm(),
+            co: getUTMContent(),
         };
         await this.sendRequest('custom', data);
     }
@@ -219,6 +221,8 @@ export class Lib {
             so: getUTMSource(),
             me: getUTMMedium(),
             ca: getUTMCampaign(),
+            te: getUTMTerm(),
+            co: getUTMContent(),
             prev,
             ...payload,
         };

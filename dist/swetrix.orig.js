@@ -80,6 +80,8 @@
     var utmSourceRegex = /[?&](ref|source|utm_source)=([^?&]+)/;
     var utmCampaignRegex = /[?&](utm_campaign)=([^?&]+)/;
     var utmMediumRegex = /[?&](utm_medium)=([^?&]+)/;
+    var utmTermRegex = /[?&](utm_term)=([^?&]+)/;
+    var utmContentRegex = /[?&](utm_content)=([^?&]+)/;
     var isInBrowser = function () {
         return typeof window !== 'undefined';
     };
@@ -106,6 +108,8 @@
     var getUTMSource = function () { return findInSearch(utmSourceRegex); };
     var getUTMMedium = function () { return findInSearch(utmMediumRegex); };
     var getUTMCampaign = function () { return findInSearch(utmCampaignRegex); };
+    var getUTMTerm = function () { return findInSearch(utmTermRegex); };
+    var getUTMContent = function () { return findInSearch(utmContentRegex); };
     /**
      * Function used to track the current page (path) of the application.
      * Will work in cases where the path looks like:
@@ -218,7 +222,7 @@
                             if (!this.canTrack()) {
                                 return [2 /*return*/];
                             }
-                            data = __assign(__assign({}, event), { pid: this.projectID, pg: this.activePage, lc: getLocale(), tz: getTimezone(), ref: getReferrer(), so: getUTMSource(), me: getUTMMedium(), ca: getUTMCampaign() });
+                            data = __assign(__assign({}, event), { pid: this.projectID, pg: this.activePage, lc: getLocale(), tz: getTimezone(), ref: getReferrer(), so: getUTMSource(), me: getUTMMedium(), ca: getUTMCampaign(), te: getUTMTerm(), co: getUTMContent() });
                             return [4 /*yield*/, this.sendRequest('custom', data)];
                         case 1:
                             _a.sent();
@@ -352,7 +356,7 @@
                 perf: perf,
                 unique: unique,
             };
-            var pvPayload = __assign({ lc: getLocale(), tz: getTimezone(), ref: getReferrer(), so: getUTMSource(), me: getUTMMedium(), ca: getUTMCampaign(), prev: prev }, payload);
+            var pvPayload = __assign({ lc: getLocale(), tz: getTimezone(), ref: getReferrer(), so: getUTMSource(), me: getUTMMedium(), ca: getUTMCampaign(), te: getUTMTerm(), co: getUTMContent(), prev: prev }, payload);
             if (evokeCallback && ((_a = this.pageViewsOptions) === null || _a === void 0 ? void 0 : _a.callback)) {
                 var callbackResult = this.pageViewsOptions.callback(pvPayload);
                 if (callbackResult === false) {

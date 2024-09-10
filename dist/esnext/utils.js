@@ -5,6 +5,8 @@ const findInSearch = (exp) => {
 const utmSourceRegex = /[?&](ref|source|utm_source)=([^?&]+)/;
 const utmCampaignRegex = /[?&](utm_campaign)=([^?&]+)/;
 const utmMediumRegex = /[?&](utm_medium)=([^?&]+)/;
+const utmTermRegex = /[?&](utm_term)=([^?&]+)/;
+const utmContentRegex = /[?&](utm_content)=([^?&]+)/;
 export const isInBrowser = () => {
     return typeof window !== 'undefined';
 };
@@ -31,6 +33,8 @@ export const getReferrer = () => {
 export const getUTMSource = () => findInSearch(utmSourceRegex);
 export const getUTMMedium = () => findInSearch(utmMediumRegex);
 export const getUTMCampaign = () => findInSearch(utmCampaignRegex);
+export const getUTMTerm = () => findInSearch(utmTermRegex);
+export const getUTMContent = () => findInSearch(utmContentRegex);
 /**
  * Function used to track the current page (path) of the application.
  * Will work in cases where the path looks like:
