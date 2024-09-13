@@ -926,10 +926,12 @@ export class UserController {
     @Ip() reqIP: string,
   ): Promise<IMetaInfo> {
     const ip = getIPFromHeaders(headers) || reqIP || ''
-    const { country } = getGeoDetails(ip)
+    const { country, city, region } = getGeoDetails(ip)
 
     return {
       country,
+      city,
+      region,
       ...this.userService.getCurrencyByCountry(country),
     }
   }
