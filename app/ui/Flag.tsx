@@ -8,7 +8,7 @@ interface IFlag extends React.HTMLAttributes<HTMLImageElement> {
   alt?: string
 }
 
-const FLAGS_PREFIX_PATH = '/assets/flags/'
+const FLAGS_PREFIX_PATH = '/assets/flags'
 
 const MISSING_FLAGS = ['t1']
 
