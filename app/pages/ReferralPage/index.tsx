@@ -83,10 +83,12 @@ const ReferralPage = ({ ssrTheme }: IReferralPage): JSX.Element => {
                 <div className='mt-4 flex flex-col items-center sm:flex-row'>
                   <Link
                     to={`/ref/${id}${routes.signup}`}
-                    className='flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white shadow-sm ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600 sm:mr-6 sm:max-w-[210px]'
+                    className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white shadow-sm ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600 sm:mr-6 sm:max-w-[210px]'
                     aria-label={t('titles.signup')}
                   >
-                    <span className='mr-1 text-base font-semibold'>{t('main.startAFreeTrial')}</span>
+                    <span className='mr-1 text-base font-semibold transition-transform group-hover:scale-[1.15]'>
+                      {t('main.startAFreeTrial')}
+                    </span>
                     <ArrowRightIcon className='mt-[1px] h-4 w-5' />
                   </Link>
                   <Link

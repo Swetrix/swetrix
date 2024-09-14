@@ -1,6 +1,5 @@
 /* eslint-disable no-confusing-arrow */
 import React, { memo, useState, useEffect } from 'react'
-import type i18next from 'i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { ClientOnly } from 'remix-utils/client-only'
 import { Link } from '@remix-run/react'
@@ -9,7 +8,7 @@ import dayjs from 'dayjs'
 import _map from 'lodash/map'
 import _isNil from 'lodash/isNil'
 import _includes from 'lodash/includes'
-import { Trans } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { RadioGroup } from '@headlessui/react'
 import cx from 'clsx'
 import { toast } from 'sonner'
@@ -49,13 +48,15 @@ const getPaidFeatures = (t: any, tier: any) => {
 }
 
 interface IPricing {
-  t: typeof i18next.t
-  language: string
   authenticated: boolean
   isBillingPage?: boolean
 }
 
-const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
+const Pricing = ({ authenticated, isBillingPage }: IPricing) => {
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
   const dispatch: AppDispatch = useDispatch()
   const { user } = useSelector((state: StateType) => state.auth)
   const { theme } = useSelector((state: StateType) => state.ui.theme)
@@ -264,7 +265,7 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
                 <h2 className='text-3xl font-extrabold text-gray-900 dark:text-gray-50 sm:text-center'>
                   {t('pricing.title')}
                 </h2>
-                <p className='mb-5 mt-5 max-w-prose text-xl text-gray-600 dark:text-gray-200 sm:text-center'>
+                <p className='my-5 max-w-prose text-xl leading-[1.625rem] text-slate-900 dark:text-slate-300 sm:text-center'>
                   {t('pricing.adv', {
                     amount: TRIAL_DAYS,
                   })}
@@ -456,7 +457,6 @@ const Pricing = ({ t, language, authenticated, isBillingPage }: IPricing) => {
         type='warning'
         message={
           <Trans
-            // @ts-ignore
             t={t}
             i18nKey='pricing.downgradeDesc'
             values={{

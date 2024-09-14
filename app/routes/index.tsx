@@ -2,51 +2,46 @@ import type { LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData, Link } from '@remix-run/react'
 import { json, redirect } from '@remix-run/node'
 import type { SitemapFunction } from 'remix-sitemap'
+import { UAParser } from 'ua-parser-js'
+import { motion } from 'framer-motion'
 
 import { detectTheme, isAuthenticated } from 'utils/server'
 
 import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { ClientOnly } from 'remix-utils/client-only'
-import { ArrowTopRightOnSquareIcon, CheckCircleIcon, ChevronRightIcon } from '@heroicons/react/24/solid'
-import {
-  CodeBracketIcon,
-  PuzzlePieceIcon,
-  ShareIcon,
-  ArrowsPointingOutIcon,
-  LightBulbIcon,
-  ArrowTrendingUpIcon,
-  ArrowRightIcon,
-} from '@heroicons/react/20/solid'
+import { CheckCircleIcon, StarIcon } from '@heroicons/react/24/solid'
+import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { TypeAnimation } from 'react-type-animation'
 import _map from 'lodash/map'
-import _isEmpty from 'lodash/isEmpty'
 
 import routesPath from 'utils/routes'
 import { getAccessToken } from 'utils/accessToken'
-import { nFormatterSeparated } from 'utils/generic'
-import { GITHUB_URL, MARKETPLACE_URL, LIVE_DEMO_URL, BOOK_A_CALL_URL, isBrowser, isSelfhosted } from 'redux/constants'
+import { getStringFromTime, getTimeFromSeconds, nFormatterSeparated } from 'utils/generic'
+import {
+  GITHUB_URL,
+  LIVE_DEMO_URL,
+  isBrowser,
+  isSelfhosted,
+  OS_LOGO_MAP,
+  OS_LOGO_MAP_DARK,
+  BROWSER_LOGO_MAP,
+} from 'redux/constants'
 import { StateType } from 'redux/store/index'
 import BackgroundSvg from 'ui/icons/BackgroundSvg'
-import Webflow from 'ui/icons/Webflow'
-import NextJS from 'ui/icons/NextJS'
-import NuxtJS from 'ui/icons/NuxtJS'
-import Angular from 'ui/icons/Angular'
-import ReactSVG from 'ui/icons/ReactSVG'
-import Telegram from 'ui/icons/Telegram'
-import Wordpress from 'ui/icons/Wordpress'
-import Cloudflare from 'ui/icons/Cloudflare'
-import Notion from 'ui/icons/Notion'
-import Ghost from 'ui/icons/Ghost'
-import Gatsby from 'ui/icons/Gatsby'
-import Wix from 'ui/icons/Wix'
 
 import Header from 'components/Header'
-import SignUp from 'pages/Auth/Signup/BasicSignup'
 import Pricing from 'components/marketing/Pricing'
 import { PROCESSED_COMPETITORS_LIST, ComparisonTable } from 'components/marketing/ComparisonTable'
 import { DitchGoogle } from 'components/marketing/DitchGoogle'
 import { Lines } from 'components/marketing/Lines'
+import React, { useEffect, useState } from 'react'
+import clsx from 'clsx'
+import { MetricCard, MetricCardSelect } from 'pages/Project/View/components/MetricCards'
+import CCRow from 'pages/Project/View/components/CCRow'
+import { CursorArrowRaysIcon, GlobeAltIcon, NewspaperIcon } from '@heroicons/react/24/outline'
+import { LogoTimeline } from 'components/marketing/LogoTimeline'
+import { MarketplaceCluster } from 'components/marketing/MarketplaceCluster'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 1,
@@ -61,17 +56,27 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const [theme] = detectTheme(request)
   const isAuth = isAuthenticated(request)
 
-  return json({ theme, isAuth })
-}
+  const userAgent = request.headers.get('user-agent')
 
-const M_FEATURES_ICONS = [
-  <ArrowsPointingOutIcon className='h-5 w-5' key='ArrowsPointingOutIcon' />,
-  <CodeBracketIcon className='h-5 w-5' key='CodeBracketIcon' />,
-  <PuzzlePieceIcon className='h-5 w-5' key='PuzzlePieceIcon' />,
-  <ArrowTrendingUpIcon className='h-5 w-5' key='ArrowTrendingUpIcon' />,
-  <LightBulbIcon className='h-5 w-5' key='LightBulbIcon' />,
-  <ShareIcon className='h-5 w-5' key='ShareIcon' />,
-]
+  let deviceInfo: {
+    browser?: string | null
+    os?: string | null
+  } = {
+    browser: 'Chrome',
+    os: 'Windows',
+  }
+
+  if (userAgent) {
+    const parser = new UAParser(userAgent)
+
+    deviceInfo = {
+      browser: parser.getBrowser().name || null,
+      os: parser.getOS().name || null,
+    }
+  }
+
+  return json({ theme, isAuth, deviceInfo })
+}
 
 const TrustedBy = () => {
   const { t } = useTranslation('common')
@@ -120,24 +125,6 @@ const TrustedBy = () => {
           />
         </div>
       </div>
-    </div>
-  )
-}
-
-const SupportUkraine = () => {
-  const { t } = useTranslation('common')
-
-  return (
-    <div className='flex items-center justify-center px-2 py-2'>
-      <a
-        href='https://u24.gov.ua/'
-        target='_blank'
-        rel='noreferrer noopener'
-        className='border-b-2 border-transparent text-center text-slate-900 hover:border-slate-900 dark:text-white dark:hover:border-white'
-      >
-        {t('main.ukrSupport')}
-      </a>
-      <ArrowTopRightOnSquareIcon className='ml-1 hidden h-4 w-4 text-slate-800 dark:text-white md:block' />
     </div>
   )
 }
@@ -239,106 +226,6 @@ const PeopleLoveSwetrix = ({ theme }: { theme: 'dark' | 'light' }) => {
         </div>
       </div>
     </section>
-  )
-}
-
-const FeatureGallery = ({ theme }: { theme: 'dark' | 'light' }) => {
-  const { t } = useTranslation('common')
-
-  return (
-    <div className='space-y-16 bg-white px-4 py-16 dark:bg-slate-900'>
-      <section
-        id='core-analytics'
-        className='m-auto flex max-w-7xl flex-col-reverse items-center md:flex-row md:items-start md:justify-between'
-      >
-        <picture>
-          <source
-            srcSet={theme === 'dark' ? '/assets/CoreFeaturesDark.webp' : '/assets/CoreFeaturesLight.webp'}
-            type='image/webp'
-          />
-          <img
-            src={theme === 'dark' ? '/assets/CoreFeaturesDark.png' : '/assets/CoreFeaturesLight.png'}
-            className='mt-3 md:mr-3 md:mt-0 md:w-[450px] lg:w-[640px]'
-            width='450'
-            height='320'
-            alt='Core Analytics Features'
-          />
-        </picture>
-        <div className='max-w-lg md:ml-5'>
-          <h2 className='text-4xl font-extrabold text-slate-900 dark:text-white'>{t('main.coreFeatures.title')}</h2>
-          <p className='mb-6 mt-6 text-gray-600 dark:text-gray-400'>{t('main.coreFeatures.desc')}</p>
-          <a
-            href={LIVE_DEMO_URL}
-            className='flex max-w-max items-center border-0 font-bold text-indigo-700 hover:underline dark:text-indigo-400'
-            target='_blank'
-            rel='noopener noreferrer'
-            aria-label={`${t('common.liveDemo')} (opens in a new tab)`}
-          >
-            {t('common.liveDemo')}
-            <ArrowRightIcon className='mt-[1px] h-4 w-5' />
-          </a>
-        </div>
-      </section>
-      <section className='m-auto flex max-w-7xl flex-col items-center md:flex-row md:justify-between'>
-        <div className='max-w-[516px]'>
-          <h2 className='text-4xl font-extrabold text-slate-900 dark:text-white'>{t('main.marketplace.title')}</h2>
-          <p className='mb-3 mt-6 text-gray-600 dark:text-gray-400'>{t('main.marketplace.desc1')}</p>
-          <p className='mb-6 text-gray-600 dark:text-gray-400'>{t('main.marketplace.desc2')}</p>
-          <a
-            href={MARKETPLACE_URL}
-            className='flex max-w-max items-center border-0 font-bold text-indigo-700 hover:underline dark:text-indigo-400'
-            target='_blank'
-            rel='noopener noreferrer'
-            aria-label='Swetrix Marketplace (opens in a new tab)'
-          >
-            {t('main.visitAddons')}
-            <ArrowRightIcon className='mt-[1px] h-4 w-5' />
-          </a>
-        </div>
-        <img
-          src={
-            theme === 'dark' ? '/assets/marketplace_extensions_dark.png' : '/assets/marketplace_extensions_light.png'
-          }
-          className='mt-3 md:mr-3 md:mt-0 md:w-[450px] lg:w-[640px]'
-          width='450'
-          height='320'
-          alt='Marketplace illustration'
-        />
-      </section>
-      <section className='m-auto flex max-w-7xl flex-col-reverse items-center md:flex-row md:items-start md:justify-between'>
-        <img
-          className='mt-3 md:mr-3 md:mt-0 md:w-[360px] lg:w-[512px]'
-          width='360'
-          height='210'
-          src='/assets/gdpr.svg'
-          alt='GDPR compliant'
-        />
-        <div className='w-full max-w-[516px] pb-16 md:min-w-[370px] md:pb-0 md:pt-8'>
-          <h2 className='mb-6 text-4xl font-extrabold text-slate-900 dark:text-white'>{t('main.privacy.title')}</h2>
-          {_map(t('main.privacy.list', { returnObjects: true }), (item: { label: string; desc: string }) => (
-            <div key={item.label} className='mb-4 flex items-center'>
-              <div className='mr-3'>
-                <CheckCircleIcon className='h-[24px] w-[24px] fill-indigo-500' />
-              </div>
-              <p>
-                <span className='dark:text-white'>{item.label}</span>
-                <span className='ml-1 mr-1 dark:text-white'>-</span>
-                <span className='text-gray-600 dark:text-gray-400'>{item.desc}</span>
-              </p>
-            </div>
-          ))}
-          {/* mt-7 because mb-4 in upper component + mt-7 = 11. mb-11 is used for spacing the links in other sections. */}
-          <Link
-            to={routesPath.privacy}
-            className='mt-7 flex max-w-max items-center border-0 font-bold text-indigo-700 hover:underline dark:text-indigo-400'
-            aria-label={t('footer.pp')}
-          >
-            {t('main.dataProtection')}
-            <ArrowRightIcon className='mt-[1px] h-4 w-5' />
-          </Link>
-        </div>
-      </section>
-    </div>
   )
 }
 
@@ -454,60 +341,6 @@ const Comparison = () => {
   )
 }
 
-const Marketplace = () => {
-  const { t } = useTranslation('common')
-
-  return (
-    <div className='overflow-hidden'>
-      <div className='relative isolate mx-auto mt-10 w-full pt-10'>
-        <svg
-          className='absolute inset-0 -z-10 hidden h-full w-full stroke-gray-200 [mask-image:radial-gradient(64rem_64rem_at_top,white,transparent)] dark:stroke-white/10 sm:block'
-          aria-hidden='true'
-        >
-          <defs>
-            <pattern id='rect-pattern-2' width={200} height={200} x='50%' y={0} patternUnits='userSpaceOnUse'>
-              <path d='M.5 200V.5H200' fill='none' />
-            </pattern>
-          </defs>
-          <svg x='50%' y={0} className='overflow-visible fill-gray-50 dark:fill-slate-800/30'>
-            <path
-              d='M-200.5 0h201v201h-201Z M599.5 0h201v201h-201Z M399.5 400h201v201h-201Z M-400.5 600h201v201h-201Z'
-              strokeWidth={0}
-            />
-          </svg>
-          <rect width='100%' height='100%' strokeWidth={0} fill='url(#rect-pattern-2)' />
-        </svg>
-        <section className='relative z-20 mx-auto max-w-7xl px-3'>
-          <h2 className='mx-auto mt-20 w-full max-w-lg text-center text-4xl font-extrabold text-slate-900 dark:text-white sm:text-5xl'>
-            {t('main.marketplaceBlock')}
-          </h2>
-          <div className='grid grid-cols-1 justify-between justify-items-center gap-y-10 pb-36 pt-20 text-slate-900 dark:text-white sm:grid-cols-2 sm:gap-y-24 md:grid-cols-3'>
-            {_map(
-              // @ts-expect-error
-              t('main.mFeatures', { returnObjects: true }),
-              (
-                item: {
-                  name: string
-                  desc: string
-                },
-                index: number,
-              ) => (
-                <div key={item.name} className='w-full max-w-[310px]'>
-                  <div className='flex items-center'>
-                    <span className='mr-4 text-xl text-slate-900 dark:text-gray-200'>{M_FEATURES_ICONS[index]}</span>
-                    <h2 className='text-xl font-semibold'>{item.name}</h2>
-                  </div>
-                  <p className='pl-9 text-slate-700 dark:text-gray-300'>{item.desc}</p>
-                </div>
-              ),
-            )}
-          </div>
-        </section>
-      </div>
-    </div>
-  )
-}
-
 const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
   const { t } = useTranslation('common')
 
@@ -539,7 +372,7 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
                 <h2 className='mx-auto mb-3 max-w-[300px] whitespace-pre-line text-xl font-semibold text-slate-900 dark:text-white'>
                   {item.name}
                 </h2>
-                <p className='mx-auto max-w-xs text-gray-600 dark:text-gray-400'>{item.desc}</p>
+                <p className='mx-auto max-w-xs leading-[1.625rem] text-gray-600 dark:text-gray-400'>{item.desc}</p>
               </div>
             </div>
           ),
@@ -550,84 +383,387 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
   )
 }
 
-const Signup = ({ theme, ssrTheme }: { theme: 'dark' | 'light'; ssrTheme: 'dark' | 'light' }) => {
+const REVIEWERS = [
+  {
+    name: 'Tomasz',
+    image: '/assets/small-testimonials/tomasz.png',
+  },
+  {
+    name: 'Alex',
+    image: '/assets/small-testimonials/alex.jpg',
+  },
+  {
+    name: 'Artur',
+    image: '/assets/small-testimonials/artur.jpg',
+  },
+  {
+    name: 'Alper',
+    image: '/assets/small-testimonials/alper.jpg',
+  },
+  {
+    name: 'Andrii',
+    image: '/assets/small-testimonials/andrii.jpg',
+  },
+]
+
+const Testimonials = () => {
   const { t } = useTranslation('common')
+  const { stats } = useSelector((state: StateType) => state.ui.misc)
 
   return (
-    <div className='relative isolate mx-auto flex w-full max-w-7xl items-center justify-center px-5 py-20 md:justify-between'>
-      <div className='absolute inset-x-0 -top-3 -z-10 transform-gpu overflow-hidden px-36 blur-3xl' aria-hidden='true'>
-        <div
-          className='mx-auto aspect-[1155/678] w-[72.1875rem] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30'
-          style={{
-            clipPath:
-              'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-          }}
-        />
+    <div className='mt-8 flex flex-col items-center justify-center gap-3 md:flex-row'>
+      <div className='flex -space-x-5 overflow-hidden'>
+        {_map(REVIEWERS, ({ name, image }) => (
+          <div
+            key={`${name}${image}`}
+            className='relative inline-flex size-12 overflow-hidden rounded-full border-4 border-gray-50 dark:border-slate-900'
+          >
+            <img alt={name} width='400' height='400' style={{ color: 'transparent' }} src={image} />
+          </div>
+        ))}
       </div>
-      <div className='relative z-50 rounded-xl lg:col-span-6'>
-        <div className='bg-white ring-1 ring-slate-200 dark:bg-slate-800/20 dark:ring-slate-800 sm:mx-auto sm:w-full sm:max-w-md sm:overflow-hidden sm:rounded-lg'>
-          <div className='px-4 py-8 sm:px-10'>
-            <p className='text-center text-lg font-semibold text-gray-900 dark:text-white md:text-xl'>
-              {t('main.signup')}
-            </p>
-            <div className='mt-6'>
-              <SignUp ssrTheme={ssrTheme} />
-            </div>
-          </div>
-          <div className='px-4 sm:px-10'>
-            <div className='border-t border-gray-200 bg-transparent py-6 dark:border-slate-700'>
-              <p className='text-xs leading-5 text-gray-600 dark:text-gray-100'>
-                <Trans
-                  t={t}
-                  i18nKey='main.signupTerms'
-                  components={{
-                    // eslint-disable-next-line jsx-a11y/anchor-has-content
-                    tos: (
-                      <Link
-                        to={routesPath.terms}
-                        className='font-medium text-gray-900 hover:underline dark:text-gray-300'
-                        aria-label={t('footer.tos')}
-                      />
-                    ),
-                    // eslint-disable-next-line jsx-a11y/anchor-has-content
-                    pp: (
-                      <Link
-                        to={routesPath.privacy}
-                        className='font-medium text-gray-900 hover:underline dark:text-gray-300'
-                        aria-label={t('footer.pp')}
-                      />
-                    ),
-                  }}
-                />
-              </p>
-            </div>
-          </div>
+      <div className='flex flex-col items-center justify-center gap-1 md:items-start'>
+        <div className='relative inline-flex'>
+          <StarIcon className='size-5 text-yellow-500' />
+          <StarIcon className='size-5 text-yellow-500' />
+          <StarIcon className='size-5 text-yellow-500' />
+          <StarIcon className='size-5 text-yellow-500' />
+          <StarIcon className='size-5 text-yellow-500' />
         </div>
-      </div>
-      <div className='relative'>
-        <picture>
-          <source
-            srcSet={theme === 'dark' ? '/assets/section-signup-dark.webp' : '/assets/section-signup-light.webp'}
-            type='image/webp'
-          />
-          <img
-            src={theme === 'dark' ? '/assets/section-signup-dark.png' : '/assets/section-signup-light.png'}
-            className='relative z-50 hidden md:block'
-            width='680'
-            height='511'
-            alt='Swetrix Dashboard overview'
-          />
-        </picture>
+        <div className='text-base text-gray-900/70 dark:text-gray-200'>
+          <ClientOnly
+            fallback={
+              <Trans
+                values={{
+                  amount: '> 1000',
+                }}
+                t={t}
+                i18nKey='main.understandTheirUsers'
+              >
+                <span className='font-semibold text-gray-900 dark:text-gray-50' />
+              </Trans>
+            }
+          >
+            {() => (
+              <Trans
+                values={{
+                  // TODO: Move this stuff to loader so there won't be flickering
+                  amount: stats.users || '> 1000',
+                }}
+                t={t}
+                i18nKey='main.understandTheirUsers'
+              >
+                <span className='font-semibold text-gray-900 dark:text-gray-50' />
+              </Trans>
+            )}
+          </ClientOnly>
+        </div>
       </div>
     </div>
   )
 }
 
-const LatestNews = () => (
-  <p className='rounded-full bg-indigo-500/10 px-3 py-1 text-center text-sm font-semibold leading-6 text-indigo-600 ring-1 ring-inset ring-indigo-500/20 dark:text-indigo-400'>
-    Latest news
-  </p>
+const Highlighted = ({ children }: { children: React.ReactNode }) => (
+  <span className='relative whitespace-nowrap'>
+    <span className='absolute -bottom-1 -left-2 -right-2 -top-1 -rotate-1 bg-slate-900 dark:bg-gray-200 md:-bottom-0 md:-left-3 md:-right-3 md:-top-0' />
+    <span className='relative text-gray-50 dark:text-slate-900'>{children}</span>
+  </span>
 )
+
+interface FeatureBlockProps {
+  heading: string
+  description: string
+  children: React.ReactNode
+  className?: string
+  dark?: boolean
+}
+
+const FeatureBlock = ({ heading, description, children, className, dark }: FeatureBlockProps) => (
+  <motion.div
+    initial='idle'
+    whileHover='active'
+    variants={{ idle: {}, active: {} }}
+    data-dark={dark ? 'true' : undefined}
+    className={clsx(
+      'group relative flex flex-col overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-black/5 data-[dark]:bg-slate-800 data-[dark]:ring-white/15',
+      className,
+    )}
+  >
+    <div className='relative h-80 shrink-0'>{children}</div>
+
+    <div className='relative p-10'>
+      <h3 className='mt-1 text-2xl/8 font-medium tracking-tight text-gray-950 group-data-[dark]:text-white'>
+        {heading}
+      </h3>
+      <p className='mt-2 max-w-[600px] text-sm/6 text-gray-600 group-data-[dark]:text-gray-400'>{description}</p>
+    </div>
+  </motion.div>
+)
+
+const SdurMetric = () => {
+  const { t } = useTranslation('common')
+  const [duration, setDuration] = useState(0)
+
+  useEffect(() => {
+    const timerId = setInterval(() => {
+      setDuration((prevDuration) => prevDuration + 1)
+    }, 1000)
+
+    return () => clearInterval(timerId)
+  }, [])
+
+  return (
+    <MetricCard
+      classes={{
+        value: 'max-md:text-xl md:text-3xl',
+        container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
+      }}
+      label={t('dashboard.sessionDuration')}
+      value={duration}
+      valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value))}
+    />
+  )
+}
+
+const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
+  const { metainfo } = useSelector((state: StateType) => state.ui.misc)
+
+  const { deviceInfo } = useLoaderData<typeof loader>()
+
+  const geo = [
+    {
+      label: t('project.mapping.cc'),
+      value: metainfo.country || 'US',
+    },
+    {
+      label: t('project.mapping.rg'),
+      value: metainfo.region || 'California',
+    },
+    {
+      label: t('project.mapping.ct'),
+      value: metainfo.city || 'San Francisco',
+    },
+  ]
+
+  return (
+    <section className='relative mx-auto max-w-7xl bg-white pb-14 pt-14 dark:bg-slate-900'>
+      <div className='relative mx-auto w-fit text-4xl font-extrabold text-slate-900 sm:text-5xl'>
+        <h2 className='relative z-20 dark:text-white'>Know your customers</h2>
+      </div>
+      <div className='mt-10 grid grid-cols-1 gap-4 sm:mt-16 lg:grid-cols-6 lg:grid-rows-2'>
+        <FeatureBlock
+          heading='Get insights into your traffic'
+          description='Swetrix helps you understand everything you need to know about your website traffic. Know how many people are online, what pages are most popular, where are your users from, and more.'
+          className='max-lg:rounded-t-4xl lg:rounded-tl-4xl lg:col-span-3'
+          dark={theme === 'dark'}
+        >
+          <div
+            className='absolute -top-40 left-60 right-0 z-10 h-full w-full rotate-45 transform-gpu overflow-hidden blur-3xl'
+            aria-hidden='true'
+          >
+            <div
+              className='mx-auto aspect-[1/3] h-full w-full bg-gradient-to-r from-amber-400 to-purple-600 opacity-20'
+              style={{
+                clipPath:
+                  'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
+              }}
+            />
+          </div>
+          <div className='h-80 overflow-hidden'>
+            <img
+              className='object-cover transition-transform group-hover:scale-105'
+              src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
+              alt='Swetrix Analytics dashboard'
+            />
+          </div>
+          <div className='absolute inset-0 bg-gradient-to-t from-white to-50% group-data-[dark]:from-slate-800' />
+        </FeatureBlock>
+        <FeatureBlock
+          heading="Understand your site's pain points"
+          description='Nobody likes slow websites. Users are more likely to abandon your website if it takes too long to load, stay ahead of these problems and measure insights from real interactions.'
+          className='lg:rounded-tr-4xl lg:col-span-3'
+          dark={theme === 'dark'}
+        >
+          <div
+            className='absolute -top-40 left-60 right-0 z-10 h-full w-full rotate-45 transform-gpu overflow-hidden blur-3xl'
+            aria-hidden='true'
+          >
+            <div
+              className='mx-auto aspect-[1/3] h-full w-full bg-gradient-to-r from-red-400 to-red-800 opacity-15'
+              style={{
+                clipPath:
+                  'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
+              }}
+            />
+          </div>
+          <div className='h-80 overflow-hidden'>
+            <img
+              className='object-cover transition-transform group-hover:scale-105'
+              src={theme === 'dark' ? '/assets/performance_part_dark.png' : '/assets/performance_part_light.png'}
+              alt='Website speed and performance monitoring'
+            />
+          </div>
+          <div className='absolute inset-0 bg-gradient-to-t from-white to-50% group-data-[dark]:from-gray-800' />
+        </FeatureBlock>
+        <FeatureBlock
+          heading='Complete customisation'
+          description='Missing a feature? We will build it :) But you can also build your own features or install 3rd party addons from our Extensions Marketplace.'
+          className='lg:rounded-bl-4xl lg:col-span-2'
+          dark={theme === 'dark'}
+        >
+          <MarketplaceCluster />
+        </FeatureBlock>
+        <FeatureBlock
+          heading='Works with any platform'
+          description='With dozens of integrations, Swetrix makes it easy to connect your website and know your users, out of the box.'
+          className='!overflow-visible lg:col-span-2'
+          dark={theme === 'dark'}
+        >
+          <LogoTimeline />
+        </FeatureBlock>
+        <FeatureBlock
+          heading='Session analysis'
+          description='Analyse the sessions of your website users and make data-driven decisions.'
+          className='max-lg:rounded-b-4xl lg:rounded-br-4xl lg:col-span-2'
+          dark={theme === 'dark'}
+        >
+          <div className='relative space-y-2 overflow-hidden px-10 pt-5'>
+            <MetricCardSelect
+              classes={{
+                value: 'max-md:text-xl md:text-3xl',
+                container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
+              }}
+              values={geo}
+              selectLabel={t('project.geo')}
+              valueMapper={({ value }, index) => {
+                if (index !== 0) {
+                  return value || 'N/A'
+                }
+
+                if (!value) {
+                  return t('project.unknownCountry')
+                }
+
+                return (
+                  <div className='flex items-center'>
+                    <CCRow spaces={1} size={26} cc={value} language={language} />
+                  </div>
+                )
+              }}
+            />
+
+            <MetricCard
+              classes={{
+                value: 'max-md:text-xl md:text-3xl',
+                container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
+              }}
+              label={t('project.mapping.os')}
+              value={deviceInfo.os}
+              valueMapper={(value: keyof typeof OS_LOGO_MAP) => {
+                const logoPathLight = OS_LOGO_MAP[value]
+                const logoPathDark = OS_LOGO_MAP_DARK[value as keyof typeof OS_LOGO_MAP_DARK]
+
+                let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
+                logoPath ||= logoPathLight
+
+                if (!logoPath) {
+                  return (
+                    <>
+                      <GlobeAltIcon className='size-6' />
+                      &nbsp;
+                      {value}
+                    </>
+                  )
+                }
+                const logoUrl = `/${logoPath}`
+
+                return (
+                  <div className='flex items-center'>
+                    <img src={logoUrl} className='size-6 dark:fill-gray-50' alt='' />
+                    &nbsp;
+                    {value}
+                  </div>
+                )
+              }}
+            />
+
+            <MetricCard
+              classes={{
+                value: 'max-md:text-xl md:text-3xl',
+                container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
+              }}
+              label={t('project.mapping.br')}
+              value={deviceInfo.browser}
+              valueMapper={(value: keyof typeof BROWSER_LOGO_MAP) => {
+                const logoUrl = BROWSER_LOGO_MAP[value]
+
+                if (!logoUrl) {
+                  return (
+                    <>
+                      <GlobeAltIcon className='size-6' />
+                      &nbsp;
+                      {value}
+                    </>
+                  )
+                }
+
+                return (
+                  <div className='flex items-center'>
+                    <img src={logoUrl} className='size-6 dark:fill-gray-50' alt='' />
+                    &nbsp;
+                    {value}
+                  </div>
+                )
+              }}
+            />
+
+            <SdurMetric />
+
+            <div className='absolute bottom-0 right-0 rotate-12 rounded-md bg-gray-50 px-2 py-1 opacity-20 transition-all group-hover:rotate-6 group-hover:scale-110 group-hover:opacity-50 dark:bg-slate-700/60'>
+              {['/home', '/product', 'SALE'].map((path, index) => (
+                <div key={path} className='relative pb-8'>
+                  {index !== 2 ? (
+                    <span
+                      className='absolute left-4 top-4 -ml-px h-full w-0.5 bg-slate-200 dark:bg-slate-700'
+                      aria-hidden='true'
+                    />
+                  ) : null}
+                  <div className='relative flex space-x-3'>
+                    <div>
+                      <span className='flex h-8 w-8 items-center justify-center rounded-full bg-slate-400 dark:bg-slate-800'>
+                        {path.startsWith('/') ? (
+                          <NewspaperIcon className='h-5 w-5 text-white' aria-hidden='true' />
+                        ) : (
+                          <CursorArrowRaysIcon className='h-5 w-5 text-white' aria-hidden='true' />
+                        )}
+                      </span>
+                    </div>
+                    <p className='pt-1.5 text-sm text-gray-700 dark:text-gray-300'>
+                      <Trans
+                        t={t}
+                        i18nKey={path.startsWith('/') ? 'project.pageviewX' : 'project.eventX'}
+                        components={{
+                          value: <span className='font-medium text-gray-900 dark:text-gray-50' />,
+                        }}
+                        values={{
+                          x: path,
+                        }}
+                      />
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </FeatureBlock>
+      </div>
+    </section>
+  )
+}
 
 const Hero = ({
   theme,
@@ -639,7 +775,6 @@ const Hero = ({
   authenticated: boolean
 }) => {
   const { t } = useTranslation('common')
-  const { lastBlogPost } = useSelector((state: StateType) => state.ui.misc)
 
   return (
     <div className='relative isolate overflow-x-clip'>
@@ -673,76 +808,30 @@ const Hero = ({
         />
       </div>
       <Header ssrTheme={ssrTheme} authenticated={authenticated} transparent />
-      <SupportUkraine />
       <div className='relative mx-auto min-h-[740px] pb-5 pt-10 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
-        <div className='relative z-20 flex flex-row content-between justify-center lg:justify-start 2xl:mr-[14vw] 2xl:justify-center'>
-          <div className='relative px-4 text-left lg:mr-14 lg:mt-0'>
-            <h1 className='max-w-2xl text-4xl font-extrabold text-slate-900 dark:text-white sm:text-5xl sm:leading-none md:text-5xl lg:text-5xl xl:text-6xl xl:leading-[110%]'>
+        <div className='relative z-20 flex flex-col content-between justify-center'>
+          <div className='relative mx-auto flex flex-col px-4 text-left'>
+            <h1 className='mx-auto max-w-4xl text-center text-4xl font-extrabold tracking-[-0.4px] text-slate-900 dark:text-white sm:text-5xl sm:leading-none md:text-5xl lg:text-6xl xl:text-7xl'>
               <Trans
                 t={t}
                 i18nKey='main.slogan'
                 components={{
-                  span: (
-                    <span className='bg-gradient-to-r from-indigo-700 to-indigo-700 bg-clip-text text-transparent dark:from-indigo-600 dark:to-indigo-400' />
-                  ),
+                  // @ts-expect-error
+                  span: <Highlighted />,
                 }}
               />
             </h1>
-            <div className='mb-2 mt-3 flex items-center overflow-hidden sm:text-xl lg:text-lg xl:text-lg'>
-              {_isEmpty(lastBlogPost) ? (
-                <>
-                  <LatestNews />
-                  <div className='ml-1 h-6 w-full max-w-xs animate-pulse rounded-md bg-slate-300 dark:bg-slate-700' />
-                </>
-              ) : (
-                <ClientOnly
-                  fallback={
-                    <>
-                      <LatestNews />
-                      <div className='ml-1 h-6 w-full max-w-xs animate-pulse rounded-md bg-slate-300 dark:bg-slate-700' />
-                    </>
-                  }
-                >
-                  {() => (
-                    <Link
-                      className='inline-flex items-center space-x-1 text-sm font-semibold leading-6 text-slate-700 dark:text-slate-300'
-                      to={`blog/${lastBlogPost.handle}`}
-                    >
-                      <LatestNews />
-                      <small className='ml-1 text-sm'>{lastBlogPost.title}</small>
-                      <ChevronRightIcon className='h-4 w-4 text-slate-500' aria-hidden='true' />
-                    </Link>
-                  )}
-                </ClientOnly>
-              )}
-            </div>
-            <div className='mt-5 space-y-2 text-base leading-8 text-slate-900 dark:text-slate-300 sm:text-xl lg:text-lg xl:text-lg'>
-              <p>
-                <Trans t={t} i18nKey='main.description'>
-                  <Link
-                    to={routesPath.forMarketers}
-                    className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
-                  />
-                  <Link
-                    to={routesPath.forStartups}
-                    className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
-                  />
-                  <Link
-                    to={routesPath.forSmallBusinesses}
-                    className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
-                  />
-                </Trans>
-              </p>
-              <p>{t('main.trackEveryMetric')}</p>
-            </div>
-            <div className='mt-10 flex flex-col items-center sm:flex-row'>
+            <p className='mx-auto mt-4 max-w-4xl text-center text-base leading-[1.625rem] tracking-wide text-slate-900 dark:text-slate-300 sm:text-lg lg:text-xl'>
+              {t('main.description')}
+            </p>
+            <div className='mt-10 flex flex-col items-center justify-center sm:flex-row'>
               <Link
                 to={routesPath.signup}
-                className='flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white shadow-sm ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600 sm:mr-6 sm:max-w-[210px]'
+                className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white shadow-sm ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600 sm:mr-6 sm:max-w-[210px]'
                 aria-label={t('titles.signup')}
               >
                 <span className='mr-1 text-base font-semibold'>{t('main.startAFreeTrial')}</span>
-                <ArrowRightIcon className='mt-[1px] h-4 w-5' />
+                <ArrowRightIcon className='mt-[1px] h-4 w-5 transition-transform group-hover:scale-[1.15]' />
               </Link>
               <a
                 href={LIVE_DEMO_URL}
@@ -754,35 +843,13 @@ const Hero = ({
                 <span className='text-base font-semibold'>{t('common.liveDemo')}</span>
               </a>
             </div>
-            <a
-              href={BOOK_A_CALL_URL}
-              className='mt-8 flex max-w-max items-center border-0 font-bold text-slate-900 hover:underline dark:text-gray-100'
-              target='_blank'
-              rel='noopener noreferrer'
-              aria-label={`${t('common.bookADemo')} (opens in a new tab)`}
-            >
-              <span className='text-base font-semibold'>{t('common.bookADemo')}</span>
-              <ArrowRightIcon className='mt-[1px] h-4 w-5' />
-            </a>
+            <Testimonials />
           </div>
           <div className='hidden max-w-md lg:block xl:max-w-lg'>
             <Lines />
-            <picture>
-              <source
-                srcSet={theme === 'dark' ? '/assets/screenshot_dark.webp' : '/assets/screenshot_light.webp'}
-                type='image/webp'
-              />
-              <img
-                src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
-                className='relative h-full min-w-[880px] rounded-xl shadow-2xl ring-1 ring-gray-900/10 dark:ring-white/10'
-                width='100%'
-                height='auto'
-                alt='Swetrix Analytics dashboard'
-              />
-            </picture>
           </div>
         </div>
-        <div className='relative z-20 my-10 block px-4 md:px-0 lg:hidden'>
+        <div className='relative z-20 mx-auto mt-10 block max-w-7xl px-4 md:px-0'>
           <picture>
             <source
               srcSet={theme === 'dark' ? '/assets/screenshot_dark.webp' : '/assets/screenshot_light.webp'}
@@ -805,10 +872,6 @@ const Hero = ({
 export default function Index() {
   const { theme: ssrTheme, isAuth } = useLoaderData<typeof loader>()
 
-  const {
-    t,
-    i18n: { language },
-  } = useTranslation('common')
   const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
   const { authenticated: reduxAuthenticated, loading } = useSelector((state: StateType) => state.auth)
   const theme = isBrowser ? reduxTheme : ssrTheme
@@ -821,7 +884,8 @@ export default function Index() {
         <Hero theme={theme} ssrTheme={ssrTheme} authenticated={authenticated} />
 
         <TrustedBy />
-        <FeatureGallery theme={theme} />
+
+        <FeatureBlocks theme={theme} />
 
         <Feedback
           name='Alex Bowles'
@@ -831,31 +895,10 @@ export default function Index() {
           feedback="Swetrix has been a game changer for our analytics. They've always been on top of feature requests and bug reports and have been friendly every step of the way. I can't recommend them enough."
         />
 
-        {!authenticated && <Signup theme={theme} ssrTheme={ssrTheme} />}
-
         <CoreFeatures theme={theme} />
 
-        <section className='relative bg-white px-3 pt-24 text-[initial] dark:bg-slate-900 sm:px-5'>
-          <h2 className='sm:ext-5xl mx-auto w-fit text-center text-4xl font-bold text-slate-900 dark:text-white'>
-            {t('main.supports')}
-          </h2>
-          <div className='mx-auto mt-20 grid w-full max-w-7xl grid-cols-3 items-center justify-between justify-items-center gap-x-4 gap-y-10 sm:grid-cols-4 md:grid-cols-6 lg:gap-x-10 lg:gap-y-16'>
-            <Telegram className='max-h-16 max-w-[64px] sm:max-w-[150px]' />
-            <NuxtJS theme={theme} className='max-h-12 max-w-[106px] sm:max-w-[150px]' />
-            <Webflow theme={theme} className='max-h-12 max-w-[106px] sm:max-w-[150px]' />
-            <NextJS theme={theme} className='max-h-12 max-w-[78px] sm:max-w-[80px]' />
-            <Notion theme={theme} className='max-h-12 max-w-[106px] sm:max-w-[130px]' />
-            <ReactSVG className='max-h-16 max-w-[71px] sm:max-w-[150px]' />
-            <Angular className='max-h-20 max-w-[60px] sm:max-w-[160px]' />
-            <Wordpress theme={theme} className='max-h-16 max-w-[100px] sm:max-w-[160px]' />
-            <Wix theme={theme} className='max-h-12 max-w-[105px] sm:max-w-[120px]' />
-            <Ghost theme={theme} className='max-h-20 max-w-[105px] sm:max-w-[150px]' />
-            <Gatsby theme={theme} className='max-h-12 max-w-[105px] sm:max-w-[150px]' />
-            <Cloudflare theme={theme} className='max-h-12 max-w-[105px] sm:max-w-[140px]' />
-          </div>
-        </section>
-
-        <Marketplace />
+        {/* Hiding the Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
+        {!authenticated && <Pricing authenticated={false} />}
 
         <Feedback
           name='Alper Alkan'
@@ -865,10 +908,12 @@ export default function Index() {
           feedback="Analytics needs on all of our products are provided by Swetrix only. It's unfathomable how good this service is compared to Google Analytics. Swetrix gives me everything I need to know about my websites."
         />
 
-        {/* Hiding the Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
-        {!authenticated && <Pricing authenticated={false} t={t} language={language} />}
+        {/* <Comparison /> */}
 
-        <Comparison />
+        <OpensourceAdvantages theme={theme} />
+
+        {/* <PeopleLoveSwetrix theme={theme} /> */}
+
         <DitchGoogle
           screenshot={{
             dark: '/assets/screenshot_dark.png',
@@ -876,8 +921,6 @@ export default function Index() {
           }}
           theme={theme}
         />
-        <OpensourceAdvantages theme={theme} />
-        <PeopleLoveSwetrix theme={theme} />
       </main>
     </div>
   )

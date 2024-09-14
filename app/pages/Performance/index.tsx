@@ -32,10 +32,7 @@ interface IPerformance {
 }
 
 const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
-  const {
-    t,
-    i18n: { language },
-  } = useTranslation('common')
+  const { t } = useTranslation('common')
   const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
   const { authenticated: reduxAuthenticated, loading } = useSelector((state: StateType) => state.auth)
   const { stats, lastBlogPost } = useSelector((state: StateType) => state.ui.misc)
@@ -134,16 +131,16 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
                 </div>
                 <p className='text-base leading-8 text-slate-900 dark:text-slate-300 sm:text-xl lg:text-lg xl:text-lg'>
                   {t('performance.description')}
-                  <br />
-                  {t('main.trackEveryMetric')}
                 </p>
                 <div className='mt-10 flex flex-col items-center sm:flex-row'>
                   <Link
                     to={routesPath.signup}
-                    className='flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white shadow-sm ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600 sm:mr-6 sm:max-w-[210px]'
+                    className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white shadow-sm ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600 sm:mr-6 sm:max-w-[210px]'
                     aria-label={t('titles.signup')}
                   >
-                    <span className='mr-1 text-base font-semibold'>{t('main.startAFreeTrial')}</span>
+                    <span className='mr-1 text-base font-semibold transition-transform group-hover:scale-[1.15]'>
+                      {t('main.startAFreeTrial')}
+                    </span>
                     <ArrowRightIcon className='mt-[1px] h-4 w-5' />
                   </Link>
                   <a
@@ -242,7 +239,7 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
         </div>
 
         {/* For now let's hide Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
-        {!authenticated && <Pricing authenticated={false} t={t} language={language} />}
+        {!authenticated && <Pricing authenticated={false} />}
 
         <DitchGoogle
           screenshot={{
