@@ -679,8 +679,8 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
               </div>
             </div>
 
-            <div className='absolute inset-0 bg-[linear-gradient(to_bottom_right,transparent,transparent_49%,red_49%,red_51%,transparent_51%,transparent)] opacity-0 transition-opacity group-hover:delay-300 duration-500 group-hover:opacity-70' />
-            <div className='absolute inset-0 bg-[linear-gradient(to_top_right,transparent,transparent_49%,red_49%,red_51%,transparent_51%,transparent)] opacity-0 transition-opacity group-hover:delay-300 duration-500 group-hover:opacity-70' />
+            <div className='absolute inset-0 bg-[linear-gradient(to_bottom_right,transparent,transparent_49%,red_49%,red_51%,transparent_51%,transparent)] opacity-0 transition-opacity duration-500 group-hover:opacity-70 group-hover:delay-300' />
+            <div className='absolute inset-0 bg-[linear-gradient(to_top_right,transparent,transparent_49%,red_49%,red_51%,transparent_51%,transparent)] opacity-0 transition-opacity duration-500 group-hover:opacity-70 group-hover:delay-300' />
           </div>
           <div className='absolute inset-0 bg-gradient-to-t from-white to-25% group-data-[dark]:from-slate-800' />
         </FeatureBlock>
@@ -692,14 +692,32 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
         >
           <ConveyorBelt />
         </FeatureBlock>
-        {/* funnel animation */}
         <FeatureBlock
           heading='User flows & marketing funnels'
           description='Track how users get to your site and know where they go. Study behaviour, visualise and understand your user journey.'
           className='!overflow-visible lg:col-span-2'
           dark={theme === 'dark'}
         >
-          <LogoTimeline />
+          <div
+            className='absolute -top-40 left-60 right-0 z-10 h-full w-full rotate-45 transform-gpu overflow-hidden blur-3xl'
+            aria-hidden='true'
+          >
+            <div
+              className='mx-auto aspect-[1/3] h-full w-full bg-gradient-to-r from-yellow-400/60 to-yellow-800/60 opacity-15 dark:from-yellow-400 dark:to-yellow-800'
+              style={{
+                clipPath:
+                  'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
+              }}
+            />
+          </div>
+          <div className='h-80 overflow-hidden'>
+            <img
+              className='object-cover transition-transform group-hover:scale-105'
+              src={theme === 'dark' ? '/assets/funnel_dark.png' : '/assets/funnel_light.png'}
+              alt='Website speed and performance monitoring'
+            />
+          </div>
+          <div className='absolute inset-0 bg-gradient-to-t from-white to-50% group-data-[dark]:from-gray-800' />
         </FeatureBlock>
 
         <FeatureBlock
@@ -853,7 +871,6 @@ export default function Index() {
         <Hero theme={theme} ssrTheme={ssrTheme} authenticated={authenticated} />
 
         <Problem />
-        {/* <TrustedBy /> */}
 
         <FeatureBlocks theme={theme} />
 
@@ -878,11 +895,7 @@ export default function Index() {
           feedback="Analytics needs on all of our products are provided by Swetrix only. It's unfathomable how good this service is compared to Google Analytics. Swetrix gives me everything I need to know about my websites."
         />
 
-        {/* <Comparison /> */}
-
         <OpensourceAdvantages theme={theme} />
-
-        {/* <PeopleLoveSwetrix theme={theme} /> */}
 
         <DitchGoogle
           screenshot={{
