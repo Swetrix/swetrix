@@ -27,7 +27,6 @@ import {
   BROWSER_LOGO_MAP,
 } from 'redux/constants'
 import { StateType } from 'redux/store/index'
-import BackgroundSvg from 'ui/icons/BackgroundSvg'
 
 import Header from 'components/Header'
 import Pricing from 'components/marketing/Pricing'
@@ -40,6 +39,7 @@ import CCRow from 'pages/Project/View/components/CCRow'
 import { CursorArrowRaysIcon, GlobeAltIcon, NewspaperIcon } from '@heroicons/react/24/outline'
 import { LogoTimeline } from 'components/marketing/LogoTimeline'
 import { MarketplaceCluster } from 'components/marketing/MarketplaceCluster'
+import { ConveyorBelt } from 'components/marketing/ConveyorBelt'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 1,
@@ -80,7 +80,7 @@ const Problem = () => {
   const { t } = useTranslation('common')
 
   return (
-    <section className='bg-neutral-600'>
+    <section className='bg-neutral-600 dark:bg-slate-700'>
       <div className='mx-auto max-w-7xl px-8 py-16 text-center md:py-32'>
         <h2 className='mb-6 text-4xl font-extrabold text-gray-50 sm:text-5xl sm:leading-none md:mb-8'>
           Most people struggle to make sense of their analytics data
@@ -232,48 +232,6 @@ const OpensourceAdvantages = ({ theme }: { theme: 'dark' | 'light' }) => {
           ))}
         </div>
       </div>
-    </section>
-  )
-}
-
-const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
-  const { t } = useTranslation('common')
-
-  return (
-    <section className='relative bg-white pb-14 pt-14 dark:bg-slate-900'>
-      <BackgroundSvg theme={theme} className='absolute -left-8' type='shapes' />
-      <div className='relative mx-auto w-fit text-4xl font-extrabold text-slate-900 sm:text-5xl'>
-        <h2 className='relative z-20 dark:text-white'>{t('main.coreFeaturesBlock')}</h2>
-        <BackgroundSvg
-          theme={theme}
-          className='absolute right-0 top-9 z-10 opacity-30 sm:-right-16'
-          type='semicircle'
-        />
-      </div>
-      <div className='mx-auto mt-[60px] flex w-full max-w-7xl flex-wrap items-center justify-center xl:justify-between'>
-        {_map(
-          // @ts-expect-error
-          t('main.features', { returnObjects: true }),
-          (
-            item: {
-              name: string
-              desc: string
-            },
-            index: number,
-          ) => (
-            <div key={item.name} className='h-64 w-[416px] px-7 py-11 text-center'>
-              <span className='text-4xl font-semibold text-indigo-500'>{1 + index}</span>
-              <div className='mt-2'>
-                <h2 className='mx-auto mb-3 max-w-[300px] whitespace-pre-line text-xl font-semibold text-slate-900 dark:text-white'>
-                  {item.name}
-                </h2>
-                <p className='mx-auto max-w-xs leading-relaxed text-gray-600 dark:text-gray-400'>{item.desc}</p>
-              </div>
-            </div>
-          ),
-        )}
-      </div>
-      <BackgroundSvg theme={theme} className='absolute bottom-0 right-0 z-10' type='twolinecircle' />
     </section>
   )
 }
@@ -659,6 +617,97 @@ const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
               ))}
             </div>
           </div>
+        </FeatureBlock>
+      </div>
+    </section>
+  )
+}
+
+const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
+  const { t } = useTranslation('common')
+
+  return (
+    <section className='relative mx-auto max-w-7xl bg-white pb-14 pt-14 dark:bg-slate-900'>
+      <div className='relative mx-auto w-fit'>
+        <h2 className='relative z-20 text-4xl font-extrabold text-slate-900 dark:text-white sm:text-5xl'>
+          Only the features you need
+        </h2>
+      </div>
+      <div className='mt-10 grid grid-cols-1 gap-4 sm:mt-16 lg:grid-cols-6 lg:grid-rows-2'>
+        {/* Spawn a ton of cookie banners; after 3 second display a huge red cross */}
+        <FeatureBlock
+          heading='Forget about annoying cookie banners'
+          description='Swetrix does not use cookies for tracking, so you can forget about all those annoying cookie banners. We collect analytical data anonymously to respect the privacy of your users. We do not collect personal identifiers and do not perform cross-device tracking.'
+          className='max-lg:rounded-t-4xl lg:rounded-tl-4xl lg:col-span-4'
+          dark={theme === 'dark'}
+        >
+          <div
+            className='absolute -top-40 left-60 right-0 z-10 h-full w-full rotate-45 transform-gpu overflow-hidden blur-3xl'
+            aria-hidden='true'
+          >
+            <div
+              className='mx-auto aspect-[1/3] h-full w-full bg-gradient-to-r from-amber-400 to-purple-600 opacity-20'
+              style={{
+                clipPath:
+                  'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
+              }}
+            />
+          </div>
+          <div className='h-80 overflow-hidden'>
+            <img
+              className='object-cover transition-transform group-hover:scale-105'
+              src={theme === 'dark' ? '/assets/traffic_part_dark.png' : '/assets/traffic_part_light.png'}
+              alt='Swetrix Traffic Dashboard'
+            />
+          </div>
+          <div className='absolute inset-0 bg-gradient-to-t from-white to-50% group-data-[dark]:from-slate-800' />
+        </FeatureBlock>
+        {/* конвеєрна стрічка яка несе на собі коробки "data" -> на виході висирає коробки "$$$", "sale", "new user" */}
+        <FeatureBlock
+          heading='Analyse marketing campaigns and newsletters'
+          description='Use UTMs to tag your ads, social media posts and email campaigns to see how much traffic they generate and how much revenue they bring in.'
+          className='lg:rounded-bl-4xl lg:col-span-2'
+          dark={theme === 'dark'}
+        >
+          {/* <MarketplaceCluster /> */}
+          <ConveyorBelt />
+        </FeatureBlock>
+        {/* funnel animation */}
+        <FeatureBlock
+          heading='User flows & marketing funnels'
+          description='Track how users get to your site and know where they go. Study behaviour, visualise and understand your user journey.'
+          className='!overflow-visible lg:col-span-2'
+          dark={theme === 'dark'}
+        >
+          <LogoTimeline />
+        </FeatureBlock>
+
+        <FeatureBlock
+          heading='E-commerce & Custom events (really easy to setup)'
+          description='Send custom events with custom properties to track user activity or sales. Analyse this data with ease in our intuitive dashboard. Create reusable views to quickly see and spot trends in your sales.'
+          className='lg:rounded-tr-4xl lg:col-span-4'
+          dark={theme === 'dark'}
+        >
+          <div
+            className='absolute -top-40 left-60 right-0 z-10 h-full w-full rotate-45 transform-gpu overflow-hidden blur-3xl'
+            aria-hidden='true'
+          >
+            <div
+              className='mx-auto aspect-[1/3] h-full w-full bg-gradient-to-r from-red-400 to-red-800 opacity-15'
+              style={{
+                clipPath:
+                  'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
+              }}
+            />
+          </div>
+          <div className='h-80 overflow-hidden'>
+            <img
+              className='object-cover transition-transform group-hover:scale-105'
+              src={theme === 'dark' ? '/assets/performance_part_dark.png' : '/assets/performance_part_light.png'}
+              alt='Website speed and performance monitoring'
+            />
+          </div>
+          <div className='absolute inset-0 bg-gradient-to-t from-white to-50% group-data-[dark]:from-gray-800' />
         </FeatureBlock>
       </div>
     </section>

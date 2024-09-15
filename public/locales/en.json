@@ -296,36 +296,9 @@
     "start": "Start for free",
     "startAFreeTrial": "Start a free trial",
     "metric": "Metric",
-    "features": [
-      {
-        "name": "Measure website traffic with 99% accuracy",
-        "desc": "The most accurate analytics solution to track all basic metrics and see the RIGHT data."
-      },
-      {
-        "name": "Demo & Geo reports",
-        "desc": "Yes, it's a standard. But we keep track of exactly where your users are from as it is."
-      },
-      {
-        "name": "UTM & Reffers tracking",
-        "desc": "All the traffic from your companies and websites will be shown without a data loss."
-      },
-      {
-        "name": "Agile system",
-        "desc": "A flexible system of settings for the basic rules of use - such as session definition, traffic accounting, and so on, is easy to set up and customise."
-      },
-      {
-        "name": "Custom events\n(really easy to setup)",
-        "desc": "User-friendly interface and ease of setting goals will help you measure the effectiveness of your website."
-      },
-      {
-        "name": "User flow",
-        "desc": "Track how users get to your site and where they go. Study the behaviour and patterns of your visitors."
-      }
-    ],
     "demoGeoReports": "Yes, it's a standard. But we keep track of exactly where your users are from as it is.",
     "peopleLoveSwetrix": "People 🥰 Swetrix",
     "whyPeopleLoveSwetrix": "Swetrix is an ethical and powerful service. Hundreds of people have already made the switch from Google Analytics and other alternatives.",
-    "marketplaceBlock": "Marketplace and extension features",
     "coreFeaturesBlock": "Core features",
     "opensourceAdv": "Advantages of using <url>open source</url>",
     "opensource": [
