@@ -27,6 +27,7 @@ import {
   BROWSER_LOGO_MAP,
 } from 'redux/constants'
 import { StateType } from 'redux/store/index'
+import { Cookie } from 'lucide-react'
 
 import Header from 'components/Header'
 import Pricing from 'components/marketing/Pricing'
@@ -490,29 +491,33 @@ const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
           dark={theme === 'dark'}
         >
           <div className='relative space-y-2 overflow-hidden px-10 pt-5'>
-            <MetricCardSelect
-              classes={{
-                value: 'max-md:text-xl md:text-3xl',
-                container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
-              }}
-              values={geo}
-              selectLabel={t('project.geo')}
-              valueMapper={({ value }, index) => {
-                if (index !== 0) {
-                  return value || 'N/A'
-                }
+            <ClientOnly>
+              {() => (
+                <MetricCardSelect
+                  classes={{
+                    value: 'max-md:text-xl md:text-2xl',
+                    container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
+                  }}
+                  values={geo}
+                  selectLabel={t('project.geo')}
+                  valueMapper={({ value }, index) => {
+                    if (index !== 0) {
+                      return value || 'N/A'
+                    }
 
-                if (!value) {
-                  return t('project.unknownCountry')
-                }
+                    if (!value) {
+                      return t('project.unknownCountry')
+                    }
 
-                return (
-                  <div className='flex items-center'>
-                    <CCRow spaces={1} size={26} cc={value} language={language} />
-                  </div>
-                )
-              }}
-            />
+                    return (
+                      <div className='flex items-center'>
+                        <CCRow spaces={1} size={26} cc={value} language={language} />
+                      </div>
+                    )
+                  }}
+                />
+              )}
+            </ClientOnly>
 
             <MetricCard
               classes={{
@@ -634,42 +639,57 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
         </h2>
       </div>
       <div className='mt-10 grid grid-cols-1 gap-4 sm:mt-16 lg:grid-cols-6 lg:grid-rows-2'>
-        {/* Spawn a ton of cookie banners; after 3 second display a huge red cross */}
         <FeatureBlock
           heading='Forget about annoying cookie banners'
           description='Swetrix does not use cookies for tracking, so you can forget about all those annoying cookie banners. We collect analytical data anonymously to respect the privacy of your users. We do not collect personal identifiers and do not perform cross-device tracking.'
           className='max-lg:rounded-t-4xl lg:rounded-tl-4xl lg:col-span-4'
           dark={theme === 'dark'}
         >
-          <div
-            className='absolute -top-40 left-60 right-0 z-10 h-full w-full rotate-45 transform-gpu overflow-hidden blur-3xl'
-            aria-hidden='true'
-          >
-            <div
-              className='mx-auto aspect-[1/3] h-full w-full bg-gradient-to-r from-amber-400 to-purple-600 opacity-20'
-              style={{
-                clipPath:
-                  'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-              }}
-            />
+          <div className='relative h-80 overflow-hidden px-10 pt-5'>
+            <div className='absolute top-2 rotate-2 rounded-sm bg-slate-200 p-4 opacity-70 transition-opacity group-hover:opacity-90'>
+              <p className='mb-4 text-sm'>
+                We use cookies to enhance your experience. By continuing to visit this site you agree to our use of
+                cookies.
+              </p>
+              <div className='max-w-max rounded-md bg-slate-800 p-2 text-gray-50'>Accept</div>
+            </div>
+
+            <div className='absolute bottom-0 left-0 mb-4 flex max-w-max -rotate-12 gap-2 rounded-sm bg-slate-100 p-4 transition-transform group-hover:-rotate-6'>
+              <p className='text-md flex'>
+                <Cookie className='mr-2 text-slate-700' size={24} />
+                Hello there, We use cookies!
+              </p>
+              <div className='max-w-max rounded-md bg-slate-800 px-1 text-gray-50'>Okay</div>
+            </div>
+
+            <div className='absolute bottom-20 left-12 mb-4 flex max-w-max -rotate-6 rounded-sm bg-slate-100 p-4 transition-transform group-hover:scale-95'>
+              <p className='text-md flex max-w-[40ch]'>
+                This website uses cookies to ensure you get the best experience on our website
+              </p>
+            </div>
+
+            <div className='absolute bottom-10 right-0 rotate-12 rounded-md bg-gray-100 p-2 opacity-90 transition-transform group-hover:rotate-3 group-hover:scale-110'>
+              <p className='text-md flex'>
+                <Cookie className='mr-2 text-slate-700' size={24} />
+                <span className='max-w-[35ch]'>Please accept our cookies to continue using our website.</span>
+              </p>
+              <div className='mt-2 flex gap-2'>
+                <div className='max-w-max rounded-md bg-green-700/80 px-1 text-gray-50'>Okay</div>
+                <div className='max-w-max rounded-md bg-red-700/80 px-1 text-gray-50'>No</div>
+              </div>
+            </div>
+
+            <div className='absolute inset-0 bg-[linear-gradient(to_bottom_right,transparent,transparent_49%,red_49%,red_51%,transparent_51%,transparent)] opacity-0 transition-opacity delay-300 duration-500 group-hover:opacity-70' />
+            <div className='absolute inset-0 bg-[linear-gradient(to_top_right,transparent,transparent_49%,red_49%,red_51%,transparent_51%,transparent)] opacity-0 transition-opacity delay-300 duration-500 group-hover:opacity-70' />
           </div>
-          <div className='h-80 overflow-hidden'>
-            <img
-              className='object-cover transition-transform group-hover:scale-105'
-              src={theme === 'dark' ? '/assets/traffic_part_dark.png' : '/assets/traffic_part_light.png'}
-              alt='Swetrix Traffic Dashboard'
-            />
-          </div>
-          <div className='absolute inset-0 bg-gradient-to-t from-white to-50% group-data-[dark]:from-slate-800' />
+          <div className='absolute inset-0 bg-gradient-to-t from-white to-25% group-data-[dark]:from-slate-800' />
         </FeatureBlock>
-        {/* конвеєрна стрічка яка несе на собі коробки "data" -> на виході висирає коробки "$$$", "sale", "new user" */}
         <FeatureBlock
           heading='Analyse marketing campaigns and newsletters'
           description='Use UTMs to tag your ads, social media posts and email campaigns to see how much traffic they generate and how much revenue they bring in.'
           className='lg:rounded-bl-4xl lg:col-span-2'
           dark={theme === 'dark'}
         >
-          {/* <MarketplaceCluster /> */}
           <ConveyorBelt />
         </FeatureBlock>
         {/* funnel animation */}
