@@ -12,12 +12,11 @@ import { useSelector } from 'react-redux'
 import { ClientOnly } from 'remix-utils/client-only'
 import { CheckCircleIcon, StarIcon } from '@heroicons/react/24/solid'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
-import { TypeAnimation } from 'react-type-animation'
 import _map from 'lodash/map'
 
 import routesPath from 'utils/routes'
 import { getAccessToken } from 'utils/accessToken'
-import { getStringFromTime, getTimeFromSeconds, nFormatterSeparated } from 'utils/generic'
+import { getStringFromTime, getTimeFromSeconds } from 'utils/generic'
 import {
   GITHUB_URL,
   LIVE_DEMO_URL,
@@ -32,7 +31,6 @@ import BackgroundSvg from 'ui/icons/BackgroundSvg'
 
 import Header from 'components/Header'
 import Pricing from 'components/marketing/Pricing'
-import { PROCESSED_COMPETITORS_LIST, ComparisonTable } from 'components/marketing/ComparisonTable'
 import { DitchGoogle } from 'components/marketing/DitchGoogle'
 import { Lines } from 'components/marketing/Lines'
 import React, { useEffect, useState } from 'react'
@@ -76,57 +74,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   return json({ theme, isAuth, deviceInfo })
-}
-
-const TrustedBy = () => {
-  const { t } = useTranslation('common')
-
-  return (
-    <div className='bg-white py-16 dark:bg-slate-900'>
-      <div className='mx-auto max-w-7xl px-6 lg:px-8'>
-        <h2 className='text-center text-lg font-semibold leading-8 text-gray-900 dark:text-gray-50'>
-          {t('main.trustedBy')}
-        </h2>
-        <div className='mx-auto mt-10 grid max-w-lg grid-cols-4 items-center gap-x-8 gap-y-10 sm:max-w-xl sm:grid-cols-6 sm:gap-x-10 lg:mx-0 lg:max-w-none lg:grid-cols-5'>
-          <img
-            alt='STELP'
-            src='/assets/users/stelp.png'
-            width={158}
-            height={48}
-            className='col-span-2 max-h-12 w-full object-contain dark:invert lg:col-span-1'
-          />
-          <img
-            alt='Datakyu'
-            src='/assets/users/datakyu.svg'
-            width={158}
-            height={48}
-            className='col-span-2 max-h-12 w-full object-contain dark:invert lg:col-span-1'
-          />
-          <img
-            alt='Cardano Foundation'
-            src='/assets/users/cardano-foundation.svg'
-            width={158}
-            height={48}
-            className='col-span-2 max-h-12 w-full object-contain dark:invert lg:col-span-1'
-          />
-          <img
-            alt='Casterlabs'
-            src='/assets/users/casterlabs.svg'
-            width={158}
-            height={48}
-            className='col-span-2 max-h-12 w-full object-contain dark:invert sm:col-start-2 lg:col-span-1'
-          />
-          <img
-            alt='Phalcode'
-            src='/assets/users/phalcode.svg'
-            width={158}
-            height={48}
-            className='col-span-2 col-start-2 max-h-12 w-full object-contain dark:invert sm:col-start-auto lg:col-span-1'
-          />
-        </div>
-      </div>
-    </div>
-  )
 }
 
 const Problem = () => {
@@ -235,73 +182,6 @@ const Feedback = ({ name, title, feedback, logoUrl, photoUrl }: IFeedback) => (
   </section>
 )
 
-const PeopleLoveSwetrix = ({ theme }: { theme: 'dark' | 'light' }) => {
-  const { t } = useTranslation('common')
-  const { stats } = useSelector((state: StateType) => state.ui.misc)
-
-  const events = nFormatterSeparated(Number(stats.events))
-  const users = nFormatterSeparated(Number(stats.users))
-  const websites = nFormatterSeparated(Number(stats.projects))
-
-  return (
-    <section className='relative bg-white pb-44 pt-20 dark:bg-slate-900'>
-      <div className='absolute right-0 top-16 z-0'>
-        <BackgroundSvg theme={theme} type='threecircle' />
-      </div>
-      <div className='absolute -left-9 top-52 rotate-90'>
-        <BackgroundSvg theme={theme} type='shapes' />
-      </div>
-      <div className='mx-auto w-full max-w-5xl px-3'>
-        <div className='mx-auto w-full max-w-prose'>
-          <h2 className='text-center text-4xl font-extrabold text-gray-900 dark:text-white md:text-4xl'>
-            {t('main.peopleLoveSwetrix')}
-          </h2>
-          <p className='mx-auto mt-5 max-w-prose text-center text-xl text-gray-600 dark:text-gray-200'>
-            {t('main.whyPeopleLoveSwetrix')}
-          </p>
-        </div>
-        <div className='mt-20 flex flex-col items-center justify-between md:mt-32 md:flex-row'>
-          <div className='text-center'>
-            <ClientOnly fallback={<p className='text-center text-5xl font-extrabold text-indigo-700'>0</p>}>
-              {() => (
-                <p className='text-center text-5xl font-extrabold text-indigo-700'>
-                  {users[0]}
-                  {users[1] && <span className='text-gray-900 dark:text-indigo-200'>{users[1]}+</span>}
-                </p>
-              )}
-            </ClientOnly>
-            <p className='text-lg text-gray-600 dark:text-gray-200'>{t('main.users')}</p>
-          </div>
-          <div className='mx-5 mb-14 mt-16 h-2 w-2 rounded-full bg-gray-800 dark:bg-gray-200 md:mb-0 md:mt-0' />
-          <div className='text-center'>
-            <ClientOnly fallback={<p className='text-center text-5xl font-extrabold text-indigo-700'>0</p>}>
-              {() => (
-                <p className='text-center text-5xl font-extrabold text-indigo-700'>
-                  {websites[0]}
-                  {websites[1] && <span className='text-gray-900 dark:text-indigo-200'>{websites[1]}+</span>}
-                </p>
-              )}
-            </ClientOnly>
-            <p className='text-lg text-gray-600 dark:text-gray-200'>{t('main.websites')}</p>
-          </div>
-          <div className='mx-5 mb-14 mt-16 h-2 w-2 rounded-full bg-gray-800 dark:bg-gray-200 md:mb-0 md:mt-0' />
-          <div className='text-center'>
-            <ClientOnly fallback={<p className='text-center text-5xl font-extrabold text-indigo-700'>0</p>}>
-              {() => (
-                <p className='text-center text-5xl font-extrabold text-indigo-700'>
-                  {events[0]}
-                  {events[1] && <span className='text-gray-900 dark:text-indigo-200'>{events[1]}+</span>}
-                </p>
-              )}
-            </ClientOnly>
-            <p className='text-lg text-gray-600 dark:text-gray-200'>{t('main.pageviews')}</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
 const OpensourceAdvantages = ({ theme }: { theme: 'dark' | 'light' }) => {
   const { t } = useTranslation('common')
 
@@ -353,64 +233,6 @@ const OpensourceAdvantages = ({ theme }: { theme: 'dark' | 'light' }) => {
         </div>
       </div>
     </section>
-  )
-}
-
-const Comparison = () => {
-  const { t } = useTranslation('common')
-
-  return (
-    <div className='overflow-hidden'>
-      <div className='relative isolate mx-auto w-full max-w-7xl'>
-        <div
-          className='absolute inset-x-0 top-1/2 -z-10 -translate-y-1/2 transform-gpu overflow-hidden opacity-30 blur-3xl'
-          aria-hidden='true'
-        >
-          <div
-            className='ml-[max(50%,38rem)] aspect-[1313/771] w-[82.0625rem] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc]'
-            style={{
-              clipPath:
-                'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-            }}
-          />
-        </div>
-        <div
-          className='absolute inset-x-0 top-0 -z-10 flex transform-gpu overflow-hidden pt-8 opacity-25 blur-3xl xl:justify-end'
-          aria-hidden='true'
-        >
-          <div
-            className='ml-[-22rem] aspect-[1313/771] w-[82.0625rem] flex-none origin-top-right rotate-[30deg] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] xl:ml-0 xl:mr-[calc(50%-12rem)]'
-            style={{
-              clipPath:
-                'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-            }}
-          />
-        </div>
-        <section className='relative z-20 px-3'>
-          <h2 className='mx-auto mb-5 mt-20 h-8 w-full max-w-prose text-center text-3xl font-extrabold text-slate-900 dark:text-white sm:text-5xl'>
-            <Trans
-              t={t}
-              i18nKey='main.whyUseSwetrix'
-              components={{
-                // eslint-disable-next-line jsx-a11y/anchor-has-content
-                competitor: (
-                  <TypeAnimation
-                    sequence={PROCESSED_COMPETITORS_LIST}
-                    className='text-slate-500 dark:text-gray-400'
-                    wrapper='span'
-                    speed={10}
-                    repeat={Infinity}
-                    cursor
-                  />
-                ),
-                swetrix: <span className='text-indigo-600 dark:text-indigo-500'>Swetrix</span>,
-              }}
-            />
-          </h2>
-          <ComparisonTable />
-        </section>
-      </div>
-    </div>
   )
 }
 
