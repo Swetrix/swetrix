@@ -10,7 +10,7 @@ import { detectTheme, isAuthenticated } from 'utils/server'
 import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { ClientOnly } from 'remix-utils/client-only'
-import { CheckCircleIcon, StarIcon } from '@heroicons/react/24/solid'
+import { StarIcon } from '@heroicons/react/24/solid'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import _map from 'lodash/map'
 
@@ -37,7 +37,13 @@ import React, { useEffect, useState } from 'react'
 import clsx from 'clsx'
 import { MetricCard, MetricCardSelect } from 'pages/Project/View/components/MetricCards'
 import CCRow from 'pages/Project/View/components/CCRow'
-import { CursorArrowRaysIcon, GlobeAltIcon, NewspaperIcon } from '@heroicons/react/24/outline'
+import {
+  CheckBadgeIcon,
+  CheckIcon,
+  CursorArrowRaysIcon,
+  GlobeAltIcon,
+  NewspaperIcon,
+} from '@heroicons/react/24/outline'
 import { LogoTimeline } from 'components/marketing/LogoTimeline'
 import { MarketplaceCluster } from 'components/marketing/MarketplaceCluster'
 import { ConveyorBelt } from 'components/marketing/ConveyorBelt'
@@ -206,13 +212,13 @@ const OpensourceAdvantages = ({ theme }: { theme: 'dark' | 'light' }) => {
         <h2 className='text-4xl font-extrabold text-slate-900 dark:text-white md:text-4xl'>
           <Trans
             t={t}
-            i18nKey='main.opensourceAdv'
+            i18nKey='main.weAreOpensource'
             components={{
               // eslint-disable-next-line jsx-a11y/anchor-has-content
               url: (
                 <a
                   href={GITHUB_URL}
-                  className='hover:underline'
+                  className='underline decoration-dashed hover:decoration-solid'
                   target='_blank'
                   rel='noopener noreferrer'
                   aria-label='Source code (opens in a new tab)'
@@ -226,7 +232,7 @@ const OpensourceAdvantages = ({ theme }: { theme: 'dark' | 'light' }) => {
           {_map(t('main.opensource', { returnObjects: true }), (item: { desc: string }) => (
             <p key={item.desc} className='mb-3 flex items-center text-sm leading-6 text-slate-700 dark:text-gray-300'>
               <span>
-                <CheckCircleIcon className='mr-4 h-6 w-6 text-indigo-500' />
+                <CheckIcon className='mr-4 h-6 w-6 text-green-500' />
               </span>
               {item.desc}
             </p>

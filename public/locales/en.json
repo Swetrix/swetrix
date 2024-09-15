@@ -300,16 +300,16 @@
     "peopleLoveSwetrix": "People 🥰 Swetrix",
     "whyPeopleLoveSwetrix": "Swetrix is an ethical and powerful service. Hundreds of people have already made the switch from Google Analytics and other alternatives.",
     "coreFeaturesBlock": "Core features",
-    "opensourceAdv": "Advantages of using <url>open source</url>",
+    "weAreOpensource": "We are <url>open source</url>",
     "opensource": [
       {
         "desc": "Install Swetrix on your own servers - the source code is available to everyone."
       },
       {
-        "desc": "Find bugs and suggest improvements - the community will be grateful to you."
+        "desc": "Take part in the development of Swetrix - contribute by suggesting improvements, reporting bugs or developing new features."
       },
       {
-        "desc": "Your data is protected, all the features and fixes are implemented in a matter of days by our developers."
+        "desc": "We are a customer-first company, and transparency is our top priority."
       }
     ],
     "timeToDitchGoogleAnalytics": "It's time <colour>to ditch</colour> Google Analytics.",

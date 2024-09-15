@@ -339,7 +339,7 @@ export const CHROME_EXTENSION_URL: string =
   'https://chrome.google.com/webstore/detail/swetrix/glbeclfdldjldjonfnpnembfkhphmeld'
 export const HAVE_I_BEEN_PWNED_URL: string = 'https://haveibeenpwned.com/passwords'
 export const LINKEDIN_URL: string = 'https://www.linkedin.com/company/swetrix/'
-export const GITHUB_URL: string = 'https://github.com/Swetrix'
+export const GITHUB_URL: string = 'https://github.com/Swetrix/swetrix-api'
 export const TWITTER_URL: string = 'https://twitter.com/intent/user?screen_name=swetrix'
 export const TWITTER_USERNAME: string = '@swetrix'
 export const DISCORD_URL: string = 'https://discord.gg/ZVK8Tw2E8j'
