@@ -265,7 +265,7 @@ const Pricing = ({ authenticated, isBillingPage }: IPricing) => {
                 <h2 className='text-3xl font-extrabold text-gray-900 dark:text-gray-50 sm:text-center'>
                   {t('pricing.title')}
                 </h2>
-                <p className='my-5 max-w-prose text-xl leading-[1.625rem] text-slate-900 dark:text-slate-300 sm:text-center'>
+                <p className='my-5 max-w-prose text-xl leading-relaxed text-slate-900 dark:text-slate-300 sm:text-center'>
                   {t('pricing.adv', {
                     amount: TRIAL_DAYS,
                   })}

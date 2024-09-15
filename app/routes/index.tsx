@@ -129,6 +129,79 @@ const TrustedBy = () => {
   )
 }
 
+const Problem = () => {
+  const { t } = useTranslation('common')
+
+  return (
+    <section className='bg-neutral-600'>
+      <div className='mx-auto max-w-7xl px-8 py-16 text-center md:py-32'>
+        <h2 className='mb-6 text-4xl font-extrabold text-gray-50 sm:text-5xl sm:leading-none md:mb-8'>
+          Most people struggle to make sense of their analytics data
+        </h2>
+        <p className='mx-auto mb-12 max-w-prose text-lg font-bold leading-relaxed text-gray-100 opacity-80 md:mb-20'>
+          Many web analytics solutions are either too complex and overwhelming, or too simple and don't provide enough
+          insight. Business owners don't understand their customers and lose money.
+        </p>
+
+        <div className='flex flex-col items-center justify-center gap-6 text-gray-50 md:flex-row md:items-start'>
+          <div className='flex w-full flex-col items-center justify-center gap-2 md:w-48'>
+            <span className='text-4xl'>🤔</span>
+            <p className='font-bold'>Business owner collects web data</p>
+          </div>
+          <svg
+            className='w-12 shrink-0 fill-gray-200 opacity-70 max-md:-scale-x-100 md:-rotate-90'
+            viewBox='0 0 138 138'
+            fill='none'
+            xmlns='http://www.w3.org/2000/svg'
+          >
+            <g>
+              <path
+                fillRule='evenodd'
+                clipRule='evenodd'
+                d='M72.9644 5.31431C98.8774 43.8211 83.3812 88.048 54.9567 120.735C54.4696 121.298 54.5274 122.151 55.0896 122.639C55.6518 123.126 56.5051 123.068 56.9922 122.506C86.2147 88.9044 101.84 43.3918 75.2003 3.80657C74.7866 3.18904 73.9486 3.02602 73.3287 3.44222C72.7113 3.85613 72.5484 4.69426 72.9644 5.31431Z'
+              />
+              <path
+                fillRule='evenodd'
+                clipRule='evenodd'
+                d='M56.5084 121.007C56.9835 118.685 57.6119 115.777 57.6736 115.445C59.3456 106.446 59.5323 97.67 58.4433 88.5628C58.3558 87.8236 57.6824 87.2948 56.9433 87.3824C56.2042 87.4699 55.6756 88.1435 55.7631 88.8828C56.8219 97.7138 56.6432 106.225 55.0203 114.954C54.926 115.463 53.5093 121.999 53.3221 123.342C53.2427 123.893 53.3688 124.229 53.4061 124.305C53.5887 124.719 53.8782 124.911 54.1287 125.015C54.4123 125.13 54.9267 125.205 55.5376 124.926C56.1758 124.631 57.3434 123.699 57.6571 123.487C62.3995 120.309 67.4155 116.348 72.791 113.634C77.9171 111.045 83.3769 109.588 89.255 111.269C89.9704 111.475 90.7181 111.057 90.9235 110.342C91.1288 109.626 90.7117 108.878 89.9963 108.673C83.424 106.794 77.3049 108.33 71.5763 111.223C66.2328 113.922 61.2322 117.814 56.5084 121.007Z'
+              />
+            </g>
+          </svg>
+          <div className='flex w-full flex-col items-center justify-center gap-2 md:w-48'>
+            <span className='text-4xl'>😕</span>
+            <p className='font-bold'>
+              Overwhelmed by <u>complex dashboards</u> or limited by oversimplified metrics
+            </p>
+          </div>
+          <svg
+            className='w-12 shrink-0 fill-gray-200 opacity-70 md:-rotate-90 md:-scale-x-100'
+            viewBox='0 0 138 138'
+            fill='none'
+            xmlns='http://www.w3.org/2000/svg'
+          >
+            <g>
+              <path
+                fillRule='evenodd'
+                clipRule='evenodd'
+                d='M72.9644 5.31431C98.8774 43.8211 83.3812 88.048 54.9567 120.735C54.4696 121.298 54.5274 122.151 55.0896 122.639C55.6518 123.126 56.5051 123.068 56.9922 122.506C86.2147 88.9044 101.84 43.3918 75.2003 3.80657C74.7866 3.18904 73.9486 3.02602 73.3287 3.44222C72.7113 3.85613 72.5484 4.69426 72.9644 5.31431Z'
+              />
+              <path
+                fillRule='evenodd'
+                clipRule='evenodd'
+                d='M56.5084 121.007C56.9835 118.685 57.6119 115.777 57.6736 115.445C59.3456 106.446 59.5323 97.67 58.4433 88.5628C58.3558 87.8236 57.6824 87.2948 56.9433 87.3824C56.2042 87.4699 55.6756 88.1435 55.7631 88.8828C56.8219 97.7138 56.6432 106.225 55.0203 114.954C54.926 115.463 53.5093 121.999 53.3221 123.342C53.2427 123.893 53.3688 124.229 53.4061 124.305C53.5887 124.719 53.8782 124.911 54.1287 125.015C54.4123 125.13 54.9267 125.205 55.5376 124.926C56.1758 124.631 57.3434 123.699 57.6571 123.487C62.3995 120.309 67.4155 116.348 72.791 113.634C77.9171 111.045 83.3769 109.588 89.255 111.269C89.9704 111.475 90.7181 111.057 90.9235 110.342C91.1288 109.626 90.7117 108.878 89.9963 108.673C83.424 106.794 77.3049 108.33 71.5763 111.223C66.2328 113.922 61.2322 117.814 56.5084 121.007Z'
+              />
+            </g>
+          </svg>
+          <div className='flex w-full flex-col items-center justify-center gap-2 md:w-48'>
+            <span className='text-4xl'>📉</span>
+            <p className='font-bold'>Makes uninformed decisions, missing opportunities for growth</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 interface IFeedback {
   name: string
   title: string
@@ -372,7 +445,7 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
                 <h2 className='mx-auto mb-3 max-w-[300px] whitespace-pre-line text-xl font-semibold text-slate-900 dark:text-white'>
                   {item.name}
                 </h2>
-                <p className='mx-auto max-w-xs leading-[1.625rem] text-gray-600 dark:text-gray-400'>{item.desc}</p>
+                <p className='mx-auto max-w-xs leading-relaxed text-gray-600 dark:text-gray-400'>{item.desc}</p>
               </div>
             </div>
           ),
@@ -811,7 +884,7 @@ const Hero = ({
       <div className='relative mx-auto min-h-[740px] pb-5 pt-10 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
         <div className='relative z-20 flex flex-col content-between justify-center'>
           <div className='relative mx-auto flex flex-col px-4 text-left'>
-            <h1 className='mx-auto max-w-4xl text-center text-4xl font-extrabold tracking-[-0.4px] text-slate-900 dark:text-white sm:text-5xl sm:leading-none md:text-5xl lg:text-6xl xl:text-7xl'>
+            <h1 className='mx-auto max-w-4xl text-center text-4xl font-extrabold tracking-[-0.4px] text-slate-900 dark:text-white sm:text-5xl sm:leading-none lg:text-6xl xl:text-7xl'>
               <Trans
                 t={t}
                 i18nKey='main.slogan'
@@ -821,7 +894,7 @@ const Hero = ({
                 }}
               />
             </h1>
-            <p className='mx-auto mt-4 max-w-4xl text-center text-base leading-[1.625rem] tracking-wide text-slate-900 dark:text-slate-300 sm:text-lg lg:text-xl'>
+            <p className='mx-auto mt-4 max-w-4xl text-center text-base leading-relaxed tracking-wide text-slate-900 dark:text-slate-300 sm:text-lg lg:text-xl'>
               {t('main.description')}
             </p>
             <div className='mt-10 flex flex-col items-center justify-center sm:flex-row'>
@@ -883,7 +956,8 @@ export default function Index() {
       <main className='bg-white dark:bg-slate-900'>
         <Hero theme={theme} ssrTheme={ssrTheme} authenticated={authenticated} />
 
-        <TrustedBy />
+        <Problem />
+        {/* <TrustedBy /> */}
 
         <FeatureBlocks theme={theme} />
 
