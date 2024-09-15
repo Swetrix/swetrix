@@ -446,8 +446,13 @@ const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
 
   return (
     <section className='relative mx-auto max-w-7xl bg-white pb-14 pt-14 dark:bg-slate-900'>
-      <div className='relative mx-auto w-fit text-4xl font-extrabold text-slate-900 sm:text-5xl'>
-        <h2 className='relative z-20 dark:text-white'>Know your customers</h2>
+      <div className='relative mx-auto w-fit'>
+        <div>
+          <p className='mb-4 text-sm font-medium text-slate-800 dark:text-gray-200'>But there is a solution...</p>
+          <h2 className='relative z-20 text-4xl font-extrabold text-slate-900 dark:text-white sm:text-5xl'>
+            Know your customers and users
+          </h2>
+        </div>
       </div>
       <div className='mt-10 grid grid-cols-1 gap-4 sm:mt-16 lg:grid-cols-6 lg:grid-rows-2'>
         <FeatureBlock
