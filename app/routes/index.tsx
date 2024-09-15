@@ -476,8 +476,8 @@ const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
           <div className='h-80 overflow-hidden'>
             <img
               className='object-cover transition-transform group-hover:scale-105'
-              src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
-              alt='Swetrix Analytics dashboard'
+              src={theme === 'dark' ? '/assets/traffic_part_dark.png' : '/assets/traffic_part_light.png'}
+              alt='Swetrix Traffic Dashboard'
             />
           </div>
           <div className='absolute inset-0 bg-gradient-to-t from-white to-50% group-data-[dark]:from-slate-800' />
