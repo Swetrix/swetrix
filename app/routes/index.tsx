@@ -679,8 +679,8 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
               </div>
             </div>
 
-            <div className='absolute inset-0 bg-[linear-gradient(to_bottom_right,transparent,transparent_49%,red_49%,red_51%,transparent_51%,transparent)] opacity-0 transition-opacity delay-300 duration-500 group-hover:opacity-70' />
-            <div className='absolute inset-0 bg-[linear-gradient(to_top_right,transparent,transparent_49%,red_49%,red_51%,transparent_51%,transparent)] opacity-0 transition-opacity delay-300 duration-500 group-hover:opacity-70' />
+            <div className='absolute inset-0 bg-[linear-gradient(to_bottom_right,transparent,transparent_49%,red_49%,red_51%,transparent_51%,transparent)] opacity-0 transition-opacity group-hover:delay-300 duration-500 group-hover:opacity-70' />
+            <div className='absolute inset-0 bg-[linear-gradient(to_top_right,transparent,transparent_49%,red_49%,red_51%,transparent_51%,transparent)] opacity-0 transition-opacity group-hover:delay-300 duration-500 group-hover:opacity-70' />
           </div>
           <div className='absolute inset-0 bg-gradient-to-t from-white to-25% group-data-[dark]:from-slate-800' />
         </FeatureBlock>
