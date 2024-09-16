@@ -26,6 +26,8 @@ const initialState: IInitialState = {
   },
   metainfo: {
     country: null,
+    region: null,
+    city: null,
     symbol: '$',
     code: 'USD',
   },
