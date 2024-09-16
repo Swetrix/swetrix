@@ -81,7 +81,7 @@ const Problem = () => {
   const { t } = useTranslation('common')
 
   return (
-    <section className='bg-neutral-600 dark:bg-slate-700'>
+    <section className='bg-slate-700'>
       <div className='mx-auto max-w-7xl px-8 py-16 text-center md:py-32'>
         <h2 className='mb-6 text-4xl font-extrabold text-gray-50 sm:text-5xl sm:leading-none md:mb-8'>
           {t('main.problem.title')}
@@ -409,7 +409,7 @@ const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
   ]
 
   return (
-    <section className='relative mx-auto max-w-7xl bg-white pb-14 pt-14 dark:bg-slate-900'>
+    <section className='relative mx-auto max-w-7xl bg-white px-6 py-14 dark:bg-slate-900 lg:px-8'>
       <div className='relative mx-auto w-fit'>
         <div>
           <p className='mb-4 text-sm font-medium text-slate-800 dark:text-gray-200'>{t('main.butThereIsASolution')}</p>
@@ -439,7 +439,7 @@ const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
           </div>
           <div className='h-80 overflow-hidden'>
             <img
-              className='object-cover transition-transform group-hover:scale-105'
+              className='object-cover object-left transition-transform group-hover:scale-105 max-md:h-full'
               src={theme === 'dark' ? '/assets/traffic_part_dark.png' : '/assets/traffic_part_light.png'}
               alt='Swetrix Traffic Dashboard'
             />
@@ -466,7 +466,7 @@ const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
           </div>
           <div className='h-80 overflow-hidden'>
             <img
-              className='object-cover transition-transform group-hover:scale-105'
+              className='h-full object-cover object-left transition-transform group-hover:scale-105 max-md:h-full'
               src={theme === 'dark' ? '/assets/performance_part_dark.png' : '/assets/performance_part_light.png'}
               alt='Website speed and performance monitoring'
             />
@@ -637,7 +637,7 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
   const { t } = useTranslation('common')
 
   return (
-    <section className='relative mx-auto max-w-7xl bg-white pb-14 pt-14 dark:bg-slate-900'>
+    <section className='relative mx-auto max-w-7xl bg-white px-6 py-14 dark:bg-slate-900 lg:px-8'>
       <div className='relative mx-auto w-fit'>
         <h2 className='relative z-20 text-4xl font-extrabold text-slate-900 dark:text-white sm:text-5xl'>
           {t('main.coreFeatures')}
@@ -717,7 +717,7 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
           </div>
           <div className='h-80 overflow-hidden'>
             <img
-              className='object-cover transition-transform group-hover:scale-105'
+              className='h-full object-cover object-left transition-transform group-hover:scale-105 max-md:h-full'
               src={theme === 'dark' ? '/assets/funnel_dark.png' : '/assets/funnel_light.png'}
               alt='Website speed and performance monitoring'
             />
@@ -745,7 +745,7 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
           </div>
           <div className='h-80 overflow-hidden'>
             <img
-              className='object-cover transition-transform group-hover:scale-105'
+              className='h-full object-cover object-left transition-transform group-hover:scale-105 max-md:h-full'
               src={theme === 'dark' ? '/assets/custom_events_dark.png' : '/assets/custom_events_light.png'}
               alt='Website speed and performance monitoring'
             />
