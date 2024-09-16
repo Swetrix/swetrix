@@ -52,6 +52,7 @@
   "common": {
     "features": "Características",
     "docs": "Documentos",
+    "bookACall": "Book a call with the founder",
     "getStarted": "Comenzar",
     "billing": "Facturación",
     "pricing": "Precios",

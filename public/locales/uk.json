@@ -52,6 +52,7 @@
   "common": {
     "features": "Функціонал",
     "docs": "Документація",
+    "bookACall": "Book a call with the founder",
     "getStarted": "Реєстрація",
     "billing": "Тарифи",
     "pricing": "Ціни",

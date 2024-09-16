@@ -52,6 +52,7 @@
   "common": {
     "features": "Χαρακτηριστικά",
     "docs": "Έγγραφα",
+    "bookACall": "Book a call with the founder",
     "getStarted": "Πρώτα βήματα",
     "billing": "Χρέωση",
     "pricing": "Τιμολογηση",

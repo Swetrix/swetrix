@@ -117,9 +117,9 @@ const Marketers = () => {
                 className='mx-auto mt-8 flex max-w-max items-center border-0 font-bold text-slate-900 hover:underline dark:text-gray-100'
                 target='_blank'
                 rel='noopener noreferrer'
-                aria-label={`${t('common.bookADemo')} (opens in a new tab)`}
+                aria-label={`${t('common.bookACall')} (opens in a new tab)`}
               >
-                <span className='text-base font-semibold'>{t('common.bookADemo')}</span>
+                <span className='text-base font-semibold'>{t('common.bookACall')}</span>
                 <ArrowRightIcon className='mt-[1px] h-4 w-5' />
               </a>
             </div>
