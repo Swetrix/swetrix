@@ -663,7 +663,7 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
           dark={theme === 'dark'}
         >
           <div className='relative h-80 overflow-hidden px-10 pt-5'>
-            <div className='absolute top-2 rotate-2 rounded-sm bg-slate-200 p-4 opacity-70 transition-opacity group-hover:opacity-90'>
+            <div className='absolute top-2 rotate-2 rounded-sm bg-slate-200 p-4 text-slate-900 opacity-70 transition-opacity group-hover:opacity-90 dark:bg-slate-700 dark:text-gray-50'>
               <p className='mb-4 text-sm'>
                 We use cookies to enhance your experience. By continuing to visit this site you agree to our use of
                 cookies.
@@ -671,7 +671,7 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
               <div className='max-w-max rounded-md bg-slate-800 p-2 text-gray-50'>Accept</div>
             </div>
 
-            <div className='absolute bottom-0 left-0 mb-4 flex max-w-max -rotate-12 gap-2 rounded-sm bg-slate-100 p-4 transition-transform group-hover:-rotate-6'>
+            <div className='absolute bottom-0 left-0 mb-4 flex max-w-max -rotate-12 gap-2 rounded-sm bg-slate-100 p-4 text-slate-900 transition-transform group-hover:-rotate-6 dark:bg-gray-900 dark:text-gray-50'>
               <p className='text-md flex'>
                 <Cookie className='mr-2 text-slate-700' size={24} />
                 Hello there, We use cookies!
@@ -679,16 +679,18 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
               <div className='max-w-max rounded-md bg-slate-800 px-1 text-gray-50'>Okay</div>
             </div>
 
-            <div className='absolute bottom-20 left-12 mb-4 flex max-w-max -rotate-6 rounded-sm bg-slate-100 p-4 transition-transform group-hover:scale-95'>
+            <div className='absolute bottom-20 left-12 mb-4 flex max-w-max -rotate-6 rounded-sm bg-slate-100 p-4 text-slate-900 transition-transform group-hover:scale-95 dark:bg-gray-800 dark:text-gray-50'>
               <p className='text-md flex max-w-[40ch]'>
                 This website uses cookies to ensure you get the best experience on our website
               </p>
             </div>
 
-            <div className='absolute bottom-10 right-0 rotate-12 rounded-md bg-gray-100 p-2 opacity-90 transition-transform group-hover:rotate-3 group-hover:scale-110'>
+            <div className='absolute bottom-10 right-0 rotate-12 rounded-md bg-gray-100 p-2 text-slate-900 opacity-90 transition-transform group-hover:rotate-3 group-hover:scale-110 dark:bg-gray-900'>
               <p className='text-md flex'>
-                <Cookie className='mr-2 text-slate-700' size={24} />
-                <span className='max-w-[35ch]'>Please accept our cookies to continue using our website.</span>
+                <Cookie className='mr-2 text-slate-700 dark:text-gray-100' size={24} />
+                <span className='max-w-[35ch] dark:text-gray-50'>
+                  Please accept our cookies to continue using our website.
+                </span>
               </p>
               <div className='mt-2 flex gap-2'>
                 <div className='max-w-max rounded-md bg-green-700/80 px-1 text-gray-50'>Okay</div>
