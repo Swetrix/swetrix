@@ -478,7 +478,7 @@ const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
           </div>
           <div className='h-80 overflow-hidden'>
             <img
-              className='h-full object-cover object-left transition-transform group-hover:scale-105 max-md:h-full'
+              className='object-cover object-left transition-transform group-hover:scale-105 max-md:h-full'
               src={theme === 'dark' ? '/assets/performance_part_dark.png' : '/assets/performance_part_light.png'}
               alt='Website speed and performance monitoring'
             />
@@ -729,7 +729,7 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
           </div>
           <div className='h-80 overflow-hidden'>
             <img
-              className='h-full object-cover object-left transition-transform group-hover:scale-105 max-md:h-full'
+              className='object-cover object-left transition-transform group-hover:scale-105 max-md:h-full'
               src={theme === 'dark' ? '/assets/funnel_dark.png' : '/assets/funnel_light.png'}
               alt='Website speed and performance monitoring'
             />
@@ -757,7 +757,7 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
           </div>
           <div className='h-80 overflow-hidden'>
             <img
-              className='h-full object-cover object-left transition-transform group-hover:scale-105 max-md:h-full'
+              className='object-cover object-left transition-transform group-hover:scale-105 max-md:h-full'
               src={theme === 'dark' ? '/assets/custom_events_dark.png' : '/assets/custom_events_light.png'}
               alt='Website speed and performance monitoring'
             />
