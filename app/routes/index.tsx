@@ -164,7 +164,7 @@ interface IFeedback {
 }
 
 const Feedback = ({ name, title, feedback, logoUrl, photoUrl }: IFeedback) => (
-  <section className='relative isolate bg-white px-6 py-24 dark:bg-slate-900 sm:py-32 lg:px-8'>
+  <section className='relative isolate z-10 bg-white px-6 py-24 dark:bg-slate-900 sm:py-32 lg:px-8'>
     <div className='absolute inset-0 -z-10 bg-[radial-gradient(45rem_50rem_at_top,theme(colors.indigo.100),white)] opacity-20 blur-3xl dark:bg-[radial-gradient(45rem_50rem_at_top,theme(colors.indigo.400),theme(colors.slate.900))]' />
     <div className='absolute inset-y-0 right-1/2 -z-10 mr-16 w-[200%] origin-bottom-left skew-x-[-30deg] border-r-2 border-slate-900/10 bg-white dark:border-slate-50/50 dark:bg-slate-900 sm:mr-28 lg:mr-0 xl:mr-16 xl:origin-center' />
     <div className='mx-auto max-w-2xl lg:max-w-4xl'>
