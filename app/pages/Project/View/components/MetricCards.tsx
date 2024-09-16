@@ -21,6 +21,7 @@ interface IMetricCard {
   type?: 'percent' | 'string'
   valueMapper?: (value: any, type: 'main' | 'badge') => any
   classes?: {
+    container?: string
     value?: string
     label?: string
   }
@@ -71,7 +72,7 @@ export const MetricCard: React.FC<IMetricCard> = ({
   valueMapper,
   classes,
 }) => (
-  <div className='flex flex-col'>
+  <div className={cx('flex flex-col', classes?.container)}>
     <div className={cx('whitespace-nowrap text-4xl font-bold text-slate-900 dark:text-gray-50', classes?.value)}>
       {valueMapper ? valueMapper(value, 'main') : value}
     </div>
@@ -100,6 +101,7 @@ interface IMetricCardSelect {
   classes?: {
     value?: string
     label?: string
+    container?: string
   }
 }
 
@@ -113,7 +115,7 @@ export const MetricCardSelect: React.FC<IMetricCardSelect> = ({ values, valueMap
   }
 
   return (
-    <div className='flex flex-col'>
+    <div className={cx('flex flex-col', classes?.container)}>
       <div className={cx('whitespace-nowrap text-4xl font-bold text-slate-900 dark:text-gray-50', classes?.value)}>
         {valueMapper ? valueMapper(values[selected], selected) : values[selected].value}
       </div>

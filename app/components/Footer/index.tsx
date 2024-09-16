@@ -22,6 +22,7 @@ import {
   CAPTCHA_URL,
 } from 'redux/constants'
 import routesPath from 'utils/routes'
+import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/solid'
 
 const navigation = {
   company: [
@@ -350,6 +351,15 @@ const Footer = ({ minimal, authenticated, showDBIPMessage }: IFooter): JSX.Eleme
             <p className='pt-10 text-base text-gray-300'>
               &copy; {year} {t('footer.copy')}
             </p>
+            <a
+              href='https://u24.gov.ua/'
+              target='_blank'
+              rel='noreferrer noopener'
+              className='block max-w-max items-center border-b-2 border-transparent text-base text-gray-300 hover:border-gray-300'
+            >
+              {t('main.ukrSupport')}
+              <ArrowTopRightOnSquareIcon className='mb-1 ml-1 inline size-4' />
+            </a>
           </div>
           <div className='mt-12 xl:mt-0'>
             <div className='grid grid-cols-2 gap-8 md:grid-cols-3'>

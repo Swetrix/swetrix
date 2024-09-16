@@ -2,51 +2,45 @@ import type { LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData, Link } from '@remix-run/react'
 import { json, redirect } from '@remix-run/node'
 import type { SitemapFunction } from 'remix-sitemap'
+import { UAParser } from 'ua-parser-js'
+import { motion } from 'framer-motion'
 
 import { detectTheme, isAuthenticated } from 'utils/server'
 
 import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { ClientOnly } from 'remix-utils/client-only'
-import { ArrowTopRightOnSquareIcon, CheckCircleIcon, ChevronRightIcon } from '@heroicons/react/24/solid'
-import {
-  CodeBracketIcon,
-  PuzzlePieceIcon,
-  ShareIcon,
-  ArrowsPointingOutIcon,
-  LightBulbIcon,
-  ArrowTrendingUpIcon,
-  ArrowRightIcon,
-} from '@heroicons/react/20/solid'
-import { TypeAnimation } from 'react-type-animation'
+import { StarIcon } from '@heroicons/react/24/solid'
+import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import _map from 'lodash/map'
-import _isEmpty from 'lodash/isEmpty'
 
 import routesPath from 'utils/routes'
 import { getAccessToken } from 'utils/accessToken'
-import { nFormatterSeparated } from 'utils/generic'
-import { GITHUB_URL, MARKETPLACE_URL, LIVE_DEMO_URL, BOOK_A_CALL_URL, isBrowser, isSelfhosted } from 'redux/constants'
+import { getStringFromTime, getTimeFromSeconds } from 'utils/generic'
+import {
+  GITHUB_URL,
+  LIVE_DEMO_URL,
+  isBrowser,
+  isSelfhosted,
+  OS_LOGO_MAP,
+  OS_LOGO_MAP_DARK,
+  BROWSER_LOGO_MAP,
+} from 'redux/constants'
 import { StateType } from 'redux/store/index'
-import BackgroundSvg from 'ui/icons/BackgroundSvg'
-import Webflow from 'ui/icons/Webflow'
-import NextJS from 'ui/icons/NextJS'
-import NuxtJS from 'ui/icons/NuxtJS'
-import Angular from 'ui/icons/Angular'
-import ReactSVG from 'ui/icons/ReactSVG'
-import Telegram from 'ui/icons/Telegram'
-import Wordpress from 'ui/icons/Wordpress'
-import Cloudflare from 'ui/icons/Cloudflare'
-import Notion from 'ui/icons/Notion'
-import Ghost from 'ui/icons/Ghost'
-import Gatsby from 'ui/icons/Gatsby'
-import Wix from 'ui/icons/Wix'
+import { Cookie } from 'lucide-react'
 
 import Header from 'components/Header'
-import SignUp from 'pages/Auth/Signup/BasicSignup'
 import Pricing from 'components/marketing/Pricing'
-import { PROCESSED_COMPETITORS_LIST, ComparisonTable } from 'components/marketing/ComparisonTable'
 import { DitchGoogle } from 'components/marketing/DitchGoogle'
 import { Lines } from 'components/marketing/Lines'
+import React, { useEffect, useState } from 'react'
+import clsx from 'clsx'
+import { MetricCard, MetricCardSelect } from 'pages/Project/View/components/MetricCards'
+import CCRow from 'pages/Project/View/components/CCRow'
+import { CheckIcon, CursorArrowRaysIcon, GlobeAltIcon, NewspaperIcon } from '@heroicons/react/24/outline'
+import { LogoTimeline } from 'components/marketing/LogoTimeline'
+import { MarketplaceCluster } from 'components/marketing/MarketplaceCluster'
+import { ConveyorBelt } from 'components/marketing/ConveyorBelt'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 1,
@@ -61,104 +55,127 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const [theme] = detectTheme(request)
   const isAuth = isAuthenticated(request)
 
-  return json({ theme, isAuth })
+  const userAgent = request.headers.get('user-agent')
+
+  let deviceInfo: {
+    browser?: string | null
+    os?: string | null
+  } = {
+    browser: 'Chrome',
+    os: 'Windows',
+  }
+
+  if (userAgent) {
+    const parser = new UAParser(userAgent)
+
+    deviceInfo = {
+      browser: parser.getBrowser().name || null,
+      os: parser.getOS().name || null,
+    }
+  }
+
+  return json({ theme, isAuth, deviceInfo })
 }
 
-const M_FEATURES_ICONS = [
-  <ArrowsPointingOutIcon className='h-5 w-5' key='ArrowsPointingOutIcon' />,
-  <CodeBracketIcon className='h-5 w-5' key='CodeBracketIcon' />,
-  <PuzzlePieceIcon className='h-5 w-5' key='PuzzlePieceIcon' />,
-  <ArrowTrendingUpIcon className='h-5 w-5' key='ArrowTrendingUpIcon' />,
-  <LightBulbIcon className='h-5 w-5' key='LightBulbIcon' />,
-  <ShareIcon className='h-5 w-5' key='ShareIcon' />,
-]
-
-const TrustedBy = () => {
+const Problem = () => {
   const { t } = useTranslation('common')
 
   return (
-    <div className='bg-white py-16 dark:bg-slate-900'>
-      <div className='mx-auto max-w-7xl px-6 lg:px-8'>
-        <h2 className='text-center text-lg font-semibold leading-8 text-gray-900 dark:text-gray-50'>
-          {t('main.trustedBy')}
+    <section className='bg-slate-700'>
+      <div className='mx-auto max-w-7xl px-8 py-16 text-center md:py-32'>
+        <h2 className='mb-6 text-4xl font-extrabold text-gray-50 sm:text-5xl sm:leading-none md:mb-8'>
+          {t('main.problem.title')}
         </h2>
-        <div className='mx-auto mt-10 grid max-w-lg grid-cols-4 items-center gap-x-8 gap-y-10 sm:max-w-xl sm:grid-cols-6 sm:gap-x-10 lg:mx-0 lg:max-w-none lg:grid-cols-5'>
-          <img
-            alt='STELP'
-            src='/assets/users/stelp.png'
-            width={158}
-            height={48}
-            className='col-span-2 max-h-12 w-full object-contain dark:invert lg:col-span-1'
-          />
-          <img
-            alt='Datakyu'
-            src='/assets/users/datakyu.svg'
-            width={158}
-            height={48}
-            className='col-span-2 max-h-12 w-full object-contain dark:invert lg:col-span-1'
-          />
-          <img
-            alt='Cardano Foundation'
-            src='/assets/users/cardano-foundation.svg'
-            width={158}
-            height={48}
-            className='col-span-2 max-h-12 w-full object-contain dark:invert lg:col-span-1'
-          />
-          <img
-            alt='Casterlabs'
-            src='/assets/users/casterlabs.svg'
-            width={158}
-            height={48}
-            className='col-span-2 max-h-12 w-full object-contain dark:invert sm:col-start-2 lg:col-span-1'
-          />
-          <img
-            alt='Phalcode'
-            src='/assets/users/phalcode.svg'
-            width={158}
-            height={48}
-            className='col-span-2 col-start-2 max-h-12 w-full object-contain dark:invert sm:col-start-auto lg:col-span-1'
-          />
+        <p className='mx-auto mb-12 max-w-prose text-lg font-bold leading-relaxed text-gray-100 opacity-80 md:mb-20'>
+          {t('main.problem.description')}
+        </p>
+
+        <div className='flex flex-col items-center justify-center gap-6 text-gray-50 md:flex-row md:items-start'>
+          <div className='flex w-full flex-col items-center justify-center gap-2 md:w-48'>
+            <span className='text-4xl'>🤔</span>
+            <p className='font-bold'>{t('main.problem.step1')}</p>
+          </div>
+          <svg
+            className='w-12 shrink-0 fill-gray-200 opacity-70 max-md:-scale-x-100 md:-rotate-90'
+            viewBox='0 0 138 138'
+            fill='none'
+            xmlns='http://www.w3.org/2000/svg'
+          >
+            <g>
+              <path
+                fillRule='evenodd'
+                clipRule='evenodd'
+                d='M72.9644 5.31431C98.8774 43.8211 83.3812 88.048 54.9567 120.735C54.4696 121.298 54.5274 122.151 55.0896 122.639C55.6518 123.126 56.5051 123.068 56.9922 122.506C86.2147 88.9044 101.84 43.3918 75.2003 3.80657C74.7866 3.18904 73.9486 3.02602 73.3287 3.44222C72.7113 3.85613 72.5484 4.69426 72.9644 5.31431Z'
+              />
+              <path
+                fillRule='evenodd'
+                clipRule='evenodd'
+                d='M56.5084 121.007C56.9835 118.685 57.6119 115.777 57.6736 115.445C59.3456 106.446 59.5323 97.67 58.4433 88.5628C58.3558 87.8236 57.6824 87.2948 56.9433 87.3824C56.2042 87.4699 55.6756 88.1435 55.7631 88.8828C56.8219 97.7138 56.6432 106.225 55.0203 114.954C54.926 115.463 53.5093 121.999 53.3221 123.342C53.2427 123.893 53.3688 124.229 53.4061 124.305C53.5887 124.719 53.8782 124.911 54.1287 125.015C54.4123 125.13 54.9267 125.205 55.5376 124.926C56.1758 124.631 57.3434 123.699 57.6571 123.487C62.3995 120.309 67.4155 116.348 72.791 113.634C77.9171 111.045 83.3769 109.588 89.255 111.269C89.9704 111.475 90.7181 111.057 90.9235 110.342C91.1288 109.626 90.7117 108.878 89.9963 108.673C83.424 106.794 77.3049 108.33 71.5763 111.223C66.2328 113.922 61.2322 117.814 56.5084 121.007Z'
+              />
+            </g>
+          </svg>
+          <div className='flex w-full flex-col items-center justify-center gap-2 md:w-48'>
+            <span className='text-4xl'>😕</span>
+            <p className='font-bold'>
+              <Trans
+                t={t}
+                i18nKey='main.problem.step2'
+                components={{
+                  u: <u />,
+                }}
+              />
+            </p>
+          </div>
+          <svg
+            className='w-12 shrink-0 fill-gray-200 opacity-70 md:-rotate-90 md:-scale-x-100'
+            viewBox='0 0 138 138'
+            fill='none'
+            xmlns='http://www.w3.org/2000/svg'
+          >
+            <g>
+              <path
+                fillRule='evenodd'
+                clipRule='evenodd'
+                d='M72.9644 5.31431C98.8774 43.8211 83.3812 88.048 54.9567 120.735C54.4696 121.298 54.5274 122.151 55.0896 122.639C55.6518 123.126 56.5051 123.068 56.9922 122.506C86.2147 88.9044 101.84 43.3918 75.2003 3.80657C74.7866 3.18904 73.9486 3.02602 73.3287 3.44222C72.7113 3.85613 72.5484 4.69426 72.9644 5.31431Z'
+              />
+              <path
+                fillRule='evenodd'
+                clipRule='evenodd'
+                d='M56.5084 121.007C56.9835 118.685 57.6119 115.777 57.6736 115.445C59.3456 106.446 59.5323 97.67 58.4433 88.5628C58.3558 87.8236 57.6824 87.2948 56.9433 87.3824C56.2042 87.4699 55.6756 88.1435 55.7631 88.8828C56.8219 97.7138 56.6432 106.225 55.0203 114.954C54.926 115.463 53.5093 121.999 53.3221 123.342C53.2427 123.893 53.3688 124.229 53.4061 124.305C53.5887 124.719 53.8782 124.911 54.1287 125.015C54.4123 125.13 54.9267 125.205 55.5376 124.926C56.1758 124.631 57.3434 123.699 57.6571 123.487C62.3995 120.309 67.4155 116.348 72.791 113.634C77.9171 111.045 83.3769 109.588 89.255 111.269C89.9704 111.475 90.7181 111.057 90.9235 110.342C91.1288 109.626 90.7117 108.878 89.9963 108.673C83.424 106.794 77.3049 108.33 71.5763 111.223C66.2328 113.922 61.2322 117.814 56.5084 121.007Z'
+              />
+            </g>
+          </svg>
+          <div className='flex w-full flex-col items-center justify-center gap-2 md:w-48'>
+            <span className='text-4xl'>📉</span>
+            <p className='font-bold'>{t('main.problem.step3')}</p>
+          </div>
         </div>
       </div>
-    </div>
-  )
-}
-
-const SupportUkraine = () => {
-  const { t } = useTranslation('common')
-
-  return (
-    <div className='flex items-center justify-center px-2 py-2'>
-      <a
-        href='https://u24.gov.ua/'
-        target='_blank'
-        rel='noreferrer noopener'
-        className='border-b-2 border-transparent text-center text-slate-900 hover:border-slate-900 dark:text-white dark:hover:border-white'
-      >
-        {t('main.ukrSupport')}
-      </a>
-      <ArrowTopRightOnSquareIcon className='ml-1 hidden h-4 w-4 text-slate-800 dark:text-white md:block' />
-    </div>
+    </section>
   )
 }
 
 interface IFeedback {
   name: string
   title: string
-  feedback: string
+  feedback: React.ReactNode
   logoUrl: string
   photoUrl: string
 }
 
 const Feedback = ({ name, title, feedback, logoUrl, photoUrl }: IFeedback) => (
-  <section className='relative isolate bg-white px-6 py-24 dark:bg-slate-900 sm:py-32 lg:px-8'>
+  <section className='relative isolate z-10 bg-white px-6 py-24 dark:bg-slate-900 sm:py-32 lg:px-8'>
     <div className='absolute inset-0 -z-10 bg-[radial-gradient(45rem_50rem_at_top,theme(colors.indigo.100),white)] opacity-20 blur-3xl dark:bg-[radial-gradient(45rem_50rem_at_top,theme(colors.indigo.400),theme(colors.slate.900))]' />
     <div className='absolute inset-y-0 right-1/2 -z-10 mr-16 w-[200%] origin-bottom-left skew-x-[-30deg] border-r-2 border-slate-900/10 bg-white dark:border-slate-50/50 dark:bg-slate-900 sm:mr-28 lg:mr-0 xl:mr-16 xl:origin-center' />
     <div className='mx-auto max-w-2xl lg:max-w-4xl'>
       <img alt='' src={logoUrl} className='mx-auto h-12' />
       <figure className='mt-10'>
         <blockquote className='text-center text-xl font-semibold leading-8 text-gray-900 dark:text-gray-50 sm:text-2xl sm:leading-9'>
-          <p>{`“${feedback}”`}</p>
+          <p>
+            <span>“</span>
+            {feedback}
+            <span>”</span>
+          </p>
         </blockquote>
         <figcaption className='mt-10'>
           <img alt='' src={photoUrl} className='mx-auto h-10 w-10 rounded-full' />
@@ -175,172 +192,13 @@ const Feedback = ({ name, title, feedback, logoUrl, photoUrl }: IFeedback) => (
   </section>
 )
 
-const PeopleLoveSwetrix = ({ theme }: { theme: 'dark' | 'light' }) => {
-  const { t } = useTranslation('common')
-  const { stats } = useSelector((state: StateType) => state.ui.misc)
-
-  const events = nFormatterSeparated(Number(stats.events))
-  const users = nFormatterSeparated(Number(stats.users))
-  const websites = nFormatterSeparated(Number(stats.projects))
-
-  return (
-    <section className='relative bg-white pb-44 pt-20 dark:bg-slate-900'>
-      <div className='absolute right-0 top-16 z-0'>
-        <BackgroundSvg theme={theme} type='threecircle' />
-      </div>
-      <div className='absolute -left-9 top-52 rotate-90'>
-        <BackgroundSvg theme={theme} type='shapes' />
-      </div>
-      <div className='mx-auto w-full max-w-5xl px-3'>
-        <div className='mx-auto w-full max-w-prose'>
-          <h2 className='text-center text-4xl font-extrabold text-gray-900 dark:text-white md:text-4xl'>
-            {t('main.peopleLoveSwetrix')}
-          </h2>
-          <p className='mx-auto mt-5 max-w-prose text-center text-xl text-gray-600 dark:text-gray-200'>
-            {t('main.whyPeopleLoveSwetrix')}
-          </p>
-        </div>
-        <div className='mt-20 flex flex-col items-center justify-between md:mt-32 md:flex-row'>
-          <div className='text-center'>
-            <ClientOnly fallback={<p className='text-center text-5xl font-extrabold text-indigo-700'>0</p>}>
-              {() => (
-                <p className='text-center text-5xl font-extrabold text-indigo-700'>
-                  {users[0]}
-                  {users[1] && <span className='text-gray-900 dark:text-indigo-200'>{users[1]}+</span>}
-                </p>
-              )}
-            </ClientOnly>
-            <p className='text-lg text-gray-600 dark:text-gray-200'>{t('main.users')}</p>
-          </div>
-          <div className='mx-5 mb-14 mt-16 h-2 w-2 rounded-full bg-gray-800 dark:bg-gray-200 md:mb-0 md:mt-0' />
-          <div className='text-center'>
-            <ClientOnly fallback={<p className='text-center text-5xl font-extrabold text-indigo-700'>0</p>}>
-              {() => (
-                <p className='text-center text-5xl font-extrabold text-indigo-700'>
-                  {websites[0]}
-                  {websites[1] && <span className='text-gray-900 dark:text-indigo-200'>{websites[1]}+</span>}
-                </p>
-              )}
-            </ClientOnly>
-            <p className='text-lg text-gray-600 dark:text-gray-200'>{t('main.websites')}</p>
-          </div>
-          <div className='mx-5 mb-14 mt-16 h-2 w-2 rounded-full bg-gray-800 dark:bg-gray-200 md:mb-0 md:mt-0' />
-          <div className='text-center'>
-            <ClientOnly fallback={<p className='text-center text-5xl font-extrabold text-indigo-700'>0</p>}>
-              {() => (
-                <p className='text-center text-5xl font-extrabold text-indigo-700'>
-                  {events[0]}
-                  {events[1] && <span className='text-gray-900 dark:text-indigo-200'>{events[1]}+</span>}
-                </p>
-              )}
-            </ClientOnly>
-            <p className='text-lg text-gray-600 dark:text-gray-200'>{t('main.pageviews')}</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
+interface FeedbackHighlightProps {
+  children: React.ReactNode
 }
 
-const FeatureGallery = ({ theme }: { theme: 'dark' | 'light' }) => {
-  const { t } = useTranslation('common')
-
-  return (
-    <div className='space-y-16 bg-white px-4 py-16 dark:bg-slate-900'>
-      <section
-        id='core-analytics'
-        className='m-auto flex max-w-7xl flex-col-reverse items-center md:flex-row md:items-start md:justify-between'
-      >
-        <picture>
-          <source
-            srcSet={theme === 'dark' ? '/assets/CoreFeaturesDark.webp' : '/assets/CoreFeaturesLight.webp'}
-            type='image/webp'
-          />
-          <img
-            src={theme === 'dark' ? '/assets/CoreFeaturesDark.png' : '/assets/CoreFeaturesLight.png'}
-            className='mt-3 md:mr-3 md:mt-0 md:w-[450px] lg:w-[640px]'
-            width='450'
-            height='320'
-            alt='Core Analytics Features'
-          />
-        </picture>
-        <div className='max-w-lg md:ml-5'>
-          <h2 className='text-4xl font-extrabold text-slate-900 dark:text-white'>{t('main.coreFeatures.title')}</h2>
-          <p className='mb-6 mt-6 text-gray-600 dark:text-gray-400'>{t('main.coreFeatures.desc')}</p>
-          <a
-            href={LIVE_DEMO_URL}
-            className='flex max-w-max items-center border-0 font-bold text-indigo-700 hover:underline dark:text-indigo-400'
-            target='_blank'
-            rel='noopener noreferrer'
-            aria-label={`${t('common.liveDemo')} (opens in a new tab)`}
-          >
-            {t('common.liveDemo')}
-            <ArrowRightIcon className='mt-[1px] h-4 w-5' />
-          </a>
-        </div>
-      </section>
-      <section className='m-auto flex max-w-7xl flex-col items-center md:flex-row md:justify-between'>
-        <div className='max-w-[516px]'>
-          <h2 className='text-4xl font-extrabold text-slate-900 dark:text-white'>{t('main.marketplace.title')}</h2>
-          <p className='mb-3 mt-6 text-gray-600 dark:text-gray-400'>{t('main.marketplace.desc1')}</p>
-          <p className='mb-6 text-gray-600 dark:text-gray-400'>{t('main.marketplace.desc2')}</p>
-          <a
-            href={MARKETPLACE_URL}
-            className='flex max-w-max items-center border-0 font-bold text-indigo-700 hover:underline dark:text-indigo-400'
-            target='_blank'
-            rel='noopener noreferrer'
-            aria-label='Swetrix Marketplace (opens in a new tab)'
-          >
-            {t('main.visitAddons')}
-            <ArrowRightIcon className='mt-[1px] h-4 w-5' />
-          </a>
-        </div>
-        <img
-          src={
-            theme === 'dark' ? '/assets/marketplace_extensions_dark.png' : '/assets/marketplace_extensions_light.png'
-          }
-          className='mt-3 md:mr-3 md:mt-0 md:w-[450px] lg:w-[640px]'
-          width='450'
-          height='320'
-          alt='Marketplace illustration'
-        />
-      </section>
-      <section className='m-auto flex max-w-7xl flex-col-reverse items-center md:flex-row md:items-start md:justify-between'>
-        <img
-          className='mt-3 md:mr-3 md:mt-0 md:w-[360px] lg:w-[512px]'
-          width='360'
-          height='210'
-          src='/assets/gdpr.svg'
-          alt='GDPR compliant'
-        />
-        <div className='w-full max-w-[516px] pb-16 md:min-w-[370px] md:pb-0 md:pt-8'>
-          <h2 className='mb-6 text-4xl font-extrabold text-slate-900 dark:text-white'>{t('main.privacy.title')}</h2>
-          {_map(t('main.privacy.list', { returnObjects: true }), (item: { label: string; desc: string }) => (
-            <div key={item.label} className='mb-4 flex items-center'>
-              <div className='mr-3'>
-                <CheckCircleIcon className='h-[24px] w-[24px] fill-indigo-500' />
-              </div>
-              <p>
-                <span className='dark:text-white'>{item.label}</span>
-                <span className='ml-1 mr-1 dark:text-white'>-</span>
-                <span className='text-gray-600 dark:text-gray-400'>{item.desc}</span>
-              </p>
-            </div>
-          ))}
-          {/* mt-7 because mb-4 in upper component + mt-7 = 11. mb-11 is used for spacing the links in other sections. */}
-          <Link
-            to={routesPath.privacy}
-            className='mt-7 flex max-w-max items-center border-0 font-bold text-indigo-700 hover:underline dark:text-indigo-400'
-            aria-label={t('footer.pp')}
-          >
-            {t('main.dataProtection')}
-            <ArrowRightIcon className='mt-[1px] h-4 w-5' />
-          </Link>
-        </div>
-      </section>
-    </div>
-  )
-}
+const FeedbackHighlight = ({ children }: FeedbackHighlightProps) => (
+  <span className='bg-yellow-100/80 dark:bg-yellow-400/40'>{children}</span>
+)
 
 const OpensourceAdvantages = ({ theme }: { theme: 'dark' | 'light' }) => {
   const { t } = useTranslation('common')
@@ -365,13 +223,13 @@ const OpensourceAdvantages = ({ theme }: { theme: 'dark' | 'light' }) => {
         <h2 className='text-4xl font-extrabold text-slate-900 dark:text-white md:text-4xl'>
           <Trans
             t={t}
-            i18nKey='main.opensourceAdv'
+            i18nKey='main.weAreOpensource'
             components={{
               // eslint-disable-next-line jsx-a11y/anchor-has-content
               url: (
                 <a
                   href={GITHUB_URL}
-                  className='hover:underline'
+                  className='underline decoration-dashed hover:decoration-solid'
                   target='_blank'
                   rel='noopener noreferrer'
                   aria-label='Source code (opens in a new tab)'
@@ -385,7 +243,7 @@ const OpensourceAdvantages = ({ theme }: { theme: 'dark' | 'light' }) => {
           {_map(t('main.opensource', { returnObjects: true }), (item: { desc: string }) => (
             <p key={item.desc} className='mb-3 flex items-center text-sm leading-6 text-slate-700 dark:text-gray-300'>
               <span>
-                <CheckCircleIcon className='mr-4 h-6 w-6 text-indigo-500' />
+                <CheckIcon className='mr-4 h-6 w-6 text-green-500' />
               </span>
               {item.desc}
             </p>
@@ -396,115 +254,394 @@ const OpensourceAdvantages = ({ theme }: { theme: 'dark' | 'light' }) => {
   )
 }
 
-const Comparison = () => {
+const REVIEWERS = [
+  {
+    name: 'Tomasz',
+    image: '/assets/small-testimonials/tomasz.png',
+  },
+  {
+    name: 'Alex',
+    image: '/assets/small-testimonials/alex.jpg',
+  },
+  {
+    name: 'Artur',
+    image: '/assets/small-testimonials/artur.jpg',
+  },
+  {
+    name: 'Alper',
+    image: '/assets/small-testimonials/alper.jpg',
+  },
+  {
+    name: 'Andrii',
+    image: '/assets/small-testimonials/andrii.jpg',
+  },
+]
+
+const Testimonials = () => {
   const { t } = useTranslation('common')
+  const { stats } = useSelector((state: StateType) => state.ui.misc)
 
   return (
-    <div className='overflow-hidden'>
-      <div className='relative isolate mx-auto w-full max-w-7xl'>
-        <div
-          className='absolute inset-x-0 top-1/2 -z-10 -translate-y-1/2 transform-gpu overflow-hidden opacity-30 blur-3xl'
-          aria-hidden='true'
-        >
+    <div className='mt-8 flex flex-col items-center justify-center gap-3 md:flex-row'>
+      <div className='flex -space-x-5 overflow-hidden'>
+        {_map(REVIEWERS, ({ name, image }) => (
           <div
-            className='ml-[max(50%,38rem)] aspect-[1313/771] w-[82.0625rem] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc]'
-            style={{
-              clipPath:
-                'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-            }}
-          />
+            key={`${name}${image}`}
+            className='relative inline-flex size-12 overflow-hidden rounded-full border-4 border-gray-50 dark:border-slate-900'
+          >
+            <img alt={name} width='400' height='400' style={{ color: 'transparent' }} src={image} />
+          </div>
+        ))}
+      </div>
+      <div className='flex flex-col items-center justify-center gap-1 md:items-start'>
+        <div className='relative inline-flex'>
+          <StarIcon className='size-5 text-yellow-500' />
+          <StarIcon className='size-5 text-yellow-500' />
+          <StarIcon className='size-5 text-yellow-500' />
+          <StarIcon className='size-5 text-yellow-500' />
+          <StarIcon className='size-5 text-yellow-500' />
         </div>
-        <div
-          className='absolute inset-x-0 top-0 -z-10 flex transform-gpu overflow-hidden pt-8 opacity-25 blur-3xl xl:justify-end'
-          aria-hidden='true'
-        >
-          <div
-            className='ml-[-22rem] aspect-[1313/771] w-[82.0625rem] flex-none origin-top-right rotate-[30deg] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] xl:ml-0 xl:mr-[calc(50%-12rem)]'
-            style={{
-              clipPath:
-                'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-            }}
-          />
+        <div className='text-base text-gray-900/70 dark:text-gray-200'>
+          <ClientOnly
+            fallback={
+              <Trans
+                values={{
+                  amount: '> 1000',
+                }}
+                t={t}
+                i18nKey='main.understandTheirUsers'
+              >
+                <span className='font-semibold text-gray-900 dark:text-gray-50' />
+              </Trans>
+            }
+          >
+            {() => (
+              <Trans
+                values={{
+                  // TODO: Move this stuff to loader so there won't be flickering
+                  amount: stats.users || '> 1000',
+                }}
+                t={t}
+                i18nKey='main.understandTheirUsers'
+              >
+                <span className='font-semibold text-gray-900 dark:text-gray-50' />
+              </Trans>
+            )}
+          </ClientOnly>
         </div>
-        <section className='relative z-20 px-3'>
-          <h2 className='mx-auto mb-5 mt-20 h-8 w-full max-w-prose text-center text-3xl font-extrabold text-slate-900 dark:text-white sm:text-5xl'>
-            <Trans
-              t={t}
-              i18nKey='main.whyUseSwetrix'
-              components={{
-                // eslint-disable-next-line jsx-a11y/anchor-has-content
-                competitor: (
-                  <TypeAnimation
-                    sequence={PROCESSED_COMPETITORS_LIST}
-                    className='text-slate-500 dark:text-gray-400'
-                    wrapper='span'
-                    speed={10}
-                    repeat={Infinity}
-                    cursor
-                  />
-                ),
-                swetrix: <span className='text-indigo-600 dark:text-indigo-500'>Swetrix</span>,
-              }}
-            />
-          </h2>
-          <ComparisonTable />
-        </section>
       </div>
     </div>
   )
 }
 
-const Marketplace = () => {
+const Highlighted = ({ children }: { children: React.ReactNode }) => (
+  <span className='relative whitespace-nowrap'>
+    <span className='absolute -bottom-1 -left-2 -right-2 -top-1 -rotate-1 bg-slate-900 dark:bg-gray-200 md:-bottom-0 md:-left-3 md:-right-3 md:-top-0' />
+    <span className='relative text-gray-50 dark:text-slate-900'>{children}</span>
+  </span>
+)
+
+interface FeatureBlockProps {
+  heading: string
+  description: string
+  children: React.ReactNode
+  className?: string
+  dark?: boolean
+}
+
+const FeatureBlock = ({ heading, description, children, className, dark }: FeatureBlockProps) => (
+  <motion.div
+    initial='idle'
+    whileHover='active'
+    variants={{ idle: {}, active: {} }}
+    data-dark={dark ? 'true' : undefined}
+    className={clsx(
+      'group relative flex flex-col overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-black/5 data-[dark]:bg-slate-800 data-[dark]:ring-white/15',
+      className,
+    )}
+  >
+    <div className='relative h-80 shrink-0'>{children}</div>
+
+    <div className='relative p-10'>
+      <h3 className='mt-1 text-2xl/8 font-medium tracking-tight text-gray-950 group-data-[dark]:text-white'>
+        {heading}
+      </h3>
+      <p className='mt-2 max-w-[600px] text-sm/6 text-gray-600 group-data-[dark]:text-gray-400'>{description}</p>
+    </div>
+  </motion.div>
+)
+
+const SdurMetric = () => {
   const { t } = useTranslation('common')
+  const [duration, setDuration] = useState(0)
+
+  useEffect(() => {
+    const timerId = setInterval(() => {
+      setDuration((prevDuration) => prevDuration + 1)
+    }, 1000)
+
+    return () => clearInterval(timerId)
+  }, [])
 
   return (
-    <div className='overflow-hidden'>
-      <div className='relative isolate mx-auto mt-10 w-full pt-10'>
-        <svg
-          className='absolute inset-0 -z-10 hidden h-full w-full stroke-gray-200 [mask-image:radial-gradient(64rem_64rem_at_top,white,transparent)] dark:stroke-white/10 sm:block'
-          aria-hidden='true'
-        >
-          <defs>
-            <pattern id='rect-pattern-2' width={200} height={200} x='50%' y={0} patternUnits='userSpaceOnUse'>
-              <path d='M.5 200V.5H200' fill='none' />
-            </pattern>
-          </defs>
-          <svg x='50%' y={0} className='overflow-visible fill-gray-50 dark:fill-slate-800/30'>
-            <path
-              d='M-200.5 0h201v201h-201Z M599.5 0h201v201h-201Z M399.5 400h201v201h-201Z M-400.5 600h201v201h-201Z'
-              strokeWidth={0}
-            />
-          </svg>
-          <rect width='100%' height='100%' strokeWidth={0} fill='url(#rect-pattern-2)' />
-        </svg>
-        <section className='relative z-20 mx-auto max-w-7xl px-3'>
-          <h2 className='mx-auto mt-20 w-full max-w-lg text-center text-4xl font-extrabold text-slate-900 dark:text-white sm:text-5xl'>
-            {t('main.marketplaceBlock')}
+    <MetricCard
+      classes={{
+        value: 'max-md:text-xl md:text-3xl',
+        container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
+      }}
+      label={t('dashboard.sessionDuration')}
+      value={duration}
+      valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value))}
+    />
+  )
+}
+
+const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
+  const { metainfo } = useSelector((state: StateType) => state.ui.misc)
+
+  const { deviceInfo } = useLoaderData<typeof loader>()
+
+  const geo = [
+    {
+      label: t('project.mapping.cc'),
+      value: metainfo.country || 'US',
+    },
+    {
+      label: t('project.mapping.rg'),
+      value: metainfo.region || 'California',
+    },
+    {
+      label: t('project.mapping.ct'),
+      value: metainfo.city || 'San Francisco',
+    },
+  ]
+
+  return (
+    <section className='relative mx-auto max-w-7xl bg-white px-6 py-14 dark:bg-slate-900 lg:px-8'>
+      <div className='relative mx-auto w-fit'>
+        <div>
+          <p className='mb-4 text-sm font-medium text-slate-800 dark:text-gray-200'>{t('main.butThereIsASolution')}</p>
+          <h2 className='relative z-20 text-4xl font-extrabold text-slate-900 dark:text-white sm:text-5xl'>
+            {t('main.knowYourCustomers')}
           </h2>
-          <div className='grid grid-cols-1 justify-between justify-items-center gap-y-10 pb-36 pt-20 text-slate-900 dark:text-white sm:grid-cols-2 sm:gap-y-24 md:grid-cols-3'>
-            {_map(
-              // @ts-expect-error
-              t('main.mFeatures', { returnObjects: true }),
-              (
-                item: {
-                  name: string
-                  desc: string
-                },
-                index: number,
-              ) => (
-                <div key={item.name} className='w-full max-w-[310px]'>
-                  <div className='flex items-center'>
-                    <span className='mr-4 text-xl text-slate-900 dark:text-gray-200'>{M_FEATURES_ICONS[index]}</span>
-                    <h2 className='text-xl font-semibold'>{item.name}</h2>
-                  </div>
-                  <p className='pl-9 text-slate-700 dark:text-gray-300'>{item.desc}</p>
-                </div>
-              ),
-            )}
-          </div>
-        </section>
+        </div>
       </div>
-    </div>
+      <div className='mt-10 grid grid-cols-1 gap-4 sm:mt-16 lg:grid-cols-6 lg:grid-rows-2'>
+        <FeatureBlock
+          heading={t('main.insights.title')}
+          description={t('main.insights.description')}
+          className='max-lg:rounded-t-4xl lg:rounded-tl-4xl lg:col-span-3'
+          dark={theme === 'dark'}
+        >
+          <div
+            className='absolute -top-40 left-60 right-0 z-10 h-full w-full rotate-45 transform-gpu overflow-hidden blur-3xl'
+            aria-hidden='true'
+          >
+            <div
+              className='mx-auto aspect-[1/3] h-full w-full bg-gradient-to-r from-amber-400 to-purple-600 opacity-20'
+              style={{
+                clipPath:
+                  'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
+              }}
+            />
+          </div>
+          <div className='h-80 overflow-hidden'>
+            <img
+              className='object-cover object-left transition-transform group-hover:scale-105 max-md:h-full'
+              src={theme === 'dark' ? '/assets/traffic_part_dark.png' : '/assets/traffic_part_light.png'}
+              alt='Swetrix Traffic Dashboard'
+            />
+          </div>
+          <div className='absolute inset-0 bg-gradient-to-t from-white to-50% group-data-[dark]:from-slate-800' />
+        </FeatureBlock>
+        <FeatureBlock
+          heading={t('main.painPoints.title')}
+          description={t('main.painPoints.description')}
+          className='lg:rounded-tr-4xl lg:col-span-3'
+          dark={theme === 'dark'}
+        >
+          <div
+            className='absolute -top-40 left-60 right-0 z-10 h-full w-full rotate-45 transform-gpu overflow-hidden blur-3xl'
+            aria-hidden='true'
+          >
+            <div
+              className='mx-auto aspect-[1/3] h-full w-full bg-gradient-to-r from-red-400 to-red-800 opacity-15'
+              style={{
+                clipPath:
+                  'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
+              }}
+            />
+          </div>
+          <div className='h-80 overflow-hidden'>
+            <img
+              className='h-full object-cover object-left transition-transform group-hover:scale-105 max-md:h-full'
+              src={theme === 'dark' ? '/assets/performance_part_dark.png' : '/assets/performance_part_light.png'}
+              alt='Website speed and performance monitoring'
+            />
+          </div>
+          <div className='absolute inset-0 bg-gradient-to-t from-white to-50% group-data-[dark]:from-gray-800' />
+        </FeatureBlock>
+        <FeatureBlock
+          heading={t('main.customisation.title')}
+          description={t('main.customisation.description')}
+          className='lg:rounded-bl-4xl lg:col-span-2'
+          dark={theme === 'dark'}
+        >
+          <MarketplaceCluster />
+        </FeatureBlock>
+        <FeatureBlock
+          heading={t('main.integrations.title')}
+          description={t('main.integrations.description')}
+          className='!overflow-visible lg:col-span-2'
+          dark={theme === 'dark'}
+        >
+          <LogoTimeline />
+        </FeatureBlock>
+        <FeatureBlock
+          heading={t('main.sessions.title')}
+          description={t('main.sessions.description')}
+          className='max-lg:rounded-b-4xl lg:rounded-br-4xl lg:col-span-2'
+          dark={theme === 'dark'}
+        >
+          <div className='relative space-y-2 overflow-hidden px-10 pt-5'>
+            <ClientOnly>
+              {() => (
+                <MetricCardSelect
+                  classes={{
+                    value: 'max-md:text-xl md:text-2xl',
+                    container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
+                  }}
+                  values={geo}
+                  selectLabel={t('project.geo')}
+                  valueMapper={({ value }, index) => {
+                    if (index !== 0) {
+                      return value || 'N/A'
+                    }
+
+                    if (!value) {
+                      return t('project.unknownCountry')
+                    }
+
+                    return (
+                      <div className='flex items-center'>
+                        <CCRow spaces={1} size={26} cc={value} language={language} />
+                      </div>
+                    )
+                  }}
+                />
+              )}
+            </ClientOnly>
+
+            <MetricCard
+              classes={{
+                value: 'max-md:text-xl md:text-3xl',
+                container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
+              }}
+              label={t('project.mapping.os')}
+              value={deviceInfo.os}
+              valueMapper={(value: keyof typeof OS_LOGO_MAP) => {
+                const logoPathLight = OS_LOGO_MAP[value]
+                const logoPathDark = OS_LOGO_MAP_DARK[value as keyof typeof OS_LOGO_MAP_DARK]
+
+                let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
+                logoPath ||= logoPathLight
+
+                if (!logoPath) {
+                  return (
+                    <>
+                      <GlobeAltIcon className='size-6' />
+                      &nbsp;
+                      {value}
+                    </>
+                  )
+                }
+                const logoUrl = `/${logoPath}`
+
+                return (
+                  <div className='flex items-center'>
+                    <img src={logoUrl} className='size-6 dark:fill-gray-50' alt='' />
+                    &nbsp;
+                    {value}
+                  </div>
+                )
+              }}
+            />
+
+            <MetricCard
+              classes={{
+                value: 'max-md:text-xl md:text-3xl',
+                container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
+              }}
+              label={t('project.mapping.br')}
+              value={deviceInfo.browser}
+              valueMapper={(value: keyof typeof BROWSER_LOGO_MAP) => {
+                const logoUrl = BROWSER_LOGO_MAP[value]
+
+                if (!logoUrl) {
+                  return (
+                    <>
+                      <GlobeAltIcon className='size-6' />
+                      &nbsp;
+                      {value}
+                    </>
+                  )
+                }
+
+                return (
+                  <div className='flex items-center'>
+                    <img src={logoUrl} className='size-6 dark:fill-gray-50' alt='' />
+                    &nbsp;
+                    {value}
+                  </div>
+                )
+              }}
+            />
+
+            <SdurMetric />
+
+            <div className='absolute bottom-0 right-0 rotate-12 rounded-md bg-gray-50 px-2 py-1 opacity-20 transition-all group-hover:rotate-6 group-hover:scale-110 group-hover:opacity-50 dark:bg-slate-700/60'>
+              {['/home', '/product', 'SALE'].map((path, index) => (
+                <div key={path} className='relative pb-8'>
+                  {index !== 2 ? (
+                    <span
+                      className='absolute left-4 top-4 -ml-px h-full w-0.5 bg-slate-200 dark:bg-slate-700'
+                      aria-hidden='true'
+                    />
+                  ) : null}
+                  <div className='relative flex space-x-3'>
+                    <div>
+                      <span className='flex h-8 w-8 items-center justify-center rounded-full bg-slate-400 dark:bg-slate-800'>
+                        {path.startsWith('/') ? (
+                          <NewspaperIcon className='h-5 w-5 text-white' aria-hidden='true' />
+                        ) : (
+                          <CursorArrowRaysIcon className='h-5 w-5 text-white' aria-hidden='true' />
+                        )}
+                      </span>
+                    </div>
+                    <p className='pt-1.5 text-sm text-gray-700 dark:text-gray-300'>
+                      <Trans
+                        t={t}
+                        i18nKey={path.startsWith('/') ? 'project.pageviewX' : 'project.eventX'}
+                        components={{
+                          value: <span className='font-medium text-gray-900 dark:text-gray-50' />,
+                        }}
+                        values={{
+                          x: path,
+                        }}
+                      />
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </FeatureBlock>
+      </div>
+    </section>
   )
 }
 
@@ -512,122 +649,125 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
   const { t } = useTranslation('common')
 
   return (
-    <section className='relative bg-white pb-14 pt-14 dark:bg-slate-900'>
-      <BackgroundSvg theme={theme} className='absolute -left-8' type='shapes' />
-      <div className='relative mx-auto w-fit text-4xl font-extrabold text-slate-900 sm:text-5xl'>
-        <h2 className='relative z-20 dark:text-white'>{t('main.coreFeaturesBlock')}</h2>
-        <BackgroundSvg
-          theme={theme}
-          className='absolute right-0 top-9 z-10 opacity-30 sm:-right-16'
-          type='semicircle'
-        />
+    <section className='relative mx-auto max-w-7xl bg-white px-6 py-14 dark:bg-slate-900 lg:px-8'>
+      <div className='relative mx-auto w-fit'>
+        <h2 className='relative z-20 text-4xl font-extrabold text-slate-900 dark:text-white sm:text-5xl'>
+          {t('main.coreFeatures')}
+        </h2>
       </div>
-      <div className='mx-auto mt-[60px] flex w-full max-w-7xl flex-wrap items-center justify-center xl:justify-between'>
-        {_map(
-          // @ts-expect-error
-          t('main.features', { returnObjects: true }),
-          (
-            item: {
-              name: string
-              desc: string
-            },
-            index: number,
-          ) => (
-            <div key={item.name} className='h-64 w-[416px] px-7 py-11 text-center'>
-              <span className='text-4xl font-semibold text-indigo-500'>{1 + index}</span>
-              <div className='mt-2'>
-                <h2 className='mx-auto mb-3 max-w-[300px] whitespace-pre-line text-xl font-semibold text-slate-900 dark:text-white'>
-                  {item.name}
-                </h2>
-                <p className='mx-auto max-w-xs text-gray-600 dark:text-gray-400'>{item.desc}</p>
+      <div className='mt-10 grid grid-cols-1 gap-4 sm:mt-16 lg:grid-cols-6 lg:grid-rows-2'>
+        <FeatureBlock
+          heading={t('main.cookies.title')}
+          description={t('main.cookies.description')}
+          className='max-lg:rounded-t-4xl lg:rounded-tl-4xl lg:col-span-4'
+          dark={theme === 'dark'}
+        >
+          <div className='relative h-80 overflow-hidden px-10 pt-5'>
+            <div className='absolute top-2 rotate-2 rounded-sm bg-slate-200 p-4 opacity-70 transition-opacity group-hover:opacity-90'>
+              <p className='mb-4 text-sm'>
+                We use cookies to enhance your experience. By continuing to visit this site you agree to our use of
+                cookies.
+              </p>
+              <div className='max-w-max rounded-md bg-slate-800 p-2 text-gray-50'>Accept</div>
+            </div>
+
+            <div className='absolute bottom-0 left-0 mb-4 flex max-w-max -rotate-12 gap-2 rounded-sm bg-slate-100 p-4 transition-transform group-hover:-rotate-6'>
+              <p className='text-md flex'>
+                <Cookie className='mr-2 text-slate-700' size={24} />
+                Hello there, We use cookies!
+              </p>
+              <div className='max-w-max rounded-md bg-slate-800 px-1 text-gray-50'>Okay</div>
+            </div>
+
+            <div className='absolute bottom-20 left-12 mb-4 flex max-w-max -rotate-6 rounded-sm bg-slate-100 p-4 transition-transform group-hover:scale-95'>
+              <p className='text-md flex max-w-[40ch]'>
+                This website uses cookies to ensure you get the best experience on our website
+              </p>
+            </div>
+
+            <div className='absolute bottom-10 right-0 rotate-12 rounded-md bg-gray-100 p-2 opacity-90 transition-transform group-hover:rotate-3 group-hover:scale-110'>
+              <p className='text-md flex'>
+                <Cookie className='mr-2 text-slate-700' size={24} />
+                <span className='max-w-[35ch]'>Please accept our cookies to continue using our website.</span>
+              </p>
+              <div className='mt-2 flex gap-2'>
+                <div className='max-w-max rounded-md bg-green-700/80 px-1 text-gray-50'>Okay</div>
+                <div className='max-w-max rounded-md bg-red-700/80 px-1 text-gray-50'>No</div>
               </div>
             </div>
-          ),
-        )}
+
+            <div className='absolute inset-0 bg-[linear-gradient(to_bottom_right,transparent,transparent_49%,red_49%,red_51%,transparent_51%,transparent)] opacity-0 transition-opacity duration-500 group-hover:opacity-70 group-hover:delay-300' />
+            <div className='absolute inset-0 bg-[linear-gradient(to_top_right,transparent,transparent_49%,red_49%,red_51%,transparent_51%,transparent)] opacity-0 transition-opacity duration-500 group-hover:opacity-70 group-hover:delay-300' />
+          </div>
+          <div className='absolute inset-0 bg-gradient-to-t from-white to-25% group-data-[dark]:from-slate-800' />
+        </FeatureBlock>
+        <FeatureBlock
+          heading={t('main.utms.title')}
+          description={t('main.utms.description')}
+          className='lg:rounded-bl-4xl lg:col-span-2'
+          dark={theme === 'dark'}
+        >
+          <ConveyorBelt />
+        </FeatureBlock>
+        <FeatureBlock
+          heading={t('main.funnels.title')}
+          description={t('main.funnels.description')}
+          className='!overflow-visible lg:col-span-2'
+          dark={theme === 'dark'}
+        >
+          <div
+            className='absolute -top-40 left-60 right-0 z-10 h-full w-full rotate-45 transform-gpu overflow-hidden blur-3xl'
+            aria-hidden='true'
+          >
+            <div
+              className='mx-auto aspect-[1/3] h-full w-full bg-gradient-to-r from-yellow-400/60 to-yellow-800/60 opacity-15 dark:from-yellow-400 dark:to-yellow-800'
+              style={{
+                clipPath:
+                  'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
+              }}
+            />
+          </div>
+          <div className='h-80 overflow-hidden'>
+            <img
+              className='h-full object-cover object-left transition-transform group-hover:scale-105 max-md:h-full'
+              src={theme === 'dark' ? '/assets/funnel_dark.png' : '/assets/funnel_light.png'}
+              alt='Website speed and performance monitoring'
+            />
+          </div>
+          <div className='absolute inset-0 bg-gradient-to-t from-white to-50% group-data-[dark]:from-gray-800' />
+        </FeatureBlock>
+
+        <FeatureBlock
+          heading={t('main.eCommerce.title')}
+          description={t('main.eCommerce.description')}
+          className='lg:rounded-tr-4xl lg:col-span-4'
+          dark={theme === 'dark'}
+        >
+          <div
+            className='absolute -top-40 left-60 right-0 z-10 h-full w-full rotate-45 transform-gpu overflow-hidden blur-3xl'
+            aria-hidden='true'
+          >
+            <div
+              className='mx-auto aspect-[1/3] h-full w-full bg-gradient-to-r from-green-400/60 to-green-800/60 opacity-15 dark:from-green-400 dark:to-green-800'
+              style={{
+                clipPath:
+                  'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
+              }}
+            />
+          </div>
+          <div className='h-80 overflow-hidden'>
+            <img
+              className='h-full object-cover object-left transition-transform group-hover:scale-105 max-md:h-full'
+              src={theme === 'dark' ? '/assets/custom_events_dark.png' : '/assets/custom_events_light.png'}
+              alt='Website speed and performance monitoring'
+            />
+          </div>
+          <div className='absolute inset-0 bg-gradient-to-t from-white to-50% group-data-[dark]:from-gray-800' />
+        </FeatureBlock>
       </div>
-      <BackgroundSvg theme={theme} className='absolute bottom-0 right-0 z-10' type='twolinecircle' />
     </section>
   )
 }
-
-const Signup = ({ theme, ssrTheme }: { theme: 'dark' | 'light'; ssrTheme: 'dark' | 'light' }) => {
-  const { t } = useTranslation('common')
-
-  return (
-    <div className='relative isolate mx-auto flex w-full max-w-7xl items-center justify-center px-5 py-20 md:justify-between'>
-      <div className='absolute inset-x-0 -top-3 -z-10 transform-gpu overflow-hidden px-36 blur-3xl' aria-hidden='true'>
-        <div
-          className='mx-auto aspect-[1155/678] w-[72.1875rem] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30'
-          style={{
-            clipPath:
-              'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)',
-          }}
-        />
-      </div>
-      <div className='relative z-50 rounded-xl lg:col-span-6'>
-        <div className='bg-white ring-1 ring-slate-200 dark:bg-slate-800/20 dark:ring-slate-800 sm:mx-auto sm:w-full sm:max-w-md sm:overflow-hidden sm:rounded-lg'>
-          <div className='px-4 py-8 sm:px-10'>
-            <p className='text-center text-lg font-semibold text-gray-900 dark:text-white md:text-xl'>
-              {t('main.signup')}
-            </p>
-            <div className='mt-6'>
-              <SignUp ssrTheme={ssrTheme} />
-            </div>
-          </div>
-          <div className='px-4 sm:px-10'>
-            <div className='border-t border-gray-200 bg-transparent py-6 dark:border-slate-700'>
-              <p className='text-xs leading-5 text-gray-600 dark:text-gray-100'>
-                <Trans
-                  t={t}
-                  i18nKey='main.signupTerms'
-                  components={{
-                    // eslint-disable-next-line jsx-a11y/anchor-has-content
-                    tos: (
-                      <Link
-                        to={routesPath.terms}
-                        className='font-medium text-gray-900 hover:underline dark:text-gray-300'
-                        aria-label={t('footer.tos')}
-                      />
-                    ),
-                    // eslint-disable-next-line jsx-a11y/anchor-has-content
-                    pp: (
-                      <Link
-                        to={routesPath.privacy}
-                        className='font-medium text-gray-900 hover:underline dark:text-gray-300'
-                        aria-label={t('footer.pp')}
-                      />
-                    ),
-                  }}
-                />
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className='relative'>
-        <picture>
-          <source
-            srcSet={theme === 'dark' ? '/assets/section-signup-dark.webp' : '/assets/section-signup-light.webp'}
-            type='image/webp'
-          />
-          <img
-            src={theme === 'dark' ? '/assets/section-signup-dark.png' : '/assets/section-signup-light.png'}
-            className='relative z-50 hidden md:block'
-            width='680'
-            height='511'
-            alt='Swetrix Dashboard overview'
-          />
-        </picture>
-      </div>
-    </div>
-  )
-}
-
-const LatestNews = () => (
-  <p className='rounded-full bg-indigo-500/10 px-3 py-1 text-center text-sm font-semibold leading-6 text-indigo-600 ring-1 ring-inset ring-indigo-500/20 dark:text-indigo-400'>
-    Latest news
-  </p>
-)
 
 const Hero = ({
   theme,
@@ -639,7 +779,6 @@ const Hero = ({
   authenticated: boolean
 }) => {
   const { t } = useTranslation('common')
-  const { lastBlogPost } = useSelector((state: StateType) => state.ui.misc)
 
   return (
     <div className='relative isolate overflow-x-clip'>
@@ -673,76 +812,30 @@ const Hero = ({
         />
       </div>
       <Header ssrTheme={ssrTheme} authenticated={authenticated} transparent />
-      <SupportUkraine />
       <div className='relative mx-auto min-h-[740px] pb-5 pt-10 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
-        <div className='relative z-20 flex flex-row content-between justify-center lg:justify-start 2xl:mr-[14vw] 2xl:justify-center'>
-          <div className='relative px-4 text-left lg:mr-14 lg:mt-0'>
-            <h1 className='max-w-2xl text-4xl font-extrabold text-slate-900 dark:text-white sm:text-5xl sm:leading-none md:text-5xl lg:text-5xl xl:text-6xl xl:leading-[110%]'>
+        <div className='relative z-20 flex flex-col content-between justify-center'>
+          <div className='relative mx-auto flex flex-col px-4 text-left'>
+            <h1 className='mx-auto max-w-4xl text-center text-4xl font-extrabold tracking-[-0.4px] text-slate-900 dark:text-white sm:text-5xl sm:leading-none lg:text-6xl xl:text-7xl'>
               <Trans
                 t={t}
                 i18nKey='main.slogan'
                 components={{
-                  span: (
-                    <span className='bg-gradient-to-r from-indigo-700 to-indigo-700 bg-clip-text text-transparent dark:from-indigo-600 dark:to-indigo-400' />
-                  ),
+                  // @ts-expect-error
+                  span: <Highlighted />,
                 }}
               />
             </h1>
-            <div className='mb-2 mt-3 flex items-center overflow-hidden sm:text-xl lg:text-lg xl:text-lg'>
-              {_isEmpty(lastBlogPost) ? (
-                <>
-                  <LatestNews />
-                  <div className='ml-1 h-6 w-full max-w-xs animate-pulse rounded-md bg-slate-300 dark:bg-slate-700' />
-                </>
-              ) : (
-                <ClientOnly
-                  fallback={
-                    <>
-                      <LatestNews />
-                      <div className='ml-1 h-6 w-full max-w-xs animate-pulse rounded-md bg-slate-300 dark:bg-slate-700' />
-                    </>
-                  }
-                >
-                  {() => (
-                    <Link
-                      className='inline-flex items-center space-x-1 text-sm font-semibold leading-6 text-slate-700 dark:text-slate-300'
-                      to={`blog/${lastBlogPost.handle}`}
-                    >
-                      <LatestNews />
-                      <small className='ml-1 text-sm'>{lastBlogPost.title}</small>
-                      <ChevronRightIcon className='h-4 w-4 text-slate-500' aria-hidden='true' />
-                    </Link>
-                  )}
-                </ClientOnly>
-              )}
-            </div>
-            <div className='mt-5 space-y-2 text-base leading-8 text-slate-900 dark:text-slate-300 sm:text-xl lg:text-lg xl:text-lg'>
-              <p>
-                <Trans t={t} i18nKey='main.description'>
-                  <Link
-                    to={routesPath.forMarketers}
-                    className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
-                  />
-                  <Link
-                    to={routesPath.forStartups}
-                    className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
-                  />
-                  <Link
-                    to={routesPath.forSmallBusinesses}
-                    className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
-                  />
-                </Trans>
-              </p>
-              <p>{t('main.trackEveryMetric')}</p>
-            </div>
-            <div className='mt-10 flex flex-col items-center sm:flex-row'>
+            <p className='mx-auto mt-4 max-w-4xl text-center text-base leading-relaxed tracking-wide text-slate-900 dark:text-slate-300 sm:text-lg lg:text-xl'>
+              {t('main.description')}
+            </p>
+            <div className='mt-10 flex flex-col items-center justify-center sm:flex-row'>
               <Link
                 to={routesPath.signup}
-                className='flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white shadow-sm ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600 sm:mr-6 sm:max-w-[210px]'
+                className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white shadow-sm ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600 sm:mr-6 sm:max-w-[210px]'
                 aria-label={t('titles.signup')}
               >
                 <span className='mr-1 text-base font-semibold'>{t('main.startAFreeTrial')}</span>
-                <ArrowRightIcon className='mt-[1px] h-4 w-5' />
+                <ArrowRightIcon className='mt-[1px] h-4 w-5 transition-transform group-hover:scale-[1.15]' />
               </Link>
               <a
                 href={LIVE_DEMO_URL}
@@ -754,35 +847,13 @@ const Hero = ({
                 <span className='text-base font-semibold'>{t('common.liveDemo')}</span>
               </a>
             </div>
-            <a
-              href={BOOK_A_CALL_URL}
-              className='mt-8 flex max-w-max items-center border-0 font-bold text-slate-900 hover:underline dark:text-gray-100'
-              target='_blank'
-              rel='noopener noreferrer'
-              aria-label={`${t('common.bookADemo')} (opens in a new tab)`}
-            >
-              <span className='text-base font-semibold'>{t('common.bookADemo')}</span>
-              <ArrowRightIcon className='mt-[1px] h-4 w-5' />
-            </a>
+            <Testimonials />
           </div>
           <div className='hidden max-w-md lg:block xl:max-w-lg'>
             <Lines />
-            <picture>
-              <source
-                srcSet={theme === 'dark' ? '/assets/screenshot_dark.webp' : '/assets/screenshot_light.webp'}
-                type='image/webp'
-              />
-              <img
-                src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
-                className='relative h-full min-w-[880px] rounded-xl shadow-2xl ring-1 ring-gray-900/10 dark:ring-white/10'
-                width='100%'
-                height='auto'
-                alt='Swetrix Analytics dashboard'
-              />
-            </picture>
           </div>
         </div>
-        <div className='relative z-20 my-10 block px-4 md:px-0 lg:hidden'>
+        <div className='relative z-20 mx-auto mt-10 block max-w-7xl px-4 md:px-0'>
           <picture>
             <source
               srcSet={theme === 'dark' ? '/assets/screenshot_dark.webp' : '/assets/screenshot_light.webp'}
@@ -805,10 +876,6 @@ const Hero = ({
 export default function Index() {
   const { theme: ssrTheme, isAuth } = useLoaderData<typeof loader>()
 
-  const {
-    t,
-    i18n: { language },
-  } = useTranslation('common')
   const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
   const { authenticated: reduxAuthenticated, loading } = useSelector((state: StateType) => state.auth)
   const theme = isBrowser ? reduxTheme : ssrTheme
@@ -820,55 +887,45 @@ export default function Index() {
       <main className='bg-white dark:bg-slate-900'>
         <Hero theme={theme} ssrTheme={ssrTheme} authenticated={authenticated} />
 
-        <TrustedBy />
-        <FeatureGallery theme={theme} />
+        <Problem />
+
+        <FeatureBlocks theme={theme} />
 
         <Feedback
           name='Alex Bowles'
           title='Co-founder of Casterlabs'
           logoUrl={theme === 'dark' ? '/assets/users/casterlabs-dark.svg' : '/assets/users/casterlabs-light.svg'}
           photoUrl='/assets/users/alex-casterlabs.jpg'
-          feedback="Swetrix has been a game changer for our analytics. They've always been on top of feature requests and bug reports and have been friendly every step of the way. I can't recommend them enough."
+          feedback={
+            <span>
+              Swetrix has been a <FeedbackHighlight>game changer for our analytics</FeedbackHighlight>. They've always
+              been on top of feature requests and bug reports and have been friendly every step of the way. I can't
+              recommend them enough.
+            </span>
+          }
         />
-
-        {!authenticated && <Signup theme={theme} ssrTheme={ssrTheme} />}
 
         <CoreFeatures theme={theme} />
 
-        <section className='relative bg-white px-3 pt-24 text-[initial] dark:bg-slate-900 sm:px-5'>
-          <h2 className='sm:ext-5xl mx-auto w-fit text-center text-4xl font-bold text-slate-900 dark:text-white'>
-            {t('main.supports')}
-          </h2>
-          <div className='mx-auto mt-20 grid w-full max-w-7xl grid-cols-3 items-center justify-between justify-items-center gap-x-4 gap-y-10 sm:grid-cols-4 md:grid-cols-6 lg:gap-x-10 lg:gap-y-16'>
-            <Telegram className='max-h-16 max-w-[64px] sm:max-w-[150px]' />
-            <NuxtJS theme={theme} className='max-h-12 max-w-[106px] sm:max-w-[150px]' />
-            <Webflow theme={theme} className='max-h-12 max-w-[106px] sm:max-w-[150px]' />
-            <NextJS theme={theme} className='max-h-12 max-w-[78px] sm:max-w-[80px]' />
-            <Notion theme={theme} className='max-h-12 max-w-[106px] sm:max-w-[130px]' />
-            <ReactSVG className='max-h-16 max-w-[71px] sm:max-w-[150px]' />
-            <Angular className='max-h-20 max-w-[60px] sm:max-w-[160px]' />
-            <Wordpress theme={theme} className='max-h-16 max-w-[100px] sm:max-w-[160px]' />
-            <Wix theme={theme} className='max-h-12 max-w-[105px] sm:max-w-[120px]' />
-            <Ghost theme={theme} className='max-h-20 max-w-[105px] sm:max-w-[150px]' />
-            <Gatsby theme={theme} className='max-h-12 max-w-[105px] sm:max-w-[150px]' />
-            <Cloudflare theme={theme} className='max-h-12 max-w-[105px] sm:max-w-[140px]' />
-          </div>
-        </section>
-
-        <Marketplace />
+        {/* Hiding the Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
+        {!authenticated && <Pricing authenticated={false} />}
 
         <Feedback
           name='Alper Alkan'
           title='Co-founder of Phalcode'
           logoUrl={theme === 'dark' ? '/assets/users/phalcode-dark.svg' : '/assets/users/phalcode-light.svg'}
           photoUrl='/assets/users/alper-phalcode.jpg'
-          feedback="Analytics needs on all of our products are provided by Swetrix only. It's unfathomable how good this service is compared to Google Analytics. Swetrix gives me everything I need to know about my websites."
+          feedback={
+            <span>
+              Analytics needs on all of our products are provided by Swetrix only. It's unfathomable how good this
+              service is compared to Google Analytics.
+              <FeedbackHighlight> Swetrix gives me everything I need to know about my websites</FeedbackHighlight>.
+            </span>
+          }
         />
 
-        {/* Hiding the Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
-        {!authenticated && <Pricing authenticated={false} t={t} language={language} />}
+        <OpensourceAdvantages theme={theme} />
 
-        <Comparison />
         <DitchGoogle
           screenshot={{
             dark: '/assets/screenshot_dark.png',
@@ -876,8 +933,6 @@ export default function Index() {
           }}
           theme={theme}
         />
-        <OpensourceAdvantages theme={theme} />
-        <PeopleLoveSwetrix theme={theme} />
       </main>
     </div>
   )

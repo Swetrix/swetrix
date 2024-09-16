@@ -3,6 +3,7 @@ import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { Trans, useTranslation } from 'react-i18next'
 
 import routes from 'utils/routes'
+import React from 'react'
 
 interface IDitchGoogle {
   screenshot: {
@@ -46,11 +47,11 @@ export const DitchGoogle = ({ screenshot: { light, dark }, theme }: IDitchGoogle
             <p className='mb-9 text-base font-medium text-gray-300 sm:text-lg'>{t('main.whyDitch')}</p>
             <Link
               to={routes.signup}
-              className='flex h-[50px] w-full max-w-[210px] items-center justify-center rounded-md border border-transparent bg-indigo-600 text-white shadow-sm transition-all !duration-300 hover:bg-indigo-700 sm:mr-6'
+              className='group flex h-[50px] w-full max-w-[210px] items-center justify-center rounded-md border border-transparent bg-indigo-600 text-white shadow-sm transition-all !duration-300 hover:bg-indigo-700 sm:mr-6'
               aria-label={t('titles.signup')}
             >
               <span className='mr-1 text-base font-semibold'>{t('main.start')}</span>
-              <ArrowRightIcon className='mt-[1px] h-4 w-5' />
+              <ArrowRightIcon className='mt-[1px] h-4 w-5 transition-transform group-hover:scale-[1.15]' />
             </Link>
           </div>
           <div className='block h-[450px] max-w-md md:rounded-md md:shadow-[8px_8px_10px_3px] xl:max-w-lg'>

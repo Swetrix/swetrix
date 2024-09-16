@@ -252,7 +252,7 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated, ssrTheme }): JSX.Elemen
         ) : (
           <>
             <div className='mt-5 flex flex-col xl:flex-row xl:space-x-5'>
-              <Pricing authenticated={authenticated} t={t} language={language} isBillingPage />
+              <Pricing authenticated={authenticated} isBillingPage />
               <div className='space-y-2'>
                 {subUpdateURL && (
                   <Button className='mr-2' onClick={onUpdatePaymentDetails} type='button' primary large>

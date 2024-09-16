@@ -339,7 +339,7 @@ export const CHROME_EXTENSION_URL: string =
   'https://chrome.google.com/webstore/detail/swetrix/glbeclfdldjldjonfnpnembfkhphmeld'
 export const HAVE_I_BEEN_PWNED_URL: string = 'https://haveibeenpwned.com/passwords'
 export const LINKEDIN_URL: string = 'https://www.linkedin.com/company/swetrix/'
-export const GITHUB_URL: string = 'https://github.com/Swetrix'
+export const GITHUB_URL: string = 'https://github.com/Swetrix/swetrix-api'
 export const TWITTER_URL: string = 'https://twitter.com/intent/user?screen_name=swetrix'
 export const TWITTER_USERNAME: string = '@swetrix'
 export const DISCORD_URL: string = 'https://discord.gg/ZVK8Tw2E8j'
@@ -484,7 +484,7 @@ export const paddleLanguageMapping: IStringObject = {
 
 // Increase this counter every time some major change is done within localisation files
 // This will prevent cached version or raw locale strings being displayed in production
-export const I18N_CACHE_BREAKER = 5
+export const I18N_CACHE_BREAKER = 6
 
 // dashboard && projects
 

@@ -1,22 +1,10 @@
 import _map from 'lodash/map'
-import _reduce from 'lodash/reduce'
 import { useTranslation } from 'react-i18next'
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/solid'
 import cx from 'clsx'
 
 const COMPETITORS_LIST = ['Google Analytics', 'Fathom', 'Plausible', 'Simple Analytics']
 const SWETRIX_AND_COMPETITORS_LIST = ['Swetrix', ...COMPETITORS_LIST]
-const COMPETITOR_SEQUENCE_DELAY = 5000 // in milliseconds
-
-const PROCESSED_COMPETITORS_LIST = _reduce(
-  COMPETITORS_LIST,
-  (acc: any[], curr: any) => {
-    acc.push(curr)
-    acc.push(COMPETITOR_SEQUENCE_DELAY)
-    return acc
-  },
-  [],
-)
 
 // The order in the table is defined by the Swetrix object
 const COMPETITOR_FEATURE_TABLE: {
@@ -105,7 +93,7 @@ interface IComparisonTable {
   className?: string
 }
 
-const ComparisonTable = ({ className }: IComparisonTable) => {
+export const ComparisonTable = ({ className }: IComparisonTable) => {
   const { t } = useTranslation('common')
 
   return (
@@ -160,5 +148,3 @@ const ComparisonTable = ({ className }: IComparisonTable) => {
     </div>
   )
 }
-
-export { ComparisonTable, PROCESSED_COMPETITORS_LIST }
