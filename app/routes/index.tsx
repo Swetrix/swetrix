@@ -158,7 +158,7 @@ const Problem = () => {
 interface IFeedback {
   name: string
   title: string
-  feedback: string
+  feedback: React.ReactNode
   logoUrl: string
   photoUrl: string
 }
@@ -171,7 +171,11 @@ const Feedback = ({ name, title, feedback, logoUrl, photoUrl }: IFeedback) => (
       <img alt='' src={logoUrl} className='mx-auto h-12' />
       <figure className='mt-10'>
         <blockquote className='text-center text-xl font-semibold leading-8 text-gray-900 dark:text-gray-50 sm:text-2xl sm:leading-9'>
-          <p>{`“${feedback}”`}</p>
+          <p>
+            <span>“</span>
+            {feedback}
+            <span>”</span>
+          </p>
         </blockquote>
         <figcaption className='mt-10'>
           <img alt='' src={photoUrl} className='mx-auto h-10 w-10 rounded-full' />
@@ -186,6 +190,14 @@ const Feedback = ({ name, title, feedback, logoUrl, photoUrl }: IFeedback) => (
       </figure>
     </div>
   </section>
+)
+
+interface FeedbackHighlightProps {
+  children: React.ReactNode
+}
+
+const FeedbackHighlight = ({ children }: FeedbackHighlightProps) => (
+  <span className='bg-yellow-100/80 dark:bg-yellow-400/40'>{children}</span>
 )
 
 const OpensourceAdvantages = ({ theme }: { theme: 'dark' | 'light' }) => {
@@ -884,7 +896,13 @@ export default function Index() {
           title='Co-founder of Casterlabs'
           logoUrl={theme === 'dark' ? '/assets/users/casterlabs-dark.svg' : '/assets/users/casterlabs-light.svg'}
           photoUrl='/assets/users/alex-casterlabs.jpg'
-          feedback="Swetrix has been a game changer for our analytics. They've always been on top of feature requests and bug reports and have been friendly every step of the way. I can't recommend them enough."
+          feedback={
+            <span>
+              Swetrix has been a <FeedbackHighlight>game changer for our analytics</FeedbackHighlight>. They've always
+              been on top of feature requests and bug reports and have been friendly every step of the way. I can't
+              recommend them enough.
+            </span>
+          }
         />
 
         <CoreFeatures theme={theme} />
@@ -897,7 +915,13 @@ export default function Index() {
           title='Co-founder of Phalcode'
           logoUrl={theme === 'dark' ? '/assets/users/phalcode-dark.svg' : '/assets/users/phalcode-light.svg'}
           photoUrl='/assets/users/alper-phalcode.jpg'
-          feedback="Analytics needs on all of our products are provided by Swetrix only. It's unfathomable how good this service is compared to Google Analytics. Swetrix gives me everything I need to know about my websites."
+          feedback={
+            <span>
+              Analytics needs on all of our products are provided by Swetrix only. It's unfathomable how good this
+              service is compared to Google Analytics.
+              <FeedbackHighlight> Swetrix gives me everything I need to know about my websites</FeedbackHighlight>.
+            </span>
+          }
         />
 
         <OpensourceAdvantages theme={theme} />
