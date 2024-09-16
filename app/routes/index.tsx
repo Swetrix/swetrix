@@ -37,13 +37,7 @@ import React, { useEffect, useState } from 'react'
 import clsx from 'clsx'
 import { MetricCard, MetricCardSelect } from 'pages/Project/View/components/MetricCards'
 import CCRow from 'pages/Project/View/components/CCRow'
-import {
-  CheckBadgeIcon,
-  CheckIcon,
-  CursorArrowRaysIcon,
-  GlobeAltIcon,
-  NewspaperIcon,
-} from '@heroicons/react/24/outline'
+import { CheckIcon, CursorArrowRaysIcon, GlobeAltIcon, NewspaperIcon } from '@heroicons/react/24/outline'
 import { LogoTimeline } from 'components/marketing/LogoTimeline'
 import { MarketplaceCluster } from 'components/marketing/MarketplaceCluster'
 import { ConveyorBelt } from 'components/marketing/ConveyorBelt'
@@ -90,17 +84,16 @@ const Problem = () => {
     <section className='bg-neutral-600 dark:bg-slate-700'>
       <div className='mx-auto max-w-7xl px-8 py-16 text-center md:py-32'>
         <h2 className='mb-6 text-4xl font-extrabold text-gray-50 sm:text-5xl sm:leading-none md:mb-8'>
-          Most people struggle to make sense of their analytics data
+          {t('main.problem.title')}
         </h2>
         <p className='mx-auto mb-12 max-w-prose text-lg font-bold leading-relaxed text-gray-100 opacity-80 md:mb-20'>
-          Many web analytics solutions are either too complex and overwhelming, or too simple and don't provide enough
-          insight. Business owners don't understand their customers and lose money.
+          {t('main.problem.description')}
         </p>
 
         <div className='flex flex-col items-center justify-center gap-6 text-gray-50 md:flex-row md:items-start'>
           <div className='flex w-full flex-col items-center justify-center gap-2 md:w-48'>
             <span className='text-4xl'>🤔</span>
-            <p className='font-bold'>Business owner collects web data</p>
+            <p className='font-bold'>{t('main.problem.step1')}</p>
           </div>
           <svg
             className='w-12 shrink-0 fill-gray-200 opacity-70 max-md:-scale-x-100 md:-rotate-90'
@@ -124,7 +117,13 @@ const Problem = () => {
           <div className='flex w-full flex-col items-center justify-center gap-2 md:w-48'>
             <span className='text-4xl'>😕</span>
             <p className='font-bold'>
-              Overwhelmed by <u>complex dashboards</u> or limited by oversimplified metrics
+              <Trans
+                t={t}
+                i18nKey='main.problem.step2'
+                components={{
+                  u: <u />,
+                }}
+              />
             </p>
           </div>
           <svg
@@ -148,7 +147,7 @@ const Problem = () => {
           </svg>
           <div className='flex w-full flex-col items-center justify-center gap-2 md:w-48'>
             <span className='text-4xl'>📉</span>
-            <p className='font-bold'>Makes uninformed decisions, missing opportunities for growth</p>
+            <p className='font-bold'>{t('main.problem.step3')}</p>
           </div>
         </div>
       </div>
@@ -413,16 +412,16 @@ const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
     <section className='relative mx-auto max-w-7xl bg-white pb-14 pt-14 dark:bg-slate-900'>
       <div className='relative mx-auto w-fit'>
         <div>
-          <p className='mb-4 text-sm font-medium text-slate-800 dark:text-gray-200'>But there is a solution...</p>
+          <p className='mb-4 text-sm font-medium text-slate-800 dark:text-gray-200'>{t('main.butThereIsASolution')}</p>
           <h2 className='relative z-20 text-4xl font-extrabold text-slate-900 dark:text-white sm:text-5xl'>
-            Know your customers and users
+            {t('main.knowYourCustomers')}
           </h2>
         </div>
       </div>
       <div className='mt-10 grid grid-cols-1 gap-4 sm:mt-16 lg:grid-cols-6 lg:grid-rows-2'>
         <FeatureBlock
-          heading='Get insights into your traffic'
-          description='Swetrix helps you understand everything you need to know about your website traffic. Know how many people are online, what pages are most popular, where are your users from, and more.'
+          heading={t('main.insights.title')}
+          description={t('main.insights.description')}
           className='max-lg:rounded-t-4xl lg:rounded-tl-4xl lg:col-span-3'
           dark={theme === 'dark'}
         >
@@ -448,8 +447,8 @@ const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
           <div className='absolute inset-0 bg-gradient-to-t from-white to-50% group-data-[dark]:from-slate-800' />
         </FeatureBlock>
         <FeatureBlock
-          heading="Understand your site's pain points"
-          description='Nobody likes slow websites. Users are more likely to abandon your website if it takes too long to load, stay ahead of these problems and measure insights from real interactions.'
+          heading={t('main.painPoints.title')}
+          description={t('main.painPoints.description')}
           className='lg:rounded-tr-4xl lg:col-span-3'
           dark={theme === 'dark'}
         >
@@ -475,24 +474,24 @@ const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
           <div className='absolute inset-0 bg-gradient-to-t from-white to-50% group-data-[dark]:from-gray-800' />
         </FeatureBlock>
         <FeatureBlock
-          heading='Complete customisation'
-          description='Missing a feature? We will build it :) But you can also build your own features or install 3rd party addons from our Extensions Marketplace.'
+          heading={t('main.customisation.title')}
+          description={t('main.customisation.description')}
           className='lg:rounded-bl-4xl lg:col-span-2'
           dark={theme === 'dark'}
         >
           <MarketplaceCluster />
         </FeatureBlock>
         <FeatureBlock
-          heading='Works with any platform'
-          description='With dozens of integrations, Swetrix makes it easy to connect your website and know your users, out of the box.'
+          heading={t('main.integrations.title')}
+          description={t('main.integrations.description')}
           className='!overflow-visible lg:col-span-2'
           dark={theme === 'dark'}
         >
           <LogoTimeline />
         </FeatureBlock>
         <FeatureBlock
-          heading='Session analysis'
-          description='Analyse the sessions of your website users and make data-driven decisions.'
+          heading={t('main.sessions.title')}
+          description={t('main.sessions.description')}
           className='max-lg:rounded-b-4xl lg:rounded-br-4xl lg:col-span-2'
           dark={theme === 'dark'}
         >
@@ -641,13 +640,13 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
     <section className='relative mx-auto max-w-7xl bg-white pb-14 pt-14 dark:bg-slate-900'>
       <div className='relative mx-auto w-fit'>
         <h2 className='relative z-20 text-4xl font-extrabold text-slate-900 dark:text-white sm:text-5xl'>
-          Only the features you need
+          {t('main.coreFeatures')}
         </h2>
       </div>
       <div className='mt-10 grid grid-cols-1 gap-4 sm:mt-16 lg:grid-cols-6 lg:grid-rows-2'>
         <FeatureBlock
-          heading='Forget about annoying cookie banners'
-          description='Swetrix does not use cookies for tracking, so you can forget about all those annoying cookie banners. We collect analytical data anonymously to respect the privacy of your users. We do not collect personal identifiers and do not perform cross-device tracking.'
+          heading={t('main.cookies.title')}
+          description={t('main.cookies.description')}
           className='max-lg:rounded-t-4xl lg:rounded-tl-4xl lg:col-span-4'
           dark={theme === 'dark'}
         >
@@ -691,16 +690,16 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
           <div className='absolute inset-0 bg-gradient-to-t from-white to-25% group-data-[dark]:from-slate-800' />
         </FeatureBlock>
         <FeatureBlock
-          heading='Analyse marketing campaigns and newsletters'
-          description='Use UTMs to tag your ads, social media posts and email campaigns to see how much traffic they generate and how much revenue they bring in.'
+          heading={t('main.utms.title')}
+          description={t('main.utms.description')}
           className='lg:rounded-bl-4xl lg:col-span-2'
           dark={theme === 'dark'}
         >
           <ConveyorBelt />
         </FeatureBlock>
         <FeatureBlock
-          heading='User flows & marketing funnels'
-          description='Track how users get to your site and know where they go. Study behaviour, visualise and understand your user journey.'
+          heading={t('main.funnels.title')}
+          description={t('main.funnels.description')}
           className='!overflow-visible lg:col-span-2'
           dark={theme === 'dark'}
         >
@@ -727,8 +726,8 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
         </FeatureBlock>
 
         <FeatureBlock
-          heading='E-commerce & Custom events (really easy to setup)'
-          description='Send custom events with custom properties to track user activity or sales. Analyse this data with ease in our intuitive dashboard. Create reusable views to quickly see and spot trends in your sales.'
+          heading={t('main.eCommerce.title')}
+          description={t('main.eCommerce.description')}
           className='lg:rounded-tr-4xl lg:col-span-4'
           dark={theme === 'dark'}
         >

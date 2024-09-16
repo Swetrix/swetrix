@@ -102,8 +102,7 @@
     "oneMember": "1 Mitglied",
     "xMembers": "{{number}} Mitglieder",
     "general": "Allgemeines",
-    "fixIt": "Fixieren",
-    "bookADemo": "Enterprise-Demo buchen"
+    "fixIt": "Fixieren"
   },
   "performance": {
     "slogan": "Endbenutzer <span>Leistungsüberwachung</span> um schnelle Webseiten zu liefern.",
@@ -289,139 +288,73 @@
   },
   "main": {
     "ukrSupport": "Unterstützen Sie die ukrainische Armee im Kampf gegen die russische Invasion.",
-    "slogan": "<span>Ultimative Open-Source-Web-Analytics</span> um alle Ihre Wünsche zu befriedigen.",
-    "trackEveryMetric": "Analytik sollte so sein: GDPR-konform, leicht und einfach zu bedienen.",
-    "description": "Swetrix ist eine kochfreie Google Analytics-Alternative, die nicht in die Privatsphäre Ihrer Nutzer eindringt. Es ist perfekt für <0>Vermarkter</0>, <1>Start-ups</1>, <2>kleine Unternehmen</2> und praktisch alle Arten von Geschäften!",
+    "slogan": "Understand <span>the story</span> behind your customer clicks and scrolls",
+    "description": "Get all the insights you need about your users and website visitors without the hassle of showing cookie banners. Experience intuitive, easy-to-use and GDPR-compliant web analytics without invading the privacy of your visitors.",
+    "understandTheirUsers": "<0>{{amount}}</0> people understand their users",
+    "perfect": "It's perfect for <0>marketers</0>, <1>start-ups</1>, <2>small businesses</2> and virtually any type of business!",
     "trustedBy": "Von Regierungen, NGOs und innovativen Unternehmen anerkannt",
     "start": "Kostenlos beginnen",
-    "signup": "Jetzt gratis registrieren!",
-    "signupTerms": "Mit der Anmeldung akzeptieren Sie unsere <tos>Allgemeinen Geschäftsbedingungen</tos> und unsere <pp>Datenschutzerklärung</pp>.",
-    "techDetails": "Möchten Sie weitere technische Details erfahren?",
-    "lookAtDocs": "Sehen Sie sich doch mal die Dokumentation und die Live Demo an.",
-    "readyToStart": "Sind Sie bereit los zu legen?",
     "startAFreeTrial": "Kostenlos testen",
     "metric": "Metrisch",
-    "coreFeatures": {
-      "title": "Kern-Analysefunktionen",
-      "desc": "Leistungsfähige und einfache Analytics um alle benötigten Kennzahlen anzuzeigen. Frei von Cookies. Man muss kein Datenwissenschaftler sein, um unsere Analytics zu verstehen."
-    },
-    "marketplace": {
-      "title": "Marktplatz & integrierte Erweiterungen",
-      "desc1": "Benötigen Sie zusätzliche Funktionen? Verwenden Sie Erweiterungen oder programmieren Sie Ihre eigenen! Ab jetzt brauchen Sie nicht mehr viele Datenquellen aus verschiedenen Systemen zu nutzen - erweitern und ergänzen Sie alles in einem!",
-      "desc2": "Installieren Sie Erweiterungen und verkaufen Sie Ihre eigenen. Sie haben eine tolle Erweiterung für Ihr Unternehmen entwickelt? Großartig! Veröffentlichen Sie es auf dem Markt und teilen Sie Ihre Einblicke mit der ganzen Community."
-    },
-    "visitAddons": "Besuche Swetrix Marktplatz",
-    "privacy": {
-      "title": "Datenschutzkonform",
-      "list": [
-        {
-          "label": "DSGVO",
-          "desc": "daten und Verarbeitung mit Sitz in der EU Zone."
-        },
-        {
-          "label": "HIPAA",
-          "desc": "vertrauliche Informationen schützen."
-        },
-        {
-          "label": "PCI DSS",
-          "desc": "Sicherheit der Zahlungsdaten."
-        },
-        {
-          "label": "CCPA",
-          "desc": "Kontrolle über die persönlichen Informationen."
-        }
-      ]
-    },
-    "dataProtection": "Mehr zum Datenschutz",
-    "faq": {
-      "title": "Häufig gestellte Fragen",
-      "list": [
-        {
-          "question": "Benutzt Swetrix Cookies?",
-          "answer": "Nein. Unser Tracking-Script arbeitet komplett ohne den Einsatz von Cookies. Sie können unseren Dienst nutzen, ohne einen Cookie-Banner auf ihrer Webseite einzubauen. \nWir sind mit Richtlinien wie GDPR, PECR, CCPA, ePrivacy und COPPA konform."
-        },
-        {
-          "question": "Werden die Daten der Endnutzer verwendet, weitergegeben oder verkauft?",
-          "answer": "Nein, die Daten werden weder verwendet, weitergegeben oder verkauft. Alle gesammelten Daten werden zudem anonymisiert und wir speichern keine personenbezogenen Daten. Wir versuchen so transparent und respektvoll wie möglich mit Privatsphäre umzugehen."
-        },
-        {
-          "question": "Muss ich für ihren Dienst bezahlen?",
-          "answer": "Wir bieten sowohl kostenfreie als auch kostenpflichtige Abos an. Während die meisten Funktionen des kostenpflichtigen Abos auch im kostenfreien Abo enthalten sind, erhalten Sie in den kostenpflichtigen Abos mehr Tracking-Events pro Monat. Sie können Ihr Abo jederzeit herauf- oder herabstufen."
-        },
-        {
-          "question": "Sind meine Daten sicher?",
-          "answer": "Wir halten uns an alle Standards zur Sicherheit der Datenspeicherung und -verarbeitung. Alle Daten werden sicher gespeichert, können von Dritten nicht eingesehen werden und die gesamte Kommunikation erfolgt stets über verschlüsselte Kanäle (HTTPS)."
-        }
-      ]
-    },
-    "features": [
-      {
-        "name": "Website-Traffic mit 99% Genauigkeit messen",
-        "desc": "Die genaueste Analytics-Lösung, um alle grundlegenden Metriken zu verfolgen und die RICHTIGEN Daten zu sehen."
-      },
-      {
-        "name": "Demo & Geo-Berichte",
-        "desc": "Ja, es ist ein Standard. Aber wir verfolgen genau, wo Ihre Benutzer sind."
-      },
-      {
-        "name": "UTM & Reffer-Tracking",
-        "desc": "Der gesamte Datenverkehr Ihrer Unternehmen und Websites wird ohne Datenverlust angezeigt."
-      },
-      {
-        "name": "Agiles System",
-        "desc": "Ein flexibles Einstellungssystem für die Grundregeln - wie die Session-Definition, Traffic-Accounting usw. ist einfach einzurichten und anzupassen."
-      },
-      {
-        "name": "Eigene Ereignisse\n(sehr einfach einzurichten)",
-        "desc": "Die benutzerfreundliche Oberfläche und das einfache Setzen von Zielen wird Ihnen helfen, die Effektivität Ihrer Website zu messen."
-      },
-      {
-        "name": "Benutzerfluss",
-        "desc": "Verfolgen Sie, wie Benutzer auf Ihre Website gelangen und wohin sie gehen. Lernen Sie das Verhalten und die Muster Ihrer Besucher."
-      }
-    ],
     "demoGeoReports": "Ja, es ist ein Standard. Aber wir verfolgen genau, wo Ihre Benutzer sind.",
-    "mFeatures": [
-      {
-        "name": "Erweitern Sie Ihre Möglichkeiten",
-        "desc": "Browser-Erweiterungen, Benachrichtigungen, 2FA, flexible Funktionalität und mehr!"
-      },
-      {
-        "name": "Open-Source",
-        "desc": "Passen Sie Swetrix ganz einfach an Ihre Bedürfnisse an oder betreiben Sie es kinderleicht selbst."
-      },
-      {
-        "name": "Marktplatz-Einstellungen",
-        "desc": "Marktplatz mit von der Community entwickelten Erweiterungen, um Ihre analytischen Fähigkeiten zu verbessern."
-      },
-      {
-        "name": "Einfache Integration",
-        "desc": "Integrieren Sie Ihre Projekte, fügen Sie neue Erweiterungen hinzu, tauchen Sie ein in die Welt der Analyse."
-      },
-      {
-        "name": "Ihre Aufgaben lösen, statt weitere zu erzeugen",
-        "desc": "Holen Sie sich Einblicke und nutzen Sie die besten Lösungen, um Ihre Probleme zu lösen."
-      },
-      {
-        "name": "Teilen Sie Ihre besten Lösungen",
-        "desc": "Teilen Sie Ihre besten Lösungen mit der Community, erhalten Sie dafür Popularität und Geld."
-      }
-    ],
-    "supports": "Unterstützt alle beliebten Plattformen",
     "peopleLoveSwetrix": "Leute 🥰 Swetrix",
     "whyPeopleLoveSwetrix": "Swetrix ist ein ethischer und leistungsstarker Dienst. Hunderte von Menschen haben bereits den Wechsel von Google Analytics und anderen Alternativen gemacht.",
-    "marketplaceBlock": "Marktplatz- und Erweiterungsfunktionen",
-    "coreFeaturesBlock": "Kernfunktionen",
-    "opensourceAdv": "Vorteile der Verwendung von <url>Open-Source-</url>",
+    "weAreOpensource": "We are <url>open source</url>",
+    "coreFeatures": "Only the features you need",
+    "problem": {
+      "title": "Most people struggle to make sense of their analytics data",
+      "description": "Many web analytics solutions are either too complex and overwhelming, or too simple and don't provide enough insight. Business owners don't understand their customers and lose money.",
+      "step1": "Business owner collects web data",
+      "step2": "Overwhelmed by <u>complex dashboards</u> or limited by oversimplified metrics",
+      "step3": "Makes uninformed decisions, missing opportunities for growth"
+    },
+    "butThereIsASolution": "But there is a solution...",
+    "knowYourCustomers": "Know your customers and users",
+    "insights": {
+      "title": "Get insights into your traffic",
+      "description": "Swetrix helps you understand everything you need to know about your website traffic. Know how many people are online, what pages are most popular, where are your users from, and more."
+    },
+    "painPoints": {
+      "title": "Understand your site's pain points",
+      "description": "Nobody likes slow websites. Users are more likely to abandon your website if it takes too long to load, stay ahead of these problems and measure insights from real interactions."
+    },
+    "customisation": {
+      "title": "Complete customisation",
+      "description": "Missing a feature? We will build it :) You can also build your own features or install 3rd party add-ons from our Extensions Marketplace."
+    },
+    "integrations": {
+      "title": "Works with any platform",
+      "description": "With dozens of integrations, Swetrix makes it easy to connect your website and know your users, out of the box."
+    },
+    "sessions": {
+      "title": "Session analysis",
+      "description": "Analyse the sessions of your website users and make data-driven decisions."
+    },
+    "cookies": {
+      "title": "Forget about annoying cookie banners",
+      "description": "Swetrix does not use cookies for tracking, so you can forget about all those annoying cookie banners. We collect analytical data anonymously to respect the privacy of your users. We do not collect personal identifiers and do not perform cross-device tracking."
+    },
+    "utms": {
+      "title": "Analyse marketing campaigns and newsletters",
+      "description": "Use UTMs to tag your ads, social media posts and email campaigns to see how much traffic they generate and how much revenue they bring in."
+    },
+    "funnels": {
+      "title": "User flows & marketing funnels",
+      "description": "Track how users get to your site and know where they go. Study behaviour, visualise and understand your user journey."
+    },
+    "eCommerce": {
+      "title": "E-commerce & Custom events (really easy to setup)",
+      "description": "Send custom events with custom properties to track user activity or sales. Analyse this data with ease in our intuitive dashboard. Create reusable views to quickly see and spot trends in your sales."
+    },
     "opensource": [
       {
         "desc": "Installieren Sie Swetrix auf Ihren eigenen Servern - der Quellcode ist für alle verfügbar."
       },
       {
-        "desc": "Finden Sie Fehler und schlagen Sie Verbesserungen vor - die Community wird Ihnen dankbar sein."
+        "desc": "Take part in the development of Swetrix - contribute by suggesting improvements, reporting bugs or developing new features."
       },
       {
-        "desc": "Ihre Daten sind geschützt, alle Funktionen und Verbesserungen werden in wenigen Tagen von unseren Entwicklern implementiert."
+        "desc": "We are a customer-first company, and transparency is our top priority."
       }
     ],
     "timeToDitchGoogleAnalytics": "Es ist Zeit Google Analytics <colour>aufzugeben</colour>.",
