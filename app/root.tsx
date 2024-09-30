@@ -32,6 +32,7 @@ import { SEO } from 'components/SEO'
 
 import mainCss from 'styles/index.css'
 import tailwindCss from 'styles/tailwind.css'
+import sonnerCss from 'styles/sonner.css'
 import FlatpickerCss from 'styles/Flatpicker.css'
 import FlatpickrLightCss from 'flatpickr/dist/themes/light.css'
 import FlatpickrDarkCss from 'flatpickr/dist/themes/dark.css'
@@ -54,6 +55,7 @@ if (isBrowser && process.env.NODE_ENV !== 'production') {
 
 export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: tailwindCss },
+  { rel: 'stylesheet', href: sonnerCss },
   { rel: 'stylesheet', href: mainCss },
   { rel: 'stylesheet', href: BillboardCss },
   { rel: 'stylesheet', href: FlatpickerCss },
