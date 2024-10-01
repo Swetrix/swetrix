@@ -50,6 +50,8 @@ yarn.lock
 *.mmdb
 *.mmdb.gz
 
+.cache
+
 # Sentry Config File
 .sentryclirc
 
