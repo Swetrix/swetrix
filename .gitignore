@@ -10,6 +10,15 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
 # OS
 .DS_Store
 
@@ -35,12 +44,14 @@ lerna-debug.log*
 
 package-lock.json
 .env
+.env.prod
 pnpm-lock.yaml
 yarn.lock
 *.mmdb
 *.mmdb.gz
 
-.env.prod
-
 # Sentry Config File
 .sentryclirc
+
+# Frontend
+web/public/build
