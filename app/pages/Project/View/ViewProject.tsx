@@ -178,7 +178,6 @@ import {
   transformAIChartData,
   FILTER_CHART_METRICS_MAPPING_FOR_COMPARE,
   getSettingsFunnels,
-  convertFilters,
   SHORTCUTS_TABS_LISTENERS,
   SHORTCUTS_TABS_MAP,
   SHORTCUTS_GENERAL_LISTENERS,
@@ -2360,6 +2359,9 @@ const ViewProject = ({
     // @ts-expect-error
     const url = new URL(window.location)
 
+    console.log('items:', items)
+    console.log('newFilters:', newFilters)
+
     if (activeTab === PROJECT_TABS.performance) {
       if (override) {
         _forEach(FILTERS_PANELS_ORDER, (value) => {
@@ -2410,15 +2412,14 @@ const ViewProject = ({
       const { pathname, search } = url
       navigate(`${pathname}${search}`)
 
-      const converted = convertFilters(newFilters)
       resetSessions()
 
       if (!override) {
-        setFiltersSessions((prev) => [...prev, ...converted])
+        setFiltersSessions((prev) => [...prev, ...newFilters])
         return
       }
 
-      setFiltersSessions(converted)
+      setFiltersSessions(newFilters)
     } else if (activeTab === PROJECT_TABS.errors) {
       if (override) {
         _forEach(ERRORS_FILTERS_PANELS_ORDER, (value) => {
@@ -2440,15 +2441,14 @@ const ViewProject = ({
       const { pathname, search } = url
       navigate(`${pathname}${search}`)
 
-      const converted = convertFilters(newFilters)
       resetErrors()
 
       if (!override) {
-        setFiltersErrors((prev) => [...prev, ...converted])
+        setFiltersErrors((prev) => [...prev, ...newFilters])
         return
       }
 
-      setFiltersErrors(converted)
+      setFiltersErrors(newFilters)
     } else {
       if (override) {
         _forEach(FILTERS_PANELS_ORDER, (value) => {

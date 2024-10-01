@@ -1682,44 +1682,6 @@ const getFormatDate = (date: Date) => {
   return `${yyyy}-${mm}-${dd}`
 }
 
-/*
-  Converts an array of filters like:
-  [
-    {
-      "column": "cc",
-      "filter": [
-        "NL", "PL"
-      ]
-    }
-  ]
-  to
-  [
-    {
-      "column": "cc",
-      "filter": "NL"
-    },
-    {
-      "column": "cc",
-      "filter": "PL"
-    }
-  ]
-*/
-const convertFilters = (filters: any) => {
-  return _reduce(
-    filters,
-    (prev: any, curr: any) => {
-      const { column, filter } = curr
-      const converted = _map(filter, (el: any) => ({
-        column,
-        filter: el,
-      }))
-
-      return [...prev, ...converted]
-    },
-    [],
-  )
-}
-
 const SHORTCUTS_TABS_MAP = {
   T: PROJECT_TABS.traffic,
   P: PROJECT_TABS.performance,
@@ -1758,7 +1720,6 @@ export {
   FILTER_CHART_METRICS_MAPPING_FOR_COMPARE,
   getSettingsFunnels,
   getSettingsSession,
-  convertFilters,
   SHORTCUTS_TABS_MAP,
   SHORTCUTS_TABS_LISTENERS,
   SHORTCUTS_GENERAL_LISTENERS,
