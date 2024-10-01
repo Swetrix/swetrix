@@ -50,10 +50,10 @@ yarn.lock
 *.mmdb
 *.mmdb.gz
 
-.cache
-
 # Sentry Config File
 .sentryclirc
 
 # Frontend
 web/public/build
+crowdin.yml
+.cache
