@@ -72,6 +72,19 @@ All of the values are numbers in milliseconds.
 | `ca` | `string` | `false` | A campaign of the pageview (e.g. `utm_campaign` GET parameter) |
 | `meta` | `object` | `false` | A `key` / `value` pair of custom properties for your event (e.g. if your event is `signup`, you can include `meta` like `{ affiliate: 'Yes', currency: 'GBP' }`). The values of the object must be strings, the maximum number of keys allowed is 20 and the total length of the values combined must be less than 1000 characters. |
 
+### Error event structure
+| Name | Type | Required | Description |
+| --- | --- | --- | --- |
+| `pid` | `string` | `true` | A project ID to record the pageview event for |
+| `name` | `string` | `true` | Error name (e.g. `ParseError`); Max length is 200 |
+| `message` | `string` | `false` | Error message (e.g. `Malformed input`); Max length is 2000 |
+| `lineno` | `number` | `false` | Line number |
+| `colno` | `number` | `false` | Column number |
+| `filename` | `number` | `false` | Error message (e.g. `https://example.com/assets/convert.js`); Max length is 1000 |
+| `tz` | `string` | `false` | Visitor's timezone (used as a backup in case IP geolocation fails). I.e. if it's set to `Europe/Kiev` and IP geolocation fails, we will set the country of this entry to `Ukraine`) |
+| `pg` | `string` | `false` | A page that user sent data from (e.g. `/home`) |
+| `lc` | `string` | `false` | A locale of the user (e.g. `en-US` or `uk-UA`) |
+
 ### Heartbeat event structure
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -118,6 +131,21 @@ curl -i -X POST https://api.swetrix.com/log/hb \
   -H "X-Client-IP-Address: 192.0.2.1" \
   -H "Content-Type: application/json" \
   -d '{"pid":"YOUR_PROJECT_ID"}'
+```
+
+```json title="Response (201 Created)"
+{}
+```
+
+### POST /log/error
+This endpoint records error events. These error events are later aggregated in the dashboard under the Errors tab.
+
+```bash title="Request"
+curl -i -X POST https://api.swetrix.com/log/error \
+  -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:109.0) Gecko/20100101 Firefox/116.0" \
+  -H "X-Client-IP-Address: 192.0.2.1" \
+  -H "Content-Type: application/json" \
+  -d '{"pid":"YOUR_PROJECT_ID","lc":"en-US","pg":"/","name":"ParseError","message":"Malformed input","lineno":12,"colno":510,"filename":"https://example.com/assets/convert.js"}'
 ```
 
 ```json title="Response (201 Created)"
