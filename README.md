@@ -4,20 +4,24 @@
 </picture>
 <br /><br />
 
-[![Dockerhub pulls](https://img.shields.io/docker/pulls/swetrix/swetrix-api.svg?style=flat)](https://hub.docker.com/r/swetrix/swetrix-api)
-[![Contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/swetrix/swetrix-api/issues)
+[Swetrix](https://swetrix.com) is an open source, privacy-focused and cookie-less alternative to Google Analytics. Swetrix is designed to be easy to use while providing all the features you need to understand your website users. With Swetrix you can track your site's traffic, monitor your site's speed, analyse user sessions and page flows, see user flows and much more!
 
-[Swetrix](https://swetrix.com) is a fully open source, privacy focused and cookieless alternative to Google Analytics. Swetrix aims to be a lightweight tool (tracking script is < 5 KB), yet powerful enough to give you all the insights you need. With Swetrix you can track your site's traffic, monitor your site's speed, analyse user sessions and pageflows, see the user flows and much more! All of it without invading your user's privacy. Check out our [live demo](https://swetrix.com/projects/STEzHcB1rALV).
+Swetrix is registered in the 🇬🇧 United Kingdom, and is hosted in 🇩🇪 Germany at [Hetzner](https://www.hetzner.com). Here's our [live demo with our own website statistics](https://swetrix.com/projects/STEzHcB1rALV).
 
 <img src="https://swetrix.com/assets/screenshot_light.png" alt="Swetrix Dashboard demonstration" />
 
-## Selfhosted Deployment
+## Selfhosting
+If you want to self-host Swetrix, please refer to our official [self-hosting documentation](https://docs.swetrix.com/selfhosting/how-to).
 
-### For development purposes
-If you want to try out Swetrix on a local machine for the development purposes (e.g. to create a new feature), please refer to our [CONTRIBUTING.MD](CONTRIBUTING.MD) file - it contains all the needed information on how to start with Swetrix.
+## Contributing
+If you want to contribute to Swetrix development, refer to our [contributing guide](./CONTRIBUTING.MD). We welcome any contribution to the project!
 
-### For production purposes
-If you want to self-host Swetrix to use it in production, please refer to our official [self-hosting documentation](https://docs.swetrix.com/selfhosting/how-to).
+The Swetrix backend is built using the Nest.js framework, as well as a MySQL database for general data and a Clickhouse database for statistics. The frontend application is built using Remix framework and Tailwind for styles. 
 
-## Project structure
-We host different parts of Swetrix under different repositories. You can find the frontend repository at [swetrix/swetrix-fe](https://github.com/swetrix/swetrix-fe) and the JavaScript tracker at [swetrix/swetrix-js](https://github.com/swetrix/swetrix-js). All of the other repositories can be easily found under the [Swetrix](https://github.com/Swetrix) Github organisation.
+## Roadmap
+Swetrix has a public [Roadmap](https://github.com/orgs/Swetrix/projects/7) of the features currently in development or on our to-do list.
+
+You can also follow us on [Twitter](https://x.com/swetrix), [LinkedIn](https://www.linkedin.com/company/linkedin/) or join our [Discord community](https://discord.gg/ZVK8Tw2E8j) for an up to date information.
+
+## License
+Swetrix is open source under the GNU Affero General Public License Version 3 (AGPLv3). The license can be found in the [LICENSE](./LICENSE) file.

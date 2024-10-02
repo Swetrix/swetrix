@@ -1,5 +1,4 @@
-name: Pull request validation workflow
-
+name: Pull Request Validation Workflow
 on:
   push:
     branches: [main]
@@ -8,26 +7,55 @@ on:
     types: [opened, labeled, synchronize, ready_for_review]
 
 jobs:
-  checks:
+  backend-checks:
+    name: Backend Checks
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        node-version: [16.19.x]
-
+        node-version: [22.x.x]
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
         with:
           persist-credentials: false
-
       - name: Setup NodeJS ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-
-      - name: Install
+      - name: Install Backend Dependencies
         run: npm install --force
-
-      - name: Lint validation
+        working-directory: backend
+      - name: Backend Lint Validation
         run: npm run lint
+        working-directory: backend
+
+  web-checks:
+    name: Web Checks
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [22.x.x]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+      - name: Setup NodeJS ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install Web Dependencies
+        run: yarn install
+        working-directory: web
+      - name: Web Lint Validation
+        run: npm run lint
+        working-directory: web
+      - name: Web Code Formatting Validation
+        run: npm run format
+        working-directory: web
+      - name: Web TypeScript Validation
+        run: npm run typecheck
+        working-directory: web
+      - name: Web Knip Validation
+        run: npm run knip
+        working-directory: web
