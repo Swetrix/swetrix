@@ -54,6 +54,7 @@ yarn.lock
 .sentryclirc
 
 # Frontend
+web/build
 web/public/build
 crowdin.yml
 .cache
