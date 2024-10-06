@@ -4,14 +4,39 @@ import _map from 'lodash/map'
 import _toUpper from 'lodash/toUpper'
 import { Trans, useTranslation } from 'react-i18next'
 
+interface IMetadata {
+  key: string
+  value: string
+}
+
 interface IPageflow {
   pages: {
     type: 'pageview' | 'event'
     value: string
     created: string
+    metadata?: IMetadata[]
   }[]
   timeFormat: '12-hour' | '24-hour'
 }
+
+const KeyValue = ({ evKey, evValue }: { evKey: string; evValue: string }) => (
+  <li className='text-xs'>
+    {evKey}: {evValue}
+  </li>
+)
+
+const TransValue = ({ metadata, children }: { metadata?: IMetadata[]; children: React.ReactNode }) => (
+  <div className='ml-1 font-medium text-gray-900 dark:text-gray-50'>
+    <p>{children}</p>
+    {metadata ? (
+      <ul>
+        {_map(metadata, ({ key, value }) => (
+          <KeyValue key={key} evKey={key} evValue={value} />
+        ))}
+      </ul>
+    ) : null}
+  </div>
+)
 
 export const Pageflow = ({ pages, timeFormat }: IPageflow) => {
   const {
@@ -22,7 +47,7 @@ export const Pageflow = ({ pages, timeFormat }: IPageflow) => {
   return (
     <div className='flow-root'>
       <ul className='-mb-8'>
-        {_map(pages, ({ value, created, type }, index) => {
+        {_map(pages, ({ value, created, type, metadata }, index) => {
           const displayCreated = new Date(created).toLocaleDateString(language, {
             day: 'numeric',
             month: 'short',
@@ -48,19 +73,19 @@ export const Pageflow = ({ pages, timeFormat }: IPageflow) => {
                     </span>
                   </div>
                   <div className='flex min-w-0 flex-1 justify-between space-x-4 pt-1.5'>
-                    <div>
-                      <p className='text-sm text-gray-700 dark:text-gray-300'>
-                        <Trans
-                          t={t}
-                          i18nKey={type === 'pageview' ? 'project.pageviewX' : 'project.eventX'}
-                          components={{
-                            value: <span className='font-medium text-gray-900 dark:text-gray-50' />,
-                          }}
-                          values={{
-                            x: value || _toUpper(t('project.redactedPage')),
-                          }}
-                        />
-                      </p>
+                    <div className='flex text-sm text-gray-700 dark:text-gray-300'>
+                      <Trans
+                        t={t}
+                        i18nKey={type === 'pageview' ? 'project.pageviewX' : 'project.eventX'}
+                        components={{
+                          // @ts-expect-error Children is provided by Trans
+                          value: <TransValue metadata={metadata} />,
+                          span: <span />,
+                        }}
+                        values={{
+                          x: value || _toUpper(t('project.redactedPage')),
+                        }}
+                      />
                     </div>
                     <div className='whitespace-nowrap text-right text-sm text-gray-700 dark:text-gray-300'>
                       <time dateTime={created}>{displayCreated}</time>
