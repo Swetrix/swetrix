@@ -3589,35 +3589,70 @@ export class AnalyticsService {
     return parsed
   }
 
+  processPageflow(pages: IPageflow[]) {
+    if (_isEmpty(pages)) {
+      return []
+    }
+
+    return _map(pages, (page: IPageflow) => {
+      if (!page.metadata) {
+        return page
+      }
+
+      return {
+        ...page,
+        metadata: _map(page.metadata, ([key, value]: [string, string]) => ({
+          key,
+          value,
+        })),
+      }
+    })
+  }
+
   async getSessionDetails(
     pid: string,
     psid: string,
     safeTimezone: string,
   ): Promise<any> {
     const queryPages = `
-      SELECT
-        *
-      FROM (
+      WITH events_with_meta AS (
         SELECT
-          'pageview' AS type,
-          pg AS value,
-          toTimeZone(analytics.created, '${safeTimezone}') AS created
+            'pageview' AS type,
+            pg AS value,
+            toTimeZone(analytics.created, '${safeTimezone}') AS created,
+            pid,
+            psid,
+            groupArray(tuple(meta.key, meta.value)) AS metadata
         FROM analytics
+        ARRAY JOIN meta.key, meta.value
         WHERE
-          pid = {pid:FixedString(12)}
-          AND psid = {psid:String}
+            pid = {pid:FixedString(12)}
+            AND psid = {psid:String}
+        GROUP BY type, value, created, pid, psid
 
         UNION ALL
 
         SELECT
-          'event' AS type,
-          ev AS value,
-          toTimeZone(customEV.created, '${safeTimezone}') AS created
+            'event' AS type,
+            ev AS value,
+            toTimeZone(customEV.created, '${safeTimezone}') AS created,
+            pid,
+            psid,
+            groupArray(tuple(meta.key, meta.value)) AS metadata
         FROM customEV
+        ARRAY JOIN meta.key, meta.value
         WHERE
-          pid = {pid:FixedString(12)}
-          AND psid = {psid:String}
+            pid = {pid:FixedString(12)}
+            AND psid = {psid:String}
+        GROUP BY type, value, created, pid, psid
       )
+
+      SELECT
+          type,
+          value,
+          created,
+          metadata
+      FROM events_with_meta
       ORDER BY created ASC;
     `
 
@@ -3719,7 +3754,13 @@ export class AnalyticsService {
       chartData = groupedChart.chart
     }
 
-    return { pages, details, psid, chart: chartData, timeBucket }
+    return {
+      pages: this.processPageflow(pages),
+      details,
+      psid,
+      chart: chartData,
+      timeBucket,
+    }
   }
 
   async getSessionsList(
