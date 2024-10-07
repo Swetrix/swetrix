@@ -175,6 +175,7 @@ export interface IPageflow {
   type: 'pageview' | 'event'
   value: string
   created: string
+  metadata?: [string, string][]
 }
 
 export interface IPageProperty {
