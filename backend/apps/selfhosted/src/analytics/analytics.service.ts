@@ -1947,9 +1947,12 @@ export class AnalyticsService {
   generateSessionAggregationQuery(
     timeBucket: TimeBucketType,
     filtersQuery: string,
+    safeTimezone: string,
   ): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
     const baseQuery = `
       SELECT
@@ -1959,11 +1962,11 @@ export class AnalyticsService {
         countIf(unique=1) as uniques
       FROM (
         SELECT *,
-          ${timeBucketFunc}(created) as tz_created
+          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
         FROM analytics
         WHERE
           pid = {pid:FixedString(12)}
-          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND created BETWEEN ${tzFromDate} AND ${tzToDate}
           ${filtersQuery}
       ) as subquery
       GROUP BY ${groupBy}
@@ -2375,9 +2378,13 @@ export class AnalyticsService {
     paramsData: any,
     safeTimezone: string,
   ): Promise<object | void> {
-    const { x, format } = this.generateUTCXAxis(timeBucket, from, to)
+    const { xShifted } = this.generateXAxis(timeBucket, from, to, safeTimezone)
 
-    const query = this.generateSessionAggregationQuery(timeBucket, filtersQuery)
+    const query = this.generateSessionAggregationQuery(
+      timeBucket,
+      filtersQuery,
+      safeTimezone,
+    )
 
     const { data } = await clickhouse
       .query({
@@ -2386,11 +2393,11 @@ export class AnalyticsService {
       })
       .then(resultSet => resultSet.json<TrafficCHResponse>())
 
-    const { visits, uniques, sdur } = this.extractChartData(data, x)
+    const { visits, uniques, sdur } = this.extractChartData(data, xShifted)
 
     return Promise.resolve({
       chart: {
-        x: this.shiftToTimezone(x, safeTimezone, format),
+        x: xShifted,
         visits,
         uniques,
         sdur,
@@ -3075,13 +3082,13 @@ export class AnalyticsService {
 
     if (!_isEmpty(pages)) {
       const from = dayjs
-        .tz(pages[0].created, safeTimezone)
-        .utc()
+        .utc(pages[0].created)
+        .tz(safeTimezone)
         .startOf('minute')
         .format('YYYY-MM-DD HH:mm:ss')
       const to = dayjs
-        .tz(pages[_size(pages) - 1].created, safeTimezone)
-        .utc()
+        .utc(pages[_size(pages) - 1].created)
+        .tz(safeTimezone)
         .endOf('minute')
         .format('YYYY-MM-DD HH:mm:ss')
 
@@ -3099,8 +3106,8 @@ export class AnalyticsService {
         {
           params: {
             ...paramsData.params,
-            groupFrom: from,
-            groupTo: to,
+            groupFrom: pages[0].created,
+            groupTo: pages[_size(pages) - 1].created,
           },
         },
         safeTimezone,
