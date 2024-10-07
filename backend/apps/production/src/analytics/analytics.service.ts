@@ -3598,9 +3598,9 @@ export class AnalyticsService {
             toTimeZone(analytics.created, '${safeTimezone}') AS created,
             pid,
             psid,
-            groupArray(tuple(meta.key, meta.value)) AS metadata
+            groupArrayIf(tuple(meta.key, meta.value), notEmpty(meta.key) AND notEmpty(meta.value)) AS metadata
         FROM analytics
-        ARRAY JOIN meta.key, meta.value
+        LEFT ARRAY JOIN meta.key, meta.value
         WHERE
             pid = {pid:FixedString(12)}
             AND psid = {psid:String}
@@ -3614,9 +3614,9 @@ export class AnalyticsService {
             toTimeZone(customEV.created, '${safeTimezone}') AS created,
             pid,
             psid,
-            groupArray(tuple(meta.key, meta.value)) AS metadata
+            groupArrayIf(tuple(meta.key, meta.value), notEmpty(meta.key) AND notEmpty(meta.value)) AS metadata
         FROM customEV
-        ARRAY JOIN meta.key, meta.value
+        LEFT ARRAY JOIN meta.key, meta.value
         WHERE
             pid = {pid:FixedString(12)}
             AND psid = {psid:String}
@@ -3629,7 +3629,7 @@ export class AnalyticsService {
           created,
           metadata
       FROM events_with_meta
-      ORDER BY created ASC;
+      ORDER BY created ASC
     `
 
     const querySessionDetails = `
