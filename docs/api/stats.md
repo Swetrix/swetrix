@@ -706,8 +706,14 @@ curl 'https://api.swetrix.com/v1/log/session?pid=YOUR_PROJECT_ID&psid=SESSION_ID
     },
     {
       "type": "pageview",
-      "value": "/settings",
-      "created": "2023-12-20 16:57:32"
+      "value": "/blog/how-to-do-stuff",
+      "created": "2023-12-20 16:57:32",
+      "metadata": [
+        {
+          "key": "author",
+          "value": "James"
+        }
+      ]
     },
     {
       "type": "event",
