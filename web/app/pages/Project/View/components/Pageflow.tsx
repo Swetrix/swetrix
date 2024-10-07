@@ -26,10 +26,10 @@ const KeyValue = ({ evKey, evValue }: { evKey: string; evValue: string }) => (
 )
 
 const TransValue = ({ metadata, children }: { metadata?: IMetadata[]; children: React.ReactNode }) => (
-  <div className='ml-1 font-medium text-gray-900 dark:text-gray-50'>
-    <p>{children}</p>
+  <div className='ml-1 text-gray-900 dark:text-gray-50'>
+    <p className='font-medium'>{children}</p>
     {metadata ? (
-      <ul>
+      <ul className='mt-1'>
         {_map(metadata, ({ key, value }) => (
           <KeyValue key={key} evKey={key} evValue={value} />
         ))}
