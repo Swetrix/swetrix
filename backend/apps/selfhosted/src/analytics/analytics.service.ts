@@ -1947,9 +1947,12 @@ export class AnalyticsService {
   generateSessionAggregationQuery(
     timeBucket: TimeBucketType,
     filtersQuery: string,
+    safeTimezone: string,
   ): string {
     const timeBucketFunc = timeBucketConversion[timeBucket]
     const [selector, groupBy] = this.getGroupSubquery(timeBucket)
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
 
     const baseQuery = `
       SELECT
@@ -1959,11 +1962,11 @@ export class AnalyticsService {
         countIf(unique=1) as uniques
       FROM (
         SELECT *,
-          ${timeBucketFunc}(created) as tz_created
+          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
         FROM analytics
         WHERE
           pid = {pid:FixedString(12)}
-          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND created BETWEEN ${tzFromDate} AND ${tzToDate}
           ${filtersQuery}
       ) as subquery
       GROUP BY ${groupBy}
@@ -2375,40 +2378,13 @@ export class AnalyticsService {
     paramsData: any,
     safeTimezone: string,
   ): Promise<object | void> {
-    const { x, format } = this.generateUTCXAxis(timeBucket, from, to)
+    const { xShifted } = this.generateXAxis(timeBucket, from, to, safeTimezone)
 
-    // if (false) {
-    //   const query = this.generateCustomEventsAggregationQuery(
-    //     timeBucket,
-    //     filtersQuery,
-    //     safeTimezone,
-    //     ChartRenderMode.PERIODICAL,
-    //   )
-
-    //   const { data } = await clickhouse
-    //     .query({
-    //       query,
-    //       query_params: paramsData.params,
-    //     })
-    //     .then(resultSet => resultSet.json<TrafficCEFilterCHResponse>())
-
-    //   const uniques =
-    //     this.extractCustomEventsChartData(result, xShifted)?._unknown_event ||
-    //     []
-
-    //   const sdur = Array(_size(xShifted)).fill(0)
-
-    //   return Promise.resolve({
-    //     chart: {
-    //       x: xShifted,
-    //       visits: uniques,
-    //       uniques,
-    //       sdur,
-    //     },
-    //   })
-    // }
-
-    const query = this.generateSessionAggregationQuery(timeBucket, filtersQuery)
+    const query = this.generateSessionAggregationQuery(
+      timeBucket,
+      filtersQuery,
+      safeTimezone,
+    )
 
     const { data } = await clickhouse
       .query({
@@ -2417,11 +2393,11 @@ export class AnalyticsService {
       })
       .then(resultSet => resultSet.json<TrafficCHResponse>())
 
-    const { visits, uniques, sdur } = this.extractChartData(data, x)
+    const { visits, uniques, sdur } = this.extractChartData(data, xShifted)
 
     return Promise.resolve({
       chart: {
-        x: this.shiftToTimezone(x, safeTimezone, format),
+        x: xShifted,
         visits,
         uniques,
         sdur,
@@ -2976,35 +2952,70 @@ export class AnalyticsService {
     return parsed
   }
 
+  processPageflow(pages: IPageflow[]) {
+    if (_isEmpty(pages)) {
+      return []
+    }
+
+    return _map(pages, (page: IPageflow) => {
+      if (!page.metadata) {
+        return page
+      }
+
+      return {
+        ...page,
+        metadata: _map(page.metadata, ([key, value]: [string, string]) => ({
+          key,
+          value,
+        })),
+      }
+    })
+  }
+
   async getSessionDetails(
     pid: string,
     psid: string,
     safeTimezone: string,
   ): Promise<any> {
     const queryPages = `
-      SELECT
-        *
-      FROM (
+      WITH events_with_meta AS (
         SELECT
-          'pageview' AS type,
-          pg AS value,
-          toTimeZone(analytics.created, '${safeTimezone}') AS created
+            'pageview' AS type,
+            pg AS value,
+            toTimeZone(analytics.created, '${safeTimezone}') AS created,
+            pid,
+            psid,
+            groupArray(tuple(meta.key, meta.value)) AS metadata
         FROM analytics
+        ARRAY JOIN meta.key, meta.value
         WHERE
-          pid = {pid:FixedString(12)}
-          AND psid = {psid:String}
+            pid = {pid:FixedString(12)}
+            AND psid = {psid:String}
+        GROUP BY type, value, created, pid, psid
 
         UNION ALL
 
         SELECT
-          'event' AS type,
-          ev AS value,
-          toTimeZone(customEV.created, '${safeTimezone}') AS created
+            'event' AS type,
+            ev AS value,
+            toTimeZone(customEV.created, '${safeTimezone}') AS created,
+            pid,
+            psid,
+            groupArray(tuple(meta.key, meta.value)) AS metadata
         FROM customEV
+        ARRAY JOIN meta.key, meta.value
         WHERE
-          pid = {pid:FixedString(12)}
-          AND psid = {psid:String}
+            pid = {pid:FixedString(12)}
+            AND psid = {psid:String}
+        GROUP BY type, value, created, pid, psid
       )
+
+      SELECT
+          type,
+          value,
+          created,
+          metadata
+      FROM events_with_meta
       ORDER BY created ASC;
     `
 
@@ -3071,13 +3082,13 @@ export class AnalyticsService {
 
     if (!_isEmpty(pages)) {
       const from = dayjs
-        .tz(pages[0].created, safeTimezone)
-        .utc()
+        .utc(pages[0].created)
+        .tz(safeTimezone)
         .startOf('minute')
         .format('YYYY-MM-DD HH:mm:ss')
       const to = dayjs
-        .tz(pages[_size(pages) - 1].created, safeTimezone)
-        .utc()
+        .utc(pages[_size(pages) - 1].created)
+        .tz(safeTimezone)
         .endOf('minute')
         .format('YYYY-MM-DD HH:mm:ss')
 
@@ -3095,8 +3106,8 @@ export class AnalyticsService {
         {
           params: {
             ...paramsData.params,
-            groupFrom: from,
-            groupTo: to,
+            groupFrom: pages[0].created,
+            groupTo: pages[_size(pages) - 1].created,
           },
         },
         safeTimezone,
@@ -3106,7 +3117,13 @@ export class AnalyticsService {
       chartData = groupedChart.chart
     }
 
-    return { pages, details, psid, chart: chartData, timeBucket }
+    return {
+      pages: this.processPageflow(pages),
+      details,
+      psid,
+      chart: chartData,
+      timeBucket,
+    }
   }
 
   async getSessionsList(
