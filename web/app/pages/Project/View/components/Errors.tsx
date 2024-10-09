@@ -83,10 +83,16 @@ const ErrorItem = ({ error, onClick, className }: IErrorItem) => {
           <div className='min-w-0 flex-auto'>
             <p className='flex items-center gap-x-2 font-semibold leading-6 text-gray-900 dark:text-gray-50'>
               <span className='text-base font-bold'>{error.name}</span>
-              <Separator />
-              <span className='mx-1 text-sm font-normal text-gray-500'>{error.filename}</span>
+              {error.filename ? (
+                <>
+                  <Separator />
+                  <span className='mx-1 text-sm font-normal text-gray-500'>{error.filename}</span>
+                </>
+              ) : null}
             </p>
-            <p className='mt-1 flex text-base leading-5 text-gray-500 dark:text-gray-300'>{error.message}</p>
+            {error.message ? (
+              <p className='mt-1 flex text-base leading-5 text-gray-500 dark:text-gray-300'>{error.message}</p>
+            ) : null}
             <p className='mt-1 flex items-center gap-x-2 text-base leading-5 text-gray-500 dark:text-gray-300'>
               <Badge className='mr-2 sm:hidden' label={status.label} colour={status.colour} />
               {lastSeen}
