@@ -1,5 +1,4 @@
 import React, { memo, useState, useEffect, useMemo, Fragment } from 'react'
-import type i18next from 'i18next'
 import InnerHTML from 'dangerously-set-html-content'
 import { ArrowLongRightIcon, ArrowLongLeftIcon } from '@heroicons/react/24/solid'
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
@@ -327,15 +326,136 @@ interface ISortRows {
   sortByDescend: boolean
 }
 
-interface IKVTable {
+interface KVTableContainerProps {
   data: any
-  t: typeof i18next.t
   uniques: number
   onClick: (key: string, value: string) => void
   displayKeyAsHeader?: boolean
 }
 
-const KVTable = ({ data, t, uniques, displayKeyAsHeader, onClick }: IKVTable) => {
+interface KVTableProps {
+  listId: string
+  data: {
+    event: string
+    quantity: number
+    conversion: number
+  }[]
+  onClick: KVTableContainerProps['onClick']
+  displayKeyAsHeader?: KVTableContainerProps['displayKeyAsHeader']
+}
+
+const KVTable = ({ listId, data, displayKeyAsHeader, onClick }: KVTableProps) => {
+  const { t } = useTranslation('common')
+  const [sort, setSort] = useState<ISortRows>({
+    label: 'quantity',
+    sortByAscend: false,
+    sortByDescend: false,
+  })
+
+  const sortedData = useMemo(() => {
+    return data.sort((a: any, b: any) => {
+      if (sort.label === 'quantity') {
+        return sort.sortByAscend ? a.quantity - b.quantity : b.quantity - a.quantity
+      }
+
+      if (sort.label === 'conversion') {
+        return sort.sortByAscend ? a.conversion - b.conversion : b.conversion - a.conversion
+      }
+
+      return sort.sortByAscend ? a.event.localeCompare(b.event) : b.event.localeCompare(a.event)
+    })
+  }, [data, sort])
+
+  const onSortBy = (label: string) => {
+    if (sort.sortByAscend) {
+      setSort({
+        label,
+        sortByAscend: false,
+        sortByDescend: true,
+      })
+      return
+    }
+
+    if (sort.sortByDescend) {
+      setSort({
+        label,
+        sortByAscend: false,
+        sortByDescend: false,
+      })
+      return
+    }
+
+    setSort({
+      label,
+      sortByAscend: true,
+      sortByDescend: false,
+    })
+  }
+
+  return (
+    <table className='mb-4 w-full border-separate border-spacing-y-1'>
+      <thead>
+        <tr className='text-gray-600 dark:text-gray-200'>
+          <th
+            onClick={() => onSortBy('event')}
+            className='flex w-2/5 cursor-pointer items-center pl-2 text-left sm:w-4/6'
+          >
+            {displayKeyAsHeader ? listId : t('project.value')}
+            <Sort
+              className='ml-1'
+              sortByAscend={sort.label === 'event' && sort.sortByAscend}
+              sortByDescend={sort.label === 'event' && sort.sortByDescend}
+            />
+          </th>
+          <th className='w-[30%] sm:w-1/6'>
+            <p onClick={() => onSortBy('quantity')} className='flex cursor-pointer items-center justify-end'>
+              {t('project.quantity')}
+              <Sort
+                className='ml-1'
+                sortByAscend={sort.label === 'quantity' && sort.sortByAscend}
+                sortByDescend={sort.label === 'quantity' && sort.sortByDescend}
+              />
+            </p>
+          </th>
+          <th className='w-[30%] pr-2 sm:w-1/6'>
+            <p onClick={() => onSortBy('conversion')} className='flex cursor-pointer items-center justify-end'>
+              {t('project.conversion')}
+              <Sort
+                className='ml-1'
+                sortByAscend={sort.label === 'conversion' && sort.sortByAscend}
+                sortByDescend={sort.label === 'conversion' && sort.sortByDescend}
+              />
+            </p>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {_map(sortedData, ({ event, quantity, conversion }) => (
+          <tr
+            key={event}
+            onClick={() => {
+              onClick(listId, event)
+            }}
+            className='group cursor-pointer py-3 text-gray-900 even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700'
+          >
+            <td className='flex items-center py-1 pl-2 text-left'>
+              {event}
+              <FunnelIcon className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300' />
+            </td>
+            <td className='py-1 text-right'>
+              {quantity}
+              &nbsp;&nbsp;
+            </td>
+            <td className='py-1 pr-2 text-right'>{conversion}%</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
+const KVTableContainer = ({ data, uniques, displayKeyAsHeader, onClick }: KVTableContainerProps) => {
+  const { t } = useTranslation('common')
   const processed = useMemo(() => {
     return _reduce(
       data,
@@ -345,59 +465,23 @@ const KVTable = ({ data, t, uniques, displayKeyAsHeader, onClick }: IKVTable) =>
         }
 
         acc[curr.key].push({
-          value: curr.value,
-          count: curr.count,
+          event: curr.value,
+          quantity: curr.count,
+          conversion: uniques === 0 ? 100 : _round((curr.count / uniques) * 100, 2),
         })
 
         return acc
       },
       {},
     )
-  }, [data])
+  }, [data, uniques])
 
   if (_isEmpty(data)) {
     return <p className='mb-2 text-gray-600 dark:text-gray-200'>{t('project.noData')}</p>
   }
 
   return _map(processed, (value, key) => {
-    return (
-      <table key={key} className='mb-4 w-full border-separate border-spacing-y-1'>
-        <thead>
-          <tr className='text-gray-600 dark:text-gray-200'>
-            <th className='flex w-2/5 items-center pl-2 text-left sm:w-4/6'>
-              {displayKeyAsHeader ? key : t('project.value')}
-            </th>
-            <th className='w-[30%] sm:w-1/6'>
-              <p className='flex items-center justify-end'>{t('project.quantity')}</p>
-            </th>
-            <th className='w-[30%] pr-2 sm:w-1/6'>
-              <p className='flex items-center justify-end'>{t('project.conversion')}</p>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {_map(value, ({ value: nestedValue, count }) => (
-            <tr
-              key={nestedValue}
-              onClick={() => {
-                onClick(key, nestedValue)
-              }}
-              className='group cursor-pointer py-3 text-gray-900 even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700'
-            >
-              <td className='flex items-center py-1 pl-2 text-left'>
-                {nestedValue}
-                <FunnelIcon className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300' />
-              </td>
-              <td className='py-1 text-right'>
-                {count}
-                &nbsp;&nbsp;
-              </td>
-              <td className='py-1 pr-2 text-right'>{uniques === 0 ? 100 : _round((count / uniques) * 100, 2)}%</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    )
+    return <KVTable key={key} listId={key} data={value} displayKeyAsHeader={displayKeyAsHeader} onClick={onClick} />
   })
 }
 
@@ -677,9 +761,8 @@ const CustomEvents = ({
               {activeEvents[ev] && !loadingEvents[ev] && (
                 <tr>
                   <td className='pl-9' colSpan={3}>
-                    <KVTable
+                    <KVTableContainer
                       data={eventsMetadata[ev]}
-                      t={t}
                       uniques={uniques}
                       onClick={async (key, value) => {
                         await onFilter(`ev:key:${key}`, value)
@@ -1121,9 +1204,8 @@ const PageProperties = ({
               {activeProperties[tag] && !loadingDetails[tag] && (
                 <tr>
                   <td className='pl-9' colSpan={3}>
-                    <KVTable
+                    <KVTableContainer
                       data={details[tag]}
-                      t={t}
                       uniques={uniques}
                       onClick={async (key, value) => {
                         await onFilter(`tag:key:${key}`, value)
