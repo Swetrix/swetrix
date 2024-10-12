@@ -93,12 +93,24 @@ const getQueryTimeString = (time: QueryTime): string => {
   return '0'
 }
 
-const getQueryCondition = (condition: QueryCondition): string => {
-  if (condition === QueryCondition.LESS_THAN) return '<'
-  if (condition === QueryCondition.LESS_EQUAL_THAN) return '<='
-  if (condition === QueryCondition.GREATER_THAN) return '>'
-  if (condition === QueryCondition.GREATER_EQUAL_THAN) return '>='
-  return ''
+const checkQueryCondition = (
+  a: number,
+  b: number,
+  condition: QueryCondition,
+) => {
+  if (condition === QueryCondition.LESS_THAN) {
+    return a < b
+  }
+  if (condition === QueryCondition.LESS_EQUAL_THAN) {
+    return a <= b
+  }
+  if (condition === QueryCondition.GREATER_THAN) {
+    return a > b
+  }
+  if (condition === QueryCondition.GREATER_EQUAL_THAN) {
+    return a >= b
+  }
+  return false
 }
 
 // TODO: Check custom events, CAPTCHA events and errors as well
@@ -993,7 +1005,7 @@ export class TaskManagerService {
       const online = await this.analyticsService.getOnlineUserCount(project.id)
       const text = `🔔 Alert *${alert.name}* got triggered!\nYour project *${project.name}* has *${online}* online users right now!`
 
-      if (online >= alert.queryValue) {
+      if (checkQueryCondition(online, alert.queryValue, alert.queryCondition)) {
         // @ts-expect-error
         await this.alertService.update(alert.id, {
           lastTriggered: new Date(),
@@ -1063,11 +1075,10 @@ export class TaskManagerService {
         alert.queryMetric === QueryMetric.UNIQUE_PAGE_VIEWS,
       )
       const time = getQueryTime(alert.queryTime)
-      const createdCondition = getQueryCondition(alert.queryCondition)
       const query =
         alert.queryMetric === QueryMetric.CUSTOM_EVENTS
-          ? `SELECT count() FROM customEV WHERE pid='${project.id}' AND ev={ev:String} AND created ${createdCondition} now() - ${time}`
-          : `SELECT count() FROM analytics WHERE pid='${project.id}' AND unique = '${isUnique}' AND created ${createdCondition} now() - ${time}`
+          ? `SELECT count() FROM customEV WHERE pid='${project.id}' AND ev={ev:String} AND created >= now() - ${time}`
+          : `SELECT count() FROM analytics WHERE pid='${project.id}' AND unique = '${isUnique}' AND created >= now() - ${time}`
 
       const params = {
         ev: alert.queryCustomEvent,
@@ -1082,7 +1093,7 @@ export class TaskManagerService {
 
       const count = Number(queryResult[0]['count()'])
 
-      if (count >= alert.queryValue) {
+      if (checkQueryCondition(count, alert.queryValue, alert.queryCondition)) {
         // @ts-expect-error
         await this.alertService.update(alert.id, {
           lastTriggered: new Date(),
