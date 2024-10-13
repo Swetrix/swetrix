@@ -18,8 +18,8 @@ import {
 import { ApiBearerAuth, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
 import { FormDataRequest } from 'nestjs-form-data'
 import { Like } from 'typeorm'
-import * as _map from 'lodash/map'
-import * as _size from 'lodash/size'
+import _map from 'lodash/map'
+import _size from 'lodash/size'
 import { CurrentUserId } from '../../auth/decorators/current-user-id.decorator'
 import { JwtAccessTokenGuard } from '../../auth/guards'
 import { Auth } from '../../auth/decorators'
@@ -107,8 +107,10 @@ export class ExtensionsController {
     })
 
     extensions = _map(extensions, extension => {
+      // @ts-expect-error
       extension.usersQuantity = _size(extension.users)
       extension.users = undefined
+      // @ts-expect-error
       extension.owner = this.extensionsService.filterOwner(extension.owner)
       return extension
     })
@@ -140,8 +142,10 @@ export class ExtensionsController {
       await this.extensionsService.getExtensions(queries)
 
     extensions = _map(extensions, extension => {
+      // @ts-expect-error
       extension.usersQuantity = _size(extension.users)
       extension.users = undefined
+      // @ts-expect-error
       extension.owner = this.extensionsService.filterOwner(extension.owner)
       return extension
     })
@@ -182,8 +186,10 @@ export class ExtensionsController {
     )
 
     extensions = _map(extensions, extension => {
+      // @ts-expect-error
       extension.usersQuantity = _size(extension.users)
       extension.users = undefined
+      // @ts-expect-error
       extension.owner = this.extensionsService.filterOwner(extension.owner)
       return extension
     })
@@ -260,8 +266,10 @@ export class ExtensionsController {
     )
 
     extensions = _map(extensions, extension => {
+      // @ts-expect-error
       extension.usersQuantity = _size(extension.users)
       extension.users = undefined
+      // @ts-expect-error
       extension.owner = this.extensionsService.filterOwner(extension.owner)
       return extension
     })
@@ -310,8 +318,10 @@ export class ExtensionsController {
       await this.extensionsService.searchExtension(queries)
 
     extensions = _map(extensions, extension => {
+      // @ts-expect-error
       extension.usersQuantity = _size(extension.users)
       extension.users = undefined
+      // @ts-expect-error
       extension.owner = this.extensionsService.filterOwner(extension.owner)
       return extension
     })

@@ -1,5 +1,5 @@
 import { ForbiddenException, Injectable } from '@nestjs/common'
-import * as _pick from 'lodash/pick'
+import _pick from 'lodash/pick'
 import { InjectRepository } from '@nestjs/typeorm'
 import { FindManyOptions, FindOneOptions, Like, Repository } from 'typeorm'
 import { UserService } from 'src/user/user.service'

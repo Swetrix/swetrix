@@ -34,18 +34,18 @@ import {
   ApiNoContentResponse,
 } from '@nestjs/swagger'
 import { Equal, FindConditions, ILike, In } from 'typeorm'
-import * as _isEmpty from 'lodash/isEmpty'
-import * as _map from 'lodash/map'
-import * as _trim from 'lodash/trim'
-import * as _size from 'lodash/size'
-import * as _includes from 'lodash/includes'
-import * as _isBoolean from 'lodash/isBoolean'
-import * as _omit from 'lodash/omit'
-import * as _split from 'lodash/split'
-import * as _head from 'lodash/head'
-import * as _filter from 'lodash/filter'
-import * as _find from 'lodash/find'
-import * as dayjs from 'dayjs'
+import _isEmpty from 'lodash/isEmpty'
+import _map from 'lodash/map'
+import _trim from 'lodash/trim'
+import _size from 'lodash/size'
+import _includes from 'lodash/includes'
+import _isBoolean from 'lodash/isBoolean'
+import _omit from 'lodash/omit'
+import _split from 'lodash/split'
+import _head from 'lodash/head'
+import _filter from 'lodash/filter'
+import _find from 'lodash/find'
+import dayjs from 'dayjs'
 
 import { hash } from 'bcrypt'
 import { JwtAccessTokenGuard } from '../auth/guards'
@@ -235,6 +235,7 @@ export class ProjectController {
 
     const projects = await this.projectService.find(where)
 
+    // @ts-expect-error
     return _map(projects, (p: Project) => ({
       id: p.id,
       name: p.name,
@@ -293,6 +294,7 @@ export class ProjectController {
         _map(paginated.results, ({ project }) => project.id),
       )
 
+    // @ts-expect-error
     paginated.results = _map(paginated.results, share => {
       const project = processProjectUser(share.project)
 
@@ -453,8 +455,8 @@ export class ProjectController {
           _filter(
             user.projects,
             (project: Project) => project.isCaptchaProject,
-          ) >= maxProjects,
-        )
+          ),
+        ) >= maxProjects
       ) {
         throw new HttpException(
           `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
@@ -466,8 +468,8 @@ export class ProjectController {
         _filter(
           user.projects,
           (project: Project) => project.isAnalyticsProject,
-        ) >= maxProjects,
-      )
+        ),
+      ) >= maxProjects
     ) {
       throw new ForbiddenException(
         `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
@@ -526,6 +528,7 @@ export class ProjectController {
 
       await this.userService.create(user)
 
+      // @ts-expect-error
       return _omit(newProject, ['passwordHash'])
     } catch (reason) {
       console.error('[ERROR] Failed to create a new project:')
@@ -1666,7 +1669,7 @@ export class ProjectController {
       )
       const { maxProjects = PROJECTS_MAXIMUM } = user
 
-      if (_size(captchaProjects >= maxProjects)) {
+      if (_size(captchaProjects) >= maxProjects) {
         throw new ForbiddenException(
           `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
         )
@@ -1676,6 +1679,7 @@ export class ProjectController {
       project.isCaptchaEnabled = true
     }
 
+    // @ts-expect-error
     await this.projectService.update(id, _omit(project, ['share', 'admin']))
 
     return _omit(project, ['passwordHash'])
@@ -1844,6 +1848,7 @@ export class ProjectController {
       }
     }
 
+    // @ts-expect-error
     await this.projectService.update(id, _omit(project, ['share', 'admin']))
 
     // await updateProjectRedis(id, project)
@@ -1924,6 +1929,7 @@ export class ProjectController {
       { project: In(pids) },
     )
 
+    // @ts-expect-error
     result.results = _map(result.results, monitor => ({
       ..._omit(monitor, ['project']),
       projectId: monitor.project.id,
@@ -2224,6 +2230,7 @@ export class ProjectController {
       { project: Equal(project.id) },
     )
 
+    // @ts-expect-error
     result.results = _map(result.results, monitor => ({
       ..._omit(monitor, ['project']),
       projectId: monitor.project.id,

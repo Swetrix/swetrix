@@ -1,32 +1,32 @@
-import * as crypto from 'crypto'
-import * as _isEmpty from 'lodash/isEmpty'
-import * as _split from 'lodash/split'
-import * as _reverse from 'lodash/reverse'
-import * as _size from 'lodash/size'
-import * as _includes from 'lodash/includes'
-import * as _map from 'lodash/map'
-import * as _toUpper from 'lodash/toUpper'
-import * as _head from 'lodash/head'
-import * as _join from 'lodash/join'
-import * as _isArray from 'lodash/isArray'
-import * as _startsWith from 'lodash/startsWith'
-import * as _sortBy from 'lodash/sortBy'
-import * as _reduce from 'lodash/reduce'
-import * as _keys from 'lodash/keys'
-import * as _last from 'lodash/last'
-import * as _replace from 'lodash/replace'
-import * as _some from 'lodash/some'
-import * as _find from 'lodash/find'
-import * as _now from 'lodash/now'
-import * as _isString from 'lodash/isString'
-import * as _values from 'lodash/values'
-import * as _round from 'lodash/round'
-import * as _filter from 'lodash/filter'
-import * as dayjs from 'dayjs'
-import * as utc from 'dayjs/plugin/utc'
-import * as dayjsTimezone from 'dayjs/plugin/timezone'
-import * as isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
-import * as ipRangeCheck from 'ip-range-check'
+import crypto from 'crypto'
+import _isEmpty from 'lodash/isEmpty'
+import _split from 'lodash/split'
+import _reverse from 'lodash/reverse'
+import _size from 'lodash/size'
+import _includes from 'lodash/includes'
+import _map from 'lodash/map'
+import _toUpper from 'lodash/toUpper'
+import _head from 'lodash/head'
+import _join from 'lodash/join'
+import _isArray from 'lodash/isArray'
+import _startsWith from 'lodash/startsWith'
+import _sortBy from 'lodash/sortBy'
+import _reduce from 'lodash/reduce'
+import _keys from 'lodash/keys'
+import _last from 'lodash/last'
+import _replace from 'lodash/replace'
+import _some from 'lodash/some'
+import _find from 'lodash/find'
+import _now from 'lodash/now'
+import _isString from 'lodash/isString'
+import _values from 'lodash/values'
+import _round from 'lodash/round'
+import _filter from 'lodash/filter'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import dayjsTimezone from 'dayjs/plugin/timezone'
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
+import ipRangeCheck from 'ip-range-check'
 import validator from 'validator'
 import { hash } from 'blake3'
 import {
@@ -409,7 +409,7 @@ export class AnalyticsService {
   checkOrigin(project: Project, origin: string): void {
     // For some reasons the project.origins sometimes may look like [''], let's filter it out
     // TODO: Properly validate the origins on project update
-    const origins = _filter(project.origins, Boolean)
+    const origins = _filter(project.origins, Boolean) as string[]
 
     if (!_isEmpty(origins) && !_isEmpty(origin)) {
       if (origin === 'null') {
@@ -433,7 +433,7 @@ export class AnalyticsService {
   checkIpBlacklist(project: Project, ip: string): void {
     // For some reasons the project.ipBlacklist sometimes may look like [''], let's filter it out
     // TODO: Properly validate the ipBlacklist on project update
-    const ipBlacklist = _filter(project.ipBlacklist, Boolean)
+    const ipBlacklist = _filter(project.ipBlacklist, Boolean) as string[]
 
     if (!_isEmpty(ipBlacklist) && ipRangeCheck(ip, ipBlacklist)) {
       throw new BadRequestException(
@@ -618,9 +618,15 @@ export class AnalyticsService {
         groupTo = djsNow
       } else {
         if (period === '1d' || period === '1h') {
-          groupFrom = djsNow.subtract(parseInt(period, 10), _last(period))
+          groupFrom = djsNow.subtract(
+            parseInt(period, 10),
+            _last(period) as dayjs.ManipulateType,
+          )
         } else {
-          groupFrom = djsNow.subtract(parseInt(period, 10) - 1, _last(period))
+          groupFrom = djsNow.subtract(
+            parseInt(period, 10) - 1,
+            _last(period) as dayjs.ManipulateType,
+          )
         }
 
         groupFrom = groupFrom.startOf(timeBucket)
@@ -750,7 +756,7 @@ export class AnalyticsService {
     return getSessionKey(ip, userAgent, pid, salt)
   }
 
-  async isSessionDurationOpen(sdKey: string): Promise<Array<string | boolean>> {
+  async isSessionDurationOpen(sdKey: string): Promise<[string, boolean]> {
     const sd = await redis.get(sdKey)
     return [sd, Boolean(sd)]
   }
@@ -1361,7 +1367,7 @@ export class AnalyticsService {
             .format('YYYY-MM-DD HH:mm:ss')
         } else {
           const amountToSubtract = parseInt(period, 10)
-          const unit = _replace(period, /[0-9]/g, '')
+          const unit = _replace(period, /[0-9]/g, '') as dayjs.ManipulateType
 
           now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
           const periodRaw = dayjs.utc().subtract(amountToSubtract, unit)
@@ -1500,7 +1506,7 @@ export class AnalyticsService {
             .format('YYYY-MM-DD HH:mm:ss')
         } else {
           const amountToSubtract = parseInt(period, 10)
-          const unit = _replace(period, /[0-9]/g, '')
+          const unit = _replace(period, /[0-9]/g, '') as dayjs.ManipulateType
 
           now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
           const periodRaw = dayjs.utc().subtract(amountToSubtract, unit)
@@ -1707,7 +1713,7 @@ export class AnalyticsService {
             .format('YYYY-MM-DD HH:mm:ss')
         } else {
           const amountToSubtract = parseInt(period, 10)
-          const unit = _replace(period, /[0-9]/g, '')
+          const unit = _replace(period, /[0-9]/g, '') as dayjs.ManipulateType
 
           now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
           const periodRaw = dayjs.utc().subtract(amountToSubtract, unit)
@@ -1902,7 +1908,7 @@ export class AnalyticsService {
             .format('YYYY-MM-DD HH:mm:ss')
         } else {
           const amountToSubtract = parseInt(period, 10)
-          const unit = _replace(period, /[0-9]/g, '')
+          const unit = _replace(period, /[0-9]/g, '') as dayjs.ManipulateType
 
           now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
           const periodRaw = dayjs.utc().subtract(amountToSubtract, unit)
@@ -4247,7 +4253,7 @@ export class AnalyticsService {
           .format('YYYY-MM-DD HH:mm:ss')
       } else {
         const amountToSubtract = parseInt(period, 10)
-        const unit = _replace(period, /[0-9]/g, '')
+        const unit = _replace(period, /[0-9]/g, '') as dayjs.ManipulateType
 
         now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
         const periodRaw = dayjs.utc().subtract(amountToSubtract, unit)

@@ -2,8 +2,8 @@ import './instrument'
 
 import { NestFactory } from '@nestjs/core'
 import { ValidationPipe, VersioningType } from '@nestjs/common'
-import * as cookieParser from 'cookie-parser'
-import * as bodyParser from 'body-parser'
+import cookieParser from 'cookie-parser'
+import bodyParser from 'body-parser'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 import { getBotToken } from 'nestjs-telegraf'
 

@@ -12,8 +12,8 @@ import {
   BadRequestException,
 } from '@nestjs/common'
 import { ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
-import * as _includes from 'lodash/includes'
-import * as _omit from 'lodash/omit'
+import _includes from 'lodash/includes'
+import _omit from 'lodash/omit'
 import { UserService } from '../../user/user.service'
 import { ExtensionsService } from '../extensions/extensions.service'
 import { Auth, CurrentUserId } from '../../auth/decorators'
@@ -174,6 +174,7 @@ export class CommentsController {
 
     return {
       ...replyComment,
+      // @ts-expect-error
       parentComment: _omit(replyComment.parentComment, ['userId']),
       isOwner: true,
     }

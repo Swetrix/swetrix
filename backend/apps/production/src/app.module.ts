@@ -1,4 +1,4 @@
-import * as _toNumber from 'lodash/toNumber'
+import _toNumber from 'lodash/toNumber'
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { ConfigModule } from '@nestjs/config'

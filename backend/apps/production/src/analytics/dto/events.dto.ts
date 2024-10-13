@@ -1,6 +1,6 @@
-import * as _keys from 'lodash/keys'
-import * as _values from 'lodash/values'
-import * as _some from 'lodash/some'
+import _keys from 'lodash/keys'
+import _values from 'lodash/values'
+import _some from 'lodash/some'
 import { ApiProperty } from '@nestjs/swagger'
 import {
   IsNotEmpty,

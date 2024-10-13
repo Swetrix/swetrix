@@ -9,7 +9,7 @@ import {
   Ip,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
-import * as _find from 'lodash/find'
+import _find from 'lodash/find'
 
 import { ProjectService } from '../project/project.service'
 import { getIPFromHeaders } from '../common/utils'

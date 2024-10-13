@@ -16,10 +16,10 @@ import {
 } from '@nestjs/common'
 import { In } from 'typeorm'
 import { ApiTags, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
-import * as _isEmpty from 'lodash/isEmpty'
-import * as _map from 'lodash/map'
-import * as _omit from 'lodash/omit'
-import * as _pick from 'lodash/pick'
+import _isEmpty from 'lodash/isEmpty'
+import _map from 'lodash/map'
+import _omit from 'lodash/omit'
+import _pick from 'lodash/pick'
 
 import { UserService } from '../user/user.service'
 import { ProjectService } from '../project/project.service'
@@ -71,6 +71,7 @@ export class AlertController {
       ['project'],
     )
 
+    // @ts-expect-error
     result.results = _map(result.results, alert => ({
       ..._omit(alert, ['project']),
       pid: alert.project.id,
@@ -143,7 +144,7 @@ export class AlertController {
     }
 
     try {
-      let alert = new Alert()
+      let alert = new Alert() as Partial<Alert>
       Object.assign(alert, alertDTO)
       alert = _omit(alert, ['pid'])
 

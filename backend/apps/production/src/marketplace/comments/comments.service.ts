@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { FindManyOptions, FindOneOptions, Repository } from 'typeorm'
-import * as _isEmpty from 'lodash/isEmpty'
+import _isEmpty from 'lodash/isEmpty'
 import { Comment } from './entities/comment.entity'
 import { CreateReplyCommentBodyDto } from './dtos/bodies/create-reply.dto'
 import { UpdateCommentReplyBodyDto } from './dtos/bodies/update-reply.dto'

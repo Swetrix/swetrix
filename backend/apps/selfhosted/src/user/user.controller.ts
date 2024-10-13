@@ -7,7 +7,7 @@ import {
   BadRequestException,
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
-import * as _omit from 'lodash/omit'
+import _omit from 'lodash/omit'
 
 import { JwtAccessTokenGuard } from '../auth/guards'
 import {
