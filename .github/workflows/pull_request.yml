@@ -28,6 +28,9 @@ jobs:
       - name: Backend Lint Validation
         run: npm run lint
         working-directory: backend
+      - name: Backend TypeScript Validation
+        run: npm run lint:tsc
+        working-directory: backend
 
   web-checks:
     name: Web Checks
