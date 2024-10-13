@@ -1,15 +1,15 @@
-import * as _round from 'lodash/round'
-import * as _isEmpty from 'lodash/isEmpty'
-import * as _keys from 'lodash/keys'
-import * as _values from 'lodash/values'
-import * as dayjs from 'dayjs'
-import * as utc from 'dayjs/plugin/utc'
+import _round from 'lodash/round'
+import _isEmpty from 'lodash/isEmpty'
+import _keys from 'lodash/keys'
+import _values from 'lodash/values'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
 
 dayjs.extend(utc)
 
 const processMetaKV = (
   rawMeta: Record<string, string>,
-): { 'meta.key': string | null; 'meta.value': string | null } => {
+): { 'meta.key': string[] | null; 'meta.value': string[] | null } => {
   if (!rawMeta || _isEmpty(rawMeta)) {
     return {
       'meta.key': null,

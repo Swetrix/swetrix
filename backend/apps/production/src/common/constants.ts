@@ -1,7 +1,7 @@
 import Redis from 'ioredis'
-import * as path from 'path'
+import path from 'path'
 import { hash } from 'blake3'
-import * as _toNumber from 'lodash/toNumber'
+import _toNumber from 'lodash/toNumber'
 import 'dotenv/config'
 
 const { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, EMAIL_ACTION_ENCRYPTION_KEY } =

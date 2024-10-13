@@ -11,12 +11,12 @@ import axios from 'axios'
 import { genSalt, hash, compare } from 'bcrypt'
 import { getCountry } from 'countries-and-timezones'
 import { Auth } from 'googleapis'
-import * as dayjs from 'dayjs'
+import dayjs from 'dayjs'
 import { UAParser } from 'ua-parser-js'
-import * as _pick from 'lodash/pick'
-import * as _split from 'lodash/split'
-import * as _isEmpty from 'lodash/isEmpty'
-import * as _find from 'lodash/find'
+import _pick from 'lodash/pick'
+import _split from 'lodash/split'
+import _isEmpty from 'lodash/isEmpty'
+import _find from 'lodash/find'
 import { v4 as uuidv4 } from 'uuid'
 
 import {
@@ -493,6 +493,7 @@ export class AuthService {
     )
 
     if (user.isTwoFactorAuthenticationEnabled) {
+      // @ts-expect-error
       user = _pick(user, ['isTwoFactorAuthenticationEnabled', 'email'])
     } else {
       user = await this.getSharedProjectsForUser(user)
@@ -944,6 +945,7 @@ export class AuthService {
     )
 
     if (user.isTwoFactorAuthenticationEnabled) {
+      // @ts-expect-error
       user = _pick(user, ['isTwoFactorAuthenticationEnabled', 'email'])
     } else {
       user = await this.getSharedProjectsForUser(user)

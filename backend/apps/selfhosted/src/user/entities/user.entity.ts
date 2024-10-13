@@ -1,4 +1,4 @@
-import * as _omit from 'lodash/omit'
+import _omit from 'lodash/omit'
 import { SELFHOSTED_EMAIL, SELFHOSTED_UUID } from '../../common/constants'
 import { getUserClickhouse } from '../../common/utils'
 

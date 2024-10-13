@@ -1,4 +1,4 @@
-import * as net from 'net'
+import net from 'net'
 import {
   ForbiddenException,
   Injectable,
@@ -8,18 +8,18 @@ import {
   ConflictException,
 } from '@nestjs/common'
 import { customAlphabet } from 'nanoid'
-import * as _isEmpty from 'lodash/isEmpty'
-import * as _isString from 'lodash/isString'
-import * as _size from 'lodash/size'
-import * as _join from 'lodash/join'
-import * as _filter from 'lodash/filter'
-import * as _includes from 'lodash/includes'
-import * as _find from 'lodash/find'
-import * as _map from 'lodash/map'
-import * as _isNull from 'lodash/isNull'
-import * as _split from 'lodash/split'
-import * as _trim from 'lodash/trim'
-import * as _reduce from 'lodash/reduce'
+import _isEmpty from 'lodash/isEmpty'
+import _isString from 'lodash/isString'
+import _size from 'lodash/size'
+import _join from 'lodash/join'
+import _filter from 'lodash/filter'
+import _includes from 'lodash/includes'
+import _find from 'lodash/find'
+import _map from 'lodash/map'
+import _isNull from 'lodash/isNull'
+import _split from 'lodash/split'
+import _trim from 'lodash/trim'
+import _reduce from 'lodash/reduce'
 import { compareSync } from 'bcrypt'
 
 import { Project } from './entity/project.entity'

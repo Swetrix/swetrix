@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import { genSalt, hash } from 'bcrypt'
-import * as _isEmpty from 'lodash/isEmpty'
+import _isEmpty from 'lodash/isEmpty'
 
 import {
   saveRefreshTokenClickhouse,

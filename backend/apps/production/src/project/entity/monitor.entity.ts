@@ -51,7 +51,7 @@ export class MonitorEntity {
   @Column({ type: 'text', nullable: true })
   description: string | null
 
-  @ManyToOne(() => Project, project => project.monitors, {
+  @ManyToOne(() => Project, entity => entity.monitors, {
     onDelete: 'CASCADE',
   })
   project: Project

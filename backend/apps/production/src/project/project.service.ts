@@ -1,4 +1,4 @@
-import * as net from 'net'
+import net from 'net'
 import {
   ForbiddenException,
   Injectable,
@@ -13,19 +13,19 @@ import { FindOneOptions, Repository } from 'typeorm'
 import { customAlphabet } from 'nanoid'
 import handlebars from 'handlebars'
 import puppeteer from 'puppeteer'
-import * as CryptoJS from 'crypto-js'
-import * as _isEmpty from 'lodash/isEmpty'
-import * as _size from 'lodash/size'
-import * as _join from 'lodash/join'
-import * as _map from 'lodash/map'
-import * as _pick from 'lodash/pick'
-import * as _trim from 'lodash/trim'
-import * as _findIndex from 'lodash/findIndex'
-import * as _filter from 'lodash/filter'
-import * as _includes from 'lodash/includes'
-import * as _reduce from 'lodash/reduce'
-import * as dayjs from 'dayjs'
-import * as utc from 'dayjs/plugin/utc'
+import CryptoJS from 'crypto-js'
+import _isEmpty from 'lodash/isEmpty'
+import _size from 'lodash/size'
+import _join from 'lodash/join'
+import _map from 'lodash/map'
+import _pick from 'lodash/pick'
+import _trim from 'lodash/trim'
+import _findIndex from 'lodash/findIndex'
+import _filter from 'lodash/filter'
+import _includes from 'lodash/includes'
+import _reduce from 'lodash/reduce'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
 import { compareSync } from 'bcrypt'
 import { firstValueFrom } from 'rxjs'
 import { HttpService } from '@nestjs/axios'
@@ -135,6 +135,7 @@ export const processProjectUser = (project: Project): Project => {
     const { user } = share[j]
 
     if (user) {
+      // @ts-expect-error _pick(user, ['email']) is partial but share[j].user expects full User entity
       share[j].user = _pick(user, ['email'])
     }
   }
@@ -422,7 +423,7 @@ export class ProjectService {
     return this.projectsRepository.delete(id)
   }
 
-  async deleteMultiple(pids: string[]): Promise<any> {
+  async deleteMultiple(pids: string): Promise<any> {
     return (
       this.projectsRepository
         .createQueryBuilder()
@@ -1376,8 +1377,8 @@ export class ProjectService {
     return _filter(
       filters,
       ({ column }) =>
-        _includes(ALL_COLUMNS, column) ||
-        _includes(TRAFFIC_METAKEY_COLUMNS, column),
+        _includes(ALL_COLUMNS, column as string) ||
+        _includes(TRAFFIC_METAKEY_COLUMNS, column as string),
     )
   }
 

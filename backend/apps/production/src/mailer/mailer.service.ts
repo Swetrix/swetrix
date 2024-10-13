@@ -1,5 +1,5 @@
-import * as fs from 'fs'
-import * as path from 'path'
+import fs from 'fs'
+import path from 'path'
 import { MailerService as NodeMailerService } from '@nestjs-modules/mailer'
 import { Injectable } from '@nestjs/common'
 import handlebars from 'handlebars'

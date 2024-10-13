@@ -25,7 +25,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger'
 import { I18nValidationExceptionFilter, I18n, I18nContext } from 'nestjs-i18n'
-import * as _pick from 'lodash/pick'
+import _pick from 'lodash/pick'
 
 import { checkRateLimit, getIPFromHeaders } from '../common/utils'
 import { UserType, User } from '../user/entities/user.entity'
@@ -156,6 +156,7 @@ export class AuthController {
     await this.authService.sendTelegramNotification(user.id, headers, ip)
 
     if (user.isTwoFactorAuthenticationEnabled) {
+      // @ts-expect-error
       user = _pick(user, ['isTwoFactorAuthenticationEnabled', 'email'])
     } else {
       user = await this.authService.getSharedProjectsForUser(user as User)

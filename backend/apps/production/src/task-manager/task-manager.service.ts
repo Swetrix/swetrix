@@ -2,20 +2,20 @@ import { Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
 import { IsNull, LessThan, In, Not, Between, MoreThan, Like } from 'typeorm'
 import { ConfigService } from '@nestjs/config'
-import * as Paypal from '@paypal/payouts-sdk'
-import * as bcrypt from 'bcrypt'
-import * as dayjs from 'dayjs'
-import * as utc from 'dayjs/plugin/utc'
-import * as _isEmpty from 'lodash/isEmpty'
-import * as _isNull from 'lodash/isNull'
-import * as _size from 'lodash/size'
-import * as _map from 'lodash/map'
-import * as _now from 'lodash/now'
-import * as _find from 'lodash/find'
-import * as _includes from 'lodash/includes'
-import * as _toNumber from 'lodash/toNumber'
-import * as _reduce from 'lodash/reduce'
-import * as _filter from 'lodash/filter'
+import Paypal from '@paypal/payouts-sdk'
+import bcrypt from 'bcrypt'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import _isEmpty from 'lodash/isEmpty'
+import _isNull from 'lodash/isNull'
+import _size from 'lodash/size'
+import _map from 'lodash/map'
+import _now from 'lodash/now'
+import _find from 'lodash/find'
+import _includes from 'lodash/includes'
+import _toNumber from 'lodash/toNumber'
+import _reduce from 'lodash/reduce'
+import _filter from 'lodash/filter'
 import { HttpService } from '@nestjs/axios'
 import { firstValueFrom } from 'rxjs'
 
@@ -146,7 +146,7 @@ const getUsersThatExceedPlanUsage = (
   users: User[],
   usage: CHPlanUsage[],
   allowedExceed = TRAFFIC_SPIKE_ALLOWED_PERCENTAGE,
-): User & { usage: number }[] => {
+): (User & { usage: number })[] => {
   const usageMap = _reduce(
     usage,
     (acc, value: CHPlanUsage) => ({
@@ -169,7 +169,7 @@ const getUsersThatExceedPlanUsage = (
     }
   }
 
-  return exceedingUsers as User & { usage: number }[]
+  return exceedingUsers
 }
 
 const getUserIDsThatExceedPlanUsage = (
@@ -202,7 +202,7 @@ const getUserIDsThatExceedPlanUsage = (
 const getUsersThatExceedContinuously = (
   users: User[],
   usage: CHPlanUsage[][],
-): User & { usage: any[] }[] => {
+): (User & { usage: any[] })[] => {
   const transformedUsage = _map(usage, (el: CHPlanUsage[]) => {
     return _reduce(
       el,
@@ -237,7 +237,7 @@ const getUsersThatExceedContinuously = (
     }
   }
 
-  return exceedingUsers as User & { usage: any[] }[]
+  return exceedingUsers
 }
 
 const EMAIL_REPORTS_MAP = {
@@ -1428,7 +1428,7 @@ export class TaskManagerService {
       },
       items: _reduce(
         payouts,
-        (acc, value, key) => {
+        (acc, value: any, key) => {
           acc.push({
             recipient_type: 'EMAIL',
             amount: {

@@ -1,5 +1,5 @@
 import Redis from 'ioredis'
-import * as _toNumber from 'lodash/toNumber'
+import _toNumber from 'lodash/toNumber'
 
 import { getSelfhostedUUID } from './utils'
 import 'dotenv/config'

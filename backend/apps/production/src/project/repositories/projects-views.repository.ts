@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import * as _map from 'lodash/map'
-import * as _isEmpty from 'lodash/isEmpty'
+import _map from 'lodash/map'
+import _isEmpty from 'lodash/isEmpty'
 import { ProjectViewEntity } from '../entity/project-view.entity'
 import { CreateProjectViewDto, Filter } from '../dto/create-project-view.dto'
 import { UpdateProjectViewDto } from '../dto/update-project-view.dto'
@@ -17,7 +17,9 @@ export class ProjectsViewsRepository {
     private projectViewCustomEventsRepository: Repository<ProjectViewCustomEventEntity>,
   ) {}
 
-  async findViews(projectId: string): Promise<(typeof this.processView)[]> {
+  async findViews(
+    projectId: string,
+  ): Promise<ReturnType<typeof this.processView>[]> {
     const views = await this.viewsRepository.find({
       where: { projectId },
       relations: ['customEvents'],

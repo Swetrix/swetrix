@@ -1,13 +1,13 @@
-import * as _isEmpty from 'lodash/isEmpty'
-import * as _isArray from 'lodash/isArray'
-import * as _pick from 'lodash/pick'
-import * as _map from 'lodash/map'
-import * as _uniqBy from 'lodash/uniqBy'
-import * as _includes from 'lodash/includes'
-import * as _size from 'lodash/size'
-import * as dayjs from 'dayjs'
-import * as utc from 'dayjs/plugin/utc'
-import * as dayjsTimezone from 'dayjs/plugin/timezone'
+import _isEmpty from 'lodash/isEmpty'
+import _isArray from 'lodash/isArray'
+import _pick from 'lodash/pick'
+import _map from 'lodash/map'
+import _uniqBy from 'lodash/uniqBy'
+import _includes from 'lodash/includes'
+import _size from 'lodash/size'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import dayjsTimezone from 'dayjs/plugin/timezone'
 import { hash } from 'blake3'
 import {
   Controller,
@@ -26,7 +26,7 @@ import {
   Response,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
-import * as UAParser from 'ua-parser-js'
+import UAParser from 'ua-parser-js'
 import { isbot } from 'isbot'
 
 import { OptionalJwtAccessTokenGuard } from '../auth/guards'
