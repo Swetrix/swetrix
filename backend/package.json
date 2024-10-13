@@ -2,7 +2,7 @@
   "name": "swetrix-api",
   "version": "3.2.0",
   "description": "Swetrix API",
-  "author": "Andrii R. <contact@swetrix.com>",
+  "author": "Swetrix Ltd. <contact@swetrix.com>",
   "private": true,
   "license": "AGPL-3.0",
   "scripts": {
@@ -23,6 +23,7 @@
     "start:prod": "npm run clickhouse:initialise && cross-env NODE_ENV=production node dist/main",
     "lint": "eslint \"{apps/production/src,apps/selfhosted/src}/**/*.ts\"",
     "lint:fix": "eslint \"{apps/production/src,apps/selfhosted/src}/**/*.ts\" --fix",
+    "lint:tsc": "tsc --noEmit",
     "find-deadcode": "ts-prune",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org my-org-f6 --project swetrix-api ./dist && sentry-cli sourcemaps upload --org my-org-f6 --project swetrix-api ./dist"
   },
@@ -110,6 +111,7 @@
     "@types/express": "^4.17.21",
     "@types/ioredis": "^4.28.10",
     "@types/jest": "^29.5.12",
+    "@types/lodash": "^4.17.10",
     "@types/multer": "^1.4.11",
     "@types/node": "^22.2.0",
     "@types/nodemailer": "^6.4.15",
@@ -155,5 +157,8 @@
   },
   "resolutions": {
     "string-width": "4.2.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
