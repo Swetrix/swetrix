@@ -783,17 +783,23 @@ export class TaskManagerService {
     if (_size(toSave) > 0) {
       await redis.del(..._map(toSave, ([key]) => key))
 
-      const setSdurQuery = `ALTER TABLE analytics UPDATE sdur = sdur + CASE ${_map(
-        toSave,
-        ([key, duration]) =>
-          `WHEN sid = '${key.split(':')[1]}' THEN ${duration / 1000}`, // converting to seconds
-      ).join(' ')} END WHERE sid IN (${_map(
-        toSave,
-        ([key]) => `'${key.split(':')[1]}'`,
-      ).join(',')})`
+      const psids = _map(toSave, ([key]) => `'${key.split(':')[1]}'`)
+
+      const setSdurQuery = `
+        ALTER TABLE
+          analytics
+        UPDATE sdur = sdur + CASE ${_map(
+          toSave,
+          ([key, duration]) =>
+            `WHEN psid = ${key.split(':')[1]} THEN ${duration / 1000}`, // converting to seconds
+        ).join(' ')} END WHERE psid IN ({ psids: Array(String) })
+      `
 
       await clickhouse.query({
         query: setSdurQuery,
+        query_params: {
+          psids,
+        },
       })
     }
   }

@@ -8,7 +8,6 @@ const CLICKHOUSE_INIT_QUERIES = [
   `CREATE TABLE IF NOT EXISTS ${dbName}.analytics
   (
     psid Nullable(UInt64),
-    sid Nullable(String),
     pid FixedString(12),
     pg Nullable(String),
     prev Nullable(String),

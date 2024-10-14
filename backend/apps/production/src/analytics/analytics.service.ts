@@ -109,14 +109,10 @@ dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
 dayjs.extend(isSameOrBefore)
 
-export const getSessionKey = (ip: string, ua: string, pid: string, salt = '') =>
-  `ses_${hash(`${ua}${ip}${pid}${salt}`)}`
-
 export const getHeartbeatKey = (pid: string, sessionID: string) =>
   `hb:${pid}:${sessionID}`
 
-const getSessionDurationKey = (sessionHash: string, pid: string) =>
-  `sd:${sessionHash}:${pid}`
+const getSessionDurationKey = (psid: string, pid: string) => `sd:${psid}:${pid}`
 
 const GMT_0_TIMEZONES = [
   'Atlantic/Azores',
@@ -749,11 +745,9 @@ export class AnalyticsService {
     userAgent: string,
     ip: string,
   ): Promise<string> {
-    this.validatePID(pid)
-
     const salt = await redis.get(REDIS_SESSION_SALT_KEY)
 
-    return getSessionKey(ip, userAgent, pid, salt)
+    return `ses_${hash(`${userAgent}${ip}${pid}${salt || ''}`)}`
   }
 
   async isSessionDurationOpen(sdKey: string): Promise<[string, boolean]> {
@@ -762,8 +756,8 @@ export class AnalyticsService {
   }
 
   // Processes interaction for session duration
-  async processInteractionSD(sessionHash: string, pid: string): Promise<void> {
-    const sdKey = getSessionDurationKey(sessionHash, pid)
+  async processInteractionSD(psid: string, pid: string): Promise<void> {
+    const sdKey = getSessionDurationKey(psid, pid)
     const [sd, isOpened] = await this.isSessionDurationOpen(sdKey)
     const now = _now()
 
@@ -1106,7 +1100,13 @@ export class AnalyticsService {
    * @param sessionHash
    * @returns [isUnique, psid]
    */
-  async isUnique(sessionHash: string): Promise<[boolean, string]> {
+  async isUnique(
+    pid: string,
+    userAgent: string,
+    ip: string,
+  ): Promise<[boolean, string]> {
+    const sessionHash = await this.getSessionHash(pid, userAgent, ip)
+
     let psid = await redis.get(sessionHash)
     const exists = Boolean(psid)
 
