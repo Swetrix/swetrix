@@ -1,5 +1,4 @@
 import { Injectable, BadRequestException } from '@nestjs/common'
-import { hash } from 'blake3'
 import svgCaptcha from 'svg-captcha'
 import CryptoJS from 'crypto-js'
 import _toLower from 'lodash/toLower'
@@ -18,7 +17,7 @@ import {
   CAPTCHA_SALT,
   CAPTCHA_TOKEN_LIFETIME,
 } from '../common/constants'
-import { getGeoDetails } from '../common/utils'
+import { getGeoDetails, hash } from '../common/utils'
 import { GeneratedCaptcha } from './interfaces/generated-captcha'
 import { captchaTransformer } from './utils/transformers'
 import { clickhouse } from '../common/integrations/clickhouse'
@@ -205,7 +204,7 @@ export class CaptchaService {
   }
 
   hashCaptcha(text: string): string {
-    return hash(captchaString(text)).toString('hex')
+    return hash(captchaString(text))
   }
 
   async generateCaptcha(theme: string): Promise<GeneratedCaptcha> {

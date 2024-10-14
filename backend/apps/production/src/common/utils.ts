@@ -1,8 +1,8 @@
+import { xxh3 } from '@node-rs/xxhash'
 import path from 'path'
 import fs from 'fs'
 import { Reader, CityResponse } from 'maxmind'
 import { HttpException } from '@nestjs/common'
-import { hash } from 'blake3'
 import timezones from 'countries-and-timezones'
 import randomstring from 'randomstring'
 import _sample from 'lodash/sample'
@@ -14,6 +14,13 @@ import _round from 'lodash/round'
 import _split from 'lodash/split'
 
 import { redis, isDevelopment, isProxiedByCloudflare } from './constants'
+
+/*
+  Returns 128 bit (a string of 32 chars) hash of the provided string using xxHash algo.
+*/
+export const hash = (content: string): string => {
+  return xxh3.xxh128(content).toString(16)
+}
 
 const marketingTips = {
   en: [
@@ -41,9 +48,9 @@ const RATE_LIMIT_REQUESTS_AMOUNT = 3
 const RATE_LIMIT_TIMEOUT = 86400 // 24 hours
 
 const getRateLimitHash = (ipOrApiKey: string, salt = '') =>
-  `rl:${hash(`${ipOrApiKey}${salt}`).toString('hex')}`
+  `rl:${hash(`${ipOrApiKey}${salt}`)}`
 
-const getRandomTip = (language = 'en'): string => {
+export const getRandomTip = (language = 'en'): string => {
   return _sample(marketingTips[language])
 }
 
@@ -56,7 +63,7 @@ const formatterLookup = [
   { value: 1e9, symbol: 'B' },
 ]
 
-const nFormatter = (num: any, digits = 1) => {
+export const nFormatter = (num: any, digits = 1) => {
   const item = _find(
     formatterLookup.slice().reverse(),
     ({ value }) => Math.abs(num) >= value,
@@ -68,7 +75,7 @@ const nFormatter = (num: any, digits = 1) => {
 }
 
 // 'action' is used as a salt to differ rate limiting routes
-const checkRateLimit = async (
+export const checkRateLimit = async (
   ip: string,
   action: string,
   reqAmount: number = RATE_LIMIT_REQUESTS_AMOUNT,
@@ -108,7 +115,7 @@ export const checkRateLimitForApiKey = async (
  * @param newVal The value that changed
  * @param round Numbers after floating point
  */
-const calculateRelativePercentage = (
+export const calculateRelativePercentage = (
   oldVal: number,
   newVal: number,
   round = 2,
@@ -124,23 +131,24 @@ const calculateRelativePercentage = (
   return _round((1 - newVal / oldVal) * -100, round)
 }
 
-const generateRecoveryCode = () =>
+export const generateRecoveryCode = () =>
   randomstring.generate({
     length: 30,
     charset: 'alphabetic',
     capitalization: 'uppercase',
   })
 
-const generateRefCode = () =>
+export const generateRefCode = () =>
   randomstring.generate({
     length: 8,
     charset: 'alphanumeric',
     capitalization: 'uppercase',
   })
 
-const millisecondsToSeconds = (milliseconds: number) => milliseconds / 1000
+export const millisecondsToSeconds = (milliseconds: number) =>
+  milliseconds / 1000
 
-const generateRandomString = (length: number): string =>
+export const generateRandomString = (length: number): string =>
   randomstring.generate(length)
 
 const dummyLookup = () => ({
@@ -190,7 +198,7 @@ interface IPGeoDetails {
   city: string | null
 }
 
-const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
+export const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
   // Stage 1: Using IP address based geo lookup
   const data = lookup.get(ip)
 
@@ -217,7 +225,10 @@ const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
   }
 }
 
-const getIPFromHeaders = (headers: any, tryXClientIPAddress?: boolean) => {
+export const getIPFromHeaders = (
+  headers: any,
+  tryXClientIPAddress?: boolean,
+) => {
   if (tryXClientIPAddress && headers['x-client-ip-address']) {
     return headers['x-client-ip-address']
   }
@@ -243,7 +254,7 @@ const getIPFromHeaders = (headers: any, tryXClientIPAddress?: boolean) => {
   return _split(ip, ',')[0]
 }
 
-const sumArrays = (source: number[], target: number[]) => {
+export const sumArrays = (source: number[], target: number[]) => {
   const result = []
   const size = _size(source)
 
@@ -254,17 +265,4 @@ const sumArrays = (source: number[], target: number[]) => {
   return result
 }
 
-export {
-  getRandomTip,
-  checkRateLimit,
-  generateRecoveryCode,
-  calculateRelativePercentage,
-  millisecondsToSeconds,
-  generateRandomString,
-  nFormatter,
-  lookup,
-  getGeoDetails,
-  getIPFromHeaders,
-  generateRefCode,
-  sumArrays,
-}
+export { lookup }

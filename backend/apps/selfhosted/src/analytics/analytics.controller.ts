@@ -8,7 +8,6 @@ import _size from 'lodash/size'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import dayjsTimezone from 'dayjs/plugin/timezone'
-import { hash } from 'blake3'
 import {
   Controller,
   Body,
@@ -61,6 +60,7 @@ import {
   checkRateLimit,
   getGeoDetails,
   getIPFromHeaders,
+  hash,
 } from '../common/utils'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
@@ -97,7 +97,7 @@ const getSessionKeyCustom = (
   pid: string,
   ev: string,
   salt = '',
-) => `cses_${hash(`${ua}${ip}${pid}${ev}${salt}`).toString('hex')}`
+) => `cses_${hash(`${ua}${ip}${pid}${ev}${salt}`)}`
 
 // Performance object validator: none of the values cannot be bigger than 1000 * 60 * 5 (5 minutes) and are >= 0
 const MAX_PERFORMANCE_VALUE = 1000 * 60 * 5

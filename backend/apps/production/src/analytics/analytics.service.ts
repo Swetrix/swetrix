@@ -28,7 +28,6 @@ import dayjsTimezone from 'dayjs/plugin/timezone'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import ipRangeCheck from 'ip-range-check'
 import validator from 'validator'
-import { hash } from 'blake3'
 import {
   Injectable,
   BadRequestException,
@@ -62,6 +61,7 @@ import {
 import { clickhouse } from '../common/integrations/clickhouse'
 import {
   calculateRelativePercentage,
+  hash,
   millisecondsToSeconds,
   sumArrays,
 } from '../common/utils'
@@ -110,7 +110,7 @@ dayjs.extend(dayjsTimezone)
 dayjs.extend(isSameOrBefore)
 
 export const getSessionKey = (ip: string, ua: string, pid: string, salt = '') =>
-  `ses_${hash(`${ua}${ip}${pid}${salt}`).toString('hex')}`
+  `ses_${hash(`${ua}${ip}${pid}${salt}`)}`
 
 export const getHeartbeatKey = (pid: string, sessionID: string) =>
   `hb:${pid}:${sessionID}`
@@ -3983,9 +3983,10 @@ export class AnalyticsService {
   getErrorID(errorDTO: ErrorDTO): string {
     const { name, message, colno, lineno, filename } = errorDTO
 
-    return hash(`${name}${message}${colno}${lineno}${filename}`, {
-      length: 16,
-    }).toString('hex')
+    return hash(`${name}${message}${colno}${lineno}${filename}`).substring(
+      0,
+      16,
+    )
   }
 
   async validateEIDs(eids: string[], pid: string) {

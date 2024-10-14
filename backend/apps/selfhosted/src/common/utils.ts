@@ -1,6 +1,6 @@
 import { NotFoundException, HttpException } from '@nestjs/common'
+import { xxh3 } from '@node-rs/xxhash'
 import timezones from 'countries-and-timezones'
-import { hash } from 'blake3'
 import { v5 as uuidv5 } from 'uuid'
 import _join from 'lodash/join'
 import _filter from 'lodash/filter'
@@ -34,6 +34,10 @@ import { ProjectViewEntity } from '../project/entity/project-view.entity'
 
 dayjs.extend(utc)
 
+export const hash = (content: string): string => {
+  return xxh3.xxh128(content).toString(16)
+}
+
 const RATE_LIMIT_REQUESTS_AMOUNT = 3
 const RATE_LIMIT_TIMEOUT = 86400 // 24 hours
 
@@ -50,7 +54,7 @@ const ALLOWED_KEYS = [
 const ALLOWED_FUNNEL_KEYS = ['name', 'steps']
 
 const getRateLimitHash = (ipOrApiKey: string, salt = '') =>
-  `rl:${hash(`${ipOrApiKey}${salt}`).toString('hex')}`
+  `rl:${hash(`${ipOrApiKey}${salt}`)}`
 
 // 'action' is used as a salt to differ rate limiting routes
 const checkRateLimit = async (

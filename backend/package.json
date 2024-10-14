@@ -45,6 +45,7 @@
     "@nestjs/swagger": "^7.4.2",
     "@nestjs/terminus": "^10.2.3",
     "@nestjs/typeorm": "^10.0.2",
+    "@node-rs/xxhash": "^1.7.4",
     "@paypal/payouts-sdk": "^1.1.1",
     "@sentry/cli": "^2.37.0",
     "@sentry/nestjs": "^8.34.0",
