@@ -8,7 +8,10 @@
 
 Swetrix is registered in the 🇬🇧 United Kingdom, and is hosted in 🇩🇪 Germany at [Hetzner](https://www.hetzner.com). Here's our [live demo with our own website statistics](https://swetrix.com/projects/STEzHcB1rALV).
 
-<img src="https://swetrix.com/assets/screenshot_light.png" alt="Swetrix Dashboard demonstration" />
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://swetrix.com/assets/screenshot_dark.png">
+  <img alt="Swetrix Dashboard demonstration" src="https://swetrix.com/assets/screenshot_light.png">
+</picture>
 
 ## Selfhosting
 If you want to self-host Swetrix, please refer to our official [self-hosting documentation](https://docs.swetrix.com/selfhosting/how-to).
