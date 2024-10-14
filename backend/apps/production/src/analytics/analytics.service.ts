@@ -3985,7 +3985,7 @@ export class AnalyticsService {
 
     return hash(`${name}${message}${colno}${lineno}${filename}`).substring(
       0,
-      16,
+      32,
     )
   }
 
