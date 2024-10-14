@@ -10,7 +10,7 @@ Swetrix is registered in the 🇬🇧 United Kingdom, and is hosted in 🇩🇪 
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://swetrix.com/assets/screenshot_dark.png">
-  <img alt="Swetrix Dashboard demonstration" src="https://swetrix.com/assets/screenshot_light.png" height="80">
+  <img alt="Swetrix Dashboard demonstration" src="https://swetrix.com/assets/screenshot_light.png">
 </picture>
 
 ## Selfhosting
