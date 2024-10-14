@@ -14,7 +14,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger'
-import { JwtAccessTokenGuard } from 'src/auth/guards'
+import { JwtAccessTokenGuard } from '../../auth/guards'
 import { Roles } from '../../auth/decorators/roles.decorator'
 import { RolesGuard } from '../../auth/guards/roles.guard'
 import { UserType } from '../../user/entities/user.entity'

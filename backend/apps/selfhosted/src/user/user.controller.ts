@@ -85,7 +85,7 @@ export class UserController {
       })
 
       const user = generateSelfhostedUser()
-      const settings = _omit((await getUserClickhouse()) || {}, ['id'])
+      const settings = _omit(await getUserClickhouse(), ['id'])
 
       return {
         ...user,

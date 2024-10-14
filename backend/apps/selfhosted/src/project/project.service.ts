@@ -35,7 +35,7 @@ import {
   TRAFFIC_METAKEY_COLUMNS,
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
-import { getProjectsClickhouse } from '../common/utils'
+import { getProjectClickhouse } from '../common/utils'
 import { MAX_PROJECT_PASSWORD_LENGTH, UpdateProjectDto } from './dto'
 import { Funnel } from './entity/funnel.entity'
 import { ProjectViewEntity } from './entity/project-view.entity'
@@ -45,6 +45,7 @@ import {
   ProjectViewCustomEventDto,
 } from './dto/create-project-view.dto'
 import { ProjectViewCustomEventEntity } from './entity/project-view-custom-event.entity'
+import { ClickhouseFunnel } from '../common/types'
 
 // A list of characters that can be used in a Project ID
 const LEGAL_PID_CHARACTERS =
@@ -68,7 +69,7 @@ export class ProjectService {
     let project: string | Project = await redis.get(pidKey)
 
     if (_isEmpty(project)) {
-      project = this.formatFromClickhouse(await getProjectsClickhouse(pid))
+      project = this.formatFromClickhouse(await getProjectClickhouse(pid))
 
       if (_isEmpty(project))
         throw new BadRequestException(
@@ -116,11 +117,11 @@ export class ProjectService {
     throw new ForbiddenException('You are not allowed to view this project')
   }
 
-  isPIDUnique(projects: Array<object>, pid: string): boolean {
+  isPIDUnique(projects: Project[], pid: string): boolean {
     return !_find(projects, ({ id }) => id === pid)
   }
 
-  checkIfIDUnique(projects: Array<object>, pid: string): void {
+  checkIfIDUnique(projects: Project[], pid: string): void {
     const isUnique = this.isPIDUnique(projects, pid)
 
     if (!isUnique) {
@@ -336,8 +337,8 @@ export class ProjectService {
     return _filter(
       filters,
       ({ column }) =>
-        _includes(ALL_COLUMNS, column) ||
-        _includes(TRAFFIC_METAKEY_COLUMNS, column),
+        _includes(ALL_COLUMNS, column as string) ||
+        _includes(TRAFFIC_METAKEY_COLUMNS, column as string),
     )
   }
 
@@ -363,7 +364,7 @@ export class ProjectService {
 
   formatCustomEventsToClickhouse(
     viewId: string,
-    customEvents: ProjectViewCustomEventEntity[] | ProjectViewCustomEventDto[],
+    customEvents: (ProjectViewCustomEventEntity | ProjectViewCustomEventDto)[],
   ) {
     if (_isEmpty(customEvents)) {
       return []
@@ -417,8 +418,8 @@ export class ProjectService {
     return updView
   }
 
-  formatFunnelToClickhouse(funnel: Funnel): any {
-    const updFunnel = { ...funnel }
+  formatFunnelToClickhouse(funnel: Funnel): ClickhouseFunnel {
+    const updFunnel = { ...funnel } as unknown as ClickhouseFunnel
     updFunnel.name = _trim(funnel.name)
     updFunnel.steps = _isString(updFunnel.steps)
       ? updFunnel.steps
@@ -427,7 +428,7 @@ export class ProjectService {
     return updFunnel
   }
 
-  formatFunnelsFromClickhouse(funnels: any[]): Funnel[] {
+  formatFunnelsFromClickhouse(funnels: ClickhouseFunnel[]): Funnel[] {
     if (_isEmpty(funnels)) {
       return []
     }

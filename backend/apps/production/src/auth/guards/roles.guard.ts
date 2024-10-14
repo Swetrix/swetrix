@@ -3,9 +3,9 @@ import { Reflector } from '@nestjs/core'
 import { ExtractJwt } from 'passport-jwt'
 import { verify } from 'jsonwebtoken'
 
-import { UserType } from 'src/user/entities/user.entity'
-import { UserService } from 'src/user/user.service'
-import { JWT_ACCESS_TOKEN_SECRET } from 'src/common/constants'
+import { UserType } from '../../user/entities/user.entity'
+import { UserService } from '../../user/user.service'
+import { JWT_ACCESS_TOKEN_SECRET } from '../../common/constants'
 import { IS_TWO_FA_NOT_REQUIRED_KEY, ROLES_KEY } from '../decorators'
 
 @Injectable()

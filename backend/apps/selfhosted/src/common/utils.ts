@@ -29,8 +29,9 @@ import {
 import { clickhouse } from './integrations/clickhouse'
 import { DEFAULT_TIMEZONE, TimeFormat } from '../user/entities/user.entity'
 import { Project } from '../project/entity/project.entity'
-import { Funnel } from '../project/entity/funnel.entity'
 import { ProjectViewEntity } from '../project/entity/project-view.entity'
+
+import { ClickhouseFunnel, ClickhouseSFUser } from './types'
 
 dayjs.extend(utc)
 
@@ -76,24 +77,13 @@ const checkRateLimit = async (
   await redis.set(rlHash, 1 + rlCount, 'EX', reqTimeout)
 }
 
-const getFunnelsClickhouse = async (projectId: string, funnelId = null) => {
+const getFunnelClickhouse = async (
+  projectId: string,
+  funnelId = null,
+): Promise<ClickhouseFunnel> => {
   const queryParams = {
     projectId,
     funnelId,
-  }
-
-  if (!funnelId) {
-    const query =
-      'SELECT * FROM funnel WHERE projectId = {projectId:FixedString(12)}'
-
-    const { data } = await clickhouse
-      .query({
-        query,
-        query_params: queryParams,
-      })
-      .then(resultSet => resultSet.json())
-
-    return data
   }
 
   const query = `
@@ -109,7 +99,7 @@ const getFunnelsClickhouse = async (projectId: string, funnelId = null) => {
       query,
       query_params: queryParams,
     })
-    .then(resultSet => resultSet.json())
+    .then(resultSet => resultSet.json<ClickhouseFunnel>())
 
   if (_isEmpty(data)) {
     throw new NotFoundException(
@@ -118,6 +108,26 @@ const getFunnelsClickhouse = async (projectId: string, funnelId = null) => {
   }
 
   return _head(data)
+}
+
+const getFunnelsClickhouse = async (
+  projectId: string,
+): Promise<ClickhouseFunnel[]> => {
+  const queryParams = {
+    projectId,
+  }
+
+  const query =
+    'SELECT * FROM funnel WHERE projectId = {projectId:FixedString(12)}'
+
+  const { data } = await clickhouse
+    .query({
+      query,
+      query_params: queryParams,
+    })
+    .then(resultSet => resultSet.json<ClickhouseFunnel>())
+
+  return data
 }
 
 const updateFunnelClickhouse = async (funnel: any) => {
@@ -152,7 +162,7 @@ const deleteFunnelClickhouse = async (id: string) => {
   })
 }
 
-const createFunnelClickhouse = async (funnel: Partial<Funnel>) => {
+const createFunnelClickhouse = async (funnel: Partial<ClickhouseFunnel>) => {
   const { id, name, steps, projectId } = funnel
 
   await clickhouse.insert({
@@ -170,42 +180,7 @@ const createFunnelClickhouse = async (funnel: Partial<Funnel>) => {
   })
 }
 
-const getProjectsClickhouse = async (id = null, search: string = null) => {
-  if (!id) {
-    if (search) {
-      const query = `
-        SELECT
-          *
-        FROM project
-        WHERE
-          name ILIKE {search:String} OR
-          id ILIKE {search:String}
-        ORDER BY created ASC
-      `
-
-      const { data } = await clickhouse
-        .query({
-          query,
-          query_params: {
-            search: `%${search}%`,
-          },
-        })
-        .then(resultSet => resultSet.json())
-
-      return data
-    }
-
-    const query = 'SELECT * FROM project ORDER BY created ASC;'
-
-    const { data } = await clickhouse
-      .query({
-        query,
-      })
-      .then(resultSet => resultSet.json())
-
-    return data
-  }
-
+const getProjectClickhouse = async (id: string): Promise<Project> => {
   const query = `SELECT * FROM project WHERE id = {id:FixedString(12)};`
 
   const { data } = await clickhouse
@@ -215,13 +190,50 @@ const getProjectsClickhouse = async (id = null, search: string = null) => {
         id,
       },
     })
-    .then(resultSet => resultSet.json())
+    .then(resultSet => resultSet.json<Project>())
 
   if (_isEmpty(data)) {
     throw new NotFoundException(`Project ${id} was not found in the database`)
   }
 
   return _head(data)
+}
+
+const getProjectsClickhouse = async (
+  search: string = null,
+): Promise<Project[]> => {
+  if (search) {
+    const query = `
+        SELECT
+          *
+        FROM project
+        WHERE
+          name ILIKE {search:String} OR
+          id ILIKE {search:String}
+        ORDER BY created ASC
+      `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: {
+          search: `%${search}%`,
+        },
+      })
+      .then(resultSet => resultSet.json<Project>())
+
+    return data
+  }
+
+  const query = 'SELECT * FROM project ORDER BY created ASC;'
+
+  const { data } = await clickhouse
+    .query({
+      query,
+    })
+    .then(resultSet => resultSet.json<Project>())
+
+  return data
 }
 
 const updateProjectClickhouse = async (project: any) => {
@@ -387,9 +399,9 @@ const getUserClickhouse = async () => {
           id: CLICKHOUSE_SETTINGS_ID,
         },
       })
-      .then(resultSet => resultSet.json())
+      .then(resultSet => resultSet.json<ClickhouseSFUser>())
 
-    return data[0] || {}
+    return data[0] || ({} as ClickhouseSFUser)
   } catch {
     return {}
   }
@@ -737,6 +749,7 @@ const sumArrays = (source: number[], target: number[]) => {
 export {
   checkRateLimit,
   createProjectClickhouse,
+  getProjectClickhouse,
   getProjectsClickhouse,
   updateProjectClickhouse,
   deleteProjectClickhouse,
@@ -752,6 +765,7 @@ export {
   getGeoDetails,
   getIPFromHeaders,
   sumArrays,
+  getFunnelClickhouse,
   getFunnelsClickhouse,
   updateFunnelClickhouse,
   deleteFunnelClickhouse,

@@ -52,7 +52,7 @@ import {
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
 import {
-  getFunnelsClickhouse,
+  getFunnelClickhouse,
   hash,
   millisecondsToSeconds,
   sumArrays,
@@ -748,7 +748,7 @@ export class AnalyticsService {
   ): Promise<string[]> {
     if (funnelId && projectId) {
       const funnel = this.projectService.formatFunnelFromClickhouse(
-        await getFunnelsClickhouse(projectId, funnelId),
+        await getFunnelClickhouse(projectId, funnelId),
       )
 
       if (!funnel || _isEmpty(funnel)) {

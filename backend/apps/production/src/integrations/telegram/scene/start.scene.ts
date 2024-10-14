@@ -1,5 +1,5 @@
 import { Ctx, Hears, Scene, SceneEnter } from 'nestjs-telegraf'
-import { UserService } from 'src/user/user.service'
+import { UserService } from '../../../user/user.service'
 import { Context } from '../interface/context.interface'
 import { PROJECTS_SCENE_ID } from './projects.scene'
 import { SETTINGS_SCENE_ID } from './settings.scene'

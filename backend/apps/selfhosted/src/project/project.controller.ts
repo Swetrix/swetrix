@@ -76,6 +76,8 @@ import {
   findProjectViewsClickhouse,
   doesProjectViewExistClickhouse,
   updateProjectViewClickhouse,
+  getProjectClickhouse,
+  getFunnelClickhouse,
 } from '../common/utils'
 import { Funnel } from './entity/funnel.entity'
 import { ProjectViewEntity } from './entity/project-view.entity'
@@ -106,7 +108,7 @@ export class ProjectController {
   ): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /project')
 
-    const chResults = await getProjectsClickhouse(null, search)
+    const chResults = await getProjectsClickhouse(search)
     const formatted = _map(chResults, this.projectService.formatFromClickhouse)
 
     const pidsWithData =
@@ -130,6 +132,7 @@ export class ProjectController {
 
     const funnelsMap = _reduce(
       funnelsData,
+      // @ts-expect-error This one is super sus, take a look at this in future
       (acc, { status, value }) => {
         if (status !== 'fulfilled') {
           return acc
@@ -245,7 +248,7 @@ export class ProjectController {
       throw new UnauthorizedException('Please auth first')
     }
 
-    const project = getProjectsClickhouse(funnelDTO.pid)
+    const project = getProjectClickhouse(funnelDTO.pid)
 
     if (!project) {
       throw new NotFoundException('Project not found.')
@@ -283,14 +286,14 @@ export class ProjectController {
       throw new UnauthorizedException('Please auth first')
     }
 
-    const project = getProjectsClickhouse(funnelDTO.pid)
+    const project = getProjectClickhouse(funnelDTO.pid)
 
     if (!project) {
       throw new NotFoundException('Project not found.')
     }
 
     const oldFunnel = this.projectService.formatFunnelFromClickhouse(
-      await getFunnelsClickhouse(funnelDTO.pid, funnelDTO.id),
+      await getFunnelClickhouse(funnelDTO.pid, funnelDTO.id),
     )
 
     if (!oldFunnel) {
@@ -320,7 +323,7 @@ export class ProjectController {
       throw new UnauthorizedException('Please auth first')
     }
 
-    const oldFunnel = getFunnelsClickhouse(pid, id)
+    const oldFunnel = getFunnelClickhouse(pid, id)
 
     if (!oldFunnel) {
       throw new NotFoundException('Funnel not found.')
@@ -343,7 +346,7 @@ export class ProjectController {
       throw new UnauthorizedException('Please auth first')
     }
 
-    const project = await getProjectsClickhouse(pid)
+    const project = await getProjectClickhouse(pid)
 
     if (!project) {
       throw new NotFoundException('Project not found.')
@@ -366,7 +369,7 @@ export class ProjectController {
   ): Promise<boolean> {
     this.logger.log({ projectId }, 'GET /project/password/:projectId')
 
-    const project = await getProjectsClickhouse(projectId)
+    const project = await getProjectClickhouse(projectId)
 
     if (!project) {
       throw new NotFoundException('Project not found.')
@@ -424,7 +427,7 @@ export class ProjectController {
     }
 
     // Checking if project exists
-    getProjectsClickhouse(pid)
+    getProjectClickhouse(pid)
 
     from = dayjs(from).format('YYYY-MM-DD')
     to = dayjs(to).format('YYYY-MM-DD 23:59:59')
@@ -474,7 +477,7 @@ export class ProjectController {
   ): Promise<any> {
     this.logger.log({ projectDTO, uid, id }, 'PUT /project/:id')
     this.projectService.validateProject(projectDTO)
-    const project = await getProjectsClickhouse(id)
+    const project = await getProjectClickhouse(id)
 
     if (_isEmpty(project)) {
       throw new NotFoundException()
@@ -541,7 +544,7 @@ export class ProjectController {
       )
     }
 
-    const project = await getProjectsClickhouse(id)
+    const project = await getProjectClickhouse(id)
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project was not found in the database')
@@ -584,7 +587,7 @@ export class ProjectController {
     @CurrentUserId() userId: string,
     @Headers() headers: { 'x-password'?: string },
   ) {
-    const project = await getProjectsClickhouse(params.projectId)
+    const project = await getProjectClickhouse(params.projectId)
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project was not found in the database')
@@ -609,7 +612,7 @@ export class ProjectController {
       throw new UnauthorizedException('Please auth first')
     }
 
-    const project = await getProjectsClickhouse(params.projectId)
+    const project = await getProjectClickhouse(params.projectId)
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project was not found in the database')
@@ -632,6 +635,7 @@ export class ProjectController {
     }
 
     await createProjectViewClickhouse(
+      // @ts-expect-error
       this.projectService.formatViewToClickhouse({
         ...body,
         customEvents,
@@ -655,7 +659,7 @@ export class ProjectController {
     @CurrentUserId() userId: string,
     @Headers() headers: { 'x-password'?: string },
   ) {
-    const project = await getProjectsClickhouse(params.projectId)
+    const project = await getProjectClickhouse(params.projectId)
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project was not found in the database')

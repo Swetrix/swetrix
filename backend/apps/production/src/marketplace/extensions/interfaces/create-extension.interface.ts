@@ -1,4 +1,4 @@
-import { User } from 'src/user/entities/user.entity'
+import { User } from '../../../user/entities/user.entity'
 import { Category } from '../../categories/category.entity'
 import { ExtensionStatus } from '../enums/extension-status.enum'
 

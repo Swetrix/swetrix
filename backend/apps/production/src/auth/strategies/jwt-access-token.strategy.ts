@@ -3,8 +3,8 @@ import { ConfigService } from '@nestjs/config'
 import { PassportStrategy } from '@nestjs/passport'
 import { Strategy, ExtractJwt } from 'passport-jwt'
 
-import { JWT_ACCESS_TOKEN_SECRET } from 'src/common/constants'
-import { UserService } from 'src/user/user.service'
+import { JWT_ACCESS_TOKEN_SECRET } from '../../common/constants'
+import { UserService } from '../../user/user.service'
 import { IJwtPayload } from '../interfaces'
 
 @Injectable()

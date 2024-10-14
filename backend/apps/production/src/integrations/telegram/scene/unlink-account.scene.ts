@@ -1,6 +1,6 @@
 import { Ctx, Hears, Scene, SceneEnter } from 'nestjs-telegraf'
 import { Markup } from 'telegraf'
-import { UserService } from 'src/user/user.service'
+import { UserService } from '../../../user/user.service'
 import { Context } from '../interface/context.interface'
 import { START_SCENE_ID } from './start.scene'
 import { TelegramService } from '../telegram.service'

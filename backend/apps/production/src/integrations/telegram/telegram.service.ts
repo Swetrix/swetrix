@@ -2,11 +2,11 @@ import { Injectable, Optional } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { InjectBot } from 'nestjs-telegraf'
 import { Markup, Telegraf } from 'telegraf'
-import { UserService } from 'src/user/user.service'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { Context } from './interface/context.interface'
 import { Message } from './entities/message.entity'
+import { UserService } from '../../user/user.service'
 
 @Injectable()
 export class TelegramService {

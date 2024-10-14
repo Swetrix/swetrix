@@ -1,6 +1,6 @@
 import { Ctx, Hears, Scene, SceneEnter } from 'nestjs-telegraf'
 import { Markup } from 'telegraf'
-import { UserService } from 'src/user/user.service'
+import { UserService } from '../../../user/user.service'
 import { Context } from '../interface/context.interface'
 import { UNLINK_ACCOUNT_SCENE_ID } from './unlink-account.scene'
 import { START_SCENE_ID } from './start.scene'
