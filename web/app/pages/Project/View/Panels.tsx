@@ -244,13 +244,7 @@ const PanelContainer = ({
     </div>
     {/* for other tabs */}
     <div
-      className={cx('flex h-full flex-col scroll-auto', {
-        'overflow-auto': !(
-          type === 'pg' &&
-          activeTab !== PROJECT_TABS.performance &&
-          activeTab !== PROJECT_TABS.errors &&
-          activeFragment === 1
-        ),
+      className={cx('flex h-full flex-col', {
         relative: isCustomContent,
       })}
     >
