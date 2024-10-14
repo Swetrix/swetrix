@@ -1104,11 +1104,33 @@ export class AnalyticsController {
 
     const sids = _map(keys, key => key.split(':')[1])
 
-    const query = `SELECT sid, dv, br, os, cc FROM analytics WHERE sid IN (${sids
-      .map(el => `'${el}'`)
-      .join(',')})`
+    console.log('keys:', keys)
+    console.log('sids:', sids)
+
+    const query = `
+      SELECT
+        sid,
+        dv,
+        br,
+        os,
+        cc
+      FROM
+        analytics
+      WHERE
+        sid IN ({ sids: Array(String) })
+        AND created > ({ createdAfter: String })
+    `
     const { data } = await clickhouse
-      .query({ query })
+      .query({
+        query,
+        query_params: {
+          sids,
+          createdAfter: dayjs
+            .utc()
+            .subtract(3, 'hours')
+            .format('YYYY-MM-DDTHH:mm:ss'),
+        },
+      })
       .then(resultSet => resultSet.json())
     const processed = _map(_uniqBy(data, 'sid'), el =>
       _pick(el, ['dv', 'br', 'os', 'cc']),
