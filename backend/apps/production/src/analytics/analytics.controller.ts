@@ -1075,37 +1075,34 @@ export class AnalyticsController {
     @Headers() headers: { 'x-password'?: string },
   ): Promise<object> {
     const { pid } = queryParams
-
     this.analyticsService.validatePID(pid)
     await this.analyticsService.checkProjectAccess(
       pid,
       uid,
       headers['x-password'],
     )
-
     await this.analyticsService.checkBillingAccess(pid)
 
     const keys = await redis.keys(`sd:*:${pid}`)
-
     if (_isEmpty(keys)) {
       return []
     }
 
     const psids = _map(keys, key => key.split(':')[1])
-
     const query = `
-      SELECT
-        psid,
-        dv,
-        br,
-        os,
-        cc
-      FROM
-        analytics
+      SELECT DISTINCT ON (psid)
+        any(dv) AS dv,
+        any(br) AS br,
+        any(os) AS os,
+        any(cc) AS cc,
+        psid
+      FROM analytics
       WHERE
         psid IN ({ psids: Array(String) })
         AND created > ({ createdAfter: String })
+      GROUP BY psid
     `
+
     const { data } = await clickhouse
       .query({
         query,
@@ -1119,11 +1116,7 @@ export class AnalyticsController {
       })
       .then(resultSet => resultSet.json())
 
-    const processed = _map(_uniqBy(data, 'psid'), el =>
-      _pick(el, ['dv', 'br', 'os', 'cc']),
-    )
-
-    return processed
+    return data
   }
 
   // Log error event
