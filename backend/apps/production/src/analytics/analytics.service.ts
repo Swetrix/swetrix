@@ -518,6 +518,40 @@ export class AnalyticsService {
     return null
   }
 
+  async validateHeartbeat(
+    logDTO: PageviewsDTO,
+    origin: string,
+    ip?: string,
+  ): Promise<string | null> {
+    if (_isEmpty(logDTO)) {
+      throw new BadRequestException('The request cannot be empty')
+    }
+
+    const { pid } = logDTO
+    this.validatePID(pid)
+
+    const project = await this.projectService.getRedisProject(pid)
+
+    this.checkIpBlacklist(project, ip)
+
+    if (!project.active) {
+      throw new BadRequestException(
+        'Incoming analytics is disabled for this project',
+      )
+    }
+
+    if (project.admin?.isAccountBillingSuspended) {
+      throw new HttpException(
+        'The account that owns this site is currently suspended, this is because of a billing issue. This, and all other events, are NOT being tracked and saved on our side. Please log in to your account on Swetrix or contact our support to resolve the issue.',
+        HttpStatus.PAYMENT_REQUIRED,
+      )
+    }
+
+    this.checkOrigin(project, origin)
+
+    return null
+  }
+
   getDataTypeColumns(dataType: DataType): string[] {
     if (dataType === DataType.ANALYTICS) {
       return TRAFFIC_COLUMNS

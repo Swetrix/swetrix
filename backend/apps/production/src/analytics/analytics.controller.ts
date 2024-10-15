@@ -1296,9 +1296,11 @@ export class AnalyticsController {
     @Headers() headers,
     @Ip() reqIP,
   ): Promise<any> {
-    const { 'user-agent': userAgent } = headers
+    const { 'user-agent': userAgent, origin } = headers
     const { pid } = logDTO
     const ip = getIPFromHeaders(headers, true) || reqIP || ''
+
+    await this.analyticsService.validateHeartbeat(logDTO, origin, ip)
 
     const [, sessionID] = await this.analyticsService.isUnique(
       pid,
