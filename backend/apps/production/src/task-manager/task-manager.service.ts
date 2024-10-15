@@ -783,7 +783,7 @@ export class TaskManagerService {
     if (_size(toSave) > 0) {
       await redis.del(..._map(toSave, ([key]) => key))
 
-      const psids = _map(toSave, ([key]) => `'${key.split(':')[1]}'`)
+      const psids = _map(toSave, ([key]) => key.split(':')[1])
 
       const setSdurQuery = `
         ALTER TABLE
