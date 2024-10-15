@@ -1,11 +1,9 @@
 import _isEmpty from 'lodash/isEmpty'
 import _isArray from 'lodash/isArray'
 import _toNumber from 'lodash/toNumber'
-import _pick from 'lodash/pick'
 import _includes from 'lodash/includes'
 import _size from 'lodash/size'
 import _map from 'lodash/map'
-import _uniqBy from 'lodash/uniqBy'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import dayjsTimezone from 'dayjs/plugin/timezone'
@@ -1089,6 +1087,7 @@ export class AnalyticsController {
     }
 
     const psids = _map(keys, key => key.split(':')[1])
+
     const query = `
       SELECT DISTINCT ON (psid)
         any(dv) AS dv,
@@ -1100,6 +1099,7 @@ export class AnalyticsController {
       WHERE
         psid IN ({ psids: Array(String) })
         AND created > ({ createdAfter: String })
+        AND pid = ({ pid: FixedString(12) })
       GROUP BY psid
     `
 
@@ -1112,6 +1112,7 @@ export class AnalyticsController {
             .utc()
             .subtract(3, 'hours')
             .format('YYYY-MM-DDTHH:mm:ss'),
+          pid,
         },
       })
       .then(resultSet => resultSet.json())
