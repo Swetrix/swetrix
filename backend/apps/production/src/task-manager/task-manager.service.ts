@@ -705,18 +705,6 @@ export class TaskManagerService {
     await redis.set(REDIS_SESSION_SALT_KEY, salt, 'EX', 87000)
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  async cleanUpSessions(): Promise<void> {
-    const delSidQuery = `ALTER TABLE analytics UPDATE sid = NULL WHERE created < '${dayjs
-      .utc()
-      .subtract(20, 'm')
-      .format('YYYY-MM-DD HH:mm:ss')}'`
-
-    await clickhouse.query({
-      query: delSidQuery,
-    })
-  }
-
   // EVERY SUNDAY AT 2:30 AM
   @Cron('30 02 * * 0')
   async weeklyReportsHandler(): Promise<void> {
