@@ -25,7 +25,6 @@ const processMetaKV = (
 
 export const trafficTransformer = (
   psid: string,
-  sid: string,
   pid: string,
   pg: string | null,
   prev: string | null,
@@ -48,7 +47,6 @@ export const trafficTransformer = (
 ) => {
   return {
     psid,
-    sid,
     pid,
     pg: pg || null,
     prev: prev || null,

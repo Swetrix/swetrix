@@ -1073,6 +1073,7 @@ export class AnalyticsController {
     @Headers() headers: { 'x-password'?: string },
   ): Promise<object> {
     const { pid } = queryParams
+
     this.analyticsService.validatePID(pid)
     await this.analyticsService.checkProjectAccess(
       pid,

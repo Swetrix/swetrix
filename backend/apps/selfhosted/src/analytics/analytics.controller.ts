@@ -1,8 +1,6 @@
 import _isEmpty from 'lodash/isEmpty'
 import _isArray from 'lodash/isArray'
-import _pick from 'lodash/pick'
 import _map from 'lodash/map'
-import _uniqBy from 'lodash/uniqBy'
 import _includes from 'lodash/includes'
 import _size from 'lodash/size'
 import dayjs from 'dayjs'
@@ -32,7 +30,6 @@ import { OptionalJwtAccessTokenGuard } from '../auth/guards'
 import { Auth, Public } from '../auth/decorators'
 import {
   AnalyticsService,
-  getSessionKey,
   getHeartbeatKey,
   validPeriods,
   DataType,
@@ -50,17 +47,12 @@ import { GetPagePropertyMetaDTO } from './dto/get-page-property-meta.dto'
 import { GetUserFlowDTO } from './dto/getUserFlow.dto'
 import { GetFunnelsDTO } from './dto/getFunnels.dto'
 import { AppLoggerService } from '../logger/logger.service'
-import {
-  redis,
-  HEARTBEAT_SID_LIFE_TIME,
-  REDIS_SESSION_SALT_KEY,
-} from '../common/constants'
+import { redis, HEARTBEAT_SID_LIFE_TIME } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
 import {
   checkRateLimit,
   getGeoDetails,
   getIPFromHeaders,
-  hash,
 } from '../common/utils'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
@@ -90,14 +82,6 @@ dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
 
 export const DEFAULT_MEASURE = 'median'
-
-const getSessionKeyCustom = (
-  ip: string,
-  ua: string,
-  pid: string,
-  ev: string,
-  salt = '',
-) => `cses_${hash(`${ua}${ip}${pid}${ev}${salt}`)}`
 
 // Performance object validator: none of the values cannot be bigger than 1000 * 60 * 5 (5 minutes) and are >= 0
 const MAX_PERFORMANCE_VALUE = 1000 * 60 * 5
@@ -897,26 +881,42 @@ export class AnalyticsController {
     )
 
     const keys = await redis.keys(`sd:*:${pid}`)
-
     if (_isEmpty(keys)) {
       return []
     }
 
-    const sids = _map(keys, key => key.split(':')[1])
+    const psids = _map(keys, key => key.split(':')[1])
 
-    const query = `SELECT sid, dv, br, os, cc FROM analytics WHERE sid IN (${sids
-      .map(el => `'${el}'`)
-      .join(',')})`
+    const query = `
+      SELECT DISTINCT ON (psid)
+        any(dv) AS dv,
+        any(br) AS br,
+        any(os) AS os,
+        any(cc) AS cc,
+        toString(psid) AS psid
+      FROM analytics
+      WHERE
+        psid IN ({ psids: Array(String) })
+        AND created > ({ createdAfter: String })
+        AND pid = ({ pid: FixedString(12) })
+      GROUP BY psid
+    `
+
     const { data } = await clickhouse
       .query({
         query,
+        query_params: {
+          psids,
+          createdAfter: dayjs
+            .utc()
+            .subtract(3, 'hours')
+            .format('YYYY-MM-DDTHH:mm:ss'),
+          pid,
+        },
       })
       .then(resultSet => resultSet.json())
-    const processed = _map(_uniqBy(data, 'sid'), el =>
-      _pick(el, ['dv', 'br', 'os', 'cc']),
-    )
 
-    return processed
+    return data
   }
 
   // Log custom event
@@ -936,17 +936,12 @@ export class AnalyticsController {
     this.analyticsService.validateCustomEVMeta(eventsDTO.meta)
     await this.analyticsService.validate(eventsDTO, origin, 'custom', ip)
 
-    const salt = await redis.get(REDIS_SESSION_SALT_KEY)
-
     if (eventsDTO.unique) {
-      const sessionHash = getSessionKeyCustom(
-        ip,
+      const [unique] = await this.analyticsService.isUnique(
+        `${eventsDTO.pid}-${eventsDTO.ev}`,
         userAgent,
-        eventsDTO.pid,
-        eventsDTO.ev,
-        salt,
+        ip,
       )
-      const [unique] = await this.analyticsService.isUnique(sessionHash)
 
       if (!unique) {
         throw new ForbiddenException(
@@ -962,8 +957,11 @@ export class AnalyticsController {
 
     const { city, region, country } = getGeoDetails(ip, eventsDTO.tz, headers)
 
-    const sessionHash = getSessionKey(ip, userAgent, eventsDTO.pid, salt)
-    const [, psid] = await this.analyticsService.isUnique(sessionHash)
+    const [, psid] = await this.analyticsService.isUnique(
+      eventsDTO.pid,
+      userAgent,
+      ip,
+    )
 
     const transformed = customEventTransformer(
       psid,
@@ -1012,11 +1010,13 @@ export class AnalyticsController {
     @Headers() headers,
     @Ip() reqIP,
   ): Promise<any> {
-    const { 'user-agent': userAgent } = headers
+    const { 'user-agent': userAgent, origin } = headers
     const { pid } = logDTO
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    const sessionID = await this.analyticsService.getSessionHash(
+    await this.analyticsService.validateHeartbeat(logDTO, origin, ip)
+
+    const [, sessionID] = await this.analyticsService.isUnique(
       pid,
       userAgent,
       ip,
@@ -1047,11 +1047,13 @@ export class AnalyticsController {
 
     await this.analyticsService.validate(logDTO, origin, 'log', ip)
 
-    const salt = await redis.get(REDIS_SESSION_SALT_KEY)
-    const sessionHash = getSessionKey(ip, userAgent, logDTO.pid, salt)
-    const [unique, psid] = await this.analyticsService.isUnique(sessionHash)
+    const [unique, psid] = await this.analyticsService.isUnique(
+      logDTO.pid,
+      userAgent,
+      ip,
+    )
 
-    await this.analyticsService.processInteractionSD(sessionHash, logDTO.pid)
+    await this.analyticsService.processInteractionSD(psid, logDTO.pid)
 
     if (unique && logDTO.unique) {
       throw new ForbiddenException(
@@ -1068,7 +1070,6 @@ export class AnalyticsController {
 
     const transformed = trafficTransformer(
       psid,
-      sessionHash,
       logDTO.pid,
       logDTO.pg,
       logDTO.prev,
@@ -1177,11 +1178,13 @@ export class AnalyticsController {
     await this.analyticsService.validate(logDTO, origin)
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
-    const salt = await redis.get(REDIS_SESSION_SALT_KEY)
-    const sessionHash = getSessionKey(ip, userAgent, logDTO.pid, salt)
-    const [unique, psid] = await this.analyticsService.isUnique(sessionHash)
+    const [unique, psid] = await this.analyticsService.isUnique(
+      logDTO.pid,
+      userAgent,
+      ip,
+    )
 
-    await this.analyticsService.processInteractionSD(sessionHash, logDTO.pid)
+    await this.analyticsService.processInteractionSD(psid, logDTO.pid)
 
     const ua = UAParser(userAgent)
     const dv = ua.device.type || 'desktop'
@@ -1192,7 +1195,6 @@ export class AnalyticsController {
 
     const transformed = trafficTransformer(
       psid,
-      sessionHash,
       logDTO.pid,
       null,
       null,
