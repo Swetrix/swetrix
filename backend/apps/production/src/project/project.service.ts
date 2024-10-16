@@ -119,8 +119,8 @@ export const deleteProjectRedis = async (id: string) => {
 
   try {
     await redis.del(key)
-  } catch (e) {
-    console.error(`Error deleting project ${id} from redis: ${e}`)
+  } catch (reason) {
+    console.error(`Error deleting project ${id} from redis: ${reason}`)
   }
 }
 
@@ -1235,6 +1235,8 @@ export class ProjectService {
       role: Role.admin,
     })
     await this.actionTokens.deleteActionToken(token)
+
+    await deleteProjectRedis(projectId)
   }
 
   async cancelTransferProject(token: string, projectId: string) {
