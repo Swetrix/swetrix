@@ -705,18 +705,6 @@ export class TaskManagerService {
     await redis.set(REDIS_SESSION_SALT_KEY, salt, 'EX', 87000)
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  async cleanUpSessions(): Promise<void> {
-    const delSidQuery = `ALTER TABLE analytics UPDATE sid = NULL WHERE created < '${dayjs
-      .utc()
-      .subtract(20, 'm')
-      .format('YYYY-MM-DD HH:mm:ss')}'`
-
-    await clickhouse.query({
-      query: delSidQuery,
-    })
-  }
-
   // EVERY SUNDAY AT 2:30 AM
   @Cron('30 02 * * 0')
   async weeklyReportsHandler(): Promise<void> {
@@ -783,17 +771,23 @@ export class TaskManagerService {
     if (_size(toSave) > 0) {
       await redis.del(..._map(toSave, ([key]) => key))
 
-      const setSdurQuery = `ALTER TABLE analytics UPDATE sdur = sdur + CASE ${_map(
-        toSave,
-        ([key, duration]) =>
-          `WHEN sid = '${key.split(':')[1]}' THEN ${duration / 1000}`, // converting to seconds
-      ).join(' ')} END WHERE sid IN (${_map(
-        toSave,
-        ([key]) => `'${key.split(':')[1]}'`,
-      ).join(',')})`
+      const psids = _map(toSave, ([key]) => key.split(':')[1])
+
+      const setSdurQuery = `
+        ALTER TABLE
+          analytics
+        UPDATE sdur = sdur + CASE ${_map(
+          toSave,
+          ([key, duration]) =>
+            `WHEN psid = ${key.split(':')[1]} THEN ${duration / 1000}`, // converting to seconds
+        ).join(' ')} END WHERE psid IN ({ psids: Array(String) })
+      `
 
       await clickhouse.query({
         query: setSdurQuery,
+        query_params: {
+          psids,
+        },
       })
     }
   }

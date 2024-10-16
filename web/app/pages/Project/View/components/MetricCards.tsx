@@ -1,7 +1,6 @@
 import React, { memo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
-// @ts-ignore
 import OutsideClickHandler from 'react-outside-click-handler'
 import _round from 'lodash/round'
 import _isEmpty from 'lodash/isEmpty'

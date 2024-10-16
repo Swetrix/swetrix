@@ -109,14 +109,10 @@ dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
 dayjs.extend(isSameOrBefore)
 
-export const getSessionKey = (ip: string, ua: string, pid: string, salt = '') =>
-  `ses_${hash(`${ua}${ip}${pid}${salt}`)}`
+export const getHeartbeatKey = (psid: string, pid: string) =>
+  `hb:${psid}:${pid}`
 
-export const getHeartbeatKey = (pid: string, sessionID: string) =>
-  `hb:${pid}:${sessionID}`
-
-const getSessionDurationKey = (sessionHash: string, pid: string) =>
-  `sd:${sessionHash}:${pid}`
+const getSessionDurationKey = (psid: string, pid: string) => `sd:${psid}:${pid}`
 
 const GMT_0_TIMEZONES = [
   'Atlantic/Azores',
@@ -522,6 +518,40 @@ export class AnalyticsService {
     return null
   }
 
+  async validateHeartbeat(
+    logDTO: PageviewsDTO,
+    origin: string,
+    ip?: string,
+  ): Promise<string | null> {
+    if (_isEmpty(logDTO)) {
+      throw new BadRequestException('The request cannot be empty')
+    }
+
+    const { pid } = logDTO
+    this.validatePID(pid)
+
+    const project = await this.projectService.getRedisProject(pid)
+
+    this.checkIpBlacklist(project, ip)
+
+    if (!project.active) {
+      throw new BadRequestException(
+        'Incoming analytics is disabled for this project',
+      )
+    }
+
+    if (project.admin?.isAccountBillingSuspended) {
+      throw new HttpException(
+        'The account that owns this site is currently suspended, this is because of a billing issue. This, and all other events, are NOT being tracked and saved on our side. Please log in to your account on Swetrix or contact our support to resolve the issue.',
+        HttpStatus.PAYMENT_REQUIRED,
+      )
+    }
+
+    this.checkOrigin(project, origin)
+
+    return null
+  }
+
   getDataTypeColumns(dataType: DataType): string[] {
     if (dataType === DataType.ANALYTICS) {
       return TRAFFIC_COLUMNS
@@ -749,11 +779,9 @@ export class AnalyticsService {
     userAgent: string,
     ip: string,
   ): Promise<string> {
-    this.validatePID(pid)
-
     const salt = await redis.get(REDIS_SESSION_SALT_KEY)
 
-    return getSessionKey(ip, userAgent, pid, salt)
+    return `ses_${hash(`${userAgent}${ip}${pid}${salt || ''}`)}`
   }
 
   async isSessionDurationOpen(sdKey: string): Promise<[string, boolean]> {
@@ -762,8 +790,8 @@ export class AnalyticsService {
   }
 
   // Processes interaction for session duration
-  async processInteractionSD(sessionHash: string, pid: string): Promise<void> {
-    const sdKey = getSessionDurationKey(sessionHash, pid)
+  async processInteractionSD(psid: string, pid: string): Promise<void> {
+    const sdKey = getSessionDurationKey(psid, pid)
     const [sd, isOpened] = await this.isSessionDurationOpen(sdKey)
     const now = _now()
 
@@ -1106,7 +1134,13 @@ export class AnalyticsService {
    * @param sessionHash
    * @returns [isUnique, psid]
    */
-  async isUnique(sessionHash: string): Promise<[boolean, string]> {
+  async isUnique(
+    pid: string,
+    userAgent: string,
+    ip: string,
+  ): Promise<[boolean, string]> {
+    const sessionHash = await this.getSessionHash(pid, userAgent, ip)
+
     let psid = await redis.get(sessionHash)
     const exists = Boolean(psid)
 
@@ -3503,8 +3537,8 @@ export class AnalyticsService {
   }
 
   async getOnlineUserCount(pid: string): Promise<number> {
-    // @ts-ignore
-    return redis.countKeysByPattern(`hb:${pid}:*`)
+    // @ts-expect-error
+    return redis.countKeysByPattern(`hb:*:${pid}`)
   }
 
   async groupCustomEVByTimeBucket(
@@ -3755,7 +3789,6 @@ export class AnalyticsService {
   ): Promise<object | void> {
     const analyticsSubquery = `
       SELECT
-        isNotNull(sid) AS active,
         CAST(psid, 'String') AS psidCasted,
         cc,
         os,
@@ -3771,7 +3804,6 @@ export class AnalyticsService {
 
     const customEVSubquery = `
       SELECT
-        0 AS active,
         CAST(psid, 'String') AS psidCasted,
         cc,
         os,
@@ -3788,7 +3820,6 @@ export class AnalyticsService {
     const query = `
       SELECT
         psidCasted AS psid,
-        any(active) AS active,
         any(cc) AS cc,
         any(os) AS os,
         any(br) AS br,
@@ -4063,11 +4094,6 @@ export class AnalyticsService {
         'Error occured while updating error status',
       )
     }
-  }
-
-  async getOnlineCountByProjectId(projectId: string) {
-    // @ts-ignore
-    return redis.countKeysByPattern(`hb:${projectId}:*`)
   }
 
   checkIfPerfMeasureIsValid(measure: PerfMeasure) {

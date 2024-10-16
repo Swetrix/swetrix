@@ -75,7 +75,7 @@ export class ProjectsScene {
       await context.scene.reenter()
     }
 
-    const onlineCount = await this.analyticsService.getOnlineCountByProjectId(
+    const onlineCount = await this.analyticsService.getOnlineUserCount(
       project.id,
     )
     const stats = await this.analyticsService.getAnalyticsSummary(
