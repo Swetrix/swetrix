@@ -449,7 +449,7 @@ Accepts the same parameters as the [`/log/birdseye` endpoint](#get-v1logbirdseye
 
 ### GET /v1/log/liveVisitors
 
-This endpoint returns a list of currently active visitors on the specified project.
+This endpoint returns a list of currently active visitors on the specified project. The psid is a unique identifier for the session, which can be used to get more information about the session using the [`/log/session` endpoint](#get-v1logsession).
 
 ```bash
 curl 'https://api.swetrix.com/v1/log/liveVisitors?pid=YOUR_PROJECT_ID'\
@@ -462,13 +462,15 @@ curl 'https://api.swetrix.com/v1/log/liveVisitors?pid=YOUR_PROJECT_ID'\
     "dv": "desktop",
     "br": "Firefox",
     "os": "Windows",
-    "cc": "GB"
+    "cc": "GB",
+    "psid": "9165978030580383830"
   },
   {
     "dv": "mobile",
     "br": "Chrome",
     "os": "Android",
-    "cc": "UA"
+    "cc": "UA",
+    "psid": "9357848011560553100"
   }
 ]
 ```
