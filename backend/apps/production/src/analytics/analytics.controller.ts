@@ -1094,7 +1094,7 @@ export class AnalyticsController {
         any(br) AS br,
         any(os) AS os,
         any(cc) AS cc,
-        psid
+        toString(psid) AS psid
       FROM analytics
       WHERE
         psid IN ({ psids: Array(String) })
