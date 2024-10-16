@@ -6,7 +6,7 @@ import {
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common'
-import Serialize from 'php-serialize'
+import { serialize } from 'php-serialize'
 import _includes from 'lodash/includes'
 import _keys from 'lodash/keys'
 import _isArray from 'lodash/isArray'
@@ -85,7 +85,7 @@ export class WebhookService {
       }
     }
     // Serialise remaining fields of jsonObj
-    const serialized = Serialize.serialize(data)
+    const serialized = serialize(data)
     // verify the serialized array against the signature using SHA1 with your public key.
     const verifier = crypto.createVerify('sha1')
     verifier.update(serialized)
