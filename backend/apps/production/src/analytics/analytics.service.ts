@@ -3789,7 +3789,6 @@ export class AnalyticsService {
   ): Promise<object | void> {
     const analyticsSubquery = `
       SELECT
-        isNotNull(sid) AS active,
         CAST(psid, 'String') AS psidCasted,
         cc,
         os,
@@ -3805,7 +3804,6 @@ export class AnalyticsService {
 
     const customEVSubquery = `
       SELECT
-        0 AS active,
         CAST(psid, 'String') AS psidCasted,
         cc,
         os,
@@ -3822,7 +3820,6 @@ export class AnalyticsService {
     const query = `
       SELECT
         psidCasted AS psid,
-        any(active) AS active,
         any(cc) AS cc,
         any(os) AS os,
         any(br) AS br,
