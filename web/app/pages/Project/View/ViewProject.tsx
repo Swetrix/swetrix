@@ -3908,9 +3908,11 @@ const ViewProject = ({
                           </h2>
                           {activeTab !== PROJECT_TABS.funnels && (
                             <LiveVisitorsDropdown
-                              projectId={project.id}
+                              onSessionSelect={(psid) => {
+                                setActiveTab(PROJECT_TABS.sessions)
+                                setActivePSID(psid)
+                              }}
                               live={liveStats[id]}
-                              projectPassword={projectPassword}
                             />
                           )}
                         </div>

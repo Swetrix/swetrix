@@ -912,6 +912,7 @@ export const getInstalledExtensions = (limit = 100, offset = 0) =>
     })
 
 export interface IGetLiveVisitorsInfo {
+  psid: string
   dv: string
   br: string
   os: string

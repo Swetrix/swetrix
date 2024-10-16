@@ -30,8 +30,8 @@ const TransValue = ({ metadata, children }: { metadata?: IMetadata[]; children: 
     <p className='font-medium'>{children}</p>
     {metadata ? (
       <ul className='mt-1'>
-        {_map(metadata, ({ key, value }) => (
-          <KeyValue key={key} evKey={key} evValue={value} />
+        {_map(metadata, ({ key, value }, index) => (
+          <KeyValue key={`${key}${value}${index}`} evKey={key} evValue={value} />
         ))}
       </ul>
     ) : null}
