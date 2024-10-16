@@ -1082,7 +1082,7 @@ export class AnalyticsController {
     )
     await this.analyticsService.checkBillingAccess(pid)
 
-    const keys = await redis.keys(`sd:*:${pid}`)
+    const keys = await redis.keys(`hb:*:${pid}`)
     if (_isEmpty(keys)) {
       return []
     }
@@ -1303,19 +1303,15 @@ export class AnalyticsController {
 
     await this.analyticsService.validateHeartbeat(logDTO, origin, ip)
 
-    const [, sessionID] = await this.analyticsService.isUnique(
-      pid,
-      userAgent,
-      ip,
-    )
+    const [, psid] = await this.analyticsService.isUnique(pid, userAgent, ip)
 
     await redis.set(
-      getHeartbeatKey(pid, sessionID),
+      getHeartbeatKey(psid, pid),
       1,
       'EX',
       HEARTBEAT_SID_LIFE_TIME,
     )
-    await this.analyticsService.processInteractionSD(sessionID, pid)
+    await this.analyticsService.processInteractionSD(psid, pid)
   }
 
   // Log pageview event

@@ -98,8 +98,8 @@ dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
 dayjs.extend(isSameOrBefore)
 
-export const getHeartbeatKey = (pid: string, sessionID: string) =>
-  `hb:${pid}:${sessionID}`
+export const getHeartbeatKey = (psid: string, pid: string) =>
+  `hb:${psid}:${pid}`
 
 const getSessionDurationKey = (psid: string, pid: string) => `sd:${psid}:${pid}`
 
@@ -2917,8 +2917,8 @@ export class AnalyticsService {
   }
 
   async getOnlineUserCount(pid: string): Promise<number> {
-    // @ts-ignore
-    return redis.countKeysByPattern(`hb:${pid}:*`)
+    // @ts-expect-error
+    return redis.countKeysByPattern(`hb:*:${pid}`)
   }
 
   async groupCustomEVByTimeBucket(
@@ -3474,11 +3474,6 @@ export class AnalyticsService {
         'Error occured while updating error status',
       )
     }
-  }
-
-  async getOnlineCountByProjectId(projectId: string) {
-    // @ts-ignore
-    return redis.countKeysByPattern(`hb:${projectId}:*`)
   }
 
   checkIfPerfMeasureIsValid(measure: PerfMeasure) {
