@@ -9,6 +9,7 @@ import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import Flag from 'ui/Flag'
 import { useViewProjectContext } from '../ViewProject'
 import { Link } from '@remix-run/react'
+import { PROJECT_TABS } from 'redux/constants'
 
 interface ILiveVisitorsDropdown {
   live: number | string
@@ -66,6 +67,7 @@ const LiveVisitorsDropdown = ({ live, onSessionSelect }: ILiveVisitorsDropdown):
                     {_map(liveInfo, ({ psid, dv, br, os, cc }) => {
                       const psidUrl = new URL(window.location.href)
                       psidUrl.searchParams.set('psid', psid)
+                      psidUrl.searchParams.set('tab', PROJECT_TABS.sessions)
                       const stringifiedUrl = psidUrl.toString()
 
                       return (
