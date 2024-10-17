@@ -18,6 +18,11 @@ import { CAPTCHA_SECRET_KEY_LENGTH } from '../../common/constants'
 import { ProjectViewEntity } from './project-view.entity'
 import { MonitorEntity } from './monitor.entity'
 
+export enum BotsProtectionLevel {
+  OFF = 'off',
+  BASIC = 'basic',
+}
+
 // In case of modifying some properties here add them to the GDPR data export email template
 @Entity()
 export class Project {
@@ -71,6 +76,14 @@ export class Project {
   @ApiProperty()
   @Column('varchar', { default: null, length: CAPTCHA_SECRET_KEY_LENGTH })
   captchaSecretKey: string
+
+  @ApiProperty()
+  @Column({
+    type: 'enum',
+    enum: BotsProtectionLevel,
+    default: BotsProtectionLevel.BASIC,
+  })
+  botsProtectionLevel: BotsProtectionLevel
 
   @ApiProperty({ type: () => User })
   @ManyToOne(() => User, user => user.projects)

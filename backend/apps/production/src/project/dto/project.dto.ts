@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty, Length } from 'class-validator'
+import { IsNotEmpty, Length, IsEnum, IsOptional } from 'class-validator'
+import { BotsProtectionLevel } from '../entity/project.entity'
 
 export class ProjectDTO {
   @ApiProperty({
@@ -25,6 +26,15 @@ export class ProjectDTO {
     description: 'An array allowed origins',
   })
   origins: string[] | null
+
+  @ApiProperty({
+    enum: BotsProtectionLevel,
+    required: false,
+    description: 'Bots protection level',
+  })
+  @IsEnum(BotsProtectionLevel)
+  @IsOptional()
+  botsProtectionLevel?: BotsProtectionLevel
 
   @ApiProperty({
     example: '::1,127.0.0.1,192.168.0.1/32',
