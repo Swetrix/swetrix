@@ -93,6 +93,7 @@ import {
   MAX_METRICS_IN_VIEW,
   ProjectViewCustomEventDto,
 } from '../project/dto/create-project-view.dto'
+import { extensions } from './utils/ua-parser'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -1135,7 +1136,7 @@ export class AnalyticsController {
 
     const { city, region, country } = getGeoDetails(ip, errorDTO.tz)
 
-    const ua = UAParser(userAgent)
+    const ua = UAParser(userAgent, extensions)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
     const os = ua.os.name
@@ -1234,7 +1235,7 @@ export class AnalyticsController {
 
     const { city, region, country } = getGeoDetails(ip, eventsDTO.tz)
 
-    const ua = UAParser(userAgent)
+    const ua = UAParser(userAgent, extensions)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
     const os = ua.os.name
@@ -1340,7 +1341,7 @@ export class AnalyticsController {
     }
 
     const { city, region, country } = getGeoDetails(ip, logDTO.tz)
-    const ua = UAParser(userAgent)
+    const ua = UAParser(userAgent, extensions)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
     const os = ua.os.name
@@ -1466,7 +1467,7 @@ export class AnalyticsController {
     await this.analyticsService.processInteractionSD(psid, logDTO.pid)
 
     const { city, region, country } = getGeoDetails(ip)
-    const ua = UAParser(userAgent)
+    const ua = UAParser(userAgent, extensions)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
     const os = ua.os.name
