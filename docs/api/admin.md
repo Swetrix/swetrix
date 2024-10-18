@@ -26,6 +26,7 @@ If you have special needs for more requests, please [contact us](https://swetrix
 | `password` | `string` | `false` | Required only if `isPasswordProtected` is set to `true`. That is the password unauthorised people will have to enter to access your project's dashboard. |
 | `origins` | `Array<string>` | `false` | An array of origins (domains) which are allowed to use script with your ProjectID. For example: `['cornell.edu', 'app.example.com', '*.gov.ua']`. By default all origins are allowed. |
 | `ipBlacklist` | `Array<string>` | `false` | An aeeay of IP addresses from which no analytics will be collected on this project. This functionality is handy if you want to ignore analytics from your IP. For example: `['172.126.10.16', '192.168.0.1/32', '::1']` |
+| `botsProtectionLevel` | `off` or `basic` | `false` | Set to `basic` or `off`. `basic` will block common bots by user agent and `off` will allow all traffic. `basic` by default. |
 
 ## Endpoints
 ### POST /v1/project
@@ -52,6 +53,7 @@ curl -i -X POST https://api.swetrix.com/v1/project \
   "isAnalyticsProject": true,
   "isCaptchaProject": false,
   "isCaptchaEnabled": false,
+  "botsProtectionLevel": "basic",
   "created": "2023-10-07T10:23:09.000Z"
 }
 ```
@@ -82,6 +84,7 @@ curl -i -X PUT https://api.swetrix.com/v1/project/WvZCYTrOPzSK \
   "isCaptchaProject": false,
   "isCaptchaEnabled": false,
   "captchaSecretKey": null,
+  "botsProtectionLevel": "basic",
   "created": "2023-10-07T10:23:09.000Z",
   "isPasswordProtected": true
 }
