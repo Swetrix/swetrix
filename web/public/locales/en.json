@@ -961,6 +961,8 @@
       "removeUser": "Remove {{user}}?",
       "people": "People",
       "inviteCoworkers": "Invite your coworkers",
+      "addARecipient": "Add a recipient",
+      "addARecipientDesc": "Enter an email address of the person you want to send reports to. They don't necessarily need to have an account on Swetrix.\nWe will send them your site's reports on a regular basis.",
       "invite": "Invite a user",
       "inviteTo": "Invite a user to {{project}}",
       "inviteDesc": "Enter an email address and a role of the person you want to share your project with.\nWe shall contact them over email to offer the access to the project.",

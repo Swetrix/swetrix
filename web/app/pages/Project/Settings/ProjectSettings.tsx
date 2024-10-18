@@ -709,7 +709,7 @@ const ProjectSettings = ({
         {!isSelfhosted && (
           <>
             <hr className='mt-8 border-gray-200 dark:border-gray-600 xs:mt-2 sm:mt-5' />
-            <Emails projectId={id} projectName={project.name} />
+            <Emails projectId={id} />
           </>
         )}
         {!isSelfhosted && (
