@@ -250,9 +250,9 @@ const People: React.FunctionComponent<IPeopleProps> = ({
       const results = await shareProject(id, { email: form.email, role: form.role })
       setProjectShareData({ share: results.share }, id)
       toast.success(t('apiNotifications.userInvited'))
-    } catch (e) {
-      console.error(`[ERROR] Error while inviting a user: ${e}`)
-      toast.error(t('apiNotifications.userInviteError'))
+    } catch (reason) {
+      console.error(`[ERROR] Error while inviting a user: ${reason}`)
+      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.userInviteError'))
     }
 
     // a timeout is needed to prevent the flicker of data fields in the modal when closing
