@@ -23,7 +23,7 @@ import useOnClickOutside from 'hooks/useOnClickOutside'
 import { IProject, IShareOwnerProject } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 
-const NoEvents = ({ t }: { t: typeof i18next.t }): JSX.Element => (
+const NoPeople = ({ t }: { t: typeof i18next.t }) => (
   <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
     <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>
       <h2 className='mb-8 px-4 text-center text-xl leading-snug'>{t('project.settings.noPeople')}</h2>
@@ -316,7 +316,7 @@ const People: React.FunctionComponent<IPeopleProps> = ({
       </div>
       <div>
         {_isEmpty(share) ? (
-          <NoEvents t={t} />
+          <NoPeople t={t} />
         ) : (
           <div className='mt-3 flex flex-col'>
             <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 md:overflow-x-visible lg:-mx-8'>
@@ -415,9 +415,9 @@ const People: React.FunctionComponent<IPeopleProps> = ({
                 {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
                 <label
                   className={cx(
-                    'relative flex cursor-pointer rounded-tl-md rounded-tr-md border border-gray-200 p-4 dark:border-gray-500',
+                    'relative flex cursor-pointer rounded-tl-md rounded-tr-md border border-gray-200 p-4 dark:border-slate-600',
                     {
-                      'z-10 border-indigo-200 bg-indigo-50 dark:border-indigo-800 dark:bg-indigo-500':
+                      'z-10 border-indigo-200 bg-indigo-50 dark:border-indigo-800/40 dark:bg-indigo-600/40':
                         form.role === roleAdmin.role,
                       'border-gray-200': form.role !== roleAdmin.role,
                     },
@@ -455,7 +455,7 @@ const People: React.FunctionComponent<IPeopleProps> = ({
                   className={cx(
                     'relative flex cursor-pointer rounded-bl-md rounded-br-md border border-gray-200 p-4 dark:border-gray-500',
                     {
-                      'z-10 border-indigo-200 bg-indigo-50 dark:border-indigo-800 dark:bg-indigo-500':
+                      'z-10 border-indigo-200 bg-indigo-50 dark:border-indigo-800/40 dark:bg-indigo-600/40':
                         form.role === roleViewer.role,
                       'border-gray-200': form.role !== roleViewer.role,
                     },
