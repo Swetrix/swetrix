@@ -20,7 +20,6 @@ import Input from 'ui/Input'
 import Button from 'ui/Button'
 import Modal from 'ui/Modal'
 import Loader from 'ui/Loader'
-import Beta from 'ui/Beta'
 import cx from 'clsx'
 import { Badge } from 'ui/Badge'
 import { ISubscribers } from 'redux/models/ISubscribers'
@@ -391,12 +390,7 @@ const Emails = ({ projectId, projectName }: { projectId: string; projectName: st
     <div className='mb-6 mt-6'>
       <div className='mb-3 flex flex-col items-start justify-between gap-y-2 sm:flex-row sm:items-center'>
         <div>
-          <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
-            {t('project.emails.title')}
-            <div className='ml-5'>
-              <Beta />
-            </div>
-          </h3>
+          <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('project.emails.title')}</h3>
           <p className='text-sm text-gray-500 dark:text-gray-400'>{t('project.emails.description')}</p>
         </div>
         <Button className='h-8 whitespace-nowrap pl-2' primary regular type='button' onClick={() => setShowModal(true)}>

@@ -925,6 +925,8 @@
     "barChart": "Bar chart",
     "lineChart": "Line chart",
     "settings": {
+      "shields": "Shields",
+      "access": "Access settings",
       "verify": "Please, verify your email address first",
       "updated": "The project's settings were updated",
       "created": "The project has been created",

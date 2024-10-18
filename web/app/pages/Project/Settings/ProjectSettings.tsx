@@ -558,13 +558,13 @@ const ProjectSettings = ({
     <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 pb-40 dark:bg-slate-900 sm:px-6 lg:px-8'>
       <form className='mx-auto w-full max-w-7xl' onSubmit={handleSubmit}>
         <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{title}</h2>
-        <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('profileSettings.general')}</h3>
+        <h3 className='mt-4 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('profileSettings.general')}</h3>
         <Input
           name='name'
           label={t('project.settings.name')}
           value={form.name}
           placeholder='My awesome project'
-          className='mt-4'
+          className='mt-2'
           onChange={handleInput}
           error={beenSubmitted ? errors.name : null}
         />
@@ -587,12 +587,14 @@ const ProjectSettings = ({
           error={null}
           disabled
         />
+
+        <h3 className='mt-6 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('project.settings.shields')}</h3>
         <Input
           name='origins'
           label={t('project.settings.origins')}
           hint={t('project.settings.originsHint')}
           value={form.origins || ''}
-          className='mt-4'
+          className='mt-2'
           onChange={handleInput}
           error={beenSubmitted ? errors.origins : null}
         />
@@ -605,6 +607,8 @@ const ProjectSettings = ({
           onChange={handleInput}
           error={beenSubmitted ? errors.ipBlacklist : null}
         />
+
+        <h3 className='mt-6 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('project.settings.access')}</h3>
         <Checkbox
           checked={Boolean(form.active)}
           onChange={(checked) =>
@@ -614,7 +618,7 @@ const ProjectSettings = ({
             }))
           }
           name='active'
-          className='mt-4'
+          className='mt-2'
           label={t('project.settings.enabled')}
           hint={t('project.settings.enabledHint')}
         />
