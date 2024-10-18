@@ -20,20 +20,16 @@ import Input from 'ui/Input'
 import Button from 'ui/Button'
 import Modal from 'ui/Modal'
 import Loader from 'ui/Loader'
-import Beta from 'ui/Beta'
 import cx from 'clsx'
 import { Badge } from 'ui/Badge'
 import { ISubscribers } from 'redux/models/ISubscribers'
 
 const ModalMessage = ({
-  project,
   handleInput,
   beenSubmitted,
   errors,
   form,
-  t,
 }: {
-  project: string
   handleInput: (e: React.ChangeEvent<HTMLInputElement>) => void
   beenSubmitted: boolean
   errors: {
@@ -44,82 +40,100 @@ const ModalMessage = ({
     email: string
     reportFrequency: string
   }
+}) => {
+  const { t } = useTranslation('common')
+
+  return (
+    <div>
+      <h2 className='text-xl font-bold text-gray-700 dark:text-gray-200'>{t('project.settings.addARecipient')}</h2>
+      <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>{t('project.settings.addARecipientDesc')}</p>
+      <Input
+        name='email'
+        type='email'
+        label={t('auth.common.email')}
+        value={form.email}
+        placeholder='you@example.com'
+        className='mt-4'
+        onChange={handleInput}
+        error={beenSubmitted && errors.email}
+      />
+      <fieldset className='mt-4'>
+        <legend className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
+          {t('project.emails.reportFrequency')}
+        </legend>
+        <div
+          className={cx('mt-1 -space-y-px rounded-md bg-white dark:bg-slate-900', {
+            'border border-red-300': errors.reportFrequency,
+          })}
+        >
+          {reportFrequencyForEmailsOptions.map((item, index) => (
+            <ReportFrequencyOption
+              key={item.value}
+              item={item}
+              index={index}
+              form={form}
+              handleInput={handleInput}
+              t={t}
+              totalOptions={reportFrequencyForEmailsOptions.length}
+            />
+          ))}
+        </div>
+        {errors.reportFrequency && (
+          <p className='mt-2 text-sm text-red-600 dark:text-red-500' id='reportFrequency-error'>
+            {errors.reportFrequency}
+          </p>
+        )}
+      </fieldset>
+    </div>
+  )
+}
+
+const ReportFrequencyOption = ({
+  item,
+  index,
+  form,
+  handleInput,
+  t,
+  totalOptions,
+}: {
+  item: { value: string; label: string }
+  index: number
+  form: { reportFrequency: string }
+  handleInput: (e: React.ChangeEvent<HTMLInputElement>) => void
   t: typeof i18next.t
-}): JSX.Element => (
-  <div>
-    <h2 className='text-xl font-bold text-gray-700 dark:text-gray-200'>
-      {t('project.settings.inviteTo', { project })}
-    </h2>
-    <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>{t('project.settings.inviteDesc')}</p>
-    <Input
-      name='email'
-      type='email'
-      label={t('auth.common.email')}
-      value={form.email}
-      placeholder='you@example.com'
-      className='mt-4'
+  totalOptions: number
+}) => (
+  <label
+    className={cx('relative flex cursor-pointer border border-gray-200 p-4 dark:border-slate-600', {
+      'z-10 border-indigo-200 bg-indigo-50 dark:border-indigo-800/40 dark:bg-indigo-600/40':
+        item.value === form.reportFrequency,
+      'border-gray-200': form.reportFrequency !== item.value,
+      'rounded-tl-md rounded-tr-md': index === 0,
+      'rounded-bl-md rounded-br-md': index === totalOptions - 1,
+    })}
+  >
+    <input
+      name='reportFrequency'
+      className='h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500'
+      type='radio'
+      value={item.value}
       onChange={handleInput}
-      error={beenSubmitted && errors.email}
+      checked={form.reportFrequency === item.value}
     />
-    <fieldset className='mt-4'>
-      {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-      <label className='block text-sm font-medium text-gray-700 dark:text-gray-300' htmlFor='role'>
-        {t('project.emails.reportFrequency')}
-      </label>
-      <div
-        className={cx('mt-1 -space-y-px rounded-md bg-white dark:bg-slate-900', {
-          'border border-red-300': errors.reportFrequency,
-        })}
-      >
-        {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-        {_map(reportFrequencyForEmailsOptions, (item, index) => (
-          <div key={item.value}>
-            {/*  eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-            <label
-              className={cx('relative flex cursor-pointer border border-gray-200 p-4 dark:border-gray-500', {
-                'z-10 border-indigo-200 bg-indigo-50 dark:border-indigo-800 dark:bg-indigo-500':
-                  item.value === form.reportFrequency,
-                'border-gray-200': form.reportFrequency !== item.value,
-                'rounded-tl-md rounded-tr-md': index === 0,
-                'rounded-bl-md rounded-br-md': index === reportFrequencyForEmailsOptions.length - 1,
-              })}
-            >
-              <input
-                name='reportFrequency'
-                className='h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500'
-                id='reportFrequency'
-                type='radio'
-                value={item.value}
-                onChange={handleInput}
-              />
-              <div className='ml-3 flex flex-col'>
-                <span
-                  className={cx('block text-sm font-medium', {
-                    'text-indigo-900 dark:text-white': form.reportFrequency === item.value,
-                    'text-gray-700 dark:text-gray-200': form.reportFrequency !== item.value,
-                  })}
-                >
-                  {t(`profileSettings.${item.value}`)}
-                </span>
-              </div>
-            </label>
-          </div>
-        ))}
-        {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
-      </div>
-      {errors.reportFrequency && (
-        <p className='mt-2 text-sm text-red-600 dark:text-red-500' id='email-error'>
-          {errors.reportFrequency}
-        </p>
-      )}
-    </fieldset>
-  </div>
+    <span
+      className={cx('ml-3 block text-sm font-medium', {
+        'text-indigo-900 dark:text-white': form.reportFrequency === item.value,
+        'text-gray-700 dark:text-gray-200': form.reportFrequency !== item.value,
+      })}
+    >
+      {t(`profileSettings.${item.value}`)}
+    </span>
+  </label>
 )
 
 const EmailList = ({
   data,
   onRemove,
-  t,
   setEmails,
   language,
 }: {
@@ -132,10 +146,10 @@ const EmailList = ({
     reportFrequency: string
   }
   onRemove: (id: string) => void
-  t: typeof i18next.t
   setEmails: (value: ISubscribers[] | ((prevVar: ISubscribers[]) => ISubscribers[])) => void
   language: string
 }) => {
+  const { t } = useTranslation('common')
   const [open, setOpen] = useState<boolean>(false)
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false)
   const openRef = useRef<HTMLDivElement>(null)
@@ -261,7 +275,7 @@ const NoSubscribers = ({ t }: { t: typeof i18next.t }): JSX.Element => (
   </div>
 )
 
-const Emails = ({ projectId, projectName }: { projectId: string; projectName: string }): JSX.Element => {
+const Emails = ({ projectId }: { projectId: string }): JSX.Element => {
   const [showModal, setShowModal] = useState<boolean>(false)
   const {
     t,
@@ -391,12 +405,7 @@ const Emails = ({ projectId, projectName }: { projectId: string; projectName: st
     <div className='mb-6 mt-6'>
       <div className='mb-3 flex flex-col items-start justify-between gap-y-2 sm:flex-row sm:items-center'>
         <div>
-          <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
-            {t('project.emails.title')}
-            <div className='ml-5'>
-              <Beta />
-            </div>
-          </h3>
+          <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('project.emails.title')}</h3>
           <p className='text-sm text-gray-500 dark:text-gray-400'>{t('project.emails.description')}</p>
         </div>
         <Button className='h-8 whitespace-nowrap pl-2' primary regular type='button' onClick={() => setShowModal(true)}>
@@ -437,7 +446,6 @@ const Emails = ({ projectId, projectName }: { projectId: string; projectName: st
                           data={email}
                           key={email.id}
                           onRemove={onRemove}
-                          t={t}
                           language={language}
                           setEmails={setEmails}
                         />
@@ -464,16 +472,7 @@ const Emails = ({ projectId, projectName }: { projectId: string; projectName: st
           </button>
         }
         closeText={t('common.cancel')}
-        message={
-          <ModalMessage
-            t={t}
-            project={projectName}
-            form={form}
-            handleInput={handleInput}
-            errors={errors}
-            beenSubmitted={beenSubmitted}
-          />
-        }
+        message={<ModalMessage form={form} handleInput={handleInput} errors={errors} beenSubmitted={beenSubmitted} />}
         isOpened={showModal}
       />
     </div>

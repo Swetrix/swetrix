@@ -503,6 +503,10 @@ export class ProjectController {
       project.ipBlacklist = []
     }
 
+    if (projectDTO.botsProtectionLevel) {
+      project.botsProtectionLevel = projectDTO.botsProtectionLevel
+    }
+
     if (projectDTO.name) {
       project.name = _trim(projectDTO.name)
     }

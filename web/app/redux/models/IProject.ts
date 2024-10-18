@@ -98,6 +98,7 @@ export interface IProject {
   isLocked: boolean
   isDataExists: boolean
   isErrorDataExists: boolean
+  botsProtectionLevel: 'off' | 'basic'
 }
 
 export interface ICaptchaProject {

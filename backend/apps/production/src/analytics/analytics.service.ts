@@ -38,6 +38,7 @@ import {
   PreconditionFailedException,
   ForbiddenException,
 } from '@nestjs/common'
+import { isbot } from 'isbot'
 
 import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
 import {
@@ -69,7 +70,7 @@ import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
 import { ProjectService } from '../project/project.service'
 import { UserService } from '../user/user.service'
-import { Project } from '../project/entity/project.entity'
+import { BotsProtectionLevel, Project } from '../project/entity/project.entity'
 import { ChartRenderMode, TimeBucketType } from './dto/getData.dto'
 import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
 import {
@@ -388,6 +389,18 @@ export class AnalyticsService {
         'The account that owns this site is currently suspended, this is because of a billing issue. Please resolve the issue to continue.',
         HttpStatus.PAYMENT_REQUIRED,
       )
+    }
+  }
+
+  async throwIfBot(pid: string, userAgent: string) {
+    const project = await this.projectService.getRedisProject(pid)
+
+    if (project.botsProtectionLevel === BotsProtectionLevel.OFF) {
+      return
+    }
+
+    if (isbot(userAgent)) {
+      throw new BadRequestException('Bot traffic detected')
     }
   }
 

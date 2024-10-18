@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, memo } from 'react'
 import type i18next from 'i18next'
 import { toast } from 'sonner'
-import { useNavigate, useParams } from '@remix-run/react'
+import { useNavigate } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
@@ -47,6 +47,8 @@ import { getFormatDate } from '../View/ViewProject.helpers'
 
 import People from './People'
 import Emails from './Emails'
+import Select from 'ui/Select'
+import { useRequiredParams } from 'hooks/useRequiredParams'
 
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
@@ -284,12 +286,7 @@ const ProjectSettings = ({
     t,
     i18n: { language },
   } = useTranslation('common')
-  // @ts-ignore
-  const {
-    id,
-  }: {
-    id: string
-  } = useParams()
+  const { id } = useRequiredParams<{ id: string }>()
   const project: IProjectForShared = useMemo(
     () =>
       _find([...projects, ..._map(sharedProjects, (item) => item.project)], (p) => p.id === id) ||
@@ -305,6 +302,7 @@ const ProjectSettings = ({
     isPasswordProtected: false,
     origins: null,
     ipBlacklist: null,
+    botsProtectionLevel: 'basic',
   })
   const [validated, setValidated] = useState<boolean>(false)
   const [errors, setErrors] = useState<{
@@ -333,6 +331,19 @@ const ProjectSettings = ({
   const paginationSkip: number = isSharedProject
     ? dashboardPaginationPageShared * ENTRIES_PER_PAGE_DASHBOARD
     : dashboardPaginationPage * ENTRIES_PER_PAGE_DASHBOARD
+
+  const botsProtectionLevels = useMemo(() => {
+    return [
+      {
+        name: 'off',
+        title: t('project.settings.botsProtectionLevel.levels.off'),
+      },
+      {
+        name: 'basic',
+        title: t('project.settings.botsProtectionLevel.levels.basic'),
+      },
+    ] as const
+  }, [t])
 
   useEffect(() => {
     if (authLoading || initialised) {
@@ -558,13 +569,13 @@ const ProjectSettings = ({
     <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 pb-40 dark:bg-slate-900 sm:px-6 lg:px-8'>
       <form className='mx-auto w-full max-w-7xl' onSubmit={handleSubmit}>
         <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{title}</h2>
-        <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('profileSettings.general')}</h3>
+        <h3 className='mt-4 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('profileSettings.general')}</h3>
         <Input
           name='name'
           label={t('project.settings.name')}
           value={form.name}
           placeholder='My awesome project'
-          className='mt-4'
+          className='mt-2'
           onChange={handleInput}
           error={beenSubmitted ? errors.name : null}
         />
@@ -587,12 +598,14 @@ const ProjectSettings = ({
           error={null}
           disabled
         />
+
+        <h3 className='mt-6 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('project.settings.shields')}</h3>
         <Input
           name='origins'
           label={t('project.settings.origins')}
           hint={t('project.settings.originsHint')}
           value={form.origins || ''}
-          className='mt-4'
+          className='mt-2'
           onChange={handleInput}
           error={beenSubmitted ? errors.origins : null}
         />
@@ -605,6 +618,27 @@ const ProjectSettings = ({
           onChange={handleInput}
           error={beenSubmitted ? errors.ipBlacklist : null}
         />
+        <div className='mt-4'>
+          <Select
+            id='botsProtectionLevel'
+            label={t('project.settings.botsProtectionLevel.title')}
+            // @ts-expect-error
+            items={botsProtectionLevels}
+            title={_find(botsProtectionLevels, (predicate) => predicate.name === form.botsProtectionLevel)?.title || ''}
+            labelExtractor={(item: any) => item.title}
+            onSelect={(item) => {
+              const key = _find(botsProtectionLevels, (predicate) => predicate.title === item)?.name || 'basic'
+
+              setForm((prevForm) => ({
+                ...prevForm,
+                botsProtectionLevel: key,
+              }))
+            }}
+            capitalise
+          />
+        </div>
+
+        <h3 className='mt-6 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('project.settings.access')}</h3>
         <Checkbox
           checked={Boolean(form.active)}
           onChange={(checked) =>
@@ -614,7 +648,7 @@ const ProjectSettings = ({
             }))
           }
           name='active'
-          className='mt-4'
+          className='mt-2'
           label={t('project.settings.enabled')}
           hint={t('project.settings.enabledHint')}
         />
@@ -705,7 +739,7 @@ const ProjectSettings = ({
         {!isSelfhosted && (
           <>
             <hr className='mt-8 border-gray-200 dark:border-gray-600 xs:mt-2 sm:mt-5' />
-            <Emails projectId={id} projectName={project.name} />
+            <Emails projectId={id} />
           </>
         )}
         {!isSelfhosted && (

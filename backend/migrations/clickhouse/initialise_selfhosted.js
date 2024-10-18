@@ -12,6 +12,7 @@ const CLICKHOUSE_INIT_QUERIES = [
     active Int8,
     public Int8,
     isPasswordProtected Int8,
+    botsProtectionLevel String DEFAULT 'basic',
     passwordHash Nullable(String),
     created DateTime
   )
