@@ -394,6 +394,7 @@ export class AnalyticsService {
 
   async throwIfBot(pid: string, userAgent: string) {
     const project = await this.projectService.getRedisProject(pid)
+
     if (project.botsProtectionLevel === BotsProtectionLevel.OFF) {
       return
     }

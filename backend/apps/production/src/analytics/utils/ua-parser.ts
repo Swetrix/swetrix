@@ -1,7 +1,7 @@
 import UAParser from 'ua-parser-js'
 
 const CUSTOM_BROWSERS = [
-  [/GameVault\/([\w.]+)/i],
+  [/(wget|curl|lynx|GameVault)\/([\w.]+)/i],
   [UAParser.BROWSER.NAME, UAParser.BROWSER.VERSION],
 ]
 

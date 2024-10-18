@@ -325,6 +325,7 @@ export class ProjectService {
           'admin',
           'public',
           'ipBlacklist',
+          'botsProtectionLevel',
           'captchaSecretKey',
           'isCaptchaEnabled',
           'passwordHash',
