@@ -927,6 +927,13 @@
     "settings": {
       "shields": "Shields",
       "access": "Access settings",
+      "botsProtectionLevel": {
+        "title": "Bots protection level",
+        "levels": {
+          "off": "Off: we allow all incoming traffic",
+          "basic": "Basic: we detect bots based on their user agent (Googlebot, Bingbot, curl, etc.)"
+        }
+      },
       "verify": "Please, verify your email address first",
       "updated": "The project's settings were updated",
       "created": "The project has been created",
