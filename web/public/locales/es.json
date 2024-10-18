@@ -808,8 +808,8 @@
     "noExist": "The selected project does not exist",
     "geo": "Geolocation",
     "campaigns": "Campaigns",
-    "pageviewX": "Pageview <value>{{x}}</value>",
-    "eventX": "Event <value>{{x}}</value>",
+    "pageviewX": "<span>Pageview</span> <value>{{x}}</value>",
+    "eventX": "<span>Event</span> <value>{{x}}</value>",
     "exportData": "Export data",
     "asCSV": "As CSV",
     "noEvTitle": "No events yet",
@@ -925,6 +925,15 @@
     "barChart": "Bar chart",
     "lineChart": "Line chart",
     "settings": {
+      "shields": "Shields",
+      "access": "Access settings",
+      "botsProtectionLevel": {
+        "title": "Bots protection level",
+        "levels": {
+          "off": "Off: we allow all incoming traffic",
+          "basic": "Basic: we detect bots based on their user agent (Googlebot, Bingbot, curl, etc.)"
+        }
+      },
       "verify": "Please, verify your email address first",
       "updated": "The project's settings were updated",
       "created": "The project has been created",
@@ -959,6 +968,8 @@
       "removeUser": "Remove {{user}}?",
       "people": "People",
       "inviteCoworkers": "Invite your coworkers",
+      "addARecipient": "Add a recipient",
+      "addARecipientDesc": "Enter an email address of the person you want to send reports to. They don't necessarily need to have an account on Swetrix.\nWe will send them your site's reports on a regular basis.",
       "invite": "Invite a user",
       "inviteTo": "Invite a user to {{project}}",
       "inviteDesc": "Enter an email address and a role of the person you want to share your project with.\nWe shall contact them over email to offer the access to the project.",
