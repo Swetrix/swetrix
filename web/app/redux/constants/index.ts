@@ -950,6 +950,7 @@ export const BROWSER_LOGO_MAP = {
   Epiphany: '/assets/browsers/web_48x48.png',
   Fennec: '/assets/browsers/firefox_48x48.png',
   Basilisk: '/assets/browsers/basilisk_48x48.png',
+  GameVault: '/assets/browsers/gamevault_43x48.png',
   DuckDuckGo: '/assets/duckduckgo.png',
   Facebook: '/assets/facebook.svg',
   MetaSr: '/assets/facebook.svg',
