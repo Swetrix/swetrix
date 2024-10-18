@@ -28,7 +28,7 @@ import {
 } from './constants'
 import { clickhouse } from './integrations/clickhouse'
 import { DEFAULT_TIMEZONE, TimeFormat } from '../user/entities/user.entity'
-import { Project } from '../project/entity/project.entity'
+import { BotsProtectionLevel, Project } from '../project/entity/project.entity'
 import { ProjectViewEntity } from '../project/entity/project-view.entity'
 
 import { ClickhouseFunnel, ClickhouseSFUser } from './types'
@@ -50,6 +50,7 @@ const ALLOWED_KEYS = [
   'public',
   'isPasswordProtected',
   'passwordHash',
+  'botsProtectionLevel',
 ]
 
 const ALLOWED_FUNNEL_KEYS = ['name', 'steps']
@@ -306,6 +307,7 @@ const createProjectClickhouse = async (project: Partial<Project>) => {
         public: 0,
         isPasswordProtected: 0,
         passwordHash: null,
+        botsProtectionLevel: BotsProtectionLevel.BASIC,
         created: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
       },
     ],

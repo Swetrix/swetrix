@@ -1,3 +1,8 @@
+export enum BotsProtectionLevel {
+  OFF = 'off',
+  BASIC = 'basic',
+}
+
 export class Project {
   id: string
 
@@ -12,6 +17,8 @@ export class Project {
   public: boolean
 
   isPasswordProtected: boolean
+
+  botsProtectionLevel: BotsProtectionLevel
 
   passwordHash?: string
 

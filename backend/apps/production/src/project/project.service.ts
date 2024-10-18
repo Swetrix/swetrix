@@ -965,7 +965,7 @@ export class ProjectService {
         query,
         query_params: params,
       })
-      .then(resultSet => resultSet.json())
+      .then(resultSet => resultSet.json<{ pid: string }>())
 
     return _map(data, ({ pid }) => pid)
   }
@@ -1014,7 +1014,7 @@ export class ProjectService {
         query,
         query_params: params,
       })
-      .then(resultSet => resultSet.json())
+      .then(resultSet => resultSet.json<{ pid: string }>())
 
     return _map(data, ({ pid }) => pid)
   }

@@ -35,6 +35,7 @@ import {
   UnprocessableEntityException,
   PreconditionFailedException,
 } from '@nestjs/common'
+import { isbot } from 'isbot'
 
 import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
 import {
@@ -60,7 +61,7 @@ import {
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
 import { ProjectService } from '../project/project.service'
-import { Project } from '../project/entity/project.entity'
+import { BotsProtectionLevel, Project } from '../project/entity/project.entity'
 import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
 import { TimeBucketType, ChartRenderMode } from './dto/getData.dto'
 import {
@@ -350,6 +351,18 @@ export class AnalyticsService {
   ): Promise<void> {
     const project = await this.projectService.getRedisProject(pid)
     this.projectService.allowedToView(project, uid, password)
+  }
+
+  async throwIfBot(pid: string, userAgent: string) {
+    const project = await this.projectService.getRedisProject(pid)
+
+    if (project.botsProtectionLevel === BotsProtectionLevel.OFF) {
+      return
+    }
+
+    if (isbot(userAgent)) {
+      throw new BadRequestException('Bot traffic detected')
+    }
   }
 
   checkOrigin(project: Project, origin: string): void {

@@ -24,7 +24,6 @@ import {
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
 import UAParser from 'ua-parser-js'
-import { isbot } from 'isbot'
 
 import { OptionalJwtAccessTokenGuard } from '../auth/guards'
 import { Auth, Public } from '../auth/decorators'
@@ -54,8 +53,6 @@ import {
   getGeoDetails,
   getIPFromHeaders,
 } from '../common/utils'
-import { BotDetection } from '../common/decorators/bot-detection.decorator'
-import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { GetCustomEventsDto } from './dto/get-custom-events.dto'
 import {
   IFunnel,
@@ -77,6 +74,7 @@ import {
   trafficTransformer,
 } from './utils/transformers'
 import { MAX_METRICS_IN_VIEW } from '../project/dto/create-project-view.dto'
+import { extensions } from './utils/ua-parser'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -919,10 +917,7 @@ export class AnalyticsController {
     return data
   }
 
-  // Log custom event
   @Post('custom')
-  @UseGuards(BotDetectionGuard)
-  @BotDetection()
   @Public()
   async logCustom(
     @Body() eventsDTO: EventsDTO,
@@ -934,6 +929,8 @@ export class AnalyticsController {
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
     this.analyticsService.validateCustomEVMeta(eventsDTO.meta)
+
+    await this.analyticsService.throwIfBot(eventsDTO.pid, userAgent)
     await this.analyticsService.validate(eventsDTO, origin, 'custom', ip)
 
     if (eventsDTO.unique) {
@@ -950,7 +947,7 @@ export class AnalyticsController {
       }
     }
 
-    const ua = UAParser(userAgent)
+    const ua = UAParser(userAgent, extensions)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
     const os = ua.os.name
@@ -1002,8 +999,6 @@ export class AnalyticsController {
   }
 
   @Post('hb')
-  @UseGuards(BotDetectionGuard)
-  @BotDetection()
   @Auth([], true, true)
   async heartbeat(
     @Body() logDTO: PageviewsDTO,
@@ -1013,6 +1008,8 @@ export class AnalyticsController {
     const { 'user-agent': userAgent, origin } = headers
     const { pid } = logDTO
     const ip = getIPFromHeaders(headers) || reqIP || ''
+
+    await this.analyticsService.throwIfBot(logDTO.pid, userAgent)
 
     await this.analyticsService.validateHeartbeat(logDTO, origin, ip)
 
@@ -1027,10 +1024,7 @@ export class AnalyticsController {
     await this.analyticsService.processInteractionSD(psid, pid)
   }
 
-  // Log pageview event
   @Post()
-  @UseGuards(BotDetectionGuard)
-  @BotDetection()
   @Public()
   async log(
     @Body() logDTO: PageviewsDTO,
@@ -1040,6 +1034,8 @@ export class AnalyticsController {
     const { 'user-agent': userAgent, origin } = headers
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
+
+    await this.analyticsService.throwIfBot(logDTO.pid, userAgent)
 
     await this.analyticsService.validate(logDTO, origin, 'log', ip)
 
@@ -1059,7 +1055,7 @@ export class AnalyticsController {
 
     const { city, region, country } = getGeoDetails(ip, logDTO.tz, headers)
 
-    const ua = UAParser(userAgent)
+    const ua = UAParser(userAgent, extensions)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
     const os = ua.os.name
@@ -1161,8 +1157,9 @@ export class AnalyticsController {
     const { 'user-agent': userAgent, origin } = headers
     const { pid } = data
 
-    // todo: create a decorator for bot traffic detection
-    if (isbot(userAgent)) {
+    try {
+      await this.analyticsService.throwIfBot(pid, userAgent)
+    } catch {
       res.writeHead(200, { 'Content-Type': 'image/gif' })
       return res.end(TRANSPARENT_GIF_BUFFER, 'binary')
     }
@@ -1182,7 +1179,7 @@ export class AnalyticsController {
 
     await this.analyticsService.processInteractionSD(psid, logDTO.pid)
 
-    const ua = UAParser(userAgent)
+    const ua = UAParser(userAgent, extensions)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
     const os = ua.os.name
@@ -1471,10 +1468,7 @@ export class AnalyticsController {
     return this.analyticsService.getErrorsFilters(pid, type)
   }
 
-  // Log error event
   @Post('error')
-  @UseGuards(BotDetectionGuard)
-  @BotDetection()
   @Public()
   async logError(
     @Body() errorDTO: ErrorDTO,
@@ -1485,11 +1479,13 @@ export class AnalyticsController {
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
+    await this.analyticsService.throwIfBot(errorDTO.pid, userAgent)
+
     await this.analyticsService.validate(errorDTO, origin, 'error', ip)
 
     const { city, region, country } = getGeoDetails(ip, errorDTO.tz, headers)
 
-    const ua = UAParser(userAgent)
+    const ua = UAParser(userAgent, extensions)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
     const os = ua.os.name
