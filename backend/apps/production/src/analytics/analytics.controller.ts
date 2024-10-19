@@ -96,6 +96,7 @@ import { extensions } from './utils/ua-parser'
 import { GetOverallStatsDto } from './dto/get-overall-stats.dto'
 import { NoscriptDto } from './dto/noscript.dto'
 import { LiveVisitorsDto } from './dto/live-visitors.dto'
+import { GetHeartbeatStatsDto } from './dto/get-heartbeat-stats'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -978,7 +979,7 @@ export class AnalyticsController {
 
   @Get('hb')
   async getHeartBeatStats(
-    @Query() data,
+    @Query() data: GetHeartbeatStatsDto,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ): Promise<object> {

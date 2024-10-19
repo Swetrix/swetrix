@@ -58,8 +58,8 @@ import {
   millisecondsToSeconds,
   sumArrays,
 } from '../common/utils'
-import { PageviewsDTO } from './dto/pageviews.dto'
-import { EventsDTO } from './dto/events.dto'
+import { PageviewsDto } from './dto/pageviews.dto'
+import { EventsDto } from './dto/events.dto'
 import { ProjectService } from '../project/project.service'
 import { BotsProtectionLevel, Project } from '../project/entity/project.entity'
 import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
@@ -90,7 +90,7 @@ import {
   IPageProperty,
   ICustomEvent,
 } from './interfaces'
-import { ErrorDTO } from './dto/error.dto'
+import { ErrorDto } from './dto/error.dto'
 import { GetPagePropertyMetaDto } from './dto/get-page-property-meta.dto'
 import { ProjectViewCustomEventMetaValueType } from '../project/entity/project-view-custom-event.entity'
 import { ProjectViewCustomEventDto } from '../project/dto/create-project-view.dto'
@@ -384,7 +384,7 @@ export class AnalyticsService {
   }
 
   async validate(
-    logDTO: PageviewsDTO | EventsDTO | ErrorDTO,
+    logDTO: PageviewsDto | EventsDto | ErrorDto,
     origin: string,
     ip?: string,
   ): Promise<string | null> {
@@ -393,7 +393,6 @@ export class AnalyticsService {
     }
 
     const { pid } = logDTO
-    this.validatePID(pid)
 
     // 'tz' does not need validation as it's based on getCountryForTimezone detection
     const { lc } = logDTO
@@ -430,7 +429,7 @@ export class AnalyticsService {
   }
 
   async validateHeartbeat(
-    logDTO: PageviewsDTO,
+    logDTO: PageviewsDto,
     origin: string,
     ip?: string,
   ): Promise<string | null> {
@@ -439,7 +438,6 @@ export class AnalyticsService {
     }
 
     const { pid } = logDTO
-    this.validatePID(pid)
 
     const project = await this.projectService.getRedisProject(pid)
 
@@ -3338,7 +3336,7 @@ export class AnalyticsService {
     }
   }
 
-  getErrorID(errorDTO: ErrorDTO): string {
+  getErrorID(errorDTO: ErrorDto): string {
     const { name, message, colno, lineno, filename } = errorDTO
 
     return hash(`${name}${message}${colno}${lineno}${filename}`).substring(

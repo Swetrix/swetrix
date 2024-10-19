@@ -1,19 +1,23 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsOptional, IsString, ValidateIf } from 'class-validator'
+import { IsOptional, IsString, Matches, ValidateIf } from 'class-validator'
 import { DEFAULT_TIMEZONE } from '../../user/entities/user.entity'
 import { ValidatePeriod } from '../decorators/validate-period.decorator'
+import { PID_REGEX } from '../../common/constants'
 
 export class GetOverallStatsDto {
   @ApiProperty({ description: 'Array of project IDs', required: false })
   @ValidateIf(o => o.pids || !o.pid)
   @IsOptional()
-  @IsString({ each: true })
+  @Matches(PID_REGEX, {
+    message: 'One of the provided Project IDs (pids) is incorrect',
+    each: true,
+  })
   pids?: string[]
 
   @ApiProperty({ description: 'Single project ID', required: false })
   @ValidateIf(o => !o.pids || o.pid)
   @IsOptional()
-  @IsString()
+  @Matches(PID_REGEX, { message: 'The provided Project ID (pid) is incorrect' })
   pid?: string
 
   @ApiProperty({ required: false })

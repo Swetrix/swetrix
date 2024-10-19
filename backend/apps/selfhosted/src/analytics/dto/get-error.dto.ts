@@ -2,7 +2,7 @@ import { ApiProperty, PickType } from '@nestjs/swagger'
 import { IsNotEmpty } from 'class-validator'
 import { GetDataDto } from './getData.dto'
 
-export class GetErrorDTO extends PickType(GetDataDto, [
+export class GetErrorDto extends PickType(GetDataDto, [
   'pid',
   'period',
   'from',

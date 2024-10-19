@@ -9,7 +9,7 @@ import {
 } from 'class-validator'
 import { PID_REGEX } from '../../common/constants'
 
-export class PatchStatusDTO {
+export class PatchStatusDto {
   @ApiProperty({
     example: 'aUn1quEid-3',
     required: true,
@@ -17,7 +17,7 @@ export class PatchStatusDTO {
   })
   @IsNotEmpty()
   @Matches(PID_REGEX, {
-    message: 'Incorrect project ID format.',
+    message: 'The provided Project ID (pid) is incorrect',
   })
   pid: string
 
