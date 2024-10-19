@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsEnum, IsNotEmpty } from 'class-validator'
+import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator'
 import { DEFAULT_TIMEZONE } from '../../user/entities/user.entity'
 import { TimeBucketType } from './getData.dto'
+import { ValidatePeriod } from '../decorators/validate-period.decorator'
 
 export class GetMonitorDataDto {
   @ApiProperty()
@@ -12,8 +13,10 @@ export class GetMonitorDataDto {
   @IsNotEmpty()
   monitorId: number
 
-  @ApiProperty()
-  period: string
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @ValidatePeriod()
+  period?: string
 
   @ApiProperty({ enum: TimeBucketType })
   @IsNotEmpty()

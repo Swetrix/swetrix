@@ -121,19 +121,6 @@ const GMT_0_TIMEZONES = [
   // 'Africa/Casablanca',
 ]
 
-export const validPeriods = [
-  '1h',
-  'today',
-  'yesterday',
-  '1d',
-  '7d',
-  '4w',
-  '3M',
-  '12M',
-  '24M',
-  'all',
-]
-
 const MEASURES_MAP = {
   average: 'avg',
   median: 'median',
@@ -224,10 +211,6 @@ export const getLowestPossibleTimeBucket = (
   to?: string,
 ): TimeBucketType => {
   if (!from && !to) {
-    if (!_includes(validPeriods, period)) {
-      throw new UnprocessableEntityException('The provided period is incorrect')
-    }
-
     if (period === '1h') {
       return TimeBucketType.MINUTE
     }
@@ -809,12 +792,6 @@ export class AnalyticsService {
     }
   }
 
-  validatePeriod(period: string): void {
-    if (!_includes(validPeriods, period)) {
-      throw new UnprocessableEntityException('The provided period is incorrect')
-    }
-  }
-
   async getPagesArray(
     rawPages?: string,
     funnelId?: string,
@@ -1232,7 +1209,7 @@ export class AnalyticsService {
   }
 
   async getFunnel(pages: string[], params: any): Promise<IFunnel[]> {
-    const pageParams = {}
+    const pageParams: Record<string, string> = {}
 
     const pagesStr = _join(
       _map(pages, (value, index) => {
@@ -1342,8 +1319,6 @@ export class AnalyticsService {
 
       _from = groupFrom
       _to = groupTo
-    } else {
-      this.validatePeriod(period)
     }
 
     const result = {}
@@ -1477,8 +1452,6 @@ export class AnalyticsService {
 
       _from = groupFrom
       _to = groupTo
-    } else {
-      this.validatePeriod(period)
     }
 
     const result = {}
@@ -1667,8 +1640,6 @@ export class AnalyticsService {
 
       _from = groupFrom
       _to = groupTo
-    } else {
-      this.validatePeriod(period)
     }
 
     const result = {}
@@ -1861,8 +1832,6 @@ export class AnalyticsService {
 
       _from = groupFrom
       _to = groupTo
-    } else {
-      this.validatePeriod(period)
     }
 
     const result = {}

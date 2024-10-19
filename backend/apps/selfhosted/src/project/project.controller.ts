@@ -257,7 +257,7 @@ export class ProjectController {
     const funnel = new Funnel()
     funnel.id = uuidv4()
     funnel.name = funnelDTO.name
-    funnel.steps = _map(funnelDTO.steps, _trim)
+    funnel.steps = _map(funnelDTO.steps, _trim) as string[]
     funnel.projectId = funnelDTO.pid
 
     const formatted = this.projectService.formatFunnelToClickhouse(funnel)
@@ -492,13 +492,13 @@ export class ProjectController {
     }
 
     if (projectDTO.origins) {
-      project.origins = _map(projectDTO.origins, _trim)
+      project.origins = _map(projectDTO.origins, _trim) as string[]
     } else {
       project.origins = []
     }
 
     if (projectDTO.ipBlacklist) {
-      project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim)
+      project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim) as string[]
     } else {
       project.ipBlacklist = []
     }
