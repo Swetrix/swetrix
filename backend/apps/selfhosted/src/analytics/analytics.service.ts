@@ -91,7 +91,7 @@ import {
   ICustomEvent,
 } from './interfaces'
 import { ErrorDTO } from './dto/error.dto'
-import { GetPagePropertyMetaDTO } from './dto/get-page-property-meta.dto'
+import { GetPagePropertyMetaDto } from './dto/get-page-property-meta.dto'
 import { ProjectViewCustomEventMetaValueType } from '../project/entity/project-view-custom-event.entity'
 import { ProjectViewCustomEventDto } from '../project/dto/create-project-view.dto'
 
@@ -108,19 +108,6 @@ const GMT_0_TIMEZONES = [
   'Atlantic/Azores',
   'Etc/GMT',
   // 'Africa/Casablanca',
-]
-
-export const validPeriods = [
-  '1h',
-  'today',
-  'yesterday',
-  '1d',
-  '7d',
-  '4w',
-  '3M',
-  '12M',
-  '24M',
-  'all',
 ]
 
 const MEASURES_MAP = {
@@ -189,10 +176,6 @@ export const getLowestPossibleTimeBucket = (
   to?: string,
 ): TimeBucketType => {
   if (!from && !to) {
-    if (!_includes(validPeriods, period)) {
-      throw new UnprocessableEntityException('The provided period is incorrect')
-    }
-
     if (period === '1h') {
       return TimeBucketType.MINUTE
     }
@@ -761,12 +744,6 @@ export class AnalyticsService {
     }
   }
 
-  validatePeriod(period: string): void {
-    if (!_includes(validPeriods, period)) {
-      throw new UnprocessableEntityException('The provided period is incorrect')
-    }
-  }
-
   async getPagesArray(
     rawPages?: string,
     funnelId?: string,
@@ -1295,8 +1272,6 @@ export class AnalyticsService {
 
       _from = groupFrom
       _to = groupTo
-    } else {
-      this.validatePeriod(period)
     }
 
     const result = {}
@@ -1489,8 +1464,6 @@ export class AnalyticsService {
 
       _from = groupFrom
       _to = groupTo
-    } else {
-      this.validatePeriod(period)
     }
 
     const result = {}
@@ -2807,7 +2780,7 @@ export class AnalyticsService {
     }
   }
 
-  async getPagePropertyMeta(data: GetPagePropertyMetaDTO): Promise<{
+  async getPagePropertyMeta(data: GetPagePropertyMetaDto): Promise<{
     result: IAggregatedMetadata[]
     appliedFilters: GetFiltersQuery[2]
   }> {
