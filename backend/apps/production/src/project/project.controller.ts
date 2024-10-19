@@ -391,7 +391,7 @@ export class ProjectController {
     try {
       const project = new Project()
       Object.assign(project, projectDTO)
-      project.origins = _map(projectDTO.origins, _trim)
+      project.origins = _map(projectDTO.origins, _trim) as string[]
 
       const newProject = await this.projectService.create(project)
       user.projects.push(project)
@@ -1821,13 +1821,13 @@ export class ProjectController {
     }
 
     if (projectDTO.origins) {
-      project.origins = _map(projectDTO.origins, _trim)
+      project.origins = _map(projectDTO.origins, _trim) as string[]
     } else {
       project.origins = []
     }
 
     if (projectDTO.ipBlacklist) {
-      project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim)
+      project.ipBlacklist = _map(projectDTO.ipBlacklist, _trim) as string[]
     } else {
       project.ipBlacklist = null
     }

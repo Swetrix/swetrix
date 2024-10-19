@@ -1163,7 +1163,7 @@ export class AnalyticsService {
   }
 
   async getFunnel(pages: string[], params: any): Promise<IFunnel[]> {
-    const pageParams = {}
+    const pageParams: Record<string, string> = {}
 
     const pagesStr = _join(
       _map(pages, (value, index) => {
