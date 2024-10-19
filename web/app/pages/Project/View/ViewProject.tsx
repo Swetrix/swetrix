@@ -2258,8 +2258,7 @@ const ViewProject = ({
       } else {
         newFiltersPerf = [...filtersPerf, { column, filter, isExclusive }]
 
-        // @ts-ignore
-        const url = new URL(window.location)
+        const url = new URL(window.location.href)
         url.searchParams.append(columnPerf, filter)
         const { pathname, search } = url
         navigate(`${pathname}${search}`)
@@ -2280,8 +2279,7 @@ const ViewProject = ({
       } else {
         newFiltersSessions = [...filtersSessions, { column, filter, isExclusive }]
 
-        // @ts-ignore
-        const url = new URL(window.location)
+        const url = new URL(window.location.href)
         url.searchParams.append(columnSessions, filter)
         const { pathname, search } = url
         navigate(`${pathname}${search}`)
@@ -2293,8 +2291,7 @@ const ViewProject = ({
       if (_find(filtersErrors, (f) => f.filter === filter)) {
         newFiltersErrors = _filter(filtersErrors, (f) => f.filter !== filter)
 
-        // @ts-ignore
-        const url = new URL(window.location)
+        const url = new URL(window.location.href)
         url.searchParams.delete(columnErrors)
         const { pathname, search } = url
         navigate(`${pathname}${search}`)
@@ -2302,8 +2299,7 @@ const ViewProject = ({
       } else {
         newFiltersErrors = [...filtersErrors, { column, filter, isExclusive }]
 
-        // @ts-ignore
-        const url = new URL(window.location)
+        const url = new URL(window.location.href)
         url.searchParams.append(columnErrors, filter)
         const { pathname, search } = url
         navigate(`${pathname}${search}`)
@@ -2320,21 +2316,17 @@ const ViewProject = ({
         setFilters(newFilters)
 
         // removing filter from the page URL
-        // @ts-ignore
-        const url = new URL(window.location)
+        const url = new URL(window.location.href)
         url.searchParams.delete(column)
         const { pathname, search } = url
         navigate(`${pathname}${search}`)
       } else {
         // selected filter is not present in the filters array -> applying it
-        // sroting filter in the state
+        // sorting filter in the state
         newFilters = [...filters, { column, filter, isExclusive }]
         setFilters(newFilters)
 
-        // storing filter in the page URL
-
-        // @ts-ignore
-        const url = new URL(window.location)
+        const url = new URL(window.location.href)
         url.searchParams.append(column, filter)
         const { pathname, search } = url
         navigate(`${pathname}${search}`)
@@ -2575,11 +2567,9 @@ const ViewProject = ({
 
     if (activeTab === PROJECT_TABS.performance) {
       const columnPerf = `${column}_perf`
-      url.searchParams.delete(columnPerf)
-      url.searchParams.append(columnPerf, filter)
+      url.searchParams.set(columnPerf, filter)
     } else {
-      url.searchParams.delete(column)
-      url.searchParams.append(column, filter)
+      url.searchParams.set(column, filter)
     }
 
     const { pathname, search } = url
@@ -2732,11 +2722,9 @@ const ViewProject = ({
 
   // this useEffect is used for parsing tab from url and set activeTab
   useEffect(() => {
-    // @ts-ignore
-    const url = new URL(window.location)
-    url.searchParams.delete('tab')
+    const url = new URL(window.location.href)
+    url.searchParams.set('tab', activeTab)
 
-    url.searchParams.append('tab', activeTab)
     const { pathname, search } = url
     navigate(`${pathname}${search}`)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -3130,19 +3118,15 @@ const ViewProject = ({
         if (!onRender && !_includes(timeBucketToDays[index].tb, timeBucket)) {
           // eslint-disable-next-line prefer-destructuring
           eventEmitTimeBucket = timeBucketToDays[index].tb[0]
-          url.searchParams.delete('timeBucket')
-          url.searchParams.append('timeBucket', eventEmitTimeBucket)
+          url.searchParams.set('timeBucket', eventEmitTimeBucket)
           const { pathname, search } = url
           navigate(`${pathname}${search}`)
           setTimebucket(eventEmitTimeBucket)
         }
 
-        url.searchParams.delete('period')
-        url.searchParams.delete('from')
-        url.searchParams.delete('to')
-        url.searchParams.append('period', 'custom')
-        url.searchParams.append('from', dates[0].toISOString())
-        url.searchParams.append('to', dates[1].toISOString())
+        url.searchParams.set('period', 'custom')
+        url.searchParams.set('from', dates[0].toISOString())
+        url.searchParams.set('to', dates[1].toISOString())
 
         const { pathname, search } = url
         navigate(`${pathname}${search}`)
@@ -3361,16 +3345,14 @@ const ViewProject = ({
 
     if (!_includes(newPeriodFull.tbs, timeBucket)) {
       tb = _last(newPeriodFull.tbs) || 'day'
-      url.searchParams.delete('timeBucket')
-      url.searchParams.append('timeBucket', tb)
+      url.searchParams.set('timeBucket', tb)
       setTimebucket(tb)
     }
 
     if (newPeriod.period !== 'custom') {
-      url.searchParams.delete('period')
       url.searchParams.delete('from')
       url.searchParams.delete('to')
-      url.searchParams.append('period', newPeriod.period)
+      url.searchParams.set('period', newPeriod.period)
       setProjectViewPrefs(id, newPeriod.period, tb)
       setPeriod(newPeriod.period)
 
@@ -3394,8 +3376,7 @@ const ViewProject = ({
   const updateTimebucket = (newTimebucket: string) => {
     // @ts-ignore
     const url = new URL(window.location)
-    url.searchParams.delete('timeBucket')
-    url.searchParams.append('timeBucket', newTimebucket)
+    url.searchParams.set('timeBucket', newTimebucket)
     const { pathname, search } = url
     navigate(`${pathname}${search}`)
     setTimebucket(newTimebucket)
@@ -3679,17 +3660,25 @@ const ViewProject = ({
             const isCurrent = tab.id === activeTab
             const isSettings = tab.id === 'settings'
 
-            const onClick = isSettings
-              ? openSettingsHandler
-              : () => {
-                  setProjectTab(tab.id)
-                  setActiveTab(tab.id)
-                }
+            const handleClick = (e: React.MouseEvent) => {
+              if (isSettings) {
+                return
+              }
+
+              e.preventDefault()
+              setProjectTab(tab.id)
+              setActiveTab(tab.id)
+            }
+
+            const currentUrl = new URL(window.location.href)
+            currentUrl.searchParams.set('tab', tab.id)
+            const tabUrl = isSettings ? _replace(routes.project_settings, ':id', id) : currentUrl.toString()
 
             return (
-              <div
+              <Link
                 key={tab.id}
-                onClick={onClick}
+                to={tabUrl}
+                onClick={handleClick}
                 className={cx(
                   'text-md group inline-flex cursor-pointer items-center whitespace-nowrap border-b-2 px-1 py-2 font-bold',
                   {
@@ -3710,7 +3699,7 @@ const ViewProject = ({
                   aria-hidden='true'
                 />
                 <span>{tab.label}</span>
-              </div>
+              </Link>
             )
           })}
         </nav>
