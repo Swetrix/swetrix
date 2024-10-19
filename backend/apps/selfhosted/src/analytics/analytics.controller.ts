@@ -39,7 +39,7 @@ import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { PageviewsDTO } from './dto/pageviews.dto'
 import { EventsDTO } from './dto/events.dto'
-import { AnalyticsGET_DTO, ChartRenderMode } from './dto/getData.dto'
+import { GetDataDto, ChartRenderMode } from './dto/getData.dto'
 import { GetFiltersDto } from './dto/get-filters.dto'
 import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
 import { GetPagePropertyMetaDTO } from './dto/get-page-property-meta.dto'
@@ -175,7 +175,7 @@ export class AnalyticsController {
   @Get()
   @Auth([], true, true)
   async getData(
-    @Query() data: AnalyticsGET_DTO,
+    @Query() data: GetDataDto,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ): Promise<any> {
@@ -230,7 +230,6 @@ export class AnalyticsController {
       allowedTumebucketForPeriodAll = res.timeBucket
     }
 
-    this.analyticsService.validateTimebucket(newTimebucket)
     const [filtersQuery, filtersParams, parsedFilters, customEVFilterApplied] =
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
 
@@ -453,7 +452,7 @@ export class AnalyticsController {
   @Get('chart')
   @Auth([], true, true)
   async getChartData(
-    @Query() data: AnalyticsGET_DTO,
+    @Query() data: GetDataDto,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ): Promise<any> {
@@ -473,7 +472,6 @@ export class AnalyticsController {
       this.analyticsService.validatePeriod(period)
     }
 
-    this.analyticsService.validateTimebucket(timeBucket)
     const [filtersQuery, filtersParams, parsedFilters, customEVFilterApplied] =
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
 
@@ -520,7 +518,7 @@ export class AnalyticsController {
   @Get('performance')
   @Auth([], true, true)
   async getPerfData(
-    @Query() data: AnalyticsGET_DTO & { measure: PerfMeasure },
+    @Query() data: GetDataDto & { measure: PerfMeasure },
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ): Promise<any> {
@@ -567,7 +565,6 @@ export class AnalyticsController {
       allowedTumebucketForPeriodAll = res.timeBucket
     }
 
-    this.analyticsService.validateTimebucket(newTimeBucket)
     const [filtersQuery, filtersParams, parsedFilters] =
       this.analyticsService.getFiltersQuery(filters, DataType.PERFORMANCE)
 
@@ -613,7 +610,7 @@ export class AnalyticsController {
   @Get('performance/chart')
   @Auth([], true, true)
   async getPerfChartData(
-    @Query() data: AnalyticsGET_DTO & { measure: PerfMeasure },
+    @Query() data: GetDataDto & { measure: PerfMeasure },
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ): Promise<any> {
@@ -635,7 +632,6 @@ export class AnalyticsController {
       this.analyticsService.validatePeriod(period)
     }
 
-    this.analyticsService.validateTimebucket(timeBucket)
     const [filtersQuery, filtersParams, parsedFilters] =
       this.analyticsService.getFiltersQuery(filters, DataType.PERFORMANCE)
 
@@ -1272,7 +1268,6 @@ export class AnalyticsController {
       timeBucket = getLowestPossibleTimeBucket(period, from, to)
     }
 
-    this.analyticsService.validateTimebucket(timeBucket)
     const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
 
@@ -1391,7 +1386,6 @@ export class AnalyticsController {
       timeBucketForAllTime = res.timeBucket
     }
 
-    this.analyticsService.validateTimebucket(newTimeBucket)
     const [filtersQuery, filtersParams, parsedFilters] =
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
 
@@ -1609,7 +1603,6 @@ export class AnalyticsController {
       timeBucket = getLowestPossibleTimeBucket(period, from, to)
     }
 
-    this.analyticsService.validateTimebucket(timeBucket)
     const [filtersQuery, filtersParams, appliedFilters] =
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
 
@@ -1693,8 +1686,6 @@ export class AnalyticsController {
     } else {
       timeBucket = getLowestPossibleTimeBucket(period, from, to)
     }
-
-    this.analyticsService.validateTimebucket(timeBucket)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFromUTC, groupToUTC } = this.analyticsService.getGroupFromTo(

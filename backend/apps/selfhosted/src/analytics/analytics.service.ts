@@ -123,14 +123,6 @@ export const validPeriods = [
   'all',
 ]
 
-const validTimebuckets = [
-  TimeBucketType.MINUTE,
-  TimeBucketType.HOUR,
-  TimeBucketType.DAY,
-  TimeBucketType.MONTH,
-  TimeBucketType.YEAR,
-]
-
 const MEASURES_MAP = {
   average: 'avg',
   median: 'median',
@@ -1082,14 +1074,6 @@ export class AnalyticsService {
       this.postProcessParsedFilters(parsed),
       customEVFilterApplied,
     ]
-  }
-
-  validateTimebucket(tb: TimeBucketType): void {
-    if (!_includes(validTimebuckets, tb)) {
-      throw new UnprocessableEntityException(
-        'The provided timebucket is incorrect',
-      )
-    }
   }
 
   generateUInt64(): string {
@@ -2762,8 +2746,6 @@ export class AnalyticsService {
         : res.timeBucket[0]
     }
 
-    this.validateTimebucket(newTimebucket)
-
     const safeTimezone = this.getSafeTimezone(timezone)
     const { groupFromUTC, groupToUTC } = this.getGroupFromTo(
       from,
@@ -2864,8 +2846,6 @@ export class AnalyticsService {
         ? timeBucket
         : res.timeBucket[0]
     }
-
-    this.validateTimebucket(newTimebucket)
 
     const safeTimezone = this.getSafeTimezone(timezone)
     const { groupFromUTC, groupToUTC } = this.getGroupFromTo(

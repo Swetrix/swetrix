@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty } from 'class-validator'
+import { IsEnum, IsNotEmpty } from 'class-validator'
 import { DEFAULT_TIMEZONE } from '../../user/entities/user.entity'
 import { TimeBucketType } from './getData.dto'
 
@@ -17,6 +17,7 @@ export class GetMonitorDataDto {
 
   @ApiProperty({ enum: TimeBucketType })
   @IsNotEmpty()
+  @IsEnum(TimeBucketType, { message: 'The provided timebucket is incorrect' })
   timeBucket: TimeBucketType
 
   @ApiProperty({ required: false })
