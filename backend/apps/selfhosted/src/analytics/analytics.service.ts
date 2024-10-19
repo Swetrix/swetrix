@@ -40,7 +40,6 @@ import { isbot } from 'isbot'
 import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
 import {
   redis,
-  isValidPID,
   UNIQUE_SESSION_LIFE_TIME,
   REDIS_SESSION_SALT_KEY,
   TRAFFIC_COLUMNS,
@@ -367,18 +366,6 @@ export class AnalyticsService {
     if (!_isEmpty(ipBlacklist) && ipRangeCheck(ip, ipBlacklist)) {
       throw new BadRequestException(
         'Incoming analytics is disabled for this IP address',
-      )
-    }
-  }
-
-  validatePID(pid: string): void {
-    if (_isEmpty(pid)) {
-      throw new BadRequestException('The Project ID (pid) has to be provided')
-    }
-
-    if (!isValidPID(pid)) {
-      throw new BadRequestException(
-        'The provided Project ID (pid) is incorrect',
       )
     }
   }
@@ -1259,12 +1246,6 @@ export class AnalyticsService {
       this.getFiltersQuery(filters, DataType.ANALYTICS)
 
     const promises = pids.map(async pid => {
-      if (!isValidPID(pid)) {
-        throw new BadRequestException(
-          `The provided Project ID (${pid}) is incorrect`,
-        )
-      }
-
       try {
         if (period === 'all') {
           let queryAll = `SELECT count(*) AS all, countIf(unique=1) AS unique, avgIf(sdur, sdur IS NOT NULL AND analytics.unique=1) AS sdur FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery}`
@@ -1460,12 +1441,6 @@ export class AnalyticsService {
       .join(', ')
 
     const promises = pids.map(async pid => {
-      if (!isValidPID(pid)) {
-        throw new BadRequestException(
-          `The provided Project ID (${pid}) is incorrect`,
-        )
-      }
-
       try {
         if (period === 'all') {
           const queryAll = `SELECT ${columnSelectors} FROM performance WHERE pid = {pid:FixedString(12)} ${filtersQuery}`
