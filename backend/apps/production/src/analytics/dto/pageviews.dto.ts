@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty, IsObject, IsOptional, Validate } from 'class-validator'
+import {
+  IsNotEmpty,
+  IsObject,
+  IsOptional,
+  Matches,
+  Validate,
+} from 'class-validator'
 
 import {
   MAX_METADATA_KEYS,
@@ -8,14 +14,16 @@ import {
   MetadataValueType,
   MetadataSizeLimit,
 } from './events.dto'
+import { PID_REGEX } from '../../common/constants'
 
-export class PageviewsDTO {
+export class PageviewsDto {
   @ApiProperty({
     example: 'aUn1quEid-3',
     required: true,
     description: 'The project ID',
   })
   @IsNotEmpty()
+  @Matches(PID_REGEX, { message: 'The provided Project ID (pid) is incorrect' })
   pid: string
 
   // Tracking metrics

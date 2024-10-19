@@ -43,7 +43,6 @@ import { isbot } from 'isbot'
 import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
 import {
   redis,
-  isValidPID,
   UNIQUE_SESSION_LIFE_TIME,
   REDIS_SESSION_SALT_KEY,
   TRAFFIC_COLUMNS,
@@ -66,8 +65,8 @@ import {
   millisecondsToSeconds,
   sumArrays,
 } from '../common/utils'
-import { PageviewsDTO } from './dto/pageviews.dto'
-import { EventsDTO } from './dto/events.dto'
+import { PageviewsDto } from './dto/pageviews.dto'
+import { EventsDto } from './dto/events.dto'
 import { ProjectService } from '../project/project.service'
 import { UserService } from '../user/user.service'
 import { BotsProtectionLevel, Project } from '../project/entity/project.entity'
@@ -101,7 +100,7 @@ import {
   ICustomEvent,
   BirdseyeCHUptimeResponse,
 } from './interfaces'
-import { ErrorDTO } from './dto/error.dto'
+import { ErrorDto } from './dto/error.dto'
 import { GetPagePropertyMetaDto } from './dto/get-page-property-meta.dto'
 import { ProjectViewCustomEventMetaValueType } from '../project/entity/project-view-custom-event.entity'
 import { ProjectViewCustomEventDto } from '../project/dto/create-project-view.dto'
@@ -422,29 +421,12 @@ export class AnalyticsService {
     }
   }
 
-  validatePID(pid: string): void {
-    if (_isEmpty(pid)) {
-      throw new BadRequestException('The Project ID (pid) has to be provided')
-    }
-
-    if (!isValidPID(pid)) {
-      throw new BadRequestException(
-        'The provided Project ID (pid) is incorrect',
-      )
-    }
-  }
-
   async validate(
-    logDTO: PageviewsDTO | EventsDTO | ErrorDTO,
+    logDTO: PageviewsDto | EventsDto | ErrorDto,
     origin: string,
     ip?: string,
   ): Promise<string | null> {
-    if (_isEmpty(logDTO)) {
-      throw new BadRequestException('The request cannot be empty')
-    }
-
     const { pid } = logDTO
-    this.validatePID(pid)
 
     // 'tz' does not need validation as it's based on getCountryForTimezone detection
     const { lc } = logDTO
@@ -488,16 +470,11 @@ export class AnalyticsService {
   }
 
   async validateHeartbeat(
-    logDTO: PageviewsDTO,
+    logDTO: PageviewsDto,
     origin: string,
     ip?: string,
   ): Promise<string | null> {
-    if (_isEmpty(logDTO)) {
-      throw new BadRequestException('The request cannot be empty')
-    }
-
     const { pid } = logDTO
-    this.validatePID(pid)
 
     const project = await this.projectService.getRedisProject(pid)
 
@@ -1311,12 +1288,6 @@ export class AnalyticsService {
     )
 
     const promises = pids.map(async pid => {
-      if (!isValidPID(pid)) {
-        throw new BadRequestException(
-          `The provided Project ID (${pid}) is incorrect`,
-        )
-      }
-
       try {
         if (period === 'all') {
           const queryAll = `SELECT count(*) AS all FROM captcha WHERE pid = {pid:FixedString(12)} ${filtersQuery}`
@@ -1629,12 +1600,6 @@ export class AnalyticsService {
       this.getFiltersQuery(filters, DataType.ANALYTICS)
 
     const promises = pids.map(async pid => {
-      if (!isValidPID(pid)) {
-        throw new BadRequestException(
-          `The provided Project ID (${pid}) is incorrect`,
-        )
-      }
-
       try {
         if (period === 'all') {
           let queryAll = `SELECT count(*) AS all, countIf(unique=1) AS unique, avgIf(sdur, sdur IS NOT NULL AND analytics.unique=1) AS sdur FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery}`
@@ -1830,12 +1795,6 @@ export class AnalyticsService {
       .join(', ')
 
     const promises = pids.map(async pid => {
-      if (!isValidPID(pid)) {
-        throw new BadRequestException(
-          `The provided Project ID (${pid}) is incorrect`,
-        )
-      }
-
       try {
         if (period === 'all') {
           const queryAll = `SELECT ${columnSelectors} FROM performance WHERE pid = {pid:FixedString(12)} ${filtersQuery}`
@@ -3954,7 +3913,7 @@ export class AnalyticsService {
     }
   }
 
-  getErrorID(errorDTO: ErrorDTO): string {
+  getErrorID(errorDTO: ErrorDto): string {
     const { name, message, colno, lineno, filename } = errorDTO
 
     return hash(`${name}${message}${colno}${lineno}${filename}`).substring(

@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty } from 'class-validator'
+import { IsNotEmpty, Matches } from 'class-validator'
+import { PID_REGEX } from '../../common/constants'
 
 export class GetFiltersDto {
   @ApiProperty({
@@ -8,6 +9,7 @@ export class GetFiltersDto {
     description: 'The project ID',
   })
   @IsNotEmpty()
+  @Matches(PID_REGEX, { message: 'The provided Project ID (pid) is incorrect' })
   pid: string
 
   @ApiProperty({
