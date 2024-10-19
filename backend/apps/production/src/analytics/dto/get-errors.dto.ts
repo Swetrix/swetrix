@@ -1,7 +1,7 @@
 import { PickType, ApiProperty } from '@nestjs/swagger'
-import { AnalyticsGET_DTO } from './getData.dto'
+import { GetDataDto } from './getData.dto'
 
-export class GetErrorsDto extends PickType(AnalyticsGET_DTO, [
+export class GetErrorsDto extends PickType(GetDataDto, [
   'pid',
   'period',
   'from',

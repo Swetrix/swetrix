@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty, IsOptional } from 'class-validator'
+import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator'
 import { DEFAULT_TIMEZONE } from '../../user/entities/user.entity'
 
 export enum TimeBucketType {
@@ -16,7 +16,7 @@ export enum ChartRenderMode {
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export class AnalyticsGET_DTO {
+export class GetDataDto {
   @ApiProperty()
   @IsNotEmpty()
   pid: string
@@ -26,6 +26,7 @@ export class AnalyticsGET_DTO {
 
   @ApiProperty({ enum: TimeBucketType })
   @IsNotEmpty()
+  @IsEnum(TimeBucketType, { message: 'The provided timebucket is incorrect' })
   timeBucket: TimeBucketType
 
   @ApiProperty()

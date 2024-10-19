@@ -102,7 +102,7 @@ import {
   BirdseyeCHUptimeResponse,
 } from './interfaces'
 import { ErrorDTO } from './dto/error.dto'
-import { GetPagePropertyMetaDTO } from './dto/get-page-property-meta.dto'
+import { GetPagePropertyMetaDto } from './dto/get-page-property-meta.dto'
 import { ProjectViewCustomEventMetaValueType } from '../project/entity/project-view-custom-event.entity'
 import { ProjectViewCustomEventDto } from '../project/dto/create-project-view.dto'
 
@@ -139,14 +139,6 @@ const MEASURES_MAP = {
   median: 'median',
   p95: 'quantileExact(0.95)',
 }
-
-const validTimebuckets = [
-  TimeBucketType.MINUTE,
-  TimeBucketType.HOUR,
-  TimeBucketType.DAY,
-  TimeBucketType.MONTH,
-  TimeBucketType.YEAR,
-]
 
 // mapping of allowed timebuckets per difference between days
 // (e.g. if difference is lower than (lt) (including) -> then the specified timebuckets are allowed to be applied)
@@ -1128,14 +1120,6 @@ export class AnalyticsService {
       this.postProcessParsedFilters(parsed),
       customEVFilterApplied,
     ]
-  }
-
-  validateTimebucket(tb: TimeBucketType): void {
-    if (!_includes(validTimebuckets, tb)) {
-      throw new UnprocessableEntityException(
-        'The provided timebucket is incorrect',
-      )
-    }
   }
 
   generateUInt64(): string {
@@ -3382,8 +3366,6 @@ export class AnalyticsService {
         : res.timeBucket[0]
     }
 
-    this.validateTimebucket(newTimebucket)
-
     const safeTimezone = this.getSafeTimezone(timezone)
     const { groupFromUTC, groupToUTC } = this.getGroupFromTo(
       from,
@@ -3445,7 +3427,7 @@ export class AnalyticsService {
     }
   }
 
-  async getPagePropertyMeta(data: GetPagePropertyMetaDTO): Promise<{
+  async getPagePropertyMeta(data: GetPagePropertyMetaDto): Promise<{
     result: IAggregatedMetadata[]
     appliedFilters: GetFiltersQuery[2]
   }> {
@@ -3484,8 +3466,6 @@ export class AnalyticsService {
         ? timeBucket
         : res.timeBucket[0]
     }
-
-    this.validateTimebucket(newTimebucket)
 
     const safeTimezone = this.getSafeTimezone(timezone)
     const { groupFromUTC, groupToUTC } = this.getGroupFromTo(

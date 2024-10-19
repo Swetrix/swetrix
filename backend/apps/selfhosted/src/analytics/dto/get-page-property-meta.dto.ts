@@ -1,8 +1,8 @@
 import { ApiProperty, PickType } from '@nestjs/swagger'
 import { IsNotEmpty, IsString } from 'class-validator'
-import { AnalyticsGET_DTO } from './getData.dto'
+import { GetDataDto } from './getData.dto'
 
-export class GetPagePropertyMetaDTO extends PickType(AnalyticsGET_DTO, [
+export class GetPagePropertyMetaDTO extends PickType(GetDataDto, [
   'pid',
   'period',
   'timeBucket',
