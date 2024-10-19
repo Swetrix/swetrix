@@ -896,7 +896,7 @@ export class AnalyticsController {
     this.analyticsService.validateCustomEVMeta(eventsDTO.meta)
 
     await this.analyticsService.throwIfBot(eventsDTO.pid, userAgent)
-    await this.analyticsService.validate(eventsDTO, origin, 'custom', ip)
+    await this.analyticsService.validate(eventsDTO, origin, ip)
 
     if (eventsDTO.unique) {
       const [unique] = await this.analyticsService.isUnique(
@@ -998,7 +998,7 @@ export class AnalyticsController {
 
     await this.analyticsService.throwIfBot(logDTO.pid, userAgent)
 
-    await this.analyticsService.validate(logDTO, origin, 'log', ip)
+    await this.analyticsService.validate(logDTO, origin, ip)
 
     const [unique, psid] = await this.analyticsService.isUnique(
       logDTO.pid,
@@ -1125,13 +1125,14 @@ export class AnalyticsController {
       return res.end(TRANSPARENT_GIF_BUFFER, 'binary')
     }
 
+    const ip = getIPFromHeaders(headers) || reqIP || ''
+
     const logDTO: PageviewsDTO = {
       pid,
     }
 
-    await this.analyticsService.validate(logDTO, origin)
+    await this.analyticsService.validate(logDTO, origin, ip)
 
-    const ip = getIPFromHeaders(headers) || reqIP || ''
     const [unique, psid] = await this.analyticsService.isUnique(
       logDTO.pid,
       userAgent,
@@ -1428,7 +1429,7 @@ export class AnalyticsController {
 
     await this.analyticsService.throwIfBot(errorDTO.pid, userAgent)
 
-    await this.analyticsService.validate(errorDTO, origin, 'error', ip)
+    await this.analyticsService.validate(errorDTO, origin, ip)
 
     const { city, region, country } = getGeoDetails(ip, errorDTO.tz, headers)
 

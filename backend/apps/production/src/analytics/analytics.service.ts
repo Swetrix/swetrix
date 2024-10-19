@@ -148,10 +148,6 @@ const timeBucketToDays = [
   { lt: 99999, tb: [TimeBucketType.YEAR] },
 ]
 
-// Smaller than 64 characters, must start with an English letter and contain only letters (a-z A-Z), numbers (0-9), underscores (_) and dots (.)
-// eslint-disable-next-line no-useless-escape
-const customEVvalidate = /^[a-zA-Z](?:[\w\.]){0,62}$/
-
 const timeBucketConversion = {
   minute: 'toStartOfMinute',
   hour: 'toStartOfHour',
@@ -441,7 +437,6 @@ export class AnalyticsService {
   async validate(
     logDTO: PageviewsDTO | EventsDTO | ErrorDTO,
     origin: string,
-    type: 'custom' | 'log' | 'error' = 'log',
     ip?: string,
   ): Promise<string | null> {
     if (_isEmpty(logDTO)) {
@@ -450,20 +445,6 @@ export class AnalyticsService {
 
     const { pid } = logDTO
     this.validatePID(pid)
-
-    if (type === 'custom') {
-      const { ev } = <EventsDTO>logDTO
-
-      if (_isEmpty(ev)) {
-        throw new BadRequestException('Empty custom events are not allowed')
-      }
-
-      if (!customEVvalidate.test(ev)) {
-        throw new BadRequestException(
-          'An incorrect event name (ev) is provided',
-        )
-      }
-    }
 
     // 'tz' does not need validation as it's based on getCountryForTimezone detection
     const { lc } = logDTO

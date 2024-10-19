@@ -53,6 +53,10 @@ yarn.lock
 # Sentry Config File
 .sentryclirc
 
+# API
+backend/.yarn/*
+backend/.yarnrc.yml
+
 # Frontend
 web/build
 web/public/build
