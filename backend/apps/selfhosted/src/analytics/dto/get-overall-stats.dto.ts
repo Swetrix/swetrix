@@ -3,15 +3,13 @@ import { IsOptional, IsString, Matches, ValidateIf } from 'class-validator'
 import { DEFAULT_TIMEZONE } from '../../user/entities/user.entity'
 import { ValidatePeriod } from '../decorators/validate-period.decorator'
 import { PID_REGEX } from '../../common/constants'
+import { ValidateProjectIds } from '../decorators/validate-project-ids.decorator'
 
 export class GetOverallStatsDto {
   @ApiProperty({ description: 'Array of project IDs', required: false })
   @ValidateIf(o => o.pids || !o.pid)
   @IsOptional()
-  @Matches(PID_REGEX, {
-    message: 'One of the provided Project IDs (pids) is incorrect',
-    each: true,
-  })
+  @ValidateProjectIds()
   pids?: string[]
 
   @ApiProperty({ description: 'Single project ID', required: false })

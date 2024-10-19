@@ -1,15 +1,13 @@
-import { IsOptional, Matches, ValidateIf } from 'class-validator'
+import { IsOptional, ValidateIf, Matches } from 'class-validator'
 import { ApiProperty } from '@nestjs/swagger'
 import { PID_REGEX } from '../../common/constants'
+import { ValidateProjectIds } from '../decorators/validate-project-ids.decorator'
 
 export class GetHeartbeatStatsDto {
   @ApiProperty({ description: 'Array of project IDs', required: false })
   @ValidateIf(o => o.pids || !o.pid)
   @IsOptional()
-  @Matches(PID_REGEX, {
-    message: 'One of the provided Project IDs (pids) is incorrect',
-    each: true,
-  })
+  @ValidateProjectIds()
   pids?: string[]
 
   @ApiProperty({ description: 'Single project ID', required: false })
