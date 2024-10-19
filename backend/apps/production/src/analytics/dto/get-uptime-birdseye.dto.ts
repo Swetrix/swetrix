@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsNotEmpty, IsOptional } from 'class-validator'
 import { DEFAULT_TIMEZONE } from '../../user/entities/user.entity'
+import { ValidatePeriod } from '../decorators/validate-period.decorator'
 
 export class GetUptimeBirdseyeDto {
   @ApiProperty()
@@ -15,8 +16,10 @@ export class GetUptimeBirdseyeDto {
   @IsOptional()
   monitorIds?: number[] | string[]
 
-  @ApiProperty()
-  period: string
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @ValidatePeriod()
+  period?: string
 
   @ApiProperty({ required: false })
   from: string

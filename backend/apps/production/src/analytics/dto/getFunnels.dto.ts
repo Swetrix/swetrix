@@ -1,15 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty } from 'class-validator'
+import { IsNotEmpty, IsOptional } from 'class-validator'
 import { DEFAULT_TIMEZONE } from '../../user/entities/user.entity'
+import { ValidatePeriod } from '../decorators/validate-period.decorator'
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export class GetFunnelsDTO {
+export class GetFunnelsDto {
   @ApiProperty()
   @IsNotEmpty()
   pid: string
 
-  @ApiProperty()
-  period: string
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @ValidatePeriod()
+  period?: string
 
   @ApiProperty()
   from: string

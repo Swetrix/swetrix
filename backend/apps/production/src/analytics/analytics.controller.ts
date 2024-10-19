@@ -38,9 +38,9 @@ import {
   AnalyticsService,
   getHeartbeatKey,
   DataType,
-  validPeriods,
   getLowestPossibleTimeBucket,
 } from './analytics.service'
+import { VALID_PERIODS } from './decorators/validate-period.decorator'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
 import { RolesGuard } from '../auth/guards/roles.guard'
@@ -49,8 +49,8 @@ import { EventsDTO } from './dto/events.dto'
 import { GetDataDto, ChartRenderMode } from './dto/getData.dto'
 import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
 import { GetPagePropertyMetaDto } from './dto/get-page-property-meta.dto'
-import { GetUserFlowDTO } from './dto/getUserFlow.dto'
-import { GetFunnelsDTO } from './dto/getFunnels.dto'
+import { GetUserFlowDto } from './dto/getUserFlow.dto'
+import { GetFunnelsDto } from './dto/getFunnels.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import {
   redis,
@@ -93,6 +93,7 @@ import {
   ProjectViewCustomEventDto,
 } from '../project/dto/create-project-view.dto'
 import { extensions } from './utils/ua-parser'
+import { GetOverallStatsDto } from './dto/get-overall-stats.dto'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -230,7 +231,7 @@ export class AnalyticsController {
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
     isCaptcha = false,
-  ): Promise<any> {
+  ) {
     const {
       pid,
       period,
@@ -243,10 +244,6 @@ export class AnalyticsController {
       metrics,
     } = data
     this.analyticsService.validatePID(pid)
-
-    if (!_isEmpty(period)) {
-      this.analyticsService.validatePeriod(period)
-    }
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -400,7 +397,7 @@ export class AnalyticsController {
   @Get('funnel')
   @Auth([], true, true)
   async getFunnel(
-    @Query() data: GetFunnelsDTO,
+    @Query() data: GetFunnelsDto,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ): Promise<IGetFunnel> {
@@ -414,10 +411,6 @@ export class AnalyticsController {
       funnelId,
     } = data
     this.analyticsService.validatePID(pid)
-
-    if (!_isEmpty(period)) {
-      this.analyticsService.validatePeriod(period)
-    }
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -479,12 +472,8 @@ export class AnalyticsController {
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ): Promise<ReturnType<typeof this.analyticsService.getCustomEventMetadata>> {
-    const { pid, period } = data
+    const { pid } = data
     this.analyticsService.validatePID(pid)
-
-    if (!_isEmpty(period)) {
-      this.analyticsService.validatePeriod(period)
-    }
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -504,12 +493,8 @@ export class AnalyticsController {
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ): Promise<ReturnType<typeof this.analyticsService.getPagePropertyMeta>> {
-    const { pid, period } = data
+    const { pid } = data
     this.analyticsService.validatePID(pid)
-
-    if (!_isEmpty(period)) {
-      this.analyticsService.validatePeriod(period)
-    }
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -528,7 +513,7 @@ export class AnalyticsController {
     @Query() data: GetFiltersDto,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
-  ): Promise<any> {
+  ) {
     const { pid, type } = data
     this.analyticsService.validatePID(pid)
 
@@ -549,7 +534,7 @@ export class AnalyticsController {
     @Query() data: GetFiltersDto,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
-  ): Promise<any> {
+  ) {
     const { pid, type } = data
     this.analyticsService.validatePID(pid)
 
@@ -570,7 +555,7 @@ export class AnalyticsController {
     @Query() data: GetDataDto,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
-  ): Promise<any> {
+  ) {
     const {
       pid,
       period,
@@ -582,10 +567,6 @@ export class AnalyticsController {
       mode = ChartRenderMode.PERIODICAL,
     } = data
     this.analyticsService.validatePID(pid)
-
-    if (!_isEmpty(period)) {
-      this.analyticsService.validatePeriod(period)
-    }
 
     const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
@@ -638,7 +619,7 @@ export class AnalyticsController {
     @Query() data: GetDataDto & { measure: PerfMeasure },
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
-  ): Promise<any> {
+  ) {
     const {
       pid,
       period,
@@ -652,10 +633,6 @@ export class AnalyticsController {
     this.analyticsService.validatePID(pid)
 
     this.analyticsService.checkIfPerfMeasureIsValid(measure)
-
-    if (!_isEmpty(period)) {
-      this.analyticsService.validatePeriod(period)
-    }
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -732,7 +709,7 @@ export class AnalyticsController {
     @Query() data: GetDataDto & { measure: PerfMeasure },
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
-  ): Promise<any> {
+  ) {
     const {
       pid,
       period,
@@ -746,10 +723,6 @@ export class AnalyticsController {
     this.analyticsService.validatePID(pid)
 
     this.analyticsService.checkIfPerfMeasureIsValid(measure)
-
-    if (!_isEmpty(period)) {
-      this.analyticsService.validatePeriod(period)
-    }
 
     const [filtersQuery, filtersParams, appliedFilters] =
       this.analyticsService.getFiltersQuery(filters, DataType.PERFORMANCE)
@@ -800,23 +773,19 @@ export class AnalyticsController {
   async getCaptchaData(
     @Query() data: GetDataDto,
     @CurrentUserId() uid: string,
-  ): Promise<any> {
+  ) {
     return this.getData(data, uid, {}, true)
   }
 
   @Get('user-flow')
   @Auth([], true, true)
   async getUserFlow(
-    @Query() data: GetUserFlowDTO,
+    @Query() data: GetUserFlowDto,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ): Promise<IUserFlow | { appliedFilters: any[] }> {
     const { pid, period, from, to, timezone = DEFAULT_TIMEZONE, filters } = data
     this.analyticsService.validatePID(pid)
-
-    if (!_isEmpty(period)) {
-      this.analyticsService.validatePeriod(period)
-    }
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -870,10 +839,10 @@ export class AnalyticsController {
   @Auth([], true, true)
   // returns overall short statistics per project
   async getOverallStats(
-    @Query() data,
+    @Query() data: GetOverallStatsDto,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
-  ): Promise<any> {
+  ) {
     const {
       pids,
       pid,
@@ -912,9 +881,9 @@ export class AnalyticsController {
   @Auth([], true, true)
   // returns overall short statistics per CAPTCHA project
   async getCaptchaOverallStats(
-    @Query() data,
+    @Query() data: GetOverallStatsDto,
     @CurrentUserId() uid: string,
-  ): Promise<any> {
+  ) {
     const {
       pids,
       pid,
@@ -948,10 +917,10 @@ export class AnalyticsController {
   @Get('performance/birdseye')
   @Auth([], true, true)
   async getPerformanceOverallStats(
-    @Query() data,
+    @Query() data: GetOverallStatsDto & { measure: PerfMeasure },
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
-  ): Promise<any> {
+  ) {
     const {
       pids,
       pid,
@@ -1115,11 +1084,7 @@ export class AnalyticsController {
 
   @Post('error')
   @Public()
-  async logError(
-    @Body() errorDTO: ErrorDTO,
-    @Headers() headers,
-    @Ip() reqIP,
-  ): Promise<any> {
+  async logError(@Body() errorDTO: ErrorDTO, @Headers() headers, @Ip() reqIP) {
     const { 'user-agent': userAgent, origin } = headers
 
     const ip = getIPFromHeaders(headers, true) || reqIP || ''
@@ -1180,7 +1145,7 @@ export class AnalyticsController {
     @CurrentUserId() uid: string,
     @Headers() headers,
     @Ip() reqIP,
-  ): Promise<any> {
+  ) {
     const { pid, eid, eids: unprocessedEids, status } = statusDTO
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
@@ -1203,7 +1168,7 @@ export class AnalyticsController {
     @Body() eventsDTO: EventsDTO,
     @Headers() headers,
     @Ip() reqIP,
-  ): Promise<any> {
+  ) {
     const { 'user-agent': userAgent, origin } = headers
 
     const ip = getIPFromHeaders(headers, true) || reqIP || ''
@@ -1284,7 +1249,7 @@ export class AnalyticsController {
     @Body() logDTO: PageviewsDTO,
     @Headers() headers,
     @Ip() reqIP,
-  ): Promise<any> {
+  ) {
     const { 'user-agent': userAgent, origin } = headers
     const { pid } = logDTO
     const ip = getIPFromHeaders(headers, true) || reqIP || ''
@@ -1307,11 +1272,7 @@ export class AnalyticsController {
   // Log pageview event
   @Post()
   @Public()
-  async log(
-    @Body() logDTO: PageviewsDTO,
-    @Headers() headers,
-    @Ip() reqIP,
-  ): Promise<any> {
+  async log(@Body() logDTO: PageviewsDTO, @Headers() headers, @Ip() reqIP) {
     const { 'user-agent': userAgent, origin } = headers
 
     const ip = getIPFromHeaders(headers, true) || reqIP || ''
@@ -1434,7 +1395,7 @@ export class AnalyticsController {
     @Headers() headers,
     @Ip() reqIP,
     @Response() res,
-  ): Promise<any> {
+  ) {
     const { 'user-agent': userAgent, origin } = headers
     const { pid } = data
 
@@ -1512,13 +1473,9 @@ export class AnalyticsController {
     @Query() data: GetSessionsDto,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
-  ): Promise<any> {
+  ) {
     const { pid, period, from, to, filters, timezone = DEFAULT_TIMEZONE } = data
     this.analyticsService.validatePID(pid)
-
-    if (!_isEmpty(period)) {
-      this.analyticsService.validatePeriod(period)
-    }
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -1599,7 +1556,7 @@ export class AnalyticsController {
     @Query() parameters: GetUptimeBirdseyeDto,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
-  ): Promise<any> {
+  ) {
     const {
       pid,
       monitorId,
@@ -1658,10 +1615,6 @@ export class AnalyticsController {
     } = parameters
 
     this.analyticsService.validatePID(pid)
-
-    if (!_isEmpty(period)) {
-      this.analyticsService.validatePeriod(period)
-    }
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -1738,7 +1691,7 @@ export class AnalyticsController {
     @Query() data: GetErrorsDto,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
-  ): Promise<any> {
+  ) {
     const {
       pid,
       period,
@@ -1749,10 +1702,6 @@ export class AnalyticsController {
       options,
     } = data
     this.analyticsService.validatePID(pid)
-
-    if (!_isEmpty(period)) {
-      this.analyticsService.validatePeriod(period)
-    }
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -1833,7 +1782,7 @@ export class AnalyticsController {
     @Query() data: GetErrorDto,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
-  ): Promise<any> {
+  ) {
     const {
       pid,
       timezone = DEFAULT_TIMEZONE,
@@ -1844,10 +1793,6 @@ export class AnalyticsController {
       //
     } = data
     this.analyticsService.validatePID(pid)
-
-    if (!_isEmpty(period)) {
-      this.analyticsService.validatePeriod(period)
-    }
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -1902,7 +1847,7 @@ export class AnalyticsController {
     @Query() data: GetSessionDto,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
-  ): Promise<any> {
+  ) {
     const {
       pid,
       psid,
@@ -1936,7 +1881,7 @@ export class AnalyticsController {
     @Query() data: GetCustomEventsDto,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
-  ): Promise<any> {
+  ) {
     const {
       pid,
       period,
@@ -1948,10 +1893,6 @@ export class AnalyticsController {
       customEvents,
     } = data
     this.analyticsService.validatePID(pid)
-
-    if (!_isEmpty(period)) {
-      this.analyticsService.validatePeriod(period)
-    }
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -1965,7 +1906,7 @@ export class AnalyticsController {
     let diff
     let timeBucketForAllTime
 
-    if (period === validPeriods[validPeriods.length - 1]) {
+    if (period === VALID_PERIODS[VALID_PERIODS.length - 1]) {
       const res = await this.analyticsService.getTimeBucketForAllTime(
         pid,
         period,
