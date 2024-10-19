@@ -44,8 +44,8 @@ import { VALID_PERIODS } from './decorators/validate-period.decorator'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { DEFAULT_TIMEZONE } from '../user/entities/user.entity'
 import { RolesGuard } from '../auth/guards/roles.guard'
-import { PageviewsDTO } from './dto/pageviews.dto'
-import { EventsDTO } from './dto/events.dto'
+import { PageviewsDto } from './dto/pageviews.dto'
+import { EventsDto } from './dto/events.dto'
 import { GetDataDto, ChartRenderMode } from './dto/getData.dto'
 import { GetCustomEventMetadata } from './dto/get-custom-event-meta.dto'
 import { GetPagePropertyMetaDto } from './dto/get-page-property-meta.dto'
@@ -77,10 +77,10 @@ import {
 import { GetSessionsDto } from './dto/get-sessions.dto'
 import { GetMonitorDataDto } from './dto/get-monitor-data.dto'
 import { GetSessionDto } from './dto/get-session.dto'
-import { ErrorDTO } from './dto/error.dto'
+import { ErrorDto } from './dto/error.dto'
 import { GetErrorsDto } from './dto/get-errors.dto'
 import { GetErrorDto } from './dto/get-error.dto'
-import { PatchStatusDTO } from './dto/patch-status.dto'
+import { PatchStatusDto } from './dto/patch-status.dto'
 import {
   customEventTransformer,
   errorEventTransformer,
@@ -94,6 +94,8 @@ import {
 } from '../project/dto/create-project-view.dto'
 import { extensions } from './utils/ua-parser'
 import { GetOverallStatsDto } from './dto/get-overall-stats.dto'
+import { NoscriptDto } from './dto/noscript.dto'
+import { LiveVisitorsDto } from './dto/live-visitors.dto'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -243,7 +245,6 @@ export class AnalyticsController {
       mode = ChartRenderMode.PERIODICAL,
       metrics,
     } = data
-    this.analyticsService.validatePID(pid)
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -410,7 +411,6 @@ export class AnalyticsController {
       pages,
       funnelId,
     } = data
-    this.analyticsService.validatePID(pid)
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -473,7 +473,6 @@ export class AnalyticsController {
     @Headers() headers: { 'x-password'?: string },
   ): Promise<ReturnType<typeof this.analyticsService.getCustomEventMetadata>> {
     const { pid } = data
-    this.analyticsService.validatePID(pid)
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -494,7 +493,6 @@ export class AnalyticsController {
     @Headers() headers: { 'x-password'?: string },
   ): Promise<ReturnType<typeof this.analyticsService.getPagePropertyMeta>> {
     const { pid } = data
-    this.analyticsService.validatePID(pid)
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -515,7 +513,6 @@ export class AnalyticsController {
     @Headers() headers: { 'x-password'?: string },
   ) {
     const { pid, type } = data
-    this.analyticsService.validatePID(pid)
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -536,7 +533,6 @@ export class AnalyticsController {
     @Headers() headers: { 'x-password'?: string },
   ) {
     const { pid, type } = data
-    this.analyticsService.validatePID(pid)
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -566,7 +562,6 @@ export class AnalyticsController {
       timezone = DEFAULT_TIMEZONE,
       mode = ChartRenderMode.PERIODICAL,
     } = data
-    this.analyticsService.validatePID(pid)
 
     const [filtersQuery, filtersParams, appliedFilters, customEVFilterApplied] =
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
@@ -630,7 +625,6 @@ export class AnalyticsController {
       timezone = DEFAULT_TIMEZONE,
       measure = DEFAULT_MEASURE,
     } = data
-    this.analyticsService.validatePID(pid)
 
     this.analyticsService.checkIfPerfMeasureIsValid(measure)
 
@@ -720,7 +714,6 @@ export class AnalyticsController {
       timezone = DEFAULT_TIMEZONE,
       measure = DEFAULT_MEASURE,
     } = data
-    this.analyticsService.validatePID(pid)
 
     this.analyticsService.checkIfPerfMeasureIsValid(measure)
 
@@ -785,7 +778,6 @@ export class AnalyticsController {
     @Headers() headers: { 'x-password'?: string },
   ): Promise<IUserFlow | { appliedFilters: any[] }> {
     const { pid, period, from, to, timezone = DEFAULT_TIMEZONE, filters } = data
-    this.analyticsService.validatePID(pid)
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -855,7 +847,6 @@ export class AnalyticsController {
     const pidsArray = getPIDsArray(pids, pid)
 
     const validationPromises = _map(pidsArray, async currentPID => {
-      this.analyticsService.validatePID(currentPID)
       await this.analyticsService.checkProjectAccess(
         currentPID,
         uid,
@@ -896,7 +887,6 @@ export class AnalyticsController {
     const pidsArray = getPIDsArray(pids, pid)
 
     const validationPromises = _map(pidsArray, async currentPID => {
-      this.analyticsService.validatePID(currentPID)
       await this.analyticsService.checkProjectAccess(currentPID, uid)
 
       await this.analyticsService.checkBillingAccess(currentPID)
@@ -940,7 +930,6 @@ export class AnalyticsController {
     }
 
     const validationPromises = _map(pidsArray, async currentPID => {
-      this.analyticsService.validatePID(currentPID)
       await this.analyticsService.checkProjectAccess(
         currentPID,
         uid,
@@ -997,7 +986,6 @@ export class AnalyticsController {
     const pidsArray = getPIDsArray(pids, pid)
 
     const validationPromises = _map(pidsArray, async currentPID => {
-      this.analyticsService.validatePID(currentPID)
       await this.analyticsService.checkProjectAccess(
         currentPID,
         uid,
@@ -1029,13 +1017,12 @@ export class AnalyticsController {
   @Get('liveVisitors')
   @Auth([], true, true)
   async getLiveVisitors(
-    @Query() queryParams,
+    @Query() queryParams: LiveVisitorsDto,
     @CurrentUserId() uid: string,
     @Headers() headers: { 'x-password'?: string },
   ): Promise<object> {
     const { pid } = queryParams
 
-    this.analyticsService.validatePID(pid)
     await this.analyticsService.checkProjectAccess(
       pid,
       uid,
@@ -1084,7 +1071,7 @@ export class AnalyticsController {
 
   @Post('error')
   @Public()
-  async logError(@Body() errorDTO: ErrorDTO, @Headers() headers, @Ip() reqIP) {
+  async logError(@Body() errorDTO: ErrorDto, @Headers() headers, @Ip() reqIP) {
     const { 'user-agent': userAgent, origin } = headers
 
     const ip = getIPFromHeaders(headers, true) || reqIP || ''
@@ -1141,7 +1128,7 @@ export class AnalyticsController {
   @Patch('error-status')
   @Auth([], true, true)
   async patchStatus(
-    @Body() statusDTO: PatchStatusDTO,
+    @Body() statusDTO: PatchStatusDto,
     @CurrentUserId() uid: string,
     @Headers() headers,
     @Ip() reqIP,
@@ -1151,7 +1138,6 @@ export class AnalyticsController {
 
     await checkRateLimit(ip, 'error-status', 100, 1800)
 
-    this.analyticsService.validatePID(pid)
     await this.analyticsService.checkManageAccess(pid, uid)
     await this.analyticsService.checkBillingAccess(pid)
 
@@ -1165,7 +1151,7 @@ export class AnalyticsController {
   @Post('custom')
   @Public()
   async logCustom(
-    @Body() eventsDTO: EventsDTO,
+    @Body() eventsDTO: EventsDto,
     @Headers() headers,
     @Ip() reqIP,
   ) {
@@ -1246,7 +1232,7 @@ export class AnalyticsController {
   @Post('hb')
   @Auth([], true, true)
   async heartbeat(
-    @Body() logDTO: PageviewsDTO,
+    @Body() logDTO: PageviewsDto,
     @Headers() headers,
     @Ip() reqIP,
   ) {
@@ -1272,7 +1258,7 @@ export class AnalyticsController {
   // Log pageview event
   @Post()
   @Public()
-  async log(@Body() logDTO: PageviewsDTO, @Headers() headers, @Ip() reqIP) {
+  async log(@Body() logDTO: PageviewsDto, @Headers() headers, @Ip() reqIP) {
     const { 'user-agent': userAgent, origin } = headers
 
     const ip = getIPFromHeaders(headers, true) || reqIP || ''
@@ -1391,7 +1377,7 @@ export class AnalyticsController {
   @Header('Cross-Origin-Resource-Policy', 'cross-origin')
   @Public()
   async noscript(
-    @Query() data,
+    @Query() data: NoscriptDto,
     @Headers() headers,
     @Ip() reqIP,
     @Response() res,
@@ -1406,7 +1392,7 @@ export class AnalyticsController {
       return res.end(TRANSPARENT_GIF_BUFFER, 'binary')
     }
 
-    const logDTO: PageviewsDTO = {
+    const logDTO: PageviewsDto = {
       pid,
     }
 
@@ -1476,7 +1462,6 @@ export class AnalyticsController {
     @Headers() headers: { 'x-password'?: string },
   ) {
     const { pid, period, from, to, filters, timezone = DEFAULT_TIMEZONE } = data
-    this.analyticsService.validatePID(pid)
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -1568,8 +1553,6 @@ export class AnalyticsController {
       timezone = DEFAULT_TIMEZONE,
     } = parameters
 
-    this.analyticsService.validatePID(pid)
-
     await this.analyticsService.checkProjectAccess(
       pid,
       uid,
@@ -1614,8 +1597,6 @@ export class AnalyticsController {
       to,
       timezone = DEFAULT_TIMEZONE,
     } = parameters
-
-    this.analyticsService.validatePID(pid)
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -1702,7 +1683,6 @@ export class AnalyticsController {
       timezone = DEFAULT_TIMEZONE,
       options,
     } = data
-    this.analyticsService.validatePID(pid)
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -1793,7 +1773,6 @@ export class AnalyticsController {
       to,
       //
     } = data
-    this.analyticsService.validatePID(pid)
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -1855,7 +1834,6 @@ export class AnalyticsController {
       timezone = DEFAULT_TIMEZONE,
       //
     } = data
-    this.analyticsService.validatePID(pid)
 
     await this.analyticsService.checkProjectAccess(
       pid,
@@ -1893,7 +1871,6 @@ export class AnalyticsController {
       timezone = DEFAULT_TIMEZONE,
       customEvents,
     } = data
-    this.analyticsService.validatePID(pid)
 
     await this.analyticsService.checkProjectAccess(
       pid,
