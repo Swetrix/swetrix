@@ -248,6 +248,13 @@ const generateParamsQuery = (
     columns = [...columns, 'cc']
   }
 
+  // For browser version and OS version, include the browser or OS name
+  if (col === 'brv') {
+    columns = [...columns, 'br']
+  } else if (col === 'osv') {
+    columns = [...columns, 'os']
+  }
+
   const columnsQuery = columns.join(', ')
 
   if (type === 'performance') {
@@ -2360,6 +2367,16 @@ export class AnalyticsService {
         sdur,
       },
     })
+  }
+
+  extractMajorMinorVersion(version: string | null): string | null {
+    if (!version) return null
+
+    const [major, minor = '0'] = version.split('.')
+
+    if (!major) return null
+
+    return `${major}.${minor}`
   }
 
   async groupErrorsByTimeBucket(
