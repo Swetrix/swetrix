@@ -60,7 +60,7 @@ Filters are used to aggregate data by specific parameters. For example, you can 
 }
 ```
 
-- **column** - the column to filter by. Possible values are: `cc`, `pg`, `lc`, `br`, `os`, `dv`, `ref`, `so`, `me`, `ca`. You can find more detailed information about columns [here](/sdk-reference#addpaneltab).
+- **column** - the column to filter by. Possible values are: `cc`, `pg`, `lc`, `br`, `brv`, `os`, `osv`, `dv`, `ref`, `so`, `me`, `ca`. You can find more detailed information about columns [here](/sdk-reference#addpaneltab).
 - **filter** - the value to filter by. For example, if you want to filter by country, the value should be a country code (e.g. `GB` for Great Britain).
 - **isExclusive** - whether to include or exclude the specified value. If `isExclusive` is `true`, the data will be filtered by the specified value. If `isExclusive` is `false`, the data will be filtered by all values except the specified one.
 
@@ -103,28 +103,94 @@ curl 'https://api.swetrix.com/v1/log?pid=YOUR_PROJECT_ID&timeBucket=day&period=7
 ```json title="Response"
 {
   "params": {
-    "cc": {
-      "UA": 3, "CZ": 1
-    },
-    "pg": {
-      "/": 4
-    },
-    "lc": {
-      "sk": 1, "en-GB": 3
-    },
-    "br": {
-      "Chrome": 20
-    },
-    "os": {
-      "Windows": 32
-    },
-    "dv": {
-      "desktop": 33
-    },
-    "ref": {},
-    "so": {},
-    "me": {},
-    "ca": {}
+    "cc": [
+      {
+        "name": "UA",
+        "count": 3
+      },
+      {
+        "name": "CZ",
+        "count": 1
+      }
+    ],
+    "rg": [
+      {
+        "name": "Kyiv Oblast'",
+        "cc": "UA",
+        "count": 3
+      },
+      {
+        "name": "Prague",
+        "cc": "CZ",
+        "count": 1
+      }
+    ],
+    "ct": [
+      {
+        "name": "Kyiv",
+        "cc": "UA",
+        "count": 3
+      },
+      {
+        "name": "Prague",
+        "cc": "CZ",
+        "count": 1
+      }
+    ],
+    "pg": [
+      {
+        "name": "/",
+        "count": 4
+      }
+    ],
+    "lc": [
+      {
+        "name": "sk",
+        "count": 1
+      },
+      {
+        "name": "en-GB",
+        "count": 3
+      }
+    ],
+    "br": [
+      {
+        "name": "Chrome",
+        "count": 20
+      }
+    ],
+    "brv": [
+      {
+        "name": "129.0",
+        "br": "Chrome",
+        "count": 20
+      }
+    ],
+    "os": [
+      {
+        "name": "Windows",
+        "count": 32
+      }
+    ],
+    "osv": [
+      {
+        "name": "10.0",
+        "os": "Windows",
+        "count": 32
+      }
+    ],
+    "dv": [
+      {
+        "name": "desktop",
+        "count": 33
+      }
+    ],
+    "ref": [],
+    "so": [],
+    "me": [],
+    "ca": [],
+    "te": [],
+    "co": []
   },
   "chart": {
     "x": [
@@ -140,8 +206,13 @@ curl 'https://api.swetrix.com/v1/log?pid=YOUR_PROJECT_ID&timeBucket=day&period=7
       0, 54, 2, 126, 8, 8, 2
     ]
   },
-  "avgSdur": 41,
-  "customs": {},
+  "customs": {
+    "sale": 16,
+    "signup": 10
+  },
+  "properties": {
+    "author": 30
+  },
   "appliedFilters": []
 }
 ```
@@ -234,18 +305,52 @@ curl 'https://api.swetrix.com/v1/log/performance?pid=YOUR_PROJECT_ID&timeBucket=
 ```json title="Response"
 {
   "params": {
-    "cc": {
-      "JO": 0.99, "AE": 4.07, "SG": 1.89, "UA": 1.05
-    },
-    "pg": {
-      "/": 1.61
-    },
-    "dv": {
-      "desktop": 1.38, "mobile": 4.36
-    },
-    "br": {
-      "Chrome": 1.21, "Mobile Safari": 4.36, "Firefox": 1.99
-    }
+    "dv": [
+      {
+        "name": "desktop",
+        "count": 0.08
+      }
+    ],
+    "pg": [
+      {
+        "name": "/",
+        "count": 0.08
+      }
+    ],
+    "ct": [],
+    "cc": [
+      {
+        "name": "IS",
+        "count": 0.1
+      },
+      {
+        "name": "GB",
+        "count": 0.06
+      }
+    ],
+    "brv": [
+      {
+        "name": "129.0",
+        "br": "Chrome",
+        "count": 0.21
+      },
+      {
+        "name": "132.0",
+        "br": "Firefox",
+        "count": 0.08
+      }
+    ],
+    "br": [
+      {
+        "name": "Firefox",
+        "count": 0.1
+      },
+      {
+        "name": "Chrome",
+        "count": 0.06
+      }
+    ],
+    "rg": []
   },
   "chart": {
     "x": [
@@ -726,12 +831,16 @@ curl 'https://api.swetrix.com/v1/log/session?pid=YOUR_PROJECT_ID&psid=SESSION_ID
   "details": {
     "dv": "desktop",
     "br": "Firefox",
+    "brv": "132.0",
     "os": "Windows",
+    "osv": "10.0",
     "lc": "en-GB",
     "ref": "https://example.com",
     "so": null,
     "me": null,
     "ca": null,
+    "te": null,
+    "co": null,
     "cc": "GB",
     "rg": "England",
     "ct": "Liverpool",
@@ -795,31 +904,84 @@ curl 'https://api.swetrix.com/log?pid=YOUR_PROJECT_ID&timeBucket=day&period=7d&f
 ```json title="Response"
 {
   "params": {
-    "cc": {
-      "GB": 293
-    },
-    "pg": {
-      "/signup": 7,
-      "/": 286
-    },
-    "lc": {
-      "zh-CN": 2, "pt-PT": 1, "en-GB": 263, "pl": 2, "it": 1, "en-US": 10, "ru": 1, "pl-PL": 2, "en-IN": 1, "ro": 1, "pt-BR": 2, "ar": 4, "ro-RO": 2, "el": 1
-    },
-    "br": {
-      "Samsung Browser": 39, "Huawei Browser": 1, "Chrome": 72, "Safari": 1, "Opera": 2, "GSA": 15, "Mobile Safari": 148, "Edge": 2, "Firefox": 10, "Facebook": 3
-    },
-    "os": {
-      "iOS": 177, "Android": 116
-    },
-    "dv": {
-      "mobile": 293
-    },
-    "ref": {
-      "https://youtube.com/": 41, "https://www.reddit.com/": 27
-    },
-    "so": {},
-    "me": {},
-    "ca": {}
+    "cc": [
+      {
+        "name": "GB",
+        "count": 293
+      }
+    ],
+    "rg": [
+      {
+        "name": "England",
+        "cc": "GB",
+        "count": 293
+      }
+    ],
+    "ct": [
+      {
+        "name": "Liverpool",
+        "cc": "GB",
+        "count": 293
+      }
+    ],
+    "dv": [
+      {
+        "name": "desktop",
+        "count": 293
+      }
+    ],
+    "brv": [
+      {
+        "name": "132.0",
+        "br": "Firefox",
+        "count": 200
+      },
+      {
+        "name": "120.5",
+        "br": "Chrome",
+        "count": 93
+      }
+    ],
+    "os": [
+      {
+        "name": "Windows",
+        "count": 293
+      }
+    ],
+    "osv": [
+      {
+        "name": "10.0",
+        "os": "Windows",
+        "count": 293
+      }
+    ],
+    "lc": [
+      {
+        "name": "en-GB",
+        "count": 280
+      },
+      {
+        "name": "en-US",
+        "count": 13
+      }
+    ],
+    "dv": [
+      {
+        "name": "desktop",
+        "count": 293
+      }
+    ],
+    "ref": [
+      {
+        "name": "https://youtube.com/",
+        "count": 41
+      }
+    ],
+    "so": [],
+    "me": [],
+    "ca": [],
+    "te": [],
+    "co": []
   },
   "chart": {
     "x": [
