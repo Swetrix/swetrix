@@ -248,6 +248,13 @@ const generateParamsQuery = (
     columns = [...columns, 'cc']
   }
 
+  // For browser version and OS version, include the browser or OS name
+  if (col === 'brv') {
+    columns = [...columns, 'br']
+  } else if (col === 'osv') {
+    columns = [...columns, 'os']
+  }
+
   const columnsQuery = columns.join(', ')
 
   if (type === 'performance') {
@@ -2362,6 +2369,16 @@ export class AnalyticsService {
     })
   }
 
+  extractMajorMinorVersion(version: string | null): string | null {
+    if (!version) return null
+
+    const [major, minor = '0'] = version.split('.')
+
+    if (!major) return null
+
+    return `${major}.${minor}`
+  }
+
   async groupErrorsByTimeBucket(
     timeBucket: TimeBucketType,
     from: string,
@@ -2933,48 +2950,48 @@ export class AnalyticsService {
     const queryPages = `
       WITH events_with_meta AS (
         SELECT
-            'pageview' AS type,
-            pg AS value,
-            toTimeZone(analytics.created, '${safeTimezone}') AS created,
-            pid,
-            psid,
-            groupArrayIf(tuple(meta.key, meta.value), notEmpty(meta.key) AND notEmpty(meta.value)) AS metadata
+          'pageview' AS type,
+          pg AS value,
+          toTimeZone(analytics.created, '${safeTimezone}') AS created,
+          pid,
+          psid,
+          groupArrayIf(tuple(meta.key, meta.value), notEmpty(meta.key) AND notEmpty(meta.value)) AS metadata
         FROM analytics
         LEFT ARRAY JOIN meta.key, meta.value
         WHERE
-            pid = {pid:FixedString(12)}
-            AND psid = {psid:String}
+          pid = {pid:FixedString(12)}
+          AND psid = {psid:String}
         GROUP BY type, value, created, pid, psid
 
         UNION ALL
 
         SELECT
-            'event' AS type,
-            ev AS value,
-            toTimeZone(customEV.created, '${safeTimezone}') AS created,
-            pid,
-            psid,
-            groupArrayIf(tuple(meta.key, meta.value), notEmpty(meta.key) AND notEmpty(meta.value)) AS metadata
+          'event' AS type,
+          ev AS value,
+          toTimeZone(customEV.created, '${safeTimezone}') AS created,
+          pid,
+          psid,
+          groupArrayIf(tuple(meta.key, meta.value), notEmpty(meta.key) AND notEmpty(meta.value)) AS metadata
         FROM customEV
         LEFT ARRAY JOIN meta.key, meta.value
         WHERE
-            pid = {pid:FixedString(12)}
-            AND psid = {psid:String}
+          pid = {pid:FixedString(12)}
+          AND psid = {psid:String}
         GROUP BY type, value, created, pid, psid
       )
 
       SELECT
-          type,
-          value,
-          created,
-          metadata
+        type,
+        value,
+        created,
+        metadata
       FROM events_with_meta
       ORDER BY created ASC
     `
 
     const querySessionDetails = `
       SELECT
-        dv, br, os, lc, ref, so, me, ca, cc, rg, ct, sdur
+        dv, br, brv, os, osv, lc, ref, so, me, ca, te, co, cc, rg, ct, sdur
       FROM analytics
       WHERE
         pid = {pid:FixedString(12)}
@@ -3010,7 +3027,7 @@ export class AnalyticsService {
     if (!details) {
       const querySessionDetailsBackup = `
         SELECT
-          dv, br, os, lc, ref, so, me, ca, cc, rg, ct, sdur
+          dv, br, brv, os, osv, lc, ref, so, me, ca, te, co, cc, rg, ct, sdur
         FROM analytics
         WHERE
           pid = {pid:FixedString(12)}

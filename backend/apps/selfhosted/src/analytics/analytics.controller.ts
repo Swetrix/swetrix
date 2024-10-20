@@ -905,7 +905,11 @@ export class AnalyticsController {
     const ua = UAParser(userAgent, extensions)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
+    const brv = this.analyticsService.extractMajorMinorVersion(
+      ua.browser.version,
+    )
     const os = ua.os.name
+    const osv = this.analyticsService.extractMajorMinorVersion(ua.os.version)
 
     const { city, region, country } = getGeoDetails(ip, eventsDTO.tz, headers)
 
@@ -922,7 +926,9 @@ export class AnalyticsController {
       eventsDTO.pg,
       dv,
       br,
+      brv,
       os,
+      osv,
       eventsDTO.lc,
       eventsDTO.ref,
       eventsDTO.so,
@@ -1009,7 +1015,11 @@ export class AnalyticsController {
     const ua = UAParser(userAgent, extensions)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
+    const brv = this.analyticsService.extractMajorMinorVersion(
+      ua.browser.version,
+    )
     const os = ua.os.name
+    const osv = this.analyticsService.extractMajorMinorVersion(ua.os.version)
 
     const transformed = trafficTransformer(
       psid,
@@ -1018,7 +1028,9 @@ export class AnalyticsController {
       logDTO.prev,
       dv,
       br,
+      brv,
       os,
+      osv,
       logDTO.lc,
       logDTO.ref,
       logDTO.so,
@@ -1053,6 +1065,7 @@ export class AnalyticsController {
         logDTO.pg,
         dv,
         br,
+        brv,
         country,
         region,
         city,
@@ -1134,7 +1147,11 @@ export class AnalyticsController {
     const ua = UAParser(userAgent, extensions)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
+    const brv = this.analyticsService.extractMajorMinorVersion(
+      ua.browser.version,
+    )
     const os = ua.os.name
+    const osv = this.analyticsService.extractMajorMinorVersion(ua.os.version)
 
     const { city, region, country } = getGeoDetails(ip, null, headers)
 
@@ -1145,7 +1162,9 @@ export class AnalyticsController {
       null,
       dv,
       br,
+      brv,
       os,
+      osv,
       null,
       null,
       null,
@@ -1422,7 +1441,11 @@ export class AnalyticsController {
     const ua = UAParser(userAgent, extensions)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
+    const brv = this.analyticsService.extractMajorMinorVersion(
+      ua.browser.version,
+    )
     const os = ua.os.name
+    const osv = this.analyticsService.extractMajorMinorVersion(ua.os.version)
 
     const { name, message, lineno, colno, filename } = errorDTO
 
@@ -1432,7 +1455,9 @@ export class AnalyticsController {
       errorDTO.pg,
       dv,
       br,
+      brv,
       os,
+      osv,
       errorDTO.lc,
       country,
       region,

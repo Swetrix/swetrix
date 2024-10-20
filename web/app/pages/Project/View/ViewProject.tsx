@@ -228,6 +228,8 @@ import AddAViewModal from './components/AddAViewModal'
 import CustomMetrics from './components/CustomMetrics'
 import { AIProcessedResponse, AIResponse } from './interfaces/ai'
 import { useRequiredParams } from 'hooks/useRequiredParams'
+import BrowserDropdown from './components/BrowserDropdown'
+import OSDropdown from './components/OSDropdown'
 const SwetrixSDK = require('@swetrix/sdk')
 
 const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
@@ -697,6 +699,12 @@ const ViewProject = ({
 
   // Used to switch between Country, Region and City tabs
   const [countryActiveTab, setCountryActiveTab] = useState<'cc' | 'rg' | 'ct'>('cc')
+
+  // Used to switch between Browser and Browser Version tabs
+  const [browserActiveTab, setBrowserActiveTab] = useState<'br' | 'brv'>('br')
+
+  // Used to switch between OS and OS Version tabs
+  const [osActiveTab, setOsActiveTab] = useState<'os' | 'osv'>('os')
 
   // Used to switch between different UTM tabs
   const [utmActiveTab, setUtmActiveTab] = useState<'so' | 'me' | 'ca'>('so')
@@ -1282,7 +1290,6 @@ const ViewProject = ({
       )
       // set chart data
       setMainChart(() => {
-        // @ts-ignore
         const generate = bb.generate(bbSettings)
         generate.data.names(dataNames)
         return generate
@@ -1357,7 +1364,7 @@ const ViewProject = ({
             diff = end.diff(start, 'day')
           }
 
-          // @ts-ignore
+          // @ts-expect-error
           if (activePeriod?.period === 'custom' ? diffCompare <= diff : diffCompare <= activePeriod?.countDays) {
             fromCompare = getFormatDate(dateRangeCompare[0])
             toCompare = getFormatDate(dateRangeCompare[1])
@@ -1426,7 +1433,7 @@ const ViewProject = ({
       // check if we need to load new data or we have data in redux/localstorage
       if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
         data = cache[id][key]
-        // @ts-ignore
+        // @ts-expect-error
         setOverall(data.overall)
       } else {
         if (period === 'custom' && dateRange) {
@@ -1583,7 +1590,6 @@ const ViewProject = ({
 
         if (activeTab === PROJECT_TABS.traffic) {
           setMainChart(() => {
-            // @ts-ignore
             const generate = bb.generate(bbSettings)
             generate.data.names(dataNames)
             return generate
@@ -1728,7 +1734,7 @@ const ViewProject = ({
       return
     }
 
-    // @ts-ignore
+    // @ts-expect-error
     const url = new URL(window.location)
     const { searchParams } = url
     const eid = searchParams.get('eid') as string
@@ -1935,7 +1941,7 @@ const ViewProject = ({
             diff = end.diff(start, 'day')
           }
 
-          // @ts-ignore
+          // @ts-expect-error
           if (activePeriod?.period === 'custom' ? diffCompare <= diff : diffCompare <= activePeriod?.countDays) {
             fromCompare = getFormatDate(dateRangeCompare[0])
             toCompare = getFormatDate(dateRangeCompare[1])
@@ -2013,7 +2019,7 @@ const ViewProject = ({
 
       if (!forced && !_isEmpty(cachePerf[id]) && !_isEmpty(cachePerf[id][key])) {
         dataPerf = cachePerf[id][key]
-        // @ts-ignore
+        // @ts-expect-error
         setOverallPerformance(dataPerf.overall)
       } else {
         if (period === 'custom' && dateRange) {
@@ -2053,7 +2059,7 @@ const ViewProject = ({
           )
         }
 
-        // @ts-ignore
+        // @ts-expect-error
         dataPerf.overall = rawOverall[id]
 
         setProjectCachePerf(id, dataPerf || {}, key)
@@ -2130,7 +2136,6 @@ const ViewProject = ({
 
         if (activeTab === PROJECT_TABS.performance) {
           setMainChart(() => {
-            // @ts-ignore
             const generate = bb.generate(bbSettings)
             generate.data.names(dataNamesPerf)
             return generate
@@ -2196,7 +2201,6 @@ const ViewProject = ({
 
         if (activeTab === PROJECT_TABS.funnels) {
           setMainChart(() => {
-            // @ts-ignore
             const generate = bb.generate(bbSettings)
             generate.data.names(dataNamesFunnel)
             return generate
@@ -2249,7 +2253,7 @@ const ViewProject = ({
       if (_find(filtersPerf, (f) => f.filter === filter)) {
         newFiltersPerf = _filter(filtersPerf, (f) => f.filter !== filter)
 
-        // @ts-ignore
+        // @ts-expect-error
         const url = new URL(window.location)
         url.searchParams.delete(columnPerf)
         const { pathname, search } = url
@@ -2270,7 +2274,7 @@ const ViewProject = ({
       if (_find(filtersSessions, (f) => f.filter === filter)) {
         newFiltersSessions = _filter(filtersSessions, (f) => f.filter !== filter)
 
-        // @ts-ignore
+        // @ts-expect-error
         const url = new URL(window.location)
         url.searchParams.delete(columnSessions)
         const { pathname, search } = url
@@ -2562,7 +2566,7 @@ const ViewProject = ({
     }
 
     // storing exclusive filter in the page URL
-    // @ts-ignore
+    // @ts-expect-error
     const url = new URL(window.location)
 
     if (activeTab === PROJECT_TABS.performance) {
@@ -2771,7 +2775,6 @@ const ViewProject = ({
           )
 
           setMainChart(() => {
-            // @ts-ignore
             const generate = bb.generate(bbSettings)
             generate.data.names(dataNames)
             return generate
@@ -2808,7 +2811,6 @@ const ViewProject = ({
       )
 
       setMainChart(() => {
-        // @ts-ignore
         const generate = bb.generate(bbSettings)
         generate.data.names(dataNamesPerf)
         return generate
@@ -2831,7 +2833,6 @@ const ViewProject = ({
         }
       })
 
-      // @ts-ignore
       sdk = new SwetrixSDK(
         processedExtensions,
         {
@@ -2944,7 +2945,7 @@ const ViewProject = ({
     // using try/catch because new URL is not supported by browsers like IE, so at least analytics would work without parsing filters
     if (activeTab === PROJECT_TABS.performance) {
       try {
-        // @ts-ignore
+        // @ts-expect-error
         const url = new URL(window.location)
         const { searchParams } = url
         const initialFilters: any[] = []
@@ -2974,7 +2975,7 @@ const ViewProject = ({
       }
     } else {
       try {
-        // @ts-ignore
+        // @ts-expect-error
         const url = new URL(window.location)
         const { searchParams } = url
         const initialFilters: any[] = []
@@ -3000,7 +3001,7 @@ const ViewProject = ({
 
   useEffect(() => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       const url = new URL(window.location)
       const { searchParams } = url
       const initialFilters: any[] = []
@@ -3034,7 +3035,7 @@ const ViewProject = ({
 
   useEffect(() => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       const url = new URL(window.location)
       const { searchParams } = url
       const initialFilters: any[] = []
@@ -3070,7 +3071,7 @@ const ViewProject = ({
   useEffect(() => {
     if (arePeriodParsed) {
       try {
-        // @ts-ignore
+        // @ts-expect-error
         const url = new URL(window.location)
         const { searchParams } = url
         const intialTimeBucket = searchParams.get('timeBucket')
@@ -3106,7 +3107,7 @@ const ViewProject = ({
   // we update url and state
   const onRangeDateChange = (dates: Date[], onRender?: boolean) => {
     const days = Math.ceil(Math.abs(dates[1].getTime() - dates[0].getTime()) / (1000 * 3600 * 24))
-    // @ts-ignore
+    // @ts-expect-error
     const url = new URL(window.location)
 
     // setting allowed time buckets for the specified date range (period)
@@ -3339,7 +3340,7 @@ const ViewProject = ({
 
     const newPeriodFull = _find(periodPairs, (el) => el.period === newPeriod.period)
     let tb = timeBucket
-    // @ts-ignore
+    // @ts-expect-error
     const url = new URL(window.location)
     if (_isEmpty(newPeriodFull)) return
 
@@ -3374,7 +3375,7 @@ const ViewProject = ({
 
   // updateTimebucket using for update timeBucket also update url
   const updateTimebucket = (newTimebucket: string) => {
-    // @ts-ignore
+    // @ts-expect-error
     const url = new URL(window.location)
     url.searchParams.set('timeBucket', newTimebucket)
     const { pathname, search } = url
@@ -3405,7 +3406,7 @@ const ViewProject = ({
   // parse period from url when page is loaded
   useEffect(() => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       const url = new URL(window.location)
       const { searchParams } = url
       const intialPeriod = projectViewPrefs
@@ -3422,9 +3423,9 @@ const ViewProject = ({
       }
 
       if (intialPeriod === 'custom') {
-        // @ts-ignore
+        // @ts-expect-error
         const from = new Date(searchParams.get('from'))
-        // @ts-ignore
+        // @ts-expect-error
         const to = new Date(searchParams.get('to'))
         if (from.getDate() && to.getDate()) {
           onRangeDateChange([from, to], true)
@@ -3580,7 +3581,7 @@ const ViewProject = ({
       return
     }
 
-    // @ts-ignore
+    // @ts-expect-error
     const tab = SHORTCUTS_TABS_MAP[key]
 
     if (!tab) {
@@ -3593,14 +3594,14 @@ const ViewProject = ({
 
   // 'General' shortcuts
   useHotkeys(SHORTCUTS_GENERAL_LISTENERS, ({ key }) => {
-    // @ts-ignore
+    // @ts-expect-error
     generalShortcutsActions[key]?.()
   })
 
   // 'Timebuckets selection' shortcuts
   useHotkeys(SHORTCUTS_TIMEBUCKETS_LISTENERS, ({ key }) => {
     const pairs = tbPeriodPairs(t, undefined, undefined, language)
-    // @ts-ignore
+    // @ts-expect-error
     const pair = _find(pairs, ({ period }) => period === timebucketShortcutsMap[key])
 
     if (!pair) {
@@ -3608,7 +3609,7 @@ const ViewProject = ({
     }
 
     if (pair.isCustomDate) {
-      // @ts-ignore
+      // @ts-expect-error
       refCalendar.current?.openCalendar?.()
       return
     }
@@ -4377,7 +4378,7 @@ const ViewProject = ({
 
                               if (pair.isCustomDate) {
                                 setTimeout(() => {
-                                  // @ts-ignore
+                                  // @ts-expect-error
                                   refCalendar.current.openCalendar()
                                 }, 100)
                               } else {
@@ -4405,7 +4406,7 @@ const ViewProject = ({
 
                                   if (pair.period === PERIOD_PAIRS_COMPARE.CUSTOM) {
                                     setTimeout(() => {
-                                      // @ts-ignore
+                                      // @ts-expect-error
                                       refCalendarCompare.current.openCalendar()
                                     }, 100)
                                   } else {
@@ -4655,7 +4656,7 @@ const ViewProject = ({
                       {!_isEmpty(activeError?.params) &&
                         _map(ERROR_PANELS_ORDER, (type: keyof typeof tnMapping) => {
                           const panelName = tnMapping[type]
-                          // @ts-ignore
+                          // @ts-expect-error
                           const panelIcon = panelIconMapping[type]
 
                           if (type === 'cc') {
@@ -4687,10 +4688,15 @@ const ViewProject = ({
                           }
 
                           if (type === 'br') {
+                            const brPanelName = tnMapping[browserActiveTab]
+
                             const rowMapper = (entry: any) => {
-                              const { name: entryName } = entry
-                              // @ts-ignore
-                              const logoUrl = BROWSER_LOGO_MAP[entryName]
+                              const { name: entryName, br } = entry
+
+                              const logoKey = browserActiveTab === 'br' ? entryName : br
+
+                              // @ts-expect-error
+                              const logoUrl = BROWSER_LOGO_MAP[logoKey]
 
                               if (!logoUrl) {
                                 return (
@@ -4714,25 +4720,30 @@ const ViewProject = ({
                             return (
                               <Panel
                                 projectPassword={projectPassword}
-                                key={type}
+                                key={browserActiveTab}
                                 icon={panelIcon}
-                                id={type}
+                                id={browserActiveTab}
                                 activeTab={activeTab}
                                 onFilter={filterHandler}
-                                name={panelName}
-                                data={activeError.params[type]}
+                                name={<BrowserDropdown onSelect={setBrowserActiveTab} title={brPanelName} />}
+                                data={activeError.params[browserActiveTab]}
                                 rowMapper={rowMapper}
                               />
                             )
                           }
 
                           if (type === 'os') {
+                            const osPanelName = tnMapping[osActiveTab]
+
                             const rowMapper = (entry: any) => {
-                              const { name: entryName } = entry
-                              // @ts-ignore
-                              const logoPathLight = OS_LOGO_MAP[entryName]
-                              // @ts-ignore
-                              const logoPathDark = OS_LOGO_MAP_DARK[entryName]
+                              const { name: entryName, os } = entry
+
+                              const logoKey = osActiveTab === 'os' ? entryName : os
+
+                              // @ts-expect-error
+                              const logoPathLight = OS_LOGO_MAP[logoKey]
+                              // @ts-expect-error
+                              const logoPathDark = OS_LOGO_MAP_DARK[logoKey]
 
                               let logoPath = _theme === 'dark' ? logoPathDark : logoPathLight
                               logoPath ||= logoPathLight
@@ -4761,13 +4772,13 @@ const ViewProject = ({
                             return (
                               <Panel
                                 projectPassword={projectPassword}
-                                key={type}
+                                key={osActiveTab}
                                 icon={panelIcon}
-                                id={type}
+                                id={osActiveTab}
                                 activeTab={activeTab}
                                 onFilter={filterHandler}
-                                name={panelName}
-                                data={activeError.params[type]}
+                                name={<OSDropdown onSelect={setOsActiveTab} title={osPanelName} />}
+                                data={activeError.params[osActiveTab]}
                                 rowMapper={rowMapper}
                               />
                             )
@@ -4798,7 +4809,6 @@ const ViewProject = ({
                                 id={type}
                                 onFilter={filterHandler}
                                 onFragmentChange={setPgActiveFragment}
-                                // @ts-ignore
                                 rowMapper={({ name: entryName }) => {
                                   if (!entryName) {
                                     return _toUpper(t('project.redactedPage'))
@@ -4946,7 +4956,7 @@ const ViewProject = ({
                       {!_isEmpty(panelsData.types) &&
                         _map(TRAFFIC_PANELS_ORDER, (type: keyof typeof tnMapping) => {
                           const panelName = tnMapping[type]
-                          // @ts-ignore
+                          // @ts-expect-error
                           const panelIcon = panelIconMapping[type]
                           const customTabs = _filter(customPanelTabs, (tab) => tab.panelID === type)
 
@@ -4982,10 +4992,15 @@ const ViewProject = ({
                           }
 
                           if (type === 'br') {
+                            const brPanelName = tnMapping[browserActiveTab]
+
                             const rowMapper = (entry: any) => {
-                              const { name: entryName } = entry
-                              // @ts-ignore
-                              const logoUrl = BROWSER_LOGO_MAP[entryName]
+                              const { name: entryName, br } = entry
+
+                              const logoKey = browserActiveTab === 'br' ? entryName : br
+
+                              // @ts-expect-error
+                              const logoUrl = BROWSER_LOGO_MAP[logoKey]
 
                               if (!logoUrl) {
                                 return (
@@ -5009,26 +5024,30 @@ const ViewProject = ({
                             return (
                               <Panel
                                 projectPassword={projectPassword}
-                                key={type}
+                                key={browserActiveTab}
                                 icon={panelIcon}
-                                id={type}
+                                id={browserActiveTab}
                                 activeTab={activeTab}
                                 onFilter={filterHandler}
-                                name={panelName}
-                                data={dataSource[type]}
-                                customTabs={customTabs}
+                                name={<BrowserDropdown onSelect={setBrowserActiveTab} title={brPanelName} />}
+                                data={dataSource[browserActiveTab]}
                                 rowMapper={rowMapper}
                               />
                             )
                           }
 
                           if (type === 'os') {
+                            const osPanelName = tnMapping[osActiveTab]
+
                             const rowMapper = (entry: any) => {
-                              const { name: entryName } = entry
-                              // @ts-ignore
-                              const logoPathLight = OS_LOGO_MAP[entryName]
-                              // @ts-ignore
-                              const logoPathDark = OS_LOGO_MAP_DARK[entryName]
+                              const { name: entryName, os } = entry
+
+                              const logoKey = osActiveTab === 'os' ? entryName : os
+
+                              // @ts-expect-error
+                              const logoPathLight = OS_LOGO_MAP[logoKey]
+                              // @ts-expect-error
+                              const logoPathDark = OS_LOGO_MAP_DARK[logoKey]
 
                               let logoPath = _theme === 'dark' ? logoPathDark : logoPathLight
                               logoPath ||= logoPathLight
@@ -5057,14 +5076,13 @@ const ViewProject = ({
                             return (
                               <Panel
                                 projectPassword={projectPassword}
-                                key={type}
+                                key={osActiveTab}
                                 icon={panelIcon}
-                                id={type}
+                                id={osActiveTab}
                                 activeTab={activeTab}
                                 onFilter={filterHandler}
-                                name={panelName}
-                                data={dataSource[type]}
-                                customTabs={customTabs}
+                                name={<OSDropdown onSelect={setOsActiveTab} title={osPanelName} />}
+                                data={dataSource[osActiveTab]}
                                 rowMapper={rowMapper}
                               />
                             )
@@ -5099,7 +5117,6 @@ const ViewProject = ({
                                 activeTab={activeTab}
                                 data={dataSource[type]}
                                 customTabs={customTabs}
-                                // @ts-ignore
                                 rowMapper={({ name: entryName }) => <RefRow rowName={entryName} />}
                               />
                             )
@@ -5119,7 +5136,6 @@ const ViewProject = ({
                                 name={<UTMDropdown onSelect={setUtmActiveTab} title={ccPanelName} />}
                                 data={dataSource[utmActiveTab]}
                                 customTabs={customTabs}
-                                // @ts-ignore
                                 rowMapper={({ name: entryName }) => decodeURIComponent(entryName)}
                               />
                             )
@@ -5134,7 +5150,6 @@ const ViewProject = ({
                                 id={type}
                                 onFilter={filterHandler}
                                 onFragmentChange={setPgActiveFragment}
-                                // @ts-ignore
                                 rowMapper={({ name: entryName }) => {
                                   if (!entryName) {
                                     return _toUpper(t('project.redactedPage'))
@@ -5248,7 +5263,7 @@ const ViewProject = ({
                       {!_isEmpty(panelsDataPerf.types) &&
                         _map(PERFORMANCE_PANELS_ORDER, (type: keyof typeof tnMapping) => {
                           const panelName = tnMapping[type]
-                          // @ts-ignore
+                          // @ts-expect-error
                           const panelIcon = panelIconMapping[type]
                           const customTabs = _filter(customPanelTabs, (tab) => tab.panelID === type)
 
@@ -5277,7 +5292,7 @@ const ViewProject = ({
                                 data={panelsDataPerf.data[countryActiveTab]}
                                 customTabs={customTabs}
                                 rowMapper={rowMapper}
-                                // @ts-ignore
+                                // @ts-expect-error
                                 valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
                               />
                             )
@@ -5295,7 +5310,7 @@ const ViewProject = ({
                                 activeTab={activeTab}
                                 data={panelsDataPerf.data[type]}
                                 customTabs={customTabs}
-                                // @ts-ignore
+                                // @ts-expect-error
                                 valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
                                 capitalize
                               />
@@ -5314,9 +5329,8 @@ const ViewProject = ({
                                 name={panelName}
                                 data={panelsDataPerf.data[type]}
                                 customTabs={customTabs}
-                                // @ts-ignore
+                                // @ts-expect-error
                                 valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
-                                // @ts-ignore
                                 rowMapper={({ name: entryName }) => {
                                   // todo: add uppercase
                                   return entryName || t('project.redactedPage')
@@ -5326,10 +5340,15 @@ const ViewProject = ({
                           }
 
                           if (type === 'br') {
+                            const brPanelName = tnMapping[browserActiveTab]
+
                             const rowMapper = (entry: any) => {
-                              const { name: entryName } = entry
-                              // @ts-ignore
-                              const logoUrl = BROWSER_LOGO_MAP[entryName]
+                              const { name: entryName, br } = entry
+
+                              const logoKey = browserActiveTab === 'br' ? entryName : br
+
+                              // @ts-expect-error
+                              const logoUrl = BROWSER_LOGO_MAP[logoKey]
 
                               if (!logoUrl) {
                                 return (
@@ -5353,16 +5372,13 @@ const ViewProject = ({
                             return (
                               <Panel
                                 projectPassword={projectPassword}
-                                key={type}
+                                key={browserActiveTab}
                                 icon={panelIcon}
-                                id={type}
+                                id={browserActiveTab}
                                 activeTab={activeTab}
                                 onFilter={filterHandler}
-                                name={panelName}
-                                data={panelsDataPerf.data[type]}
-                                customTabs={customTabs}
-                                // @ts-ignore
-                                valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
+                                name={<BrowserDropdown onSelect={setBrowserActiveTab} title={brPanelName} />}
+                                data={panelsDataPerf.data[browserActiveTab]}
                                 rowMapper={rowMapper}
                               />
                             )
@@ -5379,7 +5395,7 @@ const ViewProject = ({
                               name={panelName}
                               data={panelsDataPerf.data[type]}
                               customTabs={customTabs}
-                              // @ts-ignore
+                              // @ts-expect-error
                               valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
                             />
                           )

@@ -72,7 +72,9 @@ const TRAFFIC_COLUMNS = [
   'pg',
   'lc',
   'br',
+  'brv',
   'os',
+  'osv',
   'dv',
   'ref',
   'so',
@@ -82,12 +84,24 @@ const TRAFFIC_COLUMNS = [
   'co',
 ]
 
-const ALL_COLUMNS = [...TRAFFIC_COLUMNS, 'ev']
-
 const TRAFFIC_METAKEY_COLUMNS = ['tag:key', 'tag:value']
 
-const PERFORMANCE_COLUMNS = ['cc', 'rg', 'ct', 'pg', 'dv', 'br']
-const ERROR_COLUMNS = ['pg', 'dv', 'br', 'os', 'lc', 'cc', 'rg', 'ct']
+const ERROR_COLUMNS = [
+  'pg',
+  'dv',
+  'br',
+  'brv',
+  'os',
+  'osv',
+  'lc',
+  'cc',
+  'rg',
+  'ct',
+]
+
+const ALL_COLUMNS = [...TRAFFIC_COLUMNS, 'ev']
+
+const PERFORMANCE_COLUMNS = ['cc', 'rg', 'ct', 'pg', 'dv', 'br', 'brv']
 
 const NUMBER_JWT_REFRESH_TOKEN_LIFETIME = Number(JWT_REFRESH_TOKEN_LIFETIME)
 const NUMBER_JWT_ACCESS_TOKEN_LIFETIME = Number(JWT_ACCESS_TOKEN_LIFETIME)
