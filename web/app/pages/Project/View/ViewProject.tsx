@@ -228,6 +228,8 @@ import AddAViewModal from './components/AddAViewModal'
 import CustomMetrics from './components/CustomMetrics'
 import { AIProcessedResponse, AIResponse } from './interfaces/ai'
 import { useRequiredParams } from 'hooks/useRequiredParams'
+import BrowserDropdown from './components/BrowserDropdown'
+import OSDropdown from './components/OSDropdown'
 const SwetrixSDK = require('@swetrix/sdk')
 
 const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
@@ -697,6 +699,12 @@ const ViewProject = ({
 
   // Used to switch between Country, Region and City tabs
   const [countryActiveTab, setCountryActiveTab] = useState<'cc' | 'rg' | 'ct'>('cc')
+
+  // Used to switch between Browser and Browser Version tabs
+  const [browserActiveTab, setBrowserActiveTab] = useState<'br' | 'brv'>('br')
+
+  // Used to switch between OS and OS Version tabs
+  const [osActiveTab, setOsActiveTab] = useState<'os' | 'osv'>('os')
 
   // Used to switch between different UTM tabs
   const [utmActiveTab, setUtmActiveTab] = useState<'so' | 'me' | 'ca'>('so')
@@ -4687,6 +4695,8 @@ const ViewProject = ({
                           }
 
                           if (type === 'br') {
+                            const brPanelName = tnMapping[browserActiveTab]
+
                             const rowMapper = (entry: any) => {
                               const { name: entryName } = entry
                               // @ts-ignore
@@ -4714,19 +4724,21 @@ const ViewProject = ({
                             return (
                               <Panel
                                 projectPassword={projectPassword}
-                                key={type}
+                                key={browserActiveTab}
                                 icon={panelIcon}
-                                id={type}
+                                id={browserActiveTab}
                                 activeTab={activeTab}
                                 onFilter={filterHandler}
-                                name={panelName}
-                                data={activeError.params[type]}
+                                name={<BrowserDropdown onSelect={setBrowserActiveTab} title={brPanelName} />}
+                                data={activeError.params[browserActiveTab]}
                                 rowMapper={rowMapper}
                               />
                             )
                           }
 
                           if (type === 'os') {
+                            const osPanelName = tnMapping[osActiveTab]
+
                             const rowMapper = (entry: any) => {
                               const { name: entryName } = entry
                               // @ts-ignore
@@ -4761,13 +4773,13 @@ const ViewProject = ({
                             return (
                               <Panel
                                 projectPassword={projectPassword}
-                                key={type}
+                                key={osActiveTab}
                                 icon={panelIcon}
-                                id={type}
+                                id={osActiveTab}
                                 activeTab={activeTab}
                                 onFilter={filterHandler}
-                                name={panelName}
-                                data={activeError.params[type]}
+                                name={<OSDropdown onSelect={setOsActiveTab} title={osPanelName} />}
+                                data={activeError.params[osActiveTab]}
                                 rowMapper={rowMapper}
                               />
                             )
@@ -4982,6 +4994,8 @@ const ViewProject = ({
                           }
 
                           if (type === 'br') {
+                            const brPanelName = tnMapping[browserActiveTab]
+
                             const rowMapper = (entry: any) => {
                               const { name: entryName } = entry
                               // @ts-ignore
@@ -5009,20 +5023,21 @@ const ViewProject = ({
                             return (
                               <Panel
                                 projectPassword={projectPassword}
-                                key={type}
+                                key={browserActiveTab}
                                 icon={panelIcon}
-                                id={type}
+                                id={browserActiveTab}
                                 activeTab={activeTab}
                                 onFilter={filterHandler}
-                                name={panelName}
-                                data={dataSource[type]}
-                                customTabs={customTabs}
+                                name={<BrowserDropdown onSelect={setBrowserActiveTab} title={brPanelName} />}
+                                data={dataSource[browserActiveTab]}
                                 rowMapper={rowMapper}
                               />
                             )
                           }
 
                           if (type === 'os') {
+                            const osPanelName = tnMapping[osActiveTab]
+
                             const rowMapper = (entry: any) => {
                               const { name: entryName } = entry
                               // @ts-ignore
@@ -5057,14 +5072,13 @@ const ViewProject = ({
                             return (
                               <Panel
                                 projectPassword={projectPassword}
-                                key={type}
+                                key={osActiveTab}
                                 icon={panelIcon}
-                                id={type}
+                                id={osActiveTab}
                                 activeTab={activeTab}
                                 onFilter={filterHandler}
-                                name={panelName}
-                                data={dataSource[type]}
-                                customTabs={customTabs}
+                                name={<OSDropdown onSelect={setOsActiveTab} title={osPanelName} />}
+                                data={dataSource[osActiveTab]}
                                 rowMapper={rowMapper}
                               />
                             )
@@ -5326,6 +5340,8 @@ const ViewProject = ({
                           }
 
                           if (type === 'br') {
+                            const brPanelName = tnMapping[browserActiveTab]
+
                             const rowMapper = (entry: any) => {
                               const { name: entryName } = entry
                               // @ts-ignore
@@ -5353,16 +5369,13 @@ const ViewProject = ({
                             return (
                               <Panel
                                 projectPassword={projectPassword}
-                                key={type}
+                                key={browserActiveTab}
                                 icon={panelIcon}
-                                id={type}
+                                id={browserActiveTab}
                                 activeTab={activeTab}
                                 onFilter={filterHandler}
-                                name={panelName}
-                                data={panelsDataPerf.data[type]}
-                                customTabs={customTabs}
-                                // @ts-ignore
-                                valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
+                                name={<BrowserDropdown onSelect={setBrowserActiveTab} title={brPanelName} />}
+                                data={panelsDataPerf.data[browserActiveTab]}
                                 rowMapper={rowMapper}
                               />
                             )

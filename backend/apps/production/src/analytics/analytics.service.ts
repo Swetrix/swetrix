@@ -2766,6 +2766,14 @@ export class AnalyticsService {
     })
   }
 
+  extractMajorMinorVersion(version: string): string | null {
+    const [major, minor = '0'] = version.split('.')
+
+    if (!major) return null
+
+    return `${major}.${minor}`
+  }
+
   extractCaptchaChartData(result, x: string[]): any {
     const count = Array(x.length).fill(0)
 
