@@ -3593,7 +3593,7 @@ export class AnalyticsService {
 
     const querySessionDetails = `
       SELECT
-        dv, br, brv, os, osv, lc, ref, so, me, ca, cc, rg, ct, sdur
+        dv, br, brv, os, osv, lc, ref, so, me, ca, te, co, cc, rg, ct, sdur
       FROM analytics
       WHERE
         pid = {pid:FixedString(12)}
@@ -3629,7 +3629,7 @@ export class AnalyticsService {
     if (!details) {
       const querySessionDetailsBackup = `
         SELECT
-          dv, br, brv, os, osv, lc, ref, so, me, ca, cc, rg, ct, sdur
+          dv, br, brv, os, osv, lc, ref, so, me, ca, te, co, cc, rg, ct, sdur
         FROM analytics
         WHERE
           pid = {pid:FixedString(12)}
