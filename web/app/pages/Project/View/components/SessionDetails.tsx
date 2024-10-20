@@ -33,6 +33,28 @@ export const SessionDetails = ({ details }: ISessionDetailsComponent) => {
     },
   ]
 
+  const browser = [
+    {
+      label: t('project.mapping.br'),
+      value: details.br || 'N/A',
+    },
+    {
+      label: t('project.mapping.brv'),
+      value: details.brv || 'N/A',
+    },
+  ]
+
+  const os = [
+    {
+      label: t('project.mapping.os'),
+      value: details.os || 'N/A',
+    },
+    {
+      label: t('project.mapping.osv'),
+      value: details.osv || 'N/A',
+    },
+  ]
+
   const utm = [
     {
       label: t('project.mapping.so'),
@@ -80,12 +102,12 @@ export const SessionDetails = ({ details }: ISessionDetailsComponent) => {
           )
         }}
       />
-      <MetricCard
+      <MetricCardSelect
         classes={{
           value: 'max-md:text-xl md:text-3xl',
         }}
-        label={t('project.mapping.os')}
-        value={details.os || 'N/A'}
+        values={os}
+        selectLabel={t('project.osInfo')}
       />
       <MetricCard
         classes={{
@@ -95,12 +117,12 @@ export const SessionDetails = ({ details }: ISessionDetailsComponent) => {
         value={details.dv || 'N/A'}
         valueMapper={(value) => _capitalize(value)}
       />
-      <MetricCard
+      <MetricCardSelect
         classes={{
           value: 'max-md:text-xl md:text-3xl',
         }}
-        label={t('project.mapping.br')}
-        value={details.br || 'N/A'}
+        values={browser}
+        selectLabel={t('project.browserInfo')}
       />
       <MetricCard
         classes={{

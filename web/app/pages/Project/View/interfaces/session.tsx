@@ -11,7 +11,9 @@ export interface ISession {
 export interface ISessionDetails {
   cc: string | null
   os: string | null
+  osv: string | null
   br: string | null
+  brv: string | null
   lc: string | null
   ref: string | null
   so: string | null
