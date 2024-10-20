@@ -2773,7 +2773,9 @@ export class AnalyticsService {
     })
   }
 
-  extractMajorMinorVersion(version: string): string | null {
+  extractMajorMinorVersion(version: string | null): string | null {
+    if (!version) return null
+
     const [major, minor = '0'] = version.split('.')
 
     if (!major) return null
