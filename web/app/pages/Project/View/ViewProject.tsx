@@ -4691,9 +4691,12 @@ const ViewProject = ({
                             const brPanelName = tnMapping[browserActiveTab]
 
                             const rowMapper = (entry: any) => {
-                              const { name: entryName } = entry
+                              const { name: entryName, br } = entry
+
+                              const logoKey = browserActiveTab === 'br' ? entryName : br
+
                               // @ts-expect-error
-                              const logoUrl = BROWSER_LOGO_MAP[entryName]
+                              const logoUrl = BROWSER_LOGO_MAP[logoKey]
 
                               if (!logoUrl) {
                                 return (
@@ -4733,11 +4736,14 @@ const ViewProject = ({
                             const osPanelName = tnMapping[osActiveTab]
 
                             const rowMapper = (entry: any) => {
-                              const { name: entryName } = entry
+                              const { name: entryName, os } = entry
+
+                              const logoKey = osActiveTab === 'os' ? entryName : os
+
                               // @ts-expect-error
-                              const logoPathLight = OS_LOGO_MAP[entryName]
+                              const logoPathLight = OS_LOGO_MAP[logoKey]
                               // @ts-expect-error
-                              const logoPathDark = OS_LOGO_MAP_DARK[entryName]
+                              const logoPathDark = OS_LOGO_MAP_DARK[logoKey]
 
                               let logoPath = _theme === 'dark' ? logoPathDark : logoPathLight
                               logoPath ||= logoPathLight
@@ -4989,9 +4995,12 @@ const ViewProject = ({
                             const brPanelName = tnMapping[browserActiveTab]
 
                             const rowMapper = (entry: any) => {
-                              const { name: entryName } = entry
+                              const { name: entryName, br } = entry
+
+                              const logoKey = browserActiveTab === 'br' ? entryName : br
+
                               // @ts-expect-error
-                              const logoUrl = BROWSER_LOGO_MAP[entryName]
+                              const logoUrl = BROWSER_LOGO_MAP[logoKey]
 
                               if (!logoUrl) {
                                 return (
@@ -5031,11 +5040,14 @@ const ViewProject = ({
                             const osPanelName = tnMapping[osActiveTab]
 
                             const rowMapper = (entry: any) => {
-                              const { name: entryName } = entry
+                              const { name: entryName, os } = entry
+
+                              const logoKey = osActiveTab === 'os' ? entryName : os
+
                               // @ts-expect-error
-                              const logoPathLight = OS_LOGO_MAP[entryName]
+                              const logoPathLight = OS_LOGO_MAP[logoKey]
                               // @ts-expect-error
-                              const logoPathDark = OS_LOGO_MAP_DARK[entryName]
+                              const logoPathDark = OS_LOGO_MAP_DARK[logoKey]
 
                               let logoPath = _theme === 'dark' ? logoPathDark : logoPathLight
                               logoPath ||= logoPathLight
@@ -5331,9 +5343,12 @@ const ViewProject = ({
                             const brPanelName = tnMapping[browserActiveTab]
 
                             const rowMapper = (entry: any) => {
-                              const { name: entryName } = entry
+                              const { name: entryName, br } = entry
+
+                              const logoKey = browserActiveTab === 'br' ? entryName : br
+
                               // @ts-expect-error
-                              const logoUrl = BROWSER_LOGO_MAP[entryName]
+                              const logoUrl = BROWSER_LOGO_MAP[logoKey]
 
                               if (!logoUrl) {
                                 return (
