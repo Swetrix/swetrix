@@ -46,6 +46,8 @@ declare global {
     REMIX_ENV: any
     // Set by Docker for self-hosted
     env: any
+
+    Paddle: any
   }
 }
 
@@ -62,7 +64,7 @@ export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: FontsCss },
 ]
 
-export const headers: HeadersFunction = (stuff) => ({
+export const headers: HeadersFunction = () => ({
   // General headers
   'access-control-allow-origin': '*',
   'Cross-Origin-Embedder-Policy': 'require-corp; report-to="default";',

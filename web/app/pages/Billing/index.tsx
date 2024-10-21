@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/anchor-has-content, lodash/prefer-lodash-method */
 import React, { memo, useMemo, useState, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
@@ -25,7 +24,6 @@ import Modal from 'ui/Modal'
 import Button from 'ui/Button'
 import MultiProgress from 'ui/MultiProgress'
 import Tooltip from 'ui/Tooltip'
-import { IUser } from 'redux/models/IUser'
 import UIActions from 'redux/reducers/ui'
 import Pricing from '../../components/marketing/Pricing'
 import DashboardLockedBanner from 'components/DashboardLockedBanner'
@@ -38,16 +36,10 @@ interface IBilling {
   ssrTheme: 'dark' | 'light'
 }
 
-const Billing: React.FC<IBilling> = ({ ssrAuthenticated, ssrTheme }): JSX.Element => {
+const Billing = ({ ssrAuthenticated, ssrTheme }: IBilling) => {
   const [isCancelSubModalOpened, setIsCancelSubModalOpened] = useState<boolean>(false)
   const { metainfo, usageinfo } = useSelector((state: StateType) => state.ui.misc)
-  const {
-    user,
-    loading,
-  }: {
-    user: IUser
-    loading: boolean
-  } = useSelector((state: StateType) => state.auth)
+  const { user, loading } = useSelector((state: StateType) => state.auth)
   const { theme: reduxTheme } = useSelector((state: StateType) => state.ui.theme)
   const theme = isBrowser ? reduxTheme : ssrTheme
   const paddleLoaded = useSelector((state: StateType) => state.ui.misc.paddleLoaded)
@@ -69,10 +61,10 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated, ssrTheme }): JSX.Elemen
     subCancelURL,
     maxEventsCount,
   } = user
-  const isSubscriber = user.planCode !== 'none' && user.planCode !== 'trial' && user.planCode !== 'free'
 
-  const isTrial: boolean = planCode === 'trial'
-  const isNoSub: boolean = planCode === 'none'
+  const isSubscriber = user.planCode !== 'none' && user.planCode !== 'trial' && user.planCode !== 'free'
+  const isTrial = planCode === 'trial'
+  const isNoSub = planCode === 'none'
   const totalUsage = _round((usageinfo.total / maxEventsCount) * 100, 2) || 0
 
   // Paddle (payment processor) set-up
@@ -148,13 +140,11 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated, ssrTheme }): JSX.Elemen
   }, [language, trialEndDate, isTrial, timeFormat, isTrialEnded, t])
 
   const onSubscriptionCancel = () => {
-    // @ts-ignore
     if (!window.Paddle) {
       if (subCancelURL) window.location.replace(subCancelURL)
       return
     }
 
-    // @ts-ignore
     window.Paddle.Checkout.open({
       override: subCancelURL,
       method: 'inline',
@@ -167,19 +157,16 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated, ssrTheme }): JSX.Elemen
       country: metainfo.country,
     })
     setTimeout(() => {
-      // @ts-ignore
-      document.querySelector('#checkout-container').scrollIntoView()
+      document.querySelector('#checkout-container')?.scrollIntoView()
     }, 500)
   }
 
   const onUpdatePaymentDetails = () => {
-    // @ts-ignore
     if (!window.Paddle) {
       if (subUpdateURL) window.location.replace(subUpdateURL)
       return
     }
 
-    // @ts-ignore
     window.Paddle.Checkout.open({
       override: subUpdateURL,
       method: 'inline',
@@ -192,68 +179,102 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated, ssrTheme }): JSX.Elemen
       country: metainfo.country,
     })
     setTimeout(() => {
-      // @ts-ignore
-      document.querySelector('#checkout-container').scrollIntoView()
+      document.querySelector('#checkout-container')?.scrollIntoView()
     }, 500)
   }
 
   return (
     <div className='min-h-page bg-gray-50 dark:bg-slate-900'>
       <DashboardLockedBanner />
-      <div className='mx-auto w-11/12 whitespace-pre-line px-4 pb-16 pt-12 sm:px-6 md:w-4/5 lg:px-8'>
-        <div className='mb-4 flex flex-wrap justify-between gap-y-2'>
-          <h1 className='mr-2 text-4xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50'>
-            {t('billing.title')}
-          </h1>
-        </div>
-        <h2 id='billing' className='mb-2 text-2xl font-medium tracking-tight text-gray-900 dark:text-gray-50'>
-          {t('billing.subscription')}
-        </h2>
-        <p className='mt-1 text-base tracking-tight text-gray-900 dark:text-gray-50'>
-          {isSubscriber ? t('billing.selectPlan') : t('billing.changePlan')}
-        </p>
-        <p className='text-base tracking-tight text-gray-900 dark:text-gray-50'>{t('billing.membersNotification')}</p>
-        {isSubscriber && nextBillDate && (
+
+      <div className='mx-auto w-11/12 whitespace-pre-line px-4 pt-12 sm:px-6 md:w-5/6'>
+        <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50'>{t('billing.title')}</h1>
+      </div>
+
+      <div className='mx-auto mt-5 grid w-11/12 gap-8 whitespace-pre-line px-4 pb-16 sm:px-6 md:w-5/6 lg:grid-cols-2'>
+        <div>
+          <h2 id='billing' className='mb-2 text-2xl font-medium tracking-tight text-gray-900 dark:text-gray-50'>
+            {t('billing.subscription')}
+          </h2>
           <p className='mt-1 text-base tracking-tight text-gray-900 dark:text-gray-50'>
-            {t('billing.nextBillDateIs', {
-              date:
-                language === 'en'
-                  ? dayjs(nextBillDate).locale(language).format('MMMM D, YYYY')
-                  : dayjs(nextBillDate).locale(language).format('D MMMM, YYYY'),
-            })}
+            {isSubscriber ? t('billing.selectPlan') : t('billing.changePlan')}
           </p>
-        )}
-        {cancellationEffectiveDate && (
-          <div className='mt-3 flex items-center text-lg tracking-tight text-gray-900 dark:text-gray-50'>
-            <InformationCircleIcon className='mr-2 h-10 w-10 text-blue-600' aria-hidden='true' />
-            <span className='max-w-prose font-medium'>
-              {t('billing.cancelledSubMessage', {
-                date:
-                  language === 'en'
-                    ? dayjs(cancellationEffectiveDate).locale(language).format('MMMM D, YYYY')
-                    : dayjs(cancellationEffectiveDate).locale(language).format('D MMMM, YYYY'),
-              })}
-            </span>
-          </div>
-        )}
-        {isTrial && trialMessage && (
-          <div className='mt-3 text-lg tracking-tight text-gray-900 dark:text-gray-50'>
-            <span className='font-medium'>{trialMessage}</span>
-          </div>
-        )}
-        {isNoSub && (
-          <div className='mt-3 flex items-center text-lg tracking-tight text-gray-900 dark:text-gray-50'>
-            <ExclamationTriangleIcon className='mr-2 h-10 w-10 text-red-600' aria-hidden='true' />
-            <span className='max-w-prose font-medium'>{t('billing.noSubWarning')}</span>
-          </div>
-        )}
-        {loading ? (
-          <Loader />
-        ) : (
-          <>
-            <div className='mt-5 flex flex-col xl:flex-row xl:space-x-5'>
+          <p className='max-w-prose text-base tracking-tight text-gray-900 dark:text-gray-50'>
+            {t('billing.membersNotification')}
+          </p>
+          {isSubscriber && nextBillDate && (
+            <div className='mt-5 max-w-prose rounded-md bg-blue-50 p-4 dark:bg-blue-600/30'>
+              <div className='flex'>
+                <div className='flex-shrink-0'>
+                  <InformationCircleIcon aria-hidden='true' className='h-5 w-5 text-blue-400 dark:text-blue-100' />
+                </div>
+                <p className='ml-3 text-sm font-medium text-blue-700 dark:text-blue-100'>
+                  {t('billing.nextBillDateIs', {
+                    date:
+                      language === 'en'
+                        ? dayjs(nextBillDate).locale(language).format('MMMM D, YYYY')
+                        : dayjs(nextBillDate).locale(language).format('D MMMM, YYYY'),
+                  })}
+                </p>
+              </div>
+            </div>
+          )}
+          {cancellationEffectiveDate && (
+            <div className='mt-5 max-w-prose rounded-md bg-blue-50 p-4 dark:bg-blue-600/30'>
+              <div className='flex'>
+                <div className='flex-shrink-0'>
+                  <InformationCircleIcon aria-hidden='true' className='h-5 w-5 text-blue-400 dark:text-blue-100' />
+                </div>
+                <div className='ml-3'>
+                  <h3 className='text-sm font-medium text-blue-700 dark:text-blue-100'>
+                    {t('billing.subscriptionCancelled')}
+                  </h3>
+                  <p className='mt-2 text-sm text-blue-700 dark:text-blue-100'>
+                    {t('billing.subscriptionCancelledDescription', {
+                      date:
+                        language === 'en'
+                          ? dayjs(cancellationEffectiveDate).locale(language).format('MMMM D, YYYY')
+                          : dayjs(cancellationEffectiveDate).locale(language).format('D MMMM, YYYY'),
+                    })}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          {isTrial && trialMessage && (
+            <div className='mt-5 max-w-prose rounded-md bg-blue-50 p-4 dark:bg-blue-600/30'>
+              <div className='flex'>
+                <div className='flex-shrink-0'>
+                  <InformationCircleIcon aria-hidden='true' className='h-5 w-5 text-blue-400 dark:text-blue-100' />
+                </div>
+                <p className='ml-3 text-sm font-medium text-blue-700 dark:text-blue-100'>{trialMessage}</p>
+              </div>
+            </div>
+          )}
+          {isNoSub && (
+            <div className='mt-5 max-w-prose rounded-md bg-red-50 p-4 dark:bg-red-600/30'>
+              <div className='flex'>
+                <div className='flex-shrink-0'>
+                  <ExclamationTriangleIcon aria-hidden='true' className='h-5 w-5 text-red-400 dark:text-red-100' />
+                </div>
+                <div className='ml-3'>
+                  <h3 className='text-sm font-medium text-red-800 dark:text-red-100'>
+                    {t('billing.noActiveSubscription')}
+                  </h3>
+                  <p className='mt-2 text-sm text-red-700 dark:text-red-200'>
+                    {t('billing.noActiveSubscriptionDescription')}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {loading ? (
+            <Loader />
+          ) : (
+            <div className='mt-8 flex flex-col'>
               <Pricing authenticated={authenticated} isBillingPage />
-              <div className='space-y-2'>
+              <div className='mt-2 space-y-2'>
                 {subUpdateURL && (
                   <Button className='mr-2' onClick={onUpdatePaymentDetails} type='button' primary large>
                     {t('billing.update')}
@@ -266,12 +287,20 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated, ssrTheme }): JSX.Elemen
                 )}
               </div>
             </div>
-            <h2 id='usage' className='mt-5 text-2xl font-medium tracking-tight text-gray-900 dark:text-gray-50'>
-              {t('billing.planUsage')}
-            </h2>
-            <p className='mt-1 text-base tracking-tight text-gray-900 dark:text-gray-50'>
-              {t('billing.planUsageDesc')}
-            </p>
+          )}
+        </div>
+
+        <div>
+          <h2 id='usage' className='text-2xl font-medium tracking-tight text-gray-900 dark:text-gray-50'>
+            {t('billing.planUsage')}
+          </h2>
+          <p className='mt-1 max-w-prose text-base tracking-tight text-gray-900 dark:text-gray-50'>
+            {t('billing.planUsageDesc')}
+          </p>
+
+          {loading ? (
+            <Loader />
+          ) : (
             <div className='mt-2 text-lg tracking-tight text-gray-900 dark:text-gray-50'>
               <p className='mb-1 text-base font-medium tracking-tight text-gray-900 dark:text-gray-50'>
                 {t('billing.xofy', {
@@ -345,8 +374,8 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated, ssrTheme }): JSX.Elemen
               />
               <p className='mt-1 text-base tracking-tight text-gray-900 dark:text-gray-50'>{t('billing.resetDate')}</p>
             </div>
-          </>
-        )}
+          )}
+        </div>
       </div>
       <Modal
         onClose={() => {
@@ -363,7 +392,6 @@ const Billing: React.FC<IBilling> = ({ ssrAuthenticated, ssrTheme }): JSX.Elemen
         type='error'
         message={
           <Trans
-            // @ts-ignore
             t={t}
             i18nKey='pricing.cancelDesc'
             values={{
