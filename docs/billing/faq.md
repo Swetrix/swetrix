@@ -30,10 +30,21 @@ We accept credit/debit cards, PayPal, Google Pay and Apple Pay. All payments are
 You can add your company details and VAT ID when subscribing to one of our plans. If you're eligible, no VAT or other sales taxes will be added to your subscription price.
 
 <img alt="Add VAT on checkout" src={useBaseUrl('img/billing/checkout_add_vat.png')} />
+<br /><br />
 
 You can also add your VAT number after you created a subscription, to do that open the invoice Paddle sent you to your email address, and click on the "Add address & VAT Number" button. 
 
 <img alt="Add VAT on existing invoice" src={useBaseUrl('img/billing/invoice_add_vat.png')} />
+
+## I am seeing "Unable to validate VAT number" error when adding my VAT number
+If your VAT number has a country code prefix in it (e.g. "DE" in "DE123456789"), please remove it and try entering only the numbers.
+
+The reason for this is that you are selecting the country code from the list of countries below, so the VAT number is validated separately. Our payment processor Paddle handles the VAT processing. Here is [a list of VAT numbers formats](https://www.paddle.com/help/sell/tax/what-format-should-i-use-for-my-vat-id) accepted by Paddle.
+
+<img alt="Unable to validate VAT number" src={useBaseUrl('img/billing/checkout_unable_to_validate_vat.png')} />
+<br /><br />
+
+If you are still having this issue, please [contact us](https://swetrix.com/contact).
 
 ## How can I update my payment information?
 To update your billing information, log in to your account and go to the [Billing](https://swetrix.com/billing) page.There you will find an "Update payment details" button which will take you to the Paddle subscription management page where you can edit your payment details.
