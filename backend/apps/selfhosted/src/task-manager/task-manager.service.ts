@@ -80,7 +80,7 @@ export class TaskManagerService {
     ]
 
     const promises = _map(queries, async query => {
-      await clickhouse.query({
+      await clickhouse.command({
         query,
       })
     })
