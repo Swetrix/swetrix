@@ -40,12 +40,6 @@ export class PageviewsDto {
   pg?: string
 
   @ApiProperty({
-    example: '/home',
-    description: 'Previous page user was on',
-  })
-  prev?: string
-
-  @ApiProperty({
     example: 'en-GB',
     description: "User's locale",
   })
