@@ -1609,10 +1609,36 @@ export class AnalyticsService {
     const promises = pids.map(async pid => {
       try {
         if (period === 'all') {
-          let queryAll = `SELECT count(*) AS all, countIf(unique=1) AS unique, avgIf(sdur, sdur IS NOT NULL AND analytics.unique=1) AS sdur FROM analytics WHERE pid = {pid:FixedString(12)} ${filtersQuery}`
+          let queryAll = `
+            WITH analytics_counts AS (
+              SELECT
+                count(*) AS all,
+                countIf(unique=1) AS unique
+              FROM analytics
+              WHERE
+                pid = {pid:FixedString(12)}
+                ${filtersQuery}
+            ),
+            duration_avg AS (
+              SELECT avg(duration) as sdur
+              FROM session_durations
+              WHERE pid = {pid:FixedString(12)}
+            )
+            SELECT
+              analytics_counts.*,
+              duration_avg.sdur
+            FROM analytics_counts, duration_avg
+          `
 
           if (customEVFilterApplied) {
-            queryAll = `SELECT count(*) AS all FROM customEV WHERE pid = {pid:FixedString(12)} ${filtersQuery}`
+            queryAll = `
+              SELECT
+                count(*) AS all
+              FROM customEV
+              WHERE
+                pid = {pid:FixedString(12)}
+                ${filtersQuery}
+            `
           }
 
           const { data } = await clickhouse
@@ -1678,12 +1704,85 @@ export class AnalyticsService {
             .format('YYYY-MM-DD HH:mm:ss')
         }
 
-        let queryCurrent = `SELECT 1 AS sortOrder, count(*) AS all, countIf(unique=1) AS unique, avgIf(sdur, sdur IS NOT NULL AND analytics.unique=1) AS sdur FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodFormatted:String} AND {now:String} ${filtersQuery}`
-        let queryPrevious = `SELECT 2 AS sortOrder, count(*) AS all, countIf(unique=1) AS unique, avgIf(sdur, sdur IS NOT NULL AND analytics.unique=1) AS sdur FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String} ${filtersQuery}`
+        let queryCurrent = `
+          WITH analytics_counts AS (
+            SELECT
+              1 AS sortOrder,
+              count(*) AS all,
+              countIf(unique=1) AS unique
+            FROM analytics
+            WHERE
+              pid = {pid:FixedString(12)}
+              AND created BETWEEN {periodFormatted:String} AND {now:String}
+              ${filtersQuery}
+          ),
+          duration_avg AS (
+            SELECT avg(duration) as sdur
+            FROM session_durations
+            WHERE pid = {pid:FixedString(12)}
+            AND psid IN (
+              SELECT psid
+              FROM analytics
+              WHERE pid = {pid:FixedString(12)}
+              AND created BETWEEN {periodFormatted:String} AND {now:String}
+              AND unique = 1
+              ${filtersQuery}
+            )
+          )
+          SELECT
+            analytics_counts.*,
+            duration_avg.sdur
+          FROM analytics_counts, duration_avg
+        `
+
+        let queryPrevious = `
+          WITH analytics_counts AS (
+            SELECT
+              2 AS sortOrder,
+              count(*) AS all,
+              countIf(unique=1) AS unique
+            FROM analytics
+            WHERE
+              pid = {pid:FixedString(12)}
+              AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}
+              ${filtersQuery}
+          ),
+          duration_avg AS (
+            SELECT avg(duration) as sdur
+            FROM session_durations
+            WHERE pid = {pid:FixedString(12)}
+            AND psid IN (
+              SELECT psid
+              FROM analytics
+              WHERE pid = {pid:FixedString(12)}
+              AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}
+              AND unique = 1
+              ${filtersQuery}
+            )
+          )
+          SELECT
+            analytics_counts.*,
+            duration_avg.sdur
+          FROM analytics_counts, duration_avg
+        `
 
         if (customEVFilterApplied) {
-          queryCurrent = `SELECT 1 AS sortOrder, count(*) AS all FROM customEV WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodFormatted:String} AND {now:String} ${filtersQuery}`
-          queryPrevious = `SELECT 2 AS sortOrder, count(*) AS all FROM customEV WHERE pid = {pid:FixedString(12)} AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String} ${filtersQuery}`
+          queryCurrent = `
+            SELECT 1 AS sortOrder, count(*) AS all
+            FROM customEV
+            WHERE
+              pid = {pid:FixedString(12)}
+              AND created BETWEEN {periodFormatted:String} AND {now:String}
+              ${filtersQuery}
+          `
+          queryPrevious = `
+            SELECT 2 AS sortOrder, count(*) AS all
+            FROM customEV
+            WHERE
+              pid = {pid:FixedString(12)}
+              AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}
+              ${filtersQuery}
+          `
         }
 
         const query = `${queryCurrent} UNION ALL ${queryPrevious}`
@@ -2270,7 +2369,7 @@ export class AnalyticsService {
     const baseQuery = `
       SELECT
         ${selector},
-        avg(sdur) as sdur,
+        avg(session_durations.duration) as sdur,
         count() as pageviews,
         countIf(unique=1) as uniques
       FROM (
@@ -2282,6 +2381,9 @@ export class AnalyticsService {
           AND created BETWEEN ${tzFromDate} AND ${tzToDate}
           ${filtersQuery}
       ) as subquery
+      LEFT JOIN session_durations
+        ON subquery.pid = session_durations.pid
+        AND subquery.psid = session_durations.psid
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
     `
@@ -2312,7 +2414,7 @@ export class AnalyticsService {
     const baseQuery = `
       SELECT
         ${selector},
-        avg(sdur) as sdur,
+        avg(session_durations.duration) as sdur,
         count() as pageviews,
         countIf(unique=1) as uniques
       FROM (
@@ -2324,6 +2426,9 @@ export class AnalyticsService {
           AND created BETWEEN ${tzFromDate} AND ${tzToDate}
           ${filtersQuery}
       ) as subquery
+      LEFT JOIN session_durations
+        ON subquery.pid = session_durations.pid
+        AND subquery.psid = session_durations.psid
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
     `
@@ -3593,13 +3698,22 @@ export class AnalyticsService {
 
     const querySessionDetails = `
       SELECT
-        dv, br, brv, os, osv, lc, ref, so, me, ca, te, co, cc, rg, ct, sdur
+        dv, br, brv, os, osv, lc, ref, so, me, ca, te, co, cc, rg, ct
       FROM analytics
       WHERE
         pid = {pid:FixedString(12)}
         AND psid = {psid:String}
         AND unique = 1
       LIMIT 1;
+    `
+
+    const querySessionDuration = `
+      SELECT
+        avg(duration) as duration
+      FROM session_durations
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND psid = {psid:String}
     `
 
     const paramsData = {
@@ -3624,12 +3738,24 @@ export class AnalyticsService {
         })
         .then(resultSet => resultSet.json())
         .then(({ data }) => data)
-    )[0]
+    )[0] as any
+
+    const { duration = 0 } =
+      (
+        await clickhouse
+          .query({
+            query: querySessionDuration,
+            query_params: paramsData.params,
+          })
+          .then(resultSet =>
+            resultSet.json<{ duration: number }>().then(({ data }) => data),
+          )
+      )[0] || {}
 
     if (!details) {
       const querySessionDetailsBackup = `
         SELECT
-          dv, br, brv, os, osv, lc, ref, so, me, ca, te, co, cc, rg, ct, sdur
+          dv, br, brv, os, osv, lc, ref, so, me, ca, te, co, cc, rg, ct
         FROM analytics
         WHERE
           pid = {pid:FixedString(12)}
@@ -3691,7 +3817,10 @@ export class AnalyticsService {
 
     return {
       pages: this.processPageflow(pages),
-      details,
+      details: {
+        ...(details || {}),
+        sdur: duration,
+      },
       psid,
       chart: chartData,
       timeBucket,
