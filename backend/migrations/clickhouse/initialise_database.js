@@ -31,13 +31,22 @@ const CLICKHOUSE_INIT_QUERIES = [
       key String,
       value String
     ),
-    sdur Nullable(UInt32), 
     unique UInt8,
     created DateTime('UTC')
   )
   ENGINE = MergeTree()
   PARTITION BY toYYYYMM(created)
   ORDER BY (pid, created);`,
+
+  // Session duration table
+  `CREATE TABLE IF NOT EXISTS ${dbName}.session_durations
+  (
+    psid UInt64,
+    pid FixedString(12),
+    duration UInt32
+  )
+  ENGINE = MergeTree()
+  ORDER BY (pid, psid);`,
 
   // Custom events table
   `CREATE TABLE IF NOT EXISTS ${dbName}.customEV
