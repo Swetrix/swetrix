@@ -1480,7 +1480,7 @@ export class TaskManagerService {
   @Cron(CronExpression.EVERY_WEEK)
   async sendTrainingAiRequest(): Promise<void> {
     try {
-      await firstValueFrom(this.httpService.post('/run_training/'))
+      await firstValueFrom(this.httpService.post('/run_training/', {}))
     } catch (error) {
       this.logger.error(
         `Error triggering training on the AI service: ${error.message}`,
@@ -1492,7 +1492,7 @@ export class TaskManagerService {
   @Cron('0 1 * * 0')
   async sendPredictAiRequest(): Promise<void> {
     try {
-      await firstValueFrom(this.httpService.post('/run_prediction/'))
+      await firstValueFrom(this.httpService.post('/run_prediction/', {}))
     } catch (error) {
       this.logger.error(
         `Error triggering prediction from AI service: ${error.message}`,
