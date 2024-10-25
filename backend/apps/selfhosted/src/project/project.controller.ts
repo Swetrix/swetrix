@@ -222,11 +222,11 @@ export class ProjectController {
     }
 
     try {
-      await clickhouse.query({
-        query: `ALTER table analytics DELETE WHERE pid='${id}'`,
+      await clickhouse.command({
+        query: `DELETE FROM analytics WHERE pid='${id}'`,
       })
-      await clickhouse.query({
-        query: `ALTER table customEV DELETE WHERE pid='${id}'`,
+      await clickhouse.command({
+        query: `DELETE FROM customEV WHERE pid='${id}'`,
       })
       return 'Project resetted successfully'
     } catch (e) {
@@ -453,11 +453,11 @@ export class ProjectController {
     await deleteProjectClickhouse(id)
 
     try {
-      await clickhouse.query({
-        query: `ALTER table analytics DELETE WHERE pid='${id}'`,
+      await clickhouse.command({
+        query: `DELETE FROM analytics WHERE pid='${id}'`,
       })
-      await clickhouse.query({
-        query: `ALTER table customEV DELETE WHERE pid='${id}'`,
+      await clickhouse.command({
+        query: `DELETE FROM customEV WHERE pid='${id}'`,
       })
       return 'Project deleted successfully'
     } catch (e) {
