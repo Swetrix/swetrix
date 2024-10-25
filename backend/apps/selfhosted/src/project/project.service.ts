@@ -247,46 +247,28 @@ export class ProjectService {
     from: string,
     to: string,
   ): Promise<void> {
-    const queryAnalytics =
-      'ALTER TABLE analytics DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
-    const queryCustomEvents =
-      'ALTER TABLE customEV DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
-    const queryPerformance =
-      'ALTER TABLE performance DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
-    const queryErrors =
-      'ALTER TABLE errors DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
-    const queryErrorStatuses =
-      'ALTER TABLE error_statuses DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}'
+    const queries = [
+      'DELETE FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
+      'DELETE FROM customEV WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
+      'DELETE FROM performance WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
+      'DELETE FROM errors WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
+      'DELETE FROM error_statuses WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
+    ]
+
     const params = {
-      params: {
-        pid,
-        from,
-        to,
-      },
+      pid,
+      from,
+      to,
     }
 
-    await Promise.all([
-      clickhouse.query({
-        query: queryAnalytics,
-        query_params: params,
-      }),
-      clickhouse.query({
-        query: queryCustomEvents,
-        query_params: params,
-      }),
-      clickhouse.query({
-        query: queryPerformance,
-        query_params: params,
-      }),
-      clickhouse.query({
-        query: queryErrors,
-        query_params: params,
-      }),
-      clickhouse.query({
-        query: queryErrorStatuses,
-        query_params: params,
-      }),
-    ])
+    await Promise.all(
+      _map(queries, query =>
+        clickhouse.command({
+          query,
+          query_params: params,
+        }),
+      ),
+    )
   }
 
   formatToClickhouse(project: any): object {

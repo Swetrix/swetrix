@@ -153,7 +153,7 @@ const updateFunnelClickhouse = async (funnel: any) => {
 }
 
 const deleteFunnelClickhouse = async (id: string) => {
-  const query = `ALTER table funnel DELETE WHERE id = {id:String}`
+  const query = `DELETE FROM funnel WHERE id = {id:String}`
 
   await clickhouse.command({
     query,
@@ -281,7 +281,7 @@ const calculateRelativePercentage = (
 }
 
 const deleteProjectClickhouse = async (id: string) => {
-  const query = `ALTER table project DELETE WHERE id = {id:FixedString(12)}`
+  const query = `DELETE FROM project WHERE id = {id:FixedString(12)}`
 
   await clickhouse.command({
     query,
@@ -354,7 +354,7 @@ const deleteRefreshTokenClickhouse = async (
   userId: string,
   refreshToken: string,
 ) => {
-  const query = `ALTER table refresh_token DELETE WHERE userId = {userId:String} AND refreshToken = {refreshToken:String}`
+  const query = `DELETE FROM refresh_token WHERE userId = {userId:String} AND refreshToken = {refreshToken:String}`
 
   await clickhouse.command({
     query,
@@ -595,7 +595,7 @@ const findProjectViewsClickhouse = async (projectId: string) => {
 }
 
 const deleteProjectViewClickhouse = async (id: string) => {
-  const query = `ALTER TABLE project_views DELETE WHERE id = {id:FixedString(36)}`
+  const query = `DELETE FROM project_views WHERE id = {id:FixedString(36)}`
 
   await clickhouse.command({
     query,
@@ -606,7 +606,7 @@ const deleteProjectViewClickhouse = async (id: string) => {
 }
 
 const deleteCustomMetricsClickhouse = async (viewId: string) => {
-  const query = `ALTER TABLE projects_views_custom_events DELETE WHERE viewId = {viewId:FixedString(36)}`
+  const query = `DELETE FROM projects_views_custom_events WHERE viewId = {viewId:FixedString(36)}`
 
   await clickhouse.command({
     query,

@@ -749,6 +749,7 @@ export class TaskManagerService {
   @Cron(CronExpression.EVERY_MINUTE)
   async processSessionDuration(): Promise<void> {
     const keys = await redis.keys('sd:*')
+    const keysToDelete = []
     const toSave = []
     const now = _now()
 
@@ -758,7 +759,13 @@ export class TaskManagerService {
 
       // storing to the DB if last interaction was more than 1 minute ago
       if (duration > 60000) {
-        toSave.push([key, Number(last) - Number(start)])
+        const [, psid, pid] = key.split(':')
+        toSave.push({
+          psid,
+          pid,
+          duration: Math.floor((Number(last) - Number(start)) / 1000), // convert to seconds
+        })
+        keysToDelete.push(key)
       }
     })
 
@@ -769,25 +776,12 @@ export class TaskManagerService {
     })
 
     if (_size(toSave) > 0) {
-      await redis.del(..._map(toSave, ([key]) => key))
+      await redis.del(...keysToDelete)
 
-      const psids = _map(toSave, ([key]) => key.split(':')[1])
-
-      const setSdurQuery = `
-        ALTER TABLE
-          analytics
-        UPDATE sdur = sdur + CASE ${_map(
-          toSave,
-          ([key, duration]) =>
-            `WHEN psid = ${key.split(':')[1]} THEN ${duration / 1000}`, // converting to seconds
-        ).join(' ')} END WHERE psid IN ({ psids: Array(String) })
-      `
-
-      await clickhouse.query({
-        query: setSdurQuery,
-        query_params: {
-          psids,
-        },
+      await clickhouse.insert({
+        table: 'session_durations',
+        values: toSave,
+        format: 'JSONEachRow',
       })
     }
   }
@@ -1486,7 +1480,7 @@ export class TaskManagerService {
   @Cron(CronExpression.EVERY_WEEK)
   async sendTrainingAiRequest(): Promise<void> {
     try {
-      await firstValueFrom(this.httpService.post('/run_training/'))
+      await firstValueFrom(this.httpService.post('/run_training/', {}))
     } catch (error) {
       this.logger.error(
         `Error triggering training on the AI service: ${error.message}`,
@@ -1498,7 +1492,7 @@ export class TaskManagerService {
   @Cron('0 1 * * 0')
   async sendPredictAiRequest(): Promise<void> {
     try {
-      await firstValueFrom(this.httpService.post('/run_prediction/'))
+      await firstValueFrom(this.httpService.post('/run_prediction/', {}))
     } catch (error) {
       this.logger.error(
         `Error triggering prediction from AI service: ${error.message}`,

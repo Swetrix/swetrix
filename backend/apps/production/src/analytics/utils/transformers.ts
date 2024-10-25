@@ -44,7 +44,6 @@ export const trafficTransformer = (
   rg: string | null,
   ct: string | null,
   meta: Record<string, string> | null,
-  sdur: number,
   unique: number,
 ) => {
   return {
@@ -68,7 +67,6 @@ export const trafficTransformer = (
     rg: rg || null,
     ct: ct || null,
     ...processMetaKV(meta),
-    sdur,
     unique,
     created: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
   }

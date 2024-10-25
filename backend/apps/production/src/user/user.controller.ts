@@ -323,18 +323,18 @@ export class UserController {
         )
 
         const queries = [
-          `ALTER table analytics DELETE WHERE pid IN (${pids})`,
-          `ALTER table customEV DELETE WHERE pid IN (${pids})`,
-          `ALTER table performance DELETE WHERE pid IN (${pids})`,
-          `ALTER table errors DELETE WHERE pid IN (${pids})`,
-          `ALTER table error_statuses DELETE WHERE pid IN (${pids})`,
-          `ALTER table captcha DELETE WHERE pid IN (${pids})`,
+          `DELETE FROM analytics WHERE pid IN (${pids})`,
+          `DELETE FROM customEV WHERE pid IN (${pids})`,
+          `DELETE FROM performance WHERE pid IN (${pids})`,
+          `DELETE FROM errors WHERE pid IN (${pids})`,
+          `DELETE FROM error_statuses WHERE pid IN (${pids})`,
+          `DELETE FROM captcha WHERE pid IN (${pids})`,
         ]
 
         await this.projectService.deleteMultiple(pids)
 
         const promises = _map(queries, async query =>
-          clickhouse.query({
+          clickhouse.command({
             query,
           }),
         )
@@ -377,16 +377,16 @@ export class UserController {
           ',',
         )
         const queries = [
-          `ALTER table analytics DELETE WHERE pid IN (${pids})`,
-          `ALTER table customEV DELETE WHERE pid IN (${pids})`,
-          `ALTER table performance DELETE WHERE pid IN (${pids})`,
-          `ALTER table errors DELETE WHERE pid IN (${pids})`,
-          `ALTER table error_statuses DELETE WHERE pid IN (${pids})`,
-          `ALTER table captcha DELETE WHERE pid IN (${pids})`,
+          `DELETE FROM analytics WHERE pid IN (${pids})`,
+          `DELETE FROM customEV WHERE pid IN (${pids})`,
+          `DELETE FROM performance WHERE pid IN (${pids})`,
+          `DELETE FROM errors WHERE pid IN (${pids})`,
+          `DELETE FROM error_statuses WHERE pid IN (${pids})`,
+          `DELETE FROM captcha WHERE pid IN (${pids})`,
         ]
         await this.projectService.deleteMultiple(pids)
         const promises = _map(queries, async query =>
-          clickhouse.query({
+          clickhouse.command({
             query,
           }),
         )

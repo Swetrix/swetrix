@@ -1042,7 +1042,6 @@ export class AnalyticsController {
       region,
       city,
       logDTO.meta,
-      0,
       Number(unique),
     )
 
@@ -1176,7 +1175,6 @@ export class AnalyticsController {
       region,
       city,
       null,
-      0,
       Number(unique),
     )
 

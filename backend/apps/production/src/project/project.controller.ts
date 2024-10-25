@@ -761,16 +761,16 @@ export class ProjectController {
     this.projectService.allowedToManage(project, uid, user.roles)
 
     const queries = [
-      'ALTER table analytics DELETE WHERE pid={pid:FixedString(12)}',
-      'ALTER table customEV DELETE WHERE pid={pid:FixedString(12)}',
-      'ALTER table performance DELETE WHERE pid={pid:FixedString(12)}',
-      'ALTER table errors DELETE WHERE pid={pid:FixedString(12)}',
-      'ALTER table error_statuses DELETE WHERE pid={pid:FixedString(12)}',
+      'DELETE FROM analytics WHERE pid={pid:FixedString(12)}',
+      'DELETE FROM customEV WHERE pid={pid:FixedString(12)}',
+      'DELETE FROM performance WHERE pid={pid:FixedString(12)}',
+      'DELETE FROM errors WHERE pid={pid:FixedString(12)}',
+      'DELETE FROM error_statuses WHERE pid={pid:FixedString(12)}',
     ]
 
     try {
       const promises = _map(queries, async query =>
-        clickhouse.query({
+        clickhouse.command({
           query,
           query_params: {
             pid: id,
@@ -819,8 +819,8 @@ export class ProjectController {
     this.projectService.allowedToManage(project, uid, user.roles)
 
     try {
-      await clickhouse.query({
-        query: 'ALTER table captcha DELETE WHERE pid={pid:FixedString(12)}',
+      await clickhouse.command({
+        query: 'DELETE FROM captcha WHERE pid={pid:FixedString(12)}',
         query_params: {
           pid: id,
         },
@@ -905,8 +905,8 @@ export class ProjectController {
     this.projectService.allowedToManage(project, uid, user.roles)
 
     try {
-      await clickhouse.query({
-        query: 'ALTER table captcha DELETE WHERE pid={pid:FixedString(12)}',
+      await clickhouse.command({
+        query: 'DELETE FROM captcha WHERE pid={pid:FixedString(12)}',
         query_params: {
           pid: id,
         },
@@ -1586,17 +1586,17 @@ export class ProjectController {
     this.projectService.allowedToManage(project, uid, user.roles)
 
     const queries = [
-      'ALTER table analytics DELETE WHERE pid={pid:FixedString(12)}',
-      'ALTER table customEV DELETE WHERE pid={pid:FixedString(12)}',
-      'ALTER table performance DELETE WHERE pid={pid:FixedString(12)}',
-      'ALTER table errors DELETE WHERE pid={pid:FixedString(12)}',
-      'ALTER table error_statuses DELETE WHERE pid={pid:FixedString(12)}',
-      'ALTER table captcha DELETE WHERE pid={pid:FixedString(12)}',
+      'DELETE FROM analytics WHERE pid={pid:FixedString(12)}',
+      'DELETE FROM customEV WHERE pid={pid:FixedString(12)}',
+      'DELETE FROM performance WHERE pid={pid:FixedString(12)}',
+      'DELETE FROM errors WHERE pid={pid:FixedString(12)}',
+      'DELETE FROM error_statuses WHERE pid={pid:FixedString(12)}',
+      'DELETE FROM captcha WHERE pid={pid:FixedString(12)}',
     ]
 
     try {
       const promises = _map(queries, async query =>
-        clickhouse.query({
+        clickhouse.command({
           query,
           query_params: {
             pid: id,
