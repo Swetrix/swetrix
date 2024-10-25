@@ -2366,21 +2366,30 @@ export class AnalyticsService {
     const baseQuery = `
       SELECT
         ${selector},
-        avg(session_durations.duration) as sdur,
+        avgOrNull(session_durations.duration) as sdur,
         count() as pageviews,
-        countIf(unique=1) as uniques
+        sum(unique) as uniques
       FROM (
-        SELECT *,
+        SELECT
+          pid,
+          psid,
+          unique,
           ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
         FROM analytics
-        WHERE
-          pid = {pid:FixedString(12)}
-          AND created BETWEEN ${tzFromDate} AND ${tzToDate}
-          ${filtersQuery}
+        PREWHERE pid = {pid:FixedString(12)}
+        WHERE created BETWEEN ${tzFromDate} AND ${tzToDate}
+        ${filtersQuery}
       ) as subquery
-      LEFT JOIN session_durations
-        ON subquery.pid = session_durations.pid
-        AND subquery.psid = session_durations.psid
+      LEFT JOIN (
+        SELECT 
+          pid,
+          psid,
+          duration
+        FROM session_durations
+        WHERE pid = {pid:FixedString(12)}
+      ) as session_durations
+      ON subquery.pid = session_durations.pid
+      AND subquery.psid = session_durations.psid
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
     `
@@ -2389,8 +2398,8 @@ export class AnalyticsService {
       return `
         SELECT
           *,
-          sum(pageviews) OVER (ORDER BY ${groupBy}) as pageviews,
-          sum(uniques) OVER (ORDER BY ${groupBy}) as uniques
+          sum(pageviews) OVER (ORDER BY ${groupBy} ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as pageviews,
+          sum(uniques) OVER (ORDER BY ${groupBy} ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as uniques
         FROM (${baseQuery})
       `
     }
@@ -2411,21 +2420,32 @@ export class AnalyticsService {
     const baseQuery = `
       SELECT
         ${selector},
-        avg(session_durations.duration) as sdur,
+        avgOrNull(session_durations.duration) as sdur,
         count() as pageviews,
-        countIf(unique=1) as uniques
+        sum(unique) as uniques
       FROM (
-        SELECT *,
+        SELECT
+          pid,
+          psid,
+          unique,
           ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
         FROM analytics
-        WHERE
-          pid = {pid:FixedString(12)}
-          AND created BETWEEN ${tzFromDate} AND ${tzToDate}
-          ${filtersQuery}
+        PREWHERE pid = {pid:FixedString(12)}
+        WHERE created BETWEEN ${tzFromDate} AND ${tzToDate}
+        ${filtersQuery}
       ) as subquery
-      LEFT JOIN session_durations
-        ON subquery.pid = session_durations.pid
-        AND subquery.psid = session_durations.psid
+      
+      LEFT JOIN (
+        SELECT 
+          pid,
+          psid,
+          duration
+        FROM session_durations
+        WHERE pid = {pid:FixedString(12)}
+      ) as session_durations
+      ON subquery.pid = session_durations.pid
+      AND subquery.psid = session_durations.psid
+      
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
     `
