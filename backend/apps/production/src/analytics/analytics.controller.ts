@@ -36,7 +36,6 @@ import { OptionalJwtAccessTokenGuard } from '../auth/guards'
 import { Auth, Public } from '../auth/decorators'
 import {
   AnalyticsService,
-  getHeartbeatKey,
   DataType,
   getLowestPossibleTimeBucket,
 } from './analytics.service'
@@ -54,7 +53,6 @@ import { GetFunnelsDto } from './dto/getFunnels.dto'
 import { AppLoggerService } from '../logger/logger.service'
 import {
   redis,
-  HEARTBEAT_SID_LIFE_TIME,
   REDIS_USERS_COUNT_KEY,
   REDIS_PROJECTS_COUNT_KEY,
   REDIS_EVENTS_COUNT_KEY,
@@ -1031,7 +1029,7 @@ export class AnalyticsController {
     )
     await this.analyticsService.checkBillingAccess(pid)
 
-    const keys = await redis.keys(`hb:*:${pid}`)
+    const keys = await redis.keys(`sd:*:${pid}`)
     if (_isEmpty(keys)) {
       return []
     }
@@ -1045,11 +1043,34 @@ export class AnalyticsController {
         any(os) AS os,
         any(cc) AS cc,
         toString(psid) AS psid
-      FROM analytics
-      WHERE
-        psid IN ({ psids: Array(String) })
-        AND created > ({ createdAfter: String })
-        AND pid = ({ pid: FixedString(12) })
+      FROM
+      (
+        SELECT
+          psid,
+          dv,
+          br,
+          os,
+          cc,
+          created
+        FROM analytics
+        WHERE
+          psid IN ({ psids: Array(String) })
+          AND created > ({ createdAfter: String })
+          AND pid = ({ pid: FixedString(12) })
+        UNION ALL
+        SELECT
+          psid,
+          dv,
+          br,
+          os,
+          cc,
+          created
+        FROM customEV
+        WHERE
+          psid IN ({ psids: Array(String) })
+          AND created > ({ createdAfter: String })
+          AND pid = ({ pid: FixedString(12) })
+      )
       GROUP BY psid
     `
 
@@ -1259,12 +1280,6 @@ export class AnalyticsController {
 
     const [, psid] = await this.analyticsService.isUnique(pid, userAgent, ip)
 
-    await redis.set(
-      getHeartbeatKey(psid, pid),
-      1,
-      'EX',
-      HEARTBEAT_SID_LIFE_TIME,
-    )
     await this.analyticsService.processInteractionSD(psid, pid)
   }
 

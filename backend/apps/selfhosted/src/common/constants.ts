@@ -58,9 +58,6 @@ const redisProjectCacheTimeout = 3600
 // 30 minues -> the amount of time analytics requests within one session are counted as non-unique
 const UNIQUE_SESSION_LIFE_TIME = 1800
 
-// 35 seconds
-const HEARTBEAT_SID_LIFE_TIME = 35
-
 // Funnels
 const MIN_PAGES_IN_FUNNEL = 2
 const MAX_PAGES_IN_FUNNEL = 10
@@ -114,7 +111,6 @@ export {
   UNIQUE_SESSION_LIFE_TIME,
   TRAFFIC_METAKEY_COLUMNS,
   REDIS_SESSION_SALT_KEY,
-  HEARTBEAT_SID_LIFE_TIME,
   UUIDV5_NAMESPACE,
   SELFHOSTED_EMAIL,
   SELFHOSTED_PASSWORD,

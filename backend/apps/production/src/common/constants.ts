@@ -69,9 +69,6 @@ const redisUserUsageinfoCacheTimeout = 300
 // 30 minues -> the amount of time analytics requests within one session are counted as non-unique
 const UNIQUE_SESSION_LIFE_TIME = 1800
 
-// 35 seconds
-const HEARTBEAT_SID_LIFE_TIME = 35
-
 const AFFILIATE_CUT = 0.2
 
 // how often can user request a fresh GDPR export of their data; in days.
@@ -187,7 +184,6 @@ export {
   getRedisUserCountKey,
   redisProjectCountCacheTimeout,
   REDIS_SESSION_SALT_KEY,
-  HEARTBEAT_SID_LIFE_TIME,
   REDIS_USERS_COUNT_KEY,
   REDIS_PROJECTS_COUNT_KEY,
   REDIS_EVENTS_COUNT_KEY,

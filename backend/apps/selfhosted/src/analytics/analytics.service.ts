@@ -98,9 +98,6 @@ dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
 dayjs.extend(isSameOrBefore)
 
-export const getHeartbeatKey = (psid: string, pid: string) =>
-  `hb:${psid}:${pid}`
-
 const getSessionDurationKey = (psid: string, pid: string) => `sd:${psid}:${pid}`
 
 const GMT_0_TIMEZONES = [
@@ -2960,7 +2957,7 @@ export class AnalyticsService {
 
   async getOnlineUserCount(pid: string): Promise<number> {
     // @ts-expect-error
-    return redis.countKeysByPattern(`hb:*:${pid}`)
+    return redis.countKeysByPattern(`sd:*:${pid}`)
   }
 
   async groupCustomEVByTimeBucket(
