@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss'
+import plugin from 'tailwindcss/plugin'
 
 export default {
   mode: 'jit',
@@ -58,5 +59,17 @@ export default {
     extend: {},
     scrollBehavior: ['motion-safe', 'motion-reduce', 'responsive'],
   },
-  plugins: [require('@tailwindcss/forms'), require('@tailwindcss/typography')],
+  plugins: [
+    require('@tailwindcss/forms'),
+    require('@tailwindcss/typography'),
+    plugin(({ addVariant, addUtilities, matchVariant }) => {
+      addVariant('has-hover', '@media (hover: hover) and (pointer: fine)')
+      addVariant('no-hover', '@media not all and (hover: hover) and (pointer: fine)')
+
+      addVariant('hover-always', [
+        '@media (hover: hover) and (pointer: fine) { &:hover }',
+        '@media not all and (hover: hover) and (pointer: fine)',
+      ])
+    }),
+  ],
 } satisfies Config

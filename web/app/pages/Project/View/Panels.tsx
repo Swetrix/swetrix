@@ -1669,14 +1669,14 @@ const Panel = ({
                   >
                     {rowData}
                     {!hideFilters && (
-                      <FunnelIcon className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300' />
+                      <FunnelIcon className='min-h-4 ml-2 hidden size-4 min-w-4 text-gray-500 group-hover:block dark:text-gray-300' />
                     )}
                   </a>
                 ) : (
                   <span className={cx('label flex items-center', { capitalize })}>
                     {rowData}
                     {!hideFilters && (
-                      <FunnelIcon className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300' />
+                      <FunnelIcon className='min-h-4 ml-2 hidden size-4 min-w-4 text-gray-500 group-hover:block dark:text-gray-300' />
                     )}
                   </span>
                 )}

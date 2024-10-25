@@ -1,29 +1,31 @@
-import React, { memo } from 'react'
-import _isEmpty from 'lodash/isEmpty'
+import { memo, useMemo } from 'react'
 
 const RefRow = ({ rowName }: { rowName: string }): JSX.Element => {
-  let isUrl: boolean = true
-  let url: URL | null = null
+  const { isUrl, url } = useMemo(() => {
+    try {
+      const urlObj = new URL(rowName)
+      return { isUrl: true, url: urlObj }
+    } catch {
+      return { isUrl: false, url: null }
+    }
+  }, [rowName])
 
-  try {
-    url = new URL(rowName) as URL
-  } catch {
-    isUrl = false
-  }
+  const linkClassName = 'text-blue-600 hover:underline dark:text-blue-500'
 
   return (
-    <div className='overflow-auto'>
-      {isUrl && !_isEmpty(url?.hostname) && (
+    <div className='scrollbar-thin hover-always:overflow-auto overflow-hidden'>
+      {isUrl && (
         <img
-          className='float-left mr-1.5 h-5 w-5'
+          className='float-left mr-1.5 size-5'
           src={`https://icons.duckduckgo.com/ip3/${url?.hostname}.ico`}
+          loading='lazy'
           alt=''
           aria-hidden='true'
         />
       )}
       {isUrl ? (
         <a
-          className='label flex text-blue-600 hover:underline dark:text-blue-500'
+          className={linkClassName}
           href={rowName}
           target='_blank'
           rel='noopener noreferrer nofollow'
@@ -33,7 +35,7 @@ const RefRow = ({ rowName }: { rowName: string }): JSX.Element => {
           {rowName}
         </a>
       ) : (
-        <span className='label flex text-blue-600 hover:underline dark:text-blue-500'>{rowName}</span>
+        <span className={linkClassName}>{rowName}</span>
       )}
     </div>
   )
