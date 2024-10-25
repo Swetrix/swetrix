@@ -761,7 +761,7 @@ export class TaskManagerService {
       if (duration > 60000) {
         const [, psid, pid] = key.split(':')
         toSave.push({
-          psid: _toNumber(psid),
+          psid,
           pid,
           duration: Math.floor((Number(last) - Number(start)) / 1000), // convert to seconds
         })

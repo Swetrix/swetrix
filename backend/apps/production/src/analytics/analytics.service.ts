@@ -2034,7 +2034,7 @@ export class AnalyticsService {
         }
       } catch (reason) {
         console.error(
-          `[ERROR] (getAnalyticsSummary) Error occurred for PID ${pid}`,
+          `[ERROR] (getPerformanceSummary) Error occurred for PID ${pid}`,
         )
         console.error(reason)
         throw new InternalServerErrorException(
