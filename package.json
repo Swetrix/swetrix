@@ -26,7 +26,7 @@
     "type": "git",
     "url": "git+https://github.com/Swetrix/swetrix-js.git"
   },
-  "author": "Andrii R. <contact@swetrix.com>",
+  "author": "Andrii Romasiun, Swetrix Ltd. <contact@swetrix.com>",
   "funding": "https://ko-fi.com/andriir",
   "license": "MIT",
   "bugs": {
