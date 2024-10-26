@@ -311,34 +311,6 @@
                 this.trackPage(newPath, false);
             }
         };
-        Lib.prototype.getPreviousPage = function () {
-            // Assuming that this function is called in trackPage and this.activePage is not overwritten by new value yet
-            // That method of getting previous page works for SPA websites
-            if (this.activePage) {
-                return this.activePage;
-            }
-            // Checking if URL is supported by the browser (for example, IE11 does not support it)
-            if (typeof URL === 'function') {
-                // That method of getting previous page works for websites with page reloads
-                var referrer = getReferrer();
-                if (!referrer) {
-                    return null;
-                }
-                var host = location.host;
-                try {
-                    var url = new URL(referrer);
-                    var refHost = url.host, pathname = url.pathname;
-                    if (host !== refHost) {
-                        return null;
-                    }
-                    return pathname;
-                }
-                catch (_a) {
-                    return null;
-                }
-            }
-            return null;
-        };
         Lib.prototype.trackPage = function (pg, unique) {
             if (unique === void 0) { unique = false; }
             if (!this.pageData)
@@ -350,13 +322,12 @@
         };
         Lib.prototype.submitPageView = function (payload, unique, perf, evokeCallback) {
             var _a;
-            var prev = this.getPreviousPage();
             var privateData = {
                 pid: this.projectID,
                 perf: perf,
                 unique: unique,
             };
-            var pvPayload = __assign({ lc: getLocale(), tz: getTimezone(), ref: getReferrer(), so: getUTMSource(), me: getUTMMedium(), ca: getUTMCampaign(), te: getUTMTerm(), co: getUTMContent(), prev: prev }, payload);
+            var pvPayload = __assign({ lc: getLocale(), tz: getTimezone(), ref: getReferrer(), so: getUTMSource(), me: getUTMMedium(), ca: getUTMCampaign(), te: getUTMTerm(), co: getUTMContent() }, payload);
             if (evokeCallback && ((_a = this.pageViewsOptions) === null || _a === void 0 ? void 0 : _a.callback)) {
                 var callbackResult = this.pageViewsOptions.callback(pvPayload);
                 if (callbackResult === false) {
@@ -495,14 +466,14 @@
      *
      * @deprecated This function is deprecated and will be removed soon, please use the `pageview` instead.
      * @param pg Path of the page to track (this will be sent to the Swetrix API and displayed in the dashboard).
-     * @param prev Path of the previous page.
+     * @param _prev Path of the previous page (deprecated and ignored).
      * @param unique If set to `true`, only 1 event with the same ID will be saved per user session.
      * @returns void
      */
-    function trackPageview(pg, prev, unique) {
+    function trackPageview(pg, _prev, unique) {
         if (!exports.LIB_INSTANCE)
             return;
-        exports.LIB_INSTANCE.submitPageView({ pg: pg, prev: prev || null }, Boolean(unique), {});
+        exports.LIB_INSTANCE.submitPageView({ pg: pg }, Boolean(unique), {});
     }
     function pageview(options) {
         if (!exports.LIB_INSTANCE)

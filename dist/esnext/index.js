@@ -79,14 +79,14 @@ export function trackError(payload) {
  *
  * @deprecated This function is deprecated and will be removed soon, please use the `pageview` instead.
  * @param pg Path of the page to track (this will be sent to the Swetrix API and displayed in the dashboard).
- * @param prev Path of the previous page.
+ * @param _prev Path of the previous page (deprecated and ignored).
  * @param unique If set to `true`, only 1 event with the same ID will be saved per user session.
  * @returns void
  */
-export function trackPageview(pg, prev, unique) {
+export function trackPageview(pg, _prev, unique) {
     if (!LIB_INSTANCE)
         return;
-    LIB_INSTANCE.submitPageView({ pg, prev: prev || null }, Boolean(unique), {});
+    LIB_INSTANCE.submitPageView({ pg }, Boolean(unique), {});
 }
 export function pageview(options) {
     if (!LIB_INSTANCE)

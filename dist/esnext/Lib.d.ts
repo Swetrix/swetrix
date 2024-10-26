@@ -35,7 +35,6 @@ export interface IPageViewPayload {
     te: string | undefined;
     co: string | undefined;
     pg: string | null | undefined;
-    prev: string | null | undefined;
     /** Pageview-related metadata object with string values. */
     meta?: {
         [key: string]: string;
@@ -147,7 +146,6 @@ export declare class Lib {
     getPerformanceStats(): IPerfPayload | {};
     private heartbeat;
     private trackPathChange;
-    private getPreviousPage;
     private trackPage;
     submitPageView(payload: Partial<IPageViewPayload>, unique: boolean, perf: IPerfPayload | {}, evokeCallback?: boolean): void;
     private canTrack;

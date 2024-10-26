@@ -171,34 +171,6 @@ export class Lib {
             this.trackPage(newPath, false);
         }
     }
-    getPreviousPage() {
-        // Assuming that this function is called in trackPage and this.activePage is not overwritten by new value yet
-        // That method of getting previous page works for SPA websites
-        if (this.activePage) {
-            return this.activePage;
-        }
-        // Checking if URL is supported by the browser (for example, IE11 does not support it)
-        if (typeof URL === 'function') {
-            // That method of getting previous page works for websites with page reloads
-            const referrer = getReferrer();
-            if (!referrer) {
-                return null;
-            }
-            const { host } = location;
-            try {
-                const url = new URL(referrer);
-                const { host: refHost, pathname } = url;
-                if (host !== refHost) {
-                    return null;
-                }
-                return pathname;
-            }
-            catch {
-                return null;
-            }
-        }
-        return null;
-    }
     trackPage(pg, unique = false) {
         if (!this.pageData)
             return;
@@ -208,7 +180,6 @@ export class Lib {
         this.submitPageView({ pg }, unique, perf, true);
     }
     submitPageView(payload, unique, perf, evokeCallback) {
-        const prev = this.getPreviousPage();
         const privateData = {
             pid: this.projectID,
             perf,
@@ -223,7 +194,6 @@ export class Lib {
             ca: getUTMCampaign(),
             te: getUTMTerm(),
             co: getUTMContent(),
-            prev,
             ...payload,
         };
         if (evokeCallback && this.pageViewsOptions?.callback) {
