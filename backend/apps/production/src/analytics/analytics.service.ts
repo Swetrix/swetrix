@@ -687,7 +687,7 @@ export class AnalyticsService {
       )
       SELECT
         prev_page AS source,
-        pg AS target, 
+        pg AS target,
         count() AS value
       FROM page_sequences
       WHERE prev_page IS NOT NULL
