@@ -112,10 +112,9 @@ export const trackViews = () => {
   }
 
   Swetrix.trackViews({
-    callback: ({ pg, prev, ref }) => {
+    callback: ({ pg, ref }) => {
       const result = {
         pg,
-        prev,
         ref,
       }
 
@@ -124,7 +123,6 @@ export const trackViews = () => {
       }
 
       result.pg = getNewPath(pg)
-      result.prev = getNewPath(prev)
 
       if (checkIgnore(ref, REFS_TO_IGNORE)) {
         result.ref = undefined
