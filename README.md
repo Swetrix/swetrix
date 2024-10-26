@@ -82,9 +82,6 @@ export interface TrackPageViewOptions {
   /** A page to record the pageview event for (e.g. /home). All our scripts send the pg string with a slash (/) at the beginning, it's not a requirement but it's best to do the same so the data would be consistent when used together with our official scripts */
   pg?: string
 
-  /** Previous page user was on */
-  prev?: string
-
   /** A locale of the user (e.g. en-US or uk-UA) */
   lc?: string
 
