@@ -1041,7 +1041,6 @@ export class AnalyticsController {
       psid,
       logDTO.pid,
       logDTO.pg,
-      logDTO.prev,
       dv,
       br,
       brv,
@@ -1173,7 +1172,6 @@ export class AnalyticsController {
     const transformed = trafficTransformer(
       psid,
       logDTO.pid,
-      null,
       null,
       dv,
       br,

@@ -10,7 +10,6 @@ const CLICKHOUSE_INIT_QUERIES = [
     psid Nullable(UInt64),
     pid FixedString(12),
     pg Nullable(String),
-    prev Nullable(String),
     dv LowCardinality(Nullable(String)),
     br LowCardinality(Nullable(String)),
     brv Nullable(String),

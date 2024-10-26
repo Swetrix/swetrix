@@ -632,19 +632,30 @@ export class AnalyticsService {
     filtersQuery: string,
   ): Promise<IUserFlow> {
     const query = `
+      WITH page_sequences AS (
+        SELECT
+          psid,
+          pg,
+          created,
+          lagInFrame(pg) OVER (PARTITION BY psid ORDER BY created) AS prev_page
+        FROM analytics 
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND pg IS NOT NULL
+          ${filtersQuery}
+      )
       SELECT
-        pg AS source,
-        prev AS target,
+        prev_page AS source,
+        pg AS target,
         count() AS value
-      FROM analytics
-      WHERE
-        pid = {pid:FixedString(12)}
-        AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-        AND pg != prev
-        ${filtersQuery}
+      FROM page_sequences
+      WHERE prev_page IS NOT NULL
+        AND prev_page != pg
       GROUP BY
-        pg,
-        prev
+        source,
+        target
+      ORDER BY value DESC
     `
 
     const { data } = await clickhouse
@@ -652,7 +663,7 @@ export class AnalyticsService {
         query,
         query_params: params,
       })
-      .then(resultSet => resultSet.json<IUserFlowLink>())
+      .then(res => res.json<IUserFlowLink>())
 
     if (_isEmpty(data)) {
       const empty = { nodes: [], links: [] }
