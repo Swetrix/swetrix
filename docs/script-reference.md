@@ -90,7 +90,7 @@ swetrix.trackViews({
 | Name | Description | Default value |
 | --- | --- | --- |
 | unique | If true, only unique events will be saved. This param is useful when tracking single-page landing websites. | `false` |
-| callback | A callback used to edit / prevent sending pageviews.<br />It accepts an object with pageview event data as a parameter which has the following structure: <br />lc: string \| undefined<br />tz: string \| undefined<br />ref: string \| undefined<br />so: string \| undefined<br />me: string \| undefined<br />ca: string \| undefined<br />meta: object \| undefined ("object" should contain string values only)<br />pg: string \| null \| undefined<br />prev: string \| null \| undefined<br /><br />The callback is supposed to return the edited payload or `false` to prevent sending the pageview. If `true` is returned, the payload will be sent as-is. | `undefined` |
+| callback | A callback used to edit / prevent sending pageviews.<br />It accepts an object with pageview event data as a parameter which has the following structure: <br />lc: string \| undefined<br />tz: string \| undefined<br />ref: string \| undefined<br />so: string \| undefined<br />me: string \| undefined<br />ca: string \| undefined<br />meta: object \| undefined ("object" should contain string values only)<br />pg: string \| null \| undefined<br /><br />The callback is supposed to return the edited payload or `false` to prevent sending the pageview. If `true` is returned, the payload will be sent as-is. | `undefined` |
 | heartbeatOnBackground | Send Heartbeat requests when the website tab is not active in the browser.<br />Setting this to `true` means that users who opened your website in inactive browser tab or window will not be counted into users realtime statistics.<br />Setting this to true is usually useful for services like Spotify or Youtube. | `false` |
 | hash | Set to `true` to enable hash-based routing. For example if you have pages like `/#/path` or want to track pages like `/path#hash`. | `false` |
 | search | Set to `true` to enable search-based routing. For example if you have pages like `/path?search`. Although it's not recommended in most cases, you can set both `hash` and `search` to `true` at the same time, in which case the pageview event will be fired when either the hash or the search part of the URL changes (again, both the hash and the search are sent to the server). | `false` |
@@ -113,18 +113,17 @@ This function accepts an object argument, that contains the following properties
 
 Here are some examples of how to use this function:
 ```javascript
-// Track a page view with a path '/hello' and no previous page.
+// Track a page view with a path '/hello'.
 swetrix.pageview({
   payload: {
     pg: '/hello',
   }
 })
 
-// Track a page view with a path '/hello', the previous page '/world' and some metadata.
+// Track a page view with a path '/hello' and some metadata.
 swetrix.pageview({
   payload: {
     pg: '/hello',
-    prev: '/world',
     lc: 'de-DE',
     meta: {
       author: 'Andrii',

@@ -33,7 +33,6 @@ Must be set to `application/json` for all requests.
 | `pid` | `string` | `true` | A project ID to record the pageview event for |
 | `tz` | `string` | `false` | Visitor's timezone (used as a backup in case IP geolocation fails). I.e. if it's set to `Europe/Kiev` and IP geolocation fails, we will set the country of this entry to `Ukraine`) |
 | `pg` | `string` | `false` | A page to record the pageview event for (e.g. `/home`). All our scripts send the `pg` string with a slash (`/`) at the beginning, it's not a requirement but it's best to do the same so the data would be consistent when used together with our official scripts |
-| `prev` | `string` | `false` | Previous page user was on |
 | `lc` | `string` | `false` | A locale of the user (e.g. `en-US` or `uk-UA`) |
 | `ref` | `string` | `false` | A referrer URL (e.g. `https://example.com/`) |
 | `so` | `string` | `false` | A source of the pageview (e.g. `ref`, `source` or `utm_source` GET parameter) |
@@ -194,7 +193,6 @@ fetch('https://api.swetrix.com/log', {
     pid: 'YOUR_PROJECT_ID',
     lc: 'en-US',
     pg: '/',
-    prev: '/signup',
     tz: 'UTC',
     unique: false,
   }),
