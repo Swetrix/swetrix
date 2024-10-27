@@ -114,7 +114,7 @@ export class CaptchaService {
 
     try {
       await clickhouse.insert({
-        table: 'errors',
+        table: 'captcha',
         format: 'JSONEachRow',
         values: [transformed],
         clickhouse_settings: {
