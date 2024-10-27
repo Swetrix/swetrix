@@ -80,13 +80,13 @@ export const checkRateLimit = async (
   action: string,
   reqAmount: number = RATE_LIMIT_REQUESTS_AMOUNT,
   reqTimeout: number = RATE_LIMIT_TIMEOUT,
-): Promise<void> => {
+) => {
   if (isDevelopment) {
     return
   }
 
   const rlHash = getRateLimitHash(ip, action)
-  const rlCount: number = _toNumber(await redis.get(rlHash)) || 0
+  const rlCount = _toNumber(await redis.get(rlHash)) || 0
 
   if (rlCount >= reqAmount) {
     throw new HttpException('Too many requests, please try again later', 429)

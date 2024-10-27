@@ -28,7 +28,7 @@ import _isNull from 'lodash/isNull'
 import _isEmpty from 'lodash/isEmpty'
 import _includes from 'lodash/includes'
 import _isString from 'lodash/isString'
-import _omit from 'lodash/omit'
+import _pick from 'lodash/pick'
 import _round from 'lodash/round'
 import { v4 as uuidv4 } from 'uuid'
 import { HttpService } from '@nestjs/axios'
@@ -602,6 +602,8 @@ export class UserController {
           throw new BadRequestException('User with this email already exists')
         }
 
+        await checkRateLimit(user.id, 'change-email', 5)
+
         const token = await this.actionTokensService.createForUser(
           user,
           ActionTokenType.EMAIL_CHANGE,
@@ -610,6 +612,7 @@ export class UserController {
         const url = `${
           isDevelopment ? request.headers.origin : PRODUCTION_ORIGIN
         }/change-email/${token.id}`
+
         await this.mailerService.sendEmail(
           user.email,
           LetterTemplate.MailAddressChangeConfirmation,
@@ -704,44 +707,19 @@ export class UserController {
         })
       }
 
-      // delete internal properties from userDTO before updating it
-      // todo: use _pick instead of _omit
-      const userToUpdate = _omit(userDTO, [
-        'id',
-        'sharedProjects',
-        'isActive',
-        'evWarningSentOn',
-        'exportedAt',
-        'subID',
-        'subUpdateURL',
-        'subCancelURL',
-        'projects',
-        'actionTokens',
-        'roles',
-        'created',
-        'updated',
-        'planCode',
-        'billingFrequency',
-        'nextBillDate',
-        'twoFactorRecoveryCode',
-        'twoFactorAuthenticationSecret',
-        'isTwoFactorAuthenticationEnabled',
-        'isTelegramChatIdConfirmed',
-        'trialEndDate',
-        'cancellationEffectiveDate',
-        'trialReminderSent',
-        'googleId',
-        'registeredWithGoogle',
-        'githubId',
-        'registeredWithGithub',
-        'apiKey',
-        'emailRequests',
-        'refCode',
-        'referrerID',
-        'maxProjects',
-        'planExceedContactedAt',
-        'dashboardBlockReason',
-        'isAccountBillingSuspended',
+      const userToUpdate = _pick(userDTO, [
+        'nickname',
+        'password',
+        'reportFrequency',
+        'timezone',
+        'theme',
+        'showLiveVisitorsInTitle',
+        'paypalPaymentsEmail',
+        'slackWebhookUrl',
+        'discordWebhookUrl',
+        'telegramChatId',
+        'receiveLoginNotifications',
+        'timeFormat',
       ])
       await this.userService.update(id, userToUpdate)
 
@@ -749,7 +727,7 @@ export class UserController {
       if (shouldUpdatePassword) {
         // Send 'Password changed' email notification
         await this.mailerService.sendEmail(
-          userDTO.email,
+          user.email,
           LetterTemplate.PasswordChanged,
         )
 
