@@ -1,4 +1,11 @@
-import { Controller, Query, Get, Header, Res } from '@nestjs/common'
+import {
+  Controller,
+  Query,
+  Get,
+  Header,
+  Res,
+  BadRequestException,
+} from '@nestjs/common'
 import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import { Response } from 'express'
 
@@ -28,6 +35,10 @@ export class OgImageController {
     @Res() res: Response,
   ): Promise<any> {
     this.logger.log({ title }, 'GET /og-image')
+
+    if (!title || typeof title !== 'string') {
+      throw new BadRequestException('Title is required')
+    }
 
     const image = await this.ogImageService.getOgImage(title)
 
