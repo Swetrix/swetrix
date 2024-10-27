@@ -16,9 +16,9 @@ import { getIPFromHeaders } from '../common/utils'
 import { CaptchaService, DUMMY_PIDS } from './captcha.service'
 import { BotDetectionGuard } from '../common/guards/bot-detection.guard'
 import { BotDetection } from '../common/decorators/bot-detection.decorator'
-import { ManualDTO } from './dtos/manual.dto'
-import { ValidateDTO } from './dtos/validate.dto'
-import { GenerateDTO, DEFAULT_THEME } from './dtos/generate.dto'
+import { VerifyDto } from './dtos/manual.dto'
+import { ValidateDto } from './dtos/validate.dto'
+import { GenerateDto, DEFAULT_THEME } from './dtos/generate.dto'
 
 dayjs.extend(utc)
 
@@ -36,7 +36,7 @@ export class CaptchaController {
   @HttpCode(200)
   @UseGuards(BotDetectionGuard)
   @BotDetection()
-  async generateCaptcha(@Body() generateDTO: GenerateDTO): Promise<any> {
+  async generateCaptcha(@Body() generateDTO: GenerateDto): Promise<any> {
     this.logger.log({ generateDTO }, 'POST /captcha/generate')
 
     const { theme = DEFAULT_THEME, pid } = generateDTO
@@ -51,16 +51,16 @@ export class CaptchaController {
   @UseGuards(BotDetectionGuard)
   @BotDetection()
   async verify(
-    @Body() manualDTO: ManualDTO,
+    @Body() verifyDto: VerifyDto,
     @Headers() headers,
     @Ip() reqIP,
   ): Promise<any> {
-    this.logger.log({ manualDTO }, 'POST /captcha/verify-manual')
+    this.logger.log({ manualDTO: verifyDto }, 'POST /captcha/verify')
 
     const { 'user-agent': userAgent } = headers
     // todo: add origin checks
 
-    const { code, hash, pid } = manualDTO
+    const { code, hash, pid } = verifyDto
 
     await this.captchaService.validatePIDForCAPTCHA(pid)
 
@@ -89,7 +89,13 @@ export class CaptchaController {
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    await this.captchaService.logCaptchaPass(pid, userAgent, timestamp, ip)
+    try {
+      await this.captchaService.logCaptchaPass(pid, userAgent, timestamp, ip)
+    } catch (reason) {
+      this.logger.error(
+        `[CaptchaController -> verify] Failed to log captcha pass: ${reason}`,
+      )
+    }
 
     return {
       success: true,
@@ -102,7 +108,7 @@ export class CaptchaController {
 
   @Post('/validate')
   @HttpCode(200)
-  async validateToken(@Body() validateDTO: ValidateDTO): Promise<any> {
+  async validateToken(@Body() validateDTO: ValidateDto): Promise<any> {
     this.logger.log({ validateDTO }, 'POST /captcha/validate')
 
     const { token, secret } = validateDTO

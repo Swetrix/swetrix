@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsNotEmpty, IsString } from 'class-validator'
 
-export class ValidateDTO {
+export class ValidateDto {
   @ApiProperty({
     required: true,
     description: 'Catpcha pass token',

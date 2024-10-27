@@ -71,7 +71,7 @@ export class CaptchaService {
   ) {}
 
   // checks if captcha is enabled for pid
-  async _isCaptchaEnabledForPID(pid: string): Promise<boolean> {
+  async _isCaptchaEnabledForPID(pid: string) {
     const project = await this.projectService.getRedisProject(pid)
 
     if (!project) {
@@ -82,7 +82,7 @@ export class CaptchaService {
   }
 
   // validates pid, checks if captcha is enabled and throws an error otherwise
-  async validatePIDForCAPTCHA(pid: string): Promise<void> {
+  async validatePIDForCAPTCHA(pid: string) {
     if (isDummyPID(pid)) {
       return
     }
@@ -103,7 +103,7 @@ export class CaptchaService {
     userAgent: string,
     timestamp: number,
     ip: string,
-  ): Promise<void> {
+  ) {
     const ua = UAParser(userAgent)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
@@ -133,11 +133,7 @@ export class CaptchaService {
     )
   }
 
-  async generateToken(
-    pid: string,
-    captchaHash: string,
-    timestamp: number,
-  ): Promise<string> {
+  async generateToken(pid: string, captchaHash: string, timestamp: number) {
     if (isDummyPID(pid)) {
       return this.generateDummyToken()
     }
@@ -148,10 +144,7 @@ export class CaptchaService {
       throw new BadRequestException('Project not found')
     }
 
-    // @ts-ignore
-    const secretKey = project.captchaSecretKey
-
-    if (!secretKey) {
+    if (!project.captchaSecretKey) {
       throw new BadRequestException('No secret key generated for this project')
     }
 
@@ -161,10 +154,10 @@ export class CaptchaService {
       pid,
     }
 
-    return encryptString(JSON.stringify(token), secretKey)
+    return encryptString(JSON.stringify(token), project.captchaSecretKey)
   }
 
-  async validateToken(token: string, secretKey: string): Promise<object> {
+  async validateToken(token: string, secretKey: string) {
     let parsed
 
     if (secretKey === DUMMY_SECRETS.ALWAYS_FAIL) {
@@ -230,7 +223,7 @@ export class CaptchaService {
     }
   }
 
-  verifyCaptcha(text: string, captchaHash: string): boolean {
+  verifyCaptcha(text: string, captchaHash: string) {
     return captchaHash === this.hashCaptcha(text)
   }
 }

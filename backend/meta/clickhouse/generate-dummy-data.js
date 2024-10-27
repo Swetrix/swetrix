@@ -215,7 +215,6 @@ const generateCaptchaData = async (pid, rowCount, from, to) => {
       faker.helpers.arrayElement(BROWSERS), // br
       faker.helpers.arrayElement(OS), // os
       faker.location.countryCode(), // cc
-      faker.number.int({ min: 0, max: 2 }) === 0 ? 1 : 0, // manuallyPassed; 33% chance of manuallyPassed record
       _.split(
         faker.date
           .between({ from, to })

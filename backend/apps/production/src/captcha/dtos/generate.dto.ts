@@ -3,7 +3,7 @@ import { IsOptional, IsNotEmpty, IsString } from 'class-validator'
 
 export const DEFAULT_THEME = 'light'
 
-export class GenerateDTO {
+export class GenerateDto {
   @ApiProperty({
     example: 'aUn1quEid-3',
     required: true,

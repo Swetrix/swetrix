@@ -17,7 +17,6 @@ export const captchaTransformer = (
     br: br || null,
     os: os || null,
     cc: cc || null,
-    manuallyPassed: 1,
     created: dayjs.utc(timestamp).format('YYYY-MM-DD HH:mm:ss'),
   }
 }
