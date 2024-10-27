@@ -64,7 +64,7 @@ export class CaptchaController {
 
     await this.captchaService.validatePIDForCAPTCHA(pid)
 
-    const timestamp = dayjs.utc().unix()
+    const timestamp = dayjs.utc().unix() * 1000
 
     // For dummy (test) PIDs
     if (pid === DUMMY_PIDS.ALWAYS_PASS) {

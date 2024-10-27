@@ -171,7 +171,7 @@ export class CaptchaService {
     if (secretKey === DUMMY_SECRETS.ALWAYS_PASS) {
       return {
         hash: 'DUMMY_HASH00000111112222233333444445555566666777778888899999',
-        timestamp: dayjs().unix(),
+        timestamp: dayjs().unix() * 1000,
         pid: DUMMY_PIDS.ALWAYS_PASS,
       }
     }
@@ -183,7 +183,7 @@ export class CaptchaService {
       throw new BadRequestException('Could not decrypt token')
     }
 
-    if (dayjs().unix() - parsed.timestamp > CAPTCHA_TOKEN_LIFETIME) {
+    if (dayjs().unix() * 1000 - parsed.timestamp > CAPTCHA_TOKEN_LIFETIME) {
       throw new BadRequestException('Token expired')
     }
 

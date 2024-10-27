@@ -79,7 +79,7 @@ const SEND_WARNING_AT_PERC = 85
 
 const PROJECT_INVITE_EXPIRE = 48
 
-const CAPTCHA_TOKEN_LIFETIME = 300 // seconds (5 minutes).
+const CAPTCHA_TOKEN_LIFETIME = 300 * 1000 // milliseconds (5 minutes).
 const CAPTCHA_SECRET_KEY_LENGTH = 50
 
 // Funnels
