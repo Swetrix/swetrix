@@ -244,6 +244,15 @@ export const verifyEmail = ({ id }: { id: string }) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
+export const confirmChangeEmail = ({ id }: { id: string }) =>
+  api
+    .get(`v1/auth/change-email/confirm/${id}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
 export const verifyShare = ({ path, id }: { path: string; id: string }) =>
   api
     .get(`/project/${path}/${id}`)

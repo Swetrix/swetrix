@@ -245,7 +245,13 @@ const UserSettings = ({
       }
     }
 
-    updateUserProfileAsync(data, t('profileSettings.updated'), callback)
+    updateUserProfileAsync(data, t('profileSettings.updated'), (isSuccess: boolean) => {
+      if (isSuccess && data.email && data.email !== user.email) {
+        toast.success(t('profileSettings.emailChanged'))
+      }
+
+      callback(isSuccess)
+    })
   }
 
   useEffect(() => {

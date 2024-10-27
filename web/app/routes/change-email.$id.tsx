@@ -1,4 +1,4 @@
-import VerifyEmail from 'pages/Auth/VerifyEmail'
+import ChangeEmail from 'pages/Auth/ChangeEmail'
 import type { SitemapFunction } from 'remix-sitemap'
 import type { HeadersFunction } from '@remix-run/node'
 import { redirect } from '@remix-run/node'
@@ -23,5 +23,5 @@ export const sitemap: SitemapFunction = () => ({
 })
 
 export default function Index() {
-  return <VerifyEmail />
+  return <ChangeEmail />
 }

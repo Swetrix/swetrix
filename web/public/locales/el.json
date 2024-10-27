@@ -465,6 +465,7 @@
   },
   "profileSettings": {
     "logoutAll": "Log out from all devices",
+    "emailChanged": "To confirm the change of your email address, please click the link in the email we sent you to your new email address.",
     "account": "Account",
     "general": "Γενικές ρυθμίσεις",
     "update": "Ενημέρωση προφίλ",
