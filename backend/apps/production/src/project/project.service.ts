@@ -1320,8 +1320,14 @@ export class ProjectService {
     from: string,
     to: string,
   ): Promise<number> {
-    const query =
-      "SELECT count() FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String} AND unique='1'"
+    const query = `
+      SELECT
+        count(DISTINCT psid)
+      FROM analytics
+      WHERE
+        pid = {pid:FixedString(12)}
+        AND created BETWEEN {from:String} AND {to:String}
+    `
     const params = { pid, from, to }
     let count = 0
 

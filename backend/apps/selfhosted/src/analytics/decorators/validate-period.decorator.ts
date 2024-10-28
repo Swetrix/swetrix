@@ -24,7 +24,7 @@ export function ValidatePeriod(validationOptions?: ValidationOptions) {
       options: validationOptions,
       validator: {
         validate(value: any) {
-          if (value === undefined || value === '') {
+          if (value === undefined || value === '' || value === 'custom') {
             return true // Allow empty or undefined values
           }
           if (!_includes(VALID_PERIODS, value)) {

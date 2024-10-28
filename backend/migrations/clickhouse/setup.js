@@ -62,7 +62,15 @@ const databaselessQueriesRunner = async queries => {
   }
 }
 
-const queriesRunner = async (queries, log = true) => {
+/**
+ * @typedef {import('@clickhouse/client').CommandParams} CommandParams
+ *
+ * @param {string[]} queries
+ * @param {boolean} log
+ * @param {Omit<CommandParams, 'query'>} params
+ * @returns
+ */
+const queriesRunner = async (queries, log = true, params = {}) => {
   let failed = false
 
   for (const query of queries) {
@@ -74,6 +82,7 @@ const queriesRunner = async (queries, log = true) => {
       try {
         // eslint-disable-next-line no-await-in-loop
         await clickhouse.command({
+          ...params,
           query,
         })
 
