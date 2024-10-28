@@ -38,7 +38,7 @@ const generateInsertQueries = () => {
     SessionsAssigned AS (
         SELECT 
             a.*,
-            LAST_VALUE(IF(a.unique = 1, a.session_id, NULL)) OVER (
+            LAST_VALUE(a.session_id) OVER (
                 PARTITION BY toDate(a.created), a.br, a.os, a.lc, a.cc, a.rg, a.ct
                 ORDER BY a.created
                 RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
