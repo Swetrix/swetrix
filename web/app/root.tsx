@@ -14,6 +14,7 @@ import {
 } from '@remix-run/react'
 import { store } from 'redux/store'
 import { isBrowser, CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted, I18N_CACHE_BREAKER } from 'redux/constants'
+import { ExternalScripts } from 'remix-utils/external-scripts'
 import { getCookie, generateCookieString } from 'utils/cookie'
 import { ExclamationTriangleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 import { Provider } from 'react-redux'
@@ -191,6 +192,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     CDN_URL: process.env.CDN_URL,
     SELFHOSTED: process.env.SELFHOSTED,
     STAGING: process.env.STAGING,
+    PADDLE_CLIENT_SIDE_TOKEN: process.env.PADDLE_CLIENT_SIDE_TOKEN,
   }
 
   const init = storeThemeToCookie
@@ -267,6 +269,7 @@ export default function App() {
           <AppWrapper ssrTheme={theme} ssrAuthenticated={isAuthed} />
         </Provider>
         <ScrollRestoration />
+        <ExternalScripts />
         <Scripts />
         <LiveReload />
       </body>
