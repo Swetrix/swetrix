@@ -2082,9 +2082,7 @@ export class AnalyticsService {
     const baseQuery = `
       SELECT
         ${selector},
-        avgOrNull(session_durations.duration) as sdur,
-        count() as pageviews,
-        count(DISTINCT psid) as uniques
+        count() as pageviews
       FROM (
         SELECT
           pid,
@@ -2095,18 +2093,6 @@ export class AnalyticsService {
         WHERE created BETWEEN ${tzFromDate} AND ${tzToDate}
         ${filtersQuery}
       ) as subquery
-      
-      LEFT JOIN (
-        SELECT 
-          pid,
-          psid,
-          duration
-        FROM session_durations
-        WHERE pid = {pid:FixedString(12)}
-      ) as session_durations
-      ON subquery.pid = session_durations.pid
-      AND subquery.psid = session_durations.psid
-      
       GROUP BY ${groupBy}
       ORDER BY ${groupBy}
     `
@@ -2531,14 +2517,12 @@ export class AnalyticsService {
       })
       .then(resultSet => resultSet.json<TrafficCHResponse>())
 
-    const { visits, uniques, sdur } = this.extractChartData(data, xShifted)
+    const { visits } = this.extractChartData(data, xShifted)
 
     return Promise.resolve({
       chart: {
         x: xShifted,
         visits,
-        uniques,
-        sdur,
       },
     })
   }
