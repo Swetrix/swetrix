@@ -1,5 +1,7 @@
 const { queriesRunner, dbName } = require('./setup')
 
+const SESSION_ID_OFFSET = '586912831'
+
 // Generates insert queries from 2022-01-01 where psid is NULL.
 const generateInsertQueries = () => {
   const queries = []
@@ -19,7 +21,7 @@ const generateInsertQueries = () => {
       WITH SessionStarts AS (
         SELECT 
           *,
-          1000000 + dense_rank() OVER (
+          ${SESSION_ID_OFFSET} + dense_rank() OVER (
             PARTITION BY toDate(created)
             ORDER BY br, os, lc, cc, rg, ct, created
           ) AS session_id
@@ -88,7 +90,7 @@ const queries = [
   // Step 3: Swap Tables
   `RENAME TABLE ${dbName}.analytics TO ${dbName}.analytics_backup, ${dbName}.analytics_temp TO ${dbName}.analytics;`,
 
-  // Step 4: Drop Backup Table (Optional)
+  // Step 4: Drop Backup Table
   // `DROP TABLE ${dbName}.analytics_backup;`,
 
   // Step 5: Drop the Obsolete 'unique' Column
