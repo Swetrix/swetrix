@@ -78,23 +78,20 @@ const queries = [
   `DROP TABLE IF EXISTS ${dbName}.analytics_temp;`,
 
   // Step 1: Create Temporary Table
-  `CREATE TABLE ${dbName}.analytics_temp AS ${dbName}.analytics
-    ENGINE = MergeTree()
-    PARTITION BY toYYYYMM(created)
-    ORDER BY (pid, created);`,
+  `CREATE TABLE ${dbName}.analytics_temp AS ${dbName}.analytics;`,
 
   // Step 2: Backfill session identifiers
   ...generateInsertQueries(),
-  `INSERT INTO analytics_temp SELECT * FROM analytics WHERE isNotNull(psid);`,
+  `INSERT INTO ${dbName}.analytics_temp SELECT * FROM ${dbName}.analytics WHERE isNotNull(psid);`,
 
   // Step 3: Swap Tables
   `RENAME TABLE ${dbName}.analytics TO ${dbName}.analytics_backup, ${dbName}.analytics_temp TO ${dbName}.analytics;`,
 
   // Step 4: Drop Backup Table
-  // `DROP TABLE ${dbName}.analytics_backup;`,
+  `DROP TABLE ${dbName}.analytics_backup;`,
 
   // Step 5: Drop the Obsolete 'unique' Column
-  // `ALTER TABLE ${dbName}.analytics DROP COLUMN IF EXISTS unique;`
+  `ALTER TABLE ${dbName}.analytics DROP COLUMN IF EXISTS unique;`,
 ]
 
 queriesRunner(queries, true)

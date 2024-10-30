@@ -2100,7 +2100,7 @@ export class AnalyticsService {
     return _map(data, type)
   }
 
-  async generateParams2(
+  async generateParams(
     parsedFilters: Array<{ [key: string]: string }>,
     subQuery: string,
     customEVFilterApplied: boolean,
@@ -2149,33 +2149,38 @@ export class AnalyticsService {
       return `metrics_${col} AS (${baseQuery})`
     })
 
+    const EXTRA_FIELDS = {
+      rg: 'cc',
+      ct: 'cc',
+      brv: 'br',
+      osv: 'os',
+    }
+
     const query = `
       WITH ${withClauses.join(',\n')}
       SELECT 
         column_name,
         name,
         count,
-        cc
+        extra_field
       FROM (
         ${columns
           .map(col => {
-            const extraFields =
-              col === 'rg' || col === 'ct' ? ', cc' : ', NULL as cc'
+            const extraField = `${EXTRA_FIELDS[col] || 'NULL'} as extra_field`
+
             return `
-            SELECT 
-              '${col}' as column_name,
-              name,
-              count
-              ${extraFields}
-            FROM metrics_${col}
-          `
+              SELECT 
+                '${col}' as column_name,
+                name,
+                count,
+                ${extraField}
+              FROM metrics_${col}
+            `
           })
           .join('\nUNION ALL\n')}
       )
       ORDER BY column_name, count DESC
     `
-
-    console.log(query)
 
     const { data } = await clickhouse
       .query({
@@ -2184,74 +2189,21 @@ export class AnalyticsService {
       })
       .then(resultSet => resultSet.json<any>())
 
-    // Transform results back into the expected format
-    const params = {}
-    columns.forEach(col => {
-      params[col] = data.filter(row => row.column_name === col)
-    })
+    const params = Object.fromEntries(columns.map(col => [col, []]))
 
-    return params
-  }
+    const { length } = data
 
-  async generateParams(
-    parsedFilters: Array<{ [key: string]: string }>,
-    subQuery: string,
-    customEVFilterApplied: boolean,
-    paramsData: any,
-    type: 'traffic' | 'performance' | 'captcha' | 'errors' | 'uptime',
-    measure?: PerfMeasure,
-  ): Promise<any> {
-    const params = {}
+    for (let i = 0; i < length; ++i) {
+      const row = data[i]
 
-    // We need this to display all the pageview related data (e.g. country, browser) when user applies an inclusive filter on the Page column
-    const isPageInclusiveFilterSet = ['captcha', 'performance'].includes(type)
-      ? false
-      : !_isEmpty(
-          _find(
-            parsedFilters,
-            filter => filter.column === 'pg' && !filter.isExclusive,
-          ),
-        )
-
-    let columns = TRAFFIC_COLUMNS
-
-    if (type === 'captcha') {
-      columns = CAPTCHA_COLUMNS
+      params[row.column_name].push({
+        name: row.name,
+        count: row.count,
+        ...(row.extra_field
+          ? { [EXTRA_FIELDS[row.column_name]]: row.extra_field }
+          : {}),
+      })
     }
-
-    if (type === 'errors') {
-      columns = ERROR_COLUMNS
-    }
-
-    if (type === 'performance') {
-      columns = PERFORMANCE_COLUMNS
-    }
-
-    if (type === 'uptime') {
-      columns = UPTIME_COLUMNS
-    }
-
-    const paramsPromises = _map(columns, async col => {
-      const query = generateParamsQuery(
-        col,
-        subQuery,
-        customEVFilterApplied,
-        isPageInclusiveFilterSet,
-        type,
-        measure,
-      )
-
-      const { data } = await clickhouse
-        .query({
-          query,
-          query_params: paramsData.params,
-        })
-        .then(resultSet => resultSet.json())
-
-      params[col] = data
-    })
-
-    await Promise.all(paramsPromises)
 
     return params
   }
@@ -2782,17 +2734,12 @@ export class AnalyticsService {
     const promises = [
       // Getting params
       (async () => {
-        const id = Math.random().toString(16).substring(5, 16)
-        console.time(`${id} - groupParamsByTimeBucket`)
-
         params = await this.groupParamsByTimeBucket(
           subQuery,
           paramsData,
           customEVFilterApplied,
           parsedFilters,
         )
-
-        console.timeLog(`${id} - groupParamsByTimeBucket`)
 
         if (!_some(_values(params), val => !_isEmpty(val))) {
           throw new BadRequestException(
@@ -2803,9 +2750,6 @@ export class AnalyticsService {
 
       // Getting chart & average session duration data
       (async () => {
-        const id = Math.random().toString(16).substring(5, 16)
-        console.time(`${id} - groupChartByTimeBucket`)
-
         const groupedData = await this.groupChartByTimeBucket(
           timeBucket,
           from,
@@ -2816,8 +2760,6 @@ export class AnalyticsService {
           customEVFilterApplied,
           mode,
         )
-
-        console.timeLog(`${id} - groupChartByTimeBucket`)
 
         // @ts-ignore
         chart = groupedData.chart
@@ -2838,7 +2780,7 @@ export class AnalyticsService {
     customEVFilterApplied: boolean,
     parsedFilters: Array<{ [key: string]: string }>,
   ): Promise<object | void> {
-    return this.generateParams2(
+    return this.generateParams(
       parsedFilters,
       subQuery,
       customEVFilterApplied,
@@ -3068,7 +3010,7 @@ export class AnalyticsService {
     const promises = [
       // Getting params
       (async () => {
-        params = await this.generateParams2(
+        params = await this.generateParams(
           null,
           subQuery,
           false,
@@ -3138,7 +3080,7 @@ export class AnalyticsService {
     const promises = [
       // Params
       (async () => {
-        params = await this.generateParams2(
+        params = await this.generateParams(
           null,
           subQuery,
           false,
@@ -3381,7 +3323,7 @@ export class AnalyticsService {
     const promises = [
       // Getting params
       (async () => {
-        params = await this.generateParams2(
+        params = await this.generateParams(
           null,
           subQuery,
           false,

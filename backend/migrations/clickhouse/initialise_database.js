@@ -30,7 +30,6 @@ const CLICKHOUSE_INIT_QUERIES = [
       key String,
       value String
     ),
-    unique UInt8,
     created DateTime('UTC')
   )
   ENGINE = MergeTree()
