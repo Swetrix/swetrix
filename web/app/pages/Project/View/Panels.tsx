@@ -1644,13 +1644,13 @@ const Panel = ({
         <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
       ) : (
         _map(entriesToDisplay, (entry) => {
-          const { count, name: entryName, cc } = entry
+          const { count, name: entryName, ...rest } = entry
           const perc = _round((count / total) * 100, 2)
           const rowData = rowMapper(entry)
           const valueData = valueMapper(count)
 
           return (
-            <Fragment key={`${id}-${entryName}-${cc}`}>
+            <Fragment key={`${id}-${entryName}-${Object.values(rest).join('-')}`}>
               <div
                 className={cx('mt-[0.32rem] flex justify-between rounded first:mt-0 dark:text-gray-50', {
                   'group cursor-pointer hover:bg-gray-100 hover:dark:bg-slate-700': !hideFilters,
