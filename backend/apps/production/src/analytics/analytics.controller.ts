@@ -1339,7 +1339,6 @@ export class AnalyticsController {
       region,
       city,
       logDTO.meta,
-      Number(unique),
     )
 
     let perfTransformed = null
@@ -1433,7 +1432,7 @@ export class AnalyticsController {
 
     await this.analyticsService.validate(logDTO, origin, ip)
 
-    const [unique, psid] = await this.analyticsService.isUnique(
+    const [, psid] = await this.analyticsService.isUnique(
       logDTO.pid,
       userAgent,
       ip,
@@ -1471,7 +1470,6 @@ export class AnalyticsController {
       region,
       city,
       null,
-      Number(unique),
     )
 
     try {

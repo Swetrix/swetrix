@@ -2475,12 +2475,11 @@ export class AnalyticsService {
         ${selector},
         avgOrNull(session_durations.duration) as sdur,
         count() as pageviews,
-        sum(unique) as uniques
+        count(DISTINCT psid) as uniques
       FROM (
         SELECT
           pid,
           psid,
-          unique,
           ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
         FROM analytics
         PREWHERE pid = {pid:FixedString(12)}

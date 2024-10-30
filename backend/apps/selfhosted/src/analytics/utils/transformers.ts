@@ -43,7 +43,6 @@ export const trafficTransformer = (
   rg: string | null,
   ct: string | null,
   meta: Record<string, string> | null,
-  unique: number,
 ) => {
   return {
     psid,
@@ -65,7 +64,6 @@ export const trafficTransformer = (
     rg: rg || null,
     ct: ct || null,
     ...processMetaKV(meta),
-    unique,
     created: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
   }
 }

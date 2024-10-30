@@ -2089,7 +2089,6 @@ export class AnalyticsService {
         SELECT
           pid,
           psid,
-          unique,
           ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
         FROM analytics
         PREWHERE pid = {pid:FixedString(12)}
