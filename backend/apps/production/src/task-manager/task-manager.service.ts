@@ -1066,7 +1066,7 @@ export class TaskManagerService {
       const query =
         alert.queryMetric === QueryMetric.CUSTOM_EVENTS
           ? `SELECT count() FROM customEV WHERE pid='${project.id}' AND ev={ev:String} AND created >= now() - ${time}`
-          : `SELECT count() FROM analytics WHERE pid='${project.id}' AND unique = '${isUnique}' AND created >= now() - ${time}`
+          : `SELECT count(${isUnique ? 'DISTINCT psid' : '*'}) FROM analytics WHERE pid='${project.id}' AND created >= now() - ${time}`
 
       const params = {
         ev: alert.queryCustomEvent,

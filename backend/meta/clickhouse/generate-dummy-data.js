@@ -3,7 +3,7 @@ const { faker } = require('@faker-js/faker')
 const _ = require('lodash')
 const chalk = require('chalk')
 
-const { queriesRunner, dbName } = require('../../migrations/clickhouse/setup')
+const { clickhouse, dbName } = require('../../migrations/clickhouse/setup')
 
 const PID_SIZE = 12
 const DEFAULT_ROW_COUNT = 10
@@ -111,86 +111,76 @@ const CITIES = [
   'Kobe', // Japan
 ]
 
-const chunkArray = (arr, chunkSize = 1000) => {
-  const result = []
-  for (let i = 0; i < arr.length; i += chunkSize) {
-    result.push(arr.slice(i, i + chunkSize))
-  }
-  return result
-}
-
 const insertData = async (pid, rowCount, processedRecords, table) => {
-  const insertQueries = []
-
-  const recordChunks = chunkArray(processedRecords, 1000)
-
-  for (const chunk of recordChunks) {
-    const insertQuery = `INSERT INTO ${dbName}.${table} (*) VALUES ${chunk.join(
-      ',',
-    )}`
-    insertQueries.push(insertQuery)
-  }
-
-  if (recordChunks.length > 10) {
-    console.warn(
-      chalk.yellow(
-        '[WARNING] The number of records is big, so it might take longer to insert the records',
-      ),
-    )
-  }
-
   try {
-    const result = await queriesRunner(insertQueries, false)
-
-    if (!result) {
-      throw new Error()
-    }
+    await clickhouse.insert({
+      table,
+      format: 'JSONEachRow',
+      values: processedRecords,
+      clickhouse_settings: {
+        async_insert: 1,
+      },
+    })
 
     console.log(
       chalk.green(
         `[SUCCESS] Successfully inserted ${rowCount} records for ${pid}!`,
       ),
     )
-  } catch {
+  } catch (reason) {
     console.error(
       chalk.red('[ERROR] Error occured whilst inserting the records'),
     )
+    console.error(reason)
   }
 }
+
+const PSIDS = [
+  '123456789012',
+  '123456789013',
+  '123456789014',
+  '123456789015',
+  '123456789016',
+  '123456789017',
+  '123456789018',
+]
 
 const generateAnalyticsData = async (pid, rowCount, from, to) => {
   const records = []
 
   for (let i = 0; i < rowCount; ++i) {
-    const record = [
-      0, // psid
-      null, // sid
+    records.push({
+      psid:
+        Math.random() < 0.05
+          ? faker.helpers.arrayElement(PSIDS)
+          : Math.floor(Math.random() * 1000000000000000000),
       pid,
-      faker.helpers.arrayElement(PAGES), // pg
-      null, // prev
-      faker.helpers.arrayElement(DEVICES), // dv
-      faker.helpers.arrayElement(BROWSERS), // br
-      faker.helpers.arrayElement(OS), // os
-      _.toLower(faker.location.countryCode()), // lc
-      faker.helpers.arrayElement(URLS), // ref
-      faker.helpers.arrayElement(UTM_SOURCES), // so
-      faker.helpers.arrayElement(UTM_MEDIUMS), // me
-      faker.helpers.arrayElement(UTM_CAMPAIGNS), // ca
-      faker.location.countryCode(), // cc
-      faker.helpers.arrayElement(REGIONS), // rg
-      faker.helpers.arrayElement(CITIES), // ct
-      faker.number.int({ min: 0, max: 10000 }), // sdur
-      faker.number.int({ min: 0, max: 9 }) === 0 ? 1 : 0, // unique; 10% chance of unique record
-      _.split(
+      pg: faker.helpers.arrayElement(PAGES),
+      dv: faker.helpers.arrayElement(DEVICES),
+      br: faker.helpers.arrayElement(BROWSERS),
+      brv: null,
+      os: faker.helpers.arrayElement(OS),
+      osv: null,
+      lc: _.toLower(faker.location.countryCode()),
+      ref: faker.helpers.arrayElement(URLS),
+      so: faker.helpers.arrayElement(UTM_SOURCES),
+      me: faker.helpers.arrayElement(UTM_MEDIUMS),
+      ca: faker.helpers.arrayElement(UTM_CAMPAIGNS),
+      te: null,
+      co: null,
+      cc: faker.location.countryCode(),
+      rg: faker.helpers.arrayElement(REGIONS),
+      ct: faker.helpers.arrayElement(CITIES),
+      unique: faker.number.int({ min: 0, max: 9 }) === 0 ? 1 : 0,
+      created: _.split(
         faker.date
           .between({ from, to })
           .toISOString()
           .replace('T', ' ')
           .replace('Z', ''),
         '.',
-      )[0], // created; format the date string
-    ]
-    records.push(record)
+      )[0],
+    })
   }
 
   console.info(
@@ -199,32 +189,28 @@ const generateAnalyticsData = async (pid, rowCount, from, to) => {
     ),
   )
 
-  const processedRecords = records.map(
-    record => `(${record.map(item => `'${item}'`).join(',')})`,
-  )
-  insertData(pid, rowCount, processedRecords, 'analytics')
+  insertData(pid, rowCount, records, 'analytics')
 }
 
 const generateCaptchaData = async (pid, rowCount, from, to) => {
   const records = []
 
   for (let i = 0; i < rowCount; ++i) {
-    const record = [
+    records.push({
       pid,
-      faker.helpers.arrayElement(DEVICES), // dv
-      faker.helpers.arrayElement(BROWSERS), // br
-      faker.helpers.arrayElement(OS), // os
-      faker.location.countryCode(), // cc
-      _.split(
+      dv: faker.helpers.arrayElement(DEVICES),
+      br: faker.helpers.arrayElement(BROWSERS),
+      os: faker.helpers.arrayElement(OS),
+      cc: faker.location.countryCode(),
+      created: _.split(
         faker.date
           .between({ from, to })
           .toISOString()
           .replace('T', ' ')
           .replace('Z', ''),
         '.',
-      )[0], // created; format the date string
-    ]
-    records.push(record)
+      )[0],
+    })
   }
 
   console.info(
@@ -233,41 +219,42 @@ const generateCaptchaData = async (pid, rowCount, from, to) => {
     ),
   )
 
-  const processedRecords = records.map(
-    record => `(${record.map(item => `'${item}'`).join(',')})`,
-  )
-  insertData(pid, rowCount, processedRecords, 'captcha')
+  insertData(pid, rowCount, records, 'captcha')
 }
 
 const generateCustomEventsData = async (pid, rowCount, from, to) => {
   const records = []
 
   for (let i = 0; i < rowCount; ++i) {
-    const record = [
+    records.push({
       pid,
-      faker.helpers.arrayElement(CUSTOM_EVENTS), // ev
-      faker.helpers.arrayElement(PAGES), // pg
-      faker.helpers.arrayElement(DEVICES), // dv
-      faker.helpers.arrayElement(BROWSERS), // br
-      faker.helpers.arrayElement(OS), // os
-      _.toLower(faker.location.countryCode()), // lc
-      faker.helpers.arrayElement(URLS), // ref
-      faker.helpers.arrayElement(UTM_SOURCES), // so
-      faker.helpers.arrayElement(UTM_MEDIUMS), // me
-      faker.helpers.arrayElement(UTM_CAMPAIGNS), // ca
-      faker.location.countryCode(), // cc
-      faker.helpers.arrayElement(REGIONS), // rg
-      faker.helpers.arrayElement(CITIES), // ct
-      _.split(
+      ev: faker.helpers.arrayElement(CUSTOM_EVENTS),
+      pg: faker.helpers.arrayElement(PAGES),
+      dv: faker.helpers.arrayElement(DEVICES),
+      br: faker.helpers.arrayElement(BROWSERS),
+      brv: null,
+      os: faker.helpers.arrayElement(OS),
+      osv: null,
+      lc: _.toLower(faker.location.countryCode()),
+      ref: faker.helpers.arrayElement(URLS),
+      so: faker.helpers.arrayElement(UTM_SOURCES),
+      me: faker.helpers.arrayElement(UTM_MEDIUMS),
+      ca: faker.helpers.arrayElement(UTM_CAMPAIGNS),
+      te: null,
+      co: null,
+      cc: faker.location.countryCode(),
+      rg: faker.helpers.arrayElement(REGIONS),
+      ct: faker.helpers.arrayElement(CITIES),
+      unique: faker.number.int({ min: 0, max: 9 }) === 0 ? 1 : 0,
+      created: _.split(
         faker.date
           .between({ from, to })
           .toISOString()
           .replace('T', ' ')
           .replace('Z', ''),
         '.',
-      )[0], // created; format the date string
-    ]
-    records.push(record)
+      )[0],
+    })
   }
 
   console.info(
@@ -276,42 +263,39 @@ const generateCustomEventsData = async (pid, rowCount, from, to) => {
     ),
   )
 
-  const processedRecords = records.map(
-    record => `(${record.map(item => `'${item}'`).join(',')})`,
-  )
-  insertData(pid, rowCount, processedRecords, 'customEV')
+  insertData(pid, rowCount, records, 'customEV')
 }
 
 const generatePerformanceData = async (pid, rowCount, from, to) => {
   const records = []
 
   for (let i = 0; i < rowCount; ++i) {
-    const record = [
+    records.push({
       pid,
-      faker.helpers.arrayElement(PAGES), // pg
-      faker.helpers.arrayElement(DEVICES), // dv
-      faker.helpers.arrayElement(BROWSERS), // br
-      faker.location.countryCode(), // cc
-      faker.helpers.arrayElement(REGIONS), // rg
-      faker.helpers.arrayElement(CITIES), // ct
-      faker.number.int({ min: 0, max: 500 }), // dns
-      faker.number.int({ min: 0, max: 1000 }), // tls
-      faker.number.int({ min: 0, max: 100 }), // conn
-      faker.number.int({ min: 0, max: 500 }), // response
-      faker.number.int({ min: 0, max: 1500 }), // render
-      faker.number.int({ min: 300, max: 2000 }), // domLoad
-      faker.number.int({ min: 300, max: 2000 }), // pageLoad
-      faker.number.int({ min: 0, max: 500 }), // ttfb
-      _.split(
+      pg: faker.helpers.arrayElement(PAGES),
+      dv: faker.helpers.arrayElement(DEVICES),
+      br: faker.helpers.arrayElement(BROWSERS),
+      brv: null,
+      cc: faker.location.countryCode(),
+      rg: faker.helpers.arrayElement(REGIONS),
+      ct: faker.helpers.arrayElement(CITIES),
+      dns: faker.number.int({ min: 0, max: 500 }),
+      tls: faker.number.int({ min: 0, max: 1000 }),
+      conn: faker.number.int({ min: 0, max: 100 }),
+      response: faker.number.int({ min: 0, max: 500 }),
+      render: faker.number.int({ min: 0, max: 1500 }),
+      domLoad: faker.number.int({ min: 300, max: 2000 }),
+      pageLoad: faker.number.int({ min: 300, max: 2000 }),
+      ttfb: faker.number.int({ min: 0, max: 500 }),
+      created: _.split(
         faker.date
           .between({ from, to })
           .toISOString()
           .replace('T', ' ')
           .replace('Z', ''),
         '.',
-      )[0], // created; format the date string
-    ]
-    records.push(record)
+      )[0],
+    })
   }
 
   console.info(
@@ -320,10 +304,7 @@ const generatePerformanceData = async (pid, rowCount, from, to) => {
     ),
   )
 
-  const processedRecords = records.map(
-    record => `(${record.map(item => `'${item}'`).join(',')})`,
-  )
-  insertData(pid, rowCount, processedRecords, 'performance')
+  insertData(pid, rowCount, records, 'performance')
 }
 
 const main = () => {

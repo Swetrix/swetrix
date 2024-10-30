@@ -282,7 +282,7 @@ const generateParamsQuery = (
     return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
   }
 
-  return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL AND unique='1' GROUP BY ${columnsQuery}`
+  return `SELECT ${columnsQuery}, count(DISTINCT psid) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
 }
 
 export enum DataType {
@@ -1267,7 +1267,7 @@ export class AnalyticsService {
             WITH analytics_counts AS (
               SELECT
                 count(*) AS all,
-                countIf(unique=1) AS unique
+                count(DISTINCT psid) AS unique
               FROM analytics
               WHERE
                 pid = {pid:FixedString(12)}
@@ -1363,7 +1363,7 @@ export class AnalyticsService {
             SELECT
               1 AS sortOrder,
               count(*) AS all,
-              countIf(unique=1) AS unique
+              count(DISTINCT psid) AS unique
             FROM analytics
             WHERE
               pid = {pid:FixedString(12)}
@@ -1375,11 +1375,10 @@ export class AnalyticsService {
             FROM session_durations
             WHERE pid = {pid:FixedString(12)}
             AND psid IN (
-              SELECT psid
+              SELECT DISTINCT psid
               FROM analytics
               WHERE pid = {pid:FixedString(12)}
               AND created BETWEEN {periodFormatted:String} AND {now:String}
-              AND unique = 1
               ${filtersQuery}
             )
           )
@@ -1394,7 +1393,7 @@ export class AnalyticsService {
             SELECT
               2 AS sortOrder,
               count(*) AS all,
-              countIf(unique=1) AS unique
+              count(DISTINCT psid) AS unique
             FROM analytics
             WHERE
               pid = {pid:FixedString(12)}
@@ -1406,11 +1405,10 @@ export class AnalyticsService {
             FROM session_durations
             WHERE pid = {pid:FixedString(12)}
             AND psid IN (
-              SELECT psid
+              SELECT DISTINCT psid
               FROM analytics
               WHERE pid = {pid:FixedString(12)}
               AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}
-              AND unique = 1
               ${filtersQuery}
             )
           )
@@ -1734,32 +1732,30 @@ export class AnalyticsService {
     paramsData: any,
     type: 'traffic' | 'performance' | 'errors',
     measure?: PerfMeasure,
-  ): Promise<any> {
-    const params = {}
-
+  ) {
     // We need this to display all the pageview related data (e.g. country, browser) when user applies an inclusive filter on the Page column
-    const isPageInclusiveFilterSet =
-      type === 'performance'
-        ? false
-        : !_isEmpty(
-            _find(
-              parsedFilters,
-              filter => filter.column === 'pg' && !filter.isExclusive,
-            ),
-          )
+    const isPageInclusiveFilterSet = ['captcha', 'performance'].includes(type)
+      ? false
+      : !_isEmpty(
+          _find(
+            parsedFilters,
+            filter => filter.column === 'pg' && !filter.isExclusive,
+          ),
+        )
 
     let columns = TRAFFIC_COLUMNS
-
-    if (type === 'performance') {
-      columns = PERFORMANCE_COLUMNS
-    }
 
     if (type === 'errors') {
       columns = ERROR_COLUMNS
     }
 
-    const paramsPromises = _map(columns, async col => {
-      const query = generateParamsQuery(
+    if (type === 'performance') {
+      columns = PERFORMANCE_COLUMNS
+    }
+
+    // Build a single query combining all metrics
+    const withClauses = columns.map(col => {
+      const baseQuery = generateParamsQuery(
         col,
         subQuery,
         customEVFilterApplied,
@@ -1767,17 +1763,64 @@ export class AnalyticsService {
         type,
         measure,
       )
-      const { data } = await clickhouse
-        .query({
-          query,
-          query_params: paramsData.params,
-        })
-        .then(resultSet => resultSet.json())
-
-      params[col] = data
+      return `metrics_${col} AS (${baseQuery})`
     })
 
-    await Promise.all(paramsPromises)
+    const EXTRA_FIELDS = {
+      rg: 'cc',
+      ct: 'cc',
+      brv: 'br',
+      osv: 'os',
+    }
+
+    const query = `
+      WITH ${withClauses.join(',\n')}
+      SELECT 
+        column_name,
+        name,
+        count,
+        extra_field
+      FROM (
+        ${columns
+          .map(col => {
+            const extraField = `${EXTRA_FIELDS[col] || 'NULL'} as extra_field`
+
+            return `
+              SELECT 
+                '${col}' as column_name,
+                name,
+                count,
+                ${extraField}
+              FROM metrics_${col}
+            `
+          })
+          .join('\nUNION ALL\n')}
+      )
+      ORDER BY column_name, count DESC
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: paramsData.params,
+      })
+      .then(resultSet => resultSet.json<any>())
+
+    const params = Object.fromEntries(columns.map(col => [col, []]))
+
+    const { length } = data
+
+    for (let i = 0; i < length; ++i) {
+      const row = data[i]
+
+      params[row.column_name].push({
+        name: row.name,
+        count: row.count,
+        ...(row.extra_field
+          ? { [EXTRA_FIELDS[row.column_name]]: row.extra_field }
+          : {}),
+      })
+    }
 
     return params
   }
@@ -1988,12 +2031,11 @@ export class AnalyticsService {
         ${selector},
         avgOrNull(session_durations.duration) as sdur,
         count() as pageviews,
-        sum(unique) as uniques
+        count(DISTINCT psid) as uniques
       FROM (
         SELECT
           pid,
           psid,
-          unique,
           ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
         FROM analytics
         PREWHERE pid = {pid:FixedString(12)}
@@ -2001,7 +2043,7 @@ export class AnalyticsService {
         ${filtersQuery}
       ) as subquery
       LEFT JOIN (
-        SELECT 
+        SELECT
           pid,
           psid,
           duration
@@ -2042,7 +2084,7 @@ export class AnalyticsService {
         ${selector},
         avgOrNull(session_durations.duration) as sdur,
         count() as pageviews,
-        sum(unique) as uniques
+        count(DISTINCT psid) as uniques
       FROM (
         SELECT
           pid,
@@ -3129,7 +3171,7 @@ export class AnalyticsService {
       WHERE
         pid = {pid:FixedString(12)}
         AND psid = {psid:String}
-        AND unique = 1
+      ORDER BY created ASC
       LIMIT 1;
     `
 
