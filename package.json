@@ -15,6 +15,14 @@
     "start": "rollup -c -w",
     "tsc": "tsc -p tsconfig.esnext.json"
   },
+  "exports": {
+    ".": {
+      "import": "./dist/esnext/index.js",
+      "require": "./dist/swetrix.cjs.js",
+      "types": "./dist/esnext/index.d.ts",
+      "default": "./dist/swetrix.js"
+    }
+  },
   "keywords": [
     "swetrix",
     "analytics",
