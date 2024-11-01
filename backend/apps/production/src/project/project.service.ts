@@ -695,56 +695,79 @@ export class ProjectService {
         .format('YYYY-MM-DD HH:mm:ss')
       const monthEnd = dayjs.utc().endOf('month').format('YYYY-MM-DD HH:mm:ss')
 
-      const pids = await this.find({
+      const projects = await this.find({
         where: {
           admin: uid,
         },
         select: ['id'],
       })
 
-      if (_isEmpty(pids)) {
+      if (_isEmpty(projects)) {
         return 0
       }
 
-      const selector = `
-        WHERE pid IN (${_join(
-          _map(pids, el => `'${el.id}'`),
-          ',',
-        )})
-        AND created BETWEEN '${monthStart}' AND '${monthEnd}'
-      `
+      const CHUNK_SIZE = 5000
+      const pids = _map(projects, 'id')
+      let totalPageviews = 0
+      let totalCustomEvents = 0
+      let totalCaptcha = 0
+      let totalErrors = 0
 
-      const countEVQuery = `SELECT count() FROM analytics ${selector}`
-      const countCustomEVQuery = `SELECT count() FROM customEV ${selector}`
-      const countCaptchaQuery = `SELECT count() FROM captcha ${selector}`
-      const countErrorsQuery = `SELECT count() FROM errors ${selector}`
+      // Process PIDs in chunks
+      for (let i = 0; i < pids.length; i += CHUNK_SIZE) {
+        const pidChunk = pids.slice(i, i + CHUNK_SIZE)
+        const params = { pids: pidChunk }
 
-      const { data: pageviews } = await clickhouse
-        .query({
-          query: countEVQuery,
-        })
-        .then(resultSet => resultSet.json())
-      const { data: customEvents } = await clickhouse
-        .query({
-          query: countCustomEVQuery,
-        })
-        .then(resultSet => resultSet.json())
-      const { data: captcha } = await clickhouse
-        .query({
-          query: countCaptchaQuery,
-        })
-        .then(resultSet => resultSet.json())
-      const { data: errors } = await clickhouse
-        .query({
-          query: countErrorsQuery,
-        })
-        .then(resultSet => resultSet.json())
+        const selector = `
+          WHERE created BETWEEN '${monthStart}' AND '${monthEnd}'
+          AND pid IN ({pids:Array(FixedString(12))})
+        `
 
-      count =
-        pageviews[0]['count()'] +
-        customEvents[0]['count()'] +
-        captcha[0]['count()'] +
-        errors[0]['count()']
+        const countEVQuery = `SELECT count() FROM analytics ${selector}`
+        const countCustomEVQuery = `SELECT count() FROM customEV ${selector}`
+        const countCaptchaQuery = `SELECT count() FROM captcha ${selector}`
+        const countErrorsQuery = `SELECT count() FROM errors ${selector}`
+
+        const [
+          { data: pageviews },
+          { data: customEvents },
+          { data: captcha },
+          { data: errors },
+          // eslint-disable-next-line no-await-in-loop
+        ] = await Promise.all([
+          clickhouse
+            .query({
+              query: countEVQuery,
+              query_params: params,
+            })
+            .then(resultSet => resultSet.json()),
+          clickhouse
+            .query({
+              query: countCustomEVQuery,
+              query_params: params,
+            })
+            .then(resultSet => resultSet.json()),
+          clickhouse
+            .query({
+              query: countCaptchaQuery,
+              query_params: params,
+            })
+            .then(resultSet => resultSet.json()),
+          clickhouse
+            .query({
+              query: countErrorsQuery,
+              query_params: params,
+            })
+            .then(resultSet => resultSet.json()),
+        ])
+
+        totalPageviews += pageviews[0]['count()']
+        totalCustomEvents += customEvents[0]['count()']
+        totalCaptcha += captcha[0]['count()']
+        totalErrors += errors[0]['count()']
+      }
+
+      count = totalPageviews + totalCustomEvents + totalCaptcha + totalErrors
 
       await redis.set(countKey, `${count}`, 'EX', redisProjectCountCacheTimeout)
     } else {
@@ -771,64 +794,87 @@ export class ProjectService {
         .format('YYYY-MM-DD HH:mm:ss')
       const monthEnd = dayjs.utc().endOf('month').format('YYYY-MM-DD HH:mm:ss')
 
-      const pids = await this.find({
+      const projects = await this.find({
         where: {
           admin: uid,
         },
         select: ['id'],
       })
 
-      if (_isEmpty(pids)) {
+      if (_isEmpty(projects)) {
         return DEFAULT_USAGE_INFO
       }
 
-      const selector = `
-        WHERE pid IN (${_join(
-          _map(pids, el => `'${el.id}'`),
-          ',',
-        )})
+      const CHUNK_SIZE = 5000
+      const pids = _map(projects, 'id')
+      let totalTraffic = 0
+      let totalCustomEvents = 0
+      let totalCaptcha = 0
+      let totalErrors = 0
+
+      // Process PIDs in chunks
+      for (let i = 0; i < pids.length; i += CHUNK_SIZE) {
+        const pidChunk = pids.slice(i, i + CHUNK_SIZE)
+        const params = { pids: pidChunk }
+
+        const selector = `
+        WHERE pid IN ({pids:Array(FixedString(12))})
         AND created BETWEEN '${monthStart}' AND '${monthEnd}'
       `
 
-      const countEVQuery = `SELECT count() FROM analytics ${selector}`
-      const countCustomEVQuery = `SELECT count() FROM customEV ${selector}`
-      const countCaptchaQuery = `SELECT count() FROM captcha ${selector}`
-      const countErrorsQuery = `SELECT count() FROM errors ${selector}`
+        const countEVQuery = `SELECT count() FROM analytics ${selector}`
+        const countCustomEVQuery = `SELECT count() FROM customEV ${selector}`
+        const countCaptchaQuery = `SELECT count() FROM captcha ${selector}`
+        const countErrorsQuery = `SELECT count() FROM errors ${selector}`
 
-      const { data: rawTraffic } = await clickhouse
-        .query({
-          query: countEVQuery,
-        })
-        .then(resultSet => resultSet.json())
-      const { data: rawCustomEvents } = await clickhouse
-        .query({
-          query: countCustomEVQuery,
-        })
-        .then(resultSet => resultSet.json())
-      const { data: rawCaptcha } = await clickhouse
-        .query({
-          query: countCaptchaQuery,
-        })
-        .then(resultSet => resultSet.json())
-      const { data: rawErrors } = await clickhouse
-        .query({
-          query: countErrorsQuery,
-        })
-        .then(resultSet => resultSet.json())
+        const [
+          { data: rawTraffic },
+          { data: rawCustomEvents },
+          { data: rawCaptcha },
+          { data: rawErrors },
+          // eslint-disable-next-line no-await-in-loop
+        ] = await Promise.all([
+          clickhouse
+            .query({
+              query: countEVQuery,
+              query_params: params,
+            })
+            .then(resultSet => resultSet.json()),
+          clickhouse
+            .query({
+              query: countCustomEVQuery,
+              query_params: params,
+            })
+            .then(resultSet => resultSet.json()),
+          clickhouse
+            .query({
+              query: countCaptchaQuery,
+              query_params: params,
+            })
+            .then(resultSet => resultSet.json()),
+          clickhouse
+            .query({
+              query: countErrorsQuery,
+              query_params: params,
+            })
+            .then(resultSet => resultSet.json()),
+        ])
 
-      const traffic = rawTraffic[0]['count()']
-      const customEvents = rawCustomEvents[0]['count()']
-      const captcha = rawCaptcha[0]['count()']
-      const errors = rawErrors[0]['count()']
+        totalTraffic += rawTraffic[0]['count()']
+        totalCustomEvents += rawCustomEvents[0]['count()']
+        totalCaptcha += rawCaptcha[0]['count()']
+        totalErrors += rawErrors[0]['count()']
+      }
 
-      const total = traffic + customEvents + captcha + errors
+      const total =
+        totalTraffic + totalCustomEvents + totalCaptcha + totalErrors
 
       info = {
         total,
-        traffic,
-        customEvents,
-        captcha,
-        errors,
+        traffic: totalTraffic,
+        customEvents: totalCustomEvents,
+        captcha: totalCaptcha,
+        errors: totalErrors,
       }
 
       await redis.set(
