@@ -64,7 +64,7 @@ export const deleteProjectRedis = async (id: string) => {
 
 @Injectable()
 export class ProjectService {
-  async getRedisProject(pid: string): Promise<Project | null> {
+  async getRedisProject(pid: string) {
     const pidKey = getRedisProjectKey(pid)
     let project: string | Project = await redis.get(pidKey)
 
@@ -90,8 +90,7 @@ export class ProjectService {
       }
     }
 
-    // @ts-ignore
-    return project
+    return project as Project | null
   }
 
   allowedToView(

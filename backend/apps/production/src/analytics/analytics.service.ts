@@ -358,7 +358,7 @@ export class AnalyticsService {
   async checkBillingAccess(pid: string) {
     const project = await this.projectService.getRedisProject(pid)
 
-    if (project.admin.dashboardBlockReason) {
+    if (project.admin?.dashboardBlockReason) {
       throw new HttpException(
         'The account that owns this site is currently suspended, this is because of a billing issue. Please resolve the issue to continue.',
         HttpStatus.PAYMENT_REQUIRED,
@@ -3151,7 +3151,6 @@ export class AnalyticsService {
             query,
             query_params: paramsData.params,
           })
-          // TODO: TYPE
           .then(resultSet => resultSet.json<any>())
         const { avgResponseTime } = this.extractUptimeChartData(data, x)
 

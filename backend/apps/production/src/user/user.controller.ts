@@ -331,7 +331,7 @@ export class UserController {
           `DELETE FROM captcha WHERE pid IN (${pids})`,
         ]
 
-        await this.projectService.deleteMultiple(pids)
+        await this.projectService.deleteMultiple(user.projects.map(el => el.id))
 
         const promises = _map(queries, async query =>
           clickhouse.command({
@@ -384,7 +384,7 @@ export class UserController {
           `DELETE FROM error_statuses WHERE pid IN (${pids})`,
           `DELETE FROM captcha WHERE pid IN (${pids})`,
         ]
-        await this.projectService.deleteMultiple(pids)
+        await this.projectService.deleteMultiple(user.projects.map(el => el.id))
         const promises = _map(queries, async query =>
           clickhouse.command({
             query,

@@ -256,7 +256,7 @@ const EMAIL_REPORTS_MAP = {
     dayjsParams: [3, 'M'],
     analyticsParam: '3M',
   },
-}
+} as const
 
 @Injectable()
 export class TaskManagerService {
@@ -302,15 +302,8 @@ export class TaskManagerService {
   ): Promise<void> {
     const params = EMAIL_REPORTS_MAP[reportFrequency]
 
-    const users = await this.userService.find({
-      where: {
-        reportFrequency,
-        planCode: Not(PlanCode.none),
-        dashboardBlockReason: IsNull(),
-      },
-      relations: ['projects'],
-      select: ['id', 'email'],
-    })
+    const users = await this.userService.getReportUsers(reportFrequency)
+
     const now = dayjs.utc().format('DD.MM.YYYY')
     const timeAgo = dayjs
       .utc()
@@ -322,11 +315,6 @@ export class TaskManagerService {
 
     const promises = _map(users, async user => {
       const { id, email, projects } = user
-
-      // todo: move _size(projects) to query
-      if (_isEmpty(projects) || _isNull(projects) || _size(projects) > 50) {
-        return
-      }
 
       const unsubscribeUrl = this.generateUnsubscribeUrl(id, 'user-reports')
 

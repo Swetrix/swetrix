@@ -1673,7 +1673,6 @@ export class AnalyticsController {
         safeTimezone,
         diff,
       )
-    // TODO change to Uint64; filters.
     const subQuery =
       'FROM monitor_responses WHERE monitorId = {monitorId:UInt64} AND created BETWEEN {groupFrom:String} AND {groupTo:String}'
     const paramsData = {

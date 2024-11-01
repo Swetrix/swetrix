@@ -4,7 +4,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { In, Repository } from 'typeorm'
+import { FindManyOptions, In, IsNull, Not, Repository } from 'typeorm'
 import axios from 'axios'
 import CryptoJS from 'crypto-js'
 import dayjs from 'dayjs'
@@ -30,6 +30,7 @@ import { DeleteFeedback } from './entities/delete-feedback.entity'
 import { UserGoogleDTO } from './dto/user-google.dto'
 import { UserGithubDTO } from './dto/user-github.dto'
 import { EMAIL_ACTION_ENCRYPTION_KEY } from '../common/constants'
+import { ReportFrequency } from '../project/enums'
 
 const EUR = {
   symbol: '€',
@@ -189,8 +190,8 @@ export class UserService {
     })
   }
 
-  find(params: any): Promise<User[]> {
-    return this.usersRepository.find(params)
+  find(options: FindManyOptions<User>): Promise<User[]> {
+    return this.usersRepository.find(options)
   }
 
   findWhere(where: Record<string, unknown>): Promise<User[]> {
@@ -597,5 +598,36 @@ export class UserService {
 
   async findUserV2(id: string, select?: (keyof User)[]) {
     return this.usersRepository.findOne({ select, where: { id } })
+  }
+
+  async getReportUsers(
+    reportFrequency:
+      | ReportFrequency.WEEKLY
+      | ReportFrequency.MONTHLY
+      | ReportFrequency.QUARTERLY,
+  ) {
+    // First get the user IDs that match our criteria
+    const userIds = await this.usersRepository
+      .createQueryBuilder('user')
+      .leftJoin('user.projects', 'p')
+      .select('user.id')
+      .where({
+        reportFrequency,
+        planCode: Not(PlanCode.none),
+        dashboardBlockReason: IsNull(),
+      })
+      .groupBy('user.id')
+      .having('COUNT(p.id) BETWEEN 1 AND 50')
+      .getMany()
+
+    // Then fetch those users with their projects
+    return this.usersRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.projects', 'projects')
+      .select(['user.id', 'user.email', 'projects.id', 'projects.name'])
+      .where('user.id IN (:...userIds)', {
+        userIds: userIds.map(u => u.id),
+      })
+      .getMany()
   }
 }

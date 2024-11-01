@@ -76,15 +76,4 @@ export class AlertService {
   async delete(id: string): Promise<any> {
     return this.alertsReporsitory.delete(id)
   }
-
-  async deleteMultiple(ids: string[]): Promise<any> {
-    return (
-      this.alertsReporsitory
-        .createQueryBuilder()
-        .delete()
-        // TODO: !!! Enforce Prepared Statements and Parameterization
-        .where(`id IN (${ids})`)
-        .execute()
-    )
-  }
 }

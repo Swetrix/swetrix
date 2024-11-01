@@ -1129,7 +1129,6 @@ export class ProjectController {
         relations: ['share', 'share.user'],
       })
 
-      // todo: maybe the update project should be used here instead of delete?
       await deleteProjectRedis(pid)
       return processProjectUser(updatedProject)
     } catch (e) {
@@ -2196,7 +2195,6 @@ export class ProjectController {
     }
 
     this.projectService.allowedToView(project, userId, headers['x-password'])
-    // TODO add caching
 
     return this.projectService.sendPredictAiRequest(params.projectId)
   }

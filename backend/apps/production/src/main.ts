@@ -49,7 +49,6 @@ async function bootstrap() {
     res.header('Access-Control-Allow-Headers', 'Authorization, *')
 
     if (req.method === 'OPTIONS') {
-      // TODO: INVESTIGATE
       // eslint-disable-next-line @typescript-eslint/return-await
       return await res.sendStatus(204)
     }

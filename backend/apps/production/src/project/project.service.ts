@@ -314,35 +314,40 @@ export class ProjectService {
     let project: string | Project = await redis.get(pidKey)
 
     if (_isEmpty(project)) {
-      // todo: optimise the relations - select
-      // select only required columns
-      // https://stackoverflow.com/questions/59645009/how-to-return-only-some-columns-of-a-relations-with-typeorm
-      project = await this.findOne(pid, {
-        relations: ['admin'],
-        select: [
-          'origins',
-          'active',
-          'admin',
-          'public',
-          'ipBlacklist',
-          'botsProtectionLevel',
-          'captchaSecretKey',
-          'isCaptchaEnabled',
-          'passwordHash',
-          'isPasswordProtected',
-        ],
-      })
-      if (_isEmpty(project))
+      project = await this.projectsRepository
+        .createQueryBuilder('project')
+        .leftJoinAndSelect('project.admin', 'admin')
+        .select([
+          'project.origins',
+          'project.active',
+          'project.public',
+          'project.ipBlacklist',
+          'project.botsProtectionLevel',
+          'project.captchaSecretKey',
+          'project.isCaptchaEnabled',
+          'project.passwordHash',
+          'project.isPasswordProtected',
+          'admin.id',
+          'admin.roles',
+          'admin.dashboardBlockReason',
+          'admin.isAccountBillingSuspended',
+        ])
+        .where('project.id = :pid', { pid })
+        .getOne()
+
+      if (_isEmpty(project)) {
         throw new BadRequestException(
           'The provided Project ID (pid) is incorrect',
         )
+      }
 
-      const share = await this.findShare({
-        where: {
-          project: pid,
-        },
-        relations: ['user'],
-      })
+      const share = await this.projectShareRepository
+        .createQueryBuilder('share')
+        .leftJoinAndSelect('share.user', 'user')
+        .select(['share.role', 'user.id'])
+        .where('share.project = :pid', { pid })
+        .getMany()
+
       project = { ...project, share }
 
       await redis.set(
@@ -424,15 +429,12 @@ export class ProjectService {
     return this.projectsRepository.delete(id)
   }
 
-  async deleteMultiple(pids: string): Promise<any> {
-    return (
-      this.projectsRepository
-        .createQueryBuilder()
-        .delete()
-        // TODO: !!! Enforce Prepared Statements and Parameterization
-        .where(`id IN (${pids})`)
-        .execute()
-    )
+  async deleteMultiple(pids: string[]): Promise<any> {
+    return this.projectsRepository
+      .createQueryBuilder()
+      .delete()
+      .whereInIds(pids)
+      .execute()
   }
 
   async deleteMultipleShare(where: string): Promise<any> {
@@ -473,7 +475,10 @@ export class ProjectService {
     return this.projectsRepository.findOne(id, { relations })
   }
 
-  findOne(id: string, params: object = {}): Promise<Project | null> {
+  findOne(
+    id: string,
+    params: FindOneOptions<Project> = {},
+  ): Promise<Project | null> {
     return this.projectsRepository.findOne(id, params)
   }
 
@@ -1511,7 +1516,6 @@ export class ProjectService {
     monitorId: number,
     monitorHttpRequestDto: HttpRequestOptions,
   ) {
-    // TODO crete interface for that stuff
     await this.monitorQueue.add(
       'http-request',
       { ...monitorHttpRequestDto, monitorId },
