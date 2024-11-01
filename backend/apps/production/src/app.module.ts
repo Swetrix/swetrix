@@ -27,6 +27,7 @@ import { OgImageModule } from './og-image/og-image.module'
 import { IntegrationsModule } from './integrations/integrations.module'
 import { HealthModule } from './health/health.module'
 import { AppController } from './app.controller'
+import { isPrimaryClusterNode } from './common/utils'
 
 const modules = [
   ConfigModule.forRoot({
@@ -93,7 +94,9 @@ const modules = [
   imports: [
     ...modules,
     ...(process.env.ENABLE_INTEGRATIONS === 'true' ? [IntegrationsModule] : []),
-    ...(process.env.IS_MASTER_NODE === 'true' ? [TaskManagerModule] : []),
+    ...(process.env.IS_MASTER_NODE === 'true' && isPrimaryClusterNode()
+      ? [TaskManagerModule]
+      : []),
   ],
   controllers: [AppController],
 })
