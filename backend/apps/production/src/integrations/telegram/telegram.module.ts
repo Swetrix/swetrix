@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config'
 import { TelegrafModule } from 'nestjs-telegraf'
 import { session } from 'telegraf'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { TelegramController } from './telegram.controller'
 import { TelegramUpdate } from './telegram.update'
 import { StartScene } from './scene/start.scene'
 import { ProjectsScene } from './scene/projects.scene'
@@ -23,19 +22,6 @@ import { AnalyticsModule } from '../../analytics/analytics.module'
         token: configService.get<string>('TELEGRAM_BOT_TOKEN'),
         launchOptions: {
           dropPendingUpdates: false,
-          ...(process.env.NODE_ENV === 'production' && {
-            webhook: {
-              domain: configService.get<string>('TELEGRAM_WEBHOOK_DOMAIN'),
-              hookPath: configService.get<string>('TELEGRAM_WEBHOOK_PATH'),
-              // ipAddress: configService.get<string>(
-              //   'TELEGRAM_WEBHOOK_IP_ADDRESS',
-              // ),
-              maxConnections: 100,
-              secretToken: configService.get<string>(
-                'TELEGRAM_WEBHOOK_SECRET_TOKEN',
-              ),
-            },
-          }),
         },
         middlewares: [session()],
       }),
@@ -45,7 +31,6 @@ import { AnalyticsModule } from '../../analytics/analytics.module'
     ProjectModule,
     AnalyticsModule,
   ],
-  controllers: [TelegramController],
   providers: [
     TelegramUpdate,
     StartScene,

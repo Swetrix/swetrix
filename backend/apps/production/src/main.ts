@@ -5,7 +5,6 @@ import { ValidationPipe, VersioningType } from '@nestjs/common'
 import cookieParser from 'cookie-parser'
 import bodyParser from 'body-parser'
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
-import { getBotToken } from 'nestjs-telegraf'
 
 import { isDevelopment } from './common/constants'
 import { AppModule } from './app.module'
@@ -60,11 +59,6 @@ async function bootstrap() {
 
   app.use('/webhook/sns', bodyParser.raw())
   app.use('/webhook/sns', bodyParser.text())
-
-  if (process.env.NODE_ENV === 'production') {
-    const bot = app.get(getBotToken())
-    app.use(bot.webhookCallback(process.env.TELEGRAM_WEBHOOK_PATH))
-  }
 
   app.enableShutdownHooks()
 

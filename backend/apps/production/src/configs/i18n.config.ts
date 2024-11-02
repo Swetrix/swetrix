@@ -12,5 +12,6 @@ export const getI18nConfig = (): I18nAsyncOptions => ({
       path: join(__dirname, '..', 'i18n'),
       watch: configService.get('NODE_ENV') === 'development',
     },
+    logging: false,
   }),
 })
