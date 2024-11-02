@@ -5,9 +5,9 @@
   "main": "dist/swetrix.cjs.js",
   "module": "dist/swetrix.es5.js",
   "browser": "dist/swetrix.js",
-  "origbrowser": "dist/swetrix.orig.js",
   "esnext": "dist/esnext/index.js",
   "typings": "dist/esnext/index.d.ts",
+  "type": "module",
   "scripts": {
     "prebuild": "rimraf dist",
     "prepublish": "npm run build",
@@ -42,18 +42,18 @@
   },
   "homepage": "https://docs.swetrix.com",
   "dependencies": {
-    "@types/node": "^20.12.10",
-    "tslib": "^2.6.2"
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.1.1",
+    "@types/node": "^22.8.6",
+    "tslib": "^2.8.1"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^25.0.7",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "rimraf": "^4.4.1",
-    "rollup": "^2.79.1",
+    "@rollup/plugin-commonjs": "^28.0.1",
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "rimraf": "^6.0.1",
+    "rollup": "^4.24.3",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-sourcemaps": "^0.6.3",
-    "rollup-plugin-typescript2": "^0.36.0",
-    "rollup-plugin-uglify": "^6.0.4",
-    "typescript": "^5.4.5"
+    "typescript": "^5.6.3"
   }
 }
