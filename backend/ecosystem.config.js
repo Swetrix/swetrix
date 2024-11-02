@@ -4,7 +4,7 @@ module.exports = {
       name: 'Swetrix API',
       script: './dist/main.js',
       exec_mode: 'cluster',
-      instances: 2, // 'max',
+      instances: 'max',
     },
   ],
 }
