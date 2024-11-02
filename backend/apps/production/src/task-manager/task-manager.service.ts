@@ -115,6 +115,7 @@ const checkQueryCondition = (
 
 const CHUNK_SIZE = 5000
 
+// TODO: Count for other tables like captcha, errors, customEV too
 const generatePlanUsageQueryForUser = (
   user: User,
   getFromDate: (user?: User) => string,
