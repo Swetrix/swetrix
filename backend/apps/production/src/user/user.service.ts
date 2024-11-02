@@ -684,8 +684,7 @@ export class UserService {
       .select('user.id')
       .where({
         isActive: true,
-        // TODO: UNCOMMENT IT WHEN DEPLOYING
-        // planCode: Not(In([PlanCode.none, PlanCode.trial])),
+        planCode: Not(In([PlanCode.none, PlanCode.trial])),
         planExceedContactedAt: IsNull(),
         dashboardBlockReason: IsNull(),
         isAccountBillingSuspended: false,
