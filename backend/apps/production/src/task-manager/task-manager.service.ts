@@ -113,33 +113,56 @@ const checkQueryCondition = (
   return false
 }
 
-// TODO: Check custom events, CAPTCHA events and errors as well
-const generatePlanUsageQuery = (
-  users: User[],
-  getDate: (user?: User) => string,
+const CHUNK_SIZE = 5000
+
+const generatePlanUsageQueryForUser = (
+  user: User,
+  getFromDate: (user?: User) => string,
+  getToDate: (user?: User) => string,
 ): string => {
-  let query = ''
-
-  for (let i = 0; i < _size(users); ++i) {
-    const user = users[i]
-    const pidsStringified = _map(user.projects, p => `'${p.id}'`).join(',')
-
-    query += `SELECT '${
-      user.id
-    }' AS id, count(*) AS "count" FROM analytics WHERE pid IN (${pidsStringified}) and created > '${getDate(
-      user,
-    )}'`
-
-    if (_size(users) - 1 !== i) {
-      query += ' UNION ALL '
-    }
-  }
-
-  return query
+  return `
+    SELECT '${user.id}' AS id, count(*) AS "count" 
+    FROM analytics 
+    WHERE pid IN ({pids:Array(FixedString(12))}) 
+    AND created BETWEEN '${getFromDate(user)}' AND '${getToDate(user)}'
+  `
 }
 
-const filterUsersWithEmptyProjects = (users: User[]) => {
-  return _filter(users, (user: User) => !_isEmpty(user.projects))
+const executeChunkedQueries = async (
+  users: User[],
+  getFromDate: (user?: User) => string,
+  getToDate: (user?: User) => string,
+): Promise<CHPlanUsage[]> => {
+  const results: CHPlanUsage[] = []
+
+  for (const user of users) {
+    if (_isEmpty(user.projects)) {
+      continue
+    }
+
+    const pids = _map(user.projects, p => p.id)
+    let totalCount = 0
+
+    // Process project IDs in chunks
+    for (let i = 0; i < pids.length; i += CHUNK_SIZE) {
+      const pidChunk = pids.slice(i, i + CHUNK_SIZE)
+      const query = generatePlanUsageQueryForUser(user, getFromDate, getToDate)
+
+      // eslint-disable-next-line no-await-in-loop
+      const { data } = await clickhouse
+        .query({ query, query_params: { pids: pidChunk } })
+        .then(resultSet => resultSet.json<CHPlanUsage>())
+
+      totalCount += data[0]?.count || 0
+    }
+
+    results.push({
+      id: user.id,
+      count: totalCount,
+    })
+  }
+
+  return results
 }
 
 const getUsersThatExceedPlanUsage = (
@@ -299,7 +322,7 @@ export class TaskManagerService {
       | ReportFrequency.WEEKLY
       | ReportFrequency.MONTHLY
       | ReportFrequency.QUARTERLY,
-  ): Promise<void> {
+  ) {
     const params = EMAIL_REPORTS_MAP[reportFrequency]
 
     const users = await this.userService.getReportUsers(reportFrequency)
@@ -356,7 +379,7 @@ export class TaskManagerService {
       | ReportFrequency.WEEKLY
       | ReportFrequency.MONTHLY
       | ReportFrequency.QUARTERLY,
-  ): Promise<void> {
+  ) {
     const params = EMAIL_REPORTS_MAP[reportFrequency]
 
     const subscribers =
@@ -410,40 +433,24 @@ export class TaskManagerService {
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_5PM)
-  async lockDashboards(): Promise<void> {
-    const sevenDaysAgo = dayjs
-      .utc()
-      .subtract(7, 'days')
-      .format('YYYY-MM-DD HH:mm:ss')
-
-    const users = filterUsersWithEmptyProjects(
-      await this.userService.find({
-        where: {
-          isActive: true,
-          planCode: Not(In([PlanCode.none, PlanCode.trial])),
-          planExceedContactedAt: MoreThan(sevenDaysAgo),
-          dashboardBlockReason: IsNull(),
-          isAccountBillingSuspended: false,
-          cancellationEffectiveDate: IsNull(),
-        },
-        relations: ['projects'],
-        select: ['id', 'email', 'planCode'],
-      }),
-    )
+  async lockDashboards() {
+    const users = await this.userService.getUsersForLockDashboards()
 
     if (_isEmpty(users)) {
       return
     }
 
-    const monthlyUsageQuery = generatePlanUsageQuery(users, (user: User) =>
-      dayjs.utc(user.planExceedContactedAt).format('YYYY-MM-01'),
+    // This stuff is used solely to calculate whether the user has exceeded their limit > 30% or continuously for 2 months
+    const monthlyUsage = await executeChunkedQueries(
+      users,
+      user =>
+        dayjs.utc(user.planExceedContactedAt).format('YYYY-MM-01 00:00:00'),
+      user =>
+        dayjs
+          .utc(user.planExceedContactedAt)
+          .endOf('month')
+          .format('YYYY-MM-DD 23:59:59'),
     )
-
-    const { data: monthlyUsage } = await clickhouse
-      .query({
-        query: monthlyUsageQuery,
-      })
-      .then(resultSet => resultSet.json<CHPlanUsage>())
 
     const exceedingUserIds = getUserIDsThatExceedPlanUsage(users, monthlyUsage)
 
@@ -478,21 +485,8 @@ export class TaskManagerService {
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_4PM)
-  async checkPlanUsage(): Promise<void> {
-    const users = filterUsersWithEmptyProjects(
-      await this.userService.find({
-        where: {
-          isActive: true,
-          planCode: Not(In([PlanCode.none, PlanCode.trial])),
-          planExceedContactedAt: IsNull(),
-          dashboardBlockReason: IsNull(),
-          isAccountBillingSuspended: false,
-          cancellationEffectiveDate: IsNull(),
-        },
-        relations: ['projects'],
-        select: ['id', 'email', 'planCode'],
-      }),
-    )
+  async checkPlanUsage() {
+    const users = await this.userService.getUsersForPlanUsageCheck()
 
     if (_isEmpty(users)) {
       return
@@ -500,14 +494,17 @@ export class TaskManagerService {
 
     const planExceedContactedAt = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
 
-    const thisMonthDate = dayjs.utc().format('YYYY-MM-01')
-    const thisMonthQuery = generatePlanUsageQuery(users, () => thisMonthDate)
+    const thisMonthStart = dayjs.utc().format('YYYY-MM-01 00:00:00')
+    const thisMonthEnd = dayjs
+      .utc()
+      .endOf('month')
+      .format('YYYY-MM-DD 23:59:59')
 
-    const { data: thisMonthUsage } = await clickhouse
-      .query({
-        query: thisMonthQuery,
-      })
-      .then(resultSet => resultSet.json<CHPlanUsage>())
+    const thisMonthUsage = await executeChunkedQueries(
+      users,
+      () => thisMonthStart,
+      () => thisMonthEnd,
+    )
 
     const exceedingUsers = getUsersThatExceedPlanUsage(users, thisMonthUsage)
 
@@ -555,17 +552,21 @@ export class TaskManagerService {
       return
     }
 
-    const lastMonthDate = dayjs.utc().subtract(1, 'M').format('YYYY-MM-01')
-    const lastMonthQuery = generatePlanUsageQuery(
-      filteredUsers,
-      () => lastMonthDate,
-    )
+    const lastMonthStart = dayjs
+      .utc()
+      .subtract(1, 'M')
+      .format('YYYY-MM-01 00:00:00')
+    const lastMonthEnd = dayjs
+      .utc()
+      .subtract(1, 'M')
+      .endOf('month')
+      .format('YYYY-MM-DD 23:59:59')
 
-    const { data: lastMonthUsage } = await clickhouse
-      .query({
-        query: lastMonthQuery,
-      })
-      .then(resultSet => resultSet.json<CHPlanUsage>())
+    const lastMonthUsage = await executeChunkedQueries(
+      users,
+      () => lastMonthStart,
+      () => lastMonthEnd,
+    )
 
     const continuousExceedingUsers = getUsersThatExceedContinuously(users, [
       // the order should be kept like this
@@ -617,7 +618,7 @@ export class TaskManagerService {
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_9AM)
-  async checkLeftEvents(): Promise<void> {
+  async checkLeftEvents() {
     const thisMonth = dayjs.utc().format('YYYY-MM-01')
     const users = await this.userService.find({
       where: [
@@ -674,7 +675,7 @@ export class TaskManagerService {
   }
 
   @Cron(CronExpression.EVERY_2_HOURS)
-  async deleteOldShareInvitations(): Promise<void> {
+  async deleteOldShareInvitations() {
     const minDate = dayjs
       .utc()
       .subtract(PROJECT_INVITE_EXPIRE, 'h')
@@ -688,44 +689,44 @@ export class TaskManagerService {
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  async generateSessionSalt(): Promise<void> {
+  async generateSessionSalt() {
     const salt = await bcrypt.genSalt(10)
     await redis.set(REDIS_SESSION_SALT_KEY, salt, 'EX', 87000)
   }
 
   // EVERY SUNDAY AT 2:30 AM
   @Cron('30 02 * * 0')
-  async weeklyReportsHandler(): Promise<void> {
+  async weeklyReportsHandler() {
     await this.handleUserReports(ReportFrequency.WEEKLY)
   }
 
   // ON THE FIRST DAY OF EVERY MONTH AT 2 AM
   @Cron('0 02 1 * *')
-  async monthlyReportsHandler(): Promise<void> {
+  async monthlyReportsHandler() {
     await this.handleUserReports(ReportFrequency.MONTHLY)
   }
 
   @Cron(CronExpression.EVERY_QUARTER)
-  async quarterlyReportsHandler(): Promise<void> {
+  async quarterlyReportsHandler() {
     await this.handleUserReports(ReportFrequency.QUARTERLY)
   }
 
   // EMAIL REPORTS, BUT FOR MULTIPLE PROJECT SUBSCRIBERS
 
   @Cron(CronExpression.EVERY_QUARTER)
-  async handleQuarterlyReports(): Promise<void> {
+  async handleQuarterlyReports() {
     await this.handleSubscriberReports(ReportFrequency.QUARTERLY)
   }
 
   // ON THE FIRST DAY OF EVERY MONTH AT 3 AM
   @Cron('0 03 1 * *')
-  async handleMonthlyReports(): Promise<void> {
+  async handleMonthlyReports() {
     await this.handleSubscriberReports(ReportFrequency.MONTHLY)
   }
 
   // EVERY SUNDAY AT 3 AM
   @Cron('0 03 * * 0')
-  async handleWeeklyReports(): Promise<void> {
+  async handleWeeklyReports() {
     await this.handleSubscriberReports(ReportFrequency.WEEKLY)
   }
 
@@ -735,7 +736,7 @@ export class TaskManagerService {
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
-  async processSessionDuration(): Promise<void> {
+  async processSessionDuration() {
     const keys = await redis.keys('sd:*')
     const keysToDelete = []
     const toSave = []
@@ -775,7 +776,7 @@ export class TaskManagerService {
   }
 
   @Cron(CronExpression.EVERY_30_MINUTES)
-  async checkIsTelegramChatIdConfirmed(): Promise<void> {
+  async checkIsTelegramChatIdConfirmed() {
     const users = await this.userService.find({
       where: {
         isTelegramChatIdConfirmed: false,
@@ -799,7 +800,7 @@ export class TaskManagerService {
   }
 
   @Cron(CronExpression.EVERY_2_HOURS)
-  async cleanUpUnpaidSubUsers(): Promise<void> {
+  async cleanUpUnpaidSubUsers() {
     const users = await this.userService.find({
       where: {
         cancellationEffectiveDate: Not(IsNull()),
@@ -834,7 +835,7 @@ export class TaskManagerService {
   }
 
   @Cron(CronExpression.EVERY_4_HOURS)
-  async trialReminder(): Promise<void> {
+  async trialReminder() {
     const users = await this.userService.find({
       where: {
         planCode: PlanCode.trial,
@@ -869,7 +870,7 @@ export class TaskManagerService {
 
   // A temporary fix for a bug that was causing trialEndDate to be null
   @Cron(CronExpression.EVERY_10_MINUTES)
-  async fixAFuckingTrialEndDateNullBug(): Promise<void> {
+  async fixAFuckingTrialEndDateNullBug() {
     const users = await this.userService.find({
       where: {
         planCode: PlanCode.trial,
@@ -895,7 +896,7 @@ export class TaskManagerService {
   }
 
   @Cron(CronExpression.EVERY_2_HOURS)
-  async trialEnd(): Promise<void> {
+  async trialEnd() {
     const users = await this.userService.find({
       where: [
         {
@@ -929,7 +930,7 @@ export class TaskManagerService {
   }
 
   @Cron(CronExpression.EVERY_5_MINUTES)
-  async checkOnlineUsersAlerts(): Promise<void> {
+  async checkOnlineUsersAlerts() {
     const projects = await this.projectService.findWhere(
       [
         {
@@ -1015,7 +1016,7 @@ export class TaskManagerService {
   }
 
   @Cron(CronExpression.EVERY_5_MINUTES)
-  async checkMetricAlerts(): Promise<void> {
+  async checkMetricAlerts() {
     const projects = await this.projectService.findWhere(
       {
         admin: {
@@ -1199,7 +1200,7 @@ export class TaskManagerService {
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  async dropClickhouseLogs(): Promise<void> {
+  async dropClickhouseLogs() {
     const queries = [
       'DROP TABLE IF EXISTS system.asynchronous_metric_log',
       'DROP TABLE IF EXISTS system.metric_log',
@@ -1275,7 +1276,7 @@ export class TaskManagerService {
   // Some people stop using Swetrix but keep the account (and don't disable the email reports in settings), so why keep spamming them?
   // EVERY SUNDAY AT 2:00 AM (right before we send weekly reports)
   @Cron('0 02 * * 0')
-  async disableReportsForInactiveUsers(): Promise<void> {
+  async disableReportsForInactiveUsers() {
     const users = await this.userService.find({
       where: {
         reportFrequency: Not(ReportFrequency.NEVER),
@@ -1345,7 +1346,7 @@ export class TaskManagerService {
 
   // Delete old refresh tokens
   @Cron(CronExpression.EVERY_DAY_AT_1AM)
-  async deleteOldRefreshTokens(): Promise<void> {
+  async deleteOldRefreshTokens() {
     const minDate = dayjs
       .utc()
       .subtract(JWT_REFRESH_TOKEN_LIFETIME, 's')
@@ -1359,7 +1360,7 @@ export class TaskManagerService {
   }
 
   @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_NOON)
-  async payReferrers(): Promise<void> {
+  async payReferrers() {
     if (isDevelopment || !paypalClient) {
       return
     }
@@ -1466,7 +1467,7 @@ export class TaskManagerService {
   }
 
   @Cron(CronExpression.EVERY_WEEK)
-  async sendTrainingAiRequest(): Promise<void> {
+  async sendTrainingAiRequest() {
     try {
       await firstValueFrom(this.httpService.post('/run_training/', {}))
     } catch (error) {
@@ -1478,7 +1479,7 @@ export class TaskManagerService {
 
   // Every week at 01:00 AM
   @Cron('0 1 * * 0')
-  async sendPredictAiRequest(): Promise<void> {
+  async sendPredictAiRequest() {
     try {
       await firstValueFrom(this.httpService.post('/run_prediction/', {}))
     } catch (error) {

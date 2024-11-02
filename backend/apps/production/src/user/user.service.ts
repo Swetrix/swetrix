@@ -4,10 +4,11 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { FindManyOptions, In, IsNull, Not, Repository } from 'typeorm'
+import { FindManyOptions, In, IsNull, LessThan, Not, Repository } from 'typeorm'
 import axios from 'axios'
 import CryptoJS from 'crypto-js'
 import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
 import _omit from 'lodash/omit'
@@ -31,6 +32,8 @@ import { UserGoogleDTO } from './dto/user-google.dto'
 import { UserGithubDTO } from './dto/user-github.dto'
 import { EMAIL_ACTION_ENCRYPTION_KEY } from '../common/constants'
 import { ReportFrequency } from '../project/enums'
+
+dayjs.extend(utc)
 
 const EUR = {
   symbol: '€',
@@ -620,11 +623,87 @@ export class UserService {
       .having('COUNT(p.id) BETWEEN 1 AND 50')
       .getMany()
 
+    if (_isEmpty(userIds)) {
+      return []
+    }
+
     // Then fetch those users with their projects
     return this.usersRepository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.projects', 'projects')
       .select(['user.id', 'user.email', 'projects.id', 'projects.name'])
+      .where('user.id IN (:...userIds)', {
+        userIds: userIds.map(u => u.id),
+      })
+      .getMany()
+  }
+
+  async getUsersForLockDashboards() {
+    const sevenDaysAgo = dayjs
+      .utc()
+      .subtract(7, 'days')
+      .format('YYYY-MM-DD HH:mm:ss')
+
+    // First get the user IDs that have at least one project
+    const userIds = await this.usersRepository
+      .createQueryBuilder('user')
+      .leftJoin('user.projects', 'p')
+      .select('user.id')
+      .where({
+        isActive: true,
+        planCode: Not(In([PlanCode.none, PlanCode.trial])),
+        planExceedContactedAt: LessThan(sevenDaysAgo),
+        dashboardBlockReason: IsNull(),
+        isAccountBillingSuspended: false,
+        cancellationEffectiveDate: IsNull(),
+      })
+      .groupBy('user.id')
+      .having('COUNT(p.id) > 0')
+      .getMany()
+
+    if (_isEmpty(userIds)) {
+      return []
+    }
+
+    // Then fetch those users with their projects
+    return this.usersRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.projects', 'projects')
+      .select(['user.id', 'user.email', 'user.planCode', 'projects.id'])
+      .where('user.id IN (:...userIds)', {
+        userIds: userIds.map(u => u.id),
+      })
+      .getMany()
+  }
+
+  async getUsersForPlanUsageCheck() {
+    // First get the user IDs that have at least one project
+    const userIds = await this.usersRepository
+      .createQueryBuilder('user')
+      .leftJoin('user.projects', 'p')
+      .select('user.id')
+      .where({
+        isActive: true,
+        // TODO: UNCOMMENT IT WHEN DEPLOYING
+        // planCode: Not(In([PlanCode.none, PlanCode.trial])),
+        planExceedContactedAt: IsNull(),
+        dashboardBlockReason: IsNull(),
+        isAccountBillingSuspended: false,
+        cancellationEffectiveDate: IsNull(),
+      })
+      .groupBy('user.id')
+      .having('COUNT(p.id) > 0')
+      .getMany()
+
+    if (_isEmpty(userIds)) {
+      return []
+    }
+
+    // Then fetch those users with their projects
+    return this.usersRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.projects', 'projects')
+      .select(['user.id', 'user.email', 'user.planCode', 'projects.id'])
       .where('user.id IN (:...userIds)', {
         userIds: userIds.map(u => u.id),
       })
