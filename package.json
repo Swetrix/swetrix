@@ -1,13 +1,12 @@
 {
   "name": "swetrix",
-  "version": "3.5.1",
+  "version": "3.5.2",
   "description": "The JavaScript analytics client for Swetrix Analytics",
   "main": "dist/swetrix.cjs.js",
   "module": "dist/swetrix.es5.js",
   "browser": "dist/swetrix.js",
   "esnext": "dist/esnext/index.js",
   "typings": "dist/esnext/index.d.ts",
-  "type": "module",
   "scripts": {
     "prebuild": "rimraf dist",
     "prepublish": "npm run build",
