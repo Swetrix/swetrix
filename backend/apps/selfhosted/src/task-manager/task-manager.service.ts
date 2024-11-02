@@ -18,13 +18,13 @@ export class TaskManagerService {
   constructor(private readonly logger: AppLoggerService) {}
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  async generateSessionSalt(): Promise<void> {
+  async generateSessionSalt() {
     const salt = await bcrypt.genSalt(10)
     await redis.set(REDIS_SESSION_SALT_KEY, salt, 'EX', 87000)
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
-  async processSessionDuration(): Promise<void> {
+  async processSessionDuration() {
     const keys = await redis.keys('sd:*')
     const keysToDelete = []
     const toSave = []
@@ -64,7 +64,7 @@ export class TaskManagerService {
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  async dropClickhouseLogs(): Promise<void> {
+  async dropClickhouseLogs() {
     const queries = [
       'DROP TABLE IF EXISTS system.asynchronous_metric_log',
       'DROP TABLE IF EXISTS system.metric_log',
