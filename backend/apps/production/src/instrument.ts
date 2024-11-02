@@ -13,5 +13,7 @@ Sentry.init({
   ignoreErrors: sentryIgnoreErrors,
   enabled: process.env.SENTRY_ENABLED === 'true',
   // When we will have multiple slave nodes, their names should be set using the .env file
-  serverName: process.env.IS_MASTER_NODE ? 'Master node' : 'Slave node #1',
+  serverName: process.env.IS_PRIMARY_NODE
+    ? 'Primary node'
+    : 'Secondary node #1',
 })

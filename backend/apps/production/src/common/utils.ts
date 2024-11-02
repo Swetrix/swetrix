@@ -166,8 +166,8 @@ export const isPrimaryClusterNode = () => {
   return process.env.NODE_APP_INSTANCE === '0'
 }
 
-export const isMasterNode = () => {
-  return process.env.IS_MASTER_NODE === 'true'
+export const isPrimaryNode = () => {
+  return process.env.IS_PRIMARY_NODE === 'true'
 }
 
 const dummyLookup = () => ({

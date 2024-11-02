@@ -13,9 +13,9 @@ import { Message } from './entities/message.entity'
 import { UserModule } from '../../user/user.module'
 import { ProjectModule } from '../../project/project.module'
 import { AnalyticsModule } from '../../analytics/analytics.module'
-import { isMasterNode, isPrimaryClusterNode } from '../../common/utils'
+import { isPrimaryNode, isPrimaryClusterNode } from '../../common/utils'
 
-const shouldBotBeLaunched = isMasterNode() && isPrimaryClusterNode()
+const shouldBotBeLaunched = isPrimaryNode() && isPrimaryClusterNode()
 
 @Module({
   imports: [
