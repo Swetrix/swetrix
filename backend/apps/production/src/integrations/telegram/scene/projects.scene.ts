@@ -73,6 +73,7 @@ export class ProjectsScene {
     if (!project) {
       await context.reply('Project not found.')
       await context.scene.reenter()
+      return
     }
 
     const onlineCount = await this.analyticsService.getOnlineUserCount(
