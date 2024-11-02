@@ -44,6 +44,7 @@ services:
       - ENABLE_TELEGRAM_INTEGRATION=true
       - TELEGRAM_BOT_TOKEN=
       - SENTRY_ENABLED=true
+      - IS_PRIMARY_NODE=true
       - SENTRY_DSN=
     links:
       - 'redis'

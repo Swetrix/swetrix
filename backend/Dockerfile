@@ -21,7 +21,8 @@ ENV TZ=UTC \
     API_ORIGINS=\
     EMAIL=test@test.com \
     PASSWORD=12345678 \
-    API_KEY=
+    API_KEY=\
+    IS_PRIMARY_NODE=true
 RUN apk add --no-cache tzdata && cp /usr/share/zoneinfo/$TZ /etc/localtime
 WORKDIR /app
 COPY --from=build /build/package*.json ./

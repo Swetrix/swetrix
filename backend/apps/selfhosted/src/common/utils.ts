@@ -679,6 +679,10 @@ const updateProjectViewClickhouse = async (viewId: string, view: any) => {
 
 const millisecondsToSeconds = (milliseconds: number) => milliseconds / 1000
 
+export const isPrimaryNode = () => {
+  return process.env.IS_PRIMARY_NODE === 'true'
+}
+
 const getSelfhostedUUID = (): string => {
   try {
     return uuidv5(SELFHOSTED_EMAIL, UUIDV5_NAMESPACE)

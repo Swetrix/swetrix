@@ -12,8 +12,9 @@ import { PingModule } from './ping/ping.module'
 import { getI18nConfig } from './configs'
 import { AuthModule } from './auth/auth.module'
 import { AppController } from './app.controller'
+import { isPrimaryNode } from './common/utils'
 
-const imports = [
+const modules = [
   ConfigModule.forRoot({
     cache: true,
     envFilePath: '.env',
@@ -23,7 +24,6 @@ const imports = [
   I18nModule.forRootAsync(getI18nConfig()),
   ScheduleModule.forRoot(),
   NestjsFormDataModule.config({ isGlobal: true }),
-  TaskManagerModule,
   UserModule,
   ProjectModule,
   AnalyticsModule,
@@ -32,7 +32,7 @@ const imports = [
 ]
 
 @Module({
-  imports,
+  imports: [...modules, ...(isPrimaryNode() ? [TaskManagerModule] : [])],
   controllers: [AppController],
 })
 export class AppModule {}
