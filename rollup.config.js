@@ -3,7 +3,7 @@ import commonjs from '@rollup/plugin-commonjs'
 import sourceMaps from 'rollup-plugin-sourcemaps'
 import typescript from '@rollup/plugin-typescript'
 import terser from '@rollup/plugin-terser'
-import pkg from './package.json' assert { type: 'json' }
+import pkg from './package.json' with { type: 'json' }
 
 export default [
   {
