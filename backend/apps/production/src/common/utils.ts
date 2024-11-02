@@ -151,6 +151,25 @@ export const millisecondsToSeconds = (milliseconds: number) =>
 export const generateRandomString = (length: number): string =>
   randomstring.generate(length)
 
+/**
+ * This is used to determine if the current node is the primary node.
+ *
+ * NODE_APP_INSTANCE is set to 0 (or undefined if not running on PM2) on primary node, and any other number on secondary nodes.
+ *
+ * @see https://pm2.keymetrics.io/docs/usage/environment/#specific-environment-variables
+ */
+export const isPrimaryClusterNode = () => {
+  if (!process.env.NODE_APP_INSTANCE) {
+    return true
+  }
+
+  return process.env.NODE_APP_INSTANCE === '0'
+}
+
+export const isMasterNode = () => {
+  return process.env.IS_MASTER_NODE === 'true'
+}
+
 const dummyLookup = () => ({
   country: {
     names: {
