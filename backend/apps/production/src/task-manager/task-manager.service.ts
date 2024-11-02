@@ -730,11 +730,6 @@ export class TaskManagerService {
     await this.handleSubscriberReports(ReportFrequency.WEEKLY)
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
-  async getGeneralStats(): Promise<any> {
-    return this.analyticsService.getGeneralStats()
-  }
-
   @Cron(CronExpression.EVERY_MINUTE)
   async processSessionDuration() {
     const keys = await redis.keys('sd:*')
