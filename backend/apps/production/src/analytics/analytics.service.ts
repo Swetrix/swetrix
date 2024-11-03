@@ -3976,7 +3976,7 @@ export class AnalyticsService {
         SELECT eid, name, message, filename, toTimeZone(errors.created, '${safeTimezone}') AS created
         FROM errors
         WHERE pid = {pid:FixedString(12)}
-          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+          AND errors.created BETWEEN {groupFrom:String} AND {groupTo:String}
           ${filtersQuery}
       ) AS errors
       LEFT JOIN (
