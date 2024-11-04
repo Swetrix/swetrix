@@ -706,8 +706,16 @@ const getGeoDetails = (
   // TODO: Add support for DBIP for self-hosted
 
   // Stage 2: If Cloudflare is enabled, use their headers
-  if (isProxiedByCloudflare && headers?.['cf-ipcountry'] !== 'XX') {
-    return headers['cf-ipcountry'] || null
+  if (
+    isProxiedByCloudflare &&
+    headers['cf-ipcountry'] &&
+    headers?.['cf-ipcountry'] !== 'XX'
+  ) {
+    return {
+      country: headers['cf-ipcountry'],
+      city: null,
+      region: null,
+    }
   }
 
   // Stage 3: Using timezone based geo lookup as a fallback
