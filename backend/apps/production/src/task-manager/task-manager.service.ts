@@ -1195,29 +1195,6 @@ export class TaskManagerService {
     })
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  async dropClickhouseLogs() {
-    const queries = [
-      'DROP TABLE IF EXISTS system.asynchronous_metric_log',
-      'DROP TABLE IF EXISTS system.metric_log',
-      'DROP TABLE IF EXISTS system.query_log',
-      'DROP TABLE IF EXISTS system.trace_log',
-      'DROP TABLE IF EXISTS system.part_log',
-    ]
-
-    const promises = _map(queries, async query => {
-      await clickhouse.command({
-        query,
-      })
-    })
-
-    await Promise.allSettled(promises).catch(reason => {
-      this.logger.error(
-        `[CRON WORKER](dropClickhouseLogs) Error occured: ${reason}`,
-      )
-    })
-  }
-
   private async getAverageInstalls(
     extensions: Extension[],
     twoWeeksAgo?: Date,
