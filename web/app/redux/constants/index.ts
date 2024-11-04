@@ -196,7 +196,7 @@ export const captchaTbPeriodPairs = (
   },
 ]
 
-export const FILTERS_PERIOD_PAIRS = ['1h', '1d', '7d', '4w', '3M', '12M', 'custom', 'compare']
+export const FILTERS_PERIOD_PAIRS = ['1d', '7d', '4w', '3M', '12M', 'custom', 'compare']
 
 // TODO: add 'custom' later after an issue with it is resolved
 // currently if you select a date range - it will not display errors within the last day of the date range
