@@ -1,5 +1,8 @@
 import { NotFoundException, HttpException } from '@nestjs/common'
 import { xxh3 } from '@node-rs/xxhash'
+import path from 'node:path'
+import fs from 'node:fs'
+import { CityResponse, Reader } from 'maxmind'
 import timezones from 'countries-and-timezones'
 import { v5 as uuidv5 } from 'uuid'
 import _join from 'lodash/join'
@@ -25,6 +28,7 @@ import {
   UUIDV5_NAMESPACE,
   isDevelopment,
   isProxiedByCloudflare,
+  SELFHOSTED_GEOIP_DB_PATH,
 } from './constants'
 import { clickhouse } from './integrations/clickhouse'
 import { DEFAULT_TIMEZONE, TimeFormat } from '../user/entities/user.entity'
@@ -691,6 +695,54 @@ const getSelfhostedUUID = (): string => {
   }
 }
 
+const dummyLookup = () => ({
+  country: {
+    names: {
+      en: null,
+    },
+  },
+  city: {
+    names: {
+      en: null,
+    },
+  },
+  subdivisions: [
+    {
+      names: {
+        en: null,
+      },
+    },
+  ],
+})
+
+const DEVELOPMENT_GEOIP_DB_PATH = path.join(
+  __dirname,
+  '../../../..',
+  'dbip-city-lite.mmdb',
+)
+const PRODUCTION_GEOIP_DB_PATH = path.join(
+  __dirname,
+  '../..',
+  'dbip-city-lite.mmdb',
+)
+
+// eslint-disable-next-line
+let lookup: Reader<CityResponse> = {
+  // @ts-ignore
+  get: dummyLookup,
+}
+
+if (SELFHOSTED_GEOIP_DB_PATH && fs.existsSync(SELFHOSTED_GEOIP_DB_PATH)) {
+  const buffer = fs.readFileSync(SELFHOSTED_GEOIP_DB_PATH)
+  lookup = new Reader<CityResponse>(buffer)
+} else if (fs.existsSync(PRODUCTION_GEOIP_DB_PATH)) {
+  const buffer = fs.readFileSync(PRODUCTION_GEOIP_DB_PATH)
+  lookup = new Reader<CityResponse>(buffer)
+} else if (fs.existsSync(DEVELOPMENT_GEOIP_DB_PATH)) {
+  const buffer = fs.readFileSync(DEVELOPMENT_GEOIP_DB_PATH)
+  lookup = new Reader<CityResponse>(buffer)
+}
+
 interface IPGeoDetails {
   country: string | null
   region: string | null
@@ -703,7 +755,20 @@ const getGeoDetails = (
   headers?: unknown,
 ): IPGeoDetails => {
   // Stage 1: Using IP address based geo lookup
-  // TODO: Add support for DBIP for self-hosted
+  const data = lookup.get(ip)
+
+  const country = data?.country?.iso_code || null
+  // TODO: Add city overrides, for example, Colinton -> Edinburgh, etc.
+  const city = data?.city?.names?.en || null
+  const region = data?.subdivisions?.[0]?.names?.en || null
+
+  if (country) {
+    return {
+      country,
+      city,
+      region,
+    }
+  }
 
   // Stage 2: If Cloudflare is enabled, use their headers
   if (
