@@ -5,7 +5,7 @@ services:
     ports:
       - 6378:6379
   clickhouse:
-    image: clickhouse/clickhouse-server:23.8-alpine
+    image: clickhouse/clickhouse-server:24.8-alpine
     environment:
       CLICKHOUSE_DB: 'analytics'
     ports:
