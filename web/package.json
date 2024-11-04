@@ -161,5 +161,12 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "onFail": "error",
+      "version": ">=20"
+    }
   }
 }

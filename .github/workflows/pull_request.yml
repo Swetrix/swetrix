@@ -48,7 +48,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install Web Dependencies
-        run: yarn install
+        run: npm install --force
         working-directory: web
       - name: Web Lint Validation
         run: npm run lint
