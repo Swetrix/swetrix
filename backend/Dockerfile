@@ -3,9 +3,11 @@ FROM node:lts-alpine as build
 WORKDIR /build
 COPY . .
 RUN npm i -g pnpm && pnpm i && npm run deploy:selfhosted
+RUN node ./meta/dbip-sync.js
 
 #Stage 2
 FROM node:lts-alpine as run
+LABEL maintainer="swetrix.com <contact@swetrix.com>"
 ENV TZ=UTC \
     JWT_ACCESS_TOKEN_SECRET=jwt-access-token-secret \
     JWT_REFRESH_TOKEN_SECRET=jwt-refresh-token-secret \
@@ -22,11 +24,14 @@ ENV TZ=UTC \
     EMAIL=test@test.com \
     PASSWORD=12345678 \
     API_KEY=\
+    DEBUG_MODE=\
+    IP_GEOLOCATION_DB_PATH=\
     IS_PRIMARY_NODE=true
 RUN apk add --no-cache tzdata && cp /usr/share/zoneinfo/$TZ /etc/localtime
 WORKDIR /app
 COPY --from=build /build/package*.json ./
 COPY --from=build /build/dist/ ./dist/
+COPY --from=build /build/dbip-city-lite.mmdb ./dbip-city-lite.mmdb
 COPY --from=build /build/migrations ./migrations
 COPY --from=build /build/node_modules/ ./node_modules/
 CMD [ "npm", "run", "start:prod" ]
