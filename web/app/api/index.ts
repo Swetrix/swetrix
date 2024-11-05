@@ -447,7 +447,7 @@ export const getPropertyMetadata = (
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getProjectCompareData = (
+export const getTrafficCompareData = (
   pid: string,
   tb: string = 'hour',
   period: string = '3d',
@@ -463,6 +463,34 @@ export const getProjectCompareData = (
       `log/chart?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(
         filters,
       )}&from=${from}&to=${to}&timezone=${timezone}&mode=${mode}`,
+      {
+        headers: {
+          'x-password': password,
+        },
+      },
+    )
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getPerformanceCompareData = (
+  pid: string,
+  tb: string = 'hour',
+  period: string = '3d',
+  filters: any[] = [],
+  from: string = '',
+  to: string = '',
+  timezone: string = '',
+  measure: string = '',
+  password: string | undefined = '',
+) =>
+  api
+    .get(
+      `log/performance/chart?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(
+        filters,
+      )}&from=${from}&to=${to}&timezone=${timezone}&measure=${measure}`,
       {
         headers: {
           'x-password': password,

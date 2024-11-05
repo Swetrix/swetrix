@@ -141,7 +141,8 @@ import {
   getLiveVisitors,
   getPerfData,
   getProjectDataCustomEvents,
-  getProjectCompareData,
+  getTrafficCompareData,
+  getPerformanceCompareData,
   checkPassword,
   getCustomEventsMetadata,
   addFunnel,
@@ -1393,7 +1394,7 @@ const ViewProject = ({
             dataCompare = cache[id][keyCompare]
           } else {
             dataCompare =
-              (await getProjectCompareData(
+              (await getTrafficCompareData(
                 id,
                 timeBucket,
                 '',
@@ -1981,7 +1982,7 @@ const ViewProject = ({
           if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare])) {
             dataCompare = cache[id][keyCompare]
           } else {
-            dataCompare = await getPerfData(
+            dataCompare = await getPerformanceCompareData(
               id,
               timeBucket,
               '',
