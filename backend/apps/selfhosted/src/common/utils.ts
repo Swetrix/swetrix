@@ -749,11 +749,7 @@ interface IPGeoDetails {
   city: string | null
 }
 
-const getGeoDetails = (
-  ip: string,
-  tz?: string,
-  headers?: unknown,
-): IPGeoDetails => {
+const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
   // Stage 1: Using IP address based geo lookup
   const data = lookup.get(ip)
 
@@ -770,20 +766,7 @@ const getGeoDetails = (
     }
   }
 
-  // Stage 2: If Cloudflare is enabled, use their headers
-  if (
-    isProxiedByCloudflare &&
-    headers['cf-ipcountry'] &&
-    headers?.['cf-ipcountry'] !== 'XX'
-  ) {
-    return {
-      country: headers['cf-ipcountry'],
-      city: null,
-      region: null,
-    }
-  }
-
-  // Stage 3: Using timezone based geo lookup as a fallback
+  // Stage 2: Using timezone based geo lookup as a fallback
   const tzCountry = timezones.getCountryForTimezone(tz)?.id || null
 
   return {

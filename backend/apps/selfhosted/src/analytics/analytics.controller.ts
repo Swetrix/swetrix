@@ -933,7 +933,7 @@ export class AnalyticsController {
     const os = ua.os.name
     const osv = this.analyticsService.extractMajorMinorVersion(ua.os.version)
 
-    const { city, region, country } = getGeoDetails(ip, eventsDTO.tz, headers)
+    const { city, region, country } = getGeoDetails(ip, eventsDTO.tz)
 
     const [, psid] = await this.analyticsService.isUnique(
       eventsDTO.pid,
@@ -1026,7 +1026,7 @@ export class AnalyticsController {
       )
     }
 
-    const { city, region, country } = getGeoDetails(ip, logDTO.tz, headers)
+    const { city, region, country } = getGeoDetails(ip, logDTO.tz)
 
     const ua = UAParser(userAgent, extensions)
     const dv = ua.device.type || 'desktop'
@@ -1166,7 +1166,7 @@ export class AnalyticsController {
     const os = ua.os.name
     const osv = this.analyticsService.extractMajorMinorVersion(ua.os.version)
 
-    const { city, region, country } = getGeoDetails(ip, null, headers)
+    const { city, region, country } = getGeoDetails(ip, null)
 
     const transformed = trafficTransformer(
       psid,
@@ -1446,7 +1446,7 @@ export class AnalyticsController {
 
     await this.analyticsService.validate(errorDTO, origin, ip)
 
-    const { city, region, country } = getGeoDetails(ip, errorDTO.tz, headers)
+    const { city, region, country } = getGeoDetails(ip, errorDTO.tz)
 
     const ua = UAParser(userAgent, extensions)
     const dv = ua.device.type || 'desktop'
