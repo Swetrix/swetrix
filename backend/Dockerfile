@@ -1,34 +1,53 @@
-#Stage 1
+#Stage 1: Build
 FROM node:lts-alpine as build
 WORKDIR /build
+COPY package*.json .
+RUN npm install --force
 COPY . .
-RUN npm i -g pnpm && pnpm i && npm run deploy:selfhosted
+RUN npm run deploy:selfhosted
+RUN node ./meta/dbip-sync.js
 
-#Stage 2
+#Stage 2: Runtime
 FROM node:lts-alpine as run
+LABEL maintainer="swetrix.com <contact@swetrix.com>"
+
+# System and security configs
 ENV TZ=UTC \
+    NODE_ENV=production \
     JWT_ACCESS_TOKEN_SECRET=jwt-access-token-secret \
-    JWT_REFRESH_TOKEN_SECRET=jwt-refresh-token-secret \
-    REDIS_HOST=localhost \
-    REDIS_USER= \
-    REDIS_PASSWORD= \
+    JWT_REFRESH_TOKEN_SECRET=jwt-refresh-token-secret
+
+# Service connections
+ENV REDIS_HOST=localhost \
     REDIS_PORT=6379 \
     CLICKHOUSE_HOST=http://localhost \
     CLICKHOUSE_USER=default \
     CLICKHOUSE_PORT=8123 \
-    CLICKHOUSE_PASSWORD= \
-    CLICKHOUSE_DATABASE=analytics \
-    API_ORIGINS=\
-    EMAIL=test@test.com \
+    CLICKHOUSE_DATABASE=analytics
+
+# Application configs
+ENV EMAIL=test@test.com \
     PASSWORD=12345678 \
-    API_KEY=\
     IS_PRIMARY_NODE=true
-RUN apk add --no-cache tzdata && cp /usr/share/zoneinfo/$TZ /etc/localtime
+
+# Install and configure timezone
+RUN apk add --no-cache tzdata && \
+    cp /usr/share/zoneinfo/$TZ /etc/localtime && \
+    apk del tzdata
+
+# Use non-root numeric user
+USER 999
 WORKDIR /app
+
+# Copy files (updated to remove user:group ownership since we're not creating them)
 COPY --from=build /build/package*.json ./
 COPY --from=build /build/dist/ ./dist/
+COPY --from=build /build/dbip-city-lite.mmdb ./dbip-city-lite.mmdb
 COPY --from=build /build/migrations ./migrations
 COPY --from=build /build/node_modules/ ./node_modules/
-CMD [ "npm", "run", "start:prod" ]
+
 EXPOSE 5005
-HEALTHCHECK CMD wget -nv -t1 --spider 'http://localhost:5005/ping' || exit 1
+HEALTHCHECK --interval=30s --timeout=5s \
+    CMD wget -nv -t1 --spider 'http://localhost:5005/ping' || exit 1
+
+CMD [ "npm", "run", "start:prod" ]
