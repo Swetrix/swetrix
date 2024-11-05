@@ -104,6 +104,10 @@
     "uuid": "^10.0.0",
     "validator": "^13.12.0"
   },
+  "optionalDependencies": {
+    "@node-rs/xxhash-linux-arm64-musl": "^1.7.5",
+    "@node-rs/xxhash-linux-x64-musl": "^1.7.5"
+  },
   "devDependencies": {
     "@nestjs/cli": "^10.4.5",
     "@nestjs/testing": "^10.4.4",
