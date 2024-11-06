@@ -520,6 +520,7 @@
     "2faDisableHint": "To disable two-factor authentication, please enter your 6-digit code or one of your recovery codes below.",
     "apiKey": "API Key",
     "noApiKey": "You haven't created any API keys yet.",
+    "selfhostedNoApiKey": "You haven't created any API keys yet. You can do this in your docker compose file by modifying the API_KEY environment variable.",
     "apiKeyWarning": "Treat your API Key like a password and keep it secret. Never hardcode it into your programs, or share it with anyone.",
     "addApiKeyBtn": "Generate API Key",
     "deleteApiKeyBtn": "Delete API Key",

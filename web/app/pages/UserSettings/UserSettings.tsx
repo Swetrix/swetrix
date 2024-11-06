@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import React, { useState, useEffect, memo, useRef, useMemo } from 'react'
+import React, { useState, useEffect, memo, useMemo } from 'react'
 import type i18next from 'i18next'
 import { useNavigate } from '@remix-run/react'
 import { ClientOnly } from 'remix-utils/client-only'
@@ -17,7 +17,6 @@ import {
   ExclamationTriangleIcon,
   ArrowDownTrayIcon,
   CurrencyDollarIcon,
-  ClipboardDocumentIcon,
   ChevronDownIcon,
   UserIcon,
   ChatBubbleLeftEllipsisIcon,
@@ -183,29 +182,26 @@ const UserSettings = ({
     repeat: '',
     timeFormat: user.timeFormat || TimeFormat['12-hour'],
   })
-  const [showPasswordFields, setShowPasswordFields] = useState<boolean>(false)
+  const [showPasswordFields, setShowPasswordFields] = useState(false)
   const [timezone, setTimezone] = useState<string>(user.timezone || DEFAULT_TIMEZONE)
-  const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState<boolean>(false)
-  const [isPasswordChangeModalOpened, setIsPasswordChangeModalOpened] = useState<boolean>(false)
-  const [timezoneChanged, setTimezoneChanged] = useState<boolean>(false)
+  const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
+  const [isPasswordChangeModalOpened, setIsPasswordChangeModalOpened] = useState(false)
+  const [timezoneChanged, setTimezoneChanged] = useState(false)
   const [reportFrequency, setReportFrequency] = useState<string>(user.reportFrequency)
-  const [formPresetted, setFormPresetted] = useState<boolean>(false)
-  const [validated, setValidated] = useState<boolean>(false)
+  const [formPresetted, setFormPresetted] = useState(false)
+  const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
     [key: string]: string
   }>({})
-  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
-  const [showModal, setShowModal] = useState<boolean>(false)
-  const [showAPIDeleteModal, setShowAPIDeleteModal] = useState<boolean>(false)
-  const [showExportModal, setShowExportModal] = useState<boolean>(false)
+  const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [showModal, setShowModal] = useState(false)
+  const [showAPIDeleteModal, setShowAPIDeleteModal] = useState(false)
+  const [showExportModal, setShowExportModal] = useState(false)
   const [error, setError] = useState<null | string>(null)
-  const [copied, setCopied] = useState<boolean>(false)
   const translatedFrequencies: string[] = _map(reportFrequencies, (key) => t(`profileSettings.${key}`)) // useMemo(_map(reportFrequencies, (key) => t(`profileSettings.${key}`)), [t])
   const translatedTimeFormat: string[] = _map(TimeFormat, (key) => t(`profileSettings.${key}`)) // useMemo(_map(TimeFormat, (key) => t(`profileSettings.${key}`)), [t])
-  const [settingUpdating, setSettingUpdating] = useState<boolean>(false)
+  const [settingUpdating, setSettingUpdating] = useState(false)
   const [deletionFeedback, setDeletionFeedback] = useState<string>('')
-
-  const copyTimerRef = useRef(null)
 
   const tabs = getTabs(t)
   const activeTabLabel = useMemo(() => _find(tabs, (tab) => tab.id === activeTab)?.label, [tabs, activeTab])
@@ -257,13 +253,6 @@ const UserSettings = ({
   useEffect(() => {
     validate()
   }, [form]) // eslint-disable-line
-
-  useEffect(() => {
-    return () => {
-      // @ts-ignore
-      clearTimeout(copyTimerRef.current)
-    }
-  }, [])
 
   useEffect(() => {
     if (!loading && !formPresetted) {
@@ -409,17 +398,6 @@ const UserSettings = ({
     }
 
     return null
-  }
-
-  const setToClipboard = (value: string) => {
-    if (!copied) {
-      navigator.clipboard.writeText(value)
-      setCopied(true)
-      // @ts-ignore
-      copyTimerRef.current = setTimeout(() => {
-        setCopied(false)
-      }, 2000)
-    }
   }
 
   const _onDelete = () => {
@@ -593,7 +571,36 @@ const UserSettings = ({
                     error={beenSubmitted ? errors.email : null}
                     disabled={isSelfhosted}
                   />
-                  {!isSelfhosted && (
+                  {isSelfhosted ? (
+                    <>
+                      <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+
+                      {/* API access setup */}
+                      <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
+                        {t('profileSettings.apiKey')}
+                      </h3>
+                      {user.apiKey ? (
+                        <>
+                          <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
+                            {t('profileSettings.apiKeyWarning')}
+                          </p>
+                          <div className='grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
+                            <Input
+                              label={t('profileSettings.apiKey')}
+                              name='apiKey'
+                              className='mt-4'
+                              value={user.apiKey}
+                              disabled
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
+                          {t('profileSettings.selfhostedNoApiKey')}
+                        </p>
+                      )}
+                    </>
+                  ) : (
                     <>
                       <span
                         onClick={toggleShowPasswordFields}
@@ -634,10 +641,7 @@ const UserSettings = ({
                       <Button className='mt-4' type='submit' primary large>
                         {t('profileSettings.update')}
                       </Button>
-                    </>
-                  )}
-                  {!isSelfhosted && (
-                    <>
+
                       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
 
                       {/* API access setup */}
@@ -649,38 +653,14 @@ const UserSettings = ({
                           <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
                             {t('profileSettings.apiKeyWarning')}
                           </p>
-                          <p className='mt-4 max-w-prose text-base text-gray-900 dark:text-gray-50'>
-                            {t('profileSettings.apiKey')}
-                          </p>
                           <div className='grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
-                            <div className='group relative'>
-                              <Input
-                                name='apiKey'
-                                className='pr-9'
-                                value={user.apiKey}
-                                onChange={handleInput}
-                                disabled
-                              />
-                              <div className='absolute right-2 top-3'>
-                                <div className='group relative'>
-                                  <Button
-                                    type='button'
-                                    onClick={() => setToClipboard(user.apiKey || '')}
-                                    className='opacity-70 hover:opacity-100'
-                                    noBorder
-                                  >
-                                    <>
-                                      <ClipboardDocumentIcon className='h-6 w-6' />
-                                      {copied && (
-                                        <div className='absolute right-8 top-0.5 animate-appear cursor-auto rounded bg-white p-1 text-xs text-green-600 dark:bg-slate-800 sm:top-0'>
-                                          {t('common.copied')}
-                                        </div>
-                                      )}
-                                    </>
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
+                            <Input
+                              label={t('profileSettings.apiKey')}
+                              name='apiKey'
+                              className='mt-4'
+                              value={user.apiKey}
+                              disabled
+                            />
                           </div>
                         </>
                       ) : (

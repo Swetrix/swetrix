@@ -1,6 +1,5 @@
-import React, { memo, useState, useRef, useEffect } from 'react'
+import React, { memo, useState, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { ClipboardDocumentIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
@@ -38,23 +37,14 @@ const Referral = ({ user, updateUserData, referralStatistics, activeReferrals, s
     t,
     i18n: { language },
   } = useTranslation('common')
-  const [copied, setCopied] = useState(false)
   const [refCodeGenerating, setRefCodeGenerating] = useState(false)
   const [referralStatsRequested, setReferralStatsRequested] = useState(false)
   const [activeReferralsRequested, setActiveReferralsRequested] = useState(false)
   const [paypalInputError, setPaypalInputError] = useState<string | null>(null)
   const [isPaypalEmailLoading, setIsPaypalEmailLoading] = useState<boolean>(false)
   const [paypalEmailAddress, setPaypalEmailAddress] = useState<string | null>(user.paypalPaymentsEmail)
-  const copyTimerRef = useRef(null)
 
   const refUrl = `${REF_URL_PREFIX}${user?.refCode}`
-
-  useEffect(() => {
-    return () => {
-      // @ts-ignore
-      clearTimeout(copyTimerRef.current)
-    }
-  }, [])
 
   useEffect(() => {
     const getRefStats = async () => {
@@ -138,17 +128,6 @@ const Referral = ({ user, updateUserData, referralStatistics, activeReferrals, s
     setIsPaypalEmailLoading(false)
   }
 
-  const setToClipboard = (value: string) => {
-    if (!copied) {
-      navigator.clipboard.writeText(value)
-      setCopied(true)
-      // @ts-ignore
-      copyTimerRef.current = setTimeout(() => {
-        setCopied(false)
-      }, 2000)
-    }
-  }
-
   return (
     <>
       <p className='text-base text-gray-900 dark:text-gray-50'>
@@ -192,35 +171,15 @@ const Referral = ({ user, updateUserData, referralStatistics, activeReferrals, s
       <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
         {t('profileSettings.referral.referralLinkDesc')}
       </p>
-      {user.refCode && (
-        <p className='mt-2 max-w-prose text-base text-gray-900 dark:text-gray-50'>
-          {t('profileSettings.referral.yourReferralLink')}
-        </p>
-      )}
       {user.refCode ? (
         <div className='grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
-          <div className='group relative'>
-            <Input name='refCode' className='pr-9' value={refUrl} disabled />
-            <div className='absolute right-2 top-3'>
-              <div className='group relative'>
-                <Button
-                  type='button'
-                  onClick={() => setToClipboard(refUrl)}
-                  className='opacity-70 hover:opacity-100'
-                  noBorder
-                >
-                  <>
-                    <ClipboardDocumentIcon className='h-6 w-6' />
-                    {copied && (
-                      <div className='absolute right-8 top-0.5 animate-appear cursor-auto rounded bg-white p-1 text-xs text-green-600 dark:bg-slate-800 sm:top-0'>
-                        {t('common.copied')}
-                      </div>
-                    )}
-                  </>
-                </Button>
-              </div>
-            </div>
-          </div>
+          <Input
+            label={t('profileSettings.referral.yourReferralLink')}
+            name='refCode'
+            className='mt-4'
+            value={refUrl}
+            disabled
+          />
         </div>
       ) : (
         <Button className='mt-2' onClick={onRefCodeGenerate} loading={refCodeGenerating} primary large>

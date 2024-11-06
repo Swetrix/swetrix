@@ -4,6 +4,9 @@ import { useTranslation, Trans } from 'react-i18next'
 import Modal from 'ui/Modal'
 import { Badge } from 'ui/Badge'
 import Textarea from 'ui/Textarea'
+import { API_URL, isSelfhosted } from 'redux/constants'
+
+const API_URL_WITHOUT_TRAILING_SLASH = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL
 
 interface ITrackingSnippet {
   onClose: () => void
@@ -11,7 +14,28 @@ interface ITrackingSnippet {
   pid: string
 }
 
-const getSnippet = (pid: string) => `<script src="https://swetrix.org/swetrix.js" defer></script>
+const getSnippet = (pid: string) => {
+  if (isSelfhosted) {
+    return `<script src="https://swetrix.org/swetrix.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    swetrix.init('${pid}', {
+      apiURL: '${API_URL_WITHOUT_TRAILING_SLASH}/log',
+    })
+    swetrix.trackViews()
+  })
+</script>
+
+<noscript>
+  <img
+    src="${API_URL_WITHOUT_TRAILING_SLASH}/log/noscript?pid=${pid}"
+    alt=""
+    referrerpolicy="no-referrer-when-downgrade"
+  />
+</noscript>`
+  }
+
+  return `<script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     swetrix.init('${pid}')
@@ -21,11 +45,12 @@ const getSnippet = (pid: string) => `<script src="https://swetrix.org/swetrix.js
 
 <noscript>
   <img
-    src="https://api.swetrix.com/log/noscript?pid=${pid}"
+    src="${API_URL_WITHOUT_TRAILING_SLASH}/log/noscript?pid=${pid}"
     alt=""
     referrerpolicy="no-referrer-when-downgrade"
   />
 </noscript>`
+}
 
 const SCRIPT_DOCS_URL = 'https://docs.swetrix.com/install-script'
 

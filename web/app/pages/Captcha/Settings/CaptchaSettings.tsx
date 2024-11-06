@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, memo, useRef } from 'react'
+import React, { useState, useEffect, useMemo, memo } from 'react'
 import { useNavigate, useParams } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -14,7 +14,7 @@ import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _filter from 'lodash/filter'
 import _includes from 'lodash/includes'
-import { ExclamationTriangleIcon, TrashIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline'
+import { ExclamationTriangleIcon, TrashIcon } from '@heroicons/react/24/outline'
 
 import { withAuthentication, auth } from 'hoc/protected'
 import { isSelfhosted, TITLE_SUFFIX } from 'redux/constants'
@@ -122,10 +122,8 @@ const CaptchaSettings = ({
   const [tab, setTab] = useState<string>(tabForCreateCaptcha[0].name)
   const [reuseProjectId, setReuseProjectId] = useState<string | undefined>()
   const [allProjectsNames, setAllProjectsNames] = useState<IProjectNames[]>([])
-  const [copied, setCopied] = useState(false)
   const [captchaSecretKey, setCaptchaSecretKey] = useState(project?.captchaSecretKey)
   const [showRegenerateSecret, setShowRegenerateSecret] = useState(false)
-  const copyTimerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (loading) {
@@ -322,17 +320,6 @@ const CaptchaSettings = ({
     }
   }
 
-  const setToClipboard = (value: string) => {
-    if (!copied) {
-      navigator.clipboard.writeText(value)
-      setCopied(true)
-      // @ts-ignore
-      copyTimerRef.current = setTimeout(() => {
-        setCopied(false)
-      }, 2000)
-    }
-  }
-
   const getAllProjectsNames = async () => {
     await getProjectsNames()
       .then((res) => {
@@ -448,38 +435,14 @@ const CaptchaSettings = ({
                 <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
                   {t('profileSettings.captchaSecretKeyHint')}
                 </p>
-                <p className='mt-4 max-w-prose text-base text-gray-900 dark:text-gray-50'>
-                  {t('profileSettings.captchaSecretKey')}
-                </p>
                 <div className='grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
-                  <div className='group relative'>
-                    <Input
-                      name='sercretKey'
-                      className='pr-9'
-                      value={captchaSecretKey}
-                      onChange={handleInput}
-                      disabled
-                    />
-                    <div className='absolute right-2 top-3'>
-                      <div className='group relative'>
-                        <Button
-                          type='button'
-                          onClick={() => setToClipboard(captchaSecretKey)}
-                          className='opacity-70 hover:opacity-100'
-                          noBorder
-                        >
-                          <>
-                            <ClipboardDocumentIcon className='h-6 w-6' />
-                            {copied && (
-                              <div className='absolute right-8 top-0.5 animate-appear cursor-auto rounded bg-white p-1 text-xs text-green-600 dark:bg-slate-800 sm:top-0'>
-                                {t('common.copied')}
-                              </div>
-                            )}
-                          </>
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
+                  <Input
+                    label={t('profileSettings.captchaSecretKey')}
+                    name='sercretKey'
+                    className='mt-4'
+                    value={captchaSecretKey}
+                    disabled
+                  />
                 </div>
               </>
             ) : (

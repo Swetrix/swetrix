@@ -35,17 +35,19 @@ const Input = ({
 
   return (
     <Field as='div' className={className}>
-      <Label className='mb-1 flex text-sm font-medium text-gray-700 dark:text-gray-200'>
-        {label}
-        {isBeta && (
-          <div className='ml-5'>
-            <Beta />
-          </div>
-        )}
-      </Label>
-      {hint && hintPosition === 'top' && (
+      {label ? (
+        <Label className='mb-1 flex text-sm font-medium text-gray-700 dark:text-gray-200'>
+          {label}
+          {isBeta && (
+            <div className='ml-5'>
+              <Beta />
+            </div>
+          )}
+        </Label>
+      ) : null}
+      {hint && hintPosition === 'top' ? (
         <Description className='mt-1 whitespace-pre-line text-sm text-gray-500 dark:text-gray-300'>{hint}</Description>
-      )}
+      ) : null}
       <HeadlessInput
         type={type}
         className={cx(
@@ -60,10 +62,10 @@ const Input = ({
         invalid={isError}
         {...rest}
       />
-      {isError && <p className='mt-2 text-sm text-red-600 dark:text-red-500'>{error}</p>}
-      {hint && hintPosition === 'bottom' && (
+      {isError ? <p className='mt-2 text-sm text-red-600 dark:text-red-500'>{error}</p> : null}
+      {hint && hintPosition === 'bottom' ? (
         <Description className='mt-2 whitespace-pre-line text-sm text-gray-500 dark:text-gray-300'>{hint}</Description>
-      )}
+      ) : null}
     </Field>
   )
 }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, memo } from 'react'
 import type i18next from 'i18next'
 import { toast } from 'sonner'
-import { useNavigate } from '@remix-run/react'
+import { useLoaderData, useNavigate } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
@@ -294,6 +294,7 @@ const ProjectSettings = ({
     [projects, id, sharedProjects],
   )
   const navigate = useNavigate()
+  const { requestOrigin } = useLoaderData<{ requestOrigin: string | null }>()
 
   const [form, setForm] = useState<IForm>({
     name: '',
@@ -344,6 +345,10 @@ const ProjectSettings = ({
       },
     ] as const
   }, [t])
+
+  const sharableLink = useMemo(() => {
+    return `${requestOrigin}/projects/${id}`
+  }, [requestOrigin, id])
 
   useEffect(() => {
     if (authLoading || initialised) {
@@ -592,7 +597,7 @@ const ProjectSettings = ({
           name='sharableLink'
           label={t('project.settings.sharableLink')}
           hint={t('project.settings.sharableDesc')}
-          value={`https://swetrix.com/projects/${form.id}`}
+          value={sharableLink}
           className='mt-4'
           onChange={handleInput}
           error={null}

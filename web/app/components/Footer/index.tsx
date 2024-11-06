@@ -24,6 +24,9 @@ import {
 import routesPath from 'utils/routes'
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/solid'
 
+const CONTACT_US_URL = `https://swetrix.com${routesPath.contact}`
+const ABOUT_US_URL = `https://swetrix.com${routesPath.about}`
+
 const navigation = {
   company: [
     { key: 'about', href: routesPath.about, internal: true },
@@ -161,12 +164,14 @@ const SelfHostedFooter = () => {
       <div className='mx-auto max-w-7xl overflow-hidden px-4 py-8 sm:px-6 lg:px-8'>
         <nav className='-mx-5 -my-2 flex flex-wrap justify-center' aria-label='Footer'>
           <div className='px-5 py-2'>
-            <Link
-              to={routesPath.contact}
+            <a
+              href={CONTACT_US_URL}
+              target='_blank'
+              rel='noopener noreferrer'
               className='leading-6 text-slate-900 hover:text-slate-700 dark:text-gray-300 dark:hover:text-white'
             >
               {t('footer.contact')}
-            </Link>
+            </a>
           </div>
           <div className='px-5 py-2'>
             <a
@@ -191,12 +196,14 @@ const SelfHostedFooter = () => {
             </a>
           </div>
           <div className='px-5 py-2'>
-            <Link
-              to={routesPath.about}
+            <a
+              href={ABOUT_US_URL}
+              target='_blank'
+              rel='noopener noreferrer'
               className='leading-6 text-slate-900 hover:text-slate-700 dark:text-gray-300 dark:hover:text-white'
             >
               {t('footer.about')}
-            </Link>
+            </a>
           </div>
         </nav>
       </div>

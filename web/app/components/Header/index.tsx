@@ -60,6 +60,8 @@ import { useAppDispatch, StateType } from 'redux/store'
 dayjs.extend(utc)
 dayjs.extend(duration)
 
+const CONTACT_US_URL = `https://swetrix.com${routes.contact}`
+
 const TRIAL_STATUS_MAPPING = {
   ENDED: 1,
   ENDS_TODAY: 2,
@@ -400,18 +402,35 @@ const ProfileMenu = ({
                   )}
                 </MenuItem>
               )}
-              <MenuItem>
-                {({ active }) => (
-                  <Link
-                    to={routes.contact}
-                    className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
-                      'bg-gray-100 dark:bg-slate-800': active,
-                    })}
-                  >
-                    {t('footer.support')}
-                  </Link>
-                )}
-              </MenuItem>
+              {isSelfhosted ? (
+                <MenuItem>
+                  {({ active }) => (
+                    <a
+                      href={CONTACT_US_URL}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
+                        'bg-gray-100 dark:bg-slate-800': active,
+                      })}
+                    >
+                      {t('footer.support')}
+                    </a>
+                  )}
+                </MenuItem>
+              ) : (
+                <MenuItem>
+                  {({ active }) => (
+                    <Link
+                      to={routes.contact}
+                      className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
+                        'bg-gray-100 dark:bg-slate-800': active,
+                      })}
+                    >
+                      {t('footer.support')}
+                    </Link>
+                  )}
+                </MenuItem>
+              )}
               {!isSelfhosted && (
                 <MenuItem>
                   {({ active }) => (
