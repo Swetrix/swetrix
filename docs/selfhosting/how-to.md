@@ -42,6 +42,8 @@ The script will save the environment variables to a `.env` file in the repositor
 ./configure.sh
 ```
 
+You can always manually edit these `.env` variables later. Please refer to the [configuration section](/selfhosting/configuring) for more information.
+
 ### 3. Run the container
 
 Once all the environment variables are set, you can start the containers by running the following command:
