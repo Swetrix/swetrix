@@ -1,5 +1,9 @@
 import _omit from 'lodash/omit'
-import { SELFHOSTED_EMAIL, SELFHOSTED_UUID } from '../../common/constants'
+import {
+  SELFHOSTED_API_KEY,
+  SELFHOSTED_EMAIL,
+  SELFHOSTED_UUID,
+} from '../../common/constants'
 import { getUserClickhouse } from '../../common/utils'
 
 export enum UserType {
@@ -24,6 +28,7 @@ export interface SelfhostedUser {
   timezone: string
   timeFormat: TimeFormat
   showLiveVisitorsInTitle: boolean
+  apiKey?: string
 }
 
 export const generateSelfhostedUser = (): SelfhostedUser => ({
@@ -36,6 +41,7 @@ export const generateSelfhostedUser = (): SelfhostedUser => ({
   timezone: DEFAULT_TIMEZONE,
   timeFormat: TimeFormat['12-hour'],
   showLiveVisitorsInTitle: false,
+  apiKey: SELFHOSTED_API_KEY,
 })
 
 export const getSelfhostedUser = async (): Promise<SelfhostedUser> => {

@@ -38,7 +38,7 @@ async function bootstrap() {
     res.header('X-Frame-Options', 'DENY')
     res.header('X-Powered-By', 'Mountain Dew')
     res.header('X-XSS-Protection', '1; mode=block')
-    res.header('Access-Control-Allow-Origin', process.env.API_ORIGINS || '*')
+    res.header('Access-Control-Allow-Origin', '*')
     res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH')
     res.header('Access-Control-Allow-Headers', 'Authorization, *')
 
