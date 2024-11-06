@@ -49,6 +49,7 @@ import People from './People'
 import Emails from './Emails'
 import Select from 'ui/Select'
 import { useRequiredParams } from 'hooks/useRequiredParams'
+import { isBrowser } from 'framer-motion'
 
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
@@ -347,7 +348,9 @@ const ProjectSettings = ({
   }, [t])
 
   const sharableLink = useMemo(() => {
-    return `${requestOrigin}/projects/${id}`
+    const origin = requestOrigin || isBrowser ? window.location.origin : 'https://swetrix.com'
+
+    return `${origin}/projects/${id}`
   }, [requestOrigin, id])
 
   useEffect(() => {
