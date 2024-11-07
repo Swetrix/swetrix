@@ -27,21 +27,8 @@
 :where([data-sonner-toaster]) {
   position: fixed;
   width: var(--width);
-  font-family:
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    Segoe UI,
-    Roboto,
-    Helvetica Neue,
-    Arial,
-    Noto Sans,
-    sans-serif,
-    Apple Color Emoji,
-    Segoe UI Emoji,
-    Segoe UI Symbol,
-    Noto Color Emoji;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial,
+    Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
   --gray1: hsl(0, 0%, 99%);
   --gray2: hsl(0, 0%, 97.3%);
   --gray3: hsl(0, 0%, 95.1%);
@@ -61,6 +48,17 @@
   list-style: none;
   outline: none;
   z-index: 999999999;
+  transition: transform 400ms ease;
+}
+
+:where([data-sonner-toaster][data-lifted='true']) {
+  transform: translateY(-10px);
+}
+
+@media (hover: none) and (pointer: coarse) {
+  :where([data-sonner-toaster][data-lifted='true']) {
+    transform: none;
+  }
 }
 
 :where([data-sonner-toaster][data-x-position='right']) {
@@ -94,11 +92,7 @@
   filter: blur(0);
   /* https://stackoverflow.com/questions/48124372/pointermove-event-not-working-with-touch-why-not */
   touch-action: none;
-  transition:
-    transform 400ms,
-    opacity 400ms,
-    height 400ms,
-    box-shadow 200ms;
+  transition: transform 400ms, opacity 400ms, height 400ms, box-shadow 200ms;
   box-sizing: border-box;
   outline: none;
   overflow-wrap: anywhere;
@@ -119,9 +113,7 @@
 }
 
 :where([data-sonner-toast]:focus-visible) {
-  box-shadow:
-    0px 4px 12px rgba(0, 0, 0, 0.1),
-    0 0 0 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1), 0 0 0 2px rgba(0, 0, 0, 0.2);
 }
 
 :where([data-sonner-toast][data-y-position='top']) {
@@ -200,9 +192,7 @@
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  transition:
-    opacity 400ms,
-    box-shadow 200ms;
+  transition: opacity 400ms, box-shadow 200ms;
 }
 
 :where([data-sonner-toast]) :where([data-button]):focus-visible {
@@ -234,23 +224,21 @@
   justify-content: center;
   align-items: center;
   padding: 0;
-  background: var(--gray1);
   color: var(--gray12);
   border: 1px solid var(--gray4);
   transform: var(--toast-close-button-transform);
   border-radius: 50%;
   cursor: pointer;
   z-index: 1;
-  transition:
-    opacity 100ms,
-    background 200ms,
-    border-color 200ms;
+  transition: opacity 100ms, background 200ms, border-color 200ms;
+}
+
+[data-sonner-toast] [data-close-button] {
+  background: var(--gray1);
 }
 
 :where([data-sonner-toast]) :where([data-close-button]):focus-visible {
-  box-shadow:
-    0px 4px 12px rgba(0, 0, 0, 0.1),
-    0 0 0 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1), 0 0 0 2px rgba(0, 0, 0, 0.2);
 }
 
 :where([data-sonner-toast]) :where([data-disabled='true']) {
@@ -344,9 +332,7 @@
 :where([data-sonner-toast][data-removed='true'][data-front='false'][data-swipe-out='false'][data-expanded='false']) {
   --y: translateY(40%);
   opacity: 0;
-  transition:
-    transform 500ms,
-    opacity 200ms;
+  transition: transform 500ms, opacity 200ms;
 }
 
 /* Bump up the height to make sure hover state doesn't get set to false */
@@ -357,6 +343,10 @@
 [data-sonner-toast][data-swiping='true'] {
   transform: var(--y) translateY(var(--swipe-amount, 0px));
   transition: none;
+}
+
+[data-sonner-toast][data-swiped='true'] {
+  user-select: none;
 }
 
 [data-sonner-toast][data-swipe-out='true'][data-y-position='bottom'],
@@ -657,9 +647,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   transform-origin: center;
-  transition:
-    opacity 200ms,
-    transform 200ms;
+  transition: opacity 200ms, transform 200ms;
 }
 
 .sonner-loader[data-visible='false'] {
