@@ -152,7 +152,6 @@
     "eslint": "^8.57.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-lodash": "^8.0.0",
-    "eslint-plugin-react-hooks": "^5.0.0",
     "knip": "^5.36.3",
     "postcss": "^8.4.47",
     "prettier": "^3.3.3",
