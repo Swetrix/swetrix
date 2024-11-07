@@ -1,11 +1,11 @@
-import { marked } from 'marked'
+import { marked, type Tokens } from 'marked'
 import _isEmpty from 'lodash/isEmpty'
 import { LoaderFunction } from '@remix-run/node'
 import { getBlogPosts, getBlogPost, getBlogPostWithCategory } from 'api'
 
 const renderer = new marked.Renderer()
 
-renderer.link = (href: string, title: string | null | undefined, text: string) => {
+renderer.link = ({ href, text }: Tokens.Link) => {
   const url = new URL(href)
 
   if (url.hostname !== 'swetrix.com') {
