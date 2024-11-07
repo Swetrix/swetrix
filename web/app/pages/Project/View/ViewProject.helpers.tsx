@@ -20,7 +20,6 @@ import _map from 'lodash/map'
 import _split from 'lodash/split'
 import _replace from 'lodash/replace'
 import _isEmpty from 'lodash/isEmpty'
-import _some from 'lodash/some'
 import _startsWith from 'lodash/startsWith'
 import _keys from 'lodash/keys'
 import _size from 'lodash/size'
@@ -194,12 +193,6 @@ const CHART_METRICS_MAPPING = {
   customEvents: 'customEvents',
   cumulativeMode: 'cumulativeMode',
 }
-
-const ERROR_FILTERS_MAPPING = {
-  showResolved: 'showResolved',
-}
-
-const FILTER_CHART_METRICS_MAPPING_FOR_COMPARE = ['bounce', 'viewsPerUnique', 'trendlines', 'customEvents']
 
 const CHART_METRICS_MAPPING_PERF = {
   quantiles: 'quantiles',
@@ -1573,71 +1566,6 @@ const getSettingsPerf = (
   }
 }
 
-const validTimeBacket = ['hour', 'day', 'week', 'month']
-const validPeriods = ['custom', 'today', 'yesterday', '1d', '7d', '4w', '3M', '12M', '24M']
-const validFilters = [
-  'cc',
-  'rg',
-  'ct',
-  'pg',
-  'lc',
-  'ref',
-  'dv',
-  'br',
-  'os',
-  'so',
-  'me',
-  'ca',
-  'ev',
-  'tag:key',
-  'tag:value',
-  'ev:key',
-  'ev:value',
-]
-// dynamic filters is when a filter column starts with a specific value and is followed by some arbitrary string
-// this is done to build a connnection between dynamic column and value (e.g. for custom event metadata or page properties)
-const validDynamicFilters = ['ev:key:', 'tag:key:']
-
-const isFilterValid = (filter: string, checkDynamicFilters = false) => {
-  if (_includes(validFilters, filter)) {
-    return true
-  }
-
-  if (checkDynamicFilters && _some(validDynamicFilters, (prefix) => _startsWith(filter, prefix))) {
-    return true
-  }
-
-  return false
-}
-
-export const filterInvalidViewPrefs = (prefs: any): any => {
-  const pids = _keys(prefs)
-  const filtered = _reduce(
-    pids,
-    (prev: string[], curr: string) => {
-      const { period, timeBucket } = prefs[curr]
-
-      if (!_includes(validPeriods, period) || !_includes(validTimeBacket, timeBucket)) {
-        return prev
-      }
-
-      return [...prev, curr]
-    },
-    [],
-  )
-
-  return _reduce(
-    filtered,
-    (prev: any, curr: string) => {
-      return {
-        ...prev,
-        [curr]: prefs[curr],
-      }
-    },
-    {},
-  )
-}
-
 const typeNameMapping = (t: typeof i18next.t) => ({
   cc: t('project.mapping.cc'),
   rg: t('project.mapping.rg'),
@@ -1708,9 +1636,6 @@ export {
   getFormatDate,
   panelIconMapping,
   typeNameMapping,
-  isFilterValid,
-  validPeriods,
-  validTimeBacket,
   noRegionPeriods,
   getSettings,
   getColumns,
@@ -1719,7 +1644,6 @@ export {
   CHART_METRICS_MAPPING_PERF,
   getSettingsPerf,
   transformAIChartData,
-  FILTER_CHART_METRICS_MAPPING_FOR_COMPARE,
   getSettingsFunnels,
   getSettingsSession,
   SHORTCUTS_TABS_MAP,
@@ -1728,6 +1652,5 @@ export {
   SHORTCUTS_TIMEBUCKETS_LISTENERS,
   CHART_MEASURES_MAPPING_PERF,
   getSettingsError,
-  ERROR_FILTERS_MAPPING,
   getSettingsUptime,
 }
