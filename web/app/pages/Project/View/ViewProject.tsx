@@ -2253,16 +2253,23 @@ const ViewProject = ({
 
     let filtersToUpdate: IFilter[] = []
 
-    if (activeTab === PROJECT_TABS.performance) {
-      filtersToUpdate = updateFilterState(navigate, filtersPerf, setFiltersPerf, columnPerf, column, filter, isExclusive)
-    } else if (activeTab === PROJECT_TABS.sessions) {
-      filtersToUpdate = updateFilterState(navigate, filtersSessions, setFiltersSessions, columnSessions, column, filter, isExclusive)
-    } else if (activeTab === PROJECT_TABS.errors && !activeEID) {
-      filtersToUpdate = updateFilterState(navigate, filtersErrors, setFiltersErrors, columnErrors, column, filter, isExclusive)
-    } else if (activeTab === PROJECT_TABS.errors && activeEID) {
-      filtersToUpdate = updateFilterState(navigate, filtersSubError, setFiltersSubError, columnSubErrors, column, filter, isExclusive)
-    } else if (activeTab === PROJECT_TABS.traffic) {
-      filtersToUpdate = updateFilterState(navigate, filters, setFilters, column, column, filter, isExclusive)
+    switch (activeTab) {
+      case PROJECT_TABS.performance:
+        filtersToUpdate = updateFilterState(navigate, filtersPerf, setFiltersPerf, columnPerf, column, filter, isExclusive)
+        break
+      case PROJECT_TABS.sessions:
+        filtersToUpdate = updateFilterState(navigate, filtersSessions, setFiltersSessions, columnSessions, column, filter, isExclusive)
+        break
+      case PROJECT_TABS.errors:
+        if (!activeEID) {
+          filtersToUpdate = updateFilterState(navigate, filtersErrors, setFiltersErrors, columnErrors, column, filter, isExclusive)
+        } else {
+          filtersToUpdate = updateFilterState(navigate, filtersSubError, setFiltersSubError, columnSubErrors, column, filter, isExclusive)
+        }
+        break
+      case PROJECT_TABS.traffic:
+        filtersToUpdate = updateFilterState(navigate, filters, setFilters, column, column, filter, isExclusive)
+        break
     }
 
     resetSessions()
@@ -2392,11 +2399,8 @@ const ViewProject = ({
         parseFiltersFromUrl('_sess', setFiltersSessions, setAreFiltersSessionsParsed)
         break
       case PROJECT_TABS.errors:
-        if (!activeEID) {
           parseFiltersFromUrl('_err', setFiltersErrors, setAreFiltersErrorsParsed)
-        } else {
           parseFiltersFromUrl('_subErr', setFiltersSubError, setAreFiltersSubErrorParsed)
-        }
         break
       default:
         parseFiltersFromUrl('', setFilters, setAreFiltersParsed)
@@ -4349,14 +4353,14 @@ const ViewProject = ({
                         dataNames={dataNames}
                       />
                     )}
+                    <Filters
+                      filters={filtersSubError}
+                      onRemoveFilter={filterHandler}
+                      onChangeExclusive={onChangeExclusive}
+                      tnMapping={tnMapping}
+                      resetFilters={resetActiveTabFilters}
+                    />
                     <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
-                      <Filters
-                        filters={filtersSubError}
-                        onRemoveFilter={filterHandler}
-                        onChangeExclusive={onChangeExclusive}
-                        tnMapping={tnMapping}
-                        resetFilters={resetActiveTabFilters}
-                      />
                       {!_isEmpty(activeError?.params) &&
                         _map(ERROR_PANELS_ORDER, (type: keyof typeof tnMapping) => {
                           const panelName = tnMapping[type]
