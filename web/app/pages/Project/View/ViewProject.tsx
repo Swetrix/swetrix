@@ -2244,13 +2244,13 @@ const ViewProject = ({
     let filtersToUpdate: IFilter[] = []
 
     if (activeTab === PROJECT_TABS.performance) {
-      filtersToUpdate = updateFilterState(navigate, filtersPerf, setFiltersPerf, columnPerf, filter, isExclusive)
+      filtersToUpdate = updateFilterState(navigate, filtersPerf, setFiltersPerf, columnPerf, column, filter, isExclusive)
     } else if (activeTab === PROJECT_TABS.sessions) {
-      filtersToUpdate = updateFilterState(navigate, filtersSessions, setFiltersSessions, columnSessions, filter, isExclusive)
+      filtersToUpdate = updateFilterState(navigate, filtersSessions, setFiltersSessions, columnSessions, column, filter, isExclusive)
     } else if (activeTab === PROJECT_TABS.errors) {
-      filtersToUpdate = updateFilterState(navigate, filtersErrors, setFiltersErrors, columnErrors, filter, isExclusive)
+      filtersToUpdate = updateFilterState(navigate, filtersErrors, setFiltersErrors, columnErrors, column, filter, isExclusive)
     } else if (activeTab === PROJECT_TABS.traffic) {
-      filtersToUpdate = updateFilterState(navigate, filters, setFilters, column, filter, isExclusive)
+      filtersToUpdate = updateFilterState(navigate, filters, setFilters, column, column, filter, isExclusive)
     }
 
     resetSessions()

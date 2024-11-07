@@ -78,9 +78,8 @@ export const isFilterValid = (filter: string, checkDynamicFilters = false) => {
 
   return false
 }
-
 export const applyFilters = (items: IFilter[], suffix: string, url: URL, override: boolean): IFilter[] => {
-  const filtersToSet: IFilter[] = []
+  const filtersToLoad: IFilter[] = []
   items.forEach((item) => {
     if (!item.filter) return
 
@@ -94,9 +93,9 @@ export const applyFilters = (items: IFilter[], suffix: string, url: URL, overrid
       filters.forEach((filter) => url.searchParams.append(columnSuffix, filter))
     }
 
-    filtersToSet.push(item)
+    filtersToLoad.push(item)
   })
-  return filtersToSet
+  return filtersToLoad
 }
 
 export const handleNavigationParams = (
@@ -120,6 +119,7 @@ export const updateFilterState = (
   filters: IFilter[],
   newFiltersStateSetter: React.Dispatch<React.SetStateAction<IFilter[]>>,
   column: string,
+  columnSuffix: string,
   filter: any,
   isExclusive: boolean,
 ) => {
@@ -133,7 +133,7 @@ export const updateFilterState = (
     updatedFilters = filters.filter((_, index) => index !== existingFilterIndex)
     url.searchParams.delete(column)
   } else {
-    updatedFilters = [...filters, { column, filter, isExclusive }]
+    updatedFilters = [...filters, { column: columnSuffix, filter, isExclusive }]
     url.searchParams.append(column, filter)
   }
 
