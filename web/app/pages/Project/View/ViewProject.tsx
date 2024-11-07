@@ -479,8 +479,13 @@ const ViewProject = ({
   const [filtersPerf, setFiltersPerf] = useState<IFilter[]>([])
   const [filtersSessions, setFiltersSessions] = useState<IFilter[]>([])
   const [areFiltersSessionsParsed, setAreFiltersSessionsParsed] = useState<boolean>(false)
+  // filters for list of errors
   const [filtersErrors, setFiltersErrors] = useState<IFilter[]>([])
   const [areFiltersErrorsParsed, setAreFiltersErrorsParsed] = useState<boolean>(false)
+  // filters for details error page
+  const [filtersSubError, setFiltersSubError] = useState<IFilter[]>([])
+  const [areFiltersSubErrorParsed, setAreFiltersSubErrorParsed] = useState<boolean>(false)
+
 
   // isLoading is a true when we loading data from api
   const isLoading = authenticated ? _isLoading : false
@@ -1657,9 +1662,9 @@ const ViewProject = ({
         }
 
         if (period === 'custom' && dateRange) {
-          error = await getError(id, eid, '', from, to, timezone, projectPassword)
+          error = await getError(id, eid, '', filtersSubError, from, to, timezone, projectPassword)
         } else {
-          error = await getError(id, eid, period, '', '', timezone, projectPassword)
+          error = await getError(id, eid, period, filtersSubError, '', '', timezone, projectPassword)
         }
 
         setActiveError(error)
@@ -1757,9 +1762,13 @@ const ViewProject = ({
       return
     }
 
+    if (!areFiltersSubErrorParsed) {
+      return
+    }
+
     loadError(activeEID)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period, dateRange, timeBucket, activeEID])
+  }, [period, dateRange, timeBucket, activeEID, filtersSubError, areFiltersSubErrorParsed])
 
   const loadSessions = async (forcedSkip?: number) => {
     if (sessionsLoading) {
@@ -2240,6 +2249,7 @@ const ViewProject = ({
     const columnPerf = `${column}_perf`
     const columnSessions = `${column}_sess`
     const columnErrors = `${column}_err`
+    const columnSubErrors = `${column}_subErr`
 
     let filtersToUpdate: IFilter[] = []
 
@@ -2247,8 +2257,10 @@ const ViewProject = ({
       filtersToUpdate = updateFilterState(navigate, filtersPerf, setFiltersPerf, columnPerf, column, filter, isExclusive)
     } else if (activeTab === PROJECT_TABS.sessions) {
       filtersToUpdate = updateFilterState(navigate, filtersSessions, setFiltersSessions, columnSessions, column, filter, isExclusive)
-    } else if (activeTab === PROJECT_TABS.errors) {
+    } else if (activeTab === PROJECT_TABS.errors && !activeEID) {
       filtersToUpdate = updateFilterState(navigate, filtersErrors, setFiltersErrors, columnErrors, column, filter, isExclusive)
+    } else if (activeTab === PROJECT_TABS.errors && activeEID) {
+      filtersToUpdate = updateFilterState(navigate, filtersSubError, setFiltersSubError, columnSubErrors, column, filter, isExclusive)
     } else if (activeTab === PROJECT_TABS.traffic) {
       filtersToUpdate = updateFilterState(navigate, filters, setFilters, column, column, filter, isExclusive)
     }
@@ -2276,7 +2288,11 @@ const ViewProject = ({
         handleNavigationParams(items, '_sess', url, navigate, override, setFiltersSessions, resetSessions)
         break
       case PROJECT_TABS.errors:
-        handleNavigationParams(items, '_err', url, navigate, override, setFiltersErrors, resetErrors)
+        if (!activeEID) {
+          handleNavigationParams(items, '_err', url, navigate, override, setFiltersErrors, resetErrors)
+        } else {
+          handleNavigationParams(items, '_subErr', url, navigate, override, setFiltersSubError, resetErrors)
+        }
         break
       default:
         handleNavigationParams(items, '', url, navigate, override, setFilters, loadAnalytics)
@@ -2318,50 +2334,54 @@ const ViewProject = ({
   // this function is used for requesting the data from the API when the exclusive filter is changed
   const onChangeExclusive = (column: string, filter: string, isExclusive: boolean) => {
     const updateFilters = (
-        filters: IFilter[], 
-        setFilters: React.Dispatch<React.SetStateAction<IFilter[]>>,
+      filters: IFilter[],
+      setFilters: React.Dispatch<React.SetStateAction<IFilter[]>>,
     ): IFilter[] => {
-        const newFilters = filters.map(f => 
-            f.column === column && f.filter === filter ? { ...f, isExclusive } : f,
-        )
-        if (JSON.stringify(newFilters) !== JSON.stringify(filters)) {
-            setFilters(newFilters)
-        }
-        return newFilters
+      const newFilters = filters.map(f =>
+        f.column === column && f.filter === filter ? { ...f, isExclusive } : f,
+      )
+      if (JSON.stringify(newFilters) !== JSON.stringify(filters)) {
+        setFilters(newFilters)
+      }
+      return newFilters
     }
 
     let newFilters: IFilter[]
 
     switch (activeTab) {
-        case PROJECT_TABS.performance:
-            newFilters = updateFilters(filtersPerf, setFiltersPerf)
-            loadAnalyticsPerf(true, newFilters)
-            break
-        case PROJECT_TABS.sessions:
-            newFilters = updateFilters(filtersSessions, setFiltersSessions)
-            break
-        case PROJECT_TABS.errors:
-            newFilters = updateFilters(filtersErrors, setFiltersErrors)
-            resetErrors()
-            break
-        default:
-            newFilters = updateFilters(filters, setFilters)
-            loadAnalytics(true, newFilters)
-            break
+      case PROJECT_TABS.performance:
+        newFilters = updateFilters(filtersPerf, setFiltersPerf)
+        loadAnalyticsPerf(true, newFilters)
+        break
+      case PROJECT_TABS.sessions:
+        newFilters = updateFilters(filtersSessions, setFiltersSessions)
+        break
+      case PROJECT_TABS.errors:
+        if (!activeEID) {
+          newFilters = updateFilters(filtersErrors, setFiltersErrors)
+          resetErrors()
+        } else {
+          newFilters = updateFilters(filtersSubError, setFiltersSubError)
+        }
+        break
+      default:
+        newFilters = updateFilters(filters, setFilters)
+        loadAnalytics(true, newFilters)
+        break
     }
 
     const url = new URL(window.location.href)
     const paramName = activeTab === PROJECT_TABS.performance ? `${column}_perf` : column
     if (url.searchParams.get(paramName) !== filter) {
-        url.searchParams.set(paramName, filter)
-        const { pathname, search } = url
-        navigate(`${pathname}${search}`)
+      url.searchParams.set(paramName, filter)
+      const { pathname, search } = url
+      navigate(`${pathname}${search}`)
     }
 
     sdkInstance?._emitEvent('filtersupdate', newFilters)
   }
 
-  
+
   // Main useEffect for filters parsing
   useEffect(() => {
     switch (activeTab) {
@@ -2372,24 +2392,28 @@ const ViewProject = ({
         parseFiltersFromUrl('_sess', setFiltersSessions, setAreFiltersSessionsParsed)
         break
       case PROJECT_TABS.errors:
-        parseFiltersFromUrl('_err', setFiltersErrors, setAreFiltersErrorsParsed)
+        if (!activeEID) {
+          parseFiltersFromUrl('_err', setFiltersErrors, setAreFiltersErrorsParsed)
+        } else {
+          parseFiltersFromUrl('_subErr', setFiltersSubError, setAreFiltersSubErrorParsed)
+        }
         break
       default:
         parseFiltersFromUrl('', setFilters, setAreFiltersParsed)
         break
     }
   }, [activeTab])
-  
+
   // Parsing timeBucket from URL
   useEffect(() => {
     if (!arePeriodParsed) return
-  
+
     try {
       // @ts-expect-error
       const url = new URL(window.location)
       const { searchParams } = url
       const initialTimeBucket = searchParams.get('timeBucket')
-      
+
       if (_includes(validTimeBacket, initialTimeBucket)) {
         const newPeriodFull = _find(periodPairs, (el) => el.period === period)
         if (_includes(newPeriodFull?.tbs, initialTimeBucket)) {
@@ -3155,8 +3179,10 @@ const ViewProject = ({
       loadAnalyticsPerf(true, [])
     } else if (activeTab === PROJECT_TABS.sessions) {
       setFiltersSessions([])
-    } else if (activeTab === PROJECT_TABS.errors) {
+    } else if (activeTab === PROJECT_TABS.errors && !activeEID) {
       setFiltersErrors([])
+    } else if (activeTab === PROJECT_TABS.errors && activeEID) {
+      setFiltersSubError([])
     }
   }
 
@@ -3167,6 +3193,7 @@ const ViewProject = ({
     setFiltersPerf([])
     setFiltersSessions([])
     setFiltersErrors([])
+    setFiltersSubError([])
     if (activeTab === PROJECT_TABS.performance) {
       loadAnalyticsPerf(true, [])
     } else if (activeTab === PROJECT_TABS.traffic) {
@@ -4323,6 +4350,13 @@ const ViewProject = ({
                       />
                     )}
                     <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
+                      <Filters
+                        filters={filtersSubError}
+                        onRemoveFilter={filterHandler}
+                        onChangeExclusive={onChangeExclusive}
+                        tnMapping={tnMapping}
+                        resetFilters={resetActiveTabFilters}
+                      />
                       {!_isEmpty(activeError?.params) &&
                         _map(ERROR_PANELS_ORDER, (type: keyof typeof tnMapping) => {
                           const panelName = tnMapping[type]

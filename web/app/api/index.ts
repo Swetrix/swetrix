@@ -605,13 +605,14 @@ export const getError = (
   pid: string,
   eid: string,
   period: string = '7d',
+  filters: any[] = [],
   from: string = '',
   to: string = '',
   timezone: string = '',
   password: string | undefined = '',
 ) =>
   api
-    .get(`log/get-error?pid=${pid}&eid=${eid}&period=${period}&from=${from}&to=${to}&timezone=${timezone}`, {
+    .get(`log/get-error?pid=${pid}&eid=${eid}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}`, {
       headers: {
         'x-password': password,
       },
