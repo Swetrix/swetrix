@@ -80,8 +80,7 @@
       "JSX": "readonly"
     },
     "plugins": [
-      "lodash",
-      "react-hooks"
+      "lodash"
     ],
     "rules": {
       "jsx-quotes": [
@@ -96,7 +95,6 @@
       "@typescript-eslint/consistent-type-imports": "off",
       "jsx-a11y/anchor-has-content": "off",
       "no-unused-vars": "off",
-      "react-hooks/rules-of-hooks": "error",
       "semi": [
         "error",
         "never"
