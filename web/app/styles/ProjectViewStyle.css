@@ -167,11 +167,11 @@ html.light .bb-xgrid-focus {
   stroke: rgba(37, 99, 235, 0.4) !important;
 }
 
-.bb-target-Technical-Expences .bb-bar {
+.bb-target-Technical-Expenses .bb-bar {
   stroke: #ec4319 !important;
 }
 
-.bb-target-Business-Expences .bb-bar {
+.bb-target-Business-Expenses .bb-bar {
   stroke: #f27059 !important;
 }
 
