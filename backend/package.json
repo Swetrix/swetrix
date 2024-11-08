@@ -1,7 +1,4 @@
 {
-  "name": "swetrix-api",
-  "version": "3.2.0",
-  "description": "Swetrix API",
   "author": "Swetrix Ltd. <contact@swetrix.com>",
   "private": true,
   "license": "AGPL-3.0",
