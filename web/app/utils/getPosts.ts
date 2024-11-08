@@ -1,7 +1,6 @@
 import { marked, type Tokens } from 'marked'
 import _isEmpty from 'lodash/isEmpty'
-import { LoaderFunction } from '@remix-run/node'
-import { getBlogPosts, getBlogPost, getBlogPostWithCategory } from 'api'
+import { getBlogPost, getBlogPostWithCategory } from 'api'
 
 const renderer = new marked.Renderer()
 
@@ -65,20 +64,4 @@ export async function getPost(slug: string, category?: string): Promise<IPost | 
     author: post.attributes?.author,
     nickname: post.attributes?.nickname,
   }
-}
-
-export const blogLoader: LoaderFunction = async () => {
-  const data = await getBlogPosts()
-    .then((data) => {
-      return data
-    })
-    .catch((error) => {
-      console.error(error)
-    })
-
-  if (!data || _isEmpty(data)) {
-    return null
-  }
-
-  return data
 }

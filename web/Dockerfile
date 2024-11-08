@@ -23,7 +23,7 @@ ADD package.json ./
 FROM base as build
 
 ENV NODE_ENV=production \
-    SELFHOSTED=true
+    __SELFHOSTED=true
 
 RUN mkdir /app
 WORKDIR /app
@@ -37,7 +37,7 @@ RUN npm run build
 FROM base
 
 ENV NODE_ENV=production \
-    SELFHOSTED=true
+    __SELFHOSTED=true
 
 RUN mkdir /app
 WORKDIR /app

@@ -1,11 +1,31 @@
-import type { MetaFunction } from '@remix-run/node'
+import type { LoaderFunction, MetaFunction } from '@remix-run/node'
+import { redirect } from '@remix-run/node'
 import { Link, useLoaderData } from '@remix-run/react'
-import { blogLoader } from 'utils/getPosts'
 import _map from 'lodash/map'
+import _isEmpty from 'lodash/isEmpty'
 import _filter from 'lodash/filter'
-import { TITLE_SUFFIX } from 'redux/constants'
+import { isSelfhosted, TITLE_SUFFIX } from 'redux/constants'
+import { getBlogPosts } from 'api'
 
-export const loader = blogLoader
+export const loader: LoaderFunction = async () => {
+  if (isSelfhosted) {
+    return redirect('/dashboard', 302)
+  }
+
+  const data = await getBlogPosts()
+    .then((data) => {
+      return data
+    })
+    .catch((error) => {
+      console.error(error)
+    })
+
+  if (!data || _isEmpty(data)) {
+    return null
+  }
+
+  return data
+}
 
 export const meta: MetaFunction = () => {
   return [

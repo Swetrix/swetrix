@@ -387,7 +387,7 @@ const isStaging = isBrowser ? window.REMIX_ENV?.STAGING : process.env.STAGING
 const STAGING_API_URL = isBrowser ? window.REMIX_ENV?.API_STAGING_URL : process.env.API_STAGING_URL
 const PRODUCTION_API_URL = isBrowser ? window.REMIX_ENV?.API_URL : process.env.API_URL
 
-export const isSelfhosted = Boolean(isBrowser ? window.REMIX_ENV?.SELFHOSTED : process.env.SELFHOSTED)
+export const isSelfhosted = Boolean(isBrowser ? window.REMIX_ENV?.SELFHOSTED : process.env.__SELFHOSTED)
 
 export const API_URL = isSelfhosted || !isStaging ? PRODUCTION_API_URL : STAGING_API_URL
 export const AIAPI_URL = isBrowser ? window.REMIX_ENV?.AIAPI_URL : process.env.AIAPI_URL

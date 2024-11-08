@@ -1,6 +1,7 @@
 {
   "private": true,
   "sideEffects": false,
+  "license": "AGPL-3.0",
   "scripts": {
     "build": "remix build",
     "dev": "remix dev",
