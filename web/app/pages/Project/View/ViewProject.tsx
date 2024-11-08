@@ -218,8 +218,14 @@ import {
 } from './interfaces/traffic'
 import { trackCustom } from 'utils/analytics'
 import {
-  handleNavigationParams, updateFilterState, validTimeBacket, validPeriods, parseFiltersFromUrl, isFilterValid,
-  FILTER_CHART_METRICS_MAPPING_FOR_COMPARE, ERROR_FILTERS_MAPPING,
+  handleNavigationParams,
+  updateFilterState,
+  validTimeBacket,
+  validPeriods,
+  parseFiltersFromUrl,
+  isFilterValid,
+  FILTER_CHART_METRICS_MAPPING_FOR_COMPARE,
+  ERROR_FILTERS_MAPPING,
 } from './utils/filters'
 import AddAViewModal from './components/AddAViewModal'
 import CustomMetrics from './components/CustomMetrics'
@@ -485,7 +491,6 @@ const ViewProject = ({
   // filters for details error page
   const [filtersSubError, setFiltersSubError] = useState<IFilter[]>([])
   const [areFiltersSubErrorParsed, setAreFiltersSubErrorParsed] = useState<boolean>(false)
-
 
   // isLoading is a true when we loading data from api
   const isLoading = authenticated ? _isLoading : false
@@ -1058,12 +1063,12 @@ const ViewProject = ({
 
     const adminTabs = allowedToManage
       ? [
-        {
-          id: 'settings',
-          label: t('common.settings'),
-          icon: Cog8ToothIcon,
-        },
-      ]
+          {
+            id: 'settings',
+            label: t('common.settings'),
+            icon: Cog8ToothIcon,
+          },
+        ]
       : []
 
     if (isSelfhosted) {
@@ -2255,16 +2260,48 @@ const ViewProject = ({
 
     switch (activeTab) {
       case PROJECT_TABS.performance:
-        filtersToUpdate = updateFilterState(navigate, filtersPerf, setFiltersPerf, columnPerf, column, filter, isExclusive)
+        filtersToUpdate = updateFilterState(
+          navigate,
+          filtersPerf,
+          setFiltersPerf,
+          columnPerf,
+          column,
+          filter,
+          isExclusive,
+        )
         break
       case PROJECT_TABS.sessions:
-        filtersToUpdate = updateFilterState(navigate, filtersSessions, setFiltersSessions, columnSessions, column, filter, isExclusive)
+        filtersToUpdate = updateFilterState(
+          navigate,
+          filtersSessions,
+          setFiltersSessions,
+          columnSessions,
+          column,
+          filter,
+          isExclusive,
+        )
         break
       case PROJECT_TABS.errors:
         if (!activeEID) {
-          filtersToUpdate = updateFilterState(navigate, filtersErrors, setFiltersErrors, columnErrors, column, filter, isExclusive)
+          filtersToUpdate = updateFilterState(
+            navigate,
+            filtersErrors,
+            setFiltersErrors,
+            columnErrors,
+            column,
+            filter,
+            isExclusive,
+          )
         } else {
-          filtersToUpdate = updateFilterState(navigate, filtersSubError, setFiltersSubError, columnSubErrors, column, filter, isExclusive)
+          filtersToUpdate = updateFilterState(
+            navigate,
+            filtersSubError,
+            setFiltersSubError,
+            columnSubErrors,
+            column,
+            filter,
+            isExclusive,
+          )
         }
         break
       case PROJECT_TABS.traffic:
@@ -2344,9 +2381,7 @@ const ViewProject = ({
       filters: IFilter[],
       setFilters: React.Dispatch<React.SetStateAction<IFilter[]>>,
     ): IFilter[] => {
-      const newFilters = filters.map(f =>
-        f.column === column && f.filter === filter ? { ...f, isExclusive } : f,
-      )
+      const newFilters = filters.map((f) => (f.column === column && f.filter === filter ? { ...f, isExclusive } : f))
       if (JSON.stringify(newFilters) !== JSON.stringify(filters)) {
         setFilters(newFilters)
       }
@@ -2388,7 +2423,6 @@ const ViewProject = ({
     sdkInstance?._emitEvent('filtersupdate', newFilters)
   }
 
-
   // Main useEffect for filters parsing
   useEffect(() => {
     switch (activeTab) {
@@ -2399,8 +2433,8 @@ const ViewProject = ({
         parseFiltersFromUrl('_sess', setFiltersSessions, setAreFiltersSessionsParsed)
         break
       case PROJECT_TABS.errors:
-          parseFiltersFromUrl('_err', setFiltersErrors, setAreFiltersErrorsParsed)
-          parseFiltersFromUrl('_subErr', setFiltersSubError, setAreFiltersSubErrorParsed)
+        parseFiltersFromUrl('_err', setFiltersErrors, setAreFiltersErrorsParsed)
+        parseFiltersFromUrl('_subErr', setFiltersSubError, setAreFiltersSubErrorParsed)
         break
       default:
         parseFiltersFromUrl('', setFilters, setAreFiltersParsed)
@@ -2787,7 +2821,6 @@ const ViewProject = ({
     setPeriodPairs(tbPeriodPairs(t, undefined, undefined, language))
     setPeriodPairsCompare(tbPeriodPairsCompare(t, undefined, language))
   }, [t, language])
-
 
   const resetSessions = () => {
     setSessionsSkip(0)
@@ -3680,8 +3713,8 @@ const ViewProject = ({
                                   loading={projectViewsLoading || projectViewsLoading === null}
                                   selectItemClassName={
                                     !allowedToManage &&
-                                      !(projectViewsLoading || projectViewsLoading === null) &&
-                                      _isEmpty(projectViews)
+                                    !(projectViewsLoading || projectViewsLoading === null) &&
+                                    _isEmpty(projectViews)
                                       ? 'block px-4 py-2 text-sm text-gray-700 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50'
                                       : undefined
                                   }
@@ -3694,11 +3727,11 @@ const ViewProject = ({
                                         createView: true,
                                       },
                                       !allowedToManage &&
-                                      _isEmpty(projectViews) && {
-                                        id: 'no-views',
-                                        name: t('project.noViewsYet'),
-                                        notClickable: true,
-                                      },
+                                        _isEmpty(projectViews) && {
+                                          id: 'no-views',
+                                          name: t('project.noViewsYet'),
+                                          notClickable: true,
+                                        },
                                     ],
                                     (x) => !!x,
                                   )}
@@ -3775,7 +3808,7 @@ const ViewProject = ({
                                       !isSelfhosted && {
                                         label: t('project.lookingForMore'),
                                         lookingForMore: true,
-                                        onClick: () => { },
+                                        onClick: () => {},
                                       },
                                     ],
                                     (el) => !!el,
@@ -3855,8 +3888,8 @@ const ViewProject = ({
                               items={
                                 isActiveCompare
                                   ? _filter(chartMetrics, (el) => {
-                                    return !_includes(FILTER_CHART_METRICS_MAPPING_FOR_COMPARE, el.id)
-                                  })
+                                      return !_includes(FILTER_CHART_METRICS_MAPPING_FOR_COMPARE, el.id)
+                                    })
                                   : chartMetrics
                               }
                               title={t('project.metricVis')}

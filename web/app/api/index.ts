@@ -612,11 +612,14 @@ export const getError = (
   password: string | undefined = '',
 ) =>
   api
-    .get(`log/get-error?pid=${pid}&eid=${eid}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}`, {
-      headers: {
-        'x-password': password,
+    .get(
+      `log/get-error?pid=${pid}&eid=${eid}&period=${period}&filters=${JSON.stringify(filters)}&from=${from}&to=${to}&timezone=${timezone}`,
+      {
+        headers: {
+          'x-password': password,
+        },
       },
-    })
+    )
     .then((response) => response.data)
     .catch((error) => {
       debug('%s', error)

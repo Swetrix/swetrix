@@ -38,7 +38,6 @@ export const validFilters = [
 // this is done to build a connnection between dynamic column and value (e.g. for custom event metadata or page properties)
 const validDynamicFilters = ['ev:key:', 'tag:key:']
 
-
 export const filterInvalidViewPrefs = (prefs: any): any => {
   const pids = _keys(prefs)
   const filtered = _reduce(
@@ -155,7 +154,7 @@ export const parseFiltersFromUrl = (
     const url = new URL(window.location)
     const { searchParams } = url
     const initialFilters: IFilter[] = []
-    
+
     searchParams.forEach((value, key) => {
       if (!_includes(key, keySuffix)) return
 
