@@ -495,9 +495,9 @@ export class ProjectService {
 
   findOneWhere(
     where: Record<string, unknown>,
-    params: object = {},
+    options: Omit<FindOneOptions<Project>, 'where'> = {},
   ): Promise<Project> {
-    return this.projectsRepository.findOne({ where, ...params })
+    return this.projectsRepository.findOne({ where, ...options })
   }
 
   allowedToView(

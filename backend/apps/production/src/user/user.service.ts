@@ -4,7 +4,15 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { FindManyOptions, In, IsNull, LessThan, Not, Repository } from 'typeorm'
+import {
+  FindManyOptions,
+  FindOneOptions,
+  In,
+  IsNull,
+  LessThan,
+  Not,
+  Repository,
+} from 'typeorm'
 import axios from 'axios'
 import CryptoJS from 'crypto-js'
 import dayjs from 'dayjs'
@@ -172,7 +180,7 @@ export class UserService {
     return this.usersRepository.findOne({ where, relations, select })
   }
 
-  findOne(id: string, params: any = {}): Promise<User> {
+  findOne(id: string, params: FindOneOptions<User> = {}): Promise<User> {
     return this.usersRepository.findOne({
       where: { id },
       ...params,
