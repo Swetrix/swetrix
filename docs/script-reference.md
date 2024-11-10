@@ -67,8 +67,10 @@ Such data will include the following params if available:
 5. `so` - the page source ('ref' | 'source' | 'utm_source' GET param).
 6. `me` - UTM medium ('utm_medium' GET param).
 7. `ca` - UTM campaign ('utm_campaign' GET param).
-8. `pg` - the page user currently views (e.g. /hello).
-9. `perf` - an object which contains performance metrics related to the page load.
+8. `te` - UTM term ('utm_term' GET param).
+9. `co` - UTM content ('utm_content' GET param).
+10. `pg` - the page user currently views (e.g. /hello).
+11. `perf` - an object which contains performance metrics related to the page load.
 
 On the server side we also gather users IP Address and User Agent. This data is used to detect whether the page view is unique or not.
 
