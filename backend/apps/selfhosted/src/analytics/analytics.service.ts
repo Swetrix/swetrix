@@ -100,6 +100,8 @@ dayjs.extend(isSameOrBefore)
 
 const getSessionDurationKey = (psid: string, pid: string) => `sd:${psid}:${pid}`
 
+const SOFTWARE_WITH_PATCH_VERSION = ['GameVault']
+
 const GMT_0_TIMEZONES = [
   'Atlantic/Azores',
   'Etc/GMT',
@@ -2527,12 +2529,19 @@ export class AnalyticsService {
     })
   }
 
-  extractMajorMinorVersion(version: string | null): string | null {
+  extractSoftwareVersion(
+    version: string | null,
+    software?: string | null,
+  ): string | null {
     if (!version) return null
 
-    const [major, minor = '0'] = version.split('.')
+    const [major, minor = '0', patch = '0'] = version.split('.')
 
     if (!major) return null
+
+    if (software && SOFTWARE_WITH_PATCH_VERSION.includes(software)) {
+      return `${major}.${minor}.${patch}`
+    }
 
     return `${major}.${minor}`
   }

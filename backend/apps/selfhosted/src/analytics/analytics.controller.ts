@@ -927,11 +927,12 @@ export class AnalyticsController {
     const ua = UAParser(userAgent, extensions)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
-    const brv = this.analyticsService.extractMajorMinorVersion(
+    const brv = this.analyticsService.extractSoftwareVersion(
       ua.browser.version,
+      ua.browser.name,
     )
     const os = ua.os.name
-    const osv = this.analyticsService.extractMajorMinorVersion(ua.os.version)
+    const osv = this.analyticsService.extractSoftwareVersion(ua.os.version)
 
     const { city, region, country } = getGeoDetails(ip, eventsDTO.tz)
 
@@ -1031,11 +1032,12 @@ export class AnalyticsController {
     const ua = UAParser(userAgent, extensions)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
-    const brv = this.analyticsService.extractMajorMinorVersion(
+    const brv = this.analyticsService.extractSoftwareVersion(
       ua.browser.version,
+      ua.browser.name,
     )
     const os = ua.os.name
-    const osv = this.analyticsService.extractMajorMinorVersion(ua.os.version)
+    const osv = this.analyticsService.extractSoftwareVersion(ua.os.version)
 
     const transformed = trafficTransformer(
       psid,
@@ -1160,11 +1162,12 @@ export class AnalyticsController {
     const ua = UAParser(userAgent, extensions)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
-    const brv = this.analyticsService.extractMajorMinorVersion(
+    const brv = this.analyticsService.extractSoftwareVersion(
       ua.browser.version,
+      ua.browser.name,
     )
     const os = ua.os.name
-    const osv = this.analyticsService.extractMajorMinorVersion(ua.os.version)
+    const osv = this.analyticsService.extractSoftwareVersion(ua.os.version)
 
     const { city, region, country } = getGeoDetails(ip, null)
 
@@ -1451,11 +1454,12 @@ export class AnalyticsController {
     const ua = UAParser(userAgent, extensions)
     const dv = ua.device.type || 'desktop'
     const br = ua.browser.name
-    const brv = this.analyticsService.extractMajorMinorVersion(
+    const brv = this.analyticsService.extractSoftwareVersion(
       ua.browser.version,
+      ua.browser.name,
     )
     const os = ua.os.name
-    const osv = this.analyticsService.extractMajorMinorVersion(ua.os.version)
+    const osv = this.analyticsService.extractSoftwareVersion(ua.os.version)
 
     const { name, message, lineno, colno, filename } = errorDTO
 
