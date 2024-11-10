@@ -2,6 +2,8 @@ import _toNumber from 'lodash/toNumber'
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { ConfigModule } from '@nestjs/config'
+import { APP_FILTER } from '@nestjs/core'
+import { SentryModule, SentryGlobalFilter } from '@sentry/nestjs/setup'
 import { ScheduleModule } from '@nestjs/schedule'
 import { NestjsFormDataModule } from 'nestjs-form-data'
 import { MailerModule as NodeMailerModule } from '@nestjs-modules/mailer'
@@ -30,6 +32,7 @@ import { AppController } from './app.controller'
 import { isPrimaryNode, isPrimaryClusterNode } from './common/utils'
 
 const modules = [
+  SentryModule.forRoot(),
   ConfigModule.forRoot({
     cache: true,
     envFilePath: '.env',
@@ -97,5 +100,11 @@ const modules = [
     ...(isPrimaryNode() && isPrimaryClusterNode() ? [TaskManagerModule] : []),
   ],
   controllers: [AppController],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: SentryGlobalFilter,
+    },
+  ],
 })
 export class AppModule {}
