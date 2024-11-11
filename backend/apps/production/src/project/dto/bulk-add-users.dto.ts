@@ -4,9 +4,12 @@ import {
   IsArray,
   ValidateNested,
   ArrayMinSize,
+  IsEnum,
+  IsEmail,
 } from 'class-validator'
 import { Type } from 'class-transformer'
 
+import { ValidateProjectIds } from '../../analytics/decorators/validate-project-ids.decorator'
 import { Role } from '../entity/project-share.entity'
 
 class UserProjectAccess {
@@ -15,6 +18,7 @@ class UserProjectAccess {
     description: 'User you want to invite to your project',
   })
   @IsNotEmpty()
+  @IsEmail()
   email: string
 
   @ApiProperty({
@@ -22,6 +26,7 @@ class UserProjectAccess {
     description: 'Users role in your project',
   })
   @IsNotEmpty()
+  @IsEnum(Role)
   role: Role
 
   @ApiProperty({
@@ -31,6 +36,7 @@ class UserProjectAccess {
   @IsArray()
   @IsNotEmpty()
   @ArrayMinSize(1)
+  @ValidateProjectIds()
   projectIds: string[]
 }
 

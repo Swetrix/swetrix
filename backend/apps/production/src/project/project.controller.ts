@@ -1078,7 +1078,9 @@ export class ProjectController {
 
         const failedProjectIds = []
 
-        for (const pid of invitationObject.projectIds) {
+        const uniqueProjectIds = [...new Set(invitationObject.projectIds)]
+
+        for (const pid of uniqueProjectIds) {
           if (!isValidPID(pid)) {
             this.logger.warn(`Invalid project ID: ${pid}`)
             failedProjectIds.push({
