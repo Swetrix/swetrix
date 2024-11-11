@@ -341,6 +341,8 @@ export class UserController {
         await Promise.all(promises)
       }
       await this.actionTokensService.deleteMultiple(`userId="${id}"`)
+      await this.userService.deleteAllRefreshTokens(id)
+      await this.projectService.deleteMultipleShare(`userId="${id}"`)
       await this.userService.delete(id)
 
       return 'accountDeleted'
@@ -365,6 +367,10 @@ export class UserController {
       relations: ['projects'],
       select: ['id', 'planCode'],
     })
+
+    if (_isEmpty(user)) {
+      throw new BadRequestException('User not found')
+    }
 
     if (!_includes(UNPAID_PLANS, user.planCode)) {
       throw new BadRequestException('cancelSubFirst')
@@ -393,6 +399,8 @@ export class UserController {
         await Promise.all(promises)
       }
       await this.actionTokensService.deleteMultiple(`userId="${id}"`)
+      await this.userService.deleteAllRefreshTokens(id)
+      await this.projectService.deleteMultipleShare(`userId="${id}"`)
       await this.userService.delete(id)
     } catch (e) {
       this.logger.error(e)

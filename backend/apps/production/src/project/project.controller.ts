@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 import {
   Controller,
   Body,
@@ -110,6 +111,8 @@ import { ProjectViewIdsDto } from './dto/project-view-ids.dto'
 import { CreateMonitorHttpRequestDTO } from './dto/create-monitor.dto'
 import { MonitorEntity } from './entity/monitor.entity'
 import { UpdateMonitorHttpRequestDTO } from './dto/update-monitor.dto'
+import { BulkAddUsersDto } from './dto/bulk-add-users.dto'
+import { BulkAddUsersResponse } from './interfaces/bulk-add-users'
 
 const PROJECTS_MAXIMUM = 50
 
@@ -480,7 +483,6 @@ export class ProjectController {
 
     let pid = generateProjectId()
 
-    // eslint-disable-next-line no-await-in-loop
     while (!(await this.projectService.isPIDUnique(pid))) {
       pid = generateProjectId()
     }
@@ -689,7 +691,7 @@ export class ProjectController {
     )
 
     if (!project) {
-      throw new NotFoundException('Project not found.')
+      throw new NotFoundException('Project not found')
     }
 
     this.projectService.allowedToManage(project, userId)
@@ -1018,6 +1020,163 @@ export class ProjectController {
   }
 
   @ApiBearerAuth()
+  @Post('/bulk-add-users')
+  @HttpCode(200)
+  @Auth([], true)
+  @ApiResponse({ status: 200, type: [BulkAddUsersDto] })
+  async bulkAddUsers(
+    @Body() bulkAddUsersDto: BulkAddUsersDto,
+    @CurrentUserId() uid: string,
+  ): Promise<BulkAddUsersResponse[]> {
+    this.logger.log({ uid, bulkAddUsersDto }, 'POST /project/bulk-add-users')
+
+    const inviter = await this.userService.findOne(uid, {
+      relations: ['projects', 'sharedProjects', 'sharedProjects.project'],
+    })
+
+    const results: BulkAddUsersResponse[] = []
+
+    await Promise.all(
+      bulkAddUsersDto.users.map(async invitationObject => {
+        const invitee = await this.userService.findOneWhere(
+          {
+            email: invitationObject.email,
+          },
+          ['sharedProjects'],
+        )
+
+        if (!invitee) {
+          this.logger.warn(
+            `User with email ${invitationObject.email} is not registered`,
+          )
+
+          results.push({
+            email: invitationObject.email,
+            success: false,
+            error: 'User with this email is not registered on Swetrix',
+            failedProjectIds: [],
+          })
+
+          return null
+        }
+
+        if (invitee.id === inviter.id) {
+          this.logger.warn(
+            `Skipping self-share attempt for ${invitationObject.email}`,
+          )
+
+          results.push({
+            email: invitationObject.email,
+            success: false,
+            error:
+              'User with this email is the same as the inviter initiating this request',
+            failedProjectIds: [],
+          })
+
+          return null
+        }
+
+        const failedProjectIds = []
+
+        const uniqueProjectIds = [...new Set(invitationObject.projectIds)]
+
+        for (const pid of uniqueProjectIds) {
+          if (!isValidPID(pid)) {
+            this.logger.warn(`Invalid project ID: ${pid}`)
+            failedProjectIds.push({
+              projectId: pid,
+              reason: 'Invalid project ID',
+            })
+            continue
+          }
+
+          const project = await this.projectService.findOneWhere(
+            { id: pid },
+            {
+              relations: ['admin', 'share', 'share.user'],
+              select: ['id', 'admin', 'share'],
+            },
+          )
+
+          if (_isEmpty(project)) {
+            this.logger.warn(`Project with ID ${pid} does not exist`)
+            failedProjectIds.push({
+              projectId: pid,
+              reason: 'Project does not exist',
+            })
+            continue
+          }
+
+          try {
+            this.projectService.allowedToManage(project, uid, inviter.roles)
+          } catch (reason) {
+            this.logger.warn(`User ${uid} not allowed to manage project ${pid}`)
+            failedProjectIds.push({
+              projectId: pid,
+              reason: 'Inviter is not allowed to manage this project',
+            })
+            continue
+          }
+
+          const isSharingWithUser = !_isEmpty(
+            _find(project.share, share => share.user?.id === invitee.id),
+          )
+
+          if (isSharingWithUser) {
+            this.logger.warn(
+              `Already sharing project ${pid} with ${invitee.email}`,
+            )
+            failedProjectIds.push({
+              projectId: pid,
+              reason: 'Already sharing project with this user',
+            })
+            continue
+          }
+
+          try {
+            const share = new ProjectShare()
+            share.role = invitationObject.role
+            share.user = invitee
+            share.project = project
+            share.confirmed = true // Auto-confirm since we're not sending invitations
+
+            await this.projectService.createShare(share)
+
+            // Saving share into project
+            project.share.push(share)
+            await this.projectService.create(project)
+
+            // Saving share into invitees shared projects
+            invitee.sharedProjects.push(share)
+            await this.userService.create(invitee)
+
+            await deleteProjectRedis(pid)
+          } catch (reason) {
+            this.logger.error(
+              `[ERROR] Could not share project (pid: ${pid}, invitee ID: ${invitee.id}): ${reason}`,
+            )
+            failedProjectIds.push({
+              projectId: pid,
+              reason: 'Internal error',
+            })
+          }
+        }
+
+        results.push({
+          email: invitationObject.email,
+          success: failedProjectIds.length === 0,
+          failedProjectIds,
+          error: null,
+        })
+
+        return null
+      }),
+    )
+
+    return results
+  }
+
+  @ApiBearerAuth()
   @Post('/:pid/share')
   @HttpCode(200)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
@@ -1074,12 +1233,7 @@ export class ProjectController {
     }
 
     const isSharingWithUser = !_isEmpty(
-      await this.projectService.findShare({
-        where: {
-          project: project.id,
-          user: invitee.id,
-        },
-      }),
+      _find(project.share, share => share.user?.id === invitee.id),
     )
 
     if (isSharingWithUser) {
@@ -1341,7 +1495,7 @@ export class ProjectController {
     })
 
     if (!project) {
-      throw new NotFoundException('Project not found.')
+      throw new NotFoundException('Project not found')
     }
 
     this.projectService.allowedToManage(
@@ -1357,7 +1511,7 @@ export class ProjectController {
     )
 
     if (!subscriber) {
-      throw new NotFoundException('Subscriber not found.')
+      throw new NotFoundException('Subscriber not found')
     }
 
     await this.projectService.removeSubscriber(
@@ -1381,7 +1535,7 @@ export class ProjectController {
     })
 
     if (!project) {
-      throw new NotFoundException('Project not found.')
+      throw new NotFoundException('Project not found')
     }
 
     this.projectService.allowedToManage(
@@ -1499,7 +1653,7 @@ export class ProjectController {
     })
 
     if (!project) {
-      throw new NotFoundException('Project not found.')
+      throw new NotFoundException('Project not found')
     }
 
     this.projectService.allowedToView(project, userId)
@@ -1524,7 +1678,7 @@ export class ProjectController {
     })
 
     if (!project) {
-      throw new NotFoundException('Project not found.')
+      throw new NotFoundException('Project not found')
     }
 
     this.projectService.allowedToManage(
@@ -1540,7 +1694,7 @@ export class ProjectController {
     )
 
     if (!subscriber) {
-      throw new NotFoundException('Subscriber not found.')
+      throw new NotFoundException('Subscriber not found')
     }
 
     return this.projectService.updateSubscriber(
@@ -2152,13 +2306,13 @@ export class ProjectController {
     ])
 
     if (!project) {
-      throw new NotFoundException('Project not found.')
+      throw new NotFoundException('Project not found')
     }
 
     const user = await this.userService.findUserV2(userId, ['roles'])
 
     if (!user) {
-      throw new NotFoundException('User not found.')
+      throw new NotFoundException('User not found')
     }
 
     this.projectService.allowedToManage(project, userId, user.roles)
