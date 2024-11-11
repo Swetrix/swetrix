@@ -56,6 +56,7 @@ import {
   REDIS_USERS_COUNT_KEY,
   REDIS_PROJECTS_COUNT_KEY,
   REDIS_EVENTS_COUNT_KEY,
+  UNIQUE_SESSION_LIFE_TIME,
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
 import {
@@ -1193,7 +1194,7 @@ export class AnalyticsController {
     await this.analyticsService.validate(eventsDTO, origin, ip)
 
     if (eventsDTO.unique) {
-      const [unique] = await this.analyticsService.isUnique(
+      const [unique] = await this.analyticsService.generateAndStoreSessionId(
         `${eventsDTO.pid}-${eventsDTO.ev}`,
         userAgent,
         ip,
@@ -1217,7 +1218,7 @@ export class AnalyticsController {
     const os = ua.os.name
     const osv = this.analyticsService.extractMajorMinorVersion(ua.os.version)
 
-    const [, psid] = await this.analyticsService.isUnique(
+    const [, psid] = await this.analyticsService.generateAndStoreSessionId(
       eventsDTO.pid,
       userAgent,
       ip,
@@ -1278,7 +1279,16 @@ export class AnalyticsController {
 
     await this.analyticsService.validateHeartbeat(logDTO, origin, ip)
 
-    const [, psid] = await this.analyticsService.isUnique(pid, userAgent, ip)
+    const { exists, psid, sessionHash } =
+      await this.analyticsService.getSessionId(pid, userAgent, ip)
+
+    if (!exists) {
+      throw new ForbiddenException(
+        'The heartbeat was not saved because there is no session for this request. Please, send a pageview or custom event request first to initialise the session.',
+      )
+    }
+
+    await redis.set(sessionHash, psid, 'EX', UNIQUE_SESSION_LIFE_TIME)
 
     await this.analyticsService.processInteractionSD(psid, pid)
   }
@@ -1295,11 +1305,12 @@ export class AnalyticsController {
 
     await this.analyticsService.validate(logDTO, origin, ip)
 
-    const [unique, psid] = await this.analyticsService.isUnique(
-      logDTO.pid,
-      userAgent,
-      ip,
-    )
+    const [unique, psid] =
+      await this.analyticsService.generateAndStoreSessionId(
+        logDTO.pid,
+        userAgent,
+        ip,
+      )
 
     await this.analyticsService.processInteractionSD(psid, logDTO.pid)
 
@@ -1432,7 +1443,7 @@ export class AnalyticsController {
 
     await this.analyticsService.validate(logDTO, origin, ip)
 
-    const [, psid] = await this.analyticsService.isUnique(
+    const [, psid] = await this.analyticsService.generateAndStoreSessionId(
       logDTO.pid,
       userAgent,
       ip,

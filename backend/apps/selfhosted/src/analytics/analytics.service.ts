@@ -1038,16 +1038,11 @@ export class AnalyticsService {
     return crypto.randomBytes(8).readBigUInt64BE(0).toString()
   }
 
-  /**
-   * Checks if the session is unique and returns the session psid (or creates a new one)
-   * @param sessionHash
-   * @returns [isUnique, psid]
-   */
-  async isUnique(
+  async getSessionId(
     pid: string,
     userAgent: string,
     ip: string,
-  ): Promise<[boolean, string]> {
+  ): Promise<{ exists: boolean; psid: string; sessionHash: string }> {
     const sessionHash = await this.getSessionHash(pid, userAgent, ip)
 
     let psid = await redis.get(sessionHash)
@@ -1056,6 +1051,23 @@ export class AnalyticsService {
     if (!exists) {
       psid = this.generateUInt64()
     }
+
+    return { exists, psid, sessionHash }
+  }
+
+  /**
+   * Checks if the session is unique and returns the session psid (or creates a new one)
+   */
+  async generateAndStoreSessionId(
+    pid: string,
+    userAgent: string,
+    ip: string,
+  ): Promise<[boolean, string]> {
+    const { exists, psid, sessionHash } = await this.getSessionId(
+      pid,
+      userAgent,
+      ip,
+    )
 
     await redis.set(sessionHash, psid, 'EX', UNIQUE_SESSION_LIFE_TIME)
     return [!exists, psid]
