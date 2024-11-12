@@ -14,7 +14,7 @@ export class AlertService {
 
   async paginate(
     options: PaginationOptionsInterface,
-    where: Record<string, unknown> | undefined,
+    where: FindManyOptions<Alert>['where'],
     relations?: Array<string>,
   ): Promise<Pagination<Alert>> {
     const [results, total] = await this.alertsReporsitory.findAndCount({
@@ -46,13 +46,6 @@ export class AlertService {
 
   findOne(options: FindOneOptions<Alert>): Promise<Alert | null> {
     return this.alertsReporsitory.findOne(options)
-  }
-
-  findWhere(
-    where: Record<string, unknown>,
-    relations?: string[],
-  ): Promise<Alert[]> {
-    return this.alertsReporsitory.find({ where, relations })
   }
 
   find(options: FindManyOptions<Alert>): Promise<Alert[]> {

@@ -130,7 +130,7 @@ export class WebhookController {
 
         const currentUser = uid
           ? await this.userService.findOne({ where: { id: uid } })
-          : await this.userService.findOneWhere({ email })
+          : await this.userService.findOne({ where: { email } })
         const unlockDashboardParams =
           body.alert_name === 'subscription_created' ||
           isNextPlan(currentUser.planCode, plan.id)
@@ -178,8 +178,8 @@ export class WebhookController {
         })
 
         const { email } =
-          (await this.userService.findOneWhere({
-            subID,
+          (await this.userService.findOne({
+            where: { subID },
           })) || {}
 
         if (email) {
@@ -212,7 +212,9 @@ export class WebhookController {
           balance_currency: balanceCurrency,
         } = body
 
-        const subscriber = await this.userService.findOneWhere({ subID })
+        const subscriber = await this.userService.findOne({
+          where: { subID },
+        })
 
         if (!subscriber) {
           this.logger.error(
@@ -240,8 +242,8 @@ export class WebhookController {
           return
         }
 
-        const referrer = await this.userService.findOneWhere({
-          id: subscriber.referrerID,
+        const referrer = await this.userService.findOne({
+          where: { id: subscriber.referrerID },
         })
 
         if (!referrer) {
@@ -271,8 +273,8 @@ export class WebhookController {
 
         if (parseInt(attemptNumber, 10) >= MAX_PAYMENT_ATTEMPTS) {
           const { email } =
-            (await this.userService.findOneWhere({
-              subID,
+            (await this.userService.findOne({
+              where: { subID },
             })) || {}
 
           if (!email) {

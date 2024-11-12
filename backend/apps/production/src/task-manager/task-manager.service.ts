@@ -928,8 +928,8 @@ export class TaskManagerService {
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   async checkOnlineUsersAlerts() {
-    const projects = await this.projectService.findWhere(
-      [
+    const projects = await this.projectService.find({
+      where: [
         {
           admin: {
             isTelegramChatIdConfirmed: true,
@@ -952,17 +952,17 @@ export class TaskManagerService {
           },
         },
       ],
-      ['admin'],
-    )
+      relations: ['admin'],
+    })
 
-    const alerts = await this.alertService.findWhere(
-      {
+    const alerts = await this.alertService.find({
+      where: {
         project: In(_map(projects, 'id')),
         active: true,
         queryMetric: QueryMetric.ONLINE_USERS,
       },
-      ['project'],
-    )
+      relations: ['project'],
+    })
 
     const promises = _map(alerts, async alert => {
       const project = _find(projects, { id: alert.project.id })
@@ -1014,24 +1014,24 @@ export class TaskManagerService {
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   async checkMetricAlerts() {
-    const projects = await this.projectService.findWhere(
-      {
+    const projects = await this.projectService.find({
+      where: {
         admin: {
           planCode: Not(PlanCode.none),
           dashboardBlockReason: IsNull(),
         },
       },
-      ['admin'],
-    )
+      relations: ['admin'],
+    })
 
-    const alerts = await this.alertService.findWhere(
-      {
+    const alerts = await this.alertService.find({
+      where: {
         project: In(_map(projects, 'id')),
         active: true,
         queryMetric: Not(QueryMetric.ONLINE_USERS),
       },
-      ['project'],
-    )
+      relations: ['project'],
+    })
 
     const promises = _map(alerts, async alert => {
       const project = _find(projects, { id: alert.project.id })

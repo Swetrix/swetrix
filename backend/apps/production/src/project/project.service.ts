@@ -374,7 +374,7 @@ export class ProjectService {
 
   async paginate(
     options: PaginationOptionsInterface,
-    where: FindOptionsWhere<Project> | FindOptionsWhere<Project>[] | undefined,
+    where?: FindOptionsWhere<Project> | FindOptionsWhere<Project>[],
   ): Promise<Pagination<Project>> {
     const [results, total] = await this.projectsRepository.findAndCount({
       take: options.take || 100,
@@ -394,7 +394,7 @@ export class ProjectService {
 
   async paginateShared(
     options: PaginationOptionsInterface,
-    where: FindOptionsWhere<Project> | FindOptionsWhere<Project>[] | undefined,
+    where: FindOptionsWhere<ProjectShare> | FindOptionsWhere<ProjectShare>[],
   ): Promise<Pagination<ProjectShare>> {
     const [results, total] = await this.projectShareRepository.findAndCount({
       take: options.take || 100,
@@ -480,13 +480,6 @@ export class ProjectService {
 
   findOne(options: FindOneOptions<Project>) {
     return this.projectsRepository.findOne(options)
-  }
-
-  findWhere(
-    where: Record<string, unknown> | Record<string, unknown>[],
-    relations?: string[],
-  ) {
-    return this.projectsRepository.find({ where, relations })
   }
 
   find(options: FindManyOptions<Project>) {
@@ -892,8 +885,10 @@ export class ProjectService {
   }
 
   async clearProjectsRedisCache(uid: string): Promise<void> {
-    const projects = await this.findWhere({
-      admin: uid,
+    const projects = await this.find({
+      where: {
+        admin: { id: uid },
+      },
     })
 
     if (_isEmpty(projects)) {
@@ -906,7 +901,7 @@ export class ProjectService {
   }
 
   async clearProjectsRedisCacheByEmail(email: string): Promise<void> {
-    const user = await this.userService.findOneWhere({ email })
+    const user = await this.userService.findOne({ where: { email } })
 
     if (!user) {
       return
@@ -916,7 +911,7 @@ export class ProjectService {
   }
 
   async clearProjectsRedisCacheBySubId(subID: string): Promise<void> {
-    const user = await this.userService.findOneWhere({ subID })
+    const user = await this.userService.findOne({ where: { subID } })
 
     if (!user) {
       return
@@ -1085,7 +1080,7 @@ export class ProjectService {
     })
   }
 
-  async findOneSubscriber(where: Record<string, unknown>) {
+  async findOneSubscriber(where: FindOneOptions<ProjectSubscriber>['where']) {
     return this.projectSubscriberRepository.findOne({ where })
   }
 
@@ -1500,7 +1495,7 @@ export class ProjectService {
 
   async paginateMonitors(
     options: PaginationOptionsInterface,
-    where: Record<string, unknown> | undefined,
+    where: FindManyOptions<MonitorEntity>['where'],
   ): Promise<Pagination<MonitorEntity>> {
     const [results, total] = await this.monitorRepository.findAndCount({
       take: options.take || 100,

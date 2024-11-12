@@ -57,7 +57,11 @@ export class AlertController {
   ) {
     this.logger.log({ userId, take, skip }, 'GET /alert')
 
-    const projects = await this.projectService.findWhere({ admin: userId })
+    const projects = await this.projectService.find({
+      where: {
+        admin: { id: userId },
+      },
+    })
 
     if (_isEmpty(projects)) {
       return []

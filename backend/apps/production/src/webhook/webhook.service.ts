@@ -143,8 +143,8 @@ export class WebhookService {
   }
 
   async unsubscribeByEmail(email: string): Promise<void> {
-    const user = await this.userService.findOneWhere({
-      email,
+    const user = await this.userService.findOne({
+      where: { email },
     })
 
     // checking if the bounce originates from admin email reports

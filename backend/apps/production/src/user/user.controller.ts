@@ -500,7 +500,7 @@ export class UserController {
   ): Promise<boolean> {
     this.logger.log({ id }, 'POST /user/confirm_email')
 
-    const user = await this.userService.findOneWhere({ id })
+    const user = await this.userService.findOne({ where: { id } })
 
     if (
       !user ||
@@ -541,7 +541,7 @@ export class UserController {
       userDTO.password = await this.authService.hashPassword(userDTO.password)
     }
 
-    const user = await this.userService.findOneWhere({ id })
+    const user = await this.userService.findOne({ where: { id } })
 
     try {
       if (!user) {
@@ -573,7 +573,7 @@ export class UserController {
   ): Promise<any> {
     this.logger.log({ tgID, id }, 'DELETE /user/tg/:id')
 
-    const user = await this.userService.findOneWhere({ id })
+    const user = await this.userService.findOne({ where: { id } })
 
     if (tgID && user.telegramChatId === tgID) {
       await this.userService.update(id, {
@@ -593,7 +593,7 @@ export class UserController {
     @Req() request: Request,
   ): Promise<Partial<User>> {
     this.logger.log({ userDTO, id }, 'PUT /user')
-    const user = await this.userService.findOneWhere({ id })
+    const user = await this.userService.findOne({ where: { id } })
 
     const shouldUpdatePassword =
       !_isEmpty(userDTO.password) && _isString(userDTO.password)
@@ -608,8 +608,8 @@ export class UserController {
 
     try {
       if (userDTO.email && user.email !== userDTO.email) {
-        const userWithByEmail = await this.userService.findOneWhere({
-          email: userDTO.email,
+        const userWithByEmail = await this.userService.findOne({
+          where: { email: userDTO.email },
         })
 
         if (userWithByEmail) {
@@ -638,8 +638,8 @@ export class UserController {
         userDTO.telegramChatId &&
         user.telegramChatId !== userDTO.telegramChatId
       ) {
-        const userWithByTelegramChatId = await this.userService.findOneWhere({
-          telegramChatId: userDTO.telegramChatId,
+        const userWithByTelegramChatId = await this.userService.findOne({
+          where: { telegramChatId: userDTO.telegramChatId },
         })
 
         if (userWithByTelegramChatId) {
@@ -749,7 +749,7 @@ export class UserController {
         await this.authService.logoutAll(id)
       }
 
-      const updatedUser = await this.userService.findOneWhere({ id })
+      const updatedUser = await this.userService.findOne({ where: { id } })
       return this.userService.omitSensitiveData(updatedUser)
     } catch (reason) {
       throw new BadRequestException(reason.message)
@@ -769,7 +769,7 @@ export class UserController {
   // ): Promise<Pagination<Payout> | Payout[]> {
   //   this.logger.log({ id, take, skip }, 'GET /user/payouts/list')
 
-  //   const user = await this.userService.findOneWhere({ id })
+  //   const user = await this.userService.findOne({ where: { id } })
 
   //   if (!user) {
   //     throw new BadRequestException('User not found')
@@ -785,7 +785,7 @@ export class UserController {
   async getReferralsList(@CurrentUserId() id: string): Promise<any> {
     this.logger.log({ id }, 'GET /user/referrals')
 
-    const user = await this.userService.findOneWhere({ id })
+    const user = await this.userService.findOne({ where: { id } })
 
     if (!user) {
       throw new BadRequestException('User not found')
@@ -801,7 +801,7 @@ export class UserController {
   async getPayoutsInfo(@CurrentUserId() id: string): Promise<any> {
     this.logger.log({ id }, 'GET /user/payouts/info')
 
-    const user = await this.userService.findOneWhere({ id })
+    const user = await this.userService.findOne({ where: { id } })
 
     if (!user) {
       throw new BadRequestException('User not found')
@@ -817,7 +817,7 @@ export class UserController {
   async generateRefCode(@CurrentUserId() id: string): Promise<any> {
     this.logger.log({ id }, 'POST /user/generate-ref-code')
 
-    const user = await this.userService.findOneWhere({ id })
+    const user = await this.userService.findOne({ where: { id } })
 
     if (!user) {
       throw new BadRequestException('User not found')
@@ -847,9 +847,13 @@ export class UserController {
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async exportUserData(@CurrentUserId() user_id: string): Promise<User> {
     this.logger.log({ user_id }, 'GET /user/export')
-    const user = await this.userService.findOneWhere({ id: user_id })
-    const where = Object({ admin: user_id })
-    const projects = await this.projectService.findWhere(where, ['alerts'])
+    const user = await this.userService.findOne({ where: { id: user_id } })
+    const projects = await this.projectService.find({
+      where: {
+        admin: { id: user_id },
+      },
+      relations: ['alerts'],
+    })
 
     if (
       !_isNull(user.exportedAt) &&
@@ -989,9 +993,7 @@ export class UserController {
       throw new NotFoundException('Unsubscribe token is invalid')
     }
 
-    const user = await this.userService.findOneWhere({
-      id: userId,
-    })
+    const user = await this.userService.findOne({ where: { id: userId } })
 
     if (!user) {
       throw new NotFoundException('Unsubscribe token is invalid')

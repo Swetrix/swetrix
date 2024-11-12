@@ -163,7 +163,9 @@ export class ProjectController {
     if (search) {
       where = [
         {
-          admin: userId,
+          admin: {
+            id: userId,
+          },
           isCaptchaProject: isCaptcha,
           isAnalyticsProject: !isCaptcha,
           name: ILike(`%${search}%`),
@@ -171,7 +173,9 @@ export class ProjectController {
           // name: ILike(`%${mysql.escape(search).slice(1, 0).slice(0, -1)}%`),
         },
         {
-          admin: userId,
+          admin: {
+            id: userId,
+          },
           isCaptchaProject: isCaptcha,
           isAnalyticsProject: !isCaptcha,
           id: ILike(`%${search}%`),
@@ -181,7 +185,9 @@ export class ProjectController {
       ] as FindOptionsWhere<Project>[]
     } else {
       where = {
-        admin: userId,
+        admin: {
+          id: userId,
+        },
       } as FindOptionsWhere<Project>
 
       if (isCaptcha) {
@@ -259,25 +265,29 @@ export class ProjectController {
   ): Promise<Pagination<ProjectShare> | ProjectShare[] | object> {
     this.logger.log({ userId, take, skip, search }, 'GET /project/shared')
 
-    let where = Object()
+    let where: FindOptionsWhere<ProjectShare> | FindOptionsWhere<ProjectShare>[]
 
     if (search) {
       where = [
         {
-          user: userId,
+          user: { id: userId },
           project: {
             name: ILike(`%${search}%`),
           },
         },
         {
-          user: userId,
+          user: { id: userId },
           project: {
             id: ILike(`%${search}%`),
           },
         },
-      ]
+      ] as FindOptionsWhere<ProjectShare>[]
     } else {
-      where.user = userId
+      where = {
+        user: {
+          id: userId,
+        },
+      } as FindOptionsWhere<ProjectShare>
     }
 
     const paginated = await this.projectService.paginateShared(
@@ -327,8 +337,7 @@ export class ProjectController {
   ): Promise<Project | object> {
     this.logger.log({ take, skip }, 'GET /all')
 
-    const where = Object()
-    return this.projectService.paginate({ take, skip }, where)
+    return this.projectService.paginate({ take, skip })
   }
 
   @ApiBearerAuth()
@@ -1038,12 +1047,10 @@ export class ProjectController {
 
     await Promise.all(
       bulkAddUsersDto.users.map(async invitationObject => {
-        const invitee = await this.userService.findOneWhere(
-          {
-            email: invitationObject.email,
-          },
-          ['sharedProjects'],
-        )
+        const invitee = await this.userService.findOne({
+          where: { email: invitationObject.email },
+          relations: ['sharedProjects'],
+        })
 
         if (!invitee) {
           this.logger.warn(
@@ -1211,12 +1218,10 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, uid, user.roles)
 
-    const invitee = await this.userService.findOneWhere(
-      {
-        email: shareDTO.email,
-      },
-      ['sharedProjects'],
-    )
+    const invitee = await this.userService.findOne({
+      where: { email: shareDTO.email },
+      relations: ['sharedProjects'],
+    })
 
     if (!invitee) {
       throw new NotFoundException(
@@ -1400,7 +1405,9 @@ export class ProjectController {
       throw new NotFoundException('Project not found.')
     }
 
-    const user = await this.userService.getUserByEmail(body.email)
+    const user = await this.userService.findOne({
+      where: { email: body.email },
+    })
 
     if (!user) {
       throw new NotFoundException('User not found.')
@@ -1549,7 +1556,7 @@ export class ProjectController {
       "You are not allowed to manage this project's subscribers",
     )
 
-    const user = await this.userService.getUser(userId)
+    const user = await this.userService.findOne({ where: { id: userId } })
 
     if (user.email === body.email) {
       throw new BadRequestException('You cannot subscribe to your own project.')
@@ -2070,7 +2077,11 @@ export class ProjectController {
   ): Promise<Pagination<MonitorEntity>> {
     this.logger.log({ userId, take, skip }, 'GET /project/monitors')
 
-    const projects = await this.projectService.findWhere({ admin: userId })
+    const projects = await this.projectService.find({
+      where: {
+        admin: { id: userId },
+      },
+    })
 
     if (_isEmpty(projects)) {
       return {
