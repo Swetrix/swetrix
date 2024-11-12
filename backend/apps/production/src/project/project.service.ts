@@ -493,13 +493,6 @@ export class ProjectService {
     return this.projectsRepository.find(options)
   }
 
-  findOneWhere(
-    where: Record<string, unknown>,
-    options: Omit<FindOneOptions<Project>, 'where'> = {},
-  ) {
-    return this.projectsRepository.findOne({ where, ...options })
-  }
-
   allowedToView(
     project: Project,
     uid: string | null,

@@ -575,15 +575,15 @@ export class ProjectController {
       )
     }
 
-    const project = await this.projectService.findOneWhere(
-      {
+    const project = await this.projectService.findOne({
+      where: {
         id: funnelDTO.pid,
-        admin: userId,
+        admin: {
+          id: userId,
+        },
       },
-      {
-        relations: ['admin', 'share'],
-      },
-    )
+      relations: ['admin', 'share'],
+    })
 
     if (!project) {
       throw new NotFoundException('Project not found.')
@@ -630,15 +630,15 @@ export class ProjectController {
       )
     }
 
-    const project = await this.projectService.findOneWhere(
-      {
+    const project = await this.projectService.findOne({
+      where: {
         id: funnelDTO.pid,
-        admin: userId,
+        admin: {
+          id: userId,
+        },
       },
-      {
-        relations: ['admin', 'share', 'funnels'],
-      },
-    )
+      relations: ['admin', 'share', 'funnels'],
+    })
 
     if (!project) {
       throw new NotFoundException('Project not found.')
@@ -682,15 +682,15 @@ export class ProjectController {
       throw new UnauthorizedException('Please auth first')
     }
 
-    const project = await this.projectService.findOneWhere(
-      {
+    const project = await this.projectService.findOne({
+      where: {
         id: pid,
-        admin: userId,
+        admin: {
+          id: userId,
+        },
       },
-      {
-        relations: ['admin', 'share'],
-      },
-    )
+      relations: ['admin', 'share'],
+    })
 
     if (!project) {
       throw new NotFoundException('Project not found')
@@ -750,13 +750,11 @@ export class ProjectController {
     }
 
     const user = await this.userService.findOne({ where: { id: uid } })
-    const project = await this.projectService.findOneWhere(
-      { id },
-      {
-        relations: ['admin'],
-        select: ['id'],
-      },
-    )
+    const project = await this.projectService.findOne({
+      where: { id },
+      relations: ['admin'],
+      select: ['id'],
+    })
 
     if (_isEmpty(project)) {
       throw new NotFoundException(`Project with ID ${id} does not exist`)
@@ -808,13 +806,11 @@ export class ProjectController {
     }
 
     const user = await this.userService.findOne({ where: { id: uid } })
-    const project = await this.projectService.findOneWhere(
-      { id },
-      {
-        relations: ['admin'],
-        select: ['id'],
-      },
-    )
+    const project = await this.projectService.findOne({
+      where: { id },
+      relations: ['admin'],
+      select: ['id'],
+    })
 
     if (_isEmpty(project)) {
       throw new NotFoundException(`Project with ID ${id} does not exist`)
@@ -895,13 +891,11 @@ export class ProjectController {
     }
 
     const user = await this.userService.findOne({ where: { id: uid } })
-    const project = await this.projectService.findOneWhere(
-      { id },
-      {
-        relations: ['admin'],
-        select: ['id'],
-      },
-    )
+    const project = await this.projectService.findOne({
+      where: { id },
+      relations: ['admin'],
+      select: ['id'],
+    })
 
     if (_isEmpty(project)) {
       throw new NotFoundException(`Project with ID ${id} does not exist`)
@@ -1096,13 +1090,11 @@ export class ProjectController {
             continue
           }
 
-          const project = await this.projectService.findOneWhere(
-            { id: pid },
-            {
-              relations: ['admin', 'share', 'share.user'],
-              select: ['id', 'admin', 'share'],
-            },
-          )
+          const project = await this.projectService.findOne({
+            where: { id: pid },
+            relations: ['admin', 'share', 'share.user'],
+            select: ['id', 'admin', 'share'],
+          })
 
           if (_isEmpty(project)) {
             this.logger.warn(`Project with ID ${pid} does not exist`)
@@ -1207,13 +1199,11 @@ export class ProjectController {
     }
 
     const user = await this.userService.findOne({ where: { id: uid } })
-    const project = await this.projectService.findOneWhere(
-      { id: pid },
-      {
-        relations: ['admin', 'share', 'share.user'],
-        select: ['id', 'admin', 'share'],
-      },
-    )
+    const project = await this.projectService.findOne({
+      where: { id: pid },
+      relations: ['admin', 'share', 'share.user'],
+      select: ['id', 'admin', 'share'],
+    })
 
     if (_isEmpty(project)) {
       throw new NotFoundException(`Project with ID ${pid} does not exist`)
@@ -1740,13 +1730,11 @@ export class ProjectController {
       )
     }
     const user = await this.userService.findOne({ where: { id: uid } })
-    const project = await this.projectService.findOneWhere(
-      { id },
-      {
-        relations: ['admin'],
-        select: ['id'],
-      },
-    )
+    const project = await this.projectService.findOne({
+      where: { id },
+      relations: ['admin'],
+      select: ['id'],
+    })
 
     if (_isEmpty(project)) {
       throw new NotFoundException(`Project with ID ${id} does not exist`)
@@ -2052,13 +2040,11 @@ export class ProjectController {
       )
     }
 
-    const project = await this.projectService.findOneWhere(
-      { id: pid },
-      {
-        relations: ['admin', 'share', 'share.user'],
-        select: ['id', 'admin', 'share'],
-      },
-    )
+    const project = await this.projectService.findOne({
+      where: { id: pid },
+      relations: ['admin', 'share', 'share.user'],
+      select: ['id', 'admin', 'share'],
+    })
 
     if (_isEmpty(project)) {
       throw new NotFoundException(`Project with ID ${pid} does not exist`)

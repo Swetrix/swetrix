@@ -102,14 +102,12 @@ export class AlertController {
       throw new ForbiddenException('Please, verify your email address first')
     }
 
-    const project = await this.projectService.findOneWhere(
-      {
+    const project = await this.projectService.findOne({
+      where: {
         id: alertDTO.pid,
       },
-      {
-        relations: ['alerts', 'admin'],
-      },
-    )
+      relations: ['alerts', 'admin'],
+    })
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project not found')
