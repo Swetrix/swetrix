@@ -9,7 +9,12 @@ import {
   NotFoundException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { FindOneOptions, FindOptionsWhere, Repository } from 'typeorm'
+import {
+  FindManyOptions,
+  FindOneOptions,
+  FindOptionsWhere,
+  Repository,
+} from 'typeorm'
 import { customAlphabet } from 'nanoid'
 import handlebars from 'handlebars'
 import puppeteer from 'puppeteer'
@@ -457,8 +462,10 @@ export class ProjectService {
     return this.projectShareRepository.update(id, share)
   }
 
-  async findShare(params: object): Promise<ProjectShare[]> {
-    return this.projectShareRepository.find(params)
+  async findShare(
+    options: FindManyOptions<ProjectShare>,
+  ): Promise<ProjectShare[]> {
+    return this.projectShareRepository.find(options)
   }
 
   async findOneShare(
@@ -467,32 +474,29 @@ export class ProjectService {
     return this.projectShareRepository.findOne(options)
   }
 
-  findOneWithRelations(
-    id: string,
-    relations = ['admin'],
-  ): Promise<Project | null> {
+  findOneWithRelations(id: string, relations = ['admin']) {
     return this.projectsRepository.findOne({ where: { id }, relations })
   }
 
-  findOne(options: FindOneOptions<Project>): Promise<Project | null> {
+  findOne(options: FindOneOptions<Project>) {
     return this.projectsRepository.findOne(options)
   }
 
   findWhere(
     where: Record<string, unknown> | Record<string, unknown>[],
     relations?: string[],
-  ): Promise<Project[]> {
+  ) {
     return this.projectsRepository.find({ where, relations })
   }
 
-  find(params: object): Promise<Project[]> {
-    return this.projectsRepository.find(params)
+  find(options: FindManyOptions<Project>) {
+    return this.projectsRepository.find(options)
   }
 
   findOneWhere(
     where: Record<string, unknown>,
     options: Omit<FindOneOptions<Project>, 'where'> = {},
-  ): Promise<Project> {
+  ) {
     return this.projectsRepository.findOne({ where, ...options })
   }
 
@@ -696,7 +700,7 @@ export class ProjectService {
 
       const projects = await this.find({
         where: {
-          admin: uid,
+          admin: { id: uid },
         },
         select: ['id'],
       })
@@ -795,7 +799,7 @@ export class ProjectService {
 
       const projects = await this.find({
         where: {
-          admin: uid,
+          admin: { id: uid },
         },
         select: ['id'],
       })

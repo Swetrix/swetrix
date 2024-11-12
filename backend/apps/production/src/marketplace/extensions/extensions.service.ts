@@ -103,7 +103,7 @@ export class ExtensionsService {
     await this.extensionToUserRepository.delete({ extensionId, userId })
   }
 
-  filterOwner(owner: User): object {
+  filterOwner(owner: User) {
     return _pick(owner, ['nickname'])
   }
 

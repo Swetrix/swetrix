@@ -270,7 +270,7 @@ export class ProjectService {
     )
   }
 
-  formatToClickhouse(project: any): object {
+  formatToClickhouse(project: any) {
     const updProject = { ...project }
     updProject.active = Number(updProject.active)
     updProject.public = Number(updProject.public)

@@ -204,7 +204,7 @@ export class AuthService {
   public async getSharedProjectsForUser(user: User): Promise<User> {
     const sharedProjects = await this.projectService.findShare({
       where: {
-        user: user.id,
+        user: { id: user.id },
       },
       relations: ['project'],
     })

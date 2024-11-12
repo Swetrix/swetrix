@@ -123,7 +123,9 @@ export class AlertController {
     )
 
     const pids = _map(user.projects, userProject => userProject.id)
-    const alertsCount = await this.alertService.count({ project: In(pids) })
+    const alertsCount = await this.alertService.count({
+      where: { project: In(pids) },
+    })
 
     if (user.planCode === PlanCode.none) {
       throw new HttpException(

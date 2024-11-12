@@ -100,17 +100,19 @@ export class UserController {
   @Get('/me')
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async me(@CurrentUserId() user_id: string): Promise<Partial<User>> {
-    this.logger.log({ user_id }, 'GET /user/me')
+  async me(@CurrentUserId() uid: string): Promise<Partial<User>> {
+    this.logger.log({ uid }, 'GET /user/me')
 
     const sharedProjects = await this.projectService.findShare({
       where: {
-        user: user_id,
+        user: {
+          id: uid,
+        },
       },
       relations: ['project'],
     })
     const user = this.userService.omitSensitiveData(
-      await this.userService.findOne({ where: { id: user_id } }),
+      await this.userService.findOne({ where: { id: uid } }),
     )
 
     user.sharedProjects = sharedProjects

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { FindOneOptions, Repository } from 'typeorm'
+import { FindManyOptions, FindOneOptions, Repository } from 'typeorm'
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { Alert } from './entity/alert.entity'
 import { AlertDTO } from './dto/alert.dto'
@@ -40,7 +40,7 @@ export class AlertService {
     })
   }
 
-  async count(options: object = {}): Promise<number> {
+  async count(options: FindManyOptions<Alert> = {}): Promise<number> {
     return this.alertsReporsitory.count(options)
   }
 
@@ -55,15 +55,12 @@ export class AlertService {
     return this.alertsReporsitory.find({ where, relations })
   }
 
-  find(params: object): Promise<Alert[]> {
-    return this.alertsReporsitory.find(params)
+  find(options: FindManyOptions<Alert>): Promise<Alert[]> {
+    return this.alertsReporsitory.find(options)
   }
 
-  findOneWhere(
-    where: Record<string, unknown>,
-    params: object = {},
-  ): Promise<Alert> {
-    return this.alertsReporsitory.findOne({ where, ...params })
+  findOneWhere(options: FindOneOptions<Alert>): Promise<Alert | null> {
+    return this.alertsReporsitory.findOne(options)
   }
 
   async create(alert: AlertDTO | Alert): Promise<Alert> {
