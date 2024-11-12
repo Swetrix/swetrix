@@ -379,10 +379,7 @@ export class AnalyticsService {
   }
 
   async checkUptimeAccess(pid: string, monitorId: number) {
-    const monitor = await this.projectService.findMonitorById(
-      monitorId as unknown as string,
-      pid,
-    )
+    const monitor = await this.projectService.findMonitorById(monitorId, pid)
 
     if (!monitor) {
       throw new ForbiddenException('You are not allowed to view this project')

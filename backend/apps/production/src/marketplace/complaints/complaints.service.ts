@@ -13,11 +13,11 @@ export class ComplaintsService {
   async findAndCount(
     options: FindManyOptions<Complaint>,
   ): Promise<[Complaint[], number]> {
-    return this.complaintsRepository.findAndCount({ ...options })
+    return this.complaintsRepository.findAndCount(options)
   }
 
   async findOne(options: FindOneOptions<Complaint>): Promise<Complaint> {
-    return this.complaintsRepository.findOne({ ...options })
+    return this.complaintsRepository.findOne(options)
   }
 
   async save(complaint: Partial<Complaint>): Promise<Complaint> {

@@ -91,7 +91,10 @@ export class AlertController {
   ) {
     this.logger.log({ uid }, 'POST /alert')
 
-    const user = await this.userService.findOneWithRelations(uid, ['projects'])
+    const user = await this.userService.findOne({
+      where: { id: uid },
+      relations: ['projects'],
+    })
 
     const maxAlerts = ACCOUNT_PLANS[user.planCode]?.maxAlerts
 
@@ -182,7 +185,7 @@ export class AlertController {
       throw new NotFoundException()
     }
 
-    const user = await this.userService.findOne(uid)
+    const user = await this.userService.findOne({ where: { id: uid } })
 
     this.projectService.allowedToManage(
       alert.project,
@@ -229,7 +232,7 @@ export class AlertController {
       throw new NotFoundException()
     }
 
-    const user = await this.userService.findOne(uid)
+    const user = await this.userService.findOne({ where: { id: uid } })
 
     this.projectService.allowedToManage(
       alert.project,

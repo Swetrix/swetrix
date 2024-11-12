@@ -9,7 +9,7 @@ import {
   NotFoundException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { FindOneOptions, Repository } from 'typeorm'
+import { FindOneOptions, FindOptionsWhere, Repository } from 'typeorm'
 import { customAlphabet } from 'nanoid'
 import handlebars from 'handlebars'
 import puppeteer from 'puppeteer'
@@ -369,7 +369,7 @@ export class ProjectService {
 
   async paginate(
     options: PaginationOptionsInterface,
-    where: Record<string, unknown> | undefined,
+    where: FindOptionsWhere<Project> | FindOptionsWhere<Project>[] | undefined,
   ): Promise<Pagination<Project>> {
     const [results, total] = await this.projectsRepository.findAndCount({
       take: options.take || 100,
@@ -389,7 +389,7 @@ export class ProjectService {
 
   async paginateShared(
     options: PaginationOptionsInterface,
-    where: Record<string, unknown> | undefined,
+    where: FindOptionsWhere<Project> | FindOptionsWhere<Project>[] | undefined,
   ): Promise<Pagination<ProjectShare>> {
     const [results, total] = await this.projectShareRepository.findAndCount({
       take: options.take || 100,
@@ -462,24 +462,20 @@ export class ProjectService {
   }
 
   async findOneShare(
-    id: string,
-    params: object = {},
+    options: FindOneOptions<ProjectShare>,
   ): Promise<ProjectShare | null> {
-    return this.projectShareRepository.findOne(id, params)
+    return this.projectShareRepository.findOne(options)
   }
 
   findOneWithRelations(
     id: string,
     relations = ['admin'],
   ): Promise<Project | null> {
-    return this.projectsRepository.findOne(id, { relations })
+    return this.projectsRepository.findOne({ where: { id }, relations })
   }
 
-  findOne(
-    id: string,
-    params: FindOneOptions<Project> = {},
-  ): Promise<Project | null> {
-    return this.projectsRepository.findOne(id, params)
+  findOne(options: FindOneOptions<Project>): Promise<Project | null> {
+    return this.projectsRepository.findOne(options)
   }
 
   findWhere(
@@ -552,9 +548,12 @@ export class ProjectService {
   }
 
   async isPIDUnique(pid: string): Promise<boolean> {
-    const project = await this.findOne(pid)
+    const exists = await this.projectsRepository.findOne({
+      where: { id: pid },
+      select: ['id'],
+    })
 
-    return !project
+    return !exists
   }
 
   async checkIfIDUnique(pid: string): Promise<void> {
@@ -1446,7 +1445,7 @@ export class ProjectService {
   }
 
   async findMonitorById(
-    id: string,
+    id: number,
     projectId: string,
     options?: Omit<FindOneOptions<MonitorEntity>, 'where'>,
   ): Promise<MonitorEntity | undefined> {

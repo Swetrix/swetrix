@@ -110,7 +110,7 @@ export class UserController {
       relations: ['project'],
     })
     const user = this.userService.omitSensitiveData(
-      await this.userService.findOne(user_id),
+      await this.userService.findOne({ where: { id: user_id } }),
     )
 
     user.sharedProjects = sharedProjects
@@ -230,7 +230,7 @@ export class UserController {
 
     await checkRateLimit(ip, 'set-paypal-email', 10, 3600)
 
-    const user = await this.userService.findOne(userId)
+    const user = await this.userService.findOne({ where: { id: userId } })
 
     if (!user) {
       throw new BadRequestException('User not found')
@@ -263,7 +263,7 @@ export class UserController {
 
     await checkRateLimit(ip, 'generate-api-key', 5, 3600)
 
-    const user = await this.userService.findOne(userId)
+    const user = await this.userService.findOne({ where: { id: userId } })
 
     if (!_isNull(user.apiKey)) {
       throw new ConflictException('You already have an API key')
@@ -283,7 +283,7 @@ export class UserController {
   async deleteApiKey(@CurrentUserId() userId: string): Promise<void> {
     this.logger.log({ userId }, 'DELETE /user/api-key')
 
-    const user = await this.userService.findOne(userId)
+    const user = await this.userService.findOne({ where: { id: userId } })
 
     if (_isNull(user.apiKey)) {
       throw new ConflictException("You don't have an API key")
@@ -302,7 +302,8 @@ export class UserController {
     @CurrentUserId() uid: string,
   ): Promise<any> {
     this.logger.log({ id, uid }, 'DELETE /user/:id')
-    const user = await this.userService.findOne(id, {
+    const user = await this.userService.findOne({
+      where: { id },
       relations: ['projects'],
       select: ['id', 'planCode'],
     })
@@ -363,7 +364,8 @@ export class UserController {
   ): Promise<any> {
     this.logger.log({ id }, 'DELETE /user')
 
-    const user = await this.userService.findOne(id, {
+    const user = await this.userService.findOne({
+      where: { id },
       relations: ['projects'],
       select: ['id', 'planCode'],
     })
@@ -434,7 +436,8 @@ export class UserController {
   ): Promise<any> {
     this.logger.log({ uid, shareId }, 'DELETE /user/share/:shareId')
 
-    const share = await this.projectService.findOneShare(shareId, {
+    const share = await this.projectService.findOneShare({
+      where: { id: shareId },
       relations: ['user', 'project'],
     })
 
@@ -464,7 +467,8 @@ export class UserController {
   ): Promise<any> {
     this.logger.log({ uid, shareId }, 'GET /user/share/:shareId')
 
-    const share = await this.projectService.findOneShare(shareId, {
+    const share = await this.projectService.findOneShare({
+      where: { id: shareId },
       relations: ['user', 'project'],
     })
 
@@ -544,7 +548,7 @@ export class UserController {
       await this.userService.update(id, { ...user, ...userDTO })
       // omit sensitive data before returning using this.userService.omitSensitiveData function
       return this.userService.omitSensitiveData(
-        await this.userService.findOne(id),
+        await this.userService.findOne({ where: { id } }),
       )
     } catch (e) {
       if (e.code === 'ER_DUP_ENTRY') {

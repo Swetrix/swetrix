@@ -180,15 +180,8 @@ export class UserService {
     return this.usersRepository.findOne({ where, relations, select })
   }
 
-  findOne(id: string, params: FindOneOptions<User> = {}): Promise<User> {
-    return this.usersRepository.findOne({
-      where: { id },
-      ...params,
-    })
-  }
-
-  findOneWithRelations(id: string, relations: string[]): Promise<User> {
-    return this.usersRepository.findOne(id, { relations })
+  findOne(options: FindOneOptions<User> = {}): Promise<User> {
+    return this.usersRepository.findOne(options)
   }
 
   findWhereWithRelations(
@@ -245,7 +238,7 @@ export class UserService {
   }
 
   public async findUser(email: string) {
-    return this.usersRepository.findOne({ email })
+    return this.usersRepository.findOne({ where: { email } })
   }
 
   public async createUser(
@@ -261,7 +254,7 @@ export class UserService {
   }
 
   public async findUserById(id: string) {
-    return this.usersRepository.findOne({ id })
+    return this.usersRepository.findOne({ where: { id } })
   }
 
   public async updateUser(id: string, user: Partial<Omit<User, 'id'>>) {
@@ -275,7 +268,7 @@ export class UserService {
   }
 
   public async findDeleteFeedback(id: string) {
-    return this.deleteFeedbackRepository.findOne({ id })
+    return this.deleteFeedbackRepository.findOne({ where: { id } })
   }
 
   public async deleteDeleteFeedback(id: string) {
@@ -320,16 +313,16 @@ export class UserService {
   }
 
   async getUser(id: string) {
-    return this.usersRepository.findOne({ id })
+    return this.usersRepository.findOne({ where: { id } })
   }
 
   async getUserByEmail(email: string) {
     return this.usersRepository.findOne({ where: { email } })
   }
 
-  async getUserByTelegramId(telegramId: number) {
+  async getUserByTelegramId(telegramId: string | number) {
     return this.usersRepository.findOne({
-      where: { telegramChatId: telegramId },
+      where: { telegramChatId: telegramId.toString() },
     })
   }
 

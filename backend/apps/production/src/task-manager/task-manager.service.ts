@@ -42,6 +42,7 @@ import {
   User,
   getNextPlan,
   DashboardBlockReason,
+  ReportFrequency as UserReportFrequency,
 } from '../user/entities/user.entity'
 import {
   redis,
@@ -1252,7 +1253,7 @@ export class TaskManagerService {
   async disableReportsForInactiveUsers() {
     const users = await this.userService.find({
       where: {
-        reportFrequency: Not(ReportFrequency.NEVER),
+        reportFrequency: Not(UserReportFrequency.Never),
       },
       relations: ['projects'],
       select: ['id'],

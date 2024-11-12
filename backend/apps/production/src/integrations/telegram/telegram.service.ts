@@ -18,8 +18,10 @@ export class TelegramService {
     private readonly messageRepository: Repository<Message>,
   ) {}
 
-  async getStartMessage(telgramId: number) {
-    const user = await this.userService.getUserByTelegramId(telgramId)
+  async getStartMessage(telegramId: number) {
+    const user = await this.userService.getUserByTelegramId(
+      telegramId.toString(),
+    )
 
     let text: string
     let extra: unknown = {}
@@ -29,7 +31,7 @@ export class TelegramService {
         'Welcome to the Swetrix Bot!' +
         '\n\n' +
         'Your Telegram ID is: ' +
-        `<code>${telgramId.toString()}</code>` +
+        `<code>${telegramId.toString()}</code>` +
         '\n\n' +
         'You can use this ID to link your Telegram account with your Swetrix account.' +
         '\n\n' +
@@ -84,7 +86,7 @@ export class TelegramService {
       return
     }
 
-    const user = await this.userService.getUserByTelegramId(chatId)
+    const user = await this.userService.getUserByTelegramId(chatId.toString())
     await this.userService.updateUserTelegramId(user.id, null)
   }
 

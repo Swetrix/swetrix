@@ -61,7 +61,7 @@ export class CommentsService {
 
   async update(id: string, comment: Partial<Comment>): Promise<Comment> {
     await this.commentsRepository.update(id, comment)
-    return this.commentsRepository.findOne(id)
+    return this.commentsRepository.findOne({ where: { id } })
   }
 
   async createCommentReply(

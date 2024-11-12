@@ -174,7 +174,7 @@ export enum UserType {
   ADMIN = 'admin',
 }
 
-enum ReportFrequency {
+export enum ReportFrequency {
   Never = 'never',
   Weekly = 'weekly',
   Monthly = 'monthly',

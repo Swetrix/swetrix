@@ -129,7 +129,7 @@ export class WebhookController {
         }
 
         const currentUser = uid
-          ? await this.userService.findOne(uid)
+          ? await this.userService.findOne({ where: { id: uid } })
           : await this.userService.findOneWhere({ email })
         const unlockDashboardParams =
           body.alert_name === 'subscription_created' ||

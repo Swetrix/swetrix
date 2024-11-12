@@ -177,13 +177,11 @@ export class ExtensionsController {
     count: number
   }> {
     // eslint-disable-next-line prefer-const
-    let [extensions, count] = await this.extensionsService.findAndCount(
-      {
-        skip: queries.offset || 0,
-        take: queries.limit > 100 ? 25 : queries.limit || 25,
-      },
-      ['owner', 'users', 'category'],
-    )
+    let [extensions, count] = await this.extensionsService.findAndCount({
+      skip: queries.offset || 0,
+      take: queries.limit > 100 ? 25 : queries.limit || 25,
+      relations: ['owner', 'users', 'category'],
+    })
 
     extensions = _map(extensions, extension => {
       // @ts-expect-error
@@ -254,16 +252,14 @@ export class ExtensionsController {
     }
 
     // eslint-disable-next-line prefer-const
-    let [extensions, count] = await this.extensionsService.findAndCount(
-      {
-        skip: queries.offset || 0,
-        take: queries.limit > 100 ? 100 : queries.limit || 10,
-        where: {
-          owner: userId,
-        },
+    let [extensions, count] = await this.extensionsService.findAndCount({
+      skip: queries.offset || 0,
+      take: queries.limit > 100 ? 100 : queries.limit || 10,
+      where: {
+        owner: { id: userId },
       },
-      ['owner', 'users', 'category'],
-    )
+      relations: ['owner', 'users', 'category'],
+    })
 
     extensions = _map(extensions, extension => {
       // @ts-expect-error
@@ -568,7 +564,7 @@ export class ExtensionsController {
       throw new NotFoundException('Extension not found.')
     }
 
-    const user = await this.userService.findOne(userId)
+    const user = await this.userService.findOne({ where: { id: userId } })
     if (!user) {
       throw new NotFoundException('User not found.')
     }
@@ -591,7 +587,9 @@ export class ExtensionsController {
       })
     }
 
-    const project = await this.projectService.findOne(body.projectId)
+    const project = await this.projectService.findOne({
+      where: { id: body.projectId },
+    })
     if (!project) {
       throw new NotFoundException('Project not found.')
     }
@@ -640,7 +638,7 @@ export class ExtensionsController {
       throw new NotFoundException('Extension not found.')
     }
 
-    const user = await this.userService.findOne(userId)
+    const user = await this.userService.findOne({ where: { id: userId } })
     if (!user) {
       throw new NotFoundException('User not found.')
     }
@@ -660,7 +658,9 @@ export class ExtensionsController {
       return this.extensionsService.deleteExtensionToUser(extension.id, user.id)
     }
 
-    const project = await this.projectService.findOne(body.projectId)
+    const project = await this.projectService.findOne({
+      where: { id: body.projectId },
+    })
     if (!project) {
       throw new NotFoundException('Project not found.')
     }
