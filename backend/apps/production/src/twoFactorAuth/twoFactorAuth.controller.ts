@@ -44,7 +44,7 @@ export class TwoFactorAuthController {
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @TwoFaNotRequired()
   async register(@CurrentUserId() id: string) {
-    const user = await this.userService.findOneWhere({ id })
+    const user = await this.userService.findOne({ where: { id } })
 
     return this.twoFactorAuthService.generateTwoFactorAuthenticationSecret(user)
   }
@@ -65,7 +65,7 @@ export class TwoFactorAuthController {
     const ip = getIPFromHeaders(headers) || reqIP || ''
     await checkRateLimit(ip, '2fa-enable', 10, 1800)
 
-    const user = await this.userService.findOneWhere({ id })
+    const user = await this.userService.findOne({ where: { id } })
     const { twoFactorAuthenticationCode } = body
 
     const isCodeValid =
@@ -113,7 +113,7 @@ export class TwoFactorAuthController {
     const ip = getIPFromHeaders(headers) || reqIP || ''
     await checkRateLimit(ip, '2fa-disable', 10, 1800)
 
-    const user = await this.userService.findOneWhere({ id })
+    const user = await this.userService.findOne({ where: { id } })
     const { twoFactorAuthenticationCode } = body
 
     const isCodeValid =
@@ -153,7 +153,7 @@ export class TwoFactorAuthController {
     const ip = getIPFromHeaders(headers) || reqIP || ''
     await checkRateLimit(ip, '2fa-auth', 10, 1800)
 
-    const user = await this.userService.findOneWhere({ id })
+    const user = await this.userService.findOne({ where: { id } })
     const { twoFactorAuthenticationCode } = body
 
     const isCodeValid =

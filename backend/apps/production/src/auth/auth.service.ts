@@ -204,7 +204,7 @@ export class AuthService {
   public async getSharedProjectsForUser(user: User): Promise<User> {
     const sharedProjects = await this.projectService.findShare({
       where: {
-        user: user.id,
+        user: { id: user.id },
       },
       relations: ['project'],
     })
@@ -519,8 +519,8 @@ export class AuthService {
       referrerId,
     }
 
-    const userWithSameEmail = await this.userService.findOneWhere({
-      email,
+    const userWithSameEmail = await this.userService.findOne({
+      where: { email },
     })
 
     if (userWithSameEmail) {
@@ -591,8 +591,8 @@ export class AuthService {
       let referrerID
 
       if (refCode) {
-        const referrer = await this.userService.findOneWhere({
-          refCode,
+        const referrer = await this.userService.findOne({
+          where: { refCode },
         })
 
         if (referrer) {
@@ -636,8 +636,8 @@ export class AuthService {
     const { sub, email } = await this.processHash(ssoHash)
 
     try {
-      const user = await this.userService.findOneWhere({
-        googleId: sub,
+      const user = await this.userService.findOne({
+        where: { googleId: sub },
       })
 
       if (!user) {
@@ -742,8 +742,8 @@ export class AuthService {
       )
     }
 
-    const subUser = await this.userService.findOneWhere({
-      googleId: sub,
+    const subUser = await this.userService.findOne({
+      where: { googleId: sub },
     })
 
     if (subUser) {
@@ -909,8 +909,8 @@ export class AuthService {
       referrerId,
     }
 
-    const userWithSameEmail = await this.userService.findOneWhere({
-      email,
+    const userWithSameEmail = await this.userService.findOne({
+      where: { email },
     })
 
     if (userWithSameEmail) {
@@ -984,8 +984,8 @@ export class AuthService {
       )
     }
 
-    const subUser = await this.userService.findOneWhere({
-      githubId: id,
+    const subUser = await this.userService.findOne({
+      where: { githubId: id },
     })
 
     if (subUser) {
@@ -1014,8 +1014,8 @@ export class AuthService {
     const { id, email } = await this.processHash(ssoHash)
 
     try {
-      const user = await this.userService.findOneWhere({
-        githubId: id,
+      const user = await this.userService.findOne({
+        where: { githubId: id },
       })
 
       if (!user) {

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { FindManyOptions, Repository } from 'typeorm'
 import { Payout, PayoutStatus } from './entities/payouts.entity'
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 
@@ -52,7 +52,7 @@ export class PayoutsService {
 
   async paginate(
     options: PaginationOptionsInterface,
-    where: Record<string, unknown> | undefined,
+    where: FindManyOptions<Payout>['where'],
   ): Promise<Pagination<Payout>> {
     const [results, total] = await this.payoutsRepository.findAndCount({
       take: options.take || 100,

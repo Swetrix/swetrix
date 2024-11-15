@@ -172,41 +172,12 @@ export class UserService {
     ])
   }
 
-  findOneWhere(
-    where: Record<string, unknown>,
-    relations?: string[],
-    select?: any,
-  ): Promise<User> {
-    return this.usersRepository.findOne({ where, relations, select })
-  }
-
-  findOne(id: string, params: FindOneOptions<User> = {}): Promise<User> {
-    return this.usersRepository.findOne({
-      where: { id },
-      ...params,
-    })
-  }
-
-  findOneWithRelations(id: string, relations: string[]): Promise<User> {
-    return this.usersRepository.findOne(id, { relations })
-  }
-
-  findWhereWithRelations(
-    where: Record<string, unknown>,
-    relations: string[],
-  ): Promise<User[]> {
-    return this.usersRepository.find({
-      where,
-      relations,
-    })
+  findOne(options: FindOneOptions<User> = {}): Promise<User> {
+    return this.usersRepository.findOne(options)
   }
 
   find(options: FindManyOptions<User>): Promise<User[]> {
     return this.usersRepository.find(options)
-  }
-
-  findWhere(where: Record<string, unknown>): Promise<User[]> {
-    return this.usersRepository.find({ where })
   }
 
   validatePassword(pass: string): void {
@@ -245,7 +216,7 @@ export class UserService {
   }
 
   public async findUser(email: string) {
-    return this.usersRepository.findOne({ email })
+    return this.usersRepository.findOne({ where: { email } })
   }
 
   public async createUser(
@@ -261,7 +232,7 @@ export class UserService {
   }
 
   public async findUserById(id: string) {
-    return this.usersRepository.findOne({ id })
+    return this.usersRepository.findOne({ where: { id } })
   }
 
   public async updateUser(id: string, user: Partial<Omit<User, 'id'>>) {
@@ -275,7 +246,7 @@ export class UserService {
   }
 
   public async findDeleteFeedback(id: string) {
-    return this.deleteFeedbackRepository.findOne({ id })
+    return this.deleteFeedbackRepository.findOne({ where: { id } })
   }
 
   public async deleteDeleteFeedback(id: string) {
@@ -311,25 +282,17 @@ export class UserService {
     })
   }
 
-  public async deleteRefreshTokensWhere(where: Record<string, unknown>) {
-    await this.refreshTokenRepository.delete(where)
+  public async deleteRefreshTokensWhere(criteria: Record<string, unknown>) {
+    await this.refreshTokenRepository.delete(criteria)
   }
 
   public async findUserByApiKey(apiKey: string) {
     return this.usersRepository.findOne({ where: { apiKey } })
   }
 
-  async getUser(id: string) {
-    return this.usersRepository.findOne({ id })
-  }
-
-  async getUserByEmail(email: string) {
-    return this.usersRepository.findOne({ where: { email } })
-  }
-
-  async getUserByTelegramId(telegramId: number) {
+  async getUserByTelegramId(telegramId: string | number) {
     return this.usersRepository.findOne({
-      where: { telegramChatId: telegramId },
+      where: { telegramChatId: telegramId.toString() },
     })
   }
 
@@ -382,7 +345,7 @@ export class UserService {
   }
 
   async previewSubscription(id: string, planID: number) {
-    const user = await this.findOneWhere({ id })
+    const user = await this.findOne({ where: { id } })
     const plan = this.getPlanById(planID)
 
     if (!plan) {
@@ -443,7 +406,7 @@ export class UserService {
   }
 
   async updateSubscription(id: string, planID: number) {
-    const user = await this.findOneWhere({ id })
+    const user = await this.findOne({ where: { id } })
     const plan = this.getPlanById(planID)
 
     if (!plan) {
@@ -517,7 +480,7 @@ export class UserService {
         skip,
       },
       {
-        user: user.id,
+        user: { id: user.id },
       },
     )
   }
@@ -602,7 +565,7 @@ export class UserService {
   }
 
   async isRefCodeUnique(code: string): Promise<boolean> {
-    const user = await this.findOneWhere({ refCode: code })
+    const user = await this.findOne({ where: { refCode: code } })
 
     return !user
   }

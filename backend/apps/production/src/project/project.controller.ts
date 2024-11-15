@@ -34,7 +34,7 @@ import {
   ApiOkResponse,
   ApiNoContentResponse,
 } from '@nestjs/swagger'
-import { Equal, FindConditions, ILike, In } from 'typeorm'
+import { Equal, FindOptionsWhere, ILike, In } from 'typeorm'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _trim from 'lodash/trim'
@@ -158,14 +158,14 @@ export class ProjectController {
     this.logger.log({ userId, take, skip }, 'GET /project')
     const isCaptcha = isCaptchaStr === 'true'
 
-    let where: FindConditions<
-      Project & (Project & { admin?: string })[] & { admin?: string }
-    >
+    let where: FindOptionsWhere<Project> | FindOptionsWhere<Project>[]
 
     if (search) {
       where = [
         {
-          admin: userId,
+          admin: {
+            id: userId,
+          },
           isCaptchaProject: isCaptcha,
           isAnalyticsProject: !isCaptcha,
           name: ILike(`%${search}%`),
@@ -173,18 +173,22 @@ export class ProjectController {
           // name: ILike(`%${mysql.escape(search).slice(1, 0).slice(0, -1)}%`),
         },
         {
-          admin: userId,
+          admin: {
+            id: userId,
+          },
           isCaptchaProject: isCaptcha,
           isAnalyticsProject: !isCaptcha,
           id: ILike(`%${search}%`),
           isArchived: showArchived,
           // id: ILike(`%${mysql.escape(search).slice(1, 0).slice(0, -1)}%`),
         },
-      ]
+      ] as FindOptionsWhere<Project>[]
     } else {
       where = {
-        admin: userId,
-      }
+        admin: {
+          id: userId,
+        },
+      } as FindOptionsWhere<Project>
 
       if (isCaptcha) {
         where.isCaptchaProject = true
@@ -200,7 +204,7 @@ export class ProjectController {
     const [paginated, totalMonthlyEvents, user] = await Promise.all([
       this.projectService.paginate({ take, skip }, where),
       this.projectService.getRedisCount(userId),
-      this.userService.findOne(userId),
+      this.userService.findOne({ where: { id: userId } }),
     ])
 
     const pidsWithData =
@@ -227,25 +231,6 @@ export class ProjectController {
     }
   }
 
-  @Get('/names')
-  @ApiResponse({ status: 200, type: [Project] })
-  @Auth([UserType.CUSTOMER, UserType.ADMIN], true)
-  async getNames(@CurrentUserId() userId: string): Promise<Project[]> {
-    this.logger.log({ userId }, 'GET /project/names')
-
-    const where = Object()
-    where.admin = userId
-
-    const projects = await this.projectService.find(where)
-
-    // @ts-expect-error
-    return _map(projects, (p: Project) => ({
-      id: p.id,
-      name: p.name,
-      isCaptchaProject: p.isCaptchaProject,
-    }))
-  }
-
   @Get('/shared')
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
@@ -261,25 +246,29 @@ export class ProjectController {
   ): Promise<Pagination<ProjectShare> | ProjectShare[] | object> {
     this.logger.log({ userId, take, skip, search }, 'GET /project/shared')
 
-    let where = Object()
+    let where: FindOptionsWhere<ProjectShare> | FindOptionsWhere<ProjectShare>[]
 
     if (search) {
       where = [
         {
-          user: userId,
+          user: { id: userId },
           project: {
             name: ILike(`%${search}%`),
           },
         },
         {
-          user: userId,
+          user: { id: userId },
           project: {
             id: ILike(`%${search}%`),
           },
         },
-      ]
+      ] as FindOptionsWhere<ProjectShare>[]
     } else {
-      where.user = userId
+      where = {
+        user: {
+          id: userId,
+        },
+      } as FindOptionsWhere<ProjectShare>
     }
 
     const paginated = await this.projectService.paginateShared(
@@ -329,8 +318,7 @@ export class ProjectController {
   ): Promise<Project | object> {
     this.logger.log({ take, skip }, 'GET /all')
 
-    const where = Object()
-    return this.projectService.paginate({ take, skip }, where)
+    return this.projectService.paginate({ take, skip })
   }
 
   @ApiBearerAuth()
@@ -371,9 +359,10 @@ export class ProjectController {
   ): Promise<Project> {
     this.logger.log({ userId, projectDTO }, 'POST /project/admin/:id')
 
-    const user = await this.userService.findOneWithRelations(userId, [
-      'projects',
-    ])
+    const user = await this.userService.findOne({
+      where: { id: userId },
+      relations: ['projects'],
+    })
     const { maxProjects = PROJECTS_MAXIMUM } = user
 
     if (!user.isActive) {
@@ -429,9 +418,10 @@ export class ProjectController {
       throw new UnauthorizedException('Please auth first')
     }
 
-    const user = await this.userService.findOneWithRelations(userId, [
-      'projects',
-    ])
+    const user = await this.userService.findOne({
+      where: { id: userId },
+      relations: ['projects'],
+    })
     const { maxProjects = PROJECTS_MAXIMUM } = user
 
     if (!user.isActive) {
@@ -552,9 +542,10 @@ export class ProjectController {
       throw new UnauthorizedException('Please auth first')
     }
 
-    const user = await this.userService.findOneWithRelations(userId, [
-      'projects',
-    ])
+    const user = await this.userService.findOne({
+      where: { id: userId },
+      relations: ['projects'],
+    })
 
     if (!user.isActive) {
       throw new ForbiddenException('Please, verify your email address first')
@@ -574,15 +565,15 @@ export class ProjectController {
       )
     }
 
-    const project = await this.projectService.findOneWhere(
-      {
+    const project = await this.projectService.findOne({
+      where: {
         id: funnelDTO.pid,
-        admin: userId,
+        admin: {
+          id: userId,
+        },
       },
-      {
-        relations: ['admin', 'share'],
-      },
-    )
+      relations: ['admin', 'share'],
+    })
 
     if (!project) {
       throw new NotFoundException('Project not found.')
@@ -606,9 +597,10 @@ export class ProjectController {
       throw new UnauthorizedException('Please auth first')
     }
 
-    const user = await this.userService.findOneWithRelations(userId, [
-      'projects',
-    ])
+    const user = await this.userService.findOne({
+      where: { id: userId },
+      relations: ['projects'],
+    })
 
     if (!user.isActive) {
       throw new ForbiddenException('Please, verify your email address first')
@@ -628,15 +620,15 @@ export class ProjectController {
       )
     }
 
-    const project = await this.projectService.findOneWhere(
-      {
+    const project = await this.projectService.findOne({
+      where: {
         id: funnelDTO.pid,
-        admin: userId,
+        admin: {
+          id: userId,
+        },
       },
-      {
-        relations: ['admin', 'share', 'funnels'],
-      },
-    )
+      relations: ['admin', 'share', 'funnels'],
+    })
 
     if (!project) {
       throw new NotFoundException('Project not found.')
@@ -680,15 +672,15 @@ export class ProjectController {
       throw new UnauthorizedException('Please auth first')
     }
 
-    const project = await this.projectService.findOneWhere(
-      {
+    const project = await this.projectService.findOne({
+      where: {
         id: pid,
-        admin: userId,
+        admin: {
+          id: userId,
+        },
       },
-      {
-        relations: ['admin', 'share'],
-      },
-    )
+      relations: ['admin', 'share'],
+    })
 
     if (!project) {
       throw new NotFoundException('Project not found')
@@ -747,14 +739,12 @@ export class ProjectController {
       )
     }
 
-    const user = await this.userService.findOne(uid)
-    const project = await this.projectService.findOneWhere(
-      { id },
-      {
-        relations: ['admin'],
-        select: ['id'],
-      },
-    )
+    const user = await this.userService.findOne({ where: { id: uid } })
+    const project = await this.projectService.findOne({
+      where: { id },
+      relations: ['admin'],
+      select: ['id'],
+    })
 
     if (_isEmpty(project)) {
       throw new NotFoundException(`Project with ID ${id} does not exist`)
@@ -805,14 +795,12 @@ export class ProjectController {
       )
     }
 
-    const user = await this.userService.findOne(uid)
-    const project = await this.projectService.findOneWhere(
-      { id },
-      {
-        relations: ['admin'],
-        select: ['id'],
-      },
-    )
+    const user = await this.userService.findOne({ where: { id: uid } })
+    const project = await this.projectService.findOne({
+      where: { id },
+      relations: ['admin'],
+      select: ['id'],
+    })
 
     if (_isEmpty(project)) {
       throw new NotFoundException(`Project with ID ${id} does not exist`)
@@ -852,10 +840,11 @@ export class ProjectController {
       )
     }
 
-    const project = await this.projectService.findOne(pid, {
+    const project = await this.projectService.findOne({
+      where: { id: pid },
       relations: ['admin'],
     })
-    const user = await this.userService.findOne(uid)
+    const user = await this.userService.findOne({ where: { id: uid } })
 
     if (_isEmpty(project)) {
       throw new NotFoundException()
@@ -891,14 +880,12 @@ export class ProjectController {
       )
     }
 
-    const user = await this.userService.findOne(uid)
-    const project = await this.projectService.findOneWhere(
-      { id },
-      {
-        relations: ['admin'],
-        select: ['id'],
-      },
-    )
+    const user = await this.userService.findOne({ where: { id: uid } })
+    const project = await this.projectService.findOne({
+      where: { id },
+      relations: ['admin'],
+      select: ['id'],
+    })
 
     if (_isEmpty(project)) {
       throw new NotFoundException(`Project with ID ${id} does not exist`)
@@ -970,7 +957,8 @@ export class ProjectController {
       throw new BadRequestException("The provided 'to' date is incorrect")
     }
 
-    const project = await this.projectService.findOne(pid, {
+    const project = await this.projectService.findOne({
+      where: { id: pid },
       relations: ['admin', 'share'],
     })
 
@@ -1004,7 +992,8 @@ export class ProjectController {
       )
     }
 
-    const project = await this.projectService.findOne(pid, {
+    const project = await this.projectService.findOne({
+      where: { id: pid },
       relations: ['admin', 'share'],
     })
 
@@ -1030,7 +1019,8 @@ export class ProjectController {
   ): Promise<BulkAddUsersResponse[]> {
     this.logger.log({ uid, bulkAddUsersDto }, 'POST /project/bulk-add-users')
 
-    const inviter = await this.userService.findOne(uid, {
+    const inviter = await this.userService.findOne({
+      where: { id: uid },
       relations: ['projects', 'sharedProjects', 'sharedProjects.project'],
     })
 
@@ -1038,12 +1028,10 @@ export class ProjectController {
 
     await Promise.all(
       bulkAddUsersDto.users.map(async invitationObject => {
-        const invitee = await this.userService.findOneWhere(
-          {
-            email: invitationObject.email,
-          },
-          ['sharedProjects'],
-        )
+        const invitee = await this.userService.findOne({
+          where: { email: invitationObject.email },
+          relations: ['sharedProjects'],
+        })
 
         if (!invitee) {
           this.logger.warn(
@@ -1090,13 +1078,11 @@ export class ProjectController {
             continue
           }
 
-          const project = await this.projectService.findOneWhere(
-            { id: pid },
-            {
-              relations: ['admin', 'share', 'share.user'],
-              select: ['id', 'admin', 'share'],
-            },
-          )
+          const project = await this.projectService.findOne({
+            where: { id: pid },
+            relations: ['admin', 'share', 'share.user'],
+            select: ['id', 'admin', 'share'],
+          })
 
           if (_isEmpty(project)) {
             this.logger.warn(`Project with ID ${pid} does not exist`)
@@ -1200,14 +1186,12 @@ export class ProjectController {
       throw new BadRequestException('The provided ShareDTO is incorrect')
     }
 
-    const user = await this.userService.findOne(uid)
-    const project = await this.projectService.findOneWhere(
-      { id: pid },
-      {
-        relations: ['admin', 'share', 'share.user'],
-        select: ['id', 'admin', 'share'],
-      },
-    )
+    const user = await this.userService.findOne({ where: { id: uid } })
+    const project = await this.projectService.findOne({
+      where: { id: pid },
+      relations: ['admin', 'share', 'share.user'],
+      select: ['id', 'admin', 'share'],
+    })
 
     if (_isEmpty(project)) {
       throw new NotFoundException(`Project with ID ${pid} does not exist`)
@@ -1215,12 +1199,10 @@ export class ProjectController {
 
     this.projectService.allowedToManage(project, uid, user.roles)
 
-    const invitee = await this.userService.findOneWhere(
-      {
-        email: shareDTO.email,
-      },
-      ['sharedProjects'],
-    )
+    const invitee = await this.userService.findOne({
+      where: { email: shareDTO.email },
+      relations: ['sharedProjects'],
+    })
 
     if (!invitee) {
       throw new NotFoundException(
@@ -1279,7 +1261,8 @@ export class ProjectController {
         },
       )
 
-      const updatedProject = await this.projectService.findOne(pid, {
+      const updatedProject = await this.projectService.findOne({
+        where: { id: pid },
         relations: ['share', 'share.user'],
       })
 
@@ -1310,8 +1293,9 @@ export class ProjectController {
       throw new BadRequestException('The provided ShareUpdateDTO is incorrect')
     }
 
-    const user = await this.userService.findOne(uid)
-    const share = await this.projectService.findOneShare(shareId, {
+    const user = await this.userService.findOne({ where: { id: uid } })
+    const share = await this.projectService.findOneShare({
+      where: { id: shareId },
       relations: [
         'project',
         'project.admin',
@@ -1341,7 +1325,9 @@ export class ProjectController {
     })
 
     await deleteProjectRedis(share.project.id)
-    return this.projectService.findOneShare(shareId)
+    return this.projectService.findOneShare({
+      where: { id: shareId },
+    })
   }
 
   @ApiBearerAuth()
@@ -1364,7 +1350,9 @@ export class ProjectController {
     if (actionToken.action === ActionTokenType.PROJECT_SHARE) {
       const { newValue: shareId, id: tokenID } = actionToken
 
-      const share = await this.projectService.findOneShare(shareId)
+      const share = await this.projectService.findOneShare({
+        where: { id: shareId },
+      })
       share.confirmed = true
 
       if (_isEmpty(share)) {
@@ -1398,7 +1386,9 @@ export class ProjectController {
       throw new NotFoundException('Project not found.')
     }
 
-    const user = await this.userService.getUserByEmail(body.email)
+    const user = await this.userService.findOne({
+      where: { email: body.email },
+    })
 
     if (!user) {
       throw new NotFoundException('User not found.')
@@ -1490,7 +1480,8 @@ export class ProjectController {
       'DELETE /project/:projectId/subscribers/:subscriberId',
     )
 
-    const project = await this.projectService.findOne(params.projectId, {
+    const project = await this.projectService.findOne({
+      where: { id: params.projectId },
       relations: ['share', 'share.user', 'admin'],
     })
 
@@ -1530,7 +1521,8 @@ export class ProjectController {
   ) {
     this.logger.log({ params, body }, 'POST /project/:projectId/subscribers')
 
-    const project = await this.projectService.findOne(params.projectId, {
+    const project = await this.projectService.findOne({
+      where: { id: params.projectId },
       relations: ['share', 'share.user', 'admin'],
     })
 
@@ -1545,7 +1537,7 @@ export class ProjectController {
       "You are not allowed to manage this project's subscribers",
     )
 
-    const user = await this.userService.getUser(userId)
+    const user = await this.userService.findOne({ where: { id: userId } })
 
     if (user.email === body.email) {
       throw new BadRequestException('You cannot subscribe to your own project.')
@@ -1648,7 +1640,8 @@ export class ProjectController {
   ) {
     this.logger.log({ params, queries }, 'GET /project/:projectId/subscribers')
 
-    const project = await this.projectService.findOne(params.projectId, {
+    const project = await this.projectService.findOne({
+      where: { id: params.projectId },
       relations: ['share', 'share.user', 'admin'],
     })
 
@@ -1673,7 +1666,8 @@ export class ProjectController {
       'PATCH /project/:projectId/subscribers/:subscriberId',
     )
 
-    const project = await this.projectService.findOne(params.projectId, {
+    const project = await this.projectService.findOne({
+      where: { id: params.projectId },
       relations: ['share', 'share.user', 'admin'],
     })
 
@@ -1723,14 +1717,12 @@ export class ProjectController {
         'The provided Project ID (pid) is incorrect',
       )
     }
-    const user = await this.userService.findOne(uid)
-    const project = await this.projectService.findOneWhere(
-      { id },
-      {
-        relations: ['admin'],
-        select: ['id'],
-      },
-    )
+    const user = await this.userService.findOne({ where: { id: uid } })
+    const project = await this.projectService.findOne({
+      where: { id },
+      relations: ['admin'],
+      select: ['id'],
+    })
 
     if (_isEmpty(project)) {
       throw new NotFoundException(`Project with ID ${id} does not exist`)
@@ -1782,62 +1774,6 @@ export class ProjectController {
     return 'Project deleted successfully'
   }
 
-  @ApiBearerAuth()
-  @Put('captcha/inherited/:id')
-  @HttpCode(200)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  @ApiResponse({ status: 200, type: Project })
-  async createCaptchaInherited(
-    @Param('id') id: string,
-    @CurrentUserId() uid: string,
-  ): Promise<any> {
-    this.logger.log({ uid, id }, 'PUT /project/captcha/inherited/:id')
-
-    if (!isValidPID(id)) {
-      throw new BadRequestException(
-        'The provided Project ID (pid) is incorrect',
-      )
-    }
-
-    const project = await this.projectService.findOne(id, {
-      relations: ['admin', 'share', 'share.user'],
-    })
-    const user = await this.userService.findOne(uid)
-
-    if (_isEmpty(project)) {
-      throw new NotFoundException()
-    }
-
-    this.projectService.allowedToManage(project, uid, user.roles)
-
-    if (project.isCaptchaProject) {
-      throw new BadRequestException('This project is already a CAPTCHA project')
-    }
-
-    if (project.isAnalyticsProject) {
-      const captchaProjects = _filter(
-        user.projects,
-        (fProject: Project) => fProject.isCaptchaProject,
-      )
-      const { maxProjects = PROJECTS_MAXIMUM } = user
-
-      if (_size(captchaProjects) >= maxProjects) {
-        throw new ForbiddenException(
-          `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
-        )
-      }
-
-      project.isCaptchaProject = true
-      project.isCaptchaEnabled = true
-    }
-
-    // @ts-expect-error
-    await this.projectService.update(id, _omit(project, ['share', 'admin']))
-
-    return _omit(project, ['passwordHash'])
-  }
-
   // Used to unsubscribe from email reports for 3rd party users (i.e. project-subscriber.entity.ts)
   @Get('/unsubscribe/:token')
   @Public()
@@ -1886,7 +1822,7 @@ export class ProjectController {
       )
     }
 
-    const project = await this.projectService.findOne(id)
+    const project = await this.projectService.findOne({ where: { id } })
 
     if (_isEmpty(project)) {
       // TODO: Return default image
@@ -1919,7 +1855,7 @@ export class ProjectController {
       )
     }
 
-    const project = await this.projectService.findOne(id)
+    const project = await this.projectService.findOne({ where: { id } })
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project not found')
@@ -1950,10 +1886,11 @@ export class ProjectController {
     }
 
     this.projectService.validateProject(projectDTO)
-    const project = await this.projectService.findOne(id, {
+    const project = await this.projectService.findOne({
+      where: { id },
       relations: ['admin', 'share', 'share.user'],
     })
-    const user = await this.userService.findOne(uid)
+    const user = await this.userService.findOne({ where: { id: uid } })
 
     if (_isEmpty(project)) {
       throw new NotFoundException()
@@ -2034,19 +1971,17 @@ export class ProjectController {
       )
     }
 
-    const project = await this.projectService.findOneWhere(
-      { id: pid },
-      {
-        relations: ['admin', 'share', 'share.user'],
-        select: ['id', 'admin', 'share'],
-      },
-    )
+    const project = await this.projectService.findOne({
+      where: { id: pid },
+      relations: ['admin', 'share', 'share.user'],
+      select: ['id', 'admin', 'share'],
+    })
 
     if (_isEmpty(project)) {
       throw new NotFoundException(`Project with ID ${pid} does not exist`)
     }
 
-    const user = await this.userService.findOne(uid)
+    const user = await this.userService.findOne({ where: { id: uid } })
 
     this.projectService.allowedToManage(project, uid, user.roles)
 
@@ -2066,7 +2001,11 @@ export class ProjectController {
   ): Promise<Pagination<MonitorEntity>> {
     this.logger.log({ userId, take, skip }, 'GET /project/monitors')
 
-    const projects = await this.projectService.findWhere({ admin: userId })
+    const projects = await this.projectService.find({
+      where: {
+        admin: { id: userId },
+      },
+    })
 
     if (_isEmpty(projects)) {
       return {
@@ -2111,7 +2050,8 @@ export class ProjectController {
       )
     }
 
-    const project = await this.projectService.findOne(id, {
+    const project = await this.projectService.findOne({
+      where: { id },
       relations: ['admin', 'share', 'share.user', 'funnels'],
     })
 

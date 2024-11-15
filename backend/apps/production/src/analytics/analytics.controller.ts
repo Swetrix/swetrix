@@ -320,7 +320,7 @@ export class AnalyticsController {
       },
     }
 
-    let result: object | void
+    let result: any | void
 
     if (isCaptcha) {
       result = await this.analyticsService.groupCaptchaByTimeBucket(

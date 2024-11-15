@@ -103,7 +103,7 @@ export class ExtensionsService {
     await this.extensionToUserRepository.delete({ extensionId, userId })
   }
 
-  filterOwner(owner: User): object {
+  filterOwner(owner: User) {
     return _pick(owner, ['nickname'])
   }
 
@@ -141,7 +141,7 @@ export class ExtensionsService {
 
   async allowedToManage(ownerId: string, id: string): Promise<any> {
     const extension = await this.findOne({
-      where: { owner: ownerId, id },
+      where: { owner: { id: ownerId }, id },
     })
 
     if (!extension) {
@@ -169,12 +169,8 @@ export class ExtensionsService {
 
   async findAndCount(
     options: FindManyOptions<Extension>,
-    relations: string[] = [],
   ): Promise<[Extension[], number]> {
-    return this.extensionRepository.findAndCount({
-      ...options,
-      relations,
-    })
+    return this.extensionRepository.findAndCount(options)
   }
 
   async createExtension(extension: CreateExtensionType) {

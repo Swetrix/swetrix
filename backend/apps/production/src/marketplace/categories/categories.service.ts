@@ -40,7 +40,7 @@ export class CategoriesService {
   async findAndCount(
     options: FindManyOptions<Category>,
   ): Promise<[Category[], number]> {
-    return this.categoryRepository.findAndCount({ ...options })
+    return this.categoryRepository.findAndCount(options)
   }
 
   async findByName(name: string): Promise<Category> {

@@ -57,7 +57,11 @@ export class AlertController {
   ) {
     this.logger.log({ userId, take, skip }, 'GET /alert')
 
-    const projects = await this.projectService.findWhere({ admin: userId })
+    const projects = await this.projectService.find({
+      where: {
+        admin: { id: userId },
+      },
+    })
 
     if (_isEmpty(projects)) {
       return []
@@ -91,7 +95,10 @@ export class AlertController {
   ) {
     this.logger.log({ uid }, 'POST /alert')
 
-    const user = await this.userService.findOneWithRelations(uid, ['projects'])
+    const user = await this.userService.findOne({
+      where: { id: uid },
+      relations: ['projects'],
+    })
 
     const maxAlerts = ACCOUNT_PLANS[user.planCode]?.maxAlerts
 
@@ -99,14 +106,12 @@ export class AlertController {
       throw new ForbiddenException('Please, verify your email address first')
     }
 
-    const project = await this.projectService.findOneWhere(
-      {
+    const project = await this.projectService.findOne({
+      where: {
         id: alertDTO.pid,
       },
-      {
-        relations: ['alerts', 'admin'],
-      },
-    )
+      relations: ['alerts', 'admin'],
+    })
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project not found')
@@ -120,7 +125,9 @@ export class AlertController {
     )
 
     const pids = _map(user.projects, userProject => userProject.id)
-    const alertsCount = await this.alertService.count({ project: In(pids) })
+    const alertsCount = await this.alertService.count({
+      where: { project: In(pids) },
+    })
 
     if (user.planCode === PlanCode.none) {
       throw new HttpException(
@@ -182,7 +189,7 @@ export class AlertController {
       throw new NotFoundException()
     }
 
-    const user = await this.userService.findOne(uid)
+    const user = await this.userService.findOne({ where: { id: uid } })
 
     this.projectService.allowedToManage(
       alert.project,
@@ -229,7 +236,7 @@ export class AlertController {
       throw new NotFoundException()
     }
 
-    const user = await this.userService.findOne(uid)
+    const user = await this.userService.findOne({ where: { id: uid } })
 
     this.projectService.allowedToManage(
       alert.project,

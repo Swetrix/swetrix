@@ -100,17 +100,19 @@ export class UserController {
   @Get('/me')
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async me(@CurrentUserId() user_id: string): Promise<Partial<User>> {
-    this.logger.log({ user_id }, 'GET /user/me')
+  async me(@CurrentUserId() uid: string): Promise<Partial<User>> {
+    this.logger.log({ uid }, 'GET /user/me')
 
     const sharedProjects = await this.projectService.findShare({
       where: {
-        user: user_id,
+        user: {
+          id: uid,
+        },
       },
       relations: ['project'],
     })
     const user = this.userService.omitSensitiveData(
-      await this.userService.findOne(user_id),
+      await this.userService.findOne({ where: { id: uid } }),
     )
 
     user.sharedProjects = sharedProjects
@@ -230,7 +232,7 @@ export class UserController {
 
     await checkRateLimit(ip, 'set-paypal-email', 10, 3600)
 
-    const user = await this.userService.findOne(userId)
+    const user = await this.userService.findOne({ where: { id: userId } })
 
     if (!user) {
       throw new BadRequestException('User not found')
@@ -263,7 +265,7 @@ export class UserController {
 
     await checkRateLimit(ip, 'generate-api-key', 5, 3600)
 
-    const user = await this.userService.findOne(userId)
+    const user = await this.userService.findOne({ where: { id: userId } })
 
     if (!_isNull(user.apiKey)) {
       throw new ConflictException('You already have an API key')
@@ -283,7 +285,7 @@ export class UserController {
   async deleteApiKey(@CurrentUserId() userId: string): Promise<void> {
     this.logger.log({ userId }, 'DELETE /user/api-key')
 
-    const user = await this.userService.findOne(userId)
+    const user = await this.userService.findOne({ where: { id: userId } })
 
     if (_isNull(user.apiKey)) {
       throw new ConflictException("You don't have an API key")
@@ -302,7 +304,8 @@ export class UserController {
     @CurrentUserId() uid: string,
   ): Promise<any> {
     this.logger.log({ id, uid }, 'DELETE /user/:id')
-    const user = await this.userService.findOne(id, {
+    const user = await this.userService.findOne({
+      where: { id },
       relations: ['projects'],
       select: ['id', 'planCode'],
     })
@@ -363,7 +366,8 @@ export class UserController {
   ): Promise<any> {
     this.logger.log({ id }, 'DELETE /user')
 
-    const user = await this.userService.findOne(id, {
+    const user = await this.userService.findOne({
+      where: { id },
       relations: ['projects'],
       select: ['id', 'planCode'],
     })
@@ -434,7 +438,8 @@ export class UserController {
   ): Promise<any> {
     this.logger.log({ uid, shareId }, 'DELETE /user/share/:shareId')
 
-    const share = await this.projectService.findOneShare(shareId, {
+    const share = await this.projectService.findOneShare({
+      where: { id: shareId },
       relations: ['user', 'project'],
     })
 
@@ -464,7 +469,8 @@ export class UserController {
   ): Promise<any> {
     this.logger.log({ uid, shareId }, 'GET /user/share/:shareId')
 
-    const share = await this.projectService.findOneShare(shareId, {
+    const share = await this.projectService.findOneShare({
+      where: { id: shareId },
       relations: ['user', 'project'],
     })
 
@@ -494,7 +500,7 @@ export class UserController {
   ): Promise<boolean> {
     this.logger.log({ id }, 'POST /user/confirm_email')
 
-    const user = await this.userService.findOneWhere({ id })
+    const user = await this.userService.findOne({ where: { id } })
 
     if (
       !user ||
@@ -535,7 +541,7 @@ export class UserController {
       userDTO.password = await this.authService.hashPassword(userDTO.password)
     }
 
-    const user = await this.userService.findOneWhere({ id })
+    const user = await this.userService.findOne({ where: { id } })
 
     try {
       if (!user) {
@@ -544,7 +550,7 @@ export class UserController {
       await this.userService.update(id, { ...user, ...userDTO })
       // omit sensitive data before returning using this.userService.omitSensitiveData function
       return this.userService.omitSensitiveData(
-        await this.userService.findOne(id),
+        await this.userService.findOne({ where: { id } }),
       )
     } catch (e) {
       if (e.code === 'ER_DUP_ENTRY') {
@@ -567,7 +573,7 @@ export class UserController {
   ): Promise<any> {
     this.logger.log({ tgID, id }, 'DELETE /user/tg/:id')
 
-    const user = await this.userService.findOneWhere({ id })
+    const user = await this.userService.findOne({ where: { id } })
 
     if (tgID && user.telegramChatId === tgID) {
       await this.userService.update(id, {
@@ -587,7 +593,7 @@ export class UserController {
     @Req() request: Request,
   ): Promise<Partial<User>> {
     this.logger.log({ userDTO, id }, 'PUT /user')
-    const user = await this.userService.findOneWhere({ id })
+    const user = await this.userService.findOne({ where: { id } })
 
     const shouldUpdatePassword =
       !_isEmpty(userDTO.password) && _isString(userDTO.password)
@@ -602,8 +608,8 @@ export class UserController {
 
     try {
       if (userDTO.email && user.email !== userDTO.email) {
-        const userWithByEmail = await this.userService.findOneWhere({
-          email: userDTO.email,
+        const userWithByEmail = await this.userService.findOne({
+          where: { email: userDTO.email },
         })
 
         if (userWithByEmail) {
@@ -632,8 +638,8 @@ export class UserController {
         userDTO.telegramChatId &&
         user.telegramChatId !== userDTO.telegramChatId
       ) {
-        const userWithByTelegramChatId = await this.userService.findOneWhere({
-          telegramChatId: userDTO.telegramChatId,
+        const userWithByTelegramChatId = await this.userService.findOne({
+          where: { telegramChatId: userDTO.telegramChatId },
         })
 
         if (userWithByTelegramChatId) {
@@ -743,7 +749,7 @@ export class UserController {
         await this.authService.logoutAll(id)
       }
 
-      const updatedUser = await this.userService.findOneWhere({ id })
+      const updatedUser = await this.userService.findOne({ where: { id } })
       return this.userService.omitSensitiveData(updatedUser)
     } catch (reason) {
       throw new BadRequestException(reason.message)
@@ -763,7 +769,7 @@ export class UserController {
   // ): Promise<Pagination<Payout> | Payout[]> {
   //   this.logger.log({ id, take, skip }, 'GET /user/payouts/list')
 
-  //   const user = await this.userService.findOneWhere({ id })
+  //   const user = await this.userService.findOne({ where: { id } })
 
   //   if (!user) {
   //     throw new BadRequestException('User not found')
@@ -779,7 +785,7 @@ export class UserController {
   async getReferralsList(@CurrentUserId() id: string): Promise<any> {
     this.logger.log({ id }, 'GET /user/referrals')
 
-    const user = await this.userService.findOneWhere({ id })
+    const user = await this.userService.findOne({ where: { id } })
 
     if (!user) {
       throw new BadRequestException('User not found')
@@ -795,7 +801,7 @@ export class UserController {
   async getPayoutsInfo(@CurrentUserId() id: string): Promise<any> {
     this.logger.log({ id }, 'GET /user/payouts/info')
 
-    const user = await this.userService.findOneWhere({ id })
+    const user = await this.userService.findOne({ where: { id } })
 
     if (!user) {
       throw new BadRequestException('User not found')
@@ -811,7 +817,7 @@ export class UserController {
   async generateRefCode(@CurrentUserId() id: string): Promise<any> {
     this.logger.log({ id }, 'POST /user/generate-ref-code')
 
-    const user = await this.userService.findOneWhere({ id })
+    const user = await this.userService.findOne({ where: { id } })
 
     if (!user) {
       throw new BadRequestException('User not found')
@@ -841,9 +847,13 @@ export class UserController {
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   async exportUserData(@CurrentUserId() user_id: string): Promise<User> {
     this.logger.log({ user_id }, 'GET /user/export')
-    const user = await this.userService.findOneWhere({ id: user_id })
-    const where = Object({ admin: user_id })
-    const projects = await this.projectService.findWhere(where, ['alerts'])
+    const user = await this.userService.findOne({ where: { id: user_id } })
+    const projects = await this.projectService.find({
+      where: {
+        admin: { id: user_id },
+      },
+      relations: ['alerts'],
+    })
 
     if (
       !_isNull(user.exportedAt) &&
@@ -983,9 +993,7 @@ export class UserController {
       throw new NotFoundException('Unsubscribe token is invalid')
     }
 
-    const user = await this.userService.findOneWhere({
-      id: userId,
-    })
+    const user = await this.userService.findOne({ where: { id: userId } })
 
     if (!user) {
       throw new NotFoundException('Unsubscribe token is invalid')

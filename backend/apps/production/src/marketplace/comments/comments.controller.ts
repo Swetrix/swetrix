@@ -68,7 +68,7 @@ export class CommentsController {
     @Body() body: CreateCommentBodyDto,
     @CurrentUserId() userId: string,
   ): Promise<Comment> {
-    const user = await this.userService.findOne(userId)
+    const user = await this.userService.findOne({ where: { id: userId } })
 
     if (!user) {
       throw new NotFoundException('User not found.')
@@ -124,7 +124,7 @@ export class CommentsController {
       throw new NotFoundException('Comment not found.')
     }
 
-    const user = await this.userService.findOne(userId)
+    const user = await this.userService.findOne({ where: { id: userId } })
 
     if (!_includes(user.roles, UserType.ADMIN) && comment.user.id !== userId) {
       throw new ConflictException('You are not allowed to do this.')
@@ -139,7 +139,7 @@ export class CommentsController {
     @Body() commentReplyDto: CreateReplyCommentBodyDto,
     @CurrentUserId() userId: string,
   ): Promise<CommentReply & { isOwner?: boolean }> {
-    const user = await this.userService.findOne(userId)
+    const user = await this.userService.findOne({ where: { id: userId } })
 
     if (!user) {
       throw new NotFoundException('User not found.')
@@ -222,7 +222,7 @@ export class CommentsController {
       throw new NotFoundException('Comment reply not found.')
     }
 
-    const user = await this.userService.findOne(userId)
+    const user = await this.userService.findOne({ where: { id: userId } })
 
     if (
       !(

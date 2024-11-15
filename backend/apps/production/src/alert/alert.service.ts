@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { FindManyOptions, FindOneOptions, Repository } from 'typeorm'
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 import { Alert } from './entity/alert.entity'
 import { AlertDTO } from './dto/alert.dto'
@@ -14,7 +14,7 @@ export class AlertService {
 
   async paginate(
     options: PaginationOptionsInterface,
-    where: Record<string, unknown> | undefined,
+    where: FindManyOptions<Alert>['where'],
     relations?: Array<string>,
   ): Promise<Pagination<Alert>> {
     const [results, total] = await this.alertsReporsitory.findAndCount({
@@ -34,35 +34,26 @@ export class AlertService {
   }
 
   findOneWithRelations(id: string): Promise<Alert | null> {
-    return this.alertsReporsitory.findOne(id, {
+    return this.alertsReporsitory.findOne({
+      where: { id },
       relations: ['project', 'project.admin'],
     })
   }
 
-  async count(options: object = {}): Promise<number> {
+  async count(options: FindManyOptions<Alert> = {}): Promise<number> {
     return this.alertsReporsitory.count(options)
   }
 
-  findOne(id: string, params: object = {}): Promise<Alert | null> {
-    return this.alertsReporsitory.findOne(id, params)
+  findOne(options: FindOneOptions<Alert>): Promise<Alert | null> {
+    return this.alertsReporsitory.findOne(options)
   }
 
-  findWhere(
-    where: Record<string, unknown>,
-    relations?: string[],
-  ): Promise<Alert[]> {
-    return this.alertsReporsitory.find({ where, relations })
+  find(options: FindManyOptions<Alert>): Promise<Alert[]> {
+    return this.alertsReporsitory.find(options)
   }
 
-  find(params: object): Promise<Alert[]> {
-    return this.alertsReporsitory.find(params)
-  }
-
-  findOneWhere(
-    where: Record<string, unknown>,
-    params: object = {},
-  ): Promise<Alert> {
-    return this.alertsReporsitory.findOne({ where, ...params })
+  findOneWhere(options: FindOneOptions<Alert>): Promise<Alert | null> {
+    return this.alertsReporsitory.findOne(options)
   }
 
   async create(alert: AlertDTO | Alert): Promise<Alert> {

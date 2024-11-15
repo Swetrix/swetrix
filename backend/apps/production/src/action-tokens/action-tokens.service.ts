@@ -29,7 +29,8 @@ export class ActionTokensService {
   }
 
   async find(id: string): Promise<ActionToken> {
-    return this.actionTokensRepository.findOneOrFail(id, {
+    return this.actionTokensRepository.findOneOrFail({
+      where: { id },
       relations: ['user'],
     })
   }
@@ -51,7 +52,8 @@ export class ActionTokensService {
   }
 
   public async findActionToken(token: string) {
-    return this.actionTokensRepository.findOne(token, {
+    return this.actionTokensRepository.findOne({
+      where: { id: token },
       relations: ['user'],
     })
   }

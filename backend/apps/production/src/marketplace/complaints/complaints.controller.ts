@@ -66,7 +66,7 @@ export class ComplaintsController {
     @Param() params: GetComplaintParamDto,
   ): Promise<Complaint> {
     const complaint = await this.complaintsService.findOne({
-      where: { id: params.complaintId },
+      where: { id: parseInt(params.complaintId, 10) },
     })
 
     if (!complaint) {
@@ -82,14 +82,16 @@ export class ComplaintsController {
     @Query() queries: CreateComplaintQueryDto,
     @Body() body: CreateComplaintBodyDto,
   ): Promise<Complaint> {
-    const user = await this.userService.findOne(queries.userId)
+    const user = await this.userService.findOne({
+      where: { id: queries.userId },
+    })
 
     if (!user) {
       throw new NotFoundException('User not found.')
     }
 
     const extension = await this.extensionsService.findOne({
-      where: { id: body.extensionId },
+      where: { id: body.extensionId.toString() },
     })
 
     if (!extension) {
@@ -113,7 +115,7 @@ export class ComplaintsController {
     @Body() body: ResolveComplaintBodyDto,
   ) {
     const complaint = await this.complaintsService.findOne({
-      where: { id: params.complaintId },
+      where: { id: parseInt(params.complaintId, 10) },
     })
 
     if (!complaint) {

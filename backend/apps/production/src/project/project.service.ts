@@ -9,7 +9,12 @@ import {
   NotFoundException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { FindOneOptions, Repository } from 'typeorm'
+import {
+  FindManyOptions,
+  FindOneOptions,
+  FindOptionsWhere,
+  Repository,
+} from 'typeorm'
 import { customAlphabet } from 'nanoid'
 import handlebars from 'handlebars'
 import puppeteer from 'puppeteer'
@@ -369,7 +374,7 @@ export class ProjectService {
 
   async paginate(
     options: PaginationOptionsInterface,
-    where: Record<string, unknown> | undefined,
+    where?: FindOptionsWhere<Project> | FindOptionsWhere<Project>[],
   ): Promise<Pagination<Project>> {
     const [results, total] = await this.projectsRepository.findAndCount({
       take: options.take || 100,
@@ -389,14 +394,16 @@ export class ProjectService {
 
   async paginateShared(
     options: PaginationOptionsInterface,
-    where: Record<string, unknown> | undefined,
+    where: FindOptionsWhere<ProjectShare> | FindOptionsWhere<ProjectShare>[],
   ): Promise<Pagination<ProjectShare>> {
     const [results, total] = await this.projectShareRepository.findAndCount({
       take: options.take || 100,
       skip: options.skip || 0,
       where,
       order: {
-        project: 'ASC',
+        project: {
+          name: 'ASC',
+        },
       },
       relations: [
         'project',
@@ -457,47 +464,28 @@ export class ProjectService {
     return this.projectShareRepository.update(id, share)
   }
 
-  async findShare(params: object): Promise<ProjectShare[]> {
-    return this.projectShareRepository.find(params)
+  async findShare(
+    options: FindManyOptions<ProjectShare>,
+  ): Promise<ProjectShare[]> {
+    return this.projectShareRepository.find(options)
   }
 
   async findOneShare(
-    id: string,
-    params: object = {},
+    options: FindOneOptions<ProjectShare>,
   ): Promise<ProjectShare | null> {
-    return this.projectShareRepository.findOne(id, params)
+    return this.projectShareRepository.findOne(options)
   }
 
-  findOneWithRelations(
-    id: string,
-    relations = ['admin'],
-  ): Promise<Project | null> {
-    return this.projectsRepository.findOne(id, { relations })
+  findOneWithRelations(id: string, relations = ['admin']) {
+    return this.projectsRepository.findOne({ where: { id }, relations })
   }
 
-  findOne(
-    id: string,
-    params: FindOneOptions<Project> = {},
-  ): Promise<Project | null> {
-    return this.projectsRepository.findOne(id, params)
+  findOne(options: FindOneOptions<Project>) {
+    return this.projectsRepository.findOne(options)
   }
 
-  findWhere(
-    where: Record<string, unknown> | Record<string, unknown>[],
-    relations?: string[],
-  ): Promise<Project[]> {
-    return this.projectsRepository.find({ where, relations })
-  }
-
-  find(params: object): Promise<Project[]> {
-    return this.projectsRepository.find(params)
-  }
-
-  findOneWhere(
-    where: Record<string, unknown>,
-    options: Omit<FindOneOptions<Project>, 'where'> = {},
-  ): Promise<Project> {
-    return this.projectsRepository.findOne({ where, ...options })
+  find(options: FindManyOptions<Project>) {
+    return this.projectsRepository.find(options)
   }
 
   allowedToView(
@@ -552,9 +540,12 @@ export class ProjectService {
   }
 
   async isPIDUnique(pid: string): Promise<boolean> {
-    const project = await this.findOne(pid)
+    const exists = await this.projectsRepository.findOne({
+      where: { id: pid },
+      select: ['id'],
+    })
 
-    return !project
+    return !exists
   }
 
   async checkIfIDUnique(pid: string): Promise<void> {
@@ -697,7 +688,7 @@ export class ProjectService {
 
       const projects = await this.find({
         where: {
-          admin: uid,
+          admin: { id: uid },
         },
         select: ['id'],
       })
@@ -796,7 +787,7 @@ export class ProjectService {
 
       const projects = await this.find({
         where: {
-          admin: uid,
+          admin: { id: uid },
         },
         select: ['id'],
       })
@@ -896,8 +887,10 @@ export class ProjectService {
   }
 
   async clearProjectsRedisCache(uid: string): Promise<void> {
-    const projects = await this.findWhere({
-      admin: uid,
+    const projects = await this.find({
+      where: {
+        admin: { id: uid },
+      },
     })
 
     if (_isEmpty(projects)) {
@@ -910,7 +903,7 @@ export class ProjectService {
   }
 
   async clearProjectsRedisCacheByEmail(email: string): Promise<void> {
-    const user = await this.userService.findOneWhere({ email })
+    const user = await this.userService.findOne({ where: { email } })
 
     if (!user) {
       return
@@ -920,7 +913,7 @@ export class ProjectService {
   }
 
   async clearProjectsRedisCacheBySubId(subID: string): Promise<void> {
-    const user = await this.userService.findOneWhere({ subID })
+    const user = await this.userService.findOne({ where: { subID } })
 
     if (!user) {
       return
@@ -1089,7 +1082,7 @@ export class ProjectService {
     })
   }
 
-  async findOneSubscriber(where: Record<string, unknown>) {
+  async findOneSubscriber(where: FindOneOptions<ProjectSubscriber>['where']) {
     return this.projectSubscriberRepository.findOne({ where })
   }
 
@@ -1446,7 +1439,7 @@ export class ProjectService {
   }
 
   async findMonitorById(
-    id: string,
+    id: number,
     projectId: string,
     options?: Omit<FindOneOptions<MonitorEntity>, 'where'>,
   ): Promise<MonitorEntity | undefined> {
@@ -1504,7 +1497,7 @@ export class ProjectService {
 
   async paginateMonitors(
     options: PaginationOptionsInterface,
-    where: Record<string, unknown> | undefined,
+    where: FindManyOptions<MonitorEntity>['where'],
   ): Promise<Pagination<MonitorEntity>> {
     const [results, total] = await this.monitorRepository.findAndCount({
       take: options.take || 100,
