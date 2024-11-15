@@ -15,7 +15,7 @@ export const FILTER_CHART_METRICS_MAPPING_FOR_COMPARE = ['bounce', 'viewsPerUniq
 
 export const validTimeBacket = ['hour', 'day', 'week', 'month']
 export const validPeriods = ['custom', 'today', 'yesterday', '1d', '7d', '4w', '3M', '12M', '24M']
-export const validFilters = [
+const validFilters = [
   'cc',
   'rg',
   'ct',
@@ -77,7 +77,8 @@ export const isFilterValid = (filter: string, checkDynamicFilters = false) => {
 
   return false
 }
-export const applyFilters = (items: IFilter[], suffix: string, url: URL, override: boolean): IFilter[] => {
+
+const applyFilters = (items: IFilter[], suffix: string, url: URL, override: boolean): IFilter[] => {
   const filtersToLoad: IFilter[] = []
   items.forEach((item) => {
     if (!item.filter) return
