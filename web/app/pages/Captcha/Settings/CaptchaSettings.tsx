@@ -12,7 +12,6 @@ import _isString from 'lodash/isString'
 import _split from 'lodash/split'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
-import _filter from 'lodash/filter'
 import _includes from 'lodash/includes'
 import { ExclamationTriangleIcon, TrashIcon } from '@heroicons/react/24/outline'
 
@@ -24,37 +23,20 @@ import {
   deleteCaptchaProject,
   resetCaptchaProject,
   reGenerateCaptchaSecretKey,
-  getProjectsNames,
-  createCaptchaInherited,
 } from 'api'
 import Input from 'ui/Input'
 import Loader from 'ui/Loader'
 import Button from 'ui/Button'
 import Checkbox from 'ui/Checkbox'
 import Modal from 'ui/Modal'
-import Select from 'ui/Select'
 import { trackCustom } from 'utils/analytics'
 import routes from 'utils/routes'
-import { ICaptchaProject, IProject, IProjectNames } from 'redux/models/IProject'
+import { ICaptchaProject, IProject } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
 const MAX_IPBLACKLIST_LENGTH = 300
-
-const tabForCreateCaptcha = [
-  {
-    name: 'new',
-    label: 'project.captcha.settings.general',
-  },
-  {
-    name: 'inheritance',
-    label: 'project.captcha.settings.inheritance',
-  },
-]
-
-const tabForNew = 'new'
-const tabForInheritance = 'inheritance'
 
 // add to interface IProject new fields isCaptcha
 interface IForm extends Partial<ICaptchaProject> {
@@ -119,9 +101,6 @@ const CaptchaSettings = ({
   const [projectDeleting, setProjectDeleting] = useState<boolean>(false)
   const [projectResetting, setProjectResetting] = useState<boolean>(false)
   const [projectSaving, setProjectSaving] = useState<boolean>(false)
-  const [tab, setTab] = useState<string>(tabForCreateCaptcha[0].name)
-  const [reuseProjectId, setReuseProjectId] = useState<string | undefined>()
-  const [allProjectsNames, setAllProjectsNames] = useState<IProjectNames[]>([])
   const [captchaSecretKey, setCaptchaSecretKey] = useState(project?.captchaSecretKey)
   const [showRegenerateSecret, setShowRegenerateSecret] = useState(false)
 
@@ -173,18 +152,10 @@ const CaptchaSettings = ({
           await updateProject(id, formalisedData as ICaptchaProject)
           toast.success(t('project.settings.updated'))
         } else {
-          if (tab === tabForInheritance) {
-            if (_isEmpty(reuseProjectId)) {
-              toast.error('Select projects')
-              return
-            }
-            await createCaptchaInherited(formalisedData.id)
-          } else {
-            await createProject({
-              name: formalisedData.name,
-              isCaptcha: true,
-            })
-          }
+          await createProject({
+            name: formalisedData.name,
+            isCaptcha: true,
+          })
           trackCustom('CAPTCHA_CREATED')
           toast.success(t('project.settings.created'))
         }
@@ -240,11 +211,11 @@ const CaptchaSettings = ({
       ipBlacklist?: string
     }
 
-    if (_isEmpty(form.name) && tabForInheritance !== tab) {
+    if (_isEmpty(form.name)) {
       allErrors.name = t('project.settings.noNameError')
     }
 
-    if (_size(form.name) > MAX_NAME_LENGTH && tabForInheritance !== tab) {
+    if (_size(form.name) > MAX_NAME_LENGTH) {
       allErrors.name = t('project.settings.pxCharsError', { amount: MAX_NAME_LENGTH })
     }
 
@@ -279,20 +250,6 @@ const CaptchaSettings = ({
     e.stopPropagation()
     setBeenSubmitted(true)
 
-    if (tab === tabForInheritance) {
-      const data = _find(
-        allProjectsNames || analyticsProjects,
-        (item) => `${item.name} | ${item.id}` === reuseProjectId,
-      )
-
-      if (_isEmpty(data)) {
-        toast.error('Please select a project')
-      }
-
-      onSubmit({ ...(data as IForm), isCaptcha: true })
-      return
-    }
-
     if (validated) {
       onSubmit(form)
     }
@@ -320,21 +277,6 @@ const CaptchaSettings = ({
     }
   }
 
-  const getAllProjectsNames = async () => {
-    await getProjectsNames()
-      .then((res) => {
-        setAllProjectsNames(res)
-      })
-      .catch(console.error)
-  }
-
-  useEffect(() => {
-    if (_isEmpty(allProjectsNames)) {
-      getAllProjectsNames()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab])
-
   if (loading) {
     return (
       <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8'>
@@ -352,50 +294,15 @@ const CaptchaSettings = ({
       <form className='mx-auto w-full max-w-7xl' onSubmit={handleSubmit}>
         <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{title}</h2>
         <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('profileSettings.general')}</h3>
-        <div className='mt-6'>
-          {!isSettings &&
-            _filter(allProjectsNames || analyticsProjects, (item) => !item?.isCaptchaProject).length > 0 && (
-              <nav className='-mb-px flex space-x-8'>
-                {_map(tabForCreateCaptcha, (tabCaptcha) => (
-                  <button
-                    key={tabCaptcha.name}
-                    type='button'
-                    onClick={() => setTab(tabCaptcha.name)}
-                    className={cx('text-md whitespace-nowrap border-b-2 px-1 pb-4 font-medium', {
-                      'border-indigo-500 text-indigo-600 dark:text-indigo-500': tab === tabCaptcha.name,
-                      'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
-                        tab !== tabCaptcha.name,
-                    })}
-                  >
-                    {t(tabCaptcha.label)}
-                  </button>
-                ))}
-              </nav>
-            )}
-        </div>
-        {tab === tabForNew && (
-          <Input
-            name='name'
-            label={t('project.captcha.settings.name')}
-            value={form.name}
-            placeholder='My awesome project'
-            className='mt-4'
-            onChange={handleInput}
-            error={beenSubmitted ? errors.name : null}
-          />
-        )}
-        {tab === tabForInheritance && (
-          <Select
-            title={_isEmpty(reuseProjectId) ? 'select project' : reuseProjectId}
-            label={t('profileSettings.selectProject')}
-            className='w-full'
-            items={_filter(allProjectsNames || analyticsProjects, (item) => !item.isCaptchaProject)}
-            labelExtractor={(item) => `${item.name} | ${item.id}`}
-            keyExtractor={(item) => item.id}
-            onSelect={(item) => setReuseProjectId(item)}
-            capitalise
-          />
-        )}
+        <Input
+          name='name'
+          label={t('project.captcha.settings.name')}
+          value={form.name}
+          placeholder='My awesome project'
+          className='mt-4'
+          onChange={handleInput}
+          error={beenSubmitted ? errors.name : null}
+        />
         {isSettings ? (
           <>
             <Input

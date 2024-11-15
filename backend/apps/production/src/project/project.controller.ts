@@ -231,25 +231,6 @@ export class ProjectController {
     }
   }
 
-  @Get('/names')
-  @ApiResponse({ status: 200, type: [Project] })
-  @Auth([UserType.CUSTOMER, UserType.ADMIN], true)
-  async getNames(@CurrentUserId() userId: string): Promise<Project[]> {
-    this.logger.log({ userId }, 'GET /project/names')
-
-    const where = Object()
-    where.admin = userId
-
-    const projects = await this.projectService.find(where)
-
-    // @ts-expect-error
-    return _map(projects, (p: Project) => ({
-      id: p.id,
-      name: p.name,
-      isCaptchaProject: p.isCaptchaProject,
-    }))
-  }
-
   @Get('/shared')
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
@@ -1791,63 +1772,6 @@ export class ProjectController {
     }
 
     return 'Project deleted successfully'
-  }
-
-  @ApiBearerAuth()
-  @Put('captcha/inherited/:id')
-  @HttpCode(200)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  @ApiResponse({ status: 200, type: Project })
-  async createCaptchaInherited(
-    @Param('id') id: string,
-    @CurrentUserId() uid: string,
-  ): Promise<any> {
-    this.logger.log({ uid, id }, 'PUT /project/captcha/inherited/:id')
-
-    if (!isValidPID(id)) {
-      throw new BadRequestException(
-        'The provided Project ID (pid) is incorrect',
-      )
-    }
-
-    const project = await this.projectService.findOne({
-      where: { id },
-      relations: ['admin', 'share', 'share.user'],
-    })
-    const user = await this.userService.findOne({ where: { id: uid } })
-
-    if (_isEmpty(project)) {
-      throw new NotFoundException()
-    }
-
-    this.projectService.allowedToManage(project, uid, user.roles)
-
-    if (project.isCaptchaProject) {
-      throw new BadRequestException('This project is already a CAPTCHA project')
-    }
-
-    if (project.isAnalyticsProject) {
-      const captchaProjects = _filter(
-        user.projects,
-        (fProject: Project) => fProject.isCaptchaProject,
-      )
-      const { maxProjects = PROJECTS_MAXIMUM } = user
-
-      if (_size(captchaProjects) >= maxProjects) {
-        throw new ForbiddenException(
-          `You cannot create more than ${maxProjects} projects on your account plan. Please upgrade to be able to create more projects.`,
-        )
-      }
-
-      project.isCaptchaProject = true
-      project.isCaptchaEnabled = true
-    }
-
-    // @ts-expect-error
-    await this.projectService.update(id, _omit(project, ['share', 'admin']))
-
-    return _omit(project, ['passwordHash'])
   }
 
   // Used to unsubscribe from email reports for 3rd party users (i.e. project-subscriber.entity.ts)
