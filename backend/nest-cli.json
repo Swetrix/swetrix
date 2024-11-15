@@ -11,7 +11,7 @@
     "tsConfigPath": "apps/cloud/tsconfig.app.json"
   },
   "projects": {
-    "production": {
+    "cloud": {
       "type": "application",
       "root": "apps/cloud",
       "entryFile": "main",
@@ -20,7 +20,7 @@
         "tsConfigPath": "apps/cloud/tsconfig.app.json"
       }
     },
-    "selfhosted": {
+    "community": {
       "type": "application",
       "root": "apps/community",
       "entryFile": "main",
