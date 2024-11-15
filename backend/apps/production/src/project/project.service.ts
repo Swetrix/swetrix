@@ -401,7 +401,9 @@ export class ProjectService {
       skip: options.skip || 0,
       where,
       order: {
-        project: 'ASC',
+        project: {
+          name: 'ASC',
+        },
       },
       relations: [
         'project',
