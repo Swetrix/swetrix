@@ -11,7 +11,7 @@ import {
   isBrowser,
 } from 'redux/constants'
 import { IUserFlow } from 'redux/models/IUserFlow'
-import { filterInvalidViewPrefs } from 'pages/Project/View/ViewProject.helpers'
+import { filterInvalidViewPrefs } from 'pages/Project/View/utils/filters'
 
 const getInitialViewPrefs = (LS_VIEW: string) => {
   if (!isBrowser) {

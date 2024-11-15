@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/no-unstable-nested-components, react/display-name */
 import React, {
   useState,
@@ -51,9 +52,7 @@ import _find from 'lodash/find'
 import _filter from 'lodash/filter'
 import _uniqBy from 'lodash/uniqBy'
 import _findIndex from 'lodash/findIndex'
-import _startsWith from 'lodash/startsWith'
 import _debounce from 'lodash/debounce'
-import _forEach from 'lodash/forEach'
 import _some from 'lodash/some'
 import _pickBy from 'lodash/pickBy'
 import _every from 'lodash/every'
@@ -95,7 +94,6 @@ import {
   getProjectCacheCustomKeyPerf,
   isBrowser,
   TITLE_SUFFIX,
-  FILTERS_PANELS_ORDER,
   KEY_FOR_ALL_TIME,
   MARKETPLACE_URL,
   getFunnelsCacheKey,
@@ -105,7 +103,6 @@ import {
   OS_LOGO_MAP_DARK,
   ITBPeriodPairs,
   ERROR_PANELS_ORDER,
-  ERRORS_FILTERS_PANELS_ORDER,
   ERROR_PERIOD_PAIRS,
   FUNNELS_PERIOD_PAIRS,
 } from 'redux/constants'
@@ -168,8 +165,6 @@ import {
   getFormatDate,
   panelIconMapping,
   typeNameMapping,
-  validPeriods,
-  validTimeBacket,
   noRegionPeriods,
   getSettings,
   getColumns,
@@ -177,15 +172,12 @@ import {
   CHART_METRICS_MAPPING_PERF,
   getSettingsPerf,
   transformAIChartData,
-  FILTER_CHART_METRICS_MAPPING_FOR_COMPARE,
   getSettingsFunnels,
   SHORTCUTS_TABS_LISTENERS,
   SHORTCUTS_TABS_MAP,
   SHORTCUTS_GENERAL_LISTENERS,
   SHORTCUTS_TIMEBUCKETS_LISTENERS,
   CHART_MEASURES_MAPPING_PERF,
-  ERROR_FILTERS_MAPPING,
-  isFilterValid,
 } from './ViewProject.helpers'
 import CCRow from './components/CCRow'
 import FunnelsList from './components/FunnelsList'
@@ -225,6 +217,16 @@ import {
   ITrafficLogResponse,
 } from './interfaces/traffic'
 import { trackCustom } from 'utils/analytics'
+import {
+  handleNavigationParams,
+  updateFilterState,
+  validTimeBacket,
+  validPeriods,
+  parseFiltersFromUrl,
+  isFilterValid,
+  FILTER_CHART_METRICS_MAPPING_FOR_COMPARE,
+  ERROR_FILTERS_MAPPING,
+} from './utils/filters'
 import AddAViewModal from './components/AddAViewModal'
 import CustomMetrics from './components/CustomMetrics'
 import { AIProcessedResponse, AIResponse } from './interfaces/ai'
@@ -483,8 +485,12 @@ const ViewProject = ({
   const [filtersPerf, setFiltersPerf] = useState<IFilter[]>([])
   const [filtersSessions, setFiltersSessions] = useState<IFilter[]>([])
   const [areFiltersSessionsParsed, setAreFiltersSessionsParsed] = useState<boolean>(false)
+  // filters for list of errors
   const [filtersErrors, setFiltersErrors] = useState<IFilter[]>([])
   const [areFiltersErrorsParsed, setAreFiltersErrorsParsed] = useState<boolean>(false)
+  // filters for details error page
+  const [filtersSubError, setFiltersSubError] = useState<IFilter[]>([])
+  const [areFiltersSubErrorParsed, setAreFiltersSubErrorParsed] = useState<boolean>(false)
 
   // isLoading is a true when we loading data from api
   const isLoading = authenticated ? _isLoading : false
@@ -1661,9 +1667,9 @@ const ViewProject = ({
         }
 
         if (period === 'custom' && dateRange) {
-          error = await getError(id, eid, '', from, to, timezone, projectPassword)
+          error = await getError(id, eid, '', filtersSubError, from, to, timezone, projectPassword)
         } else {
-          error = await getError(id, eid, period, '', '', timezone, projectPassword)
+          error = await getError(id, eid, period, filtersSubError, '', '', timezone, projectPassword)
         }
 
         setActiveError(error)
@@ -1761,9 +1767,13 @@ const ViewProject = ({
       return
     }
 
+    if (!areFiltersSubErrorParsed) {
+      return
+    }
+
     loadError(activeEID)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period, dateRange, timeBucket, activeEID])
+  }, [period, dateRange, timeBucket, activeEID, filtersSubError, areFiltersSubErrorParsed])
 
   const loadSessions = async (forcedSkip?: number) => {
     if (sessionsLoading) {
@@ -2240,241 +2250,96 @@ const ViewProject = ({
     ],
   )
 
-  // this funtion is used for requesting the data from the API when the filter is changed
   const filterHandler = async (column: string, filter: any, isExclusive = false) => {
-    let newFilters
-    let newFiltersPerf
-    let newFiltersSessions
-    let newFiltersErrors
     const columnPerf = `${column}_perf`
     const columnSessions = `${column}_sess`
     const columnErrors = `${column}_err`
+    const columnSubErrors = `${column}_subErr`
 
-    if (activeTab === PROJECT_TABS.performance) {
-      if (_find(filtersPerf, (f) => f.filter === filter)) {
-        newFiltersPerf = _filter(filtersPerf, (f) => f.filter !== filter)
+    let filtersToUpdate: IFilter[] = []
 
-        // @ts-expect-error
-        const url = new URL(window.location)
-        url.searchParams.delete(columnPerf)
-        const { pathname, search } = url
-        navigate(`${pathname}${search}`)
-        setFiltersPerf(newFiltersPerf)
-      } else {
-        newFiltersPerf = [...filtersPerf, { column, filter, isExclusive }]
-
-        const url = new URL(window.location.href)
-        url.searchParams.append(columnPerf, filter)
-        const { pathname, search } = url
-        navigate(`${pathname}${search}`)
-        setFiltersPerf(newFiltersPerf)
-      }
-    }
-
-    if (activeTab === PROJECT_TABS.sessions) {
-      if (_find(filtersSessions, (f) => f.filter === filter)) {
-        newFiltersSessions = _filter(filtersSessions, (f) => f.filter !== filter)
-
-        // @ts-expect-error
-        const url = new URL(window.location)
-        url.searchParams.delete(columnSessions)
-        const { pathname, search } = url
-        navigate(`${pathname}${search}`)
-        setFiltersSessions(newFiltersSessions)
-      } else {
-        newFiltersSessions = [...filtersSessions, { column, filter, isExclusive }]
-
-        const url = new URL(window.location.href)
-        url.searchParams.append(columnSessions, filter)
-        const { pathname, search } = url
-        navigate(`${pathname}${search}`)
-        setFiltersSessions(newFiltersSessions)
-      }
-    }
-
-    if (activeTab === PROJECT_TABS.errors) {
-      if (_find(filtersErrors, (f) => f.filter === filter)) {
-        newFiltersErrors = _filter(filtersErrors, (f) => f.filter !== filter)
-
-        const url = new URL(window.location.href)
-        url.searchParams.delete(columnErrors)
-        const { pathname, search } = url
-        navigate(`${pathname}${search}`)
-        setFiltersErrors(newFiltersErrors)
-      } else {
-        newFiltersErrors = [...filtersErrors, { column, filter, isExclusive }]
-
-        const url = new URL(window.location.href)
-        url.searchParams.append(columnErrors, filter)
-        const { pathname, search } = url
-        navigate(`${pathname}${search}`)
-        setFiltersErrors(newFiltersErrors)
-      }
-    }
-
-    if (activeTab === PROJECT_TABS.traffic) {
-      // eslint-disable-next-line no-lonely-if
-      if (_find(filters, (f) => f.filter === filter) /* && f.filter === filter) */) {
-        // selected filter is already included into the filters array -> removing it
-        // removing filter from the state
-        newFilters = _filter(filters, (f) => f.filter !== filter)
-        setFilters(newFilters)
-
-        // removing filter from the page URL
-        const url = new URL(window.location.href)
-        url.searchParams.delete(column)
-        const { pathname, search } = url
-        navigate(`${pathname}${search}`)
-      } else {
-        // selected filter is not present in the filters array -> applying it
-        // sorting filter in the state
-        newFilters = [...filters, { column, filter, isExclusive }]
-        setFilters(newFilters)
-
-        const url = new URL(window.location.href)
-        url.searchParams.append(column, filter)
-        const { pathname, search } = url
-        navigate(`${pathname}${search}`)
-      }
+    switch (activeTab) {
+      case PROJECT_TABS.performance:
+        filtersToUpdate = updateFilterState(
+          navigate,
+          filtersPerf,
+          setFiltersPerf,
+          columnPerf,
+          column,
+          filter,
+          isExclusive,
+        )
+        break
+      case PROJECT_TABS.sessions:
+        filtersToUpdate = updateFilterState(
+          navigate,
+          filtersSessions,
+          setFiltersSessions,
+          columnSessions,
+          column,
+          filter,
+          isExclusive,
+        )
+        break
+      case PROJECT_TABS.errors:
+        if (!activeEID) {
+          filtersToUpdate = updateFilterState(
+            navigate,
+            filtersErrors,
+            setFiltersErrors,
+            columnErrors,
+            column,
+            filter,
+            isExclusive,
+          )
+        } else {
+          filtersToUpdate = updateFilterState(
+            navigate,
+            filtersSubError,
+            setFiltersSubError,
+            columnSubErrors,
+            column,
+            filter,
+            isExclusive,
+          )
+        }
+        break
+      case PROJECT_TABS.traffic:
+        filtersToUpdate = updateFilterState(navigate, filters, setFilters, column, column, filter, isExclusive)
+        break
     }
 
     resetSessions()
     resetErrors()
 
-    sdkInstance?._emitEvent('filtersupdate', newFilters)
+    sdkInstance?._emitEvent('filtersupdate', filtersToUpdate)
+
     if (activeTab === PROJECT_TABS.performance) {
-      await loadAnalyticsPerf(true, newFiltersPerf)
+      await loadAnalyticsPerf(true, filtersToUpdate)
     } else if (activeTab === PROJECT_TABS.traffic) {
-      await loadAnalytics(true, newFilters)
+      await loadAnalytics(true, filtersToUpdate)
     }
   }
 
-  const onFilterSearch = (items: IFilter[], override: boolean) => {
-    const newFilters = _filter(items, (item) => {
-      return !_isEmpty(item.filter)
-    })
-    // @ts-expect-error
-    const url = new URL(window.location)
+  const onFilterSearch = (items: IFilter[], override: boolean): void => {
+    const url = new URL(window.location.href)
 
-    console.log('items:', items)
-    console.log('newFilters:', newFilters)
-
-    if (activeTab === PROJECT_TABS.performance) {
-      if (override) {
-        _forEach(FILTERS_PANELS_ORDER, (value) => {
-          if (url.searchParams.has(`${value}_perf`)) {
-            url.searchParams.delete(`${value}_perf`)
-          }
-        })
-      }
-
-      _forEach(items, (item) => {
-        if (url.searchParams.has(`${item.column}_perf`)) {
-          url.searchParams.delete(`${item.column}_perf`)
+    switch (activeTab) {
+      case PROJECT_TABS.performance:
+        handleNavigationParams(items, '_perf', url, navigate, override, setFiltersPerf, loadAnalyticsPerf)
+        break
+      case PROJECT_TABS.sessions:
+        handleNavigationParams(items, '_sess', url, navigate, override, setFiltersSessions, resetSessions)
+        break
+      case PROJECT_TABS.errors:
+        if (!activeEID) {
+          handleNavigationParams(items, '_err', url, navigate, override, setFiltersErrors, resetErrors)
+        } else {
+          handleNavigationParams(items, '_subErr', url, navigate, override, setFiltersSubError, resetErrors)
         }
-        _forEach(item.filter, (filter) => {
-          url.searchParams.append(`${item.column}_perf`, filter)
-        })
-      })
-
-      const { pathname, search } = url
-      navigate(`${pathname}${search}`)
-
-      if (!override) {
-        loadAnalyticsPerf(true, [...filtersPerf, ...newFilters])
-        setFiltersPerf([...filtersPerf, ...newFilters])
-        return
-      }
-
-      setFiltersPerf(newFilters)
-      loadAnalyticsPerf(true, newFilters)
-    } else if (activeTab === PROJECT_TABS.sessions) {
-      if (override) {
-        _forEach(FILTERS_PANELS_ORDER, (value) => {
-          if (url.searchParams.has(`${value}_sess`)) {
-            url.searchParams.delete(`${value}_sess`)
-          }
-        })
-      }
-
-      _forEach(items, (item) => {
-        if (url.searchParams.has(`${item.column}_sess`)) {
-          url.searchParams.delete(`${item.column}_sess`)
-        }
-        _forEach(item.filter, (filter) => {
-          url.searchParams.append(`${item.column}_sess`, filter)
-        })
-      })
-
-      const { pathname, search } = url
-      navigate(`${pathname}${search}`)
-
-      resetSessions()
-
-      if (!override) {
-        setFiltersSessions((prev) => [...prev, ...newFilters])
-        return
-      }
-
-      setFiltersSessions(newFilters)
-    } else if (activeTab === PROJECT_TABS.errors) {
-      if (override) {
-        _forEach(ERRORS_FILTERS_PANELS_ORDER, (value) => {
-          if (url.searchParams.has(`${value}_err`)) {
-            url.searchParams.delete(`${value}_err`)
-          }
-        })
-      }
-
-      _forEach(items, (item) => {
-        if (url.searchParams.has(`${item.column}_err`)) {
-          url.searchParams.delete(`${item.column}_err`)
-        }
-        _forEach(item.filter, (filter) => {
-          url.searchParams.append(`${item.column}_err`, filter)
-        })
-      })
-
-      const { pathname, search } = url
-      navigate(`${pathname}${search}`)
-
-      resetErrors()
-
-      if (!override) {
-        setFiltersErrors((prev) => [...prev, ...newFilters])
-        return
-      }
-
-      setFiltersErrors(newFilters)
-    } else {
-      if (override) {
-        _forEach(FILTERS_PANELS_ORDER, (value) => {
-          if (url.searchParams.has(value)) {
-            url.searchParams.delete(value)
-          }
-        })
-      }
-
-      _forEach(items, (item) => {
-        if (url.searchParams.has(item.column)) {
-          url.searchParams.delete(item.column)
-        }
-        _forEach(item.filter, (filter) => {
-          url.searchParams.append(item.column, filter)
-        })
-      })
-
-      const { pathname, search } = url
-      navigate(`${pathname}${search}`)
-
-      if (!override) {
-        loadAnalytics(true, [...filters, ...newFilters])
-        setFilters([...filters, ...newFilters])
-        return
-      }
-
-      setFilters(newFilters)
-      loadAnalytics(true, newFilters)
+        break
+      default:
+        handleNavigationParams(items, '', url, navigate, override, setFilters, loadAnalytics)
     }
 
     resetSessions()
@@ -2512,75 +2377,91 @@ const ViewProject = ({
 
   // this function is used for requesting the data from the API when the exclusive filter is changed
   const onChangeExclusive = (column: string, filter: string, isExclusive: boolean) => {
-    let newFilters
-    if (activeTab === PROJECT_TABS.performance) {
-      newFilters = _map(filtersPerf, (f) => {
-        if (f.column === column && f.filter === filter) {
-          return {
-            ...f,
-            isExclusive,
-          }
-        }
-
-        return f
-      })
-      setFiltersPerf(newFilters)
-      loadAnalyticsPerf(true, newFilters)
-    } else if (activeTab === PROJECT_TABS.sessions) {
-      newFilters = _map(filtersSessions, (f) => {
-        if (f.column === column && f.filter === filter) {
-          return {
-            ...f,
-            isExclusive,
-          }
-        }
-
-        return f
-      })
-      setFiltersSessions(newFilters)
-    } else if (activeTab === PROJECT_TABS.errors) {
-      newFilters = _map(filtersErrors, (f) => {
-        if (f.column === column && f.filter === filter) {
-          return {
-            ...f,
-            isExclusive,
-          }
-        }
-
-        return f
-      })
-      resetErrors()
-      setFiltersErrors(newFilters)
-    } else {
-      newFilters = _map(filters, (f) => {
-        if (f.column === column && f.filter === filter) {
-          return {
-            ...f,
-            isExclusive,
-          }
-        }
-
-        return f
-      })
-      setFilters(newFilters)
-      loadAnalytics(true, newFilters)
+    const updateFilters = (
+      filters: IFilter[],
+      setFilters: React.Dispatch<React.SetStateAction<IFilter[]>>,
+    ): IFilter[] => {
+      const newFilters = filters.map((f) => (f.column === column && f.filter === filter ? { ...f, isExclusive } : f))
+      if (JSON.stringify(newFilters) !== JSON.stringify(filters)) {
+        setFilters(newFilters)
+      }
+      return newFilters
     }
 
-    // storing exclusive filter in the page URL
-    // @ts-expect-error
-    const url = new URL(window.location)
+    let newFilters: IFilter[]
 
-    if (activeTab === PROJECT_TABS.performance) {
-      const columnPerf = `${column}_perf`
-      url.searchParams.set(columnPerf, filter)
-    } else {
-      url.searchParams.set(column, filter)
+    switch (activeTab) {
+      case PROJECT_TABS.performance:
+        newFilters = updateFilters(filtersPerf, setFiltersPerf)
+        loadAnalyticsPerf(true, newFilters)
+        break
+      case PROJECT_TABS.sessions:
+        newFilters = updateFilters(filtersSessions, setFiltersSessions)
+        break
+      case PROJECT_TABS.errors:
+        if (!activeEID) {
+          newFilters = updateFilters(filtersErrors, setFiltersErrors)
+          resetErrors()
+        } else {
+          newFilters = updateFilters(filtersSubError, setFiltersSubError)
+        }
+        break
+      default:
+        newFilters = updateFilters(filters, setFilters)
+        loadAnalytics(true, newFilters)
+        break
     }
 
-    const { pathname, search } = url
-    navigate(`${pathname}${search}`)
+    const url = new URL(window.location.href)
+    const paramName = activeTab === PROJECT_TABS.performance ? `${column}_perf` : column
+    if (url.searchParams.get(paramName) !== filter) {
+      url.searchParams.set(paramName, filter)
+      const { pathname, search } = url
+      navigate(`${pathname}${search}`)
+    }
+
     sdkInstance?._emitEvent('filtersupdate', newFilters)
   }
+
+  // Main useEffect for filters parsing
+  useEffect(() => {
+    switch (activeTab) {
+      case PROJECT_TABS.performance:
+        parseFiltersFromUrl('_perf', setFiltersPerf, setAreFiltersPerfParsed)
+        break
+      case PROJECT_TABS.sessions:
+        parseFiltersFromUrl('_sess', setFiltersSessions, setAreFiltersSessionsParsed)
+        break
+      case PROJECT_TABS.errors:
+        parseFiltersFromUrl('_err', setFiltersErrors, setAreFiltersErrorsParsed)
+        parseFiltersFromUrl('_subErr', setFiltersSubError, setAreFiltersSubErrorParsed)
+        break
+      default:
+        parseFiltersFromUrl('', setFilters, setAreFiltersParsed)
+        break
+    }
+  }, [activeTab])
+
+  // Parsing timeBucket from URL
+  useEffect(() => {
+    if (!arePeriodParsed) return
+
+    try {
+      // @ts-expect-error
+      const url = new URL(window.location)
+      const { searchParams } = url
+      const initialTimeBucket = searchParams.get('timeBucket')
+
+      if (_includes(validTimeBacket, initialTimeBucket)) {
+        const newPeriodFull = _find(periodPairs, (el) => el.period === period)
+        if (_includes(newPeriodFull?.tbs, initialTimeBucket)) {
+          setTimebucket(initialTimeBucket || periodPairs[3].tbs[1])
+        }
+      }
+    } finally {
+      setAreTimeBucketParsed(true)
+    }
+  }, [arePeriodParsed])
 
   // this function is used for requesting the data from the API when you press the reset button
   const refreshStats = async () => {
@@ -2940,157 +2821,6 @@ const ViewProject = ({
     setPeriodPairs(tbPeriodPairs(t, undefined, undefined, language))
     setPeriodPairsCompare(tbPeriodPairsCompare(t, undefined, language))
   }, [t, language])
-
-  // Parsing initial filters from url also using for perfomance tab
-  useEffect(() => {
-    // using try/catch because new URL is not supported by browsers like IE, so at least analytics would work without parsing filters
-    if (activeTab === PROJECT_TABS.performance) {
-      try {
-        // @ts-expect-error
-        const url = new URL(window.location)
-        const { searchParams } = url
-        const initialFilters: any[] = []
-        // eslint-disable-next-line lodash/prefer-lodash-method
-        searchParams.forEach((value, key) => {
-          if (!_includes(key, '_perf')) {
-            return
-          }
-
-          const keyPerf = _replace(key, '_perf', '')
-
-          if (!isFilterValid(keyPerf)) {
-            return
-          }
-
-          const isExclusive = _startsWith(value, '!')
-          initialFilters.push({
-            column: keyPerf,
-            filter: isExclusive ? value.substring(1) : value,
-            isExclusive,
-          })
-        })
-
-        setFiltersPerf(initialFilters)
-      } finally {
-        setAreFiltersPerfParsed(true)
-      }
-    } else {
-      try {
-        // @ts-expect-error
-        const url = new URL(window.location)
-        const { searchParams } = url
-        const initialFilters: any[] = []
-        // eslint-disable-next-line lodash/prefer-lodash-method
-        searchParams.forEach((value, key) => {
-          if (!isFilterValid(key, true)) {
-            return
-          }
-
-          const isExclusive = _startsWith(value, '!')
-          initialFilters.push({
-            column: key,
-            filter: isExclusive ? value.substring(1) : value,
-            isExclusive,
-          })
-        })
-        setFilters(initialFilters)
-      } finally {
-        setAreFiltersParsed(true)
-      }
-    }
-  }, [activeTab])
-
-  useEffect(() => {
-    try {
-      // @ts-expect-error
-      const url = new URL(window.location)
-      const { searchParams } = url
-      const initialFilters: any[] = []
-      // eslint-disable-next-line lodash/prefer-lodash-method
-      searchParams.forEach((value, key) => {
-        if (!_includes(key, '_sess')) {
-          return
-        }
-
-        const keySess = _replace(key, '_sess', '')
-
-        if (!isFilterValid(keySess)) {
-          return
-        }
-
-        const isExclusive = _startsWith(value, '!')
-        initialFilters.push({
-          column: keySess,
-          filter: isExclusive ? value.substring(1) : value,
-          isExclusive,
-        })
-      })
-
-      setFiltersSessions(initialFilters)
-    } catch (reason) {
-      console.error(`[ERROR] useEffect - Parsing initial filters from url also using for sessions tab: ${reason}`)
-    } finally {
-      setAreFiltersSessionsParsed(true)
-    }
-  }, [])
-
-  useEffect(() => {
-    try {
-      // @ts-expect-error
-      const url = new URL(window.location)
-      const { searchParams } = url
-      const initialFilters: any[] = []
-      // eslint-disable-next-line lodash/prefer-lodash-method
-      searchParams.forEach((value, key) => {
-        if (!_includes(key, '_err')) {
-          return
-        }
-
-        const keyErr = _replace(key, '_err', '')
-
-        if (!isFilterValid(keyErr)) {
-          return
-        }
-
-        const isExclusive = _startsWith(value, '!')
-        initialFilters.push({
-          column: keyErr,
-          filter: isExclusive ? value.substring(1) : value,
-          isExclusive,
-        })
-      })
-
-      setFiltersErrors(initialFilters)
-    } catch (reason) {
-      console.error(`[ERROR] useEffect - Parsing initial filters from url also using for errors tab: ${reason}`)
-    } finally {
-      setAreFiltersErrorsParsed(true)
-    }
-  }, [])
-
-  // Parsing timeBucket from url
-  useEffect(() => {
-    if (arePeriodParsed) {
-      try {
-        // @ts-expect-error
-        const url = new URL(window.location)
-        const { searchParams } = url
-        const intialTimeBucket = searchParams.get('timeBucket')
-        // eslint-disable-next-line lodash/prefer-lodash-method
-        if (!_includes(validTimeBacket, intialTimeBucket)) {
-          return
-        }
-        const newPeriodFull = _find(periodPairs, (el) => el.period === period)
-        if (!_includes(newPeriodFull?.tbs, intialTimeBucket)) {
-          return
-        }
-        setTimebucket(intialTimeBucket || periodPairs[3].tbs[1])
-      } finally {
-        setAreTimeBucketParsed(true)
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [arePeriodParsed])
 
   const resetSessions = () => {
     setSessionsSkip(0)
@@ -3486,8 +3216,10 @@ const ViewProject = ({
       loadAnalyticsPerf(true, [])
     } else if (activeTab === PROJECT_TABS.sessions) {
       setFiltersSessions([])
-    } else if (activeTab === PROJECT_TABS.errors) {
+    } else if (activeTab === PROJECT_TABS.errors && !activeEID) {
       setFiltersErrors([])
+    } else if (activeTab === PROJECT_TABS.errors && activeEID) {
+      setFiltersSubError([])
     }
   }
 
@@ -3498,6 +3230,7 @@ const ViewProject = ({
     setFiltersPerf([])
     setFiltersSessions([])
     setFiltersErrors([])
+    setFiltersSubError([])
     if (activeTab === PROJECT_TABS.performance) {
       loadAnalyticsPerf(true, [])
     } else if (activeTab === PROJECT_TABS.traffic) {
@@ -4653,6 +4386,13 @@ const ViewProject = ({
                         dataNames={dataNames}
                       />
                     )}
+                    <Filters
+                      filters={filtersSubError}
+                      onRemoveFilter={filterHandler}
+                      onChangeExclusive={onChangeExclusive}
+                      tnMapping={tnMapping}
+                      resetFilters={resetActiveTabFilters}
+                    />
                     <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
                       {!_isEmpty(activeError?.params) &&
                         _map(ERROR_PANELS_ORDER, (type: keyof typeof tnMapping) => {
