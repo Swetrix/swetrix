@@ -144,13 +144,11 @@ export const updateFilterState = (
 
 export const parseFiltersFromUrl = (
   keySuffix: string,
+  searchParams: URLSearchParams,
   setFilters: React.Dispatch<React.SetStateAction<IFilter[]>>,
   setParsedFlag: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
   try {
-    // @ts-expect-error
-    const url = new URL(window.location)
-    const { searchParams } = url
     const initialFilters: IFilter[] = []
 
     searchParams.forEach((value, key) => {

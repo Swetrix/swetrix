@@ -514,7 +514,7 @@ const ViewProject = ({
     // first we check if we have activeTab in url
     // if we have activeTab in url, we return it
     // if we do not have activeTab in url, we return activeTab from localStorage or default tab trafic
-    return projectTab || PROJECT_TABS.traffic
+    return searchParams.get('tab') || projectTab || PROJECT_TABS.traffic
   })
 
   const [isHotkeysHelpOpened, setIsHotkeysHelpOpened] = useState(false)
@@ -1714,22 +1714,10 @@ const ViewProject = ({
   }
 
   useEffect(() => {
-    const url = new URL(window.location.toString())
-    const { searchParams } = url
-    const tab = searchParams.get('tab') as keyof typeof PROJECT_TABS
-
-    if (PROJECT_TABS[tab]) {
-      setActiveTab(tab)
-    }
-  }, [])
-
-  useEffect(() => {
     if (authLoading) {
       return
     }
 
-    const url = new URL(window.location.toString())
-    const { searchParams } = url
     const psid = searchParams.get('psid') as string
     const tab = searchParams.get('tab') as string
 
@@ -1744,9 +1732,6 @@ const ViewProject = ({
       return
     }
 
-    // @ts-expect-error
-    const url = new URL(window.location)
-    const { searchParams } = url
     const eid = searchParams.get('eid') as string
     const tab = searchParams.get('tab') as string
 
@@ -2430,17 +2415,17 @@ const ViewProject = ({
   useEffect(() => {
     switch (activeTab) {
       case PROJECT_TABS.performance:
-        parseFiltersFromUrl('_perf', setFiltersPerf, setAreFiltersPerfParsed)
+        parseFiltersFromUrl('_perf', searchParams, setFiltersPerf, setAreFiltersPerfParsed)
         break
       case PROJECT_TABS.sessions:
-        parseFiltersFromUrl('_sess', setFiltersSessions, setAreFiltersSessionsParsed)
+        parseFiltersFromUrl('_sess', searchParams, setFiltersSessions, setAreFiltersSessionsParsed)
         break
       case PROJECT_TABS.errors:
-        parseFiltersFromUrl('_err', setFiltersErrors, setAreFiltersErrorsParsed)
-        parseFiltersFromUrl('_subErr', setFiltersSubError, setAreFiltersSubErrorParsed)
+        parseFiltersFromUrl('_err', searchParams, setFiltersErrors, setAreFiltersErrorsParsed)
+        parseFiltersFromUrl('_subErr', searchParams, setFiltersSubError, setAreFiltersSubErrorParsed)
         break
       default:
-        parseFiltersFromUrl('', setFilters, setAreFiltersParsed)
+        parseFiltersFromUrl('', searchParams, setFilters, setAreFiltersParsed)
         break
     }
   }, [activeTab])
@@ -2450,9 +2435,6 @@ const ViewProject = ({
     if (!arePeriodParsed) return
 
     try {
-      // @ts-expect-error
-      const url = new URL(window.location)
-      const { searchParams } = url
       const initialTimeBucket = searchParams.get('timeBucket')
 
       if (_includes(validTimeBacket, initialTimeBucket)) {
@@ -3065,20 +3047,18 @@ const ViewProject = ({
 
     const newPeriodFull = _find(periodPairs, (el) => el.period === newPeriod.period)
     let tb = timeBucket
-    // @ts-expect-error
-    const url = new URL(window.location)
     if (_isEmpty(newPeriodFull)) return
 
     if (!_includes(newPeriodFull.tbs, timeBucket)) {
       tb = _last(newPeriodFull.tbs) || 'day'
-      url.searchParams.set('timeBucket', tb)
+      searchParams.set('timeBucket', tb)
       setTimebucket(tb)
     }
 
     if (newPeriod.period !== 'custom') {
-      url.searchParams.delete('from')
-      url.searchParams.delete('to')
-      url.searchParams.set('period', newPeriod.period)
+      searchParams.delete('from')
+      searchParams.delete('to')
+      searchParams.set('period', newPeriod.period)
       setProjectViewPrefs(id, newPeriod.period, tb)
       setPeriod(newPeriod.period)
 
@@ -3088,8 +3068,8 @@ const ViewProject = ({
 
       setDateRange(null)
     }
-    const { pathname, search } = url
-    navigate(`${pathname}${search}`)
+
+    setSearchParams(searchParams)
     sdkInstance?._emitEvent('timeupdate', {
       period: newPeriod.period,
       timeBucket: tb,
@@ -3100,11 +3080,8 @@ const ViewProject = ({
 
   // updateTimebucket using for update timeBucket also update url
   const updateTimebucket = (newTimebucket: string) => {
-    // @ts-expect-error
-    const url = new URL(window.location)
-    url.searchParams.set('timeBucket', newTimebucket)
-    const { pathname, search } = url
-    navigate(`${pathname}${search}`)
+    searchParams.set('timeBucket', newTimebucket)
+    setSearchParams(searchParams)
     setTimebucket(newTimebucket)
     setProjectViewPrefs(id, period, newTimebucket, dateRange as Date[])
     sdkInstance?._emitEvent('timeupdate', {
@@ -3131,9 +3108,6 @@ const ViewProject = ({
   // parse period from url when page is loaded
   useEffect(() => {
     try {
-      // @ts-expect-error
-      const url = new URL(window.location)
-      const { searchParams } = url
       const intialPeriod = projectViewPrefs
         ? searchParams.get('period') || projectViewPrefs[id]?.period
         : searchParams.get('period') || '7d'
@@ -4281,9 +4255,8 @@ const ViewProject = ({
                       onClick={() => {
                         setActiveSession(null)
                         setActivePSID(null)
-                        const url = new URL(window.location.href)
-                        url.searchParams.delete('psid')
-                        window.history.pushState({}, '', url.toString())
+                        searchParams.delete('psid')
+                        setSearchParams(searchParams)
                       }}
                       className='mx-auto mb-4 mt-2 flex items-center text-base font-normal text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100 lg:mx-0'
                     >
@@ -4354,9 +4327,8 @@ const ViewProject = ({
                       onClick={() => {
                         setActiveError(null)
                         setActiveEID(null)
-                        const url = new URL(window.location.href)
-                        url.searchParams.delete('eid')
-                        window.history.pushState({}, '', url.toString())
+                        searchParams.delete('eid')
+                        setSearchParams(searchParams)
                       }}
                       className='mx-auto mb-4 mt-2 flex items-center text-base font-normal text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100 lg:mx-0 lg:mt-0'
                     >
