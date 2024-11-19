@@ -14,7 +14,7 @@ import React, {
 } from 'react'
 import { ClientOnly } from 'remix-utils/client-only'
 import useSize from 'hooks/useSize'
-import { useNavigate, Link } from '@remix-run/react'
+import { useNavigate, Link, useSearchParams } from '@remix-run/react'
 import bb from 'billboard.js'
 import {
   ArrowDownTrayIcon,
@@ -384,6 +384,9 @@ const ViewProject = ({
   const { id } = useRequiredParams<{ id: string }>()
   // history is a history from react-router-dom
   const navigate = useNavigate()
+
+  // searchParams is a search params from react-router-dom
+  const [searchParams, setSearchParams] = useSearchParams()
 
   // find project by id from url from state in redux projects and sharedProjects. projects and sharedProjects loading from api in Saga on page load
   const project: IProjectForShared = useMemo(
@@ -2255,13 +2258,13 @@ const ViewProject = ({
     const columnSessions = `${column}_sess`
     const columnErrors = `${column}_err`
     const columnSubErrors = `${column}_subErr`
-
     let filtersToUpdate: IFilter[] = []
 
     switch (activeTab) {
       case PROJECT_TABS.performance:
         filtersToUpdate = updateFilterState(
-          navigate,
+          searchParams,
+          setSearchParams,
           filtersPerf,
           setFiltersPerf,
           columnPerf,
@@ -2272,7 +2275,8 @@ const ViewProject = ({
         break
       case PROJECT_TABS.sessions:
         filtersToUpdate = updateFilterState(
-          navigate,
+          searchParams,
+          setSearchParams,
           filtersSessions,
           setFiltersSessions,
           columnSessions,
@@ -2284,7 +2288,8 @@ const ViewProject = ({
       case PROJECT_TABS.errors:
         if (!activeEID) {
           filtersToUpdate = updateFilterState(
-            navigate,
+            searchParams,
+            setSearchParams,
             filtersErrors,
             setFiltersErrors,
             columnErrors,
@@ -2294,7 +2299,8 @@ const ViewProject = ({
           )
         } else {
           filtersToUpdate = updateFilterState(
-            navigate,
+            searchParams,
+            setSearchParams,
             filtersSubError,
             setFiltersSubError,
             columnSubErrors,
@@ -2305,7 +2311,7 @@ const ViewProject = ({
         }
         break
       case PROJECT_TABS.traffic:
-        filtersToUpdate = updateFilterState(navigate, filters, setFilters, column, column, filter, isExclusive)
+        filtersToUpdate = updateFilterState(searchParams, setSearchParams, filters, setFilters, column, column, filter, isExclusive)
         break
     }
 
@@ -2322,24 +2328,22 @@ const ViewProject = ({
   }
 
   const onFilterSearch = (items: IFilter[], override: boolean): void => {
-    const url = new URL(window.location.href)
-
     switch (activeTab) {
       case PROJECT_TABS.performance:
-        handleNavigationParams(items, '_perf', url, navigate, override, setFiltersPerf, loadAnalyticsPerf)
+        handleNavigationParams(items, '_perf', searchParams, setSearchParams, override, setFiltersPerf, loadAnalyticsPerf)
         break
       case PROJECT_TABS.sessions:
-        handleNavigationParams(items, '_sess', url, navigate, override, setFiltersSessions, resetSessions)
+        handleNavigationParams(items, '_sess', searchParams, setSearchParams, override, setFiltersSessions, resetSessions)
         break
       case PROJECT_TABS.errors:
         if (!activeEID) {
-          handleNavigationParams(items, '_err', url, navigate, override, setFiltersErrors, resetErrors)
+          handleNavigationParams(items, '_err', searchParams, setSearchParams, override, setFiltersErrors, resetErrors)
         } else {
-          handleNavigationParams(items, '_subErr', url, navigate, override, setFiltersSubError, resetErrors)
+          handleNavigationParams(items, '_subErr', searchParams, setSearchParams, override, setFiltersSubError, resetErrors)
         }
         break
       default:
-        handleNavigationParams(items, '', url, navigate, override, setFilters, loadAnalytics)
+        handleNavigationParams(items, '', searchParams, setSearchParams, override, setFilters, loadAnalytics)
     }
 
     resetSessions()
@@ -2412,12 +2416,11 @@ const ViewProject = ({
         break
     }
 
-    const url = new URL(window.location.href)
     const paramName = activeTab === PROJECT_TABS.performance ? `${column}_perf` : column
-    if (url.searchParams.get(paramName) !== filter) {
-      url.searchParams.set(paramName, filter)
-      const { pathname, search } = url
-      navigate(`${pathname}${search}`)
+
+    if (searchParams.get(paramName) !== filter) {
+      searchParams.set(paramName, filter)
+      setSearchParams(searchParams)
     }
 
     sdkInstance?._emitEvent('filtersupdate', newFilters)
@@ -2608,11 +2611,8 @@ const ViewProject = ({
 
   // this useEffect is used for parsing tab from url and set activeTab
   useEffect(() => {
-    const url = new URL(window.location.href)
-    url.searchParams.set('tab', activeTab)
-
-    const { pathname, search } = url
-    navigate(`${pathname}${search}`)
+    searchParams.set('tab', activeTab)
+    setSearchParams(searchParams)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab])
 
@@ -2838,8 +2838,6 @@ const ViewProject = ({
   // we update url and state
   const onRangeDateChange = (dates: Date[], onRender?: boolean) => {
     const days = Math.ceil(Math.abs(dates[1].getTime() - dates[0].getTime()) / (1000 * 3600 * 24))
-    // @ts-expect-error
-    const url = new URL(window.location)
 
     // setting allowed time buckets for the specified date range (period)
     // eslint-disable-next-line no-restricted-syntax
@@ -2850,18 +2848,14 @@ const ViewProject = ({
         if (!onRender && !_includes(timeBucketToDays[index].tb, timeBucket)) {
           // eslint-disable-next-line prefer-destructuring
           eventEmitTimeBucket = timeBucketToDays[index].tb[0]
-          url.searchParams.set('timeBucket', eventEmitTimeBucket)
-          const { pathname, search } = url
-          navigate(`${pathname}${search}`)
+          searchParams.set('timeBucket', eventEmitTimeBucket)
           setTimebucket(eventEmitTimeBucket)
         }
 
-        url.searchParams.set('period', 'custom')
-        url.searchParams.set('from', dates[0].toISOString())
-        url.searchParams.set('to', dates[1].toISOString())
-
-        const { pathname, search } = url
-        navigate(`${pathname}${search}`)
+        searchParams.set('period', 'custom')
+        searchParams.set('from', dates[0].toISOString()) 
+        searchParams.set('to', dates[1].toISOString())
+        setSearchParams(searchParams)
 
         setPeriodPairs(tbPeriodPairs(t, timeBucketToDays[index].tb, dates, language))
         setPeriod('custom')
@@ -3189,10 +3183,6 @@ const ViewProject = ({
   }
 
   const cleanURLFilters = () => {
-    // @ts-expect-error
-    const url = new URL(window.location)
-    const { searchParams } = url
-
     for (const [key] of Array.from(searchParams.entries())) {
       if (!isFilterValid(key, true)) {
         continue
@@ -3200,9 +3190,7 @@ const ViewProject = ({
       searchParams.delete(key)
     }
 
-    const { pathname, search } = url
-
-    navigate(`${pathname}${search}`)
+    setSearchParams(searchParams)
   }
 
   const resetActiveTabFilters = () => {
