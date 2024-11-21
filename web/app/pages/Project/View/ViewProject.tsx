@@ -2296,7 +2296,16 @@ const ViewProject = ({
         }
         break
       case PROJECT_TABS.traffic:
-        filtersToUpdate = updateFilterState(searchParams, setSearchParams, filters, setFilters, column, column, filter, isExclusive)
+        filtersToUpdate = updateFilterState(
+          searchParams,
+          setSearchParams,
+          filters,
+          setFilters,
+          column,
+          column,
+          filter,
+          isExclusive,
+        )
         break
     }
 
@@ -2315,16 +2324,40 @@ const ViewProject = ({
   const onFilterSearch = (items: IFilter[], override: boolean): void => {
     switch (activeTab) {
       case PROJECT_TABS.performance:
-        handleNavigationParams(items, '_perf', searchParams, setSearchParams, override, setFiltersPerf, loadAnalyticsPerf)
+        handleNavigationParams(
+          items,
+          '_perf',
+          searchParams,
+          setSearchParams,
+          override,
+          setFiltersPerf,
+          loadAnalyticsPerf,
+        )
         break
       case PROJECT_TABS.sessions:
-        handleNavigationParams(items, '_sess', searchParams, setSearchParams, override, setFiltersSessions, resetSessions)
+        handleNavigationParams(
+          items,
+          '_sess',
+          searchParams,
+          setSearchParams,
+          override,
+          setFiltersSessions,
+          resetSessions,
+        )
         break
       case PROJECT_TABS.errors:
         if (!activeEID) {
           handleNavigationParams(items, '_err', searchParams, setSearchParams, override, setFiltersErrors, resetErrors)
         } else {
-          handleNavigationParams(items, '_subErr', searchParams, setSearchParams, override, setFiltersSubError, resetErrors)
+          handleNavigationParams(
+            items,
+            '_subErr',
+            searchParams,
+            setSearchParams,
+            override,
+            setFiltersSubError,
+            resetErrors,
+          )
         }
         break
       default:
@@ -2835,7 +2868,7 @@ const ViewProject = ({
         }
 
         searchParams.set('period', 'custom')
-        searchParams.set('from', dates[0].toISOString()) 
+        searchParams.set('from', dates[0].toISOString())
         searchParams.set('to', dates[1].toISOString())
         setSearchParams(searchParams)
 

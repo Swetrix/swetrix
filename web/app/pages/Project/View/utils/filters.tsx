@@ -78,7 +78,12 @@ export const isFilterValid = (filter: string, checkDynamicFilters = false) => {
   return false
 }
 
-const applyFilters = (items: IFilter[], suffix: string, searchParams: URLSearchParams, override: boolean): IFilter[] => {
+const applyFilters = (
+  items: IFilter[],
+  suffix: string,
+  searchParams: URLSearchParams,
+  override: boolean,
+): IFilter[] => {
   const filtersToLoad: IFilter[] = []
   items.forEach((item) => {
     if (!item.filter) return
