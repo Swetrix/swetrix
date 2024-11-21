@@ -4,7 +4,7 @@ WORKDIR /build
 COPY package*.json .
 RUN npm install --force
 COPY . .
-RUN npm run deploy:selfhosted
+RUN npm run deploy:community
 RUN node ./meta/dbip-sync.js
 
 #Stage 2: Runtime

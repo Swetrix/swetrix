@@ -27,4 +27,6 @@ Swetrix has a public [Roadmap](https://github.com/orgs/Swetrix/projects/7) of th
 You can also follow us on [Twitter](https://x.com/swetrix), [LinkedIn](https://www.linkedin.com/company/linkedin/) or join our [Discord community](https://discord.gg/ZVK8Tw2E8j) for an up to date information.
 
 ## License
-Swetrix is open source under the GNU Affero General Public License Version 3 (AGPLv3). The license can be found in the [LICENSE](./LICENSE) file.
+Swetrix Community Edition is open source under the GNU Affero General Public License Version 3 (AGPLv3). The license can be found in the [LICENSE](./LICENSE) file.
+
+© 2021 - present, Swetrix Ltd.

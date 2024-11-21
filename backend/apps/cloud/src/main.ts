@@ -8,8 +8,11 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger'
 
 import { isDevelopment } from './common/constants'
 import { AppModule } from './app.module'
+import { validateLicense } from './common/license'
 
 async function bootstrap() {
+  validateLicense()
+
   const app = await NestFactory.create(AppModule)
 
   app.use(cookieParser())
