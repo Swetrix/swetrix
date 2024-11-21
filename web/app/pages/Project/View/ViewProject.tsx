@@ -514,7 +514,13 @@ const ViewProject = ({
     // first we check if we have activeTab in url
     // if we have activeTab in url, we return it
     // if we do not have activeTab in url, we return activeTab from localStorage or default tab trafic
-    return searchParams.get('tab') || projectTab || PROJECT_TABS.traffic
+    const tab = searchParams.get('tab') as keyof typeof PROJECT_TABS
+
+    if (tab in PROJECT_TABS) {
+      return tab
+    }
+
+    return projectTab || PROJECT_TABS.traffic
   })
 
   const [isHotkeysHelpOpened, setIsHotkeysHelpOpened] = useState(false)
