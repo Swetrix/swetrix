@@ -78,7 +78,7 @@ export const isFilterValid = (filter: string, checkDynamicFilters = false) => {
   return false
 }
 
-const applyFilters = (items: IFilter[], suffix: string, url: URL, override: boolean): IFilter[] => {
+const applyFilters = (items: IFilter[], suffix: string, searchParams: URLSearchParams, override: boolean): IFilter[] => {
   const filtersToLoad: IFilter[] = []
   items.forEach((item) => {
     if (!item.filter) return
@@ -88,9 +88,9 @@ const applyFilters = (items: IFilter[], suffix: string, url: URL, override: bool
 
     const columnSuffix = `${item.column}${suffix}`
 
-    if (override || !url.searchParams.has(columnSuffix)) {
-      url.searchParams.delete(columnSuffix)
-      filters.forEach((filter) => url.searchParams.append(columnSuffix, filter))
+    if (override || !searchParams.has(columnSuffix)) {
+      searchParams.delete(columnSuffix)
+      filters.forEach((filter) => searchParams.append(columnSuffix, filter))
     }
 
     filtersToLoad.push(item)
@@ -101,21 +101,21 @@ const applyFilters = (items: IFilter[], suffix: string, url: URL, override: bool
 export const handleNavigationParams = (
   items: IFilter[],
   suffix: string,
-  url: URL,
-  navigate: (url: string) => void,
+  searchParams: URLSearchParams,
+  setSearchParams: React.Dispatch<React.SetStateAction<URLSearchParams>>,
   override: boolean,
   stateSetter: React.Dispatch<React.SetStateAction<IFilter[]>>,
   loader: (forceReload: boolean, filters: IFilter[]) => void,
 ): void => {
-  const filters = applyFilters(items, suffix, url, override)
-  const { pathname, search } = url
-  navigate(`${pathname}${search}`)
+  const filters = applyFilters(items, suffix, searchParams, override)
+  setSearchParams(searchParams)
   stateSetter(override ? filters : (prev) => [...prev, ...filters])
   loader(true, filters)
 }
 
 export const updateFilterState = (
-  navigate: (str: string) => void,
+  searchParams: URLSearchParams,
+  setSearchParams: React.Dispatch<React.SetStateAction<URLSearchParams>>,
   filters: IFilter[],
   newFiltersStateSetter: React.Dispatch<React.SetStateAction<IFilter[]>>,
   column: string,
@@ -124,22 +124,19 @@ export const updateFilterState = (
   isExclusive: boolean,
 ) => {
   const existingFilterIndex = filters.findIndex((f) => f.filter === filter)
-  const url = new URL(window.location.href)
-  const { pathname, search } = url
-
   let updatedFilters: IFilter[]
 
   if (existingFilterIndex > -1) {
     updatedFilters = filters.filter((_, index) => index !== existingFilterIndex)
-    url.searchParams.delete(column)
+    searchParams.delete(column)
   } else {
     updatedFilters = [...filters, { column: columnSuffix, filter, isExclusive }]
-    url.searchParams.append(column, filter)
+    searchParams.append(column, filter)
   }
 
   if (JSON.stringify(updatedFilters) !== JSON.stringify(filters)) {
     newFiltersStateSetter(updatedFilters)
-    navigate(`${pathname}${search}`)
+    setSearchParams(searchParams)
   }
 
   return updatedFilters
@@ -147,13 +144,11 @@ export const updateFilterState = (
 
 export const parseFiltersFromUrl = (
   keySuffix: string,
+  searchParams: URLSearchParams,
   setFilters: React.Dispatch<React.SetStateAction<IFilter[]>>,
   setParsedFlag: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
   try {
-    // @ts-expect-error
-    const url = new URL(window.location)
-    const { searchParams } = url
     const initialFilters: IFilter[] = []
 
     searchParams.forEach((value, key) => {
