@@ -15,6 +15,7 @@ export enum ActionTokenType {
   PROJECT_SHARE,
   ADDING_PROJECT_SUBSCRIBER,
   TRANSFER_PROJECT,
+  ORGANISATION_INVITE,
 }
 
 @Entity()
