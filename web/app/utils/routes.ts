@@ -42,6 +42,9 @@ const routes = Object.freeze({
   forMarketers: '/for-marketers',
   forStartups: '/for-startups',
   forSmallBusinesses: '/for-small-businesses',
+  // marketplace
+  marketplace: '/marketplace',
+  view_extensions: '/marketplace/:id',
 })
 
 export default routes

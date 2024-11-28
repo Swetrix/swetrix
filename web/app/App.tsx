@@ -86,6 +86,7 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
     routesPath.forMarketers,
     routesPath.forStartups,
     routesPath.forSmallBusinesses,
+    routesPath.marketplace,
   ]
 
   return (

@@ -510,7 +510,6 @@ const AuthedHeader = ({
                 alt=''
               />
             </Link>
-
             <div className='ml-10 hidden gap-4 space-x-1 lg:flex'>
               {user?.planCode === 'trial' && (
                 <Link
@@ -537,6 +536,15 @@ const AuthedHeader = ({
                 </Link>
               )}
               {!isSelfhosted && <SolutionsMenu />}
+              {!isSelfhosted && (
+                <Link
+                  to={routes.marketplace}
+                  className='text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                  key='Marketplace'
+                >
+                  {t('common.marketplace')}
+                </Link>
+              )}
               {isSelfhosted ? (
                 <a
                   href={`https://swetrix.com${routes.blog}`}
@@ -665,10 +673,18 @@ const NotAuthedHeader = ({
                 />
               </Link>
             )}
-
             {!refPage && (
               <div className='ml-10 hidden items-center gap-4 space-x-1 lg:flex'>
                 {!isSelfhosted && <SolutionsMenu />}
+                {!isSelfhosted && (
+                  <Link
+                    to={routes.marketplace}
+                    className='text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                    key='Marketplace'
+                  >
+                    {t('common.marketplace')}
+                  </Link>
+                )}
                 {isSelfhosted ? (
                   <a
                     href={`https://swetrix.com${routes.blog}`}
@@ -1039,6 +1055,16 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                       </>
                     )}
                   </Disclosure>
+                )}
+                {!isSelfhosted && (
+                  <Link
+                    to={routes.marketplace}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
+                    key='Marketplace'
+                  >
+                    {t('common.marketplace')}
+                  </Link>
                 )}
                 {!isSelfhosted && authenticated && user?.planCode === 'trial' && (
                   <Link
