@@ -24,7 +24,7 @@ import { Monitor, MonitorOverall } from 'redux/models/Uptime'
 
 const debug = Debug('swetrix:api')
 
-const api = axios.create({
+export const api = axios.create({
   baseURL: API_URL,
 })
 
