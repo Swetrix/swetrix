@@ -26,15 +26,15 @@ export interface TrackEventOptions {
     };
 }
 export interface IPageViewPayload {
-    lc: string | undefined;
-    tz: string | undefined;
-    ref: string | undefined;
-    so: string | undefined;
-    me: string | undefined;
-    ca: string | undefined;
-    te: string | undefined;
-    co: string | undefined;
-    pg: string | null | undefined;
+    lc?: string;
+    tz?: string;
+    ref?: string;
+    so?: string;
+    me?: string;
+    ca?: string;
+    te?: string;
+    co?: string;
+    pg?: string | null;
     /** Pageview-related metadata object with string values. */
     meta?: {
         [key: string]: string;
@@ -42,15 +42,15 @@ export interface IPageViewPayload {
 }
 export interface IErrorEventPayload {
     name: string;
-    message: string | null | undefined;
-    lineno: number | null | undefined;
-    colno: number | null | undefined;
-    filename: string | null | undefined;
+    message?: string | null;
+    lineno?: number | null;
+    colno?: number | null;
+    filename?: string | null;
 }
 export interface IInternalErrorEventPayload extends IErrorEventPayload {
-    lc: string | undefined;
-    tz: string | undefined;
-    pg: string | null | undefined;
+    lc?: string;
+    tz?: string;
+    pg?: string | null;
 }
 interface IPerfPayload {
     dns: number;
@@ -132,8 +132,8 @@ export declare class Lib {
     private projectID;
     private options?;
     private pageData;
-    private pageViewsOptions;
-    private errorsOptions;
+    private pageViewsOptions?;
+    private errorsOptions?;
     private perfStatsCollected;
     private activePage;
     private errorListenerExists;
