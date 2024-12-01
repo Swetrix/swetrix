@@ -18,6 +18,7 @@ import { StateType } from 'redux/store/index'
 import Header from 'components/Header'
 import { Lines } from 'components/marketing/Lines'
 import ExtensionsCard from 'components/marketplace/ExtensionsCard'
+import { getExtensions } from 'api/marketplace'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 1,

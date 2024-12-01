@@ -42,8 +42,8 @@ export type IExtension = {
 export type ICategory = {
   id: number
   name: string
-  extensions: IExtension[] | []
 }
+
 export type IComment = {
   id: string
   extensionId: string
@@ -51,8 +51,6 @@ export type IComment = {
   text: string | null
   rating: number | null
   addedAt: Date
-  extension: IExtension
-  user: IUser
   replies: ICommentReply[]
 }
 
@@ -62,6 +60,6 @@ export type ICommentReply = {
   userId: string
   text: string
   addedAt: Date
-  parentComment: Comment
+  parentComment: IComment
   user: IUser
 }
