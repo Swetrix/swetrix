@@ -7,6 +7,7 @@ import { OrganisationService } from './organisation.service'
 import { UserModule } from '../user/user.module'
 import { MailerModule } from '../mailer/mailer.module'
 import { ActionTokensModule } from '../action-tokens/action-tokens.module'
+import { AppLoggerModule } from '../logger/logger.module'
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { ActionTokensModule } from '../action-tokens/action-tokens.module'
     UserModule,
     MailerModule,
     ActionTokensModule,
+    AppLoggerModule,
   ],
   controllers: [OrganisationController],
   providers: [OrganisationService],
