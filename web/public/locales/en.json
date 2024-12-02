@@ -47,7 +47,9 @@
     "enterViewName": "Please enter a view name",
     "inputCannotBeEmpty": "This input field must not be empty",
     "viewDeleted": "View has been deleted",
-    "noAIForecastAvailable": "AI forecast is not available for this project yet"
+    "noAIForecastAvailable": "AI forecast is not available for this project yet",
+    "organisationCreated": "Organisation has been created",
+    "organisationCreateError": "Error occurred while creating the organisation"
   },
   "common": {
     "features": "Features",
@@ -103,7 +105,9 @@
     "oneMember": "1 Member",
     "xMembers": "{{number}} Members",
     "general": "General",
-    "fixIt": "Fix it"
+    "fixIt": "Fix it",
+    "errorOccured": "An error occurred: {{error}}",
+    "name": "Name"
   },
   "performance": {
     "slogan": "End user <span>performance monitoring</span> to deliver fast websites.",
@@ -597,6 +601,9 @@
     "alertCreated": "The alert has been created",
     "alertUpdated": "The alert has been updated",
     "alertDeleted": "The alert has been deleted"
+  },
+  "organisations": {
+    "create": "Create organisation"
   },
   "dashboard": {
     "uptime": "Uptime",
@@ -1209,6 +1216,7 @@
     "invitation": "Shared project invitation",
     "profileSettings": "Profile settings",
     "dashboard": "Dashboard",
+    "organisations": "Organisations",
     "docs": "Documentation",
     "billing": "Billing",
     "contact": "Have something to ask?",

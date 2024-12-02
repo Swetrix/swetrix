@@ -19,22 +19,6 @@ export interface Monitor {
   }
 }
 
-/*
-current: {
-            avg: currentPeriod.avg,
-            min: currentPeriod.min,
-            max: currentPeriod.max,
-          },
-          previous: {
-            avg: previousPeriod.avg || 0,
-            min: previousPeriod.min,
-            max: previousPeriod.max,
-          },
-          avgChange: currentPeriod.avg - previousPeriod.avg,
-          minChange: currentPeriod.min - previousPeriod.min,
-          maxChange: currentPeriod.max - previousPeriod.max,
-          */
-
 interface MonitorOverallPeriodStats {
   avg: number
   min: number

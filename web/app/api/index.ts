@@ -280,6 +280,24 @@ export const getProjects = (take: number = 0, skip: number = 0, isCaptcha: boole
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
+export const getOrganisations = (take: number = 0, skip: number = 0, search?: string) =>
+  api
+    .get(`/organisation?take=${take}&skip=${skip}&search=${search}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const createOrganisation = (name: string) =>
+  api
+    .post('/organisation', { name })
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
 export const getSharedProjects = (take: number = 0, skip: number = 0, search?: string) =>
   api
     .get(`/project/shared?take=${take}&skip=${skip}&search=${search}`)
