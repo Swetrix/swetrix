@@ -611,6 +611,10 @@
       "desc": "Enter an email address and a role of the person registered on Swetrix that you want to invite to the organisation. The invitation will expire in {{expiresIn}} hours."
     },
     "role": {
+      "owner": {
+        "name": "Owner",
+        "desc": "Can manage the organisation and its members, as well as manage the projects within the organisation."
+      },
       "admin": {
         "name": "Admin",
         "desc": "Can manage the organisation and its members, as well as manage the projects within the organisation."

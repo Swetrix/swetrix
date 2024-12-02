@@ -18,7 +18,7 @@ import routes from 'utils/routes'
 
 import People from './People'
 import { useRequiredParams } from 'hooks/useRequiredParams'
-import { Organisation } from 'redux/models/Organisation'
+import { DetailedOrganisation } from 'redux/models/Organisation'
 import { StateType } from 'redux/store'
 import { useSelector } from 'react-redux'
 
@@ -47,8 +47,8 @@ const OrganisationSettings = () => {
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  const [organisation, setOrganisation] = useState<Organisation | null>(null)
-  const [form, setForm] = useState<Pick<Organisation, 'name'>>({
+  const [organisation, setOrganisation] = useState<DetailedOrganisation | null>(null)
+  const [form, setForm] = useState<Pick<DetailedOrganisation, 'name'>>({
     name: '',
   })
 

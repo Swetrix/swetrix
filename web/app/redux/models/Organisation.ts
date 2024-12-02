@@ -3,9 +3,16 @@ export interface Organisation {
   name: string
   created: string
   updated: string
+}
 
-  // todo
-  owner: any
-  members: any
-  projects: any
+export interface DetailedOrganisation extends Organisation {
+  members: {
+    id: string
+    role: 'admin' | 'viewer'
+    created: string
+    confirmed: boolean
+    user: {
+      email: string
+    }
+  }[]
 }

@@ -2,7 +2,7 @@ import type i18next from 'i18next'
 import React, { useState, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 import { ChevronDownIcon, CheckIcon } from '@heroicons/react/24/solid'
-import { TrashIcon, UserPlusIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline'
+import { TrashIcon, UserPlusIcon } from '@heroicons/react/24/outline'
 import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -10,7 +10,6 @@ import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 
-import { shareProject, changeShareRole } from 'api'
 import { isValidEmail } from 'utils/validator'
 import Input from 'ui/Input'
 import { Badge } from 'ui/Badge'
@@ -18,8 +17,9 @@ import Button from 'ui/Button'
 import Modal from 'ui/Modal'
 import { roles, roleViewer, roleAdmin, INVITATION_EXPIRES_IN } from 'redux/constants'
 import useOnClickOutside from 'hooks/useOnClickOutside'
-import { IProject, IShareOwnerProject } from 'redux/models/IProject'
-import { Organisation } from 'redux/models/Organisation'
+import { DetailedOrganisation } from 'redux/models/Organisation'
+import { useSelector } from 'react-redux'
+import { StateType } from 'redux/store'
 
 const NoPeople = ({ t }: { t: typeof i18next.t }) => (
   <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
@@ -29,112 +29,100 @@ const NoPeople = ({ t }: { t: typeof i18next.t }) => (
   </div>
 )
 
-interface IUsersList {
-  data: IShareOwnerProject
+interface UsersListProps {
+  members: DetailedOrganisation['members']
   onRemove: (id: string) => void
-  t: typeof i18next.t
-  share?: IShareOwnerProject[]
-  setProjectShareData: (item: Partial<IProject>, id: string, shared: boolean) => void
-  pid: string
-  language: string
-  authedUserEmail: string | undefined
-  isSharedProject: boolean
 }
 
-const UsersList = ({
-  data,
-  onRemove,
-  t,
-  share,
-  setProjectShareData,
-  pid,
-  language,
-  authedUserEmail,
-  isSharedProject,
-}: IUsersList) => {
-  const [open, setOpen] = useState(false)
+const UsersList = ({ members, onRemove }: UsersListProps) => {
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
+  const { user } = useSelector((state: StateType) => state.auth)
+
+  const [roleEditDropdownId, setRoleEditDropdownId] = useState<string | null>(null)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const openRef = useRef<HTMLDivElement>(null)
-  useOnClickOutside(openRef, () => setOpen(false))
-  const { id, created, confirmed, role, user } = data || {}
+  useOnClickOutside(openRef, () => setRoleEditDropdownId(null))
 
   const changeRole = async (newRole: string) => {
     try {
-      const results = await changeShareRole(id, { role: newRole })
-      const newShared: IShareOwnerProject[] = _map(share, (itShare) => {
-        if (itShare.id === results.id) {
-          return { ...results, user: itShare.user, role: newRole }
-        }
-        return itShare
-      })
-      setProjectShareData({ share: newShared }, pid, isSharedProject)
+      // todo
+
       toast.success(t('apiNotifications.roleUpdated'))
     } catch (reason) {
       console.error(`[ERROR] Error while updating user's role: ${reason}`)
       toast.error(t('apiNotifications.roleUpdateError'))
     }
 
-    setOpen(false)
+    setRoleEditDropdownId(null)
   }
 
-  return (
-    <tr className='dark:bg-slate-800'>
+  return members.map((member) => (
+    <tr key={member.id} className='dark:bg-slate-800'>
       <td className='whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6'>
-        {user.email}
+        {member.user.email}
       </td>
       <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-white'>
         {language === 'en'
-          ? dayjs(created).locale(language).format('MMMM D, YYYY')
-          : dayjs(created).locale(language).format('D MMMM, YYYY')}
+          ? dayjs(member.created).locale(language).format('MMMM D, YYYY')
+          : dayjs(member.created).locale(language).format('D MMMM, YYYY')}
       </td>
       <td className='relative whitespace-nowrap py-4 pr-2 text-right text-sm font-medium'>
-        {confirmed ? (
+        {member.confirmed ? (
           <div ref={openRef}>
             <button
-              onClick={() => setOpen(!open)}
+              onClick={() => setRoleEditDropdownId((prev) => (prev === member.id ? null : member.id))}
               type='button'
-              disabled={user.email === authedUserEmail}
+              disabled={member.user.email === user.email}
               className='inline-flex items-center rounded-full border border-gray-200 bg-white py-0.5 pl-2 pr-1 text-sm font-medium leading-5 text-gray-700 shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-80 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-gray-600'
             >
-              {t(`project.settings.roles.${role}.name`)}
-              <ChevronDownIcon style={{ transform: open ? 'rotate(180deg)' : '' }} className='ml-0.5 h-4 w-4 pt-px' />
+              {t(`organisations.role.${member.role}.name`)}
+              <ChevronDownIcon
+                style={{ transform: roleEditDropdownId === member.id ? 'rotate(180deg)' : '' }}
+                className='ml-0.5 h-4 w-4 pt-px'
+              />
             </button>
-            {open && (
+            {roleEditDropdownId === member.id ? (
               <ul className='absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 rounded-md bg-white text-left shadow-lg focus:outline-none dark:divide-gray-700 dark:bg-slate-900'>
-                {_map(roles, (itRole) => (
+                {_map(roles, (itRole, index) => (
                   <li
                     onClick={() => changeRole(itRole)}
-                    className='group flex cursor-pointer items-center justify-between p-4 hover:bg-indigo-600'
+                    className={cx(
+                      'group relative cursor-pointer p-4 hover:bg-indigo-600',
+                      index === 0 && 'rounded-t-md',
+                    )}
                     key={itRole}
                   >
-                    <div>
-                      <p className='font-bold text-gray-700 group-hover:text-gray-200 dark:text-gray-200'>
-                        {t(`project.settings.roles.${itRole}.name`)}
+                    <div className='flex justify-between'>
+                      <p className='truncate font-bold text-gray-700 group-hover:text-gray-200 dark:text-gray-200'>
+                        {t(`organisations.role.${itRole}.name`)}
                       </p>
-                      <p className='mt-1 text-sm text-gray-500 group-hover:text-gray-200'>
-                        {t(`project.settings.roles.${itRole}.shortDesc`)}
-                      </p>
+                      {member.role === itRole && (
+                        <span className='ml-3 flex-none text-indigo-600 group-hover:text-gray-200'>
+                          <CheckIcon className='size-5' />
+                        </span>
+                      )}
                     </div>
-                    {role === itRole && (
-                      <span className='text-indigo-600 group-hover:text-gray-200'>
-                        <CheckIcon className='ml-1 h-7 w-7 pt-px' />
-                      </span>
-                    )}
+                    <p className='mt-1 whitespace-normal text-sm text-gray-500 group-hover:text-gray-200'>
+                      {t(`organisations.role.${itRole}.desc`)}
+                    </p>
                   </li>
                 ))}
                 <li
                   onClick={() => {
-                    setOpen(false)
+                    setRoleEditDropdownId(null)
                     setShowDeleteModal(true)
                   }}
-                  className='group flex cursor-pointer items-center justify-between p-4 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  className='group flex cursor-pointer items-center justify-between rounded-b-md p-4 hover:bg-gray-200 dark:hover:bg-gray-700'
                 >
                   <div>
                     <p className='font-bold text-red-600 dark:text-red-500'>{t('project.settings.removeMember')}</p>
                   </div>
                 </li>
               </ul>
-            )}
+            ) : null}
           </div>
         ) : (
           <div className='flex items-center justify-end'>
@@ -157,22 +145,22 @@ const UsersList = ({
           }}
           onSubmit={() => {
             setShowDeleteModal(false)
-            onRemove(id)
+            onRemove(member.id)
           }}
           submitText={t('common.yes')}
           type='confirmed'
           closeText={t('common.no')}
-          title={t('project.settings.removeUser', { user: user.email })}
+          title={t('project.settings.removeUser', { user: member.user.email })}
           message={t('project.settings.removeConfirm')}
           isOpened={showDeleteModal}
         />
       </td>
     </tr>
-  )
+  ))
 }
 
 interface PeopleProps {
-  organisation: Organisation
+  organisation: DetailedOrganisation
 }
 
 const People = ({ organisation }: PeopleProps): JSX.Element => {
@@ -189,7 +177,7 @@ const People = ({ organisation }: PeopleProps): JSX.Element => {
   }>({})
   const [validated, setValidated] = useState(false)
 
-  const { id, name, members } = organisation
+  const { name, members } = organisation
 
   const validate = () => {
     const allErrors: {
@@ -316,16 +304,7 @@ const People = ({ organisation }: PeopleProps): JSX.Element => {
                       </tr>
                     </thead>
                     <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
-                      {/* {_map(members, (user) => (
-                        <UsersList
-                          data={user}
-                          key={user.id}
-                          onRemove={onRemove}
-                          t={t}
-                          language={language}
-                          pid={id}
-                        />
-                      ))} */}
+                      <UsersList members={members} onRemove={onRemove} />
                     </tbody>
                   </table>
                 </div>

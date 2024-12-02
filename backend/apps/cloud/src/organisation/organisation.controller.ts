@@ -71,17 +71,19 @@ export class OrganisationController {
 
     if (search) {
       where = {
-        owner: {
-          id: userId,
+        members: {
+          user: { id: userId },
+          role: OrganisationRole.owner,
         },
         name: ILike(`%${search}%`),
       }
     } else {
       where = {
-        owner: {
-          id: userId,
+        members: {
+          user: { id: userId },
+          role: OrganisationRole.owner,
         },
-      } as FindOptionsWhere<Organisation>
+      }
     }
 
     const paginated = await this.organisationService.paginate(
@@ -99,7 +101,20 @@ export class OrganisationController {
   async getOne(@Param('orgId') orgId: string): Promise<Organisation> {
     return this.organisationService.findOne({
       where: { id: orgId },
-      relations: ['members'],
+      select: {
+        id: true,
+        name: true,
+        members: {
+          id: true,
+          role: true,
+          created: true,
+          confirmed: true,
+          user: {
+            email: true,
+          },
+        },
+      },
+      relations: ['members', 'members.user'],
     })
   }
 
@@ -117,10 +132,17 @@ export class OrganisationController {
 
     const user = await this.userService.findOne({ where: { id: uid } })
 
-    return this.organisationService.create({
+    const organisation = await this.organisationService.create({
       name: createOrgDTO.name,
-      owner: user,
     })
+
+    await this.organisationService.createMembership({
+      role: OrganisationRole.owner,
+      user,
+      organisation,
+    })
+
+    return organisation
   }
 
   @ApiBearerAuth()

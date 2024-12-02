@@ -57,10 +57,6 @@ export class OrganisationService {
     organisation: Organisation,
     userId: string,
   ): Promise<void> {
-    if (organisation.owner.id === userId) {
-      return
-    }
-
     const membership = _find(
       organisation.members,
       member => member.user?.id === userId,

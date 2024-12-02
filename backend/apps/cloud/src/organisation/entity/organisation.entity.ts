@@ -2,13 +2,10 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  ManyToOne,
   OneToMany,
   BeforeUpdate,
 } from 'typeorm'
-import { ApiProperty } from '@nestjs/swagger'
 
-import { User } from '../../user/entities/user.entity'
 import { Project } from '../../project/entity/project.entity'
 import { OrganisationMember } from './organisation-member.entity'
 
@@ -19,10 +16,6 @@ export class Organisation {
 
   @Column('varchar', { length: 50 })
   name: string
-
-  @ApiProperty({ type: () => User })
-  @ManyToOne(() => User, user => user.ownedOrganisations)
-  owner: User
 
   @OneToMany(() => OrganisationMember, member => member.organisation)
   members: OrganisationMember[]
