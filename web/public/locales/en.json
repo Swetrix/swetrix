@@ -603,7 +603,23 @@
     "alertDeleted": "The alert has been deleted"
   },
   "organisations": {
-    "create": "Create organisation"
+    "create": "Create organisation",
+    "organisations": "Organisations",
+    "new": "New organisation",
+    "invite": {
+      "title": "Invite a user to {{organisation}}",
+      "desc": "Enter an email address and a role of the person registered on Swetrix that you want to invite to the organisation. The invitation will expire in {{expiresIn}} hours."
+    },
+    "role": {
+      "admin": {
+        "name": "Admin",
+        "desc": "Can manage the organisation and its members, as well as manage the projects within the organisation."
+      },
+      "viewer": {
+        "name": "Viewer",
+        "desc": "Can only access the organisation and its projects without the ability to change any settings."
+      }
+    }
   },
   "dashboard": {
     "uptime": "Uptime",

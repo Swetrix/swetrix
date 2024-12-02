@@ -93,6 +93,17 @@ export class OrganisationController {
   }
 
   @ApiBearerAuth()
+  @Get('/:orgId')
+  @ApiResponse({ status: 200, type: Organisation })
+  @Auth([], true)
+  async getOne(@Param('orgId') orgId: string): Promise<Organisation> {
+    return this.organisationService.findOne({
+      where: { id: orgId },
+      relations: ['members'],
+    })
+  }
+
+  @ApiBearerAuth()
   @Post('/')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)

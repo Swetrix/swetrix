@@ -12,11 +12,10 @@ import _map from 'lodash/map'
 import _find from 'lodash/find'
 import { useTranslation } from 'react-i18next'
 import {
-  FolderPlusIcon,
   AdjustmentsVerticalIcon,
-  ArrowTopRightOnSquareIcon,
   MagnifyingGlassIcon,
   XMarkIcon,
+  BuildingOffice2Icon,
 } from '@heroicons/react/24/outline'
 import { XCircleIcon } from '@heroicons/react/24/solid'
 
@@ -27,7 +26,6 @@ import { Badge } from 'ui/Badge'
 import routes from 'utils/routes'
 import { isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD, roleViewer } from 'redux/constants'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
-import DashboardLockedBanner from 'components/DashboardLockedBanner'
 import useDebounce from 'hooks/useDebounce'
 
 import { acceptShareProject, createOrganisation, getOrganisations } from 'api'
@@ -40,7 +38,6 @@ import Input from 'ui/Input'
 interface OrganisationCardProps {
   name?: string
   active?: boolean
-  type: 'analytics' | 'captcha'
   t: typeof i18next.t
   isPublic?: boolean
   confirmed?: boolean
@@ -49,7 +46,6 @@ interface OrganisationCardProps {
   setProjectsShareData: (data: Partial<ISharedProject>, id: string, shared?: boolean) => void
   setUserShareData: (data: Partial<ISharedProject>, id: string) => void
   shared?: boolean
-  captcha?: boolean
   isTransferring?: boolean
   getRole?: (id: string) => string | null
   members?: number
@@ -57,8 +53,6 @@ interface OrganisationCardProps {
 
 const OrganisationCard = ({
   name,
-  active,
-  isPublic,
   confirmed,
   id,
   sharedProjects,
@@ -66,7 +60,6 @@ const OrganisationCard = ({
   setUserShareData,
   shared,
   isTransferring,
-  type,
   getRole,
   members,
 }: OrganisationCardProps) => {
@@ -105,12 +98,12 @@ const OrganisationCard = ({
   return (
     <div
       onClick={() => {
-        navigate(_replace(type === 'analytics' ? routes.project : routes.captcha, ':id', id))
+        navigate(_replace(routes.organisation, ':id', id))
       }}
     >
       <li
         onClick={onElementClick}
-        className='cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 dark:border-slate-800/25 dark:bg-slate-800 dark:hover:bg-slate-700'
+        className='min-h-[153.1px] cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 dark:border-slate-800/25 dark:bg-slate-800 dark:hover:bg-slate-700'
       >
         <div className='px-4 py-4'>
           <div className='flex items-center justify-between'>
@@ -119,28 +112,15 @@ const OrganisationCard = ({
             <div className='flex items-center gap-2' onClick={(e) => e.stopPropagation()}>
               {role !== roleViewer.role && (
                 <Link
-                  to={_replace(type === 'analytics' ? routes.project_settings : routes.captcha_settings, ':id', id)}
+                  to={_replace(routes.organisation, ':id', id)}
                   aria-label={`${t('project.settings.settings')} ${name}`}
                 >
                   <AdjustmentsVerticalIcon className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500' />
                 </Link>
               )}
-              <a
-                href={_replace(type === 'analytics' ? routes.project : routes.captcha, ':id', id)}
-                aria-label='name (opens in a new tab)'
-                target='_blank'
-                rel='noopener noreferrer'
-              >
-                <ArrowTopRightOnSquareIcon className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500' />
-              </a>
             </div>
           </div>
           <div className='mt-1 flex flex-shrink-0 flex-wrap gap-2'>
-            {active ? (
-              <Badge colour='green' label={t('dashboard.active')} />
-            ) : (
-              <Badge colour='red' label={t('dashboard.disabled')} />
-            )}
             {shared &&
               (confirmed ? (
                 <Badge colour='green' label={t('dashboard.shared')} />
@@ -148,7 +128,6 @@ const OrganisationCard = ({
                 <Badge colour='yellow' label={t('common.pending')} />
               ))}
             {isTransferring && <Badge colour='indigo' label={t('common.transferring')} />}
-            {isPublic && <Badge colour='green' label={t('dashboard.public')} />}
             {!isSelfhosted && _isNumber(members) && (
               <Badge
                 colour='slate'
@@ -202,7 +181,7 @@ const NoOrganisations = ({ t, onClick }: INoOrganisations): JSX.Element => (
     onClick={onClick}
     className='relative mx-auto block max-w-lg rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
   >
-    <FolderPlusIcon className='mx-auto h-12 w-12 text-gray-400 dark:text-gray-200' />
+    <BuildingOffice2Icon className='mx-auto h-12 w-12 text-gray-400 dark:text-gray-200' />
     <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50'>
       {t('dashboard.createProject')}
     </span>
@@ -220,23 +199,22 @@ const AddOrganisation = ({ t, onClick, sitesCount }: IAddOrganisation): JSX.Elem
     )}
   >
     <div>
-      <FolderPlusIcon className='mx-auto h-12 w-12 text-gray-400 group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400' />
+      <BuildingOffice2Icon className='mx-auto h-12 w-12 text-gray-400 group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400' />
       <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
-        {t('dashboard.newProject')}
+        {t('organisations.new')}
       </span>
     </div>
   </li>
 )
 
-// @ts-expect-error
-const Organisations = ({ total }): JSX.Element => {
+const Organisations = () => {
   const { t } = useTranslation('common')
   const [isSearchActive, setIsSearchActive] = useState(false)
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
-  const pageAmount = Math.ceil(total / ENTRIES_PER_PAGE_DASHBOARD)
   const [search, setSearch] = useState<string>('')
   const debouncedSearch = useDebounce<string>(search, 500)
   const [organisations, setOrganisations] = useState<Organisation[]>([])
+  const [paginationTotal, setPaginationTotal] = useState(0)
   const [page, setPage] = useState(1)
 
   const [newOrganisationModalOpen, setNewOrganisationModalOpen] = useState(false)
@@ -247,6 +225,8 @@ const Organisations = ({ total }): JSX.Element => {
 
   const [error, setError] = useState<string | null>(null)
   const [newOrganisationError, setNewOrganisationError] = useState<string | null>(null)
+
+  const pageAmount = Math.ceil(paginationTotal / ENTRIES_PER_PAGE_DASHBOARD)
 
   const onNewOrganisation = () => {
     setNewOrganisationModalOpen(true)
@@ -268,6 +248,7 @@ const Organisations = ({ total }): JSX.Element => {
         debouncedSearch,
       )
       setOrganisations(result.results)
+      setPaginationTotal(result.total)
 
       toast.success(t('organisations.organisationCreated'))
 
@@ -299,6 +280,7 @@ const Organisations = ({ total }): JSX.Element => {
     try {
       const result = await getOrganisations(take, skip, search)
       setOrganisations(result.results)
+      setPaginationTotal(result.total)
     } catch (reason: any) {
       setError(reason)
     } finally {
@@ -353,13 +335,10 @@ const Organisations = ({ total }): JSX.Element => {
     setSearch(e.target.value)
   }
 
-  console.log('orgs:', organisations)
-
   return (
     <>
       <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
         <EventsRunningOutBanner />
-        <DashboardLockedBanner />
         <div className='flex flex-col px-4 py-6 sm:px-6 lg:px-8'>
           <div className='mx-auto w-full max-w-7xl'>
             <div className='mb-6 flex justify-between'>
@@ -407,8 +386,8 @@ const Organisations = ({ total }): JSX.Element => {
                 onClick={onNewOrganisation}
                 className='inline-flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-slate-900 px-3 py-2 !pl-2 text-center text-sm font-medium leading-4 text-white shadow-sm hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
               >
-                <FolderPlusIcon className='mr-1 h-5 w-5' />
-                {t('dashboard.newProject')}
+                <BuildingOffice2Icon className='mr-1 h-5 w-5' />
+                {t('organisations.new')}
               </span>
             </div>
             {isSearchActive && (
@@ -456,7 +435,6 @@ const Organisations = ({ total }): JSX.Element => {
                               key={id}
                               members={1 + _size(share)}
                               id={id}
-                              type='analytics'
                               t={t}
                               name={name}
                               active={active}
@@ -477,7 +455,13 @@ const Organisations = ({ total }): JSX.Element => {
               </ClientOnly>
             )}
             {pageAmount > 1 && (
-              <Pagination className='mt-2' page={page} pageAmount={pageAmount} setPage={setPage} total={total} />
+              <Pagination
+                className='mt-2'
+                page={page}
+                pageAmount={pageAmount}
+                setPage={setPage}
+                total={paginationTotal}
+              />
             )}
           </div>
         </div>

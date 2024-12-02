@@ -289,6 +289,15 @@ export const getOrganisations = (take: number = 0, skip: number = 0, search?: st
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
+export const getOrganisation = (id: string) =>
+  api
+    .get(`/organisation/${id}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
 export const createOrganisation = (name: string) =>
   api
     .post('/organisation', { name })

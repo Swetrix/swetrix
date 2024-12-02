@@ -19,7 +19,13 @@ import _includes from 'lodash/includes'
 import { ExclamationTriangleIcon, TrashIcon, RocketLaunchIcon } from '@heroicons/react/24/outline'
 
 import { withAuthentication, auth } from 'hoc/protected'
-import { isSelfhosted, TITLE_SUFFIX, ENTRIES_PER_PAGE_DASHBOARD, FILTERS_PANELS_ORDER } from 'redux/constants'
+import {
+  isSelfhosted,
+  TITLE_SUFFIX,
+  ENTRIES_PER_PAGE_DASHBOARD,
+  FILTERS_PANELS_ORDER,
+  isBrowser,
+} from 'redux/constants'
 import { IProject } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 import { IProjectForShared, ISharedProject } from 'redux/models/ISharedProject'
@@ -49,7 +55,6 @@ import People from './People'
 import Emails from './Emails'
 import Select from 'ui/Select'
 import { useRequiredParams } from 'hooks/useRequiredParams'
-import { isBrowser } from 'framer-motion'
 
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300

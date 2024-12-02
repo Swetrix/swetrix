@@ -1,6 +1,6 @@
 import { Injectable, ForbiddenException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { FindOptionsWhere, Repository } from 'typeorm'
+import { FindOneOptions, FindOptionsWhere, Repository } from 'typeorm'
 import { find as _find } from 'lodash'
 
 import { Organisation } from './entity/organisation.entity'
@@ -24,7 +24,7 @@ export class OrganisationService {
     return this.organisationRepository.save(org)
   }
 
-  async findOne(options: any): Promise<Organisation> {
+  async findOne(options: FindOneOptions<Organisation>): Promise<Organisation> {
     return this.organisationRepository.findOne(options)
   }
 
@@ -35,7 +35,9 @@ export class OrganisationService {
     return this.membershipRepository.save(membership)
   }
 
-  async findOneMembership(options: any): Promise<OrganisationMember> {
+  async findOneMembership(
+    options: FindOneOptions<OrganisationMember>,
+  ): Promise<OrganisationMember> {
     return this.membershipRepository.findOne(options)
   }
 
