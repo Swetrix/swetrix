@@ -155,15 +155,12 @@ export class AuthController {
 
     await this.authService.sendTelegramNotification(user.id, headers, ip)
 
-    console.log('before:', user)
     if (user.isTwoFactorAuthenticationEnabled) {
       // @ts-expect-error
       user = _pick(user, ['isTwoFactorAuthenticationEnabled', 'email'])
     } else {
       user = await this.authService.getSharedProjectsForUser(user)
     }
-
-    console.log('after:', user)
 
     return {
       ...jwtTokens,

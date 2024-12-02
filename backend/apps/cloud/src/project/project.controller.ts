@@ -170,7 +170,6 @@ export class ProjectController {
           isAnalyticsProject: !isCaptcha,
           name: ILike(`%${search}%`),
           isArchived: showArchived,
-          // name: ILike(`%${mysql.escape(search).slice(1, 0).slice(0, -1)}%`),
         },
         {
           admin: {
@@ -180,7 +179,6 @@ export class ProjectController {
           isAnalyticsProject: !isCaptcha,
           id: ILike(`%${search}%`),
           isArchived: showArchived,
-          // id: ILike(`%${mysql.escape(search).slice(1, 0).slice(0, -1)}%`),
         },
       ] as FindOptionsWhere<Project>[]
     } else {

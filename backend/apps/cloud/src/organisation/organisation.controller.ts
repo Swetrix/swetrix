@@ -10,9 +10,12 @@ import {
   NotFoundException,
   HttpCode,
   Headers,
+  Get,
+  Query,
 } from '@nestjs/common'
-import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger'
+import { ApiBearerAuth, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import { isEmpty as _isEmpty, find as _find } from 'lodash'
+import { FindOptionsWhere, ILike } from 'typeorm'
 
 import { JwtAccessTokenGuard } from '../auth/guards/jwt-access-token.guard'
 import { RolesGuard } from '../auth/guards/roles.guard'
@@ -33,6 +36,8 @@ import {
 import { OrganisationRole } from './entity/organisation-member.entity'
 import { AppLoggerService } from '../logger/logger.service'
 import { LetterTemplate } from '../mailer/letter'
+import { Auth } from '../auth/decorators'
+import { Pagination } from '../common/pagination'
 
 const ORGANISATION_INVITE_EXPIRE = 7 * 24 // 7 days in hours
 const { PRODUCTION_ORIGIN, isDevelopment } = process.env
@@ -48,10 +53,51 @@ export class OrganisationController {
   ) {}
 
   @ApiBearerAuth()
+  @Get('/')
+  @ApiQuery({ name: 'take', required: false })
+  @ApiQuery({ name: 'skip', required: false })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiResponse({ status: 200, type: [Organisation] })
+  @Auth([], true)
+  async get(
+    @CurrentUserId() userId: string,
+    @Query('take') take: number | undefined,
+    @Query('skip') skip: number | undefined,
+    @Query('search') search: string | undefined,
+  ): Promise<Pagination<Organisation> | Organisation[] | object> {
+    this.logger.log({ userId, take, skip }, 'GET /organisation')
+
+    let where: FindOptionsWhere<Organisation> | FindOptionsWhere<Organisation>[]
+
+    if (search) {
+      where = {
+        owner: {
+          id: userId,
+        },
+        name: ILike(`%${search}%`),
+      }
+    } else {
+      where = {
+        owner: {
+          id: userId,
+        },
+      } as FindOptionsWhere<Organisation>
+    }
+
+    const paginated = await this.organisationService.paginate(
+      { take, skip },
+      where,
+    )
+
+    return paginated
+  }
+
+  @ApiBearerAuth()
   @Post('/')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 200, type: Organisation })
+  @Auth([], true)
   async create(
     @Body() createOrgDTO: CreateOrganisationDTO,
     @CurrentUserId() uid: string,
@@ -71,6 +117,7 @@ export class OrganisationController {
   @HttpCode(200)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth([], true)
   async inviteMember(
     @Param('orgId') orgId: string,
     @Body() inviteDTO: InviteMemberDTO,
@@ -167,6 +214,7 @@ export class OrganisationController {
   @HttpCode(200)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth([], true)
   async updateMemberRole(
     @Param('memberId') memberId: string,
     @Body() updateDTO: UpdateMemberRoleDTO,
@@ -211,6 +259,7 @@ export class OrganisationController {
   @HttpCode(204)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth([], true)
   async removeMember(
     @Param('memberId') memberId: string,
     @CurrentUserId() uid: string,

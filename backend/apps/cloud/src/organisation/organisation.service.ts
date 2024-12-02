@@ -1,6 +1,6 @@
 import { Injectable, ForbiddenException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { FindOptionsWhere, Repository } from 'typeorm'
 import { find as _find } from 'lodash'
 
 import { Organisation } from './entity/organisation.entity'
@@ -8,6 +8,7 @@ import {
   OrganisationMember,
   OrganisationRole,
 } from './entity/organisation-member.entity'
+import { Pagination, PaginationOptionsInterface } from '../common/pagination'
 
 @Injectable()
 export class OrganisationService {
@@ -68,5 +69,25 @@ export class OrganisationService {
         'You do not have permission to manage this organisation',
       )
     }
+  }
+
+  async paginate(
+    options: PaginationOptionsInterface,
+    where?: FindOptionsWhere<Organisation> | FindOptionsWhere<Organisation>[],
+  ): Promise<Pagination<Organisation>> {
+    const [results, total] = await this.organisationRepository.findAndCount({
+      take: options.take || 100,
+      skip: options.skip || 0,
+      where,
+      order: {
+        name: 'ASC',
+      },
+      relations: ['owner', 'members'],
+    })
+
+    return new Pagination<Organisation>({
+      results,
+      total,
+    })
   }
 }

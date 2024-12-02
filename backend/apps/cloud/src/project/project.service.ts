@@ -420,6 +420,41 @@ export class ProjectService {
     })
   }
 
+  // async paginateAll(
+  //   options: PaginationOptionsInterface,
+  //   where: FindOptionsWhere<Project> | FindOptionsWhere<Project>[],
+  // ): Promise<Pagination<Project>> {
+  //   // Create query builder starting from Project
+  //   const queryBuilder = this.projectsRepository
+  //     .createQueryBuilder('project')
+  //     .leftJoinAndSelect('project.admin', 'admin')
+  //     .leftJoinAndSelect('project.share', 'share')
+  //     .leftJoinAndSelect('share.user', 'sharedUser')
+  //     .leftJoinAndSelect('project.funnels', 'funnels')
+  //     // Add isOwner flag using CASE expression
+  //     .addSelect(
+  //       `
+  //       CASE
+  //         WHEN admin.id = :userId THEN true
+  //         ELSE false
+  //       END`,
+  //       'project_isOwner',
+  //     )
+  //     .where('admin.id = :userId', { userId })
+  //     .orWhere('share.user.id = :userId', { userId })
+  //     .orderBy('project.name', 'ASC')
+  //     .skip(options.skip || 0)
+  //     .take(options.take || 100)
+
+  //   // Execute count and results queries
+  //   const [results, total] = await queryBuilder.getManyAndCount()
+
+  //   return new Pagination<Project>({
+  //     results: processProjectsUser(results),
+  //     total,
+  //   })
+  // }
+
   async count(): Promise<number> {
     return this.projectsRepository.count()
   }
