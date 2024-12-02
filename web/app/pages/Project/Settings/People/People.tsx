@@ -103,10 +103,13 @@ const UsersList = ({
             </button>
             {open && (
               <ul className='absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 rounded-md bg-white text-left shadow-lg focus:outline-none dark:divide-gray-700 dark:bg-slate-900'>
-                {_map(roles, (itRole) => (
+                {_map(roles, (itRole, index) => (
                   <li
                     onClick={() => changeRole(itRole)}
-                    className='group flex cursor-pointer items-center justify-between p-4 hover:bg-indigo-600'
+                    className={cx(
+                      'group flex cursor-pointer items-center justify-between p-4 hover:bg-indigo-600',
+                      index === 0 && 'rounded-t-md',
+                    )}
                     key={itRole}
                   >
                     <div>
@@ -129,7 +132,7 @@ const UsersList = ({
                     setOpen(false)
                     setShowDeleteModal(true)
                   }}
-                  className='group flex cursor-pointer items-center justify-between p-4 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  className='group flex cursor-pointer items-center justify-between rounded-b-md p-4 hover:bg-gray-200 dark:hover:bg-gray-700'
                 >
                   <div>
                     <p className='font-bold text-red-600 dark:text-red-500'>{t('project.settings.removeMember')}</p>
