@@ -497,11 +497,8 @@ const UserSettings = ({
               items={tabs}
               keyExtractor={(item) => item.id}
               labelExtractor={(item) => item.label}
-              onSelect={(label) => {
-                const selected = _find(tabs, (tab) => tab.label === label)
-                if (selected) {
-                  setActiveTab(selected?.id)
-                }
+              onSelect={(item) => {
+                setActiveTab(item.id)
               }}
               title={activeTabLabel}
               capitalise

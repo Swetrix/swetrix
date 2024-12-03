@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from 'react'
+import React, { useState, useEffect, memo, useMemo } from 'react'
 import { useNavigate } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
@@ -18,6 +18,7 @@ import { trackCustom } from 'utils/analytics'
 import routes from 'utils/routes'
 import { useAppDispatch, StateType } from 'redux/store'
 import sagaActions from 'redux/sagas/actions'
+import Select from 'ui/Select'
 
 const MAX_NAME_LENGTH = 50
 
@@ -33,6 +34,7 @@ const NewProject = () => {
 
   const [form, setForm] = useState<Partial<IProject>>({
     name: '',
+    organisationId: undefined,
   })
   const [validated, setValidated] = useState<boolean>(false)
   const [errors, setErrors] = useState<{
@@ -40,6 +42,17 @@ const NewProject = () => {
   }>({})
   const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
   const [projectSaving, setProjectSaving] = useState<boolean>(false)
+
+  const organisations = useMemo(
+    () => [
+      {
+        id: undefined,
+        name: t('common.notSet'),
+      },
+      ...(user.manageableOrganisations || []),
+    ],
+    [user.manageableOrganisations, t],
+  )
 
   useEffect(() => {
     if (loading) {
@@ -144,6 +157,31 @@ const NewProject = () => {
           onChange={handleInput}
           error={beenSubmitted ? errors.name : null}
         />
+
+        {organisations.length > 1 && (
+          <div className='mt-4'>
+            <Select
+              items={organisations}
+              keyExtractor={(item) => item.id || 'not-set'}
+              labelExtractor={(item) => {
+                if (item.id === undefined) {
+                  return <span className='italic text-gray-600 dark:text-gray-200'>{t('common.notSet')}</span>
+                }
+
+                return item.name
+              }}
+              onSelect={(item) => {
+                setForm((oldForm) => ({
+                  ...oldForm,
+                  organisationId: item.id,
+                }))
+              }}
+              label={t('project.settings.organisation')}
+              title={organisations.find((org) => org.id === form.organisationId)?.name}
+            />
+          </div>
+        )}
+
         <p className='mb-4 mt-1 text-sm italic text-gray-500 dark:text-gray-300'>{t('project.settings.createHint')}</p>
 
         <div>

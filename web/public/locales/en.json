@@ -107,7 +107,8 @@
     "general": "General",
     "fixIt": "Fix it",
     "errorOccured": "An error occurred: {{error}}",
-    "name": "Name"
+    "name": "Name",
+    "notSet": "Not set"
   },
   "performance": {
     "slogan": "End user <span>performance monitoring</span> to deliver fast websites.",
@@ -958,6 +959,7 @@
     "barChart": "Bar chart",
     "lineChart": "Line chart",
     "settings": {
+      "organisation": "Organisation",
       "shields": "Shields",
       "access": "Access settings",
       "botsProtectionLevel": {

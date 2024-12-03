@@ -582,11 +582,8 @@ const Dashboard = ({
                       items={dashboardLocTabs}
                       keyExtractor={(item) => item.id}
                       labelExtractor={(item) => item.label}
-                      onSelect={(label) => {
-                        const nameTab = _find(dashboardLocTabs, (tab) => t(tab.label) === label)?.name
-                        if (nameTab) {
-                          setActiveTab(nameTab)
-                        }
+                      onSelect={(item) => {
+                        setActiveTab(item.name)
                       }}
                       title={activeTabLabel}
                       capitalise

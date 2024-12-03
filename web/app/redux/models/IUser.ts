@@ -66,4 +66,8 @@ export interface IUser {
   planExceedContactedAt: Date
   dashboardBlockReason: DashboardBlockReason
   isAccountBillingSuspended: boolean
+  manageableOrganisations?: {
+    id: string
+    name: string
+  }[]
 }

@@ -166,10 +166,8 @@ const EditMetric = ({ metric, onChange, onDelete, errors, setErrors }: IEditMetr
             items={customEventTypes}
             keyExtractor={(item) => item.key}
             labelExtractor={(item) => item.label}
-            onSelect={(selectedLabel) => {
-              const key = _find(customEventTypes, ({ label }) => label === selectedLabel)?.key
-
-              onChange('metaValueType', key)
+            onSelect={(item) => {
+              onChange('metaValueType', item.key)
             }}
             label={t('project.metrics.metricType.title')}
             hint={t('project.metrics.metricType.description')}
@@ -384,7 +382,7 @@ const AddAViewModal = ({
             label={t('project.selectCategoryOptional')}
             items={FILTERS_PANELS_ORDER}
             labelExtractor={(item) => t(`project.mapping.${item}`)}
-            onSelect={(item: string) => setFilterType(labelToTypeMap[item])}
+            onSelect={(item) => setFilterType(labelToTypeMap[item])}
             title={
               _isEmpty(filterType) ? t('project.settings.reseted.selectFilters') : t(`project.mapping.${filterType}`)
             }

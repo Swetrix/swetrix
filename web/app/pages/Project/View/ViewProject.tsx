@@ -3368,17 +3368,14 @@ const ViewProject = ({
           items={tabs}
           keyExtractor={(item) => item.id}
           labelExtractor={(item) => item.label}
-          onSelect={(label) => {
-            const selected = _find(tabs, (tab) => tab.label === label)
-            if (selected) {
-              if (selected.id === 'settings') {
-                openSettingsHandler()
-                return
-              }
-
-              setProjectTab(selected?.id)
-              setActiveTab(selected?.id)
+          onSelect={(item) => {
+            if (item.id === 'settings') {
+              openSettingsHandler()
+              return
             }
+
+            setProjectTab(item?.id)
+            setActiveTab(item?.id)
           }}
           title={activeTabLabel}
           capitalise

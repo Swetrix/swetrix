@@ -640,11 +640,9 @@ const ProjectSettings = ({
             title={_find(botsProtectionLevels, (predicate) => predicate.name === form.botsProtectionLevel)?.title || ''}
             labelExtractor={(item: any) => item.title}
             onSelect={(item) => {
-              const key = _find(botsProtectionLevels, (predicate) => predicate.title === item)?.name || 'basic'
-
               setForm((prevForm) => ({
                 ...prevForm,
-                botsProtectionLevel: key,
+                botsProtectionLevel: item.name,
               }))
             }}
             capitalise

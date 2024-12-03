@@ -88,6 +88,7 @@ export interface IProject {
   isPublic?: boolean
   isTransferring?: boolean
   isPasswordProtected?: boolean
+  organisationId?: string
   password?: string
   isLocked: boolean
   isDataExists: boolean
