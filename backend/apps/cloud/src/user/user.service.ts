@@ -138,7 +138,7 @@ export class UserService {
     return this.usersRepository.update({ id }, update)
   }
 
-  async getManagableOrganisations(userId: string) {
+  async getManageableOrganisations(userId: string) {
     return this.organisationService.find({
       where: {
         members: {

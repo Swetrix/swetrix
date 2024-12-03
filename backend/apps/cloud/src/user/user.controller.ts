@@ -113,17 +113,17 @@ export class UserController {
         },
         relations: ['project'],
       }),
-      this.userService.getManagableOrganisations(uid),
+      this.userService.getManageableOrganisations(uid),
       this.userService.findOne({ where: { id: uid } }),
     ])
 
     const sanitizedUser = this.userService.omitSensitiveData(
       user,
     ) as Partial<User> & {
-      managableOrganisations: Organisation[]
+      manageableOrganisations: Organisation[]
     }
     sanitizedUser.sharedProjects = sharedProjects
-    sanitizedUser.managableOrganisations = manageableOrganisations
+    sanitizedUser.manageableOrganisations = manageableOrganisations
 
     return sanitizedUser
   }
