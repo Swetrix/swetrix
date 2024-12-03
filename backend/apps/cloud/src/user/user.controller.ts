@@ -76,6 +76,7 @@ import {
 } from '../common/utils'
 import { IUsageInfo, IMetaInfo } from './interfaces'
 import { ReportFrequency } from '../project/enums'
+import { Organisation } from '../organisation/entity/organisation.entity'
 
 dayjs.extend(utc)
 
@@ -100,24 +101,31 @@ export class UserController {
   @Get('/me')
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async me(@CurrentUserId() uid: string): Promise<Partial<User>> {
+  async me(@CurrentUserId() uid: string) {
     this.logger.log({ uid }, 'GET /user/me')
 
-    const sharedProjects = await this.projectService.findShare({
-      where: {
-        user: {
-          id: uid,
+    const [sharedProjects, manageableOrganisations, user] = await Promise.all([
+      this.projectService.findShare({
+        where: {
+          user: {
+            id: uid,
+          },
         },
-      },
-      relations: ['project'],
-    })
-    const user = this.userService.omitSensitiveData(
-      await this.userService.findOne({ where: { id: uid } }),
-    )
+        relations: ['project'],
+      }),
+      this.userService.getManagableOrganisations(uid),
+      this.userService.findOne({ where: { id: uid } }),
+    ])
 
-    user.sharedProjects = sharedProjects
+    const sanitizedUser = this.userService.omitSensitiveData(
+      user,
+    ) as Partial<User> & {
+      managableOrganisations: Organisation[]
+    }
+    sanitizedUser.sharedProjects = sharedProjects
+    sanitizedUser.managableOrganisations = manageableOrganisations
 
-    return user
+    return sanitizedUser
   }
 
   @ApiBearerAuth()

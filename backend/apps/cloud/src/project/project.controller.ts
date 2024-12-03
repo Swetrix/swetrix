@@ -113,6 +113,8 @@ import { MonitorEntity } from './entity/monitor.entity'
 import { UpdateMonitorHttpRequestDTO } from './dto/update-monitor.dto'
 import { BulkAddUsersDto } from './dto/bulk-add-users.dto'
 import { BulkAddUsersResponse } from './interfaces/bulk-add-users'
+import { OrganisationService } from '../organisation/organisation.service'
+import { Organisation } from '../organisation/entity/organisation.entity'
 
 const PROJECTS_MAXIMUM = 50
 
@@ -134,6 +136,7 @@ export class ProjectController {
     private readonly actionTokensService: ActionTokensService,
     private readonly mailerService: MailerService,
     private readonly projectsViewsRepository: ProjectsViewsRepository,
+    private readonly organisationService: OrganisationService,
   ) {}
 
   @ApiBearerAuth()
@@ -409,21 +412,40 @@ export class ProjectController {
   async create(
     @Body() projectDTO: CreateProjectDTO,
     @CurrentUserId() userId: string,
-  ): Promise<Project> {
+  ): Promise<Omit<Project, 'passwordHash'>> {
     this.logger.log({ projectDTO, userId }, 'POST /project')
 
     if (!userId) {
       throw new UnauthorizedException('Please auth first')
     }
 
-    const user = await this.userService.findOne({
+    const initiatingUser = await this.userService.findOne({
       where: { id: userId },
       relations: ['projects'],
     })
-    const { maxProjects = PROJECTS_MAXIMUM } = user
+    const { maxProjects = PROJECTS_MAXIMUM } = initiatingUser
 
-    if (!user.isActive) {
+    if (!initiatingUser.isActive) {
       throw new ForbiddenException('Please, verify your email address first')
+    }
+
+    let user = initiatingUser
+
+    if (projectDTO.organisationId) {
+      const canManage = await this.organisationService.canManageOrganisation(
+        projectDTO.organisationId,
+        userId,
+      )
+
+      if (!canManage) {
+        throw new ForbiddenException(
+          'You are not allowed to add projects to the selected organisation',
+        )
+      }
+
+      user = await this.organisationService.getOrganisationOwner(
+        projectDTO.organisationId,
+      )
     }
 
     if (user.planCode === PlanCode.none) {
@@ -476,10 +498,16 @@ export class ProjectController {
     }
 
     try {
-      const project = new Project()
-      project.id = pid
-      project.name = _trim(projectDTO.name)
-      project.origins = []
+      const project = {
+        id: pid,
+        name: _trim(projectDTO.name),
+        origins: [],
+        active: true,
+
+        admin: {
+          id: user.id,
+        },
+      } as Project
 
       if (projectDTO.isCaptcha) {
         project.isCaptchaProject = true
@@ -490,35 +518,14 @@ export class ProjectController {
         )
       }
 
-      if (projectDTO.isPasswordProtected && projectDTO.password) {
-        project.isPasswordProtected = true
-        project.passwordHash = await hash(projectDTO.password, 10)
-      }
-
-      if (projectDTO.public) {
-        project.public = Boolean(projectDTO.public)
-      }
-
-      if (projectDTO.active) {
-        project.active = Boolean(projectDTO.active)
-      }
-
-      if (projectDTO.origins) {
-        this.projectService.validateOrigins(projectDTO)
-        project.origins = projectDTO.origins
-      }
-
-      if (projectDTO.ipBlacklist) {
-        this.projectService.validateIPBlacklist(projectDTO)
-        project.ipBlacklist = projectDTO.ipBlacklist
+      if (projectDTO.organisationId) {
+        project.organisation = {
+          id: projectDTO.organisationId,
+        } as Organisation
       }
 
       const newProject = await this.projectService.create(project)
-      user.projects.push(project)
 
-      await this.userService.create(user)
-
-      // @ts-expect-error
       return _omit(newProject, ['passwordHash'])
     } catch (reason) {
       console.error('[ERROR] Failed to create a new project:')
@@ -2417,7 +2424,7 @@ export class ProjectController {
     @Param('monitorId') monitorId: number,
     @Body() body: UpdateMonitorHttpRequestDTO,
     @CurrentUserId() userId: string,
-  ): Promise<MonitorEntity> {
+  ): Promise<void> {
     const project = await this.projectService.findProject(projectId, [
       'admin',
       'share',

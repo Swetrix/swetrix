@@ -40,6 +40,8 @@ import { UserGoogleDTO } from './dto/user-google.dto'
 import { UserGithubDTO } from './dto/user-github.dto'
 import { EMAIL_ACTION_ENCRYPTION_KEY } from '../common/constants'
 import { ReportFrequency } from '../project/enums'
+import { OrganisationService } from '../organisation/organisation.service'
+import { OrganisationRole } from '../organisation/entity/organisation-member.entity'
 
 dayjs.extend(utc)
 
@@ -109,6 +111,7 @@ export class UserService {
     @InjectRepository(DeleteFeedback)
     private readonly deleteFeedbackRepository: Repository<DeleteFeedback>,
     private readonly payoutsService: PayoutsService,
+    private readonly organisationService: OrganisationService,
   ) {}
 
   async create(
@@ -133,6 +136,18 @@ export class UserService {
 
   async update(id: string, update: Record<string, unknown>): Promise<any> {
     return this.usersRepository.update({ id }, update)
+  }
+
+  async getManagableOrganisations(userId: string) {
+    return this.organisationService.find({
+      where: {
+        members: {
+          user: { id: userId },
+          role: In([OrganisationRole.owner, OrganisationRole.admin]),
+        },
+      },
+      select: ['id', 'name'],
+    })
   }
 
   async updateByEmail(

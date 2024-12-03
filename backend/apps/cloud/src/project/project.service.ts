@@ -14,6 +14,7 @@ import {
   FindOneOptions,
   FindOptionsWhere,
   Repository,
+  DeepPartial,
 } from 'typeorm'
 import { customAlphabet } from 'nanoid'
 import handlebars from 'handlebars'
@@ -459,19 +460,19 @@ export class ProjectService {
     return this.projectsRepository.count()
   }
 
-  async create(project: ProjectDTO | Project): Promise<Project> {
+  async create(project: DeepPartial<Project>) {
     return this.projectsRepository.save(project)
   }
 
-  async update(id: string, projectDTO: ProjectDTO | Project): Promise<any> {
+  async update(id: string, projectDTO: ProjectDTO | Project) {
     return this.projectsRepository.update(id, projectDTO)
   }
 
-  async delete(id: string): Promise<any> {
+  async delete(id: string) {
     return this.projectsRepository.delete(id)
   }
 
-  async deleteMultiple(pids: string[]): Promise<any> {
+  async deleteMultiple(pids: string[]) {
     return this.projectsRepository
       .createQueryBuilder()
       .delete()
@@ -479,7 +480,7 @@ export class ProjectService {
       .execute()
   }
 
-  async deleteMultipleShare(where: string): Promise<any> {
+  async deleteMultipleShare(where: string) {
     return this.projectShareRepository
       .createQueryBuilder()
       .delete()
@@ -491,11 +492,11 @@ export class ProjectService {
     return this.projectShareRepository.save(share)
   }
 
-  async deleteShare(id: string): Promise<any> {
+  async deleteShare(id: string) {
     return this.projectShareRepository.delete(id)
   }
 
-  async updateShare(id: string, share: ProjectShare | object): Promise<any> {
+  async updateShare(id: string, share: ProjectShare | object) {
     return this.projectShareRepository.update(id, share)
   }
 
@@ -1367,14 +1368,14 @@ export class ProjectService {
       await Promise.all([
         document.fonts.ready,
         ...selectors.map(img => {
-          // Image has already finished loading, let’s see if it worked
+          // Image has already finished loading, let's see if it worked
           if (img.complete) {
             // Image loaded and has presence
             if (img.naturalHeight !== 0) return
             // Image failed, so it has no height
             throw new Error('Image failed to load')
           }
-          // Image hasn’t loaded yet, added an event listener to know when it does
+          // Image hasn't loaded yet, added an event listener to know when it does
           // eslint-disable-next-line consistent-return
           return new Promise((resolve, reject) => {
             img.addEventListener('load', resolve)
@@ -1564,7 +1565,7 @@ export class ProjectService {
       description,
       httpOptions,
     }: UpdateMonitorHttpRequestDTO,
-  ): Promise<any> {
+  ): Promise<void> {
     await this.monitorRepository.update(
       { id: monitorId },
       {
@@ -1582,7 +1583,7 @@ export class ProjectService {
     )
   }
 
-  async deleteMonitor(monitorId: number): Promise<any> {
+  async deleteMonitor(monitorId: number) {
     return this.monitorRepository.delete(monitorId)
   }
 

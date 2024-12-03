@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { Module, forwardRef } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { Organisation } from './entity/organisation.entity'
 import { OrganisationMember } from './entity/organisation-member.entity'
@@ -12,7 +12,7 @@ import { AppLoggerModule } from '../logger/logger.module'
 @Module({
   imports: [
     TypeOrmModule.forFeature([Organisation, OrganisationMember]),
-    UserModule,
+    forwardRef(() => UserModule),
     MailerModule,
     ActionTokensModule,
     AppLoggerModule,

@@ -19,6 +19,11 @@ export class CreateProjectDTO {
   @ApiProperty({
     required: false,
   })
+  organisationId?: string
+
+  @ApiProperty({
+    required: false,
+  })
   public?: boolean
 
   @ApiProperty({

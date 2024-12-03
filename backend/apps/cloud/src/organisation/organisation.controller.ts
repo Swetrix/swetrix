@@ -15,7 +15,7 @@ import {
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import { isEmpty as _isEmpty, find as _find } from 'lodash'
-import { FindOptionsWhere, ILike } from 'typeorm'
+import { FindOptionsWhere, ILike, In } from 'typeorm'
 
 import { JwtAccessTokenGuard } from '../auth/guards/jwt-access-token.guard'
 import { RolesGuard } from '../auth/guards/roles.guard'
@@ -73,7 +73,7 @@ export class OrganisationController {
       where = {
         members: {
           user: { id: userId },
-          role: OrganisationRole.owner,
+          role: In([OrganisationRole.owner, OrganisationRole.admin]),
         },
         name: ILike(`%${search}%`),
       }
@@ -81,7 +81,7 @@ export class OrganisationController {
       where = {
         members: {
           user: { id: userId },
-          role: OrganisationRole.owner,
+          role: In([OrganisationRole.owner, OrganisationRole.admin]),
         },
       }
     }
@@ -99,6 +99,7 @@ export class OrganisationController {
   @ApiResponse({ status: 200, type: Organisation })
   @Auth([], true)
   async getOne(@Param('orgId') orgId: string): Promise<Organisation> {
+    // todo: add access control
     return this.organisationService.findOne({
       where: { id: orgId },
       select: {
@@ -165,7 +166,7 @@ export class OrganisationController {
     const user = await this.userService.findOne({ where: { id: uid } })
     const organisation = await this.organisationService.findOne({
       where: { id: orgId },
-      relations: ['owner', 'members', 'members.user'],
+      relations: ['members', 'members.user'],
     })
 
     if (_isEmpty(organisation)) {

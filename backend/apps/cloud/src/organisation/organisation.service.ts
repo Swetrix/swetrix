@@ -1,6 +1,11 @@
 import { Injectable, ForbiddenException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { FindOneOptions, FindOptionsWhere, Repository } from 'typeorm'
+import {
+  FindManyOptions,
+  FindOneOptions,
+  FindOptionsWhere,
+  Repository,
+} from 'typeorm'
 import { find as _find } from 'lodash'
 
 import { Organisation } from './entity/organisation.entity'
@@ -26,6 +31,10 @@ export class OrganisationService {
 
   async findOne(options: FindOneOptions<Organisation>): Promise<Organisation> {
     return this.organisationRepository.findOne(options)
+  }
+
+  async find(options: FindManyOptions<Organisation>): Promise<Organisation[]> {
+    return this.organisationRepository.find(options)
   }
 
   async createMembership(
@@ -69,6 +78,43 @@ export class OrganisationService {
     }
   }
 
+  async canManageOrganisation(
+    organisationId: string,
+    userId: string,
+  ): Promise<boolean> {
+    const organisation = await this.findOne({
+      where: { id: organisationId },
+      relations: ['members', 'members.user'],
+    })
+
+    if (!organisation) {
+      return false
+    }
+
+    try {
+      this.validateManageAccess(organisation, userId)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  async getOrganisationOwner(organisationId: string) {
+    const ownerMembership = await this.findOneMembership({
+      where: {
+        organisation: { id: organisationId },
+        role: OrganisationRole.owner,
+      },
+      relations: ['user'],
+    })
+
+    if (!ownerMembership) {
+      throw new ForbiddenException('Organisation owner not found')
+    }
+
+    return ownerMembership.user
+  }
+
   async paginate(
     options: PaginationOptionsInterface,
     where?: FindOptionsWhere<Organisation> | FindOptionsWhere<Organisation>[],
@@ -80,7 +126,7 @@ export class OrganisationService {
       order: {
         name: 'ASC',
       },
-      relations: ['owner', 'members'],
+      relations: ['members'],
     })
 
     return new Pagination<Organisation>({
