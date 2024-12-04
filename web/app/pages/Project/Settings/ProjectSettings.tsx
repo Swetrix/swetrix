@@ -16,7 +16,7 @@ import _filter from 'lodash/filter'
 import _map from 'lodash/map'
 import _toUpper from 'lodash/toUpper'
 import _includes from 'lodash/includes'
-import { ExclamationTriangleIcon, TrashIcon, RocketLaunchIcon } from '@heroicons/react/24/outline'
+import { TrashIcon } from '@heroicons/react/24/outline'
 
 import { withAuthentication, auth } from 'hoc/protected'
 import {
@@ -55,6 +55,7 @@ import People from './People'
 import Emails from './Emails'
 import Select from 'ui/Select'
 import { useRequiredParams } from 'hooks/useRequiredParams'
+import { ArrowLeftRight, RotateCcw } from 'lucide-react'
 
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
@@ -351,6 +352,17 @@ const ProjectSettings = ({
       },
     ] as const
   }, [t])
+
+  const organisations = useMemo(
+    () => [
+      {
+        id: undefined,
+        name: t('common.notSet'),
+      },
+      ...(user.manageableOrganisations || []),
+    ],
+    [user.manageableOrganisations, t],
+  )
 
   const sharableLink = useMemo(() => {
     const origin = requestOrigin || isBrowser ? window.location.origin : 'https://swetrix.com'
@@ -698,6 +710,29 @@ const ProjectSettings = ({
           label={t('project.settings.protected')}
           hint={t('project.settings.protectedHint')}
         />
+        {organisations.length > 1 && (
+          <div className='mt-4'>
+            <Select
+              items={organisations}
+              keyExtractor={(item) => item.id || 'not-set'}
+              labelExtractor={(item) => {
+                if (item.id === undefined) {
+                  return <span className='italic'>{t('common.notSet')}</span>
+                }
+
+                return item.name
+              }}
+              onSelect={(item) => {
+                setForm((oldForm) => ({
+                  ...oldForm,
+                  organisationId: item.id,
+                }))
+              }}
+              label={t('project.settings.organisation')}
+              title={organisations.find((org) => org.id === form.organisationId)?.name}
+            />
+          </div>
+        )}
         <div className='mt-8 flex flex-wrap justify-center gap-2 sm:justify-between'>
           <div className='flex flex-wrap items-center gap-2'>
             <Button
@@ -717,7 +752,7 @@ const ProjectSettings = ({
               {!isSelfhosted && (
                 <Button onClick={() => setShowTransfer(true)} semiDanger semiSmall>
                   <>
-                    <RocketLaunchIcon className='mr-1 h-5 w-5' />
+                    <ArrowLeftRight className='mr-1 h-5 w-5' />
                     {t('project.settings.transfer')}
                   </>
                 </Button>
@@ -729,7 +764,7 @@ const ProjectSettings = ({
                 semiSmall
               >
                 <>
-                  <TrashIcon className='mr-1 h-5 w-5' />
+                  <RotateCcw className='mr-1 h-5 w-5' />
                   {t('project.settings.reset')}
                 </>
               </Button>
@@ -740,7 +775,7 @@ const ProjectSettings = ({
                 semiSmall
               >
                 <>
-                  <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
+                  <TrashIcon className='mr-1 h-5 w-5' />
                   {t('project.settings.delete')}
                 </>
               </Button>

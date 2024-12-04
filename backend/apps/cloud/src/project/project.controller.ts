@@ -224,6 +224,7 @@ export class ProjectController {
       isLocked: !!user?.dashboardBlockReason,
       isDataExists: _includes(pidsWithData, p?.id),
       isErrorDataExists: _includes(pidsWithErrorData, p?.id),
+      organisationId: p?.organisation?.id,
     }))
 
     return {
@@ -977,6 +978,76 @@ export class ProjectController {
     to = dayjs(to).format('YYYY-MM-DD 23:59:59')
 
     await this.projectService.removeDataFromClickhouse(pid, from, to)
+  }
+
+  @ApiBearerAuth()
+  @Post('organisation/:orgId')
+  @HttpCode(200)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth([], true)
+  async addProject(
+    @Param('orgId') orgId: string,
+    @Body() addProjectDTO: ProjectIdDto,
+    @CurrentUserId() uid: string,
+  ) {
+    this.logger.log(
+      { uid, orgId, addProjectDTO },
+      'POST /organisation/:orgId/project',
+    )
+
+    const organisation = await this.organisationService.findOne({
+      where: { id: orgId },
+      relations: ['members', 'projects'],
+    })
+
+    if (_isEmpty(organisation)) {
+      throw new NotFoundException(
+        `Organisation with ID ${orgId} does not exist`,
+      )
+    }
+
+    await this.organisationService.validateManageAccess(organisation, uid)
+
+    return this.projectService.addProjectToOrganisation(
+      organisation.id,
+      addProjectDTO.projectId,
+    )
+  }
+
+  @ApiBearerAuth()
+  @Delete('organisation/:orgId/:projectId')
+  @HttpCode(204)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @Auth([], true)
+  async removeProject(
+    @Param('orgId') orgId: string,
+    @Param('projectId') projectId: string,
+    @CurrentUserId() uid: string,
+  ) {
+    this.logger.log(
+      { uid, orgId, projectId },
+      'DELETE /organisation/:orgId/project/:projectId',
+    )
+
+    const organisation = await this.organisationService.findOne({
+      where: { id: orgId },
+      relations: ['members', 'projects'],
+    })
+
+    if (_isEmpty(organisation)) {
+      throw new NotFoundException(
+        `Organisation with ID ${orgId} does not exist`,
+      )
+    }
+
+    await this.organisationService.validateManageAccess(organisation, uid)
+
+    await this.projectService.removeProjectFromOrganisation(
+      organisation.id,
+      projectId,
+    )
   }
 
   @Delete('/reset-filters/:pid')
@@ -1935,6 +2006,12 @@ export class ProjectController {
       project.name = _trim(projectDTO.name)
     }
 
+    if (projectDTO.organisationId) {
+      project.organisation = {
+        id: projectDTO.organisationId,
+      } as Organisation
+    }
+
     if (_isBoolean(projectDTO.isPasswordProtected)) {
       if (projectDTO.isPasswordProtected) {
         if (projectDTO.password) {
@@ -1950,7 +2027,6 @@ export class ProjectController {
     // @ts-expect-error
     await this.projectService.update(id, _omit(project, ['share', 'admin']))
 
-    // await updateProjectRedis(id, project)
     await deleteProjectRedis(id)
 
     return _omit(project, ['admin', 'passwordHash', 'share'])

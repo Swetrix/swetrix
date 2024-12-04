@@ -1,4 +1,3 @@
-import type i18next from 'i18next'
 import React, { useState, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 import { ChevronDownIcon, CheckIcon } from '@heroicons/react/24/solid'
@@ -21,13 +20,17 @@ import { DetailedOrganisation } from 'redux/models/Organisation'
 import { useSelector } from 'react-redux'
 import { StateType } from 'redux/store'
 
-const NoPeople = ({ t }: { t: typeof i18next.t }) => (
-  <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
-    <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>
-      <h2 className='mb-8 px-4 text-center text-xl leading-snug'>{t('project.settings.noPeople')}</h2>
+const NoPeople = () => {
+  const { t } = useTranslation('common')
+
+  return (
+    <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
+      <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>
+        <h2 className='mb-8 px-4 text-center text-xl leading-snug'>{t('project.settings.noPeople')}</h2>
+      </div>
     </div>
-  </div>
-)
+  )
+}
 
 interface UsersListProps {
   members: DetailedOrganisation['members']
@@ -278,7 +281,7 @@ const People = ({ organisation }: PeopleProps): JSX.Element => {
       </div>
       <div>
         {_isEmpty(members) ? (
-          <NoPeople t={t} />
+          <NoPeople />
         ) : (
           <div className='mt-3 flex flex-col'>
             <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 md:overflow-x-visible lg:-mx-8'>

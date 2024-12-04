@@ -12,6 +12,7 @@ import {
   Headers,
   Get,
   Query,
+  ForbiddenException,
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import { isEmpty as _isEmpty, find as _find } from 'lodash'
@@ -98,8 +99,23 @@ export class OrganisationController {
   @Get('/:orgId')
   @ApiResponse({ status: 200, type: Organisation })
   @Auth([], true)
-  async getOne(@Param('orgId') orgId: string): Promise<Organisation> {
-    // todo: add access control
+  async getOne(
+    @Param('orgId') orgId: string,
+    @CurrentUserId() userId: string,
+  ): Promise<Organisation> {
+    this.logger.log({ orgId, userId }, 'GET /organisation/:orgId')
+
+    const canManage = await this.organisationService.canManageOrganisation(
+      orgId,
+      userId,
+    )
+
+    if (!canManage) {
+      throw new ForbiddenException(
+        'You do not have permission to manage this organisation',
+      )
+    }
+
     return this.organisationService.findOne({
       where: { id: orgId },
       select: {
@@ -114,8 +130,15 @@ export class OrganisationController {
             email: true,
           },
         },
+        projects: {
+          id: true,
+          name: true,
+          admin: {
+            email: true,
+          },
+        },
       },
-      relations: ['members', 'members.user'],
+      relations: ['members', 'members.user', 'projects', 'projects.admin'],
     })
   }
 

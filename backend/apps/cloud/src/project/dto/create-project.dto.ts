@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { IsNotEmpty, Length } from 'class-validator'
+import { ProjectOrganisationDto } from './project-organisation.dto'
 
-export class CreateProjectDTO {
+export class CreateProjectDTO extends ProjectOrganisationDto {
   @ApiProperty({
     example: 'Your awesome project',
     required: true,
@@ -15,11 +16,6 @@ export class CreateProjectDTO {
     required: false,
   })
   isCaptcha?: boolean
-
-  @ApiProperty({
-    required: false,
-  })
-  organisationId?: string
 
   @ApiProperty({
     required: false,

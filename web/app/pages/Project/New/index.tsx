@@ -71,6 +71,7 @@ const NewProject = () => {
       try {
         await createProject({
           name: data.name || DEFAULT_PROJECT_NAME,
+          organisationId: data.organisationId,
         })
         trackCustom('PROJECT_CREATED')
         navigate(routes.dashboard)
@@ -165,7 +166,7 @@ const NewProject = () => {
               keyExtractor={(item) => item.id || 'not-set'}
               labelExtractor={(item) => {
                 if (item.id === undefined) {
-                  return <span className='italic text-gray-600 dark:text-gray-200'>{t('common.notSet')}</span>
+                  return <span className='italic'>{t('common.notSet')}</span>
                 }
 
                 return item.name

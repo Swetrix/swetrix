@@ -1,3 +1,5 @@
+import { Organisation } from './Organisation'
+
 interface _IOverallPeriodStats {
   all: number
   unique?: number
@@ -89,6 +91,7 @@ export interface IProject {
   isTransferring?: boolean
   isPasswordProtected?: boolean
   organisationId?: string
+  organisation?: Organisation
   password?: string
   isLocked: boolean
   isDataExists: boolean

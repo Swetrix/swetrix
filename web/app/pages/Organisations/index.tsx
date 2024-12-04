@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { Link, useNavigate } from '@remix-run/react'
+import { Link } from '@remix-run/react'
 import { toast } from 'sonner'
-import type i18next from 'i18next'
 import { ClientOnly } from 'remix-utils/client-only'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
@@ -22,9 +21,9 @@ import { XCircleIcon } from '@heroicons/react/24/solid'
 import Modal from 'ui/Modal'
 import { withAuthentication, auth } from 'hoc/protected'
 import Loader from 'ui/Loader'
-import { Badge } from 'ui/Badge'
+import { Badge, BadgeProps } from 'ui/Badge'
 import routes from 'utils/routes'
-import { isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD, roleViewer } from 'redux/constants'
+import { ENTRIES_PER_PAGE_DASHBOARD, roleViewer } from 'redux/constants'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import useDebounce from 'hooks/useDebounce'
 
@@ -38,7 +37,6 @@ import Input from 'ui/Input'
 interface OrganisationCardProps {
   name?: string
   active?: boolean
-  t: typeof i18next.t
   isPublic?: boolean
   confirmed?: boolean
   id: string
@@ -66,7 +64,28 @@ const OrganisationCard = ({
   const { t } = useTranslation('common')
   const [showInviteModal, setShowInviteModal] = useState(false)
   const role = useMemo(() => getRole && getRole(id), [getRole, id])
-  const navigate = useNavigate()
+
+  const badges = useMemo(() => {
+    const list: BadgeProps[] = []
+
+    if (shared) {
+      if (confirmed) {
+        list.push({ colour: 'green', label: t('dashboard.shared') })
+      } else {
+        list.push({ colour: 'yellow', label: t('common.pending') })
+      }
+    }
+
+    if (isTransferring) {
+      list.push({ colour: 'indigo', label: t('common.transferring') })
+    }
+
+    if (_isNumber(members)) {
+      list.push({ colour: 'slate', label: t('common.xMembers', { number: members + 1 }) })
+    }
+
+    return list
+  }, [t, confirmed, shared, isTransferring, members])
 
   const onAccept = async () => {
     // @ts-ignore
@@ -85,127 +104,112 @@ const OrganisationCard = ({
     }
   }
 
-  const onElementClick = (e: React.MouseEvent<HTMLLIElement>) => {
+  const onElementClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (confirmed) {
       return
     }
 
-    e.stopPropagation()
     e.preventDefault()
     setShowInviteModal(true)
   }
 
   return (
-    <div
-      onClick={() => {
-        navigate(_replace(routes.organisation, ':id', id))
-      }}
+    <Link
+      to={_replace(routes.organisation, ':id', id)}
+      onClick={onElementClick}
+      className='min-h-[153.1px] cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 dark:border-slate-800/25 dark:bg-slate-800 dark:hover:bg-slate-700'
     >
-      <li
-        onClick={onElementClick}
-        className='min-h-[153.1px] cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 dark:border-slate-800/25 dark:bg-slate-800 dark:hover:bg-slate-700'
-      >
-        <div className='px-4 py-4'>
-          <div className='flex items-center justify-between'>
-            <p className='truncate text-lg font-semibold text-slate-900 dark:text-gray-50'>{name}</p>
+      <div className='px-4 py-4'>
+        <div className='flex items-center justify-between'>
+          <p className='truncate text-lg font-semibold text-slate-900 dark:text-gray-50'>{name}</p>
 
-            <div className='flex items-center gap-2' onClick={(e) => e.stopPropagation()}>
-              {role !== roleViewer.role && (
-                <Link
-                  to={_replace(routes.organisation, ':id', id)}
-                  aria-label={`${t('project.settings.settings')} ${name}`}
-                >
-                  <AdjustmentsVerticalIcon className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500' />
-                </Link>
-              )}
-            </div>
-          </div>
-          <div className='mt-1 flex flex-shrink-0 flex-wrap gap-2'>
-            {shared &&
-              (confirmed ? (
-                <Badge colour='green' label={t('dashboard.shared')} />
-              ) : (
-                <Badge colour='yellow' label={t('common.pending')} />
-              ))}
-            {isTransferring && <Badge colour='indigo' label={t('common.transferring')} />}
-            {!isSelfhosted && _isNumber(members) && (
-              <Badge
-                colour='slate'
-                label={
-                  members === 1
-                    ? t('common.oneMember')
-                    : t('common.xMembers', {
-                        number: members,
-                      })
-                }
-              />
+          <div className='flex items-center gap-2' onClick={(e) => e.stopPropagation()}>
+            {role !== roleViewer.role && (
+              <Link
+                to={_replace(routes.organisation, ':id', id)}
+                aria-label={`${t('project.settings.settings')} ${name}`}
+              >
+                <AdjustmentsVerticalIcon className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500' />
+              </Link>
             )}
           </div>
         </div>
-        {!confirmed && (
-          <Modal
-            onClose={() => {
-              setShowInviteModal(false)
-            }}
-            onSubmit={() => {
-              setShowInviteModal(false)
-              onAccept()
-            }}
-            submitText={t('common.accept')}
-            type='confirmed'
-            closeText={t('common.cancel')}
-            title={t('dashboard.invitationFor', { project: name })}
-            message={t('dashboard.invitationDesc', { project: name })}
-            isOpened={showInviteModal}
-          />
-        )}
-      </li>
-    </div>
+        <div className='mt-1 flex flex-shrink-0 flex-wrap gap-2'>
+          {badges.map((badge) => (
+            <Badge key={badge.label} {...badge} />
+          ))}
+        </div>
+      </div>
+      {!confirmed && (
+        <Modal
+          onClose={() => {
+            setShowInviteModal(false)
+          }}
+          onSubmit={() => {
+            setShowInviteModal(false)
+            onAccept()
+          }}
+          submitText={t('common.accept')}
+          type='confirmed'
+          closeText={t('common.cancel')}
+          title={t('dashboard.invitationFor', { project: name })}
+          message={t('dashboard.invitationDesc', { project: name })}
+          isOpened={showInviteModal}
+        />
+      )}
+    </Link>
   )
 }
 
 interface INoOrganisations {
-  t: typeof i18next.t
   onClick: () => void
 }
 
 interface IAddOrganisation {
-  t: typeof i18next.t
   onClick: () => void
   sitesCount: number
 }
 
-const NoOrganisations = ({ t, onClick }: INoOrganisations): JSX.Element => (
-  <button
-    type='button'
-    onClick={onClick}
-    className='relative mx-auto block max-w-lg rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
-  >
-    <BuildingOffice2Icon className='mx-auto h-12 w-12 text-gray-400 dark:text-gray-200' />
-    <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50'>
-      {t('dashboard.createProject')}
-    </span>
-  </button>
-)
+const NoOrganisations = ({ onClick }: INoOrganisations) => {
+  const { t } = useTranslation('common')
 
-const AddOrganisation = ({ t, onClick, sitesCount }: IAddOrganisation): JSX.Element => (
-  <li
-    onClick={onClick}
-    className={cx(
-      'group flex h-auto min-h-[153.1px] cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400',
-      {
-        'lg:min-h-[auto]': sitesCount % 3 !== 0,
-      },
-    )}
-  >
-    <div>
-      <BuildingOffice2Icon className='mx-auto h-12 w-12 text-gray-400 group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400' />
-      <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
-        {t('organisations.new')}
+  return (
+    <button
+      type='button'
+      onClick={onClick}
+      className='relative mx-auto block max-w-lg rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
+    >
+      <BuildingOffice2Icon className='mx-auto h-12 w-12 text-gray-400 dark:text-gray-200' />
+      <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50'>
+        {t('dashboard.createProject')}
       </span>
-    </div>
-  </li>
-)
+    </button>
+  )
+}
+
+const AddOrganisation = ({ onClick, sitesCount }: IAddOrganisation) => {
+  const { t } = useTranslation('common')
+
+  return (
+    <button
+      type='button'
+      onClick={onClick}
+      className={cx(
+        'group flex h-auto min-h-[153.1px] cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400',
+        {
+          'lg:min-h-[auto]': sitesCount % 3 !== 0,
+        },
+      )}
+    >
+      <div>
+        <BuildingOffice2Icon className='mx-auto h-12 w-12 text-gray-400 group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400' />
+        <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
+          {t('organisations.new')}
+        </span>
+      </div>
+    </button>
+  )
+}
 
 const Organisations = () => {
   const { t } = useTranslation('common')
@@ -424,9 +428,9 @@ const Organisations = () => {
                 {() => (
                   <div>
                     {_isEmpty(organisations) ? (
-                      <NoOrganisations t={t} onClick={onNewOrganisation} />
+                      <NoOrganisations onClick={onNewOrganisation} />
                     ) : (
-                      <ul className='grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
+                      <div className='grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
                         {_map(
                           organisations,
                           // @ts-expect-error
@@ -435,7 +439,6 @@ const Organisations = () => {
                               key={id}
                               members={1 + _size(share)}
                               id={id}
-                              t={t}
                               name={name}
                               active={active}
                               isPublic={isPublic}
@@ -447,8 +450,8 @@ const Organisations = () => {
                             />
                           ),
                         )}
-                        <AddOrganisation sitesCount={_size(organisations)} t={t} onClick={onNewOrganisation} />
-                      </ul>
+                        <AddOrganisation sitesCount={_size(organisations)} onClick={onNewOrganisation} />
+                      </div>
                     )}
                   </div>
                 )}

@@ -307,6 +307,24 @@ export const createOrganisation = (name: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
+export const addProjectToOrganisation = (organisationId: string, projectId: string) =>
+  api
+    .post(`/project/organisation/${organisationId}`, { projectId })
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const removeProjectFromOrganisation = (organisationId: string, projectId: string) =>
+  api
+    .delete(`/project/organisation/${organisationId}/${projectId}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      debug('%s', error)
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
 export const getSharedProjects = (take: number = 0, skip: number = 0, search?: string) =>
   api
     .get(`/project/shared?take=${take}&skip=${skip}&search=${search}`)
@@ -338,7 +356,7 @@ export const getProject = (pid: string, isCaptcha: boolean = false, password?: s
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const createProject = (data: { name: string; isCaptcha?: boolean }) =>
+export const createProject = (data: { name: string; organisationId?: string; isCaptcha?: boolean }) =>
   api
     .post('/project', data)
     .then((response): IProject => response.data)

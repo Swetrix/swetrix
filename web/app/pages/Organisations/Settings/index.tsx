@@ -21,6 +21,7 @@ import { useRequiredParams } from 'hooks/useRequiredParams'
 import { DetailedOrganisation } from 'redux/models/Organisation'
 import { StateType } from 'redux/store'
 import { useSelector } from 'react-redux'
+import { Projects } from './Projects'
 
 const MAX_NAME_LENGTH = 50
 
@@ -173,7 +174,7 @@ const OrganisationSettings = () => {
     document.title = `${t('project.settings.settings')} ${form.name} ${TITLE_SUFFIX}`
   }, [form, t])
 
-  if (isLoading || isLoading === null) {
+  if (isLoading || isLoading === null || !organisation) {
     return (
       <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8'>
         <Loader />
@@ -229,6 +230,7 @@ const OrganisationSettings = () => {
         </div>
         <hr className='mt-2 border-gray-200 dark:border-gray-600 sm:mt-5' />
         <People organisation={organisation} />
+        <Projects organisation={organisation} />
       </form>
       <Modal
         onClose={() => setShowDelete(false)}

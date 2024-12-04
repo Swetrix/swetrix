@@ -49,7 +49,9 @@
     "viewDeleted": "View has been deleted",
     "noAIForecastAvailable": "AI forecast is not available for this project yet",
     "organisationCreated": "Organisation has been created",
-    "organisationCreateError": "Error occurred while creating the organisation"
+    "organisationCreateError": "Error occurred while creating the organisation",
+    "projectRemovedFromOrganisation": "The project has been removed from the organisation",
+    "projectRemoveError": "Error occurred while removing the project from the organisation"
   },
   "common": {
     "features": "Features",
@@ -108,7 +110,8 @@
     "fixIt": "Fix it",
     "errorOccured": "An error occurred: {{error}}",
     "name": "Name",
-    "notSet": "Not set"
+    "notSet": "Not set",
+    "remove": "Remove"
   },
   "performance": {
     "slogan": "End user <span>performance monitoring</span> to deliver fast websites.",
@@ -624,7 +627,16 @@
         "name": "Viewer",
         "desc": "Can only access the organisation and its projects without the ability to change any settings."
       }
-    }
+    },
+    "projects": "Projects",
+    "addProject": "Add project",
+    "modals": {
+      "remove": {
+        "title": "Remove {{project}}?",
+        "message": "Are you sure you want to remove this project from the organisation? Once removed, organisation members will no longer have access to this project unless they are added in the project settings."
+      }
+    },
+    "projectOwnedBy": "This project is owned by {{email}}"
   },
   "dashboard": {
     "uptime": "Uptime",

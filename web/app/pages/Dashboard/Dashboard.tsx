@@ -1,7 +1,6 @@
 import React, { memo, useState, useEffect, useMemo } from 'react'
-import { Link, useNavigate } from '@remix-run/react'
+import { Link } from '@remix-run/react'
 import { toast } from 'sonner'
-import type i18next from 'i18next'
 import { ClientOnly } from 'remix-utils/client-only'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
@@ -27,7 +26,7 @@ import Modal from 'ui/Modal'
 import Select from 'ui/Select'
 import { withAuthentication, auth } from 'hoc/protected'
 import Loader from 'ui/Loader'
-import { Badge } from 'ui/Badge'
+import { Badge, BadgeProps } from 'ui/Badge'
 import routes from 'utils/routes'
 import { nFormatter, calculateRelativePercentage } from 'utils/generic'
 import {
@@ -51,34 +50,28 @@ import { ISharedProject } from 'redux/models/ISharedProject'
 import { IProject, ICaptchaProject, ILiveStats, IOverall } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 
-interface IProjectCard {
-  name?: string
-  active?: boolean
+interface ProjectCardProps {
   birdseye: IOverall
   type: 'analytics' | 'captcha'
-  t: typeof i18next.t
   live?: string | number
-  isPublic?: boolean
   confirmed?: boolean
-  id: string
   sharedProjects: ISharedProject[]
   setProjectsShareData: (data: Partial<ISharedProject>, id: string, shared?: boolean) => void
   setUserShareData: (data: Partial<ISharedProject>, id: string) => void
   shared?: boolean
   captcha?: boolean
-  isTransferring?: boolean
   getRole?: (id: string) => string | null
-  members?: number
+  project: IProject
 }
 
-interface IMiniCard {
+interface MiniCardProps {
   labelTKey: string
-  t: typeof i18next.t
   total?: number | string
   percChange?: number
 }
 
-const MiniCard = ({ labelTKey, t, total = 0, percChange }: IMiniCard): JSX.Element => {
+const MiniCard = ({ labelTKey, total = 0, percChange }: MiniCardProps) => {
+  const { t } = useTranslation('common')
   const statsDidGrowUp = percChange ? percChange >= 0 : false
 
   return (
@@ -114,30 +107,62 @@ const MiniCard = ({ labelTKey, t, total = 0, percChange }: IMiniCard): JSX.Eleme
 }
 
 const ProjectCard = ({
-  name,
-  active,
   birdseye,
-  t,
   live = 'N/A',
-  isPublic,
   confirmed,
-  id,
   sharedProjects,
   setProjectsShareData,
   setUserShareData,
   shared,
   captcha,
-  isTransferring,
   type,
   getRole,
-  members,
-}: IProjectCard) => {
+  project,
+}: ProjectCardProps) => {
+  const { t } = useTranslation('common')
   const [showInviteModal, setShowInviteModal] = useState(false)
-  const role = useMemo(() => getRole && getRole(id), [getRole, id])
-  const navigate = useNavigate()
+  const role = useMemo(() => getRole && getRole(project.id), [getRole, project.id])
+
+  const { id, name, public: isPublic, active, isTransferring, share, organisation } = project
+
+  const badges = useMemo(() => {
+    const list: BadgeProps[] = []
+
+    if (!active) {
+      list.push({ colour: 'red', label: t('dashboard.disabled') })
+    }
+
+    if (shared) {
+      if (confirmed) {
+        list.push({ colour: 'green', label: t('dashboard.shared') })
+      } else {
+        list.push({ colour: 'yellow', label: t('common.pending') })
+      }
+    }
+
+    if (isTransferring) {
+      list.push({ colour: 'indigo', label: t('common.transferring') })
+    }
+
+    if (isPublic) {
+      list.push({ colour: 'green', label: t('dashboard.public') })
+    }
+
+    if (organisation) {
+      list.push({ colour: 'sky', label: organisation.name })
+    }
+
+    const members = _size(share)
+
+    if (members > 0) {
+      list.push({ colour: 'slate', label: t('common.xMembers', { number: members + 1 }) })
+    }
+
+    return list
+  }, [t, active, shared, isTransferring, isPublic, organisation, confirmed, share])
 
   const onAccept = async () => {
-    // @ts-ignore
+    // @ts-expect-error
     const pid: string = _find(sharedProjects, (item: ISharedProject) => item.project && item.project.id === id)?.id
 
     try {
@@ -153,152 +178,132 @@ const ProjectCard = ({
     }
   }
 
-  const onElementClick = (e: React.MouseEvent<HTMLLIElement>) => {
+  const onElementClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (confirmed) {
       return
     }
 
-    e.stopPropagation()
     e.preventDefault()
     setShowInviteModal(true)
   }
 
   return (
-    <div
-      onClick={() => {
-        navigate(_replace(type === 'analytics' ? routes.project : routes.captcha, ':id', id))
-      }}
+    <Link
+      to={_replace(type === 'analytics' ? routes.project : routes.captcha, ':id', id)}
+      onClick={onElementClick}
+      className='min-h-[153.1px] cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 dark:border-slate-800/25 dark:bg-slate-800 dark:hover:bg-slate-700'
     >
-      <li
-        onClick={onElementClick}
-        className='cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 dark:border-slate-800/25 dark:bg-slate-800 dark:hover:bg-slate-700'
-      >
-        <div className='px-4 py-4'>
-          <div className='flex items-center justify-between'>
-            <p className='truncate text-lg font-semibold text-slate-900 dark:text-gray-50'>{name}</p>
+      <div className='px-4 py-4'>
+        <div className='flex items-center justify-between'>
+          <p className='truncate text-lg font-semibold text-slate-900 dark:text-gray-50'>{name}</p>
 
-            <div className='flex items-center gap-2' onClick={(e) => e.stopPropagation()}>
-              {role !== roleViewer.role && (
-                <Link
-                  to={_replace(type === 'analytics' ? routes.project_settings : routes.captcha_settings, ':id', id)}
-                  aria-label={`${t('project.settings.settings')} ${name}`}
-                >
-                  <AdjustmentsVerticalIcon className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500' />
-                </Link>
-              )}
-              <a
-                href={_replace(type === 'analytics' ? routes.project : routes.captcha, ':id', id)}
-                aria-label='name (opens in a new tab)'
-                target='_blank'
-                rel='noopener noreferrer'
+          <div className='flex items-center gap-2' onClick={(e) => e.stopPropagation()}>
+            {role !== roleViewer.role && (
+              <Link
+                to={_replace(type === 'analytics' ? routes.project_settings : routes.captcha_settings, ':id', id)}
+                aria-label={`${t('project.settings.settings')} ${name}`}
               >
-                <ArrowTopRightOnSquareIcon className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500' />
-              </a>
-            </div>
-          </div>
-          <div className='mt-1 flex flex-shrink-0 flex-wrap gap-2'>
-            {active ? (
-              <Badge colour='green' label={t('dashboard.active')} />
-            ) : (
-              <Badge colour='red' label={t('dashboard.disabled')} />
+                <AdjustmentsVerticalIcon className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500' />
+              </Link>
             )}
-            {shared &&
-              (confirmed ? (
-                <Badge colour='green' label={t('dashboard.shared')} />
-              ) : (
-                <Badge colour='yellow' label={t('common.pending')} />
-              ))}
-            {isTransferring && <Badge colour='indigo' label={t('common.transferring')} />}
-            {isPublic && <Badge colour='green' label={t('dashboard.public')} />}
-            {!isSelfhosted && _isNumber(members) && (
-              <Badge
-                colour='slate'
-                label={
-                  members === 1
-                    ? t('common.oneMember')
-                    : t('common.xMembers', {
-                        number: members,
-                      })
-                }
-              />
-            )}
-          </div>
-          <div className='mt-4 flex flex-shrink-0 gap-5'>
-            {birdseye[id] && (
-              <MiniCard
-                labelTKey={captcha ? 'dashboard.captchaEvents' : 'dashboard.pageviews'}
-                t={t}
-                total={birdseye[id].current.all}
-                percChange={calculateRelativePercentage(birdseye[id].previous.all, birdseye[id].current.all)}
-              />
-            )}
-            {!captcha && <MiniCard labelTKey='dashboard.liveVisitors' t={t} total={live} />}
+            <a
+              href={_replace(type === 'analytics' ? routes.project : routes.captcha, ':id', id)}
+              aria-label='name (opens in a new tab)'
+              target='_blank'
+              rel='noopener noreferrer'
+            >
+              <ArrowTopRightOnSquareIcon className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500' />
+            </a>
           </div>
         </div>
-        {!confirmed && (
-          <Modal
-            onClose={() => {
-              setShowInviteModal(false)
-            }}
-            onSubmit={() => {
-              setShowInviteModal(false)
-              onAccept()
-            }}
-            submitText={t('common.accept')}
-            type='confirmed'
-            closeText={t('common.cancel')}
-            title={t('dashboard.invitationFor', { project: name })}
-            message={t('dashboard.invitationDesc', { project: name })}
-            isOpened={showInviteModal}
-          />
-        )}
-      </li>
-    </div>
+        <div className='mt-1 flex flex-shrink-0 flex-wrap gap-2'>
+          {badges.map((badge) => (
+            <Badge key={badge.label} {...badge} />
+          ))}
+        </div>
+        <div className='mt-4 flex flex-shrink-0 gap-5'>
+          {birdseye[id] && (
+            <MiniCard
+              labelTKey={captcha ? 'dashboard.captchaEvents' : 'dashboard.pageviews'}
+              total={birdseye[id].current.all}
+              percChange={calculateRelativePercentage(birdseye[id].previous.all, birdseye[id].current.all)}
+            />
+          )}
+          {!captcha && <MiniCard labelTKey='dashboard.liveVisitors' total={live} />}
+        </div>
+      </div>
+      {!confirmed && (
+        <Modal
+          onClose={() => {
+            setShowInviteModal(false)
+          }}
+          onSubmit={() => {
+            setShowInviteModal(false)
+            onAccept()
+          }}
+          submitText={t('common.accept')}
+          type='confirmed'
+          closeText={t('common.cancel')}
+          title={t('dashboard.invitationFor', { project: name })}
+          message={t('dashboard.invitationDesc', { project: name })}
+          isOpened={showInviteModal}
+        />
+      )}
+    </Link>
   )
 }
 
-interface INoProjects {
-  t: typeof i18next.t
-  onClick: () => void
+interface NoProjectsProps {
+  newProjectLink: string
+  onClick: (e: React.MouseEvent<HTMLAnchorElement>) => void
 }
 
-interface IAddProject {
-  t: typeof i18next.t
-  onClick: () => void
+interface AddProjectProps {
+  newProjectLink: string
+  onClick: (e: React.MouseEvent<HTMLAnchorElement>) => void
   sitesCount: number
 }
 
-const NoProjects = ({ t, onClick }: INoProjects): JSX.Element => (
-  <button
-    type='button'
-    onClick={onClick}
-    className='relative mx-auto block max-w-lg rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
-  >
-    <FolderPlusIcon className='mx-auto h-12 w-12 text-gray-400 dark:text-gray-200' />
-    <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50'>
-      {t('dashboard.createProject')}
-    </span>
-  </button>
-)
+const NoProjects = ({ newProjectLink, onClick }: NoProjectsProps) => {
+  const { t } = useTranslation('common')
 
-const AddProject = ({ t, onClick, sitesCount }: IAddProject): JSX.Element => (
-  <li
-    onClick={onClick}
-    className={cx(
-      'group flex h-auto min-h-[153.1px] cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400',
-      {
-        'lg:min-h-[auto]': sitesCount % 3 !== 0,
-      },
-    )}
-  >
-    <div>
-      <FolderPlusIcon className='mx-auto h-12 w-12 text-gray-400 group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400' />
-      <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
-        {t('dashboard.newProject')}
+  return (
+    <Link
+      to={newProjectLink}
+      onClick={onClick}
+      className='relative mx-auto block max-w-lg rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
+    >
+      <FolderPlusIcon className='mx-auto h-12 w-12 text-gray-400 dark:text-gray-200' />
+      <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50'>
+        {t('dashboard.createProject')}
       </span>
-    </div>
-  </li>
-)
+    </Link>
+  )
+}
+
+const AddProject = ({ newProjectLink, onClick, sitesCount }: AddProjectProps) => {
+  const { t } = useTranslation('common')
+
+  return (
+    <Link
+      to={newProjectLink}
+      onClick={onClick}
+      className={cx(
+        'group flex h-auto min-h-[153.1px] cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400',
+        {
+          'lg:min-h-[auto]': sitesCount % 3 !== 0,
+        },
+      )}
+    >
+      <div>
+        <FolderPlusIcon className='mx-auto h-12 w-12 text-gray-400 group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400' />
+        <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
+          {t('dashboard.newProject')}
+        </span>
+      </div>
+    </Link>
+  )
+}
 
 interface DashboardProps {
   projects: IProject[]
@@ -356,8 +361,7 @@ const Dashboard = ({
   const { t } = useTranslation('common')
   const [isSearchActive, setIsSearchActive] = useState<boolean>(false)
   const [showActivateEmailModal, setShowActivateEmailModal] = useState<boolean>(false)
-  const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState<string>(dashboardTabs)
+  const [activeTab, setActiveTab] = useState(dashboardTabs)
   const pageAmountShared: number = Math.ceil(sharedTotal / ENTRIES_PER_PAGE_DASHBOARD)
   const pageAmount: number = Math.ceil(total / ENTRIES_PER_PAGE_DASHBOARD)
   const pageAmountCaptcha: number = Math.ceil(captchaTotal / ENTRIES_PER_PAGE_DASHBOARD)
@@ -365,20 +369,25 @@ const Dashboard = ({
     _find([..._map(sharedProjects, (item) => ({ ...item.project, role: item.role }))], (p) => p.id === pid)?.role ||
     null
   // This search represents what's inside the search input
-  const [search, setSearch] = useState<string>('')
-  const debouncedSearch = useDebounce<string>(search, 500)
+  const [search, setSearch] = useState('')
+  const debouncedSearch = useDebounce(search, 500)
 
-  const onNewProject = () => {
+  const onNewProject = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (user.isActive || isSelfhosted) {
-      if (dashboardTabs === tabForCaptchaProject) {
-        navigate(routes.new_captcha)
-      } else {
-        navigate(routes.new_project)
-      }
-    } else {
-      setShowActivateEmailModal(true)
+      return
     }
+
+    e.preventDefault()
+    setShowActivateEmailModal(true)
   }
+
+  const newProjectLink = useMemo(() => {
+    if (isSelfhosted) {
+      return routes.new_project
+    }
+
+    return dashboardTabs === tabForCaptchaProject ? routes.new_captcha : routes.new_project
+  }, [dashboardTabs])
 
   useEffect(() => {
     if (sharedTotal <= 0 && activeTab === tabForSharedProject) {
@@ -546,13 +555,14 @@ const Dashboard = ({
                   </div>
                 )}
               </div>
-              <span
+              <Link
+                to={newProjectLink}
                 onClick={onNewProject}
                 className='inline-flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-slate-900 px-3 py-2 !pl-2 text-center text-sm font-medium leading-4 text-white shadow-sm hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
               >
                 <FolderPlusIcon className='mr-1 h-5 w-5' />
                 {activeTab === tabForCaptchaProject ? t('dashboard.newCaptchaProject') : t('dashboard.newProject')}
-              </span>
+              </Link>
             </div>
             {isSearchActive && (
               <div className='mb-2 flex w-full items-center sm:hidden'>
@@ -633,135 +643,117 @@ const Dashboard = ({
                 {() => (
                   <>
                     {activeTab === tabForOwnedProject && (
-                      <div>
+                      <>
                         {_isEmpty(_filter(projects, ({ uiHidden }) => !uiHidden)) ? (
-                          <NoProjects t={t} onClick={onNewProject} />
+                          <NoProjects newProjectLink={newProjectLink} onClick={onNewProject} />
                         ) : (
-                          <ul className='grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
+                          <div className='grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
                             {_map(
                               _filter(projects, ({ uiHidden }) => !uiHidden),
-                              ({ name, id, active, public: isPublic, isTransferring, share }) => (
+                              (project) => (
                                 <ProjectCard
-                                  key={id}
-                                  members={1 + _size(share)}
-                                  id={id}
+                                  key={project.id}
+                                  project={project}
                                   type='analytics'
-                                  t={t}
-                                  name={name}
-                                  active={active}
-                                  isPublic={isPublic}
                                   birdseye={birdseye}
-                                  live={_isNumber(liveStats[id]) ? liveStats[id] : 'N/A'}
+                                  live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
                                   setUserShareData={() => {}}
                                   sharedProjects={[]}
                                   setProjectsShareData={() => {}}
-                                  isTransferring={isTransferring}
                                   confirmed
                                 />
                               ),
                             )}
                             <AddProject
+                              newProjectLink={newProjectLink}
                               sitesCount={_size(_filter(projects, ({ uiHidden }) => !uiHidden))}
-                              t={t}
                               onClick={onNewProject}
                             />
-                          </ul>
+                          </div>
                         )}
-                      </div>
+                      </>
                     )}
 
                     {activeTab === tabForCaptchaProject && (
-                      <div>
+                      <>
                         {_isEmpty(_filter(captchaProjects, ({ uiHidden }) => !uiHidden)) ? (
-                          <NoProjects t={t} onClick={onNewProject} />
+                          <NoProjects newProjectLink={newProjectLink} onClick={onNewProject} />
                         ) : (
-                          <ul className='grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
+                          <div className='grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
                             {_map(
                               _filter(captchaProjects, ({ uiHidden }) => !uiHidden),
-                              ({ name, id, active, public: isPublic }) => (
+                              (project) => (
                                 <ProjectCard
-                                  t={t}
-                                  key={id}
-                                  id={id}
+                                  key={project.id}
+                                  project={project as IProject}
                                   type='captcha'
-                                  name={name}
-                                  captcha
-                                  active={active}
-                                  isPublic={isPublic}
                                   birdseye={birdseye}
-                                  live={_isNumber(liveStats[id]) ? liveStats[id] : 'N/A'}
+                                  live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
                                   sharedProjects={[]}
                                   setProjectsShareData={() => {}}
                                   setUserShareData={() => {}}
+                                  captcha
                                   confirmed
                                 />
                               ),
                             )}
                             <AddProject
+                              newProjectLink={newProjectLink}
                               sitesCount={_size(_filter(captchaProjects, ({ uiHidden }) => !uiHidden))}
-                              t={t}
                               onClick={onNewProject}
                             />
-                          </ul>
+                          </div>
                         )}
-                      </div>
+                      </>
                     )}
 
                     {activeTab === tabForSharedProject && (
-                      <div>
+                      <>
                         {_isEmpty(_filter(sharedProjects, ({ uiHidden }) => !uiHidden)) ? (
-                          <NoProjects t={t} onClick={onNewProject} />
+                          <NoProjects newProjectLink={newProjectLink} onClick={onNewProject} />
                         ) : (
-                          <ul className='grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
+                          <div className='grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
                             {_map(
                               _filter(sharedProjects, ({ uiHidden }) => !uiHidden),
                               ({ project, confirmed }) => {
                                 if (_isUndefined(confirmed) || confirmed) {
                                   return (
                                     <ProjectCard
-                                      t={t}
-                                      key={`${project?.id}-confirmed`}
+                                      key={project.id}
+                                      project={project}
                                       type='analytics'
-                                      id={project?.id}
-                                      name={project?.name}
-                                      shared
                                       getRole={getRole}
-                                      active={project?.active}
-                                      isPublic={project?.public}
                                       confirmed={confirmed}
                                       birdseye={birdseye}
                                       live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
                                       setUserShareData={() => {}}
                                       sharedProjects={[]}
                                       setProjectsShareData={() => {}}
+                                      shared
                                     />
                                   )
                                 }
 
                                 return (
                                   <ProjectCard
-                                    t={t}
                                     key={project?.id}
-                                    id={project?.id}
                                     type='analytics'
-                                    name={project?.name}
                                     shared
                                     getRole={getRole}
-                                    active={project?.active}
-                                    isPublic={project?.public}
                                     birdseye={birdseye}
                                     confirmed={confirmed}
                                     sharedProjects={user.sharedProjects}
                                     setProjectsShareData={setProjectsShareData}
                                     setUserShareData={setUserShareData}
                                     live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
+                                    project={project}
                                   />
                                 )
                               },
                             )}
-                          </ul>
+                          </div>
                         )}
-                      </div>
+                      </>
                     )}
                   </>
                 )}

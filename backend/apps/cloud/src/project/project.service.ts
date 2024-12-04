@@ -89,6 +89,7 @@ import { CreateMonitorHttpRequestDTO } from './dto/create-monitor.dto'
 import { MonitorEntity } from './entity/monitor.entity'
 import { UpdateMonitorHttpRequestDTO } from './dto/update-monitor.dto'
 import { HttpRequestOptions } from './interfaces/http-request-options.interface'
+import { Organisation } from '../organisation/entity/organisation.entity'
 
 dayjs.extend(utc)
 
@@ -301,7 +302,6 @@ export class ProjectService {
     private projectsRepository: Repository<Project>,
     @InjectRepository(ProjectShare)
     private projectShareRepository: Repository<ProjectShare>,
-    private userService: UserService,
     @InjectRepository(ProjectSubscriber)
     private readonly projectSubscriberRepository: Repository<ProjectSubscriber>,
     @InjectRepository(Funnel)
@@ -312,6 +312,7 @@ export class ProjectService {
     private readonly mailerService: MailerService,
     private readonly httpService: HttpService,
     private readonly logger: AppLoggerService,
+    private readonly userService: UserService,
     @InjectQueue('monitor') private monitorQueue: Queue,
   ) {}
 
@@ -384,7 +385,7 @@ export class ProjectService {
       order: {
         name: 'ASC',
       },
-      relations: ['share', 'share.user', 'funnels'],
+      relations: ['share', 'share.user', 'funnels', 'organisation'],
     })
 
     return new Pagination<Project>({
@@ -1618,5 +1619,44 @@ export class ProjectService {
     if (job) {
       await job.remove()
     }
+  }
+
+  async addProjectToOrganisation(organisationId: string, projectId: string) {
+    const project = await this.findOne({
+      where: { id: projectId },
+    })
+
+    if (!project) {
+      throw new NotFoundException(`Project with ID ${projectId} not found`)
+    }
+
+    return this.update(projectId, {
+      organisation: {
+        id: organisationId,
+      } as Organisation,
+    } as Project)
+  }
+
+  async removeProjectFromOrganisation(
+    organisationId: string,
+    projectId: string,
+  ) {
+    const project = await this.findOne({
+      where: { id: projectId },
+    })
+
+    if (!project) {
+      throw new NotFoundException(`Project with ID ${projectId} not found`)
+    }
+
+    if (project.organisation?.id !== organisationId) {
+      throw new BadRequestException(
+        `Project with ID ${projectId} is not in organisation with ID ${organisationId}`,
+      )
+    }
+
+    return this.update(projectId, {
+      organisation: null,
+    } as Project)
   }
 }

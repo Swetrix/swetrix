@@ -15,4 +15,11 @@ export interface DetailedOrganisation extends Organisation {
       email: string
     }
   }[]
+  projects: {
+    id: string
+    name: string
+    admin: {
+      email: string
+    }
+  }[]
 }

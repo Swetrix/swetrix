@@ -23,6 +23,7 @@
     "@heroicons/react": "^2.1.5",
     "@icons-pack/react-simple-icons": "^10.1.0",
     "@nivo/sankey": "^0.87.0",
+    "@radix-ui/react-tooltip": "^1.1.4",
     "@reduxjs/toolkit": "^1.9.7",
     "@remix-run/node": "^2.13.1",
     "@remix-run/react": "^2.13.1",

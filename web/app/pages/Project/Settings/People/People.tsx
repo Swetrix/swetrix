@@ -1,4 +1,3 @@
-import type i18next from 'i18next'
 import React, { useState, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 import { ChevronDownIcon, CheckIcon } from '@heroicons/react/24/solid'
@@ -23,18 +22,21 @@ import useOnClickOutside from 'hooks/useOnClickOutside'
 import { IProject, IShareOwnerProject } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 
-const NoPeople = ({ t }: { t: typeof i18next.t }) => (
-  <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
-    <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>
-      <h2 className='mb-8 px-4 text-center text-xl leading-snug'>{t('project.settings.noPeople')}</h2>
+const NoPeople = () => {
+  const { t } = useTranslation('common')
+
+  return (
+    <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
+      <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>
+        <h2 className='mb-8 px-4 text-center text-xl leading-snug'>{t('project.settings.noPeople')}</h2>
+      </div>
     </div>
-  </div>
-)
+  )
+}
 
 interface IUsersList {
   data: IShareOwnerProject
   onRemove: (id: string) => void
-  t: typeof i18next.t
   share?: IShareOwnerProject[]
   setProjectShareData: (item: Partial<IProject>, id: string, shared: boolean) => void
   pid: string
@@ -46,7 +48,6 @@ interface IUsersList {
 const UsersList = ({
   data,
   onRemove,
-  t,
   share,
   setProjectShareData,
   pid,
@@ -54,6 +55,7 @@ const UsersList = ({
   authedUserEmail,
   isSharedProject,
 }: IUsersList) => {
+  const { t } = useTranslation('common')
   const [open, setOpen] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const openRef = useRef<HTMLDivElement>(null)
@@ -319,7 +321,7 @@ const People: React.FunctionComponent<IPeopleProps> = ({
       </div>
       <div>
         {_isEmpty(share) ? (
-          <NoPeople t={t} />
+          <NoPeople />
         ) : (
           <div className='mt-3 flex flex-col'>
             <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 md:overflow-x-visible lg:-mx-8'>
@@ -350,7 +352,6 @@ const People: React.FunctionComponent<IPeopleProps> = ({
                           data={user}
                           key={user.id}
                           onRemove={onRemove}
-                          t={t}
                           language={language}
                           share={project.share}
                           setProjectShareData={setProjectShareData}
