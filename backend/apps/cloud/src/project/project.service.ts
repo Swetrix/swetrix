@@ -12,7 +12,6 @@ import { InjectRepository } from '@nestjs/typeorm'
 import {
   FindManyOptions,
   FindOneOptions,
-  FindOptionsWhere,
   Repository,
   DeepPartial,
 } from 'typeorm'
@@ -376,86 +375,39 @@ export class ProjectService {
 
   async paginate(
     options: PaginationOptionsInterface,
-    where?: FindOptionsWhere<Project> | FindOptionsWhere<Project>[],
+    userId: string,
+    search?: string,
   ): Promise<Pagination<Project>> {
-    const [results, total] = await this.projectsRepository.findAndCount({
-      take: options.take || 100,
-      skip: options.skip || 0,
-      where,
-      order: {
-        name: 'ASC',
-      },
-      relations: ['share', 'share.user', 'funnels', 'organisation'],
-    })
+    // Create query builder starting from Project
+    const queryBuilder = this.projectsRepository
+      .createQueryBuilder('project')
+      .leftJoinAndSelect('project.admin', 'admin')
+      .leftJoinAndSelect('project.share', 'share')
+      .leftJoinAndSelect('share.user', 'sharedUser')
+      .leftJoinAndSelect('project.funnels', 'funnels')
+      .where('admin.id = :userId', { userId })
+      .orWhere('share.user.id = :userId', { userId })
+
+    // Add search condition if search term provided
+    if (search?.trim()) {
+      queryBuilder.andWhere('(project.name ILIKE :search)', {
+        search: `%${search.trim()}%`,
+      })
+    }
+
+    queryBuilder
+      .orderBy('project.name', 'ASC')
+      .skip(options.skip || 0)
+      .take(options.take || 100)
+
+    // Execute count and results queries
+    const [results, total] = await queryBuilder.getManyAndCount()
 
     return new Pagination<Project>({
       results: processProjectsUser(results),
       total,
     })
   }
-
-  async paginateShared(
-    options: PaginationOptionsInterface,
-    where: FindOptionsWhere<ProjectShare> | FindOptionsWhere<ProjectShare>[],
-  ): Promise<Pagination<ProjectShare>> {
-    const [results, total] = await this.projectShareRepository.findAndCount({
-      take: options.take || 100,
-      skip: options.skip || 0,
-      where,
-      order: {
-        project: {
-          name: 'ASC',
-        },
-      },
-      relations: [
-        'project',
-        'project.admin',
-        'project.funnels',
-        'project.share',
-        'project.share.user',
-      ],
-    })
-
-    return new Pagination<ProjectShare>({
-      results,
-      total,
-    })
-  }
-
-  // async paginateAll(
-  //   options: PaginationOptionsInterface,
-  //   where: FindOptionsWhere<Project> | FindOptionsWhere<Project>[],
-  // ): Promise<Pagination<Project>> {
-  //   // Create query builder starting from Project
-  //   const queryBuilder = this.projectsRepository
-  //     .createQueryBuilder('project')
-  //     .leftJoinAndSelect('project.admin', 'admin')
-  //     .leftJoinAndSelect('project.share', 'share')
-  //     .leftJoinAndSelect('share.user', 'sharedUser')
-  //     .leftJoinAndSelect('project.funnels', 'funnels')
-  //     // Add isOwner flag using CASE expression
-  //     .addSelect(
-  //       `
-  //       CASE
-  //         WHEN admin.id = :userId THEN true
-  //         ELSE false
-  //       END`,
-  //       'project_isOwner',
-  //     )
-  //     .where('admin.id = :userId', { userId })
-  //     .orWhere('share.user.id = :userId', { userId })
-  //     .orderBy('project.name', 'ASC')
-  //     .skip(options.skip || 0)
-  //     .take(options.take || 100)
-
-  //   // Execute count and results queries
-  //   const [results, total] = await queryBuilder.getManyAndCount()
-
-  //   return new Pagination<Project>({
-  //     results: processProjectsUser(results),
-  //     total,
-  //   })
-  // }
 
   async count(): Promise<number> {
     return this.projectsRepository.count()

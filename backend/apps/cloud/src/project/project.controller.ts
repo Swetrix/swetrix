@@ -21,8 +21,6 @@ import {
   ConflictException,
   Res,
   UnauthorizedException,
-  ParseBoolPipe,
-  DefaultValuePipe,
 } from '@nestjs/common'
 import { Response } from 'express'
 import {
@@ -34,7 +32,7 @@ import {
   ApiOkResponse,
   ApiNoContentResponse,
 } from '@nestjs/swagger'
-import { Equal, FindOptionsWhere, ILike, In } from 'typeorm'
+import { Equal, In } from 'typeorm'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _trim from 'lodash/trim'
@@ -153,57 +151,11 @@ export class ProjectController {
     @CurrentUserId() userId: string,
     @Query('take') take: number | undefined,
     @Query('skip') skip: number | undefined,
-    @Query('isCaptcha') isCaptchaStr: string | undefined,
     @Query('search') search: string | undefined,
-    @Query('showArchived', new DefaultValuePipe(false), ParseBoolPipe)
-    showArchived?: boolean,
   ): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /project')
-    const isCaptcha = isCaptchaStr === 'true'
-
-    let where: FindOptionsWhere<Project> | FindOptionsWhere<Project>[]
-
-    if (search) {
-      where = [
-        {
-          admin: {
-            id: userId,
-          },
-          isCaptchaProject: isCaptcha,
-          isAnalyticsProject: !isCaptcha,
-          name: ILike(`%${search}%`),
-          isArchived: showArchived,
-        },
-        {
-          admin: {
-            id: userId,
-          },
-          isCaptchaProject: isCaptcha,
-          isAnalyticsProject: !isCaptcha,
-          id: ILike(`%${search}%`),
-          isArchived: showArchived,
-        },
-      ] as FindOptionsWhere<Project>[]
-    } else {
-      where = {
-        admin: {
-          id: userId,
-        },
-      } as FindOptionsWhere<Project>
-
-      if (isCaptcha) {
-        where.isCaptchaProject = true
-      } else {
-        where.isAnalyticsProject = true
-      }
-
-      if (showArchived) {
-        where.isArchived = true
-      }
-    }
-
     const [paginated, totalMonthlyEvents, user] = await Promise.all([
-      this.projectService.paginate({ take, skip }, where),
+      this.projectService.paginate({ take, skip }, userId, search),
       this.projectService.getRedisCount(userId),
       this.userService.findOne({ where: { id: userId } }),
     ])
@@ -218,131 +170,19 @@ export class ProjectController {
         _map(paginated.results, ({ id }) => id),
       )
 
-    paginated.results = _map(paginated.results, p => ({
-      ...p,
-      isOwner: true,
+    console.log('paginated.results:', paginated.results)
+
+    paginated.results = _map(paginated.results, project => ({
+      ...project,
+      isOwner: project.admin.id === userId,
+      isShareConfirmed: true,
       isLocked: !!user?.dashboardBlockReason,
-      isDataExists: _includes(pidsWithData, p?.id),
-      isErrorDataExists: _includes(pidsWithErrorData, p?.id),
-      organisationId: p?.organisation?.id,
+      isDataExists: _includes(pidsWithData, project?.id),
+      isErrorDataExists: _includes(pidsWithErrorData, project?.id),
+      organisationId: project?.organisation?.id,
+      passwordHash: undefined,
+      admin: undefined,
     }))
-
-    return {
-      ...paginated,
-      totalMonthlyEvents,
-    }
-  }
-
-  @Get('/shared')
-  @ApiQuery({ name: 'take', required: false })
-  @ApiQuery({ name: 'skip', required: false })
-  @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
-  @ApiQuery({ name: 'search', required: false, type: String })
-  @ApiResponse({ status: 200, type: [Project] })
-  @Auth([UserType.CUSTOMER, UserType.ADMIN], true)
-  async getShared(
-    @CurrentUserId() userId: string,
-    @Query('take') take: number | undefined,
-    @Query('skip') skip: number | undefined,
-    @Query('search') search: string | undefined,
-  ): Promise<Pagination<ProjectShare> | ProjectShare[] | object> {
-    this.logger.log({ userId, take, skip, search }, 'GET /project/shared')
-
-    let where: FindOptionsWhere<ProjectShare> | FindOptionsWhere<ProjectShare>[]
-
-    if (search) {
-      where = [
-        {
-          user: { id: userId },
-          project: {
-            name: ILike(`%${search}%`),
-          },
-        },
-        {
-          user: { id: userId },
-          project: {
-            id: ILike(`%${search}%`),
-          },
-        },
-      ] as FindOptionsWhere<ProjectShare>[]
-    } else {
-      where = {
-        user: {
-          id: userId,
-        },
-      } as FindOptionsWhere<ProjectShare>
-    }
-
-    const paginated = await this.projectService.paginateShared(
-      { take, skip },
-      where,
-    )
-
-    const pidsWithData =
-      await this.projectService.getPIDsWhereAnalyticsDataExists(
-        _map(paginated.results, ({ project }) => project.id),
-      )
-
-    const pidsWithErrorData =
-      await this.projectService.getPIDsWhereErrorsDataExists(
-        _map(paginated.results, ({ project }) => project.id),
-      )
-
-    // @ts-expect-error
-    paginated.results = _map(paginated.results, share => {
-      const project = processProjectUser(share.project)
-
-      return {
-        ...share,
-        project: {
-          ...project,
-          admin: undefined,
-          passwordHash: undefined,
-          isLocked: !!share?.project?.admin?.dashboardBlockReason,
-          isDataExists: _includes(pidsWithData, share?.project?.id),
-          isErrorDataExists: _includes(pidsWithErrorData, share?.project?.id),
-        },
-      }
-    })
-
-    return paginated
-  }
-
-  @Get('/all')
-  @ApiQuery({ name: 'take', required: false })
-  @ApiQuery({ name: 'skip', required: false })
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Auth([UserType.ADMIN])
-  @ApiResponse({ status: 200, type: Project })
-  async getAllProjects(
-    @Query('take') take: number | undefined,
-    @Query('skip') skip: number | undefined,
-  ): Promise<Project | object> {
-    this.logger.log({ take, skip }, 'GET /all')
-
-    return this.projectService.paginate({ take, skip })
-  }
-
-  @ApiBearerAuth()
-  @Get('/user/:id')
-  @ApiQuery({ name: 'take', required: false })
-  @ApiQuery({ name: 'skip', required: false })
-  @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
-  @ApiResponse({ status: 200, type: [Project] })
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.ADMIN)
-  async getUserProject(
-    @Param('id') userId: string,
-    @Query('take') take: number | undefined,
-    @Query('skip') skip: number | undefined,
-  ): Promise<Pagination<Project> | Project[] | object> {
-    this.logger.log({ userId, take, skip }, 'GET /user/:id')
-
-    const where = Object()
-    where.admin = userId
-
-    const paginated = await this.projectService.paginate({ take, skip }, where)
-    const totalMonthlyEvents = await this.projectService.getRedisCount(userId)
 
     return {
       ...paginated,
