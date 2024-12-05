@@ -396,9 +396,6 @@ const ViewProject = ({
     [id, password, queryPassword],
   )
 
-  // TODO: TEST
-  const isSharedProject = project.isOwner
-
   // areFiltersParsed used for check filters is parsed from url. If we have query params in url, we parse it and set to state
   // when areFiltersParsed and areFiltersPerfParsed changed we call loadAnalytics or loadAnalyticsPerf and other func for load data
   // all state with Parsed in name is used for parse query params from url
@@ -3481,7 +3478,7 @@ const ViewProject = ({
           <h2 className='mt-2 break-words break-all text-center text-xl font-bold text-gray-900 dark:text-gray-50 sm:text-left'>
             {name}
           </h2>
-          <LockedDashboard user={user} project={project} isSharedProject={isSharedProject} />
+          <LockedDashboard user={user} project={project} />
         </div>
         {!embedded && <Footer authenticated={authenticated} minimal />}
       </>
@@ -4167,7 +4164,8 @@ const ViewProject = ({
                       )}
                     </>
                   )}
-                {activeTab === PROJECT_TABS.alerts && (isSharedProject || !project?.isOwner || !authenticated) && (
+                {/* TODO: PROPERLY CHECK IF PROJECT IS SHARED */}
+                {activeTab === PROJECT_TABS.alerts && (!project?.isOwner || !authenticated) && (
                   <div className='mt-5 rounded-xl bg-gray-700 p-5'>
                     <div className='flex items-center text-gray-50'>
                       <BellIcon className='mr-2 h-8 w-8' />
@@ -4593,7 +4591,8 @@ const ViewProject = ({
                     {!errorLoading && _isEmpty(activeError) && <NoErrorDetails />}
                   </>
                 )}
-                {activeTab === PROJECT_TABS.alerts && !isSharedProject && project?.isOwner && authenticated && (
+                {/* TODO: PROPERLY CHECK IF PROJECT IS SHARED */}
+                {activeTab === PROJECT_TABS.alerts && project?.isOwner && authenticated && (
                   <ProjectAlertsView projectId={id} />
                 )}
                 {activeTab === PROJECT_TABS.uptime && <Uptime />}

@@ -9,10 +9,9 @@ import routes from 'utils/routes'
 interface ILockedDashboard {
   user?: IUser
   project: IProjectForShared
-  isSharedProject: boolean
 }
 
-const LockedDashboard = ({ user, project, isSharedProject }: ILockedDashboard) => {
+const LockedDashboard = ({ user, project }: ILockedDashboard) => {
   const { t } = useTranslation('common')
 
   const message = useMemo(() => {
@@ -31,12 +30,13 @@ const LockedDashboard = ({ user, project, isSharedProject }: ILockedDashboard) =
       }
     }
 
-    if (isSharedProject) {
+    // TODO: PROPERLY CHECK IF PROJECT IS SHARED
+    if (!project.isOwner) {
       return t('project.locked.descSharedProject')
     }
 
     return t('project.locked.descGenericIssue')
-  }, [t, user, project, isSharedProject])
+  }, [t, user, project])
 
   return (
     <div className='px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>

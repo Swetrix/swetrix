@@ -212,9 +212,11 @@ const ProjectCard = ({
           </div>
         </div>
         <div className='mt-1 flex flex-shrink-0 flex-wrap gap-2'>
-          {badges.map((badge) => (
-            <Badge key={badge.label} {...badge} />
-          ))}
+          {badges.length > 0 ? (
+            badges.map((badge) => <Badge key={badge.label} {...badge} />)
+          ) : (
+            <Badge label='I' colour='slate' className='invisible' />
+          )}
         </div>
         <div className='mt-4 flex flex-shrink-0 gap-5'>
           {birdseye[id] && (
