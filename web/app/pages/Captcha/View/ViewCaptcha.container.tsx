@@ -2,12 +2,12 @@ import { connect } from 'react-redux'
 import UIActions from 'redux/reducers/ui'
 import { StateType, AppDispatch } from 'redux/store'
 
-import { ICaptchaProject } from 'redux/models/IProject'
+import { IProject } from 'redux/models/IProject'
 import ViewCaptcha from './ViewCaptcha'
 
 const mapStateToProps = (state: StateType) => ({
-  projects: state.ui.projects.captchaProjects,
-  isLoading: state.ui.projects.isLoadingCaptcha,
+  projects: state.ui.projects.projects,
+  isLoading: state.ui.projects.isLoading,
   cache: state.ui.cache.captchaAnalytics,
   projectViewPrefs: state.ui.cache.captchaProjectsViewPrefs,
   authenticated: state.auth.authenticated,
@@ -26,8 +26,8 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
       }),
     )
   },
-  setProjects: (project: ICaptchaProject[]) => {
-    dispatch(UIActions.setCaptchaProjects(project))
+  setProjects: (projects: IProject[]) => {
+    dispatch(UIActions.setProjects({ projects }))
   },
   setProjectViewPrefs: (pid: string, period: string, timeBucket: string, rangeDate?: Date[] | null) => {
     dispatch(

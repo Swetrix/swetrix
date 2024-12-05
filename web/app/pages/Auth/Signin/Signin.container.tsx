@@ -20,7 +20,6 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
   loginSuccess: (user: IUser) => {
     dispatch(authActions.loginSuccessful(user))
     dispatch(sagaActions.loadProjects())
-    dispatch(sagaActions.loadSharedProjects())
   },
   authSSO: (provider: string, dontRemember: boolean, t: typeof i18next.t, callback: (res: any) => void) => {
     dispatch(sagaActions.authSSO(provider, dontRemember, t, callback))

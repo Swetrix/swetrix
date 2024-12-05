@@ -19,16 +19,6 @@ const loadUsageinfo = () => ({
   type: types.LOAD_USAGEINFO,
 })
 
-const loadSharedProjects = (take?: number, skip?: number, search?: string) => ({
-  type: types.LOAD_SHARED_PROJECTS,
-  payload: { take, skip, search },
-})
-
-const loadProjectsCaptcha = (take?: number, skip?: number, search?: string) => ({
-  type: types.LOAD_PROJECTS,
-  payload: { take, skip, isCaptcha: true, search },
-})
-
 const loadExtensions = () => ({
   type: types.LOAD_EXTENSIONS,
 })
@@ -179,8 +169,6 @@ const updateShowLiveVisitorsInTitle = (show: boolean, callback: (isSuccess: bool
 
 const sagaActions = {
   loadProjects,
-  loadSharedProjects,
-  loadProjectsCaptcha,
   loadExtensions,
   loadProjectAlerts,
   loginAsync,

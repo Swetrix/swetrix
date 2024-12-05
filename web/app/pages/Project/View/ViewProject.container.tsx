@@ -1,6 +1,5 @@
 import { connect } from 'react-redux'
 import UIActions from 'redux/reducers/ui'
-import { tabForSharedProject } from 'redux/constants'
 import { StateType, AppDispatch } from 'redux/store'
 import { IProject } from 'redux/models/IProject'
 import { ISharedProject } from 'redux/models/ISharedProject'
@@ -8,31 +7,8 @@ import { ISharedProject } from 'redux/models/ISharedProject'
 import ViewProject from './ViewProject'
 
 const mapStateToProps = (state: StateType) => {
-  if (state.ui.projects.dashboardTabs === tabForSharedProject) {
-    return {
-      projects: state.ui.projects.projects,
-      sharedProjects: state.ui.projects.sharedProjects,
-      isLoading: state.ui.projects.isLoadingShared,
-      cache: state.ui.cache.analytics,
-      cachePerf: state.ui.cache.analyticsPerf,
-      cacheFunnels: state.ui.cache.funnels,
-      projectViewPrefs: state.ui.cache.projectViewPrefs,
-      authenticated: state.auth.authenticated,
-      authLoading: state.auth.loading,
-      timezone: state.auth.user.timezone,
-      extensions: state.ui.misc.extensions,
-      user: state.auth.user,
-      projectTab: state.ui.projects.projectTab,
-      customEventsPrefs: state.ui.cache.customEventsPrefs,
-      liveStats: state.ui.projects.liveStats,
-      password: state.ui.projects.password,
-      theme: state.ui.theme.theme,
-    }
-  }
-
   return {
     projects: state.ui.projects.projects,
-    sharedProjects: state.ui.projects.sharedProjects,
     isLoading: state.ui.projects.isLoading,
     authLoading: state.auth.loading,
     cache: state.ui.cache.analytics,
@@ -96,11 +72,10 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
       }),
     )
   },
-  setProjects: (project: Partial<IProject | ISharedProject>[], shared?: boolean) => {
+  setProjects: (project: Partial<IProject | ISharedProject>[]) => {
     dispatch(
       UIActions.setProjects({
         projects: project,
-        shared,
       }),
     )
   },

@@ -28,7 +28,7 @@ import {
 } from 'redux/constants'
 import { IProject } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
-import { IProjectForShared, ISharedProject } from 'redux/models/ISharedProject'
+import { IProjectForShared } from 'redux/models/ISharedProject'
 import {
   updateProject,
   deleteProject,
@@ -259,34 +259,26 @@ interface IForm extends Partial<IProject> {
 const DEFAULT_PROJECT_NAME = 'Untitled Project'
 
 interface IProjectSettings {
-  loadProjects: (shared: boolean, skip: number) => void
+  loadProjects: (skip: number) => void
   isLoading: boolean
-  isLoadingShared: boolean
   projects: IProject[]
-  removeProject: (pid: string, shared: boolean) => void
+  removeProject: (pid: string) => void
   user: IUser
-  isSharedProject: boolean
-  sharedProjects: ISharedProject[]
   deleteProjectCache: (pid: string) => void
   setProjectProtectedPassword: (pid: string, password: string) => void
   dashboardPaginationPage: number
-  dashboardPaginationPageShared: number
   authLoading: boolean
 }
 
 const ProjectSettings = ({
   loadProjects,
   isLoading,
-  isLoadingShared,
   projects,
   removeProject,
   user,
-  isSharedProject,
-  sharedProjects,
   deleteProjectCache,
   setProjectProtectedPassword,
   dashboardPaginationPage,
-  dashboardPaginationPageShared,
   authLoading,
 }: IProjectSettings) => {
   const {
@@ -295,10 +287,8 @@ const ProjectSettings = ({
   } = useTranslation('common')
   const { id } = useRequiredParams<{ id: string }>()
   const project: IProjectForShared = useMemo(
-    () =>
-      _find([...projects, ..._map(sharedProjects, (item) => item.project)], (p) => p.id === id) ||
-      ({} as IProjectForShared),
-    [projects, id, sharedProjects],
+    () => _find(projects, (p) => p.id === id) || ({} as IProjectForShared),
+    [projects, id],
   )
   const navigate = useNavigate()
   const { requestOrigin } = useLoaderData<{ requestOrigin: string | null }>()
@@ -336,9 +326,7 @@ const ProjectSettings = ({
   const [activeFilter, setActiveFilter] = useState<string[]>([])
   const [filterType, setFilterType] = useState<string>('')
 
-  const paginationSkip: number = isSharedProject
-    ? dashboardPaginationPageShared * ENTRIES_PER_PAGE_DASHBOARD
-    : dashboardPaginationPage * ENTRIES_PER_PAGE_DASHBOARD
+  const paginationSkip = dashboardPaginationPage * ENTRIES_PER_PAGE_DASHBOARD
 
   const botsProtectionLevels = useMemo(() => {
     return [
@@ -380,7 +368,7 @@ const ProjectSettings = ({
       navigate(routes.dashboard)
     }
 
-    if (!isLoading && !isLoadingShared && !projectDeleting) {
+    if (!isLoading && !projectDeleting) {
       if (_isEmpty(project) || project?.uiHidden) {
         toast.error(t('project.noExist'))
         navigate(routes.dashboard)
@@ -393,7 +381,7 @@ const ProjectSettings = ({
         setInitialised(true)
       }
     }
-  }, [user, project, initialised, isLoading, navigate, projectDeleting, t, authLoading, isLoadingShared])
+  }, [user, project, initialised, isLoading, navigate, projectDeleting, t, authLoading])
 
   const onSubmit = async (data: IForm) => {
     if (!projectSaving) {
@@ -418,7 +406,7 @@ const ProjectSettings = ({
         await updateProject(id, formalisedData as Partial<IProject>)
         toast.success(t('project.settings.updated'))
 
-        loadProjects(isSharedProject, paginationSkip)
+        loadProjects(paginationSkip)
       } catch (reason: any) {
         toast.error(reason)
       } finally {
@@ -433,7 +421,7 @@ const ProjectSettings = ({
       setProjectDeleting(true)
       try {
         await deleteProject(id)
-        removeProject(id, isSharedProject)
+        removeProject(id)
         toast.success(t('project.settings.deleted'))
         navigate(routes.dashboard)
       } catch (reason: any) {
@@ -791,7 +779,7 @@ const ProjectSettings = ({
         {!isSelfhosted && (
           <>
             <hr className='mt-2 border-gray-200 dark:border-gray-600 sm:mt-5' />
-            <People project={project} isSharedProject={isSharedProject} />
+            <People project={project} />
           </>
         )}
       </form>

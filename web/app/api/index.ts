@@ -16,7 +16,6 @@ import { IUser } from 'redux/models/IUser'
 import { IAuth } from 'redux/models/IAuth'
 import { IProject, IOverall } from 'redux/models/IProject'
 import { IAlerts } from 'redux/models/IAlerts'
-import { ISharedProject } from 'redux/models/ISharedProject'
 import { ISubscribers } from 'redux/models/ISubscribers'
 import { IFilter, IProjectViewCustomEvent } from 'pages/Project/View/interfaces/traffic'
 import { AIResponse } from 'pages/Project/View/interfaces/ai'
@@ -262,9 +261,9 @@ export const verifyShare = ({ path, id }: { path: string; id: string }) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getProjects = (take: number = 0, skip: number = 0, isCaptcha: boolean = false, search?: string) =>
+export const getProjects = (take: number = 0, skip: number = 0, search?: string) =>
   api
-    .get(`/project?take=${take}&skip=${skip}&isCaptcha=${isCaptcha}&search=${search}`)
+    .get(`/project?take=${take}&skip=${skip}&search=${search}`)
     .then(
       (
         response,
@@ -320,23 +319,6 @@ export const removeProjectFromOrganisation = (organisationId: string, projectId:
   api
     .delete(`/project/organisation/${organisationId}/${projectId}`)
     .then((response) => response.data)
-    .catch((error) => {
-      debug('%s', error)
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const getSharedProjects = (take: number = 0, skip: number = 0, search?: string) =>
-  api
-    .get(`/project/shared?take=${take}&skip=${skip}&search=${search}`)
-    .then(
-      (
-        response,
-      ): {
-        results: ISharedProject[]
-        total: number
-        page_total: number
-      } => response.data,
-    )
     .catch((error) => {
       debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message

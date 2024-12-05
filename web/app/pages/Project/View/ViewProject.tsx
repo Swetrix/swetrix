@@ -298,7 +298,6 @@ interface IViewProject {
   authenticated: boolean
   user: IUser
   timezone: string
-  sharedProjects: ISharedProject[]
   projectTab: string
   setProjectTab: (tab: string) => void
   // eslint-disable-next-line no-unused-vars, no-shadow
@@ -334,7 +333,6 @@ const ViewProject = ({
   authenticated: csrAuthenticated,
   timezone = DEFAULT_TIMEZONE,
   user,
-  sharedProjects,
   extensions,
   setProjectCachePerf,
   projectTab,
@@ -388,14 +386,9 @@ const ViewProject = ({
   // searchParams is a search params from react-router-dom
   const [searchParams, setSearchParams] = useSearchParams()
 
-  // find project by id from url from state in redux projects and sharedProjects. projects and sharedProjects loading from api in Saga on page load
   const project: IProjectForShared = useMemo(
-    () =>
-      _find(
-        [...projects, ..._map(sharedProjects, (item) => ({ ...item.project, role: item.role }))],
-        (p) => p.id === id,
-      ) || ({} as IProjectForShared),
-    [projects, id, sharedProjects],
+    () => _find(projects, (p) => p.id === id) || ({} as IProjectForShared),
+    [projects, id],
   )
 
   const projectPassword = useMemo(
@@ -403,13 +396,8 @@ const ViewProject = ({
     [id, password, queryPassword],
   )
 
-  /* isSharedProject is a boolean check if project is shared. If isSharedProject is true,
-  we used role and other colummn from sharedProjects.
-  And it is used for remove settings button when user have role viewer or logic with Alert tabs */
-  const isSharedProject = useMemo(() => {
-    const foundProject = _find([..._map(sharedProjects, (item) => item.project)], (p) => p.id === id)
-    return !_isEmpty(foundProject)
-  }, [id, sharedProjects])
+  // TODO: TEST
+  const isSharedProject = project.isOwner
 
   // areFiltersParsed used for check filters is parsed from url. If we have query params in url, we parse it and set to state
   // when areFiltersParsed and areFiltersPerfParsed changed we call loadAnalytics or loadAnalyticsPerf and other func for load data

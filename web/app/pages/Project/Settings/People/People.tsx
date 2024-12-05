@@ -38,23 +38,13 @@ interface IUsersList {
   data: IShareOwnerProject
   onRemove: (id: string) => void
   share?: IShareOwnerProject[]
-  setProjectShareData: (item: Partial<IProject>, id: string, shared: boolean) => void
+  setProjectShareData: (item: Partial<IProject>, id: string) => void
   pid: string
   language: string
   authedUserEmail: string | undefined
-  isSharedProject: boolean
 }
 
-const UsersList = ({
-  data,
-  onRemove,
-  share,
-  setProjectShareData,
-  pid,
-  language,
-  authedUserEmail,
-  isSharedProject,
-}: IUsersList) => {
+const UsersList = ({ data, onRemove, share, setProjectShareData, pid, language, authedUserEmail }: IUsersList) => {
   const { t } = useTranslation('common')
   const [open, setOpen] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -71,7 +61,7 @@ const UsersList = ({
         }
         return itShare
       })
-      setProjectShareData({ share: newShared }, pid, isSharedProject)
+      setProjectShareData({ share: newShared }, pid)
       toast.success(t('apiNotifications.roleUpdated'))
     } catch (reason) {
       console.error(`[ERROR] Error while updating user's role: ${reason}`)
@@ -180,10 +170,9 @@ const UsersList = ({
 
 interface IPeopleProps {
   project: IProject
-  setProjectShareData: (data: Partial<IProject>, projectId: string, share?: boolean) => void
+  setProjectShareData: (data: Partial<IProject>, projectId: string) => void
   isPaidTierUsed: boolean
   user: IUser
-  isSharedProject: boolean
 }
 
 const People: React.FunctionComponent<IPeopleProps> = ({
@@ -191,8 +180,7 @@ const People: React.FunctionComponent<IPeopleProps> = ({
   setProjectShareData,
   isPaidTierUsed,
   user: currentUser,
-  isSharedProject,
-}: IPeopleProps): JSX.Element => {
+}: IPeopleProps) => {
   const [showModal, setShowModal] = useState<boolean>(false)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState<boolean>(false)
   const {
@@ -357,7 +345,6 @@ const People: React.FunctionComponent<IPeopleProps> = ({
                           setProjectShareData={setProjectShareData}
                           pid={id}
                           authedUserEmail={currentUser?.email}
-                          isSharedProject={isSharedProject}
                         />
                       ))}
                     </tbody>

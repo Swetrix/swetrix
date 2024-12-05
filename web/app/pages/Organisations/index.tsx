@@ -31,6 +31,7 @@ import { acceptShareProject, createOrganisation, getOrganisations } from 'api'
 
 import Pagination from 'ui/Pagination'
 import { ISharedProject } from 'redux/models/ISharedProject'
+import { IProject } from 'redux/models/IProject'
 import { Organisation } from 'redux/models/Organisation'
 import Input from 'ui/Input'
 
@@ -41,8 +42,8 @@ interface OrganisationCardProps {
   confirmed?: boolean
   id: string
   sharedProjects: ISharedProject[]
-  setProjectsShareData: (data: Partial<ISharedProject>, id: string, shared?: boolean) => void
-  setUserShareData: (data: Partial<ISharedProject>, id: string) => void
+  setProjectsShareData: (data: Partial<IProject>, id: string) => void
+  setUserShareData: (data: Partial<IProject>, id: string) => void
   shared?: boolean
   isTransferring?: boolean
   getRole?: (id: string) => string | null
@@ -96,8 +97,8 @@ const OrganisationCard = ({
         throw new Error('Project not found')
       }
       await acceptShareProject(pid)
-      setProjectsShareData({ confirmed: true }, id, true)
-      setUserShareData({ confirmed: true }, pid)
+      setProjectsShareData({ isShareConfirmed: true }, id)
+      setUserShareData({ isShareConfirmed: true }, pid)
       toast.success(t('apiNotifications.acceptInvitation'))
     } catch (reason: any) {
       toast.error(t('apiNotifications.acceptInvitationError'))

@@ -17,8 +17,6 @@ export default function* initialise() {
 
     if (token && refreshToken) {
       yield put(sagaActions.loadProjects())
-      yield put(sagaActions.loadSharedProjects())
-      yield put(sagaActions.loadProjectsCaptcha())
       yield put(sagaActions.loadExtensions())
       yield put(sagaActions.loadProjectAlerts())
       yield put(sagaActions.loadMonitors())

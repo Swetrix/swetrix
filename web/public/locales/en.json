@@ -505,7 +505,6 @@
     "quitProjectTitle": "Quit {{project}}?",
     "shared": "Shared projects",
     "receiveLoginNotifications": "Receive login notifications",
-    "owned": "Owned projects",
     "sharedTable": {
       "project": "Project",
       "role": "Role",
@@ -640,6 +639,7 @@
   },
   "dashboard": {
     "uptime": "Uptime",
+    "captcha": "CAPTCHA",
     "newProject": "New project",
     "newFunnel": "New funnel",
     "reloadPage": "Reload page",

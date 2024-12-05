@@ -76,7 +76,7 @@ const PageLoader = () => (
 )
 
 interface IViewCaptcha {
-  projects: ICaptchaProject[]
+  projects: IProject[]
   isLoading: boolean
   cache: any
   setProjectCache: (pid: string, data: any, key: string) => void
@@ -85,7 +85,7 @@ interface IViewCaptcha {
   authenticated: boolean
   user: IUser
   // eslint-disable-next-line no-unused-vars, no-shadow
-  setProjects: (projects: ICaptchaProject[]) => void
+  setProjects: (projects: IProject[]) => void
   theme: ThemeType
   ssrTheme: ThemeType
 }

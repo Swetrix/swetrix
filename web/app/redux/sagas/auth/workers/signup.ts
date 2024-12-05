@@ -48,7 +48,6 @@ export default function* signupWorder({
     yield put(authActions.setDontRemember(dontRemember))
     // yield put(UIActions.setThemeType(response.theme))
     yield put(sagaActions.loadProjects())
-    yield put(sagaActions.loadSharedProjects())
     yield put(sagaActions.loadProjectAlerts())
     yield put(sagaActions.loadMonitors())
     callback(true)

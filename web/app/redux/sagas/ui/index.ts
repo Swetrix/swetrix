@@ -10,7 +10,6 @@ import loadExtensions from './load_extensions'
 import loadMetainfo from './load_metainfo'
 import loadUsageinfo from './load_usageinfo'
 import logout from './logout'
-import loadSharedProjects from './load_shared_projects'
 import loadProjectAlerts from './load_alerts'
 import loadMonitors from './load_monitors'
 
@@ -23,8 +22,6 @@ function* mainUISaga() {
   yield takeEvery(sagaTypes.LOAD_PROJECTS, loadProjects)
   yield takeEvery(sagaTypes.LOAD_METAINFO, loadMetainfo)
   yield takeEvery(sagaTypes.LOAD_USAGEINFO, loadUsageinfo)
-  // @ts-expect-error
-  yield takeEvery(sagaTypes.LOAD_SHARED_PROJECTS, loadSharedProjects)
   yield takeEvery(sagaTypes.LOAD_EXTENSIONS, loadExtensions)
   yield takeEvery(sagaTypes.LOGOUT, logout)
   // @ts-expect-error

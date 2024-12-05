@@ -9,18 +9,11 @@ import Dashboard from './Dashboard'
 
 const mapStateToProps = (state: StateType) => ({
   projects: state.ui.projects.projects,
-  sharedProjects: state.ui.projects.sharedProjects,
-  captchaProjects: state.ui.projects.captchaProjects,
   user: state.auth.user,
   isLoading: state.ui.projects.isLoading,
   total: state.ui.projects.total,
-  sharedTotal: state.ui.projects.sharedTotal,
-  captchaTotal: state.ui.projects.captchaTotal,
   error: state.ui.projects.error,
   dashboardPaginationPage: state.ui.projects.dashboardPaginationPage,
-  dashboardPaginationPageShared: state.ui.projects.dashboardPaginationPageShared,
-  dashboardPaginationPageCaptcha: state.ui.projects.dashboardPaginationPageCaptcha,
-  dashboardTabs: state.ui.projects.dashboardTabs,
   liveStats: state.ui.projects.liveStats,
   birdseye: state.ui.projects.birdseye,
 })
@@ -31,7 +24,6 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
       UIActions.setProjectsShareData({
         data,
         id,
-        shared,
       }),
     )
   },
@@ -46,23 +38,8 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
   loadProjects: (take: number, skip: number, search: string) => {
     dispatch(sagaActions.loadProjects(take, skip, search))
   },
-  loadSharedProjects: (take: number, skip: number, search: string) => {
-    dispatch(sagaActions.loadSharedProjects(take, skip, search))
-  },
   setDashboardPaginationPage: (page: number) => {
     dispatch(UIActions.setDashboardPaginationPage(page))
-  },
-  setDashboardPaginationPageShared: (page: number) => {
-    dispatch(UIActions.setDashboardPaginationPageShared(page))
-  },
-  setDashboardTabs: (tab: string) => {
-    dispatch(UIActions.setDashboardTabs(tab))
-  },
-  loadProjectsCaptcha: (take: number, skip: number, search: string) => {
-    dispatch(sagaActions.loadProjectsCaptcha(take, skip, search))
-  },
-  setDashboardPaginationPageCaptcha: (page: number) => {
-    dispatch(UIActions.setDashboardPaginationPageCaptcha(page))
   },
 })
 

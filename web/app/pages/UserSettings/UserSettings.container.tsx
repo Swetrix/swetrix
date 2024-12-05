@@ -60,11 +60,10 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
       }),
     )
   },
-  removeProject: (projectId: string) => {
+  removeProject: (pid: string) => {
     dispatch(
       UIActions.removeProject({
-        pid: projectId,
-        shared: true,
+        pid,
       }),
     )
   },
@@ -76,7 +75,6 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
       UIActions.setProjectsShareData({
         data,
         id,
-        shared: true,
       }),
     )
   },

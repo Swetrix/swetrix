@@ -510,30 +510,6 @@ export const roleAdmin: {
   description: 'Can manage the project',
 }
 
-export const tabForOwnedProject: string = 'owned'
-export const tabForSharedProject: string = 'shared'
-export const tabForCaptchaProject: string = 'captcha'
-
-interface IDashboardTabs {
-  name: string
-  label: string
-}
-
-export const tabsForDashboard: IDashboardTabs[] = [
-  {
-    name: tabForOwnedProject,
-    label: 'profileSettings.owned',
-  },
-  {
-    name: tabForSharedProject,
-    label: 'profileSettings.shared',
-  },
-  {
-    name: tabForCaptchaProject,
-    label: 'profileSettings.captcha',
-  },
-]
-
 const SELFHOSTED_PROJECT_TABS = {
   traffic: 'traffic',
   performance: 'performance',
@@ -555,12 +531,6 @@ const PRODUCTION_PROJECT_TABS = {
 export const PROJECT_TABS = (
   isSelfhosted ? SELFHOSTED_PROJECT_TABS : PRODUCTION_PROJECT_TABS
 ) as typeof PRODUCTION_PROJECT_TABS
-
-export const DASHBOARD_TABS: IStringObject = {
-  owned: 'owned',
-  shared: 'shared',
-  captcha: 'captcha',
-}
 
 export const QUERY_METRIC: IStringObject = {
   PAGE_VIEWS: 'page_views',
