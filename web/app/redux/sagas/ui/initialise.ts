@@ -1,5 +1,4 @@
 import { put, call } from 'redux-saga/effects'
-import Debug from 'debug'
 
 import { getAccessToken } from 'utils/accessToken'
 import { getRefreshToken } from 'utils/refreshToken'
@@ -7,8 +6,6 @@ import UIActions from 'redux/reducers/ui'
 import { isSelfhosted } from 'redux/constants'
 import sagaActions from '../actions'
 const { getLastPost } = require('api')
-
-const debug = Debug('swetrix:rx:s:initialise')
 
 export default function* initialise() {
   try {
@@ -31,7 +28,7 @@ export default function* initialise() {
       } = yield call(getLastPost)
       yield put(UIActions.setLastBlogPost(lastBlogPost))
     }
-  } catch (e) {
-    debug('An error occured whilst initialising: %s', e)
+  } catch (reason) {
+    console.error('An error occured whilst initialising:', reason)
   }
 }

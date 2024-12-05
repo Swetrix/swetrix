@@ -1,11 +1,8 @@
 import { put, call } from 'redux-saga/effects'
-import Debug from 'debug'
 
 import UIActions from 'redux/reducers/ui'
 import { isSelfhosted } from 'redux/constants'
 const { getInstalledExtensions } = require('api')
-
-const debug = Debug('swetrix:rx:s:load-extensions')
 
 export default function* loadExtensions() {
   if (isSelfhosted) {
@@ -21,6 +18,6 @@ export default function* loadExtensions() {
     // if (_isString(message)) {
     //   yield put(UIActions.setProjectsError(message))
     // }
-    debug('failed to load extensions: %s', message)
+    console.error('failed to load extensions:', message)
   }
 }

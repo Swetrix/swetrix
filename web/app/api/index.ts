@@ -2,7 +2,6 @@
 import axios, { AxiosResponse } from 'axios'
 import createAuthRefreshInterceptor from 'axios-auth-refresh'
 import { store } from 'redux/store'
-import Debug from 'debug'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
 import _isArray from 'lodash/isArray'
@@ -20,8 +19,6 @@ import { ISubscribers } from 'redux/models/ISubscribers'
 import { IFilter, IProjectViewCustomEvent } from 'pages/Project/View/interfaces/traffic'
 import { AIResponse } from 'pages/Project/View/interfaces/ai'
 import { Monitor, MonitorOverall } from 'redux/models/Uptime'
-
-const debug = Debug('swetrix:api')
 
 const api = axios.create({
   baseURL: API_URL,
@@ -72,7 +69,6 @@ export const authMe = () =>
     .get('user/me')
     .then((response): IUser => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -89,7 +85,6 @@ export const logoutApi = (refreshToken: string | null) =>
       return response.data
     })
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -98,7 +93,6 @@ export const logoutAllApi = () =>
     .post(`${API_URL}v1/auth/logout-all`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw new Error(error.respon)
     })
 
@@ -107,7 +101,6 @@ export const login = (credentials: { email: string; password: string }) =>
     .post('v1/auth/login', credentials)
     .then((response): IAuth => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -200,7 +193,6 @@ export const forgotPassword = (email: { email: string }) =>
     .post('v1/auth/reset-password', email)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -209,7 +201,6 @@ export const confirmEmail = () =>
     .post('/user/confirm_email')
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -218,7 +209,6 @@ export const exportUserData = () =>
     .get('/user/export')
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -239,7 +229,6 @@ export const verifyEmail = ({ id }: { id: string }) =>
     .get(`v1/auth/verify-email/${id}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -248,7 +237,6 @@ export const confirmChangeEmail = ({ id }: { id: string }) =>
     .get(`v1/auth/change-email/confirm/${id}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -257,7 +245,6 @@ export const verifyShare = ({ path, id }: { path: string; id: string }) =>
     .get(`/project/${path}/${id}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -275,7 +262,6 @@ export const getProjects = (take: number = 0, skip: number = 0, search?: string)
       } => response.data,
     )
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -284,7 +270,6 @@ export const getOrganisations = (take: number = 0, skip: number = 0, search?: st
     .get(`/organisation?take=${take}&skip=${skip}&search=${search}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -293,7 +278,6 @@ export const getOrganisation = (id: string) =>
     .get(`/organisation/${id}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -302,7 +286,6 @@ export const createOrganisation = (name: string) =>
     .post('/organisation', { name })
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -311,7 +294,6 @@ export const addProjectToOrganisation = (organisationId: string, projectId: stri
     .post(`/project/organisation/${organisationId}`, { projectId })
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -320,7 +302,6 @@ export const removeProjectFromOrganisation = (organisationId: string, projectId:
     .delete(`/project/organisation/${organisationId}/${projectId}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -334,7 +315,6 @@ export const getProject = (pid: string, isCaptcha: boolean = false, password?: s
     })
     .then((response): IProject => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -343,7 +323,6 @@ export const createProject = (data: { name: string; organisationId?: string; isC
     .post('/project', data)
     .then((response): IProject => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -352,7 +331,6 @@ export const updateProject = (id: string, data: Partial<IProject>) =>
     .put(`/project/${id}`, data)
     .then((response): IProject => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -361,7 +339,6 @@ export const deleteProject = (id: string) =>
     .delete(`/project/${id}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -370,7 +347,6 @@ export const deleteCaptchaProject = (id: string) =>
     .delete(`project/captcha/${id}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -379,7 +355,6 @@ export const resetProject = (id: string) =>
     .delete(`/project/reset/${id}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -388,7 +363,6 @@ export const resetCaptchaProject = (id: string) =>
     .delete(`project/captcha/reset/${id}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -417,7 +391,6 @@ export const getProjectData = (
     )
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -442,7 +415,6 @@ export const getCustomEventsMetadata = (
     )
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -470,7 +442,6 @@ export const getPropertyMetadata = (
     )
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -498,7 +469,6 @@ export const getTrafficCompareData = (
     )
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -526,7 +496,6 @@ export const getPerformanceCompareData = (
     )
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -554,7 +523,6 @@ export const getPerfData = (
     )
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -582,7 +550,6 @@ export const getSessions = (
     )
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -611,7 +578,6 @@ export const getErrors = (
     )
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -624,7 +590,6 @@ export const getSession = (pid: string, psid: string, timezone: string = '', pas
     })
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -649,7 +614,6 @@ export const getError = (
     )
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw error.response
     })
 
@@ -670,7 +634,6 @@ export const getFunnelData = (
     })
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -683,7 +646,6 @@ export const getFunnels = (pid: string, password: string | undefined = '') =>
     })
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -696,7 +658,6 @@ export const getProjectViews = (pid: string, password: string | undefined = '') 
     })
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -711,7 +672,6 @@ export const createProjectView = (
     .post(`project/${pid}/views`, { name, type, filters, customEvents })
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -726,7 +686,6 @@ export const updateProjectView = (
     .patch(`project/${pid}/views/${viewId}`, { name, filters, customEvents })
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -735,7 +694,6 @@ export const deleteProjectView = (pid: string, viewId: string) =>
     .delete(`project/${pid}/views/${viewId}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -755,7 +713,6 @@ export const getCaptchaData = (
     )
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -781,7 +738,6 @@ export const getOverallStats = (
     )
     .then((response): IOverall => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -808,7 +764,6 @@ export const getPerformanceOverallStats = (
     )
     .then((response): IOverall => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -828,7 +783,6 @@ export const getOverallStatsCaptcha = (
     )
     .then((response): IOverall => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -841,7 +795,6 @@ export const getLiveVisitors = (pids: string[], password?: string) =>
     })
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -850,7 +803,6 @@ export const getGeneralStats = () =>
     .get('log/generalStats')
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -865,7 +817,6 @@ export const shareProject = (
     .post(`/project/${pid}/share`, data)
     .then((response): IProject => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -874,7 +825,6 @@ export const deleteShareProjectUsers = (pid: string, userId: string) =>
     .delete(`/project/${pid}/${userId}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -883,7 +833,6 @@ export const deleteShareProject = (pid: string) =>
     .delete(`user/share/${pid}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -892,7 +841,6 @@ export const acceptShareProject = (id: string) =>
     .get(`user/share/${id}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -906,7 +854,6 @@ export const changeShareRole = (
     .put(`project/share/${id}`, data)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -915,7 +862,6 @@ export const generate2FA = () =>
     .post('2fa/generate')
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -924,7 +870,6 @@ export const enable2FA = (twoFactorAuthenticationCode: string) =>
     .post('2fa/enable', { twoFactorAuthenticationCode })
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -933,7 +878,6 @@ export const disable2FA = (twoFactorAuthenticationCode: string) =>
     .post('2fa/disable', { twoFactorAuthenticationCode })
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -942,7 +886,6 @@ export const submit2FA = (twoFactorAuthenticationCode: string) =>
     .post('2fa/authenticate', { twoFactorAuthenticationCode })
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -957,7 +900,6 @@ export const generateApiKey = () =>
       } => response.data,
     )
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -966,7 +908,6 @@ export const deleteApiKey = () =>
     .delete('user/api-key')
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -975,7 +916,6 @@ export const getInstalledExtensions = (limit = 100, offset = 0) =>
     .get(`/extensions/installed?limit=${limit}&offset=${offset}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -996,7 +936,6 @@ export const getLiveVisitorsInfo = (pid: string, password?: string) =>
     })
     .then((response): IGetLiveVisitorsInfo[] => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1005,7 +944,6 @@ export const removeTgIntegration = (tgID: string) =>
     .delete(`user/tg/${tgID}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1022,7 +960,6 @@ export const getAlerts = (take: number = DEFAULT_ALERTS_TAKE, skip: number = 0) 
       } => response.data,
     )
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1033,7 +970,6 @@ export const createAlert = (data: ICreateAlert) =>
     .post('alert', data)
     .then((response): IAlerts => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1042,7 +978,6 @@ export const updateAlert = (id: string, data: Partial<IAlerts>) =>
     .put(`alert/${id}`, data)
     .then((response): IAlerts => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1051,7 +986,6 @@ export const deleteAlert = (id: string) =>
     .delete(`alert/${id}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1070,7 +1004,6 @@ export const getAllMonitors = (take: number = DEFAULT_MONITORS_TAKE, skip: numbe
       } => response.data,
     )
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1087,7 +1020,6 @@ export const getProjectMonitors = (projectId: string, take: number = DEFAULT_MON
       } => response.data,
     )
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1113,7 +1045,6 @@ export const getMonitorOverallStats = (
     )
     .then((response): MonitorOverall => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1138,7 +1069,6 @@ export const getMonitorStats = (
     )
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1147,7 +1077,6 @@ export const createMonitor = (pid: string, data: ICreateMonitor) =>
     .post(`project/${pid}/monitor`, data)
     .then((response): Monitor => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1156,7 +1085,6 @@ export const updateMonitor = (pid: string, id: string, data: Partial<Monitor>) =
     .patch(`project/${pid}/monitor/${id}`, data)
     .then((response): Monitor => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1165,7 +1093,6 @@ export const deleteMonitor = (pid: string, id: string) =>
     .delete(`project/${pid}/monitor/${id}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1174,7 +1101,6 @@ export const reGenerateCaptchaSecretKey = (pid: string) =>
     .post(`project/secret-gen/${pid}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1189,7 +1115,6 @@ export const addSubscriber = (
     .post(`project/${id}/subscribers`, data)
     .then((response): ISubscribers => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1198,7 +1123,6 @@ export const addFunnel = (pid: string, name: string, steps: string[]) =>
     .post('project/funnel', { pid, name, steps })
     .then((response): any => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1207,7 +1131,6 @@ export const updateFunnel = (id: string, pid: string, name: string, steps: strin
     .patch('project/funnel', { id, name, steps, pid })
     .then((response): any => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1216,7 +1139,6 @@ export const deleteFunnel = (id: string, pid: string) =>
     .delete(`project/funnel/${id}/${pid}`)
     .then((response): any => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1232,7 +1154,6 @@ export const getSubscribers = (id: string, offset: number, limit: number) =>
       } => response.data,
     )
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1247,7 +1168,6 @@ export const updateSubscriber = (
     .patch(`project/${id}/subscribers/${subscriberId}`, data)
     .then((response): ISubscribers => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1256,7 +1176,6 @@ export const removeSubscriber = (id: string, subscriberId: string) =>
     .delete(`project/${id}/subscribers/${subscriberId}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1265,7 +1184,6 @@ export const confirmSubscriberInvite = (id: string, token: string) =>
     .get(`project/${id}/subscribers/invite?token=${token}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1293,7 +1211,6 @@ export const getProjectDataCustomEvents = (
     )
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1305,7 +1222,6 @@ export const transferProject = (uuid: string, email: string) =>
     })
     .then((response): unknown => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1314,7 +1230,6 @@ export const rejectTransferProject = (uuid: string) =>
     .delete(`project/transfer?token=${uuid}`)
     .then((response): unknown => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1323,7 +1238,6 @@ export const confirmTransferProject = (uuid: string) =>
     .get(`project/transfer?token=${uuid}`)
     .then((response): unknown => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1334,7 +1248,6 @@ export const generateSSOAuthURL = (provider: string) =>
     })
     .then((response): unknown => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1343,7 +1256,6 @@ export const getJWTBySSOHash = (hash: string, provider: string, refCode?: string
     .post('v1/auth/sso/hash', { hash, provider, refCode })
     .then((response): unknown => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1352,7 +1264,6 @@ export const linkBySSOHash = (hash: string, provider: string) =>
     .post('v1/auth/sso/link_by_hash', { hash, provider })
     .then((response): unknown => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1361,7 +1272,6 @@ export const unlinkSSO = (provider: string) =>
     .delete('v1/auth/sso/unlink', { data: { provider } })
     .then((response): unknown => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1370,7 +1280,6 @@ export const processSSOToken = (token: string, hash: string) =>
     .post('v1/auth/sso/process-token', { token, hash })
     .then((response): unknown => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1385,7 +1294,6 @@ export const deletePartially = (
     .delete(`project/partially/${id}?from=${data.from}&to=${data.to}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1412,7 +1320,6 @@ export const getUserFlow = (
     )
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1425,7 +1332,6 @@ export const checkPassword = (pid: string, password: string) =>
     })
     .then((response): Boolean => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1434,7 +1340,6 @@ export const getPaymentMetainfo = () =>
     .get('user/metainfo')
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1443,7 +1348,6 @@ export const getUsageInfo = () =>
     .get('user/usageinfo')
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1456,7 +1360,6 @@ export const getFilters = (pid: string, type: string, password = '') =>
     })
     .then((response): string[] => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw error
     })
 
@@ -1469,7 +1372,6 @@ export const getErrorsFilters = (pid: string, type: string, password = '') =>
     })
     .then((response): string[] => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw error
     })
 
@@ -1478,7 +1380,6 @@ export const resetFilters = (pid: string, type: string, filters: string[]) =>
     .delete(`project/reset-filters/${pid}?type=${type}&filters=${JSON.stringify(filters)}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw error
     })
 
@@ -1487,7 +1388,6 @@ export const receiveLoginNotification = (receiveLoginNotifications: boolean) =>
     .post('user/recieve-login-notifications', { receiveLoginNotifications })
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw error
     })
 
@@ -1496,7 +1396,6 @@ export const setPaypalEmail = (paypalPaymentsEmail: string | null) =>
     .patch('user/set-paypal-email', { paypalPaymentsEmail })
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw error
     })
 
@@ -1505,7 +1404,6 @@ export const previewSubscriptionUpdate = (planId: number) =>
     .post('user/preview-plan', { planId })
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw error
     })
 
@@ -1514,7 +1412,6 @@ export const changeSubscriptionPlan = (planId: number) =>
     .post('user/change-plan', { planId })
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw error
     })
 
@@ -1523,7 +1420,6 @@ export const getBlogPosts = () =>
     .get('v1/blog')
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw error
     })
 
@@ -1532,7 +1428,6 @@ export const getBlogPost = (slug: string) =>
     .get(`v1/blog/${slug}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw error
     })
 
@@ -1541,7 +1436,6 @@ export const getSitemap = () =>
     .get('v1/blog/sitemap')
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw error
     })
 
@@ -1550,7 +1444,6 @@ export const getBlogPostWithCategory = (category: string, slug: string) =>
     .get(`v1/blog/${category}/${slug}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw error
     })
 
@@ -1566,7 +1459,6 @@ export const getLastPost = () =>
       } => response.data,
     )
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1575,7 +1467,6 @@ export const unsubscribeFromEmailReports = (token: string) =>
     .get(`user/unsubscribe/${token}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw error
     })
 
@@ -1584,7 +1475,6 @@ export const unsubscribeFromEmailReports3rdParty = (token: string) =>
     .get(`project/unsubscribe/${token}`)
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw error
     })
 
@@ -1593,7 +1483,6 @@ export const updateErrorStatus = (pid: string, status: 'resolved' | 'active', ei
     .patch('log/error-status', { pid, eid, eids, status })
     .then((response): any => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
@@ -1606,6 +1495,5 @@ export const getDetailsPrediction = (pid: string, password: string | undefined =
     })
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
