@@ -226,7 +226,7 @@ const ProjectCard = ({
               percChange={calculateRelativePercentage(birdseye[id].previous.all, birdseye[id].current.all)}
             />
           )}
-          {project.isCaptchaProject && <MiniCard labelTKey='dashboard.liveVisitors' total={live} />}
+          {project.isAnalyticsProject && <MiniCard labelTKey='dashboard.liveVisitors' total={live} />}
         </div>
       </div>
       {!project.isOwner && !project.isShareConfirmed && (
