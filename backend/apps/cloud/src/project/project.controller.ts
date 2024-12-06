@@ -170,8 +170,6 @@ export class ProjectController {
         _map(paginated.results, ({ id }) => id),
       )
 
-    console.log('paginated.results:', paginated.results)
-
     paginated.results = _map(paginated.results, project => ({
       ...project,
       isOwner: project.admin.id === userId,
@@ -411,15 +409,10 @@ export class ProjectController {
       )
     }
 
-    const project = await this.projectService.findOne({
-      where: {
-        id: funnelDTO.pid,
-        admin: {
-          id: userId,
-        },
-      },
-      relations: ['admin', 'share'],
-    })
+    const project = await this.projectService.getFullProject(
+      funnelDTO.pid,
+      userId,
+    )
 
     if (!project) {
       throw new NotFoundException('Project not found.')
@@ -466,15 +459,11 @@ export class ProjectController {
       )
     }
 
-    const project = await this.projectService.findOne({
-      where: {
-        id: funnelDTO.pid,
-        admin: {
-          id: userId,
-        },
-      },
-      relations: ['admin', 'share', 'funnels'],
-    })
+    const project = await this.projectService.getFullProject(
+      funnelDTO.pid,
+      userId,
+      ['funnels'],
+    )
 
     if (!project) {
       throw new NotFoundException('Project not found.')
@@ -518,15 +507,7 @@ export class ProjectController {
       throw new UnauthorizedException('Please auth first')
     }
 
-    const project = await this.projectService.findOne({
-      where: {
-        id: pid,
-        admin: {
-          id: userId,
-        },
-      },
-      relations: ['admin', 'share'],
-    })
+    const project = await this.projectService.getFullProject(pid, userId)
 
     if (!project) {
       throw new NotFoundException('Project not found')
@@ -557,7 +538,7 @@ export class ProjectController {
       throw new UnauthorizedException('Please auth first')
     }
 
-    const project = await this.projectService.getProject(pid, userId)
+    const project = await this.projectService.getFullProject(pid, userId)
 
     if (!project) {
       throw new NotFoundException('Project not found.')
@@ -586,11 +567,7 @@ export class ProjectController {
     }
 
     const user = await this.userService.findOne({ where: { id: uid } })
-    const project = await this.projectService.findOne({
-      where: { id },
-      relations: ['admin'],
-      select: ['id'],
-    })
+    const project = await this.projectService.getFullProject(id)
 
     if (_isEmpty(project)) {
       throw new NotFoundException(`Project with ID ${id} does not exist`)
@@ -642,11 +619,7 @@ export class ProjectController {
     }
 
     const user = await this.userService.findOne({ where: { id: uid } })
-    const project = await this.projectService.findOne({
-      where: { id },
-      relations: ['admin'],
-      select: ['id'],
-    })
+    const project = await this.projectService.getFullProject(id)
 
     if (_isEmpty(project)) {
       throw new NotFoundException(`Project with ID ${id} does not exist`)
@@ -686,10 +659,7 @@ export class ProjectController {
       )
     }
 
-    const project = await this.projectService.findOne({
-      where: { id: pid },
-      relations: ['admin'],
-    })
+    const project = await this.projectService.getFullProject(pid)
     const user = await this.userService.findOne({ where: { id: uid } })
 
     if (_isEmpty(project)) {
@@ -727,11 +697,7 @@ export class ProjectController {
     }
 
     const user = await this.userService.findOne({ where: { id: uid } })
-    const project = await this.projectService.findOne({
-      where: { id },
-      relations: ['admin'],
-      select: ['id'],
-    })
+    const project = await this.projectService.getFullProject(id)
 
     if (_isEmpty(project)) {
       throw new NotFoundException(`Project with ID ${id} does not exist`)
@@ -803,10 +769,7 @@ export class ProjectController {
       throw new BadRequestException("The provided 'to' date is incorrect")
     }
 
-    const project = await this.projectService.findOne({
-      where: { id: pid },
-      relations: ['admin', 'share'],
-    })
+    const project = await this.projectService.getFullProject(pid)
 
     if (!project) {
       throw new NotFoundException('Project not found')
@@ -908,10 +871,7 @@ export class ProjectController {
       )
     }
 
-    const project = await this.projectService.findOne({
-      where: { id: pid },
-      relations: ['admin', 'share'],
-    })
+    const project = await this.projectService.getFullProject(pid)
 
     if (!project) {
       throw new NotFoundException('Project not found')
@@ -994,11 +954,7 @@ export class ProjectController {
             continue
           }
 
-          const project = await this.projectService.findOne({
-            where: { id: pid },
-            relations: ['admin', 'share', 'share.user'],
-            select: ['id', 'admin', 'share'],
-          })
+          const project = await this.projectService.getFullProject(pid)
 
           if (_isEmpty(project)) {
             this.logger.warn(`Project with ID ${pid} does not exist`)
@@ -1103,11 +1059,7 @@ export class ProjectController {
     }
 
     const user = await this.userService.findOne({ where: { id: uid } })
-    const project = await this.projectService.findOne({
-      where: { id: pid },
-      relations: ['admin', 'share', 'share.user'],
-      select: ['id', 'admin', 'share'],
-    })
+    const project = await this.projectService.getFullProject(pid)
 
     if (_isEmpty(project)) {
       throw new NotFoundException(`Project with ID ${pid} does not exist`)
@@ -1224,6 +1176,7 @@ export class ProjectController {
       throw new NotFoundException(`Share with ID ${shareId} does not exist`)
     }
 
+    // TODO: ORG
     this.projectService.allowedToManage(share.project, uid, user.roles)
 
     const adminShare = _find(
@@ -1340,9 +1293,10 @@ export class ProjectController {
       throw new BadRequestException('Invalid token.')
     }
 
-    const project = await this.projectService.getProjectById(
-      actionToken.newValue,
-    )
+    const project = await this.projectService.findOne({
+      where: { id: actionToken.newValue },
+      relations: ['admin'],
+    })
 
     if (!project) {
       throw new NotFoundException('Project not found.')
@@ -1374,9 +1328,9 @@ export class ProjectController {
       throw new BadRequestException('Invalid token.')
     }
 
-    const project = await this.projectService.getProjectById(
-      actionToken.newValue,
-    )
+    const project = await this.projectService.findOne({
+      where: { id: actionToken.newValue },
+    })
 
     if (!project) {
       throw new NotFoundException('Project not found.')
@@ -1396,10 +1350,7 @@ export class ProjectController {
       'DELETE /project/:projectId/subscribers/:subscriberId',
     )
 
-    const project = await this.projectService.findOne({
-      where: { id: params.projectId },
-      relations: ['share', 'share.user', 'admin'],
-    })
+    const project = await this.projectService.getFullProject(params.projectId)
 
     if (!project) {
       throw new NotFoundException('Project not found')
@@ -1437,10 +1388,7 @@ export class ProjectController {
   ) {
     this.logger.log({ params, body }, 'POST /project/:projectId/subscribers')
 
-    const project = await this.projectService.findOne({
-      where: { id: params.projectId },
-      relations: ['share', 'share.user', 'admin'],
-    })
+    const project = await this.projectService.getFullProject(params.projectId)
 
     if (!project) {
       throw new NotFoundException('Project not found')
@@ -1488,7 +1436,7 @@ export class ProjectController {
   ): Promise<boolean> {
     this.logger.log({ projectId }, 'GET /project/password/:projectId')
 
-    const project = await this.projectService.getProjectById(projectId)
+    const project = await this.projectService.getFullProject(projectId)
 
     if (!project) {
       throw new NotFoundException('Project not found.')
@@ -1513,7 +1461,10 @@ export class ProjectController {
       { params, queries },
       'GET /project/:projectId/subscribers/invite',
     )
-    const project = await this.projectService.getProjectById(params.projectId)
+
+    const project = await this.projectService.findOne({
+      where: { id: params.projectId },
+    })
 
     if (!project) {
       throw new NotFoundException('Project not found.')
@@ -1556,10 +1507,7 @@ export class ProjectController {
   ) {
     this.logger.log({ params, queries }, 'GET /project/:projectId/subscribers')
 
-    const project = await this.projectService.findOne({
-      where: { id: params.projectId },
-      relations: ['share', 'share.user', 'admin'],
-    })
+    const project = await this.projectService.getFullProject(params.projectId)
 
     if (!project) {
       throw new NotFoundException('Project not found')
@@ -1582,10 +1530,7 @@ export class ProjectController {
       'PATCH /project/:projectId/subscribers/:subscriberId',
     )
 
-    const project = await this.projectService.findOne({
-      where: { id: params.projectId },
-      relations: ['share', 'share.user', 'admin'],
-    })
+    const project = await this.projectService.getFullProject(params.projectId)
 
     if (!project) {
       throw new NotFoundException('Project not found')
@@ -1634,11 +1579,7 @@ export class ProjectController {
       )
     }
     const user = await this.userService.findOne({ where: { id: uid } })
-    const project = await this.projectService.findOne({
-      where: { id },
-      relations: ['admin'],
-      select: ['id'],
-    })
+    const project = await this.projectService.getFullProject(id)
 
     if (_isEmpty(project)) {
       throw new NotFoundException(`Project with ID ${id} does not exist`)
@@ -1802,10 +1743,7 @@ export class ProjectController {
     }
 
     this.projectService.validateProject(projectDTO)
-    const project = await this.projectService.findOne({
-      where: { id },
-      relations: ['admin', 'share', 'share.user'],
-    })
+    const project = await this.projectService.getFullProject(id)
     const user = await this.userService.findOne({ where: { id: uid } })
 
     if (_isEmpty(project)) {
@@ -1892,11 +1830,7 @@ export class ProjectController {
       )
     }
 
-    const project = await this.projectService.findOne({
-      where: { id: pid },
-      relations: ['admin', 'share', 'share.user'],
-      select: ['id', 'admin', 'share'],
-    })
+    const project = await this.projectService.getFullProject(pid)
 
     if (_isEmpty(project)) {
       throw new NotFoundException(`Project with ID ${pid} does not exist`)
@@ -1971,10 +1905,9 @@ export class ProjectController {
       )
     }
 
-    const project = await this.projectService.findOne({
-      where: { id },
-      relations: ['admin', 'share', 'share.user', 'funnels'],
-    })
+    const project = await this.projectService.getFullProject(id, null, [
+      'funnels',
+    ])
 
     if (_isEmpty(project)) {
       throw new NotFoundException('Project was not found in the database')
@@ -2016,10 +1949,7 @@ export class ProjectController {
     @CurrentUserId() userId: string,
     @Headers() headers: { 'x-password'?: string },
   ) {
-    const project = await this.projectService.findProject(params.projectId, [
-      'admin',
-      'share',
-    ])
+    const project = await this.projectService.getFullProject(params.projectId)
 
     if (!project) {
       throw new NotFoundException('Project not found.')
@@ -2044,10 +1974,7 @@ export class ProjectController {
     @Body() body: CreateProjectViewDto,
     @CurrentUserId() userId: string,
   ) {
-    const project = await this.projectService.findProject(params.projectId, [
-      'admin',
-      'share',
-    ])
+    const project = await this.projectService.getFullProject(params.projectId)
 
     if (!project) {
       throw new NotFoundException('Project not found.')
@@ -2086,10 +2013,7 @@ export class ProjectController {
     @CurrentUserId() userId: string,
     @Headers() headers: { 'x-password'?: string },
   ) {
-    const project = await this.projectService.findProject(params.projectId, [
-      'admin',
-      'share',
-    ])
+    const project = await this.projectService.getFullProject(params.projectId)
 
     if (!project) {
       throw new NotFoundException('Project not found.')
@@ -2111,10 +2035,7 @@ export class ProjectController {
     @Body() body: UpdateProjectViewDto,
     @CurrentUserId() userId: string,
   ) {
-    const project = await this.projectService.findProject(params.projectId, [
-      'admin',
-      'share',
-    ])
+    const project = await this.projectService.getFullProject(params.projectId)
 
     if (!project) {
       throw new NotFoundException('Project not found.')
@@ -2161,10 +2082,7 @@ export class ProjectController {
     @Param() params: ProjectViewIdsDto,
     @CurrentUserId() userId: string,
   ) {
-    const project = await this.projectService.findProject(params.projectId, [
-      'admin',
-      'share',
-    ])
+    const project = await this.projectService.getFullProject(params.projectId)
 
     if (!project) {
       throw new NotFoundException('Project not found')
@@ -2200,10 +2118,7 @@ export class ProjectController {
     @CurrentUserId() userId: string,
     @Headers() headers: { 'x-password'?: string },
   ) {
-    const project = await this.projectService.findProject(params.projectId, [
-      'admin',
-      'share',
-    ])
+    const project = await this.projectService.getFullProject(params.projectId)
 
     if (!project) {
       throw new NotFoundException('Project not found.')
@@ -2228,10 +2143,7 @@ export class ProjectController {
   ): Promise<Pagination<MonitorEntity>> {
     this.logger.log({ userId, take, skip }, 'GET /project/:projectId/monitors')
 
-    const project = await this.projectService.findProject(projectId, [
-      'admin',
-      'share',
-    ])
+    const project = await this.projectService.getFullProject(projectId)
 
     if (!project) {
       throw new NotFoundException('Project not found.')
@@ -2266,10 +2178,7 @@ export class ProjectController {
     @Body() body: CreateMonitorHttpRequestDTO,
     @CurrentUserId() userId: string,
   ): Promise<MonitorEntity> {
-    const project = await this.projectService.findProject(projectId, [
-      'admin',
-      'share',
-    ])
+    const project = await this.projectService.getFullProject(projectId)
 
     if (!project) {
       throw new NotFoundException('Project not found.')
@@ -2304,10 +2213,7 @@ export class ProjectController {
     @Param('monitorId') monitorId: number,
     @CurrentUserId() userId: string,
   ): Promise<MonitorEntity> {
-    const project = await this.projectService.findProject(projectId, [
-      'admin',
-      'share',
-    ])
+    const project = await this.projectService.getFullProject(projectId)
 
     if (!project) {
       throw new NotFoundException('Project not found.')
@@ -2341,10 +2247,7 @@ export class ProjectController {
     @Body() body: UpdateMonitorHttpRequestDTO,
     @CurrentUserId() userId: string,
   ): Promise<void> {
-    const project = await this.projectService.findProject(projectId, [
-      'admin',
-      'share',
-    ])
+    const project = await this.projectService.getFullProject(projectId)
 
     if (!project) {
       throw new NotFoundException('Project not found.')
@@ -2383,10 +2286,7 @@ export class ProjectController {
     @Param('monitorId') monitorId: number,
     @CurrentUserId() userId: string,
   ): Promise<void> {
-    const project = await this.projectService.findProject(projectId, [
-      'admin',
-      'share',
-    ])
+    const project = await this.projectService.getFullProject(projectId)
 
     if (!project) {
       throw new NotFoundException('Project not found.')

@@ -14,6 +14,8 @@ import {
   FindOneOptions,
   Repository,
   DeepPartial,
+  Brackets,
+  FindOptionsWhere,
 } from 'typeorm'
 import { customAlphabet } from 'nanoid'
 import handlebars from 'handlebars'
@@ -89,6 +91,7 @@ import { MonitorEntity } from './entity/monitor.entity'
 import { UpdateMonitorHttpRequestDTO } from './dto/update-monitor.dto'
 import { HttpRequestOptions } from './interfaces/http-request-options.interface'
 import { Organisation } from '../organisation/entity/organisation.entity'
+import { OrganisationRole } from '../organisation/entity/organisation-member.entity'
 
 dayjs.extend(utc)
 
@@ -323,6 +326,14 @@ export class ProjectService {
       project = await this.projectsRepository
         .createQueryBuilder('project')
         .leftJoinAndSelect('project.admin', 'admin')
+        .leftJoinAndSelect('project.organisation', 'organisation')
+        .leftJoinAndSelect(
+          'organisation.members',
+          'organisationMembers',
+          'organisationMembers.confirmed = :confirmed',
+          { confirmed: true },
+        )
+        .leftJoinAndSelect('organisationMembers.user', 'organisationUser')
         .select([
           'project.origins',
           'project.active',
@@ -337,6 +348,9 @@ export class ProjectService {
           'admin.roles',
           'admin.dashboardBlockReason',
           'admin.isAccountBillingSuspended',
+          'organisation.id',
+          'organisationMembers.role',
+          'organisationUser.id',
         ])
         .where('project.id = :pid', { pid })
         .getOne()
@@ -373,6 +387,35 @@ export class ProjectService {
     return project as Project
   }
 
+  // Instead of passing relations to the findOne method every time, this method returns a project
+  // with necessary relations needed for the allowedToView and allowedToManage methods
+  async getFullProject(
+    pid: string,
+    userId?: string,
+    additionalRelations: string[] = [],
+  ) {
+    const query: FindOneOptions<Project> = {
+      where: { id: pid },
+      relations: [
+        'share',
+        'share.user',
+        'admin',
+        'organisation',
+        'organisation.members',
+        ...additionalRelations,
+      ],
+    }
+
+    if (userId) {
+      query.where = {
+        id: pid,
+        admin: { id: userId },
+      } as FindOptionsWhere<Project>
+    }
+
+    return this.projectsRepository.findOne(query)
+  }
+
   async paginate(
     options: PaginationOptionsInterface,
     userId: string,
@@ -385,10 +428,20 @@ export class ProjectService {
       .leftJoinAndSelect('project.share', 'share')
       .leftJoinAndSelect('share.user', 'sharedUser')
       .leftJoinAndSelect('project.funnels', 'funnels')
-      .where('admin.id = :userId', { userId })
-      .orWhere('share.user.id = :userId', { userId })
+      .leftJoinAndSelect('project.organisation', 'organisation')
+      .leftJoinAndSelect('organisation.members', 'organisationMembers')
+      .leftJoinAndSelect('organisationMembers.user', 'organisationUser')
+      .where(
+        new Brackets(qb => {
+          qb.where('admin.id = :userId', { userId })
+            .orWhere('share.user.id = :userId', { userId })
+            .orWhere(
+              'organisationMembers.user.id = :userId AND organisationMembers.confirmed = :confirmed',
+              { userId, confirmed: true },
+            )
+        }),
+      )
 
-    // Add search condition if search term provided
     if (search?.trim()) {
       queryBuilder.andWhere('(project.name ILIKE :search)', {
         search: `%${search.trim()}%`,
@@ -400,7 +453,6 @@ export class ProjectService {
       .skip(options.skip || 0)
       .take(options.take || 100)
 
-    // Execute count and results queries
     const [results, total] = await queryBuilder.getManyAndCount()
 
     return new Pagination<Project>({
@@ -485,7 +537,11 @@ export class ProjectService {
     if (
       project.public ||
       uid === project.admin?.id ||
-      _findIndex(project.share, ({ user }) => user?.id === uid) !== -1
+      _findIndex(project.share, ({ user }) => user?.id === uid) !== -1 ||
+      _findIndex(
+        project.organisation?.members,
+        member => member.user?.id === uid,
+      ) !== -1
     ) {
       return null
     }
@@ -520,6 +576,13 @@ export class ProjectService {
       _findIndex(
         project.share,
         share => share.user?.id === uid && share.role === Role.admin,
+      ) !== -1 ||
+      _findIndex(
+        project.organisation?.members,
+        member =>
+          member.user?.id === uid &&
+          (member.role === OrganisationRole.admin ||
+            member.role === OrganisationRole.owner),
       ) !== -1
     ) {
       return null
@@ -911,16 +974,6 @@ export class ProjectService {
     await this.clearProjectsRedisCache(user.id)
   }
 
-  async getProject(projectId: string, userId: string) {
-    return this.projectsRepository.findOne({
-      where: {
-        id: projectId,
-        admin: { id: userId },
-      },
-      relations: ['admin'],
-    })
-  }
-
   async getPIDsWhereAnalyticsDataExists(
     projectIds: string[],
   ): Promise<string[]> {
@@ -1062,13 +1115,6 @@ export class ProjectService {
         projectName,
       },
     )
-  }
-
-  async getProjectById(projectId: string) {
-    return this.projectsRepository.findOne({
-      where: { id: projectId },
-      relations: ['admin'],
-    })
   }
 
   async findOneSubscriber(where: FindOneOptions<ProjectSubscriber>['where']) {
@@ -1385,10 +1431,6 @@ export class ProjectService {
 
   async updateProject(id: string, data: Partial<Project>) {
     await this.projectsRepository.update({ id }, data)
-  }
-
-  async findProject(id: string, relations: string[]) {
-    return this.projectsRepository.findOne({ relations, where: { id } })
   }
 
   filterUnsupportedColumns(
