@@ -47,8 +47,8 @@ const ProjectList = ({
   const onAccept = async () => {
     try {
       await acceptShareProject(id)
-      setProjectsShareData({ isShareConfirmed: true }, project.id)
-      setUserShareData({ isShareConfirmed: true }, id)
+      setProjectsShareData({ isAccessConfirmed: true }, project.id)
+      setUserShareData({ confirmed: true }, id)
       toast.success(t('apiNotifications.acceptInvitation'))
     } catch (e) {
       console.error(`[ERROR] Error while accepting project invitation: ${e}`)

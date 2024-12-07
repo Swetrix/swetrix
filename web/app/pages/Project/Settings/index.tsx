@@ -1,3 +1,3 @@
-import ProjectSettings from './ProjectSettings.container'
+import ProjectSettings from './ProjectSettings'
 
 export default ProjectSettings

@@ -154,10 +154,10 @@ export class ProjectController {
     @Query('search') search: string | undefined,
   ): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /project')
-    const [paginated, totalMonthlyEvents, user] = await Promise.all([
+
+    const [paginated, totalMonthlyEvents] = await Promise.all([
       this.projectService.paginate({ take, skip }, userId, search),
       this.projectService.getRedisCount(userId),
-      this.userService.findOne({ where: { id: userId } }),
     ])
 
     const pidsWithData =
@@ -170,17 +170,38 @@ export class ProjectController {
         _map(paginated.results, ({ id }) => id),
       )
 
-    paginated.results = _map(paginated.results, project => ({
-      ...project,
-      isOwner: project.admin.id === userId,
-      isShareConfirmed: true,
-      isLocked: !!user?.dashboardBlockReason,
-      isDataExists: _includes(pidsWithData, project?.id),
-      isErrorDataExists: _includes(pidsWithErrorData, project?.id),
-      organisationId: project?.organisation?.id,
-      passwordHash: undefined,
-      admin: undefined,
-    }))
+    paginated.results = _map(paginated.results, project => {
+      const userShare = project.share.find(share => share.user.id === userId)
+      const organisationMembership = project.organisation?.members.find(
+        member => member.user.id === userId,
+      )
+
+      let role
+      let isAccessConfirmed = true
+
+      if (project.admin.id === userId) {
+        role = 'owner'
+      } else if (userShare) {
+        role = userShare.role
+        isAccessConfirmed = userShare.confirmed
+      } else if (organisationMembership) {
+        role = organisationMembership.role
+        isAccessConfirmed = organisationMembership.confirmed
+      }
+
+      return {
+        ...project,
+        isOwner: project.admin.id === userId, // deprecated
+        isAccessConfirmed,
+        isLocked: !!project.admin?.dashboardBlockReason,
+        isDataExists: _includes(pidsWithData, project?.id),
+        isErrorDataExists: _includes(pidsWithErrorData, project?.id),
+        organisationId: project?.organisation?.id,
+        role,
+        passwordHash: undefined,
+        admin: undefined,
+      }
+    })
 
     return {
       ...paginated,
@@ -566,14 +587,11 @@ export class ProjectController {
       )
     }
 
-    const user = await this.userService.findOne({ where: { id: uid } })
-    const project = await this.projectService.getFullProject(id)
+    const project = await this.projectService.getOwnProject(id, uid)
 
     if (_isEmpty(project)) {
       throw new NotFoundException(`Project with ID ${id} does not exist`)
     }
-
-    this.projectService.allowedToManage(project, uid, user.roles)
 
     const queries = [
       'DELETE FROM analytics WHERE pid={pid:FixedString(12)}',
@@ -836,7 +854,7 @@ export class ProjectController {
 
     const organisation = await this.organisationService.findOne({
       where: { id: orgId },
-      relations: ['members', 'projects'],
+      relations: ['members', 'members.user', 'projects'],
     })
 
     if (_isEmpty(organisation)) {
@@ -1578,14 +1596,12 @@ export class ProjectController {
         'The provided Project ID (pid) is incorrect',
       )
     }
-    const user = await this.userService.findOne({ where: { id: uid } })
-    const project = await this.projectService.getFullProject(id)
+
+    const project = await this.projectService.getOwnProject(id, uid)
 
     if (_isEmpty(project)) {
       throw new NotFoundException(`Project with ID ${id} does not exist`)
     }
-
-    this.projectService.allowedToManage(project, uid, user.roles)
 
     const queries = [
       'DELETE FROM analytics WHERE pid={pid:FixedString(12)}',
@@ -1922,20 +1938,47 @@ export class ProjectController {
 
     this.projectService.allowedToView(project, uid, headers['x-password'])
 
-    const isDataExists = !_isEmpty(
-      await this.projectService.getPIDsWhereAnalyticsDataExists([id]),
-    )
+    const [isDataExists, isErrorDataExists] = await Promise.all([
+      !_isEmpty(
+        await this.projectService.getPIDsWhereAnalyticsDataExists([id]),
+      ),
+      !_isEmpty(await this.projectService.getPIDsWhereErrorsDataExists([id])),
+    ])
 
-    const isErrorDataExists = !_isEmpty(
-      await this.projectService.getPIDsWhereErrorsDataExists([id]),
-    )
+    let role
+    let isAccessConfirmed = true
+
+    if (uid) {
+      const userShare = project.share?.find(share => share.user?.id === uid)
+      const organisationMembership = project.organisation?.members?.find(
+        member => member.user?.id === uid,
+      )
+
+      if (project.admin?.id === uid) {
+        role = 'owner'
+      } else if (userShare) {
+        role = userShare.role
+        isAccessConfirmed = userShare.confirmed
+      } else if (organisationMembership) {
+        role = organisationMembership.role
+        isAccessConfirmed = organisationMembership.confirmed
+      }
+    }
 
     return {
-      ..._omit(project, ['admin', 'passwordHash', 'share']),
-      isOwner: uid === project.admin?.id,
+      ..._omit(project, [
+        'admin',
+        'passwordHash',
+        'organisation',
+        role !== 'owner' && role !== 'admin' && 'share',
+      ]),
+      isOwner: uid === project.admin?.id, // deprecated
+      isAccessConfirmed,
       isLocked: !!project.admin?.dashboardBlockReason,
       isDataExists,
       isErrorDataExists,
+      organisationId: project.organisation?.id,
+      role,
     }
   }
 

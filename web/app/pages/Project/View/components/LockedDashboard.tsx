@@ -15,7 +15,7 @@ const LockedDashboard = ({ user, project }: ILockedDashboard) => {
   const { t } = useTranslation('common')
 
   const message = useMemo(() => {
-    if (project?.isOwner) {
+    if (project.role === 'owner') {
       if (user?.dashboardBlockReason === DashboardBlockReason.exceeding_plan_limits) {
         return t('project.locked.descExceedingTier')
       }
@@ -30,8 +30,7 @@ const LockedDashboard = ({ user, project }: ILockedDashboard) => {
       }
     }
 
-    // TODO: PROPERLY CHECK IF PROJECT IS SHARED
-    if (!project.isOwner) {
+    if (project.role === 'admin' || project.role === 'viewer') {
       return t('project.locked.descSharedProject')
     }
 
@@ -50,7 +49,7 @@ const LockedDashboard = ({ user, project }: ILockedDashboard) => {
               </h1>
               <p className='mt-1 max-w-prose whitespace-pre-line text-base text-gray-700 dark:text-gray-300'>
                 {message}
-                {project?.isOwner && (
+                {project.role === 'owner' && (
                   <>
                     <br />
                     <br />
@@ -59,7 +58,7 @@ const LockedDashboard = ({ user, project }: ILockedDashboard) => {
                 )}
               </p>
             </div>
-            {project?.isOwner && (
+            {project.role === 'owner' && (
               <div className='mt-8 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>
                 <Link
                   to={routes.billing}

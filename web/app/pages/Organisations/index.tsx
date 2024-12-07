@@ -97,8 +97,8 @@ const OrganisationCard = ({
         throw new Error('Project not found')
       }
       await acceptShareProject(pid)
-      setProjectsShareData({ isShareConfirmed: true }, id)
-      setUserShareData({ isShareConfirmed: true }, pid)
+      setProjectsShareData({ isAccessConfirmed: true }, id)
+      setUserShareData({ isAccessConfirmed: true }, pid)
       toast.success(t('apiNotifications.acceptInvitation'))
     } catch (reason: any) {
       toast.error(t('apiNotifications.acceptInvitationError'))

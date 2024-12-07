@@ -1,4 +1,4 @@
-import { Organisation } from './Organisation'
+import { Organisation, Role } from './Organisation'
 
 interface _IOverallPeriodStats {
   all: number
@@ -37,8 +37,9 @@ export interface IOverallPerformanceObject {
   networkChange: number
 }
 
-interface IUserShareProject {
+interface UserShareProject {
   email: string
+  id: string
 }
 
 export interface ILiveStats {
@@ -51,7 +52,7 @@ export interface IShareOwnerProject {
   role: string
   created: string
   updated: string
-  user: IUserShareProject
+  user: UserShareProject
 }
 
 export interface IFunnel {
@@ -83,14 +84,13 @@ export interface IProject {
   captchaSecretKey: string | null
   created: string
   share?: IShareOwnerProject[]
-  isOwner: boolean
   overall: IOverallObject
   uiHidden: boolean
   funnels: IFunnel[]
   isPublic?: boolean
   isTransferring?: boolean
   isPasswordProtected?: boolean
-  isShareConfirmed?: boolean
+  isAccessConfirmed?: boolean
   organisationId?: string
   organisation?: Organisation
   password?: string
@@ -98,21 +98,10 @@ export interface IProject {
   isDataExists: boolean
   isErrorDataExists: boolean
   botsProtectionLevel: 'off' | 'basic'
+  role?: Role
 }
 
-export interface ICaptchaProject {
-  id: string
-  name: string
-  origins: string[] | string | null
-  ipBlacklist: string[] | null | string
-  active: boolean
-  public: boolean
-  isAnalyticsProject: boolean
-  isCaptchaProject: boolean
-  isCaptchaEnabled: boolean
-  captchaSecretKey: string | null
-  created: string
-  isOwner: boolean
-  overall: IOverallObject
-  uiHidden: boolean
+export interface ICaptchaProject extends IProject {
+  isCaptchaProject: true
+  isCaptchaEnabled: true
 }

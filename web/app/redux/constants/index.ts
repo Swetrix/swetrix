@@ -1,5 +1,6 @@
 /* eslint-disable no-undef */
 import _endsWith from 'lodash/endsWith'
+import { Role } from 'redux/models/Organisation'
 
 const displayDateOptions: Intl.DateTimeFormatOptions = {
   year: 'numeric',
@@ -488,7 +489,7 @@ export const I18N_CACHE_BREAKER = 9
 
 // dashboard && projects
 
-export const roles: string[] = ['admin', 'viewer']
+export const roles: Role[] = ['admin', 'viewer']
 
 export const roleViewer: {
   name: string

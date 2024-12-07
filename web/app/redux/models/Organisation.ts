@@ -5,10 +5,12 @@ export interface Organisation {
   updated: string
 }
 
+export type Role = 'owner' | 'admin' | 'viewer'
+
 export interface DetailedOrganisation extends Organisation {
   members: {
     id: string
-    role: 'admin' | 'viewer'
+    role: Role
     created: string
     confirmed: boolean
     user: {

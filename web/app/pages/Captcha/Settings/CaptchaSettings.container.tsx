@@ -6,7 +6,6 @@ import CaptchaSettings from './CaptchaSettings'
 
 const mapStateToProps = (state: StateType) => ({
   projects: state.ui.projects.projects,
-  analyticsProjects: state.ui.projects.projects,
   isLoading: state.ui.projects.isLoading,
   loading: state.auth.loading,
   user: state.auth.user,

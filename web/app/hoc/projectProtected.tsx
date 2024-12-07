@@ -19,7 +19,9 @@ export const withProjectProtected = <P extends PropsType>(WrappedComponent: any)
     const { queryPassword } = props
     const project = _find(projects, { id })
 
-    if (project?.isOwner) {
+    // If project role is present (i.e. viewer, admin, owner), we don't need to check for password
+    // as the user has access to the project
+    if (project?.role) {
       return <WrappedComponent {...props} />
     }
 

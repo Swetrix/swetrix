@@ -1,15 +1,14 @@
 import React, { useState, useEffect, memo } from 'react'
 import { toast } from 'sonner'
-import { useNavigate } from '@remix-run/react'
+import { Link, useNavigate } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
-import _replace from 'lodash/replace'
 import _keys from 'lodash/keys'
 
 import { withAuthentication, auth } from 'hoc/protected'
 import { TITLE_SUFFIX } from 'redux/constants'
-import { transferProject, getOrganisation } from 'api'
+import { transferProject, getOrganisation, updateOrganisation } from 'api'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
@@ -22,10 +21,11 @@ import { DetailedOrganisation } from 'redux/models/Organisation'
 import { StateType } from 'redux/store'
 import { useSelector } from 'react-redux'
 import { Projects } from './Projects'
+import { XCircleIcon } from '@heroicons/react/24/outline'
 
 const MAX_NAME_LENGTH = 50
 
-const DEFAULT_PROJECT_NAME = 'Untitled Project'
+const DEFAULT_ORGANISATION_NAME = 'Untitled Organisation'
 
 const OrganisationSettings = () => {
   const { t } = useTranslation('common')
@@ -82,7 +82,21 @@ const OrganisationSettings = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, id])
 
-  const onSubmit = async (form: any) => {}
+  const onSubmit = async (data: any) => {
+    if (isSaving) {
+      return
+    }
+    setIsSaving(true)
+
+    try {
+      await updateOrganisation(id, { name: data.name })
+      toast.success(t('apiNotifications.orgSettingsUpdated'))
+    } catch (reason: any) {
+      toast.error(reason)
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   const onDelete = async () => {
     setShowDelete(false)
@@ -149,10 +163,6 @@ const OrganisationSettings = () => {
     }
   }
 
-  const onCancel = () => {
-    navigate(_replace(routes.project, ':id', id))
-  }
-
   const onTransfer = async () => {
     await transferProject(id, transferEmail)
       .then(() => {
@@ -182,6 +192,43 @@ const OrganisationSettings = () => {
     )
   }
 
+  if (error && !isLoading) {
+    return (
+      <div className='min-h-page bg-gray-50 px-4 py-16 dark:bg-slate-900 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
+        <div className='mx-auto max-w-max'>
+          <main className='sm:flex'>
+            <XCircleIcon className='h-12 w-12 text-red-400' aria-hidden='true' />
+            <div className='sm:ml-6'>
+              <div className='max-w-prose sm:border-l sm:border-gray-200 sm:pl-6'>
+                <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50 sm:text-5xl'>
+                  {t('apiNotifications.somethingWentWrong')}
+                </h1>
+                <p className='mt-4 text-2xl font-medium tracking-tight text-gray-700 dark:text-gray-200'>
+                  {t('apiNotifications.errorCode', { error })}
+                </p>
+              </div>
+              <div className='mt-8 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>
+                <button
+                  type='button'
+                  onClick={() => window.location.reload()}
+                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
+                >
+                  {t('dashboard.reloadPage')}
+                </button>
+                <Link
+                  to={routes.contact}
+                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700 dark:focus:ring-gray-50'
+                >
+                  {t('notFoundPage.support')}
+                </Link>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 pb-40 dark:bg-slate-900 sm:px-6 lg:px-8'>
       <form className='mx-auto w-full max-w-7xl' onSubmit={handleSubmit}>
@@ -199,7 +246,9 @@ const OrganisationSettings = () => {
           <div className='flex flex-wrap items-center gap-2'>
             <Button
               className='border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
-              onClick={onCancel}
+              as={Link}
+              // @ts-expect-error
+              to={routes.organisations}
               secondary
               regular
             >
@@ -254,7 +303,7 @@ const OrganisationSettings = () => {
             <h2 className='text-xl font-bold text-gray-700 dark:text-gray-200'>{t('project.settings.transferTo')}</h2>
             <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
               {t('project.settings.transferHint', {
-                name: form.name || DEFAULT_PROJECT_NAME,
+                name: form.name || DEFAULT_ORGANISATION_NAME,
               })}
             </p>
             <Input

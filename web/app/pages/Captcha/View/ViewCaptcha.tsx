@@ -29,7 +29,6 @@ import {
   getProjectCaptchaCacheKey,
   timeBucketToDays,
   getProjectCacheCustomKey,
-  roleAdmin,
   MAX_MONTHS_IN_PAST,
   TimeFormat,
   chartTypes,
@@ -116,10 +115,7 @@ const ViewCaptcha = ({
     id: string
   } = useParams()
   const navigate = useNavigate()
-  const project: ICaptchaProject = useMemo(
-    () => _find(projects, (p) => p.id === id) || ({} as ICaptchaProject),
-    [projects, id],
-  )
+  const project = useMemo(() => _find(projects, (p) => p.id === id) || ({} as ICaptchaProject), [projects, id])
   const [areFiltersParsed, setAreFiltersParsed] = useState<boolean>(false)
   const [areTimeBucketParsed, setAreTimeBucketParsed] = useState<boolean>(false)
   const [arePeriodParsed, setArePeriodParsed] = useState<boolean>(false)
@@ -183,9 +179,6 @@ const ViewCaptcha = ({
 
     document.title = pageTitle
   }, [name, t])
-
-  // @ts-ignore
-  const sharedRoles = useMemo(() => _find(user.sharedProjects, (p) => p.project.id === id)?.role || {}, [user, id])
 
   const chartMetrics = useMemo(() => {
     return [
@@ -520,7 +513,7 @@ const ViewCaptcha = ({
 
   useEffect(() => {
     if (!isLoading && _isEmpty(project)) {
-      getProject(id, true)
+      getProject(id)
         .then((projectRes) => {
           if (!_isEmpty(projectRes)) {
             setProjects([
@@ -781,7 +774,7 @@ const ViewCaptcha = ({
                       }
                     }}
                   />
-                  {(project?.isOwner || sharedRoles === roleAdmin.role) && (
+                  {(project.role === 'admin' || project.role === 'owner') && (
                     <button
                       type='button'
                       onClick={openSettingsHandler}

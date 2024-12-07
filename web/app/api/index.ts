@@ -19,6 +19,7 @@ import { ISubscribers } from 'redux/models/ISubscribers'
 import { IFilter, IProjectViewCustomEvent } from 'pages/Project/View/interfaces/traffic'
 import { AIResponse } from 'pages/Project/View/interfaces/ai'
 import { Monitor, MonitorOverall } from 'redux/models/Uptime'
+import { Role } from 'redux/models/Organisation'
 
 const api = axios.create({
   baseURL: API_URL,
@@ -289,6 +290,14 @@ export const createOrganisation = (name: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
+export const updateOrganisation = (organisationId: string, data: { name: string }) =>
+  api
+    .patch(`/organisation/${organisationId}`, data)
+    .then((response) => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
 export const addProjectToOrganisation = (organisationId: string, projectId: string) =>
   api
     .post(`/project/organisation/${organisationId}`, { projectId })
@@ -305,10 +314,25 @@ export const removeProjectFromOrganisation = (organisationId: string, projectId:
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-// eslint-disable-next-line default-param-last
-export const getProject = (pid: string, isCaptcha: boolean = false, password?: string) =>
+export const changeOrganisationRole = (memberId: string, role: Role) =>
   api
-    .get(`/project/${pid}?isCaptcha=${isCaptcha}`, {
+    .patch(`/organisation/member/${memberId}`, { role })
+    .then((response) => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const removeOrganisationMember = (memberId: string) =>
+  api
+    .delete(`/organisation/member/${memberId}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getProject = (pid: string, password?: string) =>
+  api
+    .get(`/project/${pid}`, {
       headers: {
         'x-password': password,
       },
@@ -836,9 +860,9 @@ export const deleteShareProject = (pid: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const acceptShareProject = (id: string) =>
+export const acceptShareProject = (shareId: string) =>
   api
-    .get(`user/share/${id}`)
+    .get(`user/share/${shareId}`)
     .then((response) => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message

@@ -51,7 +51,10 @@
     "organisationCreated": "Organisation has been created",
     "organisationCreateError": "Error occurred while creating the organisation",
     "projectRemovedFromOrganisation": "The project has been removed from the organisation",
-    "projectRemoveError": "Error occurred while removing the project from the organisation"
+    "projectRemoveError": "Error occurred while removing the project from the organisation",
+    "orgUserRemoved": "The user has been removed from the organisation",
+    "orgUserRemoveError": "Error occurred while removing the user from the organisation",
+    "orgSettingsUpdated": "Organisation settings have been updated"
   },
   "common": {
     "features": "Features",

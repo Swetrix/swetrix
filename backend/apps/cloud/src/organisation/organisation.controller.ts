@@ -1,7 +1,6 @@
 import {
   Controller,
   Post,
-  Put,
   Delete,
   Body,
   Param,
@@ -13,9 +12,10 @@ import {
   Get,
   Query,
   ForbiddenException,
+  Patch,
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiQuery, ApiResponse } from '@nestjs/swagger'
-import { isEmpty as _isEmpty, find as _find } from 'lodash'
+import { isEmpty as _isEmpty, find as _find, trim as _trim } from 'lodash'
 import { FindOptionsWhere, ILike, In } from 'typeorm'
 
 import { JwtAccessTokenGuard } from '../auth/guards/jwt-access-token.guard'
@@ -33,6 +33,7 @@ import {
   CreateOrganisationDTO,
   InviteMemberDTO,
   UpdateMemberRoleDTO,
+  UpdateOrganisationDTO,
 } from './dto/organisation.dto'
 import { OrganisationRole } from './entity/organisation-member.entity'
 import { AppLoggerService } from '../logger/logger.service'
@@ -267,7 +268,7 @@ export class OrganisationController {
   }
 
   @ApiBearerAuth()
-  @Put('/member/:memberId')
+  @Patch('/member/:memberId')
   @HttpCode(200)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
@@ -279,12 +280,17 @@ export class OrganisationController {
   ) {
     this.logger.log(
       { uid, memberId, updateDTO },
-      'PUT /organisation/member/:memberId',
+      'PATCH /organisation/member/:memberId',
     )
 
     const membership = await this.organisationService.findOneMembership({
       where: { id: memberId },
-      relations: ['organisation', 'organisation.owner', 'user'],
+      relations: [
+        'organisation',
+        'organisation.members',
+        'organisation.members.user',
+        'user',
+      ],
     })
 
     if (_isEmpty(membership)) {
@@ -302,7 +308,10 @@ export class OrganisationController {
       throw new BadRequestException('You cannot modify your own role')
     }
 
-    if (membership.role === OrganisationRole.owner) {
+    if (
+      membership.role === OrganisationRole.owner ||
+      updateDTO.role === OrganisationRole.owner
+    ) {
       throw new BadRequestException('Cannot modify owner role')
     }
 
@@ -325,7 +334,12 @@ export class OrganisationController {
 
     const membership = await this.organisationService.findOneMembership({
       where: { id: memberId },
-      relations: ['organisation', 'organisation.owner', 'user'],
+      relations: [
+        'organisation',
+        'organisation.members',
+        'organisation.members.user',
+        'user',
+      ],
     })
 
     if (_isEmpty(membership)) {
@@ -344,5 +358,40 @@ export class OrganisationController {
     }
 
     await this.organisationService.deleteMembership(memberId)
+  }
+
+  @ApiBearerAuth()
+  @Patch('/:orgId')
+  @ApiResponse({ status: 200, type: Organisation })
+  @Auth([], true)
+  async update(
+    @Param('orgId') orgId: string,
+    @Body() updateOrgDTO: UpdateOrganisationDTO,
+    @CurrentUserId() userId: string,
+  ) {
+    this.logger.log(
+      { orgId, updateOrgDTO, userId },
+      'PATCH /organisation/:orgId',
+    )
+
+    const canManage = await this.organisationService.canManageOrganisation(
+      orgId,
+      userId,
+    )
+
+    if (!canManage) {
+      throw new ForbiddenException(
+        'You do not have permission to manage this organisation',
+      )
+    }
+
+    try {
+      await this.organisationService.update(orgId, {
+        name: _trim(updateOrgDTO.name),
+      })
+    } catch (e) {
+      console.error('[ERROR] Failed to update organisation:', e)
+      throw new BadRequestException('Failed to update organisation')
+    }
   }
 }

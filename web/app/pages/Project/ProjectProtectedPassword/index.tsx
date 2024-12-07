@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo } from 'react'
-import { useNavigate, useParams } from '@remix-run/react'
+import { Link, useNavigate, useParams } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
@@ -114,10 +114,6 @@ const ProjectProtectedPassword = ({
     }
   }
 
-  const onCancel = () => {
-    navigate(routes.main)
-  }
-
   return (
     <>
       {!embedded && <Header ssrTheme={ssrTheme} authenticated={isAuth} />}
@@ -137,7 +133,9 @@ const ProjectProtectedPassword = ({
           <div className='mt-5'>
             <Button
               className='mr-2 border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
-              onClick={onCancel}
+              as={Link}
+              // @ts-expect-error
+              to={routes.main}
               secondary
               regular
             >

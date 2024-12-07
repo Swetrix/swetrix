@@ -36,7 +36,7 @@ const NoPeople = () => {
 
 interface IUsersList {
   data: IShareOwnerProject
-  onRemove: (id: string) => void
+  onRemove: () => void
   share?: IShareOwnerProject[]
   setProjectShareData: (item: Partial<IProject>, id: string) => void
   pid: string
@@ -47,8 +47,7 @@ interface IUsersList {
 const UsersList = ({ data, onRemove, share, setProjectShareData, pid, language, authedUserEmail }: IUsersList) => {
   const { t } = useTranslation('common')
   const [open, setOpen] = useState(false)
-  const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const openRef = useRef<HTMLDivElement>(null)
+  const openRef = useRef<HTMLUListElement>(null)
   useOnClickOutside(openRef, () => setOpen(false))
   const { id, created, confirmed, role, user } = data || {}
 
@@ -83,7 +82,7 @@ const UsersList = ({ data, onRemove, share, setProjectShareData, pid, language, 
       </td>
       <td className='relative whitespace-nowrap py-4 pr-2 text-right text-sm font-medium'>
         {confirmed ? (
-          <div ref={openRef}>
+          <div>
             <button
               onClick={() => setOpen(!open)}
               type='button'
@@ -94,7 +93,10 @@ const UsersList = ({ data, onRemove, share, setProjectShareData, pid, language, 
               <ChevronDownIcon style={{ transform: open ? 'rotate(180deg)' : '' }} className='ml-0.5 h-4 w-4 pt-px' />
             </button>
             {open && (
-              <ul className='absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 rounded-md bg-white text-left shadow-lg focus:outline-none dark:divide-gray-700 dark:bg-slate-900'>
+              <ul
+                ref={openRef}
+                className='absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 rounded-md bg-white text-left shadow-lg focus:outline-none dark:divide-gray-700 dark:bg-slate-900'
+              >
                 {_map(roles, (itRole, index) => (
                   <li
                     onClick={() => changeRole(itRole)}
@@ -120,15 +122,10 @@ const UsersList = ({ data, onRemove, share, setProjectShareData, pid, language, 
                   </li>
                 ))}
                 <li
-                  onClick={() => {
-                    setOpen(false)
-                    setShowDeleteModal(true)
-                  }}
+                  onClick={onRemove}
                   className='group flex cursor-pointer items-center justify-between rounded-b-md p-4 hover:bg-gray-200 dark:hover:bg-gray-700'
                 >
-                  <div>
-                    <p className='font-bold text-red-600 dark:text-red-500'>{t('project.settings.removeMember')}</p>
-                  </div>
+                  <p className='font-bold text-red-600 dark:text-red-500'>{t('project.settings.removeMember')}</p>
                 </li>
               </ul>
             )}
@@ -140,29 +137,12 @@ const UsersList = ({ data, onRemove, share, setProjectShareData, pid, language, 
               type='button'
               className='rounded-md bg-white text-base font-medium text-indigo-700 hover:bg-indigo-50 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
               small
-              onClick={() => setShowDeleteModal(true)}
+              onClick={onRemove}
             >
               <TrashIcon className='h-4 w-4' />
             </Button>
           </div>
         )}
-      </td>
-      <td>
-        <Modal
-          onClose={() => {
-            setShowDeleteModal(false)
-          }}
-          onSubmit={() => {
-            setShowDeleteModal(false)
-            onRemove(id)
-          }}
-          submitText={t('common.yes')}
-          type='confirmed'
-          closeText={t('common.no')}
-          title={t('project.settings.removeUser', { user: user.email })}
-          message={t('project.settings.removeConfirm')}
-          isOpened={showDeleteModal}
-        />
       </td>
     </tr>
   )
@@ -197,6 +177,11 @@ const People: React.FunctionComponent<IPeopleProps> = ({
     role?: string
   }>({})
   const [validated, setValidated] = useState(false)
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [memberToRemove, setMemberToRemove] = useState<IShareOwnerProject | null>(null)
+
   const { id, name, share } = project
 
   const validate = () => {
@@ -276,11 +261,17 @@ const People: React.FunctionComponent<IPeopleProps> = ({
     setErrors({})
   }
 
-  const onRemove = async (userId: string) => {
+  const onRemove = async (member: IShareOwnerProject) => {
+    if (isDeleting) {
+      return
+    }
+
+    setIsDeleting(true)
+
     try {
-      await deleteShareProjectUsers(id, userId)
+      await deleteShareProjectUsers(id, member.id)
       const newShared = _map(
-        _filter(share, (s) => s.id !== userId),
+        _filter(share, (s) => s.id !== member.id),
         (s) => s,
       )
       setProjectShareData({ share: newShared }, id)
@@ -288,6 +279,8 @@ const People: React.FunctionComponent<IPeopleProps> = ({
     } catch (reason) {
       console.error(`[ERROR] Error while deleting a user: ${reason}`)
       toast.error(t('apiNotifications.userRemoveError'))
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -331,15 +324,17 @@ const People: React.FunctionComponent<IPeopleProps> = ({
                           {t('profileSettings.sharedTable.joinedOn')}
                         </th>
                         <th scope='col' />
-                        <th scope='col' />
                       </tr>
                     </thead>
                     <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
-                      {_map(share, (user) => (
+                      {_map(share, (data) => (
                         <UsersList
-                          data={user}
-                          key={user.id}
-                          onRemove={onRemove}
+                          data={data}
+                          key={data.id}
+                          onRemove={() => {
+                            setMemberToRemove(data)
+                            setShowDeleteModal(true)
+                          }}
                           language={language}
                           share={project.share}
                           setProjectShareData={setProjectShareData}
@@ -356,6 +351,23 @@ const People: React.FunctionComponent<IPeopleProps> = ({
         )}
       </div>
       <PaidFeature isOpened={isPaidFeatureOpened} onClose={() => setIsPaidFeatureOpened(false)} />
+      <Modal
+        onClose={() => {
+          setShowDeleteModal(false)
+          setMemberToRemove(null)
+        }}
+        onSubmit={() => {
+          setShowDeleteModal(false)
+          onRemove(memberToRemove!)
+        }}
+        submitText={t('common.yes')}
+        type='confirmed'
+        closeText={t('common.no')}
+        title={t('project.settings.removeUser', { user: memberToRemove?.user.email })}
+        message={t('project.settings.removeConfirm')}
+        isOpened={showDeleteModal}
+        isLoading={isDeleting}
+      />
       <Modal
         onClose={closeModal}
         customButtons={

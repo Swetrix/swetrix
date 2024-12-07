@@ -16,9 +16,10 @@ import Button from 'ui/Button'
 import Modal from 'ui/Modal'
 import { roles, roleViewer, roleAdmin, INVITATION_EXPIRES_IN } from 'redux/constants'
 import useOnClickOutside from 'hooks/useOnClickOutside'
-import { DetailedOrganisation } from 'redux/models/Organisation'
+import { DetailedOrganisation, Role } from 'redux/models/Organisation'
 import { useSelector } from 'react-redux'
 import { StateType } from 'redux/store'
+import { changeOrganisationRole, removeOrganisationMember } from 'api'
 
 const NoPeople = () => {
   const { t } = useTranslation('common')
@@ -34,7 +35,7 @@ const NoPeople = () => {
 
 interface UsersListProps {
   members: DetailedOrganisation['members']
-  onRemove: (id: string) => void
+  onRemove: (member: DetailedOrganisation['members'][number]) => void
 }
 
 const UsersList = ({ members, onRemove }: UsersListProps) => {
@@ -45,13 +46,14 @@ const UsersList = ({ members, onRemove }: UsersListProps) => {
   const { user } = useSelector((state: StateType) => state.auth)
 
   const [roleEditDropdownId, setRoleEditDropdownId] = useState<string | null>(null)
-  const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const openRef = useRef<HTMLDivElement>(null)
+  const openRef = useRef<HTMLUListElement>(null)
   useOnClickOutside(openRef, () => setRoleEditDropdownId(null))
 
-  const changeRole = async (newRole: string) => {
+  const changeRole = async (memberId: string, newRole: Role) => {
+    console.log('changeRole', memberId, newRole)
+
     try {
-      // todo
+      await changeOrganisationRole(memberId, newRole)
 
       toast.success(t('apiNotifications.roleUpdated'))
     } catch (reason) {
@@ -74,11 +76,11 @@ const UsersList = ({ members, onRemove }: UsersListProps) => {
       </td>
       <td className='relative whitespace-nowrap py-4 pr-2 text-right text-sm font-medium'>
         {member.confirmed ? (
-          <div ref={openRef}>
+          <div>
             <button
               onClick={() => setRoleEditDropdownId((prev) => (prev === member.id ? null : member.id))}
               type='button'
-              disabled={member.user.email === user.email}
+              disabled={member.user.email === user.email || member.role === 'owner'}
               className='inline-flex items-center rounded-full border border-gray-200 bg-white py-0.5 pl-2 pr-1 text-sm font-medium leading-5 text-gray-700 shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-80 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-gray-600'
             >
               {t(`organisations.role.${member.role}.name`)}
@@ -88,10 +90,13 @@ const UsersList = ({ members, onRemove }: UsersListProps) => {
               />
             </button>
             {roleEditDropdownId === member.id ? (
-              <ul className='absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 rounded-md bg-white text-left shadow-lg focus:outline-none dark:divide-gray-700 dark:bg-slate-900'>
+              <ul
+                ref={openRef}
+                className='absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 rounded-md bg-white text-left shadow-lg focus:outline-none dark:divide-gray-700 dark:bg-slate-900'
+              >
                 {_map(roles, (itRole, index) => (
                   <li
-                    onClick={() => changeRole(itRole)}
+                    onClick={() => changeRole(member.id, itRole)}
                     className={cx(
                       'group relative cursor-pointer p-4 hover:bg-indigo-600',
                       index === 0 && 'rounded-t-md',
@@ -115,14 +120,12 @@ const UsersList = ({ members, onRemove }: UsersListProps) => {
                 ))}
                 <li
                   onClick={() => {
+                    onRemove(member)
                     setRoleEditDropdownId(null)
-                    setShowDeleteModal(true)
                   }}
                   className='group flex cursor-pointer items-center justify-between rounded-b-md p-4 hover:bg-gray-200 dark:hover:bg-gray-700'
                 >
-                  <div>
-                    <p className='font-bold text-red-600 dark:text-red-500'>{t('project.settings.removeMember')}</p>
-                  </div>
+                  <p className='font-bold text-red-600 dark:text-red-500'>{t('project.settings.removeMember')}</p>
                 </li>
               </ul>
             ) : null}
@@ -134,29 +137,12 @@ const UsersList = ({ members, onRemove }: UsersListProps) => {
               type='button'
               className='rounded-md bg-white text-base font-medium text-indigo-700 hover:bg-indigo-50 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
               small
-              onClick={() => setShowDeleteModal(true)}
+              onClick={() => onRemove(member)}
             >
               <TrashIcon className='h-4 w-4' />
             </Button>
           </div>
         )}
-      </td>
-      <td>
-        <Modal
-          onClose={() => {
-            setShowDeleteModal(false)
-          }}
-          onSubmit={() => {
-            setShowDeleteModal(false)
-            onRemove(member.id)
-          }}
-          submitText={t('common.yes')}
-          type='confirmed'
-          closeText={t('common.no')}
-          title={t('project.settings.removeUser', { user: member.user.email })}
-          message={t('project.settings.removeConfirm')}
-          isOpened={showDeleteModal}
-        />
       </td>
     </tr>
   ))
@@ -179,6 +165,10 @@ const People = ({ organisation }: PeopleProps): JSX.Element => {
     role?: string
   }>({})
   const [validated, setValidated] = useState(false)
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [memberToRemove, setMemberToRemove] = useState<DetailedOrganisation['members'][number] | null>(null)
 
   const { name, members } = organisation
 
@@ -253,13 +243,22 @@ const People = ({ organisation }: PeopleProps): JSX.Element => {
     setErrors({})
   }
 
-  const onRemove = async (userId: string) => {
+  const onRemove = async (member: DetailedOrganisation['members'][number]) => {
+    if (isDeleting) {
+      return
+    }
+
+    setIsDeleting(true)
+
     try {
-      // todo
-      toast.success(t('apiNotifications.userRemoved'))
+      await removeOrganisationMember(member.id)
+
+      toast.success(t('apiNotifications.orgUserRemoved'))
     } catch (reason) {
-      console.error(`[ERROR] Error while deleting a user: ${reason}`)
-      toast.error(t('apiNotifications.userRemoveError'))
+      console.error(`[ERROR] Error while removing user from the organisation: ${reason}`)
+      toast.error(t('apiNotifications.orgUserRemoveError'))
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -303,11 +302,16 @@ const People = ({ organisation }: PeopleProps): JSX.Element => {
                           {t('profileSettings.sharedTable.joinedOn')}
                         </th>
                         <th scope='col' />
-                        <th scope='col' />
                       </tr>
                     </thead>
                     <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
-                      <UsersList members={members} onRemove={onRemove} />
+                      <UsersList
+                        members={members}
+                        onRemove={(member) => {
+                          setMemberToRemove(member)
+                          setShowDeleteModal(true)
+                        }}
+                      />
                     </tbody>
                   </table>
                 </div>
@@ -316,6 +320,23 @@ const People = ({ organisation }: PeopleProps): JSX.Element => {
           </div>
         )}
       </div>
+      <Modal
+        onClose={() => {
+          setShowDeleteModal(false)
+          setMemberToRemove(null)
+        }}
+        onSubmit={async () => {
+          await onRemove(memberToRemove!)
+          setMemberToRemove(null)
+        }}
+        submitText={t('common.yes')}
+        type='confirmed'
+        closeText={t('common.no')}
+        title={t('project.settings.removeUser', { user: memberToRemove?.user.email })}
+        message={t('project.settings.removeConfirm')}
+        isOpened={showDeleteModal}
+        isLoading={isDeleting}
+      />
       <Modal
         onClose={closeModal}
         customButtons={

@@ -82,7 +82,6 @@ import {
   TimeFormat,
   getProjectForcastCacheKey,
   chartTypes,
-  roleAdmin,
   TRAFFIC_PANELS_ORDER,
   PERFORMANCE_PANELS_ORDER,
   isSelfhosted,
@@ -801,9 +800,6 @@ const ViewProject = ({
     document.title = pageTitle
   }, [name, user, liveStats, id, t])
 
-  // sharedRoles is a role for shared project
-  const sharedRoles = useMemo(() => _find(user.sharedProjects, (p) => p.project.id === id)?.role || {}, [user, id])
-
   const timeBucketSelectorItems = useMemo(() => {
     if (activeTab === PROJECT_TABS.errors) {
       return _filter(periodPairs, (el) => {
@@ -1006,7 +1002,7 @@ const ViewProject = ({
     [t],
   )
 
-  const allowedToManage = useMemo(() => project?.isOwner || sharedRoles === roleAdmin.role, [project, sharedRoles])
+  const allowedToManage = project.role === 'owner' || project.role === 'admin'
 
   const dataNamesFunnel = useMemo(
     () => ({
@@ -3018,13 +3014,13 @@ const ViewProject = ({
       return
     }
 
-    getProject(id, false, projectPassword)
+    getProject(id, projectPassword)
       .then((projectRes) => {
         if (_isEmpty(projectRes)) {
           onErrorLoading()
         }
 
-        if (projectRes.isPasswordProtected && !projectRes.isOwner && _isEmpty(projectPassword)) {
+        if (projectRes.isPasswordProtected && !projectRes.role && _isEmpty(projectPassword)) {
           navigate({
             pathname: _replace(routes.project_protected_password, ':id', id),
             search: `?theme=${ssrTheme}&embedded=${embedded}`,
@@ -3032,9 +3028,10 @@ const ViewProject = ({
           return
         }
 
-        if ((projectRes.isPublic || projectRes?.isPasswordProtected) && !projectRes.isOwner) {
+        if ((projectRes.isPublic || projectRes?.isPasswordProtected) && !projectRes.role) {
           setPublicProject(projectRes)
         } else {
+          // TODO: Check, do we really need to add this project to the projects list?
           setProjects([...(projects as any[]), projectRes])
 
           if (projectRes.isLocked) {
@@ -3051,8 +3048,8 @@ const ViewProject = ({
             })
         }
       })
-      .catch((e) => {
-        console.error('[ERROR] (getProject)', e)
+      .catch((reason) => {
+        console.error('[ERROR] (getProject)', reason)
         onErrorLoading()
       })
   }, [isLoading, project, id, setPublicProject]) // eslint-disable-line
@@ -4164,8 +4161,7 @@ const ViewProject = ({
                       )}
                     </>
                   )}
-                {/* TODO: PROPERLY CHECK IF PROJECT IS SHARED */}
-                {activeTab === PROJECT_TABS.alerts && (!project?.isOwner || !authenticated) && (
+                {activeTab === PROJECT_TABS.alerts && (project.role !== 'owner' || !authenticated) && (
                   <div className='mt-5 rounded-xl bg-gray-700 p-5'>
                     <div className='flex items-center text-gray-50'>
                       <BellIcon className='mr-2 h-8 w-8' />
@@ -4591,8 +4587,7 @@ const ViewProject = ({
                     {!errorLoading && _isEmpty(activeError) && <NoErrorDetails />}
                   </>
                 )}
-                {/* TODO: PROPERLY CHECK IF PROJECT IS SHARED */}
-                {activeTab === PROJECT_TABS.alerts && project?.isOwner && authenticated && (
+                {activeTab === PROJECT_TABS.alerts && project.role === 'owner' && authenticated && (
                   <ProjectAlertsView projectId={id} />
                 )}
                 {activeTab === PROJECT_TABS.uptime && <Uptime />}
@@ -5049,10 +5044,7 @@ const ViewProject = ({
                                 customTabs={customTabs}
                                 // @ts-expect-error
                                 valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
-                                rowMapper={({ name: entryName }) => {
-                                  // todo: add uppercase
-                                  return entryName || t('project.redactedPage')
-                                }}
+                                rowMapper={({ name: entryName }) => entryName || t('project.redactedPage')}
                               />
                             )
                           }

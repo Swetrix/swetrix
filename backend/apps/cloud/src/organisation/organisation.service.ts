@@ -29,6 +29,10 @@ export class OrganisationService {
     return this.organisationRepository.save(org)
   }
 
+  async update(id: string, data: Partial<Organisation>) {
+    return this.organisationRepository.update(id, data)
+  }
+
   async findOne(options: FindOneOptions<Organisation>): Promise<Organisation> {
     return this.organisationRepository.findOne(options)
   }

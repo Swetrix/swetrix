@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo, useMemo } from 'react'
-import { useNavigate } from '@remix-run/react'
+import { Link, useNavigate } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
 import { toast } from 'sonner'
@@ -129,10 +129,6 @@ const NewProject = () => {
     }
   }
 
-  const onCancel = () => {
-    navigate(routes.dashboard)
-  }
-
   useEffect(() => {
     document.title = `${t('project.settings.create')} ${TITLE_SUFFIX}`
   }, [t])
@@ -188,7 +184,9 @@ const NewProject = () => {
         <div>
           <Button
             className='mr-2 border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
-            onClick={onCancel}
+            as={Link}
+            // @ts-expect-error
+            to={routes.dashboard}
             secondary
             regular
           >

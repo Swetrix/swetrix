@@ -19,3 +19,9 @@ export class UpdateMemberRoleDTO {
   @IsEnum(OrganisationRole)
   role: OrganisationRole
 }
+
+export class UpdateOrganisationDTO {
+  @IsString()
+  @Length(1, 50)
+  name: string
+}

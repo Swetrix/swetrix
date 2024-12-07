@@ -57,7 +57,7 @@ const Pricing = ({ authenticated, isBillingPage }: IPricing) => {
     t,
     i18n: { language },
   } = useTranslation('common')
-  const dispatch: AppDispatch = useDispatch()
+  const dispatch = useDispatch<AppDispatch>()
   const { user } = useSelector((state: StateType) => state.auth)
   const { theme } = useSelector((state: StateType) => state.ui.theme)
   const { paddle, metainfo } = useSelector((state: StateType) => state.ui.misc)

@@ -145,7 +145,7 @@ export const processProjectUser = (project: Project): Project => {
 
     if (user) {
       // @ts-expect-error _pick(user, ['email']) is partial but share[j].user expects full User entity
-      share[j].user = _pick(user, ['email'])
+      share[j].user = _pick(user, ['email', 'id'])
     }
   }
 
@@ -402,8 +402,35 @@ export class ProjectService {
         'admin',
         'organisation',
         'organisation.members',
+        'organisation.members.user',
         ...additionalRelations,
       ],
+      select: {
+        share: {
+          id: true,
+          role: true,
+          user: {
+            id: true,
+            email: true,
+          },
+        },
+        admin: {
+          id: true,
+          roles: true,
+          dashboardBlockReason: true,
+          isAccountBillingSuspended: true,
+        },
+        organisation: {
+          id: true,
+          members: {
+            id: true,
+            role: true,
+            user: {
+              id: true,
+            },
+          },
+        },
+      },
     }
 
     if (userId) {
@@ -421,7 +448,6 @@ export class ProjectService {
     userId: string,
     search?: string,
   ): Promise<Pagination<Project>> {
-    // Create query builder starting from Project
     const queryBuilder = this.projectsRepository
       .createQueryBuilder('project')
       .leftJoinAndSelect('project.admin', 'admin')
@@ -1637,6 +1663,7 @@ export class ProjectService {
   ) {
     const project = await this.findOne({
       where: { id: projectId },
+      relations: ['organisation'],
     })
 
     if (!project) {

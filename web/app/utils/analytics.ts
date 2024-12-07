@@ -101,7 +101,7 @@ const getNewPath = (path: string | undefined | null) => {
 }
 
 Swetrix.init(SWETRIX_PID, {
-  devMode: isDevelopment,
+  disabled: isDevelopment,
 })
 
 const BLOG_PAGE_REGEX = /^\/blog\/.+$/

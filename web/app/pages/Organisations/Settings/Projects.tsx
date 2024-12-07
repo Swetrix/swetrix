@@ -3,6 +3,7 @@ import { toast } from 'sonner'
 import { InformationCircleIcon, PlusIcon } from '@heroicons/react/24/outline'
 import { useTranslation } from 'react-i18next'
 import _isEmpty from 'lodash/isEmpty'
+import _replace from 'lodash/replace'
 
 import Button from 'ui/Button'
 import Modal from 'ui/Modal'
@@ -11,6 +12,8 @@ import { useSelector } from 'react-redux'
 import { StateType } from 'redux/store'
 import Tooltip from 'ui/Tooltip'
 import { removeProjectFromOrganisation } from 'api'
+import { Link } from '@remix-run/react'
+import routes from 'utils/routes'
 
 const NoProjects = () => {
   const { t } = useTranslation('common')
@@ -36,7 +39,9 @@ const ProjectList = ({ projects, onRemove }: ProjectListProps) => {
   return projects.map((project) => (
     <tr key={project.id} className='dark:bg-slate-800'>
       <td className='whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6'>
-        {project.name}
+        <Link to={_replace(routes.project, ':id', project.id)} className='hover:underline'>
+          {project.name}
+        </Link>
       </td>
       <td className='relative whitespace-nowrap py-4 pr-2 text-sm font-medium'>
         <div className='flex items-center justify-end'>
