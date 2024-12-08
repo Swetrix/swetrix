@@ -458,7 +458,7 @@ const Organisations = () => {
                 )}
               </ClientOnly>
             )}
-            {pageAmount > 1 && (
+            {pageAmount > 1 ? (
               <Pagination
                 className='mt-2'
                 page={page}
@@ -466,7 +466,7 @@ const Organisations = () => {
                 setPage={setPage}
                 total={paginationTotal}
               />
-            )}
+            ) : null}
           </div>
         </div>
       </div>

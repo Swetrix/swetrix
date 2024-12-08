@@ -141,10 +141,7 @@ export class ProjectController {
   @Get('/')
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
-  @ApiQuery({ name: 'isCaptcha', required: false, type: Boolean })
-  @ApiQuery({ name: 'relatedonly', required: false, type: Boolean })
   @ApiQuery({ name: 'search', required: false, type: String })
-  @ApiQuery({ name: 'showArchived', required: false, type: Boolean })
   @ApiResponse({ status: 200, type: [Project] })
   @Auth([], true)
   async get(
@@ -207,6 +204,33 @@ export class ProjectController {
       ...paginated,
       totalMonthlyEvents,
     }
+  }
+
+  @ApiBearerAuth()
+  @Get('/available-for-organisation')
+  @ApiQuery({ name: 'take', required: false })
+  @ApiQuery({ name: 'skip', required: false })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiResponse({ status: 200, type: [Project] })
+  @Auth([], true)
+  async getAvailableProjectsForOrganization(
+    @CurrentUserId() userId: string,
+    @Query('take') take: number | undefined,
+    @Query('skip') skip: number | undefined,
+    @Query('search') search: string | undefined,
+  ): Promise<Pagination<Project> | Project[] | object> {
+    this.logger.log(
+      { userId, take, skip },
+      'GET /project/available-for-organisation',
+    )
+
+    const paginated = await this.projectService.paginateForOrganisation(
+      { take, skip },
+      userId,
+      search,
+    )
+
+    return paginated
   }
 
   @ApiBearerAuth()
@@ -819,7 +843,7 @@ export class ProjectController {
 
     const organisation = await this.organisationService.findOne({
       where: { id: orgId },
-      relations: ['members', 'projects'],
+      relations: ['members', 'members.user', 'projects'],
     })
 
     if (_isEmpty(organisation)) {

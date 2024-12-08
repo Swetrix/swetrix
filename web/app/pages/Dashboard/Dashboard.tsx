@@ -37,7 +37,7 @@ const Dashboard = () => {
   const { t } = useTranslation('common')
   const [isSearchActive, setIsSearchActive] = useState<boolean>(false)
   const [showActivateEmailModal, setShowActivateEmailModal] = useState<boolean>(false)
-  const pageAmount: number = Math.ceil(total / ENTRIES_PER_PAGE_DASHBOARD)
+  const pageAmount = Math.ceil(total / ENTRIES_PER_PAGE_DASHBOARD)
 
   // This search represents what's inside the search input
   const [search, setSearch] = useState('')

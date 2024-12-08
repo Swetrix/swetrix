@@ -137,24 +137,35 @@ const deleteProjectsRedis = async (ids: string[]) => {
   await Promise.all(_map(ids, deleteProjectRedis))
 }
 
-export const processProjectUser = (project: Project): Project => {
-  const { share } = project
+export const processProjectUser = (
+  project: Project,
+  properties: Array<'share' | 'organisation.members'> = ['share'],
+): Project => {
+  _map(properties, property => {
+    const array =
+      property === 'share' ? project.share : project.organisation?.members
 
-  for (let j = 0; j < _size(share); ++j) {
-    const { user } = share[j]
+    if (array) {
+      for (let j = 0; j < _size(array); ++j) {
+        const { user } = array[j]
 
-    if (user) {
-      // @ts-expect-error _pick(user, ['email']) is partial but share[j].user expects full User entity
-      share[j].user = _pick(user, ['email', 'id'])
+        if (user) {
+          // @ts-expect-error _pick(user, ['email']) is partial but array[j].user expects full User entity
+          array[j].user = _pick(user, ['email', 'id'])
+        }
+      }
     }
-  }
+  })
 
   return project
 }
 
-const processProjectsUser = (projects: Project[]): Project[] => {
+const processProjectsUser = (
+  projects: Project[],
+  properties: Array<'share' | 'organisation.members'> = ['share'],
+): Project[] => {
   for (let i = 0; i < _size(projects); ++i) {
-    projects[i] = processProjectUser(projects[i])
+    projects[i] = processProjectUser(projects[i], properties)
   }
 
   return projects
@@ -409,6 +420,7 @@ export class ProjectService {
         share: {
           id: true,
           role: true,
+          confirmed: true,
           user: {
             id: true,
             email: true,
@@ -469,7 +481,7 @@ export class ProjectService {
       )
 
     if (search?.trim()) {
-      queryBuilder.andWhere('(project.name ILIKE :search)', {
+      queryBuilder.andWhere('LOWER(project.name) LIKE LOWER(:search)', {
         search: `%${search.trim()}%`,
       })
     }
@@ -482,7 +494,46 @@ export class ProjectService {
     const [results, total] = await queryBuilder.getManyAndCount()
 
     return new Pagination<Project>({
-      results: processProjectsUser(results),
+      results: processProjectsUser(results, ['share', 'organisation.members']),
+      total,
+    })
+  }
+
+  async paginateForOrganisation(
+    options: PaginationOptionsInterface,
+    userId: string,
+    search?: string,
+  ): Promise<Pagination<Project>> {
+    const queryBuilder = this.projectsRepository
+      .createQueryBuilder('project')
+      .select(['project.id', 'project.name'])
+      .leftJoin('project.admin', 'admin')
+      .leftJoin('project.share', 'share')
+      .where('project.organisation IS NULL')
+      .andWhere(
+        new Brackets(qb => {
+          qb.where('admin.id = :userId', { userId }).orWhere(
+            'share.user.id = :userId AND share.role = :adminRole',
+            { userId, adminRole: Role.admin },
+          )
+        }),
+      )
+
+    if (search?.trim()) {
+      queryBuilder.andWhere('LOWER(project.name) LIKE LOWER(:search)', {
+        search: `%${search.trim()}%`,
+      })
+    }
+
+    queryBuilder
+      .orderBy('project.name', 'ASC')
+      .skip(options.skip || 0)
+      .take(options.take || 100)
+
+    const [results, total] = await queryBuilder.getManyAndCount()
+
+    return new Pagination<Project>({
+      results,
       total,
     })
   }

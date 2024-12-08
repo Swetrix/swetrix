@@ -266,6 +266,14 @@ export const getProjects = (take: number = 0, skip: number = 0, search?: string)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
+export const getProjectsAvailableForOrganisation = (take: number = 0, skip: number = 0, search?: string) =>
+  api
+    .get(`/project/available-for-organisation?take=${take}&skip=${skip}&search=${search}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
 export const getOrganisations = (take: number = 0, skip: number = 0, search?: string) =>
   api
     .get(`/organisation?take=${take}&skip=${skip}&search=${search}`)

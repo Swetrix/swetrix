@@ -17,6 +17,12 @@ const Pagination = ({ page, setPage, pageAmount, total, className }: IPagination
   const { t } = useTranslation('common')
   const paginationRange = usePagination(total, page)
 
+  console.log('total:', total)
+  console.log('page:', page)
+  console.log('pageAmount:', pageAmount)
+
+  console.log('paginationRange:', paginationRange)
+
   return (
     <nav className={cx('flex items-center justify-between border-t-0 border-gray-200 px-4 sm:px-0', className)}>
       <div className='group -mt-px flex w-0 flex-1'>

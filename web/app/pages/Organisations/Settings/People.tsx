@@ -150,9 +150,10 @@ const UsersList = ({ members, onRemove }: UsersListProps) => {
 
 interface PeopleProps {
   organisation: DetailedOrganisation
+  reloadOrganisation: () => Promise<void>
 }
 
-const People = ({ organisation }: PeopleProps): JSX.Element => {
+const People = ({ organisation, reloadOrganisation }: PeopleProps): JSX.Element => {
   const [showModal, setShowModal] = useState(false)
   const { t } = useTranslation('common')
   const [form, setForm] = useState({
@@ -214,6 +215,7 @@ const People = ({ organisation }: PeopleProps): JSX.Element => {
 
     try {
       // todo
+      await reloadOrganisation()
       toast.success(t('apiNotifications.userInvited'))
     } catch (reason) {
       console.error(`[ERROR] Error while inviting a user: ${reason}`)
@@ -252,6 +254,7 @@ const People = ({ organisation }: PeopleProps): JSX.Element => {
 
     try {
       await removeOrganisationMember(member.id)
+      await reloadOrganisation()
 
       toast.success(t('apiNotifications.orgUserRemoved'))
     } catch (reason) {

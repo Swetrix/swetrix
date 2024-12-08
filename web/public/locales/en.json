@@ -51,7 +51,9 @@
     "organisationCreated": "Organisation has been created",
     "organisationCreateError": "Error occurred while creating the organisation",
     "projectRemovedFromOrganisation": "The project has been removed from the organisation",
+    "projectAddedToOrganisation": "The project has been added to the organisation",
     "projectRemoveError": "Error occurred while removing the project from the organisation",
+    "projectAddError": "Error occurred while adding the project to the organisation",
     "orgUserRemoved": "The user has been removed from the organisation",
     "orgUserRemoveError": "Error occurred while removing the user from the organisation",
     "orgSettingsUpdated": "Organisation settings have been updated"
@@ -636,6 +638,10 @@
       "remove": {
         "title": "Remove {{project}}?",
         "message": "Are you sure you want to remove this project from the organisation? Once removed, organisation members will no longer have access to this project unless they are added in the project settings."
+      },
+      "addProject": {
+        "title": "Add project to {{organisation}}",
+        "message": "Select the project you want to add to the organisation. It will be available to all members of the organisation, and the organisation admins will be able to manage the project settings."
       }
     },
     "projectOwnedBy": "This project is owned by {{email}}"

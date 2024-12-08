@@ -1,9 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { toast } from 'sonner'
-import { InformationCircleIcon, PlusIcon } from '@heroicons/react/24/outline'
+import { InformationCircleIcon, PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { useTranslation } from 'react-i18next'
 import _isEmpty from 'lodash/isEmpty'
 import _replace from 'lodash/replace'
+import _map from 'lodash/map'
+import _filter from 'lodash/filter'
 
 import Button from 'ui/Button'
 import Modal from 'ui/Modal'
@@ -11,9 +13,111 @@ import { DetailedOrganisation } from 'redux/models/Organisation'
 import { useSelector } from 'react-redux'
 import { StateType } from 'redux/store'
 import Tooltip from 'ui/Tooltip'
-import { removeProjectFromOrganisation } from 'api'
+import { removeProjectFromOrganisation, getProjectsAvailableForOrganisation, addProjectToOrganisation } from 'api'
 import { Link } from '@remix-run/react'
 import routes from 'utils/routes'
+import Loader from 'ui/Loader'
+import Pagination from 'ui/Pagination'
+import useDebounce from 'hooks/useDebounce'
+import { IProject } from 'redux/models/IProject'
+
+interface SelectAProjectProps {
+  onSelect: (project: IProject) => void
+}
+
+const PAGINATION_ENTRIES = 5
+
+const SelectAProject = ({ onSelect }: SelectAProjectProps) => {
+  const { t } = useTranslation('common')
+
+  const [currentPage, setCurrentPage] = useState(1)
+  const [search, setSearch] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [projects, setProjects] = useState<IProject[]>([])
+  const [total, setTotal] = useState(0)
+
+  const debouncedSearch = useDebounce(search, 500)
+  const pageAmount = Math.ceil(total / PAGINATION_ENTRIES)
+
+  useEffect(() => {
+    const loadProjects = async () => {
+      setIsLoading(true)
+      try {
+        const { results, total: totalCount } = await getProjectsAvailableForOrganisation(
+          PAGINATION_ENTRIES,
+          (currentPage - 1) * PAGINATION_ENTRIES,
+          debouncedSearch,
+        )
+        setProjects(results)
+        setTotal(totalCount)
+      } catch (error) {
+        console.error('Failed to load projects:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadProjects()
+  }, [currentPage, debouncedSearch])
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [debouncedSearch])
+
+  return (
+    <div className='mt-4 flex flex-col'>
+      <div className='mb-4'>
+        <div className='relative'>
+          <div className='pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3'>
+            <MagnifyingGlassIcon className='h-5 w-5 text-gray-400' />
+          </div>
+          <input
+            type='text'
+            className='block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:bg-slate-800 dark:text-white dark:ring-slate-600 dark:focus:ring-slate-400 sm:text-sm sm:leading-6'
+            placeholder={t('project.search')}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {isLoading ? (
+        <Loader />
+      ) : (
+        <div className='overflow-hidden rounded-lg border border-gray-200 dark:border-slate-600'>
+          <ul className='divide-y divide-gray-200 dark:divide-slate-600'>
+            {_map(
+              _filter(projects, ({ uiHidden }) => !uiHidden),
+              (project) => (
+                <li
+                  key={project.id}
+                  className='cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700'
+                  onClick={() => onSelect(project)}
+                >
+                  <div className='flex items-center px-4 py-4 sm:px-6'>
+                    <div className='min-w-0 flex-1'>
+                      <p className='truncate text-sm font-medium text-gray-900 dark:text-white'>{project.name}</p>
+                    </div>
+                  </div>
+                </li>
+              ),
+            )}
+          </ul>
+        </div>
+      )}
+
+      {pageAmount > 1 ? (
+        <Pagination
+          className='mt-4'
+          page={currentPage}
+          pageAmount={pageAmount}
+          setPage={setCurrentPage}
+          total={total}
+        />
+      ) : null}
+    </div>
+  )
+}
 
 const NoProjects = () => {
   const { t } = useTranslation('common')
@@ -64,33 +168,60 @@ const ProjectList = ({ projects, onRemove }: ProjectListProps) => {
 
 interface ProjectsProps {
   organisation: DetailedOrganisation
+  reloadOrganisation: () => Promise<void>
 }
 
-export const Projects = ({ organisation }: ProjectsProps): JSX.Element => {
+export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps): JSX.Element => {
   const { t } = useTranslation('common')
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showAddProjectModal, setShowAddProjectModal] = useState(false)
   const [projectToRemove, setProjectToRemove] = useState<DetailedOrganisation['projects'][number] | null>(null)
-  const [removingProject, setRemovingProject] = useState(false)
+
+  const [isActionLoading, setIsActionLoading] = useState(false)
+  const [selectedProject, setSelectedProject] = useState<any>(null)
 
   const { projects } = organisation
 
   const removeProject = async (projectId: string) => {
-    if (removingProject) {
+    if (isActionLoading) {
       return
     }
 
-    setRemovingProject(true)
+    setIsActionLoading(true)
 
     try {
       await removeProjectFromOrganisation(organisation.id, projectId)
+      await reloadOrganisation()
       toast.success(t('apiNotifications.projectRemovedFromOrganisation'))
     } catch (reason) {
       console.error(`[ERROR] Error while deleting a project: ${reason}`)
       toast.error(t('apiNotifications.projectRemoveError'))
     } finally {
       setProjectToRemove(null)
-      setRemovingProject(false)
+      setIsActionLoading(false)
+    }
+  }
+
+  const onAddProject = async () => {
+    setShowAddProjectModal(false)
+
+    if (isActionLoading) {
+      return
+    }
+
+    setIsActionLoading(true)
+
+    try {
+      await addProjectToOrganisation(organisation.id, selectedProject.id)
+      await reloadOrganisation()
+      toast.success(t('apiNotifications.projectAddedToOrganisation'))
+    } catch (reason) {
+      console.error(`[ERROR] Error while adding a project: ${reason}`)
+      toast.error(t('apiNotifications.projectAddError'))
+    } finally {
+      setSelectedProject(null)
+      setIsActionLoading(false)
     }
   }
 
@@ -100,7 +231,15 @@ export const Projects = ({ organisation }: ProjectsProps): JSX.Element => {
         <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
           {t('organisations.projects')}
         </h3>
-        <Button className='h-8 pl-2' primary regular type='button' onClick={() => {}}>
+        <Button
+          className='h-8 pl-2'
+          primary
+          regular
+          type='button'
+          onClick={() => {
+            setShowAddProjectModal(true)
+          }}
+        >
           <>
             <PlusIcon className='mr-1 h-5 w-5' />
             {t('organisations.addProject')}
@@ -146,6 +285,49 @@ export const Projects = ({ organisation }: ProjectsProps): JSX.Element => {
 
       <Modal
         onClose={() => {
+          setShowAddProjectModal(false)
+          setSelectedProject(null)
+        }}
+        customButtons={
+          <button
+            type='button'
+            className='inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm'
+            onClick={onAddProject}
+            disabled={!selectedProject || isActionLoading}
+          >
+            {t('organisations.addProject')}
+          </button>
+        }
+        closeText={t('common.cancel')}
+        title={t('organisations.modals.addProject.title', { organisation: organisation.name })}
+        message={
+          <div>
+            <p className='mt-2 text-base text-gray-700 dark:text-gray-200'>
+              {t('organisations.modals.addProject.message')}
+            </p>
+
+            {selectedProject ? (
+              <div className='mt-4 flex items-center justify-between rounded-lg border border-gray-200 p-4 dark:border-slate-600'>
+                <span className='text-sm font-medium text-gray-900 dark:text-white'>{selectedProject.name}</span>
+                <button
+                  type='button'
+                  onClick={() => setSelectedProject(null)}
+                  className='text-sm text-red-600 hover:text-red-500'
+                >
+                  {t('common.remove')}
+                </button>
+              </div>
+            ) : (
+              <SelectAProject onSelect={setSelectedProject} />
+            )}
+          </div>
+        }
+        isOpened={showAddProjectModal}
+        isLoading={isActionLoading}
+      />
+
+      <Modal
+        onClose={() => {
           setShowDeleteModal(false)
           setProjectToRemove(null)
         }}
@@ -159,7 +341,7 @@ export const Projects = ({ organisation }: ProjectsProps): JSX.Element => {
         message={t('organisations.modals.remove.message')}
         isOpened={showDeleteModal}
         type='warning'
-        isLoading={removingProject}
+        isLoading={isActionLoading}
       />
     </div>
   )

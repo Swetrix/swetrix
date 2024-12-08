@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from 'react'
+import React, { useState, useEffect, memo, useCallback } from 'react'
 import { toast } from 'sonner'
 import { Link, useNavigate } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
@@ -71,6 +71,18 @@ const OrganisationSettings = () => {
       setIsLoading(false)
     }
   }
+
+  const reloadOrganisation = useCallback(async () => {
+    try {
+      const result = await getOrganisation(id)
+      setOrganisation(result)
+      setForm({
+        name: result.name,
+      })
+    } catch (reason: any) {
+      console.error(`[ERROR] Error while reloading organisation: ${reason}`)
+    }
+  }, [id])
 
   useEffect(() => {
     if (authLoading) {
@@ -278,8 +290,8 @@ const OrganisationSettings = () => {
           )} */}
         </div>
         <hr className='mt-2 border-gray-200 dark:border-gray-600 sm:mt-5' />
-        <People organisation={organisation} />
-        <Projects organisation={organisation} />
+        <People organisation={organisation} reloadOrganisation={reloadOrganisation} />
+        <Projects organisation={organisation} reloadOrganisation={reloadOrganisation} />
       </form>
       <Modal
         onClose={() => setShowDelete(false)}
