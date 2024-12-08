@@ -546,8 +546,11 @@ export class ProjectService {
     return this.projectsRepository.save(project)
   }
 
-  async update(id: string, projectDTO: ProjectDTO | Project) {
-    return this.projectsRepository.update(id, projectDTO)
+  async update(
+    where: FindOptionsWhere<Project>,
+    projectDTO: ProjectDTO | Project,
+  ) {
+    return this.projectsRepository.update(where, projectDTO)
   }
 
   async delete(id: string) {
@@ -1701,7 +1704,7 @@ export class ProjectService {
       throw new NotFoundException(`Project with ID ${projectId} not found`)
     }
 
-    return this.update(projectId, {
+    return this.update({ id: projectId }, {
       organisation: {
         id: organisationId,
       } as Organisation,
@@ -1727,7 +1730,7 @@ export class ProjectService {
       )
     }
 
-    return this.update(projectId, {
+    return this.update({ id: projectId }, {
       organisation: null,
     } as Project)
   }

@@ -109,6 +109,7 @@ const OrganisationSettings = () => {
     if (isSaving) {
       return
     }
+
     setIsSaving(true)
 
     try {

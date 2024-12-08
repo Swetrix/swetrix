@@ -8,11 +8,13 @@ import { UserModule } from '../user/user.module'
 import { MailerModule } from '../mailer/mailer.module'
 import { ActionTokensModule } from '../action-tokens/action-tokens.module'
 import { AppLoggerModule } from '../logger/logger.module'
+import { ProjectModule } from '../project/project.module'
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Organisation, OrganisationMember]),
     forwardRef(() => UserModule),
+    forwardRef(() => ProjectModule),
     MailerModule,
     ActionTokensModule,
     AppLoggerModule,

@@ -713,7 +713,7 @@ export class ProjectController {
     const secret = generateRandomString(CAPTCHA_SECRET_KEY_LENGTH)
 
     // @ts-ignore
-    await this.projectService.update(pid, { captchaSecretKey: secret })
+    await this.projectService.update({ id: pid }, { captchaSecretKey: secret })
 
     await deleteProjectRedis(pid)
 
@@ -759,7 +759,7 @@ export class ProjectController {
       project.isCaptchaEnabled = false
       project.isCaptchaProject = false
 
-      await this.projectService.update(id, project)
+      await this.projectService.update({ id }, project)
 
       return 'CAPTCHA project deleted successfully'
     } catch (e) {
@@ -1657,7 +1657,7 @@ export class ProjectController {
     try {
       if (project.isCaptchaProject) {
         project.isAnalyticsProject = false
-        await this.projectService.update(id, project)
+        await this.projectService.update({ id }, project)
       } else {
         await this.projectService.deleteMultipleShare(`project = "${id}"`)
         await this.projectService.delete(id)
@@ -1843,7 +1843,7 @@ export class ProjectController {
     }
 
     // @ts-expect-error
-    await this.projectService.update(id, _omit(project, ['share', 'admin']))
+    await this.projectService.update({ id }, _omit(project, ['share', 'admin']))
 
     await deleteProjectRedis(id)
 

@@ -40,6 +40,8 @@ import { AppLoggerService } from '../logger/logger.service'
 import { LetterTemplate } from '../mailer/letter'
 import { Auth } from '../auth/decorators'
 import { Pagination } from '../common/pagination'
+import { ProjectService } from '../project/project.service'
+import { Project } from '../project/entity'
 
 const ORGANISATION_INVITE_EXPIRE = 7 * 24 // 7 days in hours
 const { PRODUCTION_ORIGIN, isDevelopment } = process.env
@@ -52,6 +54,7 @@ export class OrganisationController {
     private readonly mailerService: MailerService,
     private readonly actionTokensService: ActionTokensService,
     private readonly logger: AppLoggerService,
+    private readonly projectService: ProjectService,
   ) {}
 
   @ApiBearerAuth()
@@ -378,6 +381,9 @@ export class OrganisationController {
     }
 
     try {
+      await this.projectService.update({ organisation: { id: orgId } }, {
+        organisation: null,
+      } as Project)
       await this.organisationService.deleteMemberships({
         organisation: { id: orgId },
       })
