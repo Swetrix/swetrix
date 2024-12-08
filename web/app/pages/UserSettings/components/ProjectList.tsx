@@ -29,7 +29,7 @@ const ProjectList = ({
     i18n: { language },
   } = useTranslation('common')
 
-  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const { created, confirmed, id, role, project } = item
 
   const deleteProject = async (pid: string) => {

@@ -216,7 +216,7 @@ const Organisations = () => {
   const { t } = useTranslation('common')
   const [isSearchActive, setIsSearchActive] = useState(false)
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
-  const [search, setSearch] = useState<string>('')
+  const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce<string>(search, 500)
   const [organisations, setOrganisations] = useState<Organisation[]>([])
   const [paginationTotal, setPaginationTotal] = useState(0)

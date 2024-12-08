@@ -41,7 +41,7 @@ const Referral = ({ user, updateUserData, referralStatistics, activeReferrals, s
   const [referralStatsRequested, setReferralStatsRequested] = useState(false)
   const [activeReferralsRequested, setActiveReferralsRequested] = useState(false)
   const [paypalInputError, setPaypalInputError] = useState<string | null>(null)
-  const [isPaypalEmailLoading, setIsPaypalEmailLoading] = useState<boolean>(false)
+  const [isPaypalEmailLoading, setIsPaypalEmailLoading] = useState(false)
   const [paypalEmailAddress, setPaypalEmailAddress] = useState<string | null>(user.paypalPaymentsEmail)
 
   const refUrl = `${REF_URL_PREFIX}${user?.refCode}`

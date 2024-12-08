@@ -426,11 +426,11 @@ const ViewProject = ({
   // analyticsLoading is a boolean for show loader on chart
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
   // period using for logic with update data on chart. Set when user change period in dropdown and when we parse query params from url
-  const [period, setPeriod] = useState<string>(
+  const [period, setPeriod] = useState(
     projectViewPrefs ? projectViewPrefs[id]?.period || periodPairs[4].period : periodPairs[4].period,
   )
   // timeBucket using for logic with update data on chart. Set when user change timeBucket in dropdown and when we parse query params from url
-  const [timeBucket, setTimebucket] = useState<string>(
+  const [timeBucket, setTimebucket] = useState(
     projectViewPrefs ? projectViewPrefs[id]?.timeBucket || periodPairs[4].tbs[1] : periodPairs[4].tbs[1],
   )
   // activeTab using for change tabs and display other data on chart. Like performance, traffic, custom events
@@ -440,7 +440,7 @@ const ViewProject = ({
   // mainChart is a ref for chart
   const [mainChart, setMainChart] = useState<any>(null)
   // dataLoading is a boolean for show loader on chart and do not load data when we have dataLoading === true
-  const [dataLoading, setDataLoading] = useState<boolean>(false)
+  const [dataLoading, setDataLoading] = useState(false)
   // activeChartMetrics is a list of metrics for logic with api, chart and dropdown
   // when user change metrics in dropdown, we change activeChartMetrics and show other data on chart
   const [activeChartMetrics, setActiveChartMetrics] = useState<{
@@ -460,7 +460,7 @@ const ViewProject = ({
     [ERROR_FILTERS_MAPPING.showResolved]: false,
   })
   // similar activeChartMetrics but using for performance tab
-  const [activeChartMetricsPerf, setActiveChartMetricsPerf] = useState<string>(CHART_METRICS_MAPPING_PERF.timing)
+  const [activeChartMetricsPerf, setActiveChartMetricsPerf] = useState(CHART_METRICS_MAPPING_PERF.timing)
   const [activePerfMeasure, setActivePerfMeasure] = useState(CHART_MEASURES_MAPPING_PERF.median)
   // checkIfAllMetricsAreDisabled when all metrics are disabled, we are hidden chart
   const checkIfAllMetricsAreDisabled = useMemo(
@@ -471,13 +471,13 @@ const ViewProject = ({
   const [filters, setFilters] = useState<IFilter[]>([])
   const [filtersPerf, setFiltersPerf] = useState<IFilter[]>([])
   const [filtersSessions, setFiltersSessions] = useState<IFilter[]>([])
-  const [areFiltersSessionsParsed, setAreFiltersSessionsParsed] = useState<boolean>(false)
+  const [areFiltersSessionsParsed, setAreFiltersSessionsParsed] = useState(false)
   // filters for list of errors
   const [filtersErrors, setFiltersErrors] = useState<IFilter[]>([])
-  const [areFiltersErrorsParsed, setAreFiltersErrorsParsed] = useState<boolean>(false)
+  const [areFiltersErrorsParsed, setAreFiltersErrorsParsed] = useState(false)
   // filters for details error page
   const [filtersSubError, setFiltersSubError] = useState<IFilter[]>([])
-  const [areFiltersSubErrorParsed, setAreFiltersSubErrorParsed] = useState<boolean>(false)
+  const [areFiltersSubErrorParsed, setAreFiltersSubErrorParsed] = useState(false)
 
   // isLoading is a true when we loading data from api
   const isLoading = authenticated ? _isLoading : false
@@ -494,7 +494,7 @@ const ViewProject = ({
     localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null,
   )
   // activeTab traffic, performance, alerts
-  const [activeTab, setActiveTab] = useState<string>(() => {
+  const [activeTab, setActiveTab] = useState(() => {
     // first we check if we have activeTab in url
     // if we have activeTab in url, we return it
     // if we do not have activeTab in url, we return activeTab from localStorage or default tab trafic
@@ -504,27 +504,27 @@ const ViewProject = ({
   const [isHotkeysHelpOpened, setIsHotkeysHelpOpened] = useState(false)
 
   // sessions
-  const [sessionsSkip, setSessionsSkip] = useState<number>(0)
-  const [canLoadMoreSessions, setCanLoadMoreSessions] = useState<boolean>(false)
+  const [sessionsSkip, setSessionsSkip] = useState(0)
+  const [canLoadMoreSessions, setCanLoadMoreSessions] = useState(false)
   const [sessions, setSessions] = useState<any[]>([])
   const [sessionsLoading, setSessionsLoading] = useState<boolean | null>(null) // null - not loaded, true - loading, false - loaded
   const [activeSession, setActiveSession] = useState<any>(null)
-  const [sessionLoading, setSessionLoading] = useState<boolean>(false)
+  const [sessionLoading, setSessionLoading] = useState(false)
   const [activePSID, setActivePSID] = useState<string | null>(null)
 
   // errors
-  const [errorsSkip, setErrorsSkip] = useState<number>(0)
-  const [canLoadMoreErrors, setCanLoadMoreErrors] = useState<boolean>(false)
+  const [errorsSkip, setErrorsSkip] = useState(0)
+  const [canLoadMoreErrors, setCanLoadMoreErrors] = useState(false)
   const [errors, setErrors] = useState<any[]>([])
   const [errorsLoading, setErrorsLoading] = useState<boolean | null>(null) // null - not loaded, true - loading, false - loaded
   const [activeError, setActiveError] = useState<any>(null)
-  const [errorLoading, setErrorLoading] = useState<boolean>(false)
+  const [errorLoading, setErrorLoading] = useState(false)
   const [errorStatusUpdating, setErrorStatusUpdating] = useState(false)
   const [activeEID, setActiveEID] = useState<string | null>(null)
 
   const [activeFunnel, setActiveFunnel] = useState<IFunnel | null>(null)
   const [funnelToEdit, setFunnelToEdit] = useState<IFunnel | undefined>(undefined)
-  const [funnelActionLoading, setFunnelActionLoading] = useState<boolean>(false)
+  const [funnelActionLoading, setFunnelActionLoading] = useState(false)
 
   // null -> not loaded yet
   const [projectViews, setProjectViews] = useState<IProjectView[]>([])
@@ -689,7 +689,7 @@ const ViewProject = ({
     setFunnelActionLoading(false)
   }
   // pgActiveFragment is a active fragment for pagination
-  const [pgActiveFragment, setPgActiveFragment] = useState<number>(0)
+  const [pgActiveFragment, setPgActiveFragment] = useState(0)
 
   // Used to switch between Country, Region and City tabs
   const [countryActiveTab, setCountryActiveTab] = useState<'cc' | 'rg' | 'ct'>('cc')
@@ -706,7 +706,7 @@ const ViewProject = ({
   // chartDataPerf is a data for performance chart
   const [chartDataPerf, setChartDataPerf] = useState<any>({})
   // similar to isPanelsDataEmpty but using for performance tab
-  const [isPanelsDataEmptyPerf, setIsPanelsDataEmptyPerf] = useState<boolean>(false)
+  const [isPanelsDataEmptyPerf, setIsPanelsDataEmptyPerf] = useState(false)
   // similar to panelsData but using for performance tab
   const [panelsDataPerf, setPanelsDataPerf] = useState<any>({})
   // timeFormat is a time format for chart
@@ -725,7 +725,7 @@ const ViewProject = ({
     [customEventsPrefs, id, activeChartMetricsCustomEvents],
   )
   // chartType is a type of chart, bar or line
-  const [chartType, setChartType] = useState<string>((getItem('chartType') as string) || chartTypes.line)
+  const [chartType, setChartType] = useState((getItem('chartType') as string) || chartTypes.line)
 
   // similar to periodPairs but using for compare
   const [periodPairsCompare, setPeriodPairsCompare] = useState<
@@ -749,7 +749,7 @@ const ViewProject = ({
     return false
   })
   // similar to activePeriod but using for compare
-  const [activePeriodCompare, setActivePeriodCompare] = useState<string>(periodPairsCompare[0].period)
+  const [activePeriodCompare, setActivePeriodCompare] = useState(periodPairsCompare[0].period)
   // activeDropdownLabelCompare is a label using for overview panels and dropdown
   const activeDropdownLabelCompare = useMemo(
     () => _find(periodPairsCompare, (p) => p.period === activePeriodCompare)?.label,

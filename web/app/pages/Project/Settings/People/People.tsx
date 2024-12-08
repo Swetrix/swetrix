@@ -161,8 +161,8 @@ const People: React.FunctionComponent<IPeopleProps> = ({
   isPaidTierUsed,
   user: currentUser,
 }: IPeopleProps) => {
-  const [showModal, setShowModal] = useState<boolean>(false)
-  const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState<boolean>(false)
+  const [showModal, setShowModal] = useState(false)
+  const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
   const {
     t,
     i18n: { language },

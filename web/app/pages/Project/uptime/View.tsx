@@ -163,7 +163,7 @@ const Uptime = (): JSX.Element => {
   const dispatch = useDispatch()
   const { loading, total, monitors } = useSelector((state: StateType) => state.ui.monitors)
   const { user, authenticated } = useSelector((state: StateType) => state.auth)
-  const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState<boolean>(false)
+  const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
   const [activeMonitor, setActiveMonitor] = useState<{
     monitor: Monitor
     overall?: MonitorOverallObject

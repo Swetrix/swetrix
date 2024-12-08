@@ -21,12 +21,12 @@ const ForgotPassword = () => {
   }>({
     email: '',
   })
-  const [validated, setValidated] = useState<boolean>(false)
+  const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
     email?: string
   }>({})
-  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const validate = () => {
     const allErrors = {} as {

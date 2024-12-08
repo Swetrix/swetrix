@@ -106,7 +106,7 @@ interface IMetricCardSelect {
 
 export const MetricCardSelect: React.FC<IMetricCardSelect> = ({ values, valueMapper, selectLabel, classes }) => {
   const [selected, setSelected] = useState(0)
-  const [show, setShow] = useState<boolean>(false)
+  const [show, setShow] = useState(false)
 
   const _onSelect = (value: number) => {
     setSelected(value)

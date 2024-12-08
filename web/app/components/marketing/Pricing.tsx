@@ -65,17 +65,17 @@ const Pricing = ({ authenticated, isBillingPage }: IPricing) => {
   const currencyCode = user?.tierCurrency || metainfo.code
 
   const [planCodeLoading, setPlanCodeLoading] = useState<string | null>(null)
-  const [isNewPlanConfirmationModalOpened, setIsNewPlanConfirmationModalOpened] = useState<boolean>(false)
+  const [isNewPlanConfirmationModalOpened, setIsNewPlanConfirmationModalOpened] = useState(false)
   const [subUpdatePreview, setSubUpdatePreview] = useState<any>(null) // object - preview itself, null - loading, false - error
   const [newPlanId, setNewPlanId] = useState<number | null>(null)
-  const [isSubUpdating, setIsSubUpdating] = useState<boolean>(false)
+  const [isSubUpdating, setIsSubUpdating] = useState(false)
   const [downgradeTo, setDowngradeTo] = useState<{
     planCode: string
     name: string
     pid: string
     ypid: string
   } | null>(null)
-  const [showDowngradeModal, setShowDowngradeModal] = useState<boolean>(false)
+  const [showDowngradeModal, setShowDowngradeModal] = useState(false)
   const [billingFrequency, setBillingFrequency] = useState(user?.billingFrequency || BillingFrequency.monthly)
 
   const PLAN_CODES_ARRAY = authenticated

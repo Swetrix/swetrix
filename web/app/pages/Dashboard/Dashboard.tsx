@@ -35,8 +35,8 @@ const Dashboard = () => {
   const { user } = useSelector((state: StateType) => state.auth)
 
   const { t } = useTranslation('common')
-  const [isSearchActive, setIsSearchActive] = useState<boolean>(false)
-  const [showActivateEmailModal, setShowActivateEmailModal] = useState<boolean>(false)
+  const [isSearchActive, setIsSearchActive] = useState(false)
+  const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
   const pageAmount = Math.ceil(total / ENTRIES_PER_PAGE_DASHBOARD)
 
   // This search represents what's inside the search input

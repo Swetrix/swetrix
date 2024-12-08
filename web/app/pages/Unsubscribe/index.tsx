@@ -18,8 +18,8 @@ const Unsubscribe = ({ type }: IUnsubscribe): JSX.Element => {
   const { t } = useTranslation('common')
   const { token } = useParams()
   const { authenticated } = useSelector((state: StateType) => state.auth)
-  const [loading, setLoading] = useState<boolean>(true)
-  const [error, setError] = useState<string>('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     setLoading(true)

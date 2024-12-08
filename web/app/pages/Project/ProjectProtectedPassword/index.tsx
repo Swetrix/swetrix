@@ -34,13 +34,13 @@ const ProjectProtectedPassword = ({
   const [form, setForm] = useState<IProjectProtectedPasswordForm>({
     password: '',
   })
-  const [validated, setValidated] = useState<boolean>(false)
+  const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
     password?: string
   }>({})
   const { id } = useParams()
-  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
   const dispatch = useDispatch()
 

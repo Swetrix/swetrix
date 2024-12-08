@@ -48,15 +48,15 @@ const Signin = ({ login, loginSuccess, authSSO, ssrTheme }: ISignin): JSX.Elemen
     password: '',
     dontRemember: false,
   })
-  const [validated, setValidated] = useState<boolean>(false)
+  const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
     email?: string
     password?: string
   }>({})
-  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [isTwoFARequired, setIsTwoFARequired] = useState<boolean>(false)
-  const [twoFACode, setTwoFACode] = useState<string>('')
+  const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isTwoFARequired, setIsTwoFARequired] = useState(false)
+  const [twoFACode, setTwoFACode] = useState('')
   const [twoFACodeError, setTwoFACodeError] = useState<string | null>(null)
 
   const validate = () => {

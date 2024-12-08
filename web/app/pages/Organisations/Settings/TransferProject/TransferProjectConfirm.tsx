@@ -10,8 +10,8 @@ import routes from 'utils/routes'
 
 const TransferProjectConfirm = (): JSX.Element => {
   const { t } = useTranslation('common')
-  const [loading, setLoading] = useState<boolean>(true)
-  const [error, setError] = useState<string>('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   const handleConfirm = async (token: string) => {
     try {

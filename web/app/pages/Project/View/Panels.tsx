@@ -532,7 +532,7 @@ const CustomEvents = ({
   )
   const uniques = _sum(chartData.uniques)
   const [chartOptions, setChartOptions] = useState<any>({})
-  const [activeFragment, setActiveFragment] = useState<number>(0)
+  const [activeFragment, setActiveFragment] = useState(0)
   const totalPages = useMemo(() => _ceil(_size(keys) / ENTRIES_PER_CUSTOM_EVENTS_PANEL), [keys])
   const canGoPrev = () => page > 0
   const canGoNext = () => page < _floor((_size(keys) - 1) / ENTRIES_PER_CUSTOM_EVENTS_PANEL)
@@ -987,7 +987,7 @@ const PageProperties = ({
     [keys, currentIndex],
   )
   const uniques = _sum(chartData.uniques)
-  const [activeFragment, setActiveFragment] = useState<number>(0)
+  const [activeFragment, setActiveFragment] = useState(0)
   const [triggerTagWhenFiltersChange, setTriggerTagWhenFiltersChange] = useState<string | null>(null)
   const totalPages = useMemo(() => _ceil(_size(keys) / ENTRIES_PER_CUSTOM_EVENTS_PANEL), [keys])
   const canGoPrev = () => page > 0
@@ -1425,7 +1425,7 @@ const Panel = ({
   const entriesToDisplay = _slice(entries, currentIndex, currentIndex + ENTRIES_PER_PANEL)
   const [activeFragment, setActiveFragment] = useState(0)
   const [modal, setModal] = useState(false)
-  const [isReversedUserFlow, setIsReversedUserFlow] = useState<boolean>(false)
+  const [isReversedUserFlow, setIsReversedUserFlow] = useState(false)
   const canGoPrev = () => page > 0
   const canGoNext = () => page < _floor((_size(entries) - 1) / ENTRIES_PER_PANEL)
 

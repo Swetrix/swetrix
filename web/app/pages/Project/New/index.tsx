@@ -36,12 +36,12 @@ const NewProject = () => {
     name: '',
     organisationId: undefined,
   })
-  const [validated, setValidated] = useState<boolean>(false)
+  const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
     name?: string
   }>({})
-  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
-  const [projectSaving, setProjectSaving] = useState<boolean>(false)
+  const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [projectSaving, setProjectSaving] = useState(false)
 
   const organisations = useMemo(
     () => [

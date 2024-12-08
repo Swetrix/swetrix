@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo, memo, useRef } from 'react'
 import { toast } from 'sonner'
 import useSize from 'hooks/useSize'
-import { useNavigate, useParams } from '@remix-run/react'
+import { useNavigate } from '@remix-run/react'
 import { ClientOnly } from 'remix-utils/client-only'
 import bb from 'billboard.js'
 import { ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
@@ -67,6 +67,7 @@ import TBPeriodSelector from 'pages/Project/View/components/TBPeriodSelector'
 import CCRow from '../../Project/View/components/CCRow'
 import NoEvents from './components/NoEvents'
 import Filters from 'pages/Project/View/components/Filters'
+import { useRequiredParams } from 'hooks/useRequiredParams'
 
 const PageLoader = () => (
   <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
@@ -108,20 +109,15 @@ const ViewCaptcha = ({
   } = useTranslation('common')
   const [periodPairs, setPeriodPairs] = useState(captchaTbPeriodPairs(t, undefined, undefined, language))
   const dashboardRef = useRef(null)
-  // @ts-ignore
-  const {
-    id,
-  }: {
-    id: string
-  } = useParams()
+  const { id } = useRequiredParams<{ id: string }>()
   const navigate = useNavigate()
   const project = useMemo(() => _find(projects, (p) => p.id === id) || ({} as ICaptchaProject), [projects, id])
-  const [areFiltersParsed, setAreFiltersParsed] = useState<boolean>(false)
-  const [areTimeBucketParsed, setAreTimeBucketParsed] = useState<boolean>(false)
-  const [arePeriodParsed, setArePeriodParsed] = useState<boolean>(false)
+  const [areFiltersParsed, setAreFiltersParsed] = useState(false)
+  const [areTimeBucketParsed, setAreTimeBucketParsed] = useState(false)
+  const [arePeriodParsed, setArePeriodParsed] = useState(false)
   const [panelsData, setPanelsData] = useState<any>({})
-  const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState<boolean>(false)
-  const [analyticsLoading, setAnalyticsLoading] = useState<boolean>(true)
+  const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
+  const [analyticsLoading, setAnalyticsLoading] = useState(true)
   const [period, setPeriod] = useState<string>(
     projectViewPrefs ? projectViewPrefs[id]?.period || periodPairs[4].period : periodPairs[4].period,
   )
@@ -142,7 +138,7 @@ const ViewCaptcha = ({
     [period, periodPairs],
   )
   const [chartData, setChartData] = useState<any>({})
-  const [dataLoading, setDataLoading] = useState<boolean>(false)
+  const [dataLoading, setDataLoading] = useState(false)
   const [activeChartMetrics, setActiveChartMetrics] = useState<{
     [key: string]: boolean
   }>({

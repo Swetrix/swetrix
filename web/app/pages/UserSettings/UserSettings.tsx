@@ -175,7 +175,7 @@ const UserSettings = ({
 }: IProps): JSX.Element => {
   const navigate = useNavigate()
   const { t } = useTranslation('common')
-  const [activeTab, setActiveTab] = useState<string>(TAB_MAPPING.ACCOUNT)
+  const [activeTab, setActiveTab] = useState(TAB_MAPPING.ACCOUNT)
   const [form, setForm] = useState<IForm>({
     email: user.email || '',
     password: '',
@@ -183,11 +183,11 @@ const UserSettings = ({
     timeFormat: user.timeFormat || TimeFormat['12-hour'],
   })
   const [showPasswordFields, setShowPasswordFields] = useState(false)
-  const [timezone, setTimezone] = useState<string>(user.timezone || DEFAULT_TIMEZONE)
+  const [timezone, setTimezone] = useState(user.timezone || DEFAULT_TIMEZONE)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
   const [isPasswordChangeModalOpened, setIsPasswordChangeModalOpened] = useState(false)
   const [timezoneChanged, setTimezoneChanged] = useState(false)
-  const [reportFrequency, setReportFrequency] = useState<string>(user.reportFrequency)
+  const [reportFrequency, setReportFrequency] = useState(user.reportFrequency)
   const [formPresetted, setFormPresetted] = useState(false)
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
@@ -198,10 +198,10 @@ const UserSettings = ({
   const [showAPIDeleteModal, setShowAPIDeleteModal] = useState(false)
   const [showExportModal, setShowExportModal] = useState(false)
   const [error, setError] = useState<null | string>(null)
-  const translatedFrequencies: string[] = _map(reportFrequencies, (key) => t(`profileSettings.${key}`)) // useMemo(_map(reportFrequencies, (key) => t(`profileSettings.${key}`)), [t])
-  const translatedTimeFormat: string[] = _map(TimeFormat, (key) => t(`profileSettings.${key}`)) // useMemo(_map(TimeFormat, (key) => t(`profileSettings.${key}`)), [t])
+  const translatedFrequencies = _map(reportFrequencies, (key) => t(`profileSettings.${key}`)) // useMemo(_map(reportFrequencies, (key) => t(`profileSettings.${key}`)), [t])
+  const translatedTimeFormat = _map(TimeFormat, (key) => t(`profileSettings.${key}`)) // useMemo(_map(TimeFormat, (key) => t(`profileSettings.${key}`)), [t])
   const [settingUpdating, setSettingUpdating] = useState(false)
-  const [deletionFeedback, setDeletionFeedback] = useState<string>('')
+  const [deletionFeedback, setDeletionFeedback] = useState('')
 
   const tabs = getTabs(t)
   const activeTabLabel = useMemo(() => _find(tabs, (tab) => tab.id === activeTab)?.label, [tabs, activeTab])

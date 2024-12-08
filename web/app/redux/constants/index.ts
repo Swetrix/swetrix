@@ -228,17 +228,12 @@ export const tbPeriodPairsCompare = (
   },
 ]
 
-export const PERIOD_PAIRS_COMPARE: {
-  COMPARE: string
-  PREVIOS: string
-  CUSTOM: string
-  DISABLE: string
-} = {
+export const PERIOD_PAIRS_COMPARE = {
   COMPARE: 'compare',
   PREVIOS: 'previous',
   CUSTOM: 'custom',
   DISABLE: 'disable',
-}
+} as const
 
 interface IStringObject {
   [key: string]: string
@@ -252,7 +247,7 @@ export const PERFORMANCE_PANELS_ORDER = ['cc', 'pg', 'br', 'dv']
 export const ERROR_PANELS_ORDER = ['cc', 'pg', 'br', 'os', 'lc', 'dv']
 
 // the maximum amount of months user can go back when picking a date in flat picker (project view)
-export const MAX_MONTHS_IN_PAST: number = 24
+export const MAX_MONTHS_IN_PAST = 24
 
 export const timeBucketToDays: {
   lt: number
@@ -303,14 +298,14 @@ export const TimeFormat: IStringObject = {
   '24-hour': '24-hour',
 }
 
-export const FREE_TIER_KEY: string = 'free'
+export const FREE_TIER_KEY = 'free'
 
 export const PADDLE_JS_URL = 'https://cdn.paddle.com/paddle/paddle.js'
 export const PADDLE_VENDOR_ID = 139393
 
 // a dedicated variable is needed for paid tier checking
-export const WEEKLY_REPORT_FREQUENCY: string = 'weekly'
-export const reportFrequencies: string[] = [WEEKLY_REPORT_FREQUENCY, 'monthly', 'quarterly', 'never']
+export const WEEKLY_REPORT_FREQUENCY = 'weekly'
+export const reportFrequencies = [WEEKLY_REPORT_FREQUENCY, 'monthly', 'quarterly', 'never']
 
 export const reportFrequencyForEmailsOptions: {
   value: string
@@ -322,47 +317,46 @@ export const reportFrequencyForEmailsOptions: {
   { value: 'never', label: 'Never' },
 ]
 
-export const GDPR_EXPORT_TIMEFRAME: number = 14 // days
+export const GDPR_EXPORT_TIMEFRAME = 14 // days
 
-export const SHOW_BANNER_AT_PERC: number = 85 // show banner when 85% of events in tier are used
+export const SHOW_BANNER_AT_PERC = 85 // show banner when 85% of events in tier are used
 
-export const TITLE_SUFFIX: string = '| Swetrix'
+export const TITLE_SUFFIX = '| Swetrix'
 
-export const LS_THEME_SETTING: string = 'colour-theme'
-export const LS_VIEW_PREFS_SETTING: string = 'proj-view-preferences'
-export const LS_CAPTCHA_VIEW_PREFS_SETTING: string = 'captcha-view-preferences'
+export const LS_THEME_SETTING = 'colour-theme'
+export const LS_VIEW_PREFS_SETTING = 'proj-view-preferences'
+export const LS_CAPTCHA_VIEW_PREFS_SETTING = 'captcha-view-preferences'
 
-export const DEFAULT_TIMEZONE: string = 'Etc/GMT'
+export const DEFAULT_TIMEZONE = 'Etc/GMT'
 
-export const DONATE_URL: string = 'https://ko-fi.com/andriir'
-export const FIREFOX_ADDON_URL: string = 'https://addons.mozilla.org/en-US/firefox/addon/swetrix/'
-export const CHROME_EXTENSION_URL: string =
-  'https://chrome.google.com/webstore/detail/swetrix/glbeclfdldjldjonfnpnembfkhphmeld'
-export const HAVE_I_BEEN_PWNED_URL: string = 'https://haveibeenpwned.com/passwords'
-export const LINKEDIN_URL: string = 'https://www.linkedin.com/company/swetrix/'
-export const GITHUB_URL: string = 'https://github.com/Swetrix/swetrix-api'
-export const TWITTER_URL: string = 'https://twitter.com/intent/user?screen_name=swetrix'
-export const TWITTER_USERNAME: string = '@swetrix'
-export const DISCORD_URL: string = 'https://discord.gg/ZVK8Tw2E8j'
-export const STATUSPAGE_URL: string = 'https://stats.uptimerobot.com/33rvmiXXEz'
-export const MAIN_URL: string = 'https://swetrix.com'
-export const REF_URL_PREFIX: string = `${MAIN_URL}/ref/`
-export const UTM_GENERATOR_URL: string = 'https://url.swetrix.com'
-export const LIVE_DEMO_URL: string = '/projects/STEzHcB1rALV'
-export const BOOK_A_CALL_URL: string = 'https://cal.com/swetrix'
-export const PERFORMANCE_LIVE_DEMO_URL: string = '/projects/STEzHcB1rALV?tab=performance'
-export const ERROR_TRACKING_LIVE_DEMO_URL: string = '/projects/STEzHcB1rALV?tab=errors'
-export const MARKETPLACE_URL: string = 'https://marketplace.swetrix.com'
-export const DOCS_URL: string = 'https://docs.swetrix.com'
-export const ERROR_TRACKING_DOCS_URL: string = 'https://docs.swetrix.com/error-tracking'
-export const CAPTCHA_URL: string = 'https://captcha.swetrix.com'
-export const DOCS_CAPTCHA_URL: string = `${DOCS_URL}/captcha/introduction`
-export const DOCS_REFERRAL_PROGRAM_URL: string = `${DOCS_URL}/affiliate/about`
+export const DONATE_URL = 'https://ko-fi.com/andriir'
+export const FIREFOX_ADDON_URL = 'https://addons.mozilla.org/en-US/firefox/addon/swetrix/'
+export const CHROME_EXTENSION_URL = 'https://chrome.google.com/webstore/detail/swetrix/glbeclfdldjldjonfnpnembfkhphmeld'
+export const HAVE_I_BEEN_PWNED_URL = 'https://haveibeenpwned.com/passwords'
+export const LINKEDIN_URL = 'https://www.linkedin.com/company/swetrix/'
+export const GITHUB_URL = 'https://github.com/Swetrix/swetrix-api'
+export const TWITTER_URL = 'https://twitter.com/intent/user?screen_name=swetrix'
+export const TWITTER_USERNAME = '@swetrix'
+export const DISCORD_URL = 'https://discord.gg/ZVK8Tw2E8j'
+export const STATUSPAGE_URL = 'https://stats.uptimerobot.com/33rvmiXXEz'
+export const MAIN_URL = 'https://swetrix.com'
+export const REF_URL_PREFIX = `${MAIN_URL}/ref/`
+export const UTM_GENERATOR_URL = 'https://url.swetrix.com'
+export const LIVE_DEMO_URL = '/projects/STEzHcB1rALV'
+export const BOOK_A_CALL_URL = 'https://cal.com/swetrix'
+export const PERFORMANCE_LIVE_DEMO_URL = '/projects/STEzHcB1rALV?tab=performance'
+export const ERROR_TRACKING_LIVE_DEMO_URL = '/projects/STEzHcB1rALV?tab=errors'
+export const MARKETPLACE_URL = 'https://marketplace.swetrix.com'
+export const DOCS_URL = 'https://docs.swetrix.com'
+export const ERROR_TRACKING_DOCS_URL = 'https://docs.swetrix.com/error-tracking'
+export const CAPTCHA_URL = 'https://captcha.swetrix.com'
+export const DOCS_CAPTCHA_URL = `${DOCS_URL}/captcha/introduction`
+export const DOCS_REFERRAL_PROGRAM_URL = `${DOCS_URL}/affiliate/about`
 
 // Swetrix vs ...
-export const SWETRIX_VS_GOOGLE: string = 'https://swetrix.com/blog/vs-google-analytics/'
-export const SWETRIX_VS_CLOUDFLARE: string = 'https://swetrix.com/blog/vs-cloudflare-analytics/'
-export const SWETRIX_VS_SIMPLE_ANALYTICS: string = 'https://swetrix.com/blog/vs-simple-analytics/'
+export const SWETRIX_VS_GOOGLE = 'https://swetrix.com/blog/vs-google-analytics/'
+export const SWETRIX_VS_CLOUDFLARE = 'https://swetrix.com/blog/vs-cloudflare-analytics/'
+export const SWETRIX_VS_SIMPLE_ANALYTICS = 'https://swetrix.com/blog/vs-simple-analytics/'
 
 // Referral program
 export const REFERRAL_COOKIE = 'affiliate'
@@ -375,12 +369,12 @@ export const REFERRAL_DISCOUNT_CODE = 'REFERRAL_DISCOUNT'
 export const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined'
 
 export type ThemeType = 'dark' | 'light'
-export const SUPPORTED_THEMES: string[] = ['light', 'dark']
+export const SUPPORTED_THEMES = ['light', 'dark']
 
-export const CONTACT_EMAIL: string = 'contact@swetrix.com'
-export const SECURITY_EMAIL: string = 'security@swetrix.com'
+export const CONTACT_EMAIL = 'contact@swetrix.com'
+export const SECURITY_EMAIL = 'security@swetrix.com'
 
-export const LIVE_VISITORS_UPDATE_INTERVAL: number = 40000
+export const LIVE_VISITORS_UPDATE_INTERVAL = 40000
 
 // Environment variables
 // Using optional chaining for REMIX_ENV?. to avoid errors when running some unit tests
@@ -464,7 +458,7 @@ export const whitelistWithCC = {
   pl: 'pl-PL',
   de: 'de-DE',
 }
-export const defaultLanguage: string = 'en'
+export const defaultLanguage = 'en'
 export const languages: IStringObject = {
   en: 'English',
   uk: 'Українська',
@@ -556,8 +550,8 @@ export const QUERY_TIME: IStringObject = {
   LAST_48_HOURS: 'last_48_hours',
 }
 
-export const INVITATION_EXPIRES_IN: number = 48 // hours
-export const ENTRIES_PER_PAGE_DASHBOARD: number = 11
+export const INVITATION_EXPIRES_IN = 48 // hours
+export const ENTRIES_PER_PAGE_DASHBOARD = 11
 
 export const THEME_TYPE: IStringObject = {
   classic: 'classic',
@@ -878,7 +872,7 @@ export const PLAN_LIMITS = {
 
 export const STANDARD_PLANS = ['hobby', 'freelancer', '200k', '500k', 'startup', '2m', 'enterprise', '10m']
 
-export const TRIAL_DAYS: number = 14
+export const TRIAL_DAYS = 14
 
 export const chartTypes = Object.freeze({
   line: 'line',

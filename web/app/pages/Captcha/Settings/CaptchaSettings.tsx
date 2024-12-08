@@ -86,19 +86,19 @@ const CaptchaSettings = ({
     public: false,
     isCaptcha: true,
   })
-  const [validated, setValidated] = useState<boolean>(false)
+  const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
     name?: string
     id?: string
     origins?: string
     ipBlacklist?: string
   }>({})
-  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
-  const [showDelete, setShowDelete] = useState<boolean>(false)
-  const [showReset, setShowReset] = useState<boolean>(false)
-  const [projectDeleting, setProjectDeleting] = useState<boolean>(false)
-  const [projectResetting, setProjectResetting] = useState<boolean>(false)
-  const [projectSaving, setProjectSaving] = useState<boolean>(false)
+  const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [showDelete, setShowDelete] = useState(false)
+  const [showReset, setShowReset] = useState(false)
+  const [projectDeleting, setProjectDeleting] = useState(false)
+  const [projectResetting, setProjectResetting] = useState(false)
+  const [projectSaving, setProjectSaving] = useState(false)
   const [captchaSecretKey, setCaptchaSecretKey] = useState(project?.captchaSecretKey)
   const [showRegenerateSecret, setShowRegenerateSecret] = useState(false)
 

@@ -185,7 +185,7 @@ const ProjectAlerts = ({ projectId }: IProjectAlerts): JSX.Element => {
   const dispatch = useDispatch()
   const { loading, total, alerts } = useSelector((state: StateType) => state.ui.alerts)
   const { user, authenticated } = useSelector((state: StateType) => state.auth)
-  const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState<boolean>(false)
+  const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
   const navigate = useNavigate()
 
   const limits = PLAN_LIMITS[user?.planCode] || PLAN_LIMITS.trial

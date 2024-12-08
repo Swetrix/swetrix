@@ -56,15 +56,15 @@ const Signup = ({ signup, authSSO, ssrTheme, authenticated: reduxAuthenticated, 
     dontRemember: false,
     checkIfLeaked: true,
   })
-  const [validated, setValidated] = useState<boolean>(false)
+  const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
     email?: string
     password?: string
     repeat?: string
     tos?: string
   }>({})
-  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
   const accessToken = getAccessToken()
   const authenticated = loading ? !!accessToken : reduxAuthenticated
