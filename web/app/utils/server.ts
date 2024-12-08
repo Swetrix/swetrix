@@ -247,11 +247,17 @@ export const getPageMeta = (t: typeof i18next.t, url?: string, _pathname?: strin
       }
       break
 
+    case routes.organisations:
+      result = {
+        title: t('titles.organisations'),
+      }
+      break
+
     default:
       break
   }
 
-  // project_settings, captcha_settings, project, captcha titles are set dynamically
+  // organisation, project_settings, captcha_settings, project, captcha titles are set dynamically
 
   // todo: create_alert, alert_settings, project_protected_password, create_monitor, monitor_settings,
 

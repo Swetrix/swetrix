@@ -161,7 +161,7 @@ const UserSettings = ({
   setAPIKey,
   user,
   dontRemember,
-  isPaidTierUsed, // setThemeType, themeType,
+  isPaidTierUsed,
   linkSSO,
   unlinkSSO,
   theme,

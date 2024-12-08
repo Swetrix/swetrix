@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo, useCallback } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
 import { Link, useNavigate } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
@@ -336,4 +336,4 @@ const OrganisationSettings = () => {
   )
 }
 
-export default memo(withAuthentication(OrganisationSettings, auth.authenticated))
+export default withAuthentication(OrganisationSettings, auth.authenticated)

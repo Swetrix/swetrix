@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo, useMemo } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import { useSelector, useDispatch } from 'react-redux'
@@ -201,4 +201,4 @@ const NewProject = () => {
   )
 }
 
-export default memo(withAuthentication(NewProject, auth.authenticated))
+export default withAuthentication(NewProject, auth.authenticated)

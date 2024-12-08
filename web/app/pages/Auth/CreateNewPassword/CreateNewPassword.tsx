@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate, useParams } from '@remix-run/react'
 import { useTranslation, Trans } from 'react-i18next'
 import _size from 'lodash/size'
@@ -154,4 +154,4 @@ const CreateNewPassword = () => {
   )
 }
 
-export default memo(withAuthentication(CreateNewPassword, auth.notAuthenticated))
+export default withAuthentication(CreateNewPassword, auth.notAuthenticated)

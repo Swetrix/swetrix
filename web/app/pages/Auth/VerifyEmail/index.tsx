@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from 'react'
+import { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { useParams, Link } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
@@ -10,12 +10,12 @@ import sagaActions from 'redux/sagas/actions'
 import Loader from 'ui/Loader'
 import routes from 'utils/routes'
 
-const VerifyEmail = (): JSX.Element => {
+const VerifyEmail = () => {
   const { t } = useTranslation('common')
   const dispatch = useDispatch()
   const { id } = useParams()
-  const [loading, setLoading] = useState<boolean>(true)
-  const [error, setError] = useState<string>('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     setLoading(true)
@@ -116,4 +116,4 @@ const VerifyEmail = (): JSX.Element => {
   )
 }
 
-export default memo(VerifyEmail)
+export default VerifyEmail

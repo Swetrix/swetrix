@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from 'react'
+import { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { useParams, Link } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
@@ -8,14 +8,13 @@ import _split from 'lodash/split'
 import sagaActions from 'redux/sagas/actions'
 import Loader from 'ui/Loader'
 import routes from 'utils/routes'
-import { AppDispatch } from 'redux/store'
 
 const ConfirmShare = () => {
   const { t } = useTranslation('common')
-  const dispatch: AppDispatch = useDispatch()
+  const dispatch = useDispatch()
   const { id } = useParams()
-  const [loading, setLoading] = useState<boolean>(true)
-  const [error, setError] = useState<string>('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     setLoading(true)
@@ -106,4 +105,4 @@ const ConfirmShare = () => {
   )
 }
 
-export default memo(ConfirmShare)
+export default ConfirmShare

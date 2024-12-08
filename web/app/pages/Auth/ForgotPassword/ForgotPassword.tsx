@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from '@remix-run/react'
 import { useTranslation, Trans } from 'react-i18next'
 import _keys from 'lodash/keys'
@@ -133,4 +133,4 @@ const ForgotPassword = () => {
   )
 }
 
-export default memo(withAuthentication(ForgotPassword, auth.notAuthenticated))
+export default withAuthentication(ForgotPassword, auth.notAuthenticated)
