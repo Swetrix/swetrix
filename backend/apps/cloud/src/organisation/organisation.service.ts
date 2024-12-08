@@ -41,6 +41,14 @@ export class OrganisationService {
     return this.organisationRepository.find(options)
   }
 
+  async delete(id: string) {
+    return this.organisationRepository.delete(id)
+  }
+
+  async deleteMemberships(options: FindOptionsWhere<OrganisationMember>) {
+    return this.membershipRepository.delete(options)
+  }
+
   async findMemberships(options: FindManyOptions<OrganisationMember>) {
     return this.membershipRepository.find(options)
   }
@@ -92,6 +100,18 @@ export class OrganisationService {
     } catch {
       return false
     }
+  }
+
+  async isOrganisationOwner(organisationId: string, userId: string) {
+    const ownerMembership = await this.findOneMembership({
+      where: {
+        organisation: { id: organisationId },
+        role: OrganisationRole.owner,
+        user: { id: userId },
+      },
+    })
+
+    return !!ownerMembership
   }
 
   async getOrganisationOwner(organisationId: string) {

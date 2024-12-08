@@ -52,6 +52,7 @@
     "noAIForecastAvailable": "AI forecast is not available for this project yet",
     "organisationCreated": "Organisation has been created",
     "organisationCreateError": "Error occurred while creating the organisation",
+    "organisationDeleted": "Organisation has been deleted",
     "projectRemovedFromOrganisation": "The project has been removed from the organisation",
     "projectAddedToOrganisation": "The project has been added to the organisation",
     "projectRemoveError": "Error occurred while removing the project from the organisation",
@@ -652,9 +653,14 @@
       "addProject": {
         "title": "Add project to {{organisation}}",
         "message": "Select the project you want to add to the organisation. It will be available to all members of the organisation, and the organisation admins will be able to manage the project settings."
+      },
+      "delete": {
+        "title": "Delete {{organisation}}?",
+        "message": "Are you sure you want to delete this organisation?\nAll the data related to the organisation will be deleted from our servers. This action is irreversible."
       }
     },
-    "projectOwnedBy": "This project is owned by {{email}}"
+    "projectOwnedBy": "This project is owned by {{email}}",
+    "delete": "Delete organisation"
   },
   "dashboard": {
     "uptime": "Uptime",

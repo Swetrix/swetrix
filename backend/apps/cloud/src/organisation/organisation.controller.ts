@@ -360,6 +360,35 @@ export class OrganisationController {
   }
 
   @ApiBearerAuth()
+  @Delete('/:orgId')
+  @ApiResponse({ status: 200, type: Organisation })
+  @Auth([], true)
+  async delete(@Param('orgId') orgId: string, @CurrentUserId() userId: string) {
+    this.logger.log({ orgId, userId }, 'DELETE /organisation/:orgId')
+
+    const isOwner = await this.organisationService.isOrganisationOwner(
+      orgId,
+      userId,
+    )
+
+    if (!isOwner) {
+      throw new ForbiddenException(
+        'You must be the organisation owner to delete it',
+      )
+    }
+
+    try {
+      await this.organisationService.deleteMemberships({
+        organisation: { id: orgId },
+      })
+      await this.organisationService.delete(orgId)
+    } catch (reason) {
+      console.error('[ERROR] Failed to delete organisation:', reason)
+      throw new BadRequestException('Failed to delete organisation')
+    }
+  }
+
+  @ApiBearerAuth()
   @Patch('/:orgId')
   @ApiResponse({ status: 200, type: Organisation })
   @Auth([], true)
@@ -388,8 +417,8 @@ export class OrganisationController {
       await this.organisationService.update(orgId, {
         name: _trim(updateOrgDTO.name),
       })
-    } catch (e) {
-      console.error('[ERROR] Failed to update organisation:', e)
+    } catch (reason) {
+      console.error('[ERROR] Failed to update organisation:', reason)
       throw new BadRequestException('Failed to update organisation')
     }
   }

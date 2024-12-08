@@ -255,12 +255,12 @@ const Organisations = () => {
       setOrganisations(result.results)
       setPaginationTotal(result.total)
 
-      toast.success(t('organisations.organisationCreated'))
+      toast.success(t('apiNotifications.organisationCreated'))
 
       closeNewOrganisationModal()
     } catch (reason: any) {
       setNewOrganisationError(reason)
-      toast.error(t('organisations.organisationCreateError'))
+      toast.error(t('apiNotifications.organisationCreateError'))
     } finally {
       setIsNewOrganisationLoading(false)
     }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
 import { Link, useNavigate } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
@@ -8,7 +8,7 @@ import _keys from 'lodash/keys'
 
 import { withAuthentication, auth } from 'hoc/protected'
 import { TITLE_SUFFIX } from 'redux/constants'
-import { transferProject, getOrganisation, updateOrganisation } from 'api'
+import { transferProject, getOrganisation, updateOrganisation, deleteOrganisation } from 'api'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
@@ -21,7 +21,8 @@ import { DetailedOrganisation } from 'redux/models/Organisation'
 import { StateType } from 'redux/store'
 import { useSelector } from 'react-redux'
 import { Projects } from './Projects'
-import { XCircleIcon } from '@heroicons/react/24/outline'
+import { TrashIcon, XCircleIcon } from '@heroicons/react/24/outline'
+// import { ArrowLeftRight } from 'lucide-react'
 
 const MAX_NAME_LENGTH = 50
 
@@ -32,7 +33,7 @@ const OrganisationSettings = () => {
   const { id } = useRequiredParams<{ id: string }>()
   const navigate = useNavigate()
 
-  const { loading: authLoading } = useSelector((state: StateType) => state.auth)
+  const { loading: authLoading, user } = useSelector((state: StateType) => state.auth)
 
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
@@ -52,6 +53,16 @@ const OrganisationSettings = () => {
   const [form, setForm] = useState<Pick<DetailedOrganisation, 'name'>>({
     name: '',
   })
+
+  const isOrganisationOwner = useMemo(() => {
+    if (!organisation) {
+      return false
+    }
+
+    const owner = organisation.members.find((member) => member.role === 'owner')
+
+    return owner?.user?.email === user?.email
+  }, [organisation, user])
 
   const loadOrganisation = async (organisationId: string) => {
     if (isLoading) {
@@ -111,21 +122,21 @@ const OrganisationSettings = () => {
   }
 
   const onDelete = async () => {
-    setShowDelete(false)
+    if (isDeleting) {
+      return
+    }
 
-    if (!isDeleting) {
-      setIsDeleting(true)
-      try {
-        toast.success(t('project.settings.deleted'))
+    setIsDeleting(true)
 
-        // todo
-
-        navigate(routes.organisations)
-      } catch (reason: any) {
-        toast.error(reason)
-      } finally {
-        setIsDeleting(false)
-      }
+    try {
+      await deleteOrganisation(id)
+      toast.success(t('apiNotifications.organisationDeleted'))
+      navigate(routes.organisations)
+    } catch (reason: any) {
+      toast.error(reason)
+    } finally {
+      setIsDeleting(false)
+      setShowDelete(false)
     }
   }
 
@@ -270,24 +281,18 @@ const OrganisationSettings = () => {
               {t('common.save')}
             </Button>
           </div>
-          {/* {!project?.shared && (
+          {isOrganisationOwner ? (
             <div className='flex flex-wrap justify-center gap-2'>
-              {!isSelfhosted && (
-                <Button onClick={() => setShowTransfer(true)} semiDanger semiSmall>
-                  <>
-                    <RocketLaunchIcon className='mr-1 h-5 w-5' />
-                    {t('project.settings.transfer')}
-                  </>
-                </Button>
-              )}
-              <Button onClick={() => !isDeleting && setShowDelete(true)} loading={isDeleting} danger semiSmall>
-                <>
-                  <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
-                  {t('project.settings.delete')}
-                </>
+              {/* <Button onClick={() => setShowTransfer(true)} semiDanger semiSmall>
+                <ArrowLeftRight className='mr-1 h-5 w-5' />
+                {t('project.settings.transfer')}
+              </Button> */}
+              <Button onClick={() => setShowDelete(true)} disabled={isDeleting} danger semiSmall>
+                <TrashIcon className='mr-1 h-5 w-5' />
+                {t('organisations.delete')}
               </Button>
             </div>
-          )} */}
+          ) : null}
         </div>
         <hr className='mt-2 border-gray-200 dark:border-gray-600 sm:mt-5' />
         <People organisation={organisation} reloadOrganisation={reloadOrganisation} />
@@ -296,13 +301,16 @@ const OrganisationSettings = () => {
       <Modal
         onClose={() => setShowDelete(false)}
         onSubmit={onDelete}
-        submitText={t('project.settings.delete')}
+        submitText={t('organisations.delete')}
         closeText={t('common.close')}
-        title={t('project.settings.qDelete')}
-        message={t('project.settings.deleteHint')}
+        title={t('organisations.modals.delete.title', {
+          organisation: form.name,
+        })}
+        message={t('organisations.modals.delete.message')}
         submitType='danger'
         type='error'
         isOpened={showDelete}
+        isLoading={isDeleting}
       />
       <Modal
         onClose={() => {

@@ -290,6 +290,14 @@ export const getOrganisation = (id: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
+export const deleteOrganisation = (id: string) =>
+  api
+    .delete(`/organisation/${id}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
 export const createOrganisation = (name: string) =>
   api
     .post('/organisation', { name })

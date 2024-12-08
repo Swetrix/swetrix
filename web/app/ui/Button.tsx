@@ -6,7 +6,7 @@ import Spin from './icons/Spin'
 
 interface IButton extends React.ComponentPropsWithoutRef<typeof HeadlessButton> {
   text?: string
-  children?: JSX.Element | string
+  children?: React.ReactNode
   primary?: boolean
   secondary?: boolean
   danger?: boolean
