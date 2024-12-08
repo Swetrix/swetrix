@@ -23,13 +23,13 @@ const TwoFA = ({
   updateUserData: (data: Partial<IUser>) => void
 }): JSX.Element => {
   const { t } = useTranslation('common')
-  const [twoFAConfigurating, setTwoFAConfigurating] = useState<boolean>(false)
-  const [twoFADisabling, setTwoFADisabling] = useState<boolean>(false)
+  const [twoFAConfigurating, setTwoFAConfigurating] = useState(false)
+  const [twoFADisabling, setTwoFADisabling] = useState(false)
   const [twoFAConfigData, setTwoFAConfigData] = useState<{
     secret?: string
     otpauthUrl?: string
   }>({}) // { secret, otpauthUrl }
-  const [isTwoFaLoading, setIsTwoFaLoading] = useState<boolean>(false)
+  const [isTwoFaLoading, setIsTwoFaLoading] = useState(false)
   const [twoFACode, setTwoFACode] = useState('')
   const [twoFACodeError, setTwoFACodeError] = useState<string | null>(null)
   const [twoFARecovery, setTwoFARecovery] = useState<string | null>(null)

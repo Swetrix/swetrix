@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
@@ -8,10 +8,10 @@ import Loader from 'ui/Loader'
 import { confirmTransferProject } from 'api'
 import routes from 'utils/routes'
 
-const TransferProjectConfirm = (): JSX.Element => {
+const TransferProjectConfirm = () => {
   const { t } = useTranslation('common')
-  const [loading, setLoading] = useState<boolean>(true)
-  const [error, setError] = useState<string>('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   const handleConfirm = async (token: string) => {
     try {
@@ -104,4 +104,4 @@ const TransferProjectConfirm = (): JSX.Element => {
   )
 }
 
-export default memo(TransferProjectConfirm)
+export default TransferProjectConfirm

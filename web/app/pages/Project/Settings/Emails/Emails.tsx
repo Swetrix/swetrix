@@ -1,4 +1,3 @@
-import type i18next from 'i18next'
 import React, { useState, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 import { TrashIcon, InboxStackIcon, ChevronDownIcon, CheckIcon } from '@heroicons/react/24/outline'
@@ -24,12 +23,7 @@ import cx from 'clsx'
 import { Badge } from 'ui/Badge'
 import { ISubscribers } from 'redux/models/ISubscribers'
 
-const ModalMessage = ({
-  handleInput,
-  beenSubmitted,
-  errors,
-  form,
-}: {
+interface ModalMessageProps {
   handleInput: (e: React.ChangeEvent<HTMLInputElement>) => void
   beenSubmitted: boolean
   errors: {
@@ -40,7 +34,9 @@ const ModalMessage = ({
     email: string
     reportFrequency: string
   }
-}) => {
+}
+
+const ModalMessage = ({ handleInput, beenSubmitted, errors, form }: ModalMessageProps) => {
   const { t } = useTranslation('common')
 
   return (
@@ -73,7 +69,6 @@ const ModalMessage = ({
               index={index}
               form={form}
               handleInput={handleInput}
-              t={t}
               totalOptions={reportFrequencyForEmailsOptions.length}
             />
           ))}
@@ -88,55 +83,48 @@ const ModalMessage = ({
   )
 }
 
-const ReportFrequencyOption = ({
-  item,
-  index,
-  form,
-  handleInput,
-  t,
-  totalOptions,
-}: {
+interface ReportFrequencyOptionProps {
   item: { value: string; label: string }
   index: number
   form: { reportFrequency: string }
   handleInput: (e: React.ChangeEvent<HTMLInputElement>) => void
-  t: typeof i18next.t
   totalOptions: number
-}) => (
-  <label
-    className={cx('relative flex cursor-pointer border border-gray-200 p-4 dark:border-slate-600', {
-      'z-10 border-indigo-200 bg-indigo-50 dark:border-indigo-800/40 dark:bg-indigo-600/40':
-        item.value === form.reportFrequency,
-      'border-gray-200': form.reportFrequency !== item.value,
-      'rounded-tl-md rounded-tr-md': index === 0,
-      'rounded-bl-md rounded-br-md': index === totalOptions - 1,
-    })}
-  >
-    <input
-      name='reportFrequency'
-      className='h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500'
-      type='radio'
-      value={item.value}
-      onChange={handleInput}
-      checked={form.reportFrequency === item.value}
-    />
-    <span
-      className={cx('ml-3 block text-sm font-medium', {
-        'text-indigo-900 dark:text-white': form.reportFrequency === item.value,
-        'text-gray-700 dark:text-gray-200': form.reportFrequency !== item.value,
+}
+
+const ReportFrequencyOption = ({ item, index, form, handleInput, totalOptions }: ReportFrequencyOptionProps) => {
+  const { t } = useTranslation('common')
+
+  return (
+    <label
+      className={cx('relative flex cursor-pointer border border-gray-200 p-4 dark:border-slate-600', {
+        'z-10 border-indigo-200 bg-indigo-50 dark:border-indigo-800/40 dark:bg-indigo-600/40':
+          item.value === form.reportFrequency,
+        'border-gray-200': form.reportFrequency !== item.value,
+        'rounded-t-md': index === 0,
+        'rounded-b-md': index === totalOptions - 1,
       })}
     >
-      {t(`profileSettings.${item.value}`)}
-    </span>
-  </label>
-)
+      <input
+        name='reportFrequency'
+        className='h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500'
+        type='radio'
+        value={item.value}
+        onChange={handleInput}
+        checked={form.reportFrequency === item.value}
+      />
+      <span
+        className={cx('ml-3 block text-sm font-medium', {
+          'text-indigo-900 dark:text-white': form.reportFrequency === item.value,
+          'text-gray-700 dark:text-gray-200': form.reportFrequency !== item.value,
+        })}
+      >
+        {t(`profileSettings.${item.value}`)}
+      </span>
+    </label>
+  )
+}
 
-const EmailList = ({
-  data,
-  onRemove,
-  setEmails,
-  language,
-}: {
+interface EmailListProps {
   data: {
     id: string
     addedAt: string
@@ -145,14 +133,17 @@ const EmailList = ({
     email: string
     reportFrequency: string
   }
-  onRemove: (id: string) => void
+  onRemove: () => void
   setEmails: (value: ISubscribers[] | ((prevVar: ISubscribers[]) => ISubscribers[])) => void
-  language: string
-}) => {
-  const { t } = useTranslation('common')
-  const [open, setOpen] = useState<boolean>(false)
-  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false)
-  const openRef = useRef<HTMLDivElement>(null)
+}
+
+const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
+  const [open, setOpen] = useState(false)
+  const openRef = useRef<HTMLUListElement>(null)
   useOnClickOutside(openRef, () => setOpen(false))
   const { id, addedAt, isConfirmed, projectId, email, reportFrequency } = data || {}
 
@@ -189,7 +180,7 @@ const EmailList = ({
       </td>
       <td className='relative whitespace-nowrap py-4 pr-2 text-right text-sm font-medium'>
         {isConfirmed ? (
-          <div ref={openRef}>
+          <div>
             <button
               onClick={() => setOpen(!open)}
               type='button'
@@ -199,11 +190,17 @@ const EmailList = ({
               <ChevronDownIcon style={{ transform: open ? 'rotate(180deg)' : '' }} className='ml-0.5 h-4 w-4 pt-px' />
             </button>
             {open && (
-              <ul className='absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 rounded-md bg-white text-left shadow-lg focus:outline-none dark:divide-gray-700 dark:bg-slate-900'>
-                {_map(reportFrequencyForEmailsOptions, (item) => (
+              <ul
+                ref={openRef}
+                className='absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 rounded-md bg-white text-left shadow-lg focus:outline-none dark:divide-gray-700 dark:bg-slate-900'
+              >
+                {_map(reportFrequencyForEmailsOptions, (item, index) => (
                   <li
                     onClick={() => changeRole(item)}
-                    className='group flex cursor-pointer items-center justify-between p-4 hover:bg-indigo-600'
+                    className={cx(
+                      'group flex cursor-pointer items-center justify-between p-4 hover:bg-indigo-600',
+                      index === 0 && 'rounded-t-md',
+                    )}
                     key={item.value}
                   >
                     <div>
@@ -219,15 +216,10 @@ const EmailList = ({
                   </li>
                 ))}
                 <li
-                  onClick={() => {
-                    setOpen(false)
-                    setShowDeleteModal(true)
-                  }}
-                  className='group flex cursor-pointer items-center justify-between p-4 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  onClick={onRemove}
+                  className='group flex cursor-pointer items-center justify-between rounded-b-md p-4 hover:bg-gray-200 dark:hover:bg-gray-700'
                 >
-                  <div>
-                    <p className='font-bold text-red-600 dark:text-red-500'>{t('project.settings.removeMember')}</p>
-                  </div>
+                  <p className='font-bold text-red-600 dark:text-red-500'>{t('project.settings.removeMember')}</p>
                 </li>
               </ul>
             )}
@@ -239,48 +231,32 @@ const EmailList = ({
               type='button'
               className='rounded-md bg-white text-base font-medium text-indigo-700 hover:bg-indigo-50 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
               small
-              onClick={() => setShowDeleteModal(true)}
+              onClick={onRemove}
             >
               <TrashIcon className='h-4 w-4' />
             </Button>
           </div>
         )}
       </td>
-      <td>
-        <Modal
-          onClose={() => {
-            setShowDeleteModal(false)
-          }}
-          onSubmit={() => {
-            setShowDeleteModal(false)
-            onRemove(id)
-          }}
-          submitText={t('common.yes')}
-          type='confirmed'
-          closeText={t('common.no')}
-          title={t('project.settings.removeUser', { user: email })}
-          message={t('project.settings.removeReportConfirm')}
-          isOpened={showDeleteModal}
-        />
-      </td>
     </tr>
   )
 }
 
-const NoSubscribers = ({ t }: { t: typeof i18next.t }): JSX.Element => (
-  <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
-    <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>
-      <h2 className='mb-8 px-4 text-center text-xl leading-snug'>{t('project.settings.noPeople')}</h2>
+const NoSubscribers = () => {
+  const { t } = useTranslation('common')
+
+  return (
+    <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
+      <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>
+        <h2 className='mb-8 px-4 text-center text-xl leading-snug'>{t('project.settings.noPeople')}</h2>
+      </div>
     </div>
-  </div>
-)
+  )
+}
 
 const Emails = ({ projectId }: { projectId: string }): JSX.Element => {
-  const [showModal, setShowModal] = useState<boolean>(false)
-  const {
-    t,
-    i18n: { language },
-  } = useTranslation('common')
+  const [showModal, setShowModal] = useState(false)
+  const { t } = useTranslation('common')
   const [form, setForm] = useState<{
     email: string
     reportFrequency: string
@@ -288,24 +264,28 @@ const Emails = ({ projectId }: { projectId: string }): JSX.Element => {
     email: '',
     reportFrequency: reportFrequencyForEmailsOptions[3].value,
   })
-  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
+  const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [errors, setErrors] = useState<{
     email?: string
     reportFrequency?: string
   }>({})
-  const [validated, setValidated] = useState<boolean>(false)
+  const [validated, setValidated] = useState(false)
   const [emails, setEmails] = useState<ISubscribers[]>([])
   const [loading, setLoading] = useState(true)
-  const [paggination, setPaggination] = useState({
+  const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
     total: 0,
   })
 
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [emailToRemove, setEmailToRemove] = useState<ISubscribers | null>(null)
+
   const getSubcribersAsync = async () => {
     try {
-      const { subscribers, count } = await getSubscribers(projectId, paggination.page - 1, paggination.limit)
-      setPaggination((oldPaggination) => ({
+      const { subscribers, count } = await getSubscribers(projectId, pagination.page - 1, pagination.limit)
+      setPagination((oldPaggination) => ({
         ...oldPaggination,
         count,
       }))
@@ -389,15 +369,23 @@ const Emails = ({ projectId }: { projectId: string }): JSX.Element => {
     setErrors({})
   }
 
-  const onRemove = async (email: string) => {
+  const onRemove = async (emailId: string) => {
+    if (isDeleting) {
+      return
+    }
+
+    setIsDeleting(true)
+
     try {
-      await removeSubscriber(projectId, email)
-      const results = _filter(emails, (s) => s.id !== email)
+      await removeSubscriber(projectId, emailId)
+      const results = _filter(emails, (s) => s.id !== emailId)
       setEmails(results)
       toast.success(t('apiNotifications.emailDelete'))
     } catch (reason: any) {
       console.error(`[ERROR] Error while deleting a email: ${reason}`)
       toast.error(t('apiNotifications.emailDeleteError'))
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -437,7 +425,6 @@ const Emails = ({ projectId }: { projectId: string }): JSX.Element => {
                           {t('auth.common.addedOn')}
                         </th>
                         <th scope='col' />
-                        <th scope='col' />
                       </tr>
                     </thead>
                     <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
@@ -445,8 +432,10 @@ const Emails = ({ projectId }: { projectId: string }): JSX.Element => {
                         <EmailList
                           data={email}
                           key={email.id}
-                          onRemove={onRemove}
-                          language={language}
+                          onRemove={() => {
+                            setEmailToRemove(email)
+                            setShowDeleteModal(true)
+                          }}
                           setEmails={setEmails}
                         />
                       ))}
@@ -454,7 +443,7 @@ const Emails = ({ projectId }: { projectId: string }): JSX.Element => {
                   </table>
                 </div>
               )}
-              {_isEmpty(emails) && <NoSubscribers t={t} />}
+              {_isEmpty(emails) && <NoSubscribers />}
               {loading && <Loader />}
             </div>
           </div>
@@ -474,6 +463,24 @@ const Emails = ({ projectId }: { projectId: string }): JSX.Element => {
         closeText={t('common.cancel')}
         message={<ModalMessage form={form} handleInput={handleInput} errors={errors} beenSubmitted={beenSubmitted} />}
         isOpened={showModal}
+      />
+
+      <Modal
+        onClose={() => {
+          setShowDeleteModal(false)
+          setEmailToRemove(null)
+        }}
+        onSubmit={async () => {
+          await onRemove(emailToRemove!.id)
+          setEmailToRemove(null)
+        }}
+        submitText={t('common.yes')}
+        type='confirmed'
+        closeText={t('common.no')}
+        title={t('project.settings.removeUser', { user: emailToRemove?.email })}
+        message={t('project.settings.removeReportConfirm')}
+        isOpened={showDeleteModal}
+        isLoading={isDeleting}
       />
     </div>
   )

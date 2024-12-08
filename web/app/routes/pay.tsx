@@ -1,6 +1,8 @@
+import { redirect } from '@remix-run/node'
 import { useEffect } from 'react'
 import type { SitemapFunction } from 'remix-sitemap'
 import { ExternalScriptsHandle } from 'remix-utils/external-scripts'
+import { isSelfhosted } from 'redux/constants'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 0.9,
@@ -13,6 +15,14 @@ export let handle: ExternalScriptsHandle = {
       preload: true, // use it to render a <link rel="preload"> for this script
     },
   ],
+}
+
+export async function loader() {
+  if (isSelfhosted) {
+    return redirect('/login', 302)
+  }
+
+  return null
 }
 
 export default function Index() {

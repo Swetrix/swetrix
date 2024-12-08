@@ -22,7 +22,7 @@ const OPTIONS = [
 
 const CustomEventsDropdown = ({ onSelect, title }: ICustomEventsDropdown): JSX.Element => {
   const { t } = useTranslation()
-  const [show, setShow] = useState<boolean>(false)
+  const [show, setShow] = useState(false)
 
   const _onSelect = (value: string) => {
     onSelect(value)

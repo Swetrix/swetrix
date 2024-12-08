@@ -61,8 +61,8 @@ const Integrations = ({
   const available = getAvailableIntegrations(t)
   const [integrationConfigurating, setIntegrationConfigurating] = useState<string | null>(null)
   const [integrationInput, setIntegrationInput] = useState<string | null>(null)
-  const [isIntegrationLoading, setIsIntegrationLoading] = useState<boolean>(false)
-  const [isRemovalLoading, setIsRemovalLoading] = useState<boolean>(false)
+  const [isIntegrationLoading, setIsIntegrationLoading] = useState(false)
+  const [isRemovalLoading, setIsRemovalLoading] = useState(false)
 
   const setupIntegration = (key: string) => () => {
     setIntegrationConfigurating(key)

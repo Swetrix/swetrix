@@ -83,7 +83,7 @@ const UserFlow = ({
   const key = getUserFlowCacheKey(pid, period, filters)
   const userFlowAscending = userFlowAscendingCache[key]
   const userFlowDescending = userFlowDescendingCache[key]
-  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [isLoading, setIsLoading] = useState(true)
 
   const fetchUserFlow = async () => {
     setIsLoading(true)

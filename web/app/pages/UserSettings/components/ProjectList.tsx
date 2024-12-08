@@ -7,6 +7,15 @@ import Button from 'ui/Button'
 import Modal from 'ui/Modal'
 import { deleteShareProject, acceptShareProject } from 'api'
 import { ISharedProject } from 'redux/models/ISharedProject'
+import { IProject } from 'redux/models/IProject'
+
+interface ProjectListProps {
+  item: ISharedProject
+  removeShareProject: (id: string) => void
+  removeProject: (id: string) => void
+  setProjectsShareData: (data: Partial<IProject>, id: string) => void
+  setUserShareData: (data: Partial<IProject>, id: string) => void
+}
 
 const ProjectList = ({
   item,
@@ -14,19 +23,13 @@ const ProjectList = ({
   removeProject,
   setProjectsShareData,
   setUserShareData,
-}: {
-  item: ISharedProject
-  removeShareProject: (id: string) => void
-  removeProject: (id: string) => void
-  setProjectsShareData: (data: Partial<ISharedProject>, id: string, shared?: boolean) => void
-  setUserShareData: (data: Partial<ISharedProject>, id: string) => void
-}): JSX.Element => {
+}: ProjectListProps) => {
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
 
-  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const { created, confirmed, id, role, project } = item
 
   const deleteProject = async (pid: string) => {
@@ -44,7 +47,7 @@ const ProjectList = ({
   const onAccept = async () => {
     try {
       await acceptShareProject(id)
-      setProjectsShareData({ confirmed: true }, project.id)
+      setProjectsShareData({ isAccessConfirmed: true }, project.id)
       setUserShareData({ confirmed: true }, id)
       toast.success(t('apiNotifications.acceptInvitation'))
     } catch (e) {

@@ -11,12 +11,11 @@ const mapStateToProps = (state: StateType) => ({
 })
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
-  setProjectShareData: (data: Partial<IProject>, projectId: string, shared = false) => {
+  setProjectShareData: (data: Partial<IProject>, projectId: string) => {
     dispatch(
       UIActions.setProjectsShareData({
         data,
         id: projectId,
-        shared,
       }),
     )
   },

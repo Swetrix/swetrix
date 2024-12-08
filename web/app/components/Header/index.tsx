@@ -447,6 +447,18 @@ const ProfileMenu = ({
             </MenuItem>
             <MenuItem>
               {({ active }) => (
+                <Link
+                  to={routes.organisations}
+                  className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
+                    'bg-gray-100 dark:bg-slate-800': active,
+                  })}
+                >
+                  {t('organisations.organisations')}
+                </Link>
+              )}
+            </MenuItem>
+            <MenuItem>
+              {({ active }) => (
                 <p
                   className={cx('cursor-pointer px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
                     'bg-gray-100 dark:bg-slate-800': active,
@@ -1136,6 +1148,13 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
                       className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
                     >
                       {t('common.accountSettings')}
+                    </Link>
+                    <Link
+                      to={routes.organisations}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
+                    >
+                      {t('organisations.organisations')}
                     </Link>
                     <span
                       className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'

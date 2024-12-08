@@ -1,12 +1,9 @@
 import { put, call } from 'redux-saga/effects'
-import Debug from 'debug'
 
 import UIActions from 'redux/reducers/ui'
 import { isSelfhosted } from 'redux/constants'
 import { IMetainfo } from 'redux/models/IMetainfo'
 const { getPaymentMetainfo } = require('api')
-
-const debug = Debug('swetrix:rx:s:metainfo')
 
 export default function* loadMetainfo() {
   if (isSelfhosted) {
@@ -22,6 +19,6 @@ export default function* loadMetainfo() {
     // if (_isString(message)) {
     //   yield put(UIActions.setProjectsError(message))
     // }
-    debug('failed to load metainfo: %s', message)
+    console.error('failed to load metainfo:', message)
   }
 }

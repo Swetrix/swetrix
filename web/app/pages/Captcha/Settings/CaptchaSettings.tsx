@@ -31,7 +31,7 @@ import Checkbox from 'ui/Checkbox'
 import Modal from 'ui/Modal'
 import { trackCustom } from 'utils/analytics'
 import routes from 'utils/routes'
-import { ICaptchaProject, IProject } from 'redux/models/IProject'
+import { ICaptchaProject } from 'redux/models/IProject'
 import { IUser } from 'redux/models/IUser'
 
 const MAX_NAME_LENGTH = 50
@@ -54,7 +54,6 @@ interface ICaptchaSettings {
   removeProject: (pid: string) => void
   user: IUser
   deleteProjectCache: (pid: string) => void
-  analyticsProjects: IProject[]
   loading: boolean
   isSettings: boolean
 }
@@ -66,7 +65,6 @@ const CaptchaSettings = ({
   removeProject,
   user,
   deleteProjectCache,
-  analyticsProjects,
   loading,
   isSettings,
 }: ICaptchaSettings): JSX.Element => {
@@ -77,9 +75,9 @@ const CaptchaSettings = ({
   }: {
     id: string
   } = useParams()
-  const project: ICaptchaProject | IProject = useMemo(
-    () => _find([...projects, ...analyticsProjects], (p) => p.id === id) || ({} as IProject | ICaptchaProject),
-    [projects, analyticsProjects, id],
+  const project = useMemo<ICaptchaProject>(
+    () => _find([...projects], (p) => p.id === id) || ({} as ICaptchaProject),
+    [projects, id],
   )
   const navigate = useNavigate()
   const [form, setForm] = useState<IForm>({
@@ -88,19 +86,19 @@ const CaptchaSettings = ({
     public: false,
     isCaptcha: true,
   })
-  const [validated, setValidated] = useState<boolean>(false)
+  const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
     name?: string
     id?: string
     origins?: string
     ipBlacklist?: string
   }>({})
-  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
-  const [showDelete, setShowDelete] = useState<boolean>(false)
-  const [showReset, setShowReset] = useState<boolean>(false)
-  const [projectDeleting, setProjectDeleting] = useState<boolean>(false)
-  const [projectResetting, setProjectResetting] = useState<boolean>(false)
-  const [projectSaving, setProjectSaving] = useState<boolean>(false)
+  const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [showDelete, setShowDelete] = useState(false)
+  const [showReset, setShowReset] = useState(false)
+  const [projectDeleting, setProjectDeleting] = useState(false)
+  const [projectResetting, setProjectResetting] = useState(false)
+  const [projectSaving, setProjectSaving] = useState(false)
   const [captchaSecretKey, setCaptchaSecretKey] = useState(project?.captchaSecretKey)
   const [showRegenerateSecret, setShowRegenerateSecret] = useState(false)
 

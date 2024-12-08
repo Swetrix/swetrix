@@ -82,7 +82,6 @@ import {
   TimeFormat,
   getProjectForcastCacheKey,
   chartTypes,
-  roleAdmin,
   TRAFFIC_PANELS_ORDER,
   PERFORMANCE_PANELS_ORDER,
   isSelfhosted,
@@ -298,7 +297,6 @@ interface IViewProject {
   authenticated: boolean
   user: IUser
   timezone: string
-  sharedProjects: ISharedProject[]
   projectTab: string
   setProjectTab: (tab: string) => void
   // eslint-disable-next-line no-unused-vars, no-shadow
@@ -334,7 +332,6 @@ const ViewProject = ({
   authenticated: csrAuthenticated,
   timezone = DEFAULT_TIMEZONE,
   user,
-  sharedProjects,
   extensions,
   setProjectCachePerf,
   projectTab,
@@ -388,28 +385,15 @@ const ViewProject = ({
   // searchParams is a search params from react-router-dom
   const [searchParams, setSearchParams] = useSearchParams()
 
-  // find project by id from url from state in redux projects and sharedProjects. projects and sharedProjects loading from api in Saga on page load
   const project: IProjectForShared = useMemo(
-    () =>
-      _find(
-        [...projects, ..._map(sharedProjects, (item) => ({ ...item.project, role: item.role }))],
-        (p) => p.id === id,
-      ) || ({} as IProjectForShared),
-    [projects, id, sharedProjects],
+    () => _find(projects, (p) => p.id === id) || ({} as IProjectForShared),
+    [projects, id],
   )
 
   const projectPassword = useMemo(
     () => password[id] || (getItem(PROJECTS_PROTECTED)?.[id] as string) || queryPassword || '',
     [id, password, queryPassword],
   )
-
-  /* isSharedProject is a boolean check if project is shared. If isSharedProject is true,
-  we used role and other colummn from sharedProjects.
-  And it is used for remove settings button when user have role viewer or logic with Alert tabs */
-  const isSharedProject = useMemo(() => {
-    const foundProject = _find([..._map(sharedProjects, (item) => item.project)], (p) => p.id === id)
-    return !_isEmpty(foundProject)
-  }, [id, sharedProjects])
 
   // areFiltersParsed used for check filters is parsed from url. If we have query params in url, we parse it and set to state
   // when areFiltersParsed and areFiltersPerfParsed changed we call loadAnalytics or loadAnalyticsPerf and other func for load data
@@ -442,11 +426,11 @@ const ViewProject = ({
   // analyticsLoading is a boolean for show loader on chart
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
   // period using for logic with update data on chart. Set when user change period in dropdown and when we parse query params from url
-  const [period, setPeriod] = useState<string>(
+  const [period, setPeriod] = useState(
     projectViewPrefs ? projectViewPrefs[id]?.period || periodPairs[4].period : periodPairs[4].period,
   )
   // timeBucket using for logic with update data on chart. Set when user change timeBucket in dropdown and when we parse query params from url
-  const [timeBucket, setTimebucket] = useState<string>(
+  const [timeBucket, setTimebucket] = useState(
     projectViewPrefs ? projectViewPrefs[id]?.timeBucket || periodPairs[4].tbs[1] : periodPairs[4].tbs[1],
   )
   // activeTab using for change tabs and display other data on chart. Like performance, traffic, custom events
@@ -456,7 +440,7 @@ const ViewProject = ({
   // mainChart is a ref for chart
   const [mainChart, setMainChart] = useState<any>(null)
   // dataLoading is a boolean for show loader on chart and do not load data when we have dataLoading === true
-  const [dataLoading, setDataLoading] = useState<boolean>(false)
+  const [dataLoading, setDataLoading] = useState(false)
   // activeChartMetrics is a list of metrics for logic with api, chart and dropdown
   // when user change metrics in dropdown, we change activeChartMetrics and show other data on chart
   const [activeChartMetrics, setActiveChartMetrics] = useState<{
@@ -476,7 +460,7 @@ const ViewProject = ({
     [ERROR_FILTERS_MAPPING.showResolved]: false,
   })
   // similar activeChartMetrics but using for performance tab
-  const [activeChartMetricsPerf, setActiveChartMetricsPerf] = useState<string>(CHART_METRICS_MAPPING_PERF.timing)
+  const [activeChartMetricsPerf, setActiveChartMetricsPerf] = useState(CHART_METRICS_MAPPING_PERF.timing)
   const [activePerfMeasure, setActivePerfMeasure] = useState(CHART_MEASURES_MAPPING_PERF.median)
   // checkIfAllMetricsAreDisabled when all metrics are disabled, we are hidden chart
   const checkIfAllMetricsAreDisabled = useMemo(
@@ -487,13 +471,13 @@ const ViewProject = ({
   const [filters, setFilters] = useState<IFilter[]>([])
   const [filtersPerf, setFiltersPerf] = useState<IFilter[]>([])
   const [filtersSessions, setFiltersSessions] = useState<IFilter[]>([])
-  const [areFiltersSessionsParsed, setAreFiltersSessionsParsed] = useState<boolean>(false)
+  const [areFiltersSessionsParsed, setAreFiltersSessionsParsed] = useState(false)
   // filters for list of errors
   const [filtersErrors, setFiltersErrors] = useState<IFilter[]>([])
-  const [areFiltersErrorsParsed, setAreFiltersErrorsParsed] = useState<boolean>(false)
+  const [areFiltersErrorsParsed, setAreFiltersErrorsParsed] = useState(false)
   // filters for details error page
   const [filtersSubError, setFiltersSubError] = useState<IFilter[]>([])
-  const [areFiltersSubErrorParsed, setAreFiltersSubErrorParsed] = useState<boolean>(false)
+  const [areFiltersSubErrorParsed, setAreFiltersSubErrorParsed] = useState(false)
 
   // isLoading is a true when we loading data from api
   const isLoading = authenticated ? _isLoading : false
@@ -510,7 +494,7 @@ const ViewProject = ({
     localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null,
   )
   // activeTab traffic, performance, alerts
-  const [activeTab, setActiveTab] = useState<string>(() => {
+  const [activeTab, setActiveTab] = useState(() => {
     // first we check if we have activeTab in url
     // if we have activeTab in url, we return it
     // if we do not have activeTab in url, we return activeTab from localStorage or default tab trafic
@@ -526,27 +510,27 @@ const ViewProject = ({
   const [isHotkeysHelpOpened, setIsHotkeysHelpOpened] = useState(false)
 
   // sessions
-  const [sessionsSkip, setSessionsSkip] = useState<number>(0)
-  const [canLoadMoreSessions, setCanLoadMoreSessions] = useState<boolean>(false)
+  const [sessionsSkip, setSessionsSkip] = useState(0)
+  const [canLoadMoreSessions, setCanLoadMoreSessions] = useState(false)
   const [sessions, setSessions] = useState<any[]>([])
   const [sessionsLoading, setSessionsLoading] = useState<boolean | null>(null) // null - not loaded, true - loading, false - loaded
   const [activeSession, setActiveSession] = useState<any>(null)
-  const [sessionLoading, setSessionLoading] = useState<boolean>(false)
+  const [sessionLoading, setSessionLoading] = useState(false)
   const [activePSID, setActivePSID] = useState<string | null>(null)
 
   // errors
-  const [errorsSkip, setErrorsSkip] = useState<number>(0)
-  const [canLoadMoreErrors, setCanLoadMoreErrors] = useState<boolean>(false)
+  const [errorsSkip, setErrorsSkip] = useState(0)
+  const [canLoadMoreErrors, setCanLoadMoreErrors] = useState(false)
   const [errors, setErrors] = useState<any[]>([])
   const [errorsLoading, setErrorsLoading] = useState<boolean | null>(null) // null - not loaded, true - loading, false - loaded
   const [activeError, setActiveError] = useState<any>(null)
-  const [errorLoading, setErrorLoading] = useState<boolean>(false)
+  const [errorLoading, setErrorLoading] = useState(false)
   const [errorStatusUpdating, setErrorStatusUpdating] = useState(false)
   const [activeEID, setActiveEID] = useState<string | null>(null)
 
   const [activeFunnel, setActiveFunnel] = useState<IFunnel | null>(null)
   const [funnelToEdit, setFunnelToEdit] = useState<IFunnel | undefined>(undefined)
-  const [funnelActionLoading, setFunnelActionLoading] = useState<boolean>(false)
+  const [funnelActionLoading, setFunnelActionLoading] = useState(false)
 
   // null -> not loaded yet
   const [projectViews, setProjectViews] = useState<IProjectView[]>([])
@@ -711,7 +695,7 @@ const ViewProject = ({
     setFunnelActionLoading(false)
   }
   // pgActiveFragment is a active fragment for pagination
-  const [pgActiveFragment, setPgActiveFragment] = useState<number>(0)
+  const [pgActiveFragment, setPgActiveFragment] = useState(0)
 
   // Used to switch between Country, Region and City tabs
   const [countryActiveTab, setCountryActiveTab] = useState<'cc' | 'rg' | 'ct'>('cc')
@@ -728,7 +712,7 @@ const ViewProject = ({
   // chartDataPerf is a data for performance chart
   const [chartDataPerf, setChartDataPerf] = useState<any>({})
   // similar to isPanelsDataEmpty but using for performance tab
-  const [isPanelsDataEmptyPerf, setIsPanelsDataEmptyPerf] = useState<boolean>(false)
+  const [isPanelsDataEmptyPerf, setIsPanelsDataEmptyPerf] = useState(false)
   // similar to panelsData but using for performance tab
   const [panelsDataPerf, setPanelsDataPerf] = useState<any>({})
   // timeFormat is a time format for chart
@@ -747,7 +731,7 @@ const ViewProject = ({
     [customEventsPrefs, id, activeChartMetricsCustomEvents],
   )
   // chartType is a type of chart, bar or line
-  const [chartType, setChartType] = useState<string>((getItem('chartType') as string) || chartTypes.line)
+  const [chartType, setChartType] = useState((getItem('chartType') as string) || chartTypes.line)
 
   // similar to periodPairs but using for compare
   const [periodPairsCompare, setPeriodPairsCompare] = useState<
@@ -771,7 +755,7 @@ const ViewProject = ({
     return false
   })
   // similar to activePeriod but using for compare
-  const [activePeriodCompare, setActivePeriodCompare] = useState<string>(periodPairsCompare[0].period)
+  const [activePeriodCompare, setActivePeriodCompare] = useState(periodPairsCompare[0].period)
   // activeDropdownLabelCompare is a label using for overview panels and dropdown
   const activeDropdownLabelCompare = useMemo(
     () => _find(periodPairsCompare, (p) => p.period === activePeriodCompare)?.label,
@@ -821,9 +805,6 @@ const ViewProject = ({
 
     document.title = pageTitle
   }, [name, user, liveStats, id, t])
-
-  // sharedRoles is a role for shared project
-  const sharedRoles = useMemo(() => _find(user.sharedProjects, (p) => p.project.id === id)?.role || {}, [user, id])
 
   const timeBucketSelectorItems = useMemo(() => {
     if (activeTab === PROJECT_TABS.errors) {
@@ -1027,7 +1008,7 @@ const ViewProject = ({
     [t],
   )
 
-  const allowedToManage = useMemo(() => project?.isOwner || sharedRoles === roleAdmin.role, [project, sharedRoles])
+  const allowedToManage = project.role === 'owner' || project.role === 'admin'
 
   const dataNamesFunnel = useMemo(
     () => ({
@@ -3039,13 +3020,13 @@ const ViewProject = ({
       return
     }
 
-    getProject(id, false, projectPassword)
+    getProject(id, projectPassword)
       .then((projectRes) => {
         if (_isEmpty(projectRes)) {
           onErrorLoading()
         }
 
-        if (projectRes.isPasswordProtected && !projectRes.isOwner && _isEmpty(projectPassword)) {
+        if (projectRes.isPasswordProtected && !projectRes.role && _isEmpty(projectPassword)) {
           navigate({
             pathname: _replace(routes.project_protected_password, ':id', id),
             search: `?theme=${ssrTheme}&embedded=${embedded}`,
@@ -3053,9 +3034,10 @@ const ViewProject = ({
           return
         }
 
-        if ((projectRes.isPublic || projectRes?.isPasswordProtected) && !projectRes.isOwner) {
+        if ((projectRes.isPublic || projectRes?.isPasswordProtected) && !projectRes.role) {
           setPublicProject(projectRes)
         } else {
+          // TODO: Check, do we really need to add this project to the projects list?
           setProjects([...(projects as any[]), projectRes])
 
           if (projectRes.isLocked) {
@@ -3072,8 +3054,8 @@ const ViewProject = ({
             })
         }
       })
-      .catch((e) => {
-        console.error('[ERROR] (getProject)', e)
+      .catch((reason) => {
+        console.error('[ERROR] (getProject)', reason)
         onErrorLoading()
       })
   }, [isLoading, project, id, setPublicProject]) // eslint-disable-line
@@ -3374,17 +3356,14 @@ const ViewProject = ({
           items={tabs}
           keyExtractor={(item) => item.id}
           labelExtractor={(item) => item.label}
-          onSelect={(label) => {
-            const selected = _find(tabs, (tab) => tab.label === label)
-            if (selected) {
-              if (selected.id === 'settings') {
-                openSettingsHandler()
-                return
-              }
-
-              setProjectTab(selected?.id)
-              setActiveTab(selected?.id)
+          onSelect={(item) => {
+            if (item.id === 'settings') {
+              openSettingsHandler()
+              return
             }
+
+            setProjectTab(item?.id)
+            setActiveTab(item?.id)
           }}
           title={activeTabLabel}
           capitalise
@@ -3502,7 +3481,7 @@ const ViewProject = ({
           <h2 className='mt-2 break-words break-all text-center text-xl font-bold text-gray-900 dark:text-gray-50 sm:text-left'>
             {name}
           </h2>
-          <LockedDashboard user={user} project={project} isSharedProject={isSharedProject} />
+          <LockedDashboard user={user} project={project} />
         </div>
         {!embedded && <Footer authenticated={authenticated} minimal />}
       </>
@@ -4188,7 +4167,7 @@ const ViewProject = ({
                       )}
                     </>
                   )}
-                {activeTab === PROJECT_TABS.alerts && (isSharedProject || !project?.isOwner || !authenticated) && (
+                {activeTab === PROJECT_TABS.alerts && (project.role !== 'owner' || !authenticated) && (
                   <div className='mt-5 rounded-xl bg-gray-700 p-5'>
                     <div className='flex items-center text-gray-50'>
                       <BellIcon className='mr-2 h-8 w-8' />
@@ -4614,7 +4593,7 @@ const ViewProject = ({
                     {!errorLoading && _isEmpty(activeError) && <NoErrorDetails />}
                   </>
                 )}
-                {activeTab === PROJECT_TABS.alerts && !isSharedProject && project?.isOwner && authenticated && (
+                {activeTab === PROJECT_TABS.alerts && project.role === 'owner' && authenticated && (
                   <ProjectAlertsView projectId={id} />
                 )}
                 {activeTab === PROJECT_TABS.uptime && <Uptime />}
@@ -5071,10 +5050,7 @@ const ViewProject = ({
                                 customTabs={customTabs}
                                 // @ts-expect-error
                                 valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
-                                rowMapper={({ name: entryName }) => {
-                                  // todo: add uppercase
-                                  return entryName || t('project.redactedPage')
-                                }}
+                                rowMapper={({ name: entryName }) => entryName || t('project.redactedPage')}
                               />
                             )
                           }

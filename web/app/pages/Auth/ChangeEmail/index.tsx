@@ -1,4 +1,4 @@
-import { useState, useEffect, memo } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Link } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
@@ -100,4 +100,4 @@ const ChangeEmail = () => {
   )
 }
 
-export default memo(ChangeEmail)
+export default ChangeEmail

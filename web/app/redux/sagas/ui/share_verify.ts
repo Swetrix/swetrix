@@ -18,7 +18,6 @@ export default function* shareVerify({
     // @ts-ignore
     yield call(verifyShare, data)
     yield put(sagaActions.loadProjects())
-    yield put(sagaActions.loadSharedProjects())
     successfulCallback()
   } catch (error) {
     errorCallback(error)

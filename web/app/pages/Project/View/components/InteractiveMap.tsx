@@ -37,7 +37,7 @@ const InteractiveMap = ({ data, onClickCountry, total }: IInteractiveMap) => {
     t,
     i18n: { language },
   } = useTranslation('common')
-  const [hoverShow, setHoverShow] = useState<boolean>(false)
+  const [hoverShow, setHoverShow] = useState(false)
   const [dataHover, setDataHover] = useState<IDataHover>({} as IDataHover)
   const [cursorPosition, setCursorPosition] = useState<ICursorPosition>({} as ICursorPosition)
   const countryMap: ICountryMap = useMemo(

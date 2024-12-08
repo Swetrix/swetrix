@@ -43,11 +43,7 @@ const Chart = ({ current, options }: IChart): JSX.Element => {
     return destroy
   })
 
-  return (
-    <div>
-      <div id={current} data-testid='chart' />
-    </div>
-  )
+  return <div id={current} />
 }
 
 export default Chart

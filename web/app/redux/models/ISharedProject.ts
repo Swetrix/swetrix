@@ -2,7 +2,6 @@ import { IProject } from './IProject'
 
 export interface IProjectForShared extends IProject {
   shared?: boolean
-  role?: string
 }
 
 export interface ISharedProject {

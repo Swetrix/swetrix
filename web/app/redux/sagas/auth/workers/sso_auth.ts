@@ -71,8 +71,6 @@ export default function* ssoAuth({ payload: { callback, dontRemember, t, provide
         yield call(setRefreshToken, refreshToken)
         // yield put(UIActions.setThemeType(user.theme))
         yield put(sagaActions.loadProjects())
-        yield put(sagaActions.loadSharedProjects())
-        yield put(sagaActions.loadProjectsCaptcha())
         yield put(sagaActions.loadProjectAlerts())
         yield put(sagaActions.loadMonitors())
         yield put(authActions.finishLoading())

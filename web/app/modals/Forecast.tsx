@@ -27,7 +27,7 @@ interface IForecast {
 
 const Forecast = ({ onClose, onSubmit, isOpened, activeTB, tb }: IForecast): JSX.Element => {
   const { t } = useTranslation('common')
-  const [period, setPeriod] = useState<string>(DEFAULT_PERIOD)
+  const [period, setPeriod] = useState(DEFAULT_PERIOD)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'chart' | 'details'>('chart')
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from '@remix-run/react'
 import { useTranslation, Trans } from 'react-i18next'
 import _keys from 'lodash/keys'
@@ -21,12 +21,12 @@ const ForgotPassword = () => {
   }>({
     email: '',
   })
-  const [validated, setValidated] = useState<boolean>(false)
+  const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
     email?: string
   }>({})
-  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const validate = () => {
     const allErrors = {} as {
@@ -133,4 +133,4 @@ const ForgotPassword = () => {
   )
 }
 
-export default memo(withAuthentication(ForgotPassword, auth.notAuthenticated))
+export default withAuthentication(ForgotPassword, auth.notAuthenticated)

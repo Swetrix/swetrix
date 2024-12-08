@@ -47,7 +47,16 @@
     "enterViewName": "Please enter a view name",
     "inputCannotBeEmpty": "This input field must not be empty",
     "viewDeleted": "View has been deleted",
-    "noAIForecastAvailable": "AI forecast is not available for this project yet"
+    "noAIForecastAvailable": "AI forecast is not available for this project yet",
+    "organisationCreated": "Organisation has been created",
+    "organisationCreateError": "Error occurred while creating the organisation",
+    "projectRemovedFromOrganisation": "The project has been removed from the organisation",
+    "projectAddedToOrganisation": "The project has been added to the organisation",
+    "projectRemoveError": "Error occurred while removing the project from the organisation",
+    "projectAddError": "Error occurred while adding the project to the organisation",
+    "orgUserRemoved": "The user has been removed from the organisation",
+    "orgUserRemoveError": "Error occurred while removing the user from the organisation",
+    "orgSettingsUpdated": "Organisation settings have been updated"
   },
   "common": {
     "features": "Features",
@@ -103,7 +112,11 @@
     "oneMember": "1 Member",
     "xMembers": "{{number}} Members",
     "general": "General",
-    "fixIt": "Fix it"
+    "fixIt": "Fix it",
+    "errorOccured": "An error occurred: {{error}}",
+    "name": "Name",
+    "notSet": "Not set",
+    "remove": "Remove"
   },
   "performance": {
     "slogan": "End user <span>performance monitoring</span> to deliver fast websites.",
@@ -497,7 +510,6 @@
     "quitProjectTitle": "Quit {{project}}?",
     "shared": "Shared projects",
     "receiveLoginNotifications": "Receive login notifications",
-    "owned": "Owned projects",
     "sharedTable": {
       "project": "Project",
       "role": "Role",
@@ -598,8 +610,45 @@
     "alertUpdated": "The alert has been updated",
     "alertDeleted": "The alert has been deleted"
   },
+  "organisations": {
+    "create": "Create organisation",
+    "organisations": "Organisations",
+    "new": "New organisation",
+    "invite": {
+      "title": "Invite a user to {{organisation}}",
+      "desc": "Enter an email address and a role of the person registered on Swetrix that you want to invite to the organisation. The invitation will expire in {{expiresIn}} hours."
+    },
+    "role": {
+      "owner": {
+        "name": "Owner",
+        "desc": "Can manage the organisation and its members, as well as manage the projects within the organisation."
+      },
+      "admin": {
+        "name": "Admin",
+        "desc": "Can manage the organisation and its members, as well as manage the projects within the organisation."
+      },
+      "viewer": {
+        "name": "Viewer",
+        "desc": "Can only access the organisation and its projects without the ability to change any settings."
+      }
+    },
+    "projects": "Projects",
+    "addProject": "Add project",
+    "modals": {
+      "remove": {
+        "title": "Remove {{project}}?",
+        "message": "Are you sure you want to remove this project from the organisation? Once removed, organisation members will no longer have access to this project unless they are added in the project settings."
+      },
+      "addProject": {
+        "title": "Add project to {{organisation}}",
+        "message": "Select the project you want to add to the organisation. It will be available to all members of the organisation, and the organisation admins will be able to manage the project settings."
+      }
+    },
+    "projectOwnedBy": "This project is owned by {{email}}"
+  },
   "dashboard": {
     "uptime": "Uptime",
+    "captcha": "CAPTCHA",
     "newProject": "New project",
     "newFunnel": "New funnel",
     "reloadPage": "Reload page",
@@ -931,6 +980,7 @@
     "barChart": "Bar chart",
     "lineChart": "Line chart",
     "settings": {
+      "organisation": "Organisation",
       "shields": "Shields",
       "access": "Access settings",
       "botsProtectionLevel": {
@@ -1209,6 +1259,7 @@
     "invitation": "Shared project invitation",
     "profileSettings": "Profile settings",
     "dashboard": "Dashboard",
+    "organisations": "Organisations",
     "docs": "Documentation",
     "billing": "Billing",
     "contact": "Have something to ask?",

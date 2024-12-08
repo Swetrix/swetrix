@@ -5,23 +5,22 @@ import { StateType, AppDispatch } from 'redux/store'
 import CaptchaSettings from './CaptchaSettings'
 
 const mapStateToProps = (state: StateType) => ({
-  projects: state.ui.projects.captchaProjects,
-  analyticsProjects: state.ui.projects.projects,
-  isLoading: state.ui.projects.isLoadingCaptcha,
+  projects: state.ui.projects.projects,
+  isLoading: state.ui.projects.isLoading,
   loading: state.auth.loading,
   user: state.auth.user,
 })
 
 const mapDispatchToProps = (dispatch: AppDispatch) => ({
   loadProjects: () => {
-    sagaActions.loadProjectsCaptcha()
+    sagaActions.loadProjects()
   },
   removeProject: (pid: string) => {
-    dispatch(UIActions.removeCaptchaProject(pid))
+    dispatch(UIActions.removeProject({ pid }))
   },
-  deleteProjectCache: (pid: string, filters: any) => {
+  deleteProjectCache: (pid: string) => {
     dispatch(
-      UIActions.deleteCaptchaProjectCache({
+      UIActions.deleteProjectCache({
         pid,
       }),
     )
