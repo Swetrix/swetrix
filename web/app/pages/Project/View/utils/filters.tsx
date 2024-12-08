@@ -171,8 +171,8 @@ export const parseFiltersFromUrl = (
     })
 
     setFilters(initialFilters)
-  } catch (error) {
-    console.error(`[ERROR] Parsing filters from URL with suffix ${keySuffix}: ${error}`)
+  } catch (reason) {
+    console.error(`[ERROR] Parsing filters from URL with suffix ${keySuffix}: ${reason}`)
   } finally {
     setParsedFlag(true)
   }

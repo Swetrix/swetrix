@@ -1202,8 +1202,8 @@ const ViewProject = ({
         generate.data.names(dataNames)
         return generate
       })
-    } catch (e) {
-      console.error('[ERROR] FAILED TO LOAD CUSTOM EVENTS', e)
+    } catch (reason) {
+      console.error('[ERROR] Failed to load custom events:', reason)
     } finally {
       setDataLoading(false)
     }
@@ -1708,9 +1708,8 @@ const ViewProject = ({
       } else {
         setCanLoadMoreSessions(true)
       }
-    } catch (e) {
-      console.error('[ERROR](loadSessions) Loading sessions data failed')
-      console.error(e)
+    } catch (reason) {
+      console.error('[ERROR](loadSessions) Loading sessions data failed:', reason)
     } finally {
       setSessionsLoading(false)
     }
@@ -1781,9 +1780,8 @@ const ViewProject = ({
       } else {
         setCanLoadMoreErrors(true)
       }
-    } catch (e) {
-      console.error('[ERROR](loadErrors) Loading errors data failed')
-      console.error(e)
+    } catch (reason) {
+      console.error('[ERROR](loadErrors) Loading errors data failed:', reason)
     } finally {
       setErrorsLoading(false)
     }
@@ -2030,12 +2028,11 @@ const ViewProject = ({
 
       setAnalyticsLoading(false)
       setDataLoading(false)
-    } catch (e) {
+    } catch (reason) {
       setAnalyticsLoading(false)
       setDataLoading(false)
       setIsPanelsDataEmptyPerf(true)
-      console.error('[ERROR](loadAnalytics) Loading analytics data failed')
-      console.error(e)
+      console.error('[ERROR](loadAnalytics) Loading analytics data failed:', reason)
     }
   }
 
@@ -2092,7 +2089,7 @@ const ViewProject = ({
 
         setAnalyticsLoading(false)
         setDataLoading(false)
-      } catch (e) {
+      } catch (reason) {
         setAnalyticsLoading(false)
         setDataLoading(false)
 
@@ -2100,8 +2097,7 @@ const ViewProject = ({
           setFunnelsCache(id, {}, key)
         }
 
-        console.error('[ERROR](loadFunnelsData) Loading funnels data failed')
-        console.error(e)
+        console.error('[ERROR](loadFunnelsData) Loading funnels data failed:', reason)
       }
     },
     [

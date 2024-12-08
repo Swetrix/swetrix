@@ -44,8 +44,8 @@ export default function* singinWorker({ payload: { credentials, callback } }: IS
     yield put(sagaActions.loadProjectAlerts())
     yield put(sagaActions.loadMonitors())
     callback(true, false)
-  } catch (error: any) {
-    const err = _isObject(error) ? error.message : error
+  } catch (reason: any) {
+    const err = _isObject(reason) ? reason.message : reason
 
     toast.error(err || 'apiNotifications.somethingWentWrong')
     callback(false, false)

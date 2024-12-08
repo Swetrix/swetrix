@@ -14,8 +14,8 @@ export default function* loadMetainfo() {
     const metainfo: IMetainfo = yield call(getPaymentMetainfo)
 
     yield put(UIActions.setMetainfo(metainfo))
-  } catch (e: unknown) {
-    const { message } = e as { message: string }
+  } catch (reason: unknown) {
+    const { message } = reason as { message: string }
     // if (_isString(message)) {
     //   yield put(UIActions.setProjectsError(message))
     // }

@@ -22,7 +22,7 @@ const getInitialViewPrefs = (LS_VIEW: string) => {
 
   try {
     return filterInvalidViewPrefs(storedPrefs)
-  } catch (e) {
+  } catch {
     removeItem(LS_VIEW)
   }
 

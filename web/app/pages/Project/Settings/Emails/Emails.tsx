@@ -290,8 +290,8 @@ const Emails = ({ projectId }: { projectId: string }): JSX.Element => {
         count,
       }))
       setEmails(subscribers)
-    } catch (e) {
-      console.error(`[ERROR] Error while getting subscribers: ${e}`)
+    } catch (reason) {
+      console.error(`[ERROR] Error while getting subscribers: ${reason}`)
     } finally {
       setLoading(false)
     }
@@ -341,8 +341,8 @@ const Emails = ({ projectId }: { projectId: string }): JSX.Element => {
       const results = await addSubscriber(projectId, { reportFrequency: form.reportFrequency, email: form.email })
       setEmails([...emails, results])
       toast.success(t('apiNotifications.userInvited'))
-    } catch (e) {
-      console.error(`[ERROR] Error while inviting a user: ${e}`)
+    } catch (reason) {
+      console.error(`[ERROR] Error while inviting a user: ${reason}`)
       toast.error(t('apiNotifications.userInviteError'))
     }
 

@@ -22,8 +22,8 @@ export default function* loadProjectAlerts({ payload: { take = DEFAULT_ALERTS_TA
         pageTotal,
       }),
     )
-  } catch (e: unknown) {
-    const { message } = e as { message: string }
+  } catch (reason: unknown) {
+    const { message } = reason as { message: string }
     if (_isString(message)) {
       toast.error(message)
     }

@@ -51,8 +51,8 @@ export default function* signupWorder({
     yield put(sagaActions.loadProjectAlerts())
     yield put(sagaActions.loadMonitors())
     callback(true)
-  } catch (error: any) {
-    const message = error.message || (typeof error === 'string' ? error : error[0])
+  } catch (reason: any) {
+    const message = reason.message || (typeof reason === 'string' ? reason : reason[0])
 
     toast.error(message)
     callback(false)

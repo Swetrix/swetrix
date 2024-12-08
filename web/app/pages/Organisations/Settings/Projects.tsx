@@ -50,8 +50,8 @@ const SelectAProject = ({ onSelect }: SelectAProjectProps) => {
         )
         setProjects(results)
         setTotal(totalCount)
-      } catch (error) {
-        console.error('Failed to load projects:', error)
+      } catch (reason) {
+        console.error('Failed to load projects:', reason)
       } finally {
         setIsLoading(false)
       }

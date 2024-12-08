@@ -56,8 +56,8 @@ const ForgotPassword = () => {
 
         toast.success(t('auth.forgot.sent'))
         navigate(routes.main)
-      } catch (e: any) {
-        toast.error(e.toString())
+      } catch (reason: any) {
+        toast.error(reason.toString())
       } finally {
         setIsLoading(false)
       }

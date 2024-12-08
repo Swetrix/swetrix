@@ -13,8 +13,8 @@ export default function* loadExtensions() {
     const { extensions } = yield call(getInstalledExtensions)
 
     yield put(UIActions.setExtensions(extensions))
-  } catch (e: unknown) {
-    const { message } = e as { message: string }
+  } catch (reason: unknown) {
+    const { message } = reason as { message: string }
     // if (_isString(message)) {
     //   yield put(UIActions.setProjectsError(message))
     // }

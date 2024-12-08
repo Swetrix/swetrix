@@ -71,8 +71,8 @@ const CreateNewPassword = () => {
 
         toast.success(t('auth.recovery.updated'))
         navigate(routes.signin)
-      } catch (e: any) {
-        toast.error(e.toString())
+      } catch (reason: any) {
+        toast.error(reason.toString())
       } finally {
         setIsLoading(false)
       }

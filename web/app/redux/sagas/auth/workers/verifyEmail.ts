@@ -19,8 +19,8 @@ export default function* verifyEmailWorker({
     yield call(verifyEmail, data)
     yield put(authActions.emailVerifySuccessful())
     successfulCallback()
-  } catch (error) {
-    errorCallback(error)
+  } catch (reason) {
+    errorCallback(reason)
   } finally {
     yield put(authActions.finishLoading())
   }

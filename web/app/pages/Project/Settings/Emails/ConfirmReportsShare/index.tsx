@@ -17,7 +17,7 @@ const ConfirmReportsShare = (): JSX.Element => {
   const handleConfirm = async (token: string) => {
     try {
       await confirmSubscriberInvite(id as string, token)
-    } catch (e) {
+    } catch {
       setError(t('apiNotifications.invalidToken'))
     } finally {
       setLoading(false)

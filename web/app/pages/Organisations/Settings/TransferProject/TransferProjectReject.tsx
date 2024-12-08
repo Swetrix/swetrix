@@ -16,7 +16,7 @@ const TransferProjectReject = () => {
   const handleConfirm = async (token: string) => {
     try {
       await rejectTransferProject(token)
-    } catch (e) {
+    } catch {
       setError(t('apiNotifications.invalidToken'))
     } finally {
       setLoading(false)

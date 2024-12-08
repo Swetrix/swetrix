@@ -23,14 +23,14 @@ import { authMe } from './api'
 
 const minimalFooterPages = ['/projects', '/dashboard', '/contact', '/captchas']
 
-interface IApp {
+interface AppProps {
   ssrTheme: 'dark' | 'light'
   ssrAuthenticated: boolean
 }
 
 const TITLE_BLACKLIST = ['/projects/', '/captchas/', '/blog']
 
-const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
+const App = ({ ssrTheme, ssrAuthenticated }: AppProps) => {
   const dispatch = useAppDispatch()
   const { pathname } = useLocation()
   const { t } = useTranslation('common')
@@ -48,9 +48,10 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
         try {
           const me = await authMe()
           dispatch(authActions.loginSuccessful(me))
-        } catch (e) {
+        } catch (reason) {
           dispatch(authActions.logout())
           dispatch(sagaActions.logout(false, false))
+          console.error(`[ERROR] Error while getting user: ${reason}`)
         }
       }
 

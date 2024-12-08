@@ -303,12 +303,11 @@ const ViewCaptcha = ({
 
       setAnalyticsLoading(false)
       setDataLoading(false)
-    } catch (e) {
+    } catch (reason) {
       setAnalyticsLoading(false)
       setDataLoading(false)
       setIsPanelsDataEmpty(true)
-      console.error('[ERROR](loadAnalytics) Loading analytics data failed')
-      console.error(e)
+      console.error('[ERROR](loadAnalytics) Loading analytics data failed:', reason)
     }
   }
 

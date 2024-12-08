@@ -140,7 +140,7 @@ const CaptchaSettings = ({
                     return origin
                   }
                   return new URL(origin).host
-                } catch (e) {
+                } catch {
                   return origin
                 }
               }),

@@ -376,7 +376,7 @@ const ProjectSettings = () => {
                     return origin
                   }
                   return new URL(origin).host
-                } catch (e) {
+                } catch {
                   return origin
                 }
               }),

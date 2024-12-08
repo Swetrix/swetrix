@@ -119,11 +119,11 @@ const Signin = ({ login, loginSuccess, authSSO, ssrTheme }: ISignin): JSX.Elemen
         setAccessToken(accessToken)
         setRefreshToken(refreshToken)
         loginSuccess(user)
-      } catch (err) {
-        if (_isString(err)) {
-          toast.error(err)
+      } catch (reason) {
+        if (_isString(reason)) {
+          toast.error(reason)
         }
-        console.error(`[ERROR] Failed to authenticate with 2FA: ${err}`)
+        console.error(`[ERROR] Failed to authenticate with 2FA: ${reason}`)
         setTwoFACodeError(t('profileSettings.invalid2fa'))
       }
 

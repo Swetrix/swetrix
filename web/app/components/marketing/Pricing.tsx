@@ -111,9 +111,10 @@ const Pricing = ({ authenticated, isBillingPage }: IPricing) => {
 
             dispatch(authActions.loginSuccessful(me))
             dispatch(authActions.finishLoading())
-          } catch (e) {
+          } catch (reason) {
             dispatch(authActions.logout())
             dispatch(sagaActions.logout(false, false))
+            console.error(`[ERROR] Error while getting user after subscription update: ${reason}`)
           }
 
           toast.success(t('apiNotifications.subscriptionUpdated'))
@@ -205,9 +206,10 @@ const Pricing = ({ authenticated, isBillingPage }: IPricing) => {
 
         dispatch(authActions.loginSuccessful(me))
         dispatch(authActions.finishLoading())
-      } catch (e) {
+      } catch (reason) {
         dispatch(authActions.logout())
         dispatch(sagaActions.logout(false, false))
+        console.error(`[ERROR] Error while getting user after subscription update: ${reason}`)
       }
 
       toast.success(t('apiNotifications.subscriptionUpdated'))

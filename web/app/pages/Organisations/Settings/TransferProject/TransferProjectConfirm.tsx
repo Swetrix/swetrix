@@ -16,7 +16,7 @@ const TransferProjectConfirm = (): JSX.Element => {
   const handleConfirm = async (token: string) => {
     try {
       await confirmTransferProject(token)
-    } catch (e) {
+    } catch {
       setError(t('apiNotifications.invalidToken'))
     } finally {
       setLoading(false)
