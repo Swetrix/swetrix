@@ -109,7 +109,6 @@ const ForgotPassword = () => {
           </div>
           <p className='mb-4 mt-10 text-center text-sm text-gray-500 dark:text-gray-200'>
             <Trans
-              // @ts-ignore
               t={t}
               i18nKey='auth.signin.notAMember'
               components={{

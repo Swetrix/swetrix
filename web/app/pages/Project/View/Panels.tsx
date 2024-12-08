@@ -1511,7 +1511,6 @@ const Panel = ({
           filters={filters || []}
           isReversed={isReversedUserFlow}
           setReversed={() => setIsReversedUserFlow(!isReversedUserFlow)}
-          t={t}
         />
         <Modal
           onClose={() => setModal(false)}
@@ -1539,7 +1538,6 @@ const Panel = ({
                 timezone={timezone || ''}
                 filters={filters || []}
                 isReversed={isReversedUserFlow}
-                t={t}
               />
             </div>
           }

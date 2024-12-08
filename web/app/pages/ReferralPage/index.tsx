@@ -62,7 +62,6 @@ const ReferralPage = ({ ssrTheme }: IReferralPage): JSX.Element => {
               <div className='relative px-4 text-left lg:mr-14 lg:mt-0'>
                 <h1 className='max-w-2xl text-2xl font-extrabold text-slate-900 dark:text-white sm:text-4xl sm:leading-none md:text-5xl xl:leading-[110%]'>
                   <Trans
-                    // @ts-ignore
                     t={t}
                     i18nKey='main.slogan'
                     components={{

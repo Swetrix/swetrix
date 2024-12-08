@@ -203,7 +203,6 @@ const Signup = ({ signup, authSSO, ssrTheme, authenticated: reduxAuthenticated, 
                   label={
                     <span>
                       <Trans
-                        // @ts-ignore
                         t={t}
                         i18nKey='auth.signup.tos'
                         components={{
@@ -246,7 +245,6 @@ const Signup = ({ signup, authSSO, ssrTheme, authenticated: reduxAuthenticated, 
                     className='ml-2'
                     text={
                       <Trans
-                        // @ts-ignore
                         t={t}
                         i18nKey='auth.common.checkLeakedPasswordDesc'
                         components={{
@@ -303,7 +301,6 @@ const Signup = ({ signup, authSSO, ssrTheme, authenticated: reduxAuthenticated, 
 
             <p className='mt-10 text-center text-sm text-gray-500 dark:text-gray-200'>
               <Trans
-                // @ts-ignore
                 t={t}
                 i18nKey='auth.signup.alreadyAMember'
                 components={{

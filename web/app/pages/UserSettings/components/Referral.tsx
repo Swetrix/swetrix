@@ -132,7 +132,6 @@ const Referral = ({ user, updateUserData, referralStatistics, activeReferrals, s
     <>
       <p className='text-base text-gray-900 dark:text-gray-50'>
         <Trans
-          // @ts-ignore
           t={t}
           i18nKey='profileSettings.referral.desc'
           components={{

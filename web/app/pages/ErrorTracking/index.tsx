@@ -95,7 +95,6 @@ const ErrorTracking: React.FC<IErrorTracking> = ({ ssrTheme, ssrAuthenticated })
               <div className='relative px-4 text-left lg:mr-14 lg:mt-0'>
                 <h1 className='max-w-2xl text-3xl font-extrabold text-slate-900 dark:text-white sm:text-5xl sm:leading-none md:text-5xl lg:text-5xl xl:text-6xl xl:leading-[110%]'>
                   <Trans
-                    // @ts-ignore
                     t={t}
                     i18nKey='errors.slogan'
                     components={{
@@ -198,7 +197,6 @@ const ErrorTracking: React.FC<IErrorTracking> = ({ ssrTheme, ssrAuthenticated })
           <h2 className='text-4xl font-extrabold text-slate-900 dark:text-white'>{t('errors.fast.title')}</h2>
           <p className='mt-6 text-lg text-gray-900 dark:text-gray-50'>
             <Trans
-              // @ts-ignore
               t={t}
               i18nKey='errors.fast.desc'
               components={{

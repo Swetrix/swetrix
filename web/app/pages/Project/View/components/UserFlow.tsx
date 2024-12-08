@@ -1,4 +1,3 @@
-import type i18next from 'i18next'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { ResponsiveSankey } from '@nivo/sankey'
@@ -11,6 +10,7 @@ import { getUserFlowCacheKey } from 'redux/constants'
 import { getUserFlow } from 'api'
 import Loader from 'ui/Loader'
 import { IFilter } from '../interfaces/traffic'
+import { useTranslation } from 'react-i18next'
 
 const mapStateToProps = (state: StateType) => ({
   userFlowAscendingCache: state.ui.cache.userFlowAscending,
@@ -41,7 +41,7 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
   },
 })
 
-interface IJSXUserFlow {
+interface UserFlowProps {
   pid: string
   userFlowAscendingCache: {
     [key: string]: IUserFlow
@@ -57,7 +57,6 @@ interface IJSXUserFlow {
   isReversed?: boolean
   setUserFlowAscending: (data: IUserFlow, id: string, pd: string, fltr: any) => void
   setUserFlowDescending: (data: IUserFlow, id: string, pd: string, fltr: any) => void
-  t: typeof i18next.t
   filters: IFilter[]
   setReversed: () => void
   projectPassword?: string
@@ -77,9 +76,9 @@ const UserFlow = ({
   isReversed,
   setUserFlowAscending,
   setUserFlowDescending,
-  t,
   projectPassword,
-}: IJSXUserFlow) => {
+}: UserFlowProps) => {
+  const { t } = useTranslation('common')
   const key = getUserFlowCacheKey(pid, period, filters)
   const userFlowAscending = userFlowAscendingCache[key]
   const userFlowDescending = userFlowDescendingCache[key]

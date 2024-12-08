@@ -170,7 +170,6 @@ const Signin = ({ login, loginSuccess, authSSO, ssrTheme }: ISignin): JSX.Elemen
             <div className='whitespace-pre-line text-sm text-gray-600 dark:text-gray-400'>
               {!isSelfhosted && (
                 <Trans
-                  // @ts-ignore
                   t={t}
                   i18nKey='auth.signin.2faUnavailable'
                   components={{
@@ -283,7 +282,6 @@ const Signin = ({ login, loginSuccess, authSSO, ssrTheme }: ISignin): JSX.Elemen
         {!isSelfhosted && (
           <p className='mb-4 mt-10 text-center text-sm text-gray-500 dark:text-gray-200'>
             <Trans
-              // @ts-ignore
               t={t}
               i18nKey='auth.signin.notAMember'
               components={{

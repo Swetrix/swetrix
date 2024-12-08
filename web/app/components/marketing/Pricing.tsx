@@ -421,7 +421,6 @@ const Pricing = ({ authenticated, isBillingPage }: IPricing) => {
           </div>
           <p className='mt-5 text-base tracking-tight text-gray-900 dark:text-gray-50'>
             <Trans
-              // @ts-ignore
               t={t}
               i18nKey='billing.contact'
               values={{
@@ -483,7 +482,6 @@ const Pricing = ({ authenticated, isBillingPage }: IPricing) => {
             {subUpdatePreview === false && (
               <p className='whitespace-pre-line'>
                 <Trans
-                  // @ts-ignore
                   t={t}
                   i18nKey='billing.previewLoadingError'
                   values={{

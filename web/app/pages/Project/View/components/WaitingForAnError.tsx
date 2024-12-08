@@ -24,7 +24,6 @@ const WaitingForAnError = () => {
               </h1>
               <p className='mt-2 max-w-[80ch] whitespace-pre-line text-base text-gray-700 dark:text-gray-300'>
                 <Trans
-                  // @ts-ignore
                   t={t}
                   i18nKey='project.waitingError.desc'
                   components={{
