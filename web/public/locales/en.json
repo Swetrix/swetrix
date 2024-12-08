@@ -59,7 +59,9 @@
     "projectAddError": "Error occurred while adding the project to the organisation",
     "orgUserRemoved": "The user has been removed from the organisation",
     "orgUserRemoveError": "Error occurred while removing the user from the organisation",
-    "orgSettingsUpdated": "Organisation settings have been updated"
+    "orgSettingsUpdated": "Organisation settings have been updated",
+    "projectAssigned": "The project has been assigned to the organisation",
+    "projectAssignError": "Failed to assign the project to the organisation"
   },
   "common": {
     "features": "Features",

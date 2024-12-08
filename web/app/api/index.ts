@@ -298,6 +298,14 @@ export const deleteOrganisation = (id: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
+export const assignProjectToOrganisation = (projectId: string, organisationId?: string) =>
+  api
+    .patch(`/project/${projectId}/organisation`, { organisationId })
+    .then((response) => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
 export const createOrganisation = (name: string) =>
   api
     .post('/organisation', { name })

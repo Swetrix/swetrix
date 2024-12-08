@@ -71,7 +71,7 @@ export class OrganisationService {
     await this.membershipRepository.delete(id)
   }
 
-  async validateManageAccess(organisation: Organisation, userId: string) {
+  validateManageAccess(organisation: Organisation, userId: string) {
     const membership = _find(
       organisation.members,
       member => member.user?.id === userId,

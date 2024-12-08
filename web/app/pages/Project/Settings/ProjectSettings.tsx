@@ -29,6 +29,7 @@ import {
   getFilters,
   resetFilters,
   getProject,
+  assignProjectToOrganisation,
 } from 'api'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -324,6 +325,15 @@ const ProjectSettings = () => {
     ],
     [user.organisationMemberships, t],
   )
+
+  const assignOrganisation = async (organisationId?: string) => {
+    try {
+      await assignProjectToOrganisation(id, organisationId)
+      toast.success(t('apiNotifications.projectAssigned'))
+    } catch (reason: any) {
+      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.projectAssignError'))
+    }
+  }
 
   const sharableLink = useMemo(() => {
     const origin = requestOrigin || isBrowser ? window.location.origin : 'https://swetrix.com'
@@ -740,7 +750,8 @@ const ProjectSettings = () => {
 
                 return item.name
               }}
-              onSelect={(item) => {
+              onSelect={async (item) => {
+                await assignOrganisation(item.id)
                 setForm((oldForm) => ({
                   ...oldForm,
                   organisationId: item.id,

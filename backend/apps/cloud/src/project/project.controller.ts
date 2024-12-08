@@ -113,6 +113,7 @@ import { BulkAddUsersDto } from './dto/bulk-add-users.dto'
 import { BulkAddUsersResponse } from './interfaces/bulk-add-users'
 import { OrganisationService } from '../organisation/organisation.service'
 import { Organisation } from '../organisation/entity/organisation.entity'
+import { ProjectOrganisationDto } from './dto/project-organisation.dto'
 
 const PROJECTS_MAXIMUM = 50
 
@@ -1764,6 +1765,47 @@ export class ProjectController {
   }
 
   @ApiBearerAuth()
+  @Patch('/:id/organisation')
+  @HttpCode(200)
+  @Auth([], true)
+  async updateOrganisation(
+    @Param('id') id: string,
+    @Body() body: ProjectOrganisationDto,
+    @CurrentUserId() uid: string,
+  ) {
+    this.logger.log({ body }, 'PATCH /project/:id/organisation')
+
+    if (!uid) {
+      throw new UnauthorizedException('Please auth first')
+    }
+
+    const project = await this.projectService.getFullProject(id)
+
+    if (_isEmpty(project)) {
+      throw new NotFoundException()
+    }
+
+    this.projectService.allowedToManage(project, uid)
+
+    if (body.organisationId) {
+      const canManage = await this.organisationService.canManageOrganisation(
+        body.organisationId,
+        uid,
+      )
+
+      if (!canManage) {
+        throw new ForbiddenException(
+          'You do not have permission to manage this organisation',
+        )
+      }
+    }
+
+    return this.projectService.update({ id }, {
+      organisation: { id: body.organisationId || null },
+    } as Project)
+  }
+
+  @ApiBearerAuth()
   @Put('/:id')
   @HttpCode(200)
   @Auth([], true)
@@ -1822,12 +1864,6 @@ export class ProjectController {
 
     if (projectDTO.name) {
       project.name = _trim(projectDTO.name)
-    }
-
-    if (projectDTO.organisationId) {
-      project.organisation = {
-        id: projectDTO.organisationId,
-      } as Organisation
     }
 
     if (_isBoolean(projectDTO.isPasswordProtected)) {

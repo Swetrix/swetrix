@@ -113,6 +113,7 @@ const SelectAProject = ({ onSelect }: SelectAProjectProps) => {
           pageAmount={pageAmount}
           setPage={setCurrentPage}
           total={total}
+          pageSize={PAGINATION_ENTRIES}
         />
       ) : null}
     </div>

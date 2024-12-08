@@ -3,12 +3,10 @@ import { IntersectionType, PartialType } from '@nestjs/mapped-types'
 import { ApiProperty } from '@nestjs/swagger'
 import { ProjectDTO } from './project.dto'
 import { ProjectPasswordDto } from './project-password.dto'
-import { ProjectOrganisationDto } from './project-organisation.dto'
 
 export class UpdateProjectDto extends IntersectionType(
   PartialType(ProjectDTO),
   ProjectPasswordDto,
-  ProjectOrganisationDto,
 ) {
   @ApiProperty({
     required: false,
