@@ -76,7 +76,6 @@ import {
 } from '../common/utils'
 import { IUsageInfo, IMetaInfo } from './interfaces'
 import { ReportFrequency } from '../project/enums'
-import { Organisation } from '../organisation/entity/organisation.entity'
 
 dayjs.extend(utc)
 
@@ -104,26 +103,16 @@ export class UserController {
   async me(@CurrentUserId() uid: string) {
     this.logger.log({ uid }, 'GET /user/me')
 
-    const [sharedProjects, manageableOrganisations, user] = await Promise.all([
-      this.projectService.findShare({
-        where: {
-          user: {
-            id: uid,
-          },
-        },
-        relations: ['project'],
-      }),
-      this.userService.getManageableOrganisations(uid),
+    const [sharedProjects, organisationMemberships, user] = await Promise.all([
+      this.authService.getSharedProjectsForUser(uid),
+      this.authService.getOrganisationsForUser(uid),
       this.userService.findOne({ where: { id: uid } }),
     ])
 
-    const sanitizedUser = this.userService.omitSensitiveData(
-      user,
-    ) as Partial<User> & {
-      manageableOrganisations: Organisation[]
-    }
+    const sanitizedUser = this.userService.omitSensitiveData(user)
+
     sanitizedUser.sharedProjects = sharedProjects
-    sanitizedUser.manageableOrganisations = manageableOrganisations
+    sanitizedUser.organisationMemberships = organisationMemberships
 
     return sanitizedUser
   }

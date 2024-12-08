@@ -11,6 +11,7 @@ import { ISharedProject } from 'redux/models/ISharedProject'
 import { removeRefreshToken } from 'utils/refreshToken'
 import { removeAccessToken } from 'utils/accessToken'
 import UserSettings from './UserSettings'
+import { IProject } from 'redux/models/IProject'
 
 const mapStateToProps = (state: StateType) => {
   return {
@@ -70,7 +71,7 @@ const mapDispatchToProps = (dispatch: AppDispatch) => ({
   removeShareProject: (id: string) => {
     dispatch(authActions.deleteShareProject(id))
   },
-  setProjectsShareData: (data: Partial<ISharedProject>, id: string) => {
+  setProjectsShareData: (data: Partial<IProject>, id: string) => {
     dispatch(
       UIActions.setProjectsShareData({
         data,

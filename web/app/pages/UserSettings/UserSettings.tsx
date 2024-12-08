@@ -38,7 +38,6 @@ import {
   isSelfhosted,
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
-import { ISharedProject } from 'redux/models/ISharedProject'
 import { withAuthentication, auth } from 'hoc/protected'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -66,6 +65,9 @@ import Integrations from './components/Integrations'
 import Socialisations from './components/Socialisations'
 import Referral from './components/Referral'
 import NoSharedProjects from './components/NoSharedProjects'
+import { IProject } from 'redux/models/IProject'
+import Organisations from './components/Organisations'
+import NoOrganisations from './components/NoOrganisations'
 
 dayjs.extend(utc)
 
@@ -123,8 +125,8 @@ interface IProps {
   onDeleteProjectCache: () => void
   removeProject: (id: string) => void
   removeShareProject: (id: string) => void
-  setUserShareData: (data: Partial<ISharedProject>, id: string) => void
-  setProjectsShareData: (data: Partial<ISharedProject>, id: string) => void
+  setUserShareData: (data: Partial<IProject>, id: string) => void
+  setProjectsShareData: (data: Partial<IProject>, id: string) => void
   updateUserData: (data: Partial<IUser>) => void
   updateUserProfileAsync: (data: IUser, successMessage: string, callback?: (isSuccess: boolean) => void) => void
   setAPIKey: (key: string | null) => void
@@ -745,9 +747,67 @@ const UserSettings = ({
                             </div>
                           </div>
                         ) : (
-                          <NoSharedProjects t={t} />
+                          <NoSharedProjects />
                         )}
                       </div>
+
+                      {/* Organisations setting */}
+                      <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+                      <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
+                        {t('profileSettings.organisations')}
+                      </h3>
+                      <div>
+                        {!_isEmpty(user.organisationMemberships) ? (
+                          <div className='mt-3 flex flex-col'>
+                            <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8'>
+                              <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
+                                <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
+                                  <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
+                                    <thead>
+                                      <tr className='dark:bg-slate-800'>
+                                        <th
+                                          scope='col'
+                                          className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6'
+                                        >
+                                          {t('profileSettings.organisationsTable.organisation')}
+                                        </th>
+                                        <th
+                                          scope='col'
+                                          className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'
+                                        >
+                                          {t('profileSettings.organisationsTable.role')}
+                                        </th>
+                                        <th
+                                          scope='col'
+                                          className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'
+                                        >
+                                          {t('profileSettings.organisationsTable.joinedOn')}
+                                        </th>
+                                        <th scope='col' className='relative py-3.5 pl-3 pr-4 sm:pr-6' />
+                                      </tr>
+                                    </thead>
+                                    <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
+                                      {_map(user.organisationMemberships, (membership) => (
+                                        <Organisations
+                                          key={membership.id}
+                                          membership={membership}
+                                          removeProject={removeProject}
+                                          removeShareProject={removeShareProject}
+                                          setUserShareData={setUserShareData}
+                                          setProjectsShareData={setProjectsShareData}
+                                        />
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <NoOrganisations />
+                        )}
+                      </div>
+
                       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
                       {!user.isActive && (
                         <div

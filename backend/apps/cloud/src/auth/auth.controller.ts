@@ -142,7 +142,7 @@ export class AuthController {
 
     await checkRateLimit(ip, 'login', 10, 1800)
 
-    let user = await this.authService.validateUser(body.email, body.password)
+    let user = await this.authService.getBasicUser(body.email, body.password)
 
     if (!user) {
       throw new ConflictException(i18n.t('auth.invalidCredentials'))
@@ -159,7 +159,13 @@ export class AuthController {
       // @ts-expect-error
       user = _pick(user, ['isTwoFactorAuthenticationEnabled', 'email'])
     } else {
-      user = await this.authService.getSharedProjectsForUser(user)
+      const [sharedProjects, organisationMemberships] = await Promise.all([
+        this.authService.getSharedProjectsForUser(user.id),
+        this.authService.getOrganisationsForUser(user.id),
+      ])
+
+      user.sharedProjects = sharedProjects
+      user.organisationMemberships = organisationMemberships
     }
 
     return {
@@ -257,7 +263,7 @@ export class AuthController {
       throw new UnauthorizedException()
     }
 
-    const isPasswordValid = await this.authService.validateUser(
+    const isPasswordValid = await this.authService.getBasicUser(
       user.email,
       body.oldPassword,
     )
@@ -320,7 +326,7 @@ export class AuthController {
       throw new UnauthorizedException()
     }
 
-    const isPasswordValid = await this.authService.validateUser(
+    const isPasswordValid = await this.authService.getBasicUser(
       user.email,
       body.password,
     )

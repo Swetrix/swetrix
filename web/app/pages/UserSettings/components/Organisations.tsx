@@ -5,50 +5,50 @@ import { useTranslation } from 'react-i18next'
 
 import Button from 'ui/Button'
 import Modal from 'ui/Modal'
-import { deleteShareProject, acceptShareProject } from 'api'
-import { ISharedProject } from 'redux/models/ISharedProject'
+// import { deleteShareProject, acceptShareProject } from 'api'
 import { IProject } from 'redux/models/IProject'
+import { OrganisationMembership } from 'redux/models/Organisation'
 
-interface ProjectListProps {
-  item: ISharedProject
+interface OrganisationsProps {
+  membership: OrganisationMembership
   removeShareProject: (id: string) => void
   removeProject: (id: string) => void
   setProjectsShareData: (data: Partial<IProject>, id: string) => void
   setUserShareData: (data: Partial<IProject>, id: string) => void
 }
 
-const ProjectList = ({
-  item,
+const Organisations = ({
+  membership,
   removeShareProject,
   removeProject,
   setProjectsShareData,
   setUserShareData,
-}: ProjectListProps) => {
+}: OrganisationsProps) => {
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const { created, confirmed, id, role, project } = item
+  const { organisation, confirmed, id, role, created } = membership
 
   const deleteProject = async (pid: string) => {
     try {
-      await deleteShareProject(pid)
-      removeShareProject(pid)
-      removeProject(project.id)
-      toast.success(t('apiNotifications.quitProject'))
+      // await deleteShareProject(pid)
+      // removeShareProject(pid)
+      // removeProject(project.id)
+      toast.success(t('apiNotifications.quitOrganisation'))
     } catch (reason) {
       console.error(`[ERROR] Error while quitting project: ${reason}`)
-      toast.error(t('apiNotifications.quitProjectError'))
+      toast.error(t('apiNotifications.quitOrganisationError'))
     }
   }
 
   const onAccept = async () => {
     try {
-      await acceptShareProject(id)
-      setProjectsShareData({ isAccessConfirmed: true }, project.id)
-      setUserShareData({ isAccessConfirmed: true }, id)
+      // await acceptShareProject(id)
+      // setProjectsShareData({ isAccessConfirmed: true }, project.id)
+      // setUserShareData({ isAccessConfirmed: true }, id)
       toast.success(t('apiNotifications.acceptInvitation'))
     } catch (reason) {
       console.error(`[ERROR] Error while accepting project invitation: ${reason}`)
@@ -59,7 +59,7 @@ const ProjectList = ({
   return (
     <tr className='dark:bg-slate-800'>
       <td className='whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6'>
-        {project.name}
+        {organisation.name}
       </td>
       <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-white'>
         {t(`project.settings.roles.${role}.name`)}
@@ -95,8 +95,8 @@ const ProjectList = ({
           submitText={t('common.yes')}
           type='confirmed'
           closeText={t('common.no')}
-          title={t('profileSettings.quitEntity', { entity: project.name })}
-          message={t('profileSettings.quitProject')}
+          title={t('profileSettings.quitEntity', { entity: organisation.name })}
+          message={t('profileSettings.quitOrganisation')}
           isOpened={showDeleteModal}
         />
       </td>
@@ -104,4 +104,4 @@ const ProjectList = ({
   )
 }
 
-export default memo(ProjectList)
+export default memo(Organisations)

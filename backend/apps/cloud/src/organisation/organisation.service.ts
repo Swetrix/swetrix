@@ -24,7 +24,7 @@ export class OrganisationService {
     private membershipRepository: Repository<OrganisationMember>,
   ) {}
 
-  async create(data: Partial<Organisation>): Promise<Organisation> {
+  async create(data: Partial<Organisation>) {
     const org = this.organisationRepository.create(data)
     return this.organisationRepository.save(org)
   }
@@ -33,43 +33,37 @@ export class OrganisationService {
     return this.organisationRepository.update(id, data)
   }
 
-  async findOne(options: FindOneOptions<Organisation>): Promise<Organisation> {
+  async findOne(options: FindOneOptions<Organisation>) {
     return this.organisationRepository.findOne(options)
   }
 
-  async find(options: FindManyOptions<Organisation>): Promise<Organisation[]> {
+  async find(options: FindManyOptions<Organisation>) {
     return this.organisationRepository.find(options)
   }
 
-  async createMembership(
-    data: Partial<OrganisationMember>,
-  ): Promise<OrganisationMember> {
+  async findMemberships(options: FindManyOptions<OrganisationMember>) {
+    return this.membershipRepository.find(options)
+  }
+
+  async createMembership(data: Partial<OrganisationMember>) {
     const membership = this.membershipRepository.create(data)
     return this.membershipRepository.save(membership)
   }
 
-  async findOneMembership(
-    options: FindOneOptions<OrganisationMember>,
-  ): Promise<OrganisationMember> {
+  async findOneMembership(options: FindOneOptions<OrganisationMember>) {
     return this.membershipRepository.findOne(options)
   }
 
-  async updateMembership(
-    id: string,
-    data: Partial<OrganisationMember>,
-  ): Promise<OrganisationMember> {
+  async updateMembership(id: string, data: Partial<OrganisationMember>) {
     await this.membershipRepository.update(id, data)
     return this.findOneMembership({ where: { id } })
   }
 
-  async deleteMembership(id: string): Promise<void> {
+  async deleteMembership(id: string) {
     await this.membershipRepository.delete(id)
   }
 
-  async validateManageAccess(
-    organisation: Organisation,
-    userId: string,
-  ): Promise<void> {
+  async validateManageAccess(organisation: Organisation, userId: string) {
     const membership = _find(
       organisation.members,
       member => member.user?.id === userId,
@@ -82,10 +76,7 @@ export class OrganisationService {
     }
   }
 
-  async canManageOrganisation(
-    organisationId: string,
-    userId: string,
-  ): Promise<boolean> {
+  async canManageOrganisation(organisationId: string, userId: string) {
     const organisation = await this.findOne({
       where: { id: organisationId },
       relations: ['members', 'members.user'],
@@ -122,7 +113,7 @@ export class OrganisationService {
   async paginate(
     options: PaginationOptionsInterface,
     where?: FindOptionsWhere<Organisation> | FindOptionsWhere<Organisation>[],
-  ): Promise<Pagination<Organisation>> {
+  ) {
     const [results, total] = await this.organisationRepository.findAndCount({
       take: options.take || 100,
       skip: options.skip || 0,
@@ -130,7 +121,21 @@ export class OrganisationService {
       order: {
         name: 'ASC',
       },
-      relations: ['members'],
+      relations: ['members', 'members.user'],
+      select: {
+        id: true,
+        name: true,
+        members: {
+          id: true,
+          role: true,
+          confirmed: true,
+          created: true,
+          user: {
+            id: true,
+            email: true,
+          },
+        },
+      },
     })
 
     return new Pagination<Organisation>({

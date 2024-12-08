@@ -50,15 +50,12 @@ const UsersList = ({ members, onRemove }: UsersListProps) => {
   useOnClickOutside(openRef, () => setRoleEditDropdownId(null))
 
   const changeRole = async (memberId: string, newRole: Role) => {
-    console.log('changeRole', memberId, newRole)
-
     try {
       await changeOrganisationRole(memberId, newRole)
-
       toast.success(t('apiNotifications.roleUpdated'))
     } catch (reason) {
       console.error(`[ERROR] Error while updating user's role: ${reason}`)
-      toast.error(t('apiNotifications.roleUpdateError'))
+      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.roleUpdateError'))
     }
 
     setRoleEditDropdownId(null)
@@ -259,7 +256,7 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps): JSX.Element 
       toast.success(t('apiNotifications.orgUserRemoved'))
     } catch (reason) {
       console.error(`[ERROR] Error while removing user from the organisation: ${reason}`)
-      toast.error(t('apiNotifications.orgUserRemoveError'))
+      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.orgUserRemoveError'))
     } finally {
       setIsDeleting(false)
     }

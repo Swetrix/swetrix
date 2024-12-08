@@ -16,7 +16,7 @@ import {
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import { isEmpty as _isEmpty, find as _find, trim as _trim } from 'lodash'
-import { FindOptionsWhere, ILike, In } from 'typeorm'
+import { FindOptionsWhere, ILike } from 'typeorm'
 
 import { JwtAccessTokenGuard } from '../auth/guards/jwt-access-token.guard'
 import { RolesGuard } from '../auth/guards/roles.guard'
@@ -75,7 +75,6 @@ export class OrganisationController {
       where = {
         members: {
           user: { id: userId },
-          role: In([OrganisationRole.owner, OrganisationRole.admin]),
         },
         name: ILike(`%${search}%`),
       }
@@ -83,7 +82,6 @@ export class OrganisationController {
       where = {
         members: {
           user: { id: userId },
-          role: In([OrganisationRole.owner, OrganisationRole.admin]),
         },
       }
     }
@@ -165,6 +163,7 @@ export class OrganisationController {
       role: OrganisationRole.owner,
       user,
       organisation,
+      confirmed: true,
     })
 
     return organisation

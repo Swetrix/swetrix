@@ -18,6 +18,8 @@
     "quitProjectError": "Error occurred while quitting the project",
     "payoutInfoError": "Something went wrong whilst requesting payouts information",
     "quitProject": "You have quit the project",
+    "quitOrganisation": "You have quit the organisation",
+    "quitOrganisationError": "Error occurred while quitting the organisation",
     "acceptInvitationError": "Error occurred while accepting the project invitation",
     "acceptInvitation": "The project invitation has been accepted",
     "subscriptionUpdated": "Your subscription has been updated",
@@ -507,14 +509,22 @@
     "noConfLeft": "Unfortunately, you've ran out of your email confirmation requests.\nPlease make sure you are able to receive e-mails and check your SPAM folder again for messages.\nYou may try to use a different email address or contact our customer support service.",
     "timezoneDesc": "This will be the time zone in which the data is displayed. It's only used for visualization.\nNo data will be modified based on this setting.",
     "quitProject": "Are you sure you want to quit this project?",
-    "quitProjectTitle": "Quit {{project}}?",
+    "quitOrganisation": "Are you sure you want to quit this organisation?",
+    "quitEntity": "Quit {{entity}}?",
     "shared": "Shared projects",
     "receiveLoginNotifications": "Receive login notifications",
+    "organisations": "Organisations",
+    "organisationsTable": {
+      "organisation": "Organisation",
+      "role": "Role",
+      "joinedOn": "Joined on"
+    },
     "sharedTable": {
       "project": "Project",
       "role": "Role",
       "joinedOn": "Joined on"
     },
+    "noOrganisations": "You are not a member of any organisation yet.",
     "noSharedProjects": "Nobody is sharing a project with you yet.",
     "2fa": "Two-factor authentication (2FA)",
     "2faEnable": "Enable 2FA to make your account more secure.",

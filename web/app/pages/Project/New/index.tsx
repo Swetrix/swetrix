@@ -49,9 +49,11 @@ const NewProject = () => {
         id: undefined,
         name: t('common.notSet'),
       },
-      ...(user.manageableOrganisations || []),
+      ...(user.organisationMemberships || [])
+        .filter((om) => om.confirmed && (om.role === 'admin' || om.role === 'owner'))
+        .map((om) => om.organisation),
     ],
-    [user.manageableOrganisations, t],
+    [user.organisationMemberships, t],
   )
 
   useEffect(() => {

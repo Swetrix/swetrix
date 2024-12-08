@@ -25,3 +25,11 @@ export interface DetailedOrganisation extends Organisation {
     }
   }[]
 }
+
+export interface OrganisationMembership {
+  id: string
+  role: Role
+  confirmed: boolean
+  created: string
+  organisation: Organisation
+}
