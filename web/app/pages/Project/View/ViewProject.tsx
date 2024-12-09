@@ -459,7 +459,15 @@ const ViewProject = ({
   const [dateRange, setDateRange] = useState<null | Date[]>(
     localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null,
   )
-  const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || projectTab || PROJECT_TABS.traffic)
+  const [activeTab, setActiveTab] = useState(() => {
+    const tab = searchParams.get('tab') as keyof typeof PROJECT_TABS
+
+    if (tab in PROJECT_TABS) {
+      return tab
+    }
+
+    return projectTab || PROJECT_TABS.traffic
+  })
 
   const [isHotkeysHelpOpened, setIsHotkeysHelpOpened] = useState(false)
 

@@ -1,12 +1,10 @@
-<!-- Please describe your changes using the checklist below. -->
+### Changes
 
-<!-- URL of the ticket at https://github.com/Swetrix/roadmap -->
-<!-- if there's no ticket for this task, just write N/A -->
-### Ticket (if applicable)
+If applicable, please describe what changes were made in this pull request.
 
-### Self-hosted support
-- [ ] Your feature is implemented for the selfhosted version of Swetrix
-- [ ] This PR only updates the production code (e.g. paddle webhooks, CAPTCHA, blog, etc.)
+### Community Edition support
+- [ ] Your feature is implemented for the Swetrix Community Edition
+- [ ] This PR only updates the Cloud (Enterprise) Edition code (e.g. Paddle webhooks, blog, payouts, etc.)
 
 ### Database migrations
 - [ ] Clickhouse / MySQL migrations added for this PR
