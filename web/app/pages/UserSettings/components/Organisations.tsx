@@ -2,41 +2,45 @@ import React, { memo, useState } from 'react'
 import dayjs from 'dayjs'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
+import _map from 'lodash/map'
+import _filter from 'lodash/filter'
 
 import Button from 'ui/Button'
 import Modal from 'ui/Modal'
-// import { deleteShareProject, acceptShareProject } from 'api'
-import { IProject } from 'redux/models/IProject'
+import { rejectOrganisationInvitation, acceptOrganisationInvitation } from 'api'
 import { OrganisationMembership } from 'redux/models/Organisation'
+import { StateType, useAppDispatch } from 'redux/store'
+import { authActions } from 'redux/reducers/auth'
+import { useSelector } from 'react-redux'
 
 interface OrganisationsProps {
   membership: OrganisationMembership
-  removeShareProject: (id: string) => void
-  removeProject: (id: string) => void
-  setProjectsShareData: (data: Partial<IProject>, id: string) => void
-  setUserShareData: (data: Partial<IProject>, id: string) => void
 }
 
-const Organisations = ({
-  membership,
-  removeShareProject,
-  removeProject,
-  setProjectsShareData,
-  setUserShareData,
-}: OrganisationsProps) => {
+const Organisations = ({ membership }: OrganisationsProps) => {
+  const { user } = useSelector((state: StateType) => state.auth)
+  const dispatch = useAppDispatch()
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const { organisation, confirmed, id, role, created } = membership
+  const { organisation, confirmed, role, created } = membership
 
-  const deleteProject = async (pid: string) => {
+  const onQuit = async () => {
     try {
-      // await deleteShareProject(pid)
-      // removeShareProject(pid)
-      // removeProject(project.id)
+      await rejectOrganisationInvitation(membership.id)
+
+      dispatch(
+        authActions.mergeUser({
+          organisationMemberships: _filter(
+            user.organisationMemberships,
+            (userMembership) => userMembership.id !== membership.id,
+          ),
+        }),
+      )
+
       toast.success(t('apiNotifications.quitOrganisation'))
     } catch (reason) {
       console.error(`[ERROR] Error while quitting project: ${reason}`)
@@ -46,9 +50,19 @@ const Organisations = ({
 
   const onAccept = async () => {
     try {
-      // await acceptShareProject(id)
-      // setProjectsShareData({ isAccessConfirmed: true }, project.id)
-      // setUserShareData({ isAccessConfirmed: true }, id)
+      await acceptOrganisationInvitation(membership.id)
+
+      dispatch(
+        authActions.mergeUser({
+          organisationMemberships: _map(user.organisationMemberships, (item) => {
+            if (item.id === membership.id) {
+              return { ...item, confirmed: true }
+            }
+            return item
+          }),
+        }),
+      )
+
       toast.success(t('apiNotifications.acceptInvitation'))
     } catch (reason) {
       console.error(`[ERROR] Error while accepting project invitation: ${reason}`)
@@ -79,7 +93,7 @@ const Organisations = ({
             <Button className='mr-2' onClick={() => setShowDeleteModal(true)} primary small>
               {t('common.reject')}
             </Button>
-            <Button onClick={() => onAccept()} primary small>
+            <Button onClick={onAccept} primary small>
               {t('common.accept')}
             </Button>
           </>
@@ -90,7 +104,7 @@ const Organisations = ({
           }}
           onSubmit={() => {
             setShowDeleteModal(false)
-            deleteProject(id)
+            onQuit()
           }}
           submitText={t('common.yes')}
           type='confirmed'

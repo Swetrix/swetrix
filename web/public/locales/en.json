@@ -22,6 +22,8 @@
     "quitOrganisationError": "Error occurred while quitting the organisation",
     "acceptInvitationError": "Error occurred while accepting the project invitation",
     "acceptInvitation": "The project invitation has been accepted",
+    "acceptOrganisationInvitation": "The organisation invitation has been accepted",
+    "acceptOrganisationInvitationError": "Error occurred while accepting the organisation invitation",
     "subscriptionUpdated": "Your subscription has been updated",
     "generate2FAError": "Error occurred while generating 2FA code",
     "integrationRemovalError": "Error occurred while removing the integration",

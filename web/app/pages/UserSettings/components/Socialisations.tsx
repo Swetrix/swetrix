@@ -1,5 +1,4 @@
-import React, { useState, memo } from 'react'
-import type i18next from 'i18next'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import _map from 'lodash/map'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
@@ -11,6 +10,9 @@ import GithubDark from 'ui/icons/GithubDark'
 import GithubLight from 'ui/icons/GithubLight'
 import { IUser } from 'redux/models/IUser'
 import { SSO_PROVIDERS } from 'redux/constants'
+import { StateType, useAppDispatch } from 'redux/store'
+import sagaActions from 'redux/sagas/actions'
+import { useSelector } from 'react-redux'
 
 const AVAILABLE_SSO_PROVIDERS = [
   {
@@ -48,38 +50,38 @@ const getStatusByUser = (user: IUser, socialisation: string) => {
   return [false, false]
 }
 
-interface ISocialisations {
-  user: IUser
-  linkSSO: (t: typeof i18next.t, callback: (e: any) => void, provider: string) => void
-  unlinkSSO: (t: typeof i18next.t, callback: (e: any) => void, provider: string) => void
-  theme: string
-}
-
-const Socialisations = ({ user, linkSSO, unlinkSSO, theme }: ISocialisations) => {
+const Socialisations = () => {
+  const { user } = useSelector((state: StateType) => state.auth)
+  const { theme } = useSelector((state: StateType) => state.ui.theme)
+  const dispatch = useAppDispatch()
   const { t } = useTranslation('common')
   const [isLoading, setIsLoading] = useState(false)
 
-  const _linkSSO = (provider: string) => {
+  const linkSSO = (provider: string) => {
     setIsLoading(true)
 
-    linkSSO(
-      t,
-      () => {
-        setIsLoading(false)
-      },
-      provider,
+    dispatch(
+      sagaActions.linkSSO(
+        t,
+        () => {
+          setIsLoading(false)
+        },
+        provider,
+      ),
     )
   }
 
-  const _unlinkSSO = (provider: string) => {
+  const unlinkSSO = (provider: string) => {
     setIsLoading(true)
 
-    unlinkSSO(
-      t,
-      () => {
-        setIsLoading(false)
-      },
-      provider,
+    dispatch(
+      sagaActions.unlinkSSO(
+        t,
+        () => {
+          setIsLoading(false)
+        },
+        provider,
+      ),
     )
   }
 
@@ -131,13 +133,13 @@ const Socialisations = ({ user, linkSSO, unlinkSSO, theme }: ISocialisations) =>
                     )}
 
                     {connected && unlinkable && (
-                      <Button onClick={() => _unlinkSSO(key)} loading={isLoading} small danger>
+                      <Button onClick={() => unlinkSSO(key)} loading={isLoading} small danger>
                         {t('common.unlink')}
                       </Button>
                     )}
 
                     {!connected && (
-                      <Button onClick={() => _linkSSO(key)} loading={isLoading} small primary>
+                      <Button onClick={() => linkSSO(key)} loading={isLoading} small primary>
                         {t('common.link')}
                       </Button>
                     )}
@@ -152,4 +154,4 @@ const Socialisations = ({ user, linkSSO, unlinkSSO, theme }: ISocialisations) =>
   )
 }
 
-export default memo(Socialisations)
+export default Socialisations

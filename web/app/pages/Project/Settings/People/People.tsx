@@ -17,10 +17,13 @@ import { Badge } from 'ui/Badge'
 import Button from 'ui/Button'
 import Modal from 'ui/Modal'
 import PaidFeature from 'modals/PaidFeature'
-import { roles, roleViewer, roleAdmin, INVITATION_EXPIRES_IN } from 'redux/constants'
+import { roles, INVITATION_EXPIRES_IN } from 'redux/constants'
 import useOnClickOutside from 'hooks/useOnClickOutside'
 import { IProject, IShareOwnerProject } from 'redux/models/IProject'
-import { IUser } from 'redux/models/IUser'
+import { Role } from 'redux/models/Organisation'
+import { useSelector } from 'react-redux'
+import { StateType, useAppDispatch } from 'redux/store'
+import UIActions from 'redux/reducers/ui'
 
 const NoPeople = () => {
   const { t } = useTranslation('common')
@@ -34,17 +37,17 @@ const NoPeople = () => {
   )
 }
 
-interface IUsersList {
+interface UsersListProps {
   data: IShareOwnerProject
   onRemove: () => void
   share?: IShareOwnerProject[]
-  setProjectShareData: (item: Partial<IProject>, id: string) => void
   pid: string
   language: string
   authedUserEmail: string | undefined
 }
 
-const UsersList = ({ data, onRemove, share, setProjectShareData, pid, language, authedUserEmail }: IUsersList) => {
+const UsersList = ({ data, onRemove, share, pid, language, authedUserEmail }: UsersListProps) => {
+  const dispatch = useAppDispatch()
   const { t } = useTranslation('common')
   const [open, setOpen] = useState(false)
   const openRef = useRef<HTMLUListElement>(null)
@@ -60,7 +63,12 @@ const UsersList = ({ data, onRemove, share, setProjectShareData, pid, language, 
         }
         return itShare
       })
-      setProjectShareData({ share: newShared }, pid)
+      dispatch(
+        UIActions.setProjectsShareData({
+          data: { share: newShared },
+          id: pid,
+        }),
+      )
       toast.success(t('apiNotifications.roleUpdated'))
     } catch (reason) {
       console.error(`[ERROR] Error while updating user's role: ${reason}`)
@@ -148,28 +156,26 @@ const UsersList = ({ data, onRemove, share, setProjectShareData, pid, language, 
   )
 }
 
-interface IPeopleProps {
+interface PeopleProps {
   project: IProject
-  setProjectShareData: (data: Partial<IProject>, projectId: string) => void
-  isPaidTierUsed: boolean
-  user: IUser
 }
 
-const People: React.FunctionComponent<IPeopleProps> = ({
-  project,
-  setProjectShareData,
-  isPaidTierUsed,
-  user: currentUser,
-}: IPeopleProps) => {
+const People = ({ project }: PeopleProps) => {
+  const { isPaidTierUsed, user: currentUser } = useSelector((state: StateType) => state.auth)
+  const dispatch = useAppDispatch()
+
   const [showModal, setShowModal] = useState(false)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    email: string
+    role: Role
+  }>({
     email: '',
-    role: '',
+    role: 'viewer',
   })
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [errors, setErrors] = useState<{
@@ -226,7 +232,12 @@ const People: React.FunctionComponent<IPeopleProps> = ({
 
     try {
       const results = await shareProject(id, { email: form.email, role: form.role })
-      setProjectShareData({ share: results.share }, id)
+      dispatch(
+        UIActions.setProjectsShareData({
+          data: { share: results.share },
+          id,
+        }),
+      )
       toast.success(t('apiNotifications.userInvited'))
     } catch (reason) {
       console.error(`[ERROR] Error while inviting a user: ${reason}`)
@@ -234,7 +245,7 @@ const People: React.FunctionComponent<IPeopleProps> = ({
     }
 
     // a timeout is needed to prevent the flicker of data fields in the modal when closing
-    setTimeout(() => setForm({ email: '', role: '' }), 300)
+    setTimeout(() => setForm({ email: '', role: 'viewer' }), 300)
   }
 
   const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -257,7 +268,7 @@ const People: React.FunctionComponent<IPeopleProps> = ({
   const closeModal = () => {
     setShowModal(false)
     // a timeout is needed to prevent the flicker of data fields in the modal when closing
-    setTimeout(() => setForm({ email: '', role: '' }), 300)
+    setTimeout(() => setForm({ email: '', role: 'viewer' }), 300)
     setErrors({})
   }
 
@@ -274,7 +285,12 @@ const People: React.FunctionComponent<IPeopleProps> = ({
         _filter(share, (s) => s.id !== member.id),
         (s) => s,
       )
-      setProjectShareData({ share: newShared }, id)
+      dispatch(
+        UIActions.setProjectsShareData({
+          data: { share: newShared },
+          id,
+        }),
+      )
       toast.success(t('apiNotifications.userRemoved'))
     } catch (reason) {
       console.error(`[ERROR] Error while deleting a user: ${reason}`)
@@ -337,7 +353,6 @@ const People: React.FunctionComponent<IPeopleProps> = ({
                           }}
                           language={language}
                           share={project.share}
-                          setProjectShareData={setProjectShareData}
                           pid={id}
                           authedUserEmail={currentUser?.email}
                         />
@@ -421,8 +436,8 @@ const People: React.FunctionComponent<IPeopleProps> = ({
                     'relative flex cursor-pointer rounded-tl-md rounded-tr-md border border-gray-200 p-4 dark:border-slate-600',
                     {
                       'z-10 border-indigo-200 bg-indigo-50 dark:border-indigo-800/40 dark:bg-indigo-600/40':
-                        form.role === roleAdmin.role,
-                      'border-gray-200': form.role !== roleAdmin.role,
+                        form.role === 'admin',
+                      'border-gray-200': form.role !== 'admin',
                     },
                   )}
                 >
@@ -433,20 +448,21 @@ const People: React.FunctionComponent<IPeopleProps> = ({
                     type='radio'
                     value='admin'
                     onChange={handleInput}
+                    checked={form.role === 'admin'}
                   />
                   <div className='ml-3 flex flex-col'>
                     <span
                       className={cx('block text-sm font-medium', {
-                        'text-indigo-900 dark:text-white': form.role === roleAdmin.role,
-                        'text-gray-700 dark:text-gray-200': form.role !== roleAdmin.role,
+                        'text-indigo-900 dark:text-white': form.role === 'admin',
+                        'text-gray-700 dark:text-gray-200': form.role !== 'admin',
                       })}
                     >
                       {t('project.settings.roles.admin.name')}
                     </span>
                     <span
                       className={cx('block text-sm', {
-                        'text-indigo-700 dark:text-gray-100': form.role === roleAdmin.role,
-                        'text-gray-700 dark:text-gray-200': form.role !== roleAdmin.role,
+                        'text-indigo-700 dark:text-gray-100': form.role === 'admin',
+                        'text-gray-700 dark:text-gray-200': form.role !== 'admin',
                       })}
                     >
                       {t('project.settings.roles.admin.desc')}
@@ -459,8 +475,8 @@ const People: React.FunctionComponent<IPeopleProps> = ({
                     'relative flex cursor-pointer rounded-bl-md rounded-br-md border border-gray-200 p-4 dark:border-gray-500',
                     {
                       'z-10 border-indigo-200 bg-indigo-50 dark:border-indigo-800/40 dark:bg-indigo-600/40':
-                        form.role === roleViewer.role,
-                      'border-gray-200': form.role !== roleViewer.role,
+                        form.role === 'viewer',
+                      'border-gray-200': form.role !== 'viewer',
                     },
                   )}
                 >
@@ -471,20 +487,21 @@ const People: React.FunctionComponent<IPeopleProps> = ({
                     type='radio'
                     value='viewer'
                     onChange={handleInput}
+                    checked={form.role === 'viewer'}
                   />
                   <div className='ml-3 flex flex-col'>
                     <span
                       className={cx('block text-sm font-medium', {
-                        'text-indigo-900 dark:text-white': form.role === roleViewer.role,
-                        'text-gray-700 dark:text-gray-200': form.role !== roleViewer.role,
+                        'text-indigo-900 dark:text-white': form.role === 'viewer',
+                        'text-gray-700 dark:text-gray-200': form.role !== 'viewer',
                       })}
                     >
                       {t('project.settings.roles.viewer.name')}
                     </span>
                     <span
                       className={cx('block text-sm', {
-                        'text-indigo-700 dark:text-gray-100': form.role === roleViewer.role,
-                        'text-gray-700 dark:text-gray-200': form.role !== roleViewer.role,
+                        'text-indigo-700 dark:text-gray-100': form.role === 'viewer',
+                        'text-gray-700 dark:text-gray-200': form.role !== 'viewer',
                       })}
                     >
                       {t('project.settings.roles.viewer.desc')}

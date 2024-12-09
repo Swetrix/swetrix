@@ -1,4 +1,4 @@
-import React, { useState, memo } from 'react'
+import React, { useState } from 'react'
 import QRCode from 'react-qr-code'
 import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
@@ -11,17 +11,14 @@ import Button from 'ui/Button'
 import { generate2FA, enable2FA, disable2FA } from 'api'
 import { setAccessToken } from 'utils/accessToken'
 import { setRefreshToken } from 'utils/refreshToken'
-import { IUser } from 'redux/models/IUser'
+import { StateType, useAppDispatch } from 'redux/store'
+import { useSelector } from 'react-redux'
+import { authActions } from 'redux/reducers/auth'
 
-const TwoFA = ({
-  user,
-  dontRemember,
-  updateUserData,
-}: {
-  user: IUser
-  dontRemember: boolean
-  updateUserData: (data: Partial<IUser>) => void
-}): JSX.Element => {
+const TwoFA = () => {
+  const dispatch = useAppDispatch()
+  const { user, dontRemember } = useSelector((state: StateType) => state.auth)
+
   const { t } = useTranslation('common')
   const [twoFAConfigurating, setTwoFAConfigurating] = useState(false)
   const [twoFADisabling, setTwoFADisabling] = useState(false)
@@ -74,7 +71,7 @@ const TwoFA = ({
         const { twoFactorRecoveryCode, accessToken, refreshToken } = await enable2FA(twoFACode)
         setRefreshToken(refreshToken)
         setAccessToken(accessToken, dontRemember)
-        updateUserData({ isTwoFactorAuthenticationEnabled: true })
+        dispatch(authActions.mergeUser({ isTwoFactorAuthenticationEnabled: true }))
         setTwoFARecovery(twoFactorRecoveryCode)
       } catch (reason) {
         if (_isString(reason)) {
@@ -94,7 +91,7 @@ const TwoFA = ({
 
       try {
         await disable2FA(twoFACode)
-        updateUserData({ isTwoFactorAuthenticationEnabled: false })
+        dispatch(authActions.mergeUser({ isTwoFactorAuthenticationEnabled: false }))
       } catch (reason) {
         if (_isString(reason)) {
           toast.error(reason)
@@ -224,4 +221,4 @@ const TwoFA = ({
   )
 }
 
-export default memo(TwoFA)
+export default TwoFA

@@ -14,9 +14,8 @@ import Modal from 'ui/Modal'
 import { Badge, BadgeProps } from 'ui/Badge'
 import routes from 'utils/routes'
 import { nFormatter, calculateRelativePercentage } from 'utils/generic'
-import { roleViewer } from 'redux/constants'
 
-import { acceptShareProject } from 'api'
+import { acceptProjectShare } from 'api'
 
 import { IProject } from 'redux/models/IProject'
 import { useSelector } from 'react-redux'
@@ -142,10 +141,21 @@ export const ProjectCard = ({ live = 'N/A', project }: ProjectCardProps) => {
         throw new Error('Project share not found')
       }
 
-      await acceptShareProject(shareId)
+      await acceptProjectShare(shareId)
 
       dispatch(UIActions.setProjectsShareData({ data: { isAccessConfirmed: true }, id }))
-      dispatch(authActions.setUserShareData({ data: { confirmed: true }, id: shareId }))
+
+      dispatch(
+        authActions.mergeUser({
+          sharedProjects: user.sharedProjects?.map((item) => {
+            if (item.id === shareId) {
+              return { ...item, isAccessConfirmed: true }
+            }
+
+            return item
+          }),
+        }),
+      )
 
       toast.success(t('apiNotifications.acceptInvitation'))
     } catch (reason: any) {
@@ -174,13 +184,11 @@ export const ProjectCard = ({ live = 'N/A', project }: ProjectCardProps) => {
           <p className='truncate text-lg font-semibold text-slate-900 dark:text-gray-50'>{name}</p>
 
           <div className='flex items-center gap-2' onClick={(e) => e.stopPropagation()}>
-            {role !== roleViewer.role && (
-              <Link
-                to={_replace(project.isCaptchaProject ? routes.captcha_settings : routes.project_settings, ':id', id)}
+            {role !== 'viewer' && (
+              <AdjustmentsVerticalIcon
+                className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500'
                 aria-label={`${t('project.settings.settings')} ${name}`}
-              >
-                <AdjustmentsVerticalIcon className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500' />
-              </Link>
+              />
             )}
             <a
               href={_replace(project.isCaptchaProject ? routes.captcha : routes.project, ':id', id)}

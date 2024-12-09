@@ -42,7 +42,7 @@ export default function* signupWorder({
       deleteCookie(REFERRAL_COOKIE)
     }
 
-    yield put(authActions.signupUpSuccessful(user))
+    yield put(authActions.authSuccessful(user))
     yield call(setAccessToken, accessToken, dontRemember)
     yield call(setRefreshToken, refreshToken)
     yield put(authActions.setDontRemember(dontRemember))

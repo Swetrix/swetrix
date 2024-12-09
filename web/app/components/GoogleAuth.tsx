@@ -1,15 +1,15 @@
 import React from 'react'
-import type i18next from 'i18next'
 import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
 
 import Button from 'ui/Button'
 import GoogleGSVG from 'ui/icons/GoogleG'
 import { SSO_PROVIDERS } from 'redux/constants'
+import sagaActions from 'redux/sagas/actions'
+import { useAppDispatch } from 'redux/store'
 
 interface IGoogleAuth {
   setIsLoading: (isLoading: boolean) => void
-  authSSO: (provider: string, dontRemember: boolean, t: typeof i18next.t, callback: (res: any) => void) => void
   callback?: any
   dontRemember?: boolean
   isMiniButton?: boolean
@@ -18,17 +18,17 @@ interface IGoogleAuth {
 
 const GoogleAuth: React.FC<IGoogleAuth> = ({
   setIsLoading,
-  authSSO,
   dontRemember,
   callback = () => {},
   isMiniButton,
   className,
 }) => {
+  const dispatch = useAppDispatch()
   const { t } = useTranslation()
 
   const googleLogin = async () => {
     setIsLoading(true)
-    authSSO(SSO_PROVIDERS.GOOGLE, dontRemember as boolean, t, callback)
+    dispatch(sagaActions.authSSO(SSO_PROVIDERS.GOOGLE, Boolean(dontRemember), t, callback))
   }
 
   if (isMiniButton) {

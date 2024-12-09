@@ -132,31 +132,44 @@ export class OrganisationService {
 
   async paginate(
     options: PaginationOptionsInterface,
-    where?: FindOptionsWhere<Organisation> | FindOptionsWhere<Organisation>[],
+    userId: string,
+    search?: string,
   ) {
-    const [results, total] = await this.organisationRepository.findAndCount({
-      take: options.take || 100,
-      skip: options.skip || 0,
-      where,
-      order: {
-        name: 'ASC',
-      },
-      relations: ['members', 'members.user'],
-      select: {
-        id: true,
-        name: true,
-        members: {
-          id: true,
-          role: true,
-          confirmed: true,
-          created: true,
-          user: {
-            id: true,
-            email: true,
-          },
-        },
-      },
-    })
+    const queryBuilder = this.organisationRepository
+      .createQueryBuilder('organisation')
+      // We do left join twice to avoid the issue with TypeORM where it does not return
+      // all the relations when filtering by one of them
+      // see: https://github.com/typeorm/typeorm/issues/3731
+      .leftJoin('organisation.members', 'membersFilter')
+      .leftJoin('membersFilter.user', 'userFilter')
+      .leftJoinAndSelect('organisation.members', 'members')
+      .leftJoinAndSelect('members.user', 'user')
+      .select([
+        'organisation.id',
+        'organisation.name',
+        'members.id',
+        'members.role',
+        'members.confirmed',
+        'members.created',
+        'user.email',
+      ])
+      .orderBy('organisation.name', 'ASC')
+      .take(options.take || 100)
+      .skip(options.skip || 0)
+
+    if (userId) {
+      queryBuilder.andWhere('userFilter.id = :userId', {
+        userId,
+      })
+    }
+
+    if (search) {
+      queryBuilder.andWhere('LOWER(organisation.name) LIKE LOWER(:search)', {
+        search: `%${search.trim()}%`,
+      })
+    }
+
+    const [results, total] = await queryBuilder.getManyAndCount()
 
     return new Pagination<Organisation>({
       results,

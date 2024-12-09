@@ -46,7 +46,7 @@ export default function* ssoLink({ payload: { callback, t, provider } }: ISSOLin
 
         // @ts-ignore
         const user = yield call(authMe)
-        yield put(authActions.loginSuccessful(user))
+        yield put(authActions.authSuccessful(user))
 
         toast.success(t('apiNotifications.socialAccountLinked'))
 

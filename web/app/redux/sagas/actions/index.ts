@@ -39,7 +39,7 @@ const loginAsync = (
     password: string
     dontRemember: boolean
   },
-  callback = () => {},
+  callback: (isSuccess: boolean, isTwoFactorAuthenticationEnabled: boolean) => void = () => {},
 ) => ({
   type: types.LOGIN_ASYNC,
   payload: {

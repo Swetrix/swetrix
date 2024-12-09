@@ -61,12 +61,12 @@ export default function* ssoAuth({ payload: { callback, dontRemember, t, provide
         if (user.isTwoFactorAuthenticationEnabled) {
           yield call(setAccessToken, accessToken, true)
           yield call(setRefreshToken, refreshToken)
-          yield put(authActions.updateUserData(user))
+          yield put(authActions.mergeUser(user))
           callback(false, true)
           return
         }
 
-        yield put(authActions.loginSuccessful(user))
+        yield put(authActions.authSuccessful(user))
         yield call(setAccessToken, accessToken, dontRemember)
         yield call(setRefreshToken, refreshToken)
         // yield put(UIActions.setThemeType(user.theme))

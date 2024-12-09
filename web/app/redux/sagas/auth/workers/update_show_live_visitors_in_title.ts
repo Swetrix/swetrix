@@ -16,7 +16,7 @@ export default function* updateShowLiveVisitorsInTitle({ payload: { show, callba
   try {
     const user: Partial<IUser> = yield call(setShowLiveVisitorsInTitle, show)
 
-    yield put(authActions.partiallyOverwriteUser(user))
+    yield put(authActions.mergeUser(user))
     isSuccess = true
   } catch (reason: any) {
     toast.error(reason?.message || (typeof reason === 'string' ? reason : reason[0]))

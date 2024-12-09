@@ -17,7 +17,7 @@ export default function* verifyEmailWorker({
   try {
     // @ts-ignore
     yield call(verifyEmail, data)
-    yield put(authActions.emailVerifySuccessful())
+    yield put(authActions.mergeUser({ isActive: true }))
     successfulCallback()
   } catch (reason) {
     errorCallback(reason)

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, memo } from 'react'
-import type i18next from 'i18next'
 import { Link } from '@remix-run/react'
 import { useTranslation, Trans } from 'react-i18next'
 import _keys from 'lodash/keys'
@@ -16,34 +15,27 @@ import Button from 'ui/Button'
 import Checkbox from 'ui/Checkbox'
 import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS } from 'utils/validator'
 import { isSelfhosted, TRIAL_DAYS } from 'redux/constants'
-import { IUser } from 'redux/models/IUser'
 import { submit2FA } from 'api'
 import { setAccessToken, removeAccessToken } from 'utils/accessToken'
 import { setRefreshToken, removeRefreshToken } from 'utils/refreshToken'
+import { useAppDispatch } from 'redux/store'
+import { authActions } from 'redux/reducers/auth'
+import sagaActions from 'redux/sagas/actions'
 
-interface ISigninForm {
+interface SigninForm {
   email: string
   password: string
   dontRemember: boolean
 }
 
-interface ISignin {
-  login: (
-    data: {
-      email: string
-      password: string
-      dontRemember: boolean
-    },
-    callback: (result: boolean, twoFARequired: boolean) => void,
-  ) => void
-  loginSuccess: (user: IUser) => void
-  authSSO: (provider: string, dontRemember: boolean, t: typeof i18next.t, callback: (res: any) => void) => void
+interface SigninProps {
   ssrTheme: string
 }
 
-const Signin = ({ login, loginSuccess, authSSO, ssrTheme }: ISignin): JSX.Element => {
+const Signin = ({ ssrTheme }: SigninProps) => {
+  const dispatch = useAppDispatch()
   const { t } = useTranslation('common')
-  const [form, setForm] = useState<ISigninForm>({
+  const [form, setForm] = useState<SigninForm>({
     email: '',
     password: '',
     dontRemember: false,
@@ -98,10 +90,10 @@ const Signin = ({ login, loginSuccess, authSSO, ssrTheme }: ISignin): JSX.Elemen
     }
   }
 
-  const onSubmit = (data: ISigninForm) => {
+  const onSubmit = (data: SigninForm) => {
     if (!isLoading) {
       setIsLoading(true)
-      login(data, loginCallback)
+      dispatch(sagaActions.loginAsync(data, loginCallback))
     }
   }
 
@@ -118,7 +110,8 @@ const Signin = ({ login, loginSuccess, authSSO, ssrTheme }: ISignin): JSX.Elemen
         removeRefreshToken()
         setAccessToken(accessToken)
         setRefreshToken(refreshToken)
-        loginSuccess(user)
+        dispatch(authActions.authSuccessful(user))
+        dispatch(sagaActions.loadProjects())
       } catch (reason) {
         if (_isString(reason)) {
           toast.error(reason)
@@ -261,15 +254,9 @@ const Signin = ({ login, loginSuccess, authSSO, ssrTheme }: ISignin): JSX.Elemen
                 </div>
               </div>
               <div className='mt-6 grid grid-cols-2 gap-4'>
-                <GoogleAuth
-                  setIsLoading={setIsLoading}
-                  authSSO={authSSO}
-                  callback={loginCallback}
-                  dontRemember={false}
-                />
+                <GoogleAuth setIsLoading={setIsLoading} callback={loginCallback} dontRemember={false} />
                 <GithubAuth
                   setIsLoading={setIsLoading}
-                  authSSO={authSSO}
                   callback={loginCallback}
                   dontRemember={false}
                   ssrTheme={ssrTheme}

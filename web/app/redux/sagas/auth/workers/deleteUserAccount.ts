@@ -18,7 +18,7 @@ export default function* deleteUserAccountWorker({
   try {
     yield call(deleteUser, deletionFeedback)
     yield call(successCallback)
-    yield put(authActions.deleteAccountSuccess())
+    yield put(authActions.logout())
     toast.success(t('apiNotifications.accountDeleted'))
   } catch (reason) {
     let message

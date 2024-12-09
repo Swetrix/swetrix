@@ -109,7 +109,7 @@ const Pricing = ({ authenticated, isBillingPage }: IPricing) => {
           try {
             const me = await authMe()
 
-            dispatch(authActions.loginSuccessful(me))
+            dispatch(authActions.authSuccessful(me))
             dispatch(authActions.finishLoading())
           } catch (reason) {
             dispatch(authActions.logout())
@@ -204,7 +204,7 @@ const Pricing = ({ authenticated, isBillingPage }: IPricing) => {
       try {
         const me = await authMe()
 
-        dispatch(authActions.loginSuccessful(me))
+        dispatch(authActions.authSuccessful(me))
         dispatch(authActions.finishLoading())
       } catch (reason) {
         dispatch(authActions.logout())

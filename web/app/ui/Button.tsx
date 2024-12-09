@@ -20,6 +20,7 @@ interface IButton extends React.ComponentPropsWithoutRef<typeof HeadlessButton> 
   semiDanger?: boolean
   focus?: boolean
   noBorder?: boolean
+  title?: string
 }
 
 const Button = ({

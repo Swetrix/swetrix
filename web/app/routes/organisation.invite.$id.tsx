@@ -1,41 +1,39 @@
-import React, { useState, useEffect, memo } from 'react'
-import { Link } from '@remix-run/react'
+import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline'
+import { Link, useParams } from '@remix-run/react'
+import { acceptOrganisationInvitation } from 'api'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 
 import Loader from 'ui/Loader'
-
-import { confirmTransferProject } from 'api'
 import routes from 'utils/routes'
 
-const TransferProjectConfirm = (): JSX.Element => {
+export default function ConfirmOrganisationInvitation() {
   const { t } = useTranslation('common')
+  const { id } = useParams()
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-
-  const handleConfirm = async (token: string) => {
-    try {
-      await confirmTransferProject(token)
-    } catch {
-      setError(t('apiNotifications.invalidToken'))
-    } finally {
-      setLoading(false)
-    }
-  }
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     setLoading(true)
-    const query = new URLSearchParams(window.location.search)
-    const token = query.get('token')
 
-    if (!token) {
-      setError(t('apiNotifications.invalidToken'))
+    if (!id) {
+      setError(t('common.error'))
       setLoading(false)
       return
     }
 
-    handleConfirm(token)
-  }, []) // eslint-disable-line
+    const acceptInvitation = async () => {
+      try {
+        await acceptOrganisationInvitation(id)
+      } catch (reason) {
+        setError(typeof reason === 'string' ? reason : t('apiNotifications.acceptOrganisationInvitationError'))
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    acceptInvitation()
+  }, [id]) // eslint-disable-line
 
   if (loading) {
     return (
@@ -86,7 +84,7 @@ const TransferProjectConfirm = (): JSX.Element => {
           <div className='sm:ml-6'>
             <div className='max-w-prose sm:border-l sm:border-gray-200 sm:pl-6'>
               <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50 sm:text-5xl'>
-                {t('apiNotifications.acceptInvitation')}
+                {t('apiNotifications.acceptOrganisationInvitation')}
               </h1>
             </div>
             <div className='mt-8 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>
@@ -103,5 +101,3 @@ const TransferProjectConfirm = (): JSX.Element => {
     </div>
   )
 }
-
-export default memo(TransferProjectConfirm)

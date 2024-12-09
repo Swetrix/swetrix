@@ -47,7 +47,7 @@ const App = ({ ssrTheme, ssrAuthenticated }: AppProps) => {
       if (accessToken && !reduxAuthenticated) {
         try {
           const me = await authMe()
-          dispatch(authActions.loginSuccessful(me))
+          dispatch(authActions.authSuccessful(me))
         } catch (reason) {
           dispatch(authActions.logout())
           dispatch(sagaActions.logout(false, false))

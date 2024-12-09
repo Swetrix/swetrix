@@ -40,7 +40,6 @@ import { UserGoogleDTO } from './dto/user-google.dto'
 import { UserGithubDTO } from './dto/user-github.dto'
 import { EMAIL_ACTION_ENCRYPTION_KEY } from '../common/constants'
 import { ReportFrequency } from '../project/enums'
-import { OrganisationService } from '../organisation/organisation.service'
 
 dayjs.extend(utc)
 
@@ -110,7 +109,6 @@ export class UserService {
     @InjectRepository(DeleteFeedback)
     private readonly deleteFeedbackRepository: Repository<DeleteFeedback>,
     private readonly payoutsService: PayoutsService,
-    private readonly organisationService: OrganisationService,
   ) {}
 
   async create(

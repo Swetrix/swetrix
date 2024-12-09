@@ -14,12 +14,12 @@ import Input from 'ui/Input'
 import { Badge } from 'ui/Badge'
 import Button from 'ui/Button'
 import Modal from 'ui/Modal'
-import { roles, roleViewer, roleAdmin, INVITATION_EXPIRES_IN } from 'redux/constants'
+import { roles, INVITATION_EXPIRES_IN } from 'redux/constants'
 import useOnClickOutside from 'hooks/useOnClickOutside'
 import { DetailedOrganisation, Role } from 'redux/models/Organisation'
 import { useSelector } from 'react-redux'
 import { StateType } from 'redux/store'
-import { changeOrganisationRole, removeOrganisationMember } from 'api'
+import { changeOrganisationRole, inviteOrganisationMember, removeOrganisationMember } from 'api'
 
 const NoPeople = () => {
   const { t } = useTranslation('common')
@@ -153,9 +153,12 @@ interface PeopleProps {
 const People = ({ organisation, reloadOrganisation }: PeopleProps): JSX.Element => {
   const [showModal, setShowModal] = useState(false)
   const { t } = useTranslation('common')
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    email: string
+    role: Role
+  }>({
     email: '',
-    role: '',
+    role: 'viewer',
   })
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [errors, setErrors] = useState<{
@@ -205,13 +208,13 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps): JSX.Element 
     }))
   }
 
-  const onSubmit = async () => {
+  const onInviteToOrganisation = async () => {
     setShowModal(false)
     setErrors({})
     setValidated(false)
 
     try {
-      // todo
+      await inviteOrganisationMember(organisation.id, form)
       await reloadOrganisation()
       toast.success(t('apiNotifications.userInvited'))
     } catch (reason) {
@@ -220,7 +223,7 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps): JSX.Element 
     }
 
     // a timeout is needed to prevent the flicker of data fields in the modal when closing
-    setTimeout(() => setForm({ email: '', role: '' }), 300)
+    setTimeout(() => setForm({ email: '', role: 'viewer' }), 300)
   }
 
   const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -229,7 +232,7 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps): JSX.Element 
 
     setBeenSubmitted(true)
     if (validated) {
-      onSubmit()
+      onInviteToOrganisation()
     } else {
       validate()
     }
@@ -238,8 +241,13 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps): JSX.Element 
   const closeModal = () => {
     setShowModal(false)
     // a timeout is needed to prevent the flicker of data fields in the modal when closing
-    setTimeout(() => setForm({ email: '', role: '' }), 300)
+    setTimeout(() => setForm({ email: '', role: 'viewer' }), 300)
     setErrors({})
+  }
+
+  const closeRemoveUserModal = () => {
+    setShowDeleteModal(false)
+    setTimeout(() => setMemberToRemove(null), 300)
   }
 
   const onRemove = async (member: DetailedOrganisation['members'][number]) => {
@@ -321,13 +329,10 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps): JSX.Element 
         )}
       </div>
       <Modal
-        onClose={() => {
-          setShowDeleteModal(false)
-          setMemberToRemove(null)
-        }}
+        onClose={closeRemoveUserModal}
         onSubmit={async () => {
           await onRemove(memberToRemove!)
-          setMemberToRemove(null)
+          closeRemoveUserModal()
         }}
         submitText={t('common.yes')}
         type='confirmed'
@@ -387,8 +392,8 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps): JSX.Element 
                     'relative flex cursor-pointer rounded-tl-md rounded-tr-md border border-gray-200 p-4 dark:border-slate-600',
                     {
                       'z-10 border-indigo-200 bg-indigo-50 dark:border-indigo-800/40 dark:bg-indigo-600/40':
-                        form.role === roleAdmin.role,
-                      'border-gray-200': form.role !== roleAdmin.role,
+                        form.role === 'admin',
+                      'border-gray-200': form.role !== 'admin',
                     },
                   )}
                 >
@@ -399,20 +404,21 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps): JSX.Element 
                     type='radio'
                     value='admin'
                     onChange={handleInput}
+                    checked={form.role === 'admin'}
                   />
                   <div className='ml-3 flex flex-col'>
                     <span
                       className={cx('block text-sm font-medium', {
-                        'text-indigo-900 dark:text-white': form.role === roleAdmin.role,
-                        'text-gray-700 dark:text-gray-200': form.role !== roleAdmin.role,
+                        'text-indigo-900 dark:text-white': form.role === 'admin',
+                        'text-gray-700 dark:text-gray-200': form.role !== 'admin',
                       })}
                     >
                       {t('organisations.role.admin.name')}
                     </span>
                     <span
                       className={cx('block text-sm', {
-                        'text-indigo-700 dark:text-gray-100': form.role === roleAdmin.role,
-                        'text-gray-700 dark:text-gray-200': form.role !== roleAdmin.role,
+                        'text-indigo-700 dark:text-gray-100': form.role === 'admin',
+                        'text-gray-700 dark:text-gray-200': form.role !== 'admin',
                       })}
                     >
                       {t('organisations.role.admin.desc')}
@@ -425,8 +431,8 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps): JSX.Element 
                     'relative flex cursor-pointer rounded-bl-md rounded-br-md border border-gray-200 p-4 dark:border-gray-500',
                     {
                       'z-10 border-indigo-200 bg-indigo-50 dark:border-indigo-800/40 dark:bg-indigo-600/40':
-                        form.role === roleViewer.role,
-                      'border-gray-200': form.role !== roleViewer.role,
+                        form.role === 'viewer',
+                      'border-gray-200': form.role !== 'viewer',
                     },
                   )}
                 >
@@ -437,20 +443,21 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps): JSX.Element 
                     type='radio'
                     value='viewer'
                     onChange={handleInput}
+                    checked={form.role === 'viewer'}
                   />
                   <div className='ml-3 flex flex-col'>
                     <span
                       className={cx('block text-sm font-medium', {
-                        'text-indigo-900 dark:text-white': form.role === roleViewer.role,
-                        'text-gray-700 dark:text-gray-200': form.role !== roleViewer.role,
+                        'text-indigo-900 dark:text-white': form.role === 'viewer',
+                        'text-gray-700 dark:text-gray-200': form.role !== 'viewer',
                       })}
                     >
                       {t('organisations.role.viewer.name')}
                     </span>
                     <span
                       className={cx('block text-sm', {
-                        'text-indigo-700 dark:text-gray-100': form.role === roleViewer.role,
-                        'text-gray-700 dark:text-gray-200': form.role !== roleViewer.role,
+                        'text-indigo-700 dark:text-gray-100': form.role === 'viewer',
+                        'text-gray-700 dark:text-gray-200': form.role !== 'viewer',
                       })}
                     >
                       {t('organisations.role.viewer.desc')}

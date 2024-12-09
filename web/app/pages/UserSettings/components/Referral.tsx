@@ -1,4 +1,4 @@
-import React, { memo, useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import dayjs from 'dayjs'
 import _isEmpty from 'lodash/isEmpty'
@@ -10,7 +10,6 @@ import Tooltip from 'ui/Tooltip'
 import Highlighted from 'ui/Highlighted'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
-import { IUser } from 'redux/models/IUser'
 import {
   REF_URL_PREFIX,
   DOCS_REFERRAL_PROGRAM_URL,
@@ -23,16 +22,16 @@ import {
   REFERRAL_CUT,
 } from 'redux/constants'
 import { isValidEmail } from 'utils/validator'
+import { useSelector } from 'react-redux'
+import { StateType, useAppDispatch } from 'redux/store'
+import UIActions from 'redux/reducers/ui'
+import { authActions } from 'redux/reducers/auth'
 
-interface IReferral {
-  user: IUser
-  updateUserData: (data: Partial<IUser>) => void
-  setCache: (key: string, value: any) => void
-  activeReferrals: any[]
-  referralStatistics: any
-}
+const Referral = () => {
+  const { user } = useSelector((state: StateType) => state.auth)
+  const { activeReferrals, referralStatistics } = useSelector((state: StateType) => state.ui.cache)
+  const dispatch = useAppDispatch()
 
-const Referral = ({ user, updateUserData, referralStatistics, activeReferrals, setCache }: IReferral) => {
   const {
     t,
     i18n: { language },
@@ -50,7 +49,12 @@ const Referral = ({ user, updateUserData, referralStatistics, activeReferrals, s
     const getRefStats = async () => {
       try {
         const info = await getPayoutsInfo()
-        setCache('referralStatistics', info)
+        dispatch(
+          UIActions.setCache({
+            key: 'referralStatistics',
+            value: info,
+          }),
+        )
       } catch (reason) {
         console.error('[Referral][getRefStats] Something went wrong whilst requesting payouts information', reason)
         toast.error(t('apiNotifications.payoutInfoError'))
@@ -60,7 +64,12 @@ const Referral = ({ user, updateUserData, referralStatistics, activeReferrals, s
     const getActiveReferrals = async () => {
       try {
         const info = await getReferrals()
-        setCache('activeReferrals', info)
+        dispatch(
+          UIActions.setCache({
+            key: 'activeReferrals',
+            value: info,
+          }),
+        )
       } catch (reason) {
         console.error('[Referral][getActiveReferrals] Something went wrong whilst requesting active referrals', reason)
         toast.error(t('apiNotifications.payoutInfoError'))
@@ -76,7 +85,7 @@ const Referral = ({ user, updateUserData, referralStatistics, activeReferrals, s
       setActiveReferralsRequested(true)
       getActiveReferrals()
     }
-  }, [referralStatistics, referralStatsRequested, setCache, activeReferralsRequested, activeReferrals, t])
+  }, [referralStatistics, referralStatsRequested, activeReferralsRequested, activeReferrals, t, dispatch])
 
   const onRefCodeGenerate = async () => {
     if (refCodeGenerating || user.refCode) {
@@ -87,9 +96,11 @@ const Referral = ({ user, updateUserData, referralStatistics, activeReferrals, s
 
     try {
       const { refCode } = await generateRefCode()
-      updateUserData({
-        refCode,
-      })
+      dispatch(
+        authActions.mergeUser({
+          refCode,
+        }),
+      )
     } catch {
       toast.error(t('apiNotifications.somethingWentWrong'))
     } finally {
@@ -116,9 +127,11 @@ const Referral = ({ user, updateUserData, referralStatistics, activeReferrals, s
 
     try {
       await setPaypalEmail(paypalEmailAddress)
-      updateUserData({
-        paypalPaymentsEmail: paypalEmailAddress,
-      })
+      dispatch(
+        authActions.mergeUser({
+          paypalPaymentsEmail: paypalEmailAddress,
+        }),
+      )
       toast.success(t('profileSettings.referral.payoutEmailUpdated'))
     } catch (reason) {
       console.error('[Referral][updatePaypalEmail] Something went wrong whilst updating paypal email', reason)
@@ -307,4 +320,4 @@ const Referral = ({ user, updateUserData, referralStatistics, activeReferrals, s
   )
 }
 
-export default memo(Referral)
+export default Referral

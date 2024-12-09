@@ -24,22 +24,22 @@ export class ActionTokensService {
     user: User,
     action: ActionTokenType,
     newValue: string = null,
-  ): Promise<ActionToken> {
+  ) {
     return this.actionTokensRepository.save({ user, action, newValue })
   }
 
-  async find(id: string): Promise<ActionToken> {
+  async find(id: string) {
     return this.actionTokensRepository.findOneOrFail({
       where: { id },
       relations: ['user'],
     })
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string) {
     await this.actionTokensRepository.delete(id)
   }
 
-  public async createActionToken(
+  async createActionToken(
     userId: string,
     action: ActionTokenType,
     newValue?: string,
@@ -51,14 +51,14 @@ export class ActionTokensService {
     })
   }
 
-  public async findActionToken(token: string) {
+  async findActionToken(token: string) {
     return this.actionTokensRepository.findOne({
       where: { id: token },
       relations: ['user'],
     })
   }
 
-  public async deleteActionToken(token: string) {
+  async deleteActionToken(token: string) {
     await this.actionTokensRepository.delete(token)
   }
 

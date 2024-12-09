@@ -481,29 +481,7 @@ export const paddleLanguageMapping: IStringObject = {
 // This will prevent cached version or raw locale strings being displayed in production
 export const I18N_CACHE_BREAKER = 10
 
-// dashboard && projects
-
 export const roles: Role[] = ['admin', 'viewer']
-
-export const roleViewer: {
-  name: string
-  role: string
-  description: string
-} = {
-  name: 'Viewer',
-  role: 'viewer',
-  description: 'Can view the project',
-}
-
-export const roleAdmin: {
-  name: string
-  role: string
-  description: string
-} = {
-  name: 'Admin',
-  role: 'admin',
-  description: 'Can manage the project',
-}
 
 const SELFHOSTED_PROJECT_TABS = {
   traffic: 'traffic',

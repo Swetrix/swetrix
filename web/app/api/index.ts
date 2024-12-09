@@ -346,6 +346,30 @@ export const changeOrganisationRole = (memberId: string, role: Role) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
+export const inviteOrganisationMember = (organisationId: string, data: { email: string; role: Role }) =>
+  api
+    .post(`/organisation/${organisationId}/invite`, data)
+    .then((response) => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const acceptOrganisationInvitation = (tokenId: string) =>
+  api
+    .post(`/user/organisation/${tokenId}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const rejectOrganisationInvitation = (tokenId: string) =>
+  api
+    .delete(`/user/organisation/${tokenId}`)
+    .then((response) => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
 export const removeOrganisationMember = (memberId: string) =>
   api
     .delete(`/organisation/member/${memberId}`)
@@ -876,17 +900,17 @@ export const deleteShareProjectUsers = (pid: string, userId: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const deleteShareProject = (pid: string) =>
+export const rejectProjectShare = (actionId: string) =>
   api
-    .delete(`user/share/${pid}`)
+    .delete(`/user/share/${actionId}`)
     .then((response) => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const acceptShareProject = (shareId: string) =>
+export const acceptProjectShare = (actionId: string) =>
   api
-    .get(`user/share/${shareId}`)
+    .post(`/user/share/${actionId}`)
     .then((response) => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message

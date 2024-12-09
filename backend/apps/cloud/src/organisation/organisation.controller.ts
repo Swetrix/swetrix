@@ -16,7 +16,6 @@ import {
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import { isEmpty as _isEmpty, find as _find, trim as _trim } from 'lodash'
-import { FindOptionsWhere, ILike } from 'typeorm'
 
 import { JwtAccessTokenGuard } from '../auth/guards/jwt-access-token.guard'
 import { RolesGuard } from '../auth/guards/roles.guard'
@@ -72,29 +71,7 @@ export class OrganisationController {
   ): Promise<Pagination<Organisation> | Organisation[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /organisation')
 
-    let where: FindOptionsWhere<Organisation> | FindOptionsWhere<Organisation>[]
-
-    if (search) {
-      where = {
-        members: {
-          user: { id: userId },
-        },
-        name: ILike(`%${search}%`),
-      }
-    } else {
-      where = {
-        members: {
-          user: { id: userId },
-        },
-      }
-    }
-
-    const paginated = await this.organisationService.paginate(
-      { take, skip },
-      where,
-    )
-
-    return paginated
+    return this.organisationService.paginate({ take, skip }, userId, search)
   }
 
   @ApiBearerAuth()
