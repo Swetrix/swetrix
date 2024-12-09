@@ -1,3 +1,3 @@
-import Signup from './Signup.container'
+import Signup from './Signup'
 
 export default Signup

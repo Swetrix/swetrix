@@ -40,7 +40,7 @@ const NewFunnel = ({
   allowedToManage,
 }: INewFunnel): JSX.Element => {
   const { t } = useTranslation('common')
-  const [name, setName] = useState<string>(funnel?.name || '')
+  const [name, setName] = useState(funnel?.name || '')
   const [steps, setSteps] = useState<any[]>(funnel?.steps || INITIAL_FUNNEL_STEPS)
   const [filters, setFilters] = useState<string[]>([])
   const allStepsFulfilled = useMemo(() => _every(steps, (step) => step), [steps])

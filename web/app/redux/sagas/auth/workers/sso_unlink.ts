@@ -27,7 +27,7 @@ export default function* ssoUnlink({ payload: { provider, t, callback } }: ISSOU
 
     // @ts-ignore
     const user = yield call(authMe)
-    yield put(authActions.loginSuccessful(user))
+    yield put(authActions.authSuccessful(user))
 
     toast.success(t('apiNotifications.socialAccountUninked'))
     callback(true)

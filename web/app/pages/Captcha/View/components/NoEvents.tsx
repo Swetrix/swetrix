@@ -20,7 +20,6 @@ const NoEvents = ({ filters, resetFilters }: INoEvents): JSX.Element => {
         <h2 className='my-3 text-center text-4xl leading-tight'>{t('project.noEvTitle')}</h2>
         <h2 className='mb-8 text-center text-2xl leading-snug'>
           <Trans
-            // @ts-ignore
             t={t}
             i18nKey='project.noCaptchaEv'
             components={{

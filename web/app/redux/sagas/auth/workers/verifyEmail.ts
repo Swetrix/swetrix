@@ -17,10 +17,10 @@ export default function* verifyEmailWorker({
   try {
     // @ts-ignore
     yield call(verifyEmail, data)
-    yield put(authActions.emailVerifySuccessful())
+    yield put(authActions.mergeUser({ isActive: true }))
     successfulCallback()
-  } catch (error) {
-    errorCallback(error)
+  } catch (reason) {
+    errorCallback(reason)
   } finally {
     yield put(authActions.finishLoading())
   }

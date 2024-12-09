@@ -21,4 +21,5 @@ export enum LetterTemplate {
   DashboardLockedExceedingLimits = 'dashboard-locked-exceeding-limits',
   DashboardLockedPaymentFailure = 'dashboard-locked-payment-failure',
   UptimeMonitoringFailure = 'uptime-monitoring-failure',
+  OrganisationInvitation = 'organisation-invitation',
 }

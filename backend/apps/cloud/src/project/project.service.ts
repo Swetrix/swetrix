@@ -12,8 +12,10 @@ import { InjectRepository } from '@nestjs/typeorm'
 import {
   FindManyOptions,
   FindOneOptions,
-  FindOptionsWhere,
   Repository,
+  DeepPartial,
+  Brackets,
+  FindOptionsWhere,
 } from 'typeorm'
 import { customAlphabet } from 'nanoid'
 import handlebars from 'handlebars'
@@ -88,6 +90,8 @@ import { CreateMonitorHttpRequestDTO } from './dto/create-monitor.dto'
 import { MonitorEntity } from './entity/monitor.entity'
 import { UpdateMonitorHttpRequestDTO } from './dto/update-monitor.dto'
 import { HttpRequestOptions } from './interfaces/http-request-options.interface'
+import { Organisation } from '../organisation/entity/organisation.entity'
+import { OrganisationRole } from '../organisation/entity/organisation-member.entity'
 
 dayjs.extend(utc)
 
@@ -133,24 +137,35 @@ const deleteProjectsRedis = async (ids: string[]) => {
   await Promise.all(_map(ids, deleteProjectRedis))
 }
 
-export const processProjectUser = (project: Project): Project => {
-  const { share } = project
+export const processProjectUser = (
+  project: Project,
+  properties: Array<'share' | 'organisation.members'> = ['share'],
+): Project => {
+  _map(properties, property => {
+    const array =
+      property === 'share' ? project.share : project.organisation?.members
 
-  for (let j = 0; j < _size(share); ++j) {
-    const { user } = share[j]
+    if (array) {
+      for (let j = 0; j < _size(array); ++j) {
+        const { user } = array[j]
 
-    if (user) {
-      // @ts-expect-error _pick(user, ['email']) is partial but share[j].user expects full User entity
-      share[j].user = _pick(user, ['email'])
+        if (user) {
+          // @ts-expect-error _pick(user, ['email']) is partial but array[j].user expects full User entity
+          array[j].user = _pick(user, ['email', 'id'])
+        }
+      }
     }
-  }
+  })
 
   return project
 }
 
-const processProjectsUser = (projects: Project[]): Project[] => {
+const processProjectsUser = (
+  projects: Project[],
+  properties: Array<'share' | 'organisation.members'> = ['share'],
+): Project[] => {
   for (let i = 0; i < _size(projects); ++i) {
-    projects[i] = processProjectUser(projects[i])
+    projects[i] = processProjectUser(projects[i], properties)
   }
 
   return projects
@@ -300,7 +315,6 @@ export class ProjectService {
     private projectsRepository: Repository<Project>,
     @InjectRepository(ProjectShare)
     private projectShareRepository: Repository<ProjectShare>,
-    private userService: UserService,
     @InjectRepository(ProjectSubscriber)
     private readonly projectSubscriberRepository: Repository<ProjectSubscriber>,
     @InjectRepository(Funnel)
@@ -311,6 +325,7 @@ export class ProjectService {
     private readonly mailerService: MailerService,
     private readonly httpService: HttpService,
     private readonly logger: AppLoggerService,
+    private readonly userService: UserService,
     @InjectQueue('monitor') private monitorQueue: Queue,
   ) {}
 
@@ -322,6 +337,14 @@ export class ProjectService {
       project = await this.projectsRepository
         .createQueryBuilder('project')
         .leftJoinAndSelect('project.admin', 'admin')
+        .leftJoinAndSelect('project.organisation', 'organisation')
+        .leftJoinAndSelect(
+          'organisation.members',
+          'organisationMembers',
+          'organisationMembers.confirmed = :confirmed',
+          { confirmed: true },
+        )
+        .leftJoinAndSelect('organisationMembers.user', 'organisationUser')
         .select([
           'project.origins',
           'project.active',
@@ -336,6 +359,9 @@ export class ProjectService {
           'admin.roles',
           'admin.dashboardBlockReason',
           'admin.isAccountBillingSuspended',
+          'organisation.id',
+          'organisationMembers.role',
+          'organisationUser.id',
         ])
         .where('project.id = :pid', { pid })
         .getOne()
@@ -372,49 +398,141 @@ export class ProjectService {
     return project as Project
   }
 
+  // Instead of passing relations to the findOne method every time, this method returns a project
+  // with necessary relations needed for the allowedToView and allowedToManage methods
+  async getFullProject(
+    pid: string,
+    userId?: string,
+    additionalRelations: string[] = [],
+  ) {
+    const query: FindOneOptions<Project> = {
+      where: { id: pid },
+      relations: [
+        'share',
+        'share.user',
+        'admin',
+        'organisation',
+        'organisation.members',
+        'organisation.members.user',
+        ...additionalRelations,
+      ],
+      select: {
+        share: {
+          id: true,
+          role: true,
+          confirmed: true,
+          user: {
+            id: true,
+            email: true,
+          },
+        },
+        admin: {
+          id: true,
+          roles: true,
+          dashboardBlockReason: true,
+          isAccountBillingSuspended: true,
+        },
+        organisation: {
+          id: true,
+          members: {
+            id: true,
+            role: true,
+            user: {
+              id: true,
+            },
+          },
+        },
+      },
+    }
+
+    if (userId) {
+      query.where = {
+        id: pid,
+        admin: { id: userId },
+      } as FindOptionsWhere<Project>
+    }
+
+    return this.projectsRepository.findOne(query)
+  }
+
   async paginate(
     options: PaginationOptionsInterface,
-    where?: FindOptionsWhere<Project> | FindOptionsWhere<Project>[],
+    userId: string,
+    search?: string,
   ): Promise<Pagination<Project>> {
-    const [results, total] = await this.projectsRepository.findAndCount({
-      take: options.take || 100,
-      skip: options.skip || 0,
-      where,
-      order: {
-        name: 'ASC',
-      },
-      relations: ['share', 'share.user', 'funnels'],
-    })
+    const queryBuilder = this.projectsRepository
+      .createQueryBuilder('project')
+      .leftJoinAndSelect('project.admin', 'admin')
+      .leftJoinAndSelect('project.share', 'share')
+      .leftJoinAndSelect('share.user', 'sharedUser')
+      .leftJoinAndSelect('project.funnels', 'funnels')
+      .leftJoinAndSelect('project.organisation', 'organisation')
+      .leftJoinAndSelect('organisation.members', 'organisationMembers')
+      .leftJoinAndSelect('organisationMembers.user', 'organisationUser')
+      .where(
+        new Brackets(qb => {
+          qb.where('admin.id = :userId', { userId })
+            .orWhere('share.user.id = :userId', { userId })
+            .orWhere(
+              'organisationMembers.user.id = :userId AND organisationMembers.confirmed = :confirmed',
+              { userId, confirmed: true },
+            )
+        }),
+      )
+
+    if (search?.trim()) {
+      queryBuilder.andWhere('LOWER(project.name) LIKE LOWER(:search)', {
+        search: `%${search.trim()}%`,
+      })
+    }
+
+    queryBuilder
+      .orderBy('project.name', 'ASC')
+      .skip(options.skip || 0)
+      .take(options.take || 100)
+
+    const [results, total] = await queryBuilder.getManyAndCount()
 
     return new Pagination<Project>({
-      results: processProjectsUser(results),
+      results: processProjectsUser(results, ['share', 'organisation.members']),
       total,
     })
   }
 
-  async paginateShared(
+  async paginateForOrganisation(
     options: PaginationOptionsInterface,
-    where: FindOptionsWhere<ProjectShare> | FindOptionsWhere<ProjectShare>[],
-  ): Promise<Pagination<ProjectShare>> {
-    const [results, total] = await this.projectShareRepository.findAndCount({
-      take: options.take || 100,
-      skip: options.skip || 0,
-      where,
-      order: {
-        project: {
-          name: 'ASC',
-        },
-      },
-      relations: [
-        'project',
-        'project.admin',
-        'project.funnels',
-        'project.share',
-        'project.share.user',
-      ],
-    })
+    userId: string,
+    search?: string,
+  ): Promise<Pagination<Project>> {
+    const queryBuilder = this.projectsRepository
+      .createQueryBuilder('project')
+      .select(['project.id', 'project.name'])
+      .leftJoin('project.admin', 'admin')
+      .leftJoin('project.share', 'share')
+      .where('project.organisation IS NULL')
+      .andWhere(
+        new Brackets(qb => {
+          qb.where('admin.id = :userId', { userId }).orWhere(
+            'share.user.id = :userId AND share.role = :adminRole',
+            { userId, adminRole: Role.admin },
+          )
+        }),
+      )
 
-    return new Pagination<ProjectShare>({
+    if (search?.trim()) {
+      queryBuilder.andWhere('LOWER(project.name) LIKE LOWER(:search)', {
+        search: `%${search.trim()}%`,
+      })
+    }
+
+    queryBuilder
+      .orderBy('project.name', 'ASC')
+      .skip(options.skip || 0)
+      .take(options.take || 100)
+
+    const [results, total] = await queryBuilder.getManyAndCount()
+
+    return new Pagination<Project>({
       results,
       total,
     })
@@ -424,19 +542,22 @@ export class ProjectService {
     return this.projectsRepository.count()
   }
 
-  async create(project: ProjectDTO | Project): Promise<Project> {
+  async create(project: DeepPartial<Project>) {
     return this.projectsRepository.save(project)
   }
 
-  async update(id: string, projectDTO: ProjectDTO | Project): Promise<any> {
-    return this.projectsRepository.update(id, projectDTO)
+  async update(
+    where: FindOptionsWhere<Project>,
+    projectDTO: ProjectDTO | Project,
+  ) {
+    return this.projectsRepository.update(where, projectDTO)
   }
 
-  async delete(id: string): Promise<any> {
+  async delete(id: string) {
     return this.projectsRepository.delete(id)
   }
 
-  async deleteMultiple(pids: string[]): Promise<any> {
+  async deleteMultiple(pids: string[]) {
     return this.projectsRepository
       .createQueryBuilder()
       .delete()
@@ -444,7 +565,7 @@ export class ProjectService {
       .execute()
   }
 
-  async deleteMultipleShare(where: string): Promise<any> {
+  async deleteMultipleShare(where: string) {
     return this.projectShareRepository
       .createQueryBuilder()
       .delete()
@@ -456,11 +577,11 @@ export class ProjectService {
     return this.projectShareRepository.save(share)
   }
 
-  async deleteShare(id: string): Promise<any> {
+  async deleteShare(id: string) {
     return this.projectShareRepository.delete(id)
   }
 
-  async updateShare(id: string, share: ProjectShare | object): Promise<any> {
+  async updateShare(id: string, share: ProjectShare | object) {
     return this.projectShareRepository.update(id, share)
   }
 
@@ -496,7 +617,11 @@ export class ProjectService {
     if (
       project.public ||
       uid === project.admin?.id ||
-      _findIndex(project.share, ({ user }) => user?.id === uid) !== -1
+      _findIndex(project.share, ({ user }) => user?.id === uid) !== -1 ||
+      _findIndex(
+        project.organisation?.members,
+        member => member.user?.id === uid,
+      ) !== -1
     ) {
       return null
     }
@@ -531,6 +656,13 @@ export class ProjectService {
       _findIndex(
         project.share,
         share => share.user?.id === uid && share.role === Role.admin,
+      ) !== -1 ||
+      _findIndex(
+        project.organisation?.members,
+        member =>
+          member.user?.id === uid &&
+          (member.role === OrganisationRole.admin ||
+            member.role === OrganisationRole.owner),
       ) !== -1
     ) {
       return null
@@ -922,16 +1054,6 @@ export class ProjectService {
     await this.clearProjectsRedisCache(user.id)
   }
 
-  async getProject(projectId: string, userId: string) {
-    return this.projectsRepository.findOne({
-      where: {
-        id: projectId,
-        admin: { id: userId },
-      },
-      relations: ['admin'],
-    })
-  }
-
   async getPIDsWhereAnalyticsDataExists(
     projectIds: string[],
   ): Promise<string[]> {
@@ -1073,13 +1195,6 @@ export class ProjectService {
         projectName,
       },
     )
-  }
-
-  async getProjectById(projectId: string) {
-    return this.projectsRepository.findOne({
-      where: { id: projectId },
-      relations: ['admin'],
-    })
   }
 
   async findOneSubscriber(where: FindOneOptions<ProjectSubscriber>['where']) {
@@ -1332,14 +1447,14 @@ export class ProjectService {
       await Promise.all([
         document.fonts.ready,
         ...selectors.map(img => {
-          // Image has already finished loading, let’s see if it worked
+          // Image has already finished loading, let's see if it worked
           if (img.complete) {
             // Image loaded and has presence
             if (img.naturalHeight !== 0) return
             // Image failed, so it has no height
             throw new Error('Image failed to load')
           }
-          // Image hasn’t loaded yet, added an event listener to know when it does
+          // Image hasn't loaded yet, added an event listener to know when it does
           // eslint-disable-next-line consistent-return
           return new Promise((resolve, reject) => {
             img.addEventListener('load', resolve)
@@ -1396,10 +1511,6 @@ export class ProjectService {
 
   async updateProject(id: string, data: Partial<Project>) {
     await this.projectsRepository.update({ id }, data)
-  }
-
-  async findProject(id: string, relations: string[]) {
-    return this.projectsRepository.findOne({ relations, where: { id } })
   }
 
   filterUnsupportedColumns(
@@ -1529,7 +1640,7 @@ export class ProjectService {
       description,
       httpOptions,
     }: UpdateMonitorHttpRequestDTO,
-  ): Promise<any> {
+  ): Promise<void> {
     await this.monitorRepository.update(
       { id: monitorId },
       {
@@ -1547,7 +1658,7 @@ export class ProjectService {
     )
   }
 
-  async deleteMonitor(monitorId: number): Promise<any> {
+  async deleteMonitor(monitorId: number) {
     return this.monitorRepository.delete(monitorId)
   }
 
@@ -1582,5 +1693,45 @@ export class ProjectService {
     if (job) {
       await job.remove()
     }
+  }
+
+  async addProjectToOrganisation(organisationId: string, projectId: string) {
+    const project = await this.findOne({
+      where: { id: projectId },
+    })
+
+    if (!project) {
+      throw new NotFoundException(`Project with ID ${projectId} not found`)
+    }
+
+    return this.update({ id: projectId }, {
+      organisation: {
+        id: organisationId,
+      } as Organisation,
+    } as Project)
+  }
+
+  async removeProjectFromOrganisation(
+    organisationId: string,
+    projectId: string,
+  ) {
+    const project = await this.findOne({
+      where: { id: projectId },
+      relations: ['organisation'],
+    })
+
+    if (!project) {
+      throw new NotFoundException(`Project with ID ${projectId} not found`)
+    }
+
+    if (project.organisation?.id !== organisationId) {
+      throw new BadRequestException(
+        `Project with ID ${projectId} is not in organisation with ID ${organisationId}`,
+      )
+    }
+
+    return this.update({ id: projectId }, {
+      organisation: null,
+    } as Project)
   }
 }

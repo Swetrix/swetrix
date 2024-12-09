@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate, useParams } from '@remix-run/react'
 import { useTranslation, Trans } from 'react-i18next'
 import _size from 'lodash/size'
@@ -26,13 +26,13 @@ const CreateNewPassword = () => {
     password: '',
     repeat: '',
   })
-  const [validated, setValidated] = useState<boolean>(false)
+  const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
     password?: string
     repeat?: string
   }>({})
-  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const validate = () => {
     const allErrors = {} as {
@@ -71,8 +71,8 @@ const CreateNewPassword = () => {
 
         toast.success(t('auth.recovery.updated'))
         navigate(routes.signin)
-      } catch (e: any) {
-        toast.error(e.toString())
+      } catch (reason: any) {
+        toast.error(reason.toString())
       } finally {
         setIsLoading(false)
       }
@@ -133,7 +133,6 @@ const CreateNewPassword = () => {
           </div>
           <p className='mb-4 mt-10 text-center text-sm text-gray-500 dark:text-gray-200'>
             <Trans
-              // @ts-ignore
               t={t}
               i18nKey='auth.signup.alreadyAMember'
               components={{
@@ -154,4 +153,4 @@ const CreateNewPassword = () => {
   )
 }
 
-export default memo(withAuthentication(CreateNewPassword, auth.notAuthenticated))
+export default withAuthentication(CreateNewPassword, auth.notAuthenticated)

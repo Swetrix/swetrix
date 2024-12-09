@@ -11,13 +11,13 @@ import routes from 'utils/routes'
 const ConfirmReportsShare = (): JSX.Element => {
   const { t } = useTranslation('common')
   const { id } = useParams()
-  const [loading, setLoading] = useState<boolean>(true)
-  const [error, setError] = useState<string>('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   const handleConfirm = async (token: string) => {
     try {
       await confirmSubscriberInvite(id as string, token)
-    } catch (e) {
+    } catch {
       setError(t('apiNotifications.invalidToken'))
     } finally {
       setLoading(false)

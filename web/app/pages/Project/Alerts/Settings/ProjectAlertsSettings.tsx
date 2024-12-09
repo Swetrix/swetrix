@@ -63,12 +63,12 @@ const ProjectAlertsSettings = ({
     active: true,
     queryCustomEvent: '',
   })
-  const [validated, setValidated] = useState<boolean>(false)
+  const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
     [key: string]: string
   }>({})
-  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
-  const [showModal, setShowModal] = useState<boolean>(false)
+  const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [showModal, setShowModal] = useState(false)
 
   const isIntegrationLinked = useMemo(() => {
     if (_isEmpty(user)) {

@@ -82,7 +82,6 @@ import {
   TimeFormat,
   getProjectForcastCacheKey,
   chartTypes,
-  roleAdmin,
   TRAFFIC_PANELS_ORDER,
   PERFORMANCE_PANELS_ORDER,
   isSelfhosted,
@@ -298,7 +297,6 @@ interface IViewProject {
   authenticated: boolean
   user: IUser
   timezone: string
-  sharedProjects: ISharedProject[]
   projectTab: string
   setProjectTab: (tab: string) => void
   // eslint-disable-next-line no-unused-vars, no-shadow
@@ -334,7 +332,6 @@ const ViewProject = ({
   authenticated: csrAuthenticated,
   timezone = DEFAULT_TIMEZONE,
   user,
-  sharedProjects,
   extensions,
   setProjectCachePerf,
   projectTab,
@@ -365,37 +362,24 @@ const ViewProject = ({
 
   const _theme = isBrowser ? theme : ssrTheme
 
-  // periodPairs is used for dropdown and updated when t changes
   const [periodPairs, setPeriodPairs] = useState<ITBPeriodPairs[]>(tbPeriodPairs(t, undefined, undefined, language))
 
-  // customExportTypes used for marketplace extensions if you have extensions with export
   const [customExportTypes, setCustomExportTypes] = useState<any[]>([])
-  // customPanelTabs used for marketplace extensions if you have extensions with custom panel
   const [customPanelTabs, setCustomPanelTabs] = useState<any[]>([])
-  // sdkInstance is a sdk used for dowland and working with marketplace extensions. DO NOT TOUCH IT
   const [sdkInstance, setSdkInstance] = useState<any>(null)
 
-  // activeChartMetricsCustomEvents is a list of custom events for logic with api, chart and dropdown
   const [activeChartMetricsCustomEvents, setActiveChartMetricsCustomEvents] = useState<any[]>([])
 
-  // dashboardRef is a ref for dashboard div
   const dashboardRef = useRef<HTMLDivElement>(null)
 
   const { id } = useRequiredParams<{ id: string }>()
-  // history is a history from react-router-dom
   const navigate = useNavigate()
 
-  // searchParams is a search params from react-router-dom
   const [searchParams, setSearchParams] = useSearchParams()
 
-  // find project by id from url from state in redux projects and sharedProjects. projects and sharedProjects loading from api in Saga on page load
   const project: IProjectForShared = useMemo(
-    () =>
-      _find(
-        [...projects, ..._map(sharedProjects, (item) => ({ ...item.project, role: item.role }))],
-        (p) => p.id === id,
-      ) || ({} as IProjectForShared),
-    [projects, id, sharedProjects],
+    () => _find(projects, (p) => p.id === id) || ({} as IProjectForShared),
+    [projects, id],
   )
 
   const projectPassword = useMemo(
@@ -403,27 +387,11 @@ const ViewProject = ({
     [id, password, queryPassword],
   )
 
-  /* isSharedProject is a boolean check if project is shared. If isSharedProject is true,
-  we used role and other colummn from sharedProjects.
-  And it is used for remove settings button when user have role viewer or logic with Alert tabs */
-  const isSharedProject = useMemo(() => {
-    const foundProject = _find([..._map(sharedProjects, (item) => item.project)], (p) => p.id === id)
-    return !_isEmpty(foundProject)
-  }, [id, sharedProjects])
-
-  // areFiltersParsed used for check filters is parsed from url. If we have query params in url, we parse it and set to state
-  // when areFiltersParsed and areFiltersPerfParsed changed we call loadAnalytics or loadAnalyticsPerf and other func for load data
-  // all state with Parsed in name is used for parse query params from url
   const [areFiltersParsed, setAreFiltersParsed] = useState(false)
-  // similar areFiltersParsed but using for activeTab === 'performance'
   const [areFiltersPerfParsed, setAreFiltersPerfParsed] = useState(false)
-  // similar areFiltersParsed and areFiltersPerfParsed but using for period
   const [arePeriodParsed, setArePeriodParsed] = useState(false)
-  // similar areFiltersParsed and areFiltersPerfParsed but using for timeBucket
   const [areTimeBucketParsed, setAreTimeBucketParsed] = useState(false)
 
-  // panelsData is a data used for components <Panels /> and <Metadata />,
-  // also using for logic with custom events on chart and export data like csv
   const [panelsData, setPanelsData] = useState<{
     types: (keyof IParams)[]
     data: IParams
@@ -434,31 +402,21 @@ const ViewProject = ({
   }>({})
   const [overall, setOverall] = useState<Partial<IOverallObject>>({})
   const [overallPerformance, setOverallPerformance] = useState<Partial<IOverallPerformanceObject>>({})
-  // isPanelsDataEmpty is a true we are display components <NoEvents /> and do not show dropdowns with activeChartMetrics
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
   const [isForecastOpened, setIsForecastOpened] = useState(false)
   const [isNewFunnelOpened, setIsNewFunnelOpened] = useState(false)
   const [isAddAViewOpened, setIsAddAViewOpened] = useState(false)
-  // analyticsLoading is a boolean for show loader on chart
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
-  // period using for logic with update data on chart. Set when user change period in dropdown and when we parse query params from url
-  const [period, setPeriod] = useState<string>(
+  const [period, setPeriod] = useState(
     projectViewPrefs ? projectViewPrefs[id]?.period || periodPairs[4].period : periodPairs[4].period,
   )
-  // timeBucket using for logic with update data on chart. Set when user change timeBucket in dropdown and when we parse query params from url
-  const [timeBucket, setTimebucket] = useState<string>(
+  const [timeBucket, setTimebucket] = useState(
     projectViewPrefs ? projectViewPrefs[id]?.timeBucket || periodPairs[4].tbs[1] : periodPairs[4].tbs[1],
   )
-  // activeTab using for change tabs and display other data on chart. Like performance, traffic, custom events
   const activePeriod = useMemo(() => _find(periodPairs, (p) => p.period === period), [period, periodPairs])
-  // chartData is a data for chart. It is a main data for chart
   const [chartData, setChartData] = useState<any>({})
-  // mainChart is a ref for chart
   const [mainChart, setMainChart] = useState<any>(null)
-  // dataLoading is a boolean for show loader on chart and do not load data when we have dataLoading === true
-  const [dataLoading, setDataLoading] = useState<boolean>(false)
-  // activeChartMetrics is a list of metrics for logic with api, chart and dropdown
-  // when user change metrics in dropdown, we change activeChartMetrics and show other data on chart
+  const [dataLoading, setDataLoading] = useState(false)
   const [activeChartMetrics, setActiveChartMetrics] = useState<{
     [key: string]: boolean
   }>({
@@ -475,10 +433,8 @@ const ViewProject = ({
   }>({
     [ERROR_FILTERS_MAPPING.showResolved]: false,
   })
-  // similar activeChartMetrics but using for performance tab
-  const [activeChartMetricsPerf, setActiveChartMetricsPerf] = useState<string>(CHART_METRICS_MAPPING_PERF.timing)
+  const [activeChartMetricsPerf, setActiveChartMetricsPerf] = useState(CHART_METRICS_MAPPING_PERF.timing)
   const [activePerfMeasure, setActivePerfMeasure] = useState(CHART_MEASURES_MAPPING_PERF.median)
-  // checkIfAllMetricsAreDisabled when all metrics are disabled, we are hidden chart
   const checkIfAllMetricsAreDisabled = useMemo(
     () => !_some({ ...activeChartMetrics, ...activeChartMetricsCustomEvents }, (value) => value),
     [activeChartMetrics, activeChartMetricsCustomEvents],
@@ -487,33 +443,23 @@ const ViewProject = ({
   const [filters, setFilters] = useState<IFilter[]>([])
   const [filtersPerf, setFiltersPerf] = useState<IFilter[]>([])
   const [filtersSessions, setFiltersSessions] = useState<IFilter[]>([])
-  const [areFiltersSessionsParsed, setAreFiltersSessionsParsed] = useState<boolean>(false)
-  // filters for list of errors
-  const [filtersErrors, setFiltersErrors] = useState<IFilter[]>([])
-  const [areFiltersErrorsParsed, setAreFiltersErrorsParsed] = useState<boolean>(false)
-  // filters for details error page
-  const [filtersSubError, setFiltersSubError] = useState<IFilter[]>([])
-  const [areFiltersSubErrorParsed, setAreFiltersSubErrorParsed] = useState<boolean>(false)
+  const [areFiltersSessionsParsed, setAreFiltersSessionsParsed] = useState(false)
 
-  // isLoading is a true when we loading data from api
+  const [filtersErrors, setFiltersErrors] = useState<IFilter[]>([])
+  const [areFiltersErrorsParsed, setAreFiltersErrorsParsed] = useState(false)
+
+  const [filtersSubError, setFiltersSubError] = useState<IFilter[]>([])
+  const [areFiltersSubErrorParsed, setAreFiltersSubErrorParsed] = useState(false)
+
   const isLoading = authenticated ? _isLoading : false
-  // tnMapping is a mapping for panels type
   const tnMapping = typeNameMapping(t)
-  // refCalendar is a ref for calendar
   const refCalendar = useRef(null)
-  // refCalendarCompare is a ref for calendar when compare is enabled
   const refCalendarCompare = useRef(null)
-  // localStorageDateRange is a date range from local storage
   const localStorageDateRange = projectViewPrefs ? projectViewPrefs[id]?.rangeDate : null
-  // dateRange is a date range for calendar
   const [dateRange, setDateRange] = useState<null | Date[]>(
     localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null,
   )
-  // activeTab traffic, performance, alerts
-  const [activeTab, setActiveTab] = useState<string>(() => {
-    // first we check if we have activeTab in url
-    // if we have activeTab in url, we return it
-    // if we do not have activeTab in url, we return activeTab from localStorage or default tab trafic
+  const [activeTab, setActiveTab] = useState(() => {
     const tab = searchParams.get('tab') as keyof typeof PROJECT_TABS
 
     if (tab in PROJECT_TABS) {
@@ -526,27 +472,27 @@ const ViewProject = ({
   const [isHotkeysHelpOpened, setIsHotkeysHelpOpened] = useState(false)
 
   // sessions
-  const [sessionsSkip, setSessionsSkip] = useState<number>(0)
-  const [canLoadMoreSessions, setCanLoadMoreSessions] = useState<boolean>(false)
+  const [sessionsSkip, setSessionsSkip] = useState(0)
+  const [canLoadMoreSessions, setCanLoadMoreSessions] = useState(false)
   const [sessions, setSessions] = useState<any[]>([])
   const [sessionsLoading, setSessionsLoading] = useState<boolean | null>(null) // null - not loaded, true - loading, false - loaded
   const [activeSession, setActiveSession] = useState<any>(null)
-  const [sessionLoading, setSessionLoading] = useState<boolean>(false)
+  const [sessionLoading, setSessionLoading] = useState(false)
   const [activePSID, setActivePSID] = useState<string | null>(null)
 
   // errors
-  const [errorsSkip, setErrorsSkip] = useState<number>(0)
-  const [canLoadMoreErrors, setCanLoadMoreErrors] = useState<boolean>(false)
+  const [errorsSkip, setErrorsSkip] = useState(0)
+  const [canLoadMoreErrors, setCanLoadMoreErrors] = useState(false)
   const [errors, setErrors] = useState<any[]>([])
   const [errorsLoading, setErrorsLoading] = useState<boolean | null>(null) // null - not loaded, true - loading, false - loaded
   const [activeError, setActiveError] = useState<any>(null)
-  const [errorLoading, setErrorLoading] = useState<boolean>(false)
+  const [errorLoading, setErrorLoading] = useState(false)
   const [errorStatusUpdating, setErrorStatusUpdating] = useState(false)
   const [activeEID, setActiveEID] = useState<string | null>(null)
 
   const [activeFunnel, setActiveFunnel] = useState<IFunnel | null>(null)
   const [funnelToEdit, setFunnelToEdit] = useState<IFunnel | undefined>(undefined)
-  const [funnelActionLoading, setFunnelActionLoading] = useState<boolean>(false)
+  const [funnelActionLoading, setFunnelActionLoading] = useState(false)
 
   // null -> not loaded yet
   const [projectViews, setProjectViews] = useState<IProjectView[]>([])
@@ -710,35 +656,24 @@ const ViewProject = ({
     toast.success(t('apiNotifications.funnelDeleted'))
     setFunnelActionLoading(false)
   }
-  // pgActiveFragment is a active fragment for pagination
-  const [pgActiveFragment, setPgActiveFragment] = useState<number>(0)
+  const [pgActiveFragment, setPgActiveFragment] = useState(0)
 
-  // Used to switch between Country, Region and City tabs
   const [countryActiveTab, setCountryActiveTab] = useState<'cc' | 'rg' | 'ct'>('cc')
 
-  // Used to switch between Browser and Browser Version tabs
   const [browserActiveTab, setBrowserActiveTab] = useState<'br' | 'brv'>('br')
 
-  // Used to switch between OS and OS Version tabs
   const [osActiveTab, setOsActiveTab] = useState<'os' | 'osv'>('os')
 
-  // Used to switch between different UTM tabs
   const [utmActiveTab, setUtmActiveTab] = useState<'so' | 'me' | 'ca'>('so')
 
-  // chartDataPerf is a data for performance chart
   const [chartDataPerf, setChartDataPerf] = useState<any>({})
-  // similar to isPanelsDataEmpty but using for performance tab
-  const [isPanelsDataEmptyPerf, setIsPanelsDataEmptyPerf] = useState<boolean>(false)
-  // similar to panelsData but using for performance tab
+  const [isPanelsDataEmptyPerf, setIsPanelsDataEmptyPerf] = useState(false)
   const [panelsDataPerf, setPanelsDataPerf] = useState<any>({})
-  // timeFormat is a time format for chart
+
   // @ts-expect-error
   const timeFormat = useMemo<'12-hour' | '24-hour'>(() => user.timeFormat || TimeFormat['12-hour'], [user])
-  // ref, size using for logic with responsive chart
   const [ref, size] = useSize()
-  // rotateXAxias using for logic with responsive chart
   const rotateXAxis = useMemo(() => size.width > 0 && size.width < 500, [size])
-  // customEventsChartData is a data for custom events on a chart
   const customEventsChartData = useMemo(
     () =>
       _pickBy(customEventsPrefs[id], (value, keyCustomEvents) =>
@@ -746,17 +681,14 @@ const ViewProject = ({
       ),
     [customEventsPrefs, id, activeChartMetricsCustomEvents],
   )
-  // chartType is a type of chart, bar or line
-  const [chartType, setChartType] = useState<string>((getItem('chartType') as string) || chartTypes.line)
+  const [chartType, setChartType] = useState((getItem('chartType') as string) || chartTypes.line)
 
-  // similar to periodPairs but using for compare
   const [periodPairsCompare, setPeriodPairsCompare] = useState<
     {
       label: string
       period: string
     }[]
   >(tbPeriodPairsCompare(t, undefined, language))
-  // similar to isActive but using for compare
   const [isActiveCompare, setIsActiveCompare] = useState<boolean>(() => {
     const activeCompare = getItem(IS_ACTIVE_COMPARE)
 
@@ -770,22 +702,16 @@ const ViewProject = ({
 
     return false
   })
-  // similar to activePeriod but using for compare
-  const [activePeriodCompare, setActivePeriodCompare] = useState<string>(periodPairsCompare[0].period)
-  // activeDropdownLabelCompare is a label using for overview panels and dropdown
+  const [activePeriodCompare, setActivePeriodCompare] = useState(periodPairsCompare[0].period)
   const activeDropdownLabelCompare = useMemo(
     () => _find(periodPairsCompare, (p) => p.period === activePeriodCompare)?.label,
     [periodPairsCompare, activePeriodCompare],
   )
-  // dateRangeCompare is a date range for calendar when compare is enabled
   const [dateRangeCompare, setDateRangeCompare] = useState<null | Date[]>(null)
-  // dataChartCompare is a data for chart when compare is enabled
   const [dataChartCompare, setDataChartCompare] = useState<any>({})
   const [overallCompare, setOverallCompare] = useState<Partial<IOverallObject>>({})
   const [overallPerformanceCompare, setOverallPerformanceCompare] = useState<Partial<IOverallPerformanceObject>>({})
-  // dataChartPerfCompare is a data for performance chart when compare is enabled
   const [dataChartPerfCompare, setDataChartPerfCompare] = useState<any>({})
-  // maxRangeCompare is a max range for calendar when compare is enabled
   const maxRangeCompare = useMemo(() => {
     if (!isActiveCompare) {
       return 0
@@ -801,13 +727,8 @@ const ViewProject = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActiveCompare, period])
 
-  // pgPanelNameMapping is a mapping for panel names. Using for change name of panels pg if userFlow active
-  const pgPanelNameMapping = [
-    tnMapping.pg, // when fragment 0 is selected
-    tnMapping.userFlow, // when fragment 1 is selected
-  ]
+  const pgPanelNameMapping = [tnMapping.pg, tnMapping.userFlow]
 
-  // { name } is a project name from project
   const { name } = project
 
   useEffect(() => {
@@ -821,9 +742,6 @@ const ViewProject = ({
 
     document.title = pageTitle
   }, [name, user, liveStats, id, t])
-
-  // sharedRoles is a role for shared project
-  const sharedRoles = useMemo(() => _find(user.sharedProjects, (p) => p.project.id === id)?.role || {}, [user, id])
 
   const timeBucketSelectorItems = useMemo(() => {
     if (activeTab === PROJECT_TABS.errors) {
@@ -853,10 +771,8 @@ const ViewProject = ({
     })
   }, [activeTab, isActiveCompare, period, periodPairs])
 
-  // for search filters
   const [showFiltersSearch, setShowFiltersSearch] = useState(false)
 
-  // chartMetrics is a list of metrics for dropdown
   const chartMetrics = useMemo(() => {
     return [
       {
@@ -914,7 +830,6 @@ const ViewProject = ({
     ]
   }, [t, errorOptions])
 
-  // chartMetricsPerf is a list of metrics for dropdown in performance tab
   const chartMetricsPerf = useMemo(() => {
     return [
       {
@@ -970,7 +885,6 @@ const ViewProject = ({
     ]
   }, [t, activePerfMeasure])
 
-  // chartMetricsCustomEvents is a list of custom events for dropdown
   const chartMetricsCustomEvents = useMemo(() => {
     if (!_isEmpty(panelsData.customs)) {
       return _map(_keys(panelsData.customs), (key) => ({
@@ -982,7 +896,6 @@ const ViewProject = ({
     return []
   }, [panelsData, activeChartMetricsCustomEvents])
 
-  // dataNamesCustomEvents is a list of custom events for chart
   const dataNamesCustomEvents = useMemo(() => {
     if (!_isEmpty(panelsData.customs)) {
       return { ..._keys(panelsData.customs) }
@@ -990,7 +903,6 @@ const ViewProject = ({
     return {}
   }, [panelsData])
 
-  // dataNames is a list of metrics for chart
   const dataNames = useMemo(
     () => ({
       unique: t('project.unique'),
@@ -1006,7 +918,6 @@ const ViewProject = ({
     [t, dataNamesCustomEvents],
   )
 
-  // dataNamesPerf is a list of metrics for chart in performance tab
   const dataNamesPerf = useMemo(
     () => ({
       full: t('dashboard.timing'),
@@ -1027,7 +938,7 @@ const ViewProject = ({
     [t],
   )
 
-  const allowedToManage = useMemo(() => project?.isOwner || sharedRoles === roleAdmin.role, [project, sharedRoles])
+  const allowedToManage = project.role === 'owner' || project.role === 'admin'
 
   const dataNamesFunnel = useMemo(
     () => ({
@@ -1106,7 +1017,6 @@ const ViewProject = ({
     return newTabs
   }, [t, id, projectQueryTabs, allowedToManage])
 
-  // activeTabLabel is a label for active tab. Using for title in dropdown
   const activeTabLabel = useMemo(() => _find(tabs, (tab) => tab.id === activeTab)?.label, [tabs, activeTab])
 
   const switchTrafficChartMetric = (pairID: string, conflicts?: string[]) => {
@@ -1205,7 +1115,6 @@ const ViewProject = ({
     setErrorStatusUpdating(false)
   }
 
-  // onErrorLoading is a function for redirect to dashboard when project do not exist
   const onErrorLoading = () => {
     if (projectPassword) {
       checkPassword(id, projectPassword).then((res) => {
@@ -1231,7 +1140,6 @@ const ViewProject = ({
     navigate(routes.dashboard)
   }
 
-  // loadCustomEvents is a function for load custom events data for chart from api
   const loadCustomEvents = async () => {
     if (_isEmpty(panelsData.customs)) {
       return
@@ -1245,21 +1153,16 @@ const ViewProject = ({
       setDataLoading(true)
 
       if (dateRange) {
-        // if custom date range is selected
         from = getFormatDate(dateRange[0])
         to = getFormatDate(dateRange[1])
       }
 
-      // customEventsChartData includes all activeChartMetricsCustomEvents return true if not false
       const isAllActiveChartMetricsCustomEvents = _every(activeChartMetricsCustomEvents, (metric) => {
         return _includes(_keys(customEventsChartData), metric)
       })
 
-      // check if we need to load new date or we have data in redux/localstorage
       if (!isAllActiveChartMetricsCustomEvents) {
-        // check if activePeriod is custom
         if (period === 'custom' && dateRange) {
-          // activePeriod is custom
           data = await getProjectDataCustomEvents(
             id,
             timeBucket,
@@ -1272,7 +1175,6 @@ const ViewProject = ({
             projectPassword,
           )
         } else {
-          // activePeriod is not custom
           data = await getProjectDataCustomEvents(
             id,
             timeBucket,
@@ -1292,7 +1194,6 @@ const ViewProject = ({
       setCustomEventsPrefs(id, events)
 
       const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
-      // render new settings for chart
       const bbSettings = getSettings(
         chartData,
         timeBucket,
@@ -1304,20 +1205,18 @@ const ViewProject = ({
         chartType,
         events,
       )
-      // set chart data
       setMainChart(() => {
         const generate = bb.generate(bbSettings)
         generate.data.names(dataNames)
         return generate
       })
-    } catch (e) {
-      console.error('[ERROR] FAILED TO LOAD CUSTOM EVENTS', e)
+    } catch (reason) {
+      console.error('[ERROR] Failed to load custom events:', reason)
     } finally {
       setDataLoading(false)
     }
   }
 
-  // loadCustomEvents when activeChartMetricsCustomEvents changed
   useEffect(() => {
     if (activeTab === PROJECT_TABS.traffic) {
       loadCustomEvents()
@@ -1325,7 +1224,6 @@ const ViewProject = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeChartMetricsCustomEvents])
 
-  // compareDisable is a function you need to use if you want to disable compare
   const compareDisable = () => {
     setIsActiveCompare(false)
     setDateRangeCompare(null)
@@ -1336,7 +1234,6 @@ const ViewProject = ({
     setActivePeriodCompare(periodPairsCompare[0].period)
   }
 
-  // loadAnalytics is a function for load data for chart from api
   const loadAnalytics = async (
     forced = false,
     newFilters: IFilter[] | null = null,
@@ -1363,8 +1260,6 @@ const ViewProject = ({
       let customEventsChart = customEventsChartData
       let rawOverall: any
 
-      // first we check isActiveCompare if comapre active we load compare date or check if we have data in redux/localstorage
-      // and set state dependent compare
       if (isActiveCompare) {
         if (dateRangeCompare && activePeriodCompare === PERIOD_PAIRS_COMPARE.CUSTOM) {
           let start
@@ -1437,7 +1332,6 @@ const ViewProject = ({
         setProjectCache(id, dataCompare, keyCompare)
       }
 
-      // if activePeriod is custom we check dateRange and set key for cache
       if (dateRange) {
         from = getFormatDate(dateRange[0])
         to = getFormatDate(dateRange[1])
@@ -1446,7 +1340,6 @@ const ViewProject = ({
         key = getProjectCacheKey(period, timeBucket, mode, newFilters || filters)
       }
 
-      // check if we need to load new data or we have data in redux/localstorage
       if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
         data = cache[id][key]
         // @ts-expect-error
@@ -1514,7 +1407,6 @@ const ViewProject = ({
         setOverall(rawOverall[id])
       }
 
-      // using for extensions
       const sdkData = {
         ...(data || {}),
         filters: newFilters || filters,
@@ -1525,7 +1417,6 @@ const ViewProject = ({
         to,
       }
 
-      // empty or has overall only
       if (_keys(data).length < 2) {
         setAnalyticsLoading(false)
         setDataLoading(false)
@@ -1543,7 +1434,6 @@ const ViewProject = ({
         newTimebucket = _includes(data.timeBucket, timeBucket) ? timeBucket : data.timeBucket[0]
         // @ts-expect-error
         setPeriodPairs((prev) => {
-          // find in prev state period === KEY_FOR_ALL_TIME and change tbs
           const newPeriodPairs = _map(prev, (item) => {
             if (item.period === KEY_FOR_ALL_TIME) {
               return {
@@ -1617,12 +1507,12 @@ const ViewProject = ({
 
       setAnalyticsLoading(false)
       setDataLoading(false)
-    } catch (e) {
+    } catch (reason) {
       setAnalyticsLoading(false)
       setDataLoading(false)
       setIsPanelsDataEmpty(true)
       console.error('[ERROR](loadAnalytics) Loading analytics data failed')
-      console.error(e)
+      console.error(reason)
     }
   }
 
@@ -1684,7 +1574,6 @@ const ViewProject = ({
         setActiveError(error)
       } catch (reason: any) {
         if (reason?.status === 400) {
-          // this error did not occur within specified time frame
           setErrorLoading(false)
           setActiveError(null)
           return
@@ -1827,9 +1716,8 @@ const ViewProject = ({
       } else {
         setCanLoadMoreSessions(true)
       }
-    } catch (e) {
-      console.error('[ERROR](loadSessions) Loading sessions data failed')
-      console.error(e)
+    } catch (reason) {
+      console.error('[ERROR](loadSessions) Loading sessions data failed:', reason)
     } finally {
       setSessionsLoading(false)
     }
@@ -1900,15 +1788,13 @@ const ViewProject = ({
       } else {
         setCanLoadMoreErrors(true)
       }
-    } catch (e) {
-      console.error('[ERROR](loadErrors) Loading errors data failed')
-      console.error(e)
+    } catch (reason) {
+      console.error('[ERROR](loadErrors) Loading errors data failed:', reason)
     } finally {
       setErrorsLoading(false)
     }
   }
 
-  // similar to loadAnalytics but using for performance tab
   const loadAnalyticsPerf = async (forced = false, newFilters: any[] | null = null) => {
     if (!forced && (isLoading || _isEmpty(project) || dataLoading)) {
       return
@@ -2077,7 +1963,6 @@ const ViewProject = ({
         setFiltersPerf(appliedFilters)
       }
 
-      // empty or has overall only
       if (_keys(dataPerf).length < 2) {
         setIsPanelsDataEmptyPerf(true)
         setDataLoading(false)
@@ -2091,7 +1976,6 @@ const ViewProject = ({
         // eslint-disable-next-line prefer-destructuring
         newTimebucket = _includes(dataPerf.timeBucket, timeBucket) ? timeBucket : dataPerf.timeBucket[0]
         setPeriodPairs((prev) => {
-          // find in prev state period === KEY_FOR_ALL_TIME and change tbs
           const newPeriodPairs = _map(prev, (item) => {
             if (item.period === KEY_FOR_ALL_TIME) {
               return {
@@ -2152,12 +2036,11 @@ const ViewProject = ({
 
       setAnalyticsLoading(false)
       setDataLoading(false)
-    } catch (e) {
+    } catch (reason) {
       setAnalyticsLoading(false)
       setDataLoading(false)
       setIsPanelsDataEmptyPerf(true)
-      console.error('[ERROR](loadAnalytics) Loading analytics data failed')
-      console.error(e)
+      console.error('[ERROR](loadAnalytics) Loading analytics data failed:', reason)
     }
   }
 
@@ -2214,7 +2097,7 @@ const ViewProject = ({
 
         setAnalyticsLoading(false)
         setDataLoading(false)
-      } catch (e) {
+      } catch (reason) {
         setAnalyticsLoading(false)
         setDataLoading(false)
 
@@ -2222,8 +2105,7 @@ const ViewProject = ({
           setFunnelsCache(id, {}, key)
         }
 
-        console.error('[ERROR](loadFunnelsData) Loading funnels data failed')
-        console.error(e)
+        console.error('[ERROR](loadFunnelsData) Loading funnels data failed:', reason)
       }
     },
     [
@@ -2403,7 +2285,6 @@ const ViewProject = ({
     loadAnalytics(true, null, [])
   }
 
-  // this function is used for requesting the data from the API when the exclusive filter is changed
   const onChangeExclusive = (column: string, filter: string, isExclusive: boolean) => {
     const updateFilters = (
       filters: IFilter[],
@@ -2450,7 +2331,6 @@ const ViewProject = ({
     sdkInstance?._emitEvent('filtersupdate', newFilters)
   }
 
-  // Main useEffect for filters parsing
   useEffect(() => {
     switch (activeTab) {
       case PROJECT_TABS.performance:
@@ -2469,7 +2349,6 @@ const ViewProject = ({
     }
   }, [activeTab])
 
-  // Parsing timeBucket from URL
   useEffect(() => {
     if (!arePeriodParsed) return
 
@@ -2487,7 +2366,6 @@ const ViewProject = ({
     }
   }, [arePeriodParsed])
 
-  // this function is used for requesting the data from the API when you press the reset button
   const refreshStats = async () => {
     if (!isLoading && !dataLoading) {
       if (activeTab === PROJECT_TABS.performance) {
@@ -2526,7 +2404,6 @@ const ViewProject = ({
     }
   }
 
-  // onForecastOpen is a function for open forecast modal
   const onForecastOpen = () => {
     if (isLoading || dataLoading || isSelfhosted) {
       return
@@ -2630,14 +2507,12 @@ const ViewProject = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [forecasedChartData, mode])
 
-  // this useEffect is used for parsing tab from url and set activeTab
   useEffect(() => {
     searchParams.set('tab', activeTab)
     setSearchParams(searchParams)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab])
 
-  // this useEffect is used for update chart settings when activeChartMetrics changed also using for perfomance tab
   useEffect(() => {
     if (activeTab === PROJECT_TABS.traffic) {
       if (
@@ -2721,7 +2596,6 @@ const ViewProject = ({
     }
   }, [isLoading, activeChartMetrics, chartData, chartDataPerf, activeChartMetricsPerf, dataChartCompare]) // eslint-disable-line
 
-  // Initialising Swetrix SDK instance. Using for marketplace and extensions
   useEffect(() => {
     let sdk: any | null = null
 
@@ -2803,7 +2677,6 @@ const ViewProject = ({
     }
   }, [extensions])
 
-  // Supplying 'timeupdate' event to the SDK after loading. Using for marketplace and extensions
   useEffect(() => {
     sdkInstance?._emitEvent('timeupdate', {
       period,
@@ -2812,7 +2685,6 @@ const ViewProject = ({
     })
   }, [sdkInstance]) // eslint-disable-line
 
-  // Supplying the 'clientinfo' event to the SDK that contains info about current language, theme, etc.
   useEffect(() => {
     sdkInstance?._emitEvent('clientinfo', {
       language,
@@ -2820,7 +2692,6 @@ const ViewProject = ({
     })
   }, [sdkInstance, language, theme])
 
-  // Supplying 'projectinfo' event to the SDK after loading. Using for marketplace and extensions
   useEffect(() => {
     if (_isEmpty(project)) {
       return
@@ -2837,7 +2708,6 @@ const ViewProject = ({
     })
   }, [sdkInstance, name]) // eslint-disable-line
 
-  // when t update we update dropdowns translations
   useEffect(() => {
     setPeriodPairs(tbPeriodPairs(t, undefined, undefined, language))
     setPeriodPairsCompare(tbPeriodPairsCompare(t, undefined, language))
@@ -2855,12 +2725,9 @@ const ViewProject = ({
     setErrorsLoading(null)
   }
 
-  // onRangeDateChange if is activeChartMetrics custom and we select custom date range
-  // we update url and state
   const onRangeDateChange = (dates: Date[], onRender?: boolean) => {
     const days = Math.ceil(Math.abs(dates[1].getTime() - dates[0].getTime()) / (1000 * 3600 * 24))
 
-    // setting allowed time buckets for the specified date range (period)
     // eslint-disable-next-line no-restricted-syntax
     for (const index in timeBucketToDays) {
       if (timeBucketToDays[index].lt >= days) {
@@ -3001,7 +2868,6 @@ const ViewProject = ({
     loadFunnelsData()
   }, [project, activeFunnel, loadFunnelsData, period, t])
 
-  // using this for fix some bugs with update custom events data for chart
   useEffect(() => {
     if (!_isEmpty(activeChartMetricsCustomEvents)) {
       setActiveChartMetricsCustomEvents([])
@@ -3033,19 +2899,18 @@ const ViewProject = ({
     return () => clearInterval(interval)
   }, [project.id, setLiveStatsForProject]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // loadProject if project is empty so more often it is need for public projects
   useEffect(() => {
     if (isLoading || !_isEmpty(project)) {
       return
     }
 
-    getProject(id, false, projectPassword)
+    getProject(id, projectPassword)
       .then((projectRes) => {
         if (_isEmpty(projectRes)) {
           onErrorLoading()
         }
 
-        if (projectRes.isPasswordProtected && !projectRes.isOwner && _isEmpty(projectPassword)) {
+        if (projectRes.isPasswordProtected && !projectRes.role && _isEmpty(projectPassword)) {
           navigate({
             pathname: _replace(routes.project_protected_password, ':id', id),
             search: `?theme=${ssrTheme}&embedded=${embedded}`,
@@ -3053,9 +2918,10 @@ const ViewProject = ({
           return
         }
 
-        if ((projectRes.isPublic || projectRes?.isPasswordProtected) && !projectRes.isOwner) {
+        if ((projectRes.isPublic || projectRes?.isPasswordProtected) && !projectRes.role) {
           setPublicProject(projectRes)
         } else {
+          // TODO: Check, do we really need to add this project to the projects list?
           setProjects([...(projects as any[]), projectRes])
 
           if (projectRes.isLocked) {
@@ -3072,13 +2938,12 @@ const ViewProject = ({
             })
         }
       })
-      .catch((e) => {
-        console.error('[ERROR] (getProject)', e)
+      .catch((reason) => {
+        console.error('[ERROR] (getProject)', reason)
         onErrorLoading()
       })
   }, [isLoading, project, id, setPublicProject]) // eslint-disable-line
 
-  // updatePeriod using for update period and timeBucket also update url
   const updatePeriod = (newPeriod: { period: string; label?: string }) => {
     if (period === newPeriod.period) {
       return
@@ -3117,7 +2982,6 @@ const ViewProject = ({
     setForecasedChartData({})
   }
 
-  // updateTimebucket using for update timeBucket also update url
   const updateTimebucket = (newTimebucket: string) => {
     searchParams.set('timeBucket', newTimebucket)
     setSearchParams(searchParams)
@@ -3144,7 +3008,6 @@ const ViewProject = ({
     navigate(_replace(routes.project_settings, ':id', id))
   }
 
-  // parse period from url when page is loaded
   useEffect(() => {
     try {
       const intialPeriod = projectViewPrefs
@@ -3183,7 +3046,6 @@ const ViewProject = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // check for conflicts in chart metrics in dropdown if conflicted disable some column of dropdown
   const isConflicted = (conflicts?: string[]) => {
     if (!conflicts) {
       return false
@@ -3251,13 +3113,11 @@ const ViewProject = ({
     },
   ]
 
-  // function set chart type and save to local storage
   const setChartTypeOnClick = (type: string) => {
     setItem('chartType', type)
     setChartType(type)
   }
 
-  // loadAnalytics when compare period change or compare selected
   useEffect(() => {
     setItem(IS_ACTIVE_COMPARE, JSON.stringify(isActiveCompare))
     if (activePeriodCompare === PERIOD_PAIRS_COMPARE.CUSTOM && !dateRangeCompare) {
@@ -3374,17 +3234,14 @@ const ViewProject = ({
           items={tabs}
           keyExtractor={(item) => item.id}
           labelExtractor={(item) => item.label}
-          onSelect={(label) => {
-            const selected = _find(tabs, (tab) => tab.label === label)
-            if (selected) {
-              if (selected.id === 'settings') {
-                openSettingsHandler()
-                return
-              }
-
-              setProjectTab(selected?.id)
-              setActiveTab(selected?.id)
+          onSelect={(item) => {
+            if (item.id === 'settings') {
+              openSettingsHandler()
+              return
             }
+
+            setProjectTab(item?.id)
+            setActiveTab(item?.id)
           }}
           title={activeTabLabel}
           capitalise
@@ -3502,7 +3359,7 @@ const ViewProject = ({
           <h2 className='mt-2 break-words break-all text-center text-xl font-bold text-gray-900 dark:text-gray-50 sm:text-left'>
             {name}
           </h2>
-          <LockedDashboard user={user} project={project} isSharedProject={isSharedProject} />
+          <LockedDashboard user={user} project={project} />
         </div>
         {!embedded && <Footer authenticated={authenticated} minimal />}
       </>
@@ -4188,7 +4045,7 @@ const ViewProject = ({
                       )}
                     </>
                   )}
-                {activeTab === PROJECT_TABS.alerts && (isSharedProject || !project?.isOwner || !authenticated) && (
+                {activeTab === PROJECT_TABS.alerts && (project.role !== 'owner' || !authenticated) && (
                   <div className='mt-5 rounded-xl bg-gray-700 p-5'>
                     <div className='flex items-center text-gray-50'>
                       <BellIcon className='mr-2 h-8 w-8' />
@@ -4614,7 +4471,7 @@ const ViewProject = ({
                     {!errorLoading && _isEmpty(activeError) && <NoErrorDetails />}
                   </>
                 )}
-                {activeTab === PROJECT_TABS.alerts && !isSharedProject && project?.isOwner && authenticated && (
+                {activeTab === PROJECT_TABS.alerts && project.role === 'owner' && authenticated && (
                   <ProjectAlertsView projectId={id} />
                 )}
                 {activeTab === PROJECT_TABS.uptime && <Uptime />}
@@ -5071,10 +4928,7 @@ const ViewProject = ({
                                 customTabs={customTabs}
                                 // @ts-expect-error
                                 valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
-                                rowMapper={({ name: entryName }) => {
-                                  // todo: add uppercase
-                                  return entryName || t('project.redactedPage')
-                                }}
+                                rowMapper={({ name: entryName }) => entryName || t('project.redactedPage')}
                               />
                             )
                           }

@@ -1,5 +1,4 @@
 import { put, call } from 'redux-saga/effects'
-import Debug from 'debug'
 
 import { getAccessToken } from 'utils/accessToken'
 import { getRefreshToken } from 'utils/refreshToken'
@@ -8,8 +7,6 @@ import { isSelfhosted } from 'redux/constants'
 import sagaActions from '../actions'
 const { getLastPost } = require('api')
 
-const debug = Debug('swetrix:rx:s:initialise')
-
 export default function* initialise() {
   try {
     const token: string = yield call(getAccessToken)
@@ -17,8 +14,6 @@ export default function* initialise() {
 
     if (token && refreshToken) {
       yield put(sagaActions.loadProjects())
-      yield put(sagaActions.loadSharedProjects())
-      yield put(sagaActions.loadProjectsCaptcha())
       yield put(sagaActions.loadExtensions())
       yield put(sagaActions.loadProjectAlerts())
       yield put(sagaActions.loadMonitors())
@@ -33,7 +28,7 @@ export default function* initialise() {
       } = yield call(getLastPost)
       yield put(UIActions.setLastBlogPost(lastBlogPost))
     }
-  } catch (e) {
-    debug('An error occured whilst initialising: %s', e)
+  } catch (reason) {
+    console.error('An error occured whilst initialising:', reason)
   }
 }

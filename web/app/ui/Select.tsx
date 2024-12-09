@@ -22,10 +22,10 @@ interface ISelect<T> {
   capitalise?: boolean
   items: T[]
   id?: string
-  labelExtractor?: (item: T, index: number) => string
+  labelExtractor?: (item: T, index: number) => React.ReactNode
   keyExtractor?: (item: T, index: number) => string
   iconExtractor?: (item: T, index: number) => React.ReactNode | null
-  onSelect: (item: string) => void
+  onSelect: (item: T) => void
 }
 
 function Select<T>({
@@ -90,7 +90,7 @@ function Select<T>({
                         'text-gray-900': !active,
                       })
                     }
-                    value={labelExtractor ? labelExtractor(item, index) : item}
+                    value={item}
                   >
                     {({ selected, active }) => (
                       <>

@@ -38,7 +38,6 @@ import {
   isSelfhosted,
 } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
-import { ISharedProject } from 'redux/models/ISharedProject'
 import { withAuthentication, auth } from 'hoc/protected'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -66,6 +65,15 @@ import Integrations from './components/Integrations'
 import Socialisations from './components/Socialisations'
 import Referral from './components/Referral'
 import NoSharedProjects from './components/NoSharedProjects'
+import Organisations from './components/Organisations'
+import NoOrganisations from './components/NoOrganisations'
+import { useSelector } from 'react-redux'
+import { StateType, useAppDispatch } from 'redux/store'
+import { authActions } from 'redux/reducers/auth'
+import sagaActions from 'redux/sagas/actions'
+import { removeRefreshToken } from 'utils/refreshToken'
+import { removeAccessToken } from 'utils/accessToken'
+import UIActions from 'redux/reducers/ui'
 
 dayjs.extend(utc)
 
@@ -118,64 +126,19 @@ const getTabs = (t: typeof i18next.t) => {
   ]
 }
 
-interface IProps {
-  onDelete: (t: typeof i18next.t, deletionFeedback: string, callback: () => void) => void
-  onDeleteProjectCache: () => void
-  removeProject: (id: string) => void
-  removeShareProject: (id: string) => void
-  setUserShareData: (data: Partial<ISharedProject>, id: string) => void
-  setProjectsShareData: (data: Partial<ISharedProject>, id: string) => void
-  updateUserData: (data: Partial<IUser>) => void
-  updateUserProfileAsync: (data: IUser, successMessage: string, callback?: (isSuccess: boolean) => void) => void
-  setAPIKey: (key: string | null) => void
-  user: IUser
-  dontRemember: boolean
-  isPaidTierUsed: boolean
-  linkSSO: (t: typeof i18next.t, callback: (e: any) => void, provider: string) => void
-  unlinkSSO: (t: typeof i18next.t, callback: (e: any) => void, provider: string) => void
-  theme: string
-  updateShowLiveVisitorsInTitle: (show: boolean, callback: (isSuccess: boolean) => void) => void
-  logoutLocal: () => void
-  logoutAll: () => void
-  loading: boolean
-  setCache: (key: string, value: any) => void
-  activeReferrals: any[]
-  referralStatistics: any
-}
-
 interface IForm extends Partial<IUser> {
   repeat: string
   password: string
   email: string
 }
 
-const UserSettings = ({
-  onDelete,
-  onDeleteProjectCache,
-  removeProject,
-  removeShareProject,
-  setUserShareData,
-  setProjectsShareData,
-  updateUserData,
-  updateUserProfileAsync,
-  setAPIKey,
-  user,
-  dontRemember,
-  isPaidTierUsed, // setThemeType, themeType,
-  linkSSO,
-  unlinkSSO,
-  theme,
-  updateShowLiveVisitorsInTitle,
-  logoutAll,
-  loading,
-  logoutLocal,
-  referralStatistics,
-  activeReferrals,
-  setCache,
-}: IProps): JSX.Element => {
+const UserSettings = () => {
+  const { user, isPaidTierUsed, loading } = useSelector((state: StateType) => state.auth)
+  const dispatch = useAppDispatch()
+
   const navigate = useNavigate()
   const { t } = useTranslation('common')
-  const [activeTab, setActiveTab] = useState<string>(TAB_MAPPING.ACCOUNT)
+  const [activeTab, setActiveTab] = useState(TAB_MAPPING.ACCOUNT)
   const [form, setForm] = useState<IForm>({
     email: user.email || '',
     password: '',
@@ -183,11 +146,11 @@ const UserSettings = ({
     timeFormat: user.timeFormat || TimeFormat['12-hour'],
   })
   const [showPasswordFields, setShowPasswordFields] = useState(false)
-  const [timezone, setTimezone] = useState<string>(user.timezone || DEFAULT_TIMEZONE)
+  const [timezone, setTimezone] = useState(user.timezone || DEFAULT_TIMEZONE)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
   const [isPasswordChangeModalOpened, setIsPasswordChangeModalOpened] = useState(false)
   const [timezoneChanged, setTimezoneChanged] = useState(false)
-  const [reportFrequency, setReportFrequency] = useState<string>(user.reportFrequency)
+  const [reportFrequency, setReportFrequency] = useState(user.reportFrequency)
   const [formPresetted, setFormPresetted] = useState(false)
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
@@ -198,10 +161,10 @@ const UserSettings = ({
   const [showAPIDeleteModal, setShowAPIDeleteModal] = useState(false)
   const [showExportModal, setShowExportModal] = useState(false)
   const [error, setError] = useState<null | string>(null)
-  const translatedFrequencies: string[] = _map(reportFrequencies, (key) => t(`profileSettings.${key}`)) // useMemo(_map(reportFrequencies, (key) => t(`profileSettings.${key}`)), [t])
-  const translatedTimeFormat: string[] = _map(TimeFormat, (key) => t(`profileSettings.${key}`)) // useMemo(_map(TimeFormat, (key) => t(`profileSettings.${key}`)), [t])
+  const translatedFrequencies = _map(reportFrequencies, (key) => t(`profileSettings.${key}`))
+  const translatedTimeFormat = _map(TimeFormat, (key) => t(`profileSettings.${key}`))
   const [settingUpdating, setSettingUpdating] = useState(false)
-  const [deletionFeedback, setDeletionFeedback] = useState<string>('')
+  const [deletionFeedback, setDeletionFeedback] = useState('')
 
   const tabs = getTabs(t)
   const activeTabLabel = useMemo(() => _find(tabs, (tab) => tab.id === activeTab)?.label, [tabs, activeTab])
@@ -241,13 +204,26 @@ const UserSettings = ({
       }
     }
 
-    updateUserProfileAsync(data, t('profileSettings.updated'), (isSuccess: boolean) => {
-      if (isSuccess && data.email && data.email !== user.email) {
-        toast.success(t('profileSettings.emailChanged'))
-      }
+    dispatch(
+      sagaActions.updateUserProfileAsync(data, (isSuccess: boolean) => {
+        if (isSuccess) {
+          toast.success(t('profileSettings.updated'))
+        } else {
+          toast.error(t('apiNotifications.somethingWentWrong'))
+        }
+      }),
+    )
+  }
 
-      callback(isSuccess)
-    })
+  const logoutLocal = () => {
+    dispatch(authActions.logout())
+    removeRefreshToken()
+    removeAccessToken()
+  }
+
+  const logoutAll = () => {
+    dispatch(authActions.logout())
+    dispatch(sagaActions.logout(false, true))
   }
 
   useEffect(() => {
@@ -310,7 +286,7 @@ const UserSettings = ({
     if (validated) {
       // if the timezone updates, we need to delete all project cache to refetch it with the new timezone setting afterwards
       if (timezoneChanged) {
-        onDeleteProjectCache()
+        dispatch(UIActions.deleteProjectCache({}))
       }
 
       onSubmit({
@@ -326,16 +302,19 @@ const UserSettings = ({
     }
 
     setSettingUpdating(true)
-    updateShowLiveVisitorsInTitle(checked, (isSuccess: boolean) => {
-      setSettingUpdating(false)
 
-      if (isSuccess) {
-        toast.success(t('profileSettings.updated'))
-        return
-      }
+    dispatch(
+      sagaActions.updateShowLiveVisitorsInTitle(checked, (isSuccess: boolean) => {
+        setSettingUpdating(false)
 
-      toast.error(t('apiNotifications.somethingWentWrong'))
-    })
+        if (isSuccess) {
+          toast.success(t('profileSettings.updated'))
+          return
+        }
+
+        toast.error(t('apiNotifications.somethingWentWrong'))
+      }),
+    )
   }
 
   const handleReceiveLoginNotifications = async (checked: boolean) => {
@@ -347,9 +326,7 @@ const UserSettings = ({
 
     try {
       await receiveLoginNotification(checked)
-      updateUserData({
-        receiveLoginNotifications: checked,
-      })
+      dispatch(authActions.mergeUser({ receiveLoginNotifications: checked }))
       toast.success(t('profileSettings.updated'))
     } catch {
       toast.error(t('apiNotifications.somethingWentWrong'))
@@ -400,10 +377,20 @@ const UserSettings = ({
     return null
   }
 
-  const _onDelete = () => {
-    onDelete(t, deletionFeedback, () => {
-      navigate(routes.main)
-    })
+  const onAccountDelete = () => {
+    dispatch(
+      sagaActions.deleteAccountAsync(
+        (error: string) => toast.error(error),
+        () => {
+          trackCustom('ACCOUNT_DELETED', {
+            reason_stated: deletionFeedback ? 'true' : 'false',
+          })
+          navigate(routes.main)
+        },
+        deletionFeedback,
+        t,
+      ),
+    )
   }
 
   const onExport = async (exportedAt: string) => {
@@ -451,8 +438,8 @@ const UserSettings = ({
 
   const onApiKeyGenerate = async () => {
     try {
-      const res = await generateApiKey()
-      setAPIKey(res.apiKey)
+      const { apiKey } = await generateApiKey()
+      dispatch(authActions.mergeUser({ apiKey }))
     } catch (reason: any) {
       toast.error(reason)
     }
@@ -461,7 +448,7 @@ const UserSettings = ({
   const onApiKeyDelete = async () => {
     try {
       await deleteApiKey()
-      setAPIKey(null)
+      dispatch(authActions.mergeUser({ apiKey: null }))
     } catch (reason: any) {
       toast.error(reason)
     }
@@ -497,11 +484,8 @@ const UserSettings = ({
               items={tabs}
               keyExtractor={(item) => item.id}
               labelExtractor={(item) => item.label}
-              onSelect={(label) => {
-                const selected = _find(tabs, (tab) => tab.label === label)
-                if (selected) {
-                  setActiveTab(selected?.id)
-                }
+              onSelect={(item) => {
+                setActiveTab(item.id)
               }}
               title={activeTabLabel}
               capitalise
@@ -683,7 +667,7 @@ const UserSettings = ({
                       <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
                         {t('profileSettings.2fa')}
                       </h3>
-                      <TwoFA user={user} dontRemember={dontRemember} updateUserData={updateUserData} />
+                      <TwoFA />
 
                       {/* Socialisations setup */}
                       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
@@ -693,7 +677,7 @@ const UserSettings = ({
                       >
                         {t('profileSettings.socialisations')}
                       </h3>
-                      <Socialisations user={user} linkSSO={linkSSO} unlinkSSO={unlinkSSO} theme={theme} />
+                      <Socialisations />
 
                       {/* Shared projects setting */}
                       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
@@ -732,14 +716,7 @@ const UserSettings = ({
                                     </thead>
                                     <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
                                       {_map(user.sharedProjects, (item) => (
-                                        <ProjectList
-                                          key={item.id}
-                                          item={item}
-                                          removeProject={removeProject}
-                                          removeShareProject={removeShareProject}
-                                          setUserShareData={setUserShareData}
-                                          setProjectsShareData={setProjectsShareData}
-                                        />
+                                        <ProjectList key={item.id} item={item} />
                                       ))}
                                     </tbody>
                                   </table>
@@ -748,9 +725,60 @@ const UserSettings = ({
                             </div>
                           </div>
                         ) : (
-                          <NoSharedProjects t={t} />
+                          <NoSharedProjects />
                         )}
                       </div>
+
+                      {/* Organisations setting */}
+                      <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+                      <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
+                        {t('profileSettings.organisations')}
+                      </h3>
+                      <div>
+                        {!_isEmpty(user.organisationMemberships) ? (
+                          <div className='mt-3 flex flex-col'>
+                            <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8'>
+                              <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
+                                <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
+                                  <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
+                                    <thead>
+                                      <tr className='dark:bg-slate-800'>
+                                        <th
+                                          scope='col'
+                                          className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6'
+                                        >
+                                          {t('profileSettings.organisationsTable.organisation')}
+                                        </th>
+                                        <th
+                                          scope='col'
+                                          className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'
+                                        >
+                                          {t('profileSettings.organisationsTable.role')}
+                                        </th>
+                                        <th
+                                          scope='col'
+                                          className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'
+                                        >
+                                          {t('profileSettings.organisationsTable.joinedOn')}
+                                        </th>
+                                        <th scope='col' className='relative py-3.5 pl-3 pr-4 sm:pr-6' />
+                                      </tr>
+                                    </thead>
+                                    <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
+                                      {_map(user.organisationMemberships, (membership) => (
+                                        <Organisations key={membership.id} membership={membership} />
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <NoOrganisations />
+                        )}
+                      </div>
+
                       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
                       {!user.isActive && (
                         <div
@@ -886,11 +914,7 @@ const UserSettings = ({
                       >
                         {t('profileSettings.integrations')}
                       </h3>
-                      <Integrations
-                        user={user}
-                        updateUserData={updateUserData}
-                        handleIntegrationSave={handleIntegrationSave}
-                      />
+                      <Integrations handleIntegrationSave={handleIntegrationSave} />
                       {user.isTelegramChatIdConfirmed && (
                         <Checkbox
                           checked={user.receiveLoginNotifications}
@@ -916,13 +940,7 @@ const UserSettings = ({
                   >
                     {t('profileSettings.referral.title')}
                   </h3>
-                  <Referral
-                    user={user}
-                    updateUserData={updateUserData}
-                    referralStatistics={referralStatistics}
-                    activeReferrals={activeReferrals}
-                    setCache={setCache}
-                  />
+                  <Referral />
                 </>
               )
             }
@@ -953,7 +971,7 @@ const UserSettings = ({
         }}
         onSubmit={() => {
           setShowModal(false)
-          _onDelete()
+          onAccountDelete()
         }}
         submitText={t('profileSettings.aDelete')}
         closeText={t('common.close')}

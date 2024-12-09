@@ -175,12 +175,12 @@ const UptimeSettings = (): JSX.Element => {
     acceptedStatusCodes: '200',
     description: '',
   })
-  const [validated, setValidated] = useState<boolean>(false)
+  const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
     [key: string]: string
   }>({})
-  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
-  const [showModal, setShowModal] = useState<boolean>(false)
+  const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [showModal, setShowModal] = useState(false)
 
   const setMonitors = (monitors: Monitor[]) => dispatch(UIActions.setMonitors(monitors))
   const setMonitorsTotal = (total: number) => dispatch(UIActions.setMonitorsTotal({ total }))

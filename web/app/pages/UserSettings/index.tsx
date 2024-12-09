@@ -1,3 +1,3 @@
-import UserSettings from './UserSettings.container'
+import UserSettings from './UserSettings'
 
 export default UserSettings

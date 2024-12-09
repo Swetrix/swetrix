@@ -17,7 +17,7 @@ export default function* updateUserProfileWorker({
   try {
     const user: IUser = yield call(changeUserDetails, data)
 
-    yield put(authActions.updateUserProfileSuccess(user))
+    yield put(authActions.setUser(user))
     isSuccess = true
   } catch (reason: any) {
     toast.error(reason?.message || (typeof reason === 'string' ? reason : reason[0]))

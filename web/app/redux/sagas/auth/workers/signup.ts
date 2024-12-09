@@ -42,18 +42,17 @@ export default function* signupWorder({
       deleteCookie(REFERRAL_COOKIE)
     }
 
-    yield put(authActions.signupUpSuccessful(user))
+    yield put(authActions.authSuccessful(user))
     yield call(setAccessToken, accessToken, dontRemember)
     yield call(setRefreshToken, refreshToken)
     yield put(authActions.setDontRemember(dontRemember))
     // yield put(UIActions.setThemeType(response.theme))
     yield put(sagaActions.loadProjects())
-    yield put(sagaActions.loadSharedProjects())
     yield put(sagaActions.loadProjectAlerts())
     yield put(sagaActions.loadMonitors())
     callback(true)
-  } catch (error: any) {
-    const message = error.message || (typeof error === 'string' ? error : error[0])
+  } catch (reason: any) {
+    const message = reason.message || (typeof reason === 'string' ? reason : reason[0])
 
     toast.error(message)
     callback(false)
