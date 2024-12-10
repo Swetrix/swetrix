@@ -5,12 +5,11 @@ import _reduce from 'lodash/reduce'
 import { useTranslation } from 'react-i18next'
 import countries from 'utils/isoCountries'
 import { PROJECT_TABS } from 'redux/constants'
-import { StateType } from 'redux/store'
 import { getTimeFromSeconds, getStringFromTime, nFormatter } from 'utils/generic'
 
 import { IEntry } from 'redux/models/IEntry'
 import countriesList from 'utils/countries'
-import { useSelector } from 'react-redux'
+import { useSearchParams } from '@remix-run/react'
 
 interface IInteractiveMap {
   data: IEntry[]
@@ -37,6 +36,7 @@ const InteractiveMap = ({ data, onClickCountry, total }: IInteractiveMap) => {
     t,
     i18n: { language },
   } = useTranslation('common')
+  const [searchParams] = useSearchParams()
   const [hoverShow, setHoverShow] = useState(false)
   const [dataHover, setDataHover] = useState<IDataHover>({} as IDataHover)
   const [cursorPosition, setCursorPosition] = useState<ICursorPosition>({} as ICursorPosition)
@@ -45,8 +45,7 @@ const InteractiveMap = ({ data, onClickCountry, total }: IInteractiveMap) => {
     [data],
   )
 
-  const projectTab = useSelector((state: StateType) => state.ui.projects.projectTab)
-  const isTrafficTab = projectTab === PROJECT_TABS.traffic
+  const isTrafficTab = searchParams.get('tab') === PROJECT_TABS.traffic
 
   const onMouseMove = (e: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
     const rect = e.currentTarget.getBoundingClientRect()

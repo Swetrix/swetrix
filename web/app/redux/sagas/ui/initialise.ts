@@ -13,9 +13,7 @@ export default function* initialise() {
     const refreshToken: string = yield call(getRefreshToken)
 
     if (token && refreshToken) {
-      yield put(sagaActions.loadProjects())
       yield put(sagaActions.loadExtensions())
-      yield put(sagaActions.loadProjectAlerts())
       yield put(sagaActions.loadMonitors())
     }
 

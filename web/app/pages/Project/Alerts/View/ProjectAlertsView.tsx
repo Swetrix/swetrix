@@ -1,14 +1,13 @@
-import React, { useMemo, memo, useState } from 'react'
+import React, { useMemo, memo, useState, useEffect } from 'react'
 import dayjs from 'dayjs'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
 import _replace from 'lodash/replace'
 import _values from 'lodash/values'
 import _reduce from 'lodash/reduce'
-import _filter from 'lodash/filter'
 import { useNavigate, Link } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
 import {
   BellIcon,
@@ -17,16 +16,19 @@ import {
   TrashIcon,
   PlusCircleIcon,
   ExclamationTriangleIcon,
+  XCircleIcon,
 } from '@heroicons/react/24/outline'
 
 import routes from 'utils/routes'
 import Button from 'ui/Button'
 import Modal from 'ui/Modal'
 import PaidFeature from 'modals/PaidFeature'
-import { QUERY_METRIC, PLAN_LIMITS } from 'redux/constants'
-import UIActions from 'redux/reducers/ui'
-import { deleteAlert as deleteAlertApi } from 'api'
+import { QUERY_METRIC, PLAN_LIMITS, DEFAULT_ALERTS_TAKE } from 'redux/constants'
+import { deleteAlert as deleteAlertApi, getProjectAlerts } from 'api'
 import { StateType } from 'redux/store'
+import { IAlerts } from 'redux/models/IAlerts'
+import Loader from 'ui/Loader'
+import Pagination from 'ui/Pagination'
 
 const Separator = () => (
   <svg viewBox='0 0 2 2' className='h-0.5 w-0.5 flex-none fill-gray-400'>
@@ -182,19 +184,45 @@ interface IProjectAlerts {
 
 const ProjectAlerts = ({ projectId }: IProjectAlerts): JSX.Element => {
   const { t } = useTranslation()
-  const dispatch = useDispatch()
-  const { loading, total, alerts } = useSelector((state: StateType) => state.ui.alerts)
   const { user, authenticated } = useSelector((state: StateType) => state.auth)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
+
+  const [isLoading, setIsLoading] = useState<boolean | null>(null)
+  const [total, setTotal] = useState(0)
+  const [alerts, setAlerts] = useState<IAlerts[]>([])
+  const [page, setPage] = useState(1)
+
+  const [error, setError] = useState<string | null>(null)
+
+  const pageAmount = Math.ceil(total / DEFAULT_ALERTS_TAKE)
+
   const navigate = useNavigate()
 
   const limits = PLAN_LIMITS[user?.planCode] || PLAN_LIMITS.trial
   const isLimitReached = authenticated && total >= limits?.maxAlerts
 
-  const projectAlerts = useMemo(() => {
-    if (loading) return []
-    return _filter(alerts, ({ pid }) => pid === projectId)
-  }, [projectId, alerts, loading])
+  const loadAlerts = async (take: number, skip: number, search?: string) => {
+    if (isLoading) {
+      return
+    }
+    setIsLoading(true)
+
+    try {
+      const result = await getProjectAlerts(projectId, take, skip)
+      setAlerts(result.results)
+      setTotal(result.total)
+    } catch (reason: any) {
+      setError(reason)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadAlerts(DEFAULT_ALERTS_TAKE, (page - 1) * DEFAULT_ALERTS_TAKE)
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page])
 
   const queryMetricTMapping: {
     [key: string]: string
@@ -233,23 +261,61 @@ const ProjectAlerts = ({ projectId }: IProjectAlerts): JSX.Element => {
   const onDelete = async (id: string) => {
     try {
       await deleteAlertApi(id)
-      dispatch(UIActions.setProjectAlerts(_filter(alerts, (a) => a.id !== id)))
-      dispatch(
-        UIActions.setProjectAlertsTotal({
-          total: total - 1,
-        }),
-      )
       toast.success(t('alertsSettings.alertDeleted'))
     } catch (reason: any) {
       toast.error(reason?.response?.data?.message || reason?.message || 'Something went wrong')
     }
   }
 
-  return (
-    <div>
+  if (error && isLoading === false) {
+    return (
+      <div className='bg-gray-50 px-4 py-16 dark:bg-slate-900 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
+        <div className='mx-auto max-w-max'>
+          <main className='sm:flex'>
+            <XCircleIcon className='h-12 w-12 text-red-400' aria-hidden='true' />
+            <div className='sm:ml-6'>
+              <div className='max-w-prose sm:border-l sm:border-gray-200 sm:pl-6'>
+                <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50 sm:text-5xl'>
+                  {t('apiNotifications.somethingWentWrong')}
+                </h1>
+                <p className='mt-4 text-2xl font-medium tracking-tight text-gray-700 dark:text-gray-200'>
+                  {t('apiNotifications.errorCode', { error })}
+                </p>
+              </div>
+              <div className='mt-8 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>
+                <button
+                  type='button'
+                  onClick={() => window.location.reload()}
+                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
+                >
+                  {t('dashboard.reloadPage')}
+                </button>
+                <Link
+                  to={routes.contact}
+                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700 dark:focus:ring-gray-50'
+                >
+                  {t('notFoundPage.support')}
+                </Link>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    )
+  }
+
+  if (isLoading || isLoading === null) {
+    return (
       <div className='mt-4'>
-        {loading && <div>{t('common.loading')}</div>}
-        {!loading && _isEmpty(projectAlerts) && (
+        <Loader />
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <div className='mt-4'>
+        {_isEmpty(alerts) ? (
           <div className='mt-5 rounded-xl bg-gray-700 p-5'>
             <div className='flex items-center text-gray-50'>
               <BellIcon className='mr-2 h-8 w-8' />
@@ -262,18 +328,15 @@ const ProjectAlerts = ({ projectId }: IProjectAlerts): JSX.Element => {
               secondary
               large
             >
-              <>
-                {isLimitReached && <CurrencyDollarIcon className='mr-1 h-5 w-5' />}
-                {t('alert.add')}
-              </>
+              {isLimitReached && <CurrencyDollarIcon className='mr-1 h-5 w-5' />}
+              {t('alert.add')}
             </Button>
           </div>
-        )}
-        {!loading && !_isEmpty(projectAlerts) && (
+        ) : (
           <>
             {!isIntegrationLinked && <NoNotificationChannelSet />}
             <ul className='mt-4 grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
-              {_map(projectAlerts, (alert) => (
+              {_map(alerts, (alert) => (
                 <AlertCard
                   key={alert.id}
                   {...alert}
@@ -288,9 +351,19 @@ const ProjectAlerts = ({ projectId }: IProjectAlerts): JSX.Element => {
             </ul>
           </>
         )}
+        {pageAmount > 1 ? (
+          <Pagination
+            className='mt-4'
+            page={page}
+            pageAmount={pageAmount}
+            setPage={setPage}
+            total={total}
+            pageSize={DEFAULT_ALERTS_TAKE}
+          />
+        ) : null}
       </div>
       <PaidFeature isOpened={isPaidFeatureOpened} onClose={() => setIsPaidFeatureOpened(false)} />
-    </div>
+    </>
   )
 }
 

@@ -111,7 +111,6 @@ const Signin = ({ ssrTheme }: SigninProps) => {
         setAccessToken(accessToken)
         setRefreshToken(refreshToken)
         dispatch(authActions.authSuccessful(user))
-        dispatch(sagaActions.loadProjects())
       } catch (reason) {
         if (_isString(reason)) {
           toast.error(reason)

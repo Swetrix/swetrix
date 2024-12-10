@@ -21,8 +21,6 @@ import routesPath from 'utils/routes'
 import { getPageMeta } from 'utils/server'
 import { authMe } from './api'
 
-const minimalFooterPages = ['/projects', '/dashboard', '/contact', '/captchas']
-
 interface AppProps {
   ssrTheme: 'dark' | 'light'
   ssrAuthenticated: boolean
@@ -68,8 +66,6 @@ const App = ({ ssrTheme, ssrAuthenticated }: AppProps) => {
     document.title = title
   }, [t, pathname])
 
-  const isMinimalFooter = _some(minimalFooterPages, (page) => _includes(pathname, page))
-
   const isReferralPage = _startsWith(pathname, '/ref/')
   const isProjectViewPage =
     _startsWith(pathname, '/projects/') &&
@@ -101,7 +97,7 @@ const App = ({ ssrTheme, ssrAuthenticated }: AppProps) => {
           duration: 5000,
         }}
       />
-      {!isReferralPage && !isProjectViewPage && <Footer minimal={isMinimalFooter} authenticated={authenticated} />}
+      {!isReferralPage && !isProjectViewPage && <Footer authenticated={authenticated} />}
     </>
   )
 }

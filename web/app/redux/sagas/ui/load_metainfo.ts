@@ -16,9 +16,6 @@ export default function* loadMetainfo() {
     yield put(UIActions.setMetainfo(metainfo))
   } catch (reason: unknown) {
     const { message } = reason as { message: string }
-    // if (_isString(message)) {
-    //   yield put(UIActions.setProjectsError(message))
-    // }
     console.error('failed to load metainfo:', message)
   }
 }

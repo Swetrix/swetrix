@@ -46,32 +46,56 @@ export class AlertController {
   ) {}
 
   @ApiBearerAuth()
-  @Get('/')
+  @Get('/:alertId')
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN, UserType.CUSTOMER)
   @ApiResponse({ status: 200, type: Alert })
-  async getAllAlerts(
+  async getAlert(
     @CurrentUserId() userId: string,
+    @Param('alertId') alertId: string,
+  ) {
+    this.logger.log({ userId, alertId }, 'GET /alert/:alertId')
+
+    const alert = await this.alertService.findOne({
+      where: { id: alertId },
+      relations: ['project'],
+    })
+
+    if (_isEmpty(alert)) {
+      throw new NotFoundException('Alert not found')
+    }
+
+    const project = await this.projectService.getFullProject(alert.project.id)
+
+    this.projectService.allowedToView(project, userId)
+
+    return _omit(alert, ['project'])
+  }
+
+  @ApiBearerAuth()
+  @Get('/project/:projectId')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.ADMIN, UserType.CUSTOMER)
+  @ApiResponse({ status: 200, type: Alert })
+  async getProjectAlerts(
+    @CurrentUserId() userId: string,
+    @Param('projectId') projectId: string,
     @Query('take') take: number | undefined,
     @Query('skip') skip: number | undefined,
   ) {
-    this.logger.log({ userId, take, skip }, 'GET /alert')
+    this.logger.log({ userId, projectId, take, skip }, 'GET /alert/:projectId')
 
-    const projects = await this.projectService.find({
-      where: {
-        admin: { id: userId },
-      },
-    })
+    const project = await this.projectService.getFullProject(projectId)
 
-    if (_isEmpty(projects)) {
-      return []
+    if (_isEmpty(project)) {
+      throw new NotFoundException('Project not found')
     }
 
-    const pids = _map(projects, project => project.id)
+    this.projectService.allowedToView(project, userId)
 
     const result = await this.alertService.paginate(
       { take, skip },
-      { project: In(pids) },
+      { project: { id: projectId } },
       ['project'],
     )
 

@@ -13,7 +13,7 @@ import { getRefreshToken, removeRefreshToken } from 'utils/refreshToken'
 import { DEFAULT_ALERTS_TAKE, API_URL, DEFAULT_MONITORS_TAKE } from 'redux/constants'
 import { IUser } from 'redux/models/IUser'
 import { IAuth } from 'redux/models/IAuth'
-import { IProject, IOverall } from 'redux/models/IProject'
+import { IProject, IOverall, ILiveStats } from 'redux/models/IProject'
 import { IAlerts } from 'redux/models/IAlerts'
 import { ISubscribers } from 'redux/models/ISubscribers'
 import { IFilter, IProjectViewCustomEvent } from 'pages/Project/View/interfaces/traffic'
@@ -858,7 +858,7 @@ export const getOverallStatsCaptcha = (
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getLiveVisitors = (pids: string[], password?: string) =>
+export const getLiveVisitors = (pids: string[], password?: string): Promise<ILiveStats> =>
   api
     .get(`log/hb?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`, {
       headers: {
@@ -1019,9 +1019,9 @@ export const removeTgIntegration = (tgID: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getAlerts = (take: number = DEFAULT_ALERTS_TAKE, skip: number = 0) =>
+export const getProjectAlerts = (projectId: string, take: number = DEFAULT_ALERTS_TAKE, skip: number = 0) =>
   api
-    .get(`alert?take=${take}&skip=${skip}`)
+    .get(`/alert/project/${projectId}?take=${take}&skip=${skip}`)
     .then(
       (
         response,
@@ -1031,6 +1031,14 @@ export const getAlerts = (take: number = DEFAULT_ALERTS_TAKE, skip: number = 0) 
         page_total: number
       } => response.data,
     )
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getAlert = (alertId: string) =>
+  api
+    .get(`/alert/${alertId}`)
+    .then((response): IAlerts => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })

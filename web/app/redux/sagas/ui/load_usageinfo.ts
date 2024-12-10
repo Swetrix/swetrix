@@ -22,9 +22,6 @@ export default function* loadUsageinfo() {
     yield put(UIActions.setUsageinfo(info))
   } catch (reason: unknown) {
     const { message } = reason as { message: string }
-    // if (_isString(message)) {
-    //   yield put(UIActions.setProjectsError(message))
-    // }
     console.error('failed to load usageinfo:', message)
   }
 }

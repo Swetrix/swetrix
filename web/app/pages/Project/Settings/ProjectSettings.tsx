@@ -294,7 +294,7 @@ const ProjectSettings = () => {
   const [showProtected, setShowProtected] = useState(false)
 
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
-  const [error, setError] = useState<any>(null)
+  const [error, setError] = useState<string | null>(null)
 
   // for reset data via filters
   const [activeFilter, setActiveFilter] = useState<string[]>([])
@@ -412,11 +412,6 @@ const ProjectSettings = () => {
     setIsDeleting(true)
     try {
       await deleteProject(id)
-      dispatch(
-        UIActions.removeProject({
-          pid: id,
-        }),
-      )
       toast.success(t('project.settings.deleted'))
       navigate(routes.dashboard)
     } catch (reason: any) {
@@ -548,15 +543,6 @@ const ProjectSettings = () => {
         ...form,
         isPasswordProtected: true,
       })
-
-      if (!_isEmpty(form.password) && !_isEmpty(form.id)) {
-        dispatch(
-          UIActions.setProjectProtectedPassword({
-            id: form?.id || '',
-            password: form?.password || '',
-          }),
-        )
-      }
 
       setForm((prev) => ({
         ...prev,

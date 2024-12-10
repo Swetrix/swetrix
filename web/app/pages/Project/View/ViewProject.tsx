@@ -1,10 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable react/no-unstable-nested-components, react/display-name */
 import React, {
   useState,
   useEffect,
   useMemo,
-  memo,
   useRef,
   useCallback,
   createContext,
@@ -14,7 +12,7 @@ import React, {
 } from 'react'
 import { ClientOnly } from 'remix-utils/client-only'
 import useSize from 'hooks/useSize'
-import { useNavigate, Link, useSearchParams } from '@remix-run/react'
+import { useNavigate, Link, useSearchParams, useLoaderData } from '@remix-run/react'
 import bb from 'billboard.js'
 import {
   ArrowDownTrayIcon,
@@ -61,8 +59,6 @@ import _truncate from 'lodash/truncate'
 import _isString from 'lodash/isString'
 import { toast } from 'sonner'
 
-import { withProjectProtected } from 'hoc/projectProtected'
-
 import { periodToCompareDate } from 'utils/compareConvertDate'
 
 import { getTimeFromSeconds, getStringFromTime, getLocaleDisplayName, nLocaleFormatter } from 'utils/generic'
@@ -104,17 +100,9 @@ import {
   ERROR_PANELS_ORDER,
   ERROR_PERIOD_PAIRS,
   FUNNELS_PERIOD_PAIRS,
+  ThemeType,
 } from 'redux/constants'
-import { IUser } from 'redux/models/IUser'
-import {
-  IProject,
-  ILiveStats,
-  IFunnel,
-  IAnalyticsFunnel,
-  IOverallObject,
-  IOverallPerformanceObject,
-} from 'redux/models/IProject'
-import { IProjectForShared, ISharedProject } from 'redux/models/ISharedProject'
+import { IProject, IFunnel, IAnalyticsFunnel, IOverallObject, IOverallPerformanceObject } from 'redux/models/IProject'
 import { ICountryEntry } from 'redux/models/IEntry'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
@@ -232,6 +220,9 @@ import { AIProcessedResponse, AIResponse } from './interfaces/ai'
 import { useRequiredParams } from 'hooks/useRequiredParams'
 import BrowserDropdown from './components/BrowserDropdown'
 import OSDropdown from './components/OSDropdown'
+import { StateType, useAppDispatch } from 'redux/store'
+import UIActions from 'redux/reducers/ui'
+import { useSelector } from 'react-redux'
 const SwetrixSDK = require('@swetrix/sdk')
 
 const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
@@ -275,85 +266,41 @@ export const useViewProjectContext = () => {
   return context
 }
 
-interface IViewProject {
-  projects: IProject[]
-  extensions: any
-  isLoading: boolean
-  cache: any
-  cachePerf: any
-  setProjectCache: (pid: string, data: any, key: string) => void
-  projectViewPrefs: {
-    [key: string]: {
-      period: string
-      timeBucket: string
-      rangeDate?: Date[]
-    }
-  } | null
-  setProjectViewPrefs: (pid: string, period: string, timeBucket: string, rangeDate?: Date[]) => void
-  setPublicProject: (project: Partial<IProject | ISharedProject>) => void
-  setLiveStatsForProject: (id: string, count: number) => void
-  setProjectCachePerf: (pid: string, data: any, key: string) => void
-  setProjectForcastCache: (pid: string, data: any, key: string) => void
-  authenticated: boolean
-  user: IUser
-  timezone: string
-  projectTab: string
-  setProjectTab: (tab: string) => void
-  // eslint-disable-next-line no-unused-vars, no-shadow
-  setProjects: (projects: Partial<IProject | ISharedProject>[]) => void
-  customEventsPrefs: any
-  setCustomEventsPrefs: (pid: string, data: any) => void
-  liveStats: ILiveStats
-  password: {
-    [key: string]: string
-  }
-  theme: 'dark' | 'light'
-  ssrTheme: 'dark' | 'light'
-  embedded: boolean
-  ssrAuthenticated: boolean
-  queryPassword: string | null
-  authLoading: boolean
-  cacheFunnels: any
-  setFunnelsCache: (pid: string, data: any, key: string) => void
-  updateProject: (pid: string, project: Partial<IProject | ISharedProject>) => void
-  projectQueryTabs: string[]
-}
+const ViewProject = () => {
+  const dispatch = useAppDispatch()
 
-const ViewProject = ({
-  projects,
-  isLoading: _isLoading,
-  cache,
-  cachePerf,
-  setProjectCache,
-  projectViewPrefs,
-  setProjectViewPrefs,
-  setPublicProject,
-  setLiveStatsForProject,
-  authenticated: csrAuthenticated,
-  timezone = DEFAULT_TIMEZONE,
-  user,
-  extensions,
-  setProjectCachePerf,
-  projectTab,
-  setProjectTab,
-  setProjects,
-  setProjectForcastCache,
-  customEventsPrefs,
-  setCustomEventsPrefs,
-  liveStats,
-  password,
-  theme,
-  ssrTheme,
-  embedded,
-  ssrAuthenticated,
-  queryPassword,
-  authLoading,
-  cacheFunnels,
-  setFunnelsCache,
-  updateProject,
-  projectQueryTabs,
-}: IViewProject) => {
+  const {
+    theme: ssrTheme,
+    embedded,
+    isAuth: ssrAuthenticated,
+    queryPassword,
+    tabs: projectQueryTabs,
+  } = useLoaderData<{
+    theme: ThemeType
+    embedded: boolean
+    isAuth: boolean
+    queryPassword: string | null
+    tabs: string[]
+  }>()
+
+  const {
+    analytics: cache,
+    analyticsPerf: cachePerf,
+    funnels: cacheFunnels,
+    projectViewPrefs,
+    customEventsPrefs,
+  } = useSelector((state: StateType) => state.ui.cache)
+
+  const { loading: authLoading, authenticated: csrAuthenticated, user } = useSelector((state: StateType) => state.auth)
+
+  const { theme } = useSelector((state: StateType) => state.ui.theme)
+
+  const { extensions } = useSelector((state: StateType) => state.ui.misc)
+
+  const { password } = useSelector((state: StateType) => state.ui.projects)
+
   const authenticated = isBrowser ? (authLoading ? ssrAuthenticated : csrAuthenticated) : ssrAuthenticated
+  const { timezone = DEFAULT_TIMEZONE } = user || {}
 
   const {
     t,
@@ -377,10 +324,8 @@ const ViewProject = ({
 
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const project: IProjectForShared = useMemo(
-    () => _find(projects, (p) => p.id === id) || ({} as IProjectForShared),
-    [projects, id],
-  )
+  const [project, setProject] = useState<IProject | null>(null)
+  const [liveVisitors, setLiveVisitors] = useState<number>(0)
 
   const projectPassword = useMemo(
     () => password[id] || (getItem(PROJECTS_PROTECTED)?.[id] as string) || queryPassword || '',
@@ -451,7 +396,6 @@ const ViewProject = ({
   const [filtersSubError, setFiltersSubError] = useState<IFilter[]>([])
   const [areFiltersSubErrorParsed, setAreFiltersSubErrorParsed] = useState(false)
 
-  const isLoading = authenticated ? _isLoading : false
   const tnMapping = typeNameMapping(t)
   const refCalendar = useRef(null)
   const refCalendarCompare = useRef(null)
@@ -466,7 +410,7 @@ const ViewProject = ({
       return tab
     }
 
-    return projectTab || PROJECT_TABS.traffic
+    return PROJECT_TABS.traffic
   })
 
   const [isHotkeysHelpOpened, setIsHotkeysHelpOpened] = useState(false)
@@ -588,11 +532,9 @@ const ViewProject = ({
     }
 
     try {
-      const funnels = await getFunnels(id, projectPassword)
+      await getFunnels(id, projectPassword)
 
-      updateProject(id, {
-        funnels,
-      })
+      // TODO: Update project was here. Check if it's still needed
     } catch (reason: any) {
       console.error('[ERROR] (onFunnelCreate)(getFunnels)', reason)
     }
@@ -616,11 +558,9 @@ const ViewProject = ({
     }
 
     try {
-      const funnels = await getFunnels(id, projectPassword)
+      await getFunnels(id, projectPassword)
 
-      updateProject(id, {
-        funnels,
-      })
+      // TODO: Update project was here. Check if it's still needed
     } catch (reason: any) {
       console.error('[ERROR] (onFunnelCreate)(getFunnels)', reason)
     }
@@ -644,11 +584,9 @@ const ViewProject = ({
     }
 
     try {
-      const funnels = await getFunnels(id, projectPassword)
+      await getFunnels(id, projectPassword)
 
-      updateProject(id, {
-        funnels,
-      })
+      // TODO: Update project was here. Check if it's still needed
     } catch (reason: any) {
       console.error('[ERROR] (onFunnelCreate)(getFunnels)', reason)
     }
@@ -729,10 +667,13 @@ const ViewProject = ({
 
   const pgPanelNameMapping = [tnMapping.pg, tnMapping.userFlow]
 
-  const { name } = project
-
   useEffect(() => {
-    let pageTitle = user?.showLiveVisitorsInTitle ? `👀 ${liveStats[id]} - ${name}` : name
+    if (!project) {
+      // TODO: Probably should display something like "Loading..."
+      return
+    }
+
+    let pageTitle = user?.showLiveVisitorsInTitle ? `👀 ${liveVisitors} - ${project.name}` : project.name
 
     if (!pageTitle) {
       pageTitle = t('titles.main')
@@ -741,7 +682,7 @@ const ViewProject = ({
     pageTitle += ` ${TITLE_SUFFIX}`
 
     document.title = pageTitle
-  }, [name, user, liveStats, id, t])
+  }, [project, user, liveVisitors, t])
 
   const timeBucketSelectorItems = useMemo(() => {
     if (activeTab === PROJECT_TABS.errors) {
@@ -938,7 +879,7 @@ const ViewProject = ({
     [t],
   )
 
-  const allowedToManage = project.role === 'owner' || project.role === 'admin'
+  const allowedToManage = project?.role === 'owner' || project?.role === 'admin'
 
   const dataNamesFunnel = useMemo(
     () => ({
@@ -948,8 +889,9 @@ const ViewProject = ({
     [t],
   )
 
+  // @ts-expect-error
   const tabs: {
-    id: string
+    id: keyof typeof PROJECT_TABS | 'settings'
     label: string
     icon: any
   }[] = useMemo(() => {
@@ -1079,7 +1021,7 @@ const ViewProject = ({
     setErrorStatusUpdating(true)
 
     try {
-      await updateErrorStatus(project.id, 'resolved', activeEID)
+      await updateErrorStatus(id, 'resolved', activeEID)
       await loadError(activeEID)
       updateStatusInErrors('resolved')
     } catch (reason) {
@@ -1101,7 +1043,7 @@ const ViewProject = ({
     setErrorStatusUpdating(true)
 
     try {
-      await updateErrorStatus(project.id, 'active', activeEID)
+      await updateErrorStatus(id, 'active', activeEID)
       await loadError(activeEID)
       updateStatusInErrors('active')
     } catch (reason) {
@@ -1191,7 +1133,12 @@ const ViewProject = ({
 
       const events = data?.chart ? data.chart.events : customEventsChartData
 
-      setCustomEventsPrefs(id, events)
+      dispatch(
+        UIActions.setCustomEventsPrefs({
+          pid: id,
+          data: events,
+        }),
+      )
 
       const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
       const bbSettings = getSettings(
@@ -1239,7 +1186,7 @@ const ViewProject = ({
     newFilters: IFilter[] | null = null,
     newMetrics: IProjectViewCustomEvent[] | null = null,
   ) => {
-    if (!forced && (isLoading || _isEmpty(project) || dataLoading)) {
+    if (!forced && (authLoading || _isEmpty(project) || dataLoading)) {
       return
     }
 
@@ -1328,8 +1275,14 @@ const ViewProject = ({
           }
         }
 
-        // @ts-expect-error
-        setProjectCache(id, dataCompare, keyCompare)
+        dispatch(
+          UIActions.setProjectCache({
+            pid: id,
+            // @ts-expect-error
+            data: dataCompare,
+            key: keyCompare,
+          }),
+        )
       }
 
       if (dateRange) {
@@ -1399,11 +1352,22 @@ const ViewProject = ({
 
         customEventsChart = customEventsChart?.chart ? customEventsChart.chart.events : customEventsChartData
 
-        setCustomEventsPrefs(id, customEventsChart)
+        dispatch(
+          UIActions.setCustomEventsPrefs({
+            pid: id,
+            data: customEventsChart,
+          }),
+        )
 
         data.overall = rawOverall[id]
 
-        setProjectCache(id, data, key)
+        dispatch(
+          UIActions.setProjectCache({
+            pid: id,
+            data,
+            key,
+          }),
+        )
         setOverall(rawOverall[id])
       }
 
@@ -1796,7 +1760,7 @@ const ViewProject = ({
   }
 
   const loadAnalyticsPerf = async (forced = false, newFilters: any[] | null = null) => {
-    if (!forced && (isLoading || _isEmpty(project) || dataLoading)) {
+    if (!forced && (authLoading || _isEmpty(project) || dataLoading)) {
       return
     }
 
@@ -1897,7 +1861,13 @@ const ViewProject = ({
           }
         }
 
-        setProjectCachePerf(id, dataCompare || {}, keyCompare)
+        dispatch(
+          UIActions.setProjectCachePerf({
+            pid: id,
+            data: dataCompare || {},
+            key: keyCompare,
+          }),
+        )
       }
 
       if (dateRange) {
@@ -1953,7 +1923,13 @@ const ViewProject = ({
         // @ts-expect-error
         dataPerf.overall = rawOverall[id]
 
-        setProjectCachePerf(id, dataPerf || {}, key)
+        dispatch(
+          UIActions.setProjectCachePerf({
+            pid: id,
+            data: dataPerf || {},
+            key,
+          }),
+        )
         setOverallPerformance(rawOverall[id])
       }
 
@@ -2050,7 +2026,7 @@ const ViewProject = ({
         return
       }
 
-      if (!forced && (isLoading || _isEmpty(project) || dataLoading)) {
+      if (!forced && (authLoading || _isEmpty(project) || dataLoading)) {
         return
       }
 
@@ -2080,7 +2056,13 @@ const ViewProject = ({
             dataFunnel = await getFunnelData(id, period, '', '', timezone, activeFunnel.id, projectPassword)
           }
 
-          setFunnelsCache(id, dataFunnel || {}, key)
+          dispatch(
+            UIActions.setFunnelsCache({
+              pid: id,
+              data: dataFunnel || {},
+              key,
+            }),
+          )
         }
 
         const { funnel, totalPageviews } = dataFunnel
@@ -2102,7 +2084,13 @@ const ViewProject = ({
         setDataLoading(false)
 
         if (key) {
-          setFunnelsCache(id, {}, key)
+          dispatch(
+            UIActions.setFunnelsCache({
+              pid: id,
+              data: {},
+              key,
+            }),
+          )
         }
 
         console.error('[ERROR](loadFunnelsData) Loading funnels data failed:', reason)
@@ -2115,12 +2103,11 @@ const ViewProject = ({
       dataLoading,
       dateRange,
       id,
-      isLoading,
+      authLoading,
       period,
       project,
       projectPassword,
       timezone,
-      setFunnelsCache,
       t,
       dataNamesFunnel,
     ],
@@ -2367,7 +2354,7 @@ const ViewProject = ({
   }, [arePeriodParsed])
 
   const refreshStats = async () => {
-    if (!isLoading && !dataLoading) {
+    if (!authLoading && !dataLoading) {
       if (activeTab === PROJECT_TABS.performance) {
         loadAnalyticsPerf(true)
         return
@@ -2405,7 +2392,7 @@ const ViewProject = ({
   }
 
   const onForecastOpen = () => {
-    if (isLoading || dataLoading || isSelfhosted) {
+    if (authLoading || dataLoading || isSelfhosted) {
       return
     }
 
@@ -2430,7 +2417,13 @@ const ViewProject = ({
     try {
       const result = await getChartPrediction(chartData, periodToForecast, timeBucket)
       const transformed = transformAIChartData(result)
-      setProjectForcastCache(id, transformed, key)
+      dispatch(
+        UIActions.setProjectForecastCache({
+          pid: id,
+          data: transformed,
+          key,
+        }),
+      )
       setForecasedChartData(transformed)
     } catch (reason) {
       console.error(`[forecastChart] Error: ${reason}`)
@@ -2439,7 +2432,7 @@ const ViewProject = ({
 
   const forecastDetails = async () => {
     try {
-      const data = await getDetailsPrediction(project.id, projectPassword)
+      const data = await getDetailsPrediction(id, projectPassword)
 
       if (_isEmpty(data)) {
         throw new Error('getDetailsPrediction returned an empty object')
@@ -2516,7 +2509,7 @@ const ViewProject = ({
   useEffect(() => {
     if (activeTab === PROJECT_TABS.traffic) {
       if (
-        (!isLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) ||
+        (!authLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) ||
         (isActiveCompare && !_isEmpty(dataChartCompare) && !_isEmpty(mainChart))
       ) {
         if (
@@ -2577,7 +2570,7 @@ const ViewProject = ({
           })
         }
       }
-    } else if (!isLoading && !_isEmpty(chartDataPerf) && !_isEmpty(mainChart)) {
+    } else if (!authLoading && !_isEmpty(chartDataPerf) && !_isEmpty(mainChart)) {
       const bbSettings = getSettingsPerf(
         chartDataPerf,
         timeBucket,
@@ -2594,7 +2587,7 @@ const ViewProject = ({
         return generate
       })
     }
-  }, [isLoading, activeChartMetrics, chartData, chartDataPerf, activeChartMetricsPerf, dataChartCompare]) // eslint-disable-line
+  }, [authLoading, activeChartMetrics, chartData, chartDataPerf, activeChartMetricsPerf, dataChartCompare]) // eslint-disable-line
 
   useEffect(() => {
     let sdk: any | null = null
@@ -2697,7 +2690,7 @@ const ViewProject = ({
       return
     }
 
-    const { active: isActive, created, public: isPublic } = project
+    const { active: isActive, created, public: isPublic, name } = project
 
     sdkInstance?._emitEvent('projectinfo', {
       id,
@@ -2706,7 +2699,7 @@ const ViewProject = ({
       created,
       isPublic,
     })
-  }, [sdkInstance, name]) // eslint-disable-line
+  }, [sdkInstance, project]) // eslint-disable-line
 
   useEffect(() => {
     setPeriodPairs(tbPeriodPairs(t, undefined, undefined, language))
@@ -2747,7 +2740,15 @@ const ViewProject = ({
 
         setPeriodPairs(tbPeriodPairs(t, timeBucketToDays[index].tb, dates, language))
         setPeriod('custom')
-        setProjectViewPrefs(id, 'custom', timeBucketToDays[index].tb[0], dates)
+
+        dispatch(
+          UIActions.setProjectViewPrefs({
+            pid: id,
+            period: 'custom',
+            timeBucket: timeBucketToDays[index].tb[0],
+            rangeDate: dates,
+          }),
+        )
 
         setCanLoadMoreSessions(false)
         resetSessions()
@@ -2881,36 +2882,38 @@ const ViewProject = ({
   }, [dateRange, t, arePeriodParsed]) // eslint-disable-line
 
   useEffect(() => {
+    if (!project || project.isLocked) {
+      return
+    }
+
     const updateLiveVisitors = async () => {
       const { id: pid } = project
       const result = await getLiveVisitors([pid], projectPassword)
 
-      setLiveStatsForProject(pid, result[pid])
+      setLiveVisitors(result[pid])
     }
 
-    let interval: any = null
-    if (project.uiHidden) {
-      updateLiveVisitors()
-      interval = setInterval(async () => {
-        await updateLiveVisitors()
-      }, LIVE_VISITORS_UPDATE_INTERVAL)
-    }
+    updateLiveVisitors()
+
+    const interval = setInterval(async () => {
+      await updateLiveVisitors()
+    }, LIVE_VISITORS_UPDATE_INTERVAL)
 
     return () => clearInterval(interval)
-  }, [project.id, setLiveStatsForProject]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [project, projectPassword])
 
   useEffect(() => {
-    if (isLoading || !_isEmpty(project)) {
+    if (authLoading || !_isEmpty(project)) {
       return
     }
 
     getProject(id, projectPassword)
-      .then((projectRes) => {
-        if (_isEmpty(projectRes)) {
+      .then((result) => {
+        if (_isEmpty(result)) {
           onErrorLoading()
         }
 
-        if (projectRes.isPasswordProtected && !projectRes.role && _isEmpty(projectPassword)) {
+        if (result.isPasswordProtected && !result.role && _isEmpty(projectPassword)) {
           navigate({
             pathname: _replace(routes.project_protected_password, ':id', id),
             search: `?theme=${ssrTheme}&embedded=${embedded}`,
@@ -2918,31 +2921,13 @@ const ViewProject = ({
           return
         }
 
-        if ((projectRes.isPublic || projectRes?.isPasswordProtected) && !projectRes.role) {
-          setPublicProject(projectRes)
-        } else {
-          // TODO: Check, do we really need to add this project to the projects list?
-          setProjects([...(projects as any[]), projectRes])
-
-          if (projectRes.isLocked) {
-            return
-          }
-
-          getLiveVisitors([id], projectPassword)
-            .then((res) => {
-              setLiveStatsForProject(id, res[id])
-            })
-            .catch((e) => {
-              console.error('[ERROR] (getProject -> getLiveVisitors)', e)
-              onErrorLoading()
-            })
-        }
+        setProject(result)
       })
       .catch((reason) => {
         console.error('[ERROR] (getProject)', reason)
         onErrorLoading()
       })
-  }, [isLoading, project, id, setPublicProject]) // eslint-disable-line
+  }, [authLoading, project, id]) // eslint-disable-line
 
   const updatePeriod = (newPeriod: { period: string; label?: string }) => {
     if (period === newPeriod.period) {
@@ -2963,7 +2948,13 @@ const ViewProject = ({
       searchParams.delete('from')
       searchParams.delete('to')
       searchParams.set('period', newPeriod.period)
-      setProjectViewPrefs(id, newPeriod.period, tb)
+      dispatch(
+        UIActions.setProjectViewPrefs({
+          pid: id,
+          period: newPeriod.period,
+          timeBucket: tb,
+        }),
+      )
       setPeriod(newPeriod.period)
 
       setCanLoadMoreSessions(false)
@@ -2986,7 +2977,14 @@ const ViewProject = ({
     searchParams.set('timeBucket', newTimebucket)
     setSearchParams(searchParams)
     setTimebucket(newTimebucket)
-    setProjectViewPrefs(id, period, newTimebucket, dateRange as Date[])
+    dispatch(
+      UIActions.setProjectViewPrefs({
+        pid: id,
+        period,
+        timeBucket: newTimebucket,
+        rangeDate: dateRange as Date[],
+      }),
+    )
     sdkInstance?._emitEvent('timeupdate', {
       period,
       timeBucket: newTimebucket,
@@ -3008,16 +3006,12 @@ const ViewProject = ({
     navigate(_replace(routes.project_settings, ':id', id))
   }
 
+  // TODO: What the fuck is this?
   useEffect(() => {
     try {
       const intialPeriod = projectViewPrefs
         ? searchParams.get('period') || projectViewPrefs[id]?.period
         : searchParams.get('period') || '7d'
-      const tab = searchParams.get('tab')
-
-      if (tab === PROJECT_TABS.performance) {
-        setProjectTab(PROJECT_TABS.performance)
-      }
 
       if (!_includes(validPeriods, intialPeriod)) {
         return
@@ -3183,7 +3177,6 @@ const ViewProject = ({
       return
     }
 
-    setProjectTab(tab)
     setActiveTab(tab)
   })
 
@@ -3240,8 +3233,7 @@ const ViewProject = ({
               return
             }
 
-            setProjectTab(item?.id)
-            setActiveTab(item?.id)
+            setActiveTab(item?.id as keyof typeof PROJECT_TABS)
           }}
           title={activeTabLabel}
           capitalise
@@ -3251,21 +3243,19 @@ const ViewProject = ({
         <nav className='-mb-px flex space-x-4 overflow-x-auto' aria-label='Tabs'>
           {_map(tabs, (tab) => {
             const isCurrent = tab.id === activeTab
-            const isSettings = tab.id === 'settings'
 
             const handleClick = (e: React.MouseEvent) => {
-              if (isSettings) {
+              if (tab.id === 'settings') {
                 return
               }
 
               e.preventDefault()
-              setProjectTab(tab.id)
               setActiveTab(tab.id)
             }
 
             const currentUrl = new URL(window.location.href)
             currentUrl.searchParams.set('tab', tab.id)
-            const tabUrl = isSettings ? _replace(routes.project_settings, ':id', id) : currentUrl.toString()
+            const tabUrl = tab.id === 'settings' ? _replace(routes.project_settings, ':id', id) : currentUrl.toString()
 
             return (
               <Link
@@ -3328,7 +3318,7 @@ const ViewProject = ({
     </div>
   )
 
-  if (isLoading) {
+  if (authLoading || !project) {
     return (
       <>
         {!embedded && <Header ssrTheme={ssrTheme} authenticated={authenticated} />}
@@ -3340,7 +3330,7 @@ const ViewProject = ({
         >
           <Loader />
         </div>
-        {!embedded && <Footer authenticated={authenticated} minimal />}
+        {!embedded && <Footer authenticated={authenticated} />}
       </>
     )
   }
@@ -3357,11 +3347,11 @@ const ViewProject = ({
         >
           <TabsSelector />
           <h2 className='mt-2 break-words break-all text-center text-xl font-bold text-gray-900 dark:text-gray-50 sm:text-left'>
-            {name}
+            {project.name}
           </h2>
           <LockedDashboard user={user} project={project} />
         </div>
-        {!embedded && <Footer authenticated={authenticated} minimal />}
+        {!embedded && <Footer authenticated={authenticated} />}
       </>
     )
   }
@@ -3378,11 +3368,11 @@ const ViewProject = ({
         >
           <TabsSelector />
           <h2 className='mt-2 break-words break-all text-center text-xl font-bold text-gray-900 dark:text-gray-50 sm:text-left'>
-            {name}
+            {project.name}
           </h2>
           <WaitingForAnEvent project={project} />
         </div>
-        {!embedded && <Footer authenticated={authenticated} minimal />}
+        {!embedded && <Footer authenticated={authenticated} />}
       </>
     )
   }
@@ -3403,11 +3393,11 @@ const ViewProject = ({
         >
           <TabsSelector />
           <h2 className='mt-2 break-words break-all text-center text-xl font-bold text-gray-900 dark:text-gray-50 sm:text-left'>
-            {name}
+            {project.name}
           </h2>
           <WaitingForAnError />
         </div>
-        {!embedded && <Footer authenticated={authenticated} minimal />}
+        {!embedded && <Footer authenticated={authenticated} />}
       </>
     )
   }
@@ -3422,7 +3412,7 @@ const ViewProject = ({
             projectPassword,
             timezone,
             dateRange,
-            isLoading,
+            isLoading: authLoading,
             timeBucket,
             period,
             activePeriod,
@@ -3486,7 +3476,7 @@ const ViewProject = ({
                         <div className='flex flex-wrap items-center space-x-5'>
                           <h2 className='break-words break-all text-xl font-bold text-gray-900 dark:text-gray-50'>
                             {/* If tab is funnels - then display a funnel name, otherwise a project name */}
-                            {activeTab === PROJECT_TABS.funnels ? activeFunnel?.name : name}
+                            {activeTab === PROJECT_TABS.funnels ? activeFunnel?.name : project.name}
                           </h2>
                           {activeTab !== PROJECT_TABS.funnels && (
                             <LiveVisitorsDropdown
@@ -3494,7 +3484,7 @@ const ViewProject = ({
                                 setActiveTab(PROJECT_TABS.sessions)
                                 setActivePSID(psid)
                               }}
-                              live={liveStats[id]}
+                              live={liveVisitors}
                             />
                           )}
                         </div>
@@ -3509,7 +3499,7 @@ const ViewProject = ({
                                   className={cx(
                                     'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                                     {
-                                      'cursor-not-allowed opacity-50': isLoading || dataLoading,
+                                      'cursor-not-allowed opacity-50': authLoading || dataLoading,
                                     },
                                   )}
                                 >
@@ -3530,7 +3520,8 @@ const ViewProject = ({
                                     className={cx(
                                       'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                                       {
-                                        'cursor-not-allowed opacity-50': isLoading || dataLoading || !_isEmpty(filters),
+                                        'cursor-not-allowed opacity-50':
+                                          authLoading || dataLoading || !_isEmpty(filters),
                                         '!border !border-gray-300 !bg-gray-200 dark:!border-gray-500 dark:!bg-gray-600':
                                           !_isEmpty(forecasedChartData),
                                       },
@@ -3546,6 +3537,7 @@ const ViewProject = ({
                               )}
                               <div
                                 className={cx('border-gray-200 dark:border-gray-600', {
+                                  // @ts-expect-error
                                   'lg:border-r': activeTab === PROJECT_TABS.funnels,
                                   hidden: activeTab === PROJECT_TABS.errors && activeError,
                                 })}
@@ -3557,7 +3549,7 @@ const ViewProject = ({
                                   className={cx(
                                     'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                                     {
-                                      'cursor-not-allowed opacity-50': isLoading || dataLoading,
+                                      'cursor-not-allowed opacity-50': authLoading || dataLoading,
                                     },
                                   )}
                                 >
@@ -3836,7 +3828,7 @@ const ViewProject = ({
                                 disabled={errorStatusUpdating}
                                 onClick={markErrorAsResolved}
                                 className={cx('p-2 text-sm font-medium text-gray-700 dark:text-gray-50', {
-                                  'cursor-not-allowed': isLoading || errorLoading,
+                                  'cursor-not-allowed': authLoading || errorLoading,
                                   'opacity-50': errorLoading && !errorStatusUpdating,
                                   'animate-pulse cursor-not-allowed': errorStatusUpdating,
                                 })}
@@ -3853,7 +3845,7 @@ const ViewProject = ({
                                 disabled={errorStatusUpdating}
                                 onClick={markErrorAsActive}
                                 className={cx('p-2 text-sm font-medium text-gray-700 dark:text-gray-50', {
-                                  'cursor-not-allowed': isLoading || errorLoading,
+                                  'cursor-not-allowed': authLoading || errorLoading,
                                   'opacity-50': errorLoading && !errorStatusUpdating,
                                   'animate-pulse cursor-not-allowed': errorStatusUpdating,
                                 })}
@@ -3895,7 +3887,7 @@ const ViewProject = ({
                               className={cx(
                                 'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                                 {
-                                  'cursor-not-allowed opacity-50': isLoading || dataLoading,
+                                  'cursor-not-allowed opacity-50': authLoading || dataLoading,
                                 },
                               )}
                             >
@@ -3955,6 +3947,7 @@ const ViewProject = ({
                             title={activePeriod?.label}
                             onSelect={(pair) => {
                               if (pair.period === PERIOD_PAIRS_COMPARE.COMPARE) {
+                                // @ts-expect-error
                                 if (activeTab === PROJECT_TABS.alerts) {
                                   return
                                 }
@@ -5077,7 +5070,7 @@ const ViewProject = ({
               pid={id}
               tnMapping={tnMapping}
             />
-            {!embedded && <Footer authenticated={authenticated} minimal showDBIPMessage />}
+            {!embedded && <Footer authenticated={authenticated} showDBIPMessage />}
           </>
         </ViewProjectContext.Provider>
       )}
@@ -5085,4 +5078,4 @@ const ViewProject = ({
   )
 }
 
-export default memo(withProjectProtected(ViewProject))
+export default ViewProject

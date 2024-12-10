@@ -7,7 +7,6 @@ import cx from 'clsx'
 import dayjs from 'dayjs'
 import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
-import _filter from 'lodash/filter'
 import _map from 'lodash/map'
 
 import { deleteShareProjectUsers, shareProject, changeShareRole } from 'api'
@@ -22,8 +21,7 @@ import useOnClickOutside from 'hooks/useOnClickOutside'
 import { IProject, IShareOwnerProject } from 'redux/models/IProject'
 import { Role } from 'redux/models/Organisation'
 import { useSelector } from 'react-redux'
-import { StateType, useAppDispatch } from 'redux/store'
-import UIActions from 'redux/reducers/ui'
+import { StateType } from 'redux/store'
 
 const NoPeople = () => {
   const { t } = useTranslation('common')
@@ -40,14 +38,11 @@ const NoPeople = () => {
 interface UsersListProps {
   data: IShareOwnerProject
   onRemove: () => void
-  share?: IShareOwnerProject[]
-  pid: string
   language: string
   authedUserEmail: string | undefined
 }
 
-const UsersList = ({ data, onRemove, share, pid, language, authedUserEmail }: UsersListProps) => {
-  const dispatch = useAppDispatch()
+const UsersList = ({ data, onRemove, language, authedUserEmail }: UsersListProps) => {
   const { t } = useTranslation('common')
   const [open, setOpen] = useState(false)
   const openRef = useRef<HTMLUListElement>(null)
@@ -56,19 +51,7 @@ const UsersList = ({ data, onRemove, share, pid, language, authedUserEmail }: Us
 
   const changeRole = async (newRole: string) => {
     try {
-      const results = await changeShareRole(id, { role: newRole })
-      const newShared: IShareOwnerProject[] = _map(share, (itShare) => {
-        if (itShare.id === results.id) {
-          return { ...results, user: itShare.user, role: newRole }
-        }
-        return itShare
-      })
-      dispatch(
-        UIActions.setProjectsShareData({
-          data: { share: newShared },
-          id: pid,
-        }),
-      )
+      await changeShareRole(id, { role: newRole })
       toast.success(t('apiNotifications.roleUpdated'))
     } catch (reason) {
       console.error(`[ERROR] Error while updating user's role: ${reason}`)
@@ -162,7 +145,6 @@ interface PeopleProps {
 
 const People = ({ project }: PeopleProps) => {
   const { isPaidTierUsed, user: currentUser } = useSelector((state: StateType) => state.auth)
-  const dispatch = useAppDispatch()
 
   const [showModal, setShowModal] = useState(false)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
@@ -231,13 +213,7 @@ const People = ({ project }: PeopleProps) => {
     setValidated(false)
 
     try {
-      const results = await shareProject(id, { email: form.email, role: form.role })
-      dispatch(
-        UIActions.setProjectsShareData({
-          data: { share: results.share },
-          id,
-        }),
-      )
+      await shareProject(id, { email: form.email, role: form.role })
       toast.success(t('apiNotifications.userInvited'))
     } catch (reason) {
       console.error(`[ERROR] Error while inviting a user: ${reason}`)
@@ -281,16 +257,6 @@ const People = ({ project }: PeopleProps) => {
 
     try {
       await deleteShareProjectUsers(id, member.id)
-      const newShared = _map(
-        _filter(share, (s) => s.id !== member.id),
-        (s) => s,
-      )
-      dispatch(
-        UIActions.setProjectsShareData({
-          data: { share: newShared },
-          id,
-        }),
-      )
       toast.success(t('apiNotifications.userRemoved'))
     } catch (reason) {
       console.error(`[ERROR] Error while deleting a user: ${reason}`)
@@ -352,8 +318,6 @@ const People = ({ project }: PeopleProps) => {
                             setShowDeleteModal(true)
                           }}
                           language={language}
-                          share={project.share}
-                          pid={id}
                           authedUserEmail={currentUser?.email}
                         />
                       ))}

@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
 import _keys from 'lodash/keys'
 
 import { withAuthentication, auth } from 'hoc/protected'
-import { isSelfhosted, TITLE_SUFFIX, ENTRIES_PER_PAGE_DASHBOARD } from 'redux/constants'
+import { isSelfhosted, TITLE_SUFFIX } from 'redux/constants'
 import { IProject } from 'redux/models/IProject'
 import { createProject } from 'api'
 import Input from 'ui/Input'
@@ -17,7 +17,6 @@ import Loader from 'ui/Loader'
 import { trackCustom } from 'utils/analytics'
 import routes from 'utils/routes'
 import { useAppDispatch, StateType } from 'redux/store'
-import sagaActions from 'redux/sagas/actions'
 import Select from 'ui/Select'
 
 const MAX_NAME_LENGTH = 50
@@ -25,9 +24,7 @@ const MAX_NAME_LENGTH = 50
 const DEFAULT_PROJECT_NAME = 'Untitled Project'
 
 const NewProject = () => {
-  const { dashboardPaginationPage } = useSelector((state: StateType) => state.ui.projects)
   const dispatch = useAppDispatch()
-  const _dispatch = useDispatch()
   const { user, loading } = useSelector((state: StateType) => state.auth)
   const { t } = useTranslation('common')
   const navigate = useNavigate()
@@ -78,8 +75,6 @@ const NewProject = () => {
         trackCustom('PROJECT_CREATED')
         navigate(routes.dashboard)
         toast.success(t('project.settings.created'))
-
-        _dispatch(sagaActions.loadProjects(dashboardPaginationPage * ENTRIES_PER_PAGE_DASHBOARD))
       } catch (reason: any) {
         toast.error(reason)
       } finally {

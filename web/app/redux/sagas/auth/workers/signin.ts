@@ -40,8 +40,6 @@ export default function* singinWorker({ payload: { credentials, callback } }: IS
     yield call(setAccessToken, accessToken, dontRemember)
     yield call(setRefreshToken, refreshToken)
     yield put(UIActions.setThemeType(user.theme))
-    yield put(sagaActions.loadProjects())
-    yield put(sagaActions.loadProjectAlerts())
     yield put(sagaActions.loadMonitors())
     callback(true, false)
   } catch (reason: any) {

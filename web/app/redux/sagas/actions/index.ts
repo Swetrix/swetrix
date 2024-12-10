@@ -6,11 +6,6 @@ import { removeItem } from 'utils/localstorage'
 import { LS_VIEW_PREFS_SETTING, LS_CAPTCHA_VIEW_PREFS_SETTING } from 'redux/constants'
 import { IUser } from '../../models/IUser'
 
-const loadProjects = (take?: number, skip?: number, search?: string) => ({
-  type: types.LOAD_PROJECTS,
-  payload: { take, skip, search },
-})
-
 const loadMetainfo = () => ({
   type: types.LOAD_METAINFO,
 })
@@ -21,11 +16,6 @@ const loadUsageinfo = () => ({
 
 const loadExtensions = () => ({
   type: types.LOAD_EXTENSIONS,
-})
-
-const loadProjectAlerts = (take?: number, skip?: number) => ({
-  type: types.LOAD_PROJECT_ALERTS,
-  payload: { take, skip },
 })
 
 const loadMonitors = (take?: number, skip?: number) => ({
@@ -168,9 +158,7 @@ const updateShowLiveVisitorsInTitle = (show: boolean, callback: (isSuccess: bool
 })
 
 const sagaActions = {
-  loadProjects,
   loadExtensions,
-  loadProjectAlerts,
   loginAsync,
   authSSO,
   signupAsync,

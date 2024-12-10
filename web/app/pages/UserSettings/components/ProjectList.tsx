@@ -11,7 +11,6 @@ import { rejectProjectShare, acceptProjectShare } from 'api'
 import { ISharedProject } from 'redux/models/ISharedProject'
 import { StateType, useAppDispatch } from 'redux/store'
 import { authActions } from 'redux/reducers/auth'
-import UIActions from 'redux/reducers/ui'
 import { useSelector } from 'react-redux'
 
 interface ProjectListProps {
@@ -37,11 +36,6 @@ const ProjectList = ({ item }: ProjectListProps) => {
           sharedProjects: _filter(user.sharedProjects, (share) => share.id !== item.id),
         }),
       )
-      dispatch(
-        UIActions.removeProject({
-          pid: project.id,
-        }),
-      )
       toast.success(t('apiNotifications.quitProject'))
     } catch (reason) {
       console.error(`[ERROR] Error while quitting project: ${reason}`)
@@ -52,13 +46,6 @@ const ProjectList = ({ item }: ProjectListProps) => {
   const onAccept = async () => {
     try {
       await acceptProjectShare(id)
-
-      dispatch(
-        UIActions.setProjectsShareData({
-          data: { isAccessConfirmed: true },
-          id: project.id,
-        }),
-      )
 
       dispatch(
         authActions.mergeUser({

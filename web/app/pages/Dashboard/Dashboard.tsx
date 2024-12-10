@@ -3,9 +3,7 @@ import { Link } from '@remix-run/react'
 import { ClientOnly } from 'remix-utils/client-only'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
-import _isNumber from 'lodash/isNumber'
 import _map from 'lodash/map'
-import _filter from 'lodash/filter'
 import { useTranslation } from 'react-i18next'
 import { FolderPlusIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { XCircleIcon } from '@heroicons/react/24/solid'
@@ -14,40 +12,40 @@ import Modal from 'ui/Modal'
 import { withAuthentication, auth } from 'hoc/protected'
 import Loader from 'ui/Loader'
 import routes from 'utils/routes'
-import { isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD } from 'redux/constants'
+import { isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD, LIVE_VISITORS_UPDATE_INTERVAL } from 'redux/constants'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import DashboardLockedBanner from 'components/DashboardLockedBanner'
 import useDebounce from 'hooks/useDebounce'
 
 import Pagination from 'ui/Pagination'
 import { useSelector } from 'react-redux'
-import { StateType, useAppDispatch } from 'redux/store'
-import UIActions from 'redux/reducers/ui'
-import sagaActions from 'redux/sagas/actions'
+import { StateType } from 'redux/store'
 import { ProjectCard } from './ProjectCard'
 import { NoProjects } from './NoProjects'
 import { AddProject } from './AddProject'
+import { IOverall, IProject } from 'redux/models/IProject'
+import { getProjects, getLiveVisitors, getOverallStats, getOverallStatsCaptcha } from 'api'
 
 const Dashboard = () => {
-  const { projects, isLoading, error, total, dashboardPaginationPage, liveStats } = useSelector(
-    (state: StateType) => state.ui.projects,
-  )
   const { user } = useSelector((state: StateType) => state.auth)
 
   const { t } = useTranslation('common')
   const [isSearchActive, setIsSearchActive] = useState(false)
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
-  const pageAmount = Math.ceil(total / ENTRIES_PER_PAGE_DASHBOARD)
+
+  const [projects, setProjects] = useState<IProject[]>([])
+  const [paginationTotal, setPaginationTotal] = useState(0)
+  const [page, setPage] = useState(1)
+  const [isLoading, setIsLoading] = useState<boolean | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [liveStats, setLiveStats] = useState<Record<string, number>>({})
+  const [overallStats, setOverallStats] = useState<IOverall>({})
+
+  const pageAmount = Math.ceil(paginationTotal / ENTRIES_PER_PAGE_DASHBOARD)
 
   // This search represents what's inside the search input
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 500)
-
-  const dispatch = useAppDispatch()
-
-  const setDashboardPaginationPage = (page: number) => {
-    dispatch(UIActions.setDashboardPaginationPage(page))
-  }
 
   const onNewProject = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (user.isActive || isSelfhosted) {
@@ -58,17 +56,79 @@ const Dashboard = () => {
     setShowActivateEmailModal(true)
   }
 
-  useEffect(() => {
-    dispatch(
-      sagaActions.loadProjects(
-        ENTRIES_PER_PAGE_DASHBOARD,
-        (dashboardPaginationPage - 1) * ENTRIES_PER_PAGE_DASHBOARD,
-        debouncedSearch,
-      ),
-    )
-  }, [dispatch, dashboardPaginationPage, debouncedSearch])
+  const loadProjects = async (take: number, skip: number, search?: string) => {
+    if (isLoading) {
+      return
+    }
+    setIsLoading(true)
 
-  if (error && !isLoading) {
+    try {
+      const result = await getProjects(take, skip, search)
+      setProjects(result.results)
+      setPaginationTotal(result.total)
+    } catch (reason: any) {
+      setError(reason)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadProjects(ENTRIES_PER_PAGE_DASHBOARD, (page - 1) * ENTRIES_PER_PAGE_DASHBOARD, debouncedSearch)
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, debouncedSearch])
+
+  // Set up interval for live visitors
+  useEffect(() => {
+    const updateLiveVisitors = async () => {
+      if (!projects.length) return
+
+      try {
+        const projectIds = projects.map((p) => p.id)
+        const stats = await getLiveVisitors(projectIds)
+        setLiveStats(stats)
+      } catch (error) {
+        console.error('Failed to fetch live visitors:', error)
+      }
+    }
+
+    const updateOverallStats = async (projectIds: string[]) => {
+      if (!projectIds.length) return
+
+      try {
+        const stats = await getOverallStats(projectIds, '7d')
+        setOverallStats(stats)
+      } catch (error) {
+        console.error('Failed to fetch overall stats:', error)
+      }
+    }
+
+    const updateOverallStatsCaptcha = async (projectIds: string[]) => {
+      if (!projectIds.length) return
+
+      try {
+        const stats = await getOverallStatsCaptcha(projectIds, '7d')
+        setOverallStats(stats)
+      } catch (error) {
+        console.error('Failed to fetch overall stats:', error)
+      }
+    }
+
+    const updateAllOverallStats = async () => {
+      await updateOverallStats(projects.filter((p) => p.isCaptchaProject).map((p) => p.id))
+      await updateOverallStatsCaptcha(projects.filter((p) => p.isAnalyticsProject).map((p) => p.id))
+    }
+
+    updateLiveVisitors()
+    updateAllOverallStats()
+
+    const interval = setInterval(updateLiveVisitors, LIVE_VISITORS_UPDATE_INTERVAL)
+
+    return () => clearInterval(interval)
+  }, [projects]) // Reset interval when projects change
+
+  if (error && isLoading === false) {
     return (
       <div className='min-h-page bg-gray-50 px-4 py-16 dark:bg-slate-900 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
         <div className='mx-auto max-w-max'>
@@ -186,7 +246,7 @@ const Dashboard = () => {
                 </div>
               </div>
             )}
-            {isLoading ? (
+            {isLoading || isLoading === null ? (
               <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
                 <Loader />
               </div>
@@ -200,24 +260,19 @@ const Dashboard = () => {
               >
                 {() => (
                   <>
-                    {_isEmpty(_filter(projects, ({ uiHidden }) => !uiHidden)) ? (
+                    {_isEmpty(projects) ? (
                       <NoProjects onClick={onNewProject} />
                     ) : (
                       <div className='grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
-                        {_map(
-                          _filter(projects, ({ uiHidden }) => !uiHidden),
-                          (project) => (
-                            <ProjectCard
-                              key={project.id}
-                              project={project}
-                              live={_isNumber(liveStats[project.id]) ? liveStats[project.id] : 'N/A'}
-                            />
-                          ),
-                        )}
-                        <AddProject
-                          sitesCount={_size(_filter(projects, ({ uiHidden }) => !uiHidden))}
-                          onClick={onNewProject}
-                        />
+                        {_map(projects, (project) => (
+                          <ProjectCard
+                            key={project.id}
+                            project={project}
+                            live={liveStats[project.id] ?? 'N/A'}
+                            overallStats={overallStats[project.id]}
+                          />
+                        ))}
+                        <AddProject sitesCount={_size(projects)} onClick={onNewProject} />
                       </div>
                     )}
                   </>
@@ -227,10 +282,10 @@ const Dashboard = () => {
             {pageAmount > 1 ? (
               <Pagination
                 className='mt-2'
-                page={dashboardPaginationPage}
+                page={page}
                 pageAmount={pageAmount}
-                setPage={setDashboardPaginationPage}
-                total={total}
+                setPage={setPage}
+                total={paginationTotal}
               />
             ) : null}
           </div>

@@ -1,16 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams, useLocation, Link } from '@remix-run/react'
+import { useNavigate, Link } from '@remix-run/react'
 import { useTranslation, Trans } from 'react-i18next'
 import { toast } from 'sonner'
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { ExclamationTriangleIcon, XCircleIcon } from '@heroicons/react/24/outline'
 
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
-import _replace from 'lodash/replace'
-import _find from 'lodash/find'
 import _split from 'lodash/split'
 import _keys from 'lodash/keys'
-import _filter from 'lodash/filter'
 import _reduce from 'lodash/reduce'
 import _values from 'lodash/values'
 import _findKey from 'lodash/findKey'
@@ -21,39 +18,28 @@ import Button from 'ui/Button'
 import Checkbox from 'ui/Checkbox'
 import Modal from 'ui/Modal'
 import { PROJECT_TABS, QUERY_CONDITION, QUERY_METRIC, QUERY_TIME } from 'redux/constants'
-import { createAlert, updateAlert, deleteAlert, ICreateAlert } from 'api'
+import { createAlert, updateAlert, deleteAlert, ICreateAlert, getAlert } from 'api'
 import { withAuthentication, auth } from 'hoc/protected'
 import routes from 'utils/routes'
 import Select from 'ui/Select'
 import { IAlerts } from 'redux/models/IAlerts'
-import { IUser } from 'redux/models/IUser'
+import { StateType } from 'redux/store'
+import { useSelector } from 'react-redux'
+import { useRequiredParams } from 'hooks/useRequiredParams'
+import Loader from 'ui/Loader'
 
 const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 
-interface IProjectAlertsSettings {
-  alerts: IAlerts[]
-  setProjectAlerts: (item: IAlerts[]) => void
-  user: IUser
-  setProjectAlertsTotal: (num: number) => void
-  total: number
-  loading: boolean
+interface ProjectAlertsSettingsProps {
+  isSettings?: boolean
 }
 
-const ProjectAlertsSettings = ({
-  alerts,
-  setProjectAlerts,
-  user,
-  setProjectAlertsTotal,
-  total,
-  loading,
-}: IProjectAlertsSettings): JSX.Element => {
+const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
+  const { user, loading: authLoading } = useSelector((state: StateType) => state.auth)
+
   const navigate = useNavigate()
-  const { id, pid } = useParams()
-  const { pathname } = useLocation()
+  const { id, pid } = useRequiredParams<{ id: string; pid: string }>()
   const { t } = useTranslation('common')
-  const isSettings: boolean =
-    !_isEmpty(id) && _replace(_replace(routes.alert_settings, ':id', id as string), ':pid', pid as string) === pathname
-  const alert = useMemo(() => _find(alerts, { id }), [alerts, id])
   const [form, setForm] = useState<Partial<IAlerts>>({
     pid,
     name: '',
@@ -70,6 +56,10 @@ const ProjectAlertsSettings = ({
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showModal, setShowModal] = useState(false)
 
+  const [alert, setAlert] = useState<IAlerts | null>(null)
+  const [isLoading, setIsLoading] = useState<boolean | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
   const isIntegrationLinked = useMemo(() => {
     if (_isEmpty(user)) {
       return false
@@ -79,6 +69,39 @@ const ProjectAlertsSettings = ({
       (user.telegramChatId && user.isTelegramChatIdConfirmed) || user.slackWebhookUrl || user.discordWebhookUrl,
     )
   }, [user])
+
+  const loadAlert = async (alertId: string) => {
+    if (!isSettings) {
+      setIsLoading(false)
+      return
+    }
+
+    if (isLoading) {
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      const result = await getAlert(alertId)
+      setAlert(result)
+      setForm(result)
+    } catch (reason: any) {
+      setError(reason)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (authLoading) {
+      return
+    }
+
+    loadAlert(id)
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, id, isSettings])
 
   const queryTimeTMapping: {
     [key: string]: string
@@ -176,7 +199,7 @@ const ProjectAlertsSettings = ({
       updateAlert(id as string, data)
         .then((res) => {
           navigate(`/projects/${pid}?tab=${PROJECT_TABS.alerts}`)
-          setProjectAlerts([..._filter(alerts, (a) => a.id !== id), res])
+          setAlert(res)
           toast.success(t('alertsSettings.alertUpdated'))
         })
         .catch((reason) => {
@@ -186,8 +209,6 @@ const ProjectAlertsSettings = ({
       createAlert(data as ICreateAlert)
         .then((res) => {
           navigate(`/projects/${pid}?tab=${PROJECT_TABS.alerts}`)
-          setProjectAlerts([...alerts, res])
-          setProjectAlertsTotal(total + 1)
           toast.success(t('alertsSettings.alertCreated'))
         })
         .catch((reason) => {
@@ -204,18 +225,12 @@ const ProjectAlertsSettings = ({
 
     deleteAlert(id)
       .then(() => {
-        setProjectAlerts(_filter(alerts, (a) => a.id !== id))
-        setProjectAlertsTotal(total - 1)
         navigate(`/projects/${pid}?tab=${PROJECT_TABS.alerts}`)
         toast.success(t('alertsSettings.alertDeleted'))
       })
       .catch((reason) => {
         toast.error(reason.message || reason || 'Something went wrong')
       })
-  }
-
-  const onCancel = () => {
-    navigate(`/projects/${pid}?tab=${PROJECT_TABS.alerts}`)
   }
 
   useEffect(() => {
@@ -247,6 +262,51 @@ const ProjectAlertsSettings = ({
       })
     : t('alert.create')
 
+  if (isLoading || isLoading === null) {
+    return (
+      <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8'>
+        <Loader />
+      </div>
+    )
+  }
+
+  if (error && !isLoading) {
+    return (
+      <div className='min-h-page bg-gray-50 px-4 py-16 dark:bg-slate-900 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
+        <div className='mx-auto max-w-max'>
+          <main className='sm:flex'>
+            <XCircleIcon className='h-12 w-12 text-red-400' aria-hidden='true' />
+            <div className='sm:ml-6'>
+              <div className='max-w-prose sm:border-l sm:border-gray-200 sm:pl-6'>
+                <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50 sm:text-5xl'>
+                  {t('apiNotifications.somethingWentWrong')}
+                </h1>
+                <p className='mt-4 text-2xl font-medium tracking-tight text-gray-700 dark:text-gray-200'>
+                  {t('apiNotifications.errorCode', { error })}
+                </p>
+              </div>
+              <div className='mt-8 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>
+                <button
+                  type='button'
+                  onClick={() => window.location.reload()}
+                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
+                >
+                  {t('dashboard.reloadPage')}
+                </button>
+                <Link
+                  to={routes.contact}
+                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700 dark:focus:ring-gray-50'
+                >
+                  {t('notFoundPage.support')}
+                </Link>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div
       className={cx('flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8', {
@@ -255,7 +315,7 @@ const ProjectAlertsSettings = ({
     >
       <form className='mx-auto w-full max-w-7xl' onSubmit={handleSubmit}>
         <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{title}</h2>
-        {!loading && !isIntegrationLinked && (
+        {!authLoading && !isIntegrationLinked && (
           <div className='mt-2 flex items-center whitespace-pre-wrap rounded bg-blue-50 px-5 py-3 text-base dark:bg-slate-800 dark:text-gray-50'>
             <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
             <Trans
@@ -372,7 +432,9 @@ const ProjectAlertsSettings = ({
             <div className='flex items-center justify-between'>
               <Button
                 className='mr-2 border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
-                onClick={onCancel}
+                as={Link}
+                // @ts-ignore
+                to={`/projects/${pid}?tab=${PROJECT_TABS.alerts}`}
                 secondary
                 regular
               >
@@ -387,7 +449,9 @@ const ProjectAlertsSettings = ({
           <div className='mt-5 flex items-center justify-between'>
             <Button
               className='mr-2 border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
-              onClick={onCancel}
+              as={Link}
+              // @ts-ignore
+              to={`/projects/${pid}?tab=${PROJECT_TABS.alerts}`}
               secondary
               regular
             >

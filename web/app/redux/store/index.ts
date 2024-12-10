@@ -6,7 +6,6 @@ import rootSaga from '../sagas'
 import authSlice from '../reducers/auth'
 import miscSlice from '../reducers/ui/misc'
 import projectsSlice from '../reducers/ui/projects'
-import alertsProjectsSlice from '../reducers/ui/alerts'
 import themeSlice from '../reducers/ui/theme'
 import cacheSlice from '../reducers/ui/cache'
 import monitorsSlice from '../reducers/ui/monitors'
@@ -16,7 +15,6 @@ const rootReducer = combineReducers({
   ui: combineReducers({
     misc: miscSlice,
     projects: projectsSlice,
-    alerts: alertsProjectsSlice,
     theme: themeSlice,
     cache: cacheSlice,
     monitors: monitorsSlice,

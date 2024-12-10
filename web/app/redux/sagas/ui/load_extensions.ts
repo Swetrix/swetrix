@@ -15,9 +15,6 @@ export default function* loadExtensions() {
     yield put(UIActions.setExtensions(extensions))
   } catch (reason: unknown) {
     const { message } = reason as { message: string }
-    // if (_isString(message)) {
-    //   yield put(UIActions.setProjectsError(message))
-    // }
     console.error('failed to load extensions:', message)
   }
 }

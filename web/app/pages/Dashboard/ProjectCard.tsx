@@ -17,14 +17,14 @@ import { nFormatter, calculateRelativePercentage } from 'utils/generic'
 
 import { acceptProjectShare } from 'api'
 
-import { IProject } from 'redux/models/IProject'
+import { IOverallObject, IProject } from 'redux/models/IProject'
 import { useSelector } from 'react-redux'
 import { StateType, useAppDispatch } from 'redux/store'
-import UIActions from 'redux/reducers/ui'
 import { authActions } from 'redux/reducers/auth'
 
 interface ProjectCardProps {
   live?: string | number
+  overallStats?: IOverallObject
   project: IProject
 }
 
@@ -70,13 +70,11 @@ const MiniCard = ({ labelTKey, total = 0, percChange }: MiniCardProps) => {
   )
 }
 
-export const ProjectCard = ({ live = 'N/A', project }: ProjectCardProps) => {
+export const ProjectCard = ({ live = 'N/A', project, overallStats }: ProjectCardProps) => {
   const { t } = useTranslation('common')
   const [showInviteModal, setShowInviteModal] = useState(false)
 
   const { user } = useSelector((state: StateType) => state.auth)
-
-  const { birdseye } = useSelector((state: StateType) => state.ui.projects)
 
   const dispatch = useAppDispatch()
 
@@ -143,8 +141,6 @@ export const ProjectCard = ({ live = 'N/A', project }: ProjectCardProps) => {
 
       await acceptProjectShare(shareId)
 
-      dispatch(UIActions.setProjectsShareData({ data: { isAccessConfirmed: true }, id }))
-
       dispatch(
         authActions.mergeUser({
           sharedProjects: user.sharedProjects?.map((item) => {
@@ -208,13 +204,13 @@ export const ProjectCard = ({ live = 'N/A', project }: ProjectCardProps) => {
           )}
         </div>
         <div className='mt-4 flex flex-shrink-0 gap-5'>
-          {birdseye[id] && (
+          {overallStats ? (
             <MiniCard
               labelTKey={project.isCaptchaProject ? 'dashboard.captchaEvents' : 'dashboard.pageviews'}
-              total={birdseye[id].current.all}
-              percChange={calculateRelativePercentage(birdseye[id].previous.all, birdseye[id].current.all)}
+              total={overallStats.current.all}
+              percChange={calculateRelativePercentage(overallStats.previous.all, overallStats.current.all)}
             />
-          )}
+          ) : null}
           {project.isAnalyticsProject && <MiniCard labelTKey='dashboard.liveVisitors' total={live} />}
         </div>
       </div>
