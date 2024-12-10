@@ -1,5 +1,4 @@
 import React, { useState, useEffect, memo } from 'react'
-import type i18next from 'i18next'
 import { Link } from '@remix-run/react'
 import { useTranslation, Trans } from 'react-i18next'
 import _keys from 'lodash/keys'
@@ -16,47 +15,40 @@ import Button from 'ui/Button'
 import Checkbox from 'ui/Checkbox'
 import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS } from 'utils/validator'
 import { isSelfhosted, TRIAL_DAYS } from 'redux/constants'
-import { IUser } from 'redux/models/IUser'
 import { submit2FA } from 'api'
 import { setAccessToken, removeAccessToken } from 'utils/accessToken'
 import { setRefreshToken, removeRefreshToken } from 'utils/refreshToken'
+import { useAppDispatch } from 'redux/store'
+import { authActions } from 'redux/reducers/auth'
+import sagaActions from 'redux/sagas/actions'
 
-interface ISigninForm {
+interface SigninForm {
   email: string
   password: string
   dontRemember: boolean
 }
 
-interface ISignin {
-  login: (
-    data: {
-      email: string
-      password: string
-      dontRemember: boolean
-    },
-    callback: (result: boolean, twoFARequired: boolean) => void,
-  ) => void
-  loginSuccess: (user: IUser) => void
-  authSSO: (provider: string, dontRemember: boolean, t: typeof i18next.t, callback: (res: any) => void) => void
+interface SigninProps {
   ssrTheme: string
 }
 
-const Signin = ({ login, loginSuccess, authSSO, ssrTheme }: ISignin): JSX.Element => {
+const Signin = ({ ssrTheme }: SigninProps) => {
+  const dispatch = useAppDispatch()
   const { t } = useTranslation('common')
-  const [form, setForm] = useState<ISigninForm>({
+  const [form, setForm] = useState<SigninForm>({
     email: '',
     password: '',
     dontRemember: false,
   })
-  const [validated, setValidated] = useState<boolean>(false)
+  const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
     email?: string
     password?: string
   }>({})
-  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [isTwoFARequired, setIsTwoFARequired] = useState<boolean>(false)
-  const [twoFACode, setTwoFACode] = useState<string>('')
+  const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isTwoFARequired, setIsTwoFARequired] = useState(false)
+  const [twoFACode, setTwoFACode] = useState('')
   const [twoFACodeError, setTwoFACodeError] = useState<string | null>(null)
 
   const validate = () => {
@@ -98,10 +90,10 @@ const Signin = ({ login, loginSuccess, authSSO, ssrTheme }: ISignin): JSX.Elemen
     }
   }
 
-  const onSubmit = (data: ISigninForm) => {
+  const onSubmit = (data: SigninForm) => {
     if (!isLoading) {
       setIsLoading(true)
-      login(data, loginCallback)
+      dispatch(sagaActions.loginAsync(data, loginCallback))
     }
   }
 
@@ -118,12 +110,12 @@ const Signin = ({ login, loginSuccess, authSSO, ssrTheme }: ISignin): JSX.Elemen
         removeRefreshToken()
         setAccessToken(accessToken)
         setRefreshToken(refreshToken)
-        loginSuccess(user)
-      } catch (err) {
-        if (_isString(err)) {
-          toast.error(err)
+        dispatch(authActions.authSuccessful(user))
+      } catch (reason) {
+        if (_isString(reason)) {
+          toast.error(reason)
         }
-        console.error(`[ERROR] Failed to authenticate with 2FA: ${err}`)
+        console.error(`[ERROR] Failed to authenticate with 2FA: ${reason}`)
         setTwoFACodeError(t('profileSettings.invalid2fa'))
       }
 
@@ -170,7 +162,6 @@ const Signin = ({ login, loginSuccess, authSSO, ssrTheme }: ISignin): JSX.Elemen
             <div className='whitespace-pre-line text-sm text-gray-600 dark:text-gray-400'>
               {!isSelfhosted && (
                 <Trans
-                  // @ts-ignore
                   t={t}
                   i18nKey='auth.signin.2faUnavailable'
                   components={{
@@ -262,15 +253,9 @@ const Signin = ({ login, loginSuccess, authSSO, ssrTheme }: ISignin): JSX.Elemen
                 </div>
               </div>
               <div className='mt-6 grid grid-cols-2 gap-4'>
-                <GoogleAuth
-                  setIsLoading={setIsLoading}
-                  authSSO={authSSO}
-                  callback={loginCallback}
-                  dontRemember={false}
-                />
+                <GoogleAuth setIsLoading={setIsLoading} callback={loginCallback} dontRemember={false} />
                 <GithubAuth
                   setIsLoading={setIsLoading}
-                  authSSO={authSSO}
                   callback={loginCallback}
                   dontRemember={false}
                   ssrTheme={ssrTheme}
@@ -283,7 +268,6 @@ const Signin = ({ login, loginSuccess, authSSO, ssrTheme }: ISignin): JSX.Elemen
         {!isSelfhosted && (
           <p className='mb-4 mt-10 text-center text-sm text-gray-500 dark:text-gray-200'>
             <Trans
-              // @ts-ignore
               t={t}
               i18nKey='auth.signin.notAMember'
               components={{

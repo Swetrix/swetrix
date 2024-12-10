@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo, memo, useRef } from 'react'
 import { toast } from 'sonner'
 import useSize from 'hooks/useSize'
-import { useNavigate, useParams } from '@remix-run/react'
+import { useNavigate } from '@remix-run/react'
 import { ClientOnly } from 'remix-utils/client-only'
 import bb from 'billboard.js'
 import { ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
@@ -29,7 +29,6 @@ import {
   getProjectCaptchaCacheKey,
   timeBucketToDays,
   getProjectCacheCustomKey,
-  roleAdmin,
   MAX_MONTHS_IN_PAST,
   TimeFormat,
   chartTypes,
@@ -42,7 +41,6 @@ import {
   ThemeType,
 } from 'redux/constants'
 import { ICaptchaProject, IProject } from 'redux/models/IProject'
-import { IUser } from 'redux/models/IUser'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
@@ -68,6 +66,10 @@ import TBPeriodSelector from 'pages/Project/View/components/TBPeriodSelector'
 import CCRow from '../../Project/View/components/CCRow'
 import NoEvents from './components/NoEvents'
 import Filters from 'pages/Project/View/components/Filters'
+import { useRequiredParams } from 'hooks/useRequiredParams'
+import { useSelector } from 'react-redux'
+import { StateType, useAppDispatch } from 'redux/store'
+import UIActions from 'redux/reducers/ui'
 
 const PageLoader = () => (
   <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
@@ -75,57 +77,36 @@ const PageLoader = () => (
   </div>
 )
 
-interface IViewCaptcha {
-  projects: ICaptchaProject[]
-  isLoading: boolean
-  cache: any
-  setProjectCache: (pid: string, data: any, key: string) => void
-  projectViewPrefs: any
-  setProjectViewPrefs: (pid: string, period: string, timeBucket: string, rangeDate?: Date[] | null) => void
-  authenticated: boolean
-  user: IUser
-  // eslint-disable-next-line no-unused-vars, no-shadow
-  setProjects: (projects: ICaptchaProject[]) => void
-  theme: ThemeType
+interface ViewCaptchaProps {
   ssrTheme: ThemeType
 }
 
-const ViewCaptcha = ({
-  projects,
-  isLoading: _isLoading,
-  cache,
-  setProjectCache,
-  projectViewPrefs,
-  setProjectViewPrefs,
-  authenticated,
-  user,
-  setProjects,
-  theme,
-  ssrTheme,
-}: IViewCaptcha): JSX.Element => {
+const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
+  const { loading: authLoading, user } = useSelector((state: StateType) => state.auth)
+  const { theme } = useSelector((state: StateType) => state.ui.theme)
+  const { captchaAnalytics: cache, captchaProjectsViewPrefs: projectViewPrefs } = useSelector(
+    (state: StateType) => state.ui.cache,
+  )
+
+  const dispatch = useAppDispatch()
+
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
   const [periodPairs, setPeriodPairs] = useState(captchaTbPeriodPairs(t, undefined, undefined, language))
   const dashboardRef = useRef(null)
-  // @ts-ignore
-  const {
-    id,
-  }: {
-    id: string
-  } = useParams()
+  const { id } = useRequiredParams<{ id: string }>()
   const navigate = useNavigate()
-  const project: ICaptchaProject = useMemo(
-    () => _find(projects, (p) => p.id === id) || ({} as ICaptchaProject),
-    [projects, id],
-  )
-  const [areFiltersParsed, setAreFiltersParsed] = useState<boolean>(false)
-  const [areTimeBucketParsed, setAreTimeBucketParsed] = useState<boolean>(false)
-  const [arePeriodParsed, setArePeriodParsed] = useState<boolean>(false)
+
+  const [project, setProject] = useState<ICaptchaProject | null>(null)
+
+  const [areFiltersParsed, setAreFiltersParsed] = useState(false)
+  const [areTimeBucketParsed, setAreTimeBucketParsed] = useState(false)
+  const [arePeriodParsed, setArePeriodParsed] = useState(false)
   const [panelsData, setPanelsData] = useState<any>({})
-  const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState<boolean>(false)
-  const [analyticsLoading, setAnalyticsLoading] = useState<boolean>(true)
+  const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
+  const [analyticsLoading, setAnalyticsLoading] = useState(true)
   const [period, setPeriod] = useState<string>(
     projectViewPrefs ? projectViewPrefs[id]?.period || periodPairs[4].period : periodPairs[4].period,
   )
@@ -146,7 +127,7 @@ const ViewCaptcha = ({
     [period, periodPairs],
   )
   const [chartData, setChartData] = useState<any>({})
-  const [dataLoading, setDataLoading] = useState<boolean>(false)
+  const [dataLoading, setDataLoading] = useState(false)
   const [activeChartMetrics, setActiveChartMetrics] = useState<{
     [key: string]: boolean
   }>({
@@ -154,7 +135,6 @@ const ViewCaptcha = ({
   })
   const checkIfAllMetricsAreDisabled = useMemo(() => !_some(activeChartMetrics, (value) => value), [activeChartMetrics])
   const [filters, setFilters] = useState<any[]>([])
-  const isLoading = authenticated ? _isLoading : false
   const tnMapping = typeNameMapping(t)
   const refCalendar = useRef(null)
   const localStorageDateRange = projectViewPrefs ? projectViewPrefs[id]?.rangeDate : null
@@ -184,9 +164,6 @@ const ViewCaptcha = ({
     document.title = pageTitle
   }, [name, t])
 
-  // @ts-ignore
-  const sharedRoles = useMemo(() => _find(user.sharedProjects, (p) => p.project.id === id)?.role || {}, [user, id])
-
   const chartMetrics = useMemo(() => {
     return [
       {
@@ -215,7 +192,7 @@ const ViewCaptcha = ({
 
   // this function is used for requesting the data from the API
   const loadCaptcha = async (forced: boolean = false, newFilters: any = null) => {
-    if (!forced && (isLoading || _isEmpty(project) || dataLoading)) {
+    if (!forced && (authLoading || _isEmpty(project) || dataLoading)) {
       return
     }
 
@@ -243,7 +220,13 @@ const ViewCaptcha = ({
           data = await getCaptchaData(id, timeBucket, period, newFilters || filters, '', '')
         }
 
-        setProjectCache(id, data || {}, key)
+        dispatch(
+          UIActions.setCaptchaProjectCache({
+            pid: id,
+            data: data || {},
+            key,
+          }),
+        )
       }
 
       if (_isEmpty(data)) {
@@ -314,12 +297,11 @@ const ViewCaptcha = ({
 
       setAnalyticsLoading(false)
       setDataLoading(false)
-    } catch (e) {
+    } catch (reason) {
       setAnalyticsLoading(false)
       setDataLoading(false)
       setIsPanelsDataEmpty(true)
-      console.error('[ERROR](loadAnalytics) Loading analytics data failed')
-      console.error(e)
+      console.error('[ERROR](loadAnalytics) Loading analytics data failed:', reason)
     }
   }
 
@@ -392,7 +374,7 @@ const ViewCaptcha = ({
   }
 
   const refreshStats = () => {
-    if (!isLoading && !dataLoading) {
+    if (!authLoading && !dataLoading) {
       loadCaptcha(true)
     }
   }
@@ -484,7 +466,15 @@ const ViewCaptcha = ({
 
         setPeriodPairs(captchaTbPeriodPairs(t, timeBucketToDays[index].tb, dates, language))
         setPeriod('custom')
-        setProjectViewPrefs(id, 'custom', timeBucketToDays[4].tb[0], dates)
+
+        dispatch(
+          UIActions.setCaptchaProjectViewPrefs({
+            pid: id,
+            period: 'custom',
+            timeBucket: timeBucketToDays[4].tb[0],
+            rangeDate: dates,
+          }),
+        )
 
         break
       }
@@ -519,27 +509,23 @@ const ViewCaptcha = ({
   }, [dateRange, t, arePeriodParsed]) // eslint-disable-line
 
   useEffect(() => {
-    if (!isLoading && _isEmpty(project)) {
-      getProject(id, true)
-        .then((projectRes) => {
-          if (!_isEmpty(projectRes)) {
-            setProjects([
-              ...(projects as any[]),
-              {
-                ...projectRes,
-                live: 'N/A',
-              },
-            ])
-          } else {
-            onErrorLoading()
-          }
-        })
-        .catch((e) => {
-          console.error(e)
-          onErrorLoading()
-        })
+    if (authLoading || !_isEmpty(project)) {
+      return
     }
-  }, [isLoading, project, id]) // eslint-disable-line
+
+    getProject(id)
+      .then((result) => {
+        if (_isEmpty(result)) {
+          onErrorLoading()
+        } else {
+          setProject(result as ICaptchaProject)
+        }
+      })
+      .catch((reason) => {
+        console.error(reason)
+        onErrorLoading()
+      })
+  }, [authLoading, project, id]) // eslint-disable-line
 
   const updatePeriod = (newPeriod: any) => {
     const newPeriodFull = _find(periodPairs, (el) => el.period === newPeriod.period)
@@ -560,7 +546,13 @@ const ViewCaptcha = ({
       url.searchParams.delete('from')
       url.searchParams.delete('to')
       url.searchParams.append('period', newPeriod.period)
-      setProjectViewPrefs(id, newPeriod.period, tb)
+      dispatch(
+        UIActions.setCaptchaProjectViewPrefs({
+          pid: id,
+          period: newPeriod.period,
+          timeBucket: tb,
+        }),
+      )
       setPeriod(newPeriod.period)
       setDateRange(null)
     }
@@ -576,7 +568,14 @@ const ViewCaptcha = ({
     const { pathname, search } = url
     navigate(`${pathname}${search}`)
     setTimebucket(newTimebucket)
-    setProjectViewPrefs(id, period, newTimebucket, dateRange)
+    dispatch(
+      UIActions.setCaptchaProjectViewPrefs({
+        pid: id,
+        period,
+        timeBucket: newTimebucket,
+        rangeDate: dateRange,
+      }),
+    )
   }
 
   const openSettingsHandler = () => {
@@ -653,7 +652,7 @@ const ViewCaptcha = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chartType])
 
-  if (isLoading) {
+  if (authLoading || !project) {
     return <PageLoader />
   }
 
@@ -677,7 +676,7 @@ const ViewCaptcha = ({
                     className={cx(
                       'relative mr-3 rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                       {
-                        'cursor-not-allowed opacity-50': isLoading || dataLoading,
+                        'cursor-not-allowed opacity-50': authLoading || dataLoading,
                       },
                     )}
                   >
@@ -781,7 +780,7 @@ const ViewCaptcha = ({
                       }
                     }}
                   />
-                  {(project?.isOwner || sharedRoles === roleAdmin.role) && (
+                  {(project.role === 'admin' || project.role === 'owner') && (
                     <button
                       type='button'
                       onClick={openSettingsHandler}

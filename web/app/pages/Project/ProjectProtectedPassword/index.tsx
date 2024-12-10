@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo } from 'react'
-import { useNavigate, useParams } from '@remix-run/react'
+import { Link, useNavigate } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
@@ -14,6 +14,7 @@ import { useDispatch } from 'react-redux'
 import UIActions from 'redux/reducers/ui'
 import Header from 'components/Header'
 import Footer from 'components/Footer'
+import { useRequiredParams } from 'hooks/useRequiredParams'
 
 interface IProjectProtectedPasswordForm {
   password: string
@@ -21,26 +22,24 @@ interface IProjectProtectedPasswordForm {
 
 const MAX_PASSWORD_LENGTH = 80
 
-const ProjectProtectedPassword = ({
-  ssrTheme,
-  embedded,
-  isAuth,
-}: {
+interface ProjectProtectedPasswordProps {
   ssrTheme: 'light' | 'dark'
   embedded: boolean
   isAuth: boolean
-}): JSX.Element => {
+}
+
+const ProjectProtectedPassword = ({ ssrTheme, embedded, isAuth }: ProjectProtectedPasswordProps) => {
   const { t } = useTranslation('common')
   const [form, setForm] = useState<IProjectProtectedPasswordForm>({
     password: '',
   })
-  const [validated, setValidated] = useState<boolean>(false)
+  const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
     password?: string
   }>({})
-  const { id } = useParams()
-  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const { id } = useRequiredParams<{ id: string }>()
+  const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
@@ -70,17 +69,17 @@ const ProjectProtectedPassword = ({
   const onSubmit = async (data: IProjectProtectedPasswordForm) => {
     if (!isLoading) {
       setIsLoading(true)
-      await checkPassword(id as string, data.password)
+      await checkPassword(id, data.password)
         .then((res) => {
           if (res) {
             dispatch(
-              UIActions.setProjectProtectedPassword({
-                id: id as string,
+              UIActions.setProjectPassword({
+                id,
                 password: data.password,
               }),
             )
             navigate({
-              pathname: _replace(routes.project, ':id', id as string),
+              pathname: _replace(routes.project, ':id', id),
               search: `?embedded=${embedded}&theme=${ssrTheme}`,
             })
           }
@@ -114,10 +113,6 @@ const ProjectProtectedPassword = ({
     }
   }
 
-  const onCancel = () => {
-    navigate(routes.main)
-  }
-
   return (
     <>
       {!embedded && <Header ssrTheme={ssrTheme} authenticated={isAuth} />}
@@ -137,7 +132,9 @@ const ProjectProtectedPassword = ({
           <div className='mt-5'>
             <Button
               className='mr-2 border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
-              onClick={onCancel}
+              as={Link}
+              // @ts-expect-error
+              to={routes.main}
               secondary
               regular
             >
@@ -149,7 +146,7 @@ const ProjectProtectedPassword = ({
           </div>
         </form>
       </div>
-      {!embedded && <Footer authenticated={isAuth} minimal />}
+      {!embedded && <Footer authenticated={isAuth} />}
     </>
   )
 }

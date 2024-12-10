@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import type i18next from 'i18next'
 import { Link, useNavigate } from '@remix-run/react'
 import { useTranslation, Trans } from 'react-i18next'
 import _size from 'lodash/size'
@@ -18,8 +17,11 @@ import Button from 'ui/Button'
 import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS, MAX_PASSWORD_CHARS } from 'utils/validator'
 import { HAVE_I_BEEN_PWNED_URL, TRIAL_DAYS } from 'redux/constants'
 import { trackCustom } from 'utils/analytics'
+import { StateType, useAppDispatch } from 'redux/store'
+import sagaActions from 'redux/sagas/actions'
+import { useSelector } from 'react-redux'
 
-interface ISignupForm {
+interface SignupForm {
   email: string
   password: string
   repeat: string
@@ -29,26 +31,14 @@ interface ISignupForm {
 }
 
 interface ISignup {
-  signup: (
-    data: {
-      email: string
-      password: string
-      repeat: string
-      dontRemember: boolean
-      checkIfLeaked: boolean
-    },
-    t: typeof i18next.t,
-    callback: (res: any) => void,
-  ) => void
-  authSSO: (provider: string, dontRemember: boolean, t: typeof i18next.t, callback: (res: any) => void) => void
   ssrTheme: string
-  authenticated: boolean
-  loading: boolean
 }
 
-const Signup = ({ signup, authSSO, ssrTheme, authenticated: reduxAuthenticated, loading }: ISignup): JSX.Element => {
+const Signup = ({ ssrTheme }: ISignup) => {
+  const dispatch = useAppDispatch()
+  const { authenticated: reduxAuthenticated, loading } = useSelector((state: StateType) => state.auth)
   const { t } = useTranslation('common')
-  const [form, setForm] = useState<ISignupForm>({
+  const [form, setForm] = useState<SignupForm>({
     email: '',
     password: '',
     repeat: '',
@@ -56,15 +46,15 @@ const Signup = ({ signup, authSSO, ssrTheme, authenticated: reduxAuthenticated, 
     dontRemember: false,
     checkIfLeaked: true,
   })
-  const [validated, setValidated] = useState<boolean>(false)
+  const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
     email?: string
     password?: string
     repeat?: string
     tos?: string
   }>({})
-  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
   const accessToken = getAccessToken()
   const authenticated = loading ? !!accessToken : reduxAuthenticated
@@ -125,10 +115,10 @@ const Signup = ({ signup, authSSO, ssrTheme, authenticated: reduxAuthenticated, 
     }
   }
 
-  const onSubmit = (data: ISignupForm) => {
+  const onSubmit = (data: SignupForm) => {
     if (!isLoading) {
       setIsLoading(true)
-      signup(_omit(data, 'tos'), t, signUpCallback)
+      dispatch(sagaActions.signupAsync(_omit(data, 'tos'), t, signUpCallback))
     }
   }
 
@@ -203,7 +193,6 @@ const Signup = ({ signup, authSSO, ssrTheme, authenticated: reduxAuthenticated, 
                   label={
                     <span>
                       <Trans
-                        // @ts-ignore
                         t={t}
                         i18nKey='auth.signup.tos'
                         components={{
@@ -246,7 +235,6 @@ const Signup = ({ signup, authSSO, ssrTheme, authenticated: reduxAuthenticated, 
                     className='ml-2'
                     text={
                       <Trans
-                        // @ts-ignore
                         t={t}
                         i18nKey='auth.common.checkLeakedPasswordDesc'
                         components={{
@@ -284,15 +272,9 @@ const Signup = ({ signup, authSSO, ssrTheme, authenticated: reduxAuthenticated, 
                   </div>
                 </div>
                 <div className='mt-6 grid grid-cols-2 gap-4'>
-                  <GoogleAuth
-                    setIsLoading={setIsLoading}
-                    authSSO={authSSO}
-                    callback={signUpCallback}
-                    dontRemember={false}
-                  />
+                  <GoogleAuth setIsLoading={setIsLoading} callback={signUpCallback} dontRemember={false} />
                   <GithubAuth
                     setIsLoading={setIsLoading}
-                    authSSO={authSSO}
                     callback={signUpCallback}
                     dontRemember={false}
                     ssrTheme={ssrTheme}
@@ -303,7 +285,6 @@ const Signup = ({ signup, authSSO, ssrTheme, authenticated: reduxAuthenticated, 
 
             <p className='mt-10 text-center text-sm text-gray-500 dark:text-gray-200'>
               <Trans
-                // @ts-ignore
                 t={t}
                 i18nKey='auth.signup.alreadyAMember'
                 components={{

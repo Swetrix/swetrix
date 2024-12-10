@@ -1,4 +1,5 @@
 import { ISharedProject } from './ISharedProject'
+import { OrganisationMembership } from './Organisation'
 
 export enum DashboardBlockReason {
   'exceeding_plan_limits' = 'exceeding_plan_limits',
@@ -66,4 +67,5 @@ export interface IUser {
   planExceedContactedAt: Date
   dashboardBlockReason: DashboardBlockReason
   isAccountBillingSuspended: boolean
+  organisationMemberships: OrganisationMembership[]
 }

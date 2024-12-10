@@ -105,7 +105,6 @@ class FlatPicker extends React.Component<
       <div className={cx('flatpicker-custom h-0', className)}>
         <Flatpickr
           id='calendar'
-          data-testid='calendar'
           value={value}
           options={{
             mode: 'range',

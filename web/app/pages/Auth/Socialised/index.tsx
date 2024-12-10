@@ -1,4 +1,4 @@
-import React, { useEffect, useState, memo } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
@@ -10,10 +10,10 @@ import { SSO_PROVIDERS } from 'redux/constants'
 import Loader from 'ui/Loader'
 import routes from 'utils/routes'
 
-const Socialised = (): JSX.Element => {
+const Socialised = () => {
   const { t } = useTranslation('common')
-  const [loading, setLoading] = useState<boolean>(true)
-  const [isError, setIsError] = useState<boolean>(false)
+  const [loading, setLoading] = useState(true)
+  const [isError, setIsError] = useState(false)
 
   useEffect(() => {
     // For some reason, Google redirects to a hash URL, let's fix it
@@ -119,4 +119,4 @@ const Socialised = (): JSX.Element => {
   )
 }
 
-export default memo(Socialised)
+export default Socialised

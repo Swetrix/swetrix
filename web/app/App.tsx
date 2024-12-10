@@ -21,16 +21,14 @@ import routesPath from 'utils/routes'
 import { getPageMeta } from 'utils/server'
 import { authMe } from './api'
 
-const minimalFooterPages = ['/projects', '/dashboard', '/contact', '/captchas']
-
-interface IApp {
+interface AppProps {
   ssrTheme: 'dark' | 'light'
   ssrAuthenticated: boolean
 }
 
 const TITLE_BLACKLIST = ['/projects/', '/captchas/', '/blog']
 
-const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
+const App = ({ ssrTheme, ssrAuthenticated }: AppProps) => {
   const dispatch = useAppDispatch()
   const { pathname } = useLocation()
   const { t } = useTranslation('common')
@@ -47,10 +45,11 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
       if (accessToken && !reduxAuthenticated) {
         try {
           const me = await authMe()
-          dispatch(authActions.loginSuccessful(me))
-        } catch (e) {
+          dispatch(authActions.authSuccessful(me))
+        } catch (reason) {
           dispatch(authActions.logout())
           dispatch(sagaActions.logout(false, false))
+          console.error(`[ERROR] Error while getting user: ${reason}`)
         }
       }
 
@@ -66,8 +65,6 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
     const { title } = getPageMeta(t, undefined, pathname)
     document.title = title
   }, [t, pathname])
-
-  const isMinimalFooter = _some(minimalFooterPages, (page) => _includes(pathname, page))
 
   const isReferralPage = _startsWith(pathname, '/ref/')
   const isProjectViewPage =
@@ -100,7 +97,7 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
           duration: 5000,
         }}
       />
-      {!isReferralPage && !isProjectViewPage && <Footer minimal={isMinimalFooter} authenticated={authenticated} />}
+      {!isReferralPage && !isProjectViewPage && <Footer authenticated={authenticated} />}
     </>
   )
 }

@@ -22,8 +22,8 @@ export default function* loadMonitors({ payload: { take = DEFAULT_MONITORS_TAKE,
         pageTotal,
       }),
     )
-  } catch (e: unknown) {
-    const { message } = e as { message: string }
+  } catch (reason: unknown) {
+    const { message } = reason as { message: string }
     if (_isString(message)) {
       toast.error(message)
     }

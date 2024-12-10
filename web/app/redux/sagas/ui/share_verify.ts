@@ -1,5 +1,4 @@
-import { call, put } from 'redux-saga/effects'
-import sagaActions from '../actions'
+import { call } from 'redux-saga/effects'
 const { verifyShare } = require('api')
 
 export default function* shareVerify({
@@ -15,12 +14,9 @@ export default function* shareVerify({
   }
 }) {
   try {
-    // @ts-ignore
     yield call(verifyShare, data)
-    yield put(sagaActions.loadProjects())
-    yield put(sagaActions.loadSharedProjects())
     successfulCallback()
-  } catch (error) {
-    errorCallback(error)
+  } catch (reason) {
+    errorCallback(reason)
   }
 }

@@ -1,3 +1,3 @@
-import People from './People.container'
+import People from './People'
 
 export default People

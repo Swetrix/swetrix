@@ -1,25 +1,51 @@
-import React, { memo } from 'react'
 import { QuestionMarkCircleIcon } from '@heroicons/react/24/solid'
+import React, { forwardRef, memo } from 'react'
+import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 import cx from 'clsx'
 
-interface ITooltip {
+const TooltipProvider = TooltipPrimitive.Provider
+
+const TooltipRoot = TooltipPrimitive.Root
+
+const TooltipTrigger = TooltipPrimitive.Trigger
+
+const TooltipContent = forwardRef<
+  React.ElementRef<typeof TooltipPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
+>(({ className, sideOffset = 2, ...props }, ref) => (
+  <TooltipPrimitive.Portal>
+    <TooltipPrimitive.Content
+      ref={ref}
+      sideOffset={sideOffset}
+      className={cx(
+        // Animation does not work
+        // 'transform-gpu transition-all duration-300 ease-in-out',
+        // 'data-[state=closed]:scale-90 data-[state=delayed-open]:scale-100',
+        // 'data-[state=closed]:opacity-0 data-[state=delayed-open]:opacity-100',
+        'z-50 overflow-hidden rounded-md bg-slate-800 px-3 py-1.5 text-xs text-white ring-1 ring-slate-900/80',
+        className,
+      )}
+      {...props}
+    />
+  </TooltipPrimitive.Portal>
+))
+TooltipContent.displayName = TooltipPrimitive.Content.displayName
+
+interface TooltipProps {
   text: string | number | React.ReactNode
   className?: string
   tooltipNode?: JSX.Element
 }
 
-const Tooltip = ({ text, className, tooltipNode }: ITooltip): JSX.Element => (
-  <div className={cx('group relative flex flex-col items-center', className)} data-testid='tooltip-wrapper'>
-    {tooltipNode || (
-      <QuestionMarkCircleIcon className='h-5 w-5 text-gray-700 dark:text-gray-300' data-testid='tooltip-icon' />
-    )}
-    <div className='absolute bottom-0 mb-6 hidden flex-col items-center group-hover:flex'>
-      <span className='whitespace-no-wrap relative z-10 w-60 rounded-md bg-gray-700 p-2 text-xs leading-none text-white opacity-95 shadow-lg'>
-        {text}
-      </span>
-      <div className='-mt-2 h-3 w-3 rotate-45 bg-gray-700 opacity-95' />
-    </div>
-  </div>
+const Tooltip = ({ text, className, tooltipNode }: TooltipProps) => (
+  <TooltipProvider delayDuration={200}>
+    <TooltipRoot>
+      <TooltipTrigger className={className}>
+        {tooltipNode || <QuestionMarkCircleIcon className='h-5 w-5 text-gray-700 dark:text-gray-300' />}
+      </TooltipTrigger>
+      <TooltipContent>{text}</TooltipContent>
+    </TooltipRoot>
+  </TooltipProvider>
 )
 
 export default memo(Tooltip)

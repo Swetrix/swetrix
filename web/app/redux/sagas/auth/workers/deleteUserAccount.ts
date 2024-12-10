@@ -18,15 +18,15 @@ export default function* deleteUserAccountWorker({
   try {
     yield call(deleteUser, deletionFeedback)
     yield call(successCallback)
-    yield put(authActions.deleteAccountSuccess())
+    yield put(authActions.logout())
     toast.success(t('apiNotifications.accountDeleted'))
-  } catch (error) {
+  } catch (reason) {
     let message
 
     try {
       // @ts-ignore
-      message = JSON.parse(error.message).message || 'somethingWentWrong'
-    } catch (e) {
+      message = JSON.parse(reason.message).message || 'somethingWentWrong'
+    } catch {
       message = 'somethingWentWrong'
     }
 

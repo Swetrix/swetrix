@@ -15,6 +15,7 @@ import { ProjectModule } from '../project/project.module'
 import { RefreshToken } from './entities/refresh-token.entity'
 import { DeleteFeedback } from './entities/delete-feedback.entity'
 import { Message } from '../integrations/telegram/entities/message.entity'
+import { OrganisationModule } from '../organisation/organisation.module'
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { Message } from '../integrations/telegram/entities/message.entity'
     forwardRef(() => AuthModule),
     AppLoggerModule,
     ProjectModule,
+    OrganisationModule,
     PayoutsModule,
     HttpModule,
   ],

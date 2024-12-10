@@ -1,18 +1,17 @@
 import React from 'react'
-import type i18next from 'i18next'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import cx from 'clsx'
 
 import Button from 'ui/Button'
-import { StateType } from 'redux/store/index'
+import { StateType, useAppDispatch } from 'redux/store/index'
 import GithubDarkSVG from 'ui/icons/GithubDark'
 import GithubLightSVG from 'ui/icons/GithubLight'
 import { SSO_PROVIDERS, isBrowser } from 'redux/constants'
+import sagaActions from 'redux/sagas/actions'
 
 interface IGoogleAuth {
   setIsLoading: (isLoading: boolean) => void
-  authSSO: (provider: string, dontRemember: boolean, t: typeof i18next.t, callback: (res: any) => void) => void
   ssrTheme: string
   callback?: any
   dontRemember?: boolean
@@ -22,7 +21,6 @@ interface IGoogleAuth {
 
 const GithubAuth: React.FC<IGoogleAuth> = ({
   setIsLoading,
-  authSSO,
   dontRemember,
   callback = () => {},
   isMiniButton,
@@ -30,12 +28,13 @@ const GithubAuth: React.FC<IGoogleAuth> = ({
   ssrTheme,
 }) => {
   const { t } = useTranslation()
+  const dispatch = useAppDispatch()
   const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
   const theme = isBrowser ? reduxTheme : ssrTheme
 
   const googleLogin = async () => {
     setIsLoading(true)
-    authSSO(SSO_PROVIDERS.GITHUB, dontRemember as boolean, t, callback)
+    dispatch(sagaActions.authSSO(SSO_PROVIDERS.GITHUB, Boolean(dontRemember), t, callback))
   }
 
   if (isMiniButton) {

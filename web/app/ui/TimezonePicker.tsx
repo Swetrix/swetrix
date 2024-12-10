@@ -52,9 +52,8 @@ const TimezoneSelect = ({ value, onChange }: ITimezoneSelect): JSX.Element => {
   const labelExtractor = (option: { label: string }) => option?.label
   const keyExtractor = (option: { value: string }) => option?.value
 
-  const handleChange = (label: string) => {
-    const tz = _find(options, (timezone) => labelExtractor(timezone) === label)
-    const key = keyExtractor(tz)
+  const handleChange = (item: any) => {
+    const key = keyExtractor(item)
     onChange(key)
   }
 

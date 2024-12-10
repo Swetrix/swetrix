@@ -1,3 +1,3 @@
-import ViewProject from './ViewCaptcha.container'
+import ViewCaptcha from './ViewCaptcha'
 
-export default ViewProject
+export default ViewCaptcha

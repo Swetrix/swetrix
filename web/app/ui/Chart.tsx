@@ -19,8 +19,8 @@ const Chart = ({ current, options }: IChart): JSX.Element => {
     if (chartInstance !== null) {
       try {
         chartInstance.destroy()
-      } catch (error) {
-        console.error('[ERROR] Internal billboard.js error', error)
+      } catch (reason) {
+        console.error('[ERROR] Internal billboard.js error', reason)
       } finally {
         chartInstance = null
       }
@@ -43,11 +43,7 @@ const Chart = ({ current, options }: IChart): JSX.Element => {
     return destroy
   })
 
-  return (
-    <div>
-      <div id={current} data-testid='chart' />
-    </div>
-  )
+  return <div id={current} />
 }
 
 export default Chart

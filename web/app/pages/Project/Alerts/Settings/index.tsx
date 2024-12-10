@@ -1,3 +1,3 @@
-import ProjectAlertsSettings from './ProjectAlertsSettings.container'
+import ProjectAlertsSettings from './ProjectAlertsSettings'
 
 export default ProjectAlertsSettings

@@ -37,7 +37,7 @@ interface IBilling {
 }
 
 const Billing = ({ ssrAuthenticated, ssrTheme }: IBilling) => {
-  const [isCancelSubModalOpened, setIsCancelSubModalOpened] = useState<boolean>(false)
+  const [isCancelSubModalOpened, setIsCancelSubModalOpened] = useState(false)
   const { metainfo, usageinfo } = useSelector((state: StateType) => state.ui.misc)
   const { user, loading } = useSelector((state: StateType) => state.auth)
   const { theme: reduxTheme } = useSelector((state: StateType) => state.ui.theme)

@@ -1,11 +1,11 @@
 import React, { memo } from 'react'
 
-interface IProgress {
+interface ProgressProps {
   now: number
 }
 
-const Progress = ({ now }: IProgress): JSX.Element => (
-  <div className='relative' data-testid='progress'>
+const Progress = ({ now }: ProgressProps) => (
+  <div className='relative'>
     <div className='flex h-2 overflow-hidden rounded bg-blue-200 text-xs dark:bg-slate-600'>
       <div
         style={{ width: `${now}%` }}
