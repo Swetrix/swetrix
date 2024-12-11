@@ -9,7 +9,7 @@ import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import Flag from 'ui/Flag'
 import { useViewProjectContext } from '../ViewProject'
 import { Link } from '@remix-run/react'
-import { PROJECT_TABS } from 'redux/constants'
+import { PROJECT_TABS } from 'lib/constants'
 
 interface LiveVisitorsDropdownProps {
   live: number | string

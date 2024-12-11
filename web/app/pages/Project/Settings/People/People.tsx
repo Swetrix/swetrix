@@ -16,12 +16,12 @@ import { Badge } from 'ui/Badge'
 import Button from 'ui/Button'
 import Modal from 'ui/Modal'
 import PaidFeature from 'modals/PaidFeature'
-import { roles, INVITATION_EXPIRES_IN } from 'redux/constants'
+import { roles, INVITATION_EXPIRES_IN } from 'lib/constants'
 import useOnClickOutside from 'hooks/useOnClickOutside'
-import { Project, ShareOwnerProject } from 'redux/models/Project'
-import { Role } from 'redux/models/Organisation'
+import { Project, ShareOwnerProject } from 'lib/models/Project'
+import { Role } from 'lib/models/Organisation'
 import { useSelector } from 'react-redux'
-import { StateType } from 'redux/store'
+import { StateType } from 'lib/store'
 
 const NoPeople = () => {
   const { t } = useTranslation('common')

@@ -12,10 +12,10 @@ import Telegram from 'ui/icons/Telegram'
 import Slack from 'ui/icons/Slack'
 import Discord from 'ui/icons/Discord'
 import { removeTgIntegration } from 'api'
-import { User } from 'redux/models/User'
-import { StateType, useAppDispatch } from 'redux/store'
+import { User } from 'lib/models/User'
+import { StateType, useAppDispatch } from 'lib/store'
 import { useSelector } from 'react-redux'
-import { authActions } from 'redux/reducers/auth'
+import { authActions } from 'lib/reducers/auth'
 
 const getAvailableIntegrations = (
   t: typeof i18next.t,

@@ -9,8 +9,8 @@ import {
   getProjectCaptchaCacheKey,
   getUserFlowCacheKey,
   isBrowser,
-} from 'redux/constants'
-import { IUserFlow } from 'redux/models/UserFlow'
+} from 'lib/constants'
+import { IUserFlow } from 'lib/models/UserFlow'
 import { filterInvalidViewPrefs } from 'pages/Project/View/utils/filters'
 
 const getInitialViewPrefs = (LS_VIEW: string) => {

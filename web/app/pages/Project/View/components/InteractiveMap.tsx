@@ -4,10 +4,10 @@ import _map from 'lodash/map'
 import _reduce from 'lodash/reduce'
 import { useTranslation } from 'react-i18next'
 import countries from 'utils/isoCountries'
-import { PROJECT_TABS } from 'redux/constants'
+import { PROJECT_TABS } from 'lib/constants'
 import { getTimeFromSeconds, getStringFromTime, nFormatter } from 'utils/generic'
 
-import { Entry } from 'redux/models/Entry'
+import { Entry } from 'lib/models/Entry'
 import countriesList from 'utils/countries'
 import { useSearchParams } from '@remix-run/react'
 

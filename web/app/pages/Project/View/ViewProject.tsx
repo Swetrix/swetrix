@@ -101,9 +101,9 @@ import {
   ERROR_PERIOD_PAIRS,
   FUNNELS_PERIOD_PAIRS,
   ThemeType,
-} from 'redux/constants'
-import { Project, Funnel, AnalyticsFunnel, OverallObject, OverallPerformanceObject } from 'redux/models/Project'
-import { CountryEntry } from 'redux/models/Entry'
+} from 'lib/constants'
+import { Project, Funnel, AnalyticsFunnel, OverallObject, OverallPerformanceObject } from 'lib/models/Project'
+import { CountryEntry } from 'lib/models/Entry'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
@@ -220,8 +220,8 @@ import { AIProcessedResponse, AIResponse } from './interfaces/ai'
 import { useRequiredParams } from 'hooks/useRequiredParams'
 import BrowserDropdown from './components/BrowserDropdown'
 import OSDropdown from './components/OSDropdown'
-import { StateType, useAppDispatch } from 'redux/store'
-import UIActions from 'redux/reducers/ui'
+import { StateType, useAppDispatch } from 'lib/store'
+import UIActions from 'lib/reducers/ui'
 import { useSelector } from 'react-redux'
 const SwetrixSDK = require('@swetrix/sdk')
 

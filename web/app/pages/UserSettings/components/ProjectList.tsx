@@ -8,9 +8,9 @@ import _filter from 'lodash/filter'
 import Button from 'ui/Button'
 import Modal from 'ui/Modal'
 import { rejectProjectShare, acceptProjectShare } from 'api'
-import { SharedProject } from 'redux/models/SharedProject'
-import { StateType, useAppDispatch } from 'redux/store'
-import { authActions } from 'redux/reducers/auth'
+import { SharedProject } from 'lib/models/SharedProject'
+import { StateType, useAppDispatch } from 'lib/store'
+import { authActions } from 'lib/reducers/auth'
 import { useSelector } from 'react-redux'
 
 interface ProjectListProps {

@@ -20,12 +20,12 @@ import {
   BillingFrequency,
   MERCHANT_FEE,
   REFERRAL_CUT,
-} from 'redux/constants'
+} from 'lib/constants'
 import { isValidEmail } from 'utils/validator'
 import { useSelector } from 'react-redux'
-import { StateType, useAppDispatch } from 'redux/store'
-import UIActions from 'redux/reducers/ui'
-import { authActions } from 'redux/reducers/auth'
+import { StateType, useAppDispatch } from 'lib/store'
+import UIActions from 'lib/reducers/ui'
+import { authActions } from 'lib/reducers/auth'
 
 const Referral = () => {
   const { user } = useSelector((state: StateType) => state.auth)

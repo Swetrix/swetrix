@@ -1,9 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { LOW_EVENTS_WARNING } from 'redux/constants'
+import { LOW_EVENTS_WARNING } from 'lib/constants'
 import { setCookie } from 'utils/cookie'
 import { secondsTillNextMonth } from 'utils/generic'
-import { Stats } from 'redux/models/Stats'
-import { Metainfo } from 'redux/models/Metainfo'
+import { Stats } from 'lib/models/Stats'
+import { Metainfo } from 'lib/models/Metainfo'
 
 interface InitialState {
   stats: Stats

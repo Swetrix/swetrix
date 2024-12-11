@@ -13,7 +13,7 @@ import { addSubscriber, removeSubscriber, getSubscribers, updateSubscriber } fro
 
 import { isValidEmail } from 'utils/validator'
 import useOnClickOutside from 'hooks/useOnClickOutside'
-import { reportFrequencyForEmailsOptions } from 'redux/constants'
+import { reportFrequencyForEmailsOptions } from 'lib/constants'
 
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -21,7 +21,7 @@ import Modal from 'ui/Modal'
 import Loader from 'ui/Loader'
 import cx from 'clsx'
 import { Badge } from 'ui/Badge'
-import { Subscriber } from 'redux/models/Subscriber'
+import { Subscriber } from 'lib/models/Subscriber'
 
 interface ModalMessageProps {
   handleInput: (e: React.ChangeEvent<HTMLInputElement>) => void
