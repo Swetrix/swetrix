@@ -4,17 +4,17 @@ import _map from 'lodash/map'
 import _toUpper from 'lodash/toUpper'
 import { Trans, useTranslation } from 'react-i18next'
 
-interface IMetadata {
+interface Metadata {
   key: string
   value: string
 }
 
-interface IPageflow {
+interface PageflowProps {
   pages: {
     type: 'pageview' | 'event'
     value: string
     created: string
-    metadata?: IMetadata[]
+    metadata?: Metadata[]
   }[]
   timeFormat: '12-hour' | '24-hour'
 }
@@ -25,7 +25,7 @@ const KeyValue = ({ evKey, evValue }: { evKey: string; evValue: string }) => (
   </li>
 )
 
-const TransValue = ({ metadata, children }: { metadata?: IMetadata[]; children: React.ReactNode }) => (
+const TransValue = ({ metadata, children }: { metadata?: Metadata[]; children: React.ReactNode }) => (
   <div className='ml-1 text-gray-900 dark:text-gray-50'>
     <p className='font-medium'>{children}</p>
     {metadata ? (
@@ -38,7 +38,7 @@ const TransValue = ({ metadata, children }: { metadata?: IMetadata[]; children: 
   </div>
 )
 
-export const Pageflow = ({ pages, timeFormat }: IPageflow) => {
+export const Pageflow = ({ pages, timeFormat }: PageflowProps) => {
   const {
     t,
     i18n: { language },

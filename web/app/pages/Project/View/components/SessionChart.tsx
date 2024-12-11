@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import bb from 'billboard.js'
 import { getSettingsSession } from '../ViewProject.helpers'
 
-interface ISessionChart {
+interface SessionChartProps {
   chart?: {
     x: string[]
     visits: number[]
@@ -14,7 +14,14 @@ interface ISessionChart {
   dataNames: any
 }
 
-export const SessionChart = ({ chart, timeBucket, timeFormat, rotateXAxis, chartType, dataNames }: ISessionChart) => {
+export const SessionChart = ({
+  chart,
+  timeBucket,
+  timeFormat,
+  rotateXAxis,
+  chartType,
+  dataNames,
+}: SessionChartProps) => {
   // const [bbChart, setBBChart] = useState<bb.Chart | null>(null)
 
   useEffect(() => {

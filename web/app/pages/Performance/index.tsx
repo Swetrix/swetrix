@@ -19,19 +19,19 @@ import Header from 'components/Header'
 import Pricing from '../../components/marketing/Pricing'
 import { DitchGoogle } from 'components/marketing/DitchGoogle'
 
-const Lines = (): JSX.Element => (
+const Lines = () => (
   <div className='pointer-events-none relative'>
     <div className='absolute right-[-48rem] top-[32rem] h-px w-[800%] rotate-6 bg-gradient-to-l from-slate-600 opacity-10 dark:from-slate-400' />
     <div className='absolute -left-60 top-[22.26rem] ml-[-0.5px] h-96 w-[2px] rotate-[96deg] rounded-full bg-gradient-to-t from-orange-600 opacity-50 dark:from-orange-700 xl:top-[23.5rem]' />
   </div>
 )
 
-interface IPerformance {
+interface PerformanceProps {
   ssrTheme: 'dark' | 'light'
   ssrAuthenticated: boolean
 }
 
-const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
+const Performance = ({ ssrTheme, ssrAuthenticated }: PerformanceProps) => {
   const { t } = useTranslation('common')
   const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
   const { authenticated: reduxAuthenticated, loading } = useSelector((state: StateType) => state.auth)

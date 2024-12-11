@@ -19,7 +19,7 @@ import { TrashIcon, XCircleIcon } from '@heroicons/react/24/outline'
 
 import { withAuthentication, auth } from 'hoc/protected'
 import { isSelfhosted, TITLE_SUFFIX, FILTERS_PANELS_ORDER, isBrowser } from 'redux/constants'
-import { IProject } from 'redux/models/IProject'
+import { Project } from 'redux/models/Project'
 import {
   updateProject,
   deleteProject,
@@ -247,7 +247,7 @@ const ModalMessage = ({
   )
 }
 
-interface IForm extends Partial<IProject> {
+interface Form extends Partial<Project> {
   origins: string | null
   ipBlacklist: string | null
 }
@@ -264,8 +264,8 @@ const ProjectSettings = () => {
   const navigate = useNavigate()
   const { requestOrigin } = useLoaderData<{ requestOrigin: string | null }>()
 
-  const [project, setProject] = useState<IProject | null>(null)
-  const [form, setForm] = useState<IForm>({
+  const [project, setProject] = useState<Project | null>(null)
+  const [form, setForm] = useState<Form>({
     name: '',
     id,
     public: false,
@@ -372,7 +372,7 @@ const ProjectSettings = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, id])
 
-  const onSubmit = async (data: IForm) => {
+  const onSubmit = async (data: Form) => {
     if (!isSaving) {
       setIsSaving(true)
       try {
@@ -392,7 +392,7 @@ const ProjectSettings = () => {
               }),
           ipBlacklist: _isEmpty(data.ipBlacklist) ? null : _split(data.ipBlacklist, ','),
         }
-        await updateProject(id, formalisedData as Partial<IProject>)
+        await updateProject(id, formalisedData as Partial<Project>)
         toast.success(t('project.settings.updated'))
       } catch (reason: any) {
         toast.error(reason)

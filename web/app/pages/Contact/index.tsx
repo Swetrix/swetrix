@@ -5,13 +5,13 @@ import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
 
 import { CONTACT_EMAIL, TWITTER_URL, TWITTER_USERNAME, DISCORD_URL, DOCS_URL, BOOK_A_CALL_URL } from 'redux/constants'
 
-interface IPanel {
+interface PanelProps {
   href: string
   title: string
   description: string
 }
 
-const Panel = ({ href, title, description }: IPanel) => (
+const Panel = ({ href, title, description }: PanelProps) => (
   <a
     href={href}
     target='_blank'
@@ -24,7 +24,7 @@ const Panel = ({ href, title, description }: IPanel) => (
   </a>
 )
 
-const Contact = (): JSX.Element => {
+const Contact = () => {
   const { t } = useTranslation('common')
 
   return (

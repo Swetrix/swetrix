@@ -8,7 +8,7 @@ import Loader from 'ui/Loader'
 import { confirmSubscriberInvite } from 'api'
 import routes from 'utils/routes'
 
-const ConfirmReportsShare = (): JSX.Element => {
+const ConfirmReportsShare = () => {
   const { t } = useTranslation('common')
   const { id } = useParams()
   const [loading, setLoading] = useState(true)

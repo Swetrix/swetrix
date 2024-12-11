@@ -96,14 +96,14 @@ import {
   BROWSER_LOGO_MAP,
   OS_LOGO_MAP,
   OS_LOGO_MAP_DARK,
-  ITBPeriodPairs,
+  TBPeriodPairsProps,
   ERROR_PANELS_ORDER,
   ERROR_PERIOD_PAIRS,
   FUNNELS_PERIOD_PAIRS,
   ThemeType,
 } from 'redux/constants'
-import { IProject, IFunnel, IAnalyticsFunnel, IOverallObject, IOverallPerformanceObject } from 'redux/models/IProject'
-import { ICountryEntry } from 'redux/models/IEntry'
+import { Project, Funnel, AnalyticsFunnel, OverallObject, OverallPerformanceObject } from 'redux/models/Project'
+import { CountryEntry } from 'redux/models/Entry'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
@@ -179,7 +179,7 @@ import ProjectAlertsView from '../Alerts/View'
 import Uptime from '../uptime/View'
 import UTMDropdown from './components/UTMDropdown'
 import TBPeriodSelector from './components/TBPeriodSelector'
-import { ISession } from './interfaces/session'
+import { Session } from './interfaces/session'
 import { Sessions } from './components/Sessions'
 import { Pageflow } from './components/Pageflow'
 import { SessionDetails } from './components/SessionDetails'
@@ -189,19 +189,19 @@ import LockedDashboard from './components/LockedDashboard'
 import WaitingForAnEvent from './components/WaitingForAnEvent'
 import { ErrorChart } from './components/ErrorChart'
 import { ErrorDetails } from './components/ErrorDetails'
-import { IError } from './interfaces/error'
+import { SwetrixError } from './interfaces/error'
 import NoErrorDetails from './components/NoErrorDetails'
 import WaitingForAnError from './components/WaitingForAnError'
 import NoSessionDetails from './components/NoSessionDetails'
 import {
-  ICustoms,
-  IFilter,
-  ITrafficMeta,
-  IParams,
-  IProjectView,
-  IProjectViewCustomEvent,
-  IProperties,
-  ITrafficLogResponse,
+  Customs,
+  Filter,
+  TrafficMeta,
+  Params,
+  ProjectView,
+  ProjectViewCustomEvent,
+  Properties,
+  TrafficLogResponse,
 } from './interfaces/traffic'
 import { trackCustom } from 'utils/analytics'
 import {
@@ -238,8 +238,8 @@ interface ViewProjectContextType {
   isLoading: boolean
   timeBucket: string
   period: string
-  activePeriod: ITBPeriodPairs | undefined
-  periodPairs: ITBPeriodPairs[]
+  activePeriod: TBPeriodPairsProps | undefined
+  periodPairs: TBPeriodPairsProps[]
   timeFormat: '12-hour' | '24-hour'
   size: ReturnType<typeof useSize>[1]
   allowedToManage: boolean
@@ -248,7 +248,7 @@ interface ViewProjectContextType {
   setDateRange: Dispatch<SetStateAction<Date[] | null>>
   updatePeriod: (newPeriod: { period: string; label?: string }) => void
   updateTimebucket: (newTimebucket: string) => void
-  setPeriodPairs: Dispatch<SetStateAction<ITBPeriodPairs[]>>
+  setPeriodPairs: Dispatch<SetStateAction<TBPeriodPairsProps[]>>
 
   // Refs
   refCalendar: React.MutableRefObject<any>
@@ -309,7 +309,7 @@ const ViewProject = () => {
 
   const _theme = isBrowser ? theme : ssrTheme
 
-  const [periodPairs, setPeriodPairs] = useState<ITBPeriodPairs[]>(tbPeriodPairs(t, undefined, undefined, language))
+  const [periodPairs, setPeriodPairs] = useState<TBPeriodPairsProps[]>(tbPeriodPairs(t, undefined, undefined, language))
 
   const [customExportTypes, setCustomExportTypes] = useState<any[]>([])
   const [customPanelTabs, setCustomPanelTabs] = useState<any[]>([])
@@ -324,7 +324,7 @@ const ViewProject = () => {
 
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const [project, setProject] = useState<IProject | null>(null)
+  const [project, setProject] = useState<Project | null>(null)
   const [liveVisitors, setLiveVisitors] = useState<number>(0)
 
   const projectPassword = useMemo(
@@ -338,15 +338,15 @@ const ViewProject = () => {
   const [areTimeBucketParsed, setAreTimeBucketParsed] = useState(false)
 
   const [panelsData, setPanelsData] = useState<{
-    types: (keyof IParams)[]
-    data: IParams
-    customs: ICustoms
-    properties: IProperties
-    meta?: ITrafficMeta[]
+    types: (keyof Params)[]
+    data: Params
+    customs: Customs
+    properties: Properties
+    meta?: TrafficMeta[]
     // @ts-expect-error
   }>({})
-  const [overall, setOverall] = useState<Partial<IOverallObject>>({})
-  const [overallPerformance, setOverallPerformance] = useState<Partial<IOverallPerformanceObject>>({})
+  const [overall, setOverall] = useState<Partial<OverallObject>>({})
+  const [overallPerformance, setOverallPerformance] = useState<Partial<OverallPerformanceObject>>({})
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
   const [isForecastOpened, setIsForecastOpened] = useState(false)
   const [isNewFunnelOpened, setIsNewFunnelOpened] = useState(false)
@@ -384,16 +384,16 @@ const ViewProject = () => {
     () => !_some({ ...activeChartMetrics, ...activeChartMetricsCustomEvents }, (value) => value),
     [activeChartMetrics, activeChartMetricsCustomEvents],
   )
-  const [customMetrics, setCustomMetrics] = useState<IProjectViewCustomEvent[]>([])
-  const [filters, setFilters] = useState<IFilter[]>([])
-  const [filtersPerf, setFiltersPerf] = useState<IFilter[]>([])
-  const [filtersSessions, setFiltersSessions] = useState<IFilter[]>([])
+  const [customMetrics, setCustomMetrics] = useState<ProjectViewCustomEvent[]>([])
+  const [filters, setFilters] = useState<Filter[]>([])
+  const [filtersPerf, setFiltersPerf] = useState<Filter[]>([])
+  const [filtersSessions, setFiltersSessions] = useState<Filter[]>([])
   const [areFiltersSessionsParsed, setAreFiltersSessionsParsed] = useState(false)
 
-  const [filtersErrors, setFiltersErrors] = useState<IFilter[]>([])
+  const [filtersErrors, setFiltersErrors] = useState<Filter[]>([])
   const [areFiltersErrorsParsed, setAreFiltersErrorsParsed] = useState(false)
 
-  const [filtersSubError, setFiltersSubError] = useState<IFilter[]>([])
+  const [filtersSubError, setFiltersSubError] = useState<Filter[]>([])
   const [areFiltersSubErrorParsed, setAreFiltersSubErrorParsed] = useState(false)
 
   const tnMapping = typeNameMapping(t)
@@ -434,15 +434,15 @@ const ViewProject = () => {
   const [errorStatusUpdating, setErrorStatusUpdating] = useState(false)
   const [activeEID, setActiveEID] = useState<string | null>(null)
 
-  const [activeFunnel, setActiveFunnel] = useState<IFunnel | null>(null)
-  const [funnelToEdit, setFunnelToEdit] = useState<IFunnel | undefined>(undefined)
+  const [activeFunnel, setActiveFunnel] = useState<Funnel | null>(null)
+  const [funnelToEdit, setFunnelToEdit] = useState<Funnel | undefined>(undefined)
   const [funnelActionLoading, setFunnelActionLoading] = useState(false)
 
   // null -> not loaded yet
-  const [projectViews, setProjectViews] = useState<IProjectView[]>([])
+  const [projectViews, setProjectViews] = useState<ProjectView[]>([])
   const [projectViewsLoading, setProjectViewsLoading] = useState<boolean | null>(null) //  // null - not loaded, true - loading, false - loaded
   const [projectViewDeleting, setProjectViewDeleting] = useState(false)
-  const [projectViewToUpdate, setProjectViewToUpdate] = useState<IProjectView | undefined>()
+  const [projectViewToUpdate, setProjectViewToUpdate] = useState<ProjectView | undefined>()
 
   // AI stuff
   const [forecasedChartData, setForecasedChartData] = useState({})
@@ -647,8 +647,8 @@ const ViewProject = () => {
   )
   const [dateRangeCompare, setDateRangeCompare] = useState<null | Date[]>(null)
   const [dataChartCompare, setDataChartCompare] = useState<any>({})
-  const [overallCompare, setOverallCompare] = useState<Partial<IOverallObject>>({})
-  const [overallPerformanceCompare, setOverallPerformanceCompare] = useState<Partial<IOverallPerformanceObject>>({})
+  const [overallCompare, setOverallCompare] = useState<Partial<OverallObject>>({})
+  const [overallPerformanceCompare, setOverallPerformanceCompare] = useState<Partial<OverallPerformanceObject>>({})
   const [dataChartPerfCompare, setDataChartPerfCompare] = useState<any>({})
   const maxRangeCompare = useMemo(() => {
     if (!isActiveCompare) {
@@ -1183,8 +1183,8 @@ const ViewProject = () => {
 
   const loadAnalytics = async (
     forced = false,
-    newFilters: IFilter[] | null = null,
-    newMetrics: IProjectViewCustomEvent[] | null = null,
+    newFilters: Filter[] | null = null,
+    newMetrics: ProjectViewCustomEvent[] | null = null,
   ) => {
     if (!forced && (authLoading || _isEmpty(project) || dataLoading)) {
       return
@@ -1192,11 +1192,11 @@ const ViewProject = () => {
 
     setDataLoading(true)
     try {
-      let data: ITrafficLogResponse & {
-        overall?: IOverallObject
+      let data: TrafficLogResponse & {
+        overall?: OverallObject
       }
-      let dataCompare: ITrafficLogResponse & {
-        overall?: IOverallObject
+      let dataCompare: TrafficLogResponse & {
+        overall?: OverallObject
       }
       let key = ''
       let keyCompare = ''
@@ -1631,7 +1631,7 @@ const ViewProject = () => {
 
     try {
       const skip = typeof forcedSkip === 'number' ? forcedSkip : sessionsSkip
-      let dataSessions: { sessions: ISession[]; appliedFilters: any[] }
+      let dataSessions: { sessions: Session[]; appliedFilters: any[] }
       let from
       let to
 
@@ -1696,7 +1696,7 @@ const ViewProject = () => {
 
     try {
       const skip = typeof forcedSkip === 'number' ? forcedSkip : errorsSkip
-      let dataErrors: { errors: IError[]; appliedFilters: any[] }
+      let dataErrors: { errors: SwetrixError[]; appliedFilters: any[] }
       let from
       let to
 
@@ -2035,7 +2035,7 @@ const ViewProject = () => {
       let key
 
       try {
-        let dataFunnel: { funnel: IAnalyticsFunnel[]; totalPageviews: number }
+        let dataFunnel: { funnel: AnalyticsFunnel[]; totalPageviews: number }
         let from
         let to
 
@@ -2118,7 +2118,7 @@ const ViewProject = () => {
     const columnSessions = `${column}_sess`
     const columnErrors = `${column}_err`
     const columnSubErrors = `${column}_subErr`
-    let filtersToUpdate: IFilter[] = []
+    let filtersToUpdate: Filter[] = []
 
     switch (activeTab) {
       case PROJECT_TABS.performance:
@@ -2196,7 +2196,7 @@ const ViewProject = () => {
     }
   }
 
-  const onFilterSearch = (items: IFilter[], override: boolean): void => {
+  const onFilterSearch = (items: Filter[], override: boolean): void => {
     switch (activeTab) {
       case PROJECT_TABS.performance:
         handleNavigationParams(
@@ -2243,7 +2243,7 @@ const ViewProject = () => {
     resetErrors()
   }
 
-  const onCustomMetric = (metrics: IProjectViewCustomEvent[]) => {
+  const onCustomMetric = (metrics: ProjectViewCustomEvent[]) => {
     if (activeTab !== PROJECT_TABS.traffic) {
       return
     }
@@ -2252,7 +2252,7 @@ const ViewProject = () => {
     loadAnalytics(true, null, metrics)
   }
 
-  const onRemoveCustomMetric = (metricId: IProjectViewCustomEvent['id']) => {
+  const onRemoveCustomMetric = (metricId: ProjectViewCustomEvent['id']) => {
     if (activeTab !== PROJECT_TABS.traffic) {
       return
     }
@@ -2273,10 +2273,7 @@ const ViewProject = () => {
   }
 
   const onChangeExclusive = (column: string, filter: string, isExclusive: boolean) => {
-    const updateFilters = (
-      filters: IFilter[],
-      setFilters: React.Dispatch<React.SetStateAction<IFilter[]>>,
-    ): IFilter[] => {
+    const updateFilters = (filters: Filter[], setFilters: React.Dispatch<React.SetStateAction<Filter[]>>): Filter[] => {
       const newFilters = filters.map((f) => (f.column === column && f.filter === filter ? { ...f, isExclusive } : f))
       if (JSON.stringify(newFilters) !== JSON.stringify(filters)) {
         setFilters(newFilters)
@@ -2284,7 +2281,7 @@ const ViewProject = () => {
       return newFilters
     }
 
-    let newFilters: IFilter[]
+    let newFilters: Filter[]
 
     switch (activeTab) {
       case PROJECT_TABS.performance:
@@ -3626,7 +3623,7 @@ const ViewProject = () => {
                                     )
                                   }}
                                   keyExtractor={(item) => item.id}
-                                  onSelect={(item: IProjectView, e) => {
+                                  onSelect={(item: ProjectView, e) => {
                                     // @ts-expect-error
                                     if (item.createView) {
                                       e?.stopPropagation()
@@ -4056,7 +4053,7 @@ const ViewProject = () => {
                 )}
                 {activeTab === PROJECT_TABS.funnels && !activeFunnel && !_isEmpty(project.funnels) && (
                   <FunnelsList
-                    openFunnelSettings={(funnel?: IFunnel) => {
+                    openFunnelSettings={(funnel?: Funnel) => {
                       if (funnel) {
                         setFunnelToEdit(funnel)
                         setIsNewFunnelOpened(true)
@@ -4252,7 +4249,7 @@ const ViewProject = () => {
                           if (type === 'cc') {
                             const ccPanelName = tnMapping[countryActiveTab]
 
-                            const rowMapper = (entry: ICountryEntry) => {
+                            const rowMapper = (entry: CountryEntry) => {
                               const { name: entryName, cc } = entry
 
                               if (cc) {
@@ -4555,7 +4552,7 @@ const ViewProject = () => {
                           if (type === 'cc') {
                             const ccPanelName = tnMapping[countryActiveTab]
 
-                            const rowMapper = (entry: ICountryEntry) => {
+                            const rowMapper = (entry: CountryEntry) => {
                               const { name: entryName, cc } = entry
 
                               if (cc) {
@@ -4860,7 +4857,7 @@ const ViewProject = () => {
                           if (type === 'cc') {
                             const ccPanelName = tnMapping[countryActiveTab]
 
-                            const rowMapper = (entry: ICountryEntry) => {
+                            const rowMapper = (entry: CountryEntry) => {
                               const { name: entryName, cc } = entry
 
                               if (cc) {

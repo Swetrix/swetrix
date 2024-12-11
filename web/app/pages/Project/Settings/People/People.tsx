@@ -18,7 +18,7 @@ import Modal from 'ui/Modal'
 import PaidFeature from 'modals/PaidFeature'
 import { roles, INVITATION_EXPIRES_IN } from 'redux/constants'
 import useOnClickOutside from 'hooks/useOnClickOutside'
-import { IProject, IShareOwnerProject } from 'redux/models/IProject'
+import { Project, ShareOwnerProject } from 'redux/models/Project'
 import { Role } from 'redux/models/Organisation'
 import { useSelector } from 'react-redux'
 import { StateType } from 'redux/store'
@@ -36,7 +36,7 @@ const NoPeople = () => {
 }
 
 interface UsersListProps {
-  data: IShareOwnerProject
+  data: ShareOwnerProject
   onRemove: () => void
   language: string
   authedUserEmail: string | undefined
@@ -140,7 +140,7 @@ const UsersList = ({ data, onRemove, language, authedUserEmail }: UsersListProps
 }
 
 interface PeopleProps {
-  project: IProject
+  project: Project
 }
 
 const People = ({ project }: PeopleProps) => {
@@ -168,7 +168,7 @@ const People = ({ project }: PeopleProps) => {
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [memberToRemove, setMemberToRemove] = useState<IShareOwnerProject | null>(null)
+  const [memberToRemove, setMemberToRemove] = useState<ShareOwnerProject | null>(null)
 
   const { id, name, share } = project
 
@@ -248,7 +248,7 @@ const People = ({ project }: PeopleProps) => {
     setErrors({})
   }
 
-  const onRemove = async (member: IShareOwnerProject) => {
+  const onRemove = async (member: ShareOwnerProject) => {
     if (isDeleting) {
       return
     }

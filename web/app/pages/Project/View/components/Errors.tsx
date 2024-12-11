@@ -6,32 +6,31 @@ import _map from 'lodash/map'
 import cx from 'clsx'
 import { ChevronRightIcon } from '@heroicons/react/24/outline'
 import Loader from 'ui/Loader'
-import { IError } from '../interfaces/error'
+import { SwetrixError } from '../interfaces/error'
 import { getRelativeDateIfPossible } from 'utils/date'
 import { Badge } from 'ui/Badge'
 
-interface IErrors {
-  errors: IError[]
+interface ErrorsProps {
+  errors: SwetrixError[]
   onClick: (psid: string) => void
 }
 
-interface IErrorItem {
-  error: IError
+interface ErrorItemProps {
+  error: SwetrixError
   onClick: (psid: string) => void
+}
+
+interface SeparatorProps {
   className?: string
 }
 
-interface ISeparator {
-  className?: string
-}
-
-const Separator = ({ className }: ISeparator) => (
+const Separator = ({ className }: SeparatorProps) => (
   <svg viewBox='0 0 2 2' className={cx('h-0.5 w-0.5 flex-none fill-gray-400', className)}>
     <circle cx={1} cy={1} r={1} />
   </svg>
 )
 
-const ErrorItem = ({ error, onClick, className }: IErrorItem) => {
+const ErrorItem = ({ error, onClick }: ErrorItemProps) => {
   const {
     t,
     i18n: { language },
@@ -121,7 +120,7 @@ const ErrorItem = ({ error, onClick, className }: IErrorItem) => {
   )
 }
 
-export const Errors: React.FC<IErrors> = ({ errors, onClick }) => {
+export const Errors = ({ errors, onClick }: ErrorsProps) => {
   return (
     <ClientOnly
       fallback={
@@ -132,13 +131,8 @@ export const Errors: React.FC<IErrors> = ({ errors, onClick }) => {
     >
       {() => (
         <ul className='mt-4'>
-          {_map(errors, (error, index) => (
-            <ErrorItem
-              key={error.eid}
-              error={error}
-              onClick={onClick}
-              className={`${index === 0 && 'rounded-t-md'} ${index === errors.length - 1 && 'rounded-b-md'}`}
-            />
+          {_map(errors, (error) => (
+            <ErrorItem key={error.eid} error={error} onClick={onClick} />
           ))}
         </ul>
       )}

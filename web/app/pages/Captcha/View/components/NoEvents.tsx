@@ -4,14 +4,14 @@ import _isEmpty from 'lodash/isEmpty'
 
 import Button from 'ui/Button'
 import { DOCS_CAPTCHA_URL } from 'redux/constants'
-import { IFilter } from 'pages/Project/View/interfaces/traffic'
+import { Filter } from 'pages/Project/View/interfaces/traffic'
 
-interface INoEvents {
-  filters: IFilter[]
+interface NoEventsProps {
+  filters: Filter[]
   resetFilters: () => void
 }
 
-const NoEvents = ({ filters, resetFilters }: INoEvents): JSX.Element => {
+const NoEvents = ({ filters, resetFilters }: NoEventsProps) => {
   const { t } = useTranslation('common')
 
   return (

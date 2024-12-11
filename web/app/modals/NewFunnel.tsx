@@ -11,18 +11,18 @@ import Input from 'ui/Input'
 import Combobox from 'ui/Combobox'
 import { MIN_FUNNEL_STEPS, MAX_FUNNEL_STEPS } from 'redux/constants'
 import { getFilters } from 'api'
-import { IFunnel } from 'redux/models/IProject'
-import { IProjectForShared } from 'redux/models/ISharedProject'
+import { Funnel } from 'redux/models/Project'
+import { ProjectForShared } from 'redux/models/SharedProject'
 
-interface INewFunnel {
-  project: IProjectForShared
+interface NewFunnelProps {
+  project: ProjectForShared
   onClose: () => void
   onSubmit: (name: string, steps: string[]) => Promise<void>
   isOpened: boolean
   pid: string
   loading: boolean
   allowedToManage: boolean
-  funnel?: IFunnel
+  funnel?: Funnel
   projectPassword?: string
 }
 
@@ -38,7 +38,7 @@ const NewFunnel = ({
   project,
   projectPassword,
   allowedToManage,
-}: INewFunnel): JSX.Element => {
+}: NewFunnelProps) => {
   const { t } = useTranslation('common')
   const [name, setName] = useState(funnel?.name || '')
   const [steps, setSteps] = useState<any[]>(funnel?.steps || INITIAL_FUNNEL_STEPS)

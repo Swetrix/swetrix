@@ -216,7 +216,7 @@ interface FooterProps {
   showDBIPMessage?: boolean
 }
 
-const Footer = ({ authenticated, showDBIPMessage }: FooterProps): JSX.Element => {
+const Footer = ({ authenticated, showDBIPMessage }: FooterProps) => {
   const {
     t,
     i18n: { language },

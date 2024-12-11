@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react'
 
-const RefRow = ({ rowName }: { rowName: string }): JSX.Element => {
+const RefRow = ({ rowName }: { rowName: string }) => {
   const { isUrl, url } = useMemo(() => {
     try {
       const urlObj = new URL(rowName)

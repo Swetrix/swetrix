@@ -1,6 +1,6 @@
 import { reportFrequencies } from '../constants'
 
-export interface ISubscribers {
+export interface Subscriber {
   userId: string
   projectId: string
   projectName: string

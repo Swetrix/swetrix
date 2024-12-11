@@ -34,7 +34,7 @@ TooltipContent.displayName = TooltipPrimitive.Content.displayName
 interface TooltipProps {
   text: string | number | React.ReactNode
   className?: string
-  tooltipNode?: JSX.Element
+  tooltipNode?: React.ReactNode
 }
 
 const Tooltip = ({ text, className, tooltipNode }: TooltipProps) => (

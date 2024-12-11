@@ -1,4 +1,4 @@
-export interface IUsageInfo {
+export interface UsageInfo {
   total: number
   traffic: number
   customEvents: number

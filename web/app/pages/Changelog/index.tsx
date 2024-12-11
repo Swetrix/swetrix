@@ -419,7 +419,7 @@ const changelog = [
   },
 ]
 
-const Changelog = (): JSX.Element => {
+const Changelog = () => {
   const { t } = useTranslation('common')
 
   return (

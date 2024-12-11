@@ -1,6 +1,5 @@
-/* eslint-disable */
+/* eslint-disable no-useless-escape */
 import React, { useEffect } from 'react'
-import _map from 'lodash/map'
 import bb, { bar, line } from 'billboard.js'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link } from '@remix-run/react'
@@ -361,7 +360,7 @@ const getSettings = () => {
   }
 }
 
-const OpenStartup = (): JSX.Element => {
+const OpenStartup = () => {
   const { t }: any = useTranslation('common')
   const { stats } = useSelector((state: StateType) => state.ui.misc)
 

@@ -26,7 +26,7 @@ import PaidFeature from 'modals/PaidFeature'
 import { QUERY_METRIC, PLAN_LIMITS, DEFAULT_ALERTS_TAKE } from 'redux/constants'
 import { deleteAlert as deleteAlertApi, getProjectAlerts } from 'api'
 import { StateType } from 'redux/store'
-import { IAlerts } from 'redux/models/IAlerts'
+import { Alerts } from 'redux/models/Alerts'
 import Loader from 'ui/Loader'
 import Pagination from 'ui/Pagination'
 
@@ -63,7 +63,7 @@ const NoNotificationChannelSet = () => {
   )
 }
 
-interface IAlertCard {
+interface AlertCardProps {
   id: string
   name: string
   queryMetric: string | number
@@ -81,7 +81,7 @@ const AlertCard = ({
   openAlert,
   deleteAlert,
   queryMetricTMapping,
-}: IAlertCard): JSX.Element => {
+}: AlertCardProps) => {
   const {
     t,
     i18n: { language },
@@ -151,12 +151,12 @@ const AlertCard = ({
   )
 }
 
-interface IAddAlert {
+interface AddAlertProps {
   handleNewAlert: () => void
   isLimitReached: boolean
 }
 
-const AddAlert = ({ handleNewAlert, isLimitReached }: IAddAlert): JSX.Element => {
+const AddAlert = ({ handleNewAlert, isLimitReached }: AddAlertProps) => {
   const { t } = useTranslation()
 
   return (
@@ -178,18 +178,18 @@ const AddAlert = ({ handleNewAlert, isLimitReached }: IAddAlert): JSX.Element =>
   )
 }
 
-interface IProjectAlerts {
+interface ProjectAlertsProps {
   projectId: string
 }
 
-const ProjectAlerts = ({ projectId }: IProjectAlerts): JSX.Element => {
+const ProjectAlerts = ({ projectId }: ProjectAlertsProps) => {
   const { t } = useTranslation()
   const { user, authenticated } = useSelector((state: StateType) => state.auth)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
 
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
   const [total, setTotal] = useState(0)
-  const [alerts, setAlerts] = useState<IAlerts[]>([])
+  const [alerts, setAlerts] = useState<Alerts[]>([])
   const [page, setPage] = useState(1)
 
   const [error, setError] = useState<string | null>(null)

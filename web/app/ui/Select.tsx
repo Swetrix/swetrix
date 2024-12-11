@@ -12,7 +12,7 @@ import {
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/solid'
 import _map from 'lodash/map'
 
-interface ISelect<T> {
+interface SelectProps<T> {
   title?: string
   label?: string
   hint?: string | React.ReactNode
@@ -42,7 +42,7 @@ function Select<T>({
   buttonClassName,
   capitalise,
   labelClassName,
-}: ISelect<T>): React.ReactNode {
+}: SelectProps<T>) {
   return (
     // @ts-expect-error
     <Listbox id={id || ''} value={title} onChange={onSelect}>

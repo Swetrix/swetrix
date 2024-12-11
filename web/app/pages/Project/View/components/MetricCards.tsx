@@ -7,12 +7,12 @@ import _isEmpty from 'lodash/isEmpty'
 import _isNumber from 'lodash/isNumber'
 import _map from 'lodash/map'
 import { nFormatter, getStringFromTime, getTimeFromSeconds } from 'utils/generic'
-import { IOverallObject, IOverallPerformanceObject } from 'redux/models/IProject'
+import { OverallObject, OverallPerformanceObject } from 'redux/models/Project'
 import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { Badge } from 'ui/Badge'
 import { MonitorOverallObject } from 'redux/models/Uptime'
 
-interface IMetricCard {
+interface MetricCardProps {
   label: string
   value: string | number | undefined | null
   goodChangeDirection?: 'up' | 'down'
@@ -26,7 +26,7 @@ interface IMetricCard {
   }
 }
 
-const ChangeBadge = ({ change, type, goodChangeDirection, valueMapper }: Partial<IMetricCard>) => {
+const ChangeBadge = ({ change, type, goodChangeDirection, valueMapper }: Partial<MetricCardProps>) => {
   if (!_isNumber(change)) {
     return null
   }
@@ -62,7 +62,7 @@ const ChangeBadge = ({ change, type, goodChangeDirection, valueMapper }: Partial
   }
 }
 
-export const MetricCard: React.FC<IMetricCard> = ({
+export const MetricCard: React.FC<MetricCardProps> = ({
   label,
   value,
   change,
@@ -90,7 +90,7 @@ export const MetricCard: React.FC<IMetricCard> = ({
   </div>
 )
 
-interface IMetricCardSelect {
+interface MetricCardSelectProps {
   values: {
     label: string
     value: string | number | undefined | null
@@ -104,7 +104,7 @@ interface IMetricCardSelect {
   }
 }
 
-export const MetricCardSelect: React.FC<IMetricCardSelect> = ({ values, valueMapper, selectLabel, classes }) => {
+export const MetricCardSelect = ({ values, valueMapper, selectLabel, classes }: MetricCardSelectProps) => {
   const [selected, setSelected] = useState(0)
   const [show, setShow] = useState(false)
 
@@ -153,13 +153,13 @@ export const MetricCardSelect: React.FC<IMetricCardSelect> = ({ values, valueMap
   )
 }
 
-interface IMetricCards {
-  overall: Partial<IOverallObject>
-  overallCompare?: Partial<IOverallObject>
+interface MetricCardsProps {
+  overall: Partial<OverallObject>
+  overallCompare?: Partial<OverallObject>
   activePeriodCompare?: string
 }
 
-export const MetricCards = memo(({ overall, overallCompare, activePeriodCompare }: IMetricCards) => {
+export const MetricCards = memo(({ overall, overallCompare, activePeriodCompare }: MetricCardsProps) => {
   const { t } = useTranslation('common')
 
   let uniqueChange = overall.uniqueChange
@@ -226,11 +226,11 @@ export const MetricCards = memo(({ overall, overallCompare, activePeriodCompare 
   )
 })
 
-interface IMetricCardsUptime {
+interface MetricCardsUptimeProps {
   overall: MonitorOverallObject
 }
 
-export const MetricCardsUptime = memo(({ overall }: IMetricCardsUptime) => {
+export const MetricCardsUptime = memo(({ overall }: MetricCardsUptimeProps) => {
   const { t } = useTranslation()
 
   return (
@@ -266,14 +266,14 @@ export const MetricCardsUptime = memo(({ overall }: IMetricCardsUptime) => {
   )
 })
 
-interface IPerformanceMetricCards {
-  overall: Partial<IOverallPerformanceObject>
-  overallCompare?: Partial<IOverallPerformanceObject>
+interface PerformanceMetricCardsProps {
+  overall: Partial<OverallPerformanceObject>
+  overallCompare?: Partial<OverallPerformanceObject>
   activePeriodCompare?: string
 }
 
 export const PerformanceMetricCards = memo(
-  ({ overall, overallCompare, activePeriodCompare }: IPerformanceMetricCards) => {
+  ({ overall, overallCompare, activePeriodCompare }: PerformanceMetricCardsProps) => {
     const { t } = useTranslation('common')
 
     let frontendChange = overall.frontendChange

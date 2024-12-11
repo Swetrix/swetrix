@@ -4,24 +4,24 @@ import { useTranslation } from 'react-i18next'
 import OutsideClickHandler from 'react-outside-click-handler'
 import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
-import { getLiveVisitorsInfo, IGetLiveVisitorsInfo } from 'api'
+import { getLiveVisitorsInfo, GetLiveVisitorsInfo } from 'api'
 import PulsatingCircle from 'ui/icons/PulsatingCircle'
 import Flag from 'ui/Flag'
 import { useViewProjectContext } from '../ViewProject'
 import { Link } from '@remix-run/react'
 import { PROJECT_TABS } from 'redux/constants'
 
-interface ILiveVisitorsDropdown {
+interface LiveVisitorsDropdownProps {
   live: number | string
   onSessionSelect: (psid: string) => void
 }
 
-const LiveVisitorsDropdown = ({ live, onSessionSelect }: ILiveVisitorsDropdown): JSX.Element => {
+const LiveVisitorsDropdown = ({ live, onSessionSelect }: LiveVisitorsDropdownProps) => {
   const { projectId, projectPassword } = useViewProjectContext()
   const { t } = useTranslation()
   const [show, setShow] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [liveInfo, setLiveInfo] = useState<IGetLiveVisitorsInfo[]>([])
+  const [liveInfo, setLiveInfo] = useState<GetLiveVisitorsInfo[]>([])
 
   const getLiveVisitors = async () => {
     try {

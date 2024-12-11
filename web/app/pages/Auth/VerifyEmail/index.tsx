@@ -4,11 +4,11 @@ import { useParams, Link } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import _isString from 'lodash/isString'
-import _isArray from 'lodash/isArray'
 
-import sagaActions from 'redux/sagas/actions'
 import Loader from 'ui/Loader'
 import routes from 'utils/routes'
+import { verifyEmail } from 'api'
+import { authActions } from 'redux/reducers/auth'
 
 const VerifyEmail = () => {
   const { t } = useTranslation('common')
@@ -26,27 +26,19 @@ const VerifyEmail = () => {
       return
     }
 
-    dispatch(
-      sagaActions.emailVerifyAsync(
-        {
-          id,
-        },
-        () => {
-          setLoading(false)
-        },
-        (verifyError: any) => {
-          if (_isArray(verifyError)) {
-            setError(verifyError[0])
-          } else if (_isString(verifyError)) {
-            setError(verifyError)
-          } else {
-            setError(verifyError?.message || t('auth.verification.invalid'))
-          }
+    const verify = async () => {
+      try {
+        await verifyEmail({ id })
+        dispatch(authActions.mergeUser({ isActive: true }))
+      } catch (reason: any) {
+        setError(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
+      } finally {
+        dispatch(authActions.finishLoading())
+        setLoading(false)
+      }
+    }
 
-          setLoading(false)
-        },
-      ),
-    )
+    verify()
   }, [id]) // eslint-disable-line
 
   if (loading) {

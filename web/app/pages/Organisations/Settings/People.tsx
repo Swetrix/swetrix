@@ -150,7 +150,7 @@ interface PeopleProps {
   reloadOrganisation: () => Promise<void>
 }
 
-const People = ({ organisation, reloadOrganisation }: PeopleProps): JSX.Element => {
+const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
   const [showModal, setShowModal] = useState(false)
   const { t } = useTranslation('common')
   const [form, setForm] = useState<{

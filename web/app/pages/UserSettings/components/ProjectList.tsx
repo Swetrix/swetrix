@@ -8,13 +8,13 @@ import _filter from 'lodash/filter'
 import Button from 'ui/Button'
 import Modal from 'ui/Modal'
 import { rejectProjectShare, acceptProjectShare } from 'api'
-import { ISharedProject } from 'redux/models/ISharedProject'
+import { SharedProject } from 'redux/models/SharedProject'
 import { StateType, useAppDispatch } from 'redux/store'
 import { authActions } from 'redux/reducers/auth'
 import { useSelector } from 'react-redux'
 
 interface ProjectListProps {
-  item: ISharedProject
+  item: SharedProject
 }
 
 const ProjectList = ({ item }: ProjectListProps) => {

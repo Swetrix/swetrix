@@ -3,7 +3,7 @@ import { Link, useLoaderData, useLocation } from '@remix-run/react'
 import NotFound from 'pages/NotFound'
 import { trackPageview } from 'utils/analytics'
 
-interface IPost {
+interface Post {
   slug: string
   title?: string
   html: string
@@ -16,7 +16,7 @@ interface IPost {
 
 export default function PostSlug() {
   const location = useLocation()
-  const post = useLoaderData() as IPost
+  const post = useLoaderData() as Post
 
   useEffect(() => {
     const meta = post.author

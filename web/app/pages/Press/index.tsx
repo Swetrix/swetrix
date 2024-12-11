@@ -8,7 +8,7 @@ import routes from 'utils/routes'
 const FONT_INTER_URL = 'https://rsms.me/inter/'
 const FONT_NAME = 'Inter'
 
-interface ILogoComponent {
+interface LogoComponentProps {
   description: string
   logoPNG: string
   logoSVG?: string
@@ -20,7 +20,7 @@ const LogoComponent = ({
   logoSVG,
   logoPNG,
   textColor = 'text-gray-900 dark:text-gray-50',
-}: ILogoComponent): JSX.Element => (
+}: LogoComponentProps) => (
   <p>
     <b className={`font-bold tracking-tight ${textColor}`}>{description}</b>
     <img className='mb-2 mt-5 h-16 sm:h-20' src={logoSVG || logoPNG} alt={description} />
@@ -48,7 +48,7 @@ const LogoComponent = ({
   </p>
 )
 
-const Press = (): JSX.Element => {
+const Press = () => {
   const { t } = useTranslation('common')
 
   return (

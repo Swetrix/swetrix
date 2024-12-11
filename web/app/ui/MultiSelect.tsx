@@ -5,7 +5,7 @@ import _map from 'lodash/map'
 import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
 
-interface IMultiSelect {
+interface MultiSelectProps {
   className?: string
   onRemove: (item: any) => void
   onSelect: (item: any) => void
@@ -33,7 +33,7 @@ const MultiSelect = ({
   itemExtractor,
   searchPlaseholder = 'Search...',
   onSearch,
-}: IMultiSelect) => {
+}: MultiSelectProps) => {
   const [selected, setSelected] = useState(false)
 
   return (

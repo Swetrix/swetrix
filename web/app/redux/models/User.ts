@@ -1,4 +1,4 @@
-import { ISharedProject } from './ISharedProject'
+import { SharedProject } from './SharedProject'
 import { OrganisationMembership } from './Organisation'
 
 export enum DashboardBlockReason {
@@ -22,7 +22,7 @@ enum PlanCode {
   '10m' = '10m',
 }
 
-export interface IUser {
+export interface User {
   id: string
   roles: string[]
   planCode: PlanCode
@@ -52,7 +52,7 @@ export interface IUser {
   telegramChatId: string | null
   isTelegramChatIdConfirmed: boolean
   timeFormat: string
-  sharedProjects: ISharedProject[]
+  sharedProjects: SharedProject[]
   registeredWithGoogle: boolean
   googleId: string | null
   githubId: number | null

@@ -1,9 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { IUser } from '../models/IUser'
+import { User } from '../models/User'
 import { FREE_TIER_KEY, isSelfhosted } from '../constants'
 
 interface AuthState {
-  user: IUser
+  user: User
   authenticated: boolean
   loading: boolean
   dontRemember: boolean
@@ -11,7 +11,7 @@ interface AuthState {
 }
 
 const initialState: AuthState = {
-  user: {} as IUser,
+  user: {} as User,
   authenticated: false,
   loading: true,
   dontRemember: false,
@@ -26,23 +26,23 @@ const authSlice = createSlice({
     finishLoading: (state) => {
       state.loading = false
     },
-    authSuccessful: (state, { payload }: PayloadAction<IUser>) => {
+    authSuccessful: (state, { payload }: PayloadAction<User>) => {
       state.user = payload
       state.authenticated = true
       state.isPaidTierUsed = isSelfhosted || ((payload?.planCode && payload.planCode !== FREE_TIER_KEY) as boolean)
     },
     logout: (state) => {
-      state.user = {} as IUser
+      state.user = {} as User
       state.authenticated = false
       state.isPaidTierUsed = isSelfhosted
     },
     setDontRemember: (state, { payload }: PayloadAction<boolean>) => {
       state.dontRemember = payload
     },
-    mergeUser: (state, { payload }: PayloadAction<Partial<IUser>>) => {
+    mergeUser: (state, { payload }: PayloadAction<Partial<User>>) => {
       state.user = { ...state.user, ...payload }
     },
-    setUser: (state, { payload }: PayloadAction<IUser>) => {
+    setUser: (state, { payload }: PayloadAction<User>) => {
       state.user = payload
     },
   },

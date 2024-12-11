@@ -1,4 +1,4 @@
-export interface IMetainfo {
+export interface Metainfo {
   country: string | null
   region: string | null
   city: string | null

@@ -1,17 +1,17 @@
 import React, { useMemo } from 'react'
 import { LockClosedIcon } from '@heroicons/react/24/outline'
 import { Link } from '@remix-run/react'
-import { IUser, DashboardBlockReason } from 'redux/models/IUser'
-import { IProjectForShared } from 'redux/models/ISharedProject'
+import { User, DashboardBlockReason } from 'redux/models/User'
+import { ProjectForShared } from 'redux/models/SharedProject'
 import { useTranslation } from 'react-i18next'
 import routes from 'utils/routes'
 
-interface ILockedDashboard {
-  user?: IUser
-  project: IProjectForShared
+interface LockedDashboardProps {
+  user?: User
+  project: ProjectForShared
 }
 
-const LockedDashboard = ({ user, project }: ILockedDashboard) => {
+const LockedDashboard = ({ user, project }: LockedDashboardProps) => {
   const { t } = useTranslation('common')
 
   const message = useMemo(() => {

@@ -12,7 +12,7 @@ import { Bars3BottomRightIcon, ChartBarIcon } from '@heroicons/react/24/outline'
 
 const DEFAULT_PERIOD = '3'
 
-interface IForecast {
+interface ForecastProps {
   onClose: () => void
   onSubmit: (
     type: 'chart' | 'details',
@@ -25,7 +25,7 @@ interface IForecast {
   tb: string
 }
 
-const Forecast = ({ onClose, onSubmit, isOpened, activeTB, tb }: IForecast): JSX.Element => {
+const Forecast = ({ onClose, onSubmit, isOpened, activeTB, tb }: ForecastProps) => {
   const { t } = useTranslation('common')
   const [period, setPeriod] = useState(DEFAULT_PERIOD)
   const [error, setError] = useState<string | null>(null)

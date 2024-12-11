@@ -7,7 +7,7 @@ import { isSelfhosted } from 'redux/constants'
 
 const CONTACT_US_URL = `https://swetrix.com${routes.contact}`
 
-const NotFound = (): JSX.Element => {
+const NotFound = () => {
   const { t } = useTranslation('common')
 
   return (

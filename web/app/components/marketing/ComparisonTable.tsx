@@ -89,11 +89,11 @@ const COMPETITOR_FEATURE_TABLE: {
   },
 }
 
-interface IComparisonTable {
+interface ComparisonTableProps {
   className?: string
 }
 
-export const ComparisonTable = ({ className }: IComparisonTable) => {
+export const ComparisonTable = ({ className }: ComparisonTableProps) => {
   const { t } = useTranslation('common')
 
   return (

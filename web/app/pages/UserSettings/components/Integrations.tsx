@@ -12,7 +12,7 @@ import Telegram from 'ui/icons/Telegram'
 import Slack from 'ui/icons/Slack'
 import Discord from 'ui/icons/Discord'
 import { removeTgIntegration } from 'api'
-import { IUser } from 'redux/models/IUser'
+import { User } from 'redux/models/User'
 import { StateType, useAppDispatch } from 'redux/store'
 import { useSelector } from 'react-redux'
 import { authActions } from 'redux/reducers/auth'
@@ -52,7 +52,7 @@ const SLACK_WEBHOOKS_HELP = 'https://api.slack.com/messaging/webhooks'
 const DISCORD_WEBHOOKS_HELP = 'https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks'
 
 interface IntegrationsProps {
-  handleIntegrationSave: (data: Partial<IUser>, cb: (isSuccess: boolean) => void) => void
+  handleIntegrationSave: (data: Partial<User>, cb: (isSuccess: boolean) => void) => void
 }
 
 const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {

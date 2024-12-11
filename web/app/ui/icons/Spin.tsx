@@ -1,12 +1,12 @@
 import React from 'react'
 import cx from 'clsx'
 
-interface ISpin {
+interface SpinProps {
   className?: string
   alwaysLight?: boolean
 }
 
-const Spin = ({ className, alwaysLight }: ISpin): JSX.Element => (
+const Spin = ({ className, alwaysLight }: SpinProps) => (
   <svg
     className={cx(
       '-ml-1 mr-2 h-4 w-4 animate-spin text-slate-900 dark:text-white',

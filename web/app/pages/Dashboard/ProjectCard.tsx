@@ -17,15 +17,15 @@ import { nFormatter, calculateRelativePercentage } from 'utils/generic'
 
 import { acceptProjectShare } from 'api'
 
-import { IOverallObject, IProject } from 'redux/models/IProject'
+import { OverallObject, Project } from 'redux/models/Project'
 import { useSelector } from 'react-redux'
 import { StateType, useAppDispatch } from 'redux/store'
 import { authActions } from 'redux/reducers/auth'
 
 interface ProjectCardProps {
   live?: string | number
-  overallStats?: IOverallObject
-  project: IProject
+  overallStats?: OverallObject
+  project: Project
 }
 
 interface MiniCardProps {

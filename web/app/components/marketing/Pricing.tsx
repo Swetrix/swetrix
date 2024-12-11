@@ -26,12 +26,12 @@ import {
   TRIAL_DAYS,
 } from 'redux/constants'
 import { authActions } from 'redux/reducers/auth'
-import sagaActions from 'redux/sagas/actions'
 import { authMe, previewSubscriptionUpdate, changeSubscriptionPlan } from 'api'
 import routes from 'utils/routes'
 import { AppDispatch, StateType } from 'redux/store'
 import Loader from 'ui/Loader'
 import { Badge } from 'ui/Badge'
+import { logout } from 'utils/auth'
 
 const getPaidFeatures = (t: any, tier: any) => {
   return [
@@ -47,12 +47,12 @@ const getPaidFeatures = (t: any, tier: any) => {
   ]
 }
 
-interface IPricing {
+interface PricingProps {
   authenticated: boolean
   isBillingPage?: boolean
 }
 
-const Pricing = ({ authenticated, isBillingPage }: IPricing) => {
+const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
   const {
     t,
     i18n: { language },
@@ -107,13 +107,13 @@ const Pricing = ({ authenticated, isBillingPage }: IPricing) => {
         // giving some time to the API to process tier upgrate via Paddle webhook
         setTimeout(async () => {
           try {
-            const me = await authMe()
+            const { user } = await authMe()
 
-            dispatch(authActions.authSuccessful(me))
+            dispatch(authActions.authSuccessful(user))
             dispatch(authActions.finishLoading())
           } catch (reason) {
             dispatch(authActions.logout())
-            dispatch(sagaActions.logout(false, false))
+            logout()
             console.error(`[ERROR] Error while getting user after subscription update: ${reason}`)
           }
 
@@ -202,13 +202,13 @@ const Pricing = ({ authenticated, isBillingPage }: IPricing) => {
       await changeSubscriptionPlan(newPlanId as number)
 
       try {
-        const me = await authMe()
+        const { user } = await authMe()
 
-        dispatch(authActions.authSuccessful(me))
+        dispatch(authActions.authSuccessful(user))
         dispatch(authActions.finishLoading())
       } catch (reason) {
         dispatch(authActions.logout())
-        dispatch(sagaActions.logout(false, false))
+        logout()
         console.error(`[ERROR] Error while getting user after subscription update: ${reason}`)
       }
 

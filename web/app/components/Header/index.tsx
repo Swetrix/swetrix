@@ -2,7 +2,7 @@
 import React, { memo, Fragment, useMemo, useState } from 'react'
 
 import { Link } from '@remix-run/react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import i18next from 'i18next'
 import {
@@ -40,7 +40,6 @@ import cx, { clsx } from 'clsx'
 
 import routes from 'utils/routes'
 import { authActions } from 'redux/reducers/auth'
-import sagaActions from 'redux/sagas/actions'
 import UIActions from 'redux/reducers/ui'
 import {
   whitelist,
@@ -54,8 +53,9 @@ import {
 } from 'redux/constants'
 import Dropdown from 'ui/Dropdown'
 import Flag from 'ui/Flag'
-import { IUser } from 'redux/models/IUser'
+import { User } from 'redux/models/User'
 import { useAppDispatch, StateType } from 'redux/store'
+import { logout } from 'utils/auth'
 
 dayjs.extend(utc)
 dayjs.extend(duration)
@@ -271,7 +271,7 @@ const ProfileMenu = ({
   onLanguageChange,
   language,
 }: {
-  user: IUser
+  user: User
   logoutHandler: () => void
   onLanguageChange: (l: string) => void
   language: string
@@ -485,7 +485,7 @@ const AuthedHeader = ({
   colourBackground,
   openMenu,
 }: {
-  user: IUser
+  user: User
   switchTheme: (thm?: string) => void
   theme: string
   onLanguageChange: (lng: string) => void
@@ -494,7 +494,7 @@ const AuthedHeader = ({
   logoutHandler: () => void
   colourBackground: boolean
   openMenu: () => void
-}): JSX.Element => {
+}) => {
   const {
     t,
     i18n: { language },
@@ -791,20 +791,19 @@ const NotAuthedHeader = ({
   )
 }
 
-interface IHeader {
+interface HeaderProps {
   ssrTheme: 'dark' | 'light'
   authenticated: boolean
   refPage?: boolean
   transparent?: boolean
 }
 
-const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transparent }): JSX.Element => {
+const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) => {
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
   const dispatch = useAppDispatch()
-  const _dispatch = useDispatch()
   const { user } = useSelector((state: StateType) => state.auth)
   const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -849,7 +848,7 @@ const Header: React.FC<IHeader> = ({ ssrTheme, authenticated, refPage, transpare
   const logoutHandler = () => {
     setMobileMenuOpen(false)
     dispatch(authActions.logout())
-    _dispatch(sagaActions.logout(false, false))
+    logout()
   }
 
   const switchTheme = (_theme?: string) => {

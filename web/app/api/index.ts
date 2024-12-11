@@ -7,19 +7,19 @@ import _isEmpty from 'lodash/isEmpty'
 import _isArray from 'lodash/isArray'
 
 import { authActions } from 'redux/reducers/auth'
-import sagaActions from 'redux/sagas/actions'
 import { getAccessToken, removeAccessToken, setAccessToken } from 'utils/accessToken'
 import { getRefreshToken, removeRefreshToken } from 'utils/refreshToken'
 import { DEFAULT_ALERTS_TAKE, API_URL, DEFAULT_MONITORS_TAKE } from 'redux/constants'
-import { IUser } from 'redux/models/IUser'
-import { IAuth } from 'redux/models/IAuth'
-import { IProject, IOverall, ILiveStats } from 'redux/models/IProject'
-import { IAlerts } from 'redux/models/IAlerts'
-import { ISubscribers } from 'redux/models/ISubscribers'
-import { IFilter, IProjectViewCustomEvent } from 'pages/Project/View/interfaces/traffic'
+import { User } from 'redux/models/User'
+import { Auth } from 'redux/models/Auth'
+import { Project, Overall, LiveStats } from 'redux/models/Project'
+import { Alerts } from 'redux/models/Alerts'
+import { Subscriber } from 'redux/models/Subscriber'
+import { Filter, ProjectViewCustomEvent } from 'pages/Project/View/interfaces/traffic'
 import { AIResponse } from 'pages/Project/View/interfaces/ai'
 import { Monitor, MonitorOverall } from 'redux/models/Uptime'
 import { Role } from 'redux/models/Organisation'
+import { logout } from 'utils/auth'
 
 const api = axios.create({
   baseURL: API_URL,
@@ -42,7 +42,7 @@ const refreshAuthLogic = (failedRequest: { response: AxiosResponse }) =>
     })
     .catch((error) => {
       store.dispatch(authActions.logout())
-      store.dispatch(sagaActions.logout(true, false))
+      logout()
       return Promise.reject(error)
     })
 
@@ -68,7 +68,14 @@ api.interceptors.request.use(
 export const authMe = () =>
   api
     .get('user/me')
-    .then((response): IUser => response.data)
+    .then(
+      (
+        response,
+      ): {
+        user: User
+        totalMonthlyEvents: number
+      } => response.data,
+    )
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -100,7 +107,7 @@ export const logoutAllApi = () =>
 export const login = (credentials: { email: string; password: string }) =>
   api
     .post('v1/auth/login', credentials)
-    .then((response): IAuth => response.data)
+    .then((response): Auth => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -108,7 +115,7 @@ export const login = (credentials: { email: string; password: string }) =>
 export const signup = (data: { email: string; password: string; refCode?: string }) =>
   api
     .post('v1/auth/register', data)
-    .then((response): IAuth => response.data)
+    .then((response): Auth => response.data)
     .catch((error) => {
       const errorsArray = error.response.data.message
       if (_isArray(errorsArray)) {
@@ -129,10 +136,10 @@ export const deleteUser = (deletionFeedback?: string) =>
       throw new Error(JSON.stringify(error.response.data))
     })
 
-export const changeUserDetails = (data: IUser) =>
+export const changeUserDetails = (data: User) =>
   api
     .put('/user', data)
-    .then((response): IUser => response.data)
+    .then((response): User => response.data)
     .catch((error) => {
       const errorsArray = error.response.data.message
       if (_isArray(errorsArray)) {
@@ -144,7 +151,7 @@ export const changeUserDetails = (data: IUser) =>
 export const setShowLiveVisitorsInTitle = (show: boolean) =>
   api
     .put('/user/live-visitors', { show })
-    .then((response): Partial<IUser> => response.data)
+    .then((response): Partial<User> => response.data)
     .catch((error) => {
       const errorsArray = error.response.data.message
       if (_isArray(errorsArray)) {
@@ -156,7 +163,7 @@ export const setShowLiveVisitorsInTitle = (show: boolean) =>
 export const generateRefCode = () =>
   api
     .post('/user/generate-ref-code')
-    .then((response): Partial<IUser> => response.data)
+    .then((response): Partial<User> => response.data)
     .catch((error) => {
       const errorsArray = error.response.data.message
       if (_isArray(errorsArray)) {
@@ -168,7 +175,7 @@ export const generateRefCode = () =>
 export const getPayoutsInfo = () =>
   api
     .get('/user/payouts/info')
-    .then((response): Partial<IUser> => response.data)
+    .then((response): Partial<User> => response.data)
     .catch((error) => {
       const errorsArray = error.response.data.message
       if (_isArray(errorsArray)) {
@@ -180,7 +187,7 @@ export const getPayoutsInfo = () =>
 export const getReferrals = () =>
   api
     .get('/user/referrals')
-    .then((response): Partial<IUser> => response.data)
+    .then((response): Partial<User> => response.data)
     .catch((error) => {
       const errorsArray = error.response.data.message
       if (_isArray(errorsArray)) {
@@ -256,10 +263,9 @@ export const getProjects = (take: number = 0, skip: number = 0, search?: string)
       (
         response,
       ): {
-        results: IProject[]
+        results: Project[]
         total: number
         page_total: number
-        totalMonthlyEvents: number
       } => response.data,
     )
     .catch((error) => {
@@ -385,7 +391,7 @@ export const getProject = (pid: string, password?: string) =>
         'x-password': password,
       },
     })
-    .then((response): IProject => response.data)
+    .then((response): Project => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -393,15 +399,15 @@ export const getProject = (pid: string, password?: string) =>
 export const createProject = (data: { name: string; organisationId?: string; isCaptcha?: boolean }) =>
   api
     .post('/project', data)
-    .then((response): IProject => response.data)
+    .then((response): Project => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const updateProject = (id: string, data: Partial<IProject>) =>
+export const updateProject = (id: string, data: Partial<Project>) =>
   api
     .put(`/project/${id}`, data)
-    .then((response): IProject => response.data)
+    .then((response): Project => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -442,8 +448,8 @@ export const getProjectData = (
   pid: string,
   tb: string = 'hour',
   period: string = '1d',
-  filters: IFilter[] = [],
-  metrics: IProjectViewCustomEvent[] = [],
+  filters: Filter[] = [],
+  metrics: ProjectViewCustomEvent[] = [],
   from: string = '',
   to: string = '',
   timezone: string = '',
@@ -737,8 +743,8 @@ export const createProjectView = (
   pid: string,
   name: string,
   type: 'traffic' | 'performance',
-  filters: IFilter[],
-  customEvents: Partial<IProjectViewCustomEvent>[],
+  filters: Filter[],
+  customEvents: Partial<ProjectViewCustomEvent>[],
 ) =>
   api
     .post(`project/${pid}/views`, { name, type, filters, customEvents })
@@ -751,8 +757,8 @@ export const updateProjectView = (
   pid: string,
   viewId: string,
   name: string,
-  filters: IFilter[],
-  customEvents: Partial<IProjectViewCustomEvent>[],
+  filters: Filter[],
+  customEvents: Partial<ProjectViewCustomEvent>[],
 ) =>
   api
     .patch(`project/${pid}/views/${viewId}`, { name, filters, customEvents })
@@ -808,7 +814,7 @@ export const getOverallStats = (
         },
       },
     )
-    .then((response): IOverall => response.data)
+    .then((response): Overall => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -834,7 +840,7 @@ export const getPerformanceOverallStats = (
         },
       },
     )
-    .then((response): IOverall => response.data)
+    .then((response): Overall => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -853,12 +859,12 @@ export const getOverallStatsCaptcha = (
         ',',
       )}]&period=${period}&from=${from}&to=${to}&timezone=${timezone}&filters=${JSON.stringify(filters)}`,
     )
-    .then((response): IOverall => response.data)
+    .then((response): Overall => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getLiveVisitors = (pids: string[], password?: string): Promise<ILiveStats> =>
+export const getLiveVisitors = (pids: string[], password?: string): Promise<LiveStats> =>
   api
     .get(`log/hb?pids=[${_map(pids, (pid) => `"${pid}"`).join(',')}]`, {
       headers: {
@@ -887,7 +893,7 @@ export const shareProject = (
 ) =>
   api
     .post(`/project/${pid}/share`, data)
-    .then((response): IProject => response.data)
+    .then((response): Project => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -991,7 +997,7 @@ export const getInstalledExtensions = (limit = 100, offset = 0) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export interface IGetLiveVisitorsInfo {
+export interface GetLiveVisitorsInfo {
   psid: string
   dv: string
   br: string
@@ -1006,7 +1012,7 @@ export const getLiveVisitorsInfo = (pid: string, password?: string) =>
         'x-password': password,
       },
     })
-    .then((response): IGetLiveVisitorsInfo[] => response.data)
+    .then((response): GetLiveVisitorsInfo[] => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -1026,7 +1032,7 @@ export const getProjectAlerts = (projectId: string, take: number = DEFAULT_ALERT
       (
         response,
       ): {
-        results: IAlerts[]
+        results: Alerts[]
         total: number
         page_total: number
       } => response.data,
@@ -1038,25 +1044,25 @@ export const getProjectAlerts = (projectId: string, take: number = DEFAULT_ALERT
 export const getAlert = (alertId: string) =>
   api
     .get(`/alert/${alertId}`)
-    .then((response): IAlerts => response.data)
+    .then((response): Alerts => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export interface ICreateAlert extends Omit<IAlerts, 'id' | 'lastTrigger' | 'lastTriggered' | 'created'> {}
+export interface CreateAlert extends Omit<Alerts, 'id' | 'lastTrigger' | 'lastTriggered' | 'created'> {}
 
-export const createAlert = (data: ICreateAlert) =>
+export const createAlert = (data: CreateAlert) =>
   api
     .post('alert', data)
-    .then((response): IAlerts => response.data)
+    .then((response): Alerts => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const updateAlert = (id: string, data: Partial<IAlerts>) =>
+export const updateAlert = (id: string, data: Partial<Alerts>) =>
   api
     .put(`alert/${id}`, data)
-    .then((response): IAlerts => response.data)
+    .then((response): Alerts => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -1069,23 +1075,7 @@ export const deleteAlert = (id: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export interface ICreateMonitor extends Omit<Monitor, 'id' | 'createdAt' | 'updatedAt'> {}
-
-export const getAllMonitors = (take: number = DEFAULT_MONITORS_TAKE, skip: number = 0) =>
-  api
-    .get(`project/monitors?take=${take}&skip=${skip}`)
-    .then(
-      (
-        response,
-      ): {
-        results: Monitor[]
-        total: number
-        page_total: number
-      } => response.data,
-    )
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
+export interface CreateMonitor extends Omit<Monitor, 'id' | 'createdAt' | 'updatedAt'> {}
 
 export const getProjectMonitors = (projectId: string, take: number = DEFAULT_MONITORS_TAKE, skip: number = 0) =>
   api
@@ -1099,6 +1089,14 @@ export const getProjectMonitors = (projectId: string, take: number = DEFAULT_MON
         page_total: number
       } => response.data,
     )
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const getProjectMonitor = (projectId: string, monitorId: string) =>
+  api
+    .get(`/project/${projectId}/monitor/${monitorId}`)
+    .then((response): Monitor => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -1152,7 +1150,7 @@ export const getMonitorStats = (
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const createMonitor = (pid: string, data: ICreateMonitor) =>
+export const createMonitor = (pid: string, data: CreateMonitor) =>
   api
     .post(`project/${pid}/monitor`, data)
     .then((response): Monitor => response.data)
@@ -1193,7 +1191,7 @@ export const addSubscriber = (
 ) =>
   api
     .post(`project/${id}/subscribers`, data)
-    .then((response): ISubscribers => response.data)
+    .then((response): Subscriber => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -1229,7 +1227,7 @@ export const getSubscribers = (id: string, offset: number, limit: number) =>
       (
         response,
       ): {
-        subscribers: ISubscribers[]
+        subscribers: Subscriber[]
         count: number
       } => response.data,
     )
@@ -1246,7 +1244,7 @@ export const updateSubscriber = (
 ) =>
   api
     .patch(`project/${id}/subscribers/${subscriberId}`, data)
-    .then((response): ISubscribers => response.data)
+    .then((response): Subscriber => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -1326,7 +1324,15 @@ export const generateSSOAuthURL = (provider: string) =>
     .post('v1/auth/sso/generate', {
       provider,
     })
-    .then((response): unknown => response.data)
+    .then(
+      (
+        response,
+      ): {
+        uuid: string
+        auth_url: string
+        expires_in: number
+      } => response.data,
+    )
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -1334,7 +1340,16 @@ export const generateSSOAuthURL = (provider: string) =>
 export const getJWTBySSOHash = (hash: string, provider: string, refCode?: string) =>
   api
     .post('v1/auth/sso/hash', { hash, provider, refCode })
-    .then((response): unknown => response.data)
+    .then(
+      (
+        response,
+      ): {
+        accessToken: string
+        refreshToken: string
+        user: User
+        totalMonthlyEvents: number
+      } => response.data,
+    )
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })

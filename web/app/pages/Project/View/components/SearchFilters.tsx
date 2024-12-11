@@ -13,16 +13,16 @@ import { FILTERS_PANELS_ORDER, ERRORS_FILTERS_PANELS_ORDER } from 'redux/constan
 import countries from 'utils/isoCountries'
 import { getFilters, getErrorsFilters } from 'api'
 import { Filter } from './Filters'
-import { IFilter } from '../interfaces/traffic'
+import { Filter as FilterType } from '../interfaces/traffic'
 
-interface ISearchFilters {
+interface SearchFiltersProps {
   projectPassword?: string
-  setProjectFilter: (filters: IFilter[], override: boolean) => void
+  setProjectFilter: (filters: FilterType[], override: boolean) => void
   pid: string
   showModal: boolean
   setShowModal: (show: boolean) => void
   tnMapping: Record<string, string>
-  filters: IFilter[]
+  filters: FilterType[]
   type: 'traffic' | 'errors'
 }
 
@@ -35,14 +35,14 @@ const SearchFilters = ({
   filters,
   projectPassword,
   type,
-}: ISearchFilters) => {
+}: SearchFiltersProps) => {
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
   const [filterType, setFilterType] = useState('')
   const [searchList, setSearchList] = useState<any[]>([])
-  const [activeFilters, setActiveFilters] = useState<IFilter[]>([])
+  const [activeFilters, setActiveFilters] = useState<FilterType[]>([])
   const [override, setOverride] = useState(false)
 
   const getFiltersList = useCallback(

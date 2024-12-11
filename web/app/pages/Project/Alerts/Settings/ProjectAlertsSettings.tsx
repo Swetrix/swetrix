@@ -18,11 +18,11 @@ import Button from 'ui/Button'
 import Checkbox from 'ui/Checkbox'
 import Modal from 'ui/Modal'
 import { PROJECT_TABS, QUERY_CONDITION, QUERY_METRIC, QUERY_TIME } from 'redux/constants'
-import { createAlert, updateAlert, deleteAlert, ICreateAlert, getAlert } from 'api'
+import { createAlert, updateAlert, deleteAlert, CreateAlert, getAlert } from 'api'
 import { withAuthentication, auth } from 'hoc/protected'
 import routes from 'utils/routes'
 import Select from 'ui/Select'
-import { IAlerts } from 'redux/models/IAlerts'
+import { Alerts } from 'redux/models/Alerts'
 import { StateType } from 'redux/store'
 import { useSelector } from 'react-redux'
 import { useRequiredParams } from 'hooks/useRequiredParams'
@@ -40,7 +40,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
   const navigate = useNavigate()
   const { id, pid } = useRequiredParams<{ id: string; pid: string }>()
   const { t } = useTranslation('common')
-  const [form, setForm] = useState<Partial<IAlerts>>({
+  const [form, setForm] = useState<Partial<Alerts>>({
     pid,
     name: '',
     queryTime: QUERY_TIME.LAST_1_HOUR,
@@ -56,7 +56,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showModal, setShowModal] = useState(false)
 
-  const [alert, setAlert] = useState<IAlerts | null>(null)
+  const [alert, setAlert] = useState<Alerts | null>(null)
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -194,7 +194,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
     setValidated(valid)
   }
 
-  const onSubmit = (data: Partial<IAlerts>) => {
+  const onSubmit = (data: Partial<Alerts>) => {
     if (isSettings) {
       updateAlert(id as string, data)
         .then((res) => {
@@ -206,7 +206,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
           toast.error(reason.message || reason || 'Something went wrong')
         })
     } else {
-      createAlert(data as ICreateAlert)
+      createAlert(data as CreateAlert)
         .then((res) => {
           navigate(`/projects/${pid}?tab=${PROJECT_TABS.alerts}`)
           toast.success(t('alertsSettings.alertCreated'))

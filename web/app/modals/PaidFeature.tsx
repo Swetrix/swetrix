@@ -5,12 +5,12 @@ import { useTranslation } from 'react-i18next'
 import Modal from 'ui/Modal'
 import routes from 'utils/routes'
 
-interface IPaidFeature {
+interface PaidFeatureProps {
   onClose: () => void
   isOpened: boolean
 }
 
-const PaidFeature = ({ onClose, isOpened }: IPaidFeature): JSX.Element => {
+const PaidFeature = ({ onClose, isOpened }: PaidFeatureProps) => {
   const { t } = useTranslation('common')
   const navigate = useNavigate()
 

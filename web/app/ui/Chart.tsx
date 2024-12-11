@@ -4,14 +4,14 @@ import 'billboard.js/dist/theme/datalab.css'
 import 'billboard.js/dist/billboard.css'
 
 // Define the prop types for the component
-interface IChart {
+interface ChartProps {
   // (string): The ID of the chart container.
   current: string
   // (object): The chart options.
   options: any
 }
 
-const Chart = ({ current, options }: IChart): JSX.Element => {
+const Chart = ({ current, options }: ChartProps) => {
   let chartInstance: any = {}
 
   // Destroy the chart instance

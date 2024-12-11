@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next'
 import countries from 'utils/isoCountries'
 import { getLocaleDisplayName } from 'utils/generic'
 
-interface IFilter {
+interface FilterProps {
   column: string
   filter: string
   isExclusive: boolean
@@ -33,7 +33,7 @@ export const Filter = ({
   tnMapping,
   canChangeExclusive,
   removable,
-}: IFilter): JSX.Element => {
+}: FilterProps) => {
   const {
     t,
     i18n: { language },
@@ -111,7 +111,7 @@ export const Filter = ({
   )
 }
 
-interface IFilters {
+interface FiltersProps {
   filters: {
     column: string
     filter: string
@@ -125,7 +125,7 @@ interface IFilters {
   resetFilters: () => void
 }
 
-const Filters = ({ filters, onRemoveFilter, onChangeExclusive, tnMapping, resetFilters }: IFilters) => {
+const Filters = ({ filters, onRemoveFilter, onChangeExclusive, tnMapping, resetFilters }: FiltersProps) => {
   if (_isEmpty(filters)) {
     return null
   }

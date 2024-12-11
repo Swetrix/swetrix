@@ -5,7 +5,7 @@ import cx from 'clsx'
 import { useTranslation } from 'react-i18next'
 import { usePagination, DOTS } from 'hooks/usePagination'
 
-interface IPagination {
+interface PaginationProps {
   page: number
   setPage: (item: number) => void
   pageAmount: number
@@ -14,7 +14,7 @@ interface IPagination {
   pageSize?: number
 }
 
-const Pagination = ({ page, setPage, pageAmount, total, className, pageSize }: IPagination): JSX.Element => {
+const Pagination = ({ page, setPage, pageAmount, total, className, pageSize }: PaginationProps) => {
   const { t } = useTranslation('common')
   const paginationRange = usePagination(total, page, 1, pageSize)
 

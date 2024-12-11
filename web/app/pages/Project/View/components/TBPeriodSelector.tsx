@@ -8,7 +8,7 @@ import _includes from 'lodash/includes'
 import cx from 'clsx'
 import { ALL_PERIODS } from 'redux/constants'
 
-interface ITBPeriodSelector {
+interface TBPeriodSelectorProps {
   title: string | number | React.ReactNode
   items: any[]
   /* (function): A function that is called when an item is selected. */
@@ -30,7 +30,7 @@ const TBPeriodSelector = ({
   updateTimebucket,
   timeBucket,
   classes,
-}: ITBPeriodSelector): JSX.Element => {
+}: TBPeriodSelectorProps) => {
   const { t } = useTranslation('common')
 
   const periods = useMemo(() => {

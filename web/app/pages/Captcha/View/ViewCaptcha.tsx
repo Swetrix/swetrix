@@ -40,7 +40,7 @@ import {
   isBrowser,
   ThemeType,
 } from 'redux/constants'
-import { ICaptchaProject, IProject } from 'redux/models/IProject'
+import { CaptchaProject, Project } from 'redux/models/Project'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
@@ -99,7 +99,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
   const { id } = useRequiredParams<{ id: string }>()
   const navigate = useNavigate()
 
-  const [project, setProject] = useState<ICaptchaProject | null>(null)
+  const [project, setProject] = useState<CaptchaProject | null>(null)
 
   const [areFiltersParsed, setAreFiltersParsed] = useState(false)
   const [areTimeBucketParsed, setAreTimeBucketParsed] = useState(false)
@@ -150,7 +150,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
 
   const _theme = isBrowser ? theme : ssrTheme
 
-  const { name } = project as IProject
+  const { name } = project as Project
 
   useEffect(() => {
     let pageTitle = name
@@ -518,7 +518,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
         if (_isEmpty(result)) {
           onErrorLoading()
         } else {
-          setProject(result as ICaptchaProject)
+          setProject(result as CaptchaProject)
         }
       })
       .catch((reason) => {

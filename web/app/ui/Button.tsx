@@ -4,7 +4,7 @@ import { Button as HeadlessButton } from '@headlessui/react'
 import cx from 'clsx'
 import Spin from './icons/Spin'
 
-interface IButton extends React.ComponentPropsWithoutRef<typeof HeadlessButton> {
+interface ButtonProps extends React.ComponentPropsWithoutRef<typeof HeadlessButton> {
   text?: string
   children?: React.ReactNode
   primary?: boolean
@@ -43,7 +43,7 @@ const Button = ({
   focus = true,
   disabled,
   ...props
-}: IButton) => (
+}: ButtonProps) => (
   <HeadlessButton
     {...props}
     disabled={disabled || loading}

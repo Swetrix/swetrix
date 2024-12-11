@@ -16,7 +16,7 @@ import Header from 'components/Header'
 import Footer from 'components/Footer'
 import { useRequiredParams } from 'hooks/useRequiredParams'
 
-interface IProjectProtectedPasswordForm {
+interface ProjectProtectedPasswordForm {
   password: string
 }
 
@@ -30,7 +30,7 @@ interface ProjectProtectedPasswordProps {
 
 const ProjectProtectedPassword = ({ ssrTheme, embedded, isAuth }: ProjectProtectedPasswordProps) => {
   const { t } = useTranslation('common')
-  const [form, setForm] = useState<IProjectProtectedPasswordForm>({
+  const [form, setForm] = useState<ProjectProtectedPasswordForm>({
     password: '',
   })
   const [validated, setValidated] = useState(false)
@@ -66,7 +66,7 @@ const ProjectProtectedPassword = ({ ssrTheme, embedded, isAuth }: ProjectProtect
     validate()
   }, [form]) // eslint-disable-line
 
-  const onSubmit = async (data: IProjectProtectedPasswordForm) => {
+  const onSubmit = async (data: ProjectProtectedPasswordForm) => {
     if (!isLoading) {
       setIsLoading(true)
       await checkPassword(id, data.password)

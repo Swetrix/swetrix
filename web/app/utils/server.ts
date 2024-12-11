@@ -69,15 +69,15 @@ export function isWWW(url: URL): boolean {
   return _startsWith(url.hostname, 'www.')
 }
 
-interface IPageMeta {
+interface GetPageMeta {
   title: string
   prefixLessTitle: string
 }
 
-export const getPageMeta = (t: typeof i18next.t, url?: string, _pathname?: string): IPageMeta => {
+export const getPageMeta = (t: typeof i18next.t, url?: string, _pathname?: string): GetPageMeta => {
   const DEFAULT_RESULT = {
     title: t('titles.main'),
-  } as Partial<IPageMeta>
+  } as Partial<GetPageMeta>
 
   if (!url && !_pathname) {
     return {
@@ -264,5 +264,5 @@ export const getPageMeta = (t: typeof i18next.t, url?: string, _pathname?: strin
   result.prefixLessTitle = result.title
   result.title += ` ${TITLE_SUFFIX}`
 
-  return result as IPageMeta
+  return result as GetPageMeta
 }

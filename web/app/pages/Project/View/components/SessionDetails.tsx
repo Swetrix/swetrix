@@ -4,15 +4,15 @@ import _capitalize from 'lodash/capitalize'
 import _size from 'lodash/size'
 import _truncate from 'lodash/truncate'
 import { getLocaleDisplayName, getStringFromTime, getTimeFromSeconds } from 'utils/generic'
-import { ISessionDetails } from '../interfaces/session'
+import { SessionDetails as Details } from '../interfaces/session'
 import { MetricCard, MetricCardSelect } from './MetricCards'
 import CCRow from './CCRow'
 
-interface ISessionDetailsComponent {
-  details: ISessionDetails
+interface SessionDetailsProps {
+  details: Details
 }
 
-export const SessionDetails = ({ details }: ISessionDetailsComponent) => {
+export const SessionDetails = ({ details }: SessionDetailsProps) => {
   const {
     t,
     i18n: { language },

@@ -3,14 +3,12 @@ import { PROJECTS_PROTECTED } from 'redux/constants'
 import { setItem, getItem } from 'utils/localstorage'
 
 interface InitialState {
-  totalMonthlyEvents: number | null
   password: {
     [key: string]: string
   }
 }
 
 const initialState: InitialState = {
-  totalMonthlyEvents: null,
   password: getItem(PROJECTS_PROTECTED) || {},
 }
 
@@ -18,9 +16,6 @@ const projectsSlice = createSlice({
   name: 'projects',
   initialState,
   reducers: {
-    setTotalMonthlyEvents(state, { payload }: PayloadAction<number>) {
-      state.totalMonthlyEvents = payload
-    },
     setProjectPassword: (state, { payload }: PayloadAction<{ id: string; password: string }>) => {
       const { id, password } = payload
 

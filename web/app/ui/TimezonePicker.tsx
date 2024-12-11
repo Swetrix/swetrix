@@ -37,7 +37,7 @@ const options = _reduce(
   [],
 ).sort((a, b) => a.offset - b.offset)
 
-interface ITimezoneSelect {
+interface TimezoneSelectProps {
   value:
     | string
     | {
@@ -47,7 +47,7 @@ interface ITimezoneSelect {
   onChange: (item: string) => void
 }
 
-const TimezoneSelect = ({ value, onChange }: ITimezoneSelect): JSX.Element => {
+const TimezoneSelect = ({ value, onChange }: TimezoneSelectProps) => {
   const { t } = useTranslation('common')
   const labelExtractor = (option: { label: string }) => option?.label
   const keyExtractor = (option: { value: string }) => option?.value

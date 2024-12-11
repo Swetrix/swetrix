@@ -6,7 +6,7 @@ import _keys from 'lodash/keys'
 import _omit from 'lodash/omit'
 import _isEmpty from 'lodash/isEmpty'
 
-import { getAccessToken } from 'utils/accessToken'
+import { getAccessToken, setAccessToken } from 'utils/accessToken'
 import GoogleAuth from 'components/GoogleAuth'
 import GithubAuth from 'components/GithubAuth'
 import routes from 'utils/routes'
@@ -15,11 +15,19 @@ import Checkbox from 'ui/Checkbox'
 import Tooltip from 'ui/Tooltip'
 import Button from 'ui/Button'
 import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS, MAX_PASSWORD_CHARS } from 'utils/validator'
-import { HAVE_I_BEEN_PWNED_URL, TRIAL_DAYS } from 'redux/constants'
+import { HAVE_I_BEEN_PWNED_URL, REFERRAL_COOKIE, TRIAL_DAYS } from 'redux/constants'
 import { trackCustom } from 'utils/analytics'
 import { StateType, useAppDispatch } from 'redux/store'
-import sagaActions from 'redux/sagas/actions'
 import { useSelector } from 'react-redux'
+import { delay, openBrowserWindow } from 'utils/generic'
+import { toast } from 'sonner'
+import { generateSSOAuthURL, getJWTBySSOHash, signup } from 'api'
+import { deleteCookie, getCookie } from 'utils/cookie'
+import { authActions } from 'redux/reducers/auth'
+import { setRefreshToken } from 'utils/refreshToken'
+import { shouldShowLowEventsBanner } from 'utils/auth'
+import UIActions from 'redux/reducers/ui'
+import { SSOProvider } from 'redux/models/Auth'
 
 interface SignupForm {
   email: string
@@ -30,11 +38,13 @@ interface SignupForm {
   checkIfLeaked: boolean
 }
 
-interface ISignup {
+interface SignupProps {
   ssrTheme: string
 }
 
-const Signup = ({ ssrTheme }: ISignup) => {
+const HASH_CHECK_FREQUENCY = 1000
+
+const Signup = ({ ssrTheme }: SignupProps) => {
   const dispatch = useAppDispatch()
   const { authenticated: reduxAuthenticated, loading } = useSelector((state: StateType) => state.auth)
   const { t } = useTranslation('common')
@@ -104,21 +114,111 @@ const Signup = ({ ssrTheme }: ISignup) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authenticated, beenSubmitted])
 
-  const signUpCallback = (result: any) => {
-    if (result) {
+  const onSubmit = async (data: SignupForm) => {
+    if (isLoading) {
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      const { dontRemember } = data
+
+      const refCode = getCookie(REFERRAL_COOKIE)
+
+      const { user, accessToken, refreshToken } = await signup({
+        ..._omit(data, ['dontRemember']),
+        refCode: refCode || undefined,
+      })
+
+      if (refCode) {
+        deleteCookie(REFERRAL_COOKIE)
+      }
+
+      dispatch(authActions.authSuccessful(user))
+      dispatch(authActions.setDontRemember(dontRemember))
+      setAccessToken(accessToken, dontRemember)
+      setRefreshToken(refreshToken)
+      setIsLoading(false)
+
       trackCustom('SIGNUP', {
         from: 'Signup page',
       })
       navigate(routes.confirm_email)
-    } else {
+    } catch (reason) {
+      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
       setIsLoading(false)
+    } finally {
+      dispatch(authActions.finishLoading())
     }
   }
 
-  const onSubmit = (data: SignupForm) => {
-    if (!isLoading) {
-      setIsLoading(true)
-      dispatch(sagaActions.signupAsync(_omit(data, 'tos'), t, signUpCallback))
+  const onSsoLogin = async (provider: SSOProvider) => {
+    const authWindow = openBrowserWindow('')
+
+    if (!authWindow) {
+      toast.error(t('apiNotifications.socialisationAuthGenericError'))
+      setIsLoading(false)
+      return
+    }
+
+    try {
+      const { uuid, auth_url: authUrl, expires_in: expiresIn } = await generateSSOAuthURL(provider)
+
+      authWindow.location = authUrl
+
+      // Closing the authorisation window after the session expires
+      setTimeout(authWindow.close, expiresIn)
+
+      const refCode = getCookie(REFERRAL_COOKIE) as string
+
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        await delay(HASH_CHECK_FREQUENCY)
+
+        try {
+          const { accessToken, refreshToken, user, totalMonthlyEvents } = await getJWTBySSOHash(uuid, provider, refCode)
+          authWindow.close()
+
+          if (refCode) {
+            deleteCookie(REFERRAL_COOKIE)
+          }
+
+          if (user.isTwoFactorAuthenticationEnabled) {
+            setAccessToken(accessToken, true)
+            setRefreshToken(refreshToken)
+            dispatch(authActions.mergeUser(user))
+            navigate(`${routes.signin}?show_2fa_screen=true`)
+            setIsLoading(false)
+            return
+          }
+
+          dispatch(authActions.authSuccessful(user))
+          setAccessToken(accessToken, false)
+          setRefreshToken(refreshToken)
+
+          if (shouldShowLowEventsBanner(totalMonthlyEvents, user.maxEventsCount)) {
+            dispatch(UIActions.setShowNoEventsLeftBanner(true))
+          }
+
+          dispatch(authActions.finishLoading())
+
+          navigate(routes.dashboard)
+
+          return
+        } catch (reason) {
+          // Authentication is not finished yet
+        }
+
+        if (authWindow.closed) {
+          setIsLoading(false)
+          return
+        }
+      }
+    } catch (reason) {
+      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.socialisationGenericError'))
+      setIsLoading(false)
+      return
     }
   }
 
@@ -272,13 +372,8 @@ const Signup = ({ ssrTheme }: ISignup) => {
                   </div>
                 </div>
                 <div className='mt-6 grid grid-cols-2 gap-4'>
-                  <GoogleAuth setIsLoading={setIsLoading} callback={signUpCallback} dontRemember={false} />
-                  <GithubAuth
-                    setIsLoading={setIsLoading}
-                    callback={signUpCallback}
-                    dontRemember={false}
-                    ssrTheme={ssrTheme}
-                  />
+                  <GoogleAuth onClick={() => onSsoLogin('google')} disabled={isLoading} />
+                  <GithubAuth onClick={() => onSsoLogin('github')} ssrTheme={ssrTheme} disabled={isLoading} />
                 </div>
               </div>
             </div>

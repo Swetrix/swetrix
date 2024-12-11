@@ -14,12 +14,13 @@ import Footer from 'components/Footer'
 import { Toaster } from 'sonner'
 import { getAccessToken } from 'utils/accessToken'
 import { authActions } from 'redux/reducers/auth'
-import sagaActions from 'redux/sagas/actions'
 import { StateType, useAppDispatch } from 'redux/store'
-import { isBrowser } from 'redux/constants'
+import { isBrowser, isSelfhosted } from 'redux/constants'
 import routesPath from 'utils/routes'
 import { getPageMeta } from 'utils/server'
-import { authMe } from './api'
+import { authMe, getGeneralStats, getInstalledExtensions, getLastPost, getPaymentMetainfo } from './api'
+import UIActions from 'redux/reducers/ui'
+import { logout, shouldShowLowEventsBanner } from 'utils/auth'
 
 interface AppProps {
   ssrTheme: 'dark' | 'light'
@@ -44,14 +45,42 @@ const App = ({ ssrTheme, ssrAuthenticated }: AppProps) => {
     (async () => {
       if (accessToken && !reduxAuthenticated) {
         try {
-          const me = await authMe()
-          dispatch(authActions.authSuccessful(me))
+          const { user, totalMonthlyEvents } = await authMe()
+          dispatch(authActions.authSuccessful(user))
+
+          if (shouldShowLowEventsBanner(totalMonthlyEvents, user.maxEventsCount)) {
+            dispatch(UIActions.setShowNoEventsLeftBanner(true))
+          }
+
+          if (!isSelfhosted) {
+            const extensions = await getInstalledExtensions()
+            dispatch(UIActions.setExtensions(extensions))
+          }
         } catch (reason) {
           dispatch(authActions.logout())
-          dispatch(sagaActions.logout(false, false))
+          logout()
           console.error(`[ERROR] Error while getting user: ${reason}`)
         }
       }
+
+      if (!isSelfhosted) {
+        const [metainfo, lastBlogPost, generalStats] = await Promise.all([
+          getPaymentMetainfo(),
+          getLastPost(),
+          getGeneralStats(),
+        ])
+        dispatch(UIActions.setMetainfo(metainfo))
+        dispatch(UIActions.setLastBlogPost(lastBlogPost))
+        dispatch(UIActions.setGeneralStats(generalStats))
+      }
+
+      // yield put(sagaActions.loadMetainfo())
+
+      // const lastBlogPost: {
+      //   title: string
+      //   handle: string
+      // } = yield call(getLastPost)
+      // yield put(UIActions.setLastBlogPost(lastBlogPost))
 
       dispatch(authActions.finishLoading())
     })()

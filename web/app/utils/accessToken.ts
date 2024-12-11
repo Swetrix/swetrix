@@ -20,7 +20,7 @@ export const getAccessToken = () => {
   return accessToken
 }
 
-export const setAccessToken = (token: string, temporary: boolean = false) => {
+export const setAccessToken = (token: string, temporary = false) => {
   if (!isBrowser) {
     return null
   }

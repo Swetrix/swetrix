@@ -21,7 +21,7 @@ import Modal from 'ui/Modal'
 import Loader from 'ui/Loader'
 import cx from 'clsx'
 import { Badge } from 'ui/Badge'
-import { ISubscribers } from 'redux/models/ISubscribers'
+import { Subscriber } from 'redux/models/Subscriber'
 
 interface ModalMessageProps {
   handleInput: (e: React.ChangeEvent<HTMLInputElement>) => void
@@ -134,7 +134,7 @@ interface EmailListProps {
     reportFrequency: string
   }
   onRemove: () => void
-  setEmails: (value: ISubscribers[] | ((prevVar: ISubscribers[]) => ISubscribers[])) => void
+  setEmails: (value: Subscriber[] | ((prevVar: Subscriber[]) => Subscriber[])) => void
 }
 
 const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
@@ -254,7 +254,7 @@ const NoSubscribers = () => {
   )
 }
 
-const Emails = ({ projectId }: { projectId: string }): JSX.Element => {
+const Emails = ({ projectId }: { projectId: string }) => {
   const [showModal, setShowModal] = useState(false)
   const { t } = useTranslation('common')
   const [form, setForm] = useState<{
@@ -270,7 +270,7 @@ const Emails = ({ projectId }: { projectId: string }): JSX.Element => {
     reportFrequency?: string
   }>({})
   const [validated, setValidated] = useState(false)
-  const [emails, setEmails] = useState<ISubscribers[]>([])
+  const [emails, setEmails] = useState<Subscriber[]>([])
   const [loading, setLoading] = useState(true)
   const [pagination, setPagination] = useState({
     page: 1,
@@ -280,7 +280,7 @@ const Emails = ({ projectId }: { projectId: string }): JSX.Element => {
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [emailToRemove, setEmailToRemove] = useState<ISubscribers | null>(null)
+  const [emailToRemove, setEmailToRemove] = useState<Subscriber | null>(null)
 
   const getSubcribersAsync = async () => {
     try {

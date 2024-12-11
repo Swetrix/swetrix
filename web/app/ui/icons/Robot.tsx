@@ -1,13 +1,13 @@
 import React from 'react'
 import cx from 'clsx'
 
-interface IRobot {
+interface RobotProps {
   className?: string
   containerClassName?: string
   theme: 'dark' | 'light'
 }
 
-const Robot: React.FC<IRobot> = ({ className, containerClassName, theme }): JSX.Element => {
+const Robot = ({ className, containerClassName, theme }: RobotProps) => {
   const cn = cx(className, {
     'fill-text-gray-700': theme === 'dark',
     'fill-white': theme === 'light',

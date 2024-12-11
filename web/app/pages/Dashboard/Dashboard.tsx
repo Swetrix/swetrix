@@ -23,7 +23,7 @@ import { StateType } from 'redux/store'
 import { ProjectCard } from './ProjectCard'
 import { NoProjects } from './NoProjects'
 import { AddProject } from './AddProject'
-import { IOverall, IProject } from 'redux/models/IProject'
+import { Overall, Project } from 'redux/models/Project'
 import { getProjects, getLiveVisitors, getOverallStats, getOverallStatsCaptcha } from 'api'
 
 const Dashboard = () => {
@@ -33,13 +33,13 @@ const Dashboard = () => {
   const [isSearchActive, setIsSearchActive] = useState(false)
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
 
-  const [projects, setProjects] = useState<IProject[]>([])
+  const [projects, setProjects] = useState<Project[]>([])
   const [paginationTotal, setPaginationTotal] = useState(0)
   const [page, setPage] = useState(1)
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [liveStats, setLiveStats] = useState<Record<string, number>>({})
-  const [overallStats, setOverallStats] = useState<IOverall>({})
+  const [overallStats, setOverallStats] = useState<Overall>({})
 
   const pageAmount = Math.ceil(paginationTotal / ENTRIES_PER_PAGE_DASHBOARD)
 
@@ -88,8 +88,8 @@ const Dashboard = () => {
         const projectIds = projects.map((p) => p.id)
         const stats = await getLiveVisitors(projectIds)
         setLiveStats(stats)
-      } catch (error) {
-        console.error('Failed to fetch live visitors:', error)
+      } catch (reason) {
+        console.error('Failed to fetch live visitors:', reason)
       }
     }
 
@@ -99,8 +99,8 @@ const Dashboard = () => {
       try {
         const stats = await getOverallStats(projectIds, '7d')
         setOverallStats(stats)
-      } catch (error) {
-        console.error('Failed to fetch overall stats:', error)
+      } catch (reason) {
+        console.error('Failed to fetch overall stats:', reason)
       }
     }
 
@@ -110,8 +110,8 @@ const Dashboard = () => {
       try {
         const stats = await getOverallStatsCaptcha(projectIds, '7d')
         setOverallStats(stats)
-      } catch (error) {
-        console.error('Failed to fetch overall stats:', error)
+      } catch (reason) {
+        console.error('Failed to fetch overall stats:', reason)
       }
     }
 

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import OutsideClickHandler from 'react-outside-click-handler'
 import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
-interface ICountryDropdown {
+interface CountryDropdownProps {
   onSelect: any
   title: string
 }
@@ -24,7 +24,7 @@ const OPTIONS = [
   },
 ]
 
-const CountryDropdown = ({ onSelect, title }: ICountryDropdown): JSX.Element => {
+const CountryDropdown = ({ onSelect, title }: CountryDropdownProps) => {
   const { t } = useTranslation()
   const [show, setShow] = useState(false)
 

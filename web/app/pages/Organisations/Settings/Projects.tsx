@@ -19,10 +19,10 @@ import routes from 'utils/routes'
 import Loader from 'ui/Loader'
 import Pagination from 'ui/Pagination'
 import useDebounce from 'hooks/useDebounce'
-import { IProject } from 'redux/models/IProject'
+import { Project } from 'redux/models/Project'
 
 interface SelectAProjectProps {
-  onSelect: (project: IProject) => void
+  onSelect: (project: Project) => void
 }
 
 const PAGINATION_ENTRIES = 5
@@ -33,7 +33,7 @@ const SelectAProject = ({ onSelect }: SelectAProjectProps) => {
   const [currentPage, setCurrentPage] = useState(1)
   const [search, setSearch] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [projects, setProjects] = useState<IProject[]>([])
+  const [projects, setProjects] = useState<Project[]>([])
   const [total, setTotal] = useState(0)
 
   const debouncedSearch = useDebounce(search, 500)
@@ -172,7 +172,7 @@ interface ProjectsProps {
   reloadOrganisation: () => Promise<void>
 }
 
-export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps): JSX.Element => {
+export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) => {
   const { t } = useTranslation('common')
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)

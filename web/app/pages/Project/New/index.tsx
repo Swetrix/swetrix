@@ -9,7 +9,7 @@ import _keys from 'lodash/keys'
 
 import { withAuthentication, auth } from 'hoc/protected'
 import { isSelfhosted, TITLE_SUFFIX } from 'redux/constants'
-import { IProject } from 'redux/models/IProject'
+import { Project } from 'redux/models/Project'
 import { createProject } from 'api'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -29,7 +29,7 @@ const NewProject = () => {
   const { t } = useTranslation('common')
   const navigate = useNavigate()
 
-  const [form, setForm] = useState<Partial<IProject>>({
+  const [form, setForm] = useState<Partial<Project>>({
     name: '',
     organisationId: undefined,
   })
@@ -64,7 +64,7 @@ const NewProject = () => {
     }
   }, [user, navigate, dispatch, t, loading])
 
-  const onSubmit = async (data: Partial<IProject>) => {
+  const onSubmit = async (data: Partial<Project>) => {
     if (!projectSaving) {
       setProjectSaving(true)
       try {

@@ -31,7 +31,7 @@ import Checkbox from 'ui/Checkbox'
 import Modal from 'ui/Modal'
 import { trackCustom } from 'utils/analytics'
 import routes from 'utils/routes'
-import { ICaptchaProject } from 'redux/models/IProject'
+import { CaptchaProject } from 'redux/models/Project'
 import { useRequiredParams } from 'hooks/useRequiredParams'
 import { useSelector } from 'react-redux'
 import { StateType } from 'redux/store'
@@ -40,8 +40,7 @@ const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
 const MAX_IPBLACKLIST_LENGTH = 300
 
-// add to interface IProject new fields isCaptcha
-interface IForm extends Partial<ICaptchaProject> {
+interface Form extends Partial<CaptchaProject> {
   isCaptcha?: boolean
   id: string
   name: string
@@ -53,7 +52,7 @@ interface CaptchaSettingsProps {
   isSettings: boolean
 }
 
-const CaptchaSettings = ({ isSettings }: CaptchaSettingsProps): JSX.Element => {
+const CaptchaSettings = ({ isSettings }: CaptchaSettingsProps) => {
   const { loading: authLoading } = useSelector((state: StateType) => state.auth)
 
   const { t } = useTranslation('common')
@@ -61,7 +60,7 @@ const CaptchaSettings = ({ isSettings }: CaptchaSettingsProps): JSX.Element => {
     id: string
   }>()
   const navigate = useNavigate()
-  const [form, setForm] = useState<IForm>({
+  const [form, setForm] = useState<Form>({
     name: '',
     id,
     public: false,
@@ -83,7 +82,7 @@ const CaptchaSettings = ({ isSettings }: CaptchaSettingsProps): JSX.Element => {
   const [captchaSecretKey, setCaptchaSecretKey] = useState<string | null>(null)
   const [showRegenerateSecret, setShowRegenerateSecret] = useState(false)
 
-  const [project, setProject] = useState<ICaptchaProject | null>(null)
+  const [project, setProject] = useState<CaptchaProject | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -94,7 +93,7 @@ const CaptchaSettings = ({ isSettings }: CaptchaSettingsProps): JSX.Element => {
     setIsLoading(true)
 
     try {
-      const result = (await getProject(projectId)) as ICaptchaProject
+      const result = (await getProject(projectId)) as CaptchaProject
       setProject(result)
       setCaptchaSecretKey(result.captchaSecretKey)
       setForm({
@@ -119,11 +118,11 @@ const CaptchaSettings = ({ isSettings }: CaptchaSettingsProps): JSX.Element => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, id])
 
-  const onSubmit = async (data: IForm) => {
+  const onSubmit = async (data: Form) => {
     if (!projectSaving) {
       setProjectSaving(true)
       try {
-        const formalisedData: IForm = {
+        const formalisedData: Form = {
           ...data,
           origins: _isEmpty(data.origins)
             ? null
@@ -140,7 +139,7 @@ const CaptchaSettings = ({ isSettings }: CaptchaSettingsProps): JSX.Element => {
           ipBlacklist: _isEmpty(data.ipBlacklist) ? null : _split(data.ipBlacklist as string, ','),
         }
         if (isSettings) {
-          await updateProject(id, formalisedData as ICaptchaProject)
+          await updateProject(id, formalisedData as CaptchaProject)
           toast.success(t('project.settings.updated'))
         } else {
           await createProject({

@@ -63,7 +63,8 @@
     "orgUserRemoveError": "Error occurred while removing the user from the organisation",
     "orgSettingsUpdated": "Organisation settings have been updated",
     "projectAssigned": "The project has been assigned to the organisation",
-    "projectAssignError": "Failed to assign the project to the organisation"
+    "projectAssignError": "Failed to assign the project to the organisation",
+    "failedToLoadUsageInfo": "Failed to load usage info"
   },
   "common": {
     "features": "Features",

@@ -7,40 +7,40 @@ import countries from 'utils/isoCountries'
 import { PROJECT_TABS } from 'redux/constants'
 import { getTimeFromSeconds, getStringFromTime, nFormatter } from 'utils/generic'
 
-import { IEntry } from 'redux/models/IEntry'
+import { Entry } from 'redux/models/Entry'
 import countriesList from 'utils/countries'
 import { useSearchParams } from '@remix-run/react'
 
-interface IInteractiveMap {
-  data: IEntry[]
+interface InteractiveMapProps {
+  data: Entry[]
   onClickCountry: (country: string) => void
   total: number
 }
 
-interface ICursorPosition {
+interface CursorPosition {
   pageX: number
   pageY: number
 }
 
-interface IDataHover {
+interface DataHover {
   countries: string
   data: number
 }
 
-interface ICountryMap {
+interface CountryMap {
   [key: string]: number
 }
 
-const InteractiveMap = ({ data, onClickCountry, total }: IInteractiveMap) => {
+const InteractiveMap = ({ data, onClickCountry, total }: InteractiveMapProps) => {
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
   const [searchParams] = useSearchParams()
   const [hoverShow, setHoverShow] = useState(false)
-  const [dataHover, setDataHover] = useState<IDataHover>({} as IDataHover)
-  const [cursorPosition, setCursorPosition] = useState<ICursorPosition>({} as ICursorPosition)
-  const countryMap: ICountryMap = useMemo(
+  const [dataHover, setDataHover] = useState<DataHover>({} as DataHover)
+  const [cursorPosition, setCursorPosition] = useState<CursorPosition>({} as CursorPosition)
+  const countryMap: CountryMap = useMemo(
     () => _reduce(data, (prev, curr) => ({ ...prev, [curr.cc || curr.name]: curr.count }), {}),
     [data],
   )

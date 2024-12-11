@@ -1,4 +1,4 @@
-export interface IStats {
+export interface Stats {
   users: number
   projects: number
   events: number

@@ -10,7 +10,7 @@ import {
   getUserFlowCacheKey,
   isBrowser,
 } from 'redux/constants'
-import { IUserFlow } from 'redux/models/IUserFlow'
+import { IUserFlow } from 'redux/models/UserFlow'
 import { filterInvalidViewPrefs } from 'pages/Project/View/utils/filters'
 
 const getInitialViewPrefs = (LS_VIEW: string) => {
@@ -29,7 +29,7 @@ const getInitialViewPrefs = (LS_VIEW: string) => {
   return {}
 }
 
-interface IInitialState {
+interface InitialState {
   analytics: any
   analyticsPerf: any
   funnels: any
@@ -53,7 +53,7 @@ interface IInitialState {
   referralStatistics: any
 }
 
-const initialState: IInitialState = {
+const initialState: InitialState = {
   analytics: {},
   analyticsPerf: {},
   funnels: {},

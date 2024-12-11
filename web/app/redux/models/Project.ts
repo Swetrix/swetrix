@@ -1,15 +1,15 @@
 import { Organisation, Role } from './Organisation'
 
-interface _IOverallPeriodStats {
+interface OverallPeriodStats {
   all: number
   unique?: number
   bounceRate?: number
   sdur?: number
 }
 
-export interface IOverallObject {
-  current: _IOverallPeriodStats
-  previous: _IOverallPeriodStats
+export interface OverallObject {
+  current: OverallPeriodStats
+  previous: OverallPeriodStats
   change: number
   uniqueChange?: number
   bounceRateChange?: number
@@ -17,11 +17,11 @@ export interface IOverallObject {
   customEVFilterApplied?: boolean
 }
 
-export interface IOverall {
-  [key: string]: IOverallObject
+export interface Overall {
+  [key: string]: OverallObject
 }
 
-export interface IOverallPerformanceObject {
+export interface OverallPerformanceObject {
   current: {
     frontend: number
     backend: number
@@ -42,11 +42,11 @@ interface UserShareProject {
   id: string
 }
 
-export interface ILiveStats {
+export interface LiveStats {
   [key: string]: number
 }
 
-export interface IShareOwnerProject {
+export interface ShareOwnerProject {
   id: string
   confirmed: boolean
   role: string
@@ -55,14 +55,14 @@ export interface IShareOwnerProject {
   user: UserShareProject
 }
 
-export interface IFunnel {
+export interface Funnel {
   id: string
   name: string
   steps: string[]
   created: string
 }
 
-export interface IAnalyticsFunnel {
+export interface AnalyticsFunnel {
   value: string
   events: number
   eventsPerc: number
@@ -71,7 +71,7 @@ export interface IAnalyticsFunnel {
   dropoffPercStep: number
 }
 
-export interface IProject {
+export interface Project {
   id: string
   name: string
   origins: string[] | string | null
@@ -83,10 +83,10 @@ export interface IProject {
   isCaptchaEnabled: boolean
   captchaSecretKey: string | null
   created: string
-  share?: IShareOwnerProject[]
-  overall: IOverallObject
+  share?: ShareOwnerProject[]
+  overall: OverallObject
   uiHidden: boolean
-  funnels: IFunnel[]
+  funnels: Funnel[]
   isPublic?: boolean
   isTransferring?: boolean
   isPasswordProtected?: boolean
@@ -101,7 +101,7 @@ export interface IProject {
   role?: Role
 }
 
-export interface ICaptchaProject extends IProject {
+export interface CaptchaProject extends Project {
   isCaptchaProject: true
   isCaptchaEnabled: true
 }

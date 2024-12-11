@@ -48,7 +48,7 @@ const serviceProviders: {
   },
 ]
 
-const Features = (): JSX.Element => {
+const Features = () => {
   return (
     <div className='bg-gray-50 dark:bg-slate-900'>
       <div className='mx-auto w-11/12 px-4 pb-16 pt-12 sm:px-6 md:w-4/5 lg:px-8'>

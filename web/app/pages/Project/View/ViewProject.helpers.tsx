@@ -44,10 +44,10 @@ import {
   PROJECT_TABS,
   isSelfhosted,
 } from 'redux/constants'
-import { IEntry } from 'redux/models/IEntry'
+import { Entry } from 'redux/models/Entry'
 import { getTimeFromSeconds, getStringFromTime, sumArrays, nFormatter } from 'utils/generic'
 import countries from 'utils/isoCountries'
-import { IAnalyticsFunnel } from 'redux/models/IProject'
+import { AnalyticsFunnel } from 'redux/models/Project'
 
 const getAvg = (arr: any) => {
   const total = _reduce(arr, (acc, c) => acc + c, 0)
@@ -164,7 +164,7 @@ const onCSVExportClick = (
 
     const total = _reduce(rowData[item], (acc, { count }) => acc + count, 0)
 
-    const csvData = _map(rowData[item], (entry: IEntry) => {
+    const csvData = _map(rowData[item], (entry: Entry) => {
       const perc = _round((entry.count / total) * 100 || 0, 2)
 
       if (item === 'cc') {
@@ -1062,7 +1062,7 @@ const getSettingsError = (
   }
 }
 
-const getSettingsFunnels = (funnel: IAnalyticsFunnel[], totalPageviews: number, t: typeof i18next.t): ChartOptions => {
+const getSettingsFunnels = (funnel: AnalyticsFunnel[], totalPageviews: number, t: typeof i18next.t): ChartOptions => {
   const values = _map(funnel, (step) => {
     if (_startsWith(step.value, '/')) {
       return t('project.visitPage', { page: step.value })

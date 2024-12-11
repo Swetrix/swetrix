@@ -37,7 +37,7 @@ import {
   TimeFormat,
   isSelfhosted,
 } from 'redux/constants'
-import { IUser } from 'redux/models/IUser'
+import { User } from 'redux/models/User'
 import { withAuthentication, auth } from 'hoc/protected'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -58,6 +58,9 @@ import {
   generateApiKey,
   deleteApiKey, // setTheme,
   receiveLoginNotification,
+  setShowLiveVisitorsInTitle,
+  changeUserDetails,
+  deleteUser,
 } from 'api'
 import ProjectList from './components/ProjectList'
 import TwoFA from './components/TwoFA'
@@ -70,10 +73,10 @@ import NoOrganisations from './components/NoOrganisations'
 import { useSelector } from 'react-redux'
 import { StateType, useAppDispatch } from 'redux/store'
 import { authActions } from 'redux/reducers/auth'
-import sagaActions from 'redux/sagas/actions'
 import { removeRefreshToken } from 'utils/refreshToken'
 import { removeAccessToken } from 'utils/accessToken'
 import UIActions from 'redux/reducers/ui'
+import { logout } from 'utils/auth'
 
 dayjs.extend(utc)
 
@@ -126,7 +129,7 @@ const getTabs = (t: typeof i18next.t) => {
   ]
 }
 
-interface IForm extends Partial<IUser> {
+interface Form extends Partial<User> {
   repeat: string
   password: string
   email: string
@@ -139,7 +142,7 @@ const UserSettings = () => {
   const navigate = useNavigate()
   const { t } = useTranslation('common')
   const [activeTab, setActiveTab] = useState(TAB_MAPPING.ACCOUNT)
-  const [form, setForm] = useState<IForm>({
+  const [form, setForm] = useState<Form>({
     email: user.email || '',
     password: '',
     repeat: '',
@@ -194,7 +197,7 @@ const UserSettings = () => {
     setValidated(valid)
   }
 
-  const onSubmit = (data: any, callback: (isSuccess: boolean) => void = () => {}) => {
+  const onSubmit = async (data: any, callback: (isSuccess: boolean) => void = () => {}) => {
     delete data.repeat
 
     // eslint-disable-next-line no-restricted-syntax
@@ -204,15 +207,16 @@ const UserSettings = () => {
       }
     }
 
-    dispatch(
-      sagaActions.updateUserProfileAsync(data, (isSuccess: boolean) => {
-        if (isSuccess) {
-          toast.success(t('profileSettings.updated'))
-        } else {
-          toast.error(t('apiNotifications.somethingWentWrong'))
-        }
-      }),
-    )
+    try {
+      const result = await changeUserDetails(data)
+      dispatch(authActions.setUser(result))
+      toast.success(t('profileSettings.updated'))
+    } catch (reason: any) {
+      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
+    } finally {
+      callback(true)
+      dispatch(authActions.finishLoading())
+    }
   }
 
   const logoutLocal = () => {
@@ -223,7 +227,7 @@ const UserSettings = () => {
 
   const logoutAll = () => {
     dispatch(authActions.logout())
-    dispatch(sagaActions.logout(false, true))
+    logout(true)
   }
 
   useEffect(() => {
@@ -296,25 +300,22 @@ const UserSettings = () => {
     }
   }
 
-  const handleShowLiveVisitorsSave = (checked: boolean) => {
+  const handleShowLiveVisitorsSave = async (checked: boolean) => {
     if (settingUpdating) {
       return
     }
 
     setSettingUpdating(true)
 
-    dispatch(
-      sagaActions.updateShowLiveVisitorsInTitle(checked, (isSuccess: boolean) => {
-        setSettingUpdating(false)
-
-        if (isSuccess) {
-          toast.success(t('profileSettings.updated'))
-          return
-        }
-
-        toast.error(t('apiNotifications.somethingWentWrong'))
-      }),
-    )
+    try {
+      await setShowLiveVisitorsInTitle(checked)
+      dispatch(authActions.mergeUser({ showLiveVisitorsInTitle: checked }))
+      toast.success(t('profileSettings.updated'))
+    } catch (reason: any) {
+      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
+    } finally {
+      setSettingUpdating(false)
+    }
   }
 
   const handleReceiveLoginNotifications = async (checked: boolean) => {
@@ -377,20 +378,20 @@ const UserSettings = () => {
     return null
   }
 
-  const onAccountDelete = () => {
-    dispatch(
-      sagaActions.deleteAccountAsync(
-        (error: string) => toast.error(error),
-        () => {
-          trackCustom('ACCOUNT_DELETED', {
-            reason_stated: deletionFeedback ? 'true' : 'false',
-          })
-          navigate(routes.main)
-        },
-        deletionFeedback,
-        t,
-      ),
-    )
+  const onAccountDelete = async () => {
+    try {
+      await deleteUser(deletionFeedback)
+      dispatch(authActions.logout())
+      toast.success(t('apiNotifications.accountDeleted'))
+      trackCustom('ACCOUNT_DELETED', {
+        reason_stated: deletionFeedback ? 'true' : 'false',
+      })
+      navigate(routes.main)
+    } catch (reason: any) {
+      toast.error(t(`apiNotifications.${reason}`, 'apiNotifications.somethingWentWrong'))
+    } finally {
+      dispatch(authActions.finishLoading())
+    }
   }
 
   const onExport = async (exportedAt: string) => {

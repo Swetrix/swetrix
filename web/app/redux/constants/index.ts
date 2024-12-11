@@ -43,7 +43,7 @@ export const KEY_FOR_ALL_TIME = 'all'
 
 export const ALL_PERIODS = ['minute', 'hour', 'day', 'month', 'year']
 
-export interface ITBPeriodPairs {
+export interface TBPeriodPairsProps {
   label: string
   period: string
   tbs: string[]
@@ -57,7 +57,7 @@ export const tbPeriodPairs = (
   tbs?: string[] | null,
   dates?: Date[],
   language?: string,
-): ITBPeriodPairs[] => [
+): TBPeriodPairsProps[] => [
   {
     label: t('project.thisHour'),
     period: '1h',
@@ -132,7 +132,7 @@ export const captchaTbPeriodPairs = (
   tbs?: string[] | null,
   dates?: Date[],
   language?: string,
-): ITBPeriodPairs[] => [
+): TBPeriodPairsProps[] => [
   {
     label: t('project.thisHour'),
     period: '1h',
@@ -235,7 +235,7 @@ export const PERIOD_PAIRS_COMPARE = {
   DISABLE: 'disable',
 } as const
 
-interface IStringObject {
+interface StringObject {
   [key: string]: string
 }
 
@@ -261,7 +261,7 @@ export const timeBucketToDays: {
   { lt: 732, tb: ['month'] }, // 24 months
 ]
 
-export const tbsFormatMapper: IStringObject = {
+export const tbsFormatMapper: StringObject = {
   minute: '%I:%M %p',
   hour: '%I %p',
   day: '%d %b',
@@ -269,7 +269,7 @@ export const tbsFormatMapper: IStringObject = {
   year: '%Y',
 }
 
-export const tbsFormatMapperTooltip: IStringObject = {
+export const tbsFormatMapperTooltip: StringObject = {
   minute: '%I:%M %p',
   hour: '%d %b %I %p',
   day: '%d %b',
@@ -277,7 +277,7 @@ export const tbsFormatMapperTooltip: IStringObject = {
   year: '%Y',
 }
 
-export const tbsFormatMapperTooltip24h: IStringObject = {
+export const tbsFormatMapperTooltip24h: StringObject = {
   minute: '%H:%M',
   hour: '%d %b %H:%M',
   day: '%d %b',
@@ -285,7 +285,7 @@ export const tbsFormatMapperTooltip24h: IStringObject = {
   year: '%Y',
 }
 
-export const tbsFormatMapper24h: IStringObject = {
+export const tbsFormatMapper24h: StringObject = {
   minute: '%H:%M',
   hour: '%H:%M',
   day: '%d %b',
@@ -293,7 +293,7 @@ export const tbsFormatMapper24h: IStringObject = {
   year: '%Y',
 }
 
-export const TimeFormat: IStringObject = {
+export const TimeFormat: StringObject = {
   '12-hour': '12-hour',
   '24-hour': '24-hour',
 }
@@ -459,21 +459,21 @@ export const whitelistWithCC = {
   de: 'de-DE',
 }
 export const defaultLanguage = 'en'
-export const languages: IStringObject = {
+export const languages: StringObject = {
   en: 'English',
   uk: 'Українська',
   pl: 'Polski',
   de: 'Deutsch',
 }
 
-export const languageFlag: IStringObject = {
+export const languageFlag: StringObject = {
   en: 'GB',
   uk: 'UA',
   pl: 'PL',
   de: 'DE',
 }
 
-export const paddleLanguageMapping: IStringObject = {
+export const paddleLanguageMapping: StringObject = {
   uk: 'en',
 }
 
@@ -505,21 +505,21 @@ export const PROJECT_TABS = (
   isSelfhosted ? SELFHOSTED_PROJECT_TABS : PRODUCTION_PROJECT_TABS
 ) as typeof PRODUCTION_PROJECT_TABS
 
-export const QUERY_METRIC: IStringObject = {
+export const QUERY_METRIC: StringObject = {
   PAGE_VIEWS: 'page_views',
   UNIQUE_PAGE_VIEWS: 'unique_page_views',
   ONLINE_USERS: 'online_users',
   CUSTOM_EVENTS: 'custom_events',
 }
 
-export const QUERY_CONDITION: IStringObject = {
+export const QUERY_CONDITION: StringObject = {
   GREATER_THAN: 'greater_than',
   GREATER_EQUAL_THAN: 'greater_equal_than',
   LESS_THAN: 'less_than',
   LESS_EQUAL_THAN: 'less_equal_than',
 }
 
-export const QUERY_TIME: IStringObject = {
+export const QUERY_TIME: StringObject = {
   LAST_15_MINUTES: 'last_15_minutes',
   LAST_30_MINUTES: 'last_30_minutes',
   LAST_1_HOUR: 'last_1_hour',
@@ -530,11 +530,6 @@ export const QUERY_TIME: IStringObject = {
 
 export const INVITATION_EXPIRES_IN = 48 // hours
 export const ENTRIES_PER_PAGE_DASHBOARD = 11
-
-export const THEME_TYPE: IStringObject = {
-  classic: 'classic',
-  christmas: 'christmas',
-}
 
 export const DEFAULT_ALERTS_TAKE = 100
 export const DEFAULT_MONITORS_TAKE = 100

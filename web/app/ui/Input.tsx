@@ -4,9 +4,9 @@ import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import Beta from 'ui/Beta'
 
-interface IInput {
-  label?: string | JSX.Element
-  hint?: string | JSX.Element
+interface InputProps {
+  label?: React.ReactNode
+  hint?: React.ReactNode
   className?: string
   error?: string | null | boolean
   disabled?: boolean
@@ -29,7 +29,7 @@ const Input = ({
   classes,
   hintPosition = 'bottom',
   ...rest
-}: IInput & React.InputHTMLAttributes<HTMLInputElement>): JSX.Element => {
+}: InputProps & React.InputHTMLAttributes<HTMLInputElement>) => {
   const isError = !_isEmpty(error)
   const type = rest.type || 'text'
 

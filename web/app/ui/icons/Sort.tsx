@@ -2,13 +2,13 @@ import React from 'react'
 import { ChevronUpDownIcon, ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 
-interface ISort {
+interface SortProps {
   sortByAscend?: boolean
   sortByDescend?: boolean
   className?: string
 }
 
-const Sort: React.FC<ISort> = ({ sortByAscend, sortByDescend, className }: ISort): JSX.Element => {
+const Sort = ({ sortByAscend, sortByDescend, className }: SortProps) => {
   if (sortByAscend) {
     return <ChevronUpIcon className={cx(className, 'h-4 w-4')} />
   }

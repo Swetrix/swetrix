@@ -7,7 +7,7 @@ import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
 import Spin from './icons/Spin'
 
-interface IDropdown<T> {
+interface DropdownProps<T> {
   title: string | number | React.ReactNode
   desc?: string | number | React.ReactNode
   className?: string
@@ -19,7 +19,7 @@ interface IDropdown<T> {
   buttonClassName?: string
   selectItemClassName?: string
   menuItemsClassName?: string
-  header?: string | JSX.Element
+  header?: React.ReactNode
   chevron?: 'regular' | 'mini'
   headless?: boolean
   disabled?: boolean
@@ -45,7 +45,7 @@ function Dropdown<T>({
   disabled,
   onClick,
   loading,
-}: IDropdown<T>): JSX.Element {
+}: DropdownProps<T>) {
   return (
     <Menu as='div' className={cx('relative inline-block text-left', className)}>
       {({ open, close }) => (

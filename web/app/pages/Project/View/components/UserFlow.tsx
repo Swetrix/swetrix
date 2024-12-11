@@ -4,12 +4,12 @@ import { ResponsiveSankey } from '@nivo/sankey'
 import { connect } from 'react-redux'
 import { StateType, AppDispatch } from 'redux/store'
 import UIActions from 'redux/reducers/ui'
-import { IUserFlow } from 'redux/models/IUserFlow'
+import { IUserFlow } from 'redux/models/UserFlow'
 import _isEmpty from 'lodash/isEmpty'
 import { getUserFlowCacheKey } from 'redux/constants'
 import { getUserFlow } from 'api'
 import Loader from 'ui/Loader'
-import { IFilter } from '../interfaces/traffic'
+import { Filter } from '../interfaces/traffic'
 import { useTranslation } from 'react-i18next'
 
 const mapStateToProps = (state: StateType) => ({
@@ -57,7 +57,7 @@ interface UserFlowProps {
   isReversed?: boolean
   setUserFlowAscending: (data: IUserFlow, id: string, pd: string, fltr: any) => void
   setUserFlowDescending: (data: IUserFlow, id: string, pd: string, fltr: any) => void
-  filters: IFilter[]
+  filters: Filter[]
   setReversed: () => void
   projectPassword?: string
 }

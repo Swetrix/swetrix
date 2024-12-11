@@ -1,5 +1,5 @@
 import React from 'react'
-import { IFilter } from '../interfaces/traffic'
+import { Filter } from '../interfaces/traffic'
 import _includes from 'lodash/includes'
 import _replace from 'lodash/replace'
 import _startsWith from 'lodash/startsWith'
@@ -78,13 +78,8 @@ export const isFilterValid = (filter: string, checkDynamicFilters = false) => {
   return false
 }
 
-const applyFilters = (
-  items: IFilter[],
-  suffix: string,
-  searchParams: URLSearchParams,
-  override: boolean,
-): IFilter[] => {
-  const filtersToLoad: IFilter[] = []
+const applyFilters = (items: Filter[], suffix: string, searchParams: URLSearchParams, override: boolean): Filter[] => {
+  const filtersToLoad: Filter[] = []
   items.forEach((item) => {
     if (!item.filter) return
 
@@ -104,13 +99,13 @@ const applyFilters = (
 }
 
 export const handleNavigationParams = (
-  items: IFilter[],
+  items: Filter[],
   suffix: string,
   searchParams: URLSearchParams,
   setSearchParams: React.Dispatch<React.SetStateAction<URLSearchParams>>,
   override: boolean,
-  stateSetter: React.Dispatch<React.SetStateAction<IFilter[]>>,
-  loader: (forceReload: boolean, filters: IFilter[]) => void,
+  stateSetter: React.Dispatch<React.SetStateAction<Filter[]>>,
+  loader: (forceReload: boolean, filters: Filter[]) => void,
 ): void => {
   const filters = applyFilters(items, suffix, searchParams, override)
   setSearchParams(searchParams)
@@ -121,15 +116,15 @@ export const handleNavigationParams = (
 export const updateFilterState = (
   searchParams: URLSearchParams,
   setSearchParams: React.Dispatch<React.SetStateAction<URLSearchParams>>,
-  filters: IFilter[],
-  newFiltersStateSetter: React.Dispatch<React.SetStateAction<IFilter[]>>,
+  filters: Filter[],
+  newFiltersStateSetter: React.Dispatch<React.SetStateAction<Filter[]>>,
   column: string,
   columnSuffix: string,
   filter: any,
   isExclusive: boolean,
 ) => {
   const existingFilterIndex = filters.findIndex((f) => f.filter === filter)
-  let updatedFilters: IFilter[]
+  let updatedFilters: Filter[]
 
   if (existingFilterIndex > -1) {
     updatedFilters = filters.filter((_, index) => index !== existingFilterIndex)
@@ -150,11 +145,11 @@ export const updateFilterState = (
 export const parseFiltersFromUrl = (
   keySuffix: string,
   searchParams: URLSearchParams,
-  setFilters: React.Dispatch<React.SetStateAction<IFilter[]>>,
+  setFilters: React.Dispatch<React.SetStateAction<Filter[]>>,
   setParsedFlag: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
   try {
-    const initialFilters: IFilter[] = []
+    const initialFilters: Filter[] = []
 
     searchParams.forEach((value, key) => {
       if (!_includes(key, keySuffix)) return

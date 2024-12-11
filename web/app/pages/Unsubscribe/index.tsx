@@ -10,11 +10,11 @@ import { unsubscribeFromEmailReports, unsubscribeFromEmailReports3rdParty } from
 import Loader from 'ui/Loader'
 import routes from 'utils/routes'
 
-interface IUnsubscribe {
+interface UnsubscribeProps {
   type: 'user-reports' | '3rdparty'
 }
 
-const Unsubscribe = ({ type }: IUnsubscribe): JSX.Element => {
+const Unsubscribe = ({ type }: UnsubscribeProps) => {
   const { t } = useTranslation('common')
   const { token } = useParams()
   const { authenticated } = useSelector((state: StateType) => state.auth)

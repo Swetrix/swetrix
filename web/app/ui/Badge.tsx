@@ -7,7 +7,7 @@ export interface BadgeProps {
   colour?: 'red' | 'yellow' | 'green' | 'indigo' | 'slate' | 'sky'
 }
 
-export const Badge = ({ label, className, colour }: BadgeProps): JSX.Element => (
+export const Badge = ({ label, className, colour }: BadgeProps) => (
   <span
     className={cx('inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset', className, {
       'bg-slate-50 text-slate-600 ring-slate-500/10 dark:bg-slate-400/10 dark:text-slate-400 dark:ring-slate-400/20':

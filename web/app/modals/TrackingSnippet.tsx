@@ -8,7 +8,7 @@ import { API_URL, isSelfhosted } from 'redux/constants'
 
 const API_URL_WITHOUT_TRAILING_SLASH = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL
 
-interface ITrackingSnippet {
+interface TrackingSnippetProps {
   onClose: () => void
   isOpened: boolean
   pid: string
@@ -54,7 +54,7 @@ const getSnippet = (pid: string) => {
 
 const SCRIPT_DOCS_URL = 'https://docs.swetrix.com/install-script'
 
-const TrackingSnippet = ({ onClose, isOpened, pid }: ITrackingSnippet): JSX.Element => {
+const TrackingSnippet = ({ onClose, isOpened, pid }: TrackingSnippetProps) => {
   const { t } = useTranslation('common')
 
   const snippet = getSnippet(pid)

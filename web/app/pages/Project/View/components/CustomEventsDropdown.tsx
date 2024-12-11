@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import OutsideClickHandler from 'react-outside-click-handler'
 import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
-interface ICustomEventsDropdown {
+interface CustomEventsDropdownProps {
   onSelect: any
   title: string
 }
@@ -20,7 +20,7 @@ const OPTIONS = [
   },
 ]
 
-const CustomEventsDropdown = ({ onSelect, title }: ICustomEventsDropdown): JSX.Element => {
+const CustomEventsDropdown = ({ onSelect, title }: CustomEventsDropdownProps) => {
   const { t } = useTranslation()
   const [show, setShow] = useState(false)
 

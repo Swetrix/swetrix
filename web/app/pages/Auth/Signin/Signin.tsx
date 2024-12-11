@@ -1,7 +1,8 @@
 import React, { useState, useEffect, memo } from 'react'
-import { Link } from '@remix-run/react'
+import { Link, useNavigate, useSearchParams } from '@remix-run/react'
 import { useTranslation, Trans } from 'react-i18next'
 import _keys from 'lodash/keys'
+import _omit from 'lodash/omit'
 import _isEmpty from 'lodash/isEmpty'
 import _isString from 'lodash/isString'
 import { toast } from 'sonner'
@@ -14,13 +15,17 @@ import Input from 'ui/Input'
 import Button from 'ui/Button'
 import Checkbox from 'ui/Checkbox'
 import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS } from 'utils/validator'
-import { isSelfhosted, TRIAL_DAYS } from 'redux/constants'
-import { submit2FA } from 'api'
+import { isSelfhosted, REFERRAL_COOKIE, TRIAL_DAYS } from 'redux/constants'
+import { generateSSOAuthURL, getInstalledExtensions, getJWTBySSOHash, login, submit2FA } from 'api'
 import { setAccessToken, removeAccessToken } from 'utils/accessToken'
 import { setRefreshToken, removeRefreshToken } from 'utils/refreshToken'
 import { useAppDispatch } from 'redux/store'
 import { authActions } from 'redux/reducers/auth'
-import sagaActions from 'redux/sagas/actions'
+import { delay, openBrowserWindow } from 'utils/generic'
+import { deleteCookie, getCookie } from 'utils/cookie'
+import { shouldShowLowEventsBanner } from 'utils/auth'
+import UIActions from 'redux/reducers/ui'
+import { SSOProvider } from 'redux/models/Auth'
 
 interface SigninForm {
   email: string
@@ -32,8 +37,12 @@ interface SigninProps {
   ssrTheme: string
 }
 
+const HASH_CHECK_FREQUENCY = 1000
+
 const Signin = ({ ssrTheme }: SigninProps) => {
   const dispatch = useAppDispatch()
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { t } = useTranslation('common')
   const [form, setForm] = useState<SigninForm>({
     email: '',
@@ -47,7 +56,7 @@ const Signin = ({ ssrTheme }: SigninProps) => {
   }>({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [isTwoFARequired, setIsTwoFARequired] = useState(false)
+  const [isTwoFARequired, setIsTwoFARequired] = useState(searchParams.get('show_2fa_screen') === 'true')
   const [twoFACode, setTwoFACode] = useState('')
   const [twoFACodeError, setTwoFACodeError] = useState<string | null>(null)
 
@@ -83,17 +92,125 @@ const Signin = ({ ssrTheme }: SigninProps) => {
     setTwoFACodeError(null)
   }
 
-  const loginCallback = (result: boolean, twoFARequired: boolean) => {
-    if (!result) {
+  const onSsoLogin = async (provider: SSOProvider) => {
+    const authWindow = openBrowserWindow('')
+
+    if (!authWindow) {
+      toast.error(t('apiNotifications.socialisationAuthGenericError'))
       setIsLoading(false)
-      setIsTwoFARequired(twoFARequired)
+      return
+    }
+
+    try {
+      const { uuid, auth_url: authUrl, expires_in: expiresIn } = await generateSSOAuthURL(provider)
+
+      authWindow.location = authUrl
+
+      // Closing the authorisation window after the session expires
+      setTimeout(authWindow.close, expiresIn)
+
+      const refCode = getCookie(REFERRAL_COOKIE) as string
+
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        await delay(HASH_CHECK_FREQUENCY)
+
+        try {
+          const { accessToken, refreshToken, user, totalMonthlyEvents } = await getJWTBySSOHash(uuid, provider, refCode)
+          authWindow.close()
+
+          if (refCode) {
+            deleteCookie(REFERRAL_COOKIE)
+          }
+
+          if (user.isTwoFactorAuthenticationEnabled) {
+            setAccessToken(accessToken, true)
+            setRefreshToken(refreshToken)
+            dispatch(authActions.mergeUser(user))
+            setIsTwoFARequired(true)
+            setIsLoading(false)
+            return
+          }
+
+          dispatch(authActions.authSuccessful(user))
+          setAccessToken(accessToken, false)
+          setRefreshToken(refreshToken)
+
+          if (shouldShowLowEventsBanner(totalMonthlyEvents, user.maxEventsCount)) {
+            dispatch(UIActions.setShowNoEventsLeftBanner(true))
+          }
+
+          await loadExtensions()
+
+          dispatch(authActions.finishLoading())
+
+          navigate(routes.dashboard)
+
+          return
+        } catch (reason) {
+          // Authentication is not finished yet
+        }
+
+        if (authWindow.closed) {
+          setIsLoading(false)
+          return
+        }
+      }
+    } catch (reason) {
+      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.socialisationGenericError'))
+      setIsLoading(false)
+      return
     }
   }
 
-  const onSubmit = (data: SigninForm) => {
-    if (!isLoading) {
-      setIsLoading(true)
-      dispatch(sagaActions.loginAsync(data, loginCallback))
+  const loadExtensions = async () => {
+    if (isSelfhosted) {
+      return
+    }
+
+    const extensions = await getInstalledExtensions()
+    dispatch(UIActions.setExtensions(extensions))
+  }
+
+  const onSubmit = async (data: SigninForm) => {
+    if (isLoading) {
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      const { dontRemember } = data
+
+      const { user, accessToken, refreshToken, totalMonthlyEvents } = await login(_omit(data, ['dontRemember']))
+
+      dispatch(authActions.setDontRemember(dontRemember))
+
+      if (user.isTwoFactorAuthenticationEnabled) {
+        setAccessToken(accessToken, true)
+        setRefreshToken(refreshToken, true)
+        dispatch(authActions.mergeUser(user))
+        setIsTwoFARequired(true)
+        setIsLoading(false)
+        return
+      }
+
+      dispatch(authActions.authSuccessful(user))
+      setAccessToken(accessToken, dontRemember)
+      setRefreshToken(refreshToken)
+
+      if (shouldShowLowEventsBanner(totalMonthlyEvents, user.maxEventsCount)) {
+        dispatch(UIActions.setShowNoEventsLeftBanner(true))
+      }
+
+      await loadExtensions()
+
+      setIsLoading(false)
+    } catch (reason) {
+      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
+      setIsLoading(false)
+    } finally {
+      dispatch(authActions.finishLoading())
     }
   }
 
@@ -110,6 +227,7 @@ const Signin = ({ ssrTheme }: SigninProps) => {
         removeRefreshToken()
         setAccessToken(accessToken)
         setRefreshToken(refreshToken)
+        await loadExtensions()
         dispatch(authActions.authSuccessful(user))
       } catch (reason) {
         if (_isString(reason)) {
@@ -253,13 +371,8 @@ const Signin = ({ ssrTheme }: SigninProps) => {
                 </div>
               </div>
               <div className='mt-6 grid grid-cols-2 gap-4'>
-                <GoogleAuth setIsLoading={setIsLoading} callback={loginCallback} dontRemember={false} />
-                <GithubAuth
-                  setIsLoading={setIsLoading}
-                  callback={loginCallback}
-                  dontRemember={false}
-                  ssrTheme={ssrTheme}
-                />
+                <GoogleAuth onClick={() => onSsoLogin('google')} disabled={isLoading} />
+                <GithubAuth onClick={() => onSsoLogin('github')} ssrTheme={ssrTheme} disabled={isLoading} />
               </div>
             </div>
           )}

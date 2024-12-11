@@ -40,14 +40,14 @@ import Modal from 'ui/Modal'
 import Button from 'ui/Button'
 import Chart from 'ui/Chart'
 import { PROJECT_TABS } from 'redux/constants'
-import { IEntry } from 'redux/models/IEntry'
+import { Entry } from 'redux/models/Entry'
 import InteractiveMap from './components/InteractiveMap'
 import UserFlow from './components/UserFlow'
 import { iconClassName } from './ViewProject.helpers'
 import Spin from 'ui/icons/Spin'
 import { useTranslation } from 'react-i18next'
 import CustomEventsDropdown from './components/CustomEventsDropdown'
-import { ICustoms, IFilter, IProperties } from './interfaces/traffic'
+import { Customs, Filter, Properties } from './interfaces/traffic'
 
 const ENTRIES_PER_PANEL = 5
 const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 6
@@ -97,8 +97,8 @@ const removeDuplicates = (arr: any[], keys: string[]) => {
   return uniqueObjects
 }
 
-interface IPanelContainer {
-  name: string | JSX.Element
+interface PanelContainerProps {
+  name: React.ReactNode
   children?: React.ReactNode
   noSwitch?: boolean
   icon?: React.ReactNode
@@ -124,7 +124,7 @@ const PanelContainer = ({
   activeTab,
   isCustomContent,
   onExpandClick = () => {},
-}: IPanelContainer): JSX.Element => (
+}: PanelContainerProps) => (
   <div
     className={cx(
       'relative max-h-96 min-h-72 overflow-hidden rounded-lg bg-white px-4 pt-5 shadow dark:border dark:border-slate-800/50 dark:bg-slate-800/25 sm:px-6 sm:pt-6',
@@ -295,26 +295,26 @@ const getPieOptions = (customs: any, uniques: number, t: any) => {
   }
 }
 
-interface IMetadata {
-  customs: ICustoms
-  properties: IProperties
+interface MetadataProps {
+  customs: Customs
+  properties: Properties
   chartData: any
-  filters: IFilter[]
+  filters: Filter[]
   onFilter: (column: string, filter: any, isExclusive?: boolean) => Promise<void>
   getCustomEventMetadata: (event: string) => Promise<any>
   getPropertyMetadata: (property: string) => Promise<any>
   customTabs: any
 }
 
-interface ICustomEvents extends IMetadata {
+interface CustomEventsProps extends MetadataProps {
   setActiveTab: React.Dispatch<React.SetStateAction<'customEv' | 'properties'>>
 }
 
-interface IPageProperties extends IMetadata {
+interface PagePropertiesProps extends MetadataProps {
   setActiveTab: React.Dispatch<React.SetStateAction<'customEv' | 'properties'>>
 }
 
-interface ISortRows {
+interface SortRows {
   label: string
   sortByAscend: boolean
   sortByDescend: boolean
@@ -340,7 +340,7 @@ interface KVTableProps {
 
 const KVTable = ({ listId, data, displayKeyAsHeader, onClick }: KVTableProps) => {
   const { t } = useTranslation('common')
-  const [sort, setSort] = useState<ISortRows>({
+  const [sort, setSort] = useState<SortRows>({
     label: 'quantity',
     sortByAscend: false,
     sortByDescend: false,
@@ -515,7 +515,7 @@ const CustomEvents = ({
   customTabs = [],
   getCustomEventMetadata,
   setActiveTab,
-}: ICustomEvents) => {
+}: CustomEventsProps) => {
   const { t } = useTranslation('common')
   const [page, setPage] = useState(0)
   const [detailsOpened, setDetailsOpened] = useState(false)
@@ -536,7 +536,7 @@ const CustomEvents = ({
   const totalPages = useMemo(() => _ceil(_size(keys) / ENTRIES_PER_CUSTOM_EVENTS_PANEL), [keys])
   const canGoPrev = () => page > 0
   const canGoNext = () => page < _floor((_size(keys) - 1) / ENTRIES_PER_CUSTOM_EVENTS_PANEL)
-  const [sort, setSort] = useState<ISortRows>({
+  const [sort, setSort] = useState<SortRows>({
     label: 'quantity',
     sortByAscend: false,
     sortByDescend: false,
@@ -972,14 +972,14 @@ const PageProperties = ({
   filters,
   getPropertyMetadata,
   setActiveTab,
-}: IPageProperties) => {
+}: PagePropertiesProps) => {
   const { t } = useTranslation('common')
   const [page, setPage] = useState(0)
   const [detailsOpened, setDetailsOpened] = useState(false)
   const [activeProperties, setActiveProperties] = useState<any>({})
   const [loadingDetails, setLoadingDetails] = useState<any>({})
   const [details, setDetails] = useState<any>({})
-  const [processedProperties, setProcessedProperties] = useState<IProperties>(properties)
+  const [processedProperties, setProcessedProperties] = useState<Properties>(properties)
   const currentIndex = page * ENTRIES_PER_CUSTOM_EVENTS_PANEL
   const keys = _keys(processedProperties)
   const keysToDisplay = useMemo(
@@ -992,7 +992,7 @@ const PageProperties = ({
   const totalPages = useMemo(() => _ceil(_size(keys) / ENTRIES_PER_CUSTOM_EVENTS_PANEL), [keys])
   const canGoPrev = () => page > 0
   const canGoNext = () => page < _floor((_size(keys) - 1) / ENTRIES_PER_CUSTOM_EVENTS_PANEL)
-  const [sort, setSort] = useState<ISortRows>({
+  const [sort, setSort] = useState<SortRows>({
     label: 'quantity',
     sortByAscend: false,
     sortByDescend: false,
@@ -1359,7 +1359,7 @@ const PageProperties = ({
   )
 }
 
-const Metadata = (props: IMetadata) => {
+const Metadata = (props: MetadataProps) => {
   const [activeTab, setActiveTab] = useState<'customEv' | 'properties'>('customEv')
 
   if (activeTab === 'customEv') {
@@ -1369,10 +1369,10 @@ const Metadata = (props: IMetadata) => {
   return <PageProperties {...props} setActiveTab={setActiveTab} />
 }
 
-interface IPanel {
-  name: string | JSX.Element
-  data: IEntry[]
-  rowMapper?: (row: any) => string | JSX.Element
+interface PanelProps {
+  name: React.ReactNode
+  data: Entry[]
+  rowMapper?: (row: any) => React.ReactNode
   valueMapper?: (value: number) => number
   capitalize?: boolean
   linkContent?: boolean
@@ -1389,14 +1389,14 @@ interface IPanel {
   timezone?: string | null
   activeTab?: string
   onFragmentChange?: (arg: number) => void
-  filters?: IFilter[]
+  filters?: Filter[]
   projectPassword?: string
 }
 
 const Panel = ({
   name,
   data,
-  rowMapper = (row: IEntry): string => row.name,
+  rowMapper = (row: Entry): string => row.name,
   valueMapper = (value: number): number => value,
   capitalize,
   linkContent,
@@ -1415,7 +1415,7 @@ const Panel = ({
   onFragmentChange = () => {},
   filters,
   projectPassword,
-}: IPanel): JSX.Element => {
+}: PanelProps) => {
   const { t } = useTranslation('common')
   const [page, setPage] = useState(0)
   const currentIndex = page * ENTRIES_PER_PANEL

@@ -1,6 +1,6 @@
 import React, { memo, useMemo, useState, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import duration from 'dayjs/plugin/duration'
@@ -18,7 +18,6 @@ import {
 import { loadScript } from 'utils/generic'
 import Loader from 'ui/Loader'
 import { useAppDispatch, StateType } from 'redux/store'
-import sagaActions from 'redux/sagas/actions'
 import { withAuthentication, auth } from 'hoc/protected'
 import Modal from 'ui/Modal'
 import Button from 'ui/Button'
@@ -27,25 +26,38 @@ import Tooltip from 'ui/Tooltip'
 import UIActions from 'redux/reducers/ui'
 import Pricing from '../../components/marketing/Pricing'
 import DashboardLockedBanner from 'components/DashboardLockedBanner'
+import { UsageInfo } from 'redux/models/Usageinfo'
+import { getUsageInfo } from 'api'
+import { toast } from 'sonner'
 
 dayjs.extend(utc)
 dayjs.extend(duration)
 
-interface IBilling {
+interface BillingProps {
   ssrAuthenticated: boolean
   ssrTheme: 'dark' | 'light'
 }
 
-const Billing = ({ ssrAuthenticated, ssrTheme }: IBilling) => {
+const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
   const [isCancelSubModalOpened, setIsCancelSubModalOpened] = useState(false)
-  const { metainfo, usageinfo } = useSelector((state: StateType) => state.ui.misc)
-  const { user, loading } = useSelector((state: StateType) => state.auth)
+  const { metainfo } = useSelector((state: StateType) => state.ui.misc)
+  const { user, loading: authLoading } = useSelector((state: StateType) => state.auth)
   const { theme: reduxTheme } = useSelector((state: StateType) => state.ui.theme)
   const theme = isBrowser ? reduxTheme : ssrTheme
   const paddleLoaded = useSelector((state: StateType) => state.ui.misc.paddleLoaded)
   const reduxAuthenticated = useSelector((state: StateType) => state.auth.authenticated)
-  const dispatch = useDispatch()
-  const _dispatch = useAppDispatch()
+  const [usageInfo, setUsageInfo] = useState<UsageInfo>({
+    total: 0,
+    traffic: 0,
+    errors: 0,
+    customEvents: 0,
+    captcha: 0,
+    trafficPerc: 0,
+    errorsPerc: 0,
+    customEventsPerc: 0,
+    captchaPerc: 0,
+  })
+  const dispatch = useAppDispatch()
   const {
     t,
     i18n: { language },
@@ -65,7 +77,10 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: IBilling) => {
   const isSubscriber = user.planCode !== 'none' && user.planCode !== 'trial' && user.planCode !== 'free'
   const isTrial = planCode === 'trial'
   const isNoSub = planCode === 'none'
-  const totalUsage = _round((usageinfo.total / maxEventsCount) * 100, 2) || 0
+
+  const totalUsage = _round((usageInfo.total / maxEventsCount) * 100, 2) || 0
+
+  const [isLoading, setIsLoading] = useState(true)
 
   // Paddle (payment processor) set-up
   useEffect(() => {
@@ -76,7 +91,7 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: IBilling) => {
     loadScript(PADDLE_JS_URL)
 
     const eventCallback = (data: any) => {
-      _dispatch(UIActions.setPaddleLastEvent(data))
+      dispatch(UIActions.setPaddleLastEvent(data))
     }
     // eslint-disable-next-line no-use-before-define
     const interval = setInterval(paddleSetup, 200)
@@ -95,9 +110,30 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: IBilling) => {
     }
   }, [paddleLoaded]) // eslint-disable-line
 
+  const loadUsageInfo = async () => {
+    if (!isLoading) {
+      return
+    }
+
+    try {
+      const result = await getUsageInfo()
+      setUsageInfo(result)
+    } catch (reason: any) {
+      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.failedToLoadUsageInfo'))
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   useEffect(() => {
-    dispatch(sagaActions.loadUsageinfo())
-  }, [dispatch])
+    if (authLoading) {
+      return
+    }
+
+    loadUsageInfo()
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading])
 
   const isTrialEnded = useMemo(() => {
     if (!trialEndDate) {
@@ -269,7 +305,7 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: IBilling) => {
             </div>
           )}
 
-          {loading ? (
+          {isLoading ? (
             <Loader />
           ) : (
             <div className='mt-8 flex flex-col'>
@@ -298,13 +334,13 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: IBilling) => {
             {t('billing.planUsageDesc')}
           </p>
 
-          {loading ? (
+          {isLoading ? (
             <Loader />
           ) : (
             <div className='mt-2 text-lg tracking-tight text-gray-900 dark:text-gray-50'>
               <p className='mb-1 text-base font-medium tracking-tight text-gray-900 dark:text-gray-50'>
                 {t('billing.xofy', {
-                  x: usageinfo.total || 0,
+                  x: usageInfo.total || 0,
                   y: maxEventsCount || 0,
                 })}
               </p>
@@ -314,7 +350,7 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: IBilling) => {
                   <div>
                     <p>
                       {t('billing.usageOverview', {
-                        tracked: usageinfo.total || 0,
+                        tracked: usageInfo.total || 0,
                         trackedPerc: totalUsage || 0,
                         maxEvents: maxEventsCount || 0,
                       })}
@@ -322,26 +358,26 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: IBilling) => {
                     <ul className='mt-2 list-inside list-disc'>
                       <li className='marker:text-blue-600 dark:marker:text-blue-800'>
                         {t('billing.pageviews', {
-                          quantity: usageinfo.traffic || 0,
-                          percentage: usageinfo.trafficPerc || 0,
+                          quantity: usageInfo.traffic || 0,
+                          percentage: usageInfo.trafficPerc || 0,
                         })}
                       </li>
                       <li className='marker:text-fuchsia-600 dark:marker:text-fuchsia-800'>
                         {t('billing.customEvents', {
-                          quantity: usageinfo.customEvents || 0,
-                          percentage: usageinfo.customEventsPerc || 0,
+                          quantity: usageInfo.customEvents || 0,
+                          percentage: usageInfo.customEventsPerc || 0,
                         })}
                       </li>
                       <li className='marker:text-lime-600 dark:marker:text-lime-800'>
                         {t('billing.captcha', {
-                          quantity: usageinfo.captcha || 0,
-                          percentage: usageinfo.captchaPerc || 0,
+                          quantity: usageInfo.captcha || 0,
+                          percentage: usageInfo.captchaPerc || 0,
                         })}
                       </li>
                       <li className='marker:text-red-600 dark:marker:text-red-800'>
                         {t('billing.errors', {
-                          quantity: usageinfo.errors || 0,
-                          percentage: usageinfo.errorsPerc || 0,
+                          quantity: usageInfo.errors || 0,
+                          percentage: usageInfo.errorsPerc || 0,
                         })}
                       </li>
                     </ul>
@@ -353,17 +389,17 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: IBilling) => {
                     className='w-[85vw] max-w-[25rem]'
                     progress={[
                       {
-                        value: usageinfo.traffic === 0 ? 0 : (usageinfo.traffic / maxEventsCount) * 100,
+                        value: usageInfo.traffic === 0 ? 0 : (usageInfo.traffic / maxEventsCount) * 100,
                         lightColour: '#2563eb',
                         darkColour: '#1d4ed8',
                       },
                       {
-                        value: usageinfo.customEvents === 0 ? 0 : (usageinfo.customEvents / maxEventsCount) * 100,
+                        value: usageInfo.customEvents === 0 ? 0 : (usageInfo.customEvents / maxEventsCount) * 100,
                         lightColour: '#c026d3',
                         darkColour: '#a21caf',
                       },
                       {
-                        value: usageinfo.captcha === 0 ? 0 : (usageinfo.captcha / maxEventsCount) * 100,
+                        value: usageInfo.captcha === 0 ? 0 : (usageInfo.captcha / maxEventsCount) * 100,
                         lightColour: '#65a30d',
                         darkColour: '#4d7c0f',
                       },

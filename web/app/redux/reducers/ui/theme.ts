@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import _includes from 'lodash/includes'
 import { setCookie, getCookie } from 'utils/cookie'
-import { isBrowser, LS_THEME_SETTING, SUPPORTED_THEMES, THEME_TYPE, ThemeType } from 'redux/constants'
+import { isBrowser, LS_THEME_SETTING, SUPPORTED_THEMES, ThemeType } from 'redux/constants'
 
 const setThemeToDOM = (theme: string) => {
   if (!isBrowser) {
@@ -54,15 +54,13 @@ const getInitialTheme = (): ThemeType => {
   return 'light' // light theme as the default
 }
 
-interface IInitialState {
+interface InitialState {
   theme: ThemeType
-  type: string
 }
 
-const getInitialState = (): IInitialState => {
+const getInitialState = (): InitialState => {
   return {
     theme: getInitialTheme(),
-    type: THEME_TYPE.classic,
   }
 }
 
@@ -73,9 +71,6 @@ const themeSlice = createSlice({
     setTheme(state, { payload }: PayloadAction<ThemeType>) {
       setTheme(payload)
       state.theme = payload
-    },
-    setThemeType(state, { payload }: PayloadAction<string>) {
-      state.type = payload
     },
   },
 })

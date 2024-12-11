@@ -11,11 +11,11 @@ import { Lines } from 'components/marketing/Lines'
 
 import { isBrowser, REFERRAL_COOKIE_DAYS, REFERRAL_DISCOUNT } from 'redux/constants'
 
-interface IReferralPage {
+interface ReferralPageProps {
   ssrTheme: 'dark' | 'light'
 }
 
-const ReferralPage = ({ ssrTheme }: IReferralPage): JSX.Element => {
+const ReferralPage = ({ ssrTheme }: ReferralPageProps) => {
   const { t } = useTranslation('common')
   const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
   const theme = isBrowser ? reduxTheme : ssrTheme

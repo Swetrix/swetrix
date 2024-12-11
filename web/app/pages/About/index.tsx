@@ -1,11 +1,10 @@
-/* eslint-disable */
 import React from 'react'
 import _map from 'lodash/map'
 
 import { CONTACT_EMAIL, GITHUB_URL } from 'redux/constants'
 
 const socialIcons: {
-  [key: string]: JSX.Element
+  [key: string]: React.ReactNode
 } = {
   LinkedIn: (
     <img
@@ -35,7 +34,7 @@ const socialIcons: {
   ),
 }
 
-interface ITeammate {
+interface TeammateProps {
   photo: string
   name: string
   role: string
@@ -45,7 +44,7 @@ interface ITeammate {
   desc: string
 }
 
-const Teammate = ({ photo, name, role, socials, desc }: ITeammate): JSX.Element => (
+const Teammate = ({ photo, name, role, socials, desc }: TeammateProps) => (
   <div className='flex flex-col py-6 md:flex-row md:gap-x-8'>
     <div className='flex justify-center md:w-2/5'>
       <img
@@ -123,7 +122,7 @@ const team = [
   },
 ] as const
 
-const About = (): JSX.Element => (
+const About = () => (
   <div>
     <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
       <div className='mx-auto max-w-7xl whitespace-pre-line px-4 pb-16 pt-12 sm:px-6 lg:px-8'>

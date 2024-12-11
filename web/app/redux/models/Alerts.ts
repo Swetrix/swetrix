@@ -1,6 +1,6 @@
 import { QUERY_METRIC, QUERY_CONDITION, QUERY_TIME } from '../constants'
 
-export interface IAlerts {
+export interface Alerts {
   id: string
   name: string
   active: boolean
