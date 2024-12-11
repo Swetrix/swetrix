@@ -59,4 +59,9 @@ export class RegisterResponseDto {
     description: 'User entity',
   })
   user: object
+
+  @ApiProperty({
+    description: 'Total used monthly events',
+  })
+  totalMonthlyEvents: number
 }

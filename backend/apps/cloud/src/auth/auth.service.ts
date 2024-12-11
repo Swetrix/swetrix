@@ -509,6 +509,10 @@ export class AuthService {
       !user.isTwoFactorAuthenticationEnabled,
     )
 
+    const meta = {
+      totalMonthlyEvents: undefined,
+    }
+
     if (user.isTwoFactorAuthenticationEnabled) {
       // @ts-expect-error
       user = _pick(user, ['isTwoFactorAuthenticationEnabled', 'email'])
@@ -520,10 +524,13 @@ export class AuthService {
 
       user.sharedProjects = sharedProjects
       user.organisationMemberships = organisationMemberships
+
+      meta.totalMonthlyEvents = await this.projectService.getRedisCount(user.id)
     }
 
     return {
       ...jwtTokens,
+      ...meta,
       user: this.userService.omitSensitiveData(user),
     }
   }
@@ -562,6 +569,7 @@ export class AuthService {
     return {
       ...jwtTokens,
       user: this.userService.omitSensitiveData(user),
+      totalMonthlyEvents: 0,
     }
   }
 
@@ -952,6 +960,7 @@ export class AuthService {
     return {
       ...jwtTokens,
       user: this.userService.omitSensitiveData(user),
+      totalMonthlyEvents: 0,
     }
   }
 
@@ -967,6 +976,10 @@ export class AuthService {
       !user.isTwoFactorAuthenticationEnabled,
     )
 
+    const meta = {
+      totalMonthlyEvents: undefined,
+    }
+
     if (user.isTwoFactorAuthenticationEnabled) {
       // @ts-expect-error
       user = _pick(user, ['isTwoFactorAuthenticationEnabled', 'email'])
@@ -978,10 +991,12 @@ export class AuthService {
 
       user.sharedProjects = sharedProjects
       user.organisationMemberships = organisationMemberships
+      meta.totalMonthlyEvents = await this.projectService.getRedisCount(user.id)
     }
 
     return {
       ...jwtTokens,
+      ...meta,
       user: this.userService.omitSensitiveData(user),
     }
   }

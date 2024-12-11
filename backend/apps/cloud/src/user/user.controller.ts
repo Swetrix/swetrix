@@ -105,18 +105,23 @@ export class UserController {
   async me(@CurrentUserId() uid: string) {
     this.logger.log({ uid }, 'GET /user/me')
 
-    const [sharedProjects, organisationMemberships, user] = await Promise.all([
-      this.authService.getSharedProjectsForUser(uid),
-      this.authService.getOrganisationsForUser(uid),
-      this.userService.findOne({ where: { id: uid } }),
-    ])
+    const [sharedProjects, organisationMemberships, user, totalMonthlyEvents] =
+      await Promise.all([
+        this.authService.getSharedProjectsForUser(uid),
+        this.authService.getOrganisationsForUser(uid),
+        this.userService.findOne({ where: { id: uid } }),
+        this.projectService.getRedisCount(uid),
+      ])
 
     const sanitizedUser = this.userService.omitSensitiveData(user)
 
     sanitizedUser.sharedProjects = sharedProjects
     sanitizedUser.organisationMemberships = organisationMemberships
 
-    return sanitizedUser
+    return {
+      user: sanitizedUser,
+      totalMonthlyEvents,
+    }
   }
 
   @ApiBearerAuth()

@@ -161,7 +161,6 @@ export class ProjectController {
       results,
       page_total: _size(formatted),
       total: _size(formatted),
-      totalMonthlyEvents: 0, // not needed as it's selfhosed
     }
   }
 

@@ -32,7 +32,7 @@ import {
   ApiOkResponse,
   ApiNoContentResponse,
 } from '@nestjs/swagger'
-import { Equal, In } from 'typeorm'
+import { Equal } from 'typeorm'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _trim from 'lodash/trim'
@@ -153,10 +153,11 @@ export class ProjectController {
   ): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /project')
 
-    const [paginated, totalMonthlyEvents] = await Promise.all([
-      this.projectService.paginate({ take, skip }, userId, search),
-      this.projectService.getRedisCount(userId),
-    ])
+    const paginated = await this.projectService.paginate(
+      { take, skip },
+      userId,
+      search,
+    )
 
     const pidsWithData =
       await this.projectService.getPIDsWhereAnalyticsDataExists(
@@ -201,10 +202,7 @@ export class ProjectController {
       }
     })
 
-    return {
-      ...paginated,
-      totalMonthlyEvents,
-    }
+    return paginated
   }
 
   @ApiBearerAuth()
@@ -1920,51 +1918,6 @@ export class ProjectController {
     await this.projectService.deleteShare(shareId)
   }
 
-  @ApiOperation({ summary: 'Get monitors for all user projects' })
-  @ApiBearerAuth()
-  @ApiOkResponse({ type: MonitorEntity })
-  @Get('/monitors')
-  @Auth([])
-  public async getAllMonitors(
-    @CurrentUserId() userId: string,
-    @Query('take') take: number | undefined,
-    @Query('skip') skip: number | undefined,
-  ): Promise<Pagination<MonitorEntity>> {
-    this.logger.log({ userId, take, skip }, 'GET /project/monitors')
-
-    const projects = await this.projectService.find({
-      where: {
-        admin: { id: userId },
-      },
-    })
-
-    if (_isEmpty(projects)) {
-      return {
-        results: [],
-        total: 0,
-        page_total: 0,
-      }
-    }
-
-    const pids = _map(projects, project => project.id)
-
-    const result = await this.projectService.paginateMonitors(
-      {
-        take,
-        skip,
-      },
-      { project: In(pids) },
-    )
-
-    // @ts-expect-error
-    result.results = _map(result.results, monitor => ({
-      ..._omit(monitor, ['project']),
-      projectId: monitor.project.id,
-    }))
-
-    return result
-  }
-
   @ApiBearerAuth()
   @Get('/:id')
   @Auth([], true, true)
@@ -2322,13 +2275,7 @@ export class ProjectController {
       throw new NotFoundException('Project not found.')
     }
 
-    const user = await this.userService.findUserV2(userId, ['roles'])
-
-    if (!user) {
-      throw new NotFoundException('User not found.')
-    }
-
-    this.projectService.allowedToManage(project, userId, user.roles)
+    this.projectService.allowedToManage(project, userId)
 
     const monitor = await this.projectService.getMonitor(monitorId)
 

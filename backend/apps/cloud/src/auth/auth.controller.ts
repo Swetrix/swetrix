@@ -52,6 +52,7 @@ import {
   SSOProviders,
 } from './dtos'
 import { JwtAccessTokenGuard, JwtRefreshTokenGuard, RolesGuard } from './guards'
+import { ProjectService } from '../project/project.service'
 
 const OAUTH_RATE_LIMIT = 15
 
@@ -71,6 +72,7 @@ export class AuthController {
   constructor(
     private readonly userService: UserService,
     private readonly authService: AuthService,
+    private readonly projectService: ProjectService,
   ) {}
 
   @ApiOperation({ summary: 'Register a new user' })
@@ -85,7 +87,7 @@ export class AuthController {
     @I18n() i18n: I18nContext,
     @Headers() headers: unknown,
     @Ip() requestIp: string,
-  ): Promise<RegisterResponseDto> {
+  ) {
     const ip = getIPFromHeaders(headers) || requestIp || ''
 
     await checkRateLimit(ip, 'register', 5)
@@ -121,6 +123,7 @@ export class AuthController {
     return {
       ...jwtTokens,
       user: this.userService.omitSensitiveData(newUser),
+      totalMonthlyEvents: 0,
     }
   }
 
@@ -153,6 +156,10 @@ export class AuthController {
       !user.isTwoFactorAuthenticationEnabled,
     )
 
+    const meta = {
+      totalMonthlyEvents: undefined,
+    }
+
     await this.authService.sendTelegramNotification(user.id, headers, ip)
 
     if (user.isTwoFactorAuthenticationEnabled) {
@@ -166,10 +173,12 @@ export class AuthController {
 
       user.sharedProjects = sharedProjects
       user.organisationMemberships = organisationMemberships
+      meta.totalMonthlyEvents = await this.projectService.getRedisCount(user.id)
     }
 
     return {
       ...jwtTokens,
+      ...meta,
       user: this.userService.omitSensitiveData(user as User),
     }
   }
