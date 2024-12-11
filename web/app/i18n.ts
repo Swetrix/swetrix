@@ -1,7 +1,7 @@
 import { InitOptions } from 'i18next'
 import _includes from 'lodash/includes'
 
-import { defaultLanguage, I18N_CACHE_BREAKER, whitelist } from 'redux/constants'
+import { defaultLanguage, I18N_CACHE_BREAKER, whitelist } from 'lib/constants'
 
 const genericConfig: InitOptions = {
   supportedLngs: whitelist,

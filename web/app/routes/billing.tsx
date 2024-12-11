@@ -4,7 +4,7 @@ import { json, redirect } from '@remix-run/node'
 import type { SitemapFunction } from 'remix-sitemap'
 import Billing from 'pages/Billing'
 
-import { isSelfhosted } from 'redux/constants'
+import { isSelfhosted } from 'lib/constants'
 import { isAuthenticated, detectTheme } from 'utils/server'
 
 export const sitemap: SitemapFunction = () => ({

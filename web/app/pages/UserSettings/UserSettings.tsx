@@ -36,8 +36,8 @@ import {
   GDPR_EXPORT_TIMEFRAME,
   TimeFormat,
   isSelfhosted,
-} from 'redux/constants'
-import { User } from 'redux/models/User'
+} from 'lib/constants'
+import { User } from 'lib/models/User'
 import { withAuthentication, auth } from 'hoc/protected'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
@@ -71,11 +71,11 @@ import NoSharedProjects from './components/NoSharedProjects'
 import Organisations from './components/Organisations'
 import NoOrganisations from './components/NoOrganisations'
 import { useSelector } from 'react-redux'
-import { StateType, useAppDispatch } from 'redux/store'
-import { authActions } from 'redux/reducers/auth'
+import { StateType, useAppDispatch } from 'lib/store'
+import { authActions } from 'lib/reducers/auth'
 import { removeRefreshToken } from 'utils/refreshToken'
 import { removeAccessToken } from 'utils/accessToken'
-import UIActions from 'redux/reducers/ui'
+import UIActions from 'lib/reducers/ui'
 import { logout } from 'utils/auth'
 
 dayjs.extend(utc)

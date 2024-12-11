@@ -8,7 +8,7 @@ import _isString from 'lodash/isString'
 import singlePostCss from 'css/mdfile.css'
 import { getPost, getSlugFromFilename, getDateFromFilename } from 'utils/getPosts'
 import { getSitemap } from 'api'
-import { isSelfhosted, TITLE_SUFFIX, getOgImageUrl } from 'redux/constants'
+import { isSelfhosted, TITLE_SUFFIX, getOgImageUrl } from 'lib/constants'
 import Post from 'pages/Blog/Post'
 
 export const links: LinksFunction = () => {

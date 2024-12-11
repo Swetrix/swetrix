@@ -2,7 +2,7 @@
 import React from 'react'
 import _map from 'lodash/map'
 
-import { CONTACT_EMAIL, SECURITY_EMAIL, DOCS_URL } from 'redux/constants'
+import { CONTACT_EMAIL, SECURITY_EMAIL, DOCS_URL } from 'lib/constants'
 
 const serviceProviders: {
   company: string

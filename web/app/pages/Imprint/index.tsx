@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 import React from 'react'
 
-import { CONTACT_EMAIL } from 'redux/constants'
+import { CONTACT_EMAIL } from 'lib/constants'
 
 const Imprint = () => {
   return (

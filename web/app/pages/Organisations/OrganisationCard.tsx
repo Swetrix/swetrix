@@ -13,11 +13,11 @@ import Modal from 'ui/Modal'
 import { Badge, BadgeProps } from 'ui/Badge'
 import routes from 'utils/routes'
 
-import { DetailedOrganisation } from 'redux/models/Organisation'
+import { DetailedOrganisation } from 'lib/models/Organisation'
 import { useSelector } from 'react-redux'
-import { StateType, useAppDispatch } from 'redux/store'
+import { StateType, useAppDispatch } from 'lib/store'
 import { acceptOrganisationInvitation } from 'api'
-import { authActions } from 'redux/reducers/auth'
+import { authActions } from 'lib/reducers/auth'
 
 interface OrganisationCardProps {
   organisation: DetailedOrganisation

@@ -2,7 +2,7 @@ import CheckYourInbox from 'pages/Auth/CheckYourInbox'
 import type { SitemapFunction } from 'remix-sitemap'
 import type { HeadersFunction, LoaderFunctionArgs } from '@remix-run/node'
 import { redirect } from '@remix-run/node'
-import { isSelfhosted } from 'redux/constants'
+import { isSelfhosted } from 'lib/constants'
 
 export const headers: HeadersFunction = ({ parentHeaders }) => {
   parentHeaders.set('X-Frame-Options', 'DENY')

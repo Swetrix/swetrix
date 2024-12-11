@@ -1,4 +1,4 @@
-import { isBrowser } from 'redux/constants'
+import { isBrowser } from 'lib/constants'
 
 /*
  * a small localStorage proxy for to persist localStorage

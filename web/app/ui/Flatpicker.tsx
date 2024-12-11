@@ -5,7 +5,7 @@ import _size from 'lodash/size'
 import _split from 'lodash/split'
 import cx from 'clsx'
 
-import { MAX_MONTHS_IN_PAST } from 'redux/constants'
+import { MAX_MONTHS_IN_PAST } from 'lib/constants'
 
 interface FlatPickerProps {
   onChange?: (dates: Date[]) => void

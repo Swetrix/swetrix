@@ -2,7 +2,7 @@ import { redirect } from '@remix-run/node'
 import { useEffect } from 'react'
 import type { SitemapFunction } from 'remix-sitemap'
 import { ExternalScriptsHandle } from 'remix-utils/external-scripts'
-import { isSelfhosted } from 'redux/constants'
+import { isSelfhosted } from 'lib/constants'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 0.9,

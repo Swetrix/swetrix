@@ -4,10 +4,10 @@ import { useSelector } from 'react-redux'
 import cx from 'clsx'
 
 import Button from 'ui/Button'
-import { StateType } from 'redux/store/index'
+import { StateType } from 'lib/store/index'
 import GithubDarkSVG from 'ui/icons/GithubDark'
 import GithubLightSVG from 'ui/icons/GithubLight'
-import { isBrowser } from 'redux/constants'
+import { isBrowser } from 'lib/constants'
 
 interface GoogleAuthProps {
   ssrTheme: string

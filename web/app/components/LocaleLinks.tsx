@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useLocation, Location } from '@remix-run/react'
-import { whitelist, whitelistWithCC, MAIN_URL } from 'redux/constants'
+import { whitelist, whitelistWithCC, MAIN_URL } from 'lib/constants'
 import _map from 'lodash/map'
 import _some from 'lodash/some'
 

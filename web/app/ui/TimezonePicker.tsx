@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import _find from 'lodash/find'
 import _reduce from 'lodash/reduce'
 import _includes from 'lodash/includes'
-import timezones from 'redux/constants/timezones'
+import timezones from 'lib/constants/timezones'
 
 import Select from './Select'
 

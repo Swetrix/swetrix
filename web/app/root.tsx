@@ -12,8 +12,8 @@ import {
   isRouteErrorResponse,
   useRouteError,
 } from '@remix-run/react'
-import { store } from 'redux/store'
-import { isBrowser, CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted, I18N_CACHE_BREAKER } from 'redux/constants'
+import { store } from 'lib/store'
+import { isBrowser, CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted, I18N_CACHE_BREAKER } from 'lib/constants'
 import { ExternalScripts } from 'remix-utils/external-scripts'
 import { getCookie, generateCookieString } from 'utils/cookie'
 import { ExclamationTriangleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'

@@ -25,8 +25,8 @@ import {
   OS_LOGO_MAP,
   OS_LOGO_MAP_DARK,
   BROWSER_LOGO_MAP,
-} from 'redux/constants'
-import { StateType } from 'redux/store/index'
+} from 'lib/constants'
+import { StateType } from 'lib/store/index'
 import { Cookie } from 'lucide-react'
 
 import Header from 'components/Header'

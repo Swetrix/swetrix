@@ -1,6 +1,6 @@
 import { redirect } from '@remix-run/node'
 import About from 'pages/About'
-import { isSelfhosted } from 'redux/constants'
+import { isSelfhosted } from 'lib/constants'
 
 export async function loader() {
   if (isSelfhosted) {

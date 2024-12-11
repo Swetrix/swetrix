@@ -1,6 +1,6 @@
 import * as Swetrix from 'swetrix'
 import _includes from 'lodash/includes'
-import { isDevelopment, isSelfhosted } from 'redux/constants'
+import { isDevelopment, isSelfhosted } from 'lib/constants'
 
 const SWETRIX_PID = 'STEzHcB1rALV'
 

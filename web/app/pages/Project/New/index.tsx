@@ -8,15 +8,15 @@ import _size from 'lodash/size'
 import _keys from 'lodash/keys'
 
 import { withAuthentication, auth } from 'hoc/protected'
-import { isSelfhosted, TITLE_SUFFIX } from 'redux/constants'
-import { Project } from 'redux/models/Project'
+import { isSelfhosted, TITLE_SUFFIX } from 'lib/constants'
+import { Project } from 'lib/models/Project'
 import { createProject } from 'api'
 import Input from 'ui/Input'
 import Button from 'ui/Button'
 import Loader from 'ui/Loader'
 import { trackCustom } from 'utils/analytics'
 import routes from 'utils/routes'
-import { useAppDispatch, StateType } from 'redux/store'
+import { useAppDispatch, StateType } from 'lib/store'
 import Select from 'ui/Select'
 
 const MAX_NAME_LENGTH = 50

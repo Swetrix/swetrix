@@ -1,4 +1,4 @@
-import { isSelfhosted } from 'redux/constants'
+import { isSelfhosted } from 'lib/constants'
 
 const PRODUCTION_ROBOTS = `Sitemap: https://swetrix.com/sitemap.xml
 

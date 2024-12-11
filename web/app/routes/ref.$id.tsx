@@ -3,7 +3,7 @@ import { useLoaderData } from '@remix-run/react'
 import { json, redirect } from '@remix-run/node'
 import ReferralPage from 'pages/ReferralPage'
 
-import { isSelfhosted } from 'redux/constants'
+import { isSelfhosted } from 'lib/constants'
 import { detectTheme } from 'utils/server'
 
 export async function loader({ request }: LoaderFunctionArgs) {

@@ -1,4 +1,4 @@
-import { isDevelopment, isSelfhosted, isBrowser } from 'redux/constants'
+import { isDevelopment, isSelfhosted, isBrowser } from 'lib/constants'
 
 const COOKIE_DOMAIN = 'swetrix.com'
 

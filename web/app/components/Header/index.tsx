@@ -39,8 +39,8 @@ import _startsWith from 'lodash/startsWith'
 import cx, { clsx } from 'clsx'
 
 import routes from 'utils/routes'
-import { authActions } from 'redux/reducers/auth'
-import UIActions from 'redux/reducers/ui'
+import { authActions } from 'lib/reducers/auth'
+import UIActions from 'lib/reducers/ui'
 import {
   whitelist,
   languages,
@@ -50,11 +50,11 @@ import {
   SUPPORTED_THEMES,
   isBrowser,
   CAPTCHA_URL,
-} from 'redux/constants'
+} from 'lib/constants'
 import Dropdown from 'ui/Dropdown'
 import Flag from 'ui/Flag'
-import { User } from 'redux/models/User'
-import { useAppDispatch, StateType } from 'redux/store'
+import { User } from 'lib/models/User'
+import { useAppDispatch, StateType } from 'lib/store'
 import { logout } from 'utils/auth'
 
 dayjs.extend(utc)

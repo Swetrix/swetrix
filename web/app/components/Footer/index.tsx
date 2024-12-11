@@ -20,7 +20,7 @@ import {
   SWETRIX_VS_SIMPLE_ANALYTICS,
   DISCORD_URL,
   CAPTCHA_URL,
-} from 'redux/constants'
+} from 'lib/constants'
 import routesPath from 'utils/routes'
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/solid'
 

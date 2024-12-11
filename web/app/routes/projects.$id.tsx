@@ -3,7 +3,7 @@ import type { LinksFunction, LoaderFunctionArgs, MetaFunction } from '@remix-run
 import { json } from '@remix-run/node'
 import _split from 'lodash/split'
 
-import { API_URL } from 'redux/constants'
+import { API_URL } from 'lib/constants'
 import { detectTheme, isEmbedded, isAuthenticated, getProjectPassword, getProjectTabs } from 'utils/server'
 import ProjectViewStyle from 'styles/ProjectViewStyle.css'
 

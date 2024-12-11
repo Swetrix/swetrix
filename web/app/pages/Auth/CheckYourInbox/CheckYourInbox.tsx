@@ -6,8 +6,8 @@ import { useSelector } from 'react-redux'
 
 import Loader from 'ui/Loader'
 import { withAuthentication } from 'hoc/protected'
-import { authActions } from 'redux/reducers/auth'
-import { StateType, useAppDispatch } from 'redux/store'
+import { authActions } from 'lib/reducers/auth'
+import { StateType, useAppDispatch } from 'lib/store'
 import routes from 'utils/routes'
 import { logout } from 'utils/auth'
 

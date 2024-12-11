@@ -13,20 +13,20 @@ import Modal from 'ui/Modal'
 import { withAuthentication, auth } from 'hoc/protected'
 import Loader from 'ui/Loader'
 import routes from 'utils/routes'
-import { ENTRIES_PER_PAGE_DASHBOARD } from 'redux/constants'
+import { ENTRIES_PER_PAGE_DASHBOARD } from 'lib/constants'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import useDebounce from 'hooks/useDebounce'
 
 import { createOrganisation, getOrganisations } from 'api'
 
 import Pagination from 'ui/Pagination'
-import { DetailedOrganisation } from 'redux/models/Organisation'
+import { DetailedOrganisation } from 'lib/models/Organisation'
 import Input from 'ui/Input'
 import { OrganisationCard } from './OrganisationCard'
 import { NoOrganisations } from './NoOrganisations'
 import { AddOrganisation } from './AddOrganisation'
 import { useSelector } from 'react-redux'
-import { StateType } from 'redux/store'
+import { StateType } from 'lib/store'
 
 const Organisations = () => {
   const { loading: authLoading } = useSelector((state: StateType) => state.auth)

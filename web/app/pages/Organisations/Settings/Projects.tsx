@@ -9,9 +9,9 @@ import _filter from 'lodash/filter'
 
 import Button from 'ui/Button'
 import Modal from 'ui/Modal'
-import { DetailedOrganisation } from 'redux/models/Organisation'
+import { DetailedOrganisation } from 'lib/models/Organisation'
 import { useSelector } from 'react-redux'
-import { StateType } from 'redux/store'
+import { StateType } from 'lib/store'
 import Tooltip from 'ui/Tooltip'
 import { removeProjectFromOrganisation, getProjectsAvailableForOrganisation, addProjectToOrganisation } from 'api'
 import { Link } from '@remix-run/react'
@@ -19,7 +19,7 @@ import routes from 'utils/routes'
 import Loader from 'ui/Loader'
 import Pagination from 'ui/Pagination'
 import useDebounce from 'hooks/useDebounce'
-import { Project } from 'redux/models/Project'
+import { Project } from 'lib/models/Project'
 
 interface SelectAProjectProps {
   onSelect: (project: Project) => void

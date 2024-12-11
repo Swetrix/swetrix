@@ -15,7 +15,7 @@ import _includes from 'lodash/includes'
 import { ExclamationTriangleIcon, TrashIcon, XCircleIcon } from '@heroicons/react/24/outline'
 
 import { withAuthentication, auth } from 'hoc/protected'
-import { TITLE_SUFFIX } from 'redux/constants'
+import { TITLE_SUFFIX } from 'lib/constants'
 import {
   createProject,
   updateProject,
@@ -31,10 +31,10 @@ import Checkbox from 'ui/Checkbox'
 import Modal from 'ui/Modal'
 import { trackCustom } from 'utils/analytics'
 import routes from 'utils/routes'
-import { CaptchaProject } from 'redux/models/Project'
+import { CaptchaProject } from 'lib/models/Project'
 import { useRequiredParams } from 'hooks/useRequiredParams'
 import { useSelector } from 'react-redux'
-import { StateType } from 'redux/store'
+import { StateType } from 'lib/store'
 
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300

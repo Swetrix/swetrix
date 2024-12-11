@@ -6,7 +6,7 @@ import _split from 'lodash/split'
 import _replace from 'lodash/replace'
 
 import { processSSOToken } from 'api'
-import { SSO_PROVIDERS } from 'redux/constants'
+import { SSO_PROVIDERS } from 'lib/constants'
 import Loader from 'ui/Loader'
 import routes from 'utils/routes'
 

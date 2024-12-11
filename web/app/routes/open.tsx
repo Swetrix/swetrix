@@ -1,7 +1,7 @@
 import OpenStartup from 'pages/OpenStartup'
 import { redirect } from '@remix-run/node'
 import type { LinksFunction } from '@remix-run/node'
-import { isSelfhosted } from 'redux/constants'
+import { isSelfhosted } from 'lib/constants'
 
 import Style from 'styles/ProjectViewStyle.css'
 

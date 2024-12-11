@@ -8,7 +8,7 @@ import _isString from 'lodash/isString'
 import Loader from 'ui/Loader'
 import routes from 'utils/routes'
 import { verifyEmail } from 'api'
-import { authActions } from 'redux/reducers/auth'
+import { authActions } from 'lib/reducers/auth'
 
 const VerifyEmail = () => {
   const { t } = useTranslation('common')

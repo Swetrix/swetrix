@@ -1,6 +1,6 @@
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
 import { useDispatch } from 'react-redux'
-import { isDevelopment } from 'redux/constants'
+import { isDevelopment } from 'lib/constants'
 import authSlice from '../reducers/auth'
 import miscSlice from '../reducers/ui/misc'
 import projectsSlice from '../reducers/ui/projects'

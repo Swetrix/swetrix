@@ -5,7 +5,7 @@ import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import _isString from 'lodash/isString'
 import { useSelector } from 'react-redux'
 
-import { StateType } from 'redux/store'
+import { StateType } from 'lib/store'
 import { unsubscribeFromEmailReports, unsubscribeFromEmailReports3rdParty } from 'api'
 import Loader from 'ui/Loader'
 import routes from 'utils/routes'

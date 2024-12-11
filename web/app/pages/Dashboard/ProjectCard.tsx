@@ -17,10 +17,10 @@ import { nFormatter, calculateRelativePercentage } from 'utils/generic'
 
 import { acceptProjectShare } from 'api'
 
-import { OverallObject, Project } from 'redux/models/Project'
+import { OverallObject, Project } from 'lib/models/Project'
 import { useSelector } from 'react-redux'
-import { StateType, useAppDispatch } from 'redux/store'
-import { authActions } from 'redux/reducers/auth'
+import { StateType, useAppDispatch } from 'lib/store'
+import { authActions } from 'lib/reducers/auth'
 
 interface ProjectCardProps {
   live?: string | number

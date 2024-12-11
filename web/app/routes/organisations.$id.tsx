@@ -1,7 +1,7 @@
 import { redirect } from '@remix-run/node'
 import type { SitemapFunction } from 'remix-sitemap'
 import OrganisationSettings from 'pages/Organisations/Settings'
-import { isSelfhosted } from 'redux/constants'
+import { isSelfhosted } from 'lib/constants'
 
 export const sitemap: SitemapFunction = () => ({
   exclude: true,

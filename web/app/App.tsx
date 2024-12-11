@@ -13,13 +13,13 @@ import Footer from 'components/Footer'
 
 import { Toaster } from 'sonner'
 import { getAccessToken } from 'utils/accessToken'
-import { authActions } from 'redux/reducers/auth'
-import { StateType, useAppDispatch } from 'redux/store'
-import { isBrowser, isSelfhosted } from 'redux/constants'
+import { authActions } from 'lib/reducers/auth'
+import { StateType, useAppDispatch } from 'lib/store'
+import { isBrowser, isSelfhosted } from 'lib/constants'
 import routesPath from 'utils/routes'
 import { getPageMeta } from 'utils/server'
 import { authMe, getGeneralStats, getInstalledExtensions, getLastPost, getPaymentMetainfo } from './api'
-import UIActions from 'redux/reducers/ui'
+import UIActions from 'lib/reducers/ui'
 import { logout, shouldShowLowEventsBanner } from 'utils/auth'
 
 interface AppProps {

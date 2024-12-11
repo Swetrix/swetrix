@@ -39,8 +39,8 @@ import {
   OS_LOGO_MAP_DARK,
   isBrowser,
   ThemeType,
-} from 'redux/constants'
-import { CaptchaProject, Project } from 'redux/models/Project'
+} from 'lib/constants'
+import { CaptchaProject, Project } from 'lib/models/Project'
 import Loader from 'ui/Loader'
 import Dropdown from 'ui/Dropdown'
 import Checkbox from 'ui/Checkbox'
@@ -68,8 +68,8 @@ import NoEvents from './components/NoEvents'
 import Filters from 'pages/Project/View/components/Filters'
 import { useRequiredParams } from 'hooks/useRequiredParams'
 import { useSelector } from 'react-redux'
-import { StateType, useAppDispatch } from 'redux/store'
-import UIActions from 'redux/reducers/ui'
+import { StateType, useAppDispatch } from 'lib/store'
+import UIActions from 'lib/reducers/ui'
 
 const PageLoader = () => (
   <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>

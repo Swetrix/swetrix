@@ -18,8 +18,8 @@ import _includes from 'lodash/includes'
 import { TrashIcon, XCircleIcon } from '@heroicons/react/24/outline'
 
 import { withAuthentication, auth } from 'hoc/protected'
-import { isSelfhosted, TITLE_SUFFIX, FILTERS_PANELS_ORDER, isBrowser } from 'redux/constants'
-import { Project } from 'redux/models/Project'
+import { isSelfhosted, TITLE_SUFFIX, FILTERS_PANELS_ORDER, isBrowser } from 'lib/constants'
+import { Project } from 'lib/models/Project'
 import {
   updateProject,
   deleteProject,
@@ -49,9 +49,9 @@ import Emails from './Emails'
 import Select from 'ui/Select'
 import { useRequiredParams } from 'hooks/useRequiredParams'
 import { ArrowLeftRight, RotateCcw } from 'lucide-react'
-import { StateType, useAppDispatch } from 'redux/store'
+import { StateType, useAppDispatch } from 'lib/store'
 import { useSelector } from 'react-redux'
-import UIActions from 'redux/reducers/ui'
+import UIActions from 'lib/reducers/ui'
 
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300

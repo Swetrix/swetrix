@@ -1,9 +1,9 @@
 import React, { memo, useState, useMemo } from 'react'
 import { LockClosedIcon } from '@heroicons/react/24/outline'
 import { useSelector } from 'react-redux'
-import { StateType } from 'redux/store'
+import { StateType } from 'lib/store'
 import { useTranslation } from 'react-i18next'
-import { DashboardBlockReason } from 'redux/models/User'
+import { DashboardBlockReason } from 'lib/models/User'
 import Modal from 'ui/Modal'
 
 const DashboardLockedBanner = () => {

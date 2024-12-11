@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { PROJECTS_PROTECTED } from 'redux/constants'
+import { PROJECTS_PROTECTED } from 'lib/constants'
 import { setItem, getItem } from 'utils/localstorage'
 
 interface InitialState {

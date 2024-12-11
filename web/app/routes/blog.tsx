@@ -4,7 +4,7 @@ import { Link, useLoaderData } from '@remix-run/react'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
 import _filter from 'lodash/filter'
-import { isSelfhosted, TITLE_SUFFIX } from 'redux/constants'
+import { isSelfhosted, TITLE_SUFFIX } from 'lib/constants'
 import { getBlogPosts } from 'api'
 
 export const loader: LoaderFunction = async () => {
