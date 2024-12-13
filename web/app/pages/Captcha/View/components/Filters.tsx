@@ -10,7 +10,6 @@ import { useTranslation } from 'react-i18next'
 
 import countries from 'utils/isoCountries'
 import { getLocaleDisplayName } from 'utils/generic'
-import { useViewProjectContext } from '../ViewProject'
 
 interface FilterProps {
   column: string
@@ -35,7 +34,6 @@ export const Filter = ({
   canChangeExclusive,
   removable,
 }: FilterProps) => {
-  const { dataLoading } = useViewProjectContext()
   const {
     t,
     i18n: { language },
@@ -86,9 +84,7 @@ export const Filter = ({
       &nbsp;
       {canChangeExclusive ? (
         <span
-          className={cx('cursor-pointer border-b-2 border-dotted border-blue-400 text-blue-400', {
-            'cursor-wait': dataLoading,
-          })}
+          className='cursor-pointer border-b-2 border-dotted border-blue-400 text-blue-400'
           onClick={() => onChangeExclusive(column, filter, !isExclusive)}
         >
           {t(`common.${isExclusive ? 'isNot' : 'is'}`)}
@@ -103,12 +99,7 @@ export const Filter = ({
         <button
           onClick={() => onRemoveFilter(column, filter)}
           type='button'
-          className={cx(
-            'ml-0.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-gray-800 hover:bg-gray-300 hover:text-gray-900 focus:bg-gray-300 focus:text-gray-900 focus:outline-none dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300 dark:focus:bg-gray-800 dark:focus:text-gray-300',
-            {
-              'cursor-wait': dataLoading,
-            },
-          )}
+          className='ml-0.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-gray-800 hover:bg-gray-300 hover:text-gray-900 focus:bg-gray-300 focus:text-gray-900 focus:outline-none dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300 dark:focus:bg-gray-800 dark:focus:text-gray-300'
         >
           <span className='sr-only'>Remove filter</span>
           <svg className='h-2 w-2' stroke='currentColor' fill='none' viewBox='0 0 8 8'>
@@ -127,11 +118,10 @@ interface FiltersProps {
   onChangeExclusive: (column: string, filter: string, isExclusive: boolean) => void
   tnMapping: Record<string, string>
   resetFilters: () => void
+  filters: any
 }
 
-const Filters = ({ onRemoveFilter, onChangeExclusive, tnMapping, resetFilters }: FiltersProps) => {
-  const { dataLoading, filters } = useViewProjectContext()
-
+const Filters = ({ onRemoveFilter, onChangeExclusive, tnMapping, resetFilters, filters }: FiltersProps) => {
   if (_isEmpty(filters)) {
     return null
   }
@@ -160,12 +150,7 @@ const Filters = ({ onRemoveFilter, onChangeExclusive, tnMapping, resetFilters }:
         </div>
       </div>
       <XMarkIcon
-        className={cx(
-          'box-content size-6 flex-shrink-0 cursor-pointer stroke-2 px-1 text-gray-800 hover:text-gray-600 dark:text-gray-200 dark:hover:text-gray-300',
-          {
-            'cursor-wait': dataLoading,
-          },
-        )}
+        className='box-content size-6 flex-shrink-0 cursor-pointer stroke-2 px-1 text-gray-800 hover:text-gray-600 dark:text-gray-200 dark:hover:text-gray-300'
         onClick={resetFilters}
       />
     </div>

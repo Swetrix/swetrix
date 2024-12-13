@@ -49,9 +49,8 @@ import Emails from './Emails'
 import Select from 'ui/Select'
 import { useRequiredParams } from 'hooks/useRequiredParams'
 import { ArrowLeftRight, RotateCcw } from 'lucide-react'
-import { StateType, useAppDispatch } from 'lib/store'
+import { StateType } from 'lib/store'
 import { useSelector } from 'react-redux'
-import UIActions from 'lib/reducers/ui'
 
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
@@ -257,8 +256,6 @@ const DEFAULT_PROJECT_NAME = 'Untitled Project'
 const ProjectSettings = () => {
   const { user, loading: authLoading } = useSelector((state: StateType) => state.auth)
 
-  const dispatch = useAppDispatch()
-
   const { t } = useTranslation('common')
   const { id } = useRequiredParams<{ id: string }>()
   const navigate = useNavigate()
@@ -452,11 +449,6 @@ const ProjectSettings = () => {
       } else {
         await resetProject(id)
       }
-      dispatch(
-        UIActions.deleteProjectCache({
-          pid: id,
-        }),
-      )
       toast.success(t('project.settings.resetted'))
       navigate(routes.dashboard)
     } catch (reason: any) {

@@ -1,7 +1,6 @@
 import React from 'react'
 import type { ChartOptions, GridLineOptions } from 'billboard.js'
 import type i18next from 'i18next'
-// @ts-ignore
 import { saveAs } from 'file-saver'
 import {
   GlobeEuropeAfricaIcon,
@@ -12,7 +11,6 @@ import {
   MagnifyingGlassIcon,
   ServerIcon,
 } from '@heroicons/react/24/outline'
-// @ts-ignore
 import dayjs from 'dayjs'
 import { area, areaSpline, spline, bar, line } from 'billboard.js'
 import _forEach from 'lodash/forEach'

@@ -48,6 +48,7 @@ import Spin from 'ui/icons/Spin'
 import { useTranslation } from 'react-i18next'
 import CustomEventsDropdown from './components/CustomEventsDropdown'
 import { Customs, Filter, Properties } from './interfaces/traffic'
+import { useViewProjectContext } from './ViewProject'
 
 const ENTRIES_PER_PANEL = 5
 const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 6
@@ -1381,16 +1382,7 @@ interface PanelProps {
   hideFilters?: boolean
   onFilter: any
   customTabs?: any
-  pid?: string | null
-  period?: string | null
-  timeBucket?: string | null
-  from?: string | null
-  to?: string | null
-  timezone?: string | null
-  activeTab?: string
   onFragmentChange?: (arg: number) => void
-  filters?: Filter[]
-  projectPassword?: string
 }
 
 const Panel = ({
@@ -1405,17 +1397,9 @@ const Panel = ({
   hideFilters,
   onFilter = () => {},
   customTabs = [],
-  pid,
-  period,
-  timeBucket,
-  from,
-  to,
-  timezone,
-  activeTab,
   onFragmentChange = () => {},
-  filters,
-  projectPassword,
 }: PanelProps) => {
+  const { dataLoading, activeTab } = useViewProjectContext()
   const { t } = useTranslation('common')
   const [page, setPage] = useState(0)
   const currentIndex = page * ENTRIES_PER_PANEL
@@ -1499,19 +1483,7 @@ const Panel = ({
         onExpandClick={() => setModal(true)}
         customTabs={customTabs}
       >
-        {/* @ts-ignore */}
-        <UserFlow
-          projectPassword={projectPassword}
-          pid={pid || ''}
-          period={period || ''}
-          timeBucket={timeBucket || ''}
-          from={from || ''}
-          to={to || ''}
-          timezone={timezone || ''}
-          filters={filters || []}
-          isReversed={isReversedUserFlow}
-          setReversed={() => setIsReversedUserFlow(!isReversedUserFlow)}
-        />
+        <UserFlow isReversed={isReversedUserFlow} setReversed={() => setIsReversedUserFlow((prev) => !prev)} />
         <Modal
           onClose={() => setModal(false)}
           closeText={t('common.close')}
@@ -1519,7 +1491,7 @@ const Panel = ({
           customButtons={
             <button
               type='button'
-              onClick={() => setIsReversedUserFlow(!isReversedUserFlow)}
+              onClick={() => setIsReversedUserFlow((prev) => !prev)}
               className='mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-none dark:border-gray-600 dark:bg-slate-700 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700 sm:ml-3 sm:mt-0 sm:w-auto sm:text-sm'
             >
               {t('project.reverse')}
@@ -1527,18 +1499,7 @@ const Panel = ({
           }
           message={
             <div className='h-[500px] dark:text-gray-800'>
-              {/* @ts-ignore */}
-              <UserFlow
-                projectPassword={projectPassword}
-                pid={pid || ''}
-                period={period || ''}
-                timeBucket={timeBucket || ''}
-                from={from || ''}
-                to={to || ''}
-                timezone={timezone || ''}
-                filters={filters || []}
-                isReversed={isReversedUserFlow}
-              />
+              <UserFlow isReversed={isReversedUserFlow} setReversed={() => setIsReversedUserFlow((prev) => !prev)} />
             </div>
           }
           size='large'
@@ -1651,7 +1612,8 @@ const Panel = ({
             <Fragment key={`${id}-${entryName}-${Object.values(rest).join('-')}`}>
               <div
                 className={cx('mt-[0.32rem] flex justify-between rounded first:mt-0 dark:text-gray-50', {
-                  'group cursor-pointer hover:bg-gray-100 hover:dark:bg-slate-700': !hideFilters,
+                  'group cursor-pointer hover:bg-gray-100 hover:dark:bg-slate-700': !hideFilters && !dataLoading,
+                  'cursor-wait': dataLoading,
                 })}
                 onClick={() => _onFilter(id, entryName)}
               >

@@ -235,10 +235,6 @@ export const PERIOD_PAIRS_COMPARE = {
   DISABLE: 'disable',
 } as const
 
-interface StringObject {
-  [key: string]: string
-}
-
 // the order of panels in the project view
 export const TRAFFIC_PANELS_ORDER = ['cc', 'pg', 'br', 'os', 'ref', 'lc', 'dv', 'so']
 export const FILTERS_PANELS_ORDER = ['cc', 'pg', 'br', 'os', 'ref', 'lc', 'dv']
@@ -261,44 +257,42 @@ export const timeBucketToDays: {
   { lt: 732, tb: ['month'] }, // 24 months
 ]
 
-export const tbsFormatMapper: StringObject = {
+export const tbsFormatMapper = {
   minute: '%I:%M %p',
   hour: '%I %p',
   day: '%d %b',
   month: '%b %Y',
   year: '%Y',
-}
+} as const
 
-export const tbsFormatMapperTooltip: StringObject = {
+export const tbsFormatMapperTooltip = {
   minute: '%I:%M %p',
   hour: '%d %b %I %p',
   day: '%d %b',
   month: '%b %Y',
   year: '%Y',
-}
+} as const
 
-export const tbsFormatMapperTooltip24h: StringObject = {
+export const tbsFormatMapperTooltip24h = {
   minute: '%H:%M',
   hour: '%d %b %H:%M',
   day: '%d %b',
   month: '%b %Y',
   year: '%Y',
-}
+} as const
 
-export const tbsFormatMapper24h: StringObject = {
+export const tbsFormatMapper24h = {
   minute: '%H:%M',
   hour: '%H:%M',
   day: '%d %b',
   month: '%b %Y',
   year: '%Y',
-}
+} as const
 
-export const TimeFormat: StringObject = {
+export const TimeFormat = {
   '12-hour': '12-hour',
   '24-hour': '24-hour',
-}
-
-export const FREE_TIER_KEY = 'free'
+} as const
 
 export const PADDLE_JS_URL = 'https://cdn.paddle.com/paddle/paddle.js'
 export const PADDLE_VENDOR_ID = 139393
@@ -397,42 +391,6 @@ export const getOgImageUrl = (title: string) => {
   return `${apiUrl}/v1/og-image?title=${title}`
 }
 
-// Functions
-export const getProjectCacheKey = (
-  period: string,
-  timeBucket: string,
-  mode: 'periodical' | 'cumulative',
-  filters?: any,
-  meta = '',
-): string => `${period}${timeBucket}${mode}${filters ? JSON.stringify(filters) : ''}${meta}`
-export const getProjectCaptchaCacheKey = (period: string, timeBucket: string, filters?: any): string =>
-  `${period}${timeBucket}captcha${filters ? JSON.stringify(filters) : ''}}`
-export const getProjectForcastCacheKey = (
-  period: string,
-  timeBucket: string,
-  periodToForecast: string,
-  filters: any,
-): string => `${period}${timeBucket}${periodToForecast}forecast${filters ? JSON.stringify(filters) : ''}`
-export const getProjectCacheCustomKey = (
-  from: string,
-  to: string,
-  timeBucket: string,
-  mode: 'periodical' | 'cumulative',
-  filters: any,
-  meta = '',
-): string => `cst${from}${to}${timeBucket}-${mode}${filters ? JSON.stringify(filters) : ''}${meta}`
-export const getProjectCacheCustomKeyPerf = (
-  from: string,
-  to: string,
-  timeBucket: string,
-  filters: any,
-  measure: string,
-): string => `${from}-${to}-${timeBucket}perf${filters ? JSON.stringify(filters) : ''}-${measure}`
-export const getFunnelsCacheKey = (pid: string, funnelId: string, period: string): string =>
-  `${pid}${funnelId}${period}funnels`
-export const getFunnelsCacheCustomKey = (pid: string, funnelId: string, from: string, to: string): string =>
-  `${pid}${funnelId}${from}${to}funnels`
-
 // Cookies
 export const GDPR_REQUEST: string = 'gdpr_request'
 export const CONFIRMATION_TIMEOUT: string = 'confirmation_timeout'
@@ -441,39 +399,39 @@ export const TOKEN: string = 'access_token'
 export const REFRESH_TOKEN: string = 'refresh_token'
 
 // LocalStorage
-export const PROJECTS_PROTECTED = 'projects_protected'
-export const IS_ACTIVE_COMPARE = 'is-active-compare'
+export const LS_PROJECTS_PROTECTED = 'projects_protected'
+export const LS_IS_ACTIVE_COMPARE = 'is-active-compare'
 
 // Funnels
 export const MIN_FUNNEL_STEPS = 2
 export const MAX_FUNNEL_STEPS = 10
 
 // List of languages with translations available
-export const whitelist: string[] = ['en', 'uk', 'pl', 'de']
+export const whitelist = ['en', 'uk', 'pl', 'de'] as const
 export const whitelistWithCC = {
   en: 'en-GB',
   uk: 'uk-UA',
   pl: 'pl-PL',
   de: 'de-DE',
-}
+} as const
 export const defaultLanguage = 'en'
-export const languages: StringObject = {
+export const languages = {
   en: 'English',
   uk: 'Українська',
   pl: 'Polski',
   de: 'Deutsch',
-}
+} as const
 
-export const languageFlag: StringObject = {
+export const languageFlag = {
   en: 'GB',
   uk: 'UA',
   pl: 'PL',
   de: 'DE',
-}
+} as const
 
-export const paddleLanguageMapping: StringObject = {
+export const paddleLanguageMapping = {
   uk: 'en',
-}
+} as const
 
 // Increase this counter every time some major change is done within localisation files
 // This will prevent cached version or raw locale strings being displayed in production
@@ -503,28 +461,28 @@ export const PROJECT_TABS = (
   isSelfhosted ? SELFHOSTED_PROJECT_TABS : PRODUCTION_PROJECT_TABS
 ) as typeof PRODUCTION_PROJECT_TABS
 
-export const QUERY_METRIC: StringObject = {
+export const QUERY_METRIC = {
   PAGE_VIEWS: 'page_views',
   UNIQUE_PAGE_VIEWS: 'unique_page_views',
   ONLINE_USERS: 'online_users',
   CUSTOM_EVENTS: 'custom_events',
-}
+} as const
 
-export const QUERY_CONDITION: StringObject = {
+export const QUERY_CONDITION = {
   GREATER_THAN: 'greater_than',
   GREATER_EQUAL_THAN: 'greater_equal_than',
   LESS_THAN: 'less_than',
   LESS_EQUAL_THAN: 'less_equal_than',
-}
+} as const
 
-export const QUERY_TIME: StringObject = {
+export const QUERY_TIME = {
   LAST_15_MINUTES: 'last_15_minutes',
   LAST_30_MINUTES: 'last_30_minutes',
   LAST_1_HOUR: 'last_1_hour',
   LAST_4_HOURS: 'last_4_hours',
   LAST_24_HOURS: 'last_24_hours',
   LAST_48_HOURS: 'last_48_hours',
-}
+} as const
 
 export const INVITATION_EXPIRES_IN = 48 // hours
 export const ENTRIES_PER_PAGE_DASHBOARD = 11

@@ -16,7 +16,6 @@ import {
   EnvelopeIcon,
   ExclamationTriangleIcon,
   ArrowDownTrayIcon,
-  CurrencyDollarIcon,
   ChevronDownIcon,
   UserIcon,
   ChatBubbleLeftEllipsisIcon,
@@ -30,7 +29,6 @@ import cx from 'clsx'
 import {
   reportFrequencies,
   DEFAULT_TIMEZONE,
-  WEEKLY_REPORT_FREQUENCY,
   CONFIRMATION_TIMEOUT,
   GDPR_REQUEST,
   GDPR_EXPORT_TIMEFRAME,
@@ -75,7 +73,6 @@ import { StateType, useAppDispatch } from 'lib/store'
 import { authActions } from 'lib/reducers/auth'
 import { removeRefreshToken } from 'utils/refreshToken'
 import { removeAccessToken } from 'utils/accessToken'
-import UIActions from 'lib/reducers/ui'
 import { logout } from 'utils/auth'
 
 dayjs.extend(utc)
@@ -136,7 +133,7 @@ interface Form extends Partial<User> {
 }
 
 const UserSettings = () => {
-  const { user, isPaidTierUsed, loading } = useSelector((state: StateType) => state.auth)
+  const { user, loading } = useSelector((state: StateType) => state.auth)
   const dispatch = useAppDispatch()
 
   const navigate = useNavigate()
@@ -152,7 +149,6 @@ const UserSettings = () => {
   const [timezone, setTimezone] = useState(user.timezone || DEFAULT_TIMEZONE)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
   const [isPasswordChangeModalOpened, setIsPasswordChangeModalOpened] = useState(false)
-  const [timezoneChanged, setTimezoneChanged] = useState(false)
   const [reportFrequency, setReportFrequency] = useState(user.reportFrequency)
   const [formPresetted, setFormPresetted] = useState(false)
   const [validated, setValidated] = useState(false)
@@ -247,11 +243,6 @@ const UserSettings = () => {
     }
   }, [loading, user, formPresetted])
 
-  const _setTimezone = (value: string) => {
-    setTimezoneChanged(true)
-    setTimezone(value)
-  }
-
   const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { target } = event
     const value = target.type === 'checkbox' ? target.checked : target.value
@@ -288,11 +279,6 @@ const UserSettings = () => {
     setBeenSubmitted(true)
 
     if (validated) {
-      // if the timezone updates, we need to delete all project cache to refetch it with the new timezone setting afterwards
-      if (timezoneChanged) {
-        dispatch(UIActions.deleteProjectCache({}))
-      }
-
       onSubmit({
         ...form,
         timezone,
@@ -359,23 +345,6 @@ const UserSettings = () => {
         reportFrequency,
       })
     }
-  }
-
-  const _setReportFrequency = (value: string) => {
-    if (!isPaidTierUsed && value === WEEKLY_REPORT_FREQUENCY) {
-      setIsPaidFeatureOpened(true)
-      return
-    }
-
-    setReportFrequency(value)
-  }
-
-  const reportIconExtractor = (_: any, index: number) => {
-    if (!isPaidTierUsed && reportFrequencies[index] === WEEKLY_REPORT_FREQUENCY) {
-      return <CurrencyDollarIcon className='mr-1 h-5 w-5' />
-    }
-
-    return null
   }
 
   const onAccountDelete = async () => {
@@ -828,7 +797,7 @@ const UserSettings = () => {
                   </h3>
                   <div className='mt-4 grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
                     <div>
-                      <TimezonePicker value={timezone} onChange={_setTimezone} />
+                      <TimezonePicker value={timezone} onChange={setTimezone} />
                     </div>
                   </div>
                   <Button className='mt-4' onClick={handleTimezoneSave} primary large>
@@ -893,9 +862,8 @@ const UserSettings = () => {
                             label={t('profileSettings.frequency')}
                             className='w-full'
                             items={translatedFrequencies}
-                            iconExtractor={reportIconExtractor}
                             onSelect={(f) =>
-                              _setReportFrequency(
+                              setReportFrequency(
                                 reportFrequencies[_findIndex(translatedFrequencies, (freq) => freq === f)],
                               )
                             }

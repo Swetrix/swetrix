@@ -7,7 +7,6 @@ import _map from 'lodash/map'
 import _includes from 'lodash/includes'
 import cx from 'clsx'
 import { ALL_PERIODS } from 'lib/constants'
-import { useViewProjectContext } from '../ViewProject'
 
 interface TBPeriodSelectorProps {
   title: string | number | React.ReactNode
@@ -19,10 +18,19 @@ interface TBPeriodSelectorProps {
     timeBucket?: string
     periods?: string
   }
+  updateTimebucket: (timeBucket: string) => void
+  timeBucket: string
 }
 
-const TBPeriodSelector = ({ items, title, onSelect, activePeriod, classes }: TBPeriodSelectorProps) => {
-  const { dataLoading, updateTimebucket, timeBucket } = useViewProjectContext()
+const TBPeriodSelector = ({
+  items,
+  title,
+  onSelect,
+  activePeriod,
+  classes,
+  updateTimebucket,
+  timeBucket,
+}: TBPeriodSelectorProps) => {
   const { t } = useTranslation('common')
 
   const periods = useMemo(() => {
@@ -83,8 +91,7 @@ const TBPeriodSelector = ({ items, title, onSelect, activePeriod, classes }: TBP
                         'text-gray-900 dark:text-gray-50': timeBucket === value,
                         'text-gray-700 dark:text-gray-300': available && timeBucket !== value,
                         'text-gray-400 dark:text-gray-500': !available && timeBucket !== value,
-                        'cursor-pointer': available && !dataLoading,
-                        'cursor-wait': available && dataLoading,
+                        'cursor-pointer': available,
                         'cursor-default': !available,
                       })}
                     >
@@ -98,12 +105,7 @@ const TBPeriodSelector = ({ items, title, onSelect, activePeriod, classes }: TBP
                       as='li'
                       key={item.label}
                       onClick={(e: React.MouseEvent<HTMLElement>) => onSelect(item, e)}
-                      className={cx(
-                        'block cursor-pointer rounded-md px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700',
-                        {
-                          'cursor-wait': dataLoading,
-                        },
-                      )}
+                      className='block cursor-pointer rounded-md px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
                     >
                       {item.dropdownLabel || item.label}
                     </PopoverButton>

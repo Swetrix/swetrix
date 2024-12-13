@@ -1,14 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import _filter from 'lodash/filter'
-import _isEmpty from 'lodash/isEmpty'
 import { getItem, removeItem, setItem } from 'utils/localstorage'
-import {
-  getProjectCacheKey,
-  LS_VIEW_PREFS_SETTING,
-  LS_CAPTCHA_VIEW_PREFS_SETTING,
-  getProjectCaptchaCacheKey,
-  isBrowser,
-} from 'lib/constants'
+import { LS_VIEW_PREFS_SETTING, LS_CAPTCHA_VIEW_PREFS_SETTING, isBrowser } from 'lib/constants'
 import { filterInvalidViewPrefs } from 'pages/Project/View/utils/filters'
 
 const getInitialViewPrefs = (LS_VIEW: string) => {
@@ -28,10 +20,6 @@ const getInitialViewPrefs = (LS_VIEW: string) => {
 }
 
 interface InitialState {
-  analytics: any
-  analyticsPerf: any
-  funnels: any
-  captchaAnalytics: any
   captchaProjectsViewPrefs: any
   customEventsPrefs: any
   projectViewPrefs: {
@@ -41,90 +29,18 @@ interface InitialState {
       rangeDate?: Date[]
     }
   } | null
-  activeReferrals: any[]
-  referralStatistics: any
 }
 
 const initialState: InitialState = {
-  analytics: {},
-  analyticsPerf: {},
-  funnels: {},
-  captchaAnalytics: {},
   captchaProjectsViewPrefs: getInitialViewPrefs(LS_CAPTCHA_VIEW_PREFS_SETTING) || {},
   projectViewPrefs: getInitialViewPrefs(LS_VIEW_PREFS_SETTING),
   customEventsPrefs: {},
-  activeReferrals: [],
-  referralStatistics: {},
 }
 
 const cacheSlice = createSlice({
   name: 'cache',
   initialState,
   reducers: {
-    setProjectCache(state, { payload }: PayloadAction<{ pid: string; key: string; data: any }>) {
-      state.analytics = {
-        ...state.analytics,
-        [payload.pid]: {
-          ...state.analytics[payload.pid],
-          [payload.key]: payload.data,
-        },
-      }
-    },
-    setCaptchaProjectCache(state, { payload }: PayloadAction<{ pid: string; key: string; data: any }>) {
-      state.captchaAnalytics = {
-        ...state.captchaAnalytics,
-        [payload.pid]: {
-          ...state.captchaAnalytics[payload.pid],
-          [payload.key]: payload.data,
-        },
-      }
-    },
-    deleteProjectCache(
-      state,
-      { payload }: PayloadAction<{ pid?: string; period?: string; timeBucket?: string; filters?: any }>,
-    ) {
-      const { pid, period, timeBucket, filters } = payload
-      let key: string
-
-      if (period && timeBucket && filters) {
-        key = getProjectCacheKey(period, timeBucket, filters)
-      }
-
-      if (_isEmpty(period) || _isEmpty(timeBucket)) {
-        if (_isEmpty(pid)) {
-          state.analytics = {}
-        }
-        state.analytics = _filter(state.analytics, (project) => project !== pid)
-      }
-      if (pid) {
-        state.analytics = {
-          ...state.analytics,
-          [pid]: _filter(state.analytics[pid], (ckey) => ckey !== key),
-        }
-      }
-    },
-    deleteCaptchaProjectCache(
-      state,
-      { payload }: PayloadAction<{ pid: string; period?: string; timeBucket?: string }>,
-    ) {
-      const { pid, period, timeBucket } = payload
-      let key: string
-
-      if (period && timeBucket) {
-        key = getProjectCaptchaCacheKey(period, timeBucket)
-      }
-
-      if (_isEmpty(period) || _isEmpty(timeBucket)) {
-        if (_isEmpty(pid)) {
-          state.captchaAnalytics = {}
-        }
-        state.captchaAnalytics = _filter(state.captchaAnalytics, (project) => project !== pid)
-      }
-      state.captchaAnalytics = {
-        ...state.captchaAnalytics,
-        [pid]: _filter(state.captchaAnalytics[pid], (ckey) => ckey !== key),
-      }
-    },
     setProjectViewPrefs(
       state,
       { payload }: PayloadAction<{ pid: string; period: string; timeBucket: string; rangeDate?: Date[] }>,
@@ -191,33 +107,6 @@ const cacheSlice = createSlice({
         [pid]: viewPrefs,
       }
     },
-    setProjectCachePerf(state, { payload }: PayloadAction<{ pid: string; key: string; data: any }>) {
-      state.analyticsPerf = {
-        ...state.analyticsPerf,
-        [payload.pid]: {
-          ...state.analyticsPerf[payload.pid],
-          [payload.key]: payload.data,
-        },
-      }
-    },
-    setFunnelsCache(state, { payload }: PayloadAction<{ pid: string; key: string; data: any }>) {
-      state.funnels = {
-        ...state.funnels,
-        [payload.pid]: {
-          ...state.funnels[payload.pid],
-          [payload.key]: payload.data,
-        },
-      }
-    },
-    setProjectForecastCache(state, { payload }: PayloadAction<{ pid: string; key: string; data: any }>) {
-      state.analytics = {
-        ...state.analytics,
-        [payload.pid]: {
-          ...state.analytics[payload.pid],
-          [payload.key]: payload.data,
-        },
-      }
-    },
     setCustomEventsPrefs(state, { payload }: PayloadAction<{ pid: string; data: any }>) {
       state.customEventsPrefs = {
         ...state.customEventsPrefs,
@@ -226,12 +115,6 @@ const cacheSlice = createSlice({
           ...payload.data,
         },
       }
-    },
-    setCache(state, { payload }: PayloadAction<{ key: string; value: any }>) {
-      const { key, value } = payload
-
-      // @ts-ignore
-      state[key] = value
     },
   },
 })

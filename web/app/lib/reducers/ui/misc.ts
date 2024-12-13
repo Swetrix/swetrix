@@ -1,9 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { LOW_EVENTS_WARNING } from 'lib/constants'
+import { LOW_EVENTS_WARNING, LS_PROJECTS_PROTECTED } from 'lib/constants'
 import { setCookie } from 'utils/cookie'
 import { secondsTillNextMonth } from 'utils/generic'
 import { Stats } from 'lib/models/Stats'
 import { Metainfo } from 'lib/models/Metainfo'
+import { getItem, setItem } from 'utils/localstorage'
 
 interface InitialState {
   stats: Stats
@@ -13,6 +14,9 @@ interface InitialState {
   showNoEventsLeftBanner: boolean
   lastBlogPost: any
   extensions: any[]
+  projectPasswords: {
+    [key: string]: string
+  }
 }
 
 const initialState: InitialState = {
@@ -28,6 +32,7 @@ const initialState: InitialState = {
     symbol: '$',
     code: 'USD',
   },
+  projectPasswords: getItem(LS_PROJECTS_PROTECTED) || {},
   paddleLoaded: false,
   paddle: {},
   showNoEventsLeftBanner: false,
@@ -41,6 +46,15 @@ const miscSlice = createSlice({
   reducers: {
     setGeneralStats(state, { payload }: PayloadAction<Stats>) {
       state.stats = payload
+    },
+    setProjectPassword: (state, { payload }: PayloadAction<{ id: string; password: string }>) => {
+      const { id, password } = payload
+
+      state.projectPasswords = {
+        ...state.projectPasswords,
+        [id]: password,
+      }
+      setItem(LS_PROJECTS_PROTECTED, JSON.stringify(state.projectPasswords))
     },
     setPaddleLastEvent(state, { payload }: PayloadAction<any>) {
       state.paddle = { ...state.paddle, lastEvent: payload }

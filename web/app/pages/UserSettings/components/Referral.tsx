@@ -24,12 +24,12 @@ import {
 import { isValidEmail } from 'utils/validator'
 import { useSelector } from 'react-redux'
 import { StateType, useAppDispatch } from 'lib/store'
-import UIActions from 'lib/reducers/ui'
 import { authActions } from 'lib/reducers/auth'
+import { User } from 'lib/models/User'
+import Spin from 'ui/icons/Spin'
 
 const Referral = () => {
   const { user } = useSelector((state: StateType) => state.auth)
-  const { activeReferrals, referralStatistics } = useSelector((state: StateType) => state.ui.cache)
   const dispatch = useAppDispatch()
 
   const {
@@ -37,55 +37,47 @@ const Referral = () => {
     i18n: { language },
   } = useTranslation('common')
   const [refCodeGenerating, setRefCodeGenerating] = useState(false)
-  const [referralStatsRequested, setReferralStatsRequested] = useState(false)
-  const [activeReferralsRequested, setActiveReferralsRequested] = useState(false)
   const [paypalInputError, setPaypalInputError] = useState<string | null>(null)
   const [isPaypalEmailLoading, setIsPaypalEmailLoading] = useState(false)
   const [paypalEmailAddress, setPaypalEmailAddress] = useState<string | null>(user.paypalPaymentsEmail)
 
+  const [referralStatistics, setReferralStatistics] = useState<{
+    trials: number
+    subscribers: number
+    paid: number
+    nextPayout: number
+    pending: number
+  } | null>(null)
+  const [activeReferrals, setActiveReferrals] = useState<Partial<User>[]>([])
+
+  const [isLoading, setIsLoading] = useState<boolean | null>(null)
+
+  const uiIsLoading = isLoading || isLoading === null
+
   const refUrl = `${REF_URL_PREFIX}${user?.refCode}`
 
+  const loadStatistics = async () => {
+    if (isLoading) {
+      return
+    }
+    setIsLoading(true)
+
+    try {
+      const [payoutsInfo, referrals] = await Promise.all([getPayoutsInfo(), getReferrals()])
+      setReferralStatistics(payoutsInfo)
+      setActiveReferrals(referrals)
+    } catch (reason: any) {
+      console.error('[loadStatistics] Something went wrong whilst requesting referrals info', reason)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   useEffect(() => {
-    const getRefStats = async () => {
-      try {
-        const info = await getPayoutsInfo()
-        dispatch(
-          UIActions.setCache({
-            key: 'referralStatistics',
-            value: info,
-          }),
-        )
-      } catch (reason) {
-        console.error('[Referral][getRefStats] Something went wrong whilst requesting payouts information', reason)
-        toast.error(t('apiNotifications.payoutInfoError'))
-      }
-    }
+    loadStatistics()
 
-    const getActiveReferrals = async () => {
-      try {
-        const info = await getReferrals()
-        dispatch(
-          UIActions.setCache({
-            key: 'activeReferrals',
-            value: info,
-          }),
-        )
-      } catch (reason) {
-        console.error('[Referral][getActiveReferrals] Something went wrong whilst requesting active referrals', reason)
-        toast.error(t('apiNotifications.payoutInfoError'))
-      }
-    }
-
-    if (!referralStatsRequested && _isEmpty(referralStatistics)) {
-      setReferralStatsRequested(true)
-      getRefStats()
-    }
-
-    if (!activeReferralsRequested && _isEmpty(activeReferrals)) {
-      setActiveReferralsRequested(true)
-      getActiveReferrals()
-    }
-  }, [referralStatistics, referralStatsRequested, activeReferralsRequested, activeReferrals, t, dispatch])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const onRefCodeGenerate = async () => {
     if (refCodeGenerating || user.refCode) {
@@ -198,123 +190,127 @@ const Referral = () => {
           {t('profileSettings.referral.generateRefLink')}
         </Button>
       )}
-      {!_isEmpty(referralStatistics) && (
-        <>
-          <h3 className='mt-5 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
-            {t('profileSettings.referral.referralStats')}
-          </h3>
-          <div>
-            <Tooltip
-              text={t('profileSettings.referral.trialDesc')}
-              tooltipNode={
-                <span className='text-gray-900 dark:text-gray-50'>
-                  {t('profileSettings.referral.trial')}: <Highlighted>{referralStatistics.trials}</Highlighted>
-                </span>
-              }
-              className='!h-auto !w-auto max-w-max'
-            />
-            <Tooltip
-              text={t('profileSettings.referral.activeDesc')}
-              tooltipNode={
-                <span className='text-gray-900 dark:text-gray-50'>
-                  {t('profileSettings.referral.active')}: <Highlighted>{referralStatistics.subscribers}</Highlighted>
-                </span>
-              }
-              className='!h-auto !w-auto max-w-max'
-            />
-            <Tooltip
-              text={t('profileSettings.referral.paidDesc')}
-              tooltipNode={
-                <span className='text-gray-900 dark:text-gray-50'>
-                  {t('profileSettings.referral.paid')}: <Highlighted>US$ {referralStatistics.paid}</Highlighted>
-                </span>
-              }
-              className='!h-auto !w-auto max-w-max'
-            />
-            <Tooltip
-              text={t('profileSettings.referral.nextPayoutDesc')}
-              tooltipNode={
-                <span className='text-gray-900 dark:text-gray-50'>
-                  {t('profileSettings.referral.nextPayout')}:{' '}
-                  <Highlighted>US$ {referralStatistics.nextPayout}</Highlighted>
-                </span>
-              }
-              className='!h-auto !w-auto max-w-max'
-            />
-            <Tooltip
-              text={t('profileSettings.referral.pendingDesc', {
-                days: REFERRAL_PENDING_PAYOUT_DAYS,
-              })}
-              tooltipNode={
-                <span className='text-gray-900 dark:text-gray-50'>
-                  {t('profileSettings.referral.pending')}: <Highlighted>US$ {referralStatistics.pending}</Highlighted>
-                </span>
-              }
-              className='!h-auto !w-auto max-w-max'
-            />
-          </div>
-        </>
+      <h3 className='mt-5 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
+        {t('profileSettings.referral.referralStats')}
+      </h3>
+      {referralStatistics ? (
+        <div>
+          <Tooltip
+            text={t('profileSettings.referral.trialDesc')}
+            tooltipNode={
+              <span className='text-gray-900 dark:text-gray-50'>
+                {t('profileSettings.referral.trial')}: <Highlighted>{referralStatistics.trials}</Highlighted>
+              </span>
+            }
+            className='block'
+          />
+          <Tooltip
+            text={t('profileSettings.referral.activeDesc')}
+            tooltipNode={
+              <span className='text-gray-900 dark:text-gray-50'>
+                {t('profileSettings.referral.active')}: <Highlighted>{referralStatistics.subscribers}</Highlighted>
+              </span>
+            }
+            className='block'
+          />
+          <Tooltip
+            text={t('profileSettings.referral.paidDesc')}
+            tooltipNode={
+              <span className='text-gray-900 dark:text-gray-50'>
+                {t('profileSettings.referral.paid')}: <Highlighted>US$ {referralStatistics.paid}</Highlighted>
+              </span>
+            }
+            className='block'
+          />
+          <Tooltip
+            text={t('profileSettings.referral.nextPayoutDesc')}
+            tooltipNode={
+              <span className='text-gray-900 dark:text-gray-50'>
+                {t('profileSettings.referral.nextPayout')}:{' '}
+                <Highlighted>US$ {referralStatistics.nextPayout}</Highlighted>
+              </span>
+            }
+            className='block'
+          />
+          <Tooltip
+            text={t('profileSettings.referral.pendingDesc', {
+              days: REFERRAL_PENDING_PAYOUT_DAYS,
+            })}
+            tooltipNode={
+              <span className='text-gray-900 dark:text-gray-50'>
+                {t('profileSettings.referral.pending')}: <Highlighted>US$ {referralStatistics.pending}</Highlighted>
+              </span>
+            }
+            className='block'
+          />
+        </div>
+      ) : (
+        <Spin className='!ml-0 mt-2' />
       )}
-      {!_isEmpty(activeReferrals) && (
-        <>
-          <h3 className='mt-5 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
-            {t('profileSettings.referral.activeReferrals')}
-          </h3>
-          <table className='200 mt-2 min-w-full divide-y divide-gray-300 shadow ring-1 ring-black ring-opacity-5 dark:divide-gray-500 md:rounded-lg'>
-            <thead className='bg-gray-50 dark:bg-slate-800'>
-              <tr>
-                <th
-                  scope='col'
-                  className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-50'
-                >
-                  {t('profileSettings.referral.activeReferralsTable.plan')}
-                </th>
-                <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-50'>
-                  <Tooltip
-                    text={t('profileSettings.referral.activeReferralsTable.yourCutDesc', {
-                      fee: MERCHANT_FEE,
-                      amount: REFERRAL_CUT * 100,
-                    })}
-                    tooltipNode={<>{t('profileSettings.referral.activeReferralsTable.yourCut')}</>}
-                    className='!h-auto !w-auto max-w-max'
-                  />
-                </th>
-                <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-50'>
-                  {t('profileSettings.referral.activeReferralsTable.registrationDate')}
-                </th>
-              </tr>
-            </thead>
-            <tbody className='divide-y divide-gray-200 bg-white dark:divide-gray-600 dark:bg-slate-800'>
-              {_map(activeReferrals, ({ billingFrequency, created, planCode, tierCurrency }, index) => {
-                // @ts-ignore
-                const planPrice = PLAN_LIMITS[planCode].price[tierCurrency][billingFrequency]
-                const referrerCut = calculateReferralCut(planPrice)
-                const currencySymbol = CURRENCIES[tierCurrency as 'EUR' | 'USD' | 'GBP'].symbol
-                const tBillingFrequency = t(
-                  billingFrequency === BillingFrequency.monthly ? 'pricing.perMonth' : 'pricing.perYear',
-                )
+      <h3 className='mt-5 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
+        {t('profileSettings.referral.activeReferrals')}
+      </h3>
+      {!_isEmpty(activeReferrals) ? (
+        <table className='200 mt-2 min-w-full divide-y divide-gray-300 shadow ring-1 ring-black ring-opacity-5 dark:divide-gray-500 md:rounded-lg'>
+          <thead className='bg-gray-50 dark:bg-slate-800'>
+            <tr>
+              <th
+                scope='col'
+                className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-50'
+              >
+                {t('profileSettings.referral.activeReferralsTable.plan')}
+              </th>
+              <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-50'>
+                <Tooltip
+                  text={t('profileSettings.referral.activeReferralsTable.yourCutDesc', {
+                    fee: MERCHANT_FEE,
+                    amount: REFERRAL_CUT * 100,
+                  })}
+                  tooltipNode={<>{t('profileSettings.referral.activeReferralsTable.yourCut')}</>}
+                  className='block'
+                />
+              </th>
+              <th scope='col' className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-50'>
+                {t('profileSettings.referral.activeReferralsTable.registrationDate')}
+              </th>
+            </tr>
+          </thead>
+          <tbody className='divide-y divide-gray-200 bg-white dark:divide-gray-600 dark:bg-slate-800'>
+            {_map(activeReferrals, ({ billingFrequency, created, planCode, tierCurrency }, index) => {
+              // @ts-ignore
+              const planPrice = PLAN_LIMITS[planCode].price[tierCurrency][billingFrequency]
+              const referrerCut = calculateReferralCut(planPrice)
+              const currencySymbol = CURRENCIES[tierCurrency as 'EUR' | 'USD' | 'GBP'].symbol
+              const tBillingFrequency = t(
+                billingFrequency === BillingFrequency.monthly ? 'pricing.perMonth' : 'pricing.perYear',
+              )
 
-                return (
-                  <tr key={index}>
-                    <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50 sm:pl-6'>
-                      {currencySymbol}
-                      {planPrice}/{tBillingFrequency}
-                    </td>
-                    <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50'>
-                      {currencySymbol}
-                      {referrerCut}/{tBillingFrequency}
-                    </td>
-                    <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50'>
-                      {language === 'en'
-                        ? dayjs(created).locale(language).format('MMMM D, YYYY')
-                        : dayjs(created).locale(language).format('D MMMM, YYYY')}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </>
+              return (
+                <tr key={index}>
+                  <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50 sm:pl-6'>
+                    {currencySymbol}
+                    {planPrice}/{tBillingFrequency}
+                  </td>
+                  <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50'>
+                    {currencySymbol}
+                    {referrerCut}/{tBillingFrequency}
+                  </td>
+                  <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50'>
+                    {language === 'en'
+                      ? dayjs(created).locale(language).format('MMMM D, YYYY')
+                      : dayjs(created).locale(language).format('D MMMM, YYYY')}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      ) : uiIsLoading ? (
+        <Spin className='!ml-0 mt-2' />
+      ) : (
+        <p className='mt-2 text-sm text-gray-900 dark:text-gray-50'>
+          {t('profileSettings.referral.noActiveReferrals')}
+        </p>
       )}
     </>
   )

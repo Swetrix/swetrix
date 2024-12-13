@@ -175,7 +175,17 @@ export const generateRefCode = () =>
 export const getPayoutsInfo = () =>
   api
     .get('/user/payouts/info')
-    .then((response): Partial<User> => response.data)
+    .then(
+      (
+        response,
+      ): {
+        trials: number
+        subscribers: number
+        paid: number
+        nextPayout: number
+        pending: number
+      } => response.data,
+    )
     .catch((error) => {
       const errorsArray = error.response.data.message
       if (_isArray(errorsArray)) {
@@ -187,7 +197,7 @@ export const getPayoutsInfo = () =>
 export const getReferrals = () =>
   api
     .get('/user/referrals')
-    .then((response): Partial<User> => response.data)
+    .then((response): Partial<User>[] => response.data)
     .catch((error) => {
       const errorsArray = error.response.data.message
       if (_isArray(errorsArray)) {

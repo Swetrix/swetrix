@@ -146,7 +146,6 @@ export const parseFiltersFromUrl = (
   keySuffix: string,
   searchParams: URLSearchParams,
   setFilters: React.Dispatch<React.SetStateAction<Filter[]>>,
-  setParsedFlag: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
   try {
     const initialFilters: Filter[] = []
@@ -168,7 +167,5 @@ export const parseFiltersFromUrl = (
     setFilters(initialFilters)
   } catch (reason) {
     console.error(`[ERROR] Parsing filters from URL with suffix ${keySuffix}: ${reason}`)
-  } finally {
-    setParsedFlag(true)
   }
 }

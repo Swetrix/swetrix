@@ -132,6 +132,7 @@
     "@remix-run/dev": "^2.13.1",
     "@remix-run/eslint-config": "^2.13.1",
     "@tailwindcss/typography": "^0.5.15",
+    "@types/file-saver": "^2.0.7",
     "@types/lodash": "^4.17.13",
     "@types/node": "^22.9.0",
     "@types/react": "^18.3.12",

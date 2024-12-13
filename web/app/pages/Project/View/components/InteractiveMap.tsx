@@ -10,6 +10,7 @@ import { getTimeFromSeconds, getStringFromTime, nFormatter } from 'utils/generic
 import { Entry } from 'lib/models/Entry'
 import countriesList from 'utils/countries'
 import { useSearchParams } from '@remix-run/react'
+import { useViewProjectContext } from '../ViewProject'
 
 interface InteractiveMapProps {
   data: Entry[]
@@ -32,6 +33,7 @@ interface CountryMap {
 }
 
 const InteractiveMap = ({ data, onClickCountry, total }: InteractiveMapProps) => {
+  const { dataLoading } = useViewProjectContext()
   const {
     t,
     i18n: { language },
@@ -66,18 +68,17 @@ const InteractiveMap = ({ data, onClickCountry, total }: InteractiveMapProps) =>
               <path
                 key={value}
                 id={value}
-                className={
+                className={cx(
                   isTrafficTab
-                    ? cx({
+                    ? {
                         'hover:opacity-90': perc > 0,
                         'fill-[#cfd1d4] dark:fill-[#465d7e46]': perc === 0,
                         'fill-[#92b2e7] dark:fill-[#292d77]': perc > 0 && perc < 3,
                         'fill-[#6f9be3] dark:fill-[#363391]': perc >= 3 && perc < 10,
                         'fill-[#5689db] dark:fill-[#4842be]': perc >= 10 && perc < 20,
                         'fill-[#3b82f6] dark:fill-[#6357ff]': perc >= 20,
-                        'cursor-pointer': Boolean(ccData),
-                      })
-                    : cx({
+                      }
+                    : {
                         'hover:opacity-90': ccData > 0,
                         'fill-[#cfd1d4] dark:fill-[#465d7e46]': ccData === 0,
                         'fill-[#92b2e7] dark:fill-[#292d77]': ccData > 0 && ccData < 1,
@@ -87,9 +88,12 @@ const InteractiveMap = ({ data, onClickCountry, total }: InteractiveMapProps) =>
                         'fill-[#f78a8a]': ccData >= 5 && ccData < 7,
                         'fill-[#f76b6b]': ccData >= 7 && ccData < 10,
                         'fill-[#f74b4b]': ccData >= 10,
-                        'cursor-pointer': Boolean(ccData),
-                      })
-                }
+                      },
+                  {
+                    'cursor-pointer': Boolean(ccData) && !dataLoading,
+                    'cursor-wait': dataLoading,
+                  },
+                )}
                 d={key.d}
                 onClick={() => perc !== 0 && onClickCountry(value)}
                 onMouseEnter={() => {

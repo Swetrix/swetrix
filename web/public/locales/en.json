@@ -603,6 +603,7 @@
       "generateRefLink": "Generate referral link",
       "referralStats": "Referral statistics",
       "activeReferrals": "Active referrals",
+      "noActiveReferrals": "You have no active referrals yet",
       "trial": "Trial referrals",
       "trialDesc": "Trial users referred by you",
       "active": "Active referrals",

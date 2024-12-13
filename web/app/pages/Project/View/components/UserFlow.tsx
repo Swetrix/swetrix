@@ -1,44 +1,35 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, memo, useMemo } from 'react'
 import { toast } from 'sonner'
 import { ResponsiveSankey } from '@nivo/sankey'
-import { IUserFlow } from 'lib/models/UserFlow'
+import { UserFlowType } from 'lib/models/UserFlow'
 import _isEmpty from 'lodash/isEmpty'
 import { getUserFlow } from 'api'
 import Loader from 'ui/Loader'
-import { Filter } from '../interfaces/traffic'
 import { useTranslation } from 'react-i18next'
+import { useViewProjectContext } from '../ViewProject'
+import { getFormatDate } from '../ViewProject.helpers'
 
 interface UserFlowProps {
-  pid: string
-  period: string
-  timezone: string
-  timeBucket: string
-  from: string
-  to: string
   isReversed?: boolean
-  filters: Filter[]
   setReversed: () => void
-  projectPassword?: string
 }
 
-const UserFlow = ({
-  pid,
-  period,
-  timeBucket,
-  from,
-  to,
-  timezone,
-  filters,
-  setReversed,
-  isReversed,
-  projectPassword,
-}: UserFlowProps) => {
+const UserFlow = ({ setReversed, isReversed }: UserFlowProps) => {
+  const { dateRange, period, timeBucket, timezone, projectPassword, projectId, filters } = useViewProjectContext()
   const { t } = useTranslation('common')
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState<boolean | null>(null)
   const [userFlow, setUserFlow] = useState<{
-    ascending: IUserFlow
-    descending: IUserFlow
+    ascending: UserFlowType
+    descending: UserFlowType
   } | null>(null)
+
+  const [from, to] = useMemo(() => {
+    if (!dateRange) {
+      return [undefined, undefined]
+    }
+
+    return [getFormatDate(dateRange[0]), getFormatDate(dateRange[1])]
+  }, [dateRange])
 
   const fetchUserFlow = async () => {
     if (isLoading) {
@@ -49,7 +40,7 @@ const UserFlow = ({
 
     try {
       const { ascending, descending } = await getUserFlow(
-        pid,
+        projectId,
         timeBucket,
         period,
         filters,
@@ -69,14 +60,14 @@ const UserFlow = ({
   useEffect(() => {
     fetchUserFlow()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period, timeBucket, from, to, timezone, pid])
+  }, [period, timeBucket, from, to, timezone, projectId])
 
   useEffect(() => {
     fetchUserFlow()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters])
 
-  if (isLoading) {
+  if (isLoading || isLoading === null) {
     return <Loader />
   }
 
@@ -140,4 +131,4 @@ const UserFlow = ({
   )
 }
 
-export default UserFlow
+export default memo(UserFlow)

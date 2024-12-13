@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 import { ChevronDownIcon, CheckIcon } from '@heroicons/react/24/solid'
-import { TrashIcon, UserPlusIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline'
+import { TrashIcon, UserPlusIcon } from '@heroicons/react/24/outline'
 import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -144,7 +144,7 @@ interface PeopleProps {
 }
 
 const People = ({ project }: PeopleProps) => {
-  const { isPaidTierUsed, user: currentUser } = useSelector((state: StateType) => state.auth)
+  const { user: currentUser } = useSelector((state: StateType) => state.auth)
 
   const [showModal, setShowModal] = useState(false)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
@@ -227,11 +227,6 @@ const People = ({ project }: PeopleProps) => {
   const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
     e.stopPropagation()
-
-    if (!isPaidTierUsed) {
-      setIsPaidFeatureOpened(true)
-      return
-    }
 
     setBeenSubmitted(true)
     if (validated) {
@@ -352,15 +347,9 @@ const People = ({ project }: PeopleProps) => {
         customButtons={
           <button
             type='button'
-            className={cx(
-              'inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm',
-              {
-                '!px-3 opacity-80': !isPaidTierUsed,
-              },
-            )}
+            className='inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm'
             onClick={handleSubmit}
           >
-            {!isPaidTierUsed && <CurrencyDollarIcon className='mr-1 h-5 w-5' />}
             {t('common.invite')}
           </button>
         }

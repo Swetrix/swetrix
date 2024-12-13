@@ -66,17 +66,14 @@ import { getItem, setItem, removeItem } from 'utils/localstorage'
 import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
 import {
   tbPeriodPairs,
-  getProjectCacheKey,
   LIVE_VISITORS_UPDATE_INTERVAL,
   DEFAULT_TIMEZONE,
   CDN_URL,
   isDevelopment,
   timeBucketToDays,
-  getProjectCacheCustomKey,
   MAX_MONTHS_IN_PAST,
   PROJECT_TABS,
   TimeFormat,
-  getProjectForcastCacheKey,
   chartTypes,
   TRAFFIC_PANELS_ORDER,
   PERFORMANCE_PANELS_ORDER,
@@ -84,15 +81,12 @@ import {
   tbPeriodPairsCompare,
   PERIOD_PAIRS_COMPARE,
   FILTERS_PERIOD_PAIRS,
-  IS_ACTIVE_COMPARE,
-  PROJECTS_PROTECTED,
-  getProjectCacheCustomKeyPerf,
+  LS_IS_ACTIVE_COMPARE,
+  LS_PROJECTS_PROTECTED,
   isBrowser,
   TITLE_SUFFIX,
   KEY_FOR_ALL_TIME,
   MARKETPLACE_URL,
-  getFunnelsCacheKey,
-  getFunnelsCacheCustomKey,
   BROWSER_LOGO_MAP,
   OS_LOGO_MAP,
   OS_LOGO_MAP_DARK,
@@ -243,6 +237,9 @@ interface ViewProjectContextType {
   timeFormat: '12-hour' | '24-hour'
   size: ReturnType<typeof useSize>[1]
   allowedToManage: boolean
+  dataLoading: boolean
+  activeTab: keyof typeof PROJECT_TABS
+  filters: Filter[]
 
   // Functions
   setDateRange: Dispatch<SetStateAction<Date[] | null>>
@@ -283,21 +280,13 @@ const ViewProject = () => {
     tabs: string[]
   }>()
 
-  const {
-    analytics: cache,
-    analyticsPerf: cachePerf,
-    funnels: cacheFunnels,
-    projectViewPrefs,
-    customEventsPrefs,
-  } = useSelector((state: StateType) => state.ui.cache)
+  const { projectViewPrefs, customEventsPrefs } = useSelector((state: StateType) => state.ui.cache)
 
   const { loading: authLoading, authenticated: csrAuthenticated, user } = useSelector((state: StateType) => state.auth)
 
   const { theme } = useSelector((state: StateType) => state.ui.theme)
 
-  const { extensions } = useSelector((state: StateType) => state.ui.misc)
-
-  const { password } = useSelector((state: StateType) => state.ui.projects)
+  const { extensions, projectPasswords } = useSelector((state: StateType) => state.ui.misc)
 
   const authenticated = isBrowser ? (authLoading ? ssrAuthenticated : csrAuthenticated) : ssrAuthenticated
   const { timezone = DEFAULT_TIMEZONE } = user || {}
@@ -328,14 +317,11 @@ const ViewProject = () => {
   const [liveVisitors, setLiveVisitors] = useState<number>(0)
 
   const projectPassword = useMemo(
-    () => password[id] || (getItem(PROJECTS_PROTECTED)?.[id] as string) || queryPassword || '',
-    [id, password, queryPassword],
+    () => projectPasswords[id] || (getItem(LS_PROJECTS_PROTECTED)?.[id] as string) || queryPassword || '',
+    [id, projectPasswords, queryPassword],
   )
 
   const [areFiltersParsed, setAreFiltersParsed] = useState(false)
-  const [areFiltersPerfParsed, setAreFiltersPerfParsed] = useState(false)
-  const [arePeriodParsed, setArePeriodParsed] = useState(false)
-  const [areTimeBucketParsed, setAreTimeBucketParsed] = useState(false)
 
   const [panelsData, setPanelsData] = useState<{
     types: (keyof Params)[]
@@ -388,13 +374,10 @@ const ViewProject = () => {
   const [filters, setFilters] = useState<Filter[]>([])
   const [filtersPerf, setFiltersPerf] = useState<Filter[]>([])
   const [filtersSessions, setFiltersSessions] = useState<Filter[]>([])
-  const [areFiltersSessionsParsed, setAreFiltersSessionsParsed] = useState(false)
 
   const [filtersErrors, setFiltersErrors] = useState<Filter[]>([])
-  const [areFiltersErrorsParsed, setAreFiltersErrorsParsed] = useState(false)
 
   const [filtersSubError, setFiltersSubError] = useState<Filter[]>([])
-  const [areFiltersSubErrorParsed, setAreFiltersSubErrorParsed] = useState(false)
 
   const tnMapping = typeNameMapping(t)
   const refCalendar = useRef(null)
@@ -533,8 +516,6 @@ const ViewProject = () => {
 
     try {
       await getFunnels(id, projectPassword)
-
-      // TODO: Update project was here. Check if it's still needed
     } catch (reason: any) {
       console.error('[ERROR] (onFunnelCreate)(getFunnels)', reason)
     }
@@ -559,8 +540,6 @@ const ViewProject = () => {
 
     try {
       await getFunnels(id, projectPassword)
-
-      // TODO: Update project was here. Check if it's still needed
     } catch (reason: any) {
       console.error('[ERROR] (onFunnelCreate)(getFunnels)', reason)
     }
@@ -585,8 +564,6 @@ const ViewProject = () => {
 
     try {
       await getFunnels(id, projectPassword)
-
-      // TODO: Update project was here. Check if it's still needed
     } catch (reason: any) {
       console.error('[ERROR] (onFunnelCreate)(getFunnels)', reason)
     }
@@ -627,8 +604,8 @@ const ViewProject = () => {
       period: string
     }[]
   >(tbPeriodPairsCompare(t, undefined, language))
-  const [isActiveCompare, setIsActiveCompare] = useState<boolean>(() => {
-    const activeCompare = getItem(IS_ACTIVE_COMPARE)
+  const [isActiveCompare, setIsActiveCompare] = useState(() => {
+    const activeCompare = getItem(LS_IS_ACTIVE_COMPARE)
 
     if (typeof activeCompare === 'string') {
       return activeCompare === 'true'
@@ -1073,7 +1050,7 @@ const ViewProject = () => {
           pathname: _replace(routes.project_protected_password, ':id', id),
           search: `?theme=${ssrTheme}&embedded=${embedded}`,
         })
-        removeItem(PROJECTS_PROTECTED)
+        removeItem(LS_PROJECTS_PROTECTED)
       })
       return
     }
@@ -1181,15 +1158,7 @@ const ViewProject = () => {
     setActivePeriodCompare(periodPairsCompare[0].period)
   }
 
-  const loadAnalytics = async (
-    forced = false,
-    newFilters: Filter[] | null = null,
-    newMetrics: ProjectViewCustomEvent[] | null = null,
-  ) => {
-    if (!forced && (authLoading || _isEmpty(project) || dataLoading)) {
-      return
-    }
-
+  const loadAnalytics = async () => {
     setDataLoading(true)
     try {
       let data: TrafficLogResponse & {
@@ -1198,8 +1167,6 @@ const ViewProject = () => {
       let dataCompare: TrafficLogResponse & {
         overall?: OverallObject
       }
-      let key = ''
-      let keyCompare = ''
       let from
       let fromCompare: string | undefined
       let to
@@ -1226,7 +1193,6 @@ const ViewProject = () => {
           if (activePeriod?.period === 'custom' ? diffCompare <= diff : diffCompare <= activePeriod?.countDays) {
             fromCompare = getFormatDate(dateRangeCompare[0])
             toCompare = getFormatDate(dateRangeCompare[1])
-            keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket, mode, newFilters || filters)
           } else {
             toast.error(t('project.compareDateRangeError'))
             compareDisable()
@@ -1242,138 +1208,107 @@ const ViewProject = () => {
           if (date) {
             fromCompare = date.from
             toCompare = date.to
-            keyCompare = getProjectCacheCustomKey(fromCompare, toCompare, timeBucket, mode, newFilters || filters)
           }
         }
 
         if (!_isEmpty(fromCompare) && !_isEmpty(toCompare)) {
-          if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare])) {
-            dataCompare = cache[id][keyCompare]
-          } else {
-            dataCompare =
-              (await getTrafficCompareData(
-                id,
-                timeBucket,
-                '',
-                newFilters || filters,
-                fromCompare,
-                toCompare,
-                timezone,
-                projectPassword,
-                mode,
-              )) || {}
-            const compareOverall = await getOverallStats(
-              [id],
-              'custom',
+          dataCompare =
+            (await getTrafficCompareData(
+              id,
+              timeBucket,
+              '',
+              filters,
               fromCompare,
               toCompare,
               timezone,
-              newFilters || filters,
               projectPassword,
-            )
-            dataCompare.overall = compareOverall[id]
-          }
+              mode,
+            )) || {}
+          const compareOverall = await getOverallStats(
+            [id],
+            'custom',
+            fromCompare,
+            toCompare,
+            timezone,
+            filters,
+            projectPassword,
+          )
+          dataCompare.overall = compareOverall[id]
         }
-
-        dispatch(
-          UIActions.setProjectCache({
-            pid: id,
-            // @ts-expect-error
-            data: dataCompare,
-            key: keyCompare,
-          }),
-        )
       }
 
       if (dateRange) {
         from = getFormatDate(dateRange[0])
         to = getFormatDate(dateRange[1])
-        key = getProjectCacheCustomKey(from, to, timeBucket, mode, newFilters || filters)
-      } else {
-        key = getProjectCacheKey(period, timeBucket, mode, newFilters || filters)
       }
 
-      if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
-        data = cache[id][key]
-        // @ts-expect-error
-        setOverall(data.overall)
+      if (period === 'custom' && dateRange) {
+        data = await getProjectData(
+          id,
+          timeBucket,
+          '',
+          filters,
+          customMetrics,
+          from,
+          to,
+          timezone,
+          projectPassword,
+          mode,
+        )
+        customEventsChart = await getProjectDataCustomEvents(
+          id,
+          timeBucket,
+          '',
+          filters,
+          from,
+          to,
+          timezone,
+          activeChartMetricsCustomEvents,
+          projectPassword,
+        )
+        rawOverall = await getOverallStats([id], period, from, to, timezone, filters, projectPassword)
       } else {
-        if (period === 'custom' && dateRange) {
-          data = await getProjectData(
-            id,
-            timeBucket,
-            '',
-            newFilters || filters,
-            newMetrics || customMetrics,
-            from,
-            to,
-            timezone,
-            projectPassword,
-            mode,
-          )
-          customEventsChart = await getProjectDataCustomEvents(
-            id,
-            timeBucket,
-            '',
-            filters,
-            from,
-            to,
-            timezone,
-            activeChartMetricsCustomEvents,
-            projectPassword,
-          )
-          rawOverall = await getOverallStats([id], period, from, to, timezone, newFilters || filters, projectPassword)
-        } else {
-          data = await getProjectData(
-            id,
-            timeBucket,
-            period,
-            newFilters || filters,
-            newMetrics || customMetrics,
-            '',
-            '',
-            timezone,
-            projectPassword,
-            mode,
-          )
-          customEventsChart = await getProjectDataCustomEvents(
-            id,
-            timeBucket,
-            period,
-            filters,
-            '',
-            '',
-            timezone,
-            activeChartMetricsCustomEvents,
-            projectPassword,
-          )
-          rawOverall = await getOverallStats([id], period, '', '', timezone, newFilters || filters, projectPassword)
-        }
-
-        customEventsChart = customEventsChart?.chart ? customEventsChart.chart.events : customEventsChartData
-
-        dispatch(
-          UIActions.setCustomEventsPrefs({
-            pid: id,
-            data: customEventsChart,
-          }),
+        data = await getProjectData(
+          id,
+          timeBucket,
+          period,
+          filters,
+          customMetrics,
+          '',
+          '',
+          timezone,
+          projectPassword,
+          mode,
         )
-
-        data.overall = rawOverall[id]
-
-        dispatch(
-          UIActions.setProjectCache({
-            pid: id,
-            data,
-            key,
-          }),
+        customEventsChart = await getProjectDataCustomEvents(
+          id,
+          timeBucket,
+          period,
+          filters,
+          '',
+          '',
+          timezone,
+          activeChartMetricsCustomEvents,
+          projectPassword,
         )
-        setOverall(rawOverall[id])
+        rawOverall = await getOverallStats([id], period, '', '', timezone, filters, projectPassword)
       }
+
+      customEventsChart = customEventsChart?.chart ? customEventsChart.chart.events : customEventsChartData
+
+      dispatch(
+        UIActions.setCustomEventsPrefs({
+          pid: id,
+          data: customEventsChart,
+        }),
+      )
+
+      data.overall = rawOverall[id]
+      setOverall(rawOverall[id])
 
       const sdkData = {
         ...(data || {}),
-        filters: newFilters || filters,
+        filters,
         timezone,
         timeBucket,
         period,
@@ -1389,7 +1324,7 @@ const ViewProject = () => {
         return
       }
 
-      const { chart, params, customs, properties, appliedFilters, meta } = data
+      const { chart, params, customs, properties, meta } = data
       let newTimebucket = timeBucket
       sdkInstance?._emitEvent('load', sdkData)
 
@@ -1411,11 +1346,6 @@ const ViewProject = () => {
           return newPeriodPairs
         })
         setTimebucket(newTimebucket)
-      }
-
-      if (!_isEmpty(appliedFilters)) {
-        // @ts-expect-error
-        setFilters(appliedFilters)
       }
 
       // @ts-expect-error
@@ -1577,25 +1507,22 @@ const ViewProject = () => {
       return
     }
 
-    const psid = searchParams.get('psid') as string
     const tab = searchParams.get('tab') as string
 
-    if (psid && tab === PROJECT_TABS.sessions) {
-      setActivePSID(psid)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading])
+    if (tab === PROJECT_TABS.errors) {
+      const eid = searchParams.get('eid') as string
 
-  useEffect(() => {
-    if (authLoading) {
-      return
+      if (eid) {
+        setActiveEID(eid)
+      }
     }
 
-    const eid = searchParams.get('eid') as string
-    const tab = searchParams.get('tab') as string
+    if (tab === PROJECT_TABS.sessions) {
+      const psid = searchParams.get('psid') as string
 
-    if (eid && tab === PROJECT_TABS.errors) {
-      setActiveEID(eid)
+      if (psid) {
+        setActivePSID(psid)
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading])
@@ -1610,17 +1537,13 @@ const ViewProject = () => {
   }, [period, dateRange, timeBucket, activePSID])
 
   useEffect(() => {
-    if (!activeEID) {
-      return
-    }
-
-    if (!areFiltersSubErrorParsed) {
+    if (!activeEID || !areFiltersParsed) {
       return
     }
 
     loadError(activeEID)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period, dateRange, timeBucket, activeEID, filtersSubError, areFiltersSubErrorParsed])
+  }, [period, dateRange, timeBucket, activeEID, filtersSubError, areFiltersParsed])
 
   const loadSessions = async (forcedSkip?: number) => {
     if (sessionsLoading) {
@@ -1631,7 +1554,7 @@ const ViewProject = () => {
 
     try {
       const skip = typeof forcedSkip === 'number' ? forcedSkip : sessionsSkip
-      let dataSessions: { sessions: Session[]; appliedFilters: any[] }
+      let dataSessions: { sessions: Session[] }
       let from
       let to
 
@@ -1696,7 +1619,7 @@ const ViewProject = () => {
 
     try {
       const skip = typeof forcedSkip === 'number' ? forcedSkip : errorsSkip
-      let dataErrors: { errors: SwetrixError[]; appliedFilters: any[] }
+      let dataErrors: { errors: SwetrixError[] }
       let from
       let to
 
@@ -1759,19 +1682,14 @@ const ViewProject = () => {
     }
   }
 
-  const loadAnalyticsPerf = async (forced = false, newFilters: any[] | null = null) => {
-    if (!forced && (authLoading || _isEmpty(project) || dataLoading)) {
-      return
-    }
-
+  const loadAnalyticsPerf = async () => {
     setDataLoading(true)
+
     try {
-      let dataPerf: { timeBucket?: any; params?: any; appliedFilters?: any; chart?: any }
-      let key
+      let dataPerf: { timeBucket?: any; params?: any; chart?: any }
       let from
       let to
       let dataCompare
-      let keyCompare = ''
       let fromCompare: string | undefined
       let toCompare: string | undefined
       let rawOverall: any
@@ -1800,13 +1718,6 @@ const ViewProject = () => {
           if (activePeriod?.period === 'custom' ? diffCompare <= diff : diffCompare <= activePeriod?.countDays) {
             fromCompare = getFormatDate(dateRangeCompare[0])
             toCompare = getFormatDate(dateRangeCompare[1])
-            keyCompare = getProjectCacheCustomKeyPerf(
-              fromCompare,
-              toCompare,
-              timeBucket,
-              newFilters || filtersPerf,
-              measure,
-            )
           } else {
             toast.error(t('project.compareDateRangeError'))
             compareDisable()
@@ -1822,122 +1733,61 @@ const ViewProject = () => {
           if (date) {
             fromCompare = date.from
             toCompare = date.to
-            keyCompare = getProjectCacheCustomKeyPerf(
-              fromCompare,
-              toCompare,
-              timeBucket,
-              newFilters || filtersPerf,
-              measure,
-            )
           }
         }
 
         if (!_isEmpty(fromCompare) && !_isEmpty(toCompare)) {
-          if (!_isEmpty(cache[id]) && !_isEmpty(cache[id][keyCompare])) {
-            dataCompare = cache[id][keyCompare]
-          } else {
-            dataCompare = await getPerformanceCompareData(
-              id,
-              timeBucket,
-              '',
-              newFilters || filtersPerf,
-              fromCompare,
-              toCompare,
-              timezone,
-              measure,
-              projectPassword,
-            )
-            const compareOverall = await getPerformanceOverallStats(
-              [id],
-              'custom',
-              fromCompare,
-              toCompare,
-              timezone,
-              newFilters || filters,
-              measure,
-              projectPassword,
-            )
-            dataCompare.overall = compareOverall[id]
-          }
+          dataCompare = await getPerformanceCompareData(
+            id,
+            timeBucket,
+            '',
+            filtersPerf,
+            fromCompare,
+            toCompare,
+            timezone,
+            measure,
+            projectPassword,
+          )
+          const compareOverall = await getPerformanceOverallStats(
+            [id],
+            'custom',
+            fromCompare,
+            toCompare,
+            timezone,
+            filtersPerf,
+            measure,
+            projectPassword,
+          )
+          dataCompare.overall = compareOverall[id]
         }
-
-        dispatch(
-          UIActions.setProjectCachePerf({
-            pid: id,
-            data: dataCompare || {},
-            key: keyCompare,
-          }),
-        )
       }
 
       if (dateRange) {
         from = getFormatDate(dateRange[0])
         to = getFormatDate(dateRange[1])
-        key = getProjectCacheCustomKey(from, to, timeBucket, mode, newFilters || filtersPerf, measure)
-      } else {
-        key = getProjectCacheKey(period, timeBucket, mode, newFilters || filtersPerf, measure)
       }
 
-      if (!forced && !_isEmpty(cachePerf[id]) && !_isEmpty(cachePerf[id][key])) {
-        dataPerf = cachePerf[id][key]
-        // @ts-expect-error
-        setOverallPerformance(dataPerf.overall)
+      if (period === 'custom' && dateRange) {
+        dataPerf = await getPerfData(id, timeBucket, '', filtersPerf, from, to, timezone, measure, projectPassword)
+        rawOverall = await getOverallStats([id], period, from, to, timezone, filtersPerf, projectPassword)
       } else {
-        if (period === 'custom' && dateRange) {
-          dataPerf = await getPerfData(
-            id,
-            timeBucket,
-            '',
-            newFilters || filtersPerf,
-            from,
-            to,
-            timezone,
-            measure,
-            projectPassword,
-          )
-          rawOverall = await getOverallStats([id], period, from, to, timezone, newFilters || filters, projectPassword)
-        } else {
-          dataPerf = await getPerfData(
-            id,
-            timeBucket,
-            period,
-            newFilters || filtersPerf,
-            '',
-            '',
-            timezone,
-            measure,
-            projectPassword,
-          )
-          rawOverall = await getPerformanceOverallStats(
-            [id],
-            period,
-            '',
-            '',
-            timezone,
-            newFilters || filters,
-            measure,
-            projectPassword,
-          )
-        }
-
-        // @ts-expect-error
-        dataPerf.overall = rawOverall[id]
-
-        dispatch(
-          UIActions.setProjectCachePerf({
-            pid: id,
-            data: dataPerf || {},
-            key,
-          }),
+        dataPerf = await getPerfData(id, timeBucket, period, filtersPerf, '', '', timezone, measure, projectPassword)
+        rawOverall = await getPerformanceOverallStats(
+          [id],
+          period,
+          '',
+          '',
+          timezone,
+          filtersPerf,
+          measure,
+          projectPassword,
         )
-        setOverallPerformance(rawOverall[id])
       }
 
-      const { appliedFilters } = dataPerf
+      // @ts-expect-error
+      dataPerf.overall = rawOverall[id]
 
-      if (!_isEmpty(appliedFilters)) {
-        setFiltersPerf(appliedFilters)
-      }
+      setOverallPerformance(rawOverall[id])
 
       if (_keys(dataPerf).length < 2) {
         setIsPanelsDataEmptyPerf(true)
@@ -2020,100 +1870,56 @@ const ViewProject = () => {
     }
   }
 
-  const loadFunnelsData = useCallback(
-    async (forced = false) => {
-      if (!activeFunnel || !activeFunnel.id) {
-        return
+  const loadFunnelsData = async () => {
+    if (!activeFunnel?.id) {
+      return
+    }
+
+    setDataLoading(true)
+
+    try {
+      let dataFunnel: { funnel: AnalyticsFunnel[]; totalPageviews: number }
+      let from
+      let to
+
+      if (dateRange) {
+        from = getFormatDate(dateRange[0])
+        to = getFormatDate(dateRange[1])
       }
 
-      if (!forced && (authLoading || _isEmpty(project) || dataLoading)) {
-        return
+      if (period === 'custom' && dateRange) {
+        dataFunnel = await getFunnelData(id, '', from, to, timezone, activeFunnel.id, projectPassword)
+      } else {
+        dataFunnel = await getFunnelData(id, period, '', '', timezone, activeFunnel.id, projectPassword)
       }
 
-      setDataLoading(true)
+      const { funnel, totalPageviews } = dataFunnel
 
-      let key
+      const bbSettings = getSettingsFunnels(funnel, totalPageviews, t)
 
-      try {
-        let dataFunnel: { funnel: AnalyticsFunnel[]; totalPageviews: number }
-        let from
-        let to
-
-        if (dateRange) {
-          from = getFormatDate(dateRange[0])
-          to = getFormatDate(dateRange[1])
-          key = getFunnelsCacheCustomKey(id, activeFunnel.id, from, to)
-        } else {
-          key = getFunnelsCacheKey(id, activeFunnel.id, period)
-        }
-
-        if (!forced && !_isEmpty(cacheFunnels[id]) && !_isEmpty(cacheFunnels[id][key])) {
-          dataFunnel = cacheFunnels[id][key]
-        } else {
-          if (period === 'custom' && dateRange) {
-            dataFunnel = await getFunnelData(id, '', from, to, timezone, activeFunnel.id, projectPassword)
-          } else {
-            dataFunnel = await getFunnelData(id, period, '', '', timezone, activeFunnel.id, projectPassword)
-          }
-
-          dispatch(
-            UIActions.setFunnelsCache({
-              pid: id,
-              data: dataFunnel || {},
-              key,
-            }),
-          )
-        }
-
-        const { funnel, totalPageviews } = dataFunnel
-
-        const bbSettings = getSettingsFunnels(funnel, totalPageviews, t)
-
-        if (activeTab === PROJECT_TABS.funnels) {
-          setMainChart(() => {
-            const generate = bb.generate(bbSettings)
-            generate.data.names(dataNamesFunnel)
-            return generate
-          })
-        }
-
-        setAnalyticsLoading(false)
-        setDataLoading(false)
-      } catch (reason) {
-        setAnalyticsLoading(false)
-        setDataLoading(false)
-
-        if (key) {
-          dispatch(
-            UIActions.setFunnelsCache({
-              pid: id,
-              data: {},
-              key,
-            }),
-          )
-        }
-
-        console.error('[ERROR](loadFunnelsData) Loading funnels data failed:', reason)
+      if (activeTab === PROJECT_TABS.funnels) {
+        setMainChart(() => {
+          const generate = bb.generate(bbSettings)
+          generate.data.names(dataNamesFunnel)
+          return generate
+        })
       }
-    },
-    [
-      activeFunnel,
-      activeTab,
-      cacheFunnels,
-      dataLoading,
-      dateRange,
-      id,
-      authLoading,
-      period,
-      project,
-      projectPassword,
-      timezone,
-      t,
-      dataNamesFunnel,
-    ],
-  )
+
+      setAnalyticsLoading(false)
+      setDataLoading(false)
+    } catch (reason) {
+      setAnalyticsLoading(false)
+      setDataLoading(false)
+
+      console.error('[ERROR](loadFunnelsData) Loading funnels data failed:', reason)
+    }
+  }
 
   const filterHandler = async (column: string, filter: any, isExclusive = false) => {
+    if (dataLoading) {
+      return
+    }
+
     const columnPerf = `${column}_perf`
     const columnSessions = `${column}_sess`
     const columnErrors = `${column}_err`
@@ -2188,12 +1994,6 @@ const ViewProject = () => {
     resetErrors()
 
     sdkInstance?._emitEvent('filtersupdate', filtersToUpdate)
-
-    if (activeTab === PROJECT_TABS.performance) {
-      await loadAnalyticsPerf(true, filtersToUpdate)
-    } else if (activeTab === PROJECT_TABS.traffic) {
-      await loadAnalytics(true, filtersToUpdate)
-    }
   }
 
   const onFilterSearch = (items: Filter[], override: boolean): void => {
@@ -2249,7 +2049,6 @@ const ViewProject = () => {
     }
 
     setCustomMetrics(metrics)
-    loadAnalytics(true, null, metrics)
   }
 
   const onRemoveCustomMetric = (metricId: ProjectViewCustomEvent['id']) => {
@@ -2260,7 +2059,6 @@ const ViewProject = () => {
     const newMetrics = _filter(customMetrics, (metric) => metric.id !== metricId)
 
     setCustomMetrics(newMetrics)
-    loadAnalytics(true, null, newMetrics)
   }
 
   const resetCustomMetrics = () => {
@@ -2269,10 +2067,13 @@ const ViewProject = () => {
     }
 
     setCustomMetrics([])
-    loadAnalytics(true, null, [])
   }
 
   const onChangeExclusive = (column: string, filter: string, isExclusive: boolean) => {
+    if (dataLoading) {
+      return
+    }
+
     const updateFilters = (filters: Filter[], setFilters: React.Dispatch<React.SetStateAction<Filter[]>>): Filter[] => {
       const newFilters = filters.map((f) => (f.column === column && f.filter === filter ? { ...f, isExclusive } : f))
       if (JSON.stringify(newFilters) !== JSON.stringify(filters)) {
@@ -2286,7 +2087,6 @@ const ViewProject = () => {
     switch (activeTab) {
       case PROJECT_TABS.performance:
         newFilters = updateFilters(filtersPerf, setFiltersPerf)
-        loadAnalyticsPerf(true, newFilters)
         break
       case PROJECT_TABS.sessions:
         newFilters = updateFilters(filtersSessions, setFiltersSessions)
@@ -2301,7 +2101,6 @@ const ViewProject = () => {
         break
       default:
         newFilters = updateFilters(filters, setFilters)
-        loadAnalytics(true, newFilters)
         break
     }
 
@@ -2315,26 +2114,52 @@ const ViewProject = () => {
     sdkInstance?._emitEvent('filtersupdate', newFilters)
   }
 
-  useEffect(() => {
-    switch (activeTab) {
-      case PROJECT_TABS.performance:
-        parseFiltersFromUrl('_perf', searchParams, setFiltersPerf, setAreFiltersPerfParsed)
-        break
-      case PROJECT_TABS.sessions:
-        parseFiltersFromUrl('_sess', searchParams, setFiltersSessions, setAreFiltersSessionsParsed)
-        break
-      case PROJECT_TABS.errors:
-        parseFiltersFromUrl('_err', searchParams, setFiltersErrors, setAreFiltersErrorsParsed)
-        parseFiltersFromUrl('_subErr', searchParams, setFiltersSubError, setAreFiltersSubErrorParsed)
-        break
-      default:
-        parseFiltersFromUrl('', searchParams, setFilters, setAreFiltersParsed)
-        break
+  const setDashboardTab = (key: keyof typeof PROJECT_TABS) => {
+    if (dataLoading) {
+      return
     }
-  }, [activeTab])
+
+    setActiveTab(key)
+  }
 
   useEffect(() => {
-    if (!arePeriodParsed) return
+    parseFiltersFromUrl('_perf', searchParams, setFiltersPerf)
+    parseFiltersFromUrl('_sess', searchParams, setFiltersSessions)
+    parseFiltersFromUrl('_err', searchParams, setFiltersErrors)
+    parseFiltersFromUrl('_subErr', searchParams, setFiltersSubError)
+    parseFiltersFromUrl('', searchParams, setFilters)
+
+    const parsePeriodFilters = () => {
+      try {
+        const intialPeriod = projectViewPrefs
+          ? searchParams.get('period') || projectViewPrefs[id]?.period
+          : searchParams.get('period') || '7d'
+
+        if (!_includes(validPeriods, intialPeriod)) {
+          return
+        }
+
+        if (intialPeriod === 'custom') {
+          // @ts-expect-error
+          const from = new Date(searchParams.get('from'))
+          // @ts-expect-error
+          const to = new Date(searchParams.get('to'))
+          if (from.getDate() && to.getDate()) {
+            onRangeDateChange([from, to], true)
+            setDateRange([from, to])
+          }
+          return
+        }
+
+        setPeriodPairs(tbPeriodPairs(t, undefined, undefined, language))
+        setDateRange(null)
+        updatePeriod({
+          period: intialPeriod,
+        })
+      } catch {}
+    }
+
+    parsePeriodFilters()
 
     try {
       const initialTimeBucket = searchParams.get('timeBucket')
@@ -2345,20 +2170,20 @@ const ViewProject = () => {
           setTimebucket(initialTimeBucket || periodPairs[3].tbs[1])
         }
       }
-    } finally {
-      setAreTimeBucketParsed(true)
-    }
-  }, [arePeriodParsed])
+    } catch {}
+
+    setAreFiltersParsed(true)
+  }, [activeTab])
 
   const refreshStats = async () => {
     if (!authLoading && !dataLoading) {
       if (activeTab === PROJECT_TABS.performance) {
-        loadAnalyticsPerf(true)
+        loadAnalyticsPerf()
         return
       }
 
       if (activeTab === PROJECT_TABS.funnels) {
-        loadFunnelsData(true)
+        loadFunnelsData()
         return
       }
 
@@ -2384,7 +2209,7 @@ const ViewProject = () => {
         return
       }
 
-      loadAnalytics(true)
+      loadAnalytics()
     }
   }
 
@@ -2402,25 +2227,9 @@ const ViewProject = () => {
   }
 
   const forecastChart = async (periodToForecast: string) => {
-    const key = getProjectForcastCacheKey(period, timeBucket, periodToForecast, filters)
-    const data = cache[id][key]
-
-    if (!_isEmpty(data)) {
-      setForecasedChartData(data)
-      setDataLoading(false)
-      return
-    }
-
     try {
       const result = await getChartPrediction(chartData, periodToForecast, timeBucket)
       const transformed = transformAIChartData(result)
-      dispatch(
-        UIActions.setProjectForecastCache({
-          pid: id,
-          data: transformed,
-          key,
-        }),
-      )
       setForecasedChartData(transformed)
     } catch (reason) {
       console.error(`[forecastChart] Error: ${reason}`)
@@ -2493,9 +2302,59 @@ const ViewProject = () => {
   }
 
   useEffect(() => {
+    if (!areFiltersParsed || activeTab !== PROJECT_TABS.traffic) return
+
     loadAnalytics()
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [forecasedChartData, mode])
+  }, [forecasedChartData, mode, areFiltersParsed, activeTab, customMetrics, filters, isActiveCompare])
+
+  useEffect(() => {
+    if (!areFiltersParsed || activeTab !== PROJECT_TABS.performance) return
+
+    loadAnalyticsPerf()
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [areFiltersParsed, activeTab, activePerfMeasure, activeChartMetricsPerf, filtersPerf, isActiveCompare])
+
+  useEffect(() => {
+    if (activeTab !== PROJECT_TABS.funnels) return
+
+    loadFunnelsData()
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeFunnel, activeTab])
+
+  useEffect(() => {
+    if (authLoading || !areFiltersParsed || activeTab !== PROJECT_TABS.sessions) {
+      return
+    }
+
+    loadSessions()
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, dateRange, filtersSessions, id, period, projectPassword, timezone, authLoading, areFiltersParsed])
+
+  useEffect(() => {
+    if (authLoading || !areFiltersParsed || activeTab !== PROJECT_TABS.errors) {
+      return
+    }
+
+    loadErrors()
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    activeTab,
+    errorOptions,
+    dateRange,
+    filtersErrors,
+    id,
+    period,
+    projectPassword,
+    timezone,
+    areFiltersParsed,
+    authLoading,
+  ])
 
   useEffect(() => {
     searchParams.set('tab', activeTab)
@@ -2763,120 +2622,16 @@ const ViewProject = () => {
   }
 
   useEffect(() => {
-    if (period === KEY_FOR_ALL_TIME) {
-      return
-    }
-
-    if (areFiltersParsed && areTimeBucketParsed && arePeriodParsed && activeTab === PROJECT_TABS.traffic) {
-      loadAnalytics()
-    }
-    if (areFiltersPerfParsed && areTimeBucketParsed && arePeriodParsed && activeTab === PROJECT_TABS.performance) {
-      loadAnalyticsPerf()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    project,
-    period,
-    chartType,
-    filters,
-    forecasedChartData,
-    timeBucket,
-    periodPairs,
-    areFiltersParsed,
-    areTimeBucketParsed,
-    arePeriodParsed,
-    t,
-    activeTab,
-    areFiltersPerfParsed,
-  ])
-
-  useEffect(() => {
-    if (authLoading) {
-      return
-    }
-
-    if (activeTab === PROJECT_TABS.sessions && areFiltersSessionsParsed) {
-      loadSessions()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    activeTab,
-    dateRange,
-    filtersSessions,
-    id,
-    period,
-    projectPassword,
-    timezone,
-    areFiltersSessionsParsed,
-    authLoading,
-  ])
-
-  useEffect(() => {
-    if (authLoading) {
-      return
-    }
-
-    if (activeTab === PROJECT_TABS.errors && areFiltersErrorsParsed) {
-      loadErrors()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    activeTab,
-    errorOptions,
-    dateRange,
-    filtersErrors,
-    id,
-    period,
-    projectPassword,
-    timezone,
-    areFiltersErrorsParsed,
-    authLoading,
-  ])
-
-  useEffect(() => {
-    if (period !== KEY_FOR_ALL_TIME) {
-      return
-    }
-
-    if (areFiltersParsed && areTimeBucketParsed && arePeriodParsed && activeTab === PROJECT_TABS.traffic) {
-      loadAnalytics()
-    }
-    if (areFiltersPerfParsed && areTimeBucketParsed && arePeriodParsed && activeTab === PROJECT_TABS.performance) {
-      loadAnalyticsPerf()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    project,
-    period,
-    chartType,
-    filters,
-    forecasedChartData,
-    areFiltersParsed,
-    areTimeBucketParsed,
-    arePeriodParsed,
-    activeTab,
-    areFiltersPerfParsed,
-  ])
-
-  useEffect(() => {
-    if (!project || !activeFunnel) {
-      return
-    }
-
-    loadFunnelsData()
-  }, [project, activeFunnel, loadFunnelsData, period, t])
-
-  useEffect(() => {
     if (!_isEmpty(activeChartMetricsCustomEvents)) {
       setActiveChartMetricsCustomEvents([])
     }
   }, [period, filters]) // eslint-disable-line
 
   useEffect(() => {
-    if (dateRange && arePeriodParsed) {
+    if (dateRange && areFiltersParsed) {
       onRangeDateChange(dateRange)
     }
-  }, [dateRange, t, arePeriodParsed]) // eslint-disable-line
+  }, [dateRange, t, areFiltersParsed]) // eslint-disable-line
 
   useEffect(() => {
     if (!project || project.isLocked) {
@@ -2971,6 +2726,10 @@ const ViewProject = () => {
   }
 
   const updateTimebucket = (newTimebucket: string) => {
+    if (dataLoading) {
+      return
+    }
+
     searchParams.set('timeBucket', newTimebucket)
     setSearchParams(searchParams)
     setTimebucket(newTimebucket)
@@ -2994,48 +2753,9 @@ const ViewProject = () => {
     setActivePerfMeasure(measure)
   }
 
-  useEffect(() => {
-    loadAnalyticsPerf()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activePerfMeasure, activeChartMetricsPerf])
-
   const openSettingsHandler = () => {
     navigate(_replace(routes.project_settings, ':id', id))
   }
-
-  // TODO: What the fuck is this?
-  useEffect(() => {
-    try {
-      const intialPeriod = projectViewPrefs
-        ? searchParams.get('period') || projectViewPrefs[id]?.period
-        : searchParams.get('period') || '7d'
-
-      if (!_includes(validPeriods, intialPeriod)) {
-        return
-      }
-
-      if (intialPeriod === 'custom') {
-        // @ts-expect-error
-        const from = new Date(searchParams.get('from'))
-        // @ts-expect-error
-        const to = new Date(searchParams.get('to'))
-        if (from.getDate() && to.getDate()) {
-          onRangeDateChange([from, to], true)
-          setDateRange([from, to])
-        }
-        return
-      }
-
-      setPeriodPairs(tbPeriodPairs(t, undefined, undefined, language))
-      setDateRange(null)
-      updatePeriod({
-        period: intialPeriod,
-      })
-    } finally {
-      setArePeriodParsed(true)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   const isConflicted = (conflicts?: string[]) => {
     if (!conflicts) {
@@ -3060,14 +2780,16 @@ const ViewProject = () => {
   }
 
   const resetActiveTabFilters = () => {
+    if (dataLoading) {
+      return
+    }
+
     cleanURLFilters()
 
     if (activeTab === PROJECT_TABS.traffic) {
       setFilters([])
-      loadAnalytics(true, [])
     } else if (activeTab === PROJECT_TABS.performance) {
       setFiltersPerf([])
-      loadAnalyticsPerf(true, [])
     } else if (activeTab === PROJECT_TABS.sessions) {
       setFiltersSessions([])
     } else if (activeTab === PROJECT_TABS.errors && !activeEID) {
@@ -3085,11 +2807,6 @@ const ViewProject = () => {
     setFiltersSessions([])
     setFiltersErrors([])
     setFiltersSubError([])
-    if (activeTab === PROJECT_TABS.performance) {
-      loadAnalyticsPerf(true, [])
-    } else if (activeTab === PROJECT_TABS.traffic) {
-      loadAnalytics(true, [])
-    }
   }
 
   const exportTypes = [
@@ -3108,24 +2825,6 @@ const ViewProject = () => {
     setItem('chartType', type)
     setChartType(type)
   }
-
-  useEffect(() => {
-    setItem(IS_ACTIVE_COMPARE, JSON.stringify(isActiveCompare))
-    if (activePeriodCompare === PERIOD_PAIRS_COMPARE.CUSTOM && !dateRangeCompare) {
-      return
-    }
-
-    if (isActiveCompare) {
-      if (activeTab === PROJECT_TABS.performance) {
-        loadAnalyticsPerf()
-      }
-
-      if (activeTab === PROJECT_TABS.traffic) {
-        loadAnalytics()
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isActiveCompare, activePeriodCompare, dateRangeCompare])
 
   /* KEYBOARD SHORTCUTS */
   const generalShortcutsActions = {
@@ -3174,7 +2873,7 @@ const ViewProject = () => {
       return
     }
 
-    setActiveTab(tab)
+    setDashboardTab(tab)
   })
 
   // 'General' shortcuts
@@ -3230,7 +2929,7 @@ const ViewProject = () => {
               return
             }
 
-            setActiveTab(item?.id as keyof typeof PROJECT_TABS)
+            setDashboardTab(item?.id)
           }}
           title={activeTabLabel}
           capitalise
@@ -3247,7 +2946,7 @@ const ViewProject = () => {
               }
 
               e.preventDefault()
-              setActiveTab(tab.id)
+              setDashboardTab(tab.id)
             }
 
             const currentUrl = new URL(window.location.href)
@@ -3263,8 +2962,10 @@ const ViewProject = () => {
                   'text-md group inline-flex cursor-pointer items-center whitespace-nowrap border-b-2 px-1 py-2 font-bold',
                   {
                     'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50': isCurrent,
-                    'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
-                      !isCurrent,
+                    'border-transparent text-gray-500 dark:text-gray-400': !isCurrent,
+                    'cursor-wait': dataLoading && tab.id !== 'settings',
+                    'hover:border-gray-300 hover:text-gray-700 dark:hover:border-gray-300 dark:hover:text-gray-300':
+                      !isCurrent && !dataLoading,
                   },
                 )}
                 aria-current={isCurrent ? 'page' : undefined}
@@ -3417,6 +3118,20 @@ const ViewProject = () => {
             timeFormat,
             size,
             allowedToManage,
+            dataLoading,
+            activeTab,
+            filters:
+              activeTab === PROJECT_TABS.traffic
+                ? filters
+                : activeTab === PROJECT_TABS.performance
+                  ? filtersPerf
+                  : activeTab === PROJECT_TABS.sessions
+                    ? filtersSessions
+                    : activeTab === PROJECT_TABS.errors && !activeEID
+                      ? filtersErrors
+                      : activeTab === PROJECT_TABS.errors && activeEID
+                        ? filtersSubError
+                        : [],
 
             // Functions
             setDateRange,
@@ -3478,7 +3193,7 @@ const ViewProject = () => {
                           {activeTab !== PROJECT_TABS.funnels && (
                             <LiveVisitorsDropdown
                               onSessionSelect={(psid) => {
-                                setActiveTab(PROJECT_TABS.sessions)
+                                setDashboardTab(PROJECT_TABS.sessions)
                                 setActivePSID(psid)
                               }}
                               live={liveVisitors}
@@ -3488,21 +3203,19 @@ const ViewProject = () => {
                         <div className='mx-auto mt-3 flex w-full max-w-[420px] flex-wrap items-center justify-center gap-y-1 space-x-2 sm:mx-0 sm:w-auto sm:max-w-none sm:flex-nowrap sm:justify-between lg:mt-0'>
                           {activeTab !== PROJECT_TABS.funnels && (
                             <>
-                              <div>
-                                <button
-                                  type='button'
-                                  title={t('project.refreshStats')}
-                                  onClick={refreshStats}
-                                  className={cx(
-                                    'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
-                                    {
-                                      'cursor-not-allowed opacity-50': authLoading || dataLoading,
-                                    },
-                                  )}
-                                >
-                                  <ArrowPathIcon className='h-5 w-5 stroke-2 text-gray-700 dark:text-gray-50' />
-                                </button>
-                              </div>
+                              <button
+                                type='button'
+                                title={t('project.refreshStats')}
+                                onClick={refreshStats}
+                                className={cx(
+                                  'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                                  {
+                                    'cursor-not-allowed opacity-50': authLoading || dataLoading,
+                                  },
+                                )}
+                              >
+                                <ArrowPathIcon className='h-5 w-5 stroke-2 text-gray-700 dark:text-gray-50' />
+                              </button>
                               {!isSelfhosted && !isActiveCompare && (
                                 <div
                                   className={cx({
@@ -3542,7 +3255,13 @@ const ViewProject = () => {
                                 <button
                                   type='button'
                                   title={t('project.search')}
-                                  onClick={() => setShowFiltersSearch(true)}
+                                  onClick={() => {
+                                    if (dataLoading) {
+                                      return
+                                    }
+
+                                    setShowFiltersSearch(true)
+                                  }}
                                   className={cx(
                                     'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                                     {
@@ -3594,10 +3313,14 @@ const ViewProject = () => {
                                     }
 
                                     return (
-                                      <span className='flex items-center justify-between space-x-4'>
+                                      <span
+                                        className={cx('flex items-center justify-between space-x-4', {
+                                          'cursor-wait': dataLoading,
+                                        })}
+                                      >
                                         <span>{item.name}</span>
                                         {allowedToManage && (
-                                          <span className='flex space-x-2'>
+                                          <span className='flex cursor-pointer space-x-2'>
                                             <PencilIcon
                                               className='size-4 hover:text-gray-900 dark:hover:text-gray-50'
                                               onClick={(e) => {
@@ -3938,11 +3661,13 @@ const ViewProject = () => {
                               timeBucket: activeTab === PROJECT_TABS.errors && !activeEID ? 'hidden' : '',
                             }}
                             activePeriod={activePeriod}
-                            updateTimebucket={updateTimebucket}
-                            timeBucket={timeBucket}
                             items={timeBucketSelectorItems}
                             title={activePeriod?.label}
                             onSelect={(pair) => {
+                              if (dataLoading) {
+                                return
+                              }
+
                               if (pair.period === PERIOD_PAIRS_COMPARE.COMPARE) {
                                 // @ts-expect-error
                                 if (activeTab === PROJECT_TABS.alerts) {
@@ -4099,7 +3824,6 @@ const ViewProject = () => {
                 {activeTab === PROJECT_TABS.sessions && !activePSID && (
                   <>
                     <Filters
-                      filters={filtersSessions}
                       onRemoveFilter={filterHandler}
                       onChangeExclusive={onChangeExclusive}
                       tnMapping={tnMapping}
@@ -4171,7 +3895,6 @@ const ViewProject = () => {
                 {activeTab === PROJECT_TABS.errors && !activeEID && (
                   <>
                     <Filters
-                      filters={filtersErrors}
                       onRemoveFilter={filterHandler}
                       onChangeExclusive={onChangeExclusive}
                       tnMapping={tnMapping}
@@ -4233,7 +3956,6 @@ const ViewProject = () => {
                       />
                     )}
                     <Filters
-                      filters={filtersSubError}
                       onRemoveFilter={filterHandler}
                       onChangeExclusive={onChangeExclusive}
                       tnMapping={tnMapping}
@@ -4261,12 +3983,10 @@ const ViewProject = () => {
 
                             return (
                               <Panel
-                                projectPassword={projectPassword}
                                 key={countryActiveTab}
                                 icon={panelIcon}
                                 id={countryActiveTab}
                                 onFilter={filterHandler}
-                                activeTab={activeTab}
                                 name={<CountryDropdown onSelect={setCountryActiveTab} title={ccPanelName} />}
                                 data={activeError.params[countryActiveTab]}
                                 rowMapper={rowMapper}
@@ -4306,11 +4026,9 @@ const ViewProject = () => {
 
                             return (
                               <Panel
-                                projectPassword={projectPassword}
                                 key={browserActiveTab}
                                 icon={panelIcon}
                                 id={browserActiveTab}
-                                activeTab={activeTab}
                                 onFilter={filterHandler}
                                 name={<BrowserDropdown onSelect={setBrowserActiveTab} title={brPanelName} />}
                                 data={activeError.params[browserActiveTab]}
@@ -4358,11 +4076,9 @@ const ViewProject = () => {
 
                             return (
                               <Panel
-                                projectPassword={projectPassword}
                                 key={osActiveTab}
                                 icon={panelIcon}
                                 id={osActiveTab}
-                                activeTab={activeTab}
                                 onFilter={filterHandler}
                                 name={<OSDropdown onSelect={setOsActiveTab} title={osPanelName} />}
                                 data={activeError.params[osActiveTab]}
@@ -4374,9 +4090,7 @@ const ViewProject = () => {
                           if (type === 'dv') {
                             return (
                               <Panel
-                                projectPassword={projectPassword}
                                 key={type}
-                                activeTab={activeTab}
                                 icon={panelIcon}
                                 id={type}
                                 onFilter={filterHandler}
@@ -4390,7 +4104,6 @@ const ViewProject = () => {
                           if (type === 'pg') {
                             return (
                               <Panel
-                                projectPassword={projectPassword}
                                 key={type}
                                 icon={panelIcon}
                                 id={type}
@@ -4413,14 +4126,6 @@ const ViewProject = () => {
                                 }}
                                 name={pgPanelNameMapping[pgActiveFragment]}
                                 data={activeError.params[type]}
-                                period={period}
-                                activeTab={activeTab}
-                                pid={id}
-                                timeBucket={timeBucket}
-                                filters={filters}
-                                from={dateRange ? getFormatDate(dateRange[0]) : null}
-                                to={dateRange ? getFormatDate(dateRange[1]) : null}
-                                timezone={timezone}
                               />
                             )
                           }
@@ -4428,11 +4133,9 @@ const ViewProject = () => {
                           if (type === 'lc') {
                             return (
                               <Panel
-                                projectPassword={projectPassword}
                                 key={type}
                                 icon={panelIcon}
                                 id={type}
-                                activeTab={activeTab}
                                 onFilter={filterHandler}
                                 name={panelName}
                                 data={activeError.params[type]}
@@ -4445,11 +4148,9 @@ const ViewProject = () => {
 
                           return (
                             <Panel
-                              projectPassword={projectPassword}
                               key={type}
                               icon={panelIcon}
                               id={type}
-                              activeTab={activeTab}
                               onFilter={filterHandler}
                               name={panelName}
                               data={activeError.params[type]}
@@ -4518,7 +4219,6 @@ const ViewProject = () => {
                     {!isInAIDetailsMode && (
                       <>
                         <Filters
-                          filters={filters}
                           onRemoveFilter={filterHandler}
                           onChangeExclusive={onChangeExclusive}
                           tnMapping={tnMapping}
@@ -4564,12 +4264,10 @@ const ViewProject = () => {
 
                             return (
                               <Panel
-                                projectPassword={projectPassword}
                                 key={countryActiveTab}
                                 icon={panelIcon}
                                 id={countryActiveTab}
                                 onFilter={filterHandler}
-                                activeTab={activeTab}
                                 name={<CountryDropdown onSelect={setCountryActiveTab} title={ccPanelName} />}
                                 data={dataSource[countryActiveTab]}
                                 customTabs={customTabs}
@@ -4610,11 +4308,9 @@ const ViewProject = () => {
 
                             return (
                               <Panel
-                                projectPassword={projectPassword}
                                 key={browserActiveTab}
                                 icon={panelIcon}
                                 id={browserActiveTab}
-                                activeTab={activeTab}
                                 onFilter={filterHandler}
                                 name={<BrowserDropdown onSelect={setBrowserActiveTab} title={brPanelName} />}
                                 data={dataSource[browserActiveTab]}
@@ -4662,11 +4358,9 @@ const ViewProject = () => {
 
                             return (
                               <Panel
-                                projectPassword={projectPassword}
                                 key={osActiveTab}
                                 icon={panelIcon}
                                 id={osActiveTab}
-                                activeTab={activeTab}
                                 onFilter={filterHandler}
                                 name={<OSDropdown onSelect={setOsActiveTab} title={osPanelName} />}
                                 data={dataSource[osActiveTab]}
@@ -4678,9 +4372,7 @@ const ViewProject = () => {
                           if (type === 'dv') {
                             return (
                               <Panel
-                                projectPassword={projectPassword}
                                 key={type}
-                                activeTab={activeTab}
                                 icon={panelIcon}
                                 id={type}
                                 onFilter={filterHandler}
@@ -4695,13 +4387,11 @@ const ViewProject = () => {
                           if (type === 'ref') {
                             return (
                               <Panel
-                                projectPassword={projectPassword}
                                 key={type}
                                 icon={panelIcon}
                                 id={type}
                                 onFilter={filterHandler}
                                 name={panelName}
-                                activeTab={activeTab}
                                 data={dataSource[type]}
                                 customTabs={customTabs}
                                 rowMapper={({ name: entryName }) => <RefRow rowName={entryName} />}
@@ -4714,11 +4404,9 @@ const ViewProject = () => {
 
                             return (
                               <Panel
-                                projectPassword={projectPassword}
                                 key={utmActiveTab}
                                 icon={panelIcon}
                                 id={utmActiveTab}
-                                activeTab={activeTab}
                                 onFilter={filterHandler}
                                 name={<UTMDropdown onSelect={setUtmActiveTab} title={ccPanelName} />}
                                 data={dataSource[utmActiveTab]}
@@ -4731,7 +4419,6 @@ const ViewProject = () => {
                           if (type === 'pg') {
                             return (
                               <Panel
-                                projectPassword={projectPassword}
                                 key={type}
                                 icon={panelIcon}
                                 id={type}
@@ -4755,14 +4442,6 @@ const ViewProject = () => {
                                 name={pgPanelNameMapping[pgActiveFragment]}
                                 data={dataSource[type]}
                                 customTabs={customTabs}
-                                period={period}
-                                activeTab={activeTab}
-                                pid={id}
-                                timeBucket={timeBucket}
-                                filters={filters}
-                                from={dateRange ? getFormatDate(dateRange[0]) : null}
-                                to={dateRange ? getFormatDate(dateRange[1]) : null}
-                                timezone={timezone}
                               />
                             )
                           }
@@ -4770,11 +4449,9 @@ const ViewProject = () => {
                           if (type === 'lc') {
                             return (
                               <Panel
-                                projectPassword={projectPassword}
                                 key={type}
                                 icon={panelIcon}
                                 id={type}
-                                activeTab={activeTab}
                                 onFilter={filterHandler}
                                 name={panelName}
                                 data={dataSource[type]}
@@ -4788,11 +4465,9 @@ const ViewProject = () => {
 
                           return (
                             <Panel
-                              projectPassword={projectPassword}
                               key={type}
                               icon={panelIcon}
                               id={type}
-                              activeTab={activeTab}
                               onFilter={filterHandler}
                               name={panelName}
                               data={dataSource[type]}
@@ -4832,7 +4507,6 @@ const ViewProject = () => {
                       <div className='h-80 [&_svg]:!overflow-visible' id='dataChart' />
                     </div>
                     <Filters
-                      filters={filtersPerf}
                       onRemoveFilter={filterHandler}
                       onChangeExclusive={onChangeExclusive}
                       tnMapping={tnMapping}
@@ -4875,7 +4549,6 @@ const ViewProject = () => {
                                 id={countryActiveTab}
                                 onFilter={filterHandler}
                                 name={<CountryDropdown onSelect={setCountryActiveTab} title={ccPanelName} />}
-                                activeTab={activeTab}
                                 data={panelsDataPerf.data[countryActiveTab]}
                                 customTabs={customTabs}
                                 rowMapper={rowMapper}
@@ -4894,7 +4567,6 @@ const ViewProject = () => {
                                 id={type}
                                 onFilter={filterHandler}
                                 name={panelName}
-                                activeTab={activeTab}
                                 data={panelsDataPerf.data[type]}
                                 customTabs={customTabs}
                                 // @ts-expect-error
@@ -4911,7 +4583,6 @@ const ViewProject = () => {
                                 key={type}
                                 icon={panelIcon}
                                 id={type}
-                                activeTab={activeTab}
                                 onFilter={filterHandler}
                                 name={panelName}
                                 data={panelsDataPerf.data[type]}
@@ -4955,11 +4626,9 @@ const ViewProject = () => {
 
                             return (
                               <Panel
-                                projectPassword={projectPassword}
                                 key={browserActiveTab}
                                 icon={panelIcon}
                                 id={browserActiveTab}
-                                activeTab={activeTab}
                                 onFilter={filterHandler}
                                 name={<BrowserDropdown onSelect={setBrowserActiveTab} title={brPanelName} />}
                                 data={panelsDataPerf.data[browserActiveTab]}
@@ -4970,11 +4639,9 @@ const ViewProject = () => {
 
                           return (
                             <Panel
-                              projectPassword={projectPassword}
                               key={type}
                               icon={panelIcon}
                               id={type}
-                              activeTab={activeTab}
                               onFilter={filterHandler}
                               name={panelName}
                               data={panelsDataPerf.data[type]}
