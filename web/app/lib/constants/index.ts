@@ -428,8 +428,6 @@ export const getProjectCacheCustomKeyPerf = (
   filters: any,
   measure: string,
 ): string => `${from}-${to}-${timeBucket}perf${filters ? JSON.stringify(filters) : ''}-${measure}`
-export const getUserFlowCacheKey = (pid: string, period: string, filters: any): string =>
-  `${pid}${period}userflow${filters ? JSON.stringify(filters) : ''}`
 export const getFunnelsCacheKey = (pid: string, funnelId: string, period: string): string =>
   `${pid}${funnelId}${period}funnels`
 export const getFunnelsCacheCustomKey = (pid: string, funnelId: string, from: string, to: string): string =>

@@ -1,62 +1,21 @@
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { ResponsiveSankey } from '@nivo/sankey'
-import { connect } from 'react-redux'
-import { StateType, AppDispatch } from 'lib/store'
-import UIActions from 'lib/reducers/ui'
 import { IUserFlow } from 'lib/models/UserFlow'
 import _isEmpty from 'lodash/isEmpty'
-import { getUserFlowCacheKey } from 'lib/constants'
 import { getUserFlow } from 'api'
 import Loader from 'ui/Loader'
 import { Filter } from '../interfaces/traffic'
 import { useTranslation } from 'react-i18next'
 
-const mapStateToProps = (state: StateType) => ({
-  userFlowAscendingCache: state.ui.cache.userFlowAscending,
-  userFlowDescendingCache: state.ui.cache.userFlowDescending,
-  password: state.ui.projects.password,
-})
-
-const mapDispatchToProps = (dispatch: AppDispatch) => ({
-  setUserFlowAscending: (data: IUserFlow, pid: string, period: string, filters: any) => {
-    dispatch(
-      UIActions.setUserFlowAscending({
-        data,
-        pid,
-        period,
-        filters,
-      }),
-    )
-  },
-  setUserFlowDescending: (data: IUserFlow, pid: string, period: string, filters: any) => {
-    dispatch(
-      UIActions.setUserFlowDescending({
-        data,
-        pid,
-        period,
-        filters,
-      }),
-    )
-  },
-})
-
 interface UserFlowProps {
   pid: string
-  userFlowAscendingCache: {
-    [key: string]: IUserFlow
-  }
-  userFlowDescendingCache: {
-    [key: string]: IUserFlow
-  }
   period: string
   timezone: string
   timeBucket: string
   from: string
   to: string
   isReversed?: boolean
-  setUserFlowAscending: (data: IUserFlow, id: string, pd: string, fltr: any) => void
-  setUserFlowDescending: (data: IUserFlow, id: string, pd: string, fltr: any) => void
   filters: Filter[]
   setReversed: () => void
   projectPassword?: string
@@ -69,44 +28,46 @@ const UserFlow = ({
   from,
   to,
   timezone,
-  userFlowAscendingCache,
-  userFlowDescendingCache,
   filters,
   setReversed,
   isReversed,
-  setUserFlowAscending,
-  setUserFlowDescending,
   projectPassword,
 }: UserFlowProps) => {
   const { t } = useTranslation('common')
-  const key = getUserFlowCacheKey(pid, period, filters)
-  const userFlowAscending = userFlowAscendingCache[key]
-  const userFlowDescending = userFlowDescendingCache[key]
   const [isLoading, setIsLoading] = useState(true)
+  const [userFlow, setUserFlow] = useState<{
+    ascending: IUserFlow
+    descending: IUserFlow
+  } | null>(null)
 
   const fetchUserFlow = async () => {
-    setIsLoading(true)
-    await getUserFlow(pid, timeBucket, period, filters, from, to, timezone, projectPassword)
-      .then((res: { ascending: IUserFlow; descending: IUserFlow }) => {
-        const { ascending, descending } = res
+    if (isLoading) {
+      return
+    }
 
-        setUserFlowAscending(ascending, pid, period, filters)
-        setUserFlowDescending(descending, pid, period, filters)
-      })
-      .catch((err: Error) => {
-        toast.error(err.message)
-      })
-      .finally(() => {
-        setIsLoading(false)
-      })
+    setIsLoading(true)
+
+    try {
+      const { ascending, descending } = await getUserFlow(
+        pid,
+        timeBucket,
+        period,
+        filters,
+        from,
+        to,
+        timezone,
+        projectPassword,
+      )
+      setUserFlow({ ascending, descending })
+    } catch (error: any) {
+      toast.error(typeof error === 'string' ? error : t('apiNotifications.somethingWentWrong'))
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   useEffect(() => {
-    if (_isEmpty(userFlowAscending) && _isEmpty(userFlowDescending)) {
-      fetchUserFlow()
-    } else if (isLoading) {
-      setIsLoading(false)
-    }
+    fetchUserFlow()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period, timeBucket, from, to, timezone, pid])
 
@@ -121,8 +82,8 @@ const UserFlow = ({
 
   if (
     !isReversed
-      ? _isEmpty(userFlowAscending) || _isEmpty(userFlowAscending?.nodes) || _isEmpty(userFlowAscending?.links)
-      : _isEmpty(userFlowDescending) || _isEmpty(userFlowDescending?.links) || _isEmpty(userFlowDescending?.nodes)
+      ? _isEmpty(userFlow?.ascending) || _isEmpty(userFlow?.ascending?.nodes) || _isEmpty(userFlow?.ascending?.links)
+      : _isEmpty(userFlow?.descending) || _isEmpty(userFlow?.descending?.links) || _isEmpty(userFlow?.descending?.nodes)
   ) {
     return (
       <>
@@ -144,8 +105,8 @@ const UserFlow = ({
 
   return (
     <ResponsiveSankey
-      // @ts-ignore
-      data={isReversed ? userFlowDescending : userFlowAscending}
+      // @ts-expect-error
+      data={isReversed ? userFlow?.descending : userFlow?.ascending}
       margin={{
         top: 0,
         right: 0,
@@ -179,14 +140,4 @@ const UserFlow = ({
   )
 }
 
-const mergeProps = (
-  stateProps: ReturnType<typeof mapStateToProps>,
-  dispatchProps: ReturnType<typeof mapDispatchToProps>,
-  ownProps: ReturnType<typeof UserFlow>,
-) => ({
-  ...ownProps,
-  ...stateProps,
-  ...dispatchProps,
-})
-
-export default connect(mapStateToProps, mapDispatchToProps, mergeProps)(UserFlow)
+export default UserFlow

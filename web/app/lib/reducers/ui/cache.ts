@@ -7,10 +7,8 @@ import {
   LS_VIEW_PREFS_SETTING,
   LS_CAPTCHA_VIEW_PREFS_SETTING,
   getProjectCaptchaCacheKey,
-  getUserFlowCacheKey,
   isBrowser,
 } from 'lib/constants'
-import { IUserFlow } from 'lib/models/UserFlow'
 import { filterInvalidViewPrefs } from 'pages/Project/View/utils/filters'
 
 const getInitialViewPrefs = (LS_VIEW: string) => {
@@ -43,12 +41,6 @@ interface InitialState {
       rangeDate?: Date[]
     }
   } | null
-  userFlowAscending: {
-    [key: string]: IUserFlow
-  }
-  userFlowDescending: {
-    [key: string]: IUserFlow
-  }
   activeReferrals: any[]
   referralStatistics: any
 }
@@ -61,8 +53,6 @@ const initialState: InitialState = {
   captchaProjectsViewPrefs: getInitialViewPrefs(LS_CAPTCHA_VIEW_PREFS_SETTING) || {},
   projectViewPrefs: getInitialViewPrefs(LS_VIEW_PREFS_SETTING),
   customEventsPrefs: {},
-  userFlowAscending: {},
-  userFlowDescending: {},
   activeReferrals: [],
   referralStatistics: {},
 }
@@ -235,28 +225,6 @@ const cacheSlice = createSlice({
           ...state.customEventsPrefs[payload.pid],
           ...payload.data,
         },
-      }
-    },
-    setUserFlowAscending(
-      state,
-      { payload }: PayloadAction<{ pid: string; period: string; data: IUserFlow; filters: any }>,
-    ) {
-      const key = getUserFlowCacheKey(payload.pid, payload.period, payload.filters)
-
-      state.userFlowAscending = {
-        ...state.userFlowAscending,
-        [key]: payload.data,
-      }
-    },
-    setUserFlowDescending(
-      state,
-      { payload }: PayloadAction<{ pid: string; period: string; data: IUserFlow; filters: any }>,
-    ) {
-      const key = getUserFlowCacheKey(payload.pid, payload.period, payload.filters)
-
-      state.userFlowDescending = {
-        ...state.userFlowDescending,
-        [key]: payload.data,
       }
     },
     setCache(state, { payload }: PayloadAction<{ key: string; value: any }>) {
