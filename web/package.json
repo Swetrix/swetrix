@@ -24,7 +24,7 @@
     "@icons-pack/react-simple-icons": "^10.1.0",
     "@nivo/sankey": "^0.87.0",
     "@radix-ui/react-tooltip": "^1.1.4",
-    "@reduxjs/toolkit": "^1.9.7",
+    "@reduxjs/toolkit": "^2.5.0",
     "@remix-run/node": "^2.13.1",
     "@remix-run/react": "^2.13.1",
     "@remix-run/serve": "^2.13.1",
@@ -79,15 +79,11 @@
     "globals": {
       "JSX": "readonly"
     },
-    "plugins": [
-      "lodash"
-    ],
     "rules": {
       "jsx-quotes": [
         "error",
         "prefer-single"
       ],
-      "lodash/prefer-lodash-method": "off",
       "comma-dangle": [
         "warn",
         "always-multiline"
@@ -148,7 +144,6 @@
     "cross-env": "^7.0.3",
     "eslint": "^8.57.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
-    "eslint-plugin-lodash": "^8.0.0",
     "knip": "^5.36.3",
     "postcss": "^8.4.47",
     "prettier": "^3.3.3",
