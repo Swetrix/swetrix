@@ -2,7 +2,7 @@ import { Link } from '@remix-run/react'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { Trans, useTranslation } from 'react-i18next'
 
-import routes from 'utils/routes'
+import routes from '~/utils/routes'
 
 interface DitchGoogleProps {
   screenshot: {

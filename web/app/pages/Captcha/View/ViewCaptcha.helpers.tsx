@@ -23,10 +23,10 @@ import {
   tbsFormatMapper24h,
   tbsFormatMapperTooltip,
   tbsFormatMapperTooltip24h,
-} from 'lib/constants'
+} from '~/lib/constants'
 // @ts-ignore
 import * as d3 from 'd3'
-import { nFormatter } from 'utils/generic'
+import { nFormatter } from '~/utils/generic'
 
 const PANELS_ORDER = ['cc', 'br', 'os', 'dv']
 

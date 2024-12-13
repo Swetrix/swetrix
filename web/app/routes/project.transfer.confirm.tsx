@@ -1,4 +1,4 @@
-import TransferProjectConfirm from 'pages/Project/Settings/TransferProject/TransferProjectConfirm'
+import TransferProjectConfirm from '~/pages/Project/Settings/TransferProject/TransferProjectConfirm'
 import type { SitemapFunction } from 'remix-sitemap'
 
 export const sitemap: SitemapFunction = () => ({

@@ -10,17 +10,17 @@ import { useTranslation } from 'react-i18next'
 import { AdjustmentsVerticalIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
 
-import Modal from 'ui/Modal'
-import { Badge, BadgeProps } from 'ui/Badge'
-import routes from 'utils/routes'
-import { nFormatter, calculateRelativePercentage } from 'utils/generic'
+import Modal from '~/ui/Modal'
+import { Badge, BadgeProps } from '~/ui/Badge'
+import routes from '~/utils/routes'
+import { nFormatter, calculateRelativePercentage } from '~/utils/generic'
 
-import { acceptProjectShare } from 'api'
+import { acceptProjectShare } from '~/api'
 
-import { OverallObject, Project } from 'lib/models/Project'
+import { OverallObject, Project } from '~/lib/models/Project'
 import { useSelector } from 'react-redux'
-import { StateType, useAppDispatch } from 'lib/store'
-import { authActions } from 'lib/reducers/auth'
+import { StateType, useAppDispatch } from '~/lib/store'
+import { authActions } from '~/lib/reducers/auth'
 
 interface ProjectCardProps {
   live?: string | number

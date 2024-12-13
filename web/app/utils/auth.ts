@@ -4,8 +4,8 @@ import {
   LS_CAPTCHA_VIEW_PREFS_SETTING,
   LS_VIEW_PREFS_SETTING,
   SHOW_BANNER_AT_PERC,
-} from 'lib/constants'
-import { logoutAllApi, logoutApi } from 'api'
+} from '~/lib/constants'
+import { logoutAllApi, logoutApi } from '~/api'
 import { getCookie } from './cookie'
 import { getRefreshToken, removeRefreshToken } from './refreshToken'
 import { removeAccessToken } from './accessToken'

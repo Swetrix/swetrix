@@ -14,8 +14,8 @@ import _map from 'lodash/map'
 import _includes from 'lodash/includes'
 import { ExclamationTriangleIcon, TrashIcon, XCircleIcon } from '@heroicons/react/24/outline'
 
-import { withAuthentication, auth } from 'hoc/protected'
-import { TITLE_SUFFIX } from 'lib/constants'
+import { withAuthentication, auth } from '~/hoc/protected'
+import { TITLE_SUFFIX } from '~/lib/constants'
 import {
   createProject,
   updateProject,
@@ -23,18 +23,18 @@ import {
   resetCaptchaProject,
   reGenerateCaptchaSecretKey,
   getProject,
-} from 'api'
-import Input from 'ui/Input'
-import Loader from 'ui/Loader'
-import Button from 'ui/Button'
-import Checkbox from 'ui/Checkbox'
-import Modal from 'ui/Modal'
-import { trackCustom } from 'utils/analytics'
-import routes from 'utils/routes'
-import { CaptchaProject } from 'lib/models/Project'
-import { useRequiredParams } from 'hooks/useRequiredParams'
+} from '~/api'
+import Input from '~/ui/Input'
+import Loader from '~/ui/Loader'
+import Button from '~/ui/Button'
+import Checkbox from '~/ui/Checkbox'
+import Modal from '~/ui/Modal'
+import { trackCustom } from '~/utils/analytics'
+import routes from '~/utils/routes'
+import { CaptchaProject } from '~/lib/models/Project'
+import { useRequiredParams } from '~/hooks/useRequiredParams'
 import { useSelector } from 'react-redux'
-import { StateType } from 'lib/store'
+import { StateType } from '~/lib/store'
 
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300

@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 import _endsWith from 'lodash/endsWith'
-import { Role } from 'lib/models/Organisation'
+import { Role } from '~/lib/models/Organisation'
 
 const displayDateOptions: Intl.DateTimeFormatOptions = {
   year: 'numeric',

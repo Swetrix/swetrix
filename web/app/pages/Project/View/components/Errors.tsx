@@ -5,10 +5,10 @@ import { useTranslation } from 'react-i18next'
 import _map from 'lodash/map'
 import cx from 'clsx'
 import { ChevronRightIcon } from '@heroicons/react/24/outline'
-import Loader from 'ui/Loader'
+import Loader from '~/ui/Loader'
 import { SwetrixError } from '../interfaces/error'
-import { getRelativeDateIfPossible } from 'utils/date'
-import { Badge } from 'ui/Badge'
+import { getRelativeDateIfPossible } from '~/utils/date'
+import { Badge } from '~/ui/Badge'
 
 interface ErrorsProps {
   errors: SwetrixError[]

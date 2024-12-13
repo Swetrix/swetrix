@@ -4,12 +4,12 @@ import { useTranslation, Trans } from 'react-i18next'
 import { EnvelopeIcon } from '@heroicons/react/24/outline'
 import { useSelector } from 'react-redux'
 
-import Loader from 'ui/Loader'
-import { withAuthentication } from 'hoc/protected'
-import { authActions } from 'lib/reducers/auth'
-import { StateType, useAppDispatch } from 'lib/store'
-import routes from 'utils/routes'
-import { logout } from 'utils/auth'
+import Loader from '~/ui/Loader'
+import { withAuthentication } from '~/hoc/protected'
+import { authActions } from '~/lib/reducers/auth'
+import { StateType, useAppDispatch } from '~/lib/store'
+import routes from '~/utils/routes'
+import { logout } from '~/utils/auth'
 
 const CheckYourInbox = () => {
   const { t } = useTranslation('common')

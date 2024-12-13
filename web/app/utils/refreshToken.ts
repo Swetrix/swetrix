@@ -1,6 +1,6 @@
 import _isEmpty from 'lodash/isEmpty'
 
-import { REFRESH_TOKEN, isBrowser } from 'lib/constants'
+import { REFRESH_TOKEN, isBrowser } from '~/lib/constants'
 import { getCookie, setCookie, deleteCookie } from './cookie'
 
 // 14 weeks in seconds

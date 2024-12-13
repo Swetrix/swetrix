@@ -1,11 +1,11 @@
-import Singup from 'pages/Auth/Signup'
+import Singup from '~/pages/Auth/Signup'
 import type { SitemapFunction } from 'remix-sitemap'
 import type { HeadersFunction, LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
 import { json, redirect } from '@remix-run/node'
 
-import { isSelfhosted } from 'lib/constants'
-import { detectTheme } from 'utils/server'
+import { isSelfhosted } from '~/lib/constants'
+import { detectTheme } from '~/utils/server'
 
 export const headers: HeadersFunction = ({ parentHeaders }) => {
   parentHeaders.set('X-Frame-Options', 'DENY')

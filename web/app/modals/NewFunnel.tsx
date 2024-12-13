@@ -6,13 +6,13 @@ import cx from 'clsx'
 import { TrashIcon } from '@heroicons/react/24/outline'
 import { useTranslation } from 'react-i18next'
 
-import Modal from 'ui/Modal'
-import Input from 'ui/Input'
-import Combobox from 'ui/Combobox'
-import { MIN_FUNNEL_STEPS, MAX_FUNNEL_STEPS } from 'lib/constants'
-import { getFilters } from 'api'
-import { Funnel } from 'lib/models/Project'
-import { ProjectForShared } from 'lib/models/SharedProject'
+import Modal from '~/ui/Modal'
+import Input from '~/ui/Input'
+import Combobox from '~/ui/Combobox'
+import { MIN_FUNNEL_STEPS, MAX_FUNNEL_STEPS } from '~/lib/constants'
+import { getFilters } from '~/api'
+import { Funnel } from '~/lib/models/Project'
+import { ProjectForShared } from '~/lib/models/SharedProject'
 
 interface NewFunnelProps {
   project: ProjectForShared

@@ -3,10 +3,10 @@ import { Link } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import { XCircleIcon, InformationCircleIcon } from '@heroicons/react/24/solid'
 
-import Loader from 'ui/Loader'
+import Loader from '~/ui/Loader'
 
-import { rejectTransferProject } from 'api'
-import routes from 'utils/routes'
+import { rejectTransferProject } from '~/api'
+import routes from '~/utils/routes'
 
 const TransferProjectReject = () => {
   const { t } = useTranslation('common')

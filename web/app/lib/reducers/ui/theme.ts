@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import _includes from 'lodash/includes'
-import { setCookie, getCookie } from 'utils/cookie'
-import { isBrowser, LS_THEME_SETTING, SUPPORTED_THEMES, ThemeType } from 'lib/constants'
+import { setCookie, getCookie } from '~/utils/cookie'
+import { isBrowser, LS_THEME_SETTING, SUPPORTED_THEMES, ThemeType } from '~/lib/constants'
 
 const setThemeToDOM = (theme: string) => {
   if (!isBrowser) {

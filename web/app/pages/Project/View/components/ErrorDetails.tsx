@@ -2,8 +2,8 @@ import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { SwetrixErrorDetails } from '../interfaces/error'
 import { MetricCard } from './MetricCards'
-import { getRelativeDateIfPossible } from 'utils/date'
-import Tooltip from 'ui/Tooltip'
+import { getRelativeDateIfPossible } from '~/utils/date'
+import Tooltip from '~/ui/Tooltip'
 
 interface ErrorDetailsProps {
   details: SwetrixErrorDetails

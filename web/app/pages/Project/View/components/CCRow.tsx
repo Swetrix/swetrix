@@ -1,7 +1,7 @@
 import React, { memo } from 'react'
 import _fill from 'lodash/fill'
-import countries from 'utils/isoCountries'
-import Flag from 'ui/Flag'
+import countries from '~/utils/isoCountries'
+import Flag from '~/ui/Flag'
 
 interface CCRowProps {
   cc: string

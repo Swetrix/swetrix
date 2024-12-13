@@ -1,7 +1,7 @@
 /* eslint-disable implicit-arrow-linebreak */
 import axios from 'axios'
 import _isEmpty from 'lodash/isEmpty'
-import { AIAPI_URL } from 'lib/constants'
+import { AIAPI_URL } from '~/lib/constants'
 
 const api = axios.create({
   baseURL: AIAPI_URL,

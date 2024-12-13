@@ -1,10 +1,10 @@
-import Startups from 'pages/Landings/Startups'
+import Startups from '~/pages/Landings/Startups'
 import type { LoaderFunctionArgs } from '@remix-run/node'
 import { json, redirect } from '@remix-run/node'
 import type { SitemapFunction } from 'remix-sitemap'
 
-import { detectTheme, isAuthenticated } from 'utils/server'
-import { isSelfhosted } from 'lib/constants'
+import { detectTheme, isAuthenticated } from '~/utils/server'
+import { isSelfhosted } from '~/lib/constants'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 0.9,

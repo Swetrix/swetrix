@@ -1,4 +1,4 @@
-import ConfirmShare from 'pages/Project/ConfirmShare'
+import ConfirmShare from '~/pages/Project/ConfirmShare'
 import type { SitemapFunction } from 'remix-sitemap'
 
 export const sitemap: SitemapFunction = () => ({

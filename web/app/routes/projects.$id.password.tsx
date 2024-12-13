@@ -1,9 +1,9 @@
-import ProjectProtectedPassword from 'pages/Project/ProjectProtectedPassword'
+import ProjectProtectedPassword from '~/pages/Project/ProjectProtectedPassword'
 import type { LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
 import { json } from '@remix-run/node'
 
-import { detectTheme, isEmbedded, getProjectPassword, isAuthenticated } from 'utils/server'
+import { detectTheme, isEmbedded, getProjectPassword, isAuthenticated } from '~/utils/server'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const embedded = isEmbedded(request)

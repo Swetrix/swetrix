@@ -8,8 +8,8 @@ import _startsWith from 'lodash/startsWith'
 import _replace from 'lodash/replace'
 import { useTranslation } from 'react-i18next'
 
-import countries from 'utils/isoCountries'
-import { getLocaleDisplayName } from 'utils/generic'
+import countries from '~/utils/isoCountries'
+import { getLocaleDisplayName } from '~/utils/generic'
 import { useViewProjectContext } from '../ViewProject'
 
 interface FilterProps {

@@ -1,10 +1,10 @@
 import React from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 
-import Modal from 'ui/Modal'
-import { Badge } from 'ui/Badge'
-import Textarea from 'ui/Textarea'
-import { API_URL, isSelfhosted } from 'lib/constants'
+import Modal from '~/ui/Modal'
+import { Badge } from '~/ui/Badge'
+import Textarea from '~/ui/Textarea'
+import { API_URL, isSelfhosted } from '~/lib/constants'
 
 const API_URL_WITHOUT_TRAILING_SLASH = API_URL.endsWith('/') ? API_URL.slice(0, -1) : API_URL
 

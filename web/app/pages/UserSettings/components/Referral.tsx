@@ -5,11 +5,11 @@ import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import { toast } from 'sonner'
 
-import { generateRefCode, getPayoutsInfo, getReferrals, setPaypalEmail } from 'api'
-import Tooltip from 'ui/Tooltip'
-import Highlighted from 'ui/Highlighted'
-import Input from 'ui/Input'
-import Button from 'ui/Button'
+import { generateRefCode, getPayoutsInfo, getReferrals, setPaypalEmail } from '~/api'
+import Tooltip from '~/ui/Tooltip'
+import Highlighted from '~/ui/Highlighted'
+import Input from '~/ui/Input'
+import Button from '~/ui/Button'
 import {
   REF_URL_PREFIX,
   DOCS_REFERRAL_PROGRAM_URL,
@@ -20,13 +20,13 @@ import {
   BillingFrequency,
   MERCHANT_FEE,
   REFERRAL_CUT,
-} from 'lib/constants'
-import { isValidEmail } from 'utils/validator'
+} from '~/lib/constants'
+import { isValidEmail } from '~/utils/validator'
 import { useSelector } from 'react-redux'
-import { StateType, useAppDispatch } from 'lib/store'
-import { authActions } from 'lib/reducers/auth'
-import { User } from 'lib/models/User'
-import Spin from 'ui/icons/Spin'
+import { StateType, useAppDispatch } from '~/lib/store'
+import { authActions } from '~/lib/reducers/auth'
+import { User } from '~/lib/models/User'
+import Spin from '~/ui/icons/Spin'
 
 const Referral = () => {
   const { user } = useSelector((state: StateType) => state.auth)

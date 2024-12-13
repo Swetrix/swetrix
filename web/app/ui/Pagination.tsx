@@ -3,7 +3,7 @@ import { ArrowLongLeftIcon, ArrowLongRightIcon } from '@heroicons/react/24/solid
 import _map from 'lodash/map'
 import cx from 'clsx'
 import { useTranslation } from 'react-i18next'
-import { usePagination, DOTS } from 'hooks/usePagination'
+import { usePagination, DOTS } from '~/hooks/usePagination'
 
 interface PaginationProps {
   page: number

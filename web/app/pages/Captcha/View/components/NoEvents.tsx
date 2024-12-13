@@ -2,9 +2,9 @@ import React, { memo } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import _isEmpty from 'lodash/isEmpty'
 
-import Button from 'ui/Button'
-import { DOCS_CAPTCHA_URL } from 'lib/constants'
-import { Filter } from 'pages/Project/View/interfaces/traffic'
+import Button from '~/ui/Button'
+import { DOCS_CAPTCHA_URL } from '~/lib/constants'
+import { Filter } from '~/pages/Project/View/interfaces/traffic'
 
 interface NoEventsProps {
   filters: Filter[]

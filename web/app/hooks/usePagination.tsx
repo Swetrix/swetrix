@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { ENTRIES_PER_PAGE_DASHBOARD } from 'lib/constants'
+import { ENTRIES_PER_PAGE_DASHBOARD } from '~/lib/constants'
 
 export const DOTS = '...'
 

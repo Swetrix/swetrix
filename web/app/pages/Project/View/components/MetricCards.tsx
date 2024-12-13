@@ -6,11 +6,11 @@ import _round from 'lodash/round'
 import _isEmpty from 'lodash/isEmpty'
 import _isNumber from 'lodash/isNumber'
 import _map from 'lodash/map'
-import { nFormatter, getStringFromTime, getTimeFromSeconds } from 'utils/generic'
-import { OverallObject, OverallPerformanceObject } from 'lib/models/Project'
+import { nFormatter, getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
+import { OverallObject, OverallPerformanceObject } from '~/lib/models/Project'
 import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { Badge } from 'ui/Badge'
-import { MonitorOverallObject } from 'lib/models/Uptime'
+import { Badge } from '~/ui/Badge'
+import { MonitorOverallObject } from '~/lib/models/Uptime'
 
 interface MetricCardProps {
   label: string

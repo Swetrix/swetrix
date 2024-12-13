@@ -2,8 +2,8 @@ import React from 'react'
 import { useNavigate } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 
-import Modal from 'ui/Modal'
-import routes from 'utils/routes'
+import Modal from '~/ui/Modal'
+import routes from '~/utils/routes'
 
 interface PaidFeatureProps {
   onClose: () => void

@@ -1,9 +1,9 @@
 import type { LoaderFunction, LinksFunction, MetaFunction } from '@remix-run/node'
 import { redirect, json } from '@remix-run/node'
-import singlePostCss from 'css/mdfile.css'
-import { getPost } from 'utils/getPosts'
-import { isSelfhosted, TITLE_SUFFIX, getOgImageUrl } from 'lib/constants'
-import Post from 'pages/Blog/Post'
+import singlePostCss from '~/css/mdfile.css'
+import { getPost } from '~/utils/getPosts'
+import { isSelfhosted, TITLE_SUFFIX, getOgImageUrl } from '~/lib/constants'
+import Post from '~/pages/Blog/Post'
 
 export const links: LinksFunction = () => {
   return [{ rel: 'stylesheet', href: singlePostCss }]

@@ -5,7 +5,7 @@ import type { SitemapFunction } from 'remix-sitemap'
 import { UAParser } from 'ua-parser-js'
 import { motion } from 'framer-motion'
 
-import { detectTheme, isAuthenticated } from 'utils/server'
+import { detectTheme, isAuthenticated } from '~/utils/server'
 
 import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'
@@ -14,9 +14,9 @@ import { StarIcon } from '@heroicons/react/24/solid'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import _map from 'lodash/map'
 
-import routesPath from 'utils/routes'
-import { getAccessToken } from 'utils/accessToken'
-import { getStringFromTime, getTimeFromSeconds } from 'utils/generic'
+import routesPath from '~/utils/routes'
+import { getAccessToken } from '~/utils/accessToken'
+import { getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
 import {
   GITHUB_URL,
   LIVE_DEMO_URL,
@@ -25,22 +25,22 @@ import {
   OS_LOGO_MAP,
   OS_LOGO_MAP_DARK,
   BROWSER_LOGO_MAP,
-} from 'lib/constants'
-import { StateType } from 'lib/store/index'
+} from '~/lib/constants'
+import { StateType } from '~/lib/store/index'
 import { Cookie } from 'lucide-react'
 
-import Header from 'components/Header'
-import Pricing from 'components/marketing/Pricing'
-import { DitchGoogle } from 'components/marketing/DitchGoogle'
-import { Lines } from 'components/marketing/Lines'
+import Header from '~/components/Header'
+import Pricing from '~/components/marketing/Pricing'
+import { DitchGoogle } from '~/components/marketing/DitchGoogle'
+import { Lines } from '~/components/marketing/Lines'
 import React, { useEffect, useState } from 'react'
 import clsx from 'clsx'
-import { MetricCard, MetricCardSelect } from 'pages/Project/View/components/MetricCards'
-import CCRow from 'pages/Project/View/components/CCRow'
+import { MetricCard, MetricCardSelect } from '~/pages/Project/View/components/MetricCards'
+import CCRow from '~/pages/Project/View/components/CCRow'
 import { CheckIcon, CursorArrowRaysIcon, GlobeAltIcon, NewspaperIcon } from '@heroicons/react/24/outline'
-import { LogoTimeline } from 'components/marketing/LogoTimeline'
-import { MarketplaceCluster } from 'components/marketing/MarketplaceCluster'
-import { ConveyorBelt } from 'components/marketing/ConveyorBelt'
+import { LogoTimeline } from '~/components/marketing/LogoTimeline'
+import { MarketplaceCluster } from '~/components/marketing/MarketplaceCluster'
+import { ConveyorBelt } from '~/components/marketing/ConveyorBelt'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 1,

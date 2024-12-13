@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unstable-nested-components, react/display-name */
 import React, { useState, useEffect, useMemo, memo, useRef } from 'react'
 import { toast } from 'sonner'
-import useSize from 'hooks/useSize'
+import useSize from '~/hooks/useSize'
 import { useNavigate } from '@remix-run/react'
 import { ClientOnly } from 'remix-utils/client-only'
 import bb from 'billboard.js'
@@ -20,10 +20,10 @@ import _startsWith from 'lodash/startsWith'
 import _debounce from 'lodash/debounce'
 import _some from 'lodash/some'
 
-import LineChart from 'ui/icons/LineChart'
-import BarChart from 'ui/icons/BarChart'
-import { getItem, setItem } from 'utils/localstorage'
-import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
+import LineChart from '~/ui/icons/LineChart'
+import BarChart from '~/ui/icons/BarChart'
+import { getItem, setItem } from '~/utils/localstorage'
+import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import {
   captchaTbPeriodPairs,
   timeBucketToDays,
@@ -37,15 +37,15 @@ import {
   OS_LOGO_MAP_DARK,
   isBrowser,
   ThemeType,
-} from 'lib/constants'
-import { CaptchaProject, Project } from 'lib/models/Project'
-import Loader from 'ui/Loader'
-import Dropdown from 'ui/Dropdown'
-import Checkbox from 'ui/Checkbox'
-import FlatPicker from 'ui/Flatpicker'
-import routes from 'utils/routes'
-import { getProject, getCaptchaData } from 'api'
-import { Panel } from 'pages/Project/View/Panels'
+} from '~/lib/constants'
+import { CaptchaProject, Project } from '~/lib/models/Project'
+import Loader from '~/ui/Loader'
+import Dropdown from '~/ui/Dropdown'
+import Checkbox from '~/ui/Checkbox'
+import FlatPicker from '~/ui/Flatpicker'
+import routes from '~/utils/routes'
+import { getProject, getCaptchaData } from '~/api'
+import { Panel } from '~/pages/Project/View/Panels'
 import {
   getFormatDate,
   panelIconMapping,
@@ -59,15 +59,15 @@ import {
   getColumns,
   PANELS_ORDER,
 } from './ViewCaptcha.helpers'
-import { onCSVExportClick } from 'pages/Project/View/ViewProject.helpers'
+import { onCSVExportClick } from '~/pages/Project/View/ViewProject.helpers'
 import CCRow from '../../Project/View/components/CCRow'
 import NoEvents from './components/NoEvents'
-import { useRequiredParams } from 'hooks/useRequiredParams'
+import { useRequiredParams } from '~/hooks/useRequiredParams'
 import { useSelector } from 'react-redux'
-import { StateType, useAppDispatch } from 'lib/store'
+import { StateType, useAppDispatch } from '~/lib/store'
 import Filters from './components/Filters'
 import TBPeriodSelector from './components/TBPeriodSelector'
-import UIActions from 'lib/reducers/ui'
+import UIActions from '~/lib/reducers/ui'
 
 const PageLoader = () => (
   <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>

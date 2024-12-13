@@ -8,7 +8,7 @@ import {
   UserGroupIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline'
-import Beta from 'ui/Beta'
+import Beta from '~/ui/Beta'
 import Spin from './icons/Spin'
 
 interface ModalProps {

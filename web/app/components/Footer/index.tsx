@@ -2,7 +2,7 @@ import React, { memo } from 'react'
 import { Link } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import _map from 'lodash/map'
-import Flag from 'ui/Flag'
+import Flag from '~/ui/Flag'
 
 import {
   isSelfhosted,
@@ -20,8 +20,8 @@ import {
   SWETRIX_VS_SIMPLE_ANALYTICS,
   DISCORD_URL,
   CAPTCHA_URL,
-} from 'lib/constants'
-import routesPath from 'utils/routes'
+} from '~/lib/constants'
+import routesPath from '~/utils/routes'
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/solid'
 
 const CONTACT_US_URL = `https://swetrix.com${routesPath.contact}`

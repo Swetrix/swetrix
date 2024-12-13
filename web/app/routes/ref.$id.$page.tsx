@@ -1,8 +1,8 @@
 import type { LoaderFunctionArgs } from '@remix-run/node'
 import { redirect } from '@remix-run/node'
 
-import { isSelfhosted, REFERRAL_COOKIE, REFERRAL_COOKIE_DAYS } from 'lib/constants'
-import { generateCookieString } from 'utils/cookie'
+import { isSelfhosted, REFERRAL_COOKIE, REFERRAL_COOKIE_DAYS } from '~/lib/constants'
+import { generateCookieString } from '~/utils/cookie'
 
 // This route sets the affiliate cookie ($id) and redirects to page specified at $page
 export async function loader({ params }: LoaderFunctionArgs) {

@@ -5,10 +5,10 @@ import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import _isString from 'lodash/isString'
 
-import Loader from 'ui/Loader'
-import routes from 'utils/routes'
-import { verifyEmail } from 'api'
-import { authActions } from 'lib/reducers/auth'
+import Loader from '~/ui/Loader'
+import routes from '~/utils/routes'
+import { verifyEmail } from '~/api'
+import { authActions } from '~/lib/reducers/auth'
 
 const VerifyEmail = () => {
   const { t } = useTranslation('common')

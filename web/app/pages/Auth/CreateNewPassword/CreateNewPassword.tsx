@@ -6,12 +6,12 @@ import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
 import { toast } from 'sonner'
 
-import { createNewPassword } from 'api'
-import { withAuthentication, auth } from 'hoc/protected'
-import routes from 'utils/routes'
-import Input from 'ui/Input'
-import Button from 'ui/Button'
-import { isValidPassword, MIN_PASSWORD_CHARS, MAX_PASSWORD_CHARS } from 'utils/validator'
+import { createNewPassword } from '~/api'
+import { withAuthentication, auth } from '~/hoc/protected'
+import routes from '~/utils/routes'
+import Input from '~/ui/Input'
+import Button from '~/ui/Button'
+import { isValidPassword, MIN_PASSWORD_CHARS, MAX_PASSWORD_CHARS } from '~/utils/validator'
 
 interface FormSubmitData {
   password: string

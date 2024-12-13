@@ -9,19 +9,19 @@ import _filter from 'lodash/filter'
 import _map from 'lodash/map'
 import _toLower from 'lodash/toLower'
 
-import { addSubscriber, removeSubscriber, getSubscribers, updateSubscriber } from 'api'
+import { addSubscriber, removeSubscriber, getSubscribers, updateSubscriber } from '~/api'
 
-import { isValidEmail } from 'utils/validator'
-import useOnClickOutside from 'hooks/useOnClickOutside'
-import { reportFrequencyForEmailsOptions } from 'lib/constants'
+import { isValidEmail } from '~/utils/validator'
+import useOnClickOutside from '~/hooks/useOnClickOutside'
+import { reportFrequencyForEmailsOptions } from '~/lib/constants'
 
-import Input from 'ui/Input'
-import Button from 'ui/Button'
-import Modal from 'ui/Modal'
-import Loader from 'ui/Loader'
+import Input from '~/ui/Input'
+import Button from '~/ui/Button'
+import Modal from '~/ui/Modal'
+import Loader from '~/ui/Loader'
 import cx from 'clsx'
-import { Badge } from 'ui/Badge'
-import { Subscriber } from 'lib/models/Subscriber'
+import { Badge } from '~/ui/Badge'
+import { Subscriber } from '~/lib/models/Subscriber'
 
 interface ModalMessageProps {
   handleInput: (e: React.ChangeEvent<HTMLInputElement>) => void

@@ -4,9 +4,9 @@ import _isNaN from 'lodash/isNaN'
 import _map from 'lodash/map'
 import cx from 'clsx'
 
-import Modal from 'ui/Modal'
-import Input from 'ui/Input'
-import { FORECAST_MAX_MAPPING } from 'lib/constants'
+import Modal from '~/ui/Modal'
+import Input from '~/ui/Input'
+import { FORECAST_MAX_MAPPING } from '~/lib/constants'
 import _toString from 'lodash/toString'
 import { Bars3BottomRightIcon, ChartBarIcon } from '@heroicons/react/24/outline'
 

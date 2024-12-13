@@ -34,22 +34,22 @@ import {
   GDPR_EXPORT_TIMEFRAME,
   TimeFormat,
   isSelfhosted,
-} from 'lib/constants'
-import { User } from 'lib/models/User'
-import { withAuthentication, auth } from 'hoc/protected'
-import Input from 'ui/Input'
-import Button from 'ui/Button'
-import Modal from 'ui/Modal'
-import Select from 'ui/Select'
-import Checkbox from 'ui/Checkbox'
-import PaidFeature from 'modals/PaidFeature'
-import TimezonePicker from 'ui/TimezonePicker'
-import Textarea from 'ui/Textarea'
-import Loader from 'ui/Loader'
-import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS } from 'utils/validator'
-import routes from 'utils/routes'
-import { trackCustom } from 'utils/analytics'
-import { getCookie, setCookie } from 'utils/cookie'
+} from '~/lib/constants'
+import { User } from '~/lib/models/User'
+import { withAuthentication, auth } from '~/hoc/protected'
+import Input from '~/ui/Input'
+import Button from '~/ui/Button'
+import Modal from '~/ui/Modal'
+import Select from '~/ui/Select'
+import Checkbox from '~/ui/Checkbox'
+import PaidFeature from '~/modals/PaidFeature'
+import TimezonePicker from '~/ui/TimezonePicker'
+import Textarea from '~/ui/Textarea'
+import Loader from '~/ui/Loader'
+import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS } from '~/utils/validator'
+import routes from '~/utils/routes'
+import { trackCustom } from '~/utils/analytics'
+import { getCookie, setCookie } from '~/utils/cookie'
 import {
   confirmEmail,
   exportUserData,
@@ -59,7 +59,7 @@ import {
   setShowLiveVisitorsInTitle,
   changeUserDetails,
   deleteUser,
-} from 'api'
+} from '~/api'
 import ProjectList from './components/ProjectList'
 import TwoFA from './components/TwoFA'
 import Integrations from './components/Integrations'
@@ -69,11 +69,11 @@ import NoSharedProjects from './components/NoSharedProjects'
 import Organisations from './components/Organisations'
 import NoOrganisations from './components/NoOrganisations'
 import { useSelector } from 'react-redux'
-import { StateType, useAppDispatch } from 'lib/store'
-import { authActions } from 'lib/reducers/auth'
-import { removeRefreshToken } from 'utils/refreshToken'
-import { removeAccessToken } from 'utils/accessToken'
-import { logout } from 'utils/auth'
+import { StateType, useAppDispatch } from '~/lib/store'
+import { authActions } from '~/lib/reducers/auth'
+import { removeRefreshToken } from '~/utils/refreshToken'
+import { removeAccessToken } from '~/utils/accessToken'
+import { logout } from '~/utils/auth'
 
 dayjs.extend(utc)
 

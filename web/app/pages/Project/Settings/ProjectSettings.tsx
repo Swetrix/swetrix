@@ -17,9 +17,9 @@ import _toUpper from 'lodash/toUpper'
 import _includes from 'lodash/includes'
 import { TrashIcon, XCircleIcon } from '@heroicons/react/24/outline'
 
-import { withAuthentication, auth } from 'hoc/protected'
-import { isSelfhosted, TITLE_SUFFIX, FILTERS_PANELS_ORDER, isBrowser } from 'lib/constants'
-import { Project } from 'lib/models/Project'
+import { withAuthentication, auth } from '~/hoc/protected'
+import { isSelfhosted, TITLE_SUFFIX, FILTERS_PANELS_ORDER, isBrowser } from '~/lib/constants'
+import { Project } from '~/lib/models/Project'
 import {
   updateProject,
   deleteProject,
@@ -30,26 +30,26 @@ import {
   resetFilters,
   getProject,
   assignProjectToOrganisation,
-} from 'api'
-import Input from 'ui/Input'
-import Button from 'ui/Button'
-import Loader from 'ui/Loader'
-import Checkbox from 'ui/Checkbox'
-import Modal from 'ui/Modal'
-import FlatPicker from 'ui/Flatpicker'
-import countries from 'utils/isoCountries'
-import routes from 'utils/routes'
-import Dropdown from 'ui/Dropdown'
-import MultiSelect from 'ui/MultiSelect'
+} from '~/api'
+import Input from '~/ui/Input'
+import Button from '~/ui/Button'
+import Loader from '~/ui/Loader'
+import Checkbox from '~/ui/Checkbox'
+import Modal from '~/ui/Modal'
+import FlatPicker from '~/ui/Flatpicker'
+import countries from '~/utils/isoCountries'
+import routes from '~/utils/routes'
+import Dropdown from '~/ui/Dropdown'
+import MultiSelect from '~/ui/MultiSelect'
 import CCRow from '../View/components/CCRow'
 import { getFormatDate } from '../View/ViewProject.helpers'
 
 import People from './People'
 import Emails from './Emails'
-import Select from 'ui/Select'
-import { useRequiredParams } from 'hooks/useRequiredParams'
+import Select from '~/ui/Select'
+import { useRequiredParams } from '~/hooks/useRequiredParams'
 import { ArrowLeftRight, RotateCcw } from 'lucide-react'
-import { StateType } from 'lib/store'
+import { StateType } from '~/lib/store'
 import { useSelector } from 'react-redux'
 
 const MAX_NAME_LENGTH = 50

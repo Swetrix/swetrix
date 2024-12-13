@@ -9,15 +9,15 @@ import _map from 'lodash/map'
 import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
 
-import Modal from 'ui/Modal'
-import { Badge, BadgeProps } from 'ui/Badge'
-import routes from 'utils/routes'
+import Modal from '~/ui/Modal'
+import { Badge, BadgeProps } from '~/ui/Badge'
+import routes from '~/utils/routes'
 
-import { DetailedOrganisation } from 'lib/models/Organisation'
+import { DetailedOrganisation } from '~/lib/models/Organisation'
 import { useSelector } from 'react-redux'
-import { StateType, useAppDispatch } from 'lib/store'
-import { acceptOrganisationInvitation } from 'api'
-import { authActions } from 'lib/reducers/auth'
+import { StateType, useAppDispatch } from '~/lib/store'
+import { acceptOrganisationInvitation } from '~/api'
+import { authActions } from '~/lib/reducers/auth'
 
 interface OrganisationCardProps {
   organisation: DetailedOrganisation

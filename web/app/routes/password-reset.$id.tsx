@@ -1,8 +1,8 @@
-import CreateNewPassword from 'pages/Auth/CreateNewPassword'
+import CreateNewPassword from '~/pages/Auth/CreateNewPassword'
 import type { SitemapFunction } from 'remix-sitemap'
 import type { HeadersFunction } from '@remix-run/node'
 import { redirect } from '@remix-run/node'
-import { isSelfhosted } from 'lib/constants'
+import { isSelfhosted } from '~/lib/constants'
 
 export const headers: HeadersFunction = ({ parentHeaders }) => {
   parentHeaders.set('X-Frame-Options', 'DENY')

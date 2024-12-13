@@ -5,12 +5,12 @@ import { useTranslation } from 'react-i18next'
 import _map from 'lodash/map'
 import _filter from 'lodash/filter'
 
-import Button from 'ui/Button'
-import Modal from 'ui/Modal'
-import { rejectOrganisationInvitation, acceptOrganisationInvitation } from 'api'
-import { OrganisationMembership } from 'lib/models/Organisation'
-import { StateType, useAppDispatch } from 'lib/store'
-import { authActions } from 'lib/reducers/auth'
+import Button from '~/ui/Button'
+import Modal from '~/ui/Modal'
+import { rejectOrganisationInvitation, acceptOrganisationInvitation } from '~/api'
+import { OrganisationMembership } from '~/lib/models/Organisation'
+import { StateType, useAppDispatch } from '~/lib/store'
+import { authActions } from '~/lib/reducers/auth'
 import { useSelector } from 'react-redux'
 
 interface OrganisationsProps {

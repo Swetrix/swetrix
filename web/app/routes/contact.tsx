@@ -1,6 +1,6 @@
 import { redirect } from '@remix-run/node'
-import Contact from 'pages/Contact'
-import { isSelfhosted } from 'lib/constants'
+import Contact from '~/pages/Contact'
+import { isSelfhosted } from '~/lib/constants'
 
 export async function loader() {
   if (isSelfhosted) {

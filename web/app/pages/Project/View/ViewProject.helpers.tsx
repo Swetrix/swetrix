@@ -41,11 +41,11 @@ import {
   tbsFormatMapperTooltip24h,
   PROJECT_TABS,
   isSelfhosted,
-} from 'lib/constants'
-import { Entry } from 'lib/models/Entry'
-import { getTimeFromSeconds, getStringFromTime, sumArrays, nFormatter } from 'utils/generic'
-import countries from 'utils/isoCountries'
-import { AnalyticsFunnel } from 'lib/models/Project'
+} from '~/lib/constants'
+import { Entry } from '~/lib/models/Entry'
+import { getTimeFromSeconds, getStringFromTime, sumArrays, nFormatter } from '~/utils/generic'
+import countries from '~/utils/isoCountries'
+import { AnalyticsFunnel } from '~/lib/models/Project'
 
 const getAvg = (arr: any) => {
   const total = _reduce(arr, (acc, c) => acc + c, 0)

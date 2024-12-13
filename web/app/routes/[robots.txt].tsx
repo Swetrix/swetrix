@@ -1,4 +1,4 @@
-import { isSelfhosted } from 'lib/constants'
+import { isSelfhosted } from '~/lib/constants'
 
 const PRODUCTION_ROBOTS = `Sitemap: https://swetrix.com/sitemap.xml
 

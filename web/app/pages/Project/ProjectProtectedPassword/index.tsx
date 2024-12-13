@@ -6,15 +6,15 @@ import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
 import _replace from 'lodash/replace'
 
-import routes from 'utils/routes'
-import Input from 'ui/Input'
-import Button from 'ui/Button'
-import { checkPassword } from 'api'
+import routes from '~/utils/routes'
+import Input from '~/ui/Input'
+import Button from '~/ui/Button'
+import { checkPassword } from '~/api'
 import { useDispatch } from 'react-redux'
-import UIActions from 'lib/reducers/ui'
-import Header from 'components/Header'
-import Footer from 'components/Footer'
-import { useRequiredParams } from 'hooks/useRequiredParams'
+import UIActions from '~/lib/reducers/ui'
+import Header from '~/components/Header'
+import Footer from '~/components/Footer'
+import { useRequiredParams } from '~/hooks/useRequiredParams'
 
 interface ProjectProtectedPasswordForm {
   password: string

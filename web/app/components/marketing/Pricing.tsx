@@ -13,8 +13,8 @@ import { RadioGroup } from '@headlessui/react'
 import cx from 'clsx'
 import { toast } from 'sonner'
 
-import Modal from 'ui/Modal'
-import Button from 'ui/Button'
+import Modal from '~/ui/Modal'
+import Button from '~/ui/Button'
 import {
   CONTACT_EMAIL,
   paddleLanguageMapping,
@@ -24,14 +24,14 @@ import {
   REFERRAL_DISCOUNT_CODE,
   STANDARD_PLANS,
   TRIAL_DAYS,
-} from 'lib/constants'
-import { authActions } from 'lib/reducers/auth'
-import { authMe, previewSubscriptionUpdate, changeSubscriptionPlan } from 'api'
-import routes from 'utils/routes'
-import { AppDispatch, StateType } from 'lib/store'
-import Loader from 'ui/Loader'
-import { Badge } from 'ui/Badge'
-import { logout } from 'utils/auth'
+} from '~/lib/constants'
+import { authActions } from '~/lib/reducers/auth'
+import { authMe, previewSubscriptionUpdate, changeSubscriptionPlan } from '~/api'
+import routes from '~/utils/routes'
+import { AppDispatch, StateType } from '~/lib/store'
+import Loader from '~/ui/Loader'
+import { Badge } from '~/ui/Badge'
+import { logout } from '~/utils/auth'
 
 const getPaidFeatures = (t: any, tier: any) => {
   return [

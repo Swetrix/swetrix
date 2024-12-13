@@ -1,7 +1,7 @@
-import ForgotPassword from 'pages/Auth/ForgotPassword'
+import ForgotPassword from '~/pages/Auth/ForgotPassword'
 import type { HeadersFunction } from '@remix-run/node'
 import { redirect } from '@remix-run/node'
-import { isSelfhosted } from 'lib/constants'
+import { isSelfhosted } from '~/lib/constants'
 
 export const headers: HeadersFunction = ({ parentHeaders }) => {
   parentHeaders.set('X-Frame-Options', 'DENY')

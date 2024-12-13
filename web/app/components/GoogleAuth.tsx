@@ -2,8 +2,8 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
 
-import Button from 'ui/Button'
-import GoogleGSVG from 'ui/icons/GoogleG'
+import Button from '~/ui/Button'
+import GoogleGSVG from '~/ui/icons/GoogleG'
 
 interface GoogleAuthProps {
   onClick: () => void

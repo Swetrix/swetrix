@@ -8,14 +8,14 @@ import _find from 'lodash/find'
 import _size from 'lodash/size'
 import { toast } from 'sonner'
 
-import Modal from 'ui/Modal'
-import Select from 'ui/Select'
-import Combobox from 'ui/Combobox'
-import { FILTERS_PANELS_ORDER } from 'lib/constants'
-import countries from 'utils/isoCountries'
-import { getFilters, createProjectView, updateProjectView } from 'api'
+import Modal from '~/ui/Modal'
+import Select from '~/ui/Select'
+import Combobox from '~/ui/Combobox'
+import { FILTERS_PANELS_ORDER } from '~/lib/constants'
+import countries from '~/utils/isoCountries'
+import { getFilters, createProjectView, updateProjectView } from '~/api'
 import { Filter } from './Filters'
-import Input from 'ui/Input'
+import Input from '~/ui/Input'
 import {
   Filter as FilterType,
   ProjectView,

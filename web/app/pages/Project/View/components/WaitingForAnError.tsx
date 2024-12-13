@@ -1,8 +1,8 @@
 import { BugAntIcon } from '@heroicons/react/24/outline'
 import { Link } from '@remix-run/react'
 import { useTranslation, Trans } from 'react-i18next'
-import routes from 'utils/routes'
-import { ERROR_TRACKING_DOCS_URL } from 'lib/constants'
+import routes from '~/utils/routes'
+import { ERROR_TRACKING_DOCS_URL } from '~/lib/constants'
 
 const TROUBLESHOOTING_URL = 'https://docs.swetrix.com/troubleshooting'
 

@@ -8,16 +8,16 @@ import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
 
-import routesPath from 'utils/routes'
-import { getAccessToken } from 'utils/accessToken'
-import { nFormatterSeparated } from 'utils/generic'
-import { ERROR_TRACKING_LIVE_DEMO_URL, isBrowser } from 'lib/constants'
-import { StateType } from 'lib/store/index'
-import BackgroundSvg from 'ui/icons/BackgroundSvg'
+import routesPath from '~/utils/routes'
+import { getAccessToken } from '~/utils/accessToken'
+import { nFormatterSeparated } from '~/utils/generic'
+import { ERROR_TRACKING_LIVE_DEMO_URL, isBrowser } from '~/lib/constants'
+import { StateType } from '~/lib/store/index'
+import BackgroundSvg from '~/ui/icons/BackgroundSvg'
 
-import Header from 'components/Header'
+import Header from '~/components/Header'
 import Pricing from '../../components/marketing/Pricing'
-import { DitchGoogle } from 'components/marketing/DitchGoogle'
+import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 
 const Lines = () => (
   <div className='pointer-events-none relative'>

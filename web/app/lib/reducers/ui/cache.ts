@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { getItem, removeItem, setItem } from 'utils/localstorage'
-import { LS_VIEW_PREFS_SETTING, LS_CAPTCHA_VIEW_PREFS_SETTING, isBrowser } from 'lib/constants'
-import { filterInvalidViewPrefs } from 'pages/Project/View/utils/filters'
+import { getItem, removeItem, setItem } from '~/utils/localstorage'
+import { LS_VIEW_PREFS_SETTING, LS_CAPTCHA_VIEW_PREFS_SETTING, isBrowser } from '~/lib/constants'
+import { filterInvalidViewPrefs } from '~/pages/Project/View/utils/filters'
 
 const getInitialViewPrefs = (LS_VIEW: string) => {
   if (!isBrowser) {

@@ -4,7 +4,7 @@ import { Link } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
 
-import routes from 'utils/routes'
+import routes from '~/utils/routes'
 
 interface AddProjectProps {
   onClick: (e: React.MouseEvent<HTMLAnchorElement>) => void

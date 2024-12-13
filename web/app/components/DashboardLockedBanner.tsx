@@ -1,10 +1,10 @@
 import React, { memo, useState, useMemo } from 'react'
 import { LockClosedIcon } from '@heroicons/react/24/outline'
 import { useSelector } from 'react-redux'
-import { StateType } from 'lib/store'
+import { StateType } from '~/lib/store'
 import { useTranslation } from 'react-i18next'
-import { DashboardBlockReason } from 'lib/models/User'
-import Modal from 'ui/Modal'
+import { DashboardBlockReason } from '~/lib/models/User'
+import Modal from '~/ui/Modal'
 
 const DashboardLockedBanner = () => {
   const { t } = useTranslation('common')

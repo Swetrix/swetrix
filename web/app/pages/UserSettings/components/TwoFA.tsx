@@ -6,14 +6,14 @@ import _isNull from 'lodash/isNull'
 import _isString from 'lodash/isString'
 import { toast } from 'sonner'
 
-import Input from 'ui/Input'
-import Button from 'ui/Button'
-import { generate2FA, enable2FA, disable2FA } from 'api'
-import { setAccessToken } from 'utils/accessToken'
-import { setRefreshToken } from 'utils/refreshToken'
-import { StateType, useAppDispatch } from 'lib/store'
+import Input from '~/ui/Input'
+import Button from '~/ui/Button'
+import { generate2FA, enable2FA, disable2FA } from '~/api'
+import { setAccessToken } from '~/utils/accessToken'
+import { setRefreshToken } from '~/utils/refreshToken'
+import { StateType, useAppDispatch } from '~/lib/store'
 import { useSelector } from 'react-redux'
-import { authActions } from 'lib/reducers/auth'
+import { authActions } from '~/lib/reducers/auth'
 
 const TwoFA = () => {
   const dispatch = useAppDispatch()

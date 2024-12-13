@@ -2,19 +2,19 @@ import { Link, useLoaderData } from '@remix-run/react'
 
 import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'
-import { StateType } from 'lib/store'
-import { BOOK_A_CALL_URL, DISCORD_URL, isBrowser, LIVE_DEMO_URL, TWITTER_URL } from 'lib/constants'
-import routesPath from 'utils/routes'
+import { StateType } from '~/lib/store'
+import { BOOK_A_CALL_URL, DISCORD_URL, isBrowser, LIVE_DEMO_URL, TWITTER_URL } from '~/lib/constants'
+import routesPath from '~/utils/routes'
 
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
 
-import Header from 'components/Header'
-import { getAccessToken } from 'utils/accessToken'
+import Header from '~/components/Header'
+import { getAccessToken } from '~/utils/accessToken'
 
 import _map from 'lodash/map'
-import { ComparisonTable } from 'components/marketing/ComparisonTable'
-import { DitchGoogle } from 'components/marketing/DitchGoogle'
+import { ComparisonTable } from '~/components/marketing/ComparisonTable'
+import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 
 interface LoaderProps {
   theme: 'dark' | 'light'

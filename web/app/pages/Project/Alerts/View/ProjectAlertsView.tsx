@@ -19,16 +19,16 @@ import {
   XCircleIcon,
 } from '@heroicons/react/24/outline'
 
-import routes from 'utils/routes'
-import Button from 'ui/Button'
-import Modal from 'ui/Modal'
-import PaidFeature from 'modals/PaidFeature'
-import { QUERY_METRIC, PLAN_LIMITS, DEFAULT_ALERTS_TAKE } from 'lib/constants'
-import { deleteAlert as deleteAlertApi, getProjectAlerts } from 'api'
-import { StateType } from 'lib/store'
-import { Alerts } from 'lib/models/Alerts'
-import Loader from 'ui/Loader'
-import Pagination from 'ui/Pagination'
+import routes from '~/utils/routes'
+import Button from '~/ui/Button'
+import Modal from '~/ui/Modal'
+import PaidFeature from '~/modals/PaidFeature'
+import { QUERY_METRIC, PLAN_LIMITS, DEFAULT_ALERTS_TAKE } from '~/lib/constants'
+import { deleteAlert as deleteAlertApi, getProjectAlerts } from '~/api'
+import { StateType } from '~/lib/store'
+import { Alerts } from '~/lib/models/Alerts'
+import Loader from '~/ui/Loader'
+import Pagination from '~/ui/Pagination'
 
 const Separator = () => (
   <svg viewBox='0 0 2 2' className='h-0.5 w-0.5 flex-none fill-gray-400'>

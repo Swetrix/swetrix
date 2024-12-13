@@ -1,10 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { LOW_EVENTS_WARNING, LS_PROJECTS_PROTECTED } from 'lib/constants'
-import { setCookie } from 'utils/cookie'
-import { secondsTillNextMonth } from 'utils/generic'
-import { Stats } from 'lib/models/Stats'
-import { Metainfo } from 'lib/models/Metainfo'
-import { getItem, setItem } from 'utils/localstorage'
+import { LOW_EVENTS_WARNING, LS_PROJECTS_PROTECTED } from '~/lib/constants'
+import { setCookie } from '~/utils/cookie'
+import { secondsTillNextMonth } from '~/utils/generic'
+import { Stats } from '~/lib/models/Stats'
+import { Metainfo } from '~/lib/models/Metainfo'
+import { getItem, setItem } from '~/utils/localstorage'
 
 interface InitialState {
   stats: Stats

@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
 import _map from 'lodash/map'
 
-import Modal from 'ui/Modal'
-import { Badge } from 'ui/Badge'
+import Modal from '~/ui/Modal'
+import { Badge } from '~/ui/Badge'
 
 interface ViewProjectHotkeysProps {
   onClose: () => void

@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react'
 import { LockClosedIcon } from '@heroicons/react/24/outline'
 import { Link } from '@remix-run/react'
-import { User, DashboardBlockReason } from 'lib/models/User'
-import { ProjectForShared } from 'lib/models/SharedProject'
+import { User, DashboardBlockReason } from '~/lib/models/User'
+import { ProjectForShared } from '~/lib/models/SharedProject'
 import { useTranslation } from 'react-i18next'
-import routes from 'utils/routes'
+import routes from '~/utils/routes'
 
 interface LockedDashboardProps {
   user?: User

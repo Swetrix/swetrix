@@ -11,7 +11,7 @@ import React, {
   Dispatch,
 } from 'react'
 import { ClientOnly } from 'remix-utils/client-only'
-import useSize from 'hooks/useSize'
+import useSize from '~/hooks/useSize'
 import { useNavigate, Link, useSearchParams, useLoaderData } from '@remix-run/react'
 import bb from 'billboard.js'
 import {
@@ -59,11 +59,11 @@ import _truncate from 'lodash/truncate'
 import _isString from 'lodash/isString'
 import { toast } from 'sonner'
 
-import { periodToCompareDate } from 'utils/compareConvertDate'
+import { periodToCompareDate } from '~/utils/compareConvertDate'
 
-import { getTimeFromSeconds, getStringFromTime, getLocaleDisplayName, nLocaleFormatter } from 'utils/generic'
-import { getItem, setItem, removeItem } from 'utils/localstorage'
-import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
+import { getTimeFromSeconds, getStringFromTime, getLocaleDisplayName, nLocaleFormatter } from '~/utils/generic'
+import { getItem, setItem, removeItem } from '~/utils/localstorage'
+import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import {
   tbPeriodPairs,
   LIVE_VISITORS_UPDATE_INTERVAL,
@@ -95,23 +95,23 @@ import {
   ERROR_PERIOD_PAIRS,
   FUNNELS_PERIOD_PAIRS,
   ThemeType,
-} from 'lib/constants'
-import { Project, Funnel, AnalyticsFunnel, OverallObject, OverallPerformanceObject } from 'lib/models/Project'
-import { CountryEntry } from 'lib/models/Entry'
-import Loader from 'ui/Loader'
-import Dropdown from 'ui/Dropdown'
-import Checkbox from 'ui/Checkbox'
-import Select from 'ui/Select'
-import FlatPicker from 'ui/Flatpicker'
-import Robot from 'ui/icons/Robot'
-import LineChart from 'ui/icons/LineChart'
-import BarChart from 'ui/icons/BarChart'
-import Forecast from 'modals/Forecast'
-import NewFunnel from 'modals/NewFunnel'
-import ViewProjectHotkeys from 'modals/ViewProjectHotkeys'
-import routes from 'utils/routes'
-import Header from 'components/Header'
-import Footer from 'components/Footer'
+} from '~/lib/constants'
+import { Project, Funnel, AnalyticsFunnel, OverallObject, OverallPerformanceObject } from '~/lib/models/Project'
+import { CountryEntry } from '~/lib/models/Entry'
+import Loader from '~/ui/Loader'
+import Dropdown from '~/ui/Dropdown'
+import Checkbox from '~/ui/Checkbox'
+import Select from '~/ui/Select'
+import FlatPicker from '~/ui/Flatpicker'
+import Robot from '~/ui/icons/Robot'
+import LineChart from '~/ui/icons/LineChart'
+import BarChart from '~/ui/icons/BarChart'
+import Forecast from '~/modals/Forecast'
+import NewFunnel from '~/modals/NewFunnel'
+import ViewProjectHotkeys from '~/modals/ViewProjectHotkeys'
+import routes from '~/utils/routes'
+import Header from '~/components/Header'
+import Footer from '~/components/Footer'
 import {
   getProjectData,
   getProject,
@@ -138,8 +138,8 @@ import {
   getProjectViews,
   deleteProjectView,
   getDetailsPrediction,
-} from 'api'
-import { getChartPrediction } from 'api/ai'
+} from '~/api'
+import { getChartPrediction } from '~/api/ai'
 import { Panel, Metadata } from './Panels'
 import {
   onCSVExportClick,
@@ -197,7 +197,7 @@ import {
   Properties,
   TrafficLogResponse,
 } from './interfaces/traffic'
-import { trackCustom } from 'utils/analytics'
+import { trackCustom } from '~/utils/analytics'
 import {
   handleNavigationParams,
   updateFilterState,
@@ -211,11 +211,11 @@ import {
 import AddAViewModal from './components/AddAViewModal'
 import CustomMetrics from './components/CustomMetrics'
 import { AIProcessedResponse, AIResponse } from './interfaces/ai'
-import { useRequiredParams } from 'hooks/useRequiredParams'
+import { useRequiredParams } from '~/hooks/useRequiredParams'
 import BrowserDropdown from './components/BrowserDropdown'
 import OSDropdown from './components/OSDropdown'
-import { StateType, useAppDispatch } from 'lib/store'
-import UIActions from 'lib/reducers/ui'
+import { StateType, useAppDispatch } from '~/lib/store'
+import UIActions from '~/lib/reducers/ui'
 import { useSelector } from 'react-redux'
 const SwetrixSDK = require('@swetrix/sdk')
 

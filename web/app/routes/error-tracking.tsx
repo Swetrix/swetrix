@@ -3,9 +3,9 @@ import { useLoaderData } from '@remix-run/react'
 import { json, redirect } from '@remix-run/node'
 import type { SitemapFunction } from 'remix-sitemap'
 
-import ErrorTracking from 'pages/ErrorTracking'
-import { detectTheme, isAuthenticated } from 'utils/server'
-import { isSelfhosted } from 'lib/constants'
+import ErrorTracking from '~/pages/ErrorTracking'
+import { detectTheme, isAuthenticated } from '~/utils/server'
+import { isSelfhosted } from '~/lib/constants'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 1,

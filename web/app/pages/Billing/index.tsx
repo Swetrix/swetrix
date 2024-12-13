@@ -14,20 +14,20 @@ import {
   CONTACT_EMAIL,
   paddleLanguageMapping,
   isBrowser,
-} from 'lib/constants'
-import { loadScript } from 'utils/generic'
-import Loader from 'ui/Loader'
-import { useAppDispatch, StateType } from 'lib/store'
-import { withAuthentication, auth } from 'hoc/protected'
-import Modal from 'ui/Modal'
-import Button from 'ui/Button'
-import MultiProgress from 'ui/MultiProgress'
-import Tooltip from 'ui/Tooltip'
-import UIActions from 'lib/reducers/ui'
+} from '~/lib/constants'
+import { loadScript } from '~/utils/generic'
+import Loader from '~/ui/Loader'
+import { useAppDispatch, StateType } from '~/lib/store'
+import { withAuthentication, auth } from '~/hoc/protected'
+import Modal from '~/ui/Modal'
+import Button from '~/ui/Button'
+import MultiProgress from '~/ui/MultiProgress'
+import Tooltip from '~/ui/Tooltip'
+import UIActions from '~/lib/reducers/ui'
 import Pricing from '../../components/marketing/Pricing'
-import DashboardLockedBanner from 'components/DashboardLockedBanner'
-import { UsageInfo } from 'lib/models/Usageinfo'
-import { getUsageInfo } from 'api'
+import DashboardLockedBanner from '~/components/DashboardLockedBanner'
+import { UsageInfo } from '~/lib/models/Usageinfo'
+import { getUsageInfo } from '~/api'
 import { toast } from 'sonner'
 
 dayjs.extend(utc)

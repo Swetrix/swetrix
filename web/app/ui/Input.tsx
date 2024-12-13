@@ -2,7 +2,7 @@ import React, { memo } from 'react'
 import { Description, Field, Input as HeadlessInput, Label } from '@headlessui/react'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
-import Beta from 'ui/Beta'
+import Beta from '~/ui/Beta'
 
 interface InputProps {
   label?: React.ReactNode

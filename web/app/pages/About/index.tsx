@@ -1,7 +1,7 @@
 import React from 'react'
 import _map from 'lodash/map'
 
-import { CONTACT_EMAIL, GITHUB_URL } from 'lib/constants'
+import { CONTACT_EMAIL, GITHUB_URL } from '~/lib/constants'
 
 const socialIcons: {
   [key: string]: React.ReactNode

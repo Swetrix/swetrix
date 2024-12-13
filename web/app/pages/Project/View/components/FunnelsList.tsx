@@ -3,7 +3,7 @@ import _map from 'lodash/map'
 import cx from 'clsx'
 import { useTranslation } from 'react-i18next'
 import { AdjustmentsVerticalIcon, PlusCircleIcon, TrashIcon } from '@heroicons/react/24/outline'
-import { Funnel } from 'lib/models/Project'
+import { Funnel } from '~/lib/models/Project'
 
 interface FunnelsListProps {
   funnels?: any[]

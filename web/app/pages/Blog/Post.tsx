@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { Link, useLoaderData, useLocation } from '@remix-run/react'
-import NotFound from 'pages/NotFound'
-import { trackPageview } from 'utils/analytics'
+import NotFound from '~/pages/NotFound'
+import { trackPageview } from '~/utils/analytics'
 
 interface Post {
   slug: string

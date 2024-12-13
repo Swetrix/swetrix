@@ -2,9 +2,9 @@ import { useTranslation } from 'react-i18next'
 import { useLocation } from '@remix-run/react'
 import _startsWith from 'lodash/startsWith'
 import _toUpper from 'lodash/toUpper'
-import { getPageMeta } from 'utils/server'
-import { getOgImageUrl } from 'lib/constants'
-import routes from 'utils/routes'
+import { getPageMeta } from '~/utils/server'
+import { getOgImageUrl } from '~/lib/constants'
+import routes from '~/utils/routes'
 
 export const SEO = () => {
   const {

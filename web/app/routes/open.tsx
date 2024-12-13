@@ -1,9 +1,9 @@
-import OpenStartup from 'pages/OpenStartup'
+import OpenStartup from '~/pages/OpenStartup'
 import { redirect } from '@remix-run/node'
 import type { LinksFunction } from '@remix-run/node'
-import { isSelfhosted } from 'lib/constants'
+import { isSelfhosted } from '~/lib/constants'
 
-import Style from 'styles/ProjectViewStyle.css'
+import Style from '~/styles/ProjectViewStyle.css'
 
 export const links: LinksFunction = () => {
   return [{ rel: 'stylesheet', href: Style }]

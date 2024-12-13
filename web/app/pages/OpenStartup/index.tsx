@@ -5,9 +5,9 @@ import { useTranslation, Trans } from 'react-i18next'
 import { Link } from '@remix-run/react'
 import { useSelector } from 'react-redux'
 
-import { nFormatterSeparated } from 'utils/generic'
-import { StateType } from 'lib/store/index'
-import { LIVE_DEMO_URL } from 'lib/constants'
+import { nFormatterSeparated } from '~/utils/generic'
+import { StateType } from '~/lib/store/index'
+import { LIVE_DEMO_URL } from '~/lib/constants'
 
 // This should be generated on the API side, will be done later.
 // MRR taken from Profitwell dashboard

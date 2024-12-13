@@ -4,7 +4,7 @@ import _round from 'lodash/round'
 import _map from 'lodash/map'
 import _reduce from 'lodash/reduce'
 
-import { isBrowser } from 'lib/constants'
+import { isBrowser } from '~/lib/constants'
 
 const rx = /\.0+$|(\.[0-9]*[1-9])0+$/
 
