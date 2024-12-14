@@ -190,7 +190,6 @@ export class ProjectController {
 
       return {
         ...project,
-        isOwner: project.admin.id === userId, // deprecated
         isAccessConfirmed,
         isLocked: !!project.admin?.dashboardBlockReason,
         isDataExists: _includes(pidsWithData, project?.id),
@@ -1924,7 +1923,7 @@ export class ProjectController {
   @ApiResponse({ status: 200, type: Project })
   async getOne(
     @Param('id') id: string,
-    @CurrentUserId() uid: string,
+    @CurrentUserId() userId: string,
     @Headers() headers: { 'x-password'?: string },
   ): Promise<Project | object> {
     this.logger.log({ id }, 'GET /project/:id')
@@ -1945,7 +1944,7 @@ export class ProjectController {
     let allowedToViewNoPassword = false
 
     try {
-      this.projectService.allowedToView(project, uid)
+      this.projectService.allowedToView(project, userId)
       allowedToViewNoPassword = true
     } catch {
       allowedToViewNoPassword = false
@@ -1962,7 +1961,7 @@ export class ProjectController {
       }
     }
 
-    this.projectService.allowedToView(project, uid, headers['x-password'])
+    this.projectService.allowedToView(project, userId, headers['x-password'])
 
     const [isDataExists, isErrorDataExists] = await Promise.all([
       !_isEmpty(
@@ -1974,13 +1973,13 @@ export class ProjectController {
     let role
     let isAccessConfirmed = true
 
-    if (uid) {
-      const userShare = project.share?.find(share => share.user?.id === uid)
+    if (userId) {
+      const userShare = project.share?.find(share => share.user?.id === userId)
       const organisationMembership = project.organisation?.members?.find(
-        member => member.user?.id === uid,
+        member => member.user?.id === userId,
       )
 
-      if (project.admin?.id === uid) {
+      if (project.admin?.id === userId) {
         role = 'owner'
       } else if (userShare) {
         role = userShare.role
@@ -1998,7 +1997,6 @@ export class ProjectController {
         'organisation',
         role !== 'owner' && role !== 'admin' && 'share',
       ]),
-      isOwner: uid === project.admin?.id, // deprecated
       isAccessConfirmed,
       isLocked: !!project.admin?.dashboardBlockReason,
       isDataExists,

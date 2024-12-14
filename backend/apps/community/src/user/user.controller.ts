@@ -34,10 +34,14 @@ export class UserController {
   @Get('/me')
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async me(@CurrentUserId() user_id: string): Promise<SelfhostedUser> {
+  async me(
+    @CurrentUserId() user_id: string,
+  ): Promise<{ user: SelfhostedUser }> {
     this.logger.log({ user_id }, 'GET /user/me')
 
-    return getSelfhostedUser()
+    return {
+      user: await getSelfhostedUser(),
+    }
   }
 
   @ApiBearerAuth()
