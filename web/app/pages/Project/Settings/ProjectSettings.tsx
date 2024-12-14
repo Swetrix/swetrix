@@ -684,7 +684,7 @@ const ProjectSettings = () => {
         <Checkbox
           checked={Boolean(form.public)}
           onChange={(checked) => {
-            if (!form.isPasswordProtected) {
+            if (!form.isPasswordProtected || !checked) {
               setForm((prev) => ({
                 ...prev,
                 public: checked,
@@ -698,8 +698,8 @@ const ProjectSettings = () => {
         />
         <Checkbox
           checked={Boolean(form.isPasswordProtected)}
-          onChange={() => {
-            if (!form.public && form.isPasswordProtected) {
+          onChange={(checked) => {
+            if (!checked) {
               setForm({
                 ...form,
                 isPasswordProtected: false,
