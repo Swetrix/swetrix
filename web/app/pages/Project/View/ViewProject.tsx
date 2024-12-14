@@ -515,7 +515,8 @@ const ViewProject = () => {
     }
 
     try {
-      await getFunnels(id, projectPassword)
+      const funnels = await getFunnels(id, projectPassword)
+      setProject((prev) => (prev ? { ...prev, funnels } : null))
     } catch (reason: any) {
       console.error('[ERROR] (onFunnelCreate)(getFunnels)', reason)
     }
@@ -539,7 +540,8 @@ const ViewProject = () => {
     }
 
     try {
-      await getFunnels(id, projectPassword)
+      const funnels = await getFunnels(id, projectPassword)
+      setProject((prev) => (prev ? { ...prev, funnels } : null))
     } catch (reason: any) {
       console.error('[ERROR] (onFunnelCreate)(getFunnels)', reason)
     }
@@ -563,7 +565,8 @@ const ViewProject = () => {
     }
 
     try {
-      await getFunnels(id, projectPassword)
+      const funnels = await getFunnels(id, projectPassword)
+      setProject((prev) => (prev ? { ...prev, funnels } : null))
     } catch (reason: any) {
       console.error('[ERROR] (onFunnelCreate)(getFunnels)', reason)
     }

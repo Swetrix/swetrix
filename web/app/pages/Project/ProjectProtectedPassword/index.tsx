@@ -70,8 +70,8 @@ const ProjectProtectedPassword = ({ ssrTheme, embedded, isAuth }: ProjectProtect
     if (!isLoading) {
       setIsLoading(true)
       await checkPassword(id, data.password)
-        .then((res) => {
-          if (res) {
+        .then((result) => {
+          if (result) {
             dispatch(
               UIActions.setProjectPassword({
                 id,
@@ -82,6 +82,7 @@ const ProjectProtectedPassword = ({ ssrTheme, embedded, isAuth }: ProjectProtect
               pathname: _replace(routes.project, ':id', id),
               search: `?embedded=${embedded}&theme=${ssrTheme}`,
             })
+            return
           }
           setErrors({
             password: t('apiNotifications.incorrectPassword'),

@@ -12,7 +12,7 @@ import { getRefreshToken, removeRefreshToken } from '~/utils/refreshToken'
 import { DEFAULT_ALERTS_TAKE, API_URL, DEFAULT_MONITORS_TAKE } from '~/lib/constants'
 import { User } from '~/lib/models/User'
 import { Auth } from '~/lib/models/Auth'
-import { Project, Overall, LiveStats } from '~/lib/models/Project'
+import { Project, Overall, LiveStats, Funnel } from '~/lib/models/Project'
 import { Alerts } from '~/lib/models/Alerts'
 import { Subscriber } from '~/lib/models/Subscriber'
 import { Filter, ProjectViewCustomEvent } from '~/pages/Project/View/interfaces/traffic'
@@ -732,7 +732,7 @@ export const getFunnels = (pid: string, password: string | undefined = '') =>
         'x-password': password,
       },
     })
-    .then((response) => response.data)
+    .then((response): Funnel[] => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })

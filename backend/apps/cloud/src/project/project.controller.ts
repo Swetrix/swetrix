@@ -1942,7 +1942,20 @@ export class ProjectController {
       throw new NotFoundException('Project was not found in the database')
     }
 
-    if (project.isPasswordProtected && _isEmpty(headers['x-password'])) {
+    let allowedToViewNoPassword = false
+
+    try {
+      this.projectService.allowedToView(project, uid)
+      allowedToViewNoPassword = true
+    } catch {
+      allowedToViewNoPassword = false
+    }
+
+    if (
+      !allowedToViewNoPassword &&
+      project.isPasswordProtected &&
+      _isEmpty(headers['x-password'])
+    ) {
       return {
         isPasswordProtected: true,
         id: project.id,
