@@ -365,7 +365,6 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
       const url = new URL(window.location)
       const { searchParams } = url
       const intialTimeBucket: string = searchParams.get('timeBucket') || ''
-      // eslint-disable-next-line lodash/prefer-lodash-method
       if (!_includes(validTimeBacket, intialTimeBucket)) {
         return
       }
@@ -417,7 +416,6 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
       const url = new URL(window.location)
       const { searchParams } = url
       const initialFilters: any[] = []
-      // eslint-disable-next-line lodash/prefer-lodash-method
       searchParams.forEach((value, key) => {
         if (!_includes(validFilters, key)) {
           return
