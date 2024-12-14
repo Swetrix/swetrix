@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { toast } from 'sonner'
-import { InformationCircleIcon, PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { InformationCircleIcon, MagnifyingGlassIcon, FolderPlusIcon } from '@heroicons/react/24/outline'
 import { useTranslation } from 'react-i18next'
 import _isEmpty from 'lodash/isEmpty'
 import _replace from 'lodash/replace'
@@ -242,7 +242,7 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
           }}
         >
           <>
-            <PlusIcon className='mr-1 h-5 w-5' />
+            <FolderPlusIcon className='mr-1 h-5 w-5' />
             {t('organisations.addProject')}
           </>
         </Button>

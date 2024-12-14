@@ -27,7 +27,7 @@ import {
   BROWSER_LOGO_MAP,
 } from '~/lib/constants'
 import { StateType } from '~/lib/store/index'
-import { Cookie } from 'lucide-react'
+import { Cookie, FileTextIcon } from 'lucide-react'
 
 import Header from '~/components/Header'
 import Pricing from '~/components/marketing/Pricing'
@@ -37,7 +37,7 @@ import React, { useEffect, useState } from 'react'
 import clsx from 'clsx'
 import { MetricCard, MetricCardSelect } from '~/pages/Project/View/components/MetricCards'
 import CCRow from '~/pages/Project/View/components/CCRow'
-import { CheckIcon, CursorArrowRaysIcon, GlobeAltIcon, NewspaperIcon } from '@heroicons/react/24/outline'
+import { CheckIcon, CursorArrowRaysIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
 import { LogoTimeline } from '~/components/marketing/LogoTimeline'
 import { MarketplaceCluster } from '~/components/marketing/MarketplaceCluster'
 import { ConveyorBelt } from '~/components/marketing/ConveyorBelt'
@@ -616,7 +616,7 @@ const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
                     <div>
                       <span className='flex h-8 w-8 items-center justify-center rounded-full bg-slate-400 dark:bg-slate-800'>
                         {path.startsWith('/') ? (
-                          <NewspaperIcon className='h-5 w-5 text-white' aria-hidden='true' />
+                          <FileTextIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
                         ) : (
                           <CursorArrowRaysIcon className='h-5 w-5 text-white' aria-hidden='true' />
                         )}
@@ -628,6 +628,7 @@ const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
                         i18nKey={path.startsWith('/') ? 'project.pageviewX' : 'project.eventX'}
                         components={{
                           value: <span className='font-medium text-gray-900 dark:text-gray-50' />,
+                          span: <span />,
                         }}
                         values={{
                           x: path,

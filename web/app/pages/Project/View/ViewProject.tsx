@@ -15,24 +15,26 @@ import useSize from '~/hooks/useSize'
 import { useNavigate, Link, useSearchParams, useLoaderData } from '@remix-run/react'
 import bb from 'billboard.js'
 import {
-  ArrowDownTrayIcon,
   Cog8ToothIcon,
-  ArrowPathIcon,
-  ChartBarIcon,
-  BoltIcon,
-  BellIcon,
   NoSymbolIcon,
   MagnifyingGlassIcon,
-  FunnelIcon,
   ChevronLeftIcon,
   GlobeAltIcon,
-  UsersIcon,
-  BugAntIcon,
-  BookmarkIcon,
-  TrashIcon,
-  PencilIcon,
   ClockIcon,
 } from '@heroicons/react/24/outline'
+import {
+  BugIcon,
+  GaugeIcon,
+  Trash2Icon,
+  UsersIcon,
+  BellRingIcon,
+  ChartNoAxesColumnIcon,
+  FilterIcon,
+  RotateCw,
+  BookmarkIcon,
+  PencilIcon,
+  DownloadIcon,
+} from 'lucide-react'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
@@ -103,7 +105,6 @@ import Dropdown from '~/ui/Dropdown'
 import Checkbox from '~/ui/Checkbox'
 import Select from '~/ui/Select'
 import FlatPicker from '~/ui/Flatpicker'
-import Robot from '~/ui/icons/Robot'
 import LineChart from '~/ui/icons/LineChart'
 import BarChart from '~/ui/icons/BarChart'
 import Forecast from '~/modals/Forecast'
@@ -878,12 +879,12 @@ const ViewProject = () => {
       {
         id: PROJECT_TABS.traffic,
         label: t('dashboard.traffic'),
-        icon: ChartBarIcon,
+        icon: ChartNoAxesColumnIcon,
       },
       {
         id: PROJECT_TABS.performance,
         label: t('dashboard.performance'),
-        icon: BoltIcon,
+        icon: GaugeIcon,
       },
       {
         id: PROJECT_TABS.sessions,
@@ -893,12 +894,12 @@ const ViewProject = () => {
       {
         id: PROJECT_TABS.errors,
         label: t('dashboard.errors'),
-        icon: BugAntIcon,
+        icon: BugIcon,
       },
       {
         id: PROJECT_TABS.funnels,
         label: t('dashboard.funnels'),
-        icon: FunnelIcon,
+        icon: FilterIcon,
       },
     ]
 
@@ -921,7 +922,7 @@ const ViewProject = () => {
       {
         id: PROJECT_TABS.alerts,
         label: t('dashboard.alerts'),
-        icon: BellIcon,
+        icon: BellRingIcon,
       },
       ['79eF2Z9rNNvv', 'STEzHcB1rALV'].includes(id) && {
         id: PROJECT_TABS.uptime,
@@ -3011,6 +3012,7 @@ const ViewProject = () => {
                     '-ml-0.5 mr-2 h-5 w-5',
                   )}
                   aria-hidden='true'
+                  strokeWidth={1.5}
                 />
                 <span>{tab.label}</span>
               </Link>
@@ -3247,9 +3249,9 @@ const ViewProject = () => {
                                   },
                                 )}
                               >
-                                <ArrowPathIcon className='h-5 w-5 stroke-2 text-gray-700 dark:text-gray-50' />
+                                <RotateCw className='h-5 w-5 text-gray-700 dark:text-gray-50' />
                               </button>
-                              {!isSelfhosted && !isActiveCompare && (
+                              {/* {!isSelfhosted && !isActiveCompare && (
                                 <div
                                   className={cx({
                                     hidden: activeTab !== PROJECT_TABS.traffic || _isEmpty(chartData),
@@ -3277,7 +3279,7 @@ const ViewProject = () => {
                                     />
                                   </button>
                                 </div>
-                              )}
+                              )} */}
                               <div
                                 className={cx('border-gray-200 dark:border-gray-600', {
                                   // @ts-expect-error
@@ -3334,7 +3336,7 @@ const ViewProject = () => {
                                     ],
                                     (x) => !!x,
                                   )}
-                                  title={[<BookmarkIcon key='bookmark-icon' className='h-5 w-5 stroke-2' />]}
+                                  title={[<BookmarkIcon key='bookmark-icon' className='h-5 w-5' />]}
                                   labelExtractor={(item, close) => {
                                     // @ts-expect-error
                                     if (item.createView) {
@@ -3362,8 +3364,9 @@ const ViewProject = () => {
                                                 close()
                                                 setIsAddAViewOpened(true)
                                               }}
+                                              strokeWidth={1.5}
                                             />
-                                            <TrashIcon
+                                            <Trash2Icon
                                               className={cx('size-4 hover:text-gray-900 dark:hover:text-gray-50', {
                                                 'cursor-not-allowed': projectViewDeleting,
                                               })}
@@ -3372,6 +3375,7 @@ const ViewProject = () => {
                                                 close()
                                                 onProjectViewDelete(item.id)
                                               }}
+                                              strokeWidth={1.5}
                                             />
                                           </span>
                                         )}
@@ -3416,7 +3420,7 @@ const ViewProject = () => {
                                     ],
                                     (el) => !!el,
                                   )}
-                                  title={[<ArrowDownTrayIcon key='download-icon' className='h-5 w-5 stroke-2' />]}
+                                  title={[<DownloadIcon key='download-icon' className='h-5 w-5' />]}
                                   labelExtractor={(item) => item.label}
                                   keyExtractor={(item) => item.label}
                                   onSelect={(item, e) => {
@@ -3644,7 +3648,7 @@ const ViewProject = () => {
                                 },
                               )}
                             >
-                              <ArrowPathIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
+                              <RotateCw className='h-5 w-5 text-gray-700 dark:text-gray-50' />
                             </button>
                           )}
                           {activeTab === PROJECT_TABS.performance && !isPanelsDataEmptyPerf && (
@@ -3796,7 +3800,7 @@ const ViewProject = () => {
                 {activeTab === PROJECT_TABS.alerts && (project.role !== 'owner' || !authenticated) && (
                   <div className='mt-5 rounded-xl bg-gray-700 p-5'>
                     <div className='flex items-center text-gray-50'>
-                      <BellIcon className='mr-2 h-8 w-8' />
+                      <BellRingIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
                       <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>
                     </div>
                     <p className='mt-2 whitespace-pre-wrap text-lg text-gray-100'>{t('dashboard.alertsDesc')}</p>
@@ -3831,7 +3835,7 @@ const ViewProject = () => {
                 {activeTab === PROJECT_TABS.funnels && !activeFunnel && _isEmpty(project.funnels) && (
                   <div className='mt-5 rounded-xl bg-gray-700 p-5'>
                     <div className='flex items-center text-gray-50'>
-                      <FunnelIcon className='mr-2 h-8 w-8' />
+                      <FilterIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
                       <p className='text-3xl font-bold'>{t('dashboard.funnels')}</p>
                     </div>
                     <p className='mt-2 whitespace-pre-wrap text-lg text-gray-100'>{t('dashboard.funnelsDesc')}</p>
@@ -3886,7 +3890,7 @@ const ViewProject = () => {
                           },
                         )}
                       >
-                        <ArrowDownTrayIcon className='mr-2 h-5 w-5' />
+                        <DownloadIcon className='mr-2 h-5 w-5' strokeWidth={1.5} />
                         {t('project.loadMore')}
                       </button>
                     )}
@@ -3957,7 +3961,7 @@ const ViewProject = () => {
                           },
                         )}
                       >
-                        <ArrowDownTrayIcon className='mr-2 h-5 w-5' />
+                        <DownloadIcon className='mr-2 h-5 w-5' strokeWidth={1.5} />
                         {t('project.loadMore')}
                       </button>
                     )}

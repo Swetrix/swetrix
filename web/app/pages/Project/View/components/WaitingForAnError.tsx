@@ -1,8 +1,8 @@
-import { BugAntIcon } from '@heroicons/react/24/outline'
 import { Link } from '@remix-run/react'
 import { useTranslation, Trans } from 'react-i18next'
 import routes from '~/utils/routes'
 import { ERROR_TRACKING_DOCS_URL } from '~/lib/constants'
+import { BugIcon } from 'lucide-react'
 
 const TROUBLESHOOTING_URL = 'https://docs.swetrix.com/troubleshooting'
 
@@ -13,10 +13,7 @@ const WaitingForAnError = () => {
     <div className='px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
       <div className='mx-auto max-w-max'>
         <main className='sm:flex'>
-          <BugAntIcon
-            type='giant'
-            className='-ml-1.5 mb-2 h-12 w-12 text-gray-900 dark:text-gray-50 sm:m-0 sm:h-20 sm:w-20'
-          />
+          <BugIcon className='-ml-1.5 mb-2 h-12 w-12 text-gray-900 dark:text-gray-50 sm:m-0 sm:h-20 sm:w-20' />
           <div className='sm:ml-6'>
             <div className='sm:border-l sm:border-gray-200 sm:pl-6'>
               <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50 sm:text-5xl'>

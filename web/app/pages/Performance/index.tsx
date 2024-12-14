@@ -3,7 +3,7 @@ import React, { memo } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { ClientOnly } from 'remix-utils/client-only'
-import { ArrowTopRightOnSquareIcon, ChevronRightIcon } from '@heroicons/react/24/solid'
+import { ChevronRightIcon } from '@heroicons/react/24/solid'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
@@ -18,6 +18,7 @@ import BackgroundSvg from '~/ui/icons/BackgroundSvg'
 import Header from '~/components/Header'
 import Pricing from '../../components/marketing/Pricing'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
+import { SquareArrowOutUpRightIcon } from 'lucide-react'
 
 const Lines = () => (
   <div className='pointer-events-none relative'>
@@ -88,7 +89,10 @@ const Performance = ({ ssrTheme, ssrAuthenticated }: PerformanceProps) => {
             >
               {t('main.ukrSupport')}
             </a>
-            <ArrowTopRightOnSquareIcon className='ml-1 hidden h-4 w-4 text-slate-800 dark:text-white md:block' />
+            <SquareArrowOutUpRightIcon
+              className='ml-1 hidden h-4 w-4 text-slate-800 dark:text-white md:block'
+              strokeWidth={1.5}
+            />
           </div>
           <div className='relative mx-auto min-h-[740px] pb-5 pt-10 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
             <div className='relative z-20 flex flex-row content-between justify-center lg:justify-start 2xl:mr-[14vw] 2xl:justify-center'>

@@ -21,7 +21,8 @@ import { DetailedOrganisation } from '~/lib/models/Organisation'
 import { StateType } from '~/lib/store'
 import { useSelector } from 'react-redux'
 import { Projects } from './Projects'
-import { TrashIcon, XCircleIcon } from '@heroicons/react/24/outline'
+import { XCircleIcon } from '@heroicons/react/24/outline'
+import { Trash2Icon } from 'lucide-react'
 // import { ArrowLeftRight } from 'lucide-react'
 
 const MAX_NAME_LENGTH = 50
@@ -289,7 +290,7 @@ const OrganisationSettings = () => {
                 {t('project.settings.transfer')}
               </Button> */}
               <Button onClick={() => setShowDelete(true)} disabled={isDeleting} danger semiSmall>
-                <TrashIcon className='mr-1 h-5 w-5' />
+                <Trash2Icon className='mr-1 h-5 w-5' strokeWidth={1.5} />
                 {t('organisations.delete')}
               </Button>
             </div>

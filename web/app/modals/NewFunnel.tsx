@@ -3,7 +3,6 @@ import _map from 'lodash/map'
 import _every from 'lodash/every'
 import _isUndefined from 'lodash/isUndefined'
 import cx from 'clsx'
-import { TrashIcon } from '@heroicons/react/24/outline'
 import { useTranslation } from 'react-i18next'
 
 import Modal from '~/ui/Modal'
@@ -13,6 +12,7 @@ import { MIN_FUNNEL_STEPS, MAX_FUNNEL_STEPS } from '~/lib/constants'
 import { getFilters } from '~/api'
 import { Funnel } from '~/lib/models/Project'
 import { ProjectForShared } from '~/lib/models/SharedProject'
+import { Trash2Icon } from 'lucide-react'
 
 interface NewFunnelProps {
   project: ProjectForShared
@@ -138,7 +138,7 @@ const NewFunnel = ({
                 disabled={!allowedToManage}
               />
               {steps.length > MIN_FUNNEL_STEPS && allowedToManage && (
-                <TrashIcon
+                <Trash2Icon
                   role='button'
                   aria-label='Remove step'
                   className='h-5 w-5 cursor-pointer text-gray-400 hover:text-gray-500 dark:text-gray-200 dark:hover:text-gray-300'
@@ -147,6 +147,7 @@ const NewFunnel = ({
                     newSteps.splice(index, 1)
                     setSteps(newSteps)
                   }}
+                  strokeWidth={1.5}
                 />
               )}
             </div>

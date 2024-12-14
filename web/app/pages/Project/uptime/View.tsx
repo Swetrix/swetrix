@@ -12,10 +12,8 @@ import { useSelector } from 'react-redux'
 import {
   CurrencyDollarIcon,
   AdjustmentsVerticalIcon,
-  TrashIcon,
   PlusCircleIcon,
   ClockIcon,
-  ArrowPathIcon,
   ChevronLeftIcon,
   XCircleIcon,
 } from '@heroicons/react/24/outline'
@@ -36,6 +34,7 @@ import { MetricCardsUptime } from '../View/components/MetricCards'
 import NoMonitorEvents from './components/NoMonitorDetails'
 import Loader from '~/ui/Loader'
 import Pagination from '~/ui/Pagination'
+import { RotateCw, Trash2Icon } from 'lucide-react'
 
 interface MonitorCardProps {
   monitor: Monitor
@@ -75,7 +74,7 @@ const MonitorCard = ({ monitor, deleteMonitor, onClick, allowedToManage }: Monit
                       className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500'
                     />
                   </Link>
-                  <TrashIcon
+                  <Trash2Icon
                     onClick={(e) => {
                       e.stopPropagation()
                       setShowDeleteModal(true)
@@ -83,6 +82,7 @@ const MonitorCard = ({ monitor, deleteMonitor, onClick, allowedToManage }: Monit
                     role='button'
                     aria-label={t('common.delete')}
                     className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500'
+                    strokeWidth={1.5}
                   />
                 </div>
               )}
@@ -380,7 +380,7 @@ const Uptime = () => {
                 },
               )}
             >
-              <ArrowPathIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
+              <RotateCw className='h-5 w-5 text-gray-700 dark:text-gray-50' />
             </button>
             <TBPeriodSelector
               activePeriod={activePeriod}

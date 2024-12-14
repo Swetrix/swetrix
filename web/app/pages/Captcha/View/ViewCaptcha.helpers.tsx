@@ -1,15 +1,7 @@
 import React from 'react'
 import type i18next from 'i18next'
 // @ts-ignore
-import {
-  GlobeEuropeAfricaIcon,
-  LanguageIcon,
-  DocumentTextIcon,
-  DeviceTabletIcon,
-  ArrowRightCircleIcon,
-  MagnifyingGlassIcon,
-  ServerIcon,
-} from '@heroicons/react/24/outline'
+import { LanguageIcon, ArrowRightCircleIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
 import { area, bar } from 'billboard.js'
 import type { ChartOptions } from 'billboard.js'
@@ -27,6 +19,7 @@ import {
 // @ts-ignore
 import * as d3 from 'd3'
 import { nFormatter } from '~/utils/generic'
+import { CompassIcon, FileTextIcon, MapPinIcon, MonitorCog, TabletSmartphoneIcon } from 'lucide-react'
 
 const PANELS_ORDER = ['cc', 'br', 'os', 'dv']
 
@@ -203,13 +196,13 @@ const typeNameMapping = (t: typeof i18next.t) => ({
 
 const iconClassName = 'w-6 h-6'
 const panelIconMapping = {
-  cc: <GlobeEuropeAfricaIcon className={iconClassName} />,
-  pg: <DocumentTextIcon className={iconClassName} />,
+  cc: <MapPinIcon className={iconClassName} strokeWidth={1.5} />,
+  pg: <FileTextIcon className={iconClassName} strokeWidth={1.5} />,
   lc: <LanguageIcon className={iconClassName} />,
   ref: <ArrowRightCircleIcon className={iconClassName} />,
-  dv: <DeviceTabletIcon className={iconClassName} />,
-  br: <MagnifyingGlassIcon className={iconClassName} />,
-  os: <ServerIcon className={iconClassName} />,
+  dv: <TabletSmartphoneIcon className={iconClassName} strokeWidth={1.5} />,
+  br: <CompassIcon className={iconClassName} strokeWidth={1.5} />,
+  os: <MonitorCog className={iconClassName} strokeWidth={1.5} />,
 }
 
 // This function return date using the same format as the backend

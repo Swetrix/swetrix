@@ -7,7 +7,7 @@ import _isNumber from 'lodash/isNumber'
 import _replace from 'lodash/replace'
 import _find from 'lodash/find'
 import { useTranslation } from 'react-i18next'
-import { AdjustmentsVerticalIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
+import { AdjustmentsVerticalIcon } from '@heroicons/react/24/outline'
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
 
 import Modal from '~/ui/Modal'
@@ -21,6 +21,7 @@ import { OverallObject, Project } from '~/lib/models/Project'
 import { useSelector } from 'react-redux'
 import { StateType, useAppDispatch } from '~/lib/store'
 import { authActions } from '~/lib/reducers/auth'
+import { SquareArrowOutUpRightIcon } from 'lucide-react'
 
 interface ProjectCardProps {
   live?: string | number
@@ -195,7 +196,10 @@ export const ProjectCard = ({ live = 'N/A', project, overallStats }: ProjectCard
               target='_blank'
               rel='noopener noreferrer'
             >
-              <ArrowTopRightOnSquareIcon className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500' />
+              <SquareArrowOutUpRightIcon
+                className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500'
+                strokeWidth={1.5}
+              />
             </a>
           </div>
         </div>

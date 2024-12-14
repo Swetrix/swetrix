@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 import { ChevronDownIcon, CheckIcon } from '@heroicons/react/24/solid'
-import { TrashIcon, UserPlusIcon } from '@heroicons/react/24/outline'
 import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -20,6 +19,7 @@ import { DetailedOrganisation, Role } from '~/lib/models/Organisation'
 import { useSelector } from 'react-redux'
 import { StateType } from '~/lib/store'
 import { changeOrganisationRole, inviteOrganisationMember, removeOrganisationMember } from '~/api'
+import { Trash2Icon, UserRoundPlusIcon } from 'lucide-react'
 
 const NoPeople = () => {
   const { t } = useTranslation('common')
@@ -136,7 +136,7 @@ const UsersList = ({ members, onRemove }: UsersListProps) => {
               small
               onClick={() => onRemove(member)}
             >
-              <TrashIcon className='h-4 w-4' />
+              <Trash2Icon className='h-4 w-4' strokeWidth={1.5} />
             </Button>
           </div>
         )}
@@ -281,7 +281,7 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
         </div>
         <Button className='h-8 pl-2' primary regular type='button' onClick={() => setShowModal(true)}>
           <>
-            <UserPlusIcon className='mr-1 h-5 w-5' />
+            <UserRoundPlusIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
             {t('project.settings.invite')}
           </>
         </Button>

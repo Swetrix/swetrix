@@ -17,19 +17,10 @@ import {
   MenuItem,
   MenuItems,
 } from '@headlessui/react'
-import {
-  Bars3Icon,
-  XMarkIcon,
-  ChevronDownIcon,
-  ChartPieIcon,
-  PlayCircleIcon,
-  PhoneIcon,
-  BoltIcon,
-  FaceSmileIcon,
-  PuzzlePieceIcon,
-} from '@heroicons/react/24/outline'
+import { Bars3Icon, XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
+import { SiYoutube } from '@icons-pack/react-simple-icons'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import duration from 'dayjs/plugin/duration'
@@ -37,6 +28,7 @@ import _map from 'lodash/map'
 import _includes from 'lodash/includes'
 import _startsWith from 'lodash/startsWith'
 import cx, { clsx } from 'clsx'
+import { GaugeIcon, ChartPieIcon, BugIcon, PuzzleIcon, PhoneIcon } from 'lucide-react'
 
 import routes from '~/utils/routes'
 import { authActions } from '~/lib/reducers/auth'
@@ -80,24 +72,24 @@ const getSolutions = (t: typeof i18next.t) => [
     name: t('header.solutions.performance.title'),
     description: t('header.solutions.performance.desc'),
     link: routes.performance,
-    icon: BoltIcon,
+    icon: GaugeIcon,
   },
   {
     name: t('header.solutions.errors.title'),
     description: t('header.solutions.errors.desc'),
     link: routes.errorTracking,
-    icon: FaceSmileIcon,
+    icon: BugIcon,
   },
   {
     name: t('header.solutions.captcha.title'),
     description: t('header.solutions.captcha.desc'),
     link: CAPTCHA_URL,
-    icon: PuzzlePieceIcon,
+    icon: PuzzleIcon,
   },
 ]
 
 const getCallsToAction = (t: typeof i18next.t) => [
-  { name: t('header.watchDemo'), link: 'https://www.youtube.com/watch?v=XBp38fZREIE', icon: PlayCircleIcon },
+  { name: t('header.watchDemo'), link: 'https://www.youtube.com/watch?v=XBp38fZREIE', icon: SiYoutube },
   { name: t('header.contactSales'), link: routes.contact, icon: PhoneIcon },
 ]
 
@@ -137,7 +129,11 @@ const SolutionsMenu = () => {
                       key={item.name}
                       className='group relative flex gap-x-2 rounded-lg p-2 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'
                     >
-                      <item.icon className='mt-1 h-5 w-5 text-gray-600 dark:text-gray-300' aria-hidden='true' />
+                      <item.icon
+                        className='mt-1 h-5 w-5 text-gray-600 dark:text-gray-300'
+                        aria-hidden='true'
+                        strokeWidth={1.5}
+                      />
                       <div>
                         {_startsWith(item.link, '/') ? (
                           <Link to={item.link} className='text-sm font-semibold text-gray-900 dark:text-gray-50'>
@@ -173,6 +169,7 @@ const SolutionsMenu = () => {
                           <item.icon
                             className='h-5 w-5 flex-none text-gray-400 dark:text-gray-300'
                             aria-hidden='true'
+                            strokeWidth={1.5}
                           />
                           {item.name}
                         </Link>
@@ -187,7 +184,11 @@ const SolutionsMenu = () => {
                         rel='noopener noreferrer'
                         className='flex items-center justify-center gap-x-2 rounded-lg p-3 text-gray-800 hover:bg-gray-300/50 dark:text-gray-100 dark:hover:bg-slate-700/80'
                       >
-                        <item.icon className='h-5 w-5 flex-none text-gray-400 dark:text-gray-300' aria-hidden='true' />
+                        <item.icon
+                          className='h-5 w-5 flex-none text-gray-400 dark:text-gray-300'
+                          aria-hidden='true'
+                          strokeWidth={1.5}
+                        />
                         {item.name}
                       </a>
                     )
@@ -705,7 +706,6 @@ const NotAuthedHeader = ({
                   target='_blank'
                   rel='noreferrer noopener'
                 >
-                  {/* <DocumentTextIcon className='w-5 h-5 mr-1' /> */}
                   {t('common.docs')}
                 </a>
               </div>

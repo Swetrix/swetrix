@@ -6,7 +6,6 @@ import { StateType } from '~/lib/store'
 import { BOOK_A_CALL_URL, DISCORD_URL, isBrowser, LIVE_DEMO_URL } from '~/lib/constants'
 import routesPath from '~/utils/routes'
 
-import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
 
 import Header from '~/components/Header'
@@ -15,6 +14,7 @@ import { getAccessToken } from '~/utils/accessToken'
 import _map from 'lodash/map'
 import { ComparisonTable } from '~/components/marketing/ComparisonTable'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
+import { SquareArrowOutUpRightIcon } from 'lucide-react'
 
 interface LoaderProps {
   theme: 'dark' | 'light'
@@ -74,7 +74,10 @@ const Startups = () => {
           >
             {t('main.ukrSupport')}
           </a>
-          <ArrowTopRightOnSquareIcon className='ml-1 hidden h-4 w-4 text-slate-800 dark:text-white md:block' />
+          <SquareArrowOutUpRightIcon
+            className='ml-1 hidden h-4 w-4 text-slate-800 dark:text-white md:block'
+            strokeWidth={1.5}
+          />
         </div>
         <div className='relative mx-auto min-h-[740px] pb-5 pt-10 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
           <div className='relative z-20 flex flex-col content-between justify-center'>

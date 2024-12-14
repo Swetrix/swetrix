@@ -1,4 +1,4 @@
-import { FunnelIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon } from '@heroicons/react/24/outline'
 import React, { memo } from 'react'
 import cx from 'clsx'
 import _truncate from 'lodash/truncate'
@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next'
 
 import countries from '~/utils/isoCountries'
 import { getLocaleDisplayName } from '~/utils/generic'
+import { FilterIcon } from 'lucide-react'
 
 interface FilterProps {
   column: string
@@ -129,7 +130,10 @@ const Filters = ({ onRemoveFilter, onChangeExclusive, tnMapping, resetFilters, f
   return (
     <div className='flex items-center justify-between rounded-md bg-slate-200 p-1 shadow dark:border dark:border-slate-800/50 dark:bg-slate-800/25'>
       <div className='flex items-center'>
-        <FunnelIcon className='box-content size-6 flex-shrink-0 px-1 text-gray-700 dark:text-gray-200' />
+        <FilterIcon
+          className='box-content size-6 flex-shrink-0 px-1 text-gray-700 dark:text-gray-200'
+          strokeWidth={1.5}
+        />
         <div className='flex flex-wrap'>
           {_map(filters, (props) => {
             const { column, filter } = props

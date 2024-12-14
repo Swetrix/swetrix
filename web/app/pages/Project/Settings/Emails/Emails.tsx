@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
-import { TrashIcon, InboxStackIcon, ChevronDownIcon, CheckIcon } from '@heroicons/react/24/outline'
+import { ChevronDownIcon, CheckIcon } from '@heroicons/react/24/outline'
 import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
 import _keys from 'lodash/keys'
@@ -22,6 +22,7 @@ import Loader from '~/ui/Loader'
 import cx from 'clsx'
 import { Badge } from '~/ui/Badge'
 import { Subscriber } from '~/lib/models/Subscriber'
+import { MailPlusIcon, Trash2Icon } from 'lucide-react'
 
 interface ModalMessageProps {
   handleInput: (e: React.ChangeEvent<HTMLInputElement>) => void
@@ -233,7 +234,7 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
               small
               onClick={onRemove}
             >
-              <TrashIcon className='h-4 w-4' />
+              <Trash2Icon className='h-4 w-4' strokeWidth={1.5} />
             </Button>
           </div>
         )}
@@ -398,7 +399,7 @@ const Emails = ({ projectId }: { projectId: string }) => {
         </div>
         <Button className='h-8 whitespace-nowrap pl-2' primary regular type='button' onClick={() => setShowModal(true)}>
           <>
-            <InboxStackIcon className='mr-1 h-5 w-5' />
+            <MailPlusIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
             {t('project.emails.add')}
           </>
         </Button>

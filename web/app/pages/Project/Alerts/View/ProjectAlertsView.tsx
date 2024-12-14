@@ -10,10 +10,8 @@ import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
 import {
-  BellIcon,
   CurrencyDollarIcon,
   AdjustmentsVerticalIcon,
-  TrashIcon,
   PlusCircleIcon,
   ExclamationTriangleIcon,
   XCircleIcon,
@@ -29,6 +27,7 @@ import { StateType } from '~/lib/store'
 import { Alerts } from '~/lib/models/Alerts'
 import Loader from '~/ui/Loader'
 import Pagination from '~/ui/Pagination'
+import { Trash2Icon, BellRingIcon } from 'lucide-react'
 
 const Separator = () => (
   <svg viewBox='0 0 2 2' className='h-0.5 w-0.5 flex-none fill-gray-400'>
@@ -123,7 +122,7 @@ const AlertCard = ({
                 }}
                 className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500'
               />
-              <TrashIcon
+              <Trash2Icon
                 onClick={(e) => {
                   e.stopPropagation()
                   setShowDeleteModal(true)
@@ -131,6 +130,7 @@ const AlertCard = ({
                 role='button'
                 aria-label={t('common.delete')}
                 className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500'
+                strokeWidth={1.5}
               />
             </div>
           </div>
@@ -318,7 +318,7 @@ const ProjectAlerts = ({ projectId }: ProjectAlertsProps) => {
         {_isEmpty(alerts) ? (
           <div className='mt-5 rounded-xl bg-gray-700 p-5'>
             <div className='flex items-center text-gray-50'>
-              <BellIcon className='mr-2 h-8 w-8' />
+              <BellRingIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
               <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>
             </div>
             <p className='mt-2 whitespace-pre-wrap text-lg text-gray-100'>{t('dashboard.alertsDesc')}</p>

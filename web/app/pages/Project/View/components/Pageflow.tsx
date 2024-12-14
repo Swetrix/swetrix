@@ -1,8 +1,9 @@
 import React from 'react'
-import { NewspaperIcon, CursorArrowRaysIcon } from '@heroicons/react/24/outline'
+import { CursorArrowRaysIcon } from '@heroicons/react/24/outline'
 import _map from 'lodash/map'
 import _toUpper from 'lodash/toUpper'
 import { Trans, useTranslation } from 'react-i18next'
+import { FileTextIcon } from 'lucide-react'
 
 interface Metadata {
   key: string
@@ -68,7 +69,9 @@ export const Pageflow = ({ pages, timeFormat }: PageflowProps) => {
                 <div className='relative flex space-x-3'>
                   <div>
                     <span className='flex h-8 w-8 items-center justify-center rounded-full bg-slate-400 dark:bg-slate-800'>
-                      {type === 'pageview' && <NewspaperIcon className='h-5 w-5 text-white' aria-hidden='true' />}
+                      {type === 'pageview' && (
+                        <FileTextIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
+                      )}
                       {type === 'event' && <CursorArrowRaysIcon className='h-5 w-5 text-white' aria-hidden='true' />}
                     </span>
                   </div>

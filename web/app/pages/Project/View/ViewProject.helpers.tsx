@@ -2,15 +2,7 @@ import React from 'react'
 import type { ChartOptions, GridLineOptions } from 'billboard.js'
 import type i18next from 'i18next'
 import { saveAs } from 'file-saver'
-import {
-  GlobeEuropeAfricaIcon,
-  LanguageIcon,
-  DocumentTextIcon,
-  DeviceTabletIcon,
-  ArrowRightCircleIcon,
-  MagnifyingGlassIcon,
-  ServerIcon,
-} from '@heroicons/react/24/outline'
+import { LanguageIcon, ArrowRightCircleIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
 import { area, areaSpline, spline, bar, line } from 'billboard.js'
 import _forEach from 'lodash/forEach'
@@ -46,6 +38,7 @@ import { Entry } from '~/lib/models/Entry'
 import { getTimeFromSeconds, getStringFromTime, sumArrays, nFormatter } from '~/utils/generic'
 import countries from '~/utils/isoCountries'
 import { AnalyticsFunnel } from '~/lib/models/Project'
+import { CompassIcon, FileTextIcon, MapPinIcon, MonitorCog, TabletSmartphoneIcon } from 'lucide-react'
 
 const getAvg = (arr: any) => {
   const total = _reduce(arr, (acc, c) => acc + c, 0)
@@ -1591,13 +1584,13 @@ const typeNameMapping = (t: typeof i18next.t) => ({
 
 const iconClassName = 'w-6 h-6'
 const panelIconMapping = {
-  cc: <GlobeEuropeAfricaIcon className={iconClassName} />,
-  pg: <DocumentTextIcon className={iconClassName} />,
+  cc: <MapPinIcon className={iconClassName} strokeWidth={1.5} />,
+  pg: <FileTextIcon className={iconClassName} strokeWidth={1.5} />,
   lc: <LanguageIcon className={iconClassName} />,
   ref: <ArrowRightCircleIcon className={iconClassName} />,
-  dv: <DeviceTabletIcon className={iconClassName} />,
-  br: <MagnifyingGlassIcon className={iconClassName} />,
-  os: <ServerIcon className={iconClassName} />,
+  dv: <TabletSmartphoneIcon className={iconClassName} strokeWidth={1.5} />,
+  br: <CompassIcon className={iconClassName} strokeWidth={1.5} />,
+  os: <MonitorCog className={iconClassName} strokeWidth={1.5} />,
 }
 
 // This function return date using the same format as the backend

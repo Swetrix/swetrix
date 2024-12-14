@@ -8,7 +8,8 @@ import Modal from '~/ui/Modal'
 import Input from '~/ui/Input'
 import { FORECAST_MAX_MAPPING } from '~/lib/constants'
 import _toString from 'lodash/toString'
-import { Bars3BottomRightIcon, ChartBarIcon } from '@heroicons/react/24/outline'
+import { Bars3BottomRightIcon } from '@heroicons/react/24/outline'
+import { ChartNoAxesColumnIcon } from 'lucide-react'
 
 const DEFAULT_PERIOD = '3'
 
@@ -36,7 +37,7 @@ const Forecast = ({ onClose, onSubmit, isOpened, activeTB, tb }: ForecastProps) 
       {
         id: 'chart' as const,
         label: t('modals.forecast.chart'),
-        icon: ChartBarIcon,
+        icon: ChartNoAxesColumnIcon,
       },
       {
         id: 'details' as const,
@@ -126,6 +127,7 @@ const Forecast = ({ onClose, onSubmit, isOpened, activeTB, tb }: ForecastProps) 
                       '-ml-0.5 mr-2 h-5 w-5',
                     )}
                     aria-hidden='true'
+                    strokeWidth={1.5}
                   />
                   <span>{tab.label}</span>
                 </div>

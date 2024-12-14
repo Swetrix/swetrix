@@ -15,11 +15,7 @@ import _find from 'lodash/find'
 import {
   EnvelopeIcon,
   ExclamationTriangleIcon,
-  ArrowDownTrayIcon,
   ChevronDownIcon,
-  UserIcon,
-  ChatBubbleLeftEllipsisIcon,
-  ComputerDesktopIcon,
   CursorArrowRaysIcon,
 } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
@@ -74,6 +70,7 @@ import { authActions } from '~/lib/reducers/auth'
 import { removeRefreshToken } from '~/utils/refreshToken'
 import { removeAccessToken } from '~/utils/accessToken'
 import { logout } from '~/utils/auth'
+import { DownloadIcon, MessageSquareTextIcon, MonitorIcon, UserRoundIcon } from 'lucide-react'
 
 dayjs.extend(utc)
 
@@ -92,12 +89,12 @@ const getTabs = (t: typeof i18next.t) => {
       {
         id: TAB_MAPPING.ACCOUNT,
         label: t('profileSettings.account'),
-        icon: UserIcon,
+        icon: UserRoundIcon,
       },
       {
         id: TAB_MAPPING.INTERFACE,
         label: 'Interface settings',
-        icon: ComputerDesktopIcon,
+        icon: MonitorIcon,
       },
     ]
   }
@@ -106,17 +103,17 @@ const getTabs = (t: typeof i18next.t) => {
     {
       id: TAB_MAPPING.ACCOUNT,
       label: t('profileSettings.account'),
-      icon: UserIcon,
+      icon: UserRoundIcon,
     },
     {
       id: TAB_MAPPING.COMMUNICATIONS,
       label: 'Communications',
-      icon: ChatBubbleLeftEllipsisIcon,
+      icon: MessageSquareTextIcon,
     },
     {
       id: TAB_MAPPING.INTERFACE,
       label: 'Interface settings',
-      icon: ComputerDesktopIcon,
+      icon: MonitorIcon,
     },
     {
       id: TAB_MAPPING.REFERRALS,
@@ -493,6 +490,7 @@ const UserSettings = () => {
                           '-ml-0.5 mr-2 h-5 w-5',
                         )}
                         aria-hidden='true'
+                        strokeWidth={1.5}
                       />
                       <span>{tab.label}</span>
                     </div>
@@ -762,7 +760,7 @@ const UserSettings = () => {
                       <div className='mt-4 flex flex-wrap justify-center gap-2 sm:justify-between'>
                         <Button onClick={() => setShowExportModal(true)} semiSmall primary>
                           <>
-                            <ArrowDownTrayIcon className='mr-1 h-5 w-5' />
+                            <DownloadIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
                             {t('profileSettings.requestExport')}
                           </>
                         </Button>

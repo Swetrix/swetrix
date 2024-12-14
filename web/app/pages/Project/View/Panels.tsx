@@ -2,15 +2,6 @@ import React, { memo, useState, useEffect, useMemo, Fragment } from 'react'
 import InnerHTML from 'dangerously-set-html-content'
 import { ArrowLongRightIcon, ArrowLongLeftIcon } from '@heroicons/react/24/solid'
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
-import {
-  FunnelIcon,
-  MapIcon,
-  Bars4Icon,
-  ArrowsPointingOutIcon,
-  ChartPieIcon,
-  PuzzlePieceIcon,
-  RectangleGroupIcon,
-} from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import { pie } from 'billboard.js'
 import _keys from 'lodash/keys'
@@ -49,6 +40,15 @@ import { useTranslation } from 'react-i18next'
 import CustomEventsDropdown from './components/CustomEventsDropdown'
 import { Customs, Filter, Properties } from './interfaces/traffic'
 import { useViewProjectContext } from './ViewProject'
+import {
+  AlignJustifyIcon,
+  ChartPieIcon,
+  MapIcon,
+  MaximizeIcon,
+  WorkflowIcon,
+  FilterIcon,
+  PuzzleIcon,
+} from 'lucide-react'
 
 const ENTRIES_PER_PANEL = 5
 const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 6
@@ -147,12 +147,13 @@ const PanelContainer = ({
       </h3>
       <div className='flex'>
         {(checkIfBarsNeeded(type) || checkCustomTabs(type, customTabs)) && (
-          <Bars4Icon
+          <AlignJustifyIcon
             className={cx(iconClassName, 'cursor-pointer', {
               'text-slate-900 dark:text-gray-50': activeFragment === 0,
               'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 1,
             })}
             onClick={() => setActiveFragment(0)}
+            strokeWidth={1.5}
           />
         )}
 
@@ -165,30 +166,34 @@ const PanelContainer = ({
                 'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
               })}
               onClick={() => setActiveFragment(1)}
+              strokeWidth={1.5}
             />
-            <ArrowsPointingOutIcon
+            <MaximizeIcon
               className={cx(iconClassName, 'ml-2 cursor-pointer text-slate-400 dark:text-slate-500', {
                 hidden: activeFragment === 0,
               })}
               onClick={onExpandClick}
+              strokeWidth={1.5}
             />
           </>
         )}
 
         {type === 'pg' && activeTab !== PROJECT_TABS.performance && activeTab !== PROJECT_TABS.errors && (
           <>
-            <RectangleGroupIcon
+            <WorkflowIcon
               className={cx(iconClassName, 'ml-2 cursor-pointer', {
                 'text-slate-900 dark:text-gray-50': activeFragment === 1,
                 'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
               })}
               onClick={() => setActiveFragment(1)}
+              strokeWidth={1.5}
             />
-            <ArrowsPointingOutIcon
+            <MaximizeIcon
               className={cx(iconClassName, 'ml-2 cursor-pointer text-slate-400 dark:text-slate-500', {
                 hidden: activeFragment === 0,
               })}
               onClick={onExpandClick}
+              strokeWidth={1.5}
             />
           </>
         )}
@@ -201,15 +206,17 @@ const PanelContainer = ({
               'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
             })}
             onClick={() => setActiveFragment(1)}
+            strokeWidth={1.5}
           />
         )}
 
         {/* if it is a 'Custom events' tab  */}
         {(type === 'ce' || type === 'props') && (
           <>
-            <ArrowsPointingOutIcon
+            <MaximizeIcon
               className={cx(iconClassName, 'ml-2 cursor-pointer text-slate-400 dark:text-slate-500')}
               onClick={onExpandClick}
+              strokeWidth={1.5}
             />
           </>
         )}
@@ -229,13 +236,14 @@ const PanelContainer = ({
               }
 
               return (
-                <PuzzlePieceIcon
+                <PuzzleIcon
                   key={`${extensionID}-${panelID}`}
                   className={cx(iconClassName, 'ml-2 cursor-pointer', {
                     'text-slate-900 dark:text-gray-50': activeFragment === extensionID,
                     'text-slate-400 dark:text-slate-500': activeFragment === 0,
                   })}
                   onClick={onClick}
+                  strokeWidth={1.5}
                 />
               )
             })}
@@ -435,7 +443,10 @@ const KVTable = ({ listId, data, displayKeyAsHeader, onClick }: KVTableProps) =>
           >
             <td className='flex items-center py-1 pl-2 text-left'>
               {event}
-              <FunnelIcon className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300' />
+              <FilterIcon
+                className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300'
+                strokeWidth={1.5}
+              />
             </td>
             <td className='py-1 text-right'>
               {quantity}
@@ -891,7 +902,10 @@ const CustomEvents = ({
             >
               <td className='flex items-center text-left'>
                 {ev}
-                <FunnelIcon className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300' />
+                <FilterIcon
+                  className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300'
+                  strokeWidth={1.5}
+                />
               </td>
               <td className='text-right'>
                 {customsEventsData[ev]}
@@ -1285,7 +1299,10 @@ const PageProperties = ({
             >
               <td className='flex items-center text-left'>
                 {tag}
-                <FunnelIcon className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300' />
+                <FilterIcon
+                  className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300'
+                  strokeWidth={1.5}
+                />
               </td>
               <td className='text-right'>
                 {processedProperties[tag]}
@@ -1629,14 +1646,20 @@ const Panel = ({
                   >
                     {rowData}
                     {!hideFilters && (
-                      <FunnelIcon className='min-h-4 ml-2 hidden size-4 min-w-4 text-gray-500 group-hover:block dark:text-gray-300' />
+                      <FilterIcon
+                        className='min-h-4 ml-2 hidden size-4 min-w-4 text-gray-500 group-hover:block dark:text-gray-300'
+                        strokeWidth={1.5}
+                      />
                     )}
                   </a>
                 ) : (
                   <span className={cx('label flex items-center', { capitalize })}>
                     {rowData}
                     {!hideFilters && (
-                      <FunnelIcon className='min-h-4 ml-2 hidden size-4 min-w-4 text-gray-500 group-hover:block dark:text-gray-300' />
+                      <FilterIcon
+                        className='min-h-4 ml-2 hidden size-4 min-w-4 text-gray-500 group-hover:block dark:text-gray-300'
+                        strokeWidth={1.5}
+                      />
                     )}
                   </span>
                 )}

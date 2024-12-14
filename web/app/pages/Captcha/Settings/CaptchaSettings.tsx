@@ -12,7 +12,7 @@ import _split from 'lodash/split'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _includes from 'lodash/includes'
-import { ExclamationTriangleIcon, TrashIcon, XCircleIcon } from '@heroicons/react/24/outline'
+import { ExclamationTriangleIcon, XCircleIcon } from '@heroicons/react/24/outline'
 
 import { withAuthentication, auth } from '~/hoc/protected'
 import { TITLE_SUFFIX } from '~/lib/constants'
@@ -35,6 +35,7 @@ import { CaptchaProject } from '~/lib/models/Project'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
 import { useSelector } from 'react-redux'
 import { StateType } from '~/lib/store'
+import { Trash2Icon } from 'lucide-react'
 
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
@@ -437,7 +438,7 @@ const CaptchaSettings = ({ isSettings }: CaptchaSettingsProps) => {
                   semiSmall
                 >
                   <>
-                    <TrashIcon className='mr-1 h-5 w-5' />
+                    <Trash2Icon className='mr-1 h-5 w-5' strokeWidth={1.5} />
                     {t('project.settings.reset')}
                   </>
                 </Button>

@@ -22,7 +22,7 @@ import {
   CAPTCHA_URL,
 } from '~/lib/constants'
 import routesPath from '~/utils/routes'
-import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/solid'
+import { SquareArrowOutUpRightIcon } from 'lucide-react'
 
 const CONTACT_US_URL = `https://swetrix.com${routesPath.contact}`
 const ABOUT_US_URL = `https://swetrix.com${routesPath.about}`
@@ -299,7 +299,7 @@ const Footer = ({ authenticated, showDBIPMessage }: FooterProps) => {
               className='block max-w-max items-center border-b-2 border-transparent text-base text-gray-300 hover:border-gray-300'
             >
               {t('main.ukrSupport')}
-              <ArrowTopRightOnSquareIcon className='mb-1 ml-1 inline size-4' />
+              <SquareArrowOutUpRightIcon className='mb-1 ml-1 inline size-4' strokeWidth={1.5} />
             </a>
           </div>
           <div className='mt-12 xl:mt-0'>

@@ -15,7 +15,7 @@ import _filter from 'lodash/filter'
 import _map from 'lodash/map'
 import _toUpper from 'lodash/toUpper'
 import _includes from 'lodash/includes'
-import { TrashIcon, XCircleIcon } from '@heroicons/react/24/outline'
+import { XCircleIcon } from '@heroicons/react/24/outline'
 
 import { withAuthentication, auth } from '~/hoc/protected'
 import { isSelfhosted, TITLE_SUFFIX, FILTERS_PANELS_ORDER, isBrowser } from '~/lib/constants'
@@ -48,7 +48,7 @@ import People from './People'
 import Emails from './Emails'
 import Select from '~/ui/Select'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
-import { ArrowLeftRight, RotateCcw } from 'lucide-react'
+import { ArrowLeftRight, RotateCcw, Trash2Icon } from 'lucide-react'
 import { StateType } from '~/lib/store'
 import { useSelector } from 'react-redux'
 
@@ -774,7 +774,7 @@ const ProjectSettings = () => {
               </Button>
               <Button onClick={() => !isDeleting && setShowDelete(true)} loading={isDeleting} danger semiSmall>
                 <>
-                  <TrashIcon className='mr-1 h-5 w-5' />
+                  <Trash2Icon className='mr-1 h-5 w-5' strokeWidth={1.5} />
                   {t('project.settings.delete')}
                 </>
               </Button>

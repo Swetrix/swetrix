@@ -2,8 +2,9 @@ import React from 'react'
 import _map from 'lodash/map'
 import cx from 'clsx'
 import { useTranslation } from 'react-i18next'
-import { AdjustmentsVerticalIcon, PlusCircleIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { AdjustmentsVerticalIcon, PlusCircleIcon } from '@heroicons/react/24/outline'
 import { Funnel } from '~/lib/models/Project'
+import { Trash2Icon } from 'lucide-react'
 
 interface FunnelsListProps {
   funnels?: any[]
@@ -58,7 +59,7 @@ const FunnelCard = ({
               <AdjustmentsVerticalIcon className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500' />
             </button>
             {allowedToManage && (
-              <TrashIcon
+              <Trash2Icon
                 onClick={(e) => {
                   e.stopPropagation()
                   deleteFunnel(funnel.id)
@@ -71,6 +72,7 @@ const FunnelCard = ({
                     'cursor-not-allowed': loading,
                   },
                 )}
+                strokeWidth={1.5}
               />
             )}
           </div>

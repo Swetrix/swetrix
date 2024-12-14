@@ -1,4 +1,4 @@
-import { QuestionMarkCircleIcon } from '@heroicons/react/24/solid'
+import { CircleHelpIcon } from 'lucide-react'
 import React, { forwardRef, memo } from 'react'
 import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 import cx from 'clsx'
@@ -41,7 +41,12 @@ const Tooltip = ({ text, className, tooltipNode }: TooltipProps) => (
   <TooltipProvider delayDuration={200}>
     <TooltipRoot>
       <TooltipTrigger className={className}>
-        {tooltipNode || <QuestionMarkCircleIcon className='h-5 w-5 text-gray-700 dark:text-gray-300' />}
+        {tooltipNode || (
+          <CircleHelpIcon
+            className='h-5 w-5 fill-slate-700 stroke-gray-50 dark:fill-slate-200 dark:stroke-slate-800'
+            strokeWidth={1.5}
+          />
+        )}
       </TooltipTrigger>
       <TooltipContent>{text}</TooltipContent>
     </TooltipRoot>
