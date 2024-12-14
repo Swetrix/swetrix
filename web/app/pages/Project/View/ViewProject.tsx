@@ -585,7 +585,6 @@ const ViewProject = () => {
   const [isPanelsDataEmptyPerf, setIsPanelsDataEmptyPerf] = useState(false)
   const [panelsDataPerf, setPanelsDataPerf] = useState<any>({})
 
-  // @ts-expect-error
   const timeFormat = useMemo<'12-hour' | '24-hour'>(() => user.timeFormat || TimeFormat['12-hour'], [user])
   const [ref, size] = useSize()
   const rotateXAxis = useMemo(() => size.width > 0 && size.width < 500, [size])

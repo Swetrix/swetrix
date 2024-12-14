@@ -263,7 +263,7 @@ export const tbsFormatMapper = {
   day: '%d %b',
   month: '%b %Y',
   year: '%Y',
-} as const
+} as any
 
 export const tbsFormatMapperTooltip = {
   minute: '%I:%M %p',
@@ -271,7 +271,7 @@ export const tbsFormatMapperTooltip = {
   day: '%d %b',
   month: '%b %Y',
   year: '%Y',
-} as const
+} as any
 
 export const tbsFormatMapperTooltip24h = {
   minute: '%H:%M',
@@ -279,7 +279,7 @@ export const tbsFormatMapperTooltip24h = {
   day: '%d %b',
   month: '%b %Y',
   year: '%Y',
-} as const
+} as any
 
 export const tbsFormatMapper24h = {
   minute: '%H:%M',
@@ -287,12 +287,12 @@ export const tbsFormatMapper24h = {
   day: '%d %b',
   month: '%b %Y',
   year: '%Y',
-} as const
+} as any
 
 export const TimeFormat = {
   '12-hour': '12-hour',
   '24-hour': '24-hour',
-} as const
+} as any
 
 export const PADDLE_JS_URL = 'https://cdn.paddle.com/paddle/paddle.js'
 export const PADDLE_VENDOR_ID = 139393
@@ -405,31 +405,31 @@ export const MIN_FUNNEL_STEPS = 2
 export const MAX_FUNNEL_STEPS = 10
 
 // List of languages with translations available
-export const whitelist = ['en', 'uk', 'pl', 'de'] as const
+export const whitelist = ['en', 'uk', 'pl', 'de']
 export const whitelistWithCC = {
   en: 'en-GB',
   uk: 'uk-UA',
   pl: 'pl-PL',
   de: 'de-DE',
-} as const
+} as any
 export const defaultLanguage = 'en'
 export const languages = {
   en: 'English',
   uk: 'Українська',
   pl: 'Polski',
   de: 'Deutsch',
-} as const
+} as any
 
 export const languageFlag = {
   en: 'GB',
   uk: 'UA',
   pl: 'PL',
   de: 'DE',
-} as const
+} as any
 
 export const paddleLanguageMapping = {
   uk: 'en',
-} as const
+} as any
 
 // Increase this counter every time some major change is done within localisation files
 // This will prevent cached version or raw locale strings being displayed in production

@@ -150,9 +150,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
     )
   }, [t])
 
-  const queryMetricTMapping: {
-    [key: string]: string
-  } = useMemo(() => {
+  const queryMetricTMapping = useMemo<any>(() => {
     const values = _values(QUERY_METRIC)
 
     return _reduce(
@@ -359,6 +357,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
             onSelect={(item) => {
               const key = _findKey(queryMetricTMapping, (predicate) => predicate === item)
 
+              // @ts-expect-error
               setForm((prevForm) => ({
                 ...prevForm,
                 queryMetric: key,
@@ -387,6 +386,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
             onSelect={(item) => {
               const key = _findKey(queryConditionTMapping, (predicate) => predicate === item)
 
+              // @ts-expect-error
               setForm((prevForm) => ({
                 ...prevForm,
                 queryCondition: key,
@@ -413,6 +413,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
             onSelect={(item) => {
               const key = _findKey(queryTimeTMapping, (predicate) => predicate === item)
 
+              // @ts-expect-error
               setForm((prevForm) => ({
                 ...prevForm,
                 queryTime: key,

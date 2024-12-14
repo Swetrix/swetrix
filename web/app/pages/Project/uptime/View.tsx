@@ -146,7 +146,6 @@ const Uptime = () => {
     updatePeriod,
     setPeriodPairs,
     activePeriod,
-    updateTimebucket,
     periodPairs,
     size,
     timeFormat,
@@ -385,8 +384,6 @@ const Uptime = () => {
             </button>
             <TBPeriodSelector
               activePeriod={activePeriod}
-              updateTimebucket={updateTimebucket}
-              timeBucket={timeBucket}
               items={allowedPeriodPairs}
               title={activePeriod?.label}
               onSelect={(pair) => {

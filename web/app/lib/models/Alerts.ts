@@ -6,10 +6,10 @@ export interface Alerts {
   active: boolean
   created: string
   lastTriggered: string | null
-  queryMetric: keyof typeof QUERY_METRIC
-  queryCondition: keyof typeof QUERY_CONDITION
+  queryMetric: (typeof QUERY_METRIC)[keyof typeof QUERY_METRIC]
+  queryCondition: (typeof QUERY_CONDITION)[keyof typeof QUERY_CONDITION]
   queryValue: number
-  queryTime: keyof typeof QUERY_TIME
+  queryTime: (typeof QUERY_TIME)[keyof typeof QUERY_TIME]
   pid: string
   queryCustomEvent?: string
 }

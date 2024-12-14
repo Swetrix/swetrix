@@ -269,14 +269,15 @@ const ProfileMenu = ({
   user,
   logoutHandler,
   onLanguageChange,
-  language,
 }: {
   user: User
   logoutHandler: () => void
   onLanguageChange: (l: string) => void
-  language: string
 }) => {
-  const { t } = useTranslation('common')
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
 
   return (
     <Menu as='div' className='relative ml-3'>
@@ -495,10 +496,7 @@ const AuthedHeader = ({
   colourBackground: boolean
   openMenu: () => void
 }) => {
-  const {
-    t,
-    i18n: { language },
-  } = useTranslation('common')
+  const { t } = useTranslation('common')
 
   return (
     <header
@@ -582,12 +580,7 @@ const AuthedHeader = ({
           </div>
           <div className='ml-1 hidden flex-wrap items-center justify-center space-x-2 space-y-1 sm:space-y-0 lg:ml-10 lg:flex lg:space-x-4'>
             <ThemeMenu theme={theme} switchTheme={switchTheme} />
-            <ProfileMenu
-              user={user}
-              logoutHandler={logoutHandler}
-              onLanguageChange={onLanguageChange}
-              language={language}
-            />
+            <ProfileMenu user={user} logoutHandler={logoutHandler} onLanguageChange={onLanguageChange} />
           </div>
           <div className='flex items-center justify-center space-x-3 lg:hidden'>
             {/* Theme switch */}
