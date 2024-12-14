@@ -836,7 +836,7 @@ export class ProjectController {
   ) {
     this.logger.log(
       { uid, orgId, addProjectDTO },
-      'POST /organisation/:orgId/project',
+      'POST /project/organisation/:orgId',
     )
 
     const organisation = await this.organisationService.findOne({
