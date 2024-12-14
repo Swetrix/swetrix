@@ -212,25 +212,6 @@ export class AuthService {
     })
   }
 
-  async getOrganisationsForUser(userId: string) {
-    return this.organisationService.findMemberships({
-      where: {
-        user: { id: userId },
-      },
-      relations: ['organisation'],
-      select: {
-        id: true,
-        role: true,
-        confirmed: true,
-        created: true,
-        organisation: {
-          id: true,
-          name: true,
-        },
-      },
-    })
-  }
-
   private async comparePassword(
     password: string,
     hashedPassword: string,
@@ -519,7 +500,7 @@ export class AuthService {
     } else {
       const [sharedProjects, organisationMemberships] = await Promise.all([
         this.getSharedProjectsForUser(user.id),
-        this.getOrganisationsForUser(user.id),
+        this.userService.getOrganisationsForUser(user.id),
       ])
 
       user.sharedProjects = sharedProjects
@@ -986,7 +967,7 @@ export class AuthService {
     } else {
       const [sharedProjects, organisationMemberships] = await Promise.all([
         this.getSharedProjectsForUser(user.id),
-        this.getOrganisationsForUser(user.id),
+        this.userService.getOrganisationsForUser(user.id),
       ])
 
       user.sharedProjects = sharedProjects

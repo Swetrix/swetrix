@@ -25,7 +25,7 @@ import { OrganisationModule } from '../organisation/organisation.module'
     forwardRef(() => AuthModule),
     AppLoggerModule,
     ProjectModule,
-    forwardRef(() => OrganisationModule),
+    OrganisationModule,
     PayoutsModule,
     HttpModule,
   ],

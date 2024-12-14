@@ -108,7 +108,7 @@ export class UserController {
     const [sharedProjects, organisationMemberships, user, totalMonthlyEvents] =
       await Promise.all([
         this.authService.getSharedProjectsForUser(uid),
-        this.authService.getOrganisationsForUser(uid),
+        this.userService.getOrganisationsForUser(uid),
         this.userService.findOne({ where: { id: uid } }),
         this.projectService.getRedisCount(uid),
       ])

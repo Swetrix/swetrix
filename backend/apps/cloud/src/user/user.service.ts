@@ -40,6 +40,7 @@ import { UserGoogleDTO } from './dto/user-google.dto'
 import { UserGithubDTO } from './dto/user-github.dto'
 import { EMAIL_ACTION_ENCRYPTION_KEY } from '../common/constants'
 import { ReportFrequency } from '../project/enums'
+import { OrganisationService } from '../organisation/organisation.service'
 
 dayjs.extend(utc)
 
@@ -109,6 +110,7 @@ export class UserService {
     @InjectRepository(DeleteFeedback)
     private readonly deleteFeedbackRepository: Repository<DeleteFeedback>,
     private readonly payoutsService: PayoutsService,
+    private readonly organisationService: OrganisationService,
   ) {}
 
   async create(
@@ -293,6 +295,25 @@ export class UserService {
   async getUserByTelegramId(telegramId: string | number) {
     return this.usersRepository.findOne({
       where: { telegramChatId: telegramId.toString() },
+    })
+  }
+
+  async getOrganisationsForUser(userId: string) {
+    return this.organisationService.findMemberships({
+      where: {
+        user: { id: userId },
+      },
+      relations: ['organisation'],
+      select: {
+        id: true,
+        role: true,
+        confirmed: true,
+        created: true,
+        organisation: {
+          id: true,
+          name: true,
+        },
+      },
     })
   }
 

@@ -168,7 +168,7 @@ export class AuthController {
     } else {
       const [sharedProjects, organisationMemberships] = await Promise.all([
         this.authService.getSharedProjectsForUser(user.id),
-        this.authService.getOrganisationsForUser(user.id),
+        this.userService.getOrganisationsForUser(user.id),
       ])
 
       user.sharedProjects = sharedProjects
