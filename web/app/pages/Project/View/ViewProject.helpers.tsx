@@ -38,7 +38,20 @@ import { Entry } from '~/lib/models/Entry'
 import { getTimeFromSeconds, getStringFromTime, sumArrays, nFormatter } from '~/utils/generic'
 import countries from '~/utils/isoCountries'
 import { AnalyticsFunnel } from '~/lib/models/Project'
-import { CompassIcon, FileTextIcon, MapPinIcon, MonitorCog, TabletSmartphoneIcon } from 'lucide-react'
+import {
+  CompassIcon,
+  CpuIcon,
+  FileTextIcon,
+  Gamepad2Icon,
+  MapPinIcon,
+  MonitorCog,
+  MonitorIcon,
+  SmartphoneIcon,
+  TabletIcon,
+  TabletSmartphoneIcon,
+  TvIcon,
+  WatchIcon,
+} from 'lucide-react'
 
 const getAvg = (arr: any) => {
   const total = _reduce(arr, (acc, c) => acc + c, 0)
@@ -1591,6 +1604,16 @@ const panelIconMapping = {
   dv: <TabletSmartphoneIcon className={iconClassName} strokeWidth={1.5} />,
   br: <CompassIcon className={iconClassName} strokeWidth={1.5} />,
   os: <MonitorCog className={iconClassName} strokeWidth={1.5} />,
+}
+
+export const deviceIconMapping = {
+  desktop: <MonitorIcon className='size-5' strokeWidth={1.5} />,
+  mobile: <SmartphoneIcon className='size-5' strokeWidth={1.5} />,
+  tablet: <TabletIcon className='size-5' strokeWidth={1.5} />,
+  smarttv: <TvIcon className='size-5' strokeWidth={1.5} />,
+  console: <Gamepad2Icon className='size-5' strokeWidth={1.5} />,
+  wearable: <WatchIcon className='size-5' strokeWidth={1.5} />,
+  embedded: <CpuIcon className='size-5' strokeWidth={1.5} />,
 }
 
 // This function return date using the same format as the backend

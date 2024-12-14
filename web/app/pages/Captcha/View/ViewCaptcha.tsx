@@ -59,7 +59,7 @@ import {
   getColumns,
   PANELS_ORDER,
 } from './ViewCaptcha.helpers'
-import { onCSVExportClick } from '~/pages/Project/View/ViewProject.helpers'
+import { deviceIconMapping, onCSVExportClick } from '~/pages/Project/View/ViewProject.helpers'
 import CCRow from '../../Project/View/components/CCRow'
 import NoEvents from './components/NoEvents'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
@@ -808,6 +808,23 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
                             onFilter={filterHandler}
                             name={panelName}
                             data={panelsData.data[type]}
+                            rowMapper={(entry: { name: keyof typeof deviceIconMapping }) => {
+                              const { name: entryName } = entry
+
+                              const icon = deviceIconMapping[entryName]
+
+                              if (!icon) {
+                                return entryName
+                              }
+
+                              return (
+                                <>
+                                  {icon}
+                                  &nbsp;
+                                  {entryName}
+                                </>
+                              )
+                            }}
                             capitalize
                           />
                         )

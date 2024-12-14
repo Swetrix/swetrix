@@ -160,6 +160,7 @@ import {
   SHORTCUTS_GENERAL_LISTENERS,
   SHORTCUTS_TIMEBUCKETS_LISTENERS,
   CHART_MEASURES_MAPPING_PERF,
+  deviceIconMapping,
 } from './ViewProject.helpers'
 import CCRow from './components/CCRow'
 import FunnelsList from './components/FunnelsList'
@@ -4133,6 +4134,23 @@ const ViewProject = () => {
                                 onFilter={filterHandler}
                                 name={panelName}
                                 data={activeError.params[type]}
+                                rowMapper={(entry: { name: keyof typeof deviceIconMapping }) => {
+                                  const { name: entryName } = entry
+
+                                  const icon = deviceIconMapping[entryName]
+
+                                  if (!icon) {
+                                    return entryName
+                                  }
+
+                                  return (
+                                    <>
+                                      {icon}
+                                      &nbsp;
+                                      {entryName}
+                                    </>
+                                  )
+                                }}
                                 capitalize
                               />
                             )
@@ -4416,6 +4434,23 @@ const ViewProject = () => {
                                 name={panelName}
                                 data={dataSource[type]}
                                 customTabs={customTabs}
+                                rowMapper={(entry: { name: keyof typeof deviceIconMapping }) => {
+                                  const { name: entryName } = entry
+
+                                  const icon = deviceIconMapping[entryName]
+
+                                  if (!icon) {
+                                    return entryName
+                                  }
+
+                                  return (
+                                    <>
+                                      {icon}
+                                      &nbsp;
+                                      {entryName}
+                                    </>
+                                  )
+                                }}
                                 capitalize
                               />
                             )
@@ -4606,6 +4641,23 @@ const ViewProject = () => {
                                 name={panelName}
                                 data={panelsDataPerf.data[type]}
                                 customTabs={customTabs}
+                                rowMapper={(entry: { name: keyof typeof deviceIconMapping }) => {
+                                  const { name: entryName } = entry
+
+                                  const icon = deviceIconMapping[entryName]
+
+                                  if (!icon) {
+                                    return entryName
+                                  }
+
+                                  return (
+                                    <>
+                                      {icon}
+                                      &nbsp;
+                                      {entryName}
+                                    </>
+                                  )
+                                }}
                                 // @ts-expect-error
                                 valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
                                 capitalize
