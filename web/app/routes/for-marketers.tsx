@@ -1,6 +1,6 @@
 import Marketers from '~/pages/Landings/Marketers'
 import type { LoaderFunctionArgs } from '@remix-run/node'
-import { json, redirect } from '@remix-run/node'
+import { redirect } from '@remix-run/node'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { detectTheme, isAuthenticated } from '~/utils/server'
@@ -18,7 +18,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const isAuth = isAuthenticated(request)
   const [theme] = detectTheme(request)
 
-  return json({ theme, isAuth })
+  return { theme, isAuth }
 }
 
 export default function Index() {

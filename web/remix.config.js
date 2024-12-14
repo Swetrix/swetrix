@@ -25,7 +25,15 @@ module.exports = {
     /^remix-utils.*/,
     /^remix-i18next.*/,
   ],
+  // eslint-disable-next-line no-undef
   serverMinify: process.env.NODE_ENV === 'production',
+  future: {
+    v3_fetcherPersist: true,
+    v3_throwAbortReason: true,
+    v3_lazyRouteDiscovery: true,
+    v3_singleFetch: true,
+    v3_relativeSplatPath: true,
+  },
   routes(defineRoutes) {
     // uses the v1 convention, works in v1.15+ and v2
     return createRoutesFromFolders(defineRoutes)

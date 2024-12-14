@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 import type { LinksFunction, LoaderFunctionArgs, HeadersFunction } from '@remix-run/node'
-import { json, redirect } from '@remix-run/node'
+import { data, redirect } from '@remix-run/node'
 import { useState } from 'react'
 import {
   Links,
@@ -200,7 +200,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       }
     : undefined
 
-  return json(
+  return data(
     {
       locale,
       url,
@@ -218,7 +218,7 @@ export const handle = {
 }
 
 export default function App() {
-  const { locale, url, theme, REMIX_ENV, isAuthed } = useLoaderData<typeof loader>()
+  const { locale, url, theme, REMIX_ENV, isAuthed } = useLoaderData<any>()
   const { i18n } = useTranslation('common')
 
   const urlObject = new URL(url)

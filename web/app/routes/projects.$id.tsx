@@ -1,6 +1,5 @@
 import ViewProject from '~/pages/Project/View'
 import type { LinksFunction, LoaderFunctionArgs, MetaFunction } from '@remix-run/node'
-import { json } from '@remix-run/node'
 import _split from 'lodash/split'
 
 import { API_URL } from '~/lib/constants'
@@ -27,13 +26,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const isAuth = isAuthenticated(request)
   const tabs = getProjectTabs(request)
 
-  return json({
+  return {
     theme,
     embedded,
     isAuth,
     queryPassword,
     tabs,
-  })
+  }
 }
 
 export default function Index() {

@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
-import { json, redirect } from '@remix-run/node'
+import { redirect } from '@remix-run/node'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import ErrorTracking from '~/pages/ErrorTracking'
@@ -20,7 +20,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const [theme] = detectTheme(request)
   const isAuth = isAuthenticated(request)
 
-  return json({ theme, isAuth })
+  return { theme, isAuth }
 }
 
 export default function Index() {

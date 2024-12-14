@@ -2,7 +2,7 @@ import Singup from '~/pages/Auth/Signup'
 import type { SitemapFunction } from 'remix-sitemap'
 import type { HeadersFunction, LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
-import { json, redirect } from '@remix-run/node'
+import { redirect } from '@remix-run/node'
 
 import { isSelfhosted } from '~/lib/constants'
 import { detectTheme } from '~/utils/server'
@@ -19,7 +19,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const [theme] = detectTheme(request)
 
-  return json({ theme })
+  return { theme }
 }
 
 export const sitemap: SitemapFunction = () => ({

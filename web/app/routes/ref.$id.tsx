@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
-import { json, redirect } from '@remix-run/node'
+import { redirect } from '@remix-run/node'
 import ReferralPage from '~/pages/ReferralPage'
 
 import { isSelfhosted } from '~/lib/constants'
@@ -13,7 +13,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const [theme] = detectTheme(request)
 
-  return json({ theme })
+  return { theme }
 }
 
 export default function Index() {

@@ -1,6 +1,6 @@
 import type { SitemapFunction } from 'remix-sitemap'
 import type { LoaderFunction, LinksFunction, MetaFunction } from '@remix-run/node'
-import { redirect, json } from '@remix-run/node'
+import { redirect, data } from '@remix-run/node'
 import _map from 'lodash/map'
 import _last from 'lodash/last'
 import _join from 'lodash/join'
@@ -84,7 +84,7 @@ export const loader: LoaderFunction = async ({ params }) => {
   }
 
   if (!params.slug) {
-    return json(null, {
+    return data(null, {
       status: 404,
     })
   }
@@ -92,7 +92,7 @@ export const loader: LoaderFunction = async ({ params }) => {
   const post = await getPost(params.slug)
 
   if (!post) {
-    return json(null, {
+    return data(null, {
       status: 404,
     })
   }

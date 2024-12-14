@@ -1,5 +1,5 @@
 import type { LoaderFunction, LinksFunction, MetaFunction } from '@remix-run/node'
-import { redirect, json } from '@remix-run/node'
+import { redirect, data } from '@remix-run/node'
 import singlePostCss from '~/css/mdfile.css'
 import { getPost } from '~/utils/getPosts'
 import { isSelfhosted, TITLE_SUFFIX, getOgImageUrl } from '~/lib/constants'
@@ -55,7 +55,7 @@ export const loader: LoaderFunction = async ({ params }) => {
   const { slug, category } = params
 
   if (!slug || !category) {
-    return json(null, {
+    return data(null, {
       status: 404,
     })
   }
@@ -63,7 +63,7 @@ export const loader: LoaderFunction = async ({ params }) => {
   const post = await getPost(slug, category)
 
   if (!post) {
-    return json(null, {
+    return data(null, {
       status: 404,
     })
   }

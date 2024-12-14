@@ -1,6 +1,6 @@
 import type { LoaderFunction } from '@remix-run/node'
 import type { SitemapFunction } from 'remix-sitemap'
-import { json } from '@remix-run/node'
+import { data } from '@remix-run/node'
 import NotFound from '~/pages/NotFound'
 
 export const sitemap: SitemapFunction = () => ({
@@ -8,7 +8,7 @@ export const sitemap: SitemapFunction = () => ({
 })
 
 export const loader: LoaderFunction = () => {
-  return json(null, { status: 404 })
+  return data(null, { status: 404 })
 }
 
 export default function Index() {

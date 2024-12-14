@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
-import { json, redirect } from '@remix-run/node'
+import { data, redirect } from '@remix-run/node'
 import type { SitemapFunction } from 'remix-sitemap'
 import Billing from '~/pages/Billing'
 
@@ -19,11 +19,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const [theme] = detectTheme(request)
   const isAuth = isAuthenticated(request)
 
-  return json({ isAuth, theme })
+  return data({ isAuth, theme })
 }
 
 export default function Index() {
-  const { isAuth, theme } = useLoaderData<typeof loader>()
+  const { isAuth, theme } = useLoaderData<any>()
 
   return <Billing ssrAuthenticated={isAuth} ssrTheme={theme} />
 }

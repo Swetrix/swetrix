@@ -1,6 +1,6 @@
 import type { LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData, Link } from '@remix-run/react'
-import { json, redirect } from '@remix-run/node'
+import { redirect } from '@remix-run/node'
 import type { SitemapFunction } from 'remix-sitemap'
 import { UAParser } from 'ua-parser-js'
 import { motion } from 'framer-motion'
@@ -74,7 +74,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
   }
 
-  return json({ theme, isAuth, deviceInfo })
+  return { theme, isAuth, deviceInfo }
 }
 
 const Problem = () => {
