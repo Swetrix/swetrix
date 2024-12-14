@@ -1763,7 +1763,7 @@ export class ProjectController {
 
   @ApiBearerAuth()
   @Patch('/:id/organisation')
-  @HttpCode(200)
+  @HttpCode(204)
   @Auth([], true)
   async updateOrganisation(
     @Param('id') id: string,
