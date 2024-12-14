@@ -98,7 +98,7 @@ const Dashboard = () => {
 
       try {
         const stats = await getOverallStats(projectIds, '7d')
-        setOverallStats(stats)
+        setOverallStats((prev) => ({ ...prev, ...stats }))
       } catch (reason) {
         console.error('Failed to fetch overall stats:', reason)
       }
@@ -109,7 +109,7 @@ const Dashboard = () => {
 
       try {
         const stats = await getOverallStatsCaptcha(projectIds, '7d')
-        setOverallStats(stats)
+        setOverallStats((prev) => ({ ...prev, ...stats }))
       } catch (reason) {
         console.error('Failed to fetch overall stats:', reason)
       }
