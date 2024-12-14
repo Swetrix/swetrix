@@ -1,4 +1,4 @@
-import UserSettings from 'pages/UserSettings'
+import UserSettings from '~/pages/UserSettings'
 import type { SitemapFunction } from 'remix-sitemap'
 
 export const sitemap: SitemapFunction = () => ({

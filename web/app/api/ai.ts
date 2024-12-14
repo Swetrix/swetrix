@@ -1,10 +1,7 @@
 /* eslint-disable implicit-arrow-linebreak */
 import axios from 'axios'
-import Debug from 'debug'
 import _isEmpty from 'lodash/isEmpty'
-import { AIAPI_URL } from 'redux/constants'
-
-const debug = Debug('swetrix:ai')
+import { AIAPI_URL } from '~/lib/constants'
 
 const api = axios.create({
   baseURL: AIAPI_URL,
@@ -27,6 +24,5 @@ export const getChartPrediction = (chart: any, periodToForecast: any, frequency:
     })
     .then((response) => response.data)
     .catch((error) => {
-      debug('%s', error)
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })

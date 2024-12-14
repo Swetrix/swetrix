@@ -1,5 +1,5 @@
 import _isEmpty from 'lodash/isEmpty'
-import { TOKEN, isBrowser } from 'redux/constants'
+import { TOKEN, isBrowser } from '~/lib/constants'
 import { getCookie, setCookie, deleteCookie } from './cookie'
 
 // 14 weeks in seconds
@@ -20,7 +20,7 @@ export const getAccessToken = () => {
   return accessToken
 }
 
-export const setAccessToken = (token: string, temporary: boolean = false) => {
+export const setAccessToken = (token: string, temporary = false) => {
   if (!isBrowser) {
     return null
   }

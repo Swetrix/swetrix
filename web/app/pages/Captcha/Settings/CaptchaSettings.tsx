@@ -1,45 +1,47 @@
-import React, { useState, useEffect, useMemo, memo } from 'react'
-import { useNavigate, useParams } from '@remix-run/react'
+import React, { useState, useEffect, memo } from 'react'
+import { Link, useNavigate } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
 import _replace from 'lodash/replace'
-import _find from 'lodash/find'
 import _join from 'lodash/join'
 import _isString from 'lodash/isString'
 import _split from 'lodash/split'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _includes from 'lodash/includes'
-import { ExclamationTriangleIcon, TrashIcon } from '@heroicons/react/24/outline'
+import { ExclamationTriangleIcon, XCircleIcon } from '@heroicons/react/24/outline'
 
-import { withAuthentication, auth } from 'hoc/protected'
-import { isSelfhosted, TITLE_SUFFIX } from 'redux/constants'
+import { withAuthentication, auth } from '~/hoc/protected'
+import { TITLE_SUFFIX } from '~/lib/constants'
 import {
   createProject,
   updateProject,
   deleteCaptchaProject,
   resetCaptchaProject,
   reGenerateCaptchaSecretKey,
-} from 'api'
-import Input from 'ui/Input'
-import Loader from 'ui/Loader'
-import Button from 'ui/Button'
-import Checkbox from 'ui/Checkbox'
-import Modal from 'ui/Modal'
-import { trackCustom } from 'utils/analytics'
-import routes from 'utils/routes'
-import { ICaptchaProject, IProject } from 'redux/models/IProject'
-import { IUser } from 'redux/models/IUser'
+  getProject,
+} from '~/api'
+import Input from '~/ui/Input'
+import Loader from '~/ui/Loader'
+import Button from '~/ui/Button'
+import Checkbox from '~/ui/Checkbox'
+import Modal from '~/ui/Modal'
+import { trackCustom } from '~/utils/analytics'
+import routes from '~/utils/routes'
+import { CaptchaProject } from '~/lib/models/Project'
+import { useRequiredParams } from '~/hooks/useRequiredParams'
+import { useSelector } from 'react-redux'
+import { StateType } from '~/lib/store'
+import { Trash2Icon } from 'lucide-react'
 
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
 const MAX_IPBLACKLIST_LENGTH = 300
 
-// add to interface IProject new fields isCaptcha
-interface IForm extends Partial<ICaptchaProject> {
+interface Form extends Partial<CaptchaProject> {
   isCaptcha?: boolean
   id: string
   name: string
@@ -47,92 +49,81 @@ interface IForm extends Partial<ICaptchaProject> {
   ipBlacklist?: string | null | string[]
 }
 
-interface ICaptchaSettings {
-  loadProjects: () => void
-  isLoading: boolean
-  projects: ICaptchaProject[]
-  removeProject: (pid: string) => void
-  user: IUser
-  deleteProjectCache: (pid: string) => void
-  analyticsProjects: IProject[]
-  loading: boolean
+interface CaptchaSettingsProps {
   isSettings: boolean
 }
 
-const CaptchaSettings = ({
-  loadProjects,
-  isLoading,
-  projects,
-  removeProject,
-  user,
-  deleteProjectCache,
-  analyticsProjects,
-  loading,
-  isSettings,
-}: ICaptchaSettings): JSX.Element => {
+const CaptchaSettings = ({ isSettings }: CaptchaSettingsProps) => {
+  const { loading: authLoading } = useSelector((state: StateType) => state.auth)
+
   const { t } = useTranslation('common')
-  // @ts-ignore
-  const {
-    id,
-  }: {
+  const { id } = useRequiredParams<{
     id: string
-  } = useParams()
-  const project: ICaptchaProject | IProject = useMemo(
-    () => _find([...projects, ...analyticsProjects], (p) => p.id === id) || ({} as IProject | ICaptchaProject),
-    [projects, analyticsProjects, id],
-  )
+  }>()
   const navigate = useNavigate()
-  const [form, setForm] = useState<IForm>({
+  const [form, setForm] = useState<Form>({
     name: '',
     id,
     public: false,
     isCaptcha: true,
   })
-  const [validated, setValidated] = useState<boolean>(false)
+  const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
     name?: string
     id?: string
     origins?: string
     ipBlacklist?: string
   }>({})
-  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
-  const [showDelete, setShowDelete] = useState<boolean>(false)
-  const [showReset, setShowReset] = useState<boolean>(false)
-  const [projectDeleting, setProjectDeleting] = useState<boolean>(false)
-  const [projectResetting, setProjectResetting] = useState<boolean>(false)
-  const [projectSaving, setProjectSaving] = useState<boolean>(false)
-  const [captchaSecretKey, setCaptchaSecretKey] = useState(project?.captchaSecretKey)
+  const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [showDelete, setShowDelete] = useState(false)
+  const [showReset, setShowReset] = useState(false)
+  const [projectDeleting, setProjectDeleting] = useState(false)
+  const [projectResetting, setProjectResetting] = useState(false)
+  const [projectSaving, setProjectSaving] = useState(false)
+  const [captchaSecretKey, setCaptchaSecretKey] = useState<string | null>(null)
   const [showRegenerateSecret, setShowRegenerateSecret] = useState(false)
 
+  const [project, setProject] = useState<CaptchaProject | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const loadProject = async (projectId: string) => {
+    if (isLoading) {
+      return
+    }
+    setIsLoading(true)
+
+    try {
+      const result = (await getProject(projectId)) as CaptchaProject
+      setProject(result)
+      setCaptchaSecretKey(result.captchaSecretKey)
+      setForm({
+        ...result,
+        ipBlacklist: _isString(result.ipBlacklist) ? result.ipBlacklist : _join(result.ipBlacklist, ', '),
+        origins: _isString(result.origins) ? result.origins : _join(result.origins, ', '),
+      })
+    } catch (reason: any) {
+      setError(reason)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   useEffect(() => {
-    if (loading) {
+    if (authLoading) {
       return
     }
 
-    if (!user.isActive && !isSelfhosted) {
-      toast.error(t('project.captcha.settings.verify'))
-      navigate(routes.dashboard)
-    }
+    loadProject(id)
 
-    if (!isLoading && isSettings && !projectDeleting) {
-      if (_isEmpty(project) || project?.uiHidden) {
-        toast.error(t('project.captcha.noExist'))
-        navigate(routes.dashboard)
-      } else {
-        setForm({
-          ...project,
-          ipBlacklist: _isString(project.ipBlacklist) ? project.ipBlacklist : _join(project.ipBlacklist, ', '),
-          origins: _isString(project.origins) ? project.origins : _join(project.origins, ', '),
-        })
-      }
-    }
-  }, [user, project, isLoading, isSettings, navigate, projectDeleting, t, loading])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, id])
 
-  const onSubmit = async (data: IForm) => {
+  const onSubmit = async (data: Form) => {
     if (!projectSaving) {
       setProjectSaving(true)
       try {
-        const formalisedData: IForm = {
+        const formalisedData: Form = {
           ...data,
           origins: _isEmpty(data.origins)
             ? null
@@ -142,14 +133,14 @@ const CaptchaSettings = ({
                     return origin
                   }
                   return new URL(origin).host
-                } catch (e) {
+                } catch {
                   return origin
                 }
               }),
           ipBlacklist: _isEmpty(data.ipBlacklist) ? null : _split(data.ipBlacklist as string, ','),
         }
         if (isSettings) {
-          await updateProject(id, formalisedData as ICaptchaProject)
+          await updateProject(id, formalisedData as CaptchaProject)
           toast.success(t('project.settings.updated'))
         } else {
           await createProject({
@@ -160,7 +151,6 @@ const CaptchaSettings = ({
           toast.success(t('project.settings.created'))
         }
 
-        loadProjects()
         navigate(routes.dashboard)
       } catch (reason: any) {
         toast.error(reason)
@@ -176,7 +166,6 @@ const CaptchaSettings = ({
       setProjectDeleting(true)
       try {
         await deleteCaptchaProject(id)
-        removeProject(id)
         toast.success(t('project.settings.deleted'))
         navigate(routes.dashboard)
       } catch (reason: any) {
@@ -193,7 +182,6 @@ const CaptchaSettings = ({
       setProjectResetting(true)
       try {
         await resetCaptchaProject(id)
-        deleteProjectCache(id)
         toast.success(t('project.settings.resetted'))
         navigate(routes.dashboard)
       } catch (reason: any) {
@@ -277,10 +265,47 @@ const CaptchaSettings = ({
     }
   }
 
-  if (loading) {
+  if (isLoading || isLoading === null || !project) {
     return (
       <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8'>
         <Loader />
+      </div>
+    )
+  }
+
+  if (error && !isLoading) {
+    return (
+      <div className='min-h-page bg-gray-50 px-4 py-16 dark:bg-slate-900 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
+        <div className='mx-auto max-w-max'>
+          <main className='sm:flex'>
+            <XCircleIcon className='h-12 w-12 text-red-400' aria-hidden='true' />
+            <div className='sm:ml-6'>
+              <div className='max-w-prose sm:border-l sm:border-gray-200 sm:pl-6'>
+                <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50 sm:text-5xl'>
+                  {t('apiNotifications.somethingWentWrong')}
+                </h1>
+                <p className='mt-4 text-2xl font-medium tracking-tight text-gray-700 dark:text-gray-200'>
+                  {t('apiNotifications.errorCode', { error })}
+                </p>
+              </div>
+              <div className='mt-8 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>
+                <button
+                  type='button'
+                  onClick={() => window.location.reload()}
+                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
+                >
+                  {t('dashboard.reloadPage')}
+                </button>
+                <Link
+                  to={routes.contact}
+                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700 dark:focus:ring-gray-50'
+                >
+                  {t('notFoundPage.support')}
+                </Link>
+              </div>
+            </div>
+          </main>
+        </div>
       </div>
     )
   }
@@ -413,7 +438,7 @@ const CaptchaSettings = ({
                   semiSmall
                 >
                   <>
-                    <TrashIcon className='mr-1 h-5 w-5' />
+                    <Trash2Icon className='mr-1 h-5 w-5' strokeWidth={1.5} />
                     {t('project.settings.reset')}
                   </>
                 </Button>

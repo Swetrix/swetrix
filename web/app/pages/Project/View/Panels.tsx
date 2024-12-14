@@ -2,15 +2,6 @@ import React, { memo, useState, useEffect, useMemo, Fragment } from 'react'
 import InnerHTML from 'dangerously-set-html-content'
 import { ArrowLongRightIcon, ArrowLongLeftIcon } from '@heroicons/react/24/solid'
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
-import {
-  FunnelIcon,
-  MapIcon,
-  Bars4Icon,
-  ArrowsPointingOutIcon,
-  ChartPieIcon,
-  PuzzlePieceIcon,
-  RectangleGroupIcon,
-} from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import { pie } from 'billboard.js'
 import _keys from 'lodash/keys'
@@ -33,21 +24,31 @@ import _fromPairs from 'lodash/fromPairs'
 import _toPairs from 'lodash/toPairs'
 import _reverse from 'lodash/reverse'
 
-import { nFormatter } from 'utils/generic'
-import Progress from 'ui/Progress'
-import Sort from 'ui/icons/Sort'
-import Modal from 'ui/Modal'
-import Button from 'ui/Button'
-import Chart from 'ui/Chart'
-import { PROJECT_TABS } from 'redux/constants'
-import { IEntry } from 'redux/models/IEntry'
+import { nFormatter } from '~/utils/generic'
+import Progress from '~/ui/Progress'
+import Sort from '~/ui/icons/Sort'
+import Modal from '~/ui/Modal'
+import Button from '~/ui/Button'
+import Chart from '~/ui/Chart'
+import { PROJECT_TABS } from '~/lib/constants'
+import { Entry } from '~/lib/models/Entry'
 import InteractiveMap from './components/InteractiveMap'
 import UserFlow from './components/UserFlow'
 import { iconClassName } from './ViewProject.helpers'
-import Spin from 'ui/icons/Spin'
+import Spin from '~/ui/icons/Spin'
 import { useTranslation } from 'react-i18next'
 import CustomEventsDropdown from './components/CustomEventsDropdown'
-import { ICustoms, IFilter, IProperties } from './interfaces/traffic'
+import { Customs, Filter, Properties } from './interfaces/traffic'
+import { useViewProjectContext } from './ViewProject'
+import {
+  AlignJustifyIcon,
+  ChartPieIcon,
+  MapIcon,
+  MaximizeIcon,
+  WorkflowIcon,
+  FilterIcon,
+  PuzzleIcon,
+} from 'lucide-react'
 
 const ENTRIES_PER_PANEL = 5
 const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 6
@@ -97,8 +98,8 @@ const removeDuplicates = (arr: any[], keys: string[]) => {
   return uniqueObjects
 }
 
-interface IPanelContainer {
-  name: string | JSX.Element
+interface PanelContainerProps {
+  name: React.ReactNode
   children?: React.ReactNode
   noSwitch?: boolean
   icon?: React.ReactNode
@@ -124,7 +125,7 @@ const PanelContainer = ({
   activeTab,
   isCustomContent,
   onExpandClick = () => {},
-}: IPanelContainer): JSX.Element => (
+}: PanelContainerProps) => (
   <div
     className={cx(
       'relative max-h-96 min-h-72 overflow-hidden rounded-lg bg-white px-4 pt-5 shadow dark:border dark:border-slate-800/50 dark:bg-slate-800/25 sm:px-6 sm:pt-6',
@@ -146,12 +147,13 @@ const PanelContainer = ({
       </h3>
       <div className='flex'>
         {(checkIfBarsNeeded(type) || checkCustomTabs(type, customTabs)) && (
-          <Bars4Icon
+          <AlignJustifyIcon
             className={cx(iconClassName, 'cursor-pointer', {
               'text-slate-900 dark:text-gray-50': activeFragment === 0,
               'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 1,
             })}
             onClick={() => setActiveFragment(0)}
+            strokeWidth={1.5}
           />
         )}
 
@@ -164,30 +166,34 @@ const PanelContainer = ({
                 'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
               })}
               onClick={() => setActiveFragment(1)}
+              strokeWidth={1.5}
             />
-            <ArrowsPointingOutIcon
+            <MaximizeIcon
               className={cx(iconClassName, 'ml-2 cursor-pointer text-slate-400 dark:text-slate-500', {
                 hidden: activeFragment === 0,
               })}
               onClick={onExpandClick}
+              strokeWidth={1.5}
             />
           </>
         )}
 
         {type === 'pg' && activeTab !== PROJECT_TABS.performance && activeTab !== PROJECT_TABS.errors && (
           <>
-            <RectangleGroupIcon
+            <WorkflowIcon
               className={cx(iconClassName, 'ml-2 cursor-pointer', {
                 'text-slate-900 dark:text-gray-50': activeFragment === 1,
                 'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
               })}
               onClick={() => setActiveFragment(1)}
+              strokeWidth={1.5}
             />
-            <ArrowsPointingOutIcon
+            <MaximizeIcon
               className={cx(iconClassName, 'ml-2 cursor-pointer text-slate-400 dark:text-slate-500', {
                 hidden: activeFragment === 0,
               })}
               onClick={onExpandClick}
+              strokeWidth={1.5}
             />
           </>
         )}
@@ -200,15 +206,17 @@ const PanelContainer = ({
               'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
             })}
             onClick={() => setActiveFragment(1)}
+            strokeWidth={1.5}
           />
         )}
 
         {/* if it is a 'Custom events' tab  */}
         {(type === 'ce' || type === 'props') && (
           <>
-            <ArrowsPointingOutIcon
+            <MaximizeIcon
               className={cx(iconClassName, 'ml-2 cursor-pointer text-slate-400 dark:text-slate-500')}
               onClick={onExpandClick}
+              strokeWidth={1.5}
             />
           </>
         )}
@@ -228,13 +236,14 @@ const PanelContainer = ({
               }
 
               return (
-                <PuzzlePieceIcon
+                <PuzzleIcon
                   key={`${extensionID}-${panelID}`}
                   className={cx(iconClassName, 'ml-2 cursor-pointer', {
                     'text-slate-900 dark:text-gray-50': activeFragment === extensionID,
                     'text-slate-400 dark:text-slate-500': activeFragment === 0,
                   })}
                   onClick={onClick}
+                  strokeWidth={1.5}
                 />
               )
             })}
@@ -295,26 +304,26 @@ const getPieOptions = (customs: any, uniques: number, t: any) => {
   }
 }
 
-interface IMetadata {
-  customs: ICustoms
-  properties: IProperties
+interface MetadataProps {
+  customs: Customs
+  properties: Properties
   chartData: any
-  filters: IFilter[]
+  filters: Filter[]
   onFilter: (column: string, filter: any, isExclusive?: boolean) => Promise<void>
   getCustomEventMetadata: (event: string) => Promise<any>
   getPropertyMetadata: (property: string) => Promise<any>
   customTabs: any
 }
 
-interface ICustomEvents extends IMetadata {
+interface CustomEventsProps extends MetadataProps {
   setActiveTab: React.Dispatch<React.SetStateAction<'customEv' | 'properties'>>
 }
 
-interface IPageProperties extends IMetadata {
+interface PagePropertiesProps extends MetadataProps {
   setActiveTab: React.Dispatch<React.SetStateAction<'customEv' | 'properties'>>
 }
 
-interface ISortRows {
+interface SortRows {
   label: string
   sortByAscend: boolean
   sortByDescend: boolean
@@ -340,7 +349,7 @@ interface KVTableProps {
 
 const KVTable = ({ listId, data, displayKeyAsHeader, onClick }: KVTableProps) => {
   const { t } = useTranslation('common')
-  const [sort, setSort] = useState<ISortRows>({
+  const [sort, setSort] = useState<SortRows>({
     label: 'quantity',
     sortByAscend: false,
     sortByDescend: false,
@@ -434,7 +443,10 @@ const KVTable = ({ listId, data, displayKeyAsHeader, onClick }: KVTableProps) =>
           >
             <td className='flex items-center py-1 pl-2 text-left'>
               {event}
-              <FunnelIcon className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300' />
+              <FilterIcon
+                className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300'
+                strokeWidth={1.5}
+              />
             </td>
             <td className='py-1 text-right'>
               {quantity}
@@ -515,7 +527,7 @@ const CustomEvents = ({
   customTabs = [],
   getCustomEventMetadata,
   setActiveTab,
-}: ICustomEvents) => {
+}: CustomEventsProps) => {
   const { t } = useTranslation('common')
   const [page, setPage] = useState(0)
   const [detailsOpened, setDetailsOpened] = useState(false)
@@ -532,11 +544,11 @@ const CustomEvents = ({
   )
   const uniques = _sum(chartData.uniques)
   const [chartOptions, setChartOptions] = useState<any>({})
-  const [activeFragment, setActiveFragment] = useState<number>(0)
+  const [activeFragment, setActiveFragment] = useState(0)
   const totalPages = useMemo(() => _ceil(_size(keys) / ENTRIES_PER_CUSTOM_EVENTS_PANEL), [keys])
   const canGoPrev = () => page > 0
   const canGoNext = () => page < _floor((_size(keys) - 1) / ENTRIES_PER_CUSTOM_EVENTS_PANEL)
-  const [sort, setSort] = useState<ISortRows>({
+  const [sort, setSort] = useState<SortRows>({
     label: 'quantity',
     sortByAscend: false,
     sortByDescend: false,
@@ -890,7 +902,10 @@ const CustomEvents = ({
             >
               <td className='flex items-center text-left'>
                 {ev}
-                <FunnelIcon className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300' />
+                <FilterIcon
+                  className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300'
+                  strokeWidth={1.5}
+                />
               </td>
               <td className='text-right'>
                 {customsEventsData[ev]}
@@ -972,14 +987,14 @@ const PageProperties = ({
   filters,
   getPropertyMetadata,
   setActiveTab,
-}: IPageProperties) => {
+}: PagePropertiesProps) => {
   const { t } = useTranslation('common')
   const [page, setPage] = useState(0)
   const [detailsOpened, setDetailsOpened] = useState(false)
   const [activeProperties, setActiveProperties] = useState<any>({})
   const [loadingDetails, setLoadingDetails] = useState<any>({})
   const [details, setDetails] = useState<any>({})
-  const [processedProperties, setProcessedProperties] = useState<IProperties>(properties)
+  const [processedProperties, setProcessedProperties] = useState<Properties>(properties)
   const currentIndex = page * ENTRIES_PER_CUSTOM_EVENTS_PANEL
   const keys = _keys(processedProperties)
   const keysToDisplay = useMemo(
@@ -987,12 +1002,12 @@ const PageProperties = ({
     [keys, currentIndex],
   )
   const uniques = _sum(chartData.uniques)
-  const [activeFragment, setActiveFragment] = useState<number>(0)
+  const [activeFragment, setActiveFragment] = useState(0)
   const [triggerTagWhenFiltersChange, setTriggerTagWhenFiltersChange] = useState<string | null>(null)
   const totalPages = useMemo(() => _ceil(_size(keys) / ENTRIES_PER_CUSTOM_EVENTS_PANEL), [keys])
   const canGoPrev = () => page > 0
   const canGoNext = () => page < _floor((_size(keys) - 1) / ENTRIES_PER_CUSTOM_EVENTS_PANEL)
-  const [sort, setSort] = useState<ISortRows>({
+  const [sort, setSort] = useState<SortRows>({
     label: 'quantity',
     sortByAscend: false,
     sortByDescend: false,
@@ -1284,7 +1299,10 @@ const PageProperties = ({
             >
               <td className='flex items-center text-left'>
                 {tag}
-                <FunnelIcon className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300' />
+                <FilterIcon
+                  className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300'
+                  strokeWidth={1.5}
+                />
               </td>
               <td className='text-right'>
                 {processedProperties[tag]}
@@ -1359,7 +1377,7 @@ const PageProperties = ({
   )
 }
 
-const Metadata = (props: IMetadata) => {
+const Metadata = (props: MetadataProps) => {
   const [activeTab, setActiveTab] = useState<'customEv' | 'properties'>('customEv')
 
   if (activeTab === 'customEv') {
@@ -1369,10 +1387,10 @@ const Metadata = (props: IMetadata) => {
   return <PageProperties {...props} setActiveTab={setActiveTab} />
 }
 
-interface IPanel {
-  name: string | JSX.Element
-  data: IEntry[]
-  rowMapper?: (row: any) => string | JSX.Element
+interface PanelProps {
+  name: React.ReactNode
+  data: Entry[]
+  rowMapper?: (row: any) => React.ReactNode
   valueMapper?: (value: number) => number
   capitalize?: boolean
   linkContent?: boolean
@@ -1381,22 +1399,13 @@ interface IPanel {
   hideFilters?: boolean
   onFilter: any
   customTabs?: any
-  pid?: string | null
-  period?: string | null
-  timeBucket?: string | null
-  from?: string | null
-  to?: string | null
-  timezone?: string | null
-  activeTab?: string
   onFragmentChange?: (arg: number) => void
-  filters?: IFilter[]
-  projectPassword?: string
 }
 
 const Panel = ({
   name,
   data,
-  rowMapper = (row: IEntry): string => row.name,
+  rowMapper = (row: Entry): string => row.name,
   valueMapper = (value: number): number => value,
   capitalize,
   linkContent,
@@ -1405,17 +1414,9 @@ const Panel = ({
   hideFilters,
   onFilter = () => {},
   customTabs = [],
-  pid,
-  period,
-  timeBucket,
-  from,
-  to,
-  timezone,
-  activeTab,
   onFragmentChange = () => {},
-  filters,
-  projectPassword,
-}: IPanel): JSX.Element => {
+}: PanelProps) => {
+  const { dataLoading, activeTab } = useViewProjectContext()
   const { t } = useTranslation('common')
   const [page, setPage] = useState(0)
   const currentIndex = page * ENTRIES_PER_PANEL
@@ -1425,7 +1426,7 @@ const Panel = ({
   const entriesToDisplay = _slice(entries, currentIndex, currentIndex + ENTRIES_PER_PANEL)
   const [activeFragment, setActiveFragment] = useState(0)
   const [modal, setModal] = useState(false)
-  const [isReversedUserFlow, setIsReversedUserFlow] = useState<boolean>(false)
+  const [isReversedUserFlow, setIsReversedUserFlow] = useState(false)
   const canGoPrev = () => page > 0
   const canGoNext = () => page < _floor((_size(entries) - 1) / ENTRIES_PER_PANEL)
 
@@ -1499,20 +1500,7 @@ const Panel = ({
         onExpandClick={() => setModal(true)}
         customTabs={customTabs}
       >
-        {/* @ts-ignore */}
-        <UserFlow
-          projectPassword={projectPassword}
-          pid={pid || ''}
-          period={period || ''}
-          timeBucket={timeBucket || ''}
-          from={from || ''}
-          to={to || ''}
-          timezone={timezone || ''}
-          filters={filters || []}
-          isReversed={isReversedUserFlow}
-          setReversed={() => setIsReversedUserFlow(!isReversedUserFlow)}
-          t={t}
-        />
+        <UserFlow isReversed={isReversedUserFlow} setReversed={() => setIsReversedUserFlow((prev) => !prev)} />
         <Modal
           onClose={() => setModal(false)}
           closeText={t('common.close')}
@@ -1520,7 +1508,7 @@ const Panel = ({
           customButtons={
             <button
               type='button'
-              onClick={() => setIsReversedUserFlow(!isReversedUserFlow)}
+              onClick={() => setIsReversedUserFlow((prev) => !prev)}
               className='mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-none dark:border-gray-600 dark:bg-slate-700 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700 sm:ml-3 sm:mt-0 sm:w-auto sm:text-sm'
             >
               {t('project.reverse')}
@@ -1528,19 +1516,7 @@ const Panel = ({
           }
           message={
             <div className='h-[500px] dark:text-gray-800'>
-              {/* @ts-ignore */}
-              <UserFlow
-                projectPassword={projectPassword}
-                pid={pid || ''}
-                period={period || ''}
-                timeBucket={timeBucket || ''}
-                from={from || ''}
-                to={to || ''}
-                timezone={timezone || ''}
-                filters={filters || []}
-                isReversed={isReversedUserFlow}
-                t={t}
-              />
+              <UserFlow isReversed={isReversedUserFlow} setReversed={() => setIsReversedUserFlow((prev) => !prev)} />
             </div>
           }
           size='large'
@@ -1653,7 +1629,8 @@ const Panel = ({
             <Fragment key={`${id}-${entryName}-${Object.values(rest).join('-')}`}>
               <div
                 className={cx('mt-[0.32rem] flex justify-between rounded first:mt-0 dark:text-gray-50', {
-                  'group cursor-pointer hover:bg-gray-100 hover:dark:bg-slate-700': !hideFilters,
+                  'group cursor-pointer hover:bg-gray-100 hover:dark:bg-slate-700': !hideFilters && !dataLoading,
+                  'cursor-wait': dataLoading,
                 })}
                 onClick={() => _onFilter(id, entryName)}
               >
@@ -1669,14 +1646,20 @@ const Panel = ({
                   >
                     {rowData}
                     {!hideFilters && (
-                      <FunnelIcon className='min-h-4 ml-2 hidden size-4 min-w-4 text-gray-500 group-hover:block dark:text-gray-300' />
+                      <FilterIcon
+                        className='min-h-4 ml-2 hidden size-4 min-w-4 text-gray-500 group-hover:block dark:text-gray-300'
+                        strokeWidth={1.5}
+                      />
                     )}
                   </a>
                 ) : (
                   <span className={cx('label flex items-center', { capitalize })}>
                     {rowData}
                     {!hideFilters && (
-                      <FunnelIcon className='min-h-4 ml-2 hidden size-4 min-w-4 text-gray-500 group-hover:block dark:text-gray-300' />
+                      <FilterIcon
+                        className='min-h-4 ml-2 hidden size-4 min-w-4 text-gray-500 group-hover:block dark:text-gray-300'
+                        strokeWidth={1.5}
+                      />
                     )}
                   </span>
                 )}

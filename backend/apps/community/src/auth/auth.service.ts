@@ -48,7 +48,7 @@ export class AuthService {
     )
   }
 
-  public async validateUser(
+  async getBasicUser(
     email: string,
     password: string,
   ): Promise<SelfhostedUser | null> {

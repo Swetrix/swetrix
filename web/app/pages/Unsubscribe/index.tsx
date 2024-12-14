@@ -5,21 +5,21 @@ import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import _isString from 'lodash/isString'
 import { useSelector } from 'react-redux'
 
-import { StateType } from 'redux/store'
-import { unsubscribeFromEmailReports, unsubscribeFromEmailReports3rdParty } from 'api'
-import Loader from 'ui/Loader'
-import routes from 'utils/routes'
+import { StateType } from '~/lib/store'
+import { unsubscribeFromEmailReports, unsubscribeFromEmailReports3rdParty } from '~/api'
+import Loader from '~/ui/Loader'
+import routes from '~/utils/routes'
 
-interface IUnsubscribe {
+interface UnsubscribeProps {
   type: 'user-reports' | '3rdparty'
 }
 
-const Unsubscribe = ({ type }: IUnsubscribe): JSX.Element => {
+const Unsubscribe = ({ type }: UnsubscribeProps) => {
   const { t } = useTranslation('common')
   const { token } = useParams()
   const { authenticated } = useSelector((state: StateType) => state.auth)
-  const [loading, setLoading] = useState<boolean>(true)
-  const [error, setError] = useState<string>('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     setLoading(true)

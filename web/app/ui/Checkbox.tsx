@@ -3,9 +3,9 @@ import { Checkbox as HeadlessCheckbox, Description, Field, Label } from '@headle
 import { CheckIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 
-interface ICheckbox {
-  label: string | JSX.Element
-  hint?: string | JSX.Element
+interface CheckboxProps {
+  label: React.ReactNode
+  hint?: React.ReactNode
   name?: string
   className?: string
   onChange?: (checked: boolean) => void
@@ -14,16 +14,7 @@ interface ICheckbox {
   disabled?: boolean
 }
 
-const Checkbox = ({
-  label,
-  hint,
-  name,
-  className,
-  onChange,
-  checked,
-  hintClassName,
-  disabled,
-}: ICheckbox): JSX.Element => (
+const Checkbox = ({ label, hint, name, className, onChange, checked, hintClassName, disabled }: CheckboxProps) => (
   <Field className={className} disabled={disabled}>
     <div className='flex items-center gap-2'>
       <HeadlessCheckbox

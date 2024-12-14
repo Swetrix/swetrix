@@ -1,4 +1,4 @@
-import Imprint from 'pages/Imprint'
+import Imprint from '~/pages/Imprint'
 import type { SitemapFunction } from 'remix-sitemap'
 
 export const sitemap: SitemapFunction = () => ({

@@ -18,8 +18,12 @@
     "quitProjectError": "Erreur lors de la sortie du projet",
     "payoutInfoError": "Une erreur s'est produite lors de la demande d'informations de paiement",
     "quitProject": "Vous avez quitté le projet",
+    "quitOrganisation": "You have quit the organisation",
+    "quitOrganisationError": "Error occurred while quitting the organisation",
     "acceptInvitationError": "Erreur lors de l'acceptation de l'invitation au projet",
     "acceptInvitation": "L'invitation au projet a été acceptée",
+    "acceptOrganisationInvitation": "The organisation invitation has been accepted",
+    "acceptOrganisationInvitationError": "Error occurred while accepting the organisation invitation",
     "subscriptionUpdated": "Votre abonnement a été mis à jour",
     "generate2FAError": "Erreur lors de la génération du code 2FA",
     "integrationRemovalError": "Erreur lors de la suppression de l'intégration",
@@ -47,12 +51,25 @@
     "enterViewName": "Veuillez entrer un nom de vue",
     "inputCannotBeEmpty": "Ce champ de saisie ne doit pas être vide",
     "viewDeleted": "La vue a été supprimée",
-    "noAIForecastAvailable": "Les prévisions IA ne sont pas encore disponibles pour ce projet"
+    "noAIForecastAvailable": "Les prévisions IA ne sont pas encore disponibles pour ce projet",
+    "organisationCreated": "Organisation has been created",
+    "organisationCreateError": "Error occurred while creating the organisation",
+    "organisationDeleted": "Organisation has been deleted",
+    "projectRemovedFromOrganisation": "The project has been removed from the organisation",
+    "projectAddedToOrganisation": "The project has been added to the organisation",
+    "projectRemoveError": "Error occurred while removing the project from the organisation",
+    "projectAddError": "Error occurred while adding the project to the organisation",
+    "orgUserRemoved": "The user has been removed from the organisation",
+    "orgUserRemoveError": "Error occurred while removing the user from the organisation",
+    "orgSettingsUpdated": "Organisation settings have been updated",
+    "projectAssigned": "The project has been assigned to the organisation",
+    "projectAssignError": "Failed to assign the project to the organisation",
+    "failedToLoadUsageInfo": "Failed to load usage info"
   },
   "common": {
     "features": "Fonctionnalités",
     "docs": "Documentation",
-    "bookACall": "Book a call with the founder",
+    "bookACall": "Réserver un appel avec le fondateur",
     "getStarted": "Commencer",
     "billing": "Facturation",
     "pricing": "Tarification",
@@ -63,11 +80,11 @@
     "logout": "Déconnexion",
     "save": "Enregistrer",
     "continue": "Continuer",
-    "confirm": "Confirm",
-    "amount": "Amount",
+    "confirm": "Confirmer",
+    "amount": "Montant",
     "date": "Date",
-    "success": "Success",
-    "info": "Info",
+    "success": "Succès",
+    "info": "Informations",
     "error": "Erreur",
     "close": "Fermer",
     "cancel": "Annuler",
@@ -99,11 +116,15 @@
     "transferring": "Transfert en cours",
     "link": "Lier",
     "unlink": "Dissocier",
-    "nothingFound": "Nothing found",
-    "oneMember": "1 Member",
-    "xMembers": "{{number}} Members",
+    "nothingFound": "Aucun résultat",
+    "oneMember": "1 membre",
+    "xMembers": "{{number}} Membres",
     "general": "Général",
-    "fixIt": "Réparer"
+    "fixIt": "Réparer",
+    "errorOccured": "An error occurred: {{error}}",
+    "name": "Name",
+    "notSet": "Not set",
+    "remove": "Remove"
   },
   "performance": {
     "slogan": "<span>Contrôle des performances</span> de l'utilisateur final afin de fournir des sites web rapides.",
@@ -155,35 +176,35 @@
         ]
       },
       {
-        "name": "Advanced analytics features",
+        "name": "Fonctionnalités d'analyse avancées",
         "desc": [
           "<span>Detailed traffic analysis:</span> Swetrix offers a wide range of metrics to analyse user behaviour, helping marketers make informed decisions.",
           "<span>Flexible reports:</span> Swetrix provides an ability to customise reports to meet the specific needs of marketers, allowing them to focus on the most important metrics."
         ]
       },
       {
-        "name": "Privacy and regulatory compliance",
+        "name": "Conformité de la confidentialité et de la réglementation",
         "desc": [
           "<span>GDPR compliance:</span> Swetrix is GDPR compliant, which ensures safe and legal use of the service.",
           "<span>Data security:</span> High level of data protection, which is important for marketers who work with sensitive information."
         ]
       },
       {
-        "name": "Customer support",
+        "name": "Service client",
         "desc": [
           "<span>High-quality support:</span> Swetrix provides fast and efficient support to help marketers resolve any questions or issues.",
           "<span>Educational materials:</span> Access to learning resources and <discordUrl>tips</discordUrl> to help you make the most of the service."
         ]
       },
       {
-        "name": "Flexibility and scalability",
+        "name": "Flexibilité et évolutivité",
         "desc": [
           "<span>Different pricing plans:</span> Swetrix offers different pricing plans to suit all budgets and needs, allowing marketers to choose the best option.",
           "<span>Scalability:</span> The ability to expand the functionality of the service in line with business growth and needs."
         ]
       },
       {
-        "name": "Comparison with the competition",
+        "name": "Comparaison avec la concurrence",
         "desc": [
           "<span>Transparency and trust:</span> Swetrix is open and transparent, which creates trust among users.",
           "<span>Unique features:</span> Swetrix offers dozens of unique and useful features, and here are some of them.."
@@ -196,42 +217,42 @@
     "description": "Swetrix is a comprehensive tool for managing your campaigns, optimising your strategies and analysing your traffic - all in one service, without compromising user privacy.",
     "whyUs": [
       {
-        "name": "Privacy and regulatory compliance",
+        "name": "Conformité de la confidentialité et de la réglementation",
         "desc": [
           "<span>Data security:</span> Swetrix focuses on protecting user data by not using cookies, which ensures a high degree of privacy.",
           "<span>GDPR compliance:</span> Unlike Google Analytics, Swetrix is GDPR compliant, making it a safe choice for startups that care about legal compliance."
         ]
       },
       {
-        "name": "Simplicity and ease of use",
+        "name": "Simplicité et facilité d'utilisation",
         "desc": [
           "<span>Intuitive interface:</span> Swetrix offers a simple and straightforward interface, making it easy to use even for those without technical experience.",
           "<span>Easy integration:</span> <integrationLink>Integration</integrationLink> with Swetrix takes a minimum of time and effort, which allows startups to quickly start using the service."
         ]
       },
       {
-        "name": "Focus on customer needs",
+        "name": "Concentrez-vous sur les besoins du client",
         "desc": [
           "<span>Personalised solutions:</span> Swetrix offers flexible settings and the ability to adapt to the individual needs of each startup.",
           "<span>Customer support:</span> High-quality customer support that helps to quickly resolve any issues and adjustments."
         ]
       },
       {
-        "name": "Accessibility and cost-effectiveness",
+        "name": "Accessibilité et rentabilité",
         "desc": [
           "<span>Competitive prices:</span> Swetrix offers competitive pricing, which is especially important for startups on a tight budget.",
           "<span>Free trial period:</span> The possibility of free testing of the service allows startups to evaluate its benefits without financial risks."
         ]
       },
       {
-        "name": "Functional capabilities",
+        "name": "Fonctionnalités",
         "desc": [
           "<span>Advanced traffic analysis:</span> Swetrix provides detailed traffic analysis with a variety of metrics to help startups better understand their users.",
           "<span>Reports and analytics:</span> Flexible reports and analytics that help you make informed decisions based on data."
         ]
       },
       {
-        "name": "Advantages compared to the competition",
+        "name": "Avantages par rapport à la concurrence",
         "desc": [
           "<span>Transparency:</span> Unlike some competitors, Swetrix is transparent in its operations, which creates trust among users.",
           "<span>Focus on privacy:</span> Swetrix focuses on privacy protection, which sets us apart from other solutions on the market."
@@ -244,7 +265,7 @@
     "description": "Swetrix is an all-in-one web analytics service that will help you as an entrepreneur or small business to track your campaigns, analyse traffic and website performance without compromising user privacy.",
     "whyUs": [
       {
-        "name": "Simplicity and efficiency",
+        "name": "Simplicité et efficacité",
         "desc": [
           "<span>Easy integration and configuration:</span> Swetrix <integrationLink>integrates seamlessly</integrationLink> with your existing systems, allowing you to quickly start using the service without the need for complex technical setup.",
           "<span>Intuitive interface:</span> A clear and easy-to-use interface that allows managers to quickly get the information they need without any extra effort."
@@ -298,7 +319,7 @@
     "startAFreeTrial": "Start a free trial",
     "metric": "Metric",
     "demoGeoReports": "Oui, c'est un standard. Mais nous suivons exactement d'où viennent vos utilisateurs.",
-    "peopleLoveSwetrix": "People 🥰 Swetrix",
+    "peopleLoveSwetrix": "Les gens 🥰 Swetrix",
     "whyPeopleLoveSwetrix": "Swetrix is an ethical and powerful service. Hundreds of people have already made the switch from Google Analytics and other alternatives.",
     "weAreOpensource": "We are <url>open source</url>",
     "coreFeatures": "Only the features you need",
@@ -494,15 +515,22 @@
     "noConfLeft": "Unfortunately, you've ran out of your email confirmation requests.\nPlease make sure you are able to receive e-mails and check your SPAM folder again for messages.\nYou may try to use a different email address or contact our customer support service.",
     "timezoneDesc": "This will be the time zone in which the data is displayed. It's only used for visualization.\nNo data will be modified based on this setting.",
     "quitProject": "Are you sure you want to quit this project?",
-    "quitProjectTitle": "Quit {{project}}?",
+    "quitOrganisation": "Are you sure you want to quit this organisation?",
+    "quitEntity": "Quit {{entity}}?",
     "shared": "Shared projects",
     "receiveLoginNotifications": "Receive login notifications",
-    "owned": "Owned projects",
+    "organisations": "Organisations",
+    "organisationsTable": {
+      "organisation": "Organisation",
+      "role": "Role",
+      "joinedOn": "Joined on"
+    },
     "sharedTable": {
       "project": "Project",
       "role": "Role",
       "joinedOn": "Joined on"
     },
+    "noOrganisations": "You are not a member of any organisation yet.",
     "noSharedProjects": "Nobody is sharing a project with you yet.",
     "2fa": "Two-factor authentication (2FA)",
     "2faEnable": "Enable 2FA to make your account more secure.",
@@ -575,6 +603,7 @@
       "generateRefLink": "Generate referral link",
       "referralStats": "Referral statistics",
       "activeReferrals": "Active referrals",
+      "noActiveReferrals": "You have no active referrals yet",
       "trial": "Trial referrals",
       "trialDesc": "Trial users referred by you",
       "active": "Active referrals",
@@ -598,8 +627,50 @@
     "alertUpdated": "The alert has been updated",
     "alertDeleted": "The alert has been deleted"
   },
+  "organisations": {
+    "create": "Create organisation",
+    "organisations": "Organisations",
+    "new": "New organisation",
+    "invite": {
+      "title": "Invite a user to {{organisation}}",
+      "desc": "Enter an email address and a role of the person registered on Swetrix that you want to invite to the organisation. The invitation will expire in {{expiresIn}} hours."
+    },
+    "role": {
+      "owner": {
+        "name": "Owner",
+        "desc": "Can manage the organisation and its members, as well as manage the projects within the organisation."
+      },
+      "admin": {
+        "name": "Admin",
+        "desc": "Can manage the organisation and its members, as well as manage the projects within the organisation."
+      },
+      "viewer": {
+        "name": "Viewer",
+        "desc": "Can only access the organisation and its projects without the ability to change any settings."
+      }
+    },
+    "projects": "Projects",
+    "addProject": "Add project",
+    "modals": {
+      "remove": {
+        "title": "Remove {{project}}?",
+        "message": "Are you sure you want to remove this project from the organisation? Once removed, organisation members will no longer have access to this project unless they are added in the project settings."
+      },
+      "addProject": {
+        "title": "Add project to {{organisation}}",
+        "message": "Select the project you want to add to the organisation. It will be available to all members of the organisation, and the organisation admins will be able to manage the project settings."
+      },
+      "delete": {
+        "title": "Delete {{organisation}}?",
+        "message": "Are you sure you want to delete this organisation?\nAll the data related to the organisation will be deleted from our servers. This action is irreversible."
+      }
+    },
+    "projectOwnedBy": "This project is owned by {{email}}",
+    "delete": "Delete organisation"
+  },
   "dashboard": {
     "uptime": "Uptime",
+    "captcha": "CAPTCHA",
     "newProject": "New project",
     "newFunnel": "New funnel",
     "reloadPage": "Reload page",
@@ -931,6 +1002,7 @@
     "barChart": "Graphique en barres",
     "lineChart": "Graphique en lignes",
     "settings": {
+      "organisation": "Organisation",
       "shields": "Shields",
       "access": "Access settings",
       "botsProtectionLevel": {
@@ -1209,6 +1281,7 @@
     "invitation": "Invitation à un projet partagé",
     "profileSettings": "Paramètres du profil",
     "dashboard": "Tableau de bord",
+    "organisations": "Organisations",
     "docs": "Documentation",
     "billing": "Facturation",
     "contact": "Contact",

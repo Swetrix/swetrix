@@ -4,35 +4,23 @@ import { Button as HeadlessButton } from '@headlessui/react'
 import cx from 'clsx'
 import Spin from './icons/Spin'
 
-// Define the prop types for the component
-interface IButton extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  // (string): The text to be displayed in the button.
+interface ButtonProps extends React.ComponentPropsWithoutRef<typeof HeadlessButton> {
   text?: string
-  // (node): The content to be displayed in the button.
-  children?: JSX.Element | string
+  children?: React.ReactNode
   primary?: boolean
   secondary?: boolean
   danger?: boolean
-  // (function): The function to be called when the button is clicked.
-  onClick?: () => void
   white?: boolean
   small?: boolean
   regular?: boolean
   large?: boolean
   giant?: boolean
-  // (string): The type of button to be rendered.
-  type?: 'button' | 'submit' | 'reset'
-  // (string): Additional CSS classes to be applied to the button.
-  className?: string
-  // (boolean): Whether the button is in a loading state.
   loading?: boolean
   semiSmall?: boolean
   semiDanger?: boolean
-  // (boolean): Whether the button is in a focus state.
   focus?: boolean
   noBorder?: boolean
-  // (boolean): Whether the button is disabled.
-  disabled?: boolean
+  title?: string
 }
 
 const Button = ({
@@ -41,7 +29,6 @@ const Button = ({
   primary,
   secondary,
   danger,
-  onClick,
   white,
   small,
   regular,
@@ -56,12 +43,11 @@ const Button = ({
   focus = true,
   disabled,
   ...props
-}: IButton): JSX.Element => (
+}: ButtonProps) => (
   <HeadlessButton
     {...props}
     disabled={disabled || loading}
     type={type}
-    onClick={onClick}
     className={cx(
       'relative inline-flex select-none items-center rounded-md border font-medium leading-4',
       {

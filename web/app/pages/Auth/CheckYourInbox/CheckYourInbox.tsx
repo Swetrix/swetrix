@@ -1,22 +1,21 @@
-import React, { useMemo, memo, useEffect } from 'react'
+import React, { useMemo, useEffect } from 'react'
 import { useNavigate } from '@remix-run/react'
 import { useTranslation, Trans } from 'react-i18next'
 import { EnvelopeIcon } from '@heroicons/react/24/outline'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 
-import Loader from 'ui/Loader'
-import { withAuthentication } from 'hoc/protected'
-import { authActions } from 'redux/reducers/auth'
-import sagaActions from 'redux/sagas/actions'
-import { StateType, useAppDispatch } from 'redux/store'
-import routes from 'utils/routes'
+import Loader from '~/ui/Loader'
+import { withAuthentication } from '~/hoc/protected'
+import { authActions } from '~/lib/reducers/auth'
+import { StateType, useAppDispatch } from '~/lib/store'
+import routes from '~/utils/routes'
+import { logout } from '~/utils/auth'
 
-const CheckYourInbox = (): JSX.Element => {
+const CheckYourInbox = () => {
   const { t } = useTranslation('common')
   const { loading, user } = useSelector((state: StateType) => state.auth)
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const _dispatch = useDispatch()
 
   const message = useMemo(() => {
     return t('auth.confirm.linkSent', { email: user?.email })
@@ -68,7 +67,7 @@ const CheckYourInbox = (): JSX.Element => {
                         className='cursor-pointer font-medium text-indigo-600 hover:underline dark:text-indigo-400'
                         onClick={() => {
                           dispatch(authActions.logout())
-                          _dispatch(sagaActions.logout(false, false))
+                          logout()
                         }}
                       />
                     ),
@@ -83,9 +82,7 @@ const CheckYourInbox = (): JSX.Element => {
   )
 }
 
-export default memo(
-  withAuthentication(CheckYourInbox, {
-    shouldBeAuthenticated: true,
-    redirectPath: routes.signup,
-  }),
-)
+export default withAuthentication(CheckYourInbox, {
+  shouldBeAuthenticated: true,
+  redirectPath: routes.signup,
+})

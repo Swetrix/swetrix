@@ -1,9 +1,9 @@
 /* eslint-disable react/no-unescaped-entities */
 import React from 'react'
 
-import { CONTACT_EMAIL } from 'redux/constants'
+import { CONTACT_EMAIL } from '~/lib/constants'
 
-const Terms = (): JSX.Element => {
+const Terms = () => {
   return (
     <div className='bg-gray-50 dark:bg-slate-900'>
       <div className='mx-auto w-11/12 px-4 pb-16 pt-12 sm:px-6 md:w-4/5 lg:px-8'>

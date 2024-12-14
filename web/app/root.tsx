@@ -12,32 +12,32 @@ import {
   isRouteErrorResponse,
   useRouteError,
 } from '@remix-run/react'
-import { store } from 'redux/store'
-import { isBrowser, CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted, I18N_CACHE_BREAKER } from 'redux/constants'
+import { store } from '~/lib/store'
+import { CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted, I18N_CACHE_BREAKER } from '~/lib/constants'
 import { ExternalScripts } from 'remix-utils/external-scripts'
-import { getCookie, generateCookieString } from 'utils/cookie'
+import { getCookie, generateCookieString } from '~/utils/cookie'
 import { ExclamationTriangleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 import { Provider } from 'react-redux'
 import clsx from 'clsx'
 import _replace from 'lodash/replace'
 import BillboardCss from 'billboard.js/dist/billboard.min.css'
 
-import { trackViews, trackErrors } from 'utils/analytics'
+import { trackViews, trackErrors } from '~/utils/analytics'
 import { useChangeLanguage } from 'remix-i18next/react'
 import { useTranslation } from 'react-i18next'
-import AppWrapper from 'App'
-import { detectLanguage } from 'i18n'
-import { detectTheme, isAuthenticated, isWWW } from 'utils/server'
-import { LocaleLinks } from 'components/LocaleLinks'
-import { SEO } from 'components/SEO'
+import AppWrapper from './App'
+import { detectLanguage } from './i18n'
+import { detectTheme, isAuthenticated, isWWW } from '~/utils/server'
+import { LocaleLinks } from '~/components/LocaleLinks'
+import { SEO } from '~/components/SEO'
 
-import mainCss from 'styles/index.css'
-import tailwindCss from 'styles/tailwind.css'
-import sonnerCss from 'styles/sonner.css'
-import FlatpickerCss from 'styles/Flatpicker.css'
+import mainCss from '~/styles/index.css'
+import tailwindCss from '~/styles/tailwind.css'
+import sonnerCss from '~/styles/sonner.css'
+import FlatpickerCss from '~/styles/Flatpicker.css'
 import FlatpickrLightCss from 'flatpickr/dist/themes/light.css'
 import FlatpickrDarkCss from 'flatpickr/dist/themes/dark.css'
-import FontsCss from 'styles/fonts.css'
+import FontsCss from '~/styles/fonts.css'
 
 trackViews()
 trackErrors()
@@ -50,10 +50,6 @@ declare global {
 
     Paddle: any
   }
-}
-
-if (isBrowser && process.env.NODE_ENV !== 'production') {
-  localStorage.debug = 'swetrix:*'
 }
 
 export const links: LinksFunction = () => [

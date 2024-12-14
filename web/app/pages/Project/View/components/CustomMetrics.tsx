@@ -4,14 +4,14 @@ import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import { useTranslation } from 'react-i18next'
 
-import { IProjectViewCustomEvent } from '../interfaces/traffic'
+import { ProjectViewCustomEvent } from '../interfaces/traffic'
 
-interface ICustomMetric {
-  metric: IProjectViewCustomEvent
+interface CustomMetricProps {
+  metric: ProjectViewCustomEvent
   onRemove: () => void
 }
 
-const CustomMetric = ({ metric, onRemove }: ICustomMetric): JSX.Element => {
+const CustomMetric = ({ metric, onRemove }: CustomMetricProps) => {
   const { t } = useTranslation('common')
 
   const displayValue = useMemo(() => {
@@ -65,13 +65,13 @@ const CustomMetric = ({ metric, onRemove }: ICustomMetric): JSX.Element => {
   )
 }
 
-interface IFilters {
-  metrics: IProjectViewCustomEvent[]
-  onRemoveMetric: (id: IProjectViewCustomEvent['id']) => void
+interface FiltersProps {
+  metrics: ProjectViewCustomEvent[]
+  onRemoveMetric: (id: ProjectViewCustomEvent['id']) => void
   resetMetrics: () => void
 }
 
-const CustomMetrics = ({ metrics, onRemoveMetric, resetMetrics }: IFilters) => {
+const CustomMetrics = ({ metrics, onRemoveMetric, resetMetrics }: FiltersProps) => {
   if (_isEmpty(metrics)) {
     return null
   }

@@ -1,20 +1,20 @@
 import React, { useState } from 'react'
 import { Link } from '@remix-run/react'
-import { IUser } from 'redux/models/IUser'
-import { IProjectForShared } from 'redux/models/ISharedProject'
+import { User } from '~/lib/models/User'
+import { ProjectForShared } from '~/lib/models/SharedProject'
 import { useTranslation, Trans } from 'react-i18next'
-import routes from 'utils/routes'
-import PulsatingCircle from 'ui/icons/PulsatingCircle'
-import TrackingSnippet from 'modals/TrackingSnippet'
+import routes from '~/utils/routes'
+import PulsatingCircle from '~/ui/icons/PulsatingCircle'
+import TrackingSnippet from '~/modals/TrackingSnippet'
 
-interface IWaitingForAnEvent {
-  user?: IUser
-  project: IProjectForShared
+interface WaitingForAnEventProps {
+  user?: User
+  project: ProjectForShared
 }
 
 const TROUBLESHOOTING_URL = 'https://docs.swetrix.com/troubleshooting'
 
-const WaitingForAnEvent = ({ project }: IWaitingForAnEvent) => {
+const WaitingForAnEvent = ({ project }: WaitingForAnEventProps) => {
   const { t } = useTranslation('common')
   const [isModalOpened, setIsModalOpened] = useState(false)
 

@@ -7,7 +7,7 @@ import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
 import Spin from './icons/Spin'
 
-interface IDropdown<T> {
+interface DropdownProps<T> {
   title: string | number | React.ReactNode
   desc?: string | number | React.ReactNode
   className?: string
@@ -19,7 +19,7 @@ interface IDropdown<T> {
   buttonClassName?: string
   selectItemClassName?: string
   menuItemsClassName?: string
-  header?: string | JSX.Element
+  header?: React.ReactNode
   chevron?: 'regular' | 'mini'
   headless?: boolean
   disabled?: boolean
@@ -45,7 +45,7 @@ function Dropdown<T>({
   disabled,
   onClick,
   loading,
-}: IDropdown<T>): JSX.Element {
+}: DropdownProps<T>) {
   return (
     <Menu as='div' className={cx('relative inline-block text-left', className)}>
       {({ open, close }) => (
@@ -107,20 +107,26 @@ function Dropdown<T>({
                 },
               )}
             >
-              {header && <p className='px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-50'>{header}</p>}
+              {header ? (
+                <p className='px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-50'>{header}</p>
+              ) : null}
               {loading ? (
                 <div className='px-4 py-2'>
                   <Spin className='!ml-0' />
                   <span className='sr-only'>Loading...</span>
                 </div>
               ) : (
-                _map(items, (item) => (
+                _map(items, (item, index) => (
                   <MenuItem key={keyExtractor ? keyExtractor(item, close) : (item as Key)}>
                     <span
-                      className={
+                      className={cx(
                         selectItemClassName ||
-                        'block cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
-                      }
+                          'block cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700',
+                        {
+                          'rounded-t-md': index === 0 && !header,
+                          'rounded-b-md': index === items.length - 1,
+                        },
+                      )}
                       role='menuitem'
                       tabIndex={0}
                       onClick={(e: React.MouseEvent<HTMLElement>) => onSelect(item, e, close)}

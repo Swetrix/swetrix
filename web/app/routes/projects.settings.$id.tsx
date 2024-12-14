@@ -1,5 +1,5 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
-import ProjectSettings from 'pages/Project/Settings'
+import ProjectSettings from '~/pages/Project/Settings'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   // return current domain origin, like https://app.swetrix.com

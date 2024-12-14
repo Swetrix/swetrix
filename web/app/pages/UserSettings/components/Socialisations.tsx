@@ -1,16 +1,20 @@
-import React, { useState, memo } from 'react'
-import type i18next from 'i18next'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import _map from 'lodash/map'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import { toast } from 'sonner'
 
-import Button from 'ui/Button'
-import Google from 'ui/icons/GoogleG'
-import GithubDark from 'ui/icons/GithubDark'
-import GithubLight from 'ui/icons/GithubLight'
-import { IUser } from 'redux/models/IUser'
-import { SSO_PROVIDERS } from 'redux/constants'
+import Button from '~/ui/Button'
+import Google from '~/ui/icons/GoogleG'
+import GithubDark from '~/ui/icons/GithubDark'
+import GithubLight from '~/ui/icons/GithubLight'
+import { User } from '~/lib/models/User'
+import { SSO_PROVIDERS } from '~/lib/constants'
+import { StateType, useAppDispatch } from '~/lib/store'
+import { useSelector } from 'react-redux'
+import { authMe, generateSSOAuthURL, linkBySSOHash, unlinkSSO } from '~/api'
+import { authActions } from '~/lib/reducers/auth'
+import { delay, openBrowserWindow } from '~/utils/generic'
 
 const AVAILABLE_SSO_PROVIDERS = [
   {
@@ -32,7 +36,7 @@ const AVAILABLE_SSO_PROVIDERS = [
   },
 ]
 
-const getStatusByUser = (user: IUser, socialisation: string) => {
+const getStatusByUser = (user: User, socialisation: string) => {
   if (socialisation === SSO_PROVIDERS.GOOGLE) {
     const connected = user.googleId
     const unlinkable = !user.registeredWithGoogle
@@ -48,39 +52,79 @@ const getStatusByUser = (user: IUser, socialisation: string) => {
   return [false, false]
 }
 
-interface ISocialisations {
-  user: IUser
-  linkSSO: (t: typeof i18next.t, callback: (e: any) => void, provider: string) => void
-  unlinkSSO: (t: typeof i18next.t, callback: (e: any) => void, provider: string) => void
-  theme: string
-}
+const HASH_CHECK_FREQUENCY = 1000 // 1 second
 
-const Socialisations = ({ user, linkSSO, unlinkSSO, theme }: ISocialisations) => {
+const Socialisations = () => {
+  const { user } = useSelector((state: StateType) => state.auth)
+  const { theme } = useSelector((state: StateType) => state.ui.theme)
+  const dispatch = useAppDispatch()
   const { t } = useTranslation('common')
   const [isLoading, setIsLoading] = useState(false)
 
-  const _linkSSO = (provider: string) => {
+  const linkSSO = async (provider: string) => {
     setIsLoading(true)
 
-    linkSSO(
-      t,
-      () => {
-        setIsLoading(false)
-      },
-      provider,
-    )
+    const authWindow = openBrowserWindow('')
+
+    if (!authWindow) {
+      toast.error(t('apiNotifications.socialisationGenericError'))
+      setIsLoading(false)
+      return
+    }
+
+    try {
+      const { uuid, auth_url: authUrl, expires_in: expiresIn } = await generateSSOAuthURL(provider)
+
+      authWindow.location = authUrl
+
+      // Closing the authorisation window after the session expires
+      setTimeout(authWindow.close, expiresIn)
+
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        await delay(HASH_CHECK_FREQUENCY)
+
+        try {
+          await linkBySSOHash(uuid, provider)
+          authWindow.close()
+
+          const { user } = await authMe()
+          dispatch(authActions.authSuccessful(user))
+
+          toast.success(t('apiNotifications.socialAccountLinked'))
+
+          setIsLoading(false)
+          return
+        } catch (reason) {
+          // Authentication is not finished yet
+        }
+
+        if (authWindow.closed) {
+          setIsLoading(false)
+          return
+        }
+      }
+    } catch (reason) {
+      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.socialisationGenericError'))
+      setIsLoading(false)
+      return
+    }
   }
 
-  const _unlinkSSO = (provider: string) => {
+  const onUnlinkSSO = async (provider: string) => {
     setIsLoading(true)
 
-    unlinkSSO(
-      t,
-      () => {
-        setIsLoading(false)
-      },
-      provider,
-    )
+    try {
+      await unlinkSSO(provider)
+      const { user } = await authMe()
+      dispatch(authActions.authSuccessful(user))
+
+      toast.success(t('apiNotifications.socialAccountUninked'))
+    } catch (reason) {
+      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.socialisationUnlinkGenericError'))
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -131,13 +175,13 @@ const Socialisations = ({ user, linkSSO, unlinkSSO, theme }: ISocialisations) =>
                     )}
 
                     {connected && unlinkable && (
-                      <Button onClick={() => _unlinkSSO(key)} loading={isLoading} small danger>
+                      <Button onClick={() => onUnlinkSSO(key)} loading={isLoading} small danger>
                         {t('common.unlink')}
                       </Button>
                     )}
 
                     {!connected && (
-                      <Button onClick={() => _linkSSO(key)} loading={isLoading} small primary>
+                      <Button onClick={() => linkSSO(key)} loading={isLoading} small primary>
                         {t('common.link')}
                       </Button>
                     )}
@@ -152,4 +196,4 @@ const Socialisations = ({ user, linkSSO, unlinkSSO, theme }: ISocialisations) =>
   )
 }
 
-export default memo(Socialisations)
+export default Socialisations

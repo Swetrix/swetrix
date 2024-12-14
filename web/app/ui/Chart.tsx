@@ -4,14 +4,14 @@ import 'billboard.js/dist/theme/datalab.css'
 import 'billboard.js/dist/billboard.css'
 
 // Define the prop types for the component
-interface IChart {
+interface ChartProps {
   // (string): The ID of the chart container.
   current: string
   // (object): The chart options.
   options: any
 }
 
-const Chart = ({ current, options }: IChart): JSX.Element => {
+const Chart = ({ current, options }: ChartProps) => {
   let chartInstance: any = {}
 
   // Destroy the chart instance
@@ -19,8 +19,8 @@ const Chart = ({ current, options }: IChart): JSX.Element => {
     if (chartInstance !== null) {
       try {
         chartInstance.destroy()
-      } catch (error) {
-        console.error('[ERROR] Internal billboard.js error', error)
+      } catch (reason) {
+        console.error('[ERROR] Internal billboard.js error', reason)
       } finally {
         chartInstance = null
       }
@@ -43,11 +43,7 @@ const Chart = ({ current, options }: IChart): JSX.Element => {
     return destroy
   })
 
-  return (
-    <div>
-      <div id={current} data-testid='chart' />
-    </div>
-  )
+  return <div id={current} />
 }
 
 export default Chart

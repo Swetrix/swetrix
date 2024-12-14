@@ -1,41 +1,30 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import _isEmpty from 'lodash/isEmpty'
-import _reduce from 'lodash/reduce'
 import _filter from 'lodash/filter'
 import _map from 'lodash/map'
 import _find from 'lodash/find'
 
-import Modal from 'ui/Modal'
-import Checkbox from 'ui/Checkbox'
-import Select from 'ui/Select'
-import Combobox from 'ui/Combobox'
-import { FILTERS_PANELS_ORDER, ERRORS_FILTERS_PANELS_ORDER } from 'redux/constants'
-import countries from 'utils/isoCountries'
-import { getFilters, getErrorsFilters } from 'api'
+import Modal from '~/ui/Modal'
+import Checkbox from '~/ui/Checkbox'
+import Select from '~/ui/Select'
+import Combobox from '~/ui/Combobox'
+import { FILTERS_PANELS_ORDER, ERRORS_FILTERS_PANELS_ORDER } from '~/lib/constants'
+import countries from '~/utils/isoCountries'
+import { getFilters, getErrorsFilters } from '~/api'
 import { Filter } from './Filters'
-import { IFilter } from '../interfaces/traffic'
+import { Filter as FilterType } from '../interfaces/traffic'
 
-interface ISearchFilters {
+interface SearchFiltersProps {
   projectPassword?: string
-  setProjectFilter: (filters: IFilter[], override: boolean) => void
+  setProjectFilter: (filters: FilterType[], override: boolean) => void
   pid: string
   showModal: boolean
   setShowModal: (show: boolean) => void
   tnMapping: Record<string, string>
-  filters: IFilter[]
+  filters: FilterType[]
   type: 'traffic' | 'errors'
 }
-
-const getLabelToTypeMap = (t: any, type: 'traffic' | 'errors') =>
-  _reduce(
-    type === 'traffic' ? FILTERS_PANELS_ORDER : ERRORS_FILTERS_PANELS_ORDER,
-    (acc, curr) => ({
-      ...acc,
-      [t(`project.mapping.${curr}`)]: curr,
-    }),
-    {},
-  )
 
 const SearchFilters = ({
   setProjectFilter,
@@ -46,17 +35,15 @@ const SearchFilters = ({
   filters,
   projectPassword,
   type,
-}: ISearchFilters) => {
+}: SearchFiltersProps) => {
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
   const [filterType, setFilterType] = useState('')
   const [searchList, setSearchList] = useState<any[]>([])
-  const [activeFilters, setActiveFilters] = useState<IFilter[]>([])
+  const [activeFilters, setActiveFilters] = useState<FilterType[]>([])
   const [override, setOverride] = useState(false)
-
-  const labelToTypeMap = useMemo(() => getLabelToTypeMap(t, type), [t, type])
 
   const getFiltersList = useCallback(
     async (category: string) => {
@@ -128,8 +115,7 @@ const SearchFilters = ({
             label={t('project.selectCategory')}
             items={type === 'traffic' ? FILTERS_PANELS_ORDER : ERRORS_FILTERS_PANELS_ORDER}
             labelExtractor={(item) => t(`project.mapping.${item}`)}
-            // @ts-ignore
-            onSelect={(item: string) => setFilterType(labelToTypeMap[item])}
+            onSelect={(item) => setFilterType(item)}
             title={
               _isEmpty(filterType) ? t('project.settings.reseted.selectFilters') : t(`project.mapping.${filterType}`)
             }

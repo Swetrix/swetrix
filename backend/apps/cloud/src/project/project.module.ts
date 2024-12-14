@@ -17,6 +17,7 @@ import { ProjectViewEntity } from './entity/project-view.entity'
 import { ProjectViewCustomEventEntity } from './entity/project-view-custom-event.entity'
 import { MonitorConsumer } from './consumers/monitor.consumer'
 import { MonitorEntity } from './entity/monitor.entity'
+import { OrganisationModule } from '../organisation/organisation.module'
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { MonitorEntity } from './entity/monitor.entity'
       MonitorEntity,
     ]),
     forwardRef(() => UserModule),
+    forwardRef(() => OrganisationModule),
     HttpModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

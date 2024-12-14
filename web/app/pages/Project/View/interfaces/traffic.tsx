@@ -1,4 +1,4 @@
-export interface IFilter {
+export interface Filter {
   column: string
   filter: string
   isExclusive: boolean
@@ -10,7 +10,7 @@ export enum ProjectViewCustomEventMetaValueType {
   FLOAT = 'float',
 }
 
-export interface IProjectViewCustomEvent {
+export interface ProjectViewCustomEvent {
   id: string
   customEventName: string
   metaKey?: string
@@ -19,52 +19,52 @@ export interface IProjectViewCustomEvent {
   metaValueType: ProjectViewCustomEventMetaValueType
 }
 
-export interface IProjectView {
+export interface ProjectView {
   id: string
   name: string
-  filters?: IFilter[]
-  customEvents?: IProjectViewCustomEvent[]
+  filters?: Filter[]
+  customEvents?: ProjectViewCustomEvent[]
 }
 
-interface IParam {
+interface Param {
   name: string
   count: number
 }
 
-export interface IParams {
-  [key: string]: IParam[]
+export interface Params {
+  [key: string]: Param[]
 }
 
-export interface ICustoms {
+export interface Customs {
   [key: string]: number
 }
 
-export interface IProperties {
+export interface Properties {
   [key: string]: number
 }
 
-interface IMetric {
+interface Metric {
   sum: number
   avg: number
 }
 
-export interface ITrafficMeta {
+export interface TrafficMeta {
   key: string
-  current: IMetric
-  previous: IMetric
+  current: Metric
+  previous: Metric
 }
 
-export interface ITrafficLogResponse {
-  params?: IParams
+export interface TrafficLogResponse {
+  params?: Params
   chart?: {
     x: string[]
     visits: number[]
     uniques: number[]
     sdur: number[]
   }
-  customs: ICustoms
-  properties: IProperties
-  appliedFilters?: IFilter[]
+  customs: Customs
+  properties: Properties
+  appliedFilters?: Filter[]
   timeBucket?: string[]
-  meta?: ITrafficMeta[]
+  meta?: TrafficMeta[]
 }

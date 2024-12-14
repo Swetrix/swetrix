@@ -2,7 +2,7 @@ import React, { memo } from 'react'
 import { Link } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import _map from 'lodash/map'
-import Flag from 'ui/Flag'
+import Flag from '~/ui/Flag'
 
 import {
   isSelfhosted,
@@ -20,9 +20,9 @@ import {
   SWETRIX_VS_SIMPLE_ANALYTICS,
   DISCORD_URL,
   CAPTCHA_URL,
-} from 'redux/constants'
-import routesPath from 'utils/routes'
-import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/solid'
+} from '~/lib/constants'
+import routesPath from '~/utils/routes'
+import { SquareArrowOutUpRightIcon } from 'lucide-react'
 
 const CONTACT_US_URL = `https://swetrix.com${routesPath.contact}`
 const ABOUT_US_URL = `https://swetrix.com${routesPath.about}`
@@ -211,13 +211,12 @@ const SelfHostedFooter = () => {
   )
 }
 
-interface IFooter {
-  minimal?: boolean
+interface FooterProps {
   authenticated?: boolean
   showDBIPMessage?: boolean
 }
 
-const Footer = ({ minimal, authenticated, showDBIPMessage }: IFooter): JSX.Element => {
+const Footer = ({ authenticated, showDBIPMessage }: FooterProps) => {
   const {
     t,
     i18n: { language },
@@ -226,71 +225,6 @@ const Footer = ({ minimal, authenticated, showDBIPMessage }: IFooter): JSX.Eleme
 
   if (isSelfhosted) {
     return <SelfHostedFooter />
-  }
-
-  if (minimal) {
-    return (
-      <footer className='border-t border-gray-200 bg-gray-50 dark:border-slate-800/50 dark:bg-slate-900'>
-        <div className='mx-auto max-w-7xl overflow-hidden px-4 py-8 sm:px-6 lg:px-8'>
-          <nav className='relative -mx-5 -my-2 flex flex-wrap justify-center' aria-label='Footer'>
-            <div className='px-5 py-2'>
-              <Link
-                to={routesPath.contact}
-                className='leading-6 text-slate-900 hover:text-slate-700 dark:text-gray-300 dark:hover:text-white'
-              >
-                {t('footer.contact')}
-              </Link>
-            </div>
-            <div className='px-5 py-2'>
-              <Link
-                to={routesPath.privacy}
-                className='leading-6 text-slate-900 hover:text-slate-700 dark:text-gray-300 dark:hover:text-white'
-              >
-                {t('footer.pp')}
-              </Link>
-            </div>
-            <div className='px-5 py-2'>
-              <Link
-                to={routesPath.terms}
-                className='leading-6 text-slate-900 hover:text-slate-700 dark:text-gray-300 dark:hover:text-white'
-              >
-                {t('footer.tos')}
-              </Link>
-            </div>
-            <div className='px-5 py-2'>
-              <Link
-                to={routesPath.about}
-                className='leading-6 text-slate-900 hover:text-slate-700 dark:text-gray-300 dark:hover:text-white'
-              >
-                {t('footer.about')}
-              </Link>
-            </div>
-            <div className='px-5 py-2'>
-              <a
-                href={STATUSPAGE_URL}
-                className='leading-6 text-slate-900 hover:text-slate-700 dark:text-gray-300 dark:hover:text-white'
-                target='_blank'
-                rel='noopener noreferrer'
-                aria-label={`${t('footer.status')} (opens in a new tab)`}
-              >
-                {t('footer.status')}
-              </a>
-            </div>
-            {showDBIPMessage && (
-              <a
-                className='absolute -bottom-5 leading-6 text-slate-900 hover:text-slate-700 dark:text-gray-300 dark:hover:text-white'
-                target='_blank'
-                rel='noopener noreferrer'
-                href='https://db-ip.com'
-                aria-label='IP Geolocation by DB-IP (opens in a new tab)'
-              >
-                IP Geolocation by DB-IP
-              </a>
-            )}
-          </nav>
-        </div>
-      </footer>
-    )
   }
 
   return (
@@ -365,7 +299,7 @@ const Footer = ({ minimal, authenticated, showDBIPMessage }: IFooter): JSX.Eleme
               className='block max-w-max items-center border-b-2 border-transparent text-base text-gray-300 hover:border-gray-300'
             >
               {t('main.ukrSupport')}
-              <ArrowTopRightOnSquareIcon className='mb-1 ml-1 inline size-4' />
+              <SquareArrowOutUpRightIcon className='mb-1 ml-1 inline size-4' strokeWidth={1.5} />
             </a>
           </div>
           <div className='mt-12 xl:mt-0'>
@@ -450,6 +384,20 @@ const Footer = ({ minimal, authenticated, showDBIPMessage }: IFooter): JSX.Eleme
                       </li>
                     )
                   })}
+
+                  {showDBIPMessage && (
+                    <li>
+                      <a
+                        className='text-base text-gray-300 hover:text-white'
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        href='https://db-ip.com'
+                        aria-label='IP Geolocation by DB-IP (opens in a new tab)'
+                      >
+                        IP Geolocation by DB-IP
+                      </a>
+                    </li>
+                  )}
                 </ul>
               </div>
             </div>

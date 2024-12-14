@@ -1,4 +1,4 @@
-import { IParams } from './traffic'
+import { Params } from './traffic'
 
 interface AIProperty {
   [key: string]: number
@@ -24,11 +24,11 @@ export interface AIResponse {
 }
 
 export interface AIProcessedResponse {
-  next_1_hour?: IParams
-  next_4_hour?: IParams
-  next_8_hour?: IParams
-  next_12_hour?: IParams
-  next_24_hour?: IParams
-  next_72_hour?: IParams
-  next_168_hour?: IParams
+  next_1_hour?: Params
+  next_4_hour?: Params
+  next_8_hour?: Params
+  next_12_hour?: Params
+  next_24_hour?: Params
+  next_72_hour?: Params
+  next_168_hour?: Params
 }

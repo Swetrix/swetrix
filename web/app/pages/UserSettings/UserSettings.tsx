@@ -15,12 +15,7 @@ import _find from 'lodash/find'
 import {
   EnvelopeIcon,
   ExclamationTriangleIcon,
-  ArrowDownTrayIcon,
-  CurrencyDollarIcon,
   ChevronDownIcon,
-  UserIcon,
-  ChatBubbleLeftEllipsisIcon,
-  ComputerDesktopIcon,
   CursorArrowRaysIcon,
 } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
@@ -30,42 +25,52 @@ import cx from 'clsx'
 import {
   reportFrequencies,
   DEFAULT_TIMEZONE,
-  WEEKLY_REPORT_FREQUENCY,
   CONFIRMATION_TIMEOUT,
   GDPR_REQUEST,
   GDPR_EXPORT_TIMEFRAME,
   TimeFormat,
   isSelfhosted,
-} from 'redux/constants'
-import { IUser } from 'redux/models/IUser'
-import { ISharedProject } from 'redux/models/ISharedProject'
-import { withAuthentication, auth } from 'hoc/protected'
-import Input from 'ui/Input'
-import Button from 'ui/Button'
-import Modal from 'ui/Modal'
-import Select from 'ui/Select'
-import Checkbox from 'ui/Checkbox'
-import PaidFeature from 'modals/PaidFeature'
-import TimezonePicker from 'ui/TimezonePicker'
-import Textarea from 'ui/Textarea'
-import Loader from 'ui/Loader'
-import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS } from 'utils/validator'
-import routes from 'utils/routes'
-import { trackCustom } from 'utils/analytics'
-import { getCookie, setCookie } from 'utils/cookie'
+} from '~/lib/constants'
+import { User } from '~/lib/models/User'
+import { withAuthentication, auth } from '~/hoc/protected'
+import Input from '~/ui/Input'
+import Button from '~/ui/Button'
+import Modal from '~/ui/Modal'
+import Select from '~/ui/Select'
+import Checkbox from '~/ui/Checkbox'
+import PaidFeature from '~/modals/PaidFeature'
+import TimezonePicker from '~/ui/TimezonePicker'
+import Textarea from '~/ui/Textarea'
+import Loader from '~/ui/Loader'
+import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS } from '~/utils/validator'
+import routes from '~/utils/routes'
+import { trackCustom } from '~/utils/analytics'
+import { getCookie, setCookie } from '~/utils/cookie'
 import {
   confirmEmail,
   exportUserData,
   generateApiKey,
   deleteApiKey, // setTheme,
   receiveLoginNotification,
-} from 'api'
+  setShowLiveVisitorsInTitle,
+  changeUserDetails,
+  deleteUser,
+} from '~/api'
 import ProjectList from './components/ProjectList'
 import TwoFA from './components/TwoFA'
 import Integrations from './components/Integrations'
 import Socialisations from './components/Socialisations'
 import Referral from './components/Referral'
 import NoSharedProjects from './components/NoSharedProjects'
+import Organisations from './components/Organisations'
+import NoOrganisations from './components/NoOrganisations'
+import { useSelector } from 'react-redux'
+import { StateType, useAppDispatch } from '~/lib/store'
+import { authActions } from '~/lib/reducers/auth'
+import { removeRefreshToken } from '~/utils/refreshToken'
+import { removeAccessToken } from '~/utils/accessToken'
+import { logout } from '~/utils/auth'
+import { DownloadIcon, MessageSquareTextIcon, MonitorIcon, UserRoundIcon } from 'lucide-react'
 
 dayjs.extend(utc)
 
@@ -84,12 +89,12 @@ const getTabs = (t: typeof i18next.t) => {
       {
         id: TAB_MAPPING.ACCOUNT,
         label: t('profileSettings.account'),
-        icon: UserIcon,
+        icon: UserRoundIcon,
       },
       {
         id: TAB_MAPPING.INTERFACE,
         label: 'Interface settings',
-        icon: ComputerDesktopIcon,
+        icon: MonitorIcon,
       },
     ]
   }
@@ -98,17 +103,17 @@ const getTabs = (t: typeof i18next.t) => {
     {
       id: TAB_MAPPING.ACCOUNT,
       label: t('profileSettings.account'),
-      icon: UserIcon,
+      icon: UserRoundIcon,
     },
     {
       id: TAB_MAPPING.COMMUNICATIONS,
       label: 'Communications',
-      icon: ChatBubbleLeftEllipsisIcon,
+      icon: MessageSquareTextIcon,
     },
     {
       id: TAB_MAPPING.INTERFACE,
       label: 'Interface settings',
-      icon: ComputerDesktopIcon,
+      icon: MonitorIcon,
     },
     {
       id: TAB_MAPPING.REFERRALS,
@@ -118,76 +123,30 @@ const getTabs = (t: typeof i18next.t) => {
   ]
 }
 
-interface IProps {
-  onDelete: (t: typeof i18next.t, deletionFeedback: string, callback: () => void) => void
-  onDeleteProjectCache: () => void
-  removeProject: (id: string) => void
-  removeShareProject: (id: string) => void
-  setUserShareData: (data: Partial<ISharedProject>, id: string) => void
-  setProjectsShareData: (data: Partial<ISharedProject>, id: string) => void
-  updateUserData: (data: Partial<IUser>) => void
-  updateUserProfileAsync: (data: IUser, successMessage: string, callback?: (isSuccess: boolean) => void) => void
-  setAPIKey: (key: string | null) => void
-  user: IUser
-  dontRemember: boolean
-  isPaidTierUsed: boolean
-  linkSSO: (t: typeof i18next.t, callback: (e: any) => void, provider: string) => void
-  unlinkSSO: (t: typeof i18next.t, callback: (e: any) => void, provider: string) => void
-  theme: string
-  updateShowLiveVisitorsInTitle: (show: boolean, callback: (isSuccess: boolean) => void) => void
-  logoutLocal: () => void
-  logoutAll: () => void
-  loading: boolean
-  setCache: (key: string, value: any) => void
-  activeReferrals: any[]
-  referralStatistics: any
-}
-
-interface IForm extends Partial<IUser> {
+interface Form extends Partial<User> {
   repeat: string
   password: string
   email: string
 }
 
-const UserSettings = ({
-  onDelete,
-  onDeleteProjectCache,
-  removeProject,
-  removeShareProject,
-  setUserShareData,
-  setProjectsShareData,
-  updateUserData,
-  updateUserProfileAsync,
-  setAPIKey,
-  user,
-  dontRemember,
-  isPaidTierUsed, // setThemeType, themeType,
-  linkSSO,
-  unlinkSSO,
-  theme,
-  updateShowLiveVisitorsInTitle,
-  logoutAll,
-  loading,
-  logoutLocal,
-  referralStatistics,
-  activeReferrals,
-  setCache,
-}: IProps): JSX.Element => {
+const UserSettings = () => {
+  const { user, loading } = useSelector((state: StateType) => state.auth)
+  const dispatch = useAppDispatch()
+
   const navigate = useNavigate()
   const { t } = useTranslation('common')
-  const [activeTab, setActiveTab] = useState<string>(TAB_MAPPING.ACCOUNT)
-  const [form, setForm] = useState<IForm>({
+  const [activeTab, setActiveTab] = useState(TAB_MAPPING.ACCOUNT)
+  const [form, setForm] = useState<Form>({
     email: user.email || '',
     password: '',
     repeat: '',
     timeFormat: user.timeFormat || TimeFormat['12-hour'],
   })
   const [showPasswordFields, setShowPasswordFields] = useState(false)
-  const [timezone, setTimezone] = useState<string>(user.timezone || DEFAULT_TIMEZONE)
+  const [timezone, setTimezone] = useState(user.timezone || DEFAULT_TIMEZONE)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
   const [isPasswordChangeModalOpened, setIsPasswordChangeModalOpened] = useState(false)
-  const [timezoneChanged, setTimezoneChanged] = useState(false)
-  const [reportFrequency, setReportFrequency] = useState<string>(user.reportFrequency)
+  const [reportFrequency, setReportFrequency] = useState(user.reportFrequency)
   const [formPresetted, setFormPresetted] = useState(false)
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
@@ -198,10 +157,10 @@ const UserSettings = ({
   const [showAPIDeleteModal, setShowAPIDeleteModal] = useState(false)
   const [showExportModal, setShowExportModal] = useState(false)
   const [error, setError] = useState<null | string>(null)
-  const translatedFrequencies: string[] = _map(reportFrequencies, (key) => t(`profileSettings.${key}`)) // useMemo(_map(reportFrequencies, (key) => t(`profileSettings.${key}`)), [t])
-  const translatedTimeFormat: string[] = _map(TimeFormat, (key) => t(`profileSettings.${key}`)) // useMemo(_map(TimeFormat, (key) => t(`profileSettings.${key}`)), [t])
+  const translatedFrequencies = _map(reportFrequencies, (key) => t(`profileSettings.${key}`))
+  const translatedTimeFormat = _map(TimeFormat, (key) => t(`profileSettings.${key}`))
   const [settingUpdating, setSettingUpdating] = useState(false)
-  const [deletionFeedback, setDeletionFeedback] = useState<string>('')
+  const [deletionFeedback, setDeletionFeedback] = useState('')
 
   const tabs = getTabs(t)
   const activeTabLabel = useMemo(() => _find(tabs, (tab) => tab.id === activeTab)?.label, [tabs, activeTab])
@@ -231,7 +190,7 @@ const UserSettings = ({
     setValidated(valid)
   }
 
-  const onSubmit = (data: any, callback: (isSuccess: boolean) => void = () => {}) => {
+  const onSubmit = async (data: any, callback: (isSuccess: boolean) => void = () => {}) => {
     delete data.repeat
 
     // eslint-disable-next-line no-restricted-syntax
@@ -241,13 +200,27 @@ const UserSettings = ({
       }
     }
 
-    updateUserProfileAsync(data, t('profileSettings.updated'), (isSuccess: boolean) => {
-      if (isSuccess && data.email && data.email !== user.email) {
-        toast.success(t('profileSettings.emailChanged'))
-      }
+    try {
+      const result = await changeUserDetails(data)
+      dispatch(authActions.setUser(result))
+      toast.success(t('profileSettings.updated'))
+    } catch (reason: any) {
+      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
+    } finally {
+      callback(true)
+      dispatch(authActions.finishLoading())
+    }
+  }
 
-      callback(isSuccess)
-    })
+  const logoutLocal = () => {
+    dispatch(authActions.logout())
+    removeRefreshToken()
+    removeAccessToken()
+  }
+
+  const logoutAll = () => {
+    dispatch(authActions.logout())
+    logout(true)
   }
 
   useEffect(() => {
@@ -266,11 +239,6 @@ const UserSettings = ({
       setFormPresetted(true)
     }
   }, [loading, user, formPresetted])
-
-  const _setTimezone = (value: string) => {
-    setTimezoneChanged(true)
-    setTimezone(value)
-  }
 
   const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { target } = event
@@ -308,11 +276,6 @@ const UserSettings = ({
     setBeenSubmitted(true)
 
     if (validated) {
-      // if the timezone updates, we need to delete all project cache to refetch it with the new timezone setting afterwards
-      if (timezoneChanged) {
-        onDeleteProjectCache()
-      }
-
       onSubmit({
         ...form,
         timezone,
@@ -320,22 +283,22 @@ const UserSettings = ({
     }
   }
 
-  const handleShowLiveVisitorsSave = (checked: boolean) => {
+  const handleShowLiveVisitorsSave = async (checked: boolean) => {
     if (settingUpdating) {
       return
     }
 
     setSettingUpdating(true)
-    updateShowLiveVisitorsInTitle(checked, (isSuccess: boolean) => {
+
+    try {
+      await setShowLiveVisitorsInTitle(checked)
+      dispatch(authActions.mergeUser({ showLiveVisitorsInTitle: checked }))
+      toast.success(t('profileSettings.updated'))
+    } catch (reason: any) {
+      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
+    } finally {
       setSettingUpdating(false)
-
-      if (isSuccess) {
-        toast.success(t('profileSettings.updated'))
-        return
-      }
-
-      toast.error(t('apiNotifications.somethingWentWrong'))
-    })
+    }
   }
 
   const handleReceiveLoginNotifications = async (checked: boolean) => {
@@ -347,9 +310,7 @@ const UserSettings = ({
 
     try {
       await receiveLoginNotification(checked)
-      updateUserData({
-        receiveLoginNotifications: checked,
-      })
+      dispatch(authActions.mergeUser({ receiveLoginNotifications: checked }))
       toast.success(t('profileSettings.updated'))
     } catch {
       toast.error(t('apiNotifications.somethingWentWrong'))
@@ -383,27 +344,20 @@ const UserSettings = ({
     }
   }
 
-  const _setReportFrequency = (value: string) => {
-    if (!isPaidTierUsed && value === WEEKLY_REPORT_FREQUENCY) {
-      setIsPaidFeatureOpened(true)
-      return
-    }
-
-    setReportFrequency(value)
-  }
-
-  const reportIconExtractor = (_: any, index: number) => {
-    if (!isPaidTierUsed && reportFrequencies[index] === WEEKLY_REPORT_FREQUENCY) {
-      return <CurrencyDollarIcon className='mr-1 h-5 w-5' />
-    }
-
-    return null
-  }
-
-  const _onDelete = () => {
-    onDelete(t, deletionFeedback, () => {
+  const onAccountDelete = async () => {
+    try {
+      await deleteUser(deletionFeedback)
+      dispatch(authActions.logout())
+      toast.success(t('apiNotifications.accountDeleted'))
+      trackCustom('ACCOUNT_DELETED', {
+        reason_stated: deletionFeedback ? 'true' : 'false',
+      })
       navigate(routes.main)
-    })
+    } catch (reason: any) {
+      toast.error(t(`apiNotifications.${reason}`, 'apiNotifications.somethingWentWrong'))
+    } finally {
+      dispatch(authActions.finishLoading())
+    }
   }
 
   const onExport = async (exportedAt: string) => {
@@ -451,8 +405,8 @@ const UserSettings = ({
 
   const onApiKeyGenerate = async () => {
     try {
-      const res = await generateApiKey()
-      setAPIKey(res.apiKey)
+      const { apiKey } = await generateApiKey()
+      dispatch(authActions.mergeUser({ apiKey }))
     } catch (reason: any) {
       toast.error(reason)
     }
@@ -461,7 +415,7 @@ const UserSettings = ({
   const onApiKeyDelete = async () => {
     try {
       await deleteApiKey()
-      setAPIKey(null)
+      dispatch(authActions.mergeUser({ apiKey: null }))
     } catch (reason: any) {
       toast.error(reason)
     }
@@ -497,11 +451,8 @@ const UserSettings = ({
               items={tabs}
               keyExtractor={(item) => item.id}
               labelExtractor={(item) => item.label}
-              onSelect={(label) => {
-                const selected = _find(tabs, (tab) => tab.label === label)
-                if (selected) {
-                  setActiveTab(selected?.id)
-                }
+              onSelect={(item) => {
+                setActiveTab(item.id)
               }}
               title={activeTabLabel}
               capitalise
@@ -539,6 +490,7 @@ const UserSettings = ({
                           '-ml-0.5 mr-2 h-5 w-5',
                         )}
                         aria-hidden='true'
+                        strokeWidth={1.5}
                       />
                       <span>{tab.label}</span>
                     </div>
@@ -683,7 +635,7 @@ const UserSettings = ({
                       <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
                         {t('profileSettings.2fa')}
                       </h3>
-                      <TwoFA user={user} dontRemember={dontRemember} updateUserData={updateUserData} />
+                      <TwoFA />
 
                       {/* Socialisations setup */}
                       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
@@ -693,7 +645,7 @@ const UserSettings = ({
                       >
                         {t('profileSettings.socialisations')}
                       </h3>
-                      <Socialisations user={user} linkSSO={linkSSO} unlinkSSO={unlinkSSO} theme={theme} />
+                      <Socialisations />
 
                       {/* Shared projects setting */}
                       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
@@ -732,14 +684,7 @@ const UserSettings = ({
                                     </thead>
                                     <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
                                       {_map(user.sharedProjects, (item) => (
-                                        <ProjectList
-                                          key={item.id}
-                                          item={item}
-                                          removeProject={removeProject}
-                                          removeShareProject={removeShareProject}
-                                          setUserShareData={setUserShareData}
-                                          setProjectsShareData={setProjectsShareData}
-                                        />
+                                        <ProjectList key={item.id} item={item} />
                                       ))}
                                     </tbody>
                                   </table>
@@ -748,9 +693,60 @@ const UserSettings = ({
                             </div>
                           </div>
                         ) : (
-                          <NoSharedProjects t={t} />
+                          <NoSharedProjects />
                         )}
                       </div>
+
+                      {/* Organisations setting */}
+                      <hr className='mt-5 border-gray-200 dark:border-gray-600' />
+                      <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
+                        {t('profileSettings.organisations')}
+                      </h3>
+                      <div>
+                        {!_isEmpty(user.organisationMemberships) ? (
+                          <div className='mt-3 flex flex-col'>
+                            <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8'>
+                              <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
+                                <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
+                                  <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
+                                    <thead>
+                                      <tr className='dark:bg-slate-800'>
+                                        <th
+                                          scope='col'
+                                          className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6'
+                                        >
+                                          {t('profileSettings.organisationsTable.organisation')}
+                                        </th>
+                                        <th
+                                          scope='col'
+                                          className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'
+                                        >
+                                          {t('profileSettings.organisationsTable.role')}
+                                        </th>
+                                        <th
+                                          scope='col'
+                                          className='px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white'
+                                        >
+                                          {t('profileSettings.organisationsTable.joinedOn')}
+                                        </th>
+                                        <th scope='col' className='relative py-3.5 pl-3 pr-4 sm:pr-6' />
+                                      </tr>
+                                    </thead>
+                                    <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
+                                      {_map(user.organisationMemberships, (membership) => (
+                                        <Organisations key={membership.id} membership={membership} />
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <NoOrganisations />
+                        )}
+                      </div>
+
                       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
                       {!user.isActive && (
                         <div
@@ -764,7 +760,7 @@ const UserSettings = ({
                       <div className='mt-4 flex flex-wrap justify-center gap-2 sm:justify-between'>
                         <Button onClick={() => setShowExportModal(true)} semiSmall primary>
                           <>
-                            <ArrowDownTrayIcon className='mr-1 h-5 w-5' />
+                            <DownloadIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
                             {t('profileSettings.requestExport')}
                           </>
                         </Button>
@@ -799,7 +795,7 @@ const UserSettings = ({
                   </h3>
                   <div className='mt-4 grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
                     <div>
-                      <TimezonePicker value={timezone} onChange={_setTimezone} />
+                      <TimezonePicker value={timezone} onChange={setTimezone} />
                     </div>
                   </div>
                   <Button className='mt-4' onClick={handleTimezoneSave} primary large>
@@ -864,9 +860,8 @@ const UserSettings = ({
                             label={t('profileSettings.frequency')}
                             className='w-full'
                             items={translatedFrequencies}
-                            iconExtractor={reportIconExtractor}
                             onSelect={(f) =>
-                              _setReportFrequency(
+                              setReportFrequency(
                                 reportFrequencies[_findIndex(translatedFrequencies, (freq) => freq === f)],
                               )
                             }
@@ -886,11 +881,7 @@ const UserSettings = ({
                       >
                         {t('profileSettings.integrations')}
                       </h3>
-                      <Integrations
-                        user={user}
-                        updateUserData={updateUserData}
-                        handleIntegrationSave={handleIntegrationSave}
-                      />
+                      <Integrations handleIntegrationSave={handleIntegrationSave} />
                       {user.isTelegramChatIdConfirmed && (
                         <Checkbox
                           checked={user.receiveLoginNotifications}
@@ -916,13 +907,7 @@ const UserSettings = ({
                   >
                     {t('profileSettings.referral.title')}
                   </h3>
-                  <Referral
-                    user={user}
-                    updateUserData={updateUserData}
-                    referralStatistics={referralStatistics}
-                    activeReferrals={activeReferrals}
-                    setCache={setCache}
-                  />
+                  <Referral />
                 </>
               )
             }
@@ -953,7 +938,7 @@ const UserSettings = ({
         }}
         onSubmit={() => {
           setShowModal(false)
-          _onDelete()
+          onAccountDelete()
         }}
         submitText={t('profileSettings.aDelete')}
         closeText={t('common.close')}

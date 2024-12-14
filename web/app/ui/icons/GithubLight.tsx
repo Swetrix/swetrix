@@ -1,6 +1,6 @@
 import React from 'react'
 
-const GithubLightSVG = ({ className }: { className?: string }): JSX.Element => (
+const GithubLightSVG = ({ className }: { className?: string }) => (
   <svg className={className} viewBox='0 0 100 100'>
     <path
       fillRule='evenodd'

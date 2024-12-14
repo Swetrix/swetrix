@@ -1,36 +1,28 @@
 import React, { memo, Fragment, useMemo } from 'react'
 import { Popover, PopoverButton, PopoverPanel, Transition } from '@headlessui/react'
-import { CalendarDaysIcon } from '@heroicons/react/24/outline'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { useTranslation } from 'react-i18next'
 import _map from 'lodash/map'
 import _includes from 'lodash/includes'
 import cx from 'clsx'
-import { ALL_PERIODS } from 'redux/constants'
+import { ALL_PERIODS } from '~/lib/constants'
+import { useViewProjectContext } from '../ViewProject'
+import { CalendarIcon } from 'lucide-react'
 
-interface ITBPeriodSelector {
+interface TBPeriodSelectorProps {
   title: string | number | React.ReactNode
   items: any[]
   /* (function): A function that is called when an item is selected. */
   onSelect: (item: any, e?: React.MouseEvent<HTMLElement>) => void | null
   activePeriod: any
-  updateTimebucket: (tb: string) => void
-  timeBucket: string
   classes?: {
     timeBucket?: string
     periods?: string
   }
 }
 
-const TBPeriodSelector = ({
-  items,
-  title,
-  onSelect,
-  activePeriod,
-  updateTimebucket,
-  timeBucket,
-  classes,
-}: ITBPeriodSelector): JSX.Element => {
+const TBPeriodSelector = ({ items, title, onSelect, activePeriod, classes }: TBPeriodSelectorProps) => {
+  const { dataLoading, updateTimebucket, timeBucket } = useViewProjectContext()
   const { t } = useTranslation('common')
 
   const periods = useMemo(() => {
@@ -46,7 +38,7 @@ const TBPeriodSelector = ({
       {({ open }) => (
         <>
           <PopoverButton className='group inline-flex w-full px-2.5 py-2 text-sm font-medium text-gray-700 outline-none dark:text-gray-50 md:px-4'>
-            <CalendarDaysIcon className='mr-1 h-5 w-5' />
+            <CalendarIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
             <span>{title}</span>
             <ChevronDownIcon
               className={cx(
@@ -91,7 +83,8 @@ const TBPeriodSelector = ({
                         'text-gray-900 dark:text-gray-50': timeBucket === value,
                         'text-gray-700 dark:text-gray-300': available && timeBucket !== value,
                         'text-gray-400 dark:text-gray-500': !available && timeBucket !== value,
-                        'cursor-pointer': available,
+                        'cursor-pointer': available && !dataLoading,
+                        'cursor-wait': available && dataLoading,
                         'cursor-default': !available,
                       })}
                     >
@@ -105,7 +98,12 @@ const TBPeriodSelector = ({
                       as='li'
                       key={item.label}
                       onClick={(e: React.MouseEvent<HTMLElement>) => onSelect(item, e)}
-                      className='block cursor-pointer rounded-md px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                      className={cx(
+                        'block cursor-pointer rounded-md px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700',
+                        {
+                          'cursor-wait': dataLoading,
+                        },
+                      )}
                     >
                       {item.dropdownLabel || item.label}
                     </PopoverButton>

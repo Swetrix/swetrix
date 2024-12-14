@@ -1,9 +1,9 @@
 import React, { memo } from 'react'
 import _fill from 'lodash/fill'
-import countries from 'utils/isoCountries'
-import Flag from 'ui/Flag'
+import countries from '~/utils/isoCountries'
+import Flag from '~/ui/Flag'
 
-interface ICCRow {
+interface CCRowProps {
   cc: string
   name?: string
   language: string
@@ -11,7 +11,7 @@ interface ICCRow {
   spaces?: number
 }
 
-const CCRow = ({ cc, name, language, size = 21, spaces = 2 }: ICCRow): JSX.Element => (
+const CCRow = ({ cc, name, language, size = 21, spaces = 2 }: CCRowProps) => (
   <>
     <Flag className='rounded-sm' country={cc} size={size} alt='' aria-hidden='true' />
     <span

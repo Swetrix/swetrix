@@ -4,11 +4,11 @@ import { useTranslation } from 'react-i18next'
 import Tooltip from './Tooltip'
 import { Badge } from './Badge'
 
-interface IBeta {
+interface BetaProps {
   className?: string
 }
 
-const Beta = ({ className }: IBeta): JSX.Element => {
+const Beta = ({ className }: BetaProps) => {
   const { t } = useTranslation('common')
 
   return (

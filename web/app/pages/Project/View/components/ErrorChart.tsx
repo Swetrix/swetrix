@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import bb from 'billboard.js'
 import { getSettingsError } from '../ViewProject.helpers'
 
-interface IErrorChart {
+interface ErrorChartProps {
   chart?: {
     x: string[]
     occurrences: number[]
@@ -14,7 +14,7 @@ interface IErrorChart {
   dataNames: any
 }
 
-export const ErrorChart = ({ chart, timeBucket, timeFormat, rotateXAxis, chartType, dataNames }: IErrorChart) => {
+export const ErrorChart = ({ chart, timeBucket, timeFormat, rotateXAxis, chartType, dataNames }: ErrorChartProps) => {
   useEffect(() => {
     // @ts-ignore
     const bbSettings: bb.ChartOptions = getSettingsError(

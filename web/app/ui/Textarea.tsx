@@ -3,7 +3,7 @@ import { Description, Field, Label, Textarea as HeadlessTextarea } from '@headle
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 
-interface ITextarea {
+interface TextareaProps {
   value: string | number
   label?: string
   hint?: string
@@ -29,7 +29,7 @@ const Textarea = ({
   disabled,
   readOnly,
   rows = 4,
-}: ITextarea) => {
+}: TextareaProps) => {
   const isError = !_isEmpty(error)
 
   return (

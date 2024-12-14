@@ -1,35 +1,19 @@
 import React from 'react'
-import type i18next from 'i18next'
 import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
 
-import Button from 'ui/Button'
-import GoogleGSVG from 'ui/icons/GoogleG'
-import { SSO_PROVIDERS } from 'redux/constants'
+import Button from '~/ui/Button'
+import GoogleGSVG from '~/ui/icons/GoogleG'
 
-interface IGoogleAuth {
-  setIsLoading: (isLoading: boolean) => void
-  authSSO: (provider: string, dontRemember: boolean, t: typeof i18next.t, callback: (res: any) => void) => void
-  callback?: any
-  dontRemember?: boolean
+interface GoogleAuthProps {
+  onClick: () => void
   isMiniButton?: boolean
   className?: string
+  disabled?: boolean
 }
 
-const GoogleAuth: React.FC<IGoogleAuth> = ({
-  setIsLoading,
-  authSSO,
-  dontRemember,
-  callback = () => {},
-  isMiniButton,
-  className,
-}) => {
+const GoogleAuth = ({ onClick, isMiniButton, className, disabled }: GoogleAuthProps) => {
   const { t } = useTranslation()
-
-  const googleLogin = async () => {
-    setIsLoading(true)
-    authSSO(SSO_PROVIDERS.GOOGLE, dontRemember as boolean, t, callback)
-  }
 
   if (isMiniButton) {
     return (
@@ -39,11 +23,12 @@ const GoogleAuth: React.FC<IGoogleAuth> = ({
           className,
           'bg-transparent ring-1 ring-slate-300 hover:bg-slate-100 dark:ring-slate-700 dark:hover:bg-slate-800/60',
         )}
-        onClick={googleLogin}
+        onClick={onClick}
+        disabled={disabled}
         secondary
         regular
       >
-        <GoogleGSVG className='h-5 w-5' />
+        <GoogleGSVG className='size-5' />
       </Button>
     )
   }
@@ -54,12 +39,13 @@ const GoogleAuth: React.FC<IGoogleAuth> = ({
         className,
         'flex items-center justify-center border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700',
       )}
-      onClick={googleLogin}
+      onClick={onClick}
       secondary
       regular
+      disabled={disabled}
     >
       <>
-        <GoogleGSVG className='mr-2 h-5 w-5' />
+        <GoogleGSVG className='mr-2 size-5' />
         {t('auth.common.google')}
       </>
     </Button>

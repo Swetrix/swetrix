@@ -4,18 +4,18 @@ import { ClientOnly } from 'remix-utils/client-only'
 import { useTranslation } from 'react-i18next'
 import _map from 'lodash/map'
 import { ChevronRightIcon } from '@heroicons/react/24/outline'
-import Loader from 'ui/Loader'
-import { ISession } from '../interfaces/session'
+import Loader from '~/ui/Loader'
+import { Session as SessionType } from '../interfaces/session'
 import CCRow from './CCRow'
 
-interface ISessions {
-  sessions: ISession[]
+interface SessionsProps {
+  sessions: SessionType[]
   onClick: (psid: string) => void
   timeFormat: '12-hour' | '24-hour'
 }
 
-interface ISessionComponent {
-  session: ISession
+interface SessionProps {
+  session: SessionType
   onClick: (psid: string) => void
   timeFormat: '12-hour' | '24-hour'
 }
@@ -26,7 +26,7 @@ const Separator = () => (
   </svg>
 )
 
-const Session = ({ session, onClick, timeFormat }: ISessionComponent) => {
+const Session = ({ session, onClick, timeFormat }: SessionProps) => {
   const {
     t,
     i18n: { language },
@@ -87,7 +87,7 @@ const Session = ({ session, onClick, timeFormat }: ISessionComponent) => {
   )
 }
 
-export const Sessions: React.FC<ISessions> = ({ sessions, onClick, timeFormat }) => {
+export const Sessions: React.FC<SessionsProps> = ({ sessions, onClick, timeFormat }) => {
   return (
     <ClientOnly
       fallback={

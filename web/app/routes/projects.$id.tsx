@@ -1,12 +1,11 @@
-import ViewProject from 'pages/Project/View'
+import ViewProject from '~/pages/Project/View'
 import type { LinksFunction, LoaderFunctionArgs, MetaFunction } from '@remix-run/node'
-import { useLoaderData } from '@remix-run/react'
 import { json } from '@remix-run/node'
 import _split from 'lodash/split'
 
-import { API_URL } from 'redux/constants'
-import { detectTheme, isEmbedded, isAuthenticated, getProjectPassword, getProjectTabs } from 'utils/server'
-import ProjectViewStyle from 'styles/ProjectViewStyle.css'
+import { API_URL } from '~/lib/constants'
+import { detectTheme, isEmbedded, isAuthenticated, getProjectPassword, getProjectTabs } from '~/utils/server'
+import ProjectViewStyle from '~/styles/ProjectViewStyle.css'
 
 export const links: LinksFunction = () => [{ rel: 'stylesheet', href: ProjectViewStyle }]
 
@@ -38,15 +37,5 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 export default function Index() {
-  const { theme, embedded, isAuth, queryPassword, tabs } = useLoaderData<typeof loader>()
-
-  return (
-    <ViewProject
-      ssrTheme={theme}
-      ssrAuthenticated={isAuth}
-      embedded={embedded}
-      queryPassword={queryPassword}
-      projectQueryTabs={tabs}
-    />
-  )
+  return <ViewProject />
 }

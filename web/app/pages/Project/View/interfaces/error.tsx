@@ -1,4 +1,4 @@
-export interface IError {
+export interface SwetrixError {
   eid: string
   name: string
   message: string
@@ -8,7 +8,7 @@ export interface IError {
   status: 'active' | 'regressed' | 'fixed'
 }
 
-export interface IErrorDetails extends IError {
+export interface SwetrixErrorDetails extends SwetrixError {
   colno: number
   lineno: number
   first_seen: string

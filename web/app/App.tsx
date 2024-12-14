@@ -8,29 +8,28 @@ import _startsWith from 'lodash/startsWith'
 import _endsWith from 'lodash/endsWith'
 import 'dayjs/locale/uk'
 
-import Header from 'components/Header'
-import Footer from 'components/Footer'
+import Header from '~/components/Header'
+import Footer from '~/components/Footer'
 
 import { Toaster } from 'sonner'
-import { getAccessToken } from 'utils/accessToken'
-import { authActions } from 'redux/reducers/auth'
-import sagaActions from 'redux/sagas/actions'
-import { StateType, useAppDispatch } from 'redux/store'
-import { isBrowser } from 'redux/constants'
-import routesPath from 'utils/routes'
-import { getPageMeta } from 'utils/server'
-import { authMe } from './api'
+import { getAccessToken } from '~/utils/accessToken'
+import { authActions } from '~/lib/reducers/auth'
+import { StateType, useAppDispatch } from '~/lib/store'
+import { isBrowser, isSelfhosted } from '~/lib/constants'
+import routesPath from '~/utils/routes'
+import { getPageMeta } from '~/utils/server'
+import { authMe, getGeneralStats, getInstalledExtensions, getLastPost, getPaymentMetainfo } from './api'
+import UIActions from '~/lib/reducers/ui'
+import { logout, shouldShowLowEventsBanner } from '~/utils/auth'
 
-const minimalFooterPages = ['/projects', '/dashboard', '/contact', '/captchas']
-
-interface IApp {
+interface AppProps {
   ssrTheme: 'dark' | 'light'
   ssrAuthenticated: boolean
 }
 
 const TITLE_BLACKLIST = ['/projects/', '/captchas/', '/blog']
 
-const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
+const App = ({ ssrTheme, ssrAuthenticated }: AppProps) => {
   const dispatch = useAppDispatch()
   const { pathname } = useLocation()
   const { t } = useTranslation('common')
@@ -46,13 +45,42 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
     (async () => {
       if (accessToken && !reduxAuthenticated) {
         try {
-          const me = await authMe()
-          dispatch(authActions.loginSuccessful(me))
-        } catch (e) {
+          const { user, totalMonthlyEvents } = await authMe()
+          dispatch(authActions.authSuccessful(user))
+
+          if (shouldShowLowEventsBanner(totalMonthlyEvents, user.maxEventsCount)) {
+            dispatch(UIActions.setShowNoEventsLeftBanner(true))
+          }
+
+          if (!isSelfhosted) {
+            const extensions = await getInstalledExtensions()
+            dispatch(UIActions.setExtensions(extensions))
+          }
+        } catch (reason) {
           dispatch(authActions.logout())
-          dispatch(sagaActions.logout(false, false))
+          logout()
+          console.error(`[ERROR] Error while getting user: ${reason}`)
         }
       }
+
+      if (!isSelfhosted) {
+        const [metainfo, lastBlogPost, generalStats] = await Promise.all([
+          getPaymentMetainfo(),
+          getLastPost(),
+          getGeneralStats(),
+        ])
+        dispatch(UIActions.setMetainfo(metainfo))
+        dispatch(UIActions.setLastBlogPost(lastBlogPost))
+        dispatch(UIActions.setGeneralStats(generalStats))
+      }
+
+      // yield put(sagaActions.loadMetainfo())
+
+      // const lastBlogPost: {
+      //   title: string
+      //   handle: string
+      // } = yield call(getLastPost)
+      // yield put(UIActions.setLastBlogPost(lastBlogPost))
 
       dispatch(authActions.finishLoading())
     })()
@@ -66,8 +94,6 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
     const { title } = getPageMeta(t, undefined, pathname)
     document.title = title
   }, [t, pathname])
-
-  const isMinimalFooter = _some(minimalFooterPages, (page) => _includes(pathname, page))
 
   const isReferralPage = _startsWith(pathname, '/ref/')
   const isProjectViewPage =
@@ -100,7 +126,7 @@ const App: React.FC<IApp> = ({ ssrTheme, ssrAuthenticated }) => {
           duration: 5000,
         }}
       />
-      {!isReferralPage && !isProjectViewPage && <Footer minimal={isMinimalFooter} authenticated={authenticated} />}
+      {!isReferralPage && !isProjectViewPage && <Footer authenticated={authenticated} />}
     </>
   )
 }

@@ -1,15 +1,15 @@
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { IErrorDetails } from '../interfaces/error'
+import { SwetrixErrorDetails } from '../interfaces/error'
 import { MetricCard } from './MetricCards'
-import { getRelativeDateIfPossible } from 'utils/date'
-import Tooltip from 'ui/Tooltip'
+import { getRelativeDateIfPossible } from '~/utils/date'
+import Tooltip from '~/ui/Tooltip'
 
-interface IErrorDetailsComponent {
-  details: IErrorDetails
+interface ErrorDetailsProps {
+  details: SwetrixErrorDetails
 }
 
-export const ErrorDetails = ({ details }: IErrorDetailsComponent) => {
+export const ErrorDetails = ({ details }: ErrorDetailsProps) => {
   const {
     t,
     i18n: { language },

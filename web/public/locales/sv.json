@@ -18,8 +18,12 @@
     "quitProjectError": "Error occurred while quitting the project",
     "payoutInfoError": "Something went wrong whilst requesting payouts information",
     "quitProject": "You have quit the project",
+    "quitOrganisation": "You have quit the organisation",
+    "quitOrganisationError": "Error occurred while quitting the organisation",
     "acceptInvitationError": "Error occurred while accepting the project invitation",
     "acceptInvitation": "The project invitation has been accepted",
+    "acceptOrganisationInvitation": "The organisation invitation has been accepted",
+    "acceptOrganisationInvitationError": "Error occurred while accepting the organisation invitation",
     "subscriptionUpdated": "Your subscription has been updated",
     "generate2FAError": "Error occurred while generating 2FA code",
     "integrationRemovalError": "Error occurred while removing the integration",
@@ -41,13 +45,26 @@
     "funnelCreated": "The funnel has been created",
     "funnelUpdated": "The funnel has been updated",
     "funnelDeleted": "The funnel has been deleted",
-    "errorCode": "Error code: {{error}}",
+    "errorCode": "Felkod: {{error}}",
     "updateErrorStatusFailed": "Error occured while updating error status",
     "errorStatusUpdated": "Error status has been updated",
     "enterViewName": "Please enter a view name",
     "inputCannotBeEmpty": "This input field must not be empty",
     "viewDeleted": "View has been deleted",
-    "noAIForecastAvailable": "AI forecast is not available for this project yet"
+    "noAIForecastAvailable": "AI forecast is not available for this project yet",
+    "organisationCreated": "Organisation has been created",
+    "organisationCreateError": "Error occurred while creating the organisation",
+    "organisationDeleted": "Organisation has been deleted",
+    "projectRemovedFromOrganisation": "The project has been removed from the organisation",
+    "projectAddedToOrganisation": "The project has been added to the organisation",
+    "projectRemoveError": "Error occurred while removing the project from the organisation",
+    "projectAddError": "Error occurred while adding the project to the organisation",
+    "orgUserRemoved": "The user has been removed from the organisation",
+    "orgUserRemoveError": "Error occurred while removing the user from the organisation",
+    "orgSettingsUpdated": "Organisation settings have been updated",
+    "projectAssigned": "The project has been assigned to the organisation",
+    "projectAssignError": "Failed to assign the project to the organisation",
+    "failedToLoadUsageInfo": "Failed to load usage info"
   },
   "common": {
     "features": "Funktioner",
@@ -57,15 +74,15 @@
     "billing": "Fakturering",
     "pricing": "Prissättning",
     "faqs": "Vanliga frågor",
-    "accountSettings": "Account settings",
+    "accountSettings": "Kontoinställningar",
     "liveDemo": "Live-demo",
     "dashboard": "Översikt",
     "logout": "Logga ut",
     "save": "Spara",
     "continue": "Fortsätta",
-    "confirm": "Confirm",
+    "confirm": "Bekräfta",
     "amount": "Amount",
-    "date": "Date",
+    "date": "Datum",
     "success": "Success",
     "info": "Info",
     "error": "Fel",
@@ -84,7 +101,7 @@
     "pending": "Väntande",
     "notConnected": "Not connected",
     "connected": "Connected",
-    "goBack": "Go back",
+    "goBack": "Gå tillbaka",
     "accept": "Godkänn",
     "reject": "Avvisa",
     "delete": "Radera",
@@ -97,13 +114,17 @@
     "edit": "Redigera",
     "account": "Konto",
     "transferring": "Transferring",
-    "link": "Link",
+    "link": "Länk",
     "unlink": "Unlink",
     "nothingFound": "Nothing found",
     "oneMember": "1 medlem",
     "xMembers": "{{number}} Medlemmar",
     "general": "General",
-    "fixIt": "Fix it"
+    "fixIt": "Fix it",
+    "errorOccured": "An error occurred: {{error}}",
+    "name": "Name",
+    "notSet": "Not set",
+    "remove": "Remove"
   },
   "performance": {
     "slogan": "End user <span>performance monitoring</span> to deliver fast websites.",
@@ -381,7 +402,7 @@
       "open": "Öppen källkod",
       "ckfree": "Cookie free analytics",
       "api": "API för utvecklare",
-      "2fa": "Two-factor authentication"
+      "2fa": "Tvåfaktorsautentisering"
     }
   },
   "referral": {
@@ -407,7 +428,7 @@
       "title": "Logga in på ditt konto",
       "forgot": "Glömt lösenord?",
       "button": "Logga in",
-      "2fa": "Two-factor authentication",
+      "2fa": "Tvåfaktorsautentisering",
       "2faDesc": "Open the two-factor authentication app on your device to view your authentication code and verify your identity.\nYou can also use your backup code.",
       "2faUnavailable": "Don't have access to 2FA?\n<ctl>Contact support</ctl>.",
       "6digitCode": "6-digit authentication code",
@@ -423,7 +444,7 @@
       "alreadyAMember": "Already a member? <url>Sign in</url>"
     },
     "confirm": {
-      "title": "Check your inbox",
+      "title": "Kontrollera din inkorg",
       "linkSent": "We've sent an account confirmation link to {{email}}, please click the link to confirm your email address.",
       "spam": "Can't see the email? Please check your spam folder.",
       "wrongEmail": "Wrong email? <url>Create a new account.</url>"
@@ -432,11 +453,11 @@
       "success": "Din e-postadress har verifierats framgångsrikt!"
     },
     "socialisation": {
-      "authSuccess": "Authentication successful",
-      "failed": "Authentication failed",
+      "authSuccess": "Autentisering lyckades",
+      "failed": "Autentisering misslyckades",
       "failedDesc": "An error has occurred while authenticating through a third party service, please try again or contact support.",
       "successDesc": "You are now authenticated through a 3rd party service and can safely close this page if it didn't close automatically.",
-      "orSingUpWith": "or sign up with"
+      "orSingUpWith": "eller registrera dig med"
     },
     "common": {
       "signinInstead": "Logga in istället",
@@ -444,7 +465,7 @@
       "password": "Lösenord",
       "noRemember": "Minns inte mig.",
       "repeat": "Upprepa lösenord",
-      "changePassword": "Change password",
+      "changePassword": "Ändra lösenord",
       "hint": "Längre än {{amount}} tecken",
       "xCharsError": "Lösenordet måste bestå av minst {{amount}} tecken.",
       "noMatchError": "Lösenord måste matcha.",
@@ -456,11 +477,11 @@
       "checkLeakedPassword": "Kontrollera om lösenordet är läckt",
       "checkLeakedPasswordDesc": "När aktiverad kontrollerar vi ditt lösenord med <db>{{database}}</db>databasen. Vi skickar inte ditt lösenord till tjänsten. Först hashar vi ditt lösenord ( med SHA1) och skickar endast de första fem tecknen i hashen till tjänsten. Tjänsten returnerar alla läckta lösenord som börjar med dessa 5 tecken. I vår del kontrollerar vi om något av dessa tecken stämmer överens med ditt lösenord. Vi visar dig en varning om det har läckt ut tidigare. Vi lagrar aldrig ditt lösenord i klartext.",
       "addedOn": "Added on",
-      "continueWithGoogle": "Continue with Google",
-      "continueWithGithub": "Continue with Github",
+      "continueWithGoogle": "Fortsätt med Google",
+      "continueWithGithub": "Fortsätt med GitHub",
       "google": "Google",
-      "github": "Github",
-      "orContinueWith": "Or continue with"
+      "github": "GitHub",
+      "orContinueWith": "Eller fortsätt med"
     }
   },
   "profileSettings": {
@@ -494,40 +515,47 @@
     "noConfLeft": "Tyvärr har du slut på dina förfrågningar om bekräftelse via e-post.\nSe till att du kan ta emot e-post och kontrollera din SPAM-mapp igen för meddelanden.\nDu kan försöka använda en annan e-postadress eller kontakta vår kundtjänst.",
     "timezoneDesc": "Detta kommer att vara den tidszon där data visas. Den används endast för visualisering.\nInga data kommer att ändras baserat på denna inställning.",
     "quitProject": "Are you sure you want to quit this project?",
-    "quitProjectTitle": "Avsluta {{project}}?",
-    "shared": "Shared projects",
+    "quitOrganisation": "Are you sure you want to quit this organisation?",
+    "quitEntity": "Quit {{entity}}?",
+    "shared": "Delade projekt",
     "receiveLoginNotifications": "Receive login notifications",
-    "owned": "Owned projects",
+    "organisations": "Organisations",
+    "organisationsTable": {
+      "organisation": "Organisation",
+      "role": "Role",
+      "joinedOn": "Joined on"
+    },
     "sharedTable": {
       "project": "Projekt",
       "role": "Roll",
       "joinedOn": "Gick med"
     },
+    "noOrganisations": "You are not a member of any organisation yet.",
     "noSharedProjects": "Nobody is sharing a project with you yet.",
-    "2fa": "Two-factor authentication (2FA)",
+    "2fa": "Tvåfaktorsautentisering (2FA)",
     "2faEnable": "Enable 2FA to make your account more secure.",
-    "2faEnableBtn": "Enable 2FA",
-    "2faDisableBtn": "Disable 2FA",
+    "2faEnableBtn": "Aktivera 2FA",
+    "2faDisableBtn": "Inaktivera 2FA",
     "2faDesc": "An authenticator app that supports time-based, one-time passwords (TOTP) such as andOTP or Google Authenticator can scan the QR code below to enable 2FA on your Swetrix account:",
     "2faQRAlt": "Can't scan the QR code?\nUse this secret key instead: {{key}}",
     "enter2faToEnable": "Enter your one-time code to enable 2FA",
     "enter2faToDisable": "Enter your one-time code or a recovery code",
-    "yourOneTimeCode": "Your one-time code",
-    "invalid2fa": "Invalid 2FA code, please try again",
+    "yourOneTimeCode": "Din engångskod",
+    "invalid2fa": "Ogiltig 2FA-kod, försök igen",
     "2faRecoveryNote": "Important: If you cannot use your authenticator app, because you've deleted the app or lost your device, you'll need a way to access your account and disable 2FA.\n\nYou can use this recovery code to disable 2FA. Write it down and store it in a safe, secure place.",
     "2faRecoverySaved": "I have saved this recovery code",
     "2faEnabled": "Two-factor authenticated is enabled on your account.",
     "2faDisableHint": "To disable two-factor authentication, please enter your 6-digit code or one of your recovery codes below.",
-    "apiKey": "API Key",
+    "apiKey": "API-nyckel",
     "noApiKey": "You haven't created any API keys yet.",
     "selfhostedNoApiKey": "You haven't created any API keys yet. You can do this in your docker compose file by modifying the API_KEY environment variable.",
     "apiKeyWarning": "Treat your API Key like a password and keep it secret. Never hardcode it into your programs, or share it with anyone.",
-    "addApiKeyBtn": "Generate API Key",
-    "deleteApiKeyBtn": "Delete API Key",
-    "apiKeyDelete": "Delete your API Key?",
+    "addApiKeyBtn": "Generera API-nyckel",
+    "deleteApiKeyBtn": "Radera API-nyckel",
+    "apiKeyDelete": "Radera din API-nyckel?",
     "apiKeyDeleteConf": "Are you sure you want to delete your API key?\nAll API access via this key will be disabled.",
-    "theme": "Theme",
-    "selectTheme": "Select theme",
+    "theme": "Tema",
+    "selectTheme": "Välj tema",
     "integrations": "Integrationer",
     "integrationsDesc": "Integrations can be used to connect your favourite messengers to Swetrix and receive updates such as notifications, reports or alerts directly.",
     "integrationsList": {
@@ -545,12 +573,12 @@
     "addIntegration": "Add integration",
     "removeIntegration": "Remove integration",
     "chatID": "Chat ID",
-    "12-hour": "12 hour",
-    "24-hour": "24 hour",
+    "12-hour": "12 timmar",
+    "24-hour": "24 timmar",
     "timeFormat": "Time notation",
     "selectTimeFormat": "This will be the time notation used on the chart, it is only used to visualise the data on the chart in 12 hour or 24 hour format.",
     "captcha": "CAPTCHA",
-    "selectProject": "Select project",
+    "selectProject": "Välj projekt",
     "captchaSecretKey": "CAPTCHA secret key",
     "generateSecretKey": "Generate secret key",
     "regenerateSecretKey": "Regenerate secret key",
@@ -575,6 +603,7 @@
       "generateRefLink": "Generate referral link",
       "referralStats": "Referral statistics",
       "activeReferrals": "Active referrals",
+      "noActiveReferrals": "You have no active referrals yet",
       "trial": "Trial referrals",
       "trialDesc": "Trial users referred by you",
       "active": "Active referrals",
@@ -598,8 +627,50 @@
     "alertUpdated": "The alert has been updated",
     "alertDeleted": "The alert has been deleted"
   },
+  "organisations": {
+    "create": "Create organisation",
+    "organisations": "Organisations",
+    "new": "New organisation",
+    "invite": {
+      "title": "Invite a user to {{organisation}}",
+      "desc": "Enter an email address and a role of the person registered on Swetrix that you want to invite to the organisation. The invitation will expire in {{expiresIn}} hours."
+    },
+    "role": {
+      "owner": {
+        "name": "Owner",
+        "desc": "Can manage the organisation and its members, as well as manage the projects within the organisation."
+      },
+      "admin": {
+        "name": "Admin",
+        "desc": "Can manage the organisation and its members, as well as manage the projects within the organisation."
+      },
+      "viewer": {
+        "name": "Viewer",
+        "desc": "Can only access the organisation and its projects without the ability to change any settings."
+      }
+    },
+    "projects": "Projects",
+    "addProject": "Add project",
+    "modals": {
+      "remove": {
+        "title": "Remove {{project}}?",
+        "message": "Are you sure you want to remove this project from the organisation? Once removed, organisation members will no longer have access to this project unless they are added in the project settings."
+      },
+      "addProject": {
+        "title": "Add project to {{organisation}}",
+        "message": "Select the project you want to add to the organisation. It will be available to all members of the organisation, and the organisation admins will be able to manage the project settings."
+      },
+      "delete": {
+        "title": "Delete {{organisation}}?",
+        "message": "Are you sure you want to delete this organisation?\nAll the data related to the organisation will be deleted from our servers. This action is irreversible."
+      }
+    },
+    "projectOwnedBy": "This project is owned by {{email}}",
+    "delete": "Delete organisation"
+  },
   "dashboard": {
     "uptime": "Uptime",
+    "captcha": "CAPTCHA",
     "newProject": "Nytt projekt",
     "newFunnel": "New funnel",
     "reloadPage": "Reload page",
@@ -639,7 +710,7 @@
     "traffic": "Trafik",
     "performance": "Performance",
     "funnels": "Funnels",
-    "sessions": "Sessions",
+    "sessions": "Sessioner",
     "xOccurrences": "{{x}} occurrences",
     "errors": "Errors",
     "xPageviews": "{{x}} pageviews",
@@ -650,12 +721,12 @@
     "uptimeDesc": "Swetrix uptime is a powerful tool that allows you to monitor the uptime of your websites.\nThe analysis provided by the uptime gives you the ability to discover potential problems before your customers notice them.",
     "frontend": "Frontend",
     "backend": "Backend",
-    "network": "Network",
+    "network": "Nätverk",
     "timing": "Timing breakdown",
     "timingFull": "Timing breakdown (full)",
     "allocation": "Load time allocation",
     "dns": "DNS",
-    "conn": "Connection",
+    "conn": "Anslutning",
     "tls": "TLS Setup",
     "ttfb": "Time to first byte (TTFB)",
     "domLoad": "DOM Content Load",
@@ -693,7 +764,7 @@
       "description": "Monitor description"
     },
     "error": {
-      "urlInvalid": "Please enter a valid URL",
+      "urlInvalid": "Ange en giltig URL",
       "acceptedStatusCodesNotValid": "Some of the values provided are not valid HTTP status codes"
     },
     "backToMonitors": "Back to monitors list",
@@ -724,9 +795,9 @@
     "condition": "Trigger when the metric is",
     "threshold": "Threshold",
     "time": "During the last",
-    "xMinutes": "{{amount}} minutes",
-    "xHours": "{{amount}} hours",
-    "xHour": "{{amount}} hour",
+    "xMinutes": "{{amount}} minuter",
+    "xHours": "{{amount}} timmar",
+    "xHour": "{{amount}} timme",
     "enabled": "Alert enabled",
     "enabledHint": "Disabled alerts will not notify you of any events.",
     "conditions": {
@@ -902,7 +973,7 @@
     "prev": "Föregående",
     "next": "Nästa",
     "unique": "Unika besökare",
-    "results": "Results",
+    "results": "Resultat",
     "total": "Totala sidvisningar",
     "thisHour": "This hour",
     "all": "All time",
@@ -913,12 +984,12 @@
     "lastXWeeks": "Senaste {{amount}} veckorna",
     "lastXMonths": "Senaste {{amount}} månaderna",
     "custom": "Annat datum",
-    "minute": "Minute",
+    "minute": "Minut",
     "hour": "Timme",
     "day": "Dag",
     "week": "Vecka",
     "month": "Månad",
-    "year": "Year",
+    "year": "År",
     "resetFilters": "Reset filters",
     "exportImgError": "Exporting data as image failed",
     "codeExample": "Or insert the following code into your website to track your events:",
@@ -931,6 +1002,7 @@
     "barChart": "Bar chart",
     "lineChart": "Line chart",
     "settings": {
+      "organisation": "Organisation",
       "shields": "Shields",
       "access": "Access settings",
       "botsProtectionLevel": {
@@ -1070,15 +1142,15 @@
     "dueNow": "Due now",
     "dueNowDescription": "You will be charged pro-rated amount for the remaining days of the current billing period.",
     "negativePayment": "Negative 'Amount' means that you will have a credit balance of {{currency}}{{dueNowAmount}}. You will be billed {{currency}}0.00 on {{dueNowDate}}. Once the credit balance is used up, your recurring billing amount will be {{currency}}{{nextPaymentAmount}} every billing cycle of your subscription plan.",
-    "nextPayment": "Next payment",
-    "subscription": "Subscription",
+    "nextPayment": "Nästa betalning",
+    "subscription": "Prenumeration",
     "planUsageDesc": "The plan usage shows the number of events (page views, custom events, CAPTCHA completions) that you have used for the current month.",
-    "xofy": "{{x}} of {{y}}",
+    "xofy": "{{x}} av {{y}}",
     "resetDate": "The plan usage resets on the first day of each month.",
     "selectPlan": "Select a subscription plan to unveil full Swetrix potential.",
     "changePlan": "You can change or cancel your subscription plan at any time here.",
     "membersNotification": "Pageviews, custom events and CAPTCHA completions are counted towards the limit of the subscription of the account owner. People you invite into your projects don't need a subscription.",
-    "xMonthsFree": "{{amount}} months free"
+    "xMonthsFree": "{{amount}} månader gratis"
   },
   "modals": {
     "paidFeature": {
@@ -1118,14 +1190,14 @@
     "free": "Gratis",
     "legacy": "Legacy",
     "perMonth": "må",
-    "perYear": "yr",
+    "perYear": "år",
     "yourPlan": "Din plan",
     "downgrade": "Nedgradera",
     "selectPlan": "Select plan:",
     "upgrade": "Uppgradera",
     "whatIncl": "Vad ingår",
     "monthlyBilling": "Månadsvis",
-    "yearlyBilling": "Yearly",
+    "yearlyBilling": "Årligen",
     "switchToMonthly": "Switch to monthly billing",
     "frequency": "Payment frequency",
     "eventPerMonth": "Events per month",
@@ -1147,7 +1219,7 @@
       "xAlertsSingular": "{{amount}} alerting rule",
       "xAlertsPlural": "{{amount}} alerting rules",
       "upToXProjects": "Skapa upp till {{amount}} projekt",
-      "upToXWebsites": "Add up to {{amount}} websites",
+      "upToXWebsites": "Lägg till upp till {{amount}} webbplatser",
       "xMoDataRetention": "{{amount}} månaders lagring av data",
       "evXPlanIncl": "Allt {{plan}} plan inkluderar",
       "smallBusiSupport": "By buying this you are supporting a small business",
@@ -1165,7 +1237,7 @@
   "contact": {
     "description": "You can reach us at <mail>{{email}}</mail>, tweet us at <twitter>{{twitterHandle}}</twitter> or talk to us via our <discord>Discord</discord> community. We aim to respond as soon as possible, usually within a day.",
     "docs": {
-      "title": "Documentation",
+      "title": "Dokumentation",
       "desc": "Learn how to integrate Swetrix into your application and find answers to the most common questions"
     },
     "demo": {
@@ -1209,6 +1281,7 @@
     "invitation": "Shared project invitation",
     "profileSettings": "Profilinställningar",
     "dashboard": "Instrumentbräda",
+    "organisations": "Organisations",
     "docs": "Dokumentation",
     "billing": "Fakturering",
     "contact": "Have something to ask?",
@@ -1227,9 +1300,9 @@
   },
   "header": {
     "switchTheme": "Switch theme",
-    "dark": "Dark",
-    "light": "Light",
-    "signedInAs": "Signed in as",
+    "dark": "Mörkt",
+    "light": "Ljust",
+    "signedInAs": "Inloggad som",
     "watchDemo": "Watch demo",
     "contactSales": "Contact sales",
     "solutions": {
@@ -1281,7 +1354,7 @@
     "captcha": "CAPTCHA",
     "press": "Media & Press",
     "open": "Open startup",
-    "about": "About us",
+    "about": "Om oss",
     "features": "Funktioner",
     "imprint": "Imprint"
   }

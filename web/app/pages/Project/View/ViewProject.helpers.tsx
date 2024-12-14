@@ -1,18 +1,8 @@
 import React from 'react'
 import type { ChartOptions, GridLineOptions } from 'billboard.js'
 import type i18next from 'i18next'
-// @ts-ignore
 import { saveAs } from 'file-saver'
-import {
-  GlobeEuropeAfricaIcon,
-  LanguageIcon,
-  DocumentTextIcon,
-  DeviceTabletIcon,
-  ArrowRightCircleIcon,
-  MagnifyingGlassIcon,
-  ServerIcon,
-} from '@heroicons/react/24/outline'
-// @ts-ignore
+import { LanguageIcon, ArrowRightCircleIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
 import { area, areaSpline, spline, bar, line } from 'billboard.js'
 import _forEach from 'lodash/forEach'
@@ -43,11 +33,25 @@ import {
   tbsFormatMapperTooltip24h,
   PROJECT_TABS,
   isSelfhosted,
-} from 'redux/constants'
-import { IEntry } from 'redux/models/IEntry'
-import { getTimeFromSeconds, getStringFromTime, sumArrays, nFormatter } from 'utils/generic'
-import countries from 'utils/isoCountries'
-import { IAnalyticsFunnel } from 'redux/models/IProject'
+} from '~/lib/constants'
+import { Entry } from '~/lib/models/Entry'
+import { getTimeFromSeconds, getStringFromTime, sumArrays, nFormatter } from '~/utils/generic'
+import countries from '~/utils/isoCountries'
+import { AnalyticsFunnel } from '~/lib/models/Project'
+import {
+  CompassIcon,
+  CpuIcon,
+  FileTextIcon,
+  Gamepad2Icon,
+  MapPinIcon,
+  MonitorCog,
+  MonitorIcon,
+  SmartphoneIcon,
+  TabletIcon,
+  TabletSmartphoneIcon,
+  TvIcon,
+  WatchIcon,
+} from 'lucide-react'
 
 const getAvg = (arr: any) => {
   const total = _reduce(arr, (acc, c) => acc + c, 0)
@@ -164,7 +168,7 @@ const onCSVExportClick = (
 
     const total = _reduce(rowData[item], (acc, { count }) => acc + count, 0)
 
-    const csvData = _map(rowData[item], (entry: IEntry) => {
+    const csvData = _map(rowData[item], (entry: Entry) => {
       const perc = _round((entry.count / total) * 100 || 0, 2)
 
       if (item === 'cc') {
@@ -1062,7 +1066,7 @@ const getSettingsError = (
   }
 }
 
-const getSettingsFunnels = (funnel: IAnalyticsFunnel[], totalPageviews: number, t: typeof i18next.t): ChartOptions => {
+const getSettingsFunnels = (funnel: AnalyticsFunnel[], totalPageviews: number, t: typeof i18next.t): ChartOptions => {
   const values = _map(funnel, (step) => {
     if (_startsWith(step.value, '/')) {
       return t('project.visitPage', { page: step.value })
@@ -1593,13 +1597,23 @@ const typeNameMapping = (t: typeof i18next.t) => ({
 
 const iconClassName = 'w-6 h-6'
 const panelIconMapping = {
-  cc: <GlobeEuropeAfricaIcon className={iconClassName} />,
-  pg: <DocumentTextIcon className={iconClassName} />,
+  cc: <MapPinIcon className={iconClassName} strokeWidth={1.5} />,
+  pg: <FileTextIcon className={iconClassName} strokeWidth={1.5} />,
   lc: <LanguageIcon className={iconClassName} />,
   ref: <ArrowRightCircleIcon className={iconClassName} />,
-  dv: <DeviceTabletIcon className={iconClassName} />,
-  br: <MagnifyingGlassIcon className={iconClassName} />,
-  os: <ServerIcon className={iconClassName} />,
+  dv: <TabletSmartphoneIcon className={iconClassName} strokeWidth={1.5} />,
+  br: <CompassIcon className={iconClassName} strokeWidth={1.5} />,
+  os: <MonitorCog className={iconClassName} strokeWidth={1.5} />,
+}
+
+export const deviceIconMapping = {
+  desktop: <MonitorIcon className='size-5' strokeWidth={1.5} />,
+  mobile: <SmartphoneIcon className='size-5' strokeWidth={1.5} />,
+  tablet: <TabletIcon className='size-5' strokeWidth={1.5} />,
+  smarttv: <TvIcon className='size-5' strokeWidth={1.5} />,
+  console: <Gamepad2Icon className='size-5' strokeWidth={1.5} />,
+  wearable: <WatchIcon className='size-5' strokeWidth={1.5} />,
+  embedded: <CpuIcon className='size-5' strokeWidth={1.5} />,
 }
 
 // This function return date using the same format as the backend

@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react'
 
-const RefRow = ({ rowName }: { rowName: string }): JSX.Element => {
+const RefRow = ({ rowName }: { rowName: string }) => {
   const { isUrl, url } = useMemo(() => {
     try {
       const urlObj = new URL(rowName)
@@ -13,7 +13,7 @@ const RefRow = ({ rowName }: { rowName: string }): JSX.Element => {
   const linkClassName = 'text-blue-600 hover:underline dark:text-blue-500'
 
   return (
-    <div className='scrollbar-thin overflow-hidden hover-always:overflow-auto'>
+    <div className='scrollbar-thin flex items-center overflow-hidden hover-always:overflow-auto'>
       {isUrl && (
         <img
           className='float-left mr-1.5 size-5'

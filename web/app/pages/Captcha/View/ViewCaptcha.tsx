@@ -1,11 +1,11 @@
 /* eslint-disable react/no-unstable-nested-components, react/display-name */
 import React, { useState, useEffect, useMemo, memo, useRef } from 'react'
 import { toast } from 'sonner'
-import useSize from 'hooks/useSize'
-import { useNavigate, useParams } from '@remix-run/react'
+import useSize from '~/hooks/useSize'
+import { useNavigate } from '@remix-run/react'
 import { ClientOnly } from 'remix-utils/client-only'
 import bb from 'billboard.js'
-import { ArrowDownTrayIcon, Cog8ToothIcon, ArrowPathIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
+import { GlobeAltIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import { useTranslation } from 'react-i18next'
 import _keys from 'lodash/keys'
@@ -20,16 +20,13 @@ import _startsWith from 'lodash/startsWith'
 import _debounce from 'lodash/debounce'
 import _some from 'lodash/some'
 
-import LineChart from 'ui/icons/LineChart'
-import BarChart from 'ui/icons/BarChart'
-import { getItem, setItem } from 'utils/localstorage'
-import EventsRunningOutBanner from 'components/EventsRunningOutBanner'
+import LineChart from '~/ui/icons/LineChart'
+import BarChart from '~/ui/icons/BarChart'
+import { getItem, setItem } from '~/utils/localstorage'
+import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import {
   captchaTbPeriodPairs,
-  getProjectCaptchaCacheKey,
   timeBucketToDays,
-  getProjectCacheCustomKey,
-  roleAdmin,
   MAX_MONTHS_IN_PAST,
   TimeFormat,
   chartTypes,
@@ -40,16 +37,15 @@ import {
   OS_LOGO_MAP_DARK,
   isBrowser,
   ThemeType,
-} from 'redux/constants'
-import { ICaptchaProject, IProject } from 'redux/models/IProject'
-import { IUser } from 'redux/models/IUser'
-import Loader from 'ui/Loader'
-import Dropdown from 'ui/Dropdown'
-import Checkbox from 'ui/Checkbox'
-import FlatPicker from 'ui/Flatpicker'
-import routes from 'utils/routes'
-import { getProject, getCaptchaData } from 'api'
-import { Panel } from 'pages/Project/View/Panels'
+} from '~/lib/constants'
+import { CaptchaProject, Project } from '~/lib/models/Project'
+import Loader from '~/ui/Loader'
+import Dropdown from '~/ui/Dropdown'
+import Checkbox from '~/ui/Checkbox'
+import FlatPicker from '~/ui/Flatpicker'
+import routes from '~/utils/routes'
+import { getProject, getCaptchaData } from '~/api'
+import { Panel } from '~/pages/Project/View/Panels'
 import {
   getFormatDate,
   panelIconMapping,
@@ -63,11 +59,16 @@ import {
   getColumns,
   PANELS_ORDER,
 } from './ViewCaptcha.helpers'
-import { onCSVExportClick } from 'pages/Project/View/ViewProject.helpers'
-import TBPeriodSelector from 'pages/Project/View/components/TBPeriodSelector'
+import { deviceIconMapping, onCSVExportClick } from '~/pages/Project/View/ViewProject.helpers'
 import CCRow from '../../Project/View/components/CCRow'
 import NoEvents from './components/NoEvents'
-import Filters from 'pages/Project/View/components/Filters'
+import { useRequiredParams } from '~/hooks/useRequiredParams'
+import { useSelector } from 'react-redux'
+import { StateType, useAppDispatch } from '~/lib/store'
+import Filters from './components/Filters'
+import TBPeriodSelector from './components/TBPeriodSelector'
+import UIActions from '~/lib/reducers/ui'
+import { DownloadIcon, RotateCw, SettingsIcon } from 'lucide-react'
 
 const PageLoader = () => (
   <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
@@ -75,62 +76,39 @@ const PageLoader = () => (
   </div>
 )
 
-interface IViewCaptcha {
-  projects: ICaptchaProject[]
-  isLoading: boolean
-  cache: any
-  setProjectCache: (pid: string, data: any, key: string) => void
-  projectViewPrefs: any
-  setProjectViewPrefs: (pid: string, period: string, timeBucket: string, rangeDate?: Date[] | null) => void
-  authenticated: boolean
-  user: IUser
-  // eslint-disable-next-line no-unused-vars, no-shadow
-  setProjects: (projects: ICaptchaProject[]) => void
-  theme: ThemeType
+interface ViewCaptchaProps {
   ssrTheme: ThemeType
 }
 
-const ViewCaptcha = ({
-  projects,
-  isLoading: _isLoading,
-  cache,
-  setProjectCache,
-  projectViewPrefs,
-  setProjectViewPrefs,
-  authenticated,
-  user,
-  setProjects,
-  theme,
-  ssrTheme,
-}: IViewCaptcha): JSX.Element => {
+const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
+  const { loading: authLoading, user } = useSelector((state: StateType) => state.auth)
+  const { theme } = useSelector((state: StateType) => state.ui.theme)
+  const { captchaProjectsViewPrefs } = useSelector((state: StateType) => state.ui.cache)
+
+  const dispatch = useAppDispatch()
+
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
   const [periodPairs, setPeriodPairs] = useState(captchaTbPeriodPairs(t, undefined, undefined, language))
   const dashboardRef = useRef(null)
-  // @ts-ignore
-  const {
-    id,
-  }: {
-    id: string
-  } = useParams()
+  const { id } = useRequiredParams<{ id: string }>()
   const navigate = useNavigate()
-  const project: ICaptchaProject = useMemo(
-    () => _find(projects, (p) => p.id === id) || ({} as ICaptchaProject),
-    [projects, id],
-  )
-  const [areFiltersParsed, setAreFiltersParsed] = useState<boolean>(false)
-  const [areTimeBucketParsed, setAreTimeBucketParsed] = useState<boolean>(false)
-  const [arePeriodParsed, setArePeriodParsed] = useState<boolean>(false)
+
+  const [project, setProject] = useState<CaptchaProject | null>(null)
+
+  const [areFiltersParsed, setAreFiltersParsed] = useState(false)
   const [panelsData, setPanelsData] = useState<any>({})
-  const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState<boolean>(false)
-  const [analyticsLoading, setAnalyticsLoading] = useState<boolean>(true)
+  const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
+  const [analyticsLoading, setAnalyticsLoading] = useState(true)
   const [period, setPeriod] = useState<string>(
-    projectViewPrefs ? projectViewPrefs[id]?.period || periodPairs[4].period : periodPairs[4].period,
+    captchaProjectsViewPrefs ? captchaProjectsViewPrefs[id]?.period || periodPairs[4].period : periodPairs[4].period,
   )
   const [timeBucket, setTimebucket] = useState<string>(
-    projectViewPrefs ? projectViewPrefs[id]?.timeBucket || periodPairs[4].tbs[1] : periodPairs[4].tbs[1],
+    captchaProjectsViewPrefs
+      ? captchaProjectsViewPrefs[id]?.timeBucket || periodPairs[4].tbs[1]
+      : periodPairs[4].tbs[1],
   )
   const activePeriod: {
     period: string
@@ -146,7 +124,7 @@ const ViewCaptcha = ({
     [period, periodPairs],
   )
   const [chartData, setChartData] = useState<any>({})
-  const [dataLoading, setDataLoading] = useState<boolean>(false)
+  const [dataLoading, setDataLoading] = useState(false)
   const [activeChartMetrics, setActiveChartMetrics] = useState<{
     [key: string]: boolean
   }>({
@@ -154,10 +132,9 @@ const ViewCaptcha = ({
   })
   const checkIfAllMetricsAreDisabled = useMemo(() => !_some(activeChartMetrics, (value) => value), [activeChartMetrics])
   const [filters, setFilters] = useState<any[]>([])
-  const isLoading = authenticated ? _isLoading : false
   const tnMapping = typeNameMapping(t)
   const refCalendar = useRef(null)
-  const localStorageDateRange = projectViewPrefs ? projectViewPrefs[id]?.rangeDate : null
+  const localStorageDateRange = captchaProjectsViewPrefs ? captchaProjectsViewPrefs[id]?.rangeDate : null
   const [dateRange, setDateRange] = useState<Date[] | null>(
     localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null,
   )
@@ -170,7 +147,7 @@ const ViewCaptcha = ({
 
   const _theme = isBrowser ? theme : ssrTheme
 
-  const { name } = project as IProject
+  const { name } = project as Project
 
   useEffect(() => {
     let pageTitle = name
@@ -183,9 +160,6 @@ const ViewCaptcha = ({
 
     document.title = pageTitle
   }, [name, t])
-
-  // @ts-ignore
-  const sharedRoles = useMemo(() => _find(user.sharedProjects, (p) => p.project.id === id)?.role || {}, [user, id])
 
   const chartMetrics = useMemo(() => {
     return [
@@ -213,37 +187,23 @@ const ViewCaptcha = ({
     navigate(routes.dashboard)
   }
 
-  // this function is used for requesting the data from the API
-  const loadCaptcha = async (forced: boolean = false, newFilters: any = null) => {
-    if (!forced && (isLoading || _isEmpty(project) || dataLoading)) {
-      return
-    }
-
+  const loadCaptcha = async () => {
     setDataLoading(true)
+
     try {
       let data
-      let key
       let from
       let to
 
       if (dateRange) {
         from = getFormatDate(dateRange[0])
         to = getFormatDate(dateRange[1])
-        key = getProjectCacheCustomKey(from, to, timeBucket, 'periodical', newFilters || filters)
-      } else {
-        key = getProjectCaptchaCacheKey(period, timeBucket, newFilters || filters)
       }
 
-      if (!forced && !_isEmpty(cache[id]) && !_isEmpty(cache[id][key])) {
-        data = cache[id][key]
+      if (period === 'custom' && dateRange) {
+        data = await getCaptchaData(id, timeBucket, '', filters, from, to)
       } else {
-        if (period === 'custom' && dateRange) {
-          data = await getCaptchaData(id, timeBucket, '', newFilters || filters, from, to)
-        } else {
-          data = await getCaptchaData(id, timeBucket, period, newFilters || filters, '', '')
-        }
-
-        setProjectCache(id, data || {}, key)
+        data = await getCaptchaData(id, timeBucket, period, filters, '', '')
       }
 
       if (_isEmpty(data)) {
@@ -253,13 +213,9 @@ const ViewCaptcha = ({
         return
       }
 
-      const { chart, params, customs, appliedFilters, timeBucket: timeBucketFromResponse } = data
+      const { chart, params, customs, timeBucket: timeBucketFromResponse } = data
 
       let newTimebucket = timeBucket
-
-      if (!_isEmpty(appliedFilters)) {
-        setFilters(appliedFilters)
-      }
 
       if (period === KEY_FOR_ALL_TIME && !_isEmpty(timeBucketFromResponse)) {
         // eslint-disable-next-line prefer-destructuring
@@ -314,12 +270,11 @@ const ViewCaptcha = ({
 
       setAnalyticsLoading(false)
       setDataLoading(false)
-    } catch (e) {
+    } catch (reason) {
       setAnalyticsLoading(false)
       setDataLoading(false)
       setIsPanelsDataEmpty(true)
-      console.error('[ERROR](loadAnalytics) Loading analytics data failed')
-      console.error(e)
+      console.error('[ERROR](loadAnalytics) Loading analytics data failed:', reason)
     }
   }
 
@@ -330,6 +285,14 @@ const ViewCaptcha = ({
       })
     }
   }, [chartData, mainChart, activeChartMetrics])
+
+  useEffect(() => {
+    if (!areFiltersParsed) return
+
+    loadCaptcha()
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [areFiltersParsed, filters])
 
   // this funtion is used for requesting the data from the API when the filter is changed
   const filterHandler = (column: any, filter: any, isExclusive: boolean = false) => {
@@ -361,8 +324,6 @@ const ViewCaptcha = ({
       const { pathname, search } = url
       navigate(`${pathname}${search}`)
     }
-
-    loadCaptcha(true, newFilters)
   }
 
   // this function is used for requesting the data from the API when the exclusive filter is changed
@@ -378,7 +339,6 @@ const ViewCaptcha = ({
       return f
     })
     setFilters(newFilters)
-    loadCaptcha(true, newFilters)
 
     // storing exclusive filter in the page URL
     // @ts-ignore
@@ -392,20 +352,71 @@ const ViewCaptcha = ({
   }
 
   const refreshStats = () => {
-    if (!isLoading && !dataLoading) {
-      loadCaptcha(true)
+    if (authLoading || dataLoading) {
+      return
     }
+
+    loadCaptcha()
   }
 
   // Parsing initial filters from the address bar
   useEffect(() => {
-    // using try/catch because new URL is not supported by browsers like IE, so at least analytics would work without parsing filters
+    try {
+      // @ts-ignore
+      const url = new URL(window.location)
+      const { searchParams } = url
+      const intialTimeBucket: string = searchParams.get('timeBucket') || ''
+      if (!_includes(validTimeBacket, intialTimeBucket)) {
+        return
+      }
+      const newPeriodFull = _find(periodPairs, (el) => el.period === period) || {
+        period: '',
+        tbs: [],
+        label: '',
+      }
+      if (!_includes(newPeriodFull.tbs, intialTimeBucket)) {
+        return
+      }
+      setTimebucket(intialTimeBucket)
+    } catch (reason) {
+      console.error('[ERROR](useEffect) Setting timebucket failed:', reason)
+    }
+
+    try {
+      // @ts-ignore
+      const url = new URL(window.location)
+      const { searchParams } = url
+      const intialPeriod = captchaProjectsViewPrefs
+        ? searchParams.get('period') || captchaProjectsViewPrefs[id]?.period
+        : searchParams.get('period') || '7d'
+      if (!_includes(validPeriods, intialPeriod)) {
+        return
+      }
+
+      if (intialPeriod === 'custom') {
+        // @ts-ignore
+        const from = new Date(searchParams.get('from'))
+        // @ts-ignore
+        const to = new Date(searchParams.get('to'))
+        if (from.getDate() && to.getDate()) {
+          onRangeDateChange([from, to], true)
+          setDateRange([from, to])
+        }
+        return
+      }
+
+      setPeriodPairs(captchaTbPeriodPairs(t, undefined, undefined, language))
+      setDateRange(null)
+      updatePeriod({ period: intialPeriod })
+    } catch (reason) {
+      console.error('[ERROR](useEffect) Setting period failed:', reason)
+    }
+
     try {
       // @ts-ignore
       const url = new URL(window.location)
       const { searchParams } = url
       const initialFilters: any[] = []
-      // eslint-disable-next-line lodash/prefer-lodash-method
       searchParams.forEach((value, key) => {
         if (!_includes(validFilters, key)) {
           return
@@ -419,37 +430,13 @@ const ViewCaptcha = ({
         })
       })
       setFilters(initialFilters)
-    } finally {
-      setAreFiltersParsed(true)
+    } catch (reason) {
+      console.error('[ERROR](useEffect) Setting filters failed:', reason)
     }
-  }, [])
 
-  useEffect(() => {
-    if (arePeriodParsed) {
-      try {
-        // @ts-ignore
-        const url = new URL(window.location)
-        const { searchParams } = url
-        const intialTimeBucket: string = searchParams.get('timeBucket') || ''
-        // eslint-disable-next-line lodash/prefer-lodash-method
-        if (!_includes(validTimeBacket, intialTimeBucket)) {
-          return
-        }
-        const newPeriodFull = _find(periodPairs, (el) => el.period === period) || {
-          period: '',
-          tbs: [],
-          label: '',
-        }
-        if (!_includes(newPeriodFull.tbs, intialTimeBucket)) {
-          return
-        }
-        setTimebucket(intialTimeBucket)
-      } finally {
-        setAreTimeBucketParsed(true)
-      }
-    }
+    setAreFiltersParsed(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [arePeriodParsed])
+  }, [])
 
   const onRangeDateChange = (dates: Date[], onRender?: any) => {
     const days = Math.ceil(Math.abs(dates[1].getTime() - dates[0].getTime()) / (1000 * 3600 * 24))
@@ -484,7 +471,15 @@ const ViewCaptcha = ({
 
         setPeriodPairs(captchaTbPeriodPairs(t, timeBucketToDays[index].tb, dates, language))
         setPeriod('custom')
-        setProjectViewPrefs(id, 'custom', timeBucketToDays[4].tb[0], dates)
+
+        dispatch(
+          UIActions.setCaptchaProjectViewPrefs({
+            pid: id,
+            period: 'custom',
+            timeBucket: timeBucketToDays[4].tb[0],
+            rangeDate: dates,
+          }),
+        )
 
         break
       }
@@ -492,54 +487,29 @@ const ViewCaptcha = ({
   }
 
   useEffect(() => {
-    if (period !== KEY_FOR_ALL_TIME) {
-      return
-    }
-
-    if (areFiltersParsed && areTimeBucketParsed && arePeriodParsed) {
-      loadCaptcha()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [project, period, chartType, filters, arePeriodParsed])
-
-  useEffect(() => {
-    if (period === KEY_FOR_ALL_TIME) {
-      return
-    }
-
-    if (areFiltersParsed && areTimeBucketParsed && arePeriodParsed) {
-      loadCaptcha()
-    }
-  }, [project, period, chartType, timeBucket, periodPairs, areFiltersParsed, areTimeBucketParsed, arePeriodParsed, t]) // eslint-disable-line
-
-  useEffect(() => {
-    if (dateRange && arePeriodParsed) {
+    if (dateRange && areFiltersParsed) {
       onRangeDateChange(dateRange)
     }
-  }, [dateRange, t, arePeriodParsed]) // eslint-disable-line
+  }, [dateRange, areFiltersParsed]) // eslint-disable-line
 
   useEffect(() => {
-    if (!isLoading && _isEmpty(project)) {
-      getProject(id, true)
-        .then((projectRes) => {
-          if (!_isEmpty(projectRes)) {
-            setProjects([
-              ...(projects as any[]),
-              {
-                ...projectRes,
-                live: 'N/A',
-              },
-            ])
-          } else {
-            onErrorLoading()
-          }
-        })
-        .catch((e) => {
-          console.error(e)
-          onErrorLoading()
-        })
+    if (authLoading || !_isEmpty(project)) {
+      return
     }
-  }, [isLoading, project, id]) // eslint-disable-line
+
+    getProject(id)
+      .then((result) => {
+        if (_isEmpty(result)) {
+          onErrorLoading()
+        } else {
+          setProject(result as CaptchaProject)
+        }
+      })
+      .catch((reason) => {
+        console.error(reason)
+        onErrorLoading()
+      })
+  }, [authLoading, project, id]) // eslint-disable-line
 
   const updatePeriod = (newPeriod: any) => {
     const newPeriodFull = _find(periodPairs, (el) => el.period === newPeriod.period)
@@ -560,7 +530,13 @@ const ViewCaptcha = ({
       url.searchParams.delete('from')
       url.searchParams.delete('to')
       url.searchParams.append('period', newPeriod.period)
-      setProjectViewPrefs(id, newPeriod.period, tb)
+      dispatch(
+        UIActions.setCaptchaProjectViewPrefs({
+          pid: id,
+          period: newPeriod.period,
+          timeBucket: tb,
+        }),
+      )
       setPeriod(newPeriod.period)
       setDateRange(null)
     }
@@ -576,45 +552,19 @@ const ViewCaptcha = ({
     const { pathname, search } = url
     navigate(`${pathname}${search}`)
     setTimebucket(newTimebucket)
-    setProjectViewPrefs(id, period, newTimebucket, dateRange)
+    dispatch(
+      UIActions.setCaptchaProjectViewPrefs({
+        pid: id,
+        period,
+        timeBucket: newTimebucket,
+        rangeDate: dateRange,
+      }),
+    )
   }
 
   const openSettingsHandler = () => {
     navigate(_replace(routes.captcha_settings, ':id', id))
   }
-
-  useEffect(() => {
-    try {
-      // @ts-ignore
-      const url = new URL(window.location)
-      const { searchParams } = url
-      const intialPeriod = projectViewPrefs
-        ? searchParams.get('period') || projectViewPrefs[id]?.period
-        : searchParams.get('period') || '7d'
-      if (!_includes(validPeriods, intialPeriod)) {
-        return
-      }
-
-      if (intialPeriod === 'custom') {
-        // @ts-ignore
-        const from = new Date(searchParams.get('from'))
-        // @ts-ignore
-        const to = new Date(searchParams.get('to'))
-        if (from.getDate() && to.getDate()) {
-          onRangeDateChange([from, to], true)
-          setDateRange([from, to])
-        }
-        return
-      }
-
-      setPeriodPairs(captchaTbPeriodPairs(t, undefined, undefined, language))
-      setDateRange(null)
-      updatePeriod({ period: intialPeriod })
-    } finally {
-      setArePeriodParsed(true)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   const resetFilters = () => {
     // @ts-ignore
@@ -629,7 +579,6 @@ const ViewCaptcha = ({
     const { pathname, search } = url
     navigate(`${pathname}${search}`)
     setFilters([])
-    loadCaptcha(true, [])
   }
 
   const exportTypes = [
@@ -647,13 +596,7 @@ const ViewCaptcha = ({
     setChartType(type)
   }
 
-  // useEffect to change chart if we change chart type
-  useEffect(() => {
-    loadCaptcha()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chartType])
-
-  if (isLoading) {
+  if (authLoading || !project) {
     return <PageLoader />
   }
 
@@ -677,16 +620,16 @@ const ViewCaptcha = ({
                     className={cx(
                       'relative mr-3 rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                       {
-                        'cursor-not-allowed opacity-50': isLoading || dataLoading,
+                        'cursor-not-allowed opacity-50': authLoading || dataLoading,
                       },
                     )}
                   >
-                    <ArrowPathIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
+                    <RotateCw className='h-5 w-5 text-gray-700 dark:text-gray-50' />
                   </button>
                   <Dropdown
                     header={t('project.exportData')}
                     items={exportTypes}
-                    title={[<ArrowDownTrayIcon key='download-icon' className='h-5 w-5' />]}
+                    title={[<DownloadIcon key='download-icon' className='h-5 w-5' strokeWidth={1.5} />]}
                     labelExtractor={(item) => item.label}
                     keyExtractor={(item) => item.label}
                     onSelect={(item) => item.onClick()}
@@ -781,14 +724,14 @@ const ViewCaptcha = ({
                       }
                     }}
                   />
-                  {(project?.isOwner || sharedRoles === roleAdmin.role) && (
+                  {(project.role === 'admin' || project.role === 'owner') && (
                     <button
                       type='button'
                       onClick={openSettingsHandler}
                       className='flex px-3 text-sm font-medium text-gray-700 hover:text-gray-600 dark:text-gray-50 dark:hover:text-gray-200'
                     >
                       <>
-                        <Cog8ToothIcon className='mr-1 h-5 w-5' />
+                        <SettingsIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
                         {t('common.settings')}
                       </>
                     </button>
@@ -865,6 +808,23 @@ const ViewCaptcha = ({
                             onFilter={filterHandler}
                             name={panelName}
                             data={panelsData.data[type]}
+                            rowMapper={(entry: { name: keyof typeof deviceIconMapping }) => {
+                              const { name: entryName } = entry
+
+                              const icon = deviceIconMapping[entryName]
+
+                              if (!icon) {
+                                return entryName
+                              }
+
+                              return (
+                                <>
+                                  {icon}
+                                  &nbsp;
+                                  {entryName}
+                                </>
+                              )
+                            }}
                             capitalize
                           />
                         )

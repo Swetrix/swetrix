@@ -4,7 +4,7 @@ import _round from 'lodash/round'
 import _map from 'lodash/map'
 import _reduce from 'lodash/reduce'
 
-import { isBrowser } from 'redux/constants'
+import { isBrowser } from '~/lib/constants'
 
 const rx = /\.0+$|(\.[0-9]*[1-9])0+$/
 
@@ -87,7 +87,7 @@ export const sumArrays = (...arrays: any): number[] => {
   })
 }
 
-export const openBrowserWindow = (url: string, width: number, height: number) => {
+export const openBrowserWindow = (url: string, width = 600, height = 800) => {
   return window.open(
     url,
     '',
@@ -133,3 +133,5 @@ export const getLocaleDisplayName = (locale: string, language: string): string =
     return locale
   }
 }
+
+export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))

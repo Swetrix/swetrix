@@ -1,4 +1,4 @@
-import Terms from 'pages/Terms'
+import Terms from '~/pages/Terms'
 import type { SitemapFunction } from 'remix-sitemap'
 
 export const sitemap: SitemapFunction = () => ({

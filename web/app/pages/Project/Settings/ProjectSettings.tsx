@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useMemo, memo } from 'react'
-import type i18next from 'i18next'
+import React, { useState, useEffect, useMemo } from 'react'
 import { toast } from 'sonner'
-import { useLoaderData, useNavigate } from '@remix-run/react'
+import { useLoaderData, useNavigate, Link } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
@@ -16,13 +15,11 @@ import _filter from 'lodash/filter'
 import _map from 'lodash/map'
 import _toUpper from 'lodash/toUpper'
 import _includes from 'lodash/includes'
-import { ExclamationTriangleIcon, TrashIcon, RocketLaunchIcon } from '@heroicons/react/24/outline'
+import { XCircleIcon } from '@heroicons/react/24/outline'
 
-import { withAuthentication, auth } from 'hoc/protected'
-import { isSelfhosted, TITLE_SUFFIX, ENTRIES_PER_PAGE_DASHBOARD, FILTERS_PANELS_ORDER } from 'redux/constants'
-import { IProject } from 'redux/models/IProject'
-import { IUser } from 'redux/models/IUser'
-import { IProjectForShared, ISharedProject } from 'redux/models/ISharedProject'
+import { withAuthentication, auth } from '~/hoc/protected'
+import { isSelfhosted, TITLE_SUFFIX, FILTERS_PANELS_ORDER, isBrowser } from '~/lib/constants'
+import { Project } from '~/lib/models/Project'
 import {
   updateProject,
   deleteProject,
@@ -31,31 +28,35 @@ import {
   deletePartially,
   getFilters,
   resetFilters,
-} from 'api'
-import Input from 'ui/Input'
-import Button from 'ui/Button'
-import Loader from 'ui/Loader'
-import Checkbox from 'ui/Checkbox'
-import Modal from 'ui/Modal'
-import FlatPicker from 'ui/Flatpicker'
-import countries from 'utils/isoCountries'
-import routes from 'utils/routes'
-import Dropdown from 'ui/Dropdown'
-import MultiSelect from 'ui/MultiSelect'
+  getProject,
+  assignProjectToOrganisation,
+} from '~/api'
+import Input from '~/ui/Input'
+import Button from '~/ui/Button'
+import Loader from '~/ui/Loader'
+import Checkbox from '~/ui/Checkbox'
+import Modal from '~/ui/Modal'
+import FlatPicker from '~/ui/Flatpicker'
+import countries from '~/utils/isoCountries'
+import routes from '~/utils/routes'
+import Dropdown from '~/ui/Dropdown'
+import MultiSelect from '~/ui/MultiSelect'
 import CCRow from '../View/components/CCRow'
 import { getFormatDate } from '../View/ViewProject.helpers'
 
 import People from './People'
 import Emails from './Emails'
-import Select from 'ui/Select'
-import { useRequiredParams } from 'hooks/useRequiredParams'
-import { isBrowser } from 'framer-motion'
+import Select from '~/ui/Select'
+import { useRequiredParams } from '~/hooks/useRequiredParams'
+import { ArrowLeftRight, RotateCcw, Trash2Icon } from 'lucide-react'
+import { StateType } from '~/lib/store'
+import { useSelector } from 'react-redux'
 
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
 const MAX_IPBLACKLIST_LENGTH = 300
 
-const tabDeleteDataModal = [
+const DELETE_DATA_MODAL_TABS = [
   {
     name: 'all',
     title: 'project.settings.reseted.all',
@@ -70,33 +71,33 @@ const tabDeleteDataModal = [
   },
 ]
 
-interface IModalMessage {
+interface ModalMessageProps {
   dateRange: Date[]
   setDateRange: (a: Date[]) => void
   setTab: (i: string) => void
-  t: typeof i18next.t
   tab: string
   pid: string
   activeFilter: string[]
   setActiveFilter: any
   filterType: string
   setFilterType: (a: string) => void
-  language: string
 }
 
 const ModalMessage = ({
   dateRange,
   setDateRange,
   setTab,
-  t,
   tab,
   pid,
   activeFilter,
   setActiveFilter,
   filterType,
   setFilterType,
-  language,
-}: IModalMessage): JSX.Element => {
+}: ModalMessageProps) => {
+  const {
+    t,
+    i18n: { language },
+  } = useTranslation('common')
   const [filterList, setFilterList] = useState<string[]>([])
   const [searchList, setSearchList] = useState<string[]>([])
 
@@ -121,7 +122,7 @@ const ModalMessage = ({
       <p className='mb-4 mt-1 text-sm italic text-gray-500 dark:text-gray-300'>{t('project.settings.resetHint')}</p>
       <div className='mt-6'>
         <nav className='-mb-px flex space-x-6'>
-          {_map(tabDeleteDataModal, (tabDelete) => (
+          {_map(DELETE_DATA_MODAL_TABS, (tabDelete) => (
             <button
               key={tabDelete.name}
               type='button'
@@ -137,7 +138,7 @@ const ModalMessage = ({
           ))}
         </nav>
       </div>
-      {tab === tabDeleteDataModal[1].name && (
+      {tab === DELETE_DATA_MODAL_TABS[1].name && (
         <>
           <p className='mb-2 mt-4 text-sm text-gray-500 dark:text-gray-300'>
             {t('project.settings.reseted.partiallyDesc')}
@@ -159,12 +160,12 @@ const ModalMessage = ({
           />
         </>
       )}
-      {tab === tabDeleteDataModal[0].name && (
+      {tab === DELETE_DATA_MODAL_TABS[0].name && (
         <p className='mb-4 mt-4 text-sm italic text-gray-500 dark:text-gray-300'>
           {t('project.settings.reseted.allHint')}
         </p>
       )}
-      {tab === tabDeleteDataModal[2].name && (
+      {tab === DELETE_DATA_MODAL_TABS[2].name && (
         <div className='min-h-[410px]'>
           <p className='mb-4 mt-4 text-sm italic text-gray-500 dark:text-gray-300'>
             {t('project.settings.reseted.viaFiltersHint')}
@@ -245,59 +246,23 @@ const ModalMessage = ({
   )
 }
 
-interface IForm extends Partial<IProject> {
+interface Form extends Partial<Project> {
   origins: string | null
   ipBlacklist: string | null
 }
 
 const DEFAULT_PROJECT_NAME = 'Untitled Project'
 
-interface IProjectSettings {
-  loadProjects: (shared: boolean, skip: number) => void
-  isLoading: boolean
-  isLoadingShared: boolean
-  projects: IProject[]
-  removeProject: (pid: string, shared: boolean) => void
-  user: IUser
-  isSharedProject: boolean
-  sharedProjects: ISharedProject[]
-  deleteProjectCache: (pid: string) => void
-  setProjectProtectedPassword: (pid: string, password: string) => void
-  dashboardPaginationPage: number
-  dashboardPaginationPageShared: number
-  authLoading: boolean
-}
+const ProjectSettings = () => {
+  const { user, loading: authLoading } = useSelector((state: StateType) => state.auth)
 
-const ProjectSettings = ({
-  loadProjects,
-  isLoading,
-  isLoadingShared,
-  projects,
-  removeProject,
-  user,
-  isSharedProject,
-  sharedProjects,
-  deleteProjectCache,
-  setProjectProtectedPassword,
-  dashboardPaginationPage,
-  dashboardPaginationPageShared,
-  authLoading,
-}: IProjectSettings) => {
-  const {
-    t,
-    i18n: { language },
-  } = useTranslation('common')
+  const { t } = useTranslation('common')
   const { id } = useRequiredParams<{ id: string }>()
-  const project: IProjectForShared = useMemo(
-    () =>
-      _find([...projects, ..._map(sharedProjects, (item) => item.project)], (p) => p.id === id) ||
-      ({} as IProjectForShared),
-    [projects, id, sharedProjects],
-  )
   const navigate = useNavigate()
   const { requestOrigin } = useLoaderData<{ requestOrigin: string | null }>()
 
-  const [form, setForm] = useState<IForm>({
+  const [project, setProject] = useState<Project | null>(null)
+  const [form, setForm] = useState<Form>({
     name: '',
     id,
     public: false,
@@ -306,33 +271,31 @@ const ProjectSettings = ({
     ipBlacklist: null,
     botsProtectionLevel: 'basic',
   })
-  const [validated, setValidated] = useState<boolean>(false)
+  const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
     name?: string
     origins?: string
     ipBlacklist?: string
     password?: string
   }>({})
-  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
-  const [showDelete, setShowDelete] = useState<boolean>(false)
-  const [showReset, setShowReset] = useState<boolean>(false)
-  const [projectDeleting, setProjectDeleting] = useState<boolean>(false)
-  const [projectResetting, setProjectResetting] = useState<boolean>(false)
-  const [projectSaving, setProjectSaving] = useState<boolean>(false)
-  const [showTransfer, setShowTransfer] = useState<boolean>(false)
-  const [transferEmail, setTransferEmail] = useState<string>('')
+  const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [showDelete, setShowDelete] = useState(false)
+  const [showReset, setShowReset] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [setResetting, setIsResetting] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [showTransfer, setShowTransfer] = useState(false)
+  const [transferEmail, setTransferEmail] = useState('')
   const [dateRange, setDateRange] = useState<Date[]>([])
-  const [tab, setTab] = useState<string>(tabDeleteDataModal[0].name)
-  const [showProtected, setShowProtected] = useState<boolean>(false)
-  const [initialised, setInitialised] = useState(false)
+  const [tab, setTab] = useState(DELETE_DATA_MODAL_TABS[0].name)
+  const [showProtected, setShowProtected] = useState(false)
+
+  const [isLoading, setIsLoading] = useState<boolean | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   // for reset data via filters
   const [activeFilter, setActiveFilter] = useState<string[]>([])
-  const [filterType, setFilterType] = useState<string>('')
-
-  const paginationSkip: number = isSharedProject
-    ? dashboardPaginationPageShared * ENTRIES_PER_PAGE_DASHBOARD
-    : dashboardPaginationPage * ENTRIES_PER_PAGE_DASHBOARD
+  const [filterType, setFilterType] = useState('')
 
   const botsProtectionLevels = useMemo(() => {
     return [
@@ -347,40 +310,68 @@ const ProjectSettings = ({
     ] as const
   }, [t])
 
+  const organisations = useMemo(
+    () => [
+      {
+        id: undefined,
+        name: t('common.notSet'),
+      },
+      ...(user.organisationMemberships || [])
+        .filter((om) => om.confirmed && (om.role === 'admin' || om.role === 'owner'))
+        .map((om) => om.organisation),
+    ],
+    [user.organisationMemberships, t],
+  )
+
+  const assignOrganisation = async (organisationId?: string) => {
+    try {
+      await assignProjectToOrganisation(id, organisationId)
+      toast.success(t('apiNotifications.projectAssigned'))
+    } catch (reason: any) {
+      toast.error(typeof reason === 'string' ? reason : t('apiNotifications.projectAssignError'))
+    }
+  }
+
   const sharableLink = useMemo(() => {
     const origin = requestOrigin || isBrowser ? window.location.origin : 'https://swetrix.com'
 
     return `${origin}/projects/${id}`
   }, [requestOrigin, id])
 
+  const loadProject = async (projectId: string) => {
+    if (isLoading) {
+      return
+    }
+    setIsLoading(true)
+
+    try {
+      const result = await getProject(projectId)
+      setProject(result)
+      setForm({
+        ...result,
+        ipBlacklist: _isString(result.ipBlacklist) ? result.ipBlacklist : _join(result.ipBlacklist, ', '),
+        origins: _isString(result.origins) ? result.origins : _join(result.origins, ', '),
+      })
+    } catch (reason: any) {
+      setError(reason)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   useEffect(() => {
-    if (authLoading || initialised) {
+    if (authLoading) {
       return
     }
 
-    if (!user.isActive && !isSelfhosted) {
-      toast.error(t('project.settings.verify'))
-      navigate(routes.dashboard)
-    }
+    loadProject(id)
 
-    if (!isLoading && !isLoadingShared && !projectDeleting) {
-      if (_isEmpty(project) || project?.uiHidden) {
-        toast.error(t('project.noExist'))
-        navigate(routes.dashboard)
-      } else {
-        setForm({
-          ...project,
-          ipBlacklist: _isString(project.ipBlacklist) ? project.ipBlacklist : _join(project.ipBlacklist, ', '),
-          origins: _isString(project.origins) ? project.origins : _join(project.origins, ', '),
-        })
-        setInitialised(true)
-      }
-    }
-  }, [user, project, initialised, isLoading, navigate, projectDeleting, t, authLoading, isLoadingShared])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, id])
 
-  const onSubmit = async (data: IForm) => {
-    if (!projectSaving) {
-      setProjectSaving(true)
+  const onSubmit = async (data: Form) => {
+    if (!isSaving) {
+      setIsSaving(true)
       try {
         const formalisedData = {
           ...data,
@@ -392,75 +383,78 @@ const ProjectSettings = ({
                     return origin
                   }
                   return new URL(origin).host
-                } catch (e) {
+                } catch {
                   return origin
                 }
               }),
           ipBlacklist: _isEmpty(data.ipBlacklist) ? null : _split(data.ipBlacklist, ','),
         }
-        await updateProject(id, formalisedData as Partial<IProject>)
+        await updateProject(id, formalisedData as Partial<Project>)
         toast.success(t('project.settings.updated'))
-
-        loadProjects(isSharedProject, paginationSkip)
       } catch (reason: any) {
         toast.error(reason)
       } finally {
-        setProjectSaving(false)
+        setIsSaving(false)
       }
     }
   }
 
   const onDelete = async () => {
     setShowDelete(false)
-    if (!projectDeleting) {
-      setProjectDeleting(true)
-      try {
-        await deleteProject(id)
-        removeProject(id, isSharedProject)
-        toast.success(t('project.settings.deleted'))
-        navigate(routes.dashboard)
-      } catch (reason: any) {
-        toast.error(reason)
-      } finally {
-        setProjectDeleting(false)
-      }
+
+    if (isDeleting) {
+      return
+    }
+
+    setIsDeleting(true)
+    try {
+      await deleteProject(id)
+      toast.success(t('project.settings.deleted'))
+      navigate(routes.dashboard)
+    } catch (reason: any) {
+      toast.error(reason)
+    } finally {
+      setIsDeleting(false)
     }
   }
 
   const onReset = async () => {
     setShowReset(false)
-    if (!projectResetting) {
-      setProjectResetting(true)
-      try {
-        if (tab === tabDeleteDataModal[1].name) {
-          if (_isEmpty(dateRange)) {
-            toast.error(t('project.settings.noDateRange'))
-            setProjectResetting(false)
-            return
-          }
-          await deletePartially(id, {
-            from: getFormatDate(dateRange[0]),
-            to: getFormatDate(dateRange[1]),
-          })
-        } else if (tab === tabDeleteDataModal[2].name) {
-          if (_isEmpty(activeFilter)) {
-            toast.error(t('project.settings.noFilters'))
-            setProjectResetting(false)
-            return
-          }
 
-          await resetFilters(id, filterType, activeFilter)
-        } else {
-          await resetProject(id)
+    if (setResetting) {
+      return
+    }
+
+    setIsResetting(true)
+
+    try {
+      if (tab === DELETE_DATA_MODAL_TABS[1].name) {
+        if (_isEmpty(dateRange)) {
+          toast.error(t('project.settings.noDateRange'))
+          setIsResetting(false)
+          return
         }
-        deleteProjectCache(id)
-        toast.success(t('project.settings.resetted'))
-        navigate(routes.dashboard)
-      } catch (reason: any) {
-        toast.error(reason)
-      } finally {
-        setProjectResetting(false)
+        await deletePartially(id, {
+          from: getFormatDate(dateRange[0]),
+          to: getFormatDate(dateRange[1]),
+        })
+      } else if (tab === DELETE_DATA_MODAL_TABS[2].name) {
+        if (_isEmpty(activeFilter)) {
+          toast.error(t('project.settings.noFilters'))
+          setIsResetting(false)
+          return
+        }
+
+        await resetFilters(id, filterType, activeFilter)
+      } else {
+        await resetProject(id)
       }
+      toast.success(t('project.settings.resetted'))
+      navigate(routes.dashboard)
+    } catch (reason: any) {
+      toast.error(reason)
+    } finally {
+      setIsResetting(false)
     }
   }
 
@@ -518,10 +512,6 @@ const ProjectSettings = ({
     }
   }
 
-  const onCancel = () => {
-    navigate(_replace(routes.project, ':id', id))
-  }
-
   const onTransfer = async () => {
     await transferProject(id, transferEmail)
       .then(() => {
@@ -546,10 +536,6 @@ const ProjectSettings = ({
         isPasswordProtected: true,
       })
 
-      if (!_isEmpty(form.password) && !_isEmpty(form.id)) {
-        setProjectProtectedPassword(form?.id || '', form?.password || '')
-      }
-
       setForm((prev) => ({
         ...prev,
         isPasswordProtected: true,
@@ -565,10 +551,47 @@ const ProjectSettings = ({
     document.title = `${t('project.settings.settings')} ${form.name} ${TITLE_SUFFIX}`
   }, [form, t])
 
-  if (authLoading || !initialised) {
+  if (isLoading || isLoading === null || !project) {
     return (
       <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8'>
         <Loader />
+      </div>
+    )
+  }
+
+  if (error && !isLoading) {
+    return (
+      <div className='min-h-page bg-gray-50 px-4 py-16 dark:bg-slate-900 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
+        <div className='mx-auto max-w-max'>
+          <main className='sm:flex'>
+            <XCircleIcon className='h-12 w-12 text-red-400' aria-hidden='true' />
+            <div className='sm:ml-6'>
+              <div className='max-w-prose sm:border-l sm:border-gray-200 sm:pl-6'>
+                <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50 sm:text-5xl'>
+                  {t('apiNotifications.somethingWentWrong')}
+                </h1>
+                <p className='mt-4 text-2xl font-medium tracking-tight text-gray-700 dark:text-gray-200'>
+                  {t('apiNotifications.errorCode', { error })}
+                </p>
+              </div>
+              <div className='mt-8 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>
+                <button
+                  type='button'
+                  onClick={() => window.location.reload()}
+                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
+                >
+                  {t('dashboard.reloadPage')}
+                </button>
+                <Link
+                  to={routes.contact}
+                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700 dark:focus:ring-gray-50'
+                >
+                  {t('notFoundPage.support')}
+                </Link>
+              </div>
+            </div>
+          </main>
+        </div>
       </div>
     )
   }
@@ -635,11 +658,9 @@ const ProjectSettings = ({
             title={_find(botsProtectionLevels, (predicate) => predicate.name === form.botsProtectionLevel)?.title || ''}
             labelExtractor={(item: any) => item.title}
             onSelect={(item) => {
-              const key = _find(botsProtectionLevels, (predicate) => predicate.title === item)?.name || 'basic'
-
               setForm((prevForm) => ({
                 ...prevForm,
-                botsProtectionLevel: key,
+                botsProtectionLevel: item.name,
               }))
             }}
             capitalise
@@ -663,7 +684,7 @@ const ProjectSettings = ({
         <Checkbox
           checked={Boolean(form.public)}
           onChange={(checked) => {
-            if (!form.isPasswordProtected) {
+            if (!form.isPasswordProtected || !checked) {
               setForm((prev) => ({
                 ...prev,
                 public: checked,
@@ -677,8 +698,8 @@ const ProjectSettings = ({
         />
         <Checkbox
           checked={Boolean(form.isPasswordProtected)}
-          onChange={() => {
-            if (!form.public && form.isPasswordProtected) {
+          onChange={(checked) => {
+            if (!checked) {
               setForm({
                 ...form,
                 isPasswordProtected: false,
@@ -695,54 +716,70 @@ const ProjectSettings = ({
           label={t('project.settings.protected')}
           hint={t('project.settings.protectedHint')}
         />
+        {organisations.length > 1 && (
+          <div className='mt-4'>
+            <Select
+              items={organisations}
+              keyExtractor={(item) => item.id || 'not-set'}
+              labelExtractor={(item) => {
+                if (item.id === undefined) {
+                  return <span className='italic'>{t('common.notSet')}</span>
+                }
+
+                return item.name
+              }}
+              onSelect={async (item) => {
+                await assignOrganisation(item.id)
+                setForm((oldForm) => ({
+                  ...oldForm,
+                  organisationId: item.id,
+                }))
+              }}
+              label={t('project.settings.organisation')}
+              title={organisations.find((org) => org.id === form.organisationId)?.name}
+            />
+          </div>
+        )}
         <div className='mt-8 flex flex-wrap justify-center gap-2 sm:justify-between'>
           <div className='flex flex-wrap items-center gap-2'>
             <Button
               className='border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
-              onClick={onCancel}
+              as={Link}
+              // @ts-expect-error
+              to={_replace(routes.project, ':id', id)}
               secondary
               regular
             >
               {t('common.cancel')}
             </Button>
-            <Button type='submit' loading={projectSaving} primary regular>
+            <Button type='submit' loading={isSaving} primary regular>
               {t('common.save')}
             </Button>
           </div>
-          {!project?.shared && (
+          {project.role === 'owner' ? (
             <div className='flex flex-wrap justify-center gap-2'>
               {!isSelfhosted && (
                 <Button onClick={() => setShowTransfer(true)} semiDanger semiSmall>
                   <>
-                    <RocketLaunchIcon className='mr-1 h-5 w-5' />
+                    <ArrowLeftRight className='mr-1 h-5 w-5' />
                     {t('project.settings.transfer')}
                   </>
                 </Button>
               )}
-              <Button
-                onClick={() => !projectResetting && setShowReset(true)}
-                loading={projectDeleting}
-                semiDanger
-                semiSmall
-              >
+              <Button onClick={() => !setResetting && setShowReset(true)} loading={isDeleting} semiDanger semiSmall>
                 <>
-                  <TrashIcon className='mr-1 h-5 w-5' />
+                  <RotateCcw className='mr-1 h-5 w-5' />
                   {t('project.settings.reset')}
                 </>
               </Button>
-              <Button
-                onClick={() => !projectDeleting && setShowDelete(true)}
-                loading={projectDeleting}
-                danger
-                semiSmall
-              >
+              <Button onClick={() => !isDeleting && setShowDelete(true)} loading={isDeleting} danger semiSmall>
                 <>
-                  <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
+                  <Trash2Icon className='mr-1 h-5 w-5' strokeWidth={1.5} />
                   {t('project.settings.delete')}
                 </>
               </Button>
             </div>
-          )}
+          ) : null}
         </div>
         {!isSelfhosted && (
           <>
@@ -753,7 +790,7 @@ const ProjectSettings = ({
         {!isSelfhosted && (
           <>
             <hr className='mt-2 border-gray-200 dark:border-gray-600 sm:mt-5' />
-            <People project={project} isSharedProject={isSharedProject} />
+            <People project={project} />
           </>
         )}
       </form>
@@ -781,13 +818,11 @@ const ProjectSettings = ({
             dateRange={dateRange}
             setTab={setTab}
             tab={tab}
-            t={t}
             pid={id}
             activeFilter={activeFilter}
             setActiveFilter={setActiveFilter}
             filterType={filterType}
             setFilterType={setFilterType}
-            language={language}
           />
         }
         submitType='danger'
@@ -854,4 +889,4 @@ const ProjectSettings = ({
   )
 }
 
-export default memo(withAuthentication(ProjectSettings, auth.authenticated))
+export default withAuthentication(ProjectSettings, auth.authenticated)

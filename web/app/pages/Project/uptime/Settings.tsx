@@ -1,36 +1,33 @@
-import React, { ChangeEvent, ChangeEventHandler, useEffect, useId, useMemo, useState } from 'react'
-import { useNavigate, useLocation } from '@remix-run/react'
+import React, { ChangeEvent, ChangeEventHandler, useEffect, useId, useState } from 'react'
+import { Link, useNavigate } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { ExclamationTriangleIcon, XCircleIcon } from '@heroicons/react/24/outline'
 
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
-import _replace from 'lodash/replace'
 import _join from 'lodash/join'
 import _split from 'lodash/split'
-import _find from 'lodash/find'
 import _includes from 'lodash/includes'
 import _isNaN from 'lodash/isNaN'
 import _map from 'lodash/map'
 import _keys from 'lodash/keys'
-import _filter from 'lodash/filter'
 import { clsx as cx } from 'clsx'
-import Input from 'ui/Input'
-import Button from 'ui/Button'
-import Modal from 'ui/Modal'
-import { PROJECT_TABS } from 'redux/constants'
-import { createMonitor, updateMonitor, deleteMonitor, ICreateMonitor } from 'api'
-import { withAuthentication, auth } from 'hoc/protected'
-import routes from 'utils/routes'
-import { Monitor } from 'redux/models/Uptime'
-import { useDispatch, useSelector } from 'react-redux'
+import Input from '~/ui/Input'
+import Button from '~/ui/Button'
+import Modal from '~/ui/Modal'
+import { PROJECT_TABS } from '~/lib/constants'
+import { createMonitor, updateMonitor, deleteMonitor, CreateMonitor, getProjectMonitor } from '~/api'
+import { withAuthentication, auth } from '~/hoc/protected'
+import routes from '~/utils/routes'
+import { Monitor } from '~/lib/models/Uptime'
+import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
-import { StateType } from 'redux/store'
-import UIActions from 'redux/reducers/ui'
-import { useRequiredParams } from 'hooks/useRequiredParams'
-import Select from 'ui/Select'
-import { formatTime } from 'utils/date'
-import { isValidUrl } from 'utils/validator'
+import { StateType } from '~/lib/store'
+import { useRequiredParams } from '~/hooks/useRequiredParams'
+import Select from '~/ui/Select'
+import { formatTime } from '~/utils/date'
+import { isValidUrl } from '~/utils/validator'
+import Loader from '~/ui/Loader'
 
 const MONITOR_TYPES = ['HTTP']
 
@@ -130,7 +127,7 @@ const IntervalSelector = ({ value, onChange, label, hint, name }: IntervalSelect
 
           return (
             <option
-              className='mt-4 text-sm lg:mt-0 lg:-rotate-90 lg:text-center'
+              className='mt-4 text-sm text-gray-700 dark:text-gray-200 lg:mt-0 lg:-rotate-90 lg:text-center'
               key={interval}
               value={index}
               label={displayName}
@@ -144,21 +141,19 @@ const IntervalSelector = ({ value, onChange, label, hint, name }: IntervalSelect
 
 const MAX_RETRIES = 100
 
-const UptimeSettings = (): JSX.Element => {
-  const { monitors, total } = useSelector((state: StateType) => state.ui.monitors)
+interface UptimeSettingsProps {
+  isSettings?: boolean
+}
 
-  const dispatch = useDispatch()
+const UptimeSettings = ({ isSettings }: UptimeSettingsProps) => {
+  const { loading: authLoading } = useSelector((state: StateType) => state.auth)
 
   const navigate = useNavigate()
   const { id, pid } = useRequiredParams<{ id: string; pid: string }>()
-  const { pathname } = useLocation()
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
-  const isSettings =
-    !_isEmpty(id) && _replace(_replace(routes.uptime_settings, ':id', id as string), ':pid', pid as string) === pathname
-  const monitor = useMemo(() => _find(monitors, { id }), [monitors, id])
   const [form, setForm] = useState<
     Partial<Omit<Monitor, 'acceptedStatusCodes'>> & {
       acceptedStatusCodes: string
@@ -175,24 +170,50 @@ const UptimeSettings = (): JSX.Element => {
     acceptedStatusCodes: '200',
     description: '',
   })
-  const [validated, setValidated] = useState<boolean>(false)
+  const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
     [key: string]: string
   }>({})
-  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
-  const [showModal, setShowModal] = useState<boolean>(false)
+  const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [showModal, setShowModal] = useState(false)
 
-  const setMonitors = (monitors: Monitor[]) => dispatch(UIActions.setMonitors(monitors))
-  const setMonitorsTotal = (total: number) => dispatch(UIActions.setMonitorsTotal({ total }))
+  const [isLoading, setIsLoading] = useState<boolean | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const loadMonitor = async (projectId: string, monitorId: string) => {
+    if (!isSettings) {
+      setIsLoading(false)
+      return
+    }
+
+    if (isLoading) {
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      const result = await getProjectMonitor(projectId, monitorId)
+      setForm({
+        ...result,
+        acceptedStatusCodes: _join(result.acceptedStatusCodes, ','),
+      })
+    } catch (reason: any) {
+      setError(reason)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   useEffect(() => {
-    if (!_isEmpty(monitor)) {
-      setForm({
-        ...monitor,
-        acceptedStatusCodes: _join(monitor.acceptedStatusCodes, ','),
-      })
+    if (authLoading) {
+      return
     }
-  }, [monitor])
+
+    loadMonitor(pid, id)
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, pid, id])
 
   const validate = () => {
     const allErrors: {
@@ -253,18 +274,15 @@ const UptimeSettings = (): JSX.Element => {
       updateMonitor(pid, id, data)
         .then((res) => {
           navigate(`/projects/${pid}?tab=${PROJECT_TABS.uptime}`)
-          setMonitors([..._filter(monitors, (a) => a.id !== id), res])
           toast.success(t('monitor.monitorUpdated'))
         })
         .catch((err) => {
           toast.error(err.message || err || 'Something went wrong')
         })
     } else {
-      createMonitor(pid, data as ICreateMonitor)
+      createMonitor(pid, data as CreateMonitor)
         .then((res) => {
           navigate(`/projects/${pid}?tab=${PROJECT_TABS.uptime}`)
-          setMonitors([...monitors, res])
-          setMonitorsTotal(total + 1)
           toast.success(t('monitor.monitorCreated'))
         })
         .catch((err) => {
@@ -281,18 +299,12 @@ const UptimeSettings = (): JSX.Element => {
 
     deleteMonitor(pid, id)
       .then(() => {
-        setMonitors(_filter(monitors, (a) => a.id !== id))
-        setMonitorsTotal(total - 1)
         navigate(`/projects/${pid}?tab=${PROJECT_TABS.uptime}`)
         toast.success(t('monitor.monitorDeleted'))
       })
       .catch((err) => {
         toast.error(err.message || err || 'Something went wrong')
       })
-  }
-
-  const onCancel = () => {
-    navigate(`/projects/${pid}?tab=${PROJECT_TABS.uptime}`)
   }
 
   useEffect(() => {
@@ -326,6 +338,51 @@ const UptimeSettings = (): JSX.Element => {
         name: form.name,
       })
     : t('monitor.create')
+
+  if (isLoading || isLoading === null) {
+    return (
+      <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8'>
+        <Loader />
+      </div>
+    )
+  }
+
+  if (error && !isLoading) {
+    return (
+      <div className='min-h-page bg-gray-50 px-4 py-16 dark:bg-slate-900 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
+        <div className='mx-auto max-w-max'>
+          <main className='sm:flex'>
+            <XCircleIcon className='h-12 w-12 text-red-400' aria-hidden='true' />
+            <div className='sm:ml-6'>
+              <div className='max-w-prose sm:border-l sm:border-gray-200 sm:pl-6'>
+                <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50 sm:text-5xl'>
+                  {t('apiNotifications.somethingWentWrong')}
+                </h1>
+                <p className='mt-4 text-2xl font-medium tracking-tight text-gray-700 dark:text-gray-200'>
+                  {t('apiNotifications.errorCode', { error })}
+                </p>
+              </div>
+              <div className='mt-8 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>
+                <button
+                  type='button'
+                  onClick={() => window.location.reload()}
+                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
+                >
+                  {t('dashboard.reloadPage')}
+                </button>
+                <Link
+                  to={routes.contact}
+                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700 dark:focus:ring-gray-50'
+                >
+                  {t('notFoundPage.support')}
+                </Link>
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div
@@ -422,7 +479,9 @@ const UptimeSettings = (): JSX.Element => {
             <div className='flex items-center justify-between'>
               <Button
                 className='mr-2 border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
-                onClick={onCancel}
+                as={Link}
+                // @ts-expect-error
+                to={`/projects/${pid}?tab=${PROJECT_TABS.uptime}`}
                 secondary
                 regular
               >
@@ -437,7 +496,9 @@ const UptimeSettings = (): JSX.Element => {
           <div className='mt-5 flex items-center justify-between'>
             <Button
               className='mr-2 border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
-              onClick={onCancel}
+              as={Link}
+              // @ts-expect-error
+              to={`/projects/${pid}?tab=${PROJECT_TABS.uptime}`}
               secondary
               regular
             >

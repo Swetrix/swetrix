@@ -1,4 +1,4 @@
-export interface ISession {
+export interface Session {
   psid: string
   cc: string | null
   os: string | null
@@ -8,7 +8,7 @@ export interface ISession {
   active: 1 | 0
 }
 
-export interface ISessionDetails {
+export interface SessionDetails {
   cc: string | null
   os: string | null
   osv: string | null

@@ -37,7 +37,7 @@ import { catchError, firstValueFrom, map, of } from 'rxjs'
 import { Markup } from 'telegraf'
 import { JwtAccessTokenGuard } from '../auth/guards'
 
-import { Public, Roles, CurrentUserId } from '../auth/decorators'
+import { Public, Roles, CurrentUserId, Auth } from '../auth/decorators'
 import { TelegramService } from '../integrations/telegram/telegram.service'
 import { UserService } from './user.service'
 import { ProjectService, deleteProjectRedis } from '../project/project.service'
@@ -76,6 +76,7 @@ import {
 } from '../common/utils'
 import { IUsageInfo, IMetaInfo } from './interfaces'
 import { ReportFrequency } from '../project/enums'
+import { OrganisationService } from '../organisation/organisation.service'
 
 dayjs.extend(utc)
 
@@ -94,30 +95,33 @@ export class UserController {
     private readonly logger: AppLoggerService,
     private readonly telegramService: TelegramService,
     private readonly httpService: HttpService,
+    private readonly organisationService: OrganisationService,
   ) {}
 
   @ApiBearerAuth()
   @Get('/me')
   @UseGuards(RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  async me(@CurrentUserId() uid: string): Promise<Partial<User>> {
+  async me(@CurrentUserId() uid: string) {
     this.logger.log({ uid }, 'GET /user/me')
 
-    const sharedProjects = await this.projectService.findShare({
-      where: {
-        user: {
-          id: uid,
-        },
-      },
-      relations: ['project'],
-    })
-    const user = this.userService.omitSensitiveData(
-      await this.userService.findOne({ where: { id: uid } }),
-    )
+    const [sharedProjects, organisationMemberships, user, totalMonthlyEvents] =
+      await Promise.all([
+        this.authService.getSharedProjectsForUser(uid),
+        this.authService.getOrganisationsForUser(uid),
+        this.userService.findOne({ where: { id: uid } }),
+        this.projectService.getRedisCount(uid),
+      ])
 
-    user.sharedProjects = sharedProjects
+    const sanitizedUser = this.userService.omitSensitiveData(user)
 
-    return user
+    sanitizedUser.sharedProjects = sharedProjects
+    sanitizedUser.organisationMemberships = organisationMemberships
+
+    return {
+      user: sanitizedUser,
+      totalMonthlyEvents,
+    }
   }
 
   @ApiBearerAuth()
@@ -346,6 +350,11 @@ export class UserController {
       await this.actionTokensService.deleteMultiple(`userId="${id}"`)
       await this.userService.deleteAllRefreshTokens(id)
       await this.projectService.deleteMultipleShare(`userId="${id}"`)
+      await this.organisationService.deleteMemberships({
+        user: {
+          id,
+        },
+      })
       await this.userService.delete(id)
 
       return 'accountDeleted'
@@ -405,6 +414,11 @@ export class UserController {
       await this.actionTokensService.deleteMultiple(`userId="${id}"`)
       await this.userService.deleteAllRefreshTokens(id)
       await this.projectService.deleteMultipleShare(`userId="${id}"`)
+      await this.organisationService.deleteMemberships({
+        user: {
+          id,
+        },
+      })
       await this.userService.delete(id)
     } catch (e) {
       this.logger.error(e)
@@ -427,67 +441,185 @@ export class UserController {
   }
 
   @ApiBearerAuth()
-  @Delete('/share/:shareId')
+  @Delete('/share/:actionId')
   @HttpCode(204)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async deleteShare(
-    @Param('shareId') shareId: string,
+    @Param('actionId') actionId: string,
     @CurrentUserId() uid: string,
-  ): Promise<any> {
-    this.logger.log({ uid, shareId }, 'DELETE /user/share/:shareId')
+  ) {
+    this.logger.log({ uid, actionId }, 'DELETE /user/share/:actionId')
+
+    let isActionToken = false
+
+    const actionToken = await this.actionTokensService.getActionToken(actionId)
+
+    if (actionToken) {
+      isActionToken = true
+    }
 
     const share = await this.projectService.findOneShare({
-      where: { id: shareId },
+      where: { id: actionToken?.newValue || actionId },
       relations: ['user', 'project'],
     })
 
     if (_isEmpty(share)) {
-      throw new BadRequestException('The provided share ID is not valid')
+      throw new BadRequestException(
+        'This invitation does not exist or is no longer valid',
+      )
     }
 
     if (share.user?.id !== uid) {
-      throw new BadRequestException('You are not allowed to delete this share')
+      throw new BadRequestException(
+        'You are not allowed to reject this invitation',
+      )
     }
 
-    await this.projectService.deleteShare(shareId)
+    await this.projectService.deleteShare(share.id)
     await deleteProjectRedis(share.project.id)
 
-    return 'shareDeleted'
+    if (isActionToken) {
+      await this.actionTokensService.delete(actionId)
+    }
   }
 
   @ApiBearerAuth()
-  @Get('/share/:shareId')
+  @Get('/share/:actionId')
   @HttpCode(204)
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.CUSTOMER, UserType.ADMIN)
   @ApiResponse({ status: 204, description: 'Empty body' })
   async acceptShare(
-    @Param('shareId') shareId: string,
+    @Param('actionId') actionId: string,
     @CurrentUserId() uid: string,
-  ): Promise<any> {
-    this.logger.log({ uid, shareId }, 'GET /user/share/:shareId')
+  ) {
+    this.logger.log({ uid, actionId }, 'GET /user/share/:actionId')
+
+    let isActionToken = false
+
+    const actionToken = await this.actionTokensService.getActionToken(actionId)
+
+    if (actionToken) {
+      isActionToken = true
+    }
 
     const share = await this.projectService.findOneShare({
-      where: { id: shareId },
+      where: { id: actionToken?.newValue || actionId },
       relations: ['user', 'project'],
     })
 
     if (_isEmpty(share)) {
-      throw new BadRequestException('The provided share ID is not valid')
+      throw new BadRequestException(
+        'This invitation does not exist or is no longer valid',
+      )
     }
 
     if (share.user?.id !== uid) {
-      throw new BadRequestException('You are not allowed to delete this share')
+      throw new BadRequestException(
+        'You are not allowed to accept this invitation',
+      )
     }
 
-    share.confirmed = true
-
-    await this.projectService.updateShare(shareId, share)
+    await this.projectService.updateShare(share.id, {
+      confirmed: true,
+    })
     await deleteProjectRedis(share.project.id)
 
-    return 'shareAccepted'
+    if (isActionToken) {
+      await this.actionTokensService.delete(actionId)
+    }
+  }
+
+  @ApiBearerAuth()
+  @Delete('/organisation/:actionId')
+  @HttpCode(204)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  @ApiResponse({ status: 204, description: 'Empty body' })
+  async rejectOrganisationInvitation(
+    @Param('actionId') actionId: string,
+    @CurrentUserId() uid: string,
+  ) {
+    this.logger.log({ uid, actionId }, 'DELETE /user/organisation/:actionId')
+
+    let isActionToken = false
+
+    const actionToken = await this.actionTokensService.getActionToken(actionId)
+
+    if (actionToken) {
+      isActionToken = true
+    }
+
+    const membership = await this.organisationService.findOneMembership({
+      where: { id: actionToken?.newValue || actionId },
+      relations: ['user'],
+    })
+
+    if (_isEmpty(membership)) {
+      throw new BadRequestException(
+        'This invitation does not exist or is no longer valid',
+      )
+    }
+
+    if (membership.user?.id !== uid) {
+      throw new BadRequestException(
+        'You are not allowed to reject this invitation from this account',
+      )
+    }
+
+    await this.organisationService.deleteMembership(membership.id)
+
+    if (isActionToken) {
+      await this.actionTokensService.delete(actionId)
+    }
+  }
+
+  @ApiBearerAuth()
+  @Post('/organisation/:actionId')
+  @HttpCode(204)
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Auth([], true)
+  @ApiResponse({ status: 204, description: 'Empty body' })
+  async acceptOrganisationInvitation(
+    @Param('actionId') actionId: string,
+    @CurrentUserId() uid: string,
+  ): Promise<any> {
+    this.logger.log({ uid, actionId }, 'POST /user/organisation/:actionId')
+
+    let isActionToken = false
+
+    const actionToken = await this.actionTokensService.getActionToken(actionId)
+
+    if (actionToken) {
+      isActionToken = true
+    }
+
+    const membership = await this.organisationService.findOneMembership({
+      where: { id: actionToken?.newValue || actionId },
+      relations: ['user'],
+    })
+
+    if (_isEmpty(membership)) {
+      throw new BadRequestException(
+        'This invitation does not exist or is no longer valid',
+      )
+    }
+
+    if (membership.user?.id !== uid) {
+      throw new BadRequestException(
+        'You are not allowed to accept this invitation from this account',
+      )
+    }
+
+    await this.organisationService.updateMembership(membership.id, {
+      confirmed: true,
+    })
+
+    if (isActionToken) {
+      await this.actionTokensService.delete(actionId)
+    }
   }
 
   @ApiBearerAuth()

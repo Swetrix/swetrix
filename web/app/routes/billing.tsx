@@ -2,10 +2,10 @@ import type { LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
 import { json, redirect } from '@remix-run/node'
 import type { SitemapFunction } from 'remix-sitemap'
-import Billing from 'pages/Billing'
+import Billing from '~/pages/Billing'
 
-import { isSelfhosted } from 'redux/constants'
-import { isAuthenticated, detectTheme } from 'utils/server'
+import { isSelfhosted } from '~/lib/constants'
+import { isAuthenticated, detectTheme } from '~/utils/server'
 
 export const sitemap: SitemapFunction = () => ({
   exclude: true,

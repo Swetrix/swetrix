@@ -1,4 +1,4 @@
-import Privacy from 'pages/Privacy'
+import Privacy from '~/pages/Privacy'
 import type { SitemapFunction } from 'remix-sitemap'
 
 export const sitemap: SitemapFunction = () => ({

@@ -1,4 +1,4 @@
-import Changelog from 'pages/Changelog'
+import Changelog from '~/pages/Changelog'
 import type { SitemapFunction } from 'remix-sitemap'
 
 export const sitemap: SitemapFunction = () => ({

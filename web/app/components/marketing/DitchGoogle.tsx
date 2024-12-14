@@ -2,10 +2,9 @@ import { Link } from '@remix-run/react'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { Trans, useTranslation } from 'react-i18next'
 
-import routes from 'utils/routes'
-import React from 'react'
+import routes from '~/utils/routes'
 
-interface IDitchGoogle {
+interface DitchGoogleProps {
   screenshot: {
     light: string
     dark: string
@@ -13,7 +12,7 @@ interface IDitchGoogle {
   theme: 'dark' | 'light'
 }
 
-export const DitchGoogle = ({ screenshot: { light, dark }, theme }: IDitchGoogle) => {
+export const DitchGoogle = ({ screenshot: { light, dark }, theme }: DitchGoogleProps) => {
   const { t } = useTranslation('common')
 
   return (

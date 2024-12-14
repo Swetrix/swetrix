@@ -1,6 +1,6 @@
 import React from 'react'
 
-const Discord = ({ className }: { className?: string }): JSX.Element => (
+const Discord = ({ className }: { className?: string }) => (
   <svg className={className} viewBox='0 0 127.14 96.36'>
     <title>Discord</title>
     <path

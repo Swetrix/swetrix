@@ -47,6 +47,7 @@ import { TelegramService } from '../integrations/telegram/telegram.service'
 import { SSOProviders } from './dtos'
 import { UserGoogleDTO } from '../user/dto/user-google.dto'
 import { UserGithubDTO } from '../user/dto/user-github.dto'
+import { OrganisationService } from '../organisation/organisation.service'
 
 const REDIS_SSO_SESSION_TIMEOUT = 60 * 5 // 5 minutes
 const getSSORedisKey = (uuid: string) => `${REDIS_SSO_UUID}:${uuid}`
@@ -77,6 +78,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly projectService: ProjectService,
     private readonly telegramService: TelegramService,
+    private readonly organisationService: OrganisationService,
   ) {
     this.oauth2Client = new Auth.OAuth2Client(
       this.configService.get('GOOGLE_OAUTH2_CLIENT_ID'),
@@ -180,7 +182,7 @@ export class AuthService {
     )
   }
 
-  public async validateUser(
+  public async getBasicUser(
     email: string,
     password: string,
   ): Promise<User | null> {
@@ -201,17 +203,32 @@ export class AuthService {
     return null
   }
 
-  public async getSharedProjectsForUser(user: User): Promise<User> {
-    const sharedProjects = await this.projectService.findShare({
+  async getSharedProjectsForUser(userId: string) {
+    return this.projectService.findShare({
       where: {
-        user: { id: user.id },
+        user: { id: userId },
       },
       relations: ['project'],
     })
+  }
 
-    user.sharedProjects = sharedProjects
-
-    return user
+  async getOrganisationsForUser(userId: string) {
+    return this.organisationService.findMemberships({
+      where: {
+        user: { id: userId },
+      },
+      relations: ['organisation'],
+      select: {
+        id: true,
+        role: true,
+        confirmed: true,
+        created: true,
+        organisation: {
+          id: true,
+          name: true,
+        },
+      },
+    })
   }
 
   private async comparePassword(
@@ -492,15 +509,28 @@ export class AuthService {
       !user.isTwoFactorAuthenticationEnabled,
     )
 
+    const meta = {
+      totalMonthlyEvents: undefined,
+    }
+
     if (user.isTwoFactorAuthenticationEnabled) {
       // @ts-expect-error
       user = _pick(user, ['isTwoFactorAuthenticationEnabled', 'email'])
     } else {
-      user = await this.getSharedProjectsForUser(user)
+      const [sharedProjects, organisationMemberships] = await Promise.all([
+        this.getSharedProjectsForUser(user.id),
+        this.getOrganisationsForUser(user.id),
+      ])
+
+      user.sharedProjects = sharedProjects
+      user.organisationMemberships = organisationMemberships
+
+      meta.totalMonthlyEvents = await this.projectService.getRedisCount(user.id)
     }
 
     return {
       ...jwtTokens,
+      ...meta,
       user: this.userService.omitSensitiveData(user),
     }
   }
@@ -539,6 +569,7 @@ export class AuthService {
     return {
       ...jwtTokens,
       user: this.userService.omitSensitiveData(user),
+      totalMonthlyEvents: 0,
     }
   }
 
@@ -929,6 +960,7 @@ export class AuthService {
     return {
       ...jwtTokens,
       user: this.userService.omitSensitiveData(user),
+      totalMonthlyEvents: 0,
     }
   }
 
@@ -944,15 +976,27 @@ export class AuthService {
       !user.isTwoFactorAuthenticationEnabled,
     )
 
+    const meta = {
+      totalMonthlyEvents: undefined,
+    }
+
     if (user.isTwoFactorAuthenticationEnabled) {
       // @ts-expect-error
       user = _pick(user, ['isTwoFactorAuthenticationEnabled', 'email'])
     } else {
-      user = await this.getSharedProjectsForUser(user)
+      const [sharedProjects, organisationMemberships] = await Promise.all([
+        this.getSharedProjectsForUser(user.id),
+        this.getOrganisationsForUser(user.id),
+      ])
+
+      user.sharedProjects = sharedProjects
+      user.organisationMemberships = organisationMemberships
+      meta.totalMonthlyEvents = await this.projectService.getRedisCount(user.id)
     }
 
     return {
       ...jwtTokens,
+      ...meta,
       user: this.userService.omitSensitiveData(user),
     }
   }

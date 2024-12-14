@@ -2,9 +2,9 @@ import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { useNavigate } from '@remix-run/react'
 
-import { getAccessToken } from 'utils/accessToken'
-import { StateType } from 'redux/store'
-import routes from 'utils/routes'
+import { getAccessToken } from '~/utils/accessToken'
+import { StateType } from '~/lib/store'
+import routes from '~/utils/routes'
 
 type AuthParamType = {
   shouldBeAuthenticated: boolean

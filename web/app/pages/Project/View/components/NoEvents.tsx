@@ -2,15 +2,15 @@ import React, { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import _isEmpty from 'lodash/isEmpty'
 
-import Button from 'ui/Button'
-import { IFilter } from '../interfaces/traffic'
+import Button from '~/ui/Button'
+import { Filter } from '../interfaces/traffic'
 
-interface INoEvents {
-  filters: IFilter[]
+interface NoEventsProps {
+  filters: Filter[]
   resetFilters: () => void
 }
 
-const NoEvents = ({ filters, resetFilters }: INoEvents): JSX.Element => {
+const NoEvents = ({ filters, resetFilters }: NoEventsProps) => {
   const { t } = useTranslation('common')
 
   return (

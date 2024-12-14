@@ -1,14 +1,14 @@
 import React from 'react'
 import cx from 'clsx'
 
-interface IBackgroundSvg {
+interface BackgroundSvgProps {
   className?: string
   type: 'shapes' | 'circle' | 'semicircle' | 'twolinecircle' | 'threecircle' | 'twolinecircle2'
-  children?: JSX.Element
+  children?: React.ReactNode
   theme: 'dark' | 'light'
 }
 
-const BackgroundSvg: React.FC<IBackgroundSvg> = ({ className, type, children, theme }): JSX.Element => {
+const BackgroundSvg = ({ className, type, children, theme }: BackgroundSvgProps) => {
   if (type === 'shapes') {
     return (
       <svg

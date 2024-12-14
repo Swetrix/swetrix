@@ -4,18 +4,18 @@ import { useSelector } from 'react-redux'
 import { useTranslation, Trans } from 'react-i18next'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
 
-import { StateType } from 'redux/store/index'
-import Header from 'components/Header'
-import routes from 'utils/routes'
-import { Lines } from 'components/marketing/Lines'
+import { StateType } from '~/lib/store/index'
+import Header from '~/components/Header'
+import routes from '~/utils/routes'
+import { Lines } from '~/components/marketing/Lines'
 
-import { isBrowser, REFERRAL_COOKIE_DAYS, REFERRAL_DISCOUNT } from 'redux/constants'
+import { isBrowser, REFERRAL_COOKIE_DAYS, REFERRAL_DISCOUNT } from '~/lib/constants'
 
-interface IReferralPage {
+interface ReferralPageProps {
   ssrTheme: 'dark' | 'light'
 }
 
-const ReferralPage = ({ ssrTheme }: IReferralPage): JSX.Element => {
+const ReferralPage = ({ ssrTheme }: ReferralPageProps) => {
   const { t } = useTranslation('common')
   const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
   const theme = isBrowser ? reduxTheme : ssrTheme
@@ -62,7 +62,6 @@ const ReferralPage = ({ ssrTheme }: IReferralPage): JSX.Element => {
               <div className='relative px-4 text-left lg:mr-14 lg:mt-0'>
                 <h1 className='max-w-2xl text-2xl font-extrabold text-slate-900 dark:text-white sm:text-4xl sm:leading-none md:text-5xl xl:leading-[110%]'>
                   <Trans
-                    // @ts-ignore
                     t={t}
                     i18nKey='main.slogan'
                     components={{

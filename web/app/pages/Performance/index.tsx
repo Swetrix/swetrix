@@ -3,35 +3,36 @@ import React, { memo } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { ClientOnly } from 'remix-utils/client-only'
-import { ArrowTopRightOnSquareIcon, ChevronRightIcon } from '@heroicons/react/24/solid'
+import { ChevronRightIcon } from '@heroicons/react/24/solid'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
 
-import routesPath from 'utils/routes'
-import { getAccessToken } from 'utils/accessToken'
-import { nFormatterSeparated } from 'utils/generic'
-import { PERFORMANCE_LIVE_DEMO_URL, isBrowser } from 'redux/constants'
-import { StateType } from 'redux/store/index'
-import BackgroundSvg from 'ui/icons/BackgroundSvg'
+import routesPath from '~/utils/routes'
+import { getAccessToken } from '~/utils/accessToken'
+import { nFormatterSeparated } from '~/utils/generic'
+import { PERFORMANCE_LIVE_DEMO_URL, isBrowser } from '~/lib/constants'
+import { StateType } from '~/lib/store/index'
+import BackgroundSvg from '~/ui/icons/BackgroundSvg'
 
-import Header from 'components/Header'
+import Header from '~/components/Header'
 import Pricing from '../../components/marketing/Pricing'
-import { DitchGoogle } from 'components/marketing/DitchGoogle'
+import { DitchGoogle } from '~/components/marketing/DitchGoogle'
+import { SquareArrowOutUpRightIcon } from 'lucide-react'
 
-const Lines = (): JSX.Element => (
+const Lines = () => (
   <div className='pointer-events-none relative'>
     <div className='absolute right-[-48rem] top-[32rem] h-px w-[800%] rotate-6 bg-gradient-to-l from-slate-600 opacity-10 dark:from-slate-400' />
     <div className='absolute -left-60 top-[22.26rem] ml-[-0.5px] h-96 w-[2px] rotate-[96deg] rounded-full bg-gradient-to-t from-orange-600 opacity-50 dark:from-orange-700 xl:top-[23.5rem]' />
   </div>
 )
 
-interface IPerformance {
+interface PerformanceProps {
   ssrTheme: 'dark' | 'light'
   ssrAuthenticated: boolean
 }
 
-const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JSX.Element => {
+const Performance = ({ ssrTheme, ssrAuthenticated }: PerformanceProps) => {
   const { t } = useTranslation('common')
   const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
   const { authenticated: reduxAuthenticated, loading } = useSelector((state: StateType) => state.auth)
@@ -88,14 +89,16 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
             >
               {t('main.ukrSupport')}
             </a>
-            <ArrowTopRightOnSquareIcon className='ml-1 hidden h-4 w-4 text-slate-800 dark:text-white md:block' />
+            <SquareArrowOutUpRightIcon
+              className='ml-1 hidden h-4 w-4 text-slate-800 dark:text-white md:block'
+              strokeWidth={1.5}
+            />
           </div>
           <div className='relative mx-auto min-h-[740px] pb-5 pt-10 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
             <div className='relative z-20 flex flex-row content-between justify-center lg:justify-start 2xl:mr-[14vw] 2xl:justify-center'>
               <div className='relative px-4 text-left lg:mr-14 lg:mt-0'>
                 <h1 className='max-w-2xl text-3xl font-extrabold text-slate-900 dark:text-white sm:text-5xl sm:leading-none md:text-5xl lg:text-5xl xl:text-6xl xl:leading-[110%]'>
                   <Trans
-                    // @ts-ignore
                     t={t}
                     i18nKey='performance.slogan'
                     components={{
@@ -196,7 +199,6 @@ const Performance: React.FC<IPerformance> = ({ ssrTheme, ssrAuthenticated }): JS
           <h2 className='text-4xl font-extrabold text-slate-900 dark:text-white'>{t('performance.fast.title')}</h2>
           <p className='mt-6 text-lg text-gray-900 dark:text-gray-50'>
             <Trans
-              // @ts-ignore
               t={t}
               i18nKey='performance.fast.desc'
               components={{

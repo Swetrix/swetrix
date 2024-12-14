@@ -1,45 +1,57 @@
-import React, { useState, useEffect, memo } from 'react'
-import { useNavigate } from '@remix-run/react'
+import React, { useState, useEffect, useMemo } from 'react'
+import { Link, useNavigate } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
 import _keys from 'lodash/keys'
 
-import { withAuthentication, auth } from 'hoc/protected'
-import { isSelfhosted, TITLE_SUFFIX, ENTRIES_PER_PAGE_DASHBOARD } from 'redux/constants'
-import { IProject } from 'redux/models/IProject'
-import { createProject } from 'api'
-import Input from 'ui/Input'
-import Button from 'ui/Button'
-import Loader from 'ui/Loader'
-import { trackCustom } from 'utils/analytics'
-import routes from 'utils/routes'
-import { useAppDispatch, StateType } from 'redux/store'
-import sagaActions from 'redux/sagas/actions'
+import { withAuthentication, auth } from '~/hoc/protected'
+import { isSelfhosted, TITLE_SUFFIX } from '~/lib/constants'
+import { Project } from '~/lib/models/Project'
+import { createProject } from '~/api'
+import Input from '~/ui/Input'
+import Button from '~/ui/Button'
+import Loader from '~/ui/Loader'
+import { trackCustom } from '~/utils/analytics'
+import routes from '~/utils/routes'
+import { useAppDispatch, StateType } from '~/lib/store'
+import Select from '~/ui/Select'
 
 const MAX_NAME_LENGTH = 50
 
 const DEFAULT_PROJECT_NAME = 'Untitled Project'
 
 const NewProject = () => {
-  const { dashboardPaginationPage } = useSelector((state: StateType) => state.ui.projects)
   const dispatch = useAppDispatch()
-  const _dispatch = useDispatch()
   const { user, loading } = useSelector((state: StateType) => state.auth)
   const { t } = useTranslation('common')
   const navigate = useNavigate()
 
-  const [form, setForm] = useState<Partial<IProject>>({
+  const [form, setForm] = useState<Partial<Project>>({
     name: '',
+    organisationId: undefined,
   })
-  const [validated, setValidated] = useState<boolean>(false)
+  const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{
     name?: string
   }>({})
-  const [beenSubmitted, setBeenSubmitted] = useState<boolean>(false)
-  const [projectSaving, setProjectSaving] = useState<boolean>(false)
+  const [beenSubmitted, setBeenSubmitted] = useState(false)
+  const [projectSaving, setProjectSaving] = useState(false)
+
+  const organisations = useMemo(
+    () => [
+      {
+        id: undefined,
+        name: t('common.notSet'),
+      },
+      ...(user.organisationMemberships || [])
+        .filter((om) => om.confirmed && (om.role === 'admin' || om.role === 'owner'))
+        .map((om) => om.organisation),
+    ],
+    [user.organisationMemberships, t],
+  )
 
   useEffect(() => {
     if (loading) {
@@ -52,18 +64,17 @@ const NewProject = () => {
     }
   }, [user, navigate, dispatch, t, loading])
 
-  const onSubmit = async (data: Partial<IProject>) => {
+  const onSubmit = async (data: Partial<Project>) => {
     if (!projectSaving) {
       setProjectSaving(true)
       try {
         await createProject({
           name: data.name || DEFAULT_PROJECT_NAME,
+          organisationId: data.organisationId,
         })
         trackCustom('PROJECT_CREATED')
         navigate(routes.dashboard)
         toast.success(t('project.settings.created'))
-
-        _dispatch(sagaActions.loadProjects(dashboardPaginationPage * ENTRIES_PER_PAGE_DASHBOARD))
       } catch (reason: any) {
         toast.error(reason)
       } finally {
@@ -115,10 +126,6 @@ const NewProject = () => {
     }
   }
 
-  const onCancel = () => {
-    navigate(routes.dashboard)
-  }
-
   useEffect(() => {
     document.title = `${t('project.settings.create')} ${TITLE_SUFFIX}`
   }, [t])
@@ -144,12 +151,39 @@ const NewProject = () => {
           onChange={handleInput}
           error={beenSubmitted ? errors.name : null}
         />
+
+        {organisations.length > 1 && (
+          <div className='mt-4'>
+            <Select
+              items={organisations}
+              keyExtractor={(item) => item.id || 'not-set'}
+              labelExtractor={(item) => {
+                if (item.id === undefined) {
+                  return <span className='italic'>{t('common.notSet')}</span>
+                }
+
+                return item.name
+              }}
+              onSelect={(item) => {
+                setForm((oldForm) => ({
+                  ...oldForm,
+                  organisationId: item.id,
+                }))
+              }}
+              label={t('project.settings.organisation')}
+              title={organisations.find((org) => org.id === form.organisationId)?.name}
+            />
+          </div>
+        )}
+
         <p className='mb-4 mt-1 text-sm italic text-gray-500 dark:text-gray-300'>{t('project.settings.createHint')}</p>
 
         <div>
           <Button
             className='mr-2 border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
-            onClick={onCancel}
+            as={Link}
+            // @ts-expect-error
+            to={routes.dashboard}
             secondary
             regular
           >
@@ -164,4 +198,4 @@ const NewProject = () => {
   )
 }
 
-export default memo(withAuthentication(NewProject, auth.authenticated))
+export default withAuthentication(NewProject, auth.authenticated)

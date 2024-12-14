@@ -1,12 +1,12 @@
-import { useState, useEffect, memo } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Link } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import _isString from 'lodash/isString'
 
-import { confirmChangeEmail } from 'api'
-import Loader from 'ui/Loader'
-import routes from 'utils/routes'
+import { confirmChangeEmail } from '~/api'
+import Loader from '~/ui/Loader'
+import routes from '~/utils/routes'
 
 const ChangeEmail = () => {
   const { t } = useTranslation('common')
@@ -100,4 +100,4 @@ const ChangeEmail = () => {
   )
 }
 
-export default memo(ChangeEmail)
+export default ChangeEmail

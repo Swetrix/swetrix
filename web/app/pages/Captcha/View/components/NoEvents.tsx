@@ -2,16 +2,16 @@ import React, { memo } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import _isEmpty from 'lodash/isEmpty'
 
-import Button from 'ui/Button'
-import { DOCS_CAPTCHA_URL } from 'redux/constants'
-import { IFilter } from 'pages/Project/View/interfaces/traffic'
+import Button from '~/ui/Button'
+import { DOCS_CAPTCHA_URL } from '~/lib/constants'
+import { Filter } from '~/pages/Project/View/interfaces/traffic'
 
-interface INoEvents {
-  filters: IFilter[]
+interface NoEventsProps {
+  filters: Filter[]
   resetFilters: () => void
 }
 
-const NoEvents = ({ filters, resetFilters }: INoEvents): JSX.Element => {
+const NoEvents = ({ filters, resetFilters }: NoEventsProps) => {
   const { t } = useTranslation('common')
 
   return (
@@ -20,7 +20,6 @@ const NoEvents = ({ filters, resetFilters }: INoEvents): JSX.Element => {
         <h2 className='my-3 text-center text-4xl leading-tight'>{t('project.noEvTitle')}</h2>
         <h2 className='mb-8 text-center text-2xl leading-snug'>
           <Trans
-            // @ts-ignore
             t={t}
             i18nKey='project.noCaptchaEv'
             components={{

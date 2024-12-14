@@ -13,8 +13,8 @@ import { RadioGroup } from '@headlessui/react'
 import cx from 'clsx'
 import { toast } from 'sonner'
 
-import Modal from 'ui/Modal'
-import Button from 'ui/Button'
+import Modal from '~/ui/Modal'
+import Button from '~/ui/Button'
 import {
   CONTACT_EMAIL,
   paddleLanguageMapping,
@@ -24,14 +24,14 @@ import {
   REFERRAL_DISCOUNT_CODE,
   STANDARD_PLANS,
   TRIAL_DAYS,
-} from 'redux/constants'
-import { authActions } from 'redux/reducers/auth'
-import sagaActions from 'redux/sagas/actions'
-import { authMe, previewSubscriptionUpdate, changeSubscriptionPlan } from 'api'
-import routes from 'utils/routes'
-import { AppDispatch, StateType } from 'redux/store'
-import Loader from 'ui/Loader'
-import { Badge } from 'ui/Badge'
+} from '~/lib/constants'
+import { authActions } from '~/lib/reducers/auth'
+import { authMe, previewSubscriptionUpdate, changeSubscriptionPlan } from '~/api'
+import routes from '~/utils/routes'
+import { AppDispatch, StateType } from '~/lib/store'
+import Loader from '~/ui/Loader'
+import { Badge } from '~/ui/Badge'
+import { logout } from '~/utils/auth'
 
 const getPaidFeatures = (t: any, tier: any) => {
   return [
@@ -47,17 +47,17 @@ const getPaidFeatures = (t: any, tier: any) => {
   ]
 }
 
-interface IPricing {
+interface PricingProps {
   authenticated: boolean
   isBillingPage?: boolean
 }
 
-const Pricing = ({ authenticated, isBillingPage }: IPricing) => {
+const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
-  const dispatch: AppDispatch = useDispatch()
+  const dispatch = useDispatch<AppDispatch>()
   const { user } = useSelector((state: StateType) => state.auth)
   const { theme } = useSelector((state: StateType) => state.ui.theme)
   const { paddle, metainfo } = useSelector((state: StateType) => state.ui.misc)
@@ -65,17 +65,17 @@ const Pricing = ({ authenticated, isBillingPage }: IPricing) => {
   const currencyCode = user?.tierCurrency || metainfo.code
 
   const [planCodeLoading, setPlanCodeLoading] = useState<string | null>(null)
-  const [isNewPlanConfirmationModalOpened, setIsNewPlanConfirmationModalOpened] = useState<boolean>(false)
+  const [isNewPlanConfirmationModalOpened, setIsNewPlanConfirmationModalOpened] = useState(false)
   const [subUpdatePreview, setSubUpdatePreview] = useState<any>(null) // object - preview itself, null - loading, false - error
   const [newPlanId, setNewPlanId] = useState<number | null>(null)
-  const [isSubUpdating, setIsSubUpdating] = useState<boolean>(false)
+  const [isSubUpdating, setIsSubUpdating] = useState(false)
   const [downgradeTo, setDowngradeTo] = useState<{
     planCode: string
     name: string
     pid: string
     ypid: string
   } | null>(null)
-  const [showDowngradeModal, setShowDowngradeModal] = useState<boolean>(false)
+  const [showDowngradeModal, setShowDowngradeModal] = useState(false)
   const [billingFrequency, setBillingFrequency] = useState(user?.billingFrequency || BillingFrequency.monthly)
 
   const PLAN_CODES_ARRAY = authenticated
@@ -107,13 +107,14 @@ const Pricing = ({ authenticated, isBillingPage }: IPricing) => {
         // giving some time to the API to process tier upgrate via Paddle webhook
         setTimeout(async () => {
           try {
-            const me = await authMe()
+            const { user } = await authMe()
 
-            dispatch(authActions.loginSuccessful(me))
+            dispatch(authActions.authSuccessful(user))
             dispatch(authActions.finishLoading())
-          } catch (e) {
+          } catch (reason) {
             dispatch(authActions.logout())
-            dispatch(sagaActions.logout(false, false))
+            logout()
+            console.error(`[ERROR] Error while getting user after subscription update: ${reason}`)
           }
 
           toast.success(t('apiNotifications.subscriptionUpdated'))
@@ -201,13 +202,14 @@ const Pricing = ({ authenticated, isBillingPage }: IPricing) => {
       await changeSubscriptionPlan(newPlanId as number)
 
       try {
-        const me = await authMe()
+        const { user } = await authMe()
 
-        dispatch(authActions.loginSuccessful(me))
+        dispatch(authActions.authSuccessful(user))
         dispatch(authActions.finishLoading())
-      } catch (e) {
+      } catch (reason) {
         dispatch(authActions.logout())
-        dispatch(sagaActions.logout(false, false))
+        logout()
+        console.error(`[ERROR] Error while getting user after subscription update: ${reason}`)
       }
 
       toast.success(t('apiNotifications.subscriptionUpdated'))
@@ -419,7 +421,6 @@ const Pricing = ({ authenticated, isBillingPage }: IPricing) => {
           </div>
           <p className='mt-5 text-base tracking-tight text-gray-900 dark:text-gray-50'>
             <Trans
-              // @ts-ignore
               t={t}
               i18nKey='billing.contact'
               values={{
@@ -481,7 +482,6 @@ const Pricing = ({ authenticated, isBillingPage }: IPricing) => {
             {subUpdatePreview === false && (
               <p className='whitespace-pre-line'>
                 <Trans
-                  // @ts-ignore
                   t={t}
                   i18nKey='billing.previewLoadingError'
                   values={{

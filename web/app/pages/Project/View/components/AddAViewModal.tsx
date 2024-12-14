@@ -8,30 +8,30 @@ import _find from 'lodash/find'
 import _size from 'lodash/size'
 import { toast } from 'sonner'
 
-import Modal from 'ui/Modal'
-import Select from 'ui/Select'
-import Combobox from 'ui/Combobox'
-import { FILTERS_PANELS_ORDER } from 'redux/constants'
-import countries from 'utils/isoCountries'
-import { getFilters, createProjectView, updateProjectView } from 'api'
+import Modal from '~/ui/Modal'
+import Select from '~/ui/Select'
+import Combobox from '~/ui/Combobox'
+import { FILTERS_PANELS_ORDER } from '~/lib/constants'
+import countries from '~/utils/isoCountries'
+import { getFilters, createProjectView, updateProjectView } from '~/api'
 import { Filter } from './Filters'
-import Input from 'ui/Input'
+import Input from '~/ui/Input'
 import {
-  IFilter,
-  IProjectView,
-  IProjectViewCustomEvent,
+  Filter as FilterType,
+  ProjectView,
+  ProjectViewCustomEvent,
   ProjectViewCustomEventMetaValueType,
 } from '../interfaces/traffic'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 
-interface IAddAViewModal {
+interface AddAViewModalProps {
   projectPassword?: string
   onSubmit: () => void
   pid: string
   showModal: boolean
   setShowModal: (show: boolean) => void
   tnMapping: Record<string, string>
-  defaultView?: IProjectView
+  defaultView?: ProjectView
 }
 
 const getLabelToTypeMap = (t: any): Record<string, string> =>
@@ -54,15 +54,15 @@ const InlineButton = ({ text, onClick }: { text: string; onClick: () => void }) 
   </button>
 )
 
-interface IEditMetric {
-  metric: Partial<IProjectViewCustomEvent>
-  onChange: (key: keyof IProjectViewCustomEvent, value: any) => void
+interface EditMetricProps {
+  metric: Partial<ProjectViewCustomEvent>
+  onChange: (key: keyof ProjectViewCustomEvent, value: any) => void
   errors: AddAViewModalErrors
   setErrors: React.Dispatch<React.SetStateAction<AddAViewModalErrors>>
   onDelete: () => void
 }
 
-const EditMetric = ({ metric, onChange, onDelete, errors, setErrors }: IEditMetric) => {
+const EditMetric = ({ metric, onChange, onDelete, errors, setErrors }: EditMetricProps) => {
   const { t } = useTranslation('common')
 
   const customEventTypes = useMemo(
@@ -166,10 +166,8 @@ const EditMetric = ({ metric, onChange, onDelete, errors, setErrors }: IEditMetr
             items={customEventTypes}
             keyExtractor={(item) => item.key}
             labelExtractor={(item) => item.label}
-            onSelect={(selectedLabel) => {
-              const key = _find(customEventTypes, ({ label }) => label === selectedLabel)?.key
-
-              onChange('metaValueType', key)
+            onSelect={(item) => {
+              onChange('metaValueType', item.key)
             }}
             label={t('project.metrics.metricType.title')}
             hint={t('project.metrics.metricType.description')}
@@ -182,7 +180,7 @@ const EditMetric = ({ metric, onChange, onDelete, errors, setErrors }: IEditMetr
   )
 }
 
-const EMPTY_CUSTOM_EVENT: Partial<IProjectViewCustomEvent> = {
+const EMPTY_CUSTOM_EVENT: Partial<ProjectViewCustomEvent> = {
   customEventName: '',
   metaKey: '',
   metaValue: '',
@@ -191,7 +189,7 @@ const EMPTY_CUSTOM_EVENT: Partial<IProjectViewCustomEvent> = {
 
 interface AddAViewModalErrors {
   name?: string
-  [key: `${string}_${keyof IProjectViewCustomEvent}`]: string | undefined
+  [key: `${string}_${keyof ProjectViewCustomEvent}`]: string | undefined
 }
 
 const MAX_METRICS_IN_VIEW = 3
@@ -204,7 +202,7 @@ const AddAViewModal = ({
   tnMapping,
   projectPassword,
   defaultView,
-}: IAddAViewModal) => {
+}: AddAViewModalProps) => {
   const {
     t,
     i18n: { language },
@@ -212,8 +210,8 @@ const AddAViewModal = ({
   const [name, setName] = useState(defaultView?.name || '')
   const [filterType, setFilterType] = useState('')
   const [searchList, setSearchList] = useState<any[]>([])
-  const [activeFilters, setActiveFilters] = useState<IFilter[]>(defaultView?.filters || [])
-  const [customEvents, setCustomEvents] = useState<Partial<IProjectViewCustomEvent>[]>(defaultView?.customEvents || [])
+  const [activeFilters, setActiveFilters] = useState<FilterType[]>(defaultView?.filters || [])
+  const [customEvents, setCustomEvents] = useState<Partial<ProjectViewCustomEvent>[]>(defaultView?.customEvents || [])
   const [isViewSubmitting, setIsViewSubmitting] = useState(false)
   const [errors, setErrors] = useState<AddAViewModalErrors>({})
 
@@ -384,7 +382,7 @@ const AddAViewModal = ({
             label={t('project.selectCategoryOptional')}
             items={FILTERS_PANELS_ORDER}
             labelExtractor={(item) => t(`project.mapping.${item}`)}
-            onSelect={(item: string) => setFilterType(labelToTypeMap[item])}
+            onSelect={(item) => setFilterType(labelToTypeMap[item])}
             title={
               _isEmpty(filterType) ? t('project.settings.reseted.selectFilters') : t(`project.mapping.${filterType}`)
             }

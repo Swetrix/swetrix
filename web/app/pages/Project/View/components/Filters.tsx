@@ -1,4 +1,4 @@
-import { FunnelIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon } from '@heroicons/react/24/outline'
 import React, { memo } from 'react'
 import cx from 'clsx'
 import _truncate from 'lodash/truncate'
@@ -8,10 +8,12 @@ import _startsWith from 'lodash/startsWith'
 import _replace from 'lodash/replace'
 import { useTranslation } from 'react-i18next'
 
-import countries from 'utils/isoCountries'
-import { getLocaleDisplayName } from 'utils/generic'
+import countries from '~/utils/isoCountries'
+import { getLocaleDisplayName } from '~/utils/generic'
+import { useViewProjectContext } from '../ViewProject'
+import { FilterIcon } from 'lucide-react'
 
-interface IFilter {
+interface FilterProps {
   column: string
   filter: string
   isExclusive: boolean
@@ -33,7 +35,8 @@ export const Filter = ({
   tnMapping,
   canChangeExclusive,
   removable,
-}: IFilter): JSX.Element => {
+}: FilterProps) => {
+  const { dataLoading } = useViewProjectContext()
   const {
     t,
     i18n: { language },
@@ -84,7 +87,9 @@ export const Filter = ({
       &nbsp;
       {canChangeExclusive ? (
         <span
-          className='cursor-pointer border-b-2 border-dotted border-blue-400 text-blue-400'
+          className={cx('cursor-pointer border-b-2 border-dotted border-blue-400 text-blue-400', {
+            'cursor-wait': dataLoading,
+          })}
           onClick={() => onChangeExclusive(column, filter, !isExclusive)}
         >
           {t(`common.${isExclusive ? 'isNot' : 'is'}`)}
@@ -99,7 +104,12 @@ export const Filter = ({
         <button
           onClick={() => onRemoveFilter(column, filter)}
           type='button'
-          className='ml-0.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-gray-800 hover:bg-gray-300 hover:text-gray-900 focus:bg-gray-300 focus:text-gray-900 focus:outline-none dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300 dark:focus:bg-gray-800 dark:focus:text-gray-300'
+          className={cx(
+            'ml-0.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-gray-800 hover:bg-gray-300 hover:text-gray-900 focus:bg-gray-300 focus:text-gray-900 focus:outline-none dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300 dark:focus:bg-gray-800 dark:focus:text-gray-300',
+            {
+              'cursor-wait': dataLoading,
+            },
+          )}
         >
           <span className='sr-only'>Remove filter</span>
           <svg className='h-2 w-2' stroke='currentColor' fill='none' viewBox='0 0 8 8'>
@@ -111,12 +121,7 @@ export const Filter = ({
   )
 }
 
-interface IFilters {
-  filters: {
-    column: string
-    filter: string
-    isExclusive: boolean
-  }[]
+interface FiltersProps {
   // eslint-disable-next-line no-shadow
   onRemoveFilter: (column: string, filter: string) => void
   // eslint-disable-next-line no-shadow
@@ -125,7 +130,9 @@ interface IFilters {
   resetFilters: () => void
 }
 
-const Filters = ({ filters, onRemoveFilter, onChangeExclusive, tnMapping, resetFilters }: IFilters) => {
+const Filters = ({ onRemoveFilter, onChangeExclusive, tnMapping, resetFilters }: FiltersProps) => {
+  const { dataLoading, filters } = useViewProjectContext()
+
   if (_isEmpty(filters)) {
     return null
   }
@@ -133,7 +140,10 @@ const Filters = ({ filters, onRemoveFilter, onChangeExclusive, tnMapping, resetF
   return (
     <div className='flex items-center justify-between rounded-md bg-slate-200 p-1 shadow dark:border dark:border-slate-800/50 dark:bg-slate-800/25'>
       <div className='flex items-center'>
-        <FunnelIcon className='box-content size-6 flex-shrink-0 px-1 text-gray-700 dark:text-gray-200' />
+        <FilterIcon
+          className='box-content size-6 flex-shrink-0 px-1 text-gray-700 dark:text-gray-200'
+          strokeWidth={1.5}
+        />
         <div className='flex flex-wrap'>
           {_map(filters, (props) => {
             const { column, filter } = props
@@ -154,7 +164,12 @@ const Filters = ({ filters, onRemoveFilter, onChangeExclusive, tnMapping, resetF
         </div>
       </div>
       <XMarkIcon
-        className='box-content size-6 flex-shrink-0 cursor-pointer stroke-2 px-1 text-gray-800 hover:text-gray-600 dark:text-gray-200 dark:hover:text-gray-300'
+        className={cx(
+          'box-content size-6 flex-shrink-0 cursor-pointer stroke-2 px-1 text-gray-800 hover:text-gray-600 dark:text-gray-200 dark:hover:text-gray-300',
+          {
+            'cursor-wait': dataLoading,
+          },
+        )}
         onClick={resetFilters}
       />
     </div>

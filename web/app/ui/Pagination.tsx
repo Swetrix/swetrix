@@ -3,19 +3,20 @@ import { ArrowLongLeftIcon, ArrowLongRightIcon } from '@heroicons/react/24/solid
 import _map from 'lodash/map'
 import cx from 'clsx'
 import { useTranslation } from 'react-i18next'
-import { usePagination, DOTS } from 'hooks/usePagination'
+import { usePagination, DOTS } from '~/hooks/usePagination'
 
-interface IPagination {
+interface PaginationProps {
   page: number
   setPage: (item: number) => void
   pageAmount: number
   total: number
   className?: string
+  pageSize?: number
 }
 
-const Pagination = ({ page, setPage, pageAmount, total, className }: IPagination): JSX.Element => {
+const Pagination = ({ page, setPage, pageAmount, total, className, pageSize }: PaginationProps) => {
   const { t } = useTranslation('common')
-  const paginationRange = usePagination(total, page)
+  const paginationRange = usePagination(total, page, 1, pageSize)
 
   return (
     <nav className={cx('flex items-center justify-between border-t-0 border-gray-200 px-4 sm:px-0', className)}>

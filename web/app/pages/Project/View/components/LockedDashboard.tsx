@@ -1,22 +1,21 @@
 import React, { useMemo } from 'react'
 import { LockClosedIcon } from '@heroicons/react/24/outline'
 import { Link } from '@remix-run/react'
-import { IUser, DashboardBlockReason } from 'redux/models/IUser'
-import { IProjectForShared } from 'redux/models/ISharedProject'
+import { User, DashboardBlockReason } from '~/lib/models/User'
+import { ProjectForShared } from '~/lib/models/SharedProject'
 import { useTranslation } from 'react-i18next'
-import routes from 'utils/routes'
+import routes from '~/utils/routes'
 
-interface ILockedDashboard {
-  user?: IUser
-  project: IProjectForShared
-  isSharedProject: boolean
+interface LockedDashboardProps {
+  user?: User
+  project: ProjectForShared
 }
 
-const LockedDashboard = ({ user, project, isSharedProject }: ILockedDashboard) => {
+const LockedDashboard = ({ user, project }: LockedDashboardProps) => {
   const { t } = useTranslation('common')
 
   const message = useMemo(() => {
-    if (project?.isOwner) {
+    if (project.role === 'owner') {
       if (user?.dashboardBlockReason === DashboardBlockReason.exceeding_plan_limits) {
         return t('project.locked.descExceedingTier')
       }
@@ -31,12 +30,12 @@ const LockedDashboard = ({ user, project, isSharedProject }: ILockedDashboard) =
       }
     }
 
-    if (isSharedProject) {
+    if (project.role === 'admin' || project.role === 'viewer') {
       return t('project.locked.descSharedProject')
     }
 
     return t('project.locked.descGenericIssue')
-  }, [t, user, project, isSharedProject])
+  }, [t, user, project])
 
   return (
     <div className='px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
@@ -50,7 +49,7 @@ const LockedDashboard = ({ user, project, isSharedProject }: ILockedDashboard) =
               </h1>
               <p className='mt-1 max-w-prose whitespace-pre-line text-base text-gray-700 dark:text-gray-300'>
                 {message}
-                {project?.isOwner && (
+                {project.role === 'owner' && (
                   <>
                     <br />
                     <br />
@@ -59,7 +58,7 @@ const LockedDashboard = ({ user, project, isSharedProject }: ILockedDashboard) =
                 )}
               </p>
             </div>
-            {project?.isOwner && (
+            {project.role === 'owner' && (
               <div className='mt-8 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>
                 <Link
                   to={routes.billing}

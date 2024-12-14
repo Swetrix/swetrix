@@ -2,38 +2,40 @@ import React, { memo, useState } from 'react'
 import dayjs from 'dayjs'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
+import _map from 'lodash/map'
+import _filter from 'lodash/filter'
 
-import Button from 'ui/Button'
-import Modal from 'ui/Modal'
-import { deleteShareProject, acceptShareProject } from 'api'
-import { ISharedProject } from 'redux/models/ISharedProject'
+import Button from '~/ui/Button'
+import Modal from '~/ui/Modal'
+import { rejectProjectShare, acceptProjectShare } from '~/api'
+import { SharedProject } from '~/lib/models/SharedProject'
+import { StateType, useAppDispatch } from '~/lib/store'
+import { authActions } from '~/lib/reducers/auth'
+import { useSelector } from 'react-redux'
 
-const ProjectList = ({
-  item,
-  removeShareProject,
-  removeProject,
-  setProjectsShareData,
-  setUserShareData,
-}: {
-  item: ISharedProject
-  removeShareProject: (id: string) => void
-  removeProject: (id: string) => void
-  setProjectsShareData: (data: Partial<ISharedProject>, id: string, shared?: boolean) => void
-  setUserShareData: (data: Partial<ISharedProject>, id: string) => void
-}): JSX.Element => {
+interface ProjectListProps {
+  item: SharedProject
+}
+
+const ProjectList = ({ item }: ProjectListProps) => {
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
+  const { user } = useSelector((state: StateType) => state.auth)
+  const dispatch = useAppDispatch()
 
-  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const { created, confirmed, id, role, project } = item
 
-  const deleteProject = async (pid: string) => {
+  const onQuit = async () => {
     try {
-      await deleteShareProject(pid)
-      removeShareProject(pid)
-      removeProject(project.id)
+      await rejectProjectShare(item.id)
+      dispatch(
+        authActions.mergeUser({
+          sharedProjects: _filter(user.sharedProjects, (share) => share.id !== item.id),
+        }),
+      )
       toast.success(t('apiNotifications.quitProject'))
     } catch (reason) {
       console.error(`[ERROR] Error while quitting project: ${reason}`)
@@ -43,12 +45,22 @@ const ProjectList = ({
 
   const onAccept = async () => {
     try {
-      await acceptShareProject(id)
-      setProjectsShareData({ confirmed: true }, project.id)
-      setUserShareData({ confirmed: true }, id)
+      await acceptProjectShare(id)
+
+      dispatch(
+        authActions.mergeUser({
+          sharedProjects: _map(user.sharedProjects, (item) => {
+            if (item.id === id) {
+              return { ...item, confirmed: true }
+            }
+            return item
+          }),
+        }),
+      )
+
       toast.success(t('apiNotifications.acceptInvitation'))
-    } catch (e) {
-      console.error(`[ERROR] Error while accepting project invitation: ${e}`)
+    } catch (reason) {
+      console.error(`[ERROR] Error while accepting project invitation: ${reason}`)
       toast.error(t('apiNotifications.acceptInvitationError'))
     }
   }
@@ -76,7 +88,7 @@ const ProjectList = ({
             <Button className='mr-2' onClick={() => setShowDeleteModal(true)} primary small>
               {t('common.reject')}
             </Button>
-            <Button onClick={() => onAccept()} primary small>
+            <Button onClick={onAccept} primary small>
               {t('common.accept')}
             </Button>
           </>
@@ -87,12 +99,12 @@ const ProjectList = ({
           }}
           onSubmit={() => {
             setShowDeleteModal(false)
-            deleteProject(id)
+            onQuit()
           }}
           submitText={t('common.yes')}
           type='confirmed'
           closeText={t('common.no')}
-          title={t('profileSettings.quitProjectTitle', { project: project.name })}
+          title={t('profileSettings.quitEntity', { entity: project.name })}
           message={t('profileSettings.quitProject')}
           isOpened={showDeleteModal}
         />

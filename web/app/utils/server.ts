@@ -1,9 +1,9 @@
 import type i18next from 'i18next'
-import routes from 'utils/routes'
+import routes from '~/utils/routes'
 import _includes from 'lodash/includes'
 import _split from 'lodash/split'
 import _startsWith from 'lodash/startsWith'
-import { TITLE_SUFFIX, SUPPORTED_THEMES, ThemeType } from 'redux/constants'
+import { TITLE_SUFFIX, SUPPORTED_THEMES, ThemeType } from '~/lib/constants'
 
 /**
  * Function detects theme based on user's browser hints and cookies
@@ -69,15 +69,15 @@ export function isWWW(url: URL): boolean {
   return _startsWith(url.hostname, 'www.')
 }
 
-interface IPageMeta {
+interface GetPageMeta {
   title: string
   prefixLessTitle: string
 }
 
-export const getPageMeta = (t: typeof i18next.t, url?: string, _pathname?: string): IPageMeta => {
+export const getPageMeta = (t: typeof i18next.t, url?: string, _pathname?: string): GetPageMeta => {
   const DEFAULT_RESULT = {
     title: t('titles.main'),
-  } as Partial<IPageMeta>
+  } as Partial<GetPageMeta>
 
   if (!url && !_pathname) {
     return {
@@ -247,16 +247,22 @@ export const getPageMeta = (t: typeof i18next.t, url?: string, _pathname?: strin
       }
       break
 
+    case routes.organisations:
+      result = {
+        title: t('titles.organisations'),
+      }
+      break
+
     default:
       break
   }
 
-  // project_settings, captcha_settings, project, captcha titles are set dynamically
+  // organisation, project_settings, captcha_settings, project, captcha titles are set dynamically
 
   // todo: create_alert, alert_settings, project_protected_password, create_monitor, monitor_settings,
 
   result.prefixLessTitle = result.title
   result.title += ` ${TITLE_SUFFIX}`
 
-  return result as IPageMeta
+  return result as GetPageMeta
 }

@@ -56,7 +56,7 @@ export class AuthController {
 
     await checkRateLimit(ip, 'login', 10, 1800)
 
-    const user = await this.authService.validateUser(body.email, body.password)
+    const user = await this.authService.getBasicUser(body.email, body.password)
 
     if (!user) {
       throw new ConflictException(i18n.t('auth.invalidCredentials'))

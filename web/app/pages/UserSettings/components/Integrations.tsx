@@ -6,13 +6,16 @@ import _isString from 'lodash/isString'
 import { CheckCircleIcon, XCircleIcon, ClockIcon } from '@heroicons/react/24/solid'
 import { toast } from 'sonner'
 
-import Input from 'ui/Input'
-import Button from 'ui/Button'
-import Telegram from 'ui/icons/Telegram'
-import Slack from 'ui/icons/Slack'
-import Discord from 'ui/icons/Discord'
-import { removeTgIntegration } from 'api'
-import { IUser } from 'redux/models/IUser'
+import Input from '~/ui/Input'
+import Button from '~/ui/Button'
+import Telegram from '~/ui/icons/Telegram'
+import Slack from '~/ui/icons/Slack'
+import Discord from '~/ui/icons/Discord'
+import { removeTgIntegration } from '~/api'
+import { User } from '~/lib/models/User'
+import { StateType, useAppDispatch } from '~/lib/store'
+import { useSelector } from 'react-redux'
+import { authActions } from '~/lib/reducers/auth'
 
 const getAvailableIntegrations = (
   t: typeof i18next.t,
@@ -48,21 +51,20 @@ const TG_BOT_USERNAME = '@swetrixbot'
 const SLACK_WEBHOOKS_HELP = 'https://api.slack.com/messaging/webhooks'
 const DISCORD_WEBHOOKS_HELP = 'https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks'
 
-const Integrations = ({
-  user,
-  updateUserData,
-  handleIntegrationSave,
-}: {
-  user: IUser
-  updateUserData: (data: Partial<IUser>) => void
-  handleIntegrationSave: (data: Partial<IUser>, cb: (isSuccess: boolean) => void) => void
-}) => {
+interface IntegrationsProps {
+  handleIntegrationSave: (data: Partial<User>, cb: (isSuccess: boolean) => void) => void
+}
+
+const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
+  const dispatch = useAppDispatch()
+  const { user } = useSelector((state: StateType) => state.auth)
+
   const { t } = useTranslation('common')
   const available = getAvailableIntegrations(t)
   const [integrationConfigurating, setIntegrationConfigurating] = useState<string | null>(null)
   const [integrationInput, setIntegrationInput] = useState<string | null>(null)
-  const [isIntegrationLoading, setIsIntegrationLoading] = useState<boolean>(false)
-  const [isRemovalLoading, setIsRemovalLoading] = useState<boolean>(false)
+  const [isIntegrationLoading, setIsIntegrationLoading] = useState(false)
+  const [isRemovalLoading, setIsRemovalLoading] = useState(false)
 
   const setupIntegration = (key: string) => () => {
     setIntegrationConfigurating(key)
@@ -165,10 +167,12 @@ const Integrations = ({
         } else {
           throw new Error('No chat ID')
         }
-        updateUserData({
-          isTelegramChatIdConfirmed: false,
-          telegramChatId: null,
-        })
+        dispatch(
+          authActions.mergeUser({
+            isTelegramChatIdConfirmed: false,
+            telegramChatId: null,
+          }),
+        )
       } catch (reason) {
         if (_isString(reason)) {
           toast.error(reason)
@@ -191,9 +195,11 @@ const Integrations = ({
             toast.error(t('apiNotifications.integrationRemovalError'))
           }
 
-          updateUserData({
-            slackWebhookUrl: null,
-          })
+          dispatch(
+            authActions.mergeUser({
+              slackWebhookUrl: null,
+            }),
+          )
           setIsRemovalLoading(false)
         },
       )
@@ -209,9 +215,11 @@ const Integrations = ({
             toast.error(t('apiNotifications.integrationRemovalError'))
           }
 
-          updateUserData({
-            discordWebhookUrl: null,
-          })
+          dispatch(
+            authActions.mergeUser({
+              discordWebhookUrl: null,
+            }),
+          )
           setIsRemovalLoading(false)
         },
       )

@@ -18,8 +18,12 @@
     "quitProjectError": "Сталася помилка при виході з проєкту",
     "payoutInfoError": "Щось пішло не так під час запиту інформації про виплати",
     "quitProject": "Ви покинули проєкт",
+    "quitOrganisation": "You have quit the organisation",
+    "quitOrganisationError": "Error occurred while quitting the organisation",
     "acceptInvitationError": "Помилка під час прийняття запрошення до проєкту",
     "acceptInvitation": "Запрошення до проєкту було прийнято",
+    "acceptOrganisationInvitation": "The organisation invitation has been accepted",
+    "acceptOrganisationInvitationError": "Error occurred while accepting the organisation invitation",
     "subscriptionUpdated": "Ваша підписка була оновлена",
     "generate2FAError": "Сталася помилка під час генерації 2FA-коду",
     "integrationRemovalError": "Сталася помилка під час видалення інтеграції",
@@ -47,7 +51,20 @@
     "enterViewName": "Please enter a view name",
     "inputCannotBeEmpty": "This input field must not be empty",
     "viewDeleted": "View has been deleted",
-    "noAIForecastAvailable": "AI forecast is not available for this project yet"
+    "noAIForecastAvailable": "AI forecast is not available for this project yet",
+    "organisationCreated": "Organisation has been created",
+    "organisationCreateError": "Error occurred while creating the organisation",
+    "organisationDeleted": "Organisation has been deleted",
+    "projectRemovedFromOrganisation": "The project has been removed from the organisation",
+    "projectAddedToOrganisation": "The project has been added to the organisation",
+    "projectRemoveError": "Error occurred while removing the project from the organisation",
+    "projectAddError": "Error occurred while adding the project to the organisation",
+    "orgUserRemoved": "The user has been removed from the organisation",
+    "orgUserRemoveError": "Error occurred while removing the user from the organisation",
+    "orgSettingsUpdated": "Organisation settings have been updated",
+    "projectAssigned": "The project has been assigned to the organisation",
+    "projectAssignError": "Failed to assign the project to the organisation",
+    "failedToLoadUsageInfo": "Failed to load usage info"
   },
   "common": {
     "features": "Функціонал",
@@ -103,7 +120,11 @@
     "oneMember": "1 учасник",
     "xMembers": "{{number}} учасників",
     "general": "Загальні",
-    "fixIt": "Виправити"
+    "fixIt": "Виправити",
+    "errorOccured": "An error occurred: {{error}}",
+    "name": "Name",
+    "notSet": "Not set",
+    "remove": "Remove"
   },
   "performance": {
     "slogan": "<span>Моніторинг ефективності</span> для створення швидких вебсайтів.",
@@ -494,15 +515,22 @@
     "noConfLeft": "На жаль, ви вичерпали кількість спроб на підтвердження акаунту.\nПереконайтеся, що ваша ел. пошта може отримувати листи та вони не потрапляють в папку СПАМ.\nВи можете зареєструвати новий акаунт з іншою ел. адресою або звернутися до служби підтримки.",
     "timezoneDesc": "Це налаштування часового поясу, на основі якого відображаються дані. Він використовується лише для візуалізації.\nАналітичні дані не будуть змінені в залежності від цього параметра.",
     "quitProject": "Ви впевнені, що хочете покинути цей проєкт?",
-    "quitProjectTitle": "Покинути {{project}}?",
+    "quitOrganisation": "Are you sure you want to quit this organisation?",
+    "quitEntity": "Quit {{entity}}?",
     "shared": "Спільні проєкти",
     "receiveLoginNotifications": "Отримувати сповіщення про вхід",
-    "owned": "Власні проєкти",
+    "organisations": "Organisations",
+    "organisationsTable": {
+      "organisation": "Organisation",
+      "role": "Role",
+      "joinedOn": "Joined on"
+    },
     "sharedTable": {
       "project": "Проєкт",
       "role": "Роль",
       "joinedOn": "Приєднався"
     },
+    "noOrganisations": "You are not a member of any organisation yet.",
     "noSharedProjects": "З вами поки що ніхто не ділиться проєктами.",
     "2fa": "Двофакторна автентифікація (2FA)",
     "2faEnable": "Увімкніть 2FA, щоб зробити свій обліковий запис більш захищеним.",
@@ -575,6 +603,7 @@
       "generateRefLink": "Створити реферальне посилання",
       "referralStats": "Реферальна статистика",
       "activeReferrals": "Активні реферали",
+      "noActiveReferrals": "You have no active referrals yet",
       "trial": "Пробні реферали",
       "trialDesc": "Пробні користувачі, яких ви запросили",
       "active": "Активні реферали",
@@ -598,8 +627,50 @@
     "alertUpdated": "Сповіщення було оновлено",
     "alertDeleted": "Сповіщення видалено"
   },
+  "organisations": {
+    "create": "Create organisation",
+    "organisations": "Organisations",
+    "new": "New organisation",
+    "invite": {
+      "title": "Invite a user to {{organisation}}",
+      "desc": "Enter an email address and a role of the person registered on Swetrix that you want to invite to the organisation. The invitation will expire in {{expiresIn}} hours."
+    },
+    "role": {
+      "owner": {
+        "name": "Owner",
+        "desc": "Can manage the organisation and its members, as well as manage the projects within the organisation."
+      },
+      "admin": {
+        "name": "Admin",
+        "desc": "Can manage the organisation and its members, as well as manage the projects within the organisation."
+      },
+      "viewer": {
+        "name": "Viewer",
+        "desc": "Can only access the organisation and its projects without the ability to change any settings."
+      }
+    },
+    "projects": "Projects",
+    "addProject": "Add project",
+    "modals": {
+      "remove": {
+        "title": "Remove {{project}}?",
+        "message": "Are you sure you want to remove this project from the organisation? Once removed, organisation members will no longer have access to this project unless they are added in the project settings."
+      },
+      "addProject": {
+        "title": "Add project to {{organisation}}",
+        "message": "Select the project you want to add to the organisation. It will be available to all members of the organisation, and the organisation admins will be able to manage the project settings."
+      },
+      "delete": {
+        "title": "Delete {{organisation}}?",
+        "message": "Are you sure you want to delete this organisation?\nAll the data related to the organisation will be deleted from our servers. This action is irreversible."
+      }
+    },
+    "projectOwnedBy": "This project is owned by {{email}}",
+    "delete": "Delete organisation"
+  },
   "dashboard": {
     "uptime": "Uptime",
+    "captcha": "CAPTCHA",
     "newProject": "Новий проєкт",
     "newFunnel": "Нова воронка",
     "reloadPage": "Оновити сторінку",
@@ -931,6 +1002,7 @@
     "barChart": "Гістограма",
     "lineChart": "Лінійний графік",
     "settings": {
+      "organisation": "Organisation",
       "shields": "Shields",
       "access": "Access settings",
       "botsProtectionLevel": {
@@ -1209,6 +1281,7 @@
     "invitation": "Запрошення до спільного проєкту",
     "profileSettings": "Налаштування облікового запису",
     "dashboard": "Панель керування",
+    "organisations": "Organisations",
     "docs": "Документація",
     "billing": "Ціни та тарифи",
     "contact": "Маєте що запитати?",

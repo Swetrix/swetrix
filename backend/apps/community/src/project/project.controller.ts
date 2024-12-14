@@ -148,20 +148,22 @@ export class ProjectController {
       {},
     )
 
-    const results = _map(formatted, p => ({
-      ..._omit(p, ['passwordHash']),
-      funnels: funnelsMap[p.id],
-      isOwner: true,
+    const results = _map(formatted, project => ({
+      ..._omit(project, ['passwordHash']),
+      funnels: funnelsMap[project.id],
+      isDataExists: _includes(pidsWithData, project?.id),
+      isErrorDataExists: _includes(pidsWithErrorData, project?.id),
+
+      // these ones are not used, but we need to keep them for compatibility with the Cloud version
+      role: userId ? 'owner' : 'viewer',
       isLocked: false,
-      isDataExists: _includes(pidsWithData, p?.id),
-      isErrorDataExists: _includes(pidsWithErrorData, p?.id),
+      isAccessConfirmed: true,
     }))
 
     return {
       results,
       page_total: _size(formatted),
       total: _size(formatted),
-      totalMonthlyEvents: 0, // not needed as it's selfhosed
     }
   }
 
@@ -538,7 +540,7 @@ export class ProjectController {
   @ApiResponse({ status: 200, type: Project })
   async getOne(
     @Param('id') id: string,
-    @CurrentUserId() uid: string,
+    @CurrentUserId() userId: string,
     @Headers() headers: { 'x-password'?: string },
   ): Promise<Project | object> {
     this.logger.log({ id }, 'GET /project/:id')
@@ -554,14 +556,27 @@ export class ProjectController {
       throw new NotFoundException('Project was not found in the database')
     }
 
-    if (project.isPasswordProtected && _isEmpty(headers['x-password'])) {
+    let allowedToViewNoPassword = false
+
+    try {
+      this.projectService.allowedToView(project, userId)
+      allowedToViewNoPassword = true
+    } catch {
+      allowedToViewNoPassword = false
+    }
+
+    if (
+      !allowedToViewNoPassword &&
+      project.isPasswordProtected &&
+      _isEmpty(headers['x-password'])
+    ) {
       return {
         isPasswordProtected: true,
         id: project.id,
       }
     }
 
-    this.projectService.allowedToView(project, uid, headers['x-password'])
+    this.projectService.allowedToView(project, userId, headers['x-password'])
 
     const isDataExists = !_isEmpty(
       await this.projectService.getPIDsWhereAnalyticsDataExists([id]),
@@ -578,6 +593,11 @@ export class ProjectController {
       funnels: this.projectService.formatFunnelsFromClickhouse(funnels),
       isDataExists,
       isErrorDataExists,
+
+      // these ones are not used, but we need to keep them for compatibility with the Cloud version
+      role: userId ? 'owner' : 'viewer',
+      isLocked: false,
+      isAccessConfirmed: true,
     })
   }
 

@@ -3,15 +3,15 @@ import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
 import _map from 'lodash/map'
 
-import Modal from 'ui/Modal'
-import { Badge } from 'ui/Badge'
+import Modal from '~/ui/Modal'
+import { Badge } from '~/ui/Badge'
 
-interface IViewProjectHotkeys {
+interface ViewProjectHotkeysProps {
   onClose: () => void
   isOpened: boolean
 }
 
-interface IHotkeysList {
+interface HotkeysListProps {
   title: string
   hotkeys: { [key: string]: string }
 }
@@ -49,7 +49,7 @@ const getHotkeys = (t: TFunction) => ({
   },
 })
 
-const HotkeysList = ({ title, hotkeys }: IHotkeysList) => (
+const HotkeysList = ({ title, hotkeys }: HotkeysListProps) => (
   <div className='mt-2 first:mt-0'>
     <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-700'>
       <thead>
@@ -74,7 +74,7 @@ const HotkeysList = ({ title, hotkeys }: IHotkeysList) => (
   </div>
 )
 
-const ViewProjectHotkeys = ({ onClose, isOpened }: IViewProjectHotkeys): JSX.Element => {
+const ViewProjectHotkeys = ({ onClose, isOpened }: ViewProjectHotkeysProps) => {
   const { t } = useTranslation('common')
   const hotkeys = useMemo(() => getHotkeys(t), [t])
 

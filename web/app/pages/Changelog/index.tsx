@@ -5,8 +5,8 @@ import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
 import { Link } from '@remix-run/react'
 
-import { SWETRIX_VS_GOOGLE, DOCS_URL, CAPTCHA_URL, DOCS_CAPTCHA_URL } from 'redux/constants'
-import routes from 'utils/routes'
+import { SWETRIX_VS_GOOGLE, DOCS_URL, CAPTCHA_URL, DOCS_CAPTCHA_URL } from '~/lib/constants'
+import routes from '~/utils/routes'
 
 const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 
@@ -419,7 +419,7 @@ const changelog = [
   },
 ]
 
-const Changelog = (): JSX.Element => {
+const Changelog = () => {
   const { t } = useTranslation('common')
 
   return (

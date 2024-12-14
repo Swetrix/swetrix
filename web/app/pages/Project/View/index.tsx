@@ -1,3 +1,3 @@
-import ViewProject from './ViewProject.container'
+import ViewProject from './ViewProject'
 
 export default ViewProject

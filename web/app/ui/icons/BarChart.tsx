@@ -1,11 +1,11 @@
 import React from 'react'
 import cx from 'clsx'
 
-interface IBarChart {
+interface BarChartProps {
   className?: string
 }
 
-const BarChart = ({ className }: IBarChart): JSX.Element => (
+const BarChart = ({ className }: BarChartProps) => (
   <svg className={cx('fill-gray-700 dark:fill-gray-50', className)} viewBox='0 0 448 512'>
     {/* Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc. */}
     <path

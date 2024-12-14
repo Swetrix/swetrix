@@ -1,11 +1,11 @@
-import Performance from 'pages/Performance'
+import Performance from '~/pages/Performance'
 import type { LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
 import { json, redirect } from '@remix-run/node'
 import type { SitemapFunction } from 'remix-sitemap'
 
-import { detectTheme, isAuthenticated } from 'utils/server'
-import { isSelfhosted } from 'redux/constants'
+import { detectTheme, isAuthenticated } from '~/utils/server'
+import { isSelfhosted } from '~/lib/constants'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 1,

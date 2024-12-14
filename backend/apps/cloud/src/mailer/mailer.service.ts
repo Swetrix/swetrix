@@ -66,6 +66,11 @@ const metaInfoJson = {
       en: () => 'You have been invited to join the project',
     },
   },
+  [LetterTemplate.OrganisationInvitation]: {
+    subject: {
+      en: () => 'You have been invited to join the organisation',
+    },
+  },
   [LetterTemplate.TwoFAOn]: {
     subject: {
       en: () => '2FA has been enabled on your Swetrix account',

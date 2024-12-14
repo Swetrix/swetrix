@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import _find from 'lodash/find'
 import _reduce from 'lodash/reduce'
 import _includes from 'lodash/includes'
-import timezones from 'redux/constants/timezones'
+import timezones from '~/lib/constants/timezones'
 
 import Select from './Select'
 
@@ -37,7 +37,7 @@ const options = _reduce(
   [],
 ).sort((a, b) => a.offset - b.offset)
 
-interface ITimezoneSelect {
+interface TimezoneSelectProps {
   value:
     | string
     | {
@@ -47,14 +47,13 @@ interface ITimezoneSelect {
   onChange: (item: string) => void
 }
 
-const TimezoneSelect = ({ value, onChange }: ITimezoneSelect): JSX.Element => {
+const TimezoneSelect = ({ value, onChange }: TimezoneSelectProps) => {
   const { t } = useTranslation('common')
   const labelExtractor = (option: { label: string }) => option?.label
   const keyExtractor = (option: { value: string }) => option?.value
 
-  const handleChange = (label: string) => {
-    const tz = _find(options, (timezone) => labelExtractor(timezone) === label)
-    const key = keyExtractor(tz)
+  const handleChange = (item: any) => {
+    const key = keyExtractor(item)
     onChange(key)
   }
 

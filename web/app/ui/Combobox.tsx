@@ -9,7 +9,7 @@ import _filter from 'lodash/filter'
 import _toLower from 'lodash/toLower'
 import _includes from 'lodash/includes'
 
-interface ISelect {
+interface SelectProps {
   title?: string
   className?: string
   buttonClassName?: string
@@ -31,7 +31,7 @@ const Combobox = ({
   buttonClassName,
   placeholder,
   disabled,
-}: ISelect): JSX.Element => {
+}: SelectProps) => {
   const { t } = useTranslation('common')
   const [query, setQuery] = useState('')
 

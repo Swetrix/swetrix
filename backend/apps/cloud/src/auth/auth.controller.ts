@@ -52,6 +52,7 @@ import {
   SSOProviders,
 } from './dtos'
 import { JwtAccessTokenGuard, JwtRefreshTokenGuard, RolesGuard } from './guards'
+import { ProjectService } from '../project/project.service'
 
 const OAUTH_RATE_LIMIT = 15
 
@@ -71,6 +72,7 @@ export class AuthController {
   constructor(
     private readonly userService: UserService,
     private readonly authService: AuthService,
+    private readonly projectService: ProjectService,
   ) {}
 
   @ApiOperation({ summary: 'Register a new user' })
@@ -85,7 +87,7 @@ export class AuthController {
     @I18n() i18n: I18nContext,
     @Headers() headers: unknown,
     @Ip() requestIp: string,
-  ): Promise<RegisterResponseDto> {
+  ) {
     const ip = getIPFromHeaders(headers) || requestIp || ''
 
     await checkRateLimit(ip, 'register', 5)
@@ -121,6 +123,7 @@ export class AuthController {
     return {
       ...jwtTokens,
       user: this.userService.omitSensitiveData(newUser),
+      totalMonthlyEvents: 0,
     }
   }
 
@@ -142,7 +145,7 @@ export class AuthController {
 
     await checkRateLimit(ip, 'login', 10, 1800)
 
-    let user = await this.authService.validateUser(body.email, body.password)
+    let user = await this.authService.getBasicUser(body.email, body.password)
 
     if (!user) {
       throw new ConflictException(i18n.t('auth.invalidCredentials'))
@@ -153,20 +156,29 @@ export class AuthController {
       !user.isTwoFactorAuthenticationEnabled,
     )
 
+    const meta = {
+      totalMonthlyEvents: undefined,
+    }
+
     await this.authService.sendTelegramNotification(user.id, headers, ip)
 
-    console.log('before:', user)
     if (user.isTwoFactorAuthenticationEnabled) {
       // @ts-expect-error
       user = _pick(user, ['isTwoFactorAuthenticationEnabled', 'email'])
     } else {
-      user = await this.authService.getSharedProjectsForUser(user)
-    }
+      const [sharedProjects, organisationMemberships] = await Promise.all([
+        this.authService.getSharedProjectsForUser(user.id),
+        this.authService.getOrganisationsForUser(user.id),
+      ])
 
-    console.log('after:', user)
+      user.sharedProjects = sharedProjects
+      user.organisationMemberships = organisationMemberships
+      meta.totalMonthlyEvents = await this.projectService.getRedisCount(user.id)
+    }
 
     return {
       ...jwtTokens,
+      ...meta,
       user: this.userService.omitSensitiveData(user as User),
     }
   }
@@ -260,7 +272,7 @@ export class AuthController {
       throw new UnauthorizedException()
     }
 
-    const isPasswordValid = await this.authService.validateUser(
+    const isPasswordValid = await this.authService.getBasicUser(
       user.email,
       body.oldPassword,
     )
@@ -323,7 +335,7 @@ export class AuthController {
       throw new UnauthorizedException()
     }
 
-    const isPasswordValid = await this.authService.validateUser(
+    const isPasswordValid = await this.authService.getBasicUser(
       user.email,
       body.password,
     )

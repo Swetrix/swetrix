@@ -1,13 +1,13 @@
 import React from 'react'
 import cx from 'clsx'
 
-interface IBadge {
+export interface BadgeProps {
   label: string
   className?: string
-  colour?: 'red' | 'yellow' | 'green' | 'indigo' | 'slate'
+  colour?: 'red' | 'yellow' | 'green' | 'indigo' | 'slate' | 'sky'
 }
 
-const Badge = ({ label, className, colour }: IBadge): JSX.Element => (
+export const Badge = ({ label, className, colour }: BadgeProps) => (
   <span
     className={cx('inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset', className, {
       'bg-slate-50 text-slate-600 ring-slate-500/10 dark:bg-slate-400/10 dark:text-slate-400 dark:ring-slate-400/20':
@@ -20,10 +20,10 @@ const Badge = ({ label, className, colour }: IBadge): JSX.Element => (
         colour === 'green',
       'bg-red-50 text-red-700 ring-red-600/10 dark:bg-red-400/10 dark:text-red-400 dark:ring-red-400/20':
         colour === 'red',
+      'bg-sky-50 text-sky-700 ring-sky-600/20 dark:bg-sky-400/10 dark:text-sky-400 dark:ring-sky-400/20':
+        colour === 'sky',
     })}
   >
     {label}
   </span>
 )
-
-export { Badge }

@@ -8,10 +8,10 @@ import {
   UserGroupIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline'
-import Beta from 'ui/Beta'
+import Beta from '~/ui/Beta'
 import Spin from './icons/Spin'
 
-interface IModal {
+interface ModalProps {
   className?: string
   type?: 'error' | 'success' | 'info' | 'warning' | 'confirmed'
   title?: string
@@ -24,7 +24,7 @@ interface IModal {
   submitDisabled?: boolean
   submitType?: 'regular' | 'danger'
   size?: 'regular' | 'large'
-  customButtons?: JSX.Element
+  customButtons?: React.ReactNode
   isBeta?: boolean
   isLoading?: boolean
   overflowVisible?: boolean
@@ -47,7 +47,7 @@ const Modal = ({
   isLoading,
   submitDisabled,
   overflowVisible,
-}: IModal): JSX.Element => (
+}: ModalProps) => (
   <Transition show={isOpened} as={Fragment}>
     <Dialog
       as='div'

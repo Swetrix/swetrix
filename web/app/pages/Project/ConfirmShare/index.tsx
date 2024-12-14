@@ -1,21 +1,18 @@
-import React, { useState, useEffect, memo } from 'react'
-import { useDispatch } from 'react-redux'
+import { useState, useEffect } from 'react'
 import { useParams, Link } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import _split from 'lodash/split'
 
-import sagaActions from 'redux/sagas/actions'
-import Loader from 'ui/Loader'
-import routes from 'utils/routes'
-import { AppDispatch } from 'redux/store'
+import Loader from '~/ui/Loader'
+import routes from '~/utils/routes'
+import { verifyShare } from '~/api'
 
 const ConfirmShare = () => {
   const { t } = useTranslation('common')
-  const dispatch: AppDispatch = useDispatch()
   const { id } = useParams()
-  const [loading, setLoading] = useState<boolean>(true)
-  const [error, setError] = useState<string>('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     setLoading(true)
@@ -27,16 +24,17 @@ const ConfirmShare = () => {
       return
     }
 
-    dispatch(
-      sagaActions.shareVerifyAsync(
-        { path, id },
-        () => setLoading(false),
-        (verifyError) => {
-          setError(verifyError)
-          setLoading(false)
-        },
-      ),
-    )
+    const verify = async () => {
+      try {
+        await verifyShare({ path, id })
+      } catch (reason: any) {
+        setError(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    verify()
   }, [id]) // eslint-disable-line
 
   if (loading) {
@@ -106,4 +104,4 @@ const ConfirmShare = () => {
   )
 }
 
-export default memo(ConfirmShare)
+export default ConfirmShare

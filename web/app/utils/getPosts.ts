@@ -1,6 +1,6 @@
 import { marked, type Tokens } from 'marked'
 import _isEmpty from 'lodash/isEmpty'
-import { getBlogPost, getBlogPostWithCategory } from 'api'
+import { getBlogPost, getBlogPostWithCategory } from '~/api'
 
 const renderer = new marked.Renderer()
 
@@ -18,7 +18,7 @@ renderer.link = ({ href, text }: Tokens.Link) => {
 export const getSlugFromFilename = (filename: string) => filename.substring(11)
 export const getDateFromFilename = (filename: string) => filename.substring(0, 10)
 
-interface IPost {
+interface GetPost {
   slug: string
   title?: string
   html: string
@@ -29,7 +29,7 @@ interface IPost {
   nickname?: string
 }
 
-export async function getPost(slug: string, category?: string): Promise<IPost | null> {
+export async function getPost(slug: string, category?: string): Promise<GetPost | null> {
   let post: any = null
 
   if (category) {

@@ -1,75 +1,57 @@
-import type i18next from 'i18next'
 import React, { useState, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 import { ChevronDownIcon, CheckIcon } from '@heroicons/react/24/solid'
-import { TrashIcon, UserPlusIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline'
 import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
-import _filter from 'lodash/filter'
 import _map from 'lodash/map'
 
-import { deleteShareProjectUsers, shareProject, changeShareRole } from 'api'
-import { isValidEmail } from 'utils/validator'
-import Input from 'ui/Input'
-import { Badge } from 'ui/Badge'
-import Button from 'ui/Button'
-import Modal from 'ui/Modal'
-import PaidFeature from 'modals/PaidFeature'
-import { roles, roleViewer, roleAdmin, INVITATION_EXPIRES_IN } from 'redux/constants'
-import useOnClickOutside from 'hooks/useOnClickOutside'
-import { IProject, IShareOwnerProject } from 'redux/models/IProject'
-import { IUser } from 'redux/models/IUser'
+import { deleteShareProjectUsers, shareProject, changeShareRole } from '~/api'
+import { isValidEmail } from '~/utils/validator'
+import Input from '~/ui/Input'
+import { Badge } from '~/ui/Badge'
+import Button from '~/ui/Button'
+import Modal from '~/ui/Modal'
+import PaidFeature from '~/modals/PaidFeature'
+import { roles, INVITATION_EXPIRES_IN } from '~/lib/constants'
+import useOnClickOutside from '~/hooks/useOnClickOutside'
+import { Project, ShareOwnerProject } from '~/lib/models/Project'
+import { Role } from '~/lib/models/Organisation'
+import { useSelector } from 'react-redux'
+import { StateType } from '~/lib/store'
+import { Trash2Icon, UserRoundPlusIcon } from 'lucide-react'
 
-const NoPeople = ({ t }: { t: typeof i18next.t }) => (
-  <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
-    <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>
-      <h2 className='mb-8 px-4 text-center text-xl leading-snug'>{t('project.settings.noPeople')}</h2>
+const NoPeople = () => {
+  const { t } = useTranslation('common')
+
+  return (
+    <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
+      <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>
+        <h2 className='mb-8 px-4 text-center text-xl leading-snug'>{t('project.settings.noPeople')}</h2>
+      </div>
     </div>
-  </div>
-)
-
-interface IUsersList {
-  data: IShareOwnerProject
-  onRemove: (id: string) => void
-  t: typeof i18next.t
-  share?: IShareOwnerProject[]
-  setProjectShareData: (item: Partial<IProject>, id: string, shared: boolean) => void
-  pid: string
-  language: string
-  authedUserEmail: string | undefined
-  isSharedProject: boolean
+  )
 }
 
-const UsersList = ({
-  data,
-  onRemove,
-  t,
-  share,
-  setProjectShareData,
-  pid,
-  language,
-  authedUserEmail,
-  isSharedProject,
-}: IUsersList) => {
+interface UsersListProps {
+  data: ShareOwnerProject
+  onRemove: () => void
+  language: string
+  authedUserEmail: string | undefined
+}
+
+const UsersList = ({ data, onRemove, language, authedUserEmail }: UsersListProps) => {
+  const { t } = useTranslation('common')
   const [open, setOpen] = useState(false)
-  const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const openRef = useRef<HTMLDivElement>(null)
+  const openRef = useRef<HTMLUListElement>(null)
   useOnClickOutside(openRef, () => setOpen(false))
   const { id, created, confirmed, role, user } = data || {}
 
   const changeRole = async (newRole: string) => {
     try {
-      const results = await changeShareRole(id, { role: newRole })
-      const newShared: IShareOwnerProject[] = _map(share, (itShare) => {
-        if (itShare.id === results.id) {
-          return { ...results, user: itShare.user, role: newRole }
-        }
-        return itShare
-      })
-      setProjectShareData({ share: newShared }, pid, isSharedProject)
+      await changeShareRole(id, { role: newRole })
       toast.success(t('apiNotifications.roleUpdated'))
     } catch (reason) {
       console.error(`[ERROR] Error while updating user's role: ${reason}`)
@@ -91,7 +73,7 @@ const UsersList = ({
       </td>
       <td className='relative whitespace-nowrap py-4 pr-2 text-right text-sm font-medium'>
         {confirmed ? (
-          <div ref={openRef}>
+          <div>
             <button
               onClick={() => setOpen(!open)}
               type='button'
@@ -102,11 +84,17 @@ const UsersList = ({
               <ChevronDownIcon style={{ transform: open ? 'rotate(180deg)' : '' }} className='ml-0.5 h-4 w-4 pt-px' />
             </button>
             {open && (
-              <ul className='absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 rounded-md bg-white text-left shadow-lg focus:outline-none dark:divide-gray-700 dark:bg-slate-900'>
-                {_map(roles, (itRole) => (
+              <ul
+                ref={openRef}
+                className='absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 rounded-md bg-white text-left shadow-lg focus:outline-none dark:divide-gray-700 dark:bg-slate-900'
+              >
+                {_map(roles, (itRole, index) => (
                   <li
                     onClick={() => changeRole(itRole)}
-                    className='group flex cursor-pointer items-center justify-between p-4 hover:bg-indigo-600'
+                    className={cx(
+                      'group flex cursor-pointer items-center justify-between p-4 hover:bg-indigo-600',
+                      index === 0 && 'rounded-t-md',
+                    )}
                     key={itRole}
                   >
                     <div>
@@ -125,15 +113,10 @@ const UsersList = ({
                   </li>
                 ))}
                 <li
-                  onClick={() => {
-                    setOpen(false)
-                    setShowDeleteModal(true)
-                  }}
-                  className='group flex cursor-pointer items-center justify-between p-4 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  onClick={onRemove}
+                  className='group flex cursor-pointer items-center justify-between rounded-b-md p-4 hover:bg-gray-200 dark:hover:bg-gray-700'
                 >
-                  <div>
-                    <p className='font-bold text-red-600 dark:text-red-500'>{t('project.settings.removeMember')}</p>
-                  </div>
+                  <p className='font-bold text-red-600 dark:text-red-500'>{t('project.settings.removeMember')}</p>
                 </li>
               </ul>
             )}
@@ -145,58 +128,36 @@ const UsersList = ({
               type='button'
               className='rounded-md bg-white text-base font-medium text-indigo-700 hover:bg-indigo-50 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
               small
-              onClick={() => setShowDeleteModal(true)}
+              onClick={onRemove}
             >
-              <TrashIcon className='h-4 w-4' />
+              <Trash2Icon className='h-4 w-4' strokeWidth={1.5} />
             </Button>
           </div>
         )}
-      </td>
-      <td>
-        <Modal
-          onClose={() => {
-            setShowDeleteModal(false)
-          }}
-          onSubmit={() => {
-            setShowDeleteModal(false)
-            onRemove(id)
-          }}
-          submitText={t('common.yes')}
-          type='confirmed'
-          closeText={t('common.no')}
-          title={t('project.settings.removeUser', { user: user.email })}
-          message={t('project.settings.removeConfirm')}
-          isOpened={showDeleteModal}
-        />
       </td>
     </tr>
   )
 }
 
-interface IPeopleProps {
-  project: IProject
-  setProjectShareData: (data: Partial<IProject>, projectId: string, share?: boolean) => void
-  isPaidTierUsed: boolean
-  user: IUser
-  isSharedProject: boolean
+interface PeopleProps {
+  project: Project
 }
 
-const People: React.FunctionComponent<IPeopleProps> = ({
-  project,
-  setProjectShareData,
-  isPaidTierUsed,
-  user: currentUser,
-  isSharedProject,
-}: IPeopleProps): JSX.Element => {
-  const [showModal, setShowModal] = useState<boolean>(false)
-  const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState<boolean>(false)
+const People = ({ project }: PeopleProps) => {
+  const { user: currentUser } = useSelector((state: StateType) => state.auth)
+
+  const [showModal, setShowModal] = useState(false)
+  const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    email: string
+    role: Role
+  }>({
     email: '',
-    role: '',
+    role: 'viewer',
   })
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [errors, setErrors] = useState<{
@@ -204,6 +165,11 @@ const People: React.FunctionComponent<IPeopleProps> = ({
     role?: string
   }>({})
   const [validated, setValidated] = useState(false)
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [memberToRemove, setMemberToRemove] = useState<ShareOwnerProject | null>(null)
+
   const { id, name, share } = project
 
   const validate = () => {
@@ -247,8 +213,7 @@ const People: React.FunctionComponent<IPeopleProps> = ({
     setValidated(false)
 
     try {
-      const results = await shareProject(id, { email: form.email, role: form.role })
-      setProjectShareData({ share: results.share }, id)
+      await shareProject(id, { email: form.email, role: form.role })
       toast.success(t('apiNotifications.userInvited'))
     } catch (reason) {
       console.error(`[ERROR] Error while inviting a user: ${reason}`)
@@ -256,17 +221,12 @@ const People: React.FunctionComponent<IPeopleProps> = ({
     }
 
     // a timeout is needed to prevent the flicker of data fields in the modal when closing
-    setTimeout(() => setForm({ email: '', role: '' }), 300)
+    setTimeout(() => setForm({ email: '', role: 'viewer' }), 300)
   }
 
   const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
     e.stopPropagation()
-
-    if (!isPaidTierUsed) {
-      setIsPaidFeatureOpened(true)
-      return
-    }
 
     setBeenSubmitted(true)
     if (validated) {
@@ -279,22 +239,25 @@ const People: React.FunctionComponent<IPeopleProps> = ({
   const closeModal = () => {
     setShowModal(false)
     // a timeout is needed to prevent the flicker of data fields in the modal when closing
-    setTimeout(() => setForm({ email: '', role: '' }), 300)
+    setTimeout(() => setForm({ email: '', role: 'viewer' }), 300)
     setErrors({})
   }
 
-  const onRemove = async (userId: string) => {
+  const onRemove = async (member: ShareOwnerProject) => {
+    if (isDeleting) {
+      return
+    }
+
+    setIsDeleting(true)
+
     try {
-      await deleteShareProjectUsers(id, userId)
-      const newShared = _map(
-        _filter(share, (s) => s.id !== userId),
-        (s) => s,
-      )
-      setProjectShareData({ share: newShared }, id)
+      await deleteShareProjectUsers(id, member.id)
       toast.success(t('apiNotifications.userRemoved'))
     } catch (reason) {
       console.error(`[ERROR] Error while deleting a user: ${reason}`)
       toast.error(t('apiNotifications.userRemoveError'))
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -309,14 +272,14 @@ const People: React.FunctionComponent<IPeopleProps> = ({
         </div>
         <Button className='h-8 pl-2' primary regular type='button' onClick={() => setShowModal(true)}>
           <>
-            <UserPlusIcon className='mr-1 h-5 w-5' />
+            <UserRoundPlusIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
             {t('project.settings.invite')}
           </>
         </Button>
       </div>
       <div>
         {_isEmpty(share) ? (
-          <NoPeople t={t} />
+          <NoPeople />
         ) : (
           <div className='mt-3 flex flex-col'>
             <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 md:overflow-x-visible lg:-mx-8'>
@@ -338,22 +301,19 @@ const People: React.FunctionComponent<IPeopleProps> = ({
                           {t('profileSettings.sharedTable.joinedOn')}
                         </th>
                         <th scope='col' />
-                        <th scope='col' />
                       </tr>
                     </thead>
                     <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
-                      {_map(share, (user) => (
+                      {_map(share, (data) => (
                         <UsersList
-                          data={user}
-                          key={user.id}
-                          onRemove={onRemove}
-                          t={t}
+                          data={data}
+                          key={data.id}
+                          onRemove={() => {
+                            setMemberToRemove(data)
+                            setShowDeleteModal(true)
+                          }}
                           language={language}
-                          share={project.share}
-                          setProjectShareData={setProjectShareData}
-                          pid={id}
                           authedUserEmail={currentUser?.email}
-                          isSharedProject={isSharedProject}
                         />
                       ))}
                     </tbody>
@@ -366,19 +326,30 @@ const People: React.FunctionComponent<IPeopleProps> = ({
       </div>
       <PaidFeature isOpened={isPaidFeatureOpened} onClose={() => setIsPaidFeatureOpened(false)} />
       <Modal
+        onClose={() => {
+          setShowDeleteModal(false)
+          setMemberToRemove(null)
+        }}
+        onSubmit={() => {
+          setShowDeleteModal(false)
+          onRemove(memberToRemove!)
+        }}
+        submitText={t('common.yes')}
+        type='confirmed'
+        closeText={t('common.no')}
+        title={t('project.settings.removeUser', { user: memberToRemove?.user.email })}
+        message={t('project.settings.removeConfirm')}
+        isOpened={showDeleteModal}
+        isLoading={isDeleting}
+      />
+      <Modal
         onClose={closeModal}
         customButtons={
           <button
             type='button'
-            className={cx(
-              'inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm',
-              {
-                '!px-3 opacity-80': !isPaidTierUsed,
-              },
-            )}
+            className='inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm'
             onClick={handleSubmit}
           >
-            {!isPaidTierUsed && <CurrencyDollarIcon className='mr-1 h-5 w-5' />}
             {t('common.invite')}
           </button>
         }
@@ -418,8 +389,8 @@ const People: React.FunctionComponent<IPeopleProps> = ({
                     'relative flex cursor-pointer rounded-tl-md rounded-tr-md border border-gray-200 p-4 dark:border-slate-600',
                     {
                       'z-10 border-indigo-200 bg-indigo-50 dark:border-indigo-800/40 dark:bg-indigo-600/40':
-                        form.role === roleAdmin.role,
-                      'border-gray-200': form.role !== roleAdmin.role,
+                        form.role === 'admin',
+                      'border-gray-200': form.role !== 'admin',
                     },
                   )}
                 >
@@ -430,20 +401,21 @@ const People: React.FunctionComponent<IPeopleProps> = ({
                     type='radio'
                     value='admin'
                     onChange={handleInput}
+                    checked={form.role === 'admin'}
                   />
                   <div className='ml-3 flex flex-col'>
                     <span
                       className={cx('block text-sm font-medium', {
-                        'text-indigo-900 dark:text-white': form.role === roleAdmin.role,
-                        'text-gray-700 dark:text-gray-200': form.role !== roleAdmin.role,
+                        'text-indigo-900 dark:text-white': form.role === 'admin',
+                        'text-gray-700 dark:text-gray-200': form.role !== 'admin',
                       })}
                     >
                       {t('project.settings.roles.admin.name')}
                     </span>
                     <span
                       className={cx('block text-sm', {
-                        'text-indigo-700 dark:text-gray-100': form.role === roleAdmin.role,
-                        'text-gray-700 dark:text-gray-200': form.role !== roleAdmin.role,
+                        'text-indigo-700 dark:text-gray-100': form.role === 'admin',
+                        'text-gray-700 dark:text-gray-200': form.role !== 'admin',
                       })}
                     >
                       {t('project.settings.roles.admin.desc')}
@@ -456,8 +428,8 @@ const People: React.FunctionComponent<IPeopleProps> = ({
                     'relative flex cursor-pointer rounded-bl-md rounded-br-md border border-gray-200 p-4 dark:border-gray-500',
                     {
                       'z-10 border-indigo-200 bg-indigo-50 dark:border-indigo-800/40 dark:bg-indigo-600/40':
-                        form.role === roleViewer.role,
-                      'border-gray-200': form.role !== roleViewer.role,
+                        form.role === 'viewer',
+                      'border-gray-200': form.role !== 'viewer',
                     },
                   )}
                 >
@@ -468,20 +440,21 @@ const People: React.FunctionComponent<IPeopleProps> = ({
                     type='radio'
                     value='viewer'
                     onChange={handleInput}
+                    checked={form.role === 'viewer'}
                   />
                   <div className='ml-3 flex flex-col'>
                     <span
                       className={cx('block text-sm font-medium', {
-                        'text-indigo-900 dark:text-white': form.role === roleViewer.role,
-                        'text-gray-700 dark:text-gray-200': form.role !== roleViewer.role,
+                        'text-indigo-900 dark:text-white': form.role === 'viewer',
+                        'text-gray-700 dark:text-gray-200': form.role !== 'viewer',
                       })}
                     >
                       {t('project.settings.roles.viewer.name')}
                     </span>
                     <span
                       className={cx('block text-sm', {
-                        'text-indigo-700 dark:text-gray-100': form.role === roleViewer.role,
-                        'text-gray-700 dark:text-gray-200': form.role !== roleViewer.role,
+                        'text-indigo-700 dark:text-gray-100': form.role === 'viewer',
+                        'text-gray-700 dark:text-gray-200': form.role !== 'viewer',
                       })}
                     >
                       {t('project.settings.roles.viewer.desc')}

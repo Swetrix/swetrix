@@ -2,30 +2,31 @@ import React from 'react'
 import _map from 'lodash/map'
 import cx from 'clsx'
 import { useTranslation } from 'react-i18next'
-import { AdjustmentsVerticalIcon, PlusCircleIcon, TrashIcon } from '@heroicons/react/24/outline'
-import { IFunnel } from 'redux/models/IProject'
+import { AdjustmentsVerticalIcon, PlusCircleIcon } from '@heroicons/react/24/outline'
+import { Funnel } from '~/lib/models/Project'
+import { Trash2Icon } from 'lucide-react'
 
-interface IFunnelsList {
+interface FunnelsListProps {
   funnels?: any[]
-  openFunnelSettings: (funnel?: IFunnel) => void
-  openFunnel: (funnel: IFunnel) => void
+  openFunnelSettings: (funnel?: Funnel) => void
+  openFunnel: (funnel: Funnel) => void
   deleteFunnel: (id: string) => void
   loading: boolean
   authenticated: boolean
   allowedToManage: boolean
 }
 
-interface IFunnelCard {
-  funnel: IFunnel
-  openFunnelSettings: (funnel: IFunnel) => void
-  openFunnel: (funnel: IFunnel) => void
+interface FunnelCardProps {
+  funnel: Funnel
+  openFunnelSettings: (funnel: Funnel) => void
+  openFunnel: (funnel: Funnel) => void
   deleteFunnel: (id: string) => void
   loading: boolean
   allowedToManage: boolean
 }
 
-interface IAddFunnel {
-  openFunnelSettings: (funnel?: IFunnel) => void
+interface AddFunnelProps {
+  openFunnelSettings: (funnel?: Funnel) => void
 }
 
 const FunnelCard = ({
@@ -35,7 +36,7 @@ const FunnelCard = ({
   deleteFunnel,
   loading,
   allowedToManage,
-}: IFunnelCard): JSX.Element => {
+}: FunnelCardProps) => {
   const { t } = useTranslation()
 
   return (
@@ -58,7 +59,7 @@ const FunnelCard = ({
               <AdjustmentsVerticalIcon className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500' />
             </button>
             {allowedToManage && (
-              <TrashIcon
+              <Trash2Icon
                 onClick={(e) => {
                   e.stopPropagation()
                   deleteFunnel(funnel.id)
@@ -71,6 +72,7 @@ const FunnelCard = ({
                     'cursor-not-allowed': loading,
                   },
                 )}
+                strokeWidth={1.5}
               />
             )}
           </div>
@@ -80,7 +82,7 @@ const FunnelCard = ({
   )
 }
 
-const AddFunnel = ({ openFunnelSettings }: IAddFunnel): JSX.Element => {
+const AddFunnel = ({ openFunnelSettings }: AddFunnelProps) => {
   const { t } = useTranslation()
 
   const onClick = () => {
@@ -110,7 +112,7 @@ const FunnelsList = ({
   loading,
   authenticated,
   allowedToManage,
-}: IFunnelsList): JSX.Element => (
+}: FunnelsListProps) => (
   <ul className='mt-4 grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
     {_map(funnels, (funnel) => (
       <FunnelCard

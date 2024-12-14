@@ -5,7 +5,7 @@ import type { SitemapFunction } from 'remix-sitemap'
 import { UAParser } from 'ua-parser-js'
 import { motion } from 'framer-motion'
 
-import { detectTheme, isAuthenticated } from 'utils/server'
+import { detectTheme, isAuthenticated } from '~/utils/server'
 
 import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'
@@ -14,9 +14,9 @@ import { StarIcon } from '@heroicons/react/24/solid'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import _map from 'lodash/map'
 
-import routesPath from 'utils/routes'
-import { getAccessToken } from 'utils/accessToken'
-import { getStringFromTime, getTimeFromSeconds } from 'utils/generic'
+import routesPath from '~/utils/routes'
+import { getAccessToken } from '~/utils/accessToken'
+import { getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
 import {
   GITHUB_URL,
   LIVE_DEMO_URL,
@@ -25,22 +25,22 @@ import {
   OS_LOGO_MAP,
   OS_LOGO_MAP_DARK,
   BROWSER_LOGO_MAP,
-} from 'redux/constants'
-import { StateType } from 'redux/store/index'
-import { Cookie } from 'lucide-react'
+} from '~/lib/constants'
+import { StateType } from '~/lib/store/index'
+import { Cookie, FileTextIcon } from 'lucide-react'
 
-import Header from 'components/Header'
-import Pricing from 'components/marketing/Pricing'
-import { DitchGoogle } from 'components/marketing/DitchGoogle'
-import { Lines } from 'components/marketing/Lines'
+import Header from '~/components/Header'
+import Pricing from '~/components/marketing/Pricing'
+import { DitchGoogle } from '~/components/marketing/DitchGoogle'
+import { Lines } from '~/components/marketing/Lines'
 import React, { useEffect, useState } from 'react'
 import clsx from 'clsx'
-import { MetricCard, MetricCardSelect } from 'pages/Project/View/components/MetricCards'
-import CCRow from 'pages/Project/View/components/CCRow'
-import { CheckIcon, CursorArrowRaysIcon, GlobeAltIcon, NewspaperIcon } from '@heroicons/react/24/outline'
-import { LogoTimeline } from 'components/marketing/LogoTimeline'
-import { MarketplaceCluster } from 'components/marketing/MarketplaceCluster'
-import { ConveyorBelt } from 'components/marketing/ConveyorBelt'
+import { MetricCard, MetricCardSelect } from '~/pages/Project/View/components/MetricCards'
+import CCRow from '~/pages/Project/View/components/CCRow'
+import { CheckIcon, CursorArrowRaysIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
+import { LogoTimeline } from '~/components/marketing/LogoTimeline'
+import { MarketplaceCluster } from '~/components/marketing/MarketplaceCluster'
+import { ConveyorBelt } from '~/components/marketing/ConveyorBelt'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 1,
@@ -155,7 +155,7 @@ const Problem = () => {
   )
 }
 
-interface IFeedback {
+interface FeedbackProps {
   name: string
   title: string
   feedback: React.ReactNode
@@ -163,7 +163,7 @@ interface IFeedback {
   photoUrl: string
 }
 
-const Feedback = ({ name, title, feedback, logoUrl, photoUrl }: IFeedback) => (
+const Feedback = ({ name, title, feedback, logoUrl, photoUrl }: FeedbackProps) => (
   <section className='relative isolate z-10 bg-white px-6 py-24 dark:bg-slate-900 sm:py-32 lg:px-8'>
     <div className='absolute inset-0 -z-10 bg-[radial-gradient(45rem_50rem_at_top,theme(colors.indigo.100),white)] opacity-20 blur-3xl dark:bg-[radial-gradient(45rem_50rem_at_top,theme(colors.indigo.400),theme(colors.slate.900))]' />
     <div className='absolute inset-y-0 right-1/2 -z-10 mr-16 w-[200%] origin-bottom-left skew-x-[-30deg] border-r-2 border-slate-900/10 bg-white dark:border-slate-50/50 dark:bg-slate-900 sm:mr-28 lg:mr-0 xl:mr-16 xl:origin-center' />
@@ -616,7 +616,7 @@ const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
                     <div>
                       <span className='flex h-8 w-8 items-center justify-center rounded-full bg-slate-400 dark:bg-slate-800'>
                         {path.startsWith('/') ? (
-                          <NewspaperIcon className='h-5 w-5 text-white' aria-hidden='true' />
+                          <FileTextIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
                         ) : (
                           <CursorArrowRaysIcon className='h-5 w-5 text-white' aria-hidden='true' />
                         )}
@@ -628,6 +628,7 @@ const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
                         i18nKey={path.startsWith('/') ? 'project.pageviewX' : 'project.eventX'}
                         components={{
                           value: <span className='font-medium text-gray-900 dark:text-gray-50' />,
+                          span: <span />,
                         }}
                         values={{
                           x: path,
