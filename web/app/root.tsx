@@ -13,7 +13,7 @@ import {
   useRouteError,
 } from '@remix-run/react'
 import { store } from '~/lib/store'
-import { isBrowser, CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted, I18N_CACHE_BREAKER } from '~/lib/constants'
+import { CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted, I18N_CACHE_BREAKER } from '~/lib/constants'
 import { ExternalScripts } from 'remix-utils/external-scripts'
 import { getCookie, generateCookieString } from '~/utils/cookie'
 import { ExclamationTriangleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
@@ -50,10 +50,6 @@ declare global {
 
     Paddle: any
   }
-}
-
-if (isBrowser && process.env.NODE_ENV !== 'production') {
-  localStorage.debug = 'swetrix:*'
 }
 
 export const links: LinksFunction = () => [
