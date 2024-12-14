@@ -27,6 +27,7 @@ If you have special needs for more requests, please [contact us](https://swetrix
 | `origins` | `Array<string>` | `false` | An array of origins (domains) which are allowed to use script with your ProjectID. For example: `['cornell.edu', 'app.example.com', '*.gov.ua']`. By default all origins are allowed. |
 | `ipBlacklist` | `Array<string>` | `false` | An aeeay of IP addresses from which no analytics will be collected on this project. This functionality is handy if you want to ignore analytics from your IP. For example: `['172.126.10.16', '192.168.0.1/32', '::1']` |
 | `botsProtectionLevel` | `off` or `basic` | `false` | Set to `basic` or `off`. `basic` will block common bots by user agent and `off` will allow all traffic. `basic` by default. |
+| `organisationId` | `string` | `false` | Organisation you want to add this project to. You must be an owner or admin of the organisation to add a project to it. |
 
 ## Endpoints
 ### POST /v1/project
@@ -54,7 +55,10 @@ curl -i -X POST https://api.swetrix.com/v1/project \
   "isCaptchaProject": false,
   "isCaptchaEnabled": false,
   "botsProtectionLevel": "basic",
-  "created": "2023-10-07T10:23:09.000Z"
+  "created": "2023-10-07T10:23:09.000Z",
+  "organisation": {
+    "id": "ORG_ID"
+  }
 }
 ```
 
@@ -86,7 +90,10 @@ curl -i -X PUT https://api.swetrix.com/v1/project/WvZCYTrOPzSK \
   "captchaSecretKey": null,
   "botsProtectionLevel": "basic",
   "created": "2023-10-07T10:23:09.000Z",
-  "isPasswordProtected": true
+  "isPasswordProtected": true,
+  "organisation": {
+    "id": "ORG_ID"
+  }
 }
 ```
 
@@ -97,6 +104,19 @@ This endpoint allows you to delete a project.
 curl -i -X DELETE https://api.swetrix.com/v1/project/WvZCYTrOPzSK \
   -H "X-Api-Key: ${SWETRIX_API_KEY}" \
   -H "Content-Type: application/json"
+```
+
+```json title="Response (204 No Content)"
+```
+
+### PATCH /v1/project/:id/organisation
+This endpoint allows you to assign a project to an organisation, or unassign it from an organisation. To unassign a project from an organisation, don't pass the request body.
+
+```bash title="Request"
+curl -i -X PATCH https://api.swetrix.com/v1/project/WvZCYTrOPzSK/organisation \
+  -H "X-Api-Key: ${SWETRIX_API_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{"organisationId": "ORG_ID"}'
 ```
 
 ```json title="Response (204 No Content)"
