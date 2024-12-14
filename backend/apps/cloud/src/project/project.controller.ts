@@ -1797,7 +1797,7 @@ export class ProjectController {
       }
     }
 
-    return this.projectService.update({ id }, {
+    await this.projectService.update({ id }, {
       organisation: { id: body.organisationId || null },
     } as Project)
   }
