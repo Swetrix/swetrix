@@ -297,9 +297,7 @@ export const TimeFormat = {
 export const PADDLE_JS_URL = 'https://cdn.paddle.com/paddle/paddle.js'
 export const PADDLE_VENDOR_ID = 139393
 
-// a dedicated variable is needed for paid tier checking
-export const WEEKLY_REPORT_FREQUENCY = 'weekly'
-export const reportFrequencies = [WEEKLY_REPORT_FREQUENCY, 'monthly', 'quarterly', 'never']
+export const reportFrequencies = ['weekly', 'monthly', 'quarterly', 'never']
 
 export const reportFrequencyForEmailsOptions: {
   value: string

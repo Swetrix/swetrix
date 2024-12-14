@@ -24,7 +24,7 @@ interface FilterProps {
   removable?: boolean
 }
 
-export const Filter = ({
+const Filter = ({
   column,
   filter,
   isExclusive,
