@@ -14,14 +14,7 @@ import { ClientOnly } from 'remix-utils/client-only'
 import useSize from '~/hooks/useSize'
 import { useNavigate, Link, useSearchParams, useLoaderData } from '@remix-run/react'
 import bb from 'billboard.js'
-import {
-  Cog8ToothIcon,
-  NoSymbolIcon,
-  MagnifyingGlassIcon,
-  ChevronLeftIcon,
-  GlobeAltIcon,
-  ClockIcon,
-} from '@heroicons/react/24/outline'
+import { MagnifyingGlassIcon, ChevronLeftIcon, GlobeAltIcon, ClockIcon } from '@heroicons/react/24/outline'
 import {
   BugIcon,
   GaugeIcon,
@@ -34,6 +27,8 @@ import {
   BookmarkIcon,
   PencilIcon,
   DownloadIcon,
+  SettingsIcon,
+  BanIcon,
 } from 'lucide-react'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -909,7 +904,7 @@ const ViewProject = () => {
           {
             id: 'settings',
             label: t('common.settings'),
-            icon: Cog8ToothIcon,
+            icon: SettingsIcon,
           },
         ]
       : []
@@ -3510,7 +3505,7 @@ const ViewProject = () => {
                                   if (_isEmpty(panelsData.customs)) {
                                     return (
                                       <span className='flex cursor-not-allowed items-center px-4 py-2'>
-                                        <NoSymbolIcon className='mr-1 h-5 w-5' />
+                                        <BanIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
                                         {label}
                                       </span>
                                     )

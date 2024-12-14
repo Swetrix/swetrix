@@ -5,7 +5,7 @@ import useSize from '~/hooks/useSize'
 import { useNavigate } from '@remix-run/react'
 import { ClientOnly } from 'remix-utils/client-only'
 import bb from 'billboard.js'
-import { Cog8ToothIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
+import { GlobeAltIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import { useTranslation } from 'react-i18next'
 import _keys from 'lodash/keys'
@@ -68,7 +68,7 @@ import { StateType, useAppDispatch } from '~/lib/store'
 import Filters from './components/Filters'
 import TBPeriodSelector from './components/TBPeriodSelector'
 import UIActions from '~/lib/reducers/ui'
-import { DownloadIcon, RotateCw } from 'lucide-react'
+import { DownloadIcon, RotateCw, SettingsIcon } from 'lucide-react'
 
 const PageLoader = () => (
   <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
@@ -731,7 +731,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
                       className='flex px-3 text-sm font-medium text-gray-700 hover:text-gray-600 dark:text-gray-50 dark:hover:text-gray-200'
                     >
                       <>
-                        <Cog8ToothIcon className='mr-1 h-5 w-5' />
+                        <SettingsIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
                         {t('common.settings')}
                       </>
                     </button>
