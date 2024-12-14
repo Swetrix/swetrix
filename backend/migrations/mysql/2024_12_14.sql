@@ -20,4 +20,3 @@ CREATE TABLE `organisation_member` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 ALTER TABLE project ADD COLUMN `organisationId` varchar(36) DEFAULT NULL AFTER `botsProtectionLevel`;
-
