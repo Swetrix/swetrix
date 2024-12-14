@@ -179,15 +179,18 @@ export const ProjectCard = ({ live = 'N/A', project, overallStats }: ProjectCard
         <div className='flex items-center justify-between'>
           <p className='truncate text-lg font-semibold text-slate-900 dark:text-gray-50'>{name}</p>
 
-          <div className='flex items-center gap-2' onClick={(e) => e.stopPropagation()}>
+          <div className='flex items-center gap-2'>
             {role !== 'viewer' && (
-              <AdjustmentsVerticalIcon
-                className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500'
-                aria-label={`${t('project.settings.settings')} ${name}`}
-              />
+              <Link onClick={(e) => e.stopPropagation()} to={_replace(routes.project_settings, ':id', id)}>
+                <AdjustmentsVerticalIcon
+                  className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500'
+                  aria-label={`${t('project.settings.settings')} ${name}`}
+                />
+              </Link>
             )}
             <a
               href={_replace(project.isCaptchaProject ? routes.captcha : routes.project, ':id', id)}
+              onClick={(e) => e.stopPropagation()}
               aria-label='name (opens in a new tab)'
               target='_blank'
               rel='noopener noreferrer'
