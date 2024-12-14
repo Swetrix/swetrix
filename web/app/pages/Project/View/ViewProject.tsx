@@ -317,7 +317,7 @@ const ViewProject = () => {
   const [liveVisitors, setLiveVisitors] = useState<number>(0)
 
   const projectPassword = useMemo(
-    () => projectPasswords[id] || (getItem(LS_PROJECTS_PROTECTED)?.[id] as string) || queryPassword || '',
+    () => projectPasswords[id] || queryPassword || (getItem(LS_PROJECTS_PROTECTED)?.[id] as string) || '',
     [id, projectPasswords, queryPassword],
   )
 
@@ -2304,41 +2304,71 @@ const ViewProject = () => {
   }
 
   useEffect(() => {
-    if (!areFiltersParsed || activeTab !== PROJECT_TABS.traffic) return
+    if (!areFiltersParsed || activeTab !== PROJECT_TABS.traffic || authLoading || !project) return
 
     loadAnalytics()
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [forecasedChartData, mode, areFiltersParsed, activeTab, customMetrics, filters, isActiveCompare])
+  }, [
+    forecasedChartData,
+    mode,
+    areFiltersParsed,
+    activeTab,
+    customMetrics,
+    filters,
+    authLoading,
+    project,
+    isActiveCompare,
+  ])
 
   useEffect(() => {
-    if (!areFiltersParsed || activeTab !== PROJECT_TABS.performance) return
+    if (!areFiltersParsed || activeTab !== PROJECT_TABS.performance || authLoading || !project) return
 
     loadAnalyticsPerf()
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [areFiltersParsed, activeTab, activePerfMeasure, activeChartMetricsPerf, filtersPerf, isActiveCompare])
+  }, [
+    areFiltersParsed,
+    activeTab,
+    activePerfMeasure,
+    activeChartMetricsPerf,
+    filtersPerf,
+    authLoading,
+    project,
+    isActiveCompare,
+  ])
 
   useEffect(() => {
-    if (activeTab !== PROJECT_TABS.funnels) return
+    if (activeTab !== PROJECT_TABS.funnels || authLoading || !project) return
 
     loadFunnelsData()
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeFunnel, activeTab])
+  }, [activeFunnel, activeTab, authLoading, project])
 
   useEffect(() => {
-    if (authLoading || !areFiltersParsed || activeTab !== PROJECT_TABS.sessions) {
+    if (authLoading || !areFiltersParsed || activeTab !== PROJECT_TABS.sessions || authLoading || !project) {
       return
     }
 
     loadSessions()
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, dateRange, filtersSessions, id, period, projectPassword, timezone, authLoading, areFiltersParsed])
+  }, [
+    activeTab,
+    dateRange,
+    filtersSessions,
+    id,
+    period,
+    projectPassword,
+    timezone,
+    authLoading,
+    project,
+    areFiltersParsed,
+  ])
 
   useEffect(() => {
-    if (authLoading || !areFiltersParsed || activeTab !== PROJECT_TABS.errors) {
+    if (authLoading || !areFiltersParsed || activeTab !== PROJECT_TABS.errors || authLoading || !project) {
       return
     }
 
@@ -2356,6 +2386,7 @@ const ViewProject = () => {
     timezone,
     areFiltersParsed,
     authLoading,
+    project,
   ])
 
   useEffect(() => {
