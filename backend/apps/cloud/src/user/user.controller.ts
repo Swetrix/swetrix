@@ -350,6 +350,11 @@ export class UserController {
       await this.actionTokensService.deleteMultiple(`userId="${id}"`)
       await this.userService.deleteAllRefreshTokens(id)
       await this.projectService.deleteMultipleShare(`userId="${id}"`)
+      await this.organisationService.deleteMemberships({
+        user: {
+          id,
+        },
+      })
       await this.userService.delete(id)
 
       return 'accountDeleted'
@@ -409,6 +414,11 @@ export class UserController {
       await this.actionTokensService.deleteMultiple(`userId="${id}"`)
       await this.userService.deleteAllRefreshTokens(id)
       await this.projectService.deleteMultipleShare(`userId="${id}"`)
+      await this.organisationService.deleteMemberships({
+        user: {
+          id,
+        },
+      })
       await this.userService.delete(id)
     } catch (e) {
       this.logger.error(e)
