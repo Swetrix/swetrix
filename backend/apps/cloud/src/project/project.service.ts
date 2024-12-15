@@ -462,28 +462,58 @@ export class ProjectService {
   ): Promise<Pagination<Project>> {
     const queryBuilder = this.projectsRepository
       .createQueryBuilder('project')
-      .leftJoinAndSelect('project.admin', 'admin')
-      .leftJoinAndSelect('project.share', 'share')
-      .leftJoinAndSelect('share.user', 'sharedUser')
-      .leftJoinAndSelect('project.funnels', 'funnels')
-      .leftJoinAndSelect('project.organisation', 'organisation')
-      .leftJoinAndSelect('organisation.members', 'organisationMembers')
-      .leftJoinAndSelect('organisationMembers.user', 'organisationUser')
+      .select([
+        'project',
+        'admin.id',
+        'admin.dashboardBlockReason',
+        'share.id',
+        'share.role',
+        'share.confirmed',
+        'sharedUser.id',
+        'sharedUser.email',
+        'organisation.id',
+        'organisation.name',
+        'organisationMembers.id',
+        'organisationMembers.role',
+        'organisationMembers.confirmed',
+        'organisationUser.id',
+        'organisationUser.email',
+      ])
+      .leftJoin('project.admin', 'admin')
+      .leftJoin('project.share', 'share')
+      .leftJoin('share.user', 'sharedUser')
+      .leftJoin('project.organisation', 'organisation')
+      .leftJoin('organisation.members', 'organisationMembers')
+      .leftJoin('organisationMembers.user', 'organisationUser')
       .where(
         new Brackets(qb => {
           qb.where('admin.id = :userId', { userId })
-            .orWhere('share.user.id = :userId', { userId })
             .orWhere(
-              'organisationMembers.user.id = :userId AND organisationMembers.confirmed = :confirmed',
-              { userId, confirmed: true },
+              new Brackets(qb2 => {
+                qb2
+                  .where('share.user.id = :userId')
+                  .andWhere('share.confirmed = true')
+              }),
+            )
+            .orWhere(
+              new Brackets(qb3 => {
+                qb3
+                  .where('organisationMembers.user.id = :userId')
+                  .andWhere('organisationMembers.confirmed = true')
+              }),
             )
         }),
       )
 
     if (search?.trim()) {
-      queryBuilder.andWhere('LOWER(project.name) LIKE LOWER(:search)', {
-        search: `%${search.trim()}%`,
-      })
+      queryBuilder
+        .andWhere(() => {
+          if (search?.trim()) {
+            return 'project.name LIKE :search'
+          }
+          return '1=1'
+        })
+        .setParameter('search', search ? `%${search.trim()}%` : '')
     }
 
     queryBuilder
@@ -492,9 +522,13 @@ export class ProjectService {
       .take(options.take || 100)
 
     const [results, total] = await queryBuilder.getManyAndCount()
+    const processedResults = await processProjectsUser(results, [
+      'share',
+      'organisation.members',
+    ])
 
     return new Pagination<Project>({
-      results: processProjectsUser(results, ['share', 'organisation.members']),
+      results: processedResults,
       total,
     })
   }
