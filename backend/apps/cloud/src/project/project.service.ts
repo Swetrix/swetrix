@@ -507,12 +507,7 @@ export class ProjectService {
 
     if (search?.trim()) {
       queryBuilder
-        .andWhere(() => {
-          if (search?.trim()) {
-            return 'project.name LIKE :search'
-          }
-          return '1=1'
-        })
+        .andWhere('project.name LIKE :search')
         .setParameter('search', search ? `%${search.trim()}%` : '')
     }
 
