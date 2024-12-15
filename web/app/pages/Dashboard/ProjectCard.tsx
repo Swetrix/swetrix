@@ -6,6 +6,7 @@ import _size from 'lodash/size'
 import _isNumber from 'lodash/isNumber'
 import _replace from 'lodash/replace'
 import _find from 'lodash/find'
+import _map from 'lodash/map'
 import { useTranslation } from 'react-i18next'
 import { AdjustmentsVerticalIcon } from '@heroicons/react/24/outline'
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
@@ -239,5 +240,34 @@ export const ProjectCard = ({ live = 'N/A', project, overallStats }: ProjectCard
         />
       )}
     </Link>
+  )
+}
+
+export const ProjectCardSkeleton = () => {
+  return (
+    <div className='grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
+      {_map(Array(12), () => (
+        <div className='min-h-[153.1px] animate-pulse cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-slate-800/25 dark:bg-slate-800 dark:hover:bg-slate-700'>
+          <div className='px-4 py-4'>
+            <div className='flex items-center justify-between'>
+              <div className='h-6 w-3/4 rounded bg-gray-200 dark:bg-slate-700'></div>
+              <div className='flex items-center gap-2'>
+                <div className='h-6 w-6 rounded-[3px] bg-gray-200 dark:bg-slate-700'></div>
+                <div className='h-6 w-6 rounded-[3px] bg-gray-200 dark:bg-slate-700'></div>
+              </div>
+            </div>
+            <div className='mt-1 flex flex-shrink-0 flex-wrap gap-2'>
+              <div className='h-4 w-16 rounded bg-gray-200 dark:bg-slate-700'></div>
+              <div className='h-4 w-16 rounded bg-gray-200 dark:bg-slate-700'></div>
+              <div className='h-4 w-16 rounded bg-gray-200 dark:bg-slate-700'></div>
+            </div>
+            <div className='mt-8 flex flex-shrink-0 gap-5'>
+              <div className='h-10 w-24 rounded bg-gray-200 dark:bg-slate-700'></div>
+              <div className='h-10 w-24 rounded bg-gray-200 dark:bg-slate-700'></div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
   )
 }
