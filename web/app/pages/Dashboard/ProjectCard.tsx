@@ -247,7 +247,7 @@ export const ProjectCardSkeleton = () => {
   return (
     <div className='grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
       {_map(Array(12), () => (
-        <div className='min-h-[153.1px] animate-pulse cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-slate-800/25 dark:bg-slate-800 dark:hover:bg-slate-700'>
+        <div className='min-h-[153.1px] animate-pulse cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-slate-800/25 dark:bg-slate-800'>
           <div className='px-4 py-4'>
             <div className='flex items-center justify-between'>
               <div className='h-6 w-3/4 rounded bg-gray-200 dark:bg-slate-700'></div>
