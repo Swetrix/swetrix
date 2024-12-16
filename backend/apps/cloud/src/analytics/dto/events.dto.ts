@@ -13,17 +13,18 @@ import {
 } from 'class-validator'
 import { PID_REGEX } from '../../common/constants'
 
-export const MAX_METADATA_KEYS = 20
-export const MAX_METADATA_VALUE_LENGTH = 1000
+export const MAX_METADATA_KEYS = 100
+export const MAX_METADATA_VALUE_LENGTH = 2000
 
 @ValidatorConstraint()
 export class MetadataSizeLimit implements ValidatorConstraintInterface {
   validate(metadata: Record<string, string>) {
+    const keys = _keys(metadata)
     const values = _values(metadata)
     let totalSize = 0
 
-    for (const value of values) {
-      totalSize += value.length
+    for (let i = 0; i < keys.length; i++) {
+      totalSize += keys[i].length + values[i].length
       if (totalSize > MAX_METADATA_VALUE_LENGTH) {
         return false
       }
@@ -149,7 +150,7 @@ export class EventsDto {
     message: 'All of metadata object values must be strings',
   })
   @Validate(MetadataSizeLimit, {
-    message: `Metadata object can't have values with total length more than ${MAX_METADATA_VALUE_LENGTH} characters`,
+    message: `Metadata object can't have keys and values with total length more than ${MAX_METADATA_VALUE_LENGTH} characters`,
   })
   meta?: Record<string, string>
 }
