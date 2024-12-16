@@ -23,16 +23,17 @@ import { useSelector } from 'react-redux'
 import { StateType, useAppDispatch } from '~/lib/store'
 import { authActions } from '~/lib/reducers/auth'
 import { SquareArrowOutUpRightIcon } from 'lucide-react'
+import Spin from '~/ui/icons/Spin'
 
 interface ProjectCardProps {
-  live?: string | number
+  live?: string | number | null
   overallStats?: OverallObject
   project: Project
 }
 
 interface MiniCardProps {
   labelTKey: string
-  total?: number | string
+  total?: number | string | null
   percChange?: number
 }
 
@@ -45,34 +46,40 @@ const MiniCard = ({ labelTKey, total = 0, percChange }: MiniCardProps) => {
       <p className='text-sm text-gray-500 dark:text-gray-300'>{t(labelTKey)}</p>
 
       <div className='flex font-bold'>
-        <p className='text-xl text-gray-700 dark:text-gray-100'>{_isNumber(total) ? nFormatter(total) : total}</p>
-        {_isNumber(percChange) && (
-          <p
-            className={cx('flex items-center text-xs', {
-              'text-green-600': statsDidGrowUp,
-              'text-red-600': !statsDidGrowUp,
-            })}
-          >
-            {statsDidGrowUp ? (
-              <>
-                <ChevronUpIcon className='h-4 w-4 flex-shrink-0 self-center text-green-500' />
-                <span className='sr-only'>{t('dashboard.inc')}</span>
-              </>
-            ) : (
-              <>
-                <ChevronDownIcon className='h-4 w-4 flex-shrink-0 self-center text-red-500' />
-                <span className='sr-only'>{t('dashboard.dec')}</span>
-              </>
+        {total === null ? (
+          <Spin className='!ml-0 mt-2' />
+        ) : (
+          <>
+            <p className='text-xl text-gray-700 dark:text-gray-100'>{_isNumber(total) ? nFormatter(total) : total}</p>
+            {_isNumber(percChange) && (
+              <p
+                className={cx('flex items-center text-xs', {
+                  'text-green-600': statsDidGrowUp,
+                  'text-red-600': !statsDidGrowUp,
+                })}
+              >
+                {statsDidGrowUp ? (
+                  <>
+                    <ChevronUpIcon className='h-4 w-4 flex-shrink-0 self-center text-green-500' />
+                    <span className='sr-only'>{t('dashboard.inc')}</span>
+                  </>
+                ) : (
+                  <>
+                    <ChevronDownIcon className='h-4 w-4 flex-shrink-0 self-center text-red-500' />
+                    <span className='sr-only'>{t('dashboard.dec')}</span>
+                  </>
+                )}
+                {nFormatter(percChange)}%
+              </p>
             )}
-            {nFormatter(percChange)}%
-          </p>
+          </>
         )}
       </div>
     </div>
   )
 }
 
-export const ProjectCard = ({ live = 'N/A', project, overallStats }: ProjectCardProps) => {
+export const ProjectCard = ({ live = null, project, overallStats }: ProjectCardProps) => {
   const { t } = useTranslation('common')
   const [showInviteModal, setShowInviteModal] = useState(false)
 
@@ -212,13 +219,11 @@ export const ProjectCard = ({ live = 'N/A', project, overallStats }: ProjectCard
           )}
         </div>
         <div className='mt-4 flex flex-shrink-0 gap-5'>
-          {overallStats ? (
-            <MiniCard
-              labelTKey={project.isCaptchaProject ? 'dashboard.captchaEvents' : 'dashboard.pageviews'}
-              total={overallStats.current.all}
-              percChange={calculateRelativePercentage(overallStats.previous.all, overallStats.current.all)}
-            />
-          ) : null}
+          <MiniCard
+            labelTKey={project.isCaptchaProject ? 'dashboard.captchaEvents' : 'dashboard.pageviews'}
+            total={overallStats?.current.all ?? null}
+            percChange={calculateRelativePercentage(overallStats?.previous.all ?? 0, overallStats?.current.all ?? 0)}
+          />
           {project.isAnalyticsProject && <MiniCard labelTKey='dashboard.liveVisitors' total={live} />}
         </div>
       </div>
