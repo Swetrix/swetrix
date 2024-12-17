@@ -10,7 +10,6 @@ import { XCircleIcon } from '@heroicons/react/24/solid'
 
 import Modal from '~/ui/Modal'
 import { withAuthentication, auth } from '~/hoc/protected'
-import Loader from '~/ui/Loader'
 import routes from '~/utils/routes'
 import { isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD, LIVE_VISITORS_UPDATE_INTERVAL } from '~/lib/constants'
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
@@ -20,7 +19,7 @@ import useDebounce from '~/hooks/useDebounce'
 import Pagination from '~/ui/Pagination'
 import { useSelector } from 'react-redux'
 import { StateType } from '~/lib/store'
-import { ProjectCard } from './ProjectCard'
+import { ProjectCard, ProjectCardSkeleton } from './ProjectCard'
 import { NoProjects } from './NoProjects'
 import { AddProject } from './AddProject'
 import { Overall, Project } from '~/lib/models/Project'
@@ -250,13 +249,13 @@ const Dashboard = () => {
             )}
             {isLoading || isLoading === null ? (
               <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-                <Loader />
+                <ProjectCardSkeleton />
               </div>
             ) : (
               <ClientOnly
                 fallback={
                   <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-                    <Loader />
+                    <ProjectCardSkeleton />
                   </div>
                 }
               >
@@ -270,7 +269,7 @@ const Dashboard = () => {
                           <ProjectCard
                             key={project.id}
                             project={project}
-                            live={liveStats[project.id] ?? 'N/A'}
+                            live={liveStats[project.id] ?? null}
                             overallStats={overallStats[project.id]}
                           />
                         ))}
