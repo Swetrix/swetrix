@@ -406,6 +406,11 @@ export class ProjectController {
         } as Organisation
       }
 
+      if (projectDTO.isPasswordProtected && projectDTO.password) {
+        project.isPasswordProtected = true
+        project.passwordHash = await hash(projectDTO.password, 10)
+      }
+
       const newProject = await this.projectService.create(project)
 
       return _omit(newProject, ['passwordHash'])
