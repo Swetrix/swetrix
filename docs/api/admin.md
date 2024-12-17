@@ -16,12 +16,22 @@ If you have special needs for more requests, please [contact us](https://swetrix
 
 ## Concepts
 ### Projects manipulation
-#### 'Create project' / 'Update project' payload
+#### 'Create project' payload
 | Name | Type | Required | Description |
 | --- | --- | --- | --- |
 | `name` | `string` | `true` | A display name for your project, max length is 50 chars. |
 | `isCaptcha` | `boolean` | `false` | (Only supported when creating a new project). Set to `true` if your project is a [CAPTCHA](/captcha/introduction) project. `false` by default. |
-| `public` | `boolean` | `false` | Set to `true` if your project should have a publicly available dashboard. `false` by default. |
+| `isPasswordProtected` | `boolean` | `false` | Set to `true` if your project's dashboard should be password protected. `false` by default. |
+| `password` | `string` | `false` | Required only if `isPasswordProtected` is set to `true`. That is the password unauthorised people will have to enter to access your project's dashboard. |
+| `organisationId` | `string` | `false` | Organisation you want to add this project to. You must be an owner or admin of the organisation to add a project to it. |
+
+#### 'Update project' payload
+| Name | Type | Required | Description |
+| --- | --- | --- | --- |
+| `name` | `string` | `true` | A display name for your project, max length is 50 chars. |
+| `isCaptcha` | `boolean` | `false` | (Only supported when creating a new project). Set to `true` if your project is a [CAPTCHA](/captcha/introduction) project. `false` by default. |
+| `active` | `boolean` | `false` | Set to `true` if your project should be active and accept incoming traffic. |
+| `public` | `boolean` | `false` | Set to `true` if your project should have a publicly available dashboard. |
 | `isPasswordProtected` | `boolean` | `false` | Set to `true` if your project's dashboard should be password protected. `false` by default. |
 | `password` | `string` | `false` | Required only if `isPasswordProtected` is set to `true`. That is the password unauthorised people will have to enter to access your project's dashboard. |
 | `origins` | `Array<string>` | `false` | An array of origins (domains) which are allowed to use script with your ProjectID. For example: `['cornell.edu', 'app.example.com', '*.gov.ua']`. By default all origins are allowed. |
