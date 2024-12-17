@@ -26,18 +26,18 @@ If you have special needs for more requests, please [contact us](https://swetrix
 | `organisationId` | `string` | `false` | Organisation you want to add this project to. You must be an owner or admin of the organisation to add a project to it. |
 
 #### 'Update project' payload
-| Name | Type | Required | Description |
-| --- | --- | --- | --- |
-| `name` | `string` | `true` | A display name for your project, max length is 50 chars. |
-| `isCaptcha` | `boolean` | `false` | (Only supported when creating a new project). Set to `true` if your project is a [CAPTCHA](/captcha/introduction) project. `false` by default. |
-| `active` | `boolean` | `false` | Set to `true` if your project should be active and accept incoming traffic. |
-| `public` | `boolean` | `false` | Set to `true` if your project should have a publicly available dashboard. |
-| `isPasswordProtected` | `boolean` | `false` | Set to `true` if your project's dashboard should be password protected. `false` by default. |
-| `password` | `string` | `false` | Required only if `isPasswordProtected` is set to `true`. That is the password unauthorised people will have to enter to access your project's dashboard. |
-| `origins` | `Array<string>` | `false` | An array of origins (domains) which are allowed to use script with your ProjectID. For example: `['cornell.edu', 'app.example.com', '*.gov.ua']`. By default all origins are allowed. |
-| `ipBlacklist` | `Array<string>` | `false` | An aeeay of IP addresses from which no analytics will be collected on this project. This functionality is handy if you want to ignore analytics from your IP. For example: `['172.126.10.16', '192.168.0.1/32', '::1']` |
-| `botsProtectionLevel` | `off` or `basic` | `false` | Set to `basic` or `off`. `basic` will block common bots by user agent and `off` will allow all traffic. `basic` by default. |
-| `organisationId` | `string` | `false` | Organisation you want to add this project to. You must be an owner or admin of the organisation to add a project to it. |
+| Name | Type | Description |
+| --- | --- | --- |
+| `name` | `string` | A display name for your project, max length is 50 chars. |
+| `isCaptcha` | `boolean` | (Only supported when creating a new project). Set to `true` if your project is a [CAPTCHA](/captcha/introduction) project. `false` by default. |
+| `active` | `boolean` | Set to `true` if your project should be active and accept incoming traffic. |
+| `public` | `boolean` | Set to `true` if your project should have a publicly available dashboard. |
+| `isPasswordProtected` | `boolean` | Set to `true` if your project's dashboard should be password protected. `false` by default. |
+| `password` | `string` | Required only if `isPasswordProtected` is set to `true`. That is the password unauthorised people will have to enter to access your project's dashboard. |
+| `origins` | `Array<string>` | An array of origins (domains) which are allowed to use script with your ProjectID. For example: `['cornell.edu', 'app.example.com', '*.gov.ua']`. By default all origins are allowed. |
+| `ipBlacklist` | `Array<string>` | An aeeay of IP addresses from which no analytics will be collected on this project. This functionality is handy if you want to ignore analytics from your IP. For example: `['172.126.10.16', '192.168.0.1/32', '::1']` |
+| `botsProtectionLevel` | `off` or `basic` | Set to `basic` or `off`. `basic` will block common bots by user agent and `off` will allow all traffic. `basic` by default. |
+| `organisationId` | `string` | Organisation you want to add this project to. You must be an owner or admin of the organisation to add a project to it. |
 
 ## Endpoints
 ### POST /v1/project
