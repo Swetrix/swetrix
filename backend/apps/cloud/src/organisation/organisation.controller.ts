@@ -41,9 +41,9 @@ import { Auth } from '../auth/decorators'
 import { Pagination } from '../common/pagination'
 import { ProjectService } from '../project/project.service'
 import { Project } from '../project/entity'
+import { isDevelopment, PRODUCTION_ORIGIN } from '../common/constants'
 
 const ORGANISATION_INVITE_EXPIRE = 7 * 24 // 7 days in hours
-const { PRODUCTION_ORIGIN, isDevelopment } = process.env
 
 @Controller('organisation')
 export class OrganisationController {
