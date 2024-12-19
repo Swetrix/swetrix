@@ -926,7 +926,7 @@ export const rejectProjectShare = (actionId: string) =>
 
 export const acceptProjectShare = (actionId: string) =>
   api
-    .post(`/user/share/${actionId}`)
+    .get(`/user/share/${actionId}`)
     .then((response) => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
