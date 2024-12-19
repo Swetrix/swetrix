@@ -863,7 +863,7 @@ export class AnalyticsController {
     })
 
     try {
-      await Promise.all(validationPromises)
+      await Promise.allSettled(validationPromises)
     } catch {
       // eslint-disable-next-line no-empty
     }
@@ -903,16 +903,31 @@ export class AnalyticsController {
     } = data
     const pidsArray = getPIDsArray(pids, pid)
 
+    const validPids = []
+
     const validationPromises = _map(pidsArray, async currentPID => {
       await this.analyticsService.checkProjectAccess(currentPID, uid)
 
       await this.analyticsService.checkBillingAccess(currentPID)
+
+      validPids.push(currentPID)
     })
 
-    await Promise.all(validationPromises)
+    try {
+      await Promise.allSettled(validationPromises)
+    } catch {
+      // eslint-disable-next-line no-empty
+    }
+
+    if (_isEmpty(validPids)) {
+      throw new HttpException(
+        'The data could not be loaded for the selected projects. It is possible that the projects are not accessible to you or the account owner has been suspended.',
+        HttpStatus.PAYMENT_REQUIRED,
+      )
+    }
 
     return this.analyticsService.getCaptchaSummary(
-      pidsArray,
+      validPids,
       period,
       from,
       to,
@@ -1017,7 +1032,7 @@ export class AnalyticsController {
     })
 
     try {
-      await Promise.all(validationPromises)
+      await Promise.allSettled(validationPromises)
       // eslint-disable-next-line no-empty
     } catch {}
 
