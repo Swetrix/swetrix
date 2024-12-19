@@ -269,7 +269,7 @@ const Dashboard = () => {
                           <ProjectCard
                             key={project.id}
                             project={project}
-                            live={liveStats[project.id] ?? null}
+                            live={liveStats[project.id] ?? (_isEmpty(liveStats) ? null : 'N/A')}
                             overallStats={overallStats[project.id]}
                           />
                         ))}

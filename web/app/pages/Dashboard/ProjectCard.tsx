@@ -221,8 +221,12 @@ export const ProjectCard = ({ live = null, project, overallStats }: ProjectCardP
         <div className='mt-4 flex flex-shrink-0 gap-5'>
           <MiniCard
             labelTKey={project.isCaptchaProject ? 'dashboard.captchaEvents' : 'dashboard.pageviews'}
-            total={overallStats?.current.all ?? null}
-            percChange={calculateRelativePercentage(overallStats?.previous.all ?? 0, overallStats?.current.all ?? 0)}
+            total={live === 'N/A' ? 'N/A' : (overallStats?.current.all ?? null)}
+            percChange={
+              live === 'N/A'
+                ? 0
+                : calculateRelativePercentage(overallStats?.previous.all ?? 0, overallStats?.current.all ?? 0)
+            }
           />
           {project.isAnalyticsProject && <MiniCard labelTKey='dashboard.liveVisitors' total={live} />}
         </div>
