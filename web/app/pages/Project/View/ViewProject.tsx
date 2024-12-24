@@ -29,6 +29,8 @@ import {
   DownloadIcon,
   SettingsIcon,
   BanIcon,
+  BotIcon,
+  BotOffIcon,
 } from 'lucide-react'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -3247,7 +3249,7 @@ const ViewProject = () => {
                               >
                                 <RotateCw className='h-5 w-5 text-gray-700 dark:text-gray-50' />
                               </button>
-                              {/* {!isSelfhosted && !isActiveCompare && (
+                              {!isSelfhosted && !isActiveCompare && id === 'STEzHcB1rALV' && (
                                 <div
                                   className={cx({
                                     hidden: activeTab !== PROJECT_TABS.traffic || _isEmpty(chartData),
@@ -3263,19 +3265,17 @@ const ViewProject = () => {
                                       {
                                         'cursor-not-allowed opacity-50':
                                           authLoading || dataLoading || !_isEmpty(filters),
-                                        '!border !border-gray-300 !bg-gray-200 dark:!border-gray-500 dark:!bg-gray-600':
-                                          !_isEmpty(forecasedChartData),
                                       },
                                     )}
                                   >
-                                    <Robot
-                                      theme={_theme}
-                                      containerClassName='w-5 h-5'
-                                      className='stroke-2 text-gray-700 dark:text-gray-50'
-                                    />
+                                    {_isEmpty(forecasedChartData) ? (
+                                      <BotIcon className='size-5 stroke-2 text-gray-700 dark:text-gray-50' />
+                                    ) : (
+                                      <BotOffIcon className='size-5 stroke-2 text-gray-700 dark:text-gray-50' />
+                                    )}
                                   </button>
                                 </div>
-                              )} */}
+                              )}
                               <div
                                 className={cx('border-gray-200 dark:border-gray-600', {
                                   // @ts-expect-error
