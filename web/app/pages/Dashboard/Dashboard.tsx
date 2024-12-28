@@ -290,7 +290,7 @@ const Dashboard = () => {
                             overallStats={overallStats[project.id]}
                           />
                         ))}
-                        {_size(projects) % 12 !== 0 ? (
+                        {_size(projects) % 12 !== 0 && activeTab === 'default' ? (
                           <AddProject sitesCount={_size(projects)} onClick={onNewProject} />
                         ) : null}
                       </div>
