@@ -266,9 +266,9 @@ export const verifyShare = ({ path, id }: { path: string; id: string }) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getProjects = (take: number = 0, skip: number = 0, search?: string, mode?: string) =>
+export const getProjects = (take: number = 0, skip: number = 0, search?: string, mode?: string, period?: string) =>
   api
-    .get(`/project?take=${take}&skip=${skip}&search=${search}&mode=${mode}`)
+    .get(`/project?take=${take}&skip=${skip}&search=${search}&mode=${mode}&period=${period}`)
     .then(
       (
         response,

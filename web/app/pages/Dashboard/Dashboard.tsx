@@ -25,6 +25,7 @@ import { AddProject } from './AddProject'
 import { Overall, Project } from '~/lib/models/Project'
 import { getProjects, getLiveVisitors, getOverallStats, getOverallStatsCaptcha } from '~/api'
 import { DASHBOARD_TABS, Tabs } from './Tabs'
+import { PeriodSelector } from './PeriodSelector'
 
 const PAGE_SIZE_OPTIONS = [12, 24, 48, 96]
 
@@ -45,6 +46,7 @@ const Dashboard = () => {
   const [overallStats, setOverallStats] = useState<Overall>({})
 
   const [activeTab, setActiveTab] = useState<(typeof DASHBOARD_TABS)[number]['id']>(DASHBOARD_TABS[0].id)
+  const [activePeriod, setActivePeriod] = useState('7d')
 
   const pageAmount = Math.ceil(paginationTotal / pageSize)
 
@@ -61,14 +63,14 @@ const Dashboard = () => {
     setShowActivateEmailModal(true)
   }
 
-  const loadProjects = async (take: number, skip: number, search?: string, tab?: string) => {
+  const loadProjects = async (take: number, skip: number, search?: string, tab?: string, period?: string) => {
     if (isLoading) {
       return
     }
     setIsLoading(true)
 
     try {
-      const result = await getProjects(take, skip, search, tab)
+      const result = await getProjects(take, skip, search, tab, period)
       setProjects(result.results)
       setPaginationTotal(result.total)
     } catch (reason: any) {
@@ -79,10 +81,10 @@ const Dashboard = () => {
   }
 
   useEffect(() => {
-    loadProjects(pageSize, (page - 1) * pageSize, debouncedSearch, activeTab)
+    loadProjects(pageSize, (page - 1) * pageSize, debouncedSearch, activeTab, activePeriod)
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, pageSize, debouncedSearch, activeTab])
+  }, [page, pageSize, debouncedSearch, activeTab, activePeriod])
 
   // Set up interval for live visitors
   useEffect(() => {
@@ -229,14 +231,23 @@ const Dashboard = () => {
                   </div>
                 )}
               </div>
-              <Link
-                to={routes.new_project}
-                onClick={onNewProject}
-                className='inline-flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-slate-900 px-3 py-2 !pl-2 text-center text-sm font-medium leading-4 text-white shadow-sm hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
-              >
-                <FolderPlusIcon className='mr-1 h-5 w-5' />
-                {t('dashboard.newProject')}
-              </Link>
+              <div className='flex items-center gap-2'>
+                {activeTab === 'default' || activeTab === 'lost-traffic' ? null : (
+                  <PeriodSelector
+                    activePeriod={activePeriod}
+                    setActivePeriod={setActivePeriod}
+                    isLoading={isLoading === null || isLoading}
+                  />
+                )}
+                <Link
+                  to={routes.new_project}
+                  onClick={onNewProject}
+                  className='inline-flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-slate-900 px-3 py-2 !pl-2 text-center text-sm font-medium leading-4 text-white shadow-sm hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
+                >
+                  <FolderPlusIcon className='mr-1 h-5 w-5' />
+                  {t('dashboard.newProject')}
+                </Link>
+              </div>
             </div>
             {isSearchActive && (
               <div className='mb-2 flex w-full items-center sm:hidden'>
