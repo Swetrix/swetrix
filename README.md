@@ -29,4 +29,6 @@ You can also follow us on [Twitter](https://x.com/swetrix), [LinkedIn](https://w
 ## License
 Swetrix Community Edition is open source under the GNU Affero General Public License Version 3 (AGPLv3). The license can be found in the [LICENSE](./LICENSE) file.
 
+Source code contributions are subject to the [Contributor License Agreement](https://gist.github.com/Blaumaus/cb232e7c2506b9feec188194a77cb9f9).
+
 © 2021 - present, Swetrix Ltd.
