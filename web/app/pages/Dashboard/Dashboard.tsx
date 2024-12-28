@@ -11,7 +11,7 @@ import { XCircleIcon } from '@heroicons/react/24/solid'
 import Modal from '~/ui/Modal'
 import { withAuthentication, auth } from '~/hoc/protected'
 import routes from '~/utils/routes'
-import { isSelfhosted, ENTRIES_PER_PAGE_DASHBOARD, LIVE_VISITORS_UPDATE_INTERVAL } from '~/lib/constants'
+import { isSelfhosted, LIVE_VISITORS_UPDATE_INTERVAL } from '~/lib/constants'
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import DashboardLockedBanner from '~/components/DashboardLockedBanner'
 import useDebounce from '~/hooks/useDebounce'
@@ -25,6 +25,8 @@ import { AddProject } from './AddProject'
 import { Overall, Project } from '~/lib/models/Project'
 import { getProjects, getLiveVisitors, getOverallStats, getOverallStatsCaptcha } from '~/api'
 
+const PAGE_SIZE_OPTIONS = [12, 24, 48, 96]
+
 const Dashboard = () => {
   const { user } = useSelector((state: StateType) => state.auth)
 
@@ -35,12 +37,13 @@ const Dashboard = () => {
   const [projects, setProjects] = useState<Project[]>([])
   const [paginationTotal, setPaginationTotal] = useState(0)
   const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0])
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [liveStats, setLiveStats] = useState<Record<string, number>>({})
   const [overallStats, setOverallStats] = useState<Overall>({})
 
-  const pageAmount = Math.ceil(paginationTotal / ENTRIES_PER_PAGE_DASHBOARD)
+  const pageAmount = Math.ceil(paginationTotal / pageSize)
 
   // This search represents what's inside the search input
   const [search, setSearch] = useState('')
@@ -73,10 +76,10 @@ const Dashboard = () => {
   }
 
   useEffect(() => {
-    loadProjects(ENTRIES_PER_PAGE_DASHBOARD, (page - 1) * ENTRIES_PER_PAGE_DASHBOARD, debouncedSearch)
+    loadProjects(pageSize, (page - 1) * pageSize, debouncedSearch)
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, debouncedSearch])
+  }, [page, pageSize, debouncedSearch])
 
   // Set up interval for live visitors
   useEffect(() => {
@@ -168,6 +171,11 @@ const Dashboard = () => {
 
   const onSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value)
+  }
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size)
+    setPage(1) // Reset to first page when changing page size
   }
 
   return (
@@ -273,20 +281,25 @@ const Dashboard = () => {
                             overallStats={overallStats[project.id]}
                           />
                         ))}
-                        <AddProject sitesCount={_size(projects)} onClick={onNewProject} />
+                        {_size(projects) % 12 !== 0 ? (
+                          <AddProject sitesCount={_size(projects)} onClick={onNewProject} />
+                        ) : null}
                       </div>
                     )}
                   </>
                 )}
               </ClientOnly>
             )}
-            {pageAmount > 1 ? (
+            {paginationTotal > PAGE_SIZE_OPTIONS[0] ? (
               <Pagination
-                className='mt-2'
+                className='mt-4'
                 page={page}
                 pageAmount={pageAmount}
                 setPage={setPage}
                 total={paginationTotal}
+                pageSize={pageSize}
+                pageSizeOptions={PAGE_SIZE_OPTIONS}
+                onPageSizeChange={handlePageSizeChange}
               />
             ) : null}
           </div>
