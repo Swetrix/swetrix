@@ -104,7 +104,7 @@ const Dashboard = () => {
       if (!projectIds.length) return
 
       try {
-        const stats = await getOverallStats(projectIds, '7d')
+        const stats = await getOverallStats(projectIds, activePeriod)
         setOverallStats((prev) => ({ ...prev, ...stats }))
       } catch (reason) {
         console.error('Failed to fetch overall stats:', reason)
@@ -115,7 +115,7 @@ const Dashboard = () => {
       if (!projectIds.length) return
 
       try {
-        const stats = await getOverallStatsCaptcha(projectIds, '7d')
+        const stats = await getOverallStatsCaptcha(projectIds, activePeriod)
         setOverallStats((prev) => ({ ...prev, ...stats }))
       } catch (reason) {
         console.error('Failed to fetch overall stats:', reason)
@@ -135,7 +135,7 @@ const Dashboard = () => {
     const interval = setInterval(updateLiveVisitors, LIVE_VISITORS_UPDATE_INTERVAL)
 
     return () => clearInterval(interval)
-  }, [projects]) // Reset interval when projects change
+  }, [projects, activePeriod]) // Reset interval when projects change
 
   if (error && isLoading === false) {
     return (
@@ -232,7 +232,7 @@ const Dashboard = () => {
                 )}
               </div>
               <div className='flex items-center gap-2'>
-                {activeTab === 'default' || activeTab === 'lost-traffic' ? null : (
+                {activeTab === 'lost-traffic' ? null : (
                   <PeriodSelector
                     activePeriod={activePeriod}
                     setActivePeriod={setActivePeriod}
