@@ -22,7 +22,6 @@ import { OverallObject, Project } from '~/lib/models/Project'
 import { useSelector } from 'react-redux'
 import { StateType, useAppDispatch } from '~/lib/store'
 import { authActions } from '~/lib/reducers/auth'
-import { SquareArrowOutUpRightIcon } from 'lucide-react'
 import Spin from '~/ui/icons/Spin'
 
 interface ProjectCardProps {
@@ -188,28 +187,14 @@ export const ProjectCard = ({ live = null, project, overallStats }: ProjectCardP
         <div className='flex items-center justify-between'>
           <p className='truncate text-lg font-semibold text-slate-900 dark:text-gray-50'>{name}</p>
 
-          <div className='flex items-center gap-2'>
-            {role !== 'viewer' && (
-              <Link onClick={(e) => e.stopPropagation()} to={_replace(routes.project_settings, ':id', id)}>
-                <AdjustmentsVerticalIcon
-                  className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500'
-                  aria-label={`${t('project.settings.settings')} ${name}`}
-                />
-              </Link>
-            )}
-            <a
-              href={_replace(project.isCaptchaProject ? routes.captcha : routes.project, ':id', id)}
-              onClick={(e) => e.stopPropagation()}
-              aria-label='name (opens in a new tab)'
-              target='_blank'
-              rel='noopener noreferrer'
-            >
-              <SquareArrowOutUpRightIcon
+          {role !== 'viewer' && (
+            <Link onClick={(e) => e.stopPropagation()} to={_replace(routes.project_settings, ':id', id)}>
+              <AdjustmentsVerticalIcon
                 className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500'
-                strokeWidth={1.5}
+                aria-label={`${t('project.settings.settings')} ${name}`}
               />
-            </a>
-          </div>
+            </Link>
+          )}
         </div>
         <div className='mt-1 flex flex-shrink-0 flex-wrap gap-2'>
           {badges.length > 0 ? (
@@ -262,20 +247,17 @@ export const ProjectCardSkeleton = () => {
         >
           <div className='px-4 py-4'>
             <div className='flex items-center justify-between'>
-              <div className='h-6 w-3/4 rounded bg-gray-200 dark:bg-slate-700'></div>
-              <div className='flex items-center gap-2'>
-                <div className='h-6 w-6 rounded-[3px] bg-gray-200 dark:bg-slate-700'></div>
-                <div className='h-6 w-6 rounded-[3px] bg-gray-200 dark:bg-slate-700'></div>
-              </div>
+              <div className='h-6 w-3/4 rounded bg-gray-200 dark:bg-slate-700' />
+              <div className='h-6 w-6 rounded-[3px] bg-gray-200 dark:bg-slate-700' />
             </div>
-            <div className='mt-1 flex flex-shrink-0 flex-wrap gap-2'>
-              <div className='h-4 w-16 rounded bg-gray-200 dark:bg-slate-700'></div>
-              <div className='h-4 w-16 rounded bg-gray-200 dark:bg-slate-700'></div>
-              <div className='h-4 w-16 rounded bg-gray-200 dark:bg-slate-700'></div>
+            <div className='mt-1.5 flex flex-shrink-0 flex-wrap gap-2'>
+              <div className='h-6 w-16 rounded bg-gray-200 dark:bg-slate-700' />
+              <div className='h-6 w-16 rounded bg-gray-200 dark:bg-slate-700' />
+              <div className='h-6 w-16 rounded bg-gray-200 dark:bg-slate-700' />
             </div>
-            <div className='mt-8 flex flex-shrink-0 gap-5'>
-              <div className='h-10 w-24 rounded bg-gray-200 dark:bg-slate-700'></div>
-              <div className='h-10 w-24 rounded bg-gray-200 dark:bg-slate-700'></div>
+            <div className='mt-[1.375rem] flex flex-shrink-0 gap-5'>
+              <div className='h-10 w-24 rounded bg-gray-200 dark:bg-slate-700' />
+              <div className='h-10 w-24 rounded bg-gray-200 dark:bg-slate-700' />
             </div>
           </div>
         </div>
