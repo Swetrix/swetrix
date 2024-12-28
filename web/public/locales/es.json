@@ -124,7 +124,9 @@
     "errorOccured": "An error occurred: {{error}}",
     "name": "Name",
     "notSet": "Not set",
-    "remove": "Remove"
+    "remove": "Remove",
+    "pagination": "Showing <0>{{start}}</0> to <0>{{end}}</0> of <0>{{total}}</0> results",
+    "resultsPerPage": "Results per page"
   },
   "performance": {
     "slogan": "End user <span>performance monitoring</span> to deliver fast websites.",
