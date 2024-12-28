@@ -143,6 +143,11 @@ export class ProjectController {
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
   @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({
+    name: 'mode',
+    required: false,
+    type: String,
+  })
   @ApiResponse({ status: 200, type: [Project] })
   @Auth([], true)
   async get(
@@ -150,6 +155,14 @@ export class ProjectController {
     @Query('take') take: number | undefined,
     @Query('skip') skip: number | undefined,
     @Query('search') search: string | undefined,
+    @Query('mode')
+    mode:
+      | 'default'
+      | 'high-traffic'
+      | 'low-traffic'
+      | 'performance'
+      | 'lost-traffic'
+      | undefined,
   ): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /project')
 
