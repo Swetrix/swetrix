@@ -48,13 +48,15 @@ function Select<T>({
     <Listbox id={id || ''} value={title} onChange={onSelect}>
       {({ open }) => (
         <>
-          <Label className='block whitespace-pre-line text-sm font-medium text-gray-700 dark:text-gray-100'>
-            {label}
-          </Label>
-          <div className={cx('relative mt-1', className)}>
+          {label ? (
+            <Label className='mb-1 block whitespace-pre-line text-sm font-medium text-gray-700 dark:text-gray-100'>
+              {label}
+            </Label>
+          ) : null}
+          <div className={cx('relative', className)}>
             <ListboxButton
               className={cx(
-                'relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 sm:text-sm',
+                'relative w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 sm:text-sm',
                 buttonClassName,
               )}
             >
