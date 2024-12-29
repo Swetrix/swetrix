@@ -1,9 +1,15 @@
 import { redirect } from '@remix-run/node'
 import Contact from '~/pages/Contact'
-import { isSelfhosted } from '~/lib/constants'
+import { isDisableMarketingPages, isSelfhosted } from '~/lib/constants'
+import { SitemapFunction } from 'remix-sitemap'
+
+export const sitemap: SitemapFunction = () => ({
+  priority: 1,
+  exclude: isSelfhosted || isDisableMarketingPages,
+})
 
 export async function loader() {
-  if (isSelfhosted) {
+  if (isSelfhosted || isDisableMarketingPages) {
     return redirect('/dashboard', 302)
   }
 

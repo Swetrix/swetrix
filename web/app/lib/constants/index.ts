@@ -376,6 +376,9 @@ const PRODUCTION_API_URL = isBrowser ? window.REMIX_ENV?.API_URL : process.env.A
 
 export const isSelfhosted = Boolean(isBrowser ? window.REMIX_ENV?.SELFHOSTED : process.env.__SELFHOSTED)
 
+export const isDisableMarketingPages =
+  (isBrowser ? window.REMIX_ENV?.DISABLE_MARKETING_PAGES : process.env.DISABLE_MARKETING_PAGES) === 'true'
+
 const apiUrlUnprocessed = isSelfhosted || !isStaging ? PRODUCTION_API_URL : STAGING_API_URL
 const aiApiUrlUnprocessed = isBrowser ? window.REMIX_ENV?.AIAPI_URL : process.env.AIAPI_URL
 const cdnUrlUnprocessed = isBrowser ? window.REMIX_ENV?.CDN_URL : process.env.CDN_URL

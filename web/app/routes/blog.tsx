@@ -4,11 +4,11 @@ import { Link, useLoaderData } from '@remix-run/react'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
 import _filter from 'lodash/filter'
-import { isSelfhosted, TITLE_SUFFIX } from '~/lib/constants'
+import { isDisableMarketingPages, isSelfhosted, TITLE_SUFFIX } from '~/lib/constants'
 import { getBlogPosts } from '~/api'
 
 export const loader: LoaderFunction = async () => {
-  if (isSelfhosted) {
+  if (isSelfhosted || isDisableMarketingPages) {
     return redirect('/dashboard', 302)
   }
 

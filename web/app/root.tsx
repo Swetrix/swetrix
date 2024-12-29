@@ -187,6 +187,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     API_STAGING_URL: process.env.API_STAGING_URL,
     CDN_URL: process.env.CDN_URL,
     SELFHOSTED: process.env.__SELFHOSTED,
+    DISABLE_MARKETING_PAGES: process.env.DISABLE_MARKETING_PAGES,
     STAGING: process.env.STAGING,
     PADDLE_CLIENT_SIDE_TOKEN: process.env.PADDLE_CLIENT_SIDE_TOKEN,
   }

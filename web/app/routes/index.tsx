@@ -25,6 +25,7 @@ import {
   OS_LOGO_MAP,
   OS_LOGO_MAP_DARK,
   BROWSER_LOGO_MAP,
+  isDisableMarketingPages,
 } from '~/lib/constants'
 import { StateType } from '~/lib/store/index'
 import { Cookie, FileTextIcon } from 'lucide-react'
@@ -44,11 +45,11 @@ import { ConveyorBelt } from '~/components/marketing/ConveyorBelt'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 1,
-  exclude: isSelfhosted,
+  exclude: isSelfhosted || isDisableMarketingPages,
 })
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  if (isSelfhosted) {
+  if (isSelfhosted || isDisableMarketingPages) {
     return redirect('/login', 302)
   }
 

@@ -5,7 +5,7 @@ import { ExternalScriptsHandle } from 'remix-utils/external-scripts'
 import { isSelfhosted } from '~/lib/constants'
 
 export const sitemap: SitemapFunction = () => ({
-  priority: 0.9,
+  exclude: true,
 })
 
 export let handle: ExternalScriptsHandle = {
