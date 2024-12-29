@@ -261,14 +261,13 @@ export const getIPFromHeaders = (
   }
 
   // Get IP based on the NGINX configuration
-  // No need to do this if API is behind a load balancer
-  // let ip = headers['x-real-ip']
+  let ip = headers['x-real-ip']
 
-  // if (ip) {
-  //   return ip
-  // }
+  if (ip) {
+    return ip
+  }
 
-  const ip = headers['x-forwarded-for'] || null
+  ip = headers['x-forwarded-for'] || null
 
   if (!ip) {
     return null
