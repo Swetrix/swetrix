@@ -42,6 +42,7 @@ import {
   SUPPORTED_THEMES,
   isBrowser,
   CAPTCHA_URL,
+  isDisableMarketingPages,
 } from '~/lib/constants'
 import Dropdown from '~/ui/Dropdown'
 import Flag from '~/ui/Flag'
@@ -547,8 +548,8 @@ const AuthedHeader = ({
                   {t('billing.inactive')}
                 </Link>
               )}
-              {!isSelfhosted && <SolutionsMenu />}
-              {isSelfhosted ? (
+              {!isSelfhosted && !isDisableMarketingPages && <SolutionsMenu />}
+              {isSelfhosted && !isDisableMarketingPages && (
                 <a
                   href={`https://swetrix.com${routes.blog}`}
                   target='_blank'
@@ -557,7 +558,8 @@ const AuthedHeader = ({
                 >
                   {t('footer.blog')}
                 </a>
-              ) : (
+              )}
+              {!isSelfhosted && !isDisableMarketingPages && (
                 <Link
                   to={routes.blog}
                   className='text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
@@ -673,8 +675,8 @@ const NotAuthedHeader = ({
 
             {!refPage && (
               <div className='ml-10 hidden items-center gap-4 space-x-1 lg:flex'>
-                {!isSelfhosted && <SolutionsMenu />}
-                {isSelfhosted ? (
+                {!isSelfhosted && !isDisableMarketingPages && <SolutionsMenu />}
+                {isSelfhosted && !isDisableMarketingPages && (
                   <a
                     href={`https://swetrix.com${routes.blog}`}
                     target='_blank'
@@ -683,7 +685,8 @@ const NotAuthedHeader = ({
                   >
                     {t('footer.blog')}
                   </a>
-                ) : (
+                )}
+                {!isSelfhosted && !isDisableMarketingPages && (
                   <Link
                     to={routes.blog}
                     className='text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
@@ -691,7 +694,7 @@ const NotAuthedHeader = ({
                     {t('footer.blog')}
                   </Link>
                 )}
-                {!isSelfhosted && (
+                {!isSelfhosted && !isDisableMarketingPages && (
                   <Link
                     to={`${routes.main}#pricing`}
                     className='text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
@@ -1082,7 +1085,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                     {t('common.billing')}
                   </Link>
                 )}
-                {!isSelfhosted && !authenticated && (
+                {!isSelfhosted && !isDisableMarketingPages && !authenticated && (
                   <Link
                     to={`${routes.main}#pricing`}
                     onClick={() => setMobileMenuOpen(false)}
@@ -1092,7 +1095,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                     {t('common.pricing')}
                   </Link>
                 )}
-                {isSelfhosted ? (
+                {isSelfhosted && !isDisableMarketingPages && (
                   <a
                     onClick={() => setMobileMenuOpen(false)}
                     href={`https://swetrix.com${routes.blog}`}
@@ -1102,7 +1105,8 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                   >
                     {t('footer.blog')}
                   </a>
-                ) : (
+                )}
+                {!isSelfhosted && !isDisableMarketingPages && (
                   <Link
                     to={routes.blog}
                     onClick={() => setMobileMenuOpen(false)}
