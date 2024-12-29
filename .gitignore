@@ -43,7 +43,8 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 !.vscode/extensions.json
 
 .env
-.env.prod
+.env.*
+!.env.example
 pnpm-lock.yaml
 yarn.lock
 *.mmdb
