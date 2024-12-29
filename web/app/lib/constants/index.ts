@@ -376,15 +376,19 @@ const PRODUCTION_API_URL = isBrowser ? window.REMIX_ENV?.API_URL : process.env.A
 
 export const isSelfhosted = Boolean(isBrowser ? window.REMIX_ENV?.SELFHOSTED : process.env.__SELFHOSTED)
 
-export const API_URL = isSelfhosted || !isStaging ? PRODUCTION_API_URL : STAGING_API_URL
-export const AIAPI_URL = isBrowser ? window.REMIX_ENV?.AIAPI_URL : process.env.AIAPI_URL
-export const CDN_URL = isBrowser ? window.REMIX_ENV?.CDN_URL : process.env.CDN_URL
+const apiUrlUnprocessed = isSelfhosted || !isStaging ? PRODUCTION_API_URL : STAGING_API_URL
+const aiApiUrlUnprocessed = isBrowser ? window.REMIX_ENV?.AIAPI_URL : process.env.AIAPI_URL
+const cdnUrlUnprocessed = isBrowser ? window.REMIX_ENV?.CDN_URL : process.env.CDN_URL
+
+export const API_URL = _endsWith(apiUrlUnprocessed, '/') ? apiUrlUnprocessed : `${apiUrlUnprocessed}/`
+export const AIAPI_URL = _endsWith(aiApiUrlUnprocessed, '/') ? aiApiUrlUnprocessed : `${aiApiUrlUnprocessed}/`
+export const CDN_URL = _endsWith(cdnUrlUnprocessed, '/') ? cdnUrlUnprocessed : `${cdnUrlUnprocessed}/`
 const NODE_ENV = isBrowser ? window.REMIX_ENV?.NODE_ENV : process.env.NODE_ENV
 
 export const isDevelopment = !NODE_ENV || NODE_ENV === 'development'
 
 export const getOgImageUrl = (title: string) => {
-  const apiUrl = _endsWith(API_URL, '/') ? API_URL.slice(0, -1) : API_URL
+  const apiUrl = API_URL.slice(0, -1)
 
   return `${apiUrl}/v1/og-image?title=${title}`
 }
@@ -813,7 +817,9 @@ export const SSO_PROVIDERS = Object.freeze({
 
 export const BROWSER_LOGO_MAP = {
   Chrome: '/assets/browsers/chrome_48x48.png',
+  'Mobile Chrome': '/assets/browsers/chrome_48x48.png',
   Firefox: '/assets/browsers/firefox_48x48.png',
+  'Mobile Firefox': '/assets/browsers/firefox_48x48.png',
   Safari: '/assets/browsers/safari_48x48.png',
   'Mobile Safari': '/assets/browsers/safari-ios_48x48.png',
   Edge: '/assets/browsers/edge_48x48.png',
@@ -855,6 +861,7 @@ export const OS_LOGO_MAP = {
   Android: 'assets/os/AND.png',
   iOS: 'assets/os/apple.svg',
   'Mac OS': 'assets/os/apple.svg',
+  macOS: 'assets/os/apple.svg',
   Mac: 'assets/os/apple.svg',
   Linux: 'assets/os/LIN.png',
   Ubuntu: 'assets/os/UBT.png',
@@ -878,5 +885,6 @@ export const OS_LOGO_MAP = {
 export const OS_LOGO_MAP_DARK = {
   iOS: 'assets/os/apple-dark.svg',
   'Mac OS': 'assets/os/apple-dark.svg',
+  macOS: 'assets/os/apple-dark.svg',
   Mac: 'assets/os/apple-dark.svg',
 }
