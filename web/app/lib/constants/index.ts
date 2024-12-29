@@ -813,7 +813,9 @@ export const SSO_PROVIDERS = Object.freeze({
 
 export const BROWSER_LOGO_MAP = {
   Chrome: '/assets/browsers/chrome_48x48.png',
+  'Mobile Chrome': '/assets/browsers/chrome_48x48.png',
   Firefox: '/assets/browsers/firefox_48x48.png',
+  'Mobile Firefox': '/assets/browsers/firefox_48x48.png',
   Safari: '/assets/browsers/safari_48x48.png',
   'Mobile Safari': '/assets/browsers/safari-ios_48x48.png',
   Edge: '/assets/browsers/edge_48x48.png',
@@ -855,6 +857,7 @@ export const OS_LOGO_MAP = {
   Android: 'assets/os/AND.png',
   iOS: 'assets/os/apple.svg',
   'Mac OS': 'assets/os/apple.svg',
+  macOS: 'assets/os/apple.svg',
   Mac: 'assets/os/apple.svg',
   Linux: 'assets/os/LIN.png',
   Ubuntu: 'assets/os/UBT.png',
@@ -878,5 +881,6 @@ export const OS_LOGO_MAP = {
 export const OS_LOGO_MAP_DARK = {
   iOS: 'assets/os/apple-dark.svg',
   'Mac OS': 'assets/os/apple-dark.svg',
+  macOS: 'assets/os/apple-dark.svg',
   Mac: 'assets/os/apple-dark.svg',
 }
