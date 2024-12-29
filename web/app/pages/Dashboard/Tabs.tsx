@@ -46,7 +46,13 @@ export const Tabs = ({ activeTab, setActiveTab, className, isLoading }: TabsProp
       return (
         <button
           key={tab.id}
-          onClick={() => setActiveTab(tab.id)}
+          onClick={() => {
+            if (isLoading) {
+              return
+            }
+
+            setActiveTab(tab.id)
+          }}
           className={cx(
             'text-md group inline-flex cursor-pointer items-center whitespace-nowrap border-b-2 px-1 py-2 font-bold',
             {
