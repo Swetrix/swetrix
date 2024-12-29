@@ -48,6 +48,9 @@ export const sitemap: SitemapFunction = () => ({
 })
 
 export async function loader({ request }: LoaderFunctionArgs) {
+  return redirect('/dashboard', 302)
+
+  // eslint-disable-next-line no-unreachable
   if (isSelfhosted) {
     return redirect('/login', 302)
   }
@@ -66,6 +69,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   if (userAgent) {
+    // @ts-expect-error
     const parser = new UAParser(userAgent)
 
     deviceInfo = {
