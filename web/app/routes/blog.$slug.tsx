@@ -79,6 +79,9 @@ export const sitemap: SitemapFunction = async () => {
 }
 
 export const loader: LoaderFunction = async ({ params }) => {
+  return redirect('/dashboard', 302)
+
+  // eslint-disable-next-line no-unreachable
   if (isSelfhosted) {
     return redirect('/dashboard', 302)
   }
@@ -89,6 +92,7 @@ export const loader: LoaderFunction = async ({ params }) => {
     })
   }
 
+  // @ts-expect-error
   const post = await getPost(params.slug)
 
   if (!post) {
