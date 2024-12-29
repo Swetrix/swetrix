@@ -5,15 +5,15 @@ import { redirect } from '@remix-run/node'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { detectTheme, isAuthenticated } from '~/utils/server'
-import { isSelfhosted } from '~/lib/constants'
+import { isDisableMarketingPages, isSelfhosted } from '~/lib/constants'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 1,
-  exclude: isSelfhosted,
+  exclude: isSelfhosted || isDisableMarketingPages,
 })
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  if (isSelfhosted) {
+  if (isSelfhosted || isDisableMarketingPages) {
     return redirect('/login', 302)
   }
 

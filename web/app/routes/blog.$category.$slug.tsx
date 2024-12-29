@@ -2,7 +2,7 @@ import type { LoaderFunction, LinksFunction, MetaFunction } from '@remix-run/nod
 import { redirect, data } from '@remix-run/node'
 import singlePostCss from '~/css/mdfile.css'
 import { getPost } from '~/utils/getPosts'
-import { isSelfhosted, TITLE_SUFFIX, getOgImageUrl } from '~/lib/constants'
+import { isSelfhosted, TITLE_SUFFIX, getOgImageUrl, isDisableMarketingPages } from '~/lib/constants'
 import Post from '~/pages/Blog/Post'
 
 export const links: LinksFunction = () => {
@@ -48,7 +48,7 @@ export const meta: MetaFunction = (loaderData: any) => {
 }
 
 export const loader: LoaderFunction = async ({ params }) => {
-  if (isSelfhosted) {
+  if (isSelfhosted || isDisableMarketingPages) {
     return redirect('/dashboard', 302)
   }
 

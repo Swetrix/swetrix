@@ -8,7 +8,7 @@ import _isString from 'lodash/isString'
 import singlePostCss from '~/css/mdfile.css'
 import { getPost, getSlugFromFilename, getDateFromFilename } from '~/utils/getPosts'
 import { getSitemap } from '~/api'
-import { isSelfhosted, TITLE_SUFFIX, getOgImageUrl } from '~/lib/constants'
+import { isSelfhosted, TITLE_SUFFIX, getOgImageUrl, isDisableMarketingPages } from '~/lib/constants'
 import Post from '~/pages/Blog/Post'
 
 export const links: LinksFunction = () => {
@@ -57,6 +57,12 @@ export const meta: MetaFunction = (loaderData: any) => {
 export const sitemap: SitemapFunction = async () => {
   const files = await getSitemap()
 
+  if (isSelfhosted || isDisableMarketingPages) {
+    return {
+      exclude: true,
+    }
+  }
+
   return _map(files, (file) => {
     let handle: string
     let date: string
@@ -79,7 +85,7 @@ export const sitemap: SitemapFunction = async () => {
 }
 
 export const loader: LoaderFunction = async ({ params }) => {
-  if (isSelfhosted) {
+  if (isSelfhosted || isDisableMarketingPages) {
     return redirect('/dashboard', 302)
   }
 
