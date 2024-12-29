@@ -24,6 +24,8 @@ import { NoProjects } from './NoProjects'
 import { AddProject } from './AddProject'
 import { Overall, Project } from '~/lib/models/Project'
 import { getProjects, getLiveVisitors, getOverallStats, getOverallStatsCaptcha } from '~/api'
+import { DASHBOARD_TABS, Tabs } from './Tabs'
+import { PeriodSelector } from './PeriodSelector'
 
 const PAGE_SIZE_OPTIONS = [12, 24, 48, 96]
 
@@ -43,6 +45,9 @@ const Dashboard = () => {
   const [liveStats, setLiveStats] = useState<Record<string, number>>({})
   const [overallStats, setOverallStats] = useState<Overall>({})
 
+  const [activeTab, setActiveTab] = useState<(typeof DASHBOARD_TABS)[number]['id']>(DASHBOARD_TABS[0].id)
+  const [activePeriod, setActivePeriod] = useState('7d')
+
   const pageAmount = Math.ceil(paginationTotal / pageSize)
 
   // This search represents what's inside the search input
@@ -58,14 +63,14 @@ const Dashboard = () => {
     setShowActivateEmailModal(true)
   }
 
-  const loadProjects = async (take: number, skip: number, search?: string) => {
+  const loadProjects = async (take: number, skip: number, search?: string, tab?: string, period?: string) => {
     if (isLoading) {
       return
     }
     setIsLoading(true)
 
     try {
-      const result = await getProjects(take, skip, search)
+      const result = await getProjects(take, skip, search, tab, period)
       setProjects(result.results)
       setPaginationTotal(result.total)
     } catch (reason: any) {
@@ -76,10 +81,10 @@ const Dashboard = () => {
   }
 
   useEffect(() => {
-    loadProjects(pageSize, (page - 1) * pageSize, debouncedSearch)
+    loadProjects(pageSize, (page - 1) * pageSize, debouncedSearch, activeTab, activePeriod)
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, pageSize, debouncedSearch])
+  }, [page, pageSize, debouncedSearch, activeTab, activePeriod])
 
   // Set up interval for live visitors
   useEffect(() => {
@@ -99,7 +104,7 @@ const Dashboard = () => {
       if (!projectIds.length) return
 
       try {
-        const stats = await getOverallStats(projectIds, '7d')
+        const stats = await getOverallStats(projectIds, activePeriod)
         setOverallStats((prev) => ({ ...prev, ...stats }))
       } catch (reason) {
         console.error('Failed to fetch overall stats:', reason)
@@ -110,7 +115,7 @@ const Dashboard = () => {
       if (!projectIds.length) return
 
       try {
-        const stats = await getOverallStatsCaptcha(projectIds, '7d')
+        const stats = await getOverallStatsCaptcha(projectIds, activePeriod)
         setOverallStats((prev) => ({ ...prev, ...stats }))
       } catch (reason) {
         console.error('Failed to fetch overall stats:', reason)
@@ -130,7 +135,7 @@ const Dashboard = () => {
     const interval = setInterval(updateLiveVisitors, LIVE_VISITORS_UPDATE_INTERVAL)
 
     return () => clearInterval(interval)
-  }, [projects]) // Reset interval when projects change
+  }, [projects, activePeriod]) // Reset interval when projects change
 
   if (error && isLoading === false) {
     return (
@@ -185,7 +190,7 @@ const Dashboard = () => {
         <DashboardLockedBanner />
         <div className='flex flex-col px-4 py-6 sm:px-6 lg:px-8'>
           <div className='mx-auto w-full max-w-7xl'>
-            <div className='mb-6 flex justify-between'>
+            <div className='flex justify-between'>
               <div className='flex items-end justify-between'>
                 <h2 className='mt-2 flex items-baseline text-3xl font-bold text-gray-900 dark:text-gray-50'>
                   {t('titles.dashboard')}
@@ -226,14 +231,23 @@ const Dashboard = () => {
                   </div>
                 )}
               </div>
-              <Link
-                to={routes.new_project}
-                onClick={onNewProject}
-                className='inline-flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-slate-900 px-3 py-2 !pl-2 text-center text-sm font-medium leading-4 text-white shadow-sm hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
-              >
-                <FolderPlusIcon className='mr-1 h-5 w-5' />
-                {t('dashboard.newProject')}
-              </Link>
+              <div className='flex items-center gap-2'>
+                {activeTab === 'lost-traffic' ? null : (
+                  <PeriodSelector
+                    activePeriod={activePeriod}
+                    setActivePeriod={setActivePeriod}
+                    isLoading={isLoading === null || isLoading}
+                  />
+                )}
+                <Link
+                  to={routes.new_project}
+                  onClick={onNewProject}
+                  className='inline-flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-slate-900 px-3 py-2 !pl-2 text-center text-sm font-medium leading-4 text-white shadow-sm hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
+                >
+                  <FolderPlusIcon className='mr-1 h-5 w-5' />
+                  {t('dashboard.newProject')}
+                </Link>
+              </div>
             </div>
             {isSearchActive && (
               <div className='mb-2 flex w-full items-center sm:hidden'>
@@ -255,6 +269,12 @@ const Dashboard = () => {
                 </div>
               </div>
             )}
+            <Tabs
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              isLoading={isLoading === null || isLoading}
+              className='mb-4 mt-2'
+            />
             {isLoading || isLoading === null ? (
               <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
                 <ProjectCardSkeleton />
@@ -281,7 +301,7 @@ const Dashboard = () => {
                             overallStats={overallStats[project.id]}
                           />
                         ))}
-                        {_size(projects) % 12 !== 0 ? (
+                        {_size(projects) % 12 !== 0 && activeTab === 'default' ? (
                           <AddProject sitesCount={_size(projects)} onClick={onNewProject} />
                         ) : null}
                       </div>

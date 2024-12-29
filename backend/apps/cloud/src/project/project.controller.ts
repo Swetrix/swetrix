@@ -21,6 +21,7 @@ import {
   ConflictException,
   Res,
   UnauthorizedException,
+  UnprocessableEntityException,
 } from '@nestjs/common'
 import { Response } from 'express'
 import {
@@ -143,6 +144,16 @@ export class ProjectController {
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
   @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({
+    name: 'mode',
+    required: false,
+    type: String,
+  })
+  @ApiQuery({
+    name: 'timeFrame',
+    required: false,
+    type: String,
+  })
   @ApiResponse({ status: 200, type: [Project] })
   @Auth([], true)
   async get(
@@ -150,58 +161,49 @@ export class ProjectController {
     @Query('take') take: number | undefined,
     @Query('skip') skip: number | undefined,
     @Query('search') search: string | undefined,
+    @Query('mode')
+    mode:
+      | 'default'
+      | 'high-traffic'
+      | 'low-traffic'
+      | 'performance'
+      | 'lost-traffic'
+      | undefined,
+    @Query('period')
+    period: '1h' | '1d' | '7d' | '4w' | '3M' | '12M' | '24M' | 'all' = '7d',
   ): Promise<Pagination<Project> | Project[] | object> {
-    this.logger.log({ userId, take, skip }, 'GET /project')
+    this.logger.log(
+      { userId, take, skip, mode, timeFrame: period },
+      'GET /project',
+    )
 
-    const paginated = await this.projectService.paginate(
-      { take, skip },
+    const validPeriods = ['1h', '1d', '7d', '4w', '3M', '12M', '24M', 'all']
+
+    if (!validPeriods.includes(period)) {
+      throw new UnprocessableEntityException(
+        `The provided timeFrame is incorrect. It should be one of: ${validPeriods.join(', ')}`,
+      )
+    }
+
+    if (!mode || mode === 'default') {
+      const paginated = await this.projectService.paginate(
+        { take, skip },
+        userId,
+        search,
+      )
+      return this.projectService.processDefaultResults(paginated, userId)
+    }
+
+    return this.projectService.paginateByTraffic(
+      {
+        take,
+        skip,
+        mode,
+        period,
+      },
       userId,
       search,
     )
-
-    const pidsWithData =
-      await this.projectService.getPIDsWhereAnalyticsDataExists(
-        _map(paginated.results, ({ id }) => id),
-      )
-
-    const pidsWithErrorData =
-      await this.projectService.getPIDsWhereErrorsDataExists(
-        _map(paginated.results, ({ id }) => id),
-      )
-
-    paginated.results = _map(paginated.results, project => {
-      const userShare = project.share.find(share => share.user.id === userId)
-      const organisationMembership = project.organisation?.members.find(
-        member => member.user.id === userId,
-      )
-
-      let role
-      let isAccessConfirmed = true
-
-      if (project.admin.id === userId) {
-        role = 'owner'
-      } else if (userShare) {
-        role = userShare.role
-        isAccessConfirmed = userShare.confirmed
-      } else if (organisationMembership) {
-        role = organisationMembership.role
-        isAccessConfirmed = organisationMembership.confirmed
-      }
-
-      return {
-        ...project,
-        isAccessConfirmed,
-        isLocked: !!project.admin?.dashboardBlockReason,
-        isDataExists: _includes(pidsWithData, project?.id),
-        isErrorDataExists: _includes(pidsWithErrorData, project?.id),
-        organisationId: project?.organisation?.id,
-        role,
-        passwordHash: undefined,
-        admin: undefined,
-      }
-    })
-
-    return paginated
   }
 
   @ApiBearerAuth()
