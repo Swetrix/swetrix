@@ -8,9 +8,6 @@ import { isSelfhosted, TITLE_SUFFIX } from '~/lib/constants'
 import { getBlogPosts } from '~/api'
 
 export const loader: LoaderFunction = async () => {
-  return redirect('/dashboard', 302)
-
-  // eslint-disable-next-line no-unreachable
   if (isSelfhosted) {
     return redirect('/dashboard', 302)
   }
@@ -23,7 +20,6 @@ export const loader: LoaderFunction = async () => {
       console.error(error)
     })
 
-  // eslint-disable-next-line no-unreachable
   if (!data || _isEmpty(data)) {
     return null
   }
