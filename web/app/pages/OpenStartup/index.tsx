@@ -253,13 +253,12 @@ const financeData = {
     MRR: 257,
     Revenue: 340,
   },
-  // '2024-12-01': {
-  //   ON 27 Dec 23:43:
-  //   'Technical Expenses': -96, // cloud hosting, mail, accounting
-  //   'Business Expenses': -1859, // google ads + marketing freelancer + gov
-  //   MRR: 291,
-  //   Revenue: 0, // TODO
-  // },
+  '2024-12-01': {
+    'Technical Expenses': -96, // cloud hosting, mail, accounting
+    'Business Expenses': -1859, // google ads + marketing freelancer + gov
+    MRR: 291,
+    Revenue: 1059, // TODO
+  },
 }
 
 const financeDataToColumns = (financeData: any) => {
