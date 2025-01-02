@@ -9,7 +9,7 @@ import {
   defaultActions,
   IErrorEventPayload,
   IPageViewPayload,
-} from './Lib'
+} from './Lib.js'
 
 export let LIB_INSTANCE: Lib | null = null
 

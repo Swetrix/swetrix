@@ -11,7 +11,7 @@ import {
   getUTMTerm,
   getUTMContent,
   getPath,
-} from './utils'
+} from './utils.js'
 
 export interface LibOptions {
   /**
