@@ -1,4 +1,4 @@
-import { Lib, defaultActions, } from './Lib';
+import { Lib, defaultActions, } from './Lib.js';
 export let LIB_INSTANCE = null;
 /**
  * Initialise the tracking library instance (other methods won't work if the library is not initialised).

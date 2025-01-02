@@ -1,4 +1,4 @@
-import { isInBrowser, isLocalhost, isAutomated, getLocale, getTimezone, getReferrer, getUTMCampaign, getUTMMedium, getUTMSource, getUTMTerm, getUTMContent, getPath, } from './utils';
+import { isInBrowser, isLocalhost, isAutomated, getLocale, getTimezone, getReferrer, getUTMCampaign, getUTMMedium, getUTMSource, getUTMTerm, getUTMContent, getPath, } from './utils.js';
 export const defaultActions = {
     stop() { },
 };

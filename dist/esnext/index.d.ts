@@ -1,4 +1,4 @@
-import { Lib, LibOptions, TrackEventOptions, PageViewsOptions, ErrorOptions, PageActions, ErrorActions, IErrorEventPayload, IPageViewPayload } from './Lib';
+import { Lib, LibOptions, TrackEventOptions, PageViewsOptions, ErrorOptions, PageActions, ErrorActions, IErrorEventPayload, IPageViewPayload } from './Lib.js';
 export declare let LIB_INSTANCE: Lib | null;
 /**
  * Initialise the tracking library instance (other methods won't work if the library is not initialised).
