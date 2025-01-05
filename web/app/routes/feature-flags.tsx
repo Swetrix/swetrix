@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import { Switch } from '@headlessui/react'
 import { toast } from 'sonner'
@@ -12,25 +12,29 @@ import { setFeatureFlags } from '~/api'
 import { useNavigate } from '@remix-run/react'
 import routes from '~/utils/routes'
 import Loader from '~/ui/Loader'
+import { authActions } from '~/lib/reducers/auth'
 
 const FeatureFlagsPage = () => {
   const { t } = useTranslation('common')
   const { user, loading } = useSelector((state: StateType) => state.auth)
   const [flags, setFlags] = useState<FeatureFlag[]>([])
+  const [initialised, setInitialised] = useState(false)
   const navigate = useNavigate()
+  const dispatch = useDispatch()
 
   useEffect(() => {
-    if (loading) {
+    if (loading || initialised) {
       return
     }
 
     if (user) {
       setFlags(user.featureFlags)
+      setInitialised(true)
       return
     }
 
     navigate(routes.main)
-  }, [loading, user, navigate])
+  }, [loading, user, navigate, initialised])
 
   const handleToggle = async (flag: FeatureFlag) => {
     try {
@@ -38,6 +42,7 @@ const FeatureFlagsPage = () => {
 
       await setFeatureFlags(newFlags)
       setFlags(newFlags)
+      dispatch(authActions.mergeUser({ featureFlags: newFlags }))
       toast.success(t('featureFlags.updated'))
     } catch (error) {
       console.error('Failed to update feature flags:', error)
