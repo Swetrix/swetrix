@@ -44,6 +44,7 @@ const routes = Object.freeze({
   forSmallBusinesses: '/for-small-businesses',
   organisations: '/organisations',
   organisation: '/organisations/:id',
+  feature_flags: '/feature-flags',
 })
 
 export default routes

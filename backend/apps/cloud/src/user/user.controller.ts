@@ -47,6 +47,7 @@ import {
   MAX_EMAIL_REQUESTS,
   PlanCode,
   Theme,
+  FeatureFlag,
 } from './entities/user.entity'
 import { Pagination } from '../common/pagination/pagination'
 import {
@@ -147,6 +148,17 @@ export class UserController {
     @Body('theme') theme: Theme,
   ): Promise<User> {
     return this.userService.update(userId, { theme })
+  }
+
+  @ApiBearerAuth()
+  @Put('/feature-flags')
+  @UseGuards(JwtAccessTokenGuard, RolesGuard)
+  @Roles(UserType.CUSTOMER, UserType.ADMIN)
+  async setFeatureFlags(
+    @CurrentUserId() userId: string,
+    @Body('featureFlags') featureFlags: FeatureFlag[],
+  ) {
+    await this.userService.update(userId, { featureFlags })
   }
 
   @ApiBearerAuth()

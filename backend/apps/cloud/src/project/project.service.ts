@@ -16,6 +16,7 @@ import {
   DeepPartial,
   Brackets,
   FindOptionsWhere,
+  In,
 } from 'typeorm'
 import { customAlphabet } from 'nanoid'
 import handlebars from 'handlebars'
@@ -306,6 +307,11 @@ const getCompiledHTML = (title: string, desc: string, styles: string) => {
     desc,
     styles,
   })
+}
+
+interface TrafficPaginationOptions extends PaginationOptionsInterface {
+  mode: 'high-traffic' | 'low-traffic' | 'performance' | 'lost-traffic'
+  period: '1h' | '1d' | '7d' | '4w' | '3M' | '12M' | '24M' | 'all'
 }
 
 @Injectable()
@@ -1762,5 +1768,340 @@ export class ProjectService {
     return this.update({ id: projectId }, {
       organisation: null,
     } as Project)
+  }
+
+  async getVisibleProjectIds(
+    userId: string,
+    search?: string,
+  ): Promise<string[]> {
+    const queryBuilder = this.projectsRepository
+      .createQueryBuilder('project')
+      .select('project.id')
+      .leftJoin('project.admin', 'admin')
+      .leftJoin('project.share', 'share')
+      .leftJoin('project.organisation', 'organisation')
+      .leftJoin('organisation.members', 'organisationMembers')
+      .where('project.isAnalyticsProject = true')
+      .where(
+        new Brackets(qb => {
+          qb.where('admin.id = :userId', { userId })
+            .orWhere(
+              new Brackets(qb2 => {
+                qb2
+                  .where('share.user.id = :userId')
+                  .andWhere('share.confirmed = true')
+              }),
+            )
+            .orWhere(
+              new Brackets(qb3 => {
+                qb3
+                  .where('organisationMembers.user.id = :userId')
+                  .andWhere('organisationMembers.confirmed = true')
+              }),
+            )
+        }),
+      )
+
+    if (search?.trim()) {
+      queryBuilder
+        .andWhere('project.name LIKE :search')
+        .setParameter('search', `%${search.trim()}%`)
+    }
+
+    const projects = await queryBuilder.getMany()
+    return projects.map(p => p.id)
+  }
+
+  async paginateByTraffic(
+    options: TrafficPaginationOptions,
+    userId: string,
+    search?: string,
+  ): Promise<Pagination<Project>> {
+    // Get all visible project IDs
+    const projectIds = await this.getVisibleProjectIds(userId, search)
+
+    if (!projectIds.length) {
+      return new Pagination<Project>({ results: [], total: 0 })
+    }
+
+    // Process project IDs in chunks to avoid overwhelming Clickhouse
+    const CHUNK_SIZE = 1000
+    const chunks = []
+    for (let i = 0; i < projectIds.length; i += CHUNK_SIZE) {
+      chunks.push(projectIds.slice(i, i + CHUNK_SIZE))
+    }
+
+    // Build the appropriate Clickhouse query based on mode
+    const timeFrameClause = this.getTimeFrameClause(options.period)
+    let query = ''
+
+    if (options.mode === 'performance') {
+      query = `
+        WITH 
+          currentPeriod AS (
+            SELECT pid, count() as visits
+            FROM analytics
+            WHERE pid IN {pids:Array(String)}
+              AND created BETWEEN ${timeFrameClause.currentStart} AND ${timeFrameClause.currentEnd}
+            GROUP BY pid
+          ),
+          previousPeriod AS (
+            SELECT pid, count() as visits
+            FROM analytics
+            WHERE pid IN {pids:Array(String)}
+              AND created BETWEEN ${timeFrameClause.previousStart} AND ${timeFrameClause.previousEnd}
+            GROUP BY pid
+          )
+        SELECT 
+          cp.pid,
+          cp.visits as current_visits,
+          pp.visits as previous_visits,
+          ((cp.visits - pp.visits) / pp.visits * 100) as percentage_change
+        FROM currentPeriod cp
+        JOIN previousPeriod pp ON cp.pid = pp.pid
+        WHERE pp.visits > 0
+        ORDER BY abs(percentage_change) DESC
+        LIMIT {limit:UInt32}
+        OFFSET {offset:UInt32}
+      `
+    } else if (options.mode === 'lost-traffic') {
+      query = `
+        SELECT 
+          pid,
+          max(created) as last_visit,
+          count() as total_visits
+        FROM analytics
+        WHERE pid IN {pids:Array(String)}
+          AND created < (now() - INTERVAL 48 HOUR)
+        GROUP BY pid
+        HAVING last_visit < (now() - INTERVAL 48 HOUR)
+          AND total_visits > 0
+        ORDER BY last_visit DESC
+        LIMIT {limit:UInt32}
+        OFFSET {offset:UInt32}
+      `
+    } else {
+      // High/Low traffic query
+      query = `
+        SELECT 
+          pid,
+          count() as visits
+        FROM analytics
+        WHERE pid IN {pids:Array(String)}
+          AND created BETWEEN ${timeFrameClause.currentStart} AND ${timeFrameClause.currentEnd}
+        GROUP BY pid
+        ORDER BY visits ${options.mode === 'high-traffic' ? 'DESC' : 'ASC'}
+        LIMIT {limit:UInt32}
+        OFFSET {offset:UInt32}
+      `
+    }
+
+    // Execute query for each chunk and combine results
+    let allResults = []
+    let total = 0
+
+    for (const chunk of chunks) {
+      // eslint-disable-next-line no-await-in-loop
+      const result = await clickhouse.query({
+        query,
+        query_params: {
+          pids: chunk,
+          limit: options.take || 10,
+          offset: options.skip || 0,
+        },
+        format: 'JSONEachRow',
+      })
+
+      // eslint-disable-next-line no-await-in-loop
+      const chunkResults = await result.json()
+      allResults = allResults.concat(chunkResults)
+
+      // Get total count for this chunk
+      const countQuery = query
+        .replace(/SELECT .* FROM/, 'SELECT count() as total FROM')
+        .replace(/ORDER BY.*$/, '')
+
+      // eslint-disable-next-line no-await-in-loop
+      const countResult = await clickhouse.query({
+        query: countQuery,
+        query_params: {
+          pids: chunk,
+          limit: 100000000,
+          offset: 0,
+        },
+        format: 'JSONEachRow',
+      })
+
+      // eslint-disable-next-line no-await-in-loop
+      const [{ total: chunkTotal }] = await countResult.json<{
+        total: number
+      }>()
+      total += chunkTotal
+    }
+
+    // Apply pagination to combined results
+    const paginatedResults = allResults.slice(
+      options.skip || 0,
+      (options.skip || 0) + (options.take || 10),
+    )
+
+    // Fetch full project details for the paginated results
+    const projects = await this.projectsRepository.find({
+      where: { id: In(paginatedResults.map(r => r.pid)) },
+      relations: [
+        'admin',
+        'share',
+        'share.user',
+        'organisation',
+        'organisation.members',
+        'organisation.members.user',
+      ],
+    })
+
+    // Add traffic stats to projects
+    const enrichedProjects = projects.map(project => {
+      const stats = paginatedResults.find(r => r.pid === project.id)
+      return {
+        ...project,
+        trafficStats: {
+          visits: stats?.visits || stats?.current_visits || 0,
+          percentageChange: stats?.percentage_change,
+        },
+      }
+    })
+
+    const results = new Pagination<Project>({
+      results: enrichedProjects.sort((a, b) => {
+        if (options.mode === 'performance') {
+          return (
+            Math.abs(b.trafficStats.percentageChange) -
+            Math.abs(a.trafficStats.percentageChange)
+          )
+        }
+
+        if (options.mode === 'high-traffic') {
+          return (b.trafficStats.visits || 0) - (a.trafficStats.visits || 0)
+        }
+
+        if (options.mode === 'low-traffic') {
+          return (a.trafficStats.visits || 0) - (b.trafficStats.visits || 0)
+        }
+
+        return (b.trafficStats.visits || 0) - (a.trafficStats.visits || 0)
+      }),
+      total,
+    })
+
+    return this.processDefaultResults(results, userId)
+  }
+
+  private getTimeFrameClause(period: TrafficPaginationOptions['period']): {
+    currentStart: string
+    currentEnd: string
+    previousStart?: string
+    previousEnd?: string
+  } {
+    const now = 'now()'
+
+    switch (period) {
+      case '1h':
+        return {
+          currentStart: `${now} - INTERVAL 1 HOUR`,
+          currentEnd: now,
+          previousStart: `${now} - INTERVAL 2 HOUR`,
+          previousEnd: `${now} - INTERVAL 1 HOUR`,
+        }
+      case '1d':
+        return {
+          currentStart: `${now} - INTERVAL 1 DAY`,
+          currentEnd: now,
+          previousStart: `${now} - INTERVAL 2 DAY`,
+          previousEnd: `${now} - INTERVAL 1 DAY`,
+        }
+      case '7d':
+        return {
+          currentStart: `${now} - INTERVAL 7 DAY`,
+          currentEnd: now,
+          previousStart: `${now} - INTERVAL 14 DAY`,
+          previousEnd: `${now} - INTERVAL 7 DAY`,
+        }
+      case '4w':
+        return {
+          currentStart: `${now} - INTERVAL 28 DAY`,
+          currentEnd: now,
+          previousStart: `${now} - INTERVAL 56 DAY`,
+          previousEnd: `${now} - INTERVAL 28 DAY`,
+        }
+      case '3M':
+        return {
+          currentStart: `${now} - INTERVAL 90 DAY`,
+          currentEnd: now,
+          previousStart: `${now} - INTERVAL 180 DAY`,
+          previousEnd: `${now} - INTERVAL 90 DAY`,
+        }
+      case '12M':
+        return {
+          currentStart: `${now} - INTERVAL 365 DAY`,
+          currentEnd: now,
+          previousStart: `${now} - INTERVAL 730 DAY`,
+          previousEnd: `${now} - INTERVAL 365 DAY`,
+        }
+      case '24M':
+        return {
+          currentStart: `${now} - INTERVAL 730 DAY`,
+          currentEnd: now,
+          previousStart: `${now} - INTERVAL 1460 DAY`,
+          previousEnd: `${now} - INTERVAL 730 DAY`,
+        }
+      default: // all time
+        return {
+          currentStart: "toDate('2020-01-01')", // or your earliest date
+          currentEnd: now,
+        }
+    }
+  }
+
+  async processDefaultResults(paginated: Pagination<Project>, userId: string) {
+    const pidsWithData = await this.getPIDsWhereAnalyticsDataExists(
+      _map(paginated.results, ({ id }) => id),
+    )
+
+    const pidsWithErrorData = await this.getPIDsWhereErrorsDataExists(
+      _map(paginated.results, ({ id }) => id),
+    )
+
+    paginated.results = _map(paginated.results, project => {
+      const userShare = project.share.find(share => share.user.id === userId)
+      const organisationMembership = project.organisation?.members.find(
+        member => member.user.id === userId,
+      )
+
+      let role
+      let isAccessConfirmed = true
+
+      if (project.admin.id === userId) {
+        role = 'owner'
+      } else if (userShare) {
+        role = userShare.role
+        isAccessConfirmed = userShare.confirmed
+      } else if (organisationMembership) {
+        role = organisationMembership.role
+        isAccessConfirmed = organisationMembership.confirmed
+      }
+
+      return {
+        ...project,
+        isAccessConfirmed,
+        isLocked: !!project.admin?.dashboardBlockReason,
+        isDataExists: _includes(pidsWithData, project?.id),
+        isErrorDataExists: _includes(pidsWithErrorData, project?.id),
+        organisationId: project?.organisation?.id,
+        role,
+        passwordHash: undefined,
+        admin: undefined,
+      }
+    })
+
+    return paginated
   }
 }
