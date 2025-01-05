@@ -1,6 +1,6 @@
 import { isDevelopment, isSelfhosted, isBrowser } from '~/lib/constants'
 
-const COOKIE_DOMAIN = 'bigfoot.swetrix.com'
+const COOKIE_DOMAIN = 'swetrix.com'
 
 const COOKIE_SUFFIX = isDevelopment || isSelfhosted ? '' : `; domain=${COOKIE_DOMAIN}; secure`
 
