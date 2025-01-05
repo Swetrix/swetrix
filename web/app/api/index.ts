@@ -10,7 +10,7 @@ import { authActions } from '~/lib/reducers/auth'
 import { getAccessToken, removeAccessToken, setAccessToken } from '~/utils/accessToken'
 import { getRefreshToken, removeRefreshToken } from '~/utils/refreshToken'
 import { DEFAULT_ALERTS_TAKE, API_URL, DEFAULT_MONITORS_TAKE } from '~/lib/constants'
-import { User } from '~/lib/models/User'
+import { User, FeatureFlag } from '~/lib/models/User'
 import { Auth } from '~/lib/models/Auth'
 import { Project, Overall, LiveStats, Funnel } from '~/lib/models/Project'
 import { Alerts } from '~/lib/models/Alerts'
@@ -1599,6 +1599,14 @@ export const getDetailsPrediction = (pid: string, password: string | undefined =
       },
     })
     .then((response) => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const setFeatureFlags = (featureFlags: FeatureFlag[]) =>
+  api
+    .put('/user/feature-flags', { featureFlags })
+    .then((response): User => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })

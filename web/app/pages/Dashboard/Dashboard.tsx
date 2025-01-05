@@ -7,6 +7,7 @@ import _map from 'lodash/map'
 import { useTranslation } from 'react-i18next'
 import { FolderPlusIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { XCircleIcon } from '@heroicons/react/24/solid'
+import cx from 'clsx'
 
 import Modal from '~/ui/Modal'
 import { withAuthentication, auth } from '~/hoc/protected'
@@ -15,6 +16,8 @@ import { isSelfhosted, LIVE_VISITORS_UPDATE_INTERVAL } from '~/lib/constants'
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import DashboardLockedBanner from '~/components/DashboardLockedBanner'
 import useDebounce from '~/hooks/useDebounce'
+import useFeatureFlag from '~/hooks/useFeatureFlag'
+import { FeatureFlag } from '~/lib/models/User'
 
 import Pagination from '~/ui/Pagination'
 import { useSelector } from 'react-redux'
@@ -31,6 +34,8 @@ const PAGE_SIZE_OPTIONS = [12, 24, 48, 96]
 
 const Dashboard = () => {
   const { user } = useSelector((state: StateType) => state.auth)
+  const showPeriodSelector = useFeatureFlag(FeatureFlag['dashboard-period-selector'])
+  const showTabs = useFeatureFlag(FeatureFlag['dashboard-analytics-tabs'])
 
   const { t } = useTranslation('common')
   const [isSearchActive, setIsSearchActive] = useState(false)
@@ -190,7 +195,7 @@ const Dashboard = () => {
         <DashboardLockedBanner />
         <div className='flex flex-col px-4 py-6 sm:px-6 lg:px-8'>
           <div className='mx-auto w-full max-w-7xl'>
-            <div className='flex justify-between'>
+            <div className={cx('flex justify-between', showTabs ? 'mb-2' : 'mb-4')}>
               <div className='flex items-end justify-between'>
                 <h2 className='mt-2 flex items-baseline text-3xl font-bold text-gray-900 dark:text-gray-50'>
                   {t('titles.dashboard')}
@@ -232,13 +237,13 @@ const Dashboard = () => {
                 )}
               </div>
               <div className='flex items-center gap-2'>
-                {activeTab === 'lost-traffic' ? null : (
+                {activeTab === 'lost-traffic' ? null : showPeriodSelector ? (
                   <PeriodSelector
                     activePeriod={activePeriod}
                     setActivePeriod={setActivePeriod}
                     isLoading={isLoading === null || isLoading}
                   />
-                )}
+                ) : null}
                 <Link
                   to={routes.new_project}
                   onClick={onNewProject}
@@ -269,12 +274,14 @@ const Dashboard = () => {
                 </div>
               </div>
             )}
-            <Tabs
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              isLoading={isLoading === null || isLoading}
-              className='mb-4 mt-2'
-            />
+            {showTabs && (
+              <Tabs
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                isLoading={isLoading === null || isLoading}
+                className='mb-4'
+              />
+            )}
             {isLoading || isLoading === null ? (
               <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
                 <ProjectCardSkeleton />

@@ -22,10 +22,16 @@ enum PlanCode {
   '10m' = '10m',
 }
 
+export enum FeatureFlag {
+  'dashboard-period-selector' = 'dashboard-period-selector',
+  'dashboard-analytics-tabs' = 'dashboard-analytics-tabs',
+}
+
 export interface User {
   id: string
   roles: string[]
   planCode: PlanCode
+  featureFlags: FeatureFlag[]
   nickname: string
   email: string
   isActive: boolean
