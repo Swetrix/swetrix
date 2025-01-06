@@ -1933,10 +1933,8 @@ export class ProjectService {
       })
 
       // eslint-disable-next-line no-await-in-loop
-      const [{ total: chunkTotal }] = await countResult.json<{
-        total: number
-      }>()
-      total += chunkTotal
+      const countData = await countResult.json<{ total: number }>()
+      total += countData[0]?.total || 0
     }
 
     // Apply pagination to combined results
