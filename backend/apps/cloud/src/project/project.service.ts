@@ -1866,15 +1866,18 @@ export class ProjectService {
       `
     } else if (options.mode === 'lost-traffic') {
       query = `
-        SELECT 
-          pid,
-          max(created) as last_visit,
-          count() as total_visits
-        FROM analytics
-        WHERE pid IN {pids:Array(String)}
-          AND created < (now() - INTERVAL 48 HOUR)
-        GROUP BY pid
-        HAVING last_visit < (now() - INTERVAL 48 HOUR)
+        WITH last_visits AS (
+          SELECT 
+            pid,
+            max(created) as last_visit,
+            count() as total_visits
+          FROM analytics
+          WHERE pid IN {pids:Array(String)}
+          GROUP BY pid
+        )
+        SELECT *
+        FROM last_visits
+        WHERE last_visit < (now() - INTERVAL 48 HOUR)
           AND total_visits > 0
         ORDER BY last_visit DESC
         LIMIT {limit:UInt32}
