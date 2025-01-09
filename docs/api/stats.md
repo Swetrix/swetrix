@@ -60,7 +60,7 @@ Filters are used to aggregate data by specific parameters. For example, you can 
 }
 ```
 
-- **column** - the column to filter by. Possible values are: `cc`, `pg`, `lc`, `br`, `brv`, `os`, `osv`, `dv`, `ref`, `so`, `me`, `ca`. You can find more detailed information about columns [here](/sdk-reference#addpaneltab).
+- **column** - the column to filter by. Possible values are: `cc`, `host`, `pg`, `lc`, `br`, `brv`, `os`, `osv`, `dv`, `ref`, `so`, `me`, `ca`. You can find more detailed information about columns [here](/sdk-reference#addpaneltab).
 - **filter** - the value to filter by. For example, if you want to filter by country, the value should be a country code (e.g. `GB` for Great Britain).
 - **isExclusive** - whether to include or exclude the specified value. If `isExclusive` is `true`, the data will be filtered by the specified value. If `isExclusive` is `false`, the data will be filtered by all values except the specified one.
 
@@ -135,6 +135,12 @@ curl 'https://api.swetrix.com/v1/log?pid=YOUR_PROJECT_ID&timeBucket=day&period=7
         "name": "Prague",
         "cc": "CZ",
         "count": 1
+      }
+    ],
+    "host": [
+      {
+        "name": "example.com",
+        "count": 4
       }
     ],
     "pg": [
@@ -308,6 +314,12 @@ curl 'https://api.swetrix.com/v1/log/performance?pid=YOUR_PROJECT_ID&timeBucket=
     "dv": [
       {
         "name": "desktop",
+        "count": 0.08
+      }
+    ],
+    "host": [
+      {
+        "name": "example.com",
         "count": 0.08
       }
     ],
