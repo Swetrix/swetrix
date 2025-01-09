@@ -9,6 +9,7 @@ const CLICKHOUSE_INIT_QUERIES = [
   (
     psid Nullable(UInt64),
     pid FixedString(12),
+    hostname Nullable(String),
     pg Nullable(String),
     dv LowCardinality(Nullable(String)),
     br LowCardinality(Nullable(String)),
@@ -51,6 +52,7 @@ const CLICKHOUSE_INIT_QUERIES = [
   (
     psid Nullable(UInt64),
     pid FixedString(12),
+    hostname Nullable(String),
     ev String,
     pg Nullable(String),
     dv LowCardinality(Nullable(String)),
@@ -83,6 +85,7 @@ const CLICKHOUSE_INIT_QUERIES = [
   `CREATE TABLE IF NOT EXISTS ${dbName}.performance
   (
     pid FixedString(12),
+    hostname Nullable(String),
     pg Nullable(String),
     dv LowCardinality(Nullable(String)),
     br LowCardinality(Nullable(String)),
@@ -109,6 +112,7 @@ const CLICKHOUSE_INIT_QUERIES = [
   (
     eid FixedString(32),
     pid FixedString(12),
+    hostname Nullable(String),
     pg Nullable(String),
     dv LowCardinality(Nullable(String)),
     br LowCardinality(Nullable(String)),

@@ -98,6 +98,7 @@ const TRAFFIC_COLUMNS = [
   'cc',
   'rg',
   'ct',
+  'hostname',
   'pg',
   'lc',
   'br',
@@ -118,6 +119,7 @@ const UPTIME_COLUMNS = ['region', 'statusCode']
 const TRAFFIC_METAKEY_COLUMNS = ['tag:key', 'tag:value']
 
 const ERROR_COLUMNS = [
+  'hostname',
   'pg',
   'dv',
   'br',
@@ -133,7 +135,16 @@ const ERROR_COLUMNS = [
 const ALL_COLUMNS = [...TRAFFIC_COLUMNS, 'ev']
 
 const CAPTCHA_COLUMNS = ['cc', 'br', 'os', 'dv']
-const PERFORMANCE_COLUMNS = ['cc', 'rg', 'ct', 'pg', 'dv', 'br', 'brv']
+const PERFORMANCE_COLUMNS = [
+  'cc',
+  'rg',
+  'ct',
+  'hostname',
+  'pg',
+  'dv',
+  'br',
+  'brv',
+]
 
 const sentryIgnoreErrors: (string | RegExp)[] = [
   'BadRequestException',

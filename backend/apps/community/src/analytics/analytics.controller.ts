@@ -945,6 +945,7 @@ export class AnalyticsController {
     const transformed = customEventTransformer(
       psid,
       eventsDTO.pid,
+      headers.host,
       eventsDTO.ev,
       eventsDTO.pg,
       dv,
@@ -1052,6 +1053,7 @@ export class AnalyticsController {
     const transformed = trafficTransformer(
       psid,
       logDTO.pid,
+      headers.host,
       logDTO.pg,
       dv,
       br,
@@ -1087,6 +1089,7 @@ export class AnalyticsController {
 
       perfTransformed = performanceTransformer(
         logDTO.pid,
+        headers.host,
         logDTO.pg,
         dv,
         br,
@@ -1184,6 +1187,7 @@ export class AnalyticsController {
     const transformed = trafficTransformer(
       psid,
       logDTO.pid,
+      headers.host,
       null,
       dv,
       br,
@@ -1476,6 +1480,7 @@ export class AnalyticsController {
     const transformed = errorEventTransformer(
       this.analyticsService.getErrorID(errorDTO),
       errorDTO.pid,
+      headers.host,
       errorDTO.pg,
       dv,
       br,

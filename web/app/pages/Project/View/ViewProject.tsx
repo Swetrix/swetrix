@@ -216,6 +216,7 @@ import OSDropdown from './components/OSDropdown'
 import { StateType, useAppDispatch } from '~/lib/store'
 import UIActions from '~/lib/reducers/ui'
 import { useSelector } from 'react-redux'
+import PageDropdown from './components/PageDropdown'
 const SwetrixSDK = require('@swetrix/sdk')
 
 const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
@@ -573,11 +574,13 @@ const ViewProject = () => {
     toast.success(t('apiNotifications.funnelDeleted'))
     setFunnelActionLoading(false)
   }
-  const [pgActiveFragment, setPgActiveFragment] = useState(0)
 
   const [countryActiveTab, setCountryActiveTab] = useState<'cc' | 'rg' | 'ct'>('cc')
 
   const [browserActiveTab, setBrowserActiveTab] = useState<'br' | 'brv'>('br')
+
+  const [pageActiveTab, setPageActiveTab] = useState<'pg' | 'hostname'>('pg')
+  const [pgActiveFragment, setPgActiveFragment] = useState(0)
 
   const [osActiveTab, setOsActiveTab] = useState<'os' | 'osv'>('os')
 
@@ -642,8 +645,6 @@ const ViewProject = () => {
     return findActivePeriod?.countDays || 0
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActiveCompare, period])
-
-  const pgPanelNameMapping = [tnMapping.pg, tnMapping.userFlow]
 
   useEffect(() => {
     if (!project) {
@@ -4154,11 +4155,10 @@ const ViewProject = () => {
                           if (type === 'pg') {
                             return (
                               <Panel
-                                key={type}
+                                key={pageActiveTab}
                                 icon={panelIcon}
-                                id={type}
+                                id={pageActiveTab}
                                 onFilter={filterHandler}
-                                onFragmentChange={setPgActiveFragment}
                                 rowMapper={({ name: entryName }) => {
                                   if (!entryName) {
                                     return _toUpper(t('project.redactedPage'))
@@ -4174,8 +4174,8 @@ const ViewProject = () => {
 
                                   return decodedUri
                                 }}
-                                name={pgPanelNameMapping[pgActiveFragment]}
-                                data={activeError.params[type]}
+                                data={activeError.params[pageActiveTab]}
+                                name={<PageDropdown onSelect={setPageActiveTab} title={tnMapping[pageActiveTab]} />}
                               />
                             )
                           }
@@ -4486,9 +4486,9 @@ const ViewProject = () => {
                           if (type === 'pg') {
                             return (
                               <Panel
-                                key={type}
+                                key={pageActiveTab}
                                 icon={panelIcon}
-                                id={type}
+                                id={pageActiveTab}
                                 onFilter={filterHandler}
                                 onFragmentChange={setPgActiveFragment}
                                 rowMapper={({ name: entryName }) => {
@@ -4506,8 +4506,14 @@ const ViewProject = () => {
 
                                   return decodedUri
                                 }}
-                                name={pgPanelNameMapping[pgActiveFragment]}
-                                data={dataSource[type]}
+                                name={
+                                  pgActiveFragment === 1 ? (
+                                    tnMapping.userFlow
+                                  ) : (
+                                    <PageDropdown onSelect={setPageActiveTab} title={tnMapping[pageActiveTab]} />
+                                  )
+                                }
+                                data={dataSource[pageActiveTab]}
                                 customTabs={customTabs}
                               />
                             )
@@ -4664,16 +4670,16 @@ const ViewProject = () => {
                             return (
                               <Panel
                                 projectPassword={projectPassword}
-                                key={type}
+                                key={pageActiveTab}
                                 icon={panelIcon}
-                                id={type}
+                                id={pageActiveTab}
                                 onFilter={filterHandler}
-                                name={panelName}
-                                data={panelsDataPerf.data[type]}
+                                data={panelsDataPerf.data[pageActiveTab]}
                                 customTabs={customTabs}
                                 // @ts-expect-error
                                 valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
                                 rowMapper={({ name: entryName }) => entryName || t('project.redactedPage')}
+                                name={<PageDropdown onSelect={setPageActiveTab} title={tnMapping[pageActiveTab]} />}
                               />
                             )
                           }
