@@ -128,6 +128,20 @@
     "pagination": "Showing <0>{{start}}</0> to <0>{{end}}</0> of <0>{{total}}</0> results",
     "resultsPerPage": "Results per page"
   },
+  "featureFlags": {
+    "title": "Feature Flags",
+    "description": "Enable or disable experimental features to try out new functionality before it's fully released. Feature flags allow you to test new features and provide feedback.",
+    "updated": "Feature flags updated successfully",
+    "error": "Failed to update feature flags",
+    "dashboard-period-selector": {
+      "title": "Dashboard Period Selector",
+      "description": "Enables the period selector in the dashboard, allowing you to see the number of pageviews for different periods (if this feature flag is disabled, the default period is {{defaultPeriod}} days)."
+    },
+    "dashboard-analytics-tabs": {
+      "title": "Dashboard Analytics Tabs",
+      "description": "Enables analytics tabs in the dashboard, providing different views of your data such as high / low traffic sites, abandoned projects, and more."
+    }
+  },
   "performance": {
     "slogan": "End user <span>performance monitoring</span> to deliver fast websites.",
     "description": "Deliver a flawless experience to your users, and we will let you know if your site is fast enough.",
@@ -824,7 +838,7 @@
   },
   "notFoundPage": {
     "title": "Page not found",
-    "description": "Sorry, we couldn’t find the page you’re looking for.\nPlease check the URL in the address bar and try again.",
+    "description": "Sorry, we couldn't find the page you're looking for.\nPlease check the URL in the address bar and try again.",
     "goHome": "Go back home",
     "support": "Contact support"
   },
@@ -883,6 +897,7 @@
     "noExist": "The selected project does not exist",
     "geo": "Geolocation",
     "browserInfo": "Browser information",
+    "urlInfo": "URL information",
     "osInfo": "OS information",
     "campaigns": "Campaigns",
     "pageviewX": "<span>Pageview</span> <value>{{x}}</value>",
@@ -932,6 +947,7 @@
       "rg": "Region",
       "ct": "City",
       "pg": "Page",
+      "hostname": "Hostname",
       "lc": "Locale",
       "ref": "Referrer",
       "dv": "Device type",
@@ -1298,7 +1314,8 @@
     "errors": "End user error tracking tool to deliver bug-free experiences",
     "forMarketers": "For marketers",
     "forSmbs": "For small businesses",
-    "forStartups": "For startups"
+    "forStartups": "For startups",
+    "featureFlags": "Feature flags"
   },
   "header": {
     "switchTheme": "Switch theme",
