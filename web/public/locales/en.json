@@ -897,6 +897,7 @@
     "noExist": "The selected project does not exist",
     "geo": "Geolocation",
     "browserInfo": "Browser information",
+    "urlInfo": "URL information",
     "osInfo": "OS information",
     "campaigns": "Campaigns",
     "pageviewX": "<span>Pageview</span> <value>{{x}}</value>",
@@ -946,6 +947,7 @@
       "rg": "Region",
       "ct": "City",
       "pg": "Page",
+      "host": "Host",
       "lc": "Locale",
       "ref": "Referrer",
       "dv": "Device type",
@@ -972,6 +974,7 @@
       }
     },
     "redactedPage": "Redacted page",
+    "unknownHost": "Unknown host",
     "noData": "No data to display",
     "overview": "Overview",
     "weeklyStats": "Weekly stats",

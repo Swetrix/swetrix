@@ -26,6 +26,7 @@ const processMetaKV = (
 export const trafficTransformer = (
   psid: string,
   pid: string,
+  host: string | null,
   pg: string | null,
   dv: string | null,
   br: string | null,
@@ -47,6 +48,7 @@ export const trafficTransformer = (
   return {
     psid,
     pid,
+    host: host || null,
     pg: pg || null,
     dv: dv || null,
     br: br || null,
@@ -71,6 +73,7 @@ export const trafficTransformer = (
 export const customEventTransformer = (
   psid: string,
   pid: string,
+  host: string | null,
   ev: string,
   pg: string | null,
   dv: string | null,
@@ -93,6 +96,7 @@ export const customEventTransformer = (
   return {
     psid,
     pid,
+    host: host || null,
     ev,
     pg: pg || null,
     dv: dv || null,
@@ -118,6 +122,7 @@ export const customEventTransformer = (
 export const errorEventTransformer = (
   eid: string,
   pid: string,
+  host: string | null,
   pg: string | null,
   dv: string | null,
   br: string | null,
@@ -137,6 +142,7 @@ export const errorEventTransformer = (
   return {
     eid,
     pid,
+    host: host || null,
     pg: pg || null,
     dv: dv || null,
     br: br || null,
@@ -158,6 +164,7 @@ export const errorEventTransformer = (
 
 export const performanceTransformer = (
   pid: string,
+  host: string | null,
   pg: string | null,
   dv: string | null,
   br: string | null,
@@ -176,6 +183,7 @@ export const performanceTransformer = (
 ) => {
   return {
     pid,
+    host: host || null,
     pg: pg || null,
     dv: dv || null,
     br: br || null,

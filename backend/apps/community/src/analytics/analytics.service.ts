@@ -261,7 +261,7 @@ const generateParamsQuery = (
 
     const fn = MEASURES_MAP[processedMeasure]
 
-    if (col === 'pg') {
+    if (col === 'pg' || col === 'host') {
       return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} GROUP BY ${columnsQuery}`
     }
 
@@ -276,7 +276,7 @@ const generateParamsQuery = (
     return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
   }
 
-  if (col === 'pg') {
+  if (col === 'pg' || col === 'host') {
     return `SELECT ${columnsQuery}, count(*) as count ${subQuery} GROUP BY ${columnsQuery}`
   }
 
@@ -1753,7 +1753,9 @@ export class AnalyticsService {
       : !_isEmpty(
           _find(
             parsedFilters,
-            filter => filter.column === 'pg' && !filter.isExclusive,
+            filter =>
+              (filter.column === 'pg' || filter.column === 'host') &&
+              !filter.isExclusive,
           ),
         )
 
