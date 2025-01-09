@@ -1572,7 +1572,7 @@ const getSettingsPerf = (
 
 const typeNameMapping = (t: typeof i18next.t) => ({
   cc: t('project.mapping.cc'),
-  hostname: t('project.mapping.hostname'),
+  host: t('project.mapping.host'),
   rg: t('project.mapping.rg'),
   ct: t('project.mapping.ct'),
   pg: t('project.mapping.pg'),

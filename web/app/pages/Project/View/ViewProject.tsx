@@ -579,7 +579,7 @@ const ViewProject = () => {
 
   const [browserActiveTab, setBrowserActiveTab] = useState<'br' | 'brv'>('br')
 
-  const [pageActiveTab, setPageActiveTab] = useState<'pg' | 'hostname'>('pg')
+  const [pageActiveTab, setPageActiveTab] = useState<'pg' | 'host'>('pg')
   const [pgActiveFragment, setPgActiveFragment] = useState(0)
 
   const [osActiveTab, setOsActiveTab] = useState<'os' | 'osv'>('os')
@@ -4161,7 +4161,9 @@ const ViewProject = () => {
                                 onFilter={filterHandler}
                                 rowMapper={({ name: entryName }) => {
                                   if (!entryName) {
-                                    return _toUpper(t('project.redactedPage'))
+                                    return _toUpper(
+                                      pageActiveTab === 'pg' ? t('project.redactedPage') : t('project.unknownHost'),
+                                    )
                                   }
 
                                   let decodedUri = entryName as string
@@ -4493,7 +4495,9 @@ const ViewProject = () => {
                                 onFragmentChange={setPgActiveFragment}
                                 rowMapper={({ name: entryName }) => {
                                   if (!entryName) {
-                                    return _toUpper(t('project.redactedPage'))
+                                    return _toUpper(
+                                      pageActiveTab === 'pg' ? t('project.redactedPage') : t('project.unknownHost'),
+                                    )
                                   }
 
                                   let decodedUri = entryName as string
@@ -4678,7 +4682,10 @@ const ViewProject = () => {
                                 customTabs={customTabs}
                                 // @ts-expect-error
                                 valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}
-                                rowMapper={({ name: entryName }) => entryName || t('project.redactedPage')}
+                                rowMapper={({ name: entryName }) =>
+                                  entryName ||
+                                  (pageActiveTab === 'pg' ? t('project.redactedPage') : t('project.unknownHost'))
+                                }
                                 name={<PageDropdown onSelect={setPageActiveTab} title={tnMapping[pageActiveTab]} />}
                               />
                             )

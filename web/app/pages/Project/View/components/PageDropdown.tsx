@@ -10,8 +10,8 @@ const OPTIONS = [
     value: 'pg',
   },
   {
-    label: 'project.mapping.hostname',
-    value: 'hostname',
+    label: 'project.mapping.host',
+    value: 'host',
   },
 ] as const
 

@@ -67,7 +67,7 @@ const TRAFFIC_COLUMNS = [
   'cc',
   'rg',
   'ct',
-  'hostname',
+  'host',
   'pg',
   'lc',
   'br',
@@ -86,7 +86,7 @@ const TRAFFIC_COLUMNS = [
 const TRAFFIC_METAKEY_COLUMNS = ['tag:key', 'tag:value']
 
 const ERROR_COLUMNS = [
-  'hostname',
+  'host',
   'pg',
   'dv',
   'br',
@@ -101,16 +101,7 @@ const ERROR_COLUMNS = [
 
 const ALL_COLUMNS = [...TRAFFIC_COLUMNS, 'ev']
 
-const PERFORMANCE_COLUMNS = [
-  'cc',
-  'rg',
-  'ct',
-  'hostname',
-  'pg',
-  'dv',
-  'br',
-  'brv',
-]
+const PERFORMANCE_COLUMNS = ['cc', 'rg', 'ct', 'host', 'pg', 'dv', 'br', 'brv']
 
 const NUMBER_JWT_REFRESH_TOKEN_LIFETIME = Number(JWT_REFRESH_TOKEN_LIFETIME)
 const NUMBER_JWT_ACCESS_TOKEN_LIFETIME = Number(JWT_ACCESS_TOKEN_LIFETIME)
