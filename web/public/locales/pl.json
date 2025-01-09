@@ -947,7 +947,7 @@
       "rg": "Region",
       "ct": "City",
       "pg": "Strona",
-      "hostname": "Hostname",
+      "host": "Host",
       "lc": "Język",
       "ref": "Źródło",
       "dv": "Rodzaj urządzenia",
@@ -974,6 +974,7 @@
       }
     },
     "redactedPage": "Redacted page",
+    "unknownHost": "Unknown host",
     "noData": "No data to display",
     "overview": "Przegląd",
     "weeklyStats": "Statystyki tygodniowe",

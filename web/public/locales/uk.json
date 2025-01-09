@@ -947,7 +947,7 @@
       "rg": "Область",
       "ct": "Місто",
       "pg": "Сторінка",
-      "hostname": "Hostname",
+      "host": "Host",
       "lc": "Мова",
       "ref": "Джерело",
       "dv": "Тип пристрою",
@@ -974,6 +974,7 @@
       }
     },
     "redactedPage": "Прихована сторінка",
+    "unknownHost": "Unknown host",
     "noData": "Немає даних для відображення",
     "overview": "Огляд",
     "weeklyStats": "Тижнева статистика",

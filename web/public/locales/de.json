@@ -947,7 +947,7 @@
       "rg": "Region",
       "ct": "Stadt",
       "pg": "Seite",
-      "hostname": "Hostname",
+      "host": "Host",
       "lc": "Sprache",
       "ref": "Referrer",
       "dv": "Gerätetyp",
@@ -974,6 +974,7 @@
       }
     },
     "redactedPage": "Gespeicherte Seite",
+    "unknownHost": "Unknown host",
     "noData": "Keine Daten vorhanden",
     "overview": "Übersicht",
     "weeklyStats": "Wöchentliche Statistik",
