@@ -412,6 +412,15 @@ export class AnalyticsService {
     }
   }
 
+  getHostFromOrigin(origin: string): string | null {
+    try {
+      const { hostname } = new URL(origin)
+      return hostname || null
+    } catch (error) {
+      return null
+    }
+  }
+
   checkIpBlacklist(project: Project, ip: string): void {
     // For some reasons the project.ipBlacklist sometimes may look like [''], let's filter it out
     // TODO: Properly validate the ipBlacklist on project update
