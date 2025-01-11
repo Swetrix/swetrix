@@ -182,7 +182,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const REMIX_ENV = {
     NODE_ENV: process.env.NODE_ENV,
-    AIAPI_URL: process.env.AIAPI_URL,
     API_URL: process.env.API_URL,
     API_STAGING_URL: process.env.API_STAGING_URL,
     CDN_URL: process.env.CDN_URL,

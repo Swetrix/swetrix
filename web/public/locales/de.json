@@ -31,7 +31,6 @@
     "enterACorrectNumber": "Bitte geben Sie eine korrekte Zahl ein",
     "numberCantBeNegative": "Die Zahl darf nicht negativ sein",
     "numberCantBeBigger": "Die Zahl darf nicht größer als {{max}} sein",
-    "forecastNumberCantBeBigger": "Die prognostizierte Zahl kann nicht größer sein als {{max}} für die gewählte Frequenz",
     "invalidToken": "Ungültiger Token",
     "transferRequestSent": "Transferanfrage gesendet",
     "transferProjectReject": "Die Anfrage zum Projekttransfer wurde abgebrochen",
@@ -51,7 +50,6 @@
     "enterViewName": "Bitte geben Sie einen Namen für die Ansicht an",
     "inputCannotBeEmpty": "Dieses Eingabefeld darf nicht leer sein",
     "viewDeleted": "Die Ansicht wurde gelöscht",
-    "noAIForecastAvailable": "Die KI-Prognose ist für dieses Projekt noch nicht verfügbar",
     "organisationCreated": "Organisation has been created",
     "organisationCreateError": "Error occurred while creating the organisation",
     "organisationDeleted": "Organisation has been deleted",
@@ -140,6 +138,10 @@
     "dashboard-analytics-tabs": {
       "title": "Dashboard Analytics Tabs",
       "description": "Enables analytics tabs in the dashboard, providing different views of your data such as high / low traffic sites, abandoned projects, and more."
+    },
+    "dashboard-hostname-cards": {
+      "title": "Dashboard Hostname-based navigation",
+      "description": "Replaces traditional project-based navigation with hostname-based navigation - instead of seeing individual projects, you see the hostnames from the analytics data instead. This is useful if you have a lot of websites and don't want to create a project for each one, so you can create one project and collect all the data in it."
     }
   },
   "performance": {
@@ -846,7 +848,6 @@
     "metadata": "Metadaten",
     "nextOneHour": "Nächste Stunde",
     "nextXHours": "Nächste {{x}} Stunden",
-    "exitForecastingMode": "Prognosemodus beenden",
     "aiDetailsDesc": "Mit den Schaltflächen oben können Sie eine Schätzung des Verkehrsaufkommens anzeigen, das Sie in den nächsten X Stunden innerhalb einer Stunde erwarten können.",
     "search": "Suche",
     "views": "Ansichten",
@@ -941,6 +942,7 @@
     },
     "trendlineTotal": "Seitenansichten Trendlinie",
     "noEvContent": "Für den angegebenen Zeitraum wurden keine Ereignisse erfasst. Bitte versuchen Sie einen anderen Zeitraum.",
+    "noEventsFiltersDesc": "No events have been recorded for the specified period or applied filters, please try a different period or change the filters applied.",
     "noCaptchaEv": "Für den angegebenen Zeitraum wurden keine Ereignisse erfasst.\nWenn Sie CAPTCHA noch nicht eingerichtet haben, können Sie sich unsere <url>Docs</url> anschauen, um es einfach in Ihre App zu integrieren.",
     "mapping": {
       "cc": "Land",
@@ -1180,14 +1182,6 @@
       "title": "Fügen Sie Ihrer Website einen Swetrix-Tracking-Code hinzu",
       "add": "Fügen Sie folgendes Snippet in den <bsect></bsect> Bereich Ihrer Website ein.",
       "docs": "Lesen Sie unsere <pdocs>Dokumentation</pdocs> für Details und weitere Integrationsanleitungen."
-    },
-    "forecast": {
-      "title": "Traffic-Prognose",
-      "desc": "Diese Art der Prognose gibt Ihnen auf dem Hauptdiagramm eine grobe Schätzung, wie viel Traffic Sie auf Ihrer Website erwarten können.",
-      "detailsDesc": "Diese Art der Prognose bietet Ihnen eine flexiblere Vorhersage, die Ihnen zeigt, welche Art von Nutzern (aus welchem Land, Browser, Gebietsschema usw.) und wie viele davon Sie innerhalb des von Ihnen gewählten Zeitraums erwarten können.\n\nSie ist möglicherweise nicht für neu erstellte Websites oder Websites mit geringem Besucheraufkommen verfügbar, da wir unsere Prognosemodelle regelmäßig trainieren und solche Websites möglicherweise nicht im Trainingsdatensatz enthalten sind.\n\nWenn Sie mit dieser Art der Vorhersage fortfahren möchten, klicken Sie bitte auf „Weiter“.",
-      "input": "Die Menge von '{{frequency}}' die Sie vorhersagen möchten",
-      "chart": "Prognosediagramm",
-      "details": "Detailvorhersage"
     },
     "funnels": {
       "addTitle": "Trichter hinzufügen",

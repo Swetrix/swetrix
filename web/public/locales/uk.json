@@ -31,7 +31,6 @@
     "enterACorrectNumber": "Будь ласка, введіть коректне число",
     "numberCantBeNegative": "Число не може бути від'ємним",
     "numberCantBeBigger": "The number cannot be bigger than {{max}}",
-    "forecastNumberCantBeBigger": "Кількість прогнозу не може бути більшим {{max}} для обраної частоти",
     "invalidToken": "Недійсний токен",
     "transferRequestSent": "Запит на передачу проєкту надіслано",
     "transferProjectReject": "Запит на передачу проєкту був скасований",
@@ -51,7 +50,6 @@
     "enterViewName": "Please enter a view name",
     "inputCannotBeEmpty": "This input field must not be empty",
     "viewDeleted": "View has been deleted",
-    "noAIForecastAvailable": "AI forecast is not available for this project yet",
     "organisationCreated": "Organisation has been created",
     "organisationCreateError": "Error occurred while creating the organisation",
     "organisationDeleted": "Organisation has been deleted",
@@ -140,6 +138,10 @@
     "dashboard-analytics-tabs": {
       "title": "Dashboard Analytics Tabs",
       "description": "Enables analytics tabs in the dashboard, providing different views of your data such as high / low traffic sites, abandoned projects, and more."
+    },
+    "dashboard-hostname-cards": {
+      "title": "Dashboard Hostname-based navigation",
+      "description": "Replaces traditional project-based navigation with hostname-based navigation - instead of seeing individual projects, you see the hostnames from the analytics data instead. This is useful if you have a lot of websites and don't want to create a project for each one, so you can create one project and collect all the data in it."
     }
   },
   "performance": {
@@ -846,7 +848,6 @@
     "metadata": "Метадані",
     "nextOneHour": "Next 1 hour",
     "nextXHours": "Next {{x}} hours",
-    "exitForecastingMode": "Exit forecasting mode",
     "aiDetailsDesc": "The buttons above allow you to see an estimate of what kind of traffic you can expect within an hour in the next X hours.",
     "search": "Пошук",
     "views": "Views",
@@ -941,6 +942,7 @@
     },
     "trendlineTotal": "Тренд кількості переглядів",
     "noEvContent": "За вказаний період не було зафіксовано жодної події, будь ласка, спробуйте інший період.",
+    "noEventsFiltersDesc": "No events have been recorded for the specified period or applied filters, please try a different period or change the filters applied.",
     "noCaptchaEv": "За вказаний період часу не було зафіксовано жодної події.\nЯкщо ви ще не інтегрували віджет CAPTCHA в ваш вебсайт, ви можете ознайомитися з <url>документацією</url>, щоб легко це зробити.",
     "mapping": {
       "cc": "Країна",
@@ -1180,14 +1182,6 @@
       "title": "Додайте код відстеження Swetrix на свій сайт",
       "add": "Додайте наступний фрагмент до розділу <bsect></bsect> вашого сайту.",
       "docs": "Перегляньте нашу <pdocs>документацію</pdocs> для отримання детальної інформації та інших посібників з інтеграції."
-    },
-    "forecast": {
-      "title": "Прогноз трафіку",
-      "desc": "This type of forecast gives you a rough estimate on the main graph of how much traffic you can expect to get to your website.",
-      "detailsDesc": "This type of forecast provides you with a more flexible prediction, showing you what type of users (from what country, browser, locale, etc.) and how many of them you can expect to visit within your chosen timeframe.\n\nIt may not be available for newly created or low traffic sites, as we train our prediction models regularly and such sites may not be included in the training dataset.\n\nIf you wish to continue with this type of forecast, please press 'Continue'.",
-      "input": "Кількість '{{frequency}}', яку ви хочете прогнозувати",
-      "chart": "Chart forecast",
-      "details": "Details forecast"
     },
     "funnels": {
       "addTitle": "Додати воронку",

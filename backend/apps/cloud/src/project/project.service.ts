@@ -35,9 +35,6 @@ import _reduce from 'lodash/reduce'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import { compareSync } from 'bcrypt'
-import { firstValueFrom } from 'rxjs'
-import { HttpService } from '@nestjs/axios'
-import { AxiosError } from 'axios'
 import { InjectQueue } from '@nestjs/bull'
 import { Queue } from 'bullmq'
 
@@ -86,7 +83,6 @@ import { ReportFrequency } from './enums'
 import { nFormatter } from '../common/utils'
 import { browserArgs } from '../og-image/og-image.service'
 import { CreateProjectViewDto } from './dto/create-project-view.dto'
-import { AppLoggerService } from '../logger/logger.service'
 import { CreateMonitorHttpRequestDTO } from './dto/create-monitor.dto'
 import { MonitorEntity } from './entity/monitor.entity'
 import { UpdateMonitorHttpRequestDTO } from './dto/update-monitor.dto'
@@ -329,8 +325,6 @@ export class ProjectService {
     private readonly monitorRepository: Repository<MonitorEntity>,
     private readonly actionTokens: ActionTokensService,
     private readonly mailerService: MailerService,
-    private readonly httpService: HttpService,
-    private readonly logger: AppLoggerService,
     private readonly userService: UserService,
     @InjectQueue('monitor') private monitorQueue: Queue,
   ) {}
@@ -1690,27 +1684,6 @@ export class ProjectService {
         _includes(ALL_COLUMNS, column as string) ||
         _includes(TRAFFIC_METAKEY_COLUMNS, column as string),
     )
-  }
-
-  async sendPredictAiRequest(id: string) {
-    try {
-      const { data } = await firstValueFrom(
-        this.httpService.get('/predict/', {
-          params: { pid: id },
-        }),
-      )
-      return data
-    } catch (error) {
-      if (error instanceof AxiosError && error.response?.status === 404) {
-        throw new NotFoundException(
-          'Data not found. Prediction is not available for this timeframe.',
-        )
-      }
-      this.logger.error(
-        `Error receiving prediction from AI service: ${error.message}`,
-      )
-      return null
-    }
   }
 
   async findMonitorById(

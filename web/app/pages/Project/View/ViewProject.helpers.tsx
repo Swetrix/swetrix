@@ -16,7 +16,6 @@ import _size from 'lodash/size'
 import _round from 'lodash/round'
 import _fill from 'lodash/fill'
 import _reduce from 'lodash/reduce'
-import _last from 'lodash/last'
 import _toNumber from 'lodash/toNumber'
 import _toString from 'lodash/toString'
 import _includes from 'lodash/includes'
@@ -60,32 +59,6 @@ const getAvg = (arr: any) => {
 
 const getSum = (arr: any) => {
   return _reduce(arr, (acc, c) => acc + c, 0)
-}
-
-const transformAIChartData = (data: { [key: string]: any }) => {
-  const transformedData = {
-    x: [],
-    sdur: [],
-    uniques: [],
-    visits: [],
-  }
-
-  _forEach(data, (d) => {
-    if (d.x) {
-      transformedData.x = d.x
-    }
-    if (d.sdur) {
-      transformedData.sdur = d.sdur
-    }
-    if (d.uniques) {
-      transformedData.uniques = d.uniques
-    }
-    if (d.visits) {
-      transformedData.visits = d.visits
-    }
-  })
-
-  return transformedData
 }
 
 const trendline = (data: any[]): string[] => {
@@ -481,9 +454,6 @@ const getSettings = (
   },
   applyRegions: boolean,
   timeFormat: string,
-  forecasedChartData: {
-    [key: string]: string[]
-  },
   rotateXAxis: boolean,
   chartType: string,
   customEvents?: {
@@ -514,17 +484,6 @@ const getSettings = (
         [el]: stringToColour(el),
       }
     })
-  }
-
-  if (!_isEmpty(forecasedChartData) && _isEmpty(compareChart)) {
-    lines.push({
-      value: _last(chart?.x) as string,
-      text: 'Forecast',
-    })
-    modifiedChart.x = [...modifiedChart.x, ...forecasedChartData.x]
-    modifiedChart.uniques = [...modifiedChart.uniques, ...forecasedChartData.uniques]
-    modifiedChart.visits = [...modifiedChart.visits, ...forecasedChartData.visits]
-    modifiedChart.sdur = [...modifiedChart.sdur, ...forecasedChartData.sdur]
   }
 
   const columns = getColumns(modifiedChart, activeChartMetrics, compareChart)
@@ -1658,7 +1617,6 @@ export {
   CHART_METRICS_MAPPING,
   CHART_METRICS_MAPPING_PERF,
   getSettingsPerf,
-  transformAIChartData,
   getSettingsFunnels,
   getSettingsSession,
   SHORTCUTS_TABS_MAP,

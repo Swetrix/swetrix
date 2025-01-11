@@ -2198,27 +2198,6 @@ export class ProjectController {
     await this.projectsViewsRepository.deleteProjectView(params.viewId)
   }
 
-  @ApiOperation({ summary: 'Get AI prediction' })
-  @ApiBearerAuth()
-  @HttpCode(HttpStatus.OK)
-  @Get(':projectId/predict')
-  @Auth([], true, true)
-  async getAiPrediction(
-    @Param() params: ProjectIdDto,
-    @CurrentUserId() userId: string,
-    @Headers() headers: { 'x-password'?: string },
-  ) {
-    const project = await this.projectService.getFullProject(params.projectId)
-
-    if (!project) {
-      throw new NotFoundException('Project not found.')
-    }
-
-    this.projectService.allowedToView(project, userId, headers['x-password'])
-
-    return this.projectService.sendPredictAiRequest(params.projectId)
-  }
-
   @ApiOperation({ summary: 'Get monitors for a project' })
   @ApiBearerAuth()
   @ApiOkResponse({ type: MonitorEntity })

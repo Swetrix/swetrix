@@ -29,8 +29,6 @@ import {
   DownloadIcon,
   SettingsIcon,
   BanIcon,
-  BotIcon,
-  BotOffIcon,
 } from 'lucide-react'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -38,8 +36,6 @@ import { useTranslation } from 'react-i18next'
 import { useHotkeys } from 'react-hotkeys-hook'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
-import _reduce from 'lodash/reduce'
-import _split from 'lodash/split'
 import _includes from 'lodash/includes'
 import _last from 'lodash/last'
 import _isEmpty from 'lodash/isEmpty'
@@ -104,7 +100,6 @@ import Select from '~/ui/Select'
 import FlatPicker from '~/ui/Flatpicker'
 import LineChart from '~/ui/icons/LineChart'
 import BarChart from '~/ui/icons/BarChart'
-import Forecast from '~/modals/Forecast'
 import NewFunnel from '~/modals/NewFunnel'
 import ViewProjectHotkeys from '~/modals/ViewProjectHotkeys'
 import routes from '~/utils/routes'
@@ -135,9 +130,7 @@ import {
   getPropertyMetadata,
   getProjectViews,
   deleteProjectView,
-  getDetailsPrediction,
 } from '~/api'
-import { getChartPrediction } from '~/api/ai'
 import { Panel, Metadata } from './Panels'
 import {
   onCSVExportClick,
@@ -150,7 +143,6 @@ import {
   CHART_METRICS_MAPPING,
   CHART_METRICS_MAPPING_PERF,
   getSettingsPerf,
-  transformAIChartData,
   getSettingsFunnels,
   SHORTCUTS_TABS_LISTENERS,
   SHORTCUTS_TABS_MAP,
@@ -209,7 +201,6 @@ import {
 } from './utils/filters'
 import AddAViewModal from './components/AddAViewModal'
 import CustomMetrics from './components/CustomMetrics'
-import { AIProcessedResponse, AIResponse } from './interfaces/ai'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
 import BrowserDropdown from './components/BrowserDropdown'
 import OSDropdown from './components/OSDropdown'
@@ -334,7 +325,6 @@ const ViewProject = () => {
   const [overall, setOverall] = useState<Partial<OverallObject>>({})
   const [overallPerformance, setOverallPerformance] = useState<Partial<OverallPerformanceObject>>({})
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
-  const [isForecastOpened, setIsForecastOpened] = useState(false)
   const [isNewFunnelOpened, setIsNewFunnelOpened] = useState(false)
   const [isAddAViewOpened, setIsAddAViewOpened] = useState(false)
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
@@ -426,38 +416,6 @@ const ViewProject = () => {
   const [projectViewsLoading, setProjectViewsLoading] = useState<boolean | null>(null) //  // null - not loaded, true - loading, false - loaded
   const [projectViewDeleting, setProjectViewDeleting] = useState(false)
   const [projectViewToUpdate, setProjectViewToUpdate] = useState<ProjectView | undefined>()
-
-  // AI stuff
-  const [forecasedChartData, setForecasedChartData] = useState({})
-  const [isInAIDetailsMode, setIsInAIDetailsMode] = useState(false)
-  const [aiDetails, setAiDetails] = useState<AIProcessedResponse | null>(null)
-  const [activeAiDetail, setActiveAIDetail] = useState<keyof AIResponse | null>(null)
-
-  const sortedAIKeys = useMemo(() => {
-    if (!aiDetails) {
-      return []
-    }
-
-    const hours = _map(aiDetails, (_, key) => parseInt(_split(key, '_')[1], 10)).sort((a, b) => a - b)
-
-    return _map(hours, (hour) => {
-      const key = `next_${hour}_hour` as keyof AIResponse
-
-      if (hour === 1) {
-        return {
-          key,
-          label: t('project.nextOneHour'),
-        }
-      }
-
-      return {
-        key,
-        label: t('project.nextXHours', {
-          x: hour,
-        }),
-      }
-    })
-  }, [aiDetails, t])
 
   const mode = activeChartMetrics[CHART_METRICS_MAPPING.cumulativeMode] ? 'cumulative' : 'periodical'
 
@@ -1126,7 +1084,6 @@ const ViewProject = () => {
         activeChartMetrics,
         applyRegions,
         timeFormat,
-        forecasedChartData,
         rotateXAxis,
         chartType,
         events,
@@ -1373,7 +1330,6 @@ const ViewProject = () => {
           activeChartMetrics,
           applyRegions,
           timeFormat,
-          forecasedChartData,
           rotateXAxis,
           chartType,
           customEventsChart,
@@ -2215,111 +2171,13 @@ const ViewProject = () => {
     }
   }
 
-  const onForecastOpen = () => {
-    if (authLoading || dataLoading || isSelfhosted) {
-      return
-    }
-
-    if (!_isEmpty(forecasedChartData)) {
-      setForecasedChartData({})
-      return
-    }
-
-    setIsForecastOpened(true)
-  }
-
-  const forecastChart = async (periodToForecast: string) => {
-    try {
-      const result = await getChartPrediction(chartData, periodToForecast, timeBucket)
-      const transformed = transformAIChartData(result)
-      setForecasedChartData(transformed)
-    } catch (reason) {
-      console.error(`[forecastChart] Error: ${reason}`)
-    }
-  }
-
-  const forecastDetails = async () => {
-    try {
-      const data = await getDetailsPrediction(id, projectPassword)
-
-      if (_isEmpty(data)) {
-        throw new Error('getDetailsPrediction returned an empty object')
-      }
-
-      const result: AIProcessedResponse = {}
-
-      const dataKeys = _keys(data) as (keyof AIResponse)[]
-
-      for (let i = 0; i < dataKeys.length; ++i) {
-        const dataKey = dataKeys[i]
-
-        const processed = _reduce(
-          data[dataKey],
-          (prev, curr, key) => {
-            return {
-              ...prev,
-              [key]: _map(_keys(curr), (key) => ({
-                name: key,
-                count: curr?.[key] || 0,
-              })),
-            }
-          },
-          {},
-        )
-
-        result[dataKey] = processed
-      }
-
-      setAiDetails(result)
-      setActiveAIDetail(_keys(data)[0] as keyof AIResponse)
-      setIsInAIDetailsMode(true)
-    } catch (reason) {
-      console.error(`[forecastDetails] Error: ${reason}`)
-      toast.error(t('apiNotifications.noAIForecastAvailable'))
-    }
-  }
-
-  const onForecastSubmit = async (type: 'chart' | 'details', options: any = {}) => {
-    if (isSelfhosted) {
-      return
-    }
-
-    setIsForecastOpened(false)
-    setDataLoading(true)
-
-    if (type === 'chart') {
-      const { period: periodToForecast } = options
-      await forecastChart(periodToForecast)
-    }
-
-    if (type === 'details') {
-      await forecastDetails()
-    }
-
-    setDataLoading(false)
-
-    trackCustom('TRAFFIC_FORECAST', {
-      type,
-    })
-  }
-
   useEffect(() => {
     if (!areFiltersParsed || activeTab !== PROJECT_TABS.traffic || authLoading || !project) return
 
     loadAnalytics()
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    forecasedChartData,
-    mode,
-    areFiltersParsed,
-    activeTab,
-    customMetrics,
-    filters,
-    authLoading,
-    project,
-    isActiveCompare,
-  ])
+  }, [mode, areFiltersParsed, activeTab, customMetrics, filters, authLoading, project, isActiveCompare])
 
   useEffect(() => {
     if (!areFiltersParsed || activeTab !== PROJECT_TABS.performance || authLoading || !project) return
@@ -2427,7 +2285,6 @@ const ViewProject = () => {
             activeChartMetrics,
             applyRegions,
             timeFormat,
-            forecasedChartData,
             rotateXAxis,
             chartType,
             customEventsChartData,
@@ -2755,7 +2612,6 @@ const ViewProject = () => {
       timeBucket: tb,
       dateRange: newPeriod.period === 'custom' ? dateRange : null,
     })
-    setForecasedChartData({})
   }
 
   const updateTimebucket = (newTimebucket: string) => {
@@ -2779,7 +2635,6 @@ const ViewProject = () => {
       timeBucket: newTimebucket,
       dateRange,
     })
-    setForecasedChartData({})
   }
 
   const onMeasureChange = (measure: string) => {
@@ -2857,8 +2712,6 @@ const ViewProject = () => {
     '¬': () => setChartTypeOnClick(chartTypes.line),
     S: () => setShowFiltersSearch(true),
     ß: () => setShowFiltersSearch(true),
-    F: onForecastOpen,
-    ƒ: onForecastOpen,
     r: refreshStats,
   }
 
@@ -3012,34 +2865,6 @@ const ViewProject = () => {
     </div>
   )
 
-  const AITabsSelector = () => (
-    <div className='-mb-px flex space-x-4 overflow-x-auto' aria-label='Tabs'>
-      {_map(sortedAIKeys, ({ key, label }) => {
-        const isCurrent = activeAiDetail === key
-
-        return (
-          <div
-            key={key}
-            onClick={() => {
-              setActiveAIDetail(key)
-            }}
-            className={cx(
-              'text-md group inline-flex cursor-pointer items-center whitespace-nowrap border-b-2 px-1 py-2 font-bold',
-              {
-                'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50': isCurrent,
-                'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
-                  !isCurrent,
-              },
-            )}
-            aria-current={isCurrent}
-          >
-            <span>{label}</span>
-          </div>
-        )
-      })}
-    </div>
-  )
-
   if (authLoading || !project) {
     return (
       <>
@@ -3183,27 +3008,8 @@ const ViewProject = () => {
                 })}
                 ref={dashboardRef}
               >
-                {isInAIDetailsMode ? (
-                  <>
-                    <button
-                      onClick={() => {
-                        setIsInAIDetailsMode(false)
-                        setAiDetails(null)
-                        setActiveAIDetail(null)
-                      }}
-                      className='mx-auto mb-4 mt-2 flex items-center text-base font-normal text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100 lg:mx-0 lg:mt-0'
-                    >
-                      <ChevronLeftIcon className='h-4 w-4' />
-                      {t('project.exitForecastingMode')}
-                    </button>
-                    <AITabsSelector />
-                    <span className='mt-6 text-sm'>{t('project.aiDetailsDesc')}</span>
-                  </>
-                ) : (
-                  <TabsSelector />
-                )}
-                {!isInAIDetailsMode &&
-                  activeTab !== PROJECT_TABS.alerts &&
+                <TabsSelector />
+                {activeTab !== PROJECT_TABS.alerts &&
                   activeTab !== PROJECT_TABS.uptime &&
                   (activeTab !== PROJECT_TABS.sessions || !activePSID) &&
                   (activeFunnel || activeTab !== PROJECT_TABS.funnels) && (
@@ -3240,33 +3046,6 @@ const ViewProject = () => {
                               >
                                 <RotateCw className='h-5 w-5 text-gray-700 dark:text-gray-50' />
                               </button>
-                              {!isSelfhosted && !isActiveCompare && id === 'STEzHcB1rALV' && (
-                                <div
-                                  className={cx({
-                                    hidden: activeTab !== PROJECT_TABS.traffic || _isEmpty(chartData),
-                                  })}
-                                >
-                                  <button
-                                    type='button'
-                                    title={t('modals.forecast.title')}
-                                    onClick={onForecastOpen}
-                                    disabled={!_isEmpty(filters)}
-                                    className={cx(
-                                      'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
-                                      {
-                                        'cursor-not-allowed opacity-50':
-                                          authLoading || dataLoading || !_isEmpty(filters),
-                                      },
-                                    )}
-                                  >
-                                    {_isEmpty(forecasedChartData) ? (
-                                      <BotIcon className='size-5 stroke-2 text-gray-700 dark:text-gray-50' />
-                                    ) : (
-                                      <BotOffIcon className='size-5 stroke-2 text-gray-700 dark:text-gray-50' />
-                                    )}
-                                  </button>
-                                </div>
-                              )}
                               <div
                                 className={cx('border-gray-200 dark:border-gray-600', {
                                   // @ts-expect-error
@@ -4239,7 +4018,7 @@ const ViewProject = () => {
                 )}
                 {activeTab === PROJECT_TABS.traffic && (
                   <div className={cx('pt-2', { hidden: isPanelsDataEmpty || analyticsLoading })}>
-                    {!isInAIDetailsMode && !_isEmpty(overall) && (
+                    {!_isEmpty(overall) && (
                       <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
                         <MetricCards
                           overall={overall}
@@ -4273,26 +4052,22 @@ const ViewProject = () => {
                     )}
                     <div
                       className={cx('h-80', {
-                        hidden: checkIfAllMetricsAreDisabled || isInAIDetailsMode,
+                        hidden: checkIfAllMetricsAreDisabled,
                       })}
                     >
                       <div className='mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible' id='dataChart' />
                     </div>
-                    {!isInAIDetailsMode && (
-                      <>
-                        <Filters
-                          onRemoveFilter={filterHandler}
-                          onChangeExclusive={onChangeExclusive}
-                          tnMapping={tnMapping}
-                          resetFilters={resetActiveTabFilters}
-                        />
-                        <CustomMetrics
-                          metrics={customMetrics}
-                          onRemoveMetric={(id) => onRemoveCustomMetric(id)}
-                          resetMetrics={resetCustomMetrics}
-                        />
-                      </>
-                    )}
+                    <Filters
+                      onRemoveFilter={filterHandler}
+                      onChangeExclusive={onChangeExclusive}
+                      tnMapping={tnMapping}
+                      resetFilters={resetActiveTabFilters}
+                    />
+                    <CustomMetrics
+                      metrics={customMetrics}
+                      onRemoveMetric={(id) => onRemoveCustomMetric(id)}
+                      resetMetrics={resetCustomMetrics}
+                    />
                     {dataLoading && (
                       <div className='static mt-4 !bg-transparent' id='loader'>
                         <div className='loader-head dark:!bg-slate-800'>
@@ -4308,8 +4083,6 @@ const ViewProject = () => {
                           // @ts-expect-error
                           const panelIcon = panelIconMapping[type]
                           const customTabs = _filter(customPanelTabs, (tab) => tab.panelID === type)
-
-                          const dataSource = isInAIDetailsMode ? aiDetails?.[activeAiDetail!] || {} : panelsData.data
 
                           if (type === 'cc') {
                             const ccPanelName = tnMapping[countryActiveTab]
@@ -4331,7 +4104,7 @@ const ViewProject = () => {
                                 id={countryActiveTab}
                                 onFilter={filterHandler}
                                 name={<CountryDropdown onSelect={setCountryActiveTab} title={ccPanelName} />}
-                                data={dataSource[countryActiveTab]}
+                                data={panelsData.data[countryActiveTab]}
                                 customTabs={customTabs}
                                 rowMapper={rowMapper}
                               />
@@ -4375,7 +4148,7 @@ const ViewProject = () => {
                                 id={browserActiveTab}
                                 onFilter={filterHandler}
                                 name={<BrowserDropdown onSelect={setBrowserActiveTab} title={brPanelName} />}
-                                data={dataSource[browserActiveTab]}
+                                data={panelsData.data[browserActiveTab]}
                                 rowMapper={rowMapper}
                               />
                             )
@@ -4425,7 +4198,7 @@ const ViewProject = () => {
                                 id={osActiveTab}
                                 onFilter={filterHandler}
                                 name={<OSDropdown onSelect={setOsActiveTab} title={osPanelName} />}
-                                data={dataSource[osActiveTab]}
+                                data={panelsData.data[osActiveTab]}
                                 rowMapper={rowMapper}
                               />
                             )
@@ -4439,7 +4212,7 @@ const ViewProject = () => {
                                 id={type}
                                 onFilter={filterHandler}
                                 name={panelName}
-                                data={dataSource[type]}
+                                data={panelsData.data[type]}
                                 customTabs={customTabs}
                                 rowMapper={(entry: { name: keyof typeof deviceIconMapping }) => {
                                   const { name: entryName } = entry
@@ -4471,7 +4244,7 @@ const ViewProject = () => {
                                 id={type}
                                 onFilter={filterHandler}
                                 name={panelName}
-                                data={dataSource[type]}
+                                data={panelsData.data[type]}
                                 customTabs={customTabs}
                                 rowMapper={({ name: entryName }) => <RefRow rowName={entryName} />}
                               />
@@ -4488,7 +4261,7 @@ const ViewProject = () => {
                                 id={utmActiveTab}
                                 onFilter={filterHandler}
                                 name={<UTMDropdown onSelect={setUtmActiveTab} title={ccPanelName} />}
-                                data={dataSource[utmActiveTab]}
+                                data={panelsData.data[utmActiveTab]}
                                 customTabs={customTabs}
                                 rowMapper={({ name: entryName }) => decodeURIComponent(entryName)}
                               />
@@ -4527,7 +4300,7 @@ const ViewProject = () => {
                                     <PageDropdown onSelect={setPageActiveTab} title={tnMapping[pageActiveTab]} />
                                   )
                                 }
-                                data={dataSource[pageActiveTab]}
+                                data={panelsData.data[pageActiveTab]}
                                 customTabs={customTabs}
                               />
                             )
@@ -4541,7 +4314,7 @@ const ViewProject = () => {
                                 id={type}
                                 onFilter={filterHandler}
                                 name={panelName}
-                                data={dataSource[type]}
+                                data={panelsData.data[type]}
                                 rowMapper={({ name: entryName }: { name: string }) =>
                                   getLocaleDisplayName(entryName, language)
                                 }
@@ -4557,12 +4330,12 @@ const ViewProject = () => {
                               id={type}
                               onFilter={filterHandler}
                               name={panelName}
-                              data={dataSource[type]}
+                              data={panelsData.data[type]}
                               customTabs={customTabs}
                             />
                           )
                         })}
-                      {!isInAIDetailsMode && !_isEmpty(panelsData.data) && (
+                      {!_isEmpty(panelsData.data) && (
                         <Metadata
                           customs={panelsData.customs}
                           properties={panelsData.properties}
@@ -4778,13 +4551,6 @@ const ViewProject = () => {
                 )}
               </div>
             </div>
-            <Forecast
-              isOpened={isForecastOpened}
-              onClose={() => setIsForecastOpened(false)}
-              onSubmit={onForecastSubmit}
-              activeTB={t(`project.${timeBucket}`)}
-              tb={timeBucket}
-            />
             <ViewProjectHotkeys isOpened={isHotkeysHelpOpened} onClose={() => setIsHotkeysHelpOpened(false)} />
             <NewFunnel
               project={project}

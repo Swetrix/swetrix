@@ -31,14 +31,6 @@ const getCustomLabel = (dates: Date[], t: Function, language?: string): string =
   return t('project.custom')
 }
 
-export const FORECAST_MAX_MAPPING: {
-  [key: string]: number
-} = {
-  hour: 72,
-  day: 21,
-  month: 12,
-}
-
 export const KEY_FOR_ALL_TIME = 'all'
 
 export const ALL_PERIODS = ['minute', 'hour', 'day', 'month', 'year']
@@ -380,11 +372,9 @@ export const isDisableMarketingPages =
   (isBrowser ? window.REMIX_ENV?.DISABLE_MARKETING_PAGES : process.env.DISABLE_MARKETING_PAGES) === 'true'
 
 const apiUrlUnprocessed = isSelfhosted || !isStaging ? PRODUCTION_API_URL : STAGING_API_URL
-const aiApiUrlUnprocessed = isBrowser ? window.REMIX_ENV?.AIAPI_URL : process.env.AIAPI_URL
 const cdnUrlUnprocessed = isBrowser ? window.REMIX_ENV?.CDN_URL : process.env.CDN_URL
 
 export const API_URL = _endsWith(apiUrlUnprocessed, '/') ? apiUrlUnprocessed : `${apiUrlUnprocessed}/`
-export const AIAPI_URL = _endsWith(aiApiUrlUnprocessed, '/') ? aiApiUrlUnprocessed : `${aiApiUrlUnprocessed}/`
 export const CDN_URL = _endsWith(cdnUrlUnprocessed, '/') ? cdnUrlUnprocessed : `${cdnUrlUnprocessed}/`
 const NODE_ENV = isBrowser ? window.REMIX_ENV?.NODE_ENV : process.env.NODE_ENV
 

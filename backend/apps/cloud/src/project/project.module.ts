@@ -1,7 +1,5 @@
 import { Module, forwardRef } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { HttpModule } from '@nestjs/axios'
-import { ConfigModule, ConfigService } from '@nestjs/config'
 import { ClientsModule, Transport } from '@nestjs/microservices'
 import { BullModule } from '@nestjs/bull'
 
@@ -32,13 +30,6 @@ import { OrganisationModule } from '../organisation/organisation.module'
     ]),
     forwardRef(() => UserModule),
     forwardRef(() => OrganisationModule),
-    HttpModule.registerAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        baseURL: configService.get('AI_URL'),
-      }),
-    }),
     ClientsModule.register([
       {
         name: 'MONITOR_SERVICE',

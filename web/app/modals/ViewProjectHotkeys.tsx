@@ -41,7 +41,6 @@ const getHotkeys = (t: TFunction) => ({
     [t('common.settings')]: 'Shift + E',
   },
   [t('common.general')]: {
-    [t('modals.forecast.title')]: 'Alt + F',
     [t('project.search')]: 'Alt + S',
     [t('project.barChart')]: 'Alt + B',
     [t('project.lineChart')]: 'Alt + L',

@@ -31,7 +31,6 @@
     "enterACorrectNumber": "Veuillez entrer un numéro correct",
     "numberCantBeNegative": "Le nombre ne peut pas être négatif",
     "numberCantBeBigger": "Le nombre ne peut pas être plus grand que {{max}}",
-    "forecastNumberCantBeBigger": "Le nombre prévu ne peut pas être supérieur à {{max}} pour la fréquence sélectionnée",
     "invalidToken": "Jeton invalide",
     "transferRequestSent": "Demande de transfert envoyée",
     "transferProjectReject": "La demande de transfert de projet a été annulée",
@@ -51,7 +50,6 @@
     "enterViewName": "Veuillez entrer un nom de vue",
     "inputCannotBeEmpty": "Ce champ de saisie ne doit pas être vide",
     "viewDeleted": "La vue a été supprimée",
-    "noAIForecastAvailable": "Les prévisions IA ne sont pas encore disponibles pour ce projet",
     "organisationCreated": "Organisation has been created",
     "organisationCreateError": "Error occurred while creating the organisation",
     "organisationDeleted": "Organisation has been deleted",
@@ -140,6 +138,10 @@
     "dashboard-analytics-tabs": {
       "title": "Dashboard Analytics Tabs",
       "description": "Enables analytics tabs in the dashboard, providing different views of your data such as high / low traffic sites, abandoned projects, and more."
+    },
+    "dashboard-hostname-cards": {
+      "title": "Dashboard Hostname-based navigation",
+      "description": "Replaces traditional project-based navigation with hostname-based navigation - instead of seeing individual projects, you see the hostnames from the analytics data instead. This is useful if you have a lot of websites and don't want to create a project for each one, so you can create one project and collect all the data in it."
     }
   },
   "performance": {
@@ -846,7 +848,6 @@
     "metadata": "Metadata",
     "nextOneHour": "Next 1 hour",
     "nextXHours": "Next {{x}} hours",
-    "exitForecastingMode": "Exit forecasting mode",
     "aiDetailsDesc": "The buttons above allow you to see an estimate of what kind of traffic you can expect within an hour in the next X hours.",
     "search": "Search",
     "views": "Views",
@@ -941,6 +942,7 @@
     },
     "trendlineTotal": "Tendance des pages vues",
     "noEvContent": "Aucun événement n'a été capturé pour la période spécifiée.\nSi vous n'avez pas encore suivi d'événements, vous pouvez consulter notre <url>Documentation</url> pour intégrer facilement le suivi dans votre application.",
+    "noEventsFiltersDesc": "No events have been recorded for the specified period or applied filters, please try a different period or change the filters applied.",
     "noCaptchaEv": "Aucun événement n'a été capturé pour la période spécifiée.\nSi vous n'avez pas encore configuré CAPTCHA, vous pouvez consulter notre <url>Documentation</url> pour l'intégrer facilement dans votre application.",
     "mapping": {
       "cc": "Pays",
@@ -1180,14 +1182,6 @@
       "title": "Add a Swetrix tracking code to your website",
       "add": "Add the following snippet into the <bsect></bsect> section of your site.",
       "docs": "Check our <pdocs>our documentation</pdocs> for details and more integration guides."
-    },
-    "forecast": {
-      "title": "Prévision du trafic",
-      "desc": "Ceci est une estimation approximative du trafic que vous pouvez attendre sur votre site web, basée sur les modèles d'IA de Swetrix.",
-      "detailsDesc": "This type of forecast provides you with a more flexible prediction, showing you what type of users (from what country, browser, locale, etc.) and how many of them you can expect to visit within your chosen timeframe.\n\nIt may not be available for newly created or low traffic sites, as we train our prediction models regularly and such sites may not be included in the training dataset.\n\nIf you wish to continue with this type of forecast, please press 'Continue'.",
-      "input": "La quantité de '{{frequency}}' que vous souhaitez prévoir",
-      "chart": "Chart forecast",
-      "details": "Details forecast"
     },
     "funnels": {
       "addTitle": "Add funnel",

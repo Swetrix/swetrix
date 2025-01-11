@@ -16,7 +16,6 @@ import { Project, Overall, LiveStats, Funnel } from '~/lib/models/Project'
 import { Alerts } from '~/lib/models/Alerts'
 import { Subscriber } from '~/lib/models/Subscriber'
 import { Filter, ProjectViewCustomEvent } from '~/pages/Project/View/interfaces/traffic'
-import { AIResponse } from '~/pages/Project/View/interfaces/ai'
 import { Monitor, MonitorOverall } from '~/lib/models/Uptime'
 import { Role } from '~/lib/models/Organisation'
 import { logout } from '~/utils/auth'
@@ -1596,18 +1595,6 @@ export const updateErrorStatus = (pid: string, status: 'resolved' | 'active', ei
   api
     .patch('log/error-status', { pid, eid, eids, status })
     .then((response): any => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
-export const getDetailsPrediction = (pid: string, password: string | undefined = ''): Promise<AIResponse> =>
-  api
-    .get(`project/${pid}/predict`, {
-      headers: {
-        'x-password': password,
-      },
-    })
-    .then((response) => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
