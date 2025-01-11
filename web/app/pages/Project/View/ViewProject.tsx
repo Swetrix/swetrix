@@ -2832,16 +2832,6 @@ const ViewProject = () => {
     }
   }
 
-  const resetFilters = () => {
-    cleanURLFilters()
-
-    setFilters([])
-    setFiltersPerf([])
-    setFiltersSessions([])
-    setFiltersErrors([])
-    setFiltersSubError([])
-  }
-
   const exportTypes = [
     {
       label: t('project.asCSV'),
@@ -3865,7 +3855,12 @@ const ViewProject = () => {
                     />
                     {(sessionsLoading === null || sessionsLoading) && _isEmpty(sessions) && <Loader />}
                     {typeof sessionsLoading === 'boolean' && !sessionsLoading && _isEmpty(sessions) && (
-                      <NoEvents filters={filters} resetFilters={resetFilters} />
+                      <NoEvents
+                        filters={filters}
+                        filterHandler={filterHandler}
+                        onChangeExclusive={onChangeExclusive}
+                        resetActiveTabFilters={resetActiveTabFilters}
+                      />
                     )}
                     <Sessions
                       sessions={sessions}
@@ -3936,7 +3931,12 @@ const ViewProject = () => {
                     />
                     {(errorsLoading === null || errorsLoading) && _isEmpty(errors) && <Loader />}
                     {typeof errorsLoading === 'boolean' && !errorsLoading && _isEmpty(errors) && (
-                      <NoEvents filters={filtersErrors} resetFilters={resetFilters} />
+                      <NoEvents
+                        filters={filtersErrors}
+                        filterHandler={filterHandler}
+                        onChangeExclusive={onChangeExclusive}
+                        resetActiveTabFilters={resetActiveTabFilters}
+                      />
                     )}
                     <Errors
                       errors={errors}
@@ -4222,10 +4222,20 @@ const ViewProject = () => {
                   <Loader />
                 )}
                 {isPanelsDataEmpty && activeTab === PROJECT_TABS.traffic && (
-                  <NoEvents filters={filters} resetFilters={resetFilters} />
+                  <NoEvents
+                    filters={filters}
+                    filterHandler={filterHandler}
+                    onChangeExclusive={onChangeExclusive}
+                    resetActiveTabFilters={resetActiveTabFilters}
+                  />
                 )}
                 {isPanelsDataEmptyPerf && activeTab === PROJECT_TABS.performance && (
-                  <NoEvents filters={filtersPerf} resetFilters={resetFilters} />
+                  <NoEvents
+                    filters={filtersPerf}
+                    filterHandler={filterHandler}
+                    onChangeExclusive={onChangeExclusive}
+                    resetActiveTabFilters={resetActiveTabFilters}
+                  />
                 )}
                 {activeTab === PROJECT_TABS.traffic && (
                   <div className={cx('pt-2', { hidden: isPanelsDataEmpty || analyticsLoading })}>
