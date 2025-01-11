@@ -171,9 +171,13 @@ export class ProjectController {
       | undefined,
     @Query('period')
     period: '1h' | '1d' | '7d' | '4w' | '3M' | '12M' | '24M' | 'all' = '7d',
+    @Query('use-hostname-navigation')
+    useHostnameNavigation: string = 'false',
   ): Promise<Pagination<Project> | Project[] | object> {
+    const isHostnameNavigationEnabled = useHostnameNavigation === 'true'
+
     this.logger.log(
-      { userId, take, skip, mode, timeFrame: period },
+      { userId, take, skip, mode, timeFrame: period, useHostnameNavigation },
       'GET /project',
     )
 
@@ -186,11 +190,22 @@ export class ProjectController {
     }
 
     if (!mode || mode === 'default') {
-      const paginated = await this.projectService.paginate(
-        { take, skip },
-        userId,
-        search,
-      )
+      let paginated: Pagination<Project>
+
+      if (isHostnameNavigationEnabled) {
+        paginated = await this.projectService.paginateHostnameNavigation(
+          { take, skip },
+          userId,
+          search,
+        )
+      } else {
+        paginated = await this.projectService.paginate(
+          { take, skip },
+          userId,
+          search,
+        )
+      }
+
       return this.projectService.processDefaultResults(paginated, userId)
     }
 
@@ -203,6 +218,7 @@ export class ProjectController {
       },
       userId,
       search,
+      isHostnameNavigationEnabled,
     )
   }
 

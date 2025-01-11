@@ -33,9 +33,10 @@ import { PeriodSelector } from './PeriodSelector'
 const PAGE_SIZE_OPTIONS = [12, 24, 48, 96]
 
 const Dashboard = () => {
-  const { user } = useSelector((state: StateType) => state.auth)
+  const { user, loading: authLoading } = useSelector((state: StateType) => state.auth)
   const showPeriodSelector = useFeatureFlag(FeatureFlag['dashboard-period-selector'])
   const showTabs = useFeatureFlag(FeatureFlag['dashboard-analytics-tabs'])
+  const isHostnameNavigationEnabled = useFeatureFlag(FeatureFlag['dashboard-hostname-cards'])
 
   const { t } = useTranslation('common')
   const [isSearchActive, setIsSearchActive] = useState(false)
@@ -68,14 +69,21 @@ const Dashboard = () => {
     setShowActivateEmailModal(true)
   }
 
-  const loadProjects = async (take: number, skip: number, search?: string, tab?: string, period?: string) => {
+  const loadProjects = async (
+    take: number,
+    skip: number,
+    search?: string,
+    tab?: string,
+    period?: string,
+    isHostnameNavigationEnabled?: boolean,
+  ) => {
     if (isLoading) {
       return
     }
     setIsLoading(true)
 
     try {
-      const result = await getProjects(take, skip, search, tab, period)
+      const result = await getProjects(take, skip, search, tab, period, isHostnameNavigationEnabled)
       setProjects(result.results)
       setPaginationTotal(result.total)
     } catch (reason: any) {
@@ -86,10 +94,14 @@ const Dashboard = () => {
   }
 
   useEffect(() => {
-    loadProjects(pageSize, (page - 1) * pageSize, debouncedSearch, activeTab, activePeriod)
+    if (authLoading) {
+      return
+    }
+
+    loadProjects(pageSize, (page - 1) * pageSize, debouncedSearch, activeTab, activePeriod, isHostnameNavigationEnabled)
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, pageSize, debouncedSearch, activeTab, activePeriod])
+  }, [page, pageSize, debouncedSearch, activeTab, activePeriod, isHostnameNavigationEnabled, authLoading])
 
   // Set up interval for live visitors
   useEffect(() => {

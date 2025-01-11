@@ -140,6 +140,10 @@
     "dashboard-analytics-tabs": {
       "title": "Dashboard Analytics Tabs",
       "description": "Enables analytics tabs in the dashboard, providing different views of your data such as high / low traffic sites, abandoned projects, and more."
+    },
+    "dashboard-hostname-cards": {
+      "title": "Dashboard Hostname-based navigation",
+      "description": "Replaces traditional project-based navigation with hostname-based navigation - instead of seeing individual projects, you see the hostnames from the analytics data instead. This is useful if you have a lot of websites and don't want to create a project for each one, so you can create one project and collect all the data in it."
     }
   },
   "performance": {

@@ -16,6 +16,7 @@ export const FILTER_CHART_METRICS_MAPPING_FOR_COMPARE = ['bounce', 'viewsPerUniq
 export const validTimeBacket = ['hour', 'day', 'week', 'month']
 export const validPeriods = ['custom', 'today', 'yesterday', '1d', '7d', '4w', '3M', '12M', '24M']
 const validFilters = [
+  'host',
   'cc',
   'rg',
   'ct',
