@@ -461,6 +461,135 @@ export class ProjectService {
     return this.projectsRepository.findOne(query)
   }
 
+  async paginateHostnameNavigation(
+    options: PaginationOptionsInterface,
+    userId: string,
+    search?: string,
+  ): Promise<Pagination<Project>> {
+    const projectIds = await this.getVisibleProjectIds(userId, search)
+
+    if (!projectIds.length) {
+      return new Pagination<Project>({ results: [], total: 0 })
+    }
+
+    // Process project IDs in chunks to avoid overwhelming Clickhouse
+    const CHUNK_SIZE = 1000
+    const chunks = []
+    for (let i = 0; i < projectIds.length; i += CHUNK_SIZE) {
+      chunks.push(projectIds.slice(i, i + CHUNK_SIZE))
+    }
+
+    // Query to get hosts and their associated PIDs
+    const query = `
+        WITH hostStats AS (
+          SELECT 
+            host,
+            groupArray(DISTINCT pid) as pids,
+            count() as visits
+          FROM analytics
+          WHERE pid IN {pids:Array(String)}
+            AND host IS NOT NULL
+            AND host != ''
+            AND created >= now() - INTERVAL 30 DAY
+          GROUP BY host
+          ORDER BY visits DESC
+        )
+        SELECT *
+        FROM hostStats
+        LIMIT {limit:UInt32}
+        OFFSET {offset:UInt32}
+      `
+
+    // Execute query for each chunk and combine results
+    let allResults = []
+    let total = 0
+
+    for (const chunk of chunks) {
+      // eslint-disable-next-line no-await-in-loop
+      const result = await clickhouse.query({
+        query,
+        query_params: {
+          pids: chunk,
+          limit: options.take || 10,
+          offset: options.skip || 0,
+        },
+        format: 'JSONEachRow',
+      })
+
+      // eslint-disable-next-line no-await-in-loop
+      const chunkResults = await result.json()
+      allResults = allResults.concat(chunkResults)
+
+      // Get total count for this chunk
+      const countQuery = query
+        .replace(/SELECT .* FROM/, 'SELECT count() as total FROM')
+        .replace(/ORDER BY.*$/, '')
+
+      // eslint-disable-next-line no-await-in-loop
+      const countResult = await clickhouse.query({
+        query: countQuery,
+        query_params: {
+          pids: chunk,
+          limit: 100000000,
+          offset: 0,
+        },
+        format: 'JSONEachRow',
+      })
+
+      // eslint-disable-next-line no-await-in-loop
+      const countData = await countResult.json<{ total: number }>()
+      total += countData[0]?.total || 0
+    }
+
+    console.log('allResults:', allResults)
+
+    // Apply pagination to combined results
+    const paginatedResults = allResults
+      .slice(options.skip || 0, (options.skip || 0) + (options.take || 10))
+      .map(result => {
+        const pids = result.pids || []
+        return {
+          ...result,
+          pid: pids[0],
+        }
+      })
+
+    // Fetch full project details for the paginated results
+    const projects = await this.projectsRepository.find({
+      where: { id: In(paginatedResults.map(r => r.pid)) },
+      relations: [
+        'admin',
+        'share',
+        'share.user',
+        'organisation',
+        'organisation.members',
+        'organisation.members.user',
+      ],
+    })
+
+    // Add hostname info to projects
+    const enrichedProjects = projects.map(project => {
+      const chResult = paginatedResults.find(r => r.pid === project.id)
+
+      return {
+        ...project,
+        name: chResult?.host || project.name,
+        trafficStats: {
+          visits: chResult?.visits || 0,
+        },
+      }
+    })
+
+    const results = new Pagination<Project>({
+      results: enrichedProjects.sort(
+        (a, b) => (b.trafficStats?.visits || 0) - (a.trafficStats?.visits || 0),
+      ),
+      total,
+    })
+
+    return results
+  }
+
   async paginate(
     options: PaginationOptionsInterface,
     userId: string,

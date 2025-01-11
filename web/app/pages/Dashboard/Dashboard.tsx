@@ -33,7 +33,7 @@ import { PeriodSelector } from './PeriodSelector'
 const PAGE_SIZE_OPTIONS = [12, 24, 48, 96]
 
 const Dashboard = () => {
-  const { user } = useSelector((state: StateType) => state.auth)
+  const { user, loading: authLoading } = useSelector((state: StateType) => state.auth)
   const showPeriodSelector = useFeatureFlag(FeatureFlag['dashboard-period-selector'])
   const showTabs = useFeatureFlag(FeatureFlag['dashboard-analytics-tabs'])
   const isHostnameNavigationEnabled = useFeatureFlag(FeatureFlag['dashboard-hostname-cards'])
@@ -94,10 +94,14 @@ const Dashboard = () => {
   }
 
   useEffect(() => {
+    if (authLoading) {
+      return
+    }
+
     loadProjects(pageSize, (page - 1) * pageSize, debouncedSearch, activeTab, activePeriod, isHostnameNavigationEnabled)
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, pageSize, debouncedSearch, activeTab, activePeriod])
+  }, [page, pageSize, debouncedSearch, activeTab, activePeriod, isHostnameNavigationEnabled, authLoading])
 
   // Set up interval for live visitors
   useEffect(() => {

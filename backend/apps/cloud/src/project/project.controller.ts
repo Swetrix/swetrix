@@ -190,11 +190,22 @@ export class ProjectController {
     }
 
     if (!mode || mode === 'default') {
-      const paginated = await this.projectService.paginate(
-        { take, skip },
-        userId,
-        search,
-      )
+      let paginated: Pagination<Project>
+
+      if (isHostnameNavigationEnabled) {
+        paginated = await this.projectService.paginateHostnameNavigation(
+          { take, skip },
+          userId,
+          search,
+        )
+      } else {
+        paginated = await this.projectService.paginate(
+          { take, skip },
+          userId,
+          search,
+        )
+      }
+
       return this.projectService.processDefaultResults(paginated, userId)
     }
 
