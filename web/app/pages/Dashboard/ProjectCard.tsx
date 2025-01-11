@@ -23,6 +23,8 @@ import { useSelector } from 'react-redux'
 import { StateType, useAppDispatch } from '~/lib/store'
 import { authActions } from '~/lib/reducers/auth'
 import Spin from '~/ui/icons/Spin'
+import useFeatureFlag from '~/hooks/useFeatureFlag'
+import { FeatureFlag } from '~/lib/models/User'
 
 interface ProjectCardProps {
   live?: string | number | null
@@ -81,6 +83,7 @@ const MiniCard = ({ labelTKey, total = 0, percChange }: MiniCardProps) => {
 export const ProjectCard = ({ live = null, project, overallStats }: ProjectCardProps) => {
   const { t } = useTranslation('common')
   const [showInviteModal, setShowInviteModal] = useState(false)
+  const isHostnameNavigationEnabled = useFeatureFlag(FeatureFlag['dashboard-hostname-cards'])
 
   const { user } = useSelector((state: StateType) => state.auth)
 
@@ -179,7 +182,10 @@ export const ProjectCard = ({ live = null, project, overallStats }: ProjectCardP
 
   return (
     <Link
-      to={_replace(project.isCaptchaProject ? routes.captcha : routes.project, ':id', id)}
+      to={{
+        pathname: _replace(project.isCaptchaProject ? routes.captcha : routes.project, ':id', id),
+        search: isHostnameNavigationEnabled ? `?host=${encodeURIComponent(project.name)}` : undefined,
+      }}
       onClick={onElementClick}
       className='min-h-[153.1px] cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 dark:border-slate-800/25 dark:bg-slate-800 dark:hover:bg-slate-700'
     >

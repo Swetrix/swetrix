@@ -171,9 +171,13 @@ export class ProjectController {
       | undefined,
     @Query('period')
     period: '1h' | '1d' | '7d' | '4w' | '3M' | '12M' | '24M' | 'all' = '7d',
+    @Query('use-hostname-navigation')
+    useHostnameNavigation: string = 'false',
   ): Promise<Pagination<Project> | Project[] | object> {
+    const isHostnameNavigationEnabled = useHostnameNavigation === 'true'
+
     this.logger.log(
-      { userId, take, skip, mode, timeFrame: period },
+      { userId, take, skip, mode, timeFrame: period, useHostnameNavigation },
       'GET /project',
     )
 
@@ -203,6 +207,7 @@ export class ProjectController {
       },
       userId,
       search,
+      isHostnameNavigationEnabled,
     )
   }
 

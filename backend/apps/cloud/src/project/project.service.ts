@@ -1816,6 +1816,7 @@ export class ProjectService {
     options: TrafficPaginationOptions,
     userId: string,
     search?: string,
+    isHostnameNavigationEnabled?: boolean,
   ): Promise<Pagination<Project>> {
     // Get all visible project IDs
     const projectIds = await this.getVisibleProjectIds(userId, search)
@@ -1835,68 +1836,169 @@ export class ProjectService {
     const timeFrameClause = this.getTimeFrameClause(options.period)
     let query = ''
 
-    if (options.mode === 'performance') {
-      query = `
-        WITH 
-          currentPeriod AS (
-            SELECT pid, count() as visits
+    if (isHostnameNavigationEnabled) {
+      if (options.mode === 'performance') {
+        query = `
+          WITH 
+            currentPeriod AS (
+              SELECT host, pid, count() as visits
+              FROM analytics
+              WHERE pid IN {pids:Array(String)}
+                AND created BETWEEN ${timeFrameClause.currentStart} AND ${timeFrameClause.currentEnd}
+                AND host IS NOT NULL
+                AND host != ''
+              GROUP BY host, pid
+            ),
+            previousPeriod AS (
+              SELECT host, pid, count() as visits
+              FROM analytics
+              WHERE pid IN {pids:Array(String)}
+                AND created BETWEEN ${timeFrameClause.previousStart} AND ${timeFrameClause.previousEnd}
+                AND host IS NOT NULL
+                AND host != ''
+              GROUP BY host, pid
+            ),
+            hostStats AS (
+              SELECT 
+                cp.host,
+                groupArray(DISTINCT cp.pid) as pids,
+                sum(cp.visits) as current_visits,
+                sum(pp.visits) as previous_visits
+              FROM currentPeriod cp
+              JOIN previousPeriod pp ON cp.host = pp.host AND cp.pid = pp.pid
+              GROUP BY cp.host
+            )
+          SELECT 
+            host,
+            pids,
+            current_visits,
+            previous_visits,
+            ((current_visits - previous_visits) / previous_visits * 100) as percentage_change
+          FROM hostStats
+          WHERE previous_visits > 0
+          ORDER BY abs(percentage_change) DESC
+          LIMIT {limit:UInt32}
+          OFFSET {offset:UInt32}
+        `
+      } else if (options.mode === 'lost-traffic') {
+        query = `
+          WITH last_visits AS (
+            SELECT 
+              host,
+              pid,
+              max(created) as last_visit,
+              count() as total_visits
+            FROM analytics
+            WHERE pid IN {pids:Array(String)}
+              AND host IS NOT NULL
+              AND host != ''
+            GROUP BY host, pid
+          ),
+          hostStats AS (
+            SELECT 
+              host,
+              groupArray(DISTINCT pid) as pids,
+              max(last_visit) as last_visit,
+              sum(total_visits) as total_visits
+            FROM last_visits
+            GROUP BY host
+          )
+          SELECT *
+          FROM hostStats
+          WHERE last_visit < (now() - INTERVAL 48 HOUR)
+            AND total_visits > 0
+          ORDER BY last_visit DESC
+          LIMIT {limit:UInt32}
+          OFFSET {offset:UInt32}
+        `
+      } else {
+        // High/Low traffic query
+        query = `
+          WITH hostStats AS (
+            SELECT 
+              host,
+              groupArray(DISTINCT pid) as pids,
+              count() as visits
             FROM analytics
             WHERE pid IN {pids:Array(String)}
               AND created BETWEEN ${timeFrameClause.currentStart} AND ${timeFrameClause.currentEnd}
-            GROUP BY pid
-          ),
-          previousPeriod AS (
-            SELECT pid, count() as visits
-            FROM analytics
-            WHERE pid IN {pids:Array(String)}
-              AND created BETWEEN ${timeFrameClause.previousStart} AND ${timeFrameClause.previousEnd}
-            GROUP BY pid
+              AND host IS NOT NULL
+              AND host != ''
+            GROUP BY host
           )
-        SELECT 
-          cp.pid,
-          cp.visits as current_visits,
-          pp.visits as previous_visits,
-          ((cp.visits - pp.visits) / pp.visits * 100) as percentage_change
-        FROM currentPeriod cp
-        JOIN previousPeriod pp ON cp.pid = pp.pid
-        WHERE pp.visits > 0
-        ORDER BY abs(percentage_change) DESC
-        LIMIT {limit:UInt32}
-        OFFSET {offset:UInt32}
-      `
+          SELECT *
+          FROM hostStats
+          ORDER BY visits ${options.mode === 'high-traffic' ? 'DESC' : 'ASC'}
+          LIMIT {limit:UInt32}
+          OFFSET {offset:UInt32}
+        `
+      }
+    } else if (options.mode === 'performance') {
+      query = `
+          WITH 
+            currentPeriod AS (
+              SELECT pid, count() as visits
+              FROM analytics
+              WHERE pid IN {pids:Array(String)}
+                AND created BETWEEN ${timeFrameClause.currentStart} AND ${timeFrameClause.currentEnd}
+              GROUP BY pid
+            ),
+            previousPeriod AS (
+              SELECT pid, count() as visits
+              FROM analytics
+              WHERE pid IN {pids:Array(String)}
+                AND created BETWEEN ${timeFrameClause.previousStart} AND ${timeFrameClause.previousEnd}
+              GROUP BY pid
+            )
+          SELECT 
+            cp.pid,
+            cp.visits as current_visits,
+            pp.visits as previous_visits,
+            ((cp.visits - pp.visits) / pp.visits * 100) as percentage_change
+          FROM currentPeriod cp
+          JOIN previousPeriod pp ON cp.pid = pp.pid
+          WHERE pp.visits > 0
+          ORDER BY abs(percentage_change) DESC
+          LIMIT {limit:UInt32}
+          OFFSET {offset:UInt32}
+        `
     } else if (options.mode === 'lost-traffic') {
       query = `
-        WITH last_visits AS (
-          SELECT 
-            pid,
-            max(created) as last_visit,
-            count() as total_visits
-          FROM analytics
-          WHERE pid IN {pids:Array(String)}
-          GROUP BY pid
-        )
-        SELECT *
-        FROM last_visits
-        WHERE last_visit < (now() - INTERVAL 48 HOUR)
-          AND total_visits > 0
-        ORDER BY last_visit DESC
-        LIMIT {limit:UInt32}
-        OFFSET {offset:UInt32}
-      `
+          WITH last_visits AS (
+            SELECT 
+              pid,
+              max(created) as last_visit,
+              count() as total_visits
+            FROM analytics
+            WHERE pid IN {pids:Array(String)}
+              AND host IS NOT NULL
+              AND host != ''
+            GROUP BY pid
+          )
+          SELECT *
+          FROM last_visits
+          WHERE last_visit < (now() - INTERVAL 48 HOUR)
+            AND total_visits > 0
+          ORDER BY last_visit DESC
+          LIMIT {limit:UInt32}
+          OFFSET {offset:UInt32}
+        `
     } else {
       // High/Low traffic query
       query = `
-        SELECT 
-          pid,
-          count() as visits
-        FROM analytics
-        WHERE pid IN {pids:Array(String)}
-          AND created BETWEEN ${timeFrameClause.currentStart} AND ${timeFrameClause.currentEnd}
-        GROUP BY pid
-        ORDER BY visits ${options.mode === 'high-traffic' ? 'DESC' : 'ASC'}
-        LIMIT {limit:UInt32}
-        OFFSET {offset:UInt32}
-      `
+          SELECT 
+            pid,
+            count() as visits
+          FROM analytics
+          WHERE pid IN {pids:Array(String)}
+            AND created BETWEEN ${timeFrameClause.currentStart} AND ${timeFrameClause.currentEnd}
+            AND host IS NOT NULL
+            AND host != ''
+          GROUP BY pid
+          ORDER BY visits ${options.mode === 'high-traffic' ? 'DESC' : 'ASC'}
+          LIMIT {limit:UInt32}
+          OFFSET {offset:UInt32}
+        `
     }
 
     // Execute query for each chunk and combine results
@@ -1941,10 +2043,21 @@ export class ProjectService {
     }
 
     // Apply pagination to combined results
-    const paginatedResults = allResults.slice(
+    let paginatedResults = allResults.slice(
       options.skip || 0,
       (options.skip || 0) + (options.take || 10),
     )
+
+    if (isHostnameNavigationEnabled) {
+      paginatedResults = paginatedResults.map(result => {
+        const pids = result.pids || []
+
+        return {
+          ...result,
+          pid: pids[0],
+        }
+      })
+    }
 
     // Fetch full project details for the paginated results
     const projects = await this.projectsRepository.find({
@@ -1961,12 +2074,14 @@ export class ProjectService {
 
     // Add traffic stats to projects
     const enrichedProjects = projects.map(project => {
-      const stats = paginatedResults.find(r => r.pid === project.id)
+      const chResult = paginatedResults.find(r => r.pid === project.id)
+
       return {
         ...project,
+        name: chResult?.host || project.name,
         trafficStats: {
-          visits: stats?.visits || stats?.current_visits || 0,
-          percentageChange: stats?.percentage_change,
+          visits: chResult?.visits || chResult?.current_visits || 0,
+          percentageChange: chResult?.percentage_change,
         },
       }
     })

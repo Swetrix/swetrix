@@ -266,9 +266,18 @@ export const verifyShare = ({ path, id }: { path: string; id: string }) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getProjects = (take: number = 0, skip: number = 0, search?: string, mode?: string, period?: string) =>
+export const getProjects = (
+  take: number = 0,
+  skip: number = 0,
+  search?: string,
+  mode?: string,
+  period?: string,
+  useHostnameNavigation?: boolean,
+) =>
   api
-    .get(`/project?take=${take}&skip=${skip}&search=${search}&mode=${mode}&period=${period}`)
+    .get(
+      `/project?take=${take}&skip=${skip}&search=${search}&mode=${mode}&period=${period}&use-hostname-navigation=${useHostnameNavigation}`,
+    )
     .then(
       (
         response,

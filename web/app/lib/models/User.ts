@@ -25,6 +25,7 @@ enum PlanCode {
 export enum FeatureFlag {
   'dashboard-period-selector' = 'dashboard-period-selector',
   'dashboard-analytics-tabs' = 'dashboard-analytics-tabs',
+  'dashboard-hostname-cards' = 'dashboard-hostname-cards',
 }
 
 export interface User {
