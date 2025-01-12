@@ -16,6 +16,7 @@ import { ProjectViewCustomEventEntity } from './entity/project-view-custom-event
 import { MonitorConsumer } from './consumers/monitor.consumer'
 import { MonitorEntity } from './entity/monitor.entity'
 import { OrganisationModule } from '../organisation/organisation.module'
+import { ProjectExtraService } from './project-extra.service'
 
 @Module({
   imports: [
@@ -54,8 +55,13 @@ import { OrganisationModule } from '../organisation/organisation.module'
     ActionTokensModule,
     MailerModule,
   ],
-  providers: [ProjectService, ProjectsViewsRepository, MonitorConsumer],
-  exports: [ProjectService, ProjectsViewsRepository],
+  providers: [
+    ProjectService,
+    ProjectExtraService,
+    ProjectsViewsRepository,
+    MonitorConsumer,
+  ],
+  exports: [ProjectService, ProjectExtraService, ProjectsViewsRepository],
   controllers: [ProjectController],
 })
 export class ProjectModule {}

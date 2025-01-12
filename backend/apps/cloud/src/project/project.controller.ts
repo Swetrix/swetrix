@@ -115,6 +115,7 @@ import { BulkAddUsersResponse } from './interfaces/bulk-add-users'
 import { OrganisationService } from '../organisation/organisation.service'
 import { Organisation } from '../organisation/entity/organisation.entity'
 import { ProjectOrganisationDto } from './dto/project-organisation.dto'
+import { ProjectExtraService } from './project-extra.service'
 
 const PROJECTS_MAXIMUM = 50
 
@@ -137,6 +138,7 @@ export class ProjectController {
     private readonly mailerService: MailerService,
     private readonly projectsViewsRepository: ProjectsViewsRepository,
     private readonly organisationService: OrganisationService,
+    private readonly projectExtraService: ProjectExtraService,
   ) {}
 
   @ApiBearerAuth()
@@ -193,7 +195,7 @@ export class ProjectController {
       let paginated: Pagination<Project>
 
       if (isHostnameNavigationEnabled) {
-        paginated = await this.projectService.paginateHostnameNavigation(
+        paginated = await this.projectExtraService.paginateHostnameNavigation(
           { take, skip, period },
           userId,
           search,
@@ -209,7 +211,7 @@ export class ProjectController {
       return this.projectService.processDefaultResults(paginated, userId)
     }
 
-    return this.projectService.paginateByTraffic(
+    return this.projectExtraService.paginateByTraffic(
       {
         take,
         skip,
