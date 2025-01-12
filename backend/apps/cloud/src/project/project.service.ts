@@ -478,14 +478,14 @@ export class ProjectService {
         WITH hostStats AS (
           SELECT 
             host,
-            groupArray(DISTINCT pid) as pids,
+            pid,
             count() as visits
           FROM analytics
           WHERE pid IN {pids:Array(String)}
             AND host IS NOT NULL
             AND host != ''
             AND created >= now() - INTERVAL 30 DAY
-          GROUP BY host
+          GROUP BY host, pid
           ORDER BY visits DESC
         )
         SELECT *
@@ -535,22 +535,17 @@ export class ProjectService {
       total += countData[0]?.total || 0
     }
 
-    console.log('allResults:', allResults)
-
     // Apply pagination to combined results
-    const paginatedResults = allResults
-      .slice(options.skip || 0, (options.skip || 0) + (options.take || 10))
-      .map(result => {
-        const pids = result.pids || []
-        return {
-          ...result,
-          pid: pids[0],
-        }
-      })
+    const paginatedResults = allResults.slice(
+      options.skip || 0,
+      (options.skip || 0) + (options.take || 10),
+    )
+
+    const uniquePids = [...new Set(paginatedResults.map(r => r.pid))]
 
     // Fetch full project details for the paginated results
     const projects = await this.projectsRepository.find({
-      where: { id: In(paginatedResults.map(r => r.pid)) },
+      where: { id: In(uniquePids) },
       relations: [
         'admin',
         'share',
@@ -561,18 +556,19 @@ export class ProjectService {
       ],
     })
 
-    // Add hostname info to projects
-    const enrichedProjects = projects.map(project => {
-      const chResult = paginatedResults.find(r => r.pid === project.id)
+    const enrichedProjects = projects
+      .map(project => {
+        const chResults = paginatedResults.filter(r => r.pid === project.id)
 
-      return {
-        ...project,
-        name: chResult?.host || project.name,
-        trafficStats: {
-          visits: chResult?.visits || 0,
-        },
-      }
-    })
+        return chResults.map(chResult => ({
+          ...project,
+          name: chResult.host || project.name,
+          trafficStats: {
+            visits: chResult.visits || 0,
+          },
+        }))
+      })
+      .flat()
 
     const results = new Pagination<Project>({
       results: enrichedProjects.sort(
@@ -1963,16 +1959,16 @@ export class ProjectService {
             hostStats AS (
               SELECT 
                 cp.host,
-                groupArray(DISTINCT cp.pid) as pids,
+                cp.pid,
                 sum(cp.visits) as current_visits,
                 sum(pp.visits) as previous_visits
               FROM currentPeriod cp
               JOIN previousPeriod pp ON cp.host = pp.host AND cp.pid = pp.pid
-              GROUP BY cp.host
+              GROUP BY cp.host, cp.pid
             )
           SELECT 
             host,
-            pids,
+            pid,
             current_visits,
             previous_visits,
             ((current_visits - previous_visits) / previous_visits * 100) as percentage_change
@@ -2145,25 +2141,16 @@ export class ProjectService {
     }
 
     // Apply pagination to combined results
-    let paginatedResults = allResults.slice(
+    const paginatedResults = allResults.slice(
       options.skip || 0,
       (options.skip || 0) + (options.take || 10),
     )
 
-    if (isHostnameNavigationEnabled) {
-      paginatedResults = paginatedResults.map(result => {
-        const pids = result.pids || []
-
-        return {
-          ...result,
-          pid: pids[0],
-        }
-      })
-    }
+    const uniquePids = [...new Set(paginatedResults.map(r => r.pid))]
 
     // Fetch full project details for the paginated results
     const projects = await this.projectsRepository.find({
-      where: { id: In(paginatedResults.map(r => r.pid)) },
+      where: { id: In(uniquePids) },
       relations: [
         'admin',
         'share',
@@ -2175,18 +2162,20 @@ export class ProjectService {
     })
 
     // Add traffic stats to projects
-    const enrichedProjects = projects.map(project => {
-      const chResult = paginatedResults.find(r => r.pid === project.id)
+    const enrichedProjects = projects
+      .map(project => {
+        const chResults = paginatedResults.filter(r => r.pid === project.id)
 
-      return {
-        ...project,
-        name: chResult?.host || project.name,
-        trafficStats: {
-          visits: chResult?.visits || chResult?.current_visits || 0,
-          percentageChange: chResult?.percentage_change,
-        },
-      }
-    })
+        return chResults.map(chResult => ({
+          ...project,
+          name: chResult.host || project.name,
+          trafficStats: {
+            visits: chResult.visits || chResult.current_visits || 0,
+            percentageChange: chResult.percentage_change,
+          },
+        }))
+      })
+      .flat()
 
     const results = new Pagination<Project>({
       results: enrichedProjects.sort((a, b) => {
