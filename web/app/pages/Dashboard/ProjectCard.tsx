@@ -30,6 +30,7 @@ interface ProjectCardProps {
   live?: string | number | null
   overallStats?: OverallObject
   project: Project
+  activePeriod: string
 }
 
 interface MiniCardProps {
@@ -80,10 +81,11 @@ const MiniCard = ({ labelTKey, total = 0, percChange }: MiniCardProps) => {
   )
 }
 
-export const ProjectCard = ({ live = null, project, overallStats }: ProjectCardProps) => {
+export const ProjectCard = ({ live = null, project, overallStats, activePeriod }: ProjectCardProps) => {
   const { t } = useTranslation('common')
   const [showInviteModal, setShowInviteModal] = useState(false)
   const isHostnameNavigationEnabled = useFeatureFlag(FeatureFlag['dashboard-hostname-cards'])
+  const showPeriodSelector = useFeatureFlag(FeatureFlag['dashboard-period-selector'])
 
   const { user } = useSelector((state: StateType) => state.auth)
 
@@ -180,11 +182,25 @@ export const ProjectCard = ({ live = null, project, overallStats }: ProjectCardP
     setShowInviteModal(true)
   }
 
+  const searchParams = useMemo(() => {
+    const params = new URLSearchParams()
+
+    if (showPeriodSelector) {
+      params.set('period', activePeriod)
+    }
+
+    if (isHostnameNavigationEnabled) {
+      params.set('host', encodeURIComponent(project.name))
+    }
+
+    return params.toString()
+  }, [showPeriodSelector, activePeriod, isHostnameNavigationEnabled, project.name])
+
   return (
     <Link
       to={{
         pathname: _replace(project.isCaptchaProject ? routes.captcha : routes.project, ':id', id),
-        search: isHostnameNavigationEnabled ? `?host=${encodeURIComponent(project.name)}` : undefined,
+        search: searchParams,
       }}
       onClick={onElementClick}
       className='min-h-[153.1px] cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 dark:border-slate-800/25 dark:bg-slate-800 dark:hover:bg-slate-700'

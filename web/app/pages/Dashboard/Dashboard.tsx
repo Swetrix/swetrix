@@ -318,6 +318,7 @@ const Dashboard = () => {
                             project={project}
                             live={liveStats[project.id] ?? (_isEmpty(liveStats) ? null : 'N/A')}
                             overallStats={overallStats[project.id]}
+                            activePeriod={activePeriod}
                           />
                         ))}
                         {_size(projects) % 12 !== 0 && activeTab === 'default' ? (
