@@ -118,7 +118,7 @@ const Dashboard = () => {
     }
 
     const updateOverallStats = async (projectIds: string[]) => {
-      if (!projectIds.length) return
+      if (!projectIds.length || isHostnameNavigationEnabled) return
 
       try {
         const stats = await getOverallStats(projectIds, activePeriod)
@@ -152,7 +152,7 @@ const Dashboard = () => {
     const interval = setInterval(updateLiveVisitors, LIVE_VISITORS_UPDATE_INTERVAL)
 
     return () => clearInterval(interval)
-  }, [projects, activePeriod]) // Reset interval when projects change
+  }, [projects, activePeriod, isHostnameNavigationEnabled]) // Reset interval when projects change
 
   if (error && isLoading === false) {
     return (

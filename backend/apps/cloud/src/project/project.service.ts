@@ -306,8 +306,8 @@ const getCompiledHTML = (title: string, desc: string, styles: string) => {
 }
 
 interface TrafficPaginationOptions extends PaginationOptionsInterface {
-  mode: 'high-traffic' | 'low-traffic' | 'performance' | 'lost-traffic'
-  period: '1h' | '1d' | '7d' | '4w' | '3M' | '12M' | '24M' | 'all'
+  mode?: 'high-traffic' | 'low-traffic' | 'performance' | 'lost-traffic'
+  period?: '1h' | '1d' | '7d' | '4w' | '3M' | '12M' | '24M' | 'all'
 }
 
 @Injectable()
@@ -456,7 +456,7 @@ export class ProjectService {
   }
 
   async paginateHostnameNavigation(
-    options: PaginationOptionsInterface,
+    options: TrafficPaginationOptions,
     userId: string,
     search?: string,
   ): Promise<Pagination<Project>> {
@@ -465,6 +465,8 @@ export class ProjectService {
     if (!projectIds.length) {
       return new Pagination<Project>({ results: [], total: 0 })
     }
+
+    const timeFrameClause = this.getTimeFrameClause(options.period)
 
     // Process project IDs in chunks to avoid overwhelming Clickhouse
     const CHUNK_SIZE = 1000
@@ -484,7 +486,7 @@ export class ProjectService {
           WHERE pid IN {pids:Array(String)}
             AND host IS NOT NULL
             AND host != ''
-            AND created >= now() - INTERVAL 30 DAY
+            AND created BETWEEN ${timeFrameClause.currentStart} AND ${timeFrameClause.currentEnd}
           GROUP BY host, pid
           ORDER BY visits DESC
         )
@@ -515,17 +517,27 @@ export class ProjectService {
       allResults = allResults.concat(chunkResults)
 
       // Get total count for this chunk
-      const countQuery = query
-        .replace(/SELECT .* FROM/, 'SELECT count() as total FROM')
-        .replace(/ORDER BY.*$/, '')
+      const countQuery = `
+        WITH hostStats AS (
+          SELECT 
+            host,
+            pid,
+            count() as visits
+          FROM analytics
+          WHERE pid IN {pids:Array(String)}
+            AND host IS NOT NULL 
+            AND host != ''
+            AND created BETWEEN ${timeFrameClause.currentStart} AND ${timeFrameClause.currentEnd}
+          GROUP BY host, pid
+        )
+        SELECT count() as total FROM hostStats
+      `
 
       // eslint-disable-next-line no-await-in-loop
       const countResult = await clickhouse.query({
         query: countQuery,
         query_params: {
           pids: chunk,
-          limit: 100000000,
-          offset: 0,
         },
         format: 'JSONEachRow',
       })
@@ -2120,17 +2132,27 @@ export class ProjectService {
       allResults = allResults.concat(chunkResults)
 
       // Get total count for this chunk
-      const countQuery = query
-        .replace(/SELECT .* FROM/, 'SELECT count() as total FROM')
-        .replace(/ORDER BY.*$/, '')
+      const countQuery = `
+        WITH hostStats AS (
+          SELECT 
+            host,
+            pid,
+            count() as visits
+          FROM analytics
+          WHERE pid IN {pids:Array(String)}
+            AND host IS NOT NULL 
+            AND host != ''
+            AND created BETWEEN ${timeFrameClause.currentStart} AND ${timeFrameClause.currentEnd}
+          GROUP BY host, pid
+        )
+        SELECT count() as total FROM hostStats
+      `
 
       // eslint-disable-next-line no-await-in-loop
       const countResult = await clickhouse.query({
         query: countQuery,
         query_params: {
           pids: chunk,
-          limit: 100000000,
-          offset: 0,
         },
         format: 'JSONEachRow',
       })

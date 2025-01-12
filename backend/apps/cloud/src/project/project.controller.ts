@@ -194,7 +194,7 @@ export class ProjectController {
 
       if (isHostnameNavigationEnabled) {
         paginated = await this.projectService.paginateHostnameNavigation(
-          { take, skip },
+          { take, skip, period },
           userId,
           search,
         )

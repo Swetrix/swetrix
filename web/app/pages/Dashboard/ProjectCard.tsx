@@ -210,15 +210,23 @@ export const ProjectCard = ({ live = null, project, overallStats }: ProjectCardP
           )}
         </div>
         <div className='mt-4 flex flex-shrink-0 gap-5'>
-          <MiniCard
-            labelTKey={project.isCaptchaProject ? 'dashboard.captchaEvents' : 'dashboard.pageviews'}
-            total={live === 'N/A' ? 'N/A' : (overallStats?.current.all ?? null)}
-            percChange={
-              live === 'N/A'
-                ? 0
-                : calculateRelativePercentage(overallStats?.previous.all ?? 0, overallStats?.current.all ?? 0)
-            }
-          />
+          {isHostnameNavigationEnabled ? (
+            <MiniCard
+              labelTKey={project.isCaptchaProject ? 'dashboard.captchaEvents' : 'dashboard.pageviews'}
+              // @ts-expect-error
+              total={project?.trafficStats?.visits}
+            />
+          ) : (
+            <MiniCard
+              labelTKey={project.isCaptchaProject ? 'dashboard.captchaEvents' : 'dashboard.pageviews'}
+              total={live === 'N/A' ? 'N/A' : (overallStats?.current.all ?? null)}
+              percChange={
+                live === 'N/A'
+                  ? 0
+                  : calculateRelativePercentage(overallStats?.previous.all ?? 0, overallStats?.current.all ?? 0)
+              }
+            />
+          )}
           {project.isAnalyticsProject && <MiniCard labelTKey='dashboard.liveVisitors' total={live} />}
         </div>
       </div>
