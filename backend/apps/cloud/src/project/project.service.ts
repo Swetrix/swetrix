@@ -460,7 +460,7 @@ export class ProjectService {
     userId: string,
     search?: string,
   ): Promise<Pagination<Project>> {
-    const projectIds = await this.getVisibleProjectIds(userId, search)
+    const projectIds = await this.getVisibleProjectIds(userId)
 
     if (!projectIds.length) {
       return new Pagination<Project>({ results: [], total: 0 })
@@ -486,6 +486,7 @@ export class ProjectService {
           WHERE pid IN {pids:Array(String)}
             AND host IS NOT NULL
             AND host != ''
+            ${search ? `AND host ILIKE {search:String}` : ''}
             AND created BETWEEN ${timeFrameClause.currentStart} AND ${timeFrameClause.currentEnd}
           GROUP BY host, pid
           ORDER BY visits DESC
@@ -508,6 +509,7 @@ export class ProjectService {
           pids: chunk,
           limit: options.take || 10,
           offset: options.skip || 0,
+          search: `%${search}%`,
         },
         format: 'JSONEachRow',
       })
@@ -527,6 +529,7 @@ export class ProjectService {
           WHERE pid IN {pids:Array(String)}
             AND host IS NOT NULL 
             AND host != ''
+            ${search ? `AND host ILIKE {search:String}` : ''}
             AND created BETWEEN ${timeFrameClause.currentStart} AND ${timeFrameClause.currentEnd}
           GROUP BY host, pid
         )
@@ -538,6 +541,7 @@ export class ProjectService {
         query: countQuery,
         query_params: {
           pids: chunk,
+          search: `%${search}%`,
         },
         format: 'JSONEachRow',
       })
@@ -1929,7 +1933,10 @@ export class ProjectService {
     isHostnameNavigationEnabled?: boolean,
   ): Promise<Pagination<Project>> {
     // Get all visible project IDs
-    const projectIds = await this.getVisibleProjectIds(userId, search)
+    const projectIds = await this.getVisibleProjectIds(
+      userId,
+      isHostnameNavigationEnabled ? undefined : search,
+    )
 
     if (!projectIds.length) {
       return new Pagination<Project>({ results: [], total: 0 })
@@ -1957,6 +1964,7 @@ export class ProjectService {
                 AND created BETWEEN ${timeFrameClause.currentStart} AND ${timeFrameClause.currentEnd}
                 AND host IS NOT NULL
                 AND host != ''
+                ${search ? `AND host ILIKE {search:String}` : ''}
               GROUP BY host, pid
             ),
             previousPeriod AS (
@@ -1966,6 +1974,7 @@ export class ProjectService {
                 AND created BETWEEN ${timeFrameClause.previousStart} AND ${timeFrameClause.previousEnd}
                 AND host IS NOT NULL
                 AND host != ''
+                ${search ? `AND host ILIKE {search:String}` : ''}
               GROUP BY host, pid
             ),
             hostStats AS (
@@ -2002,6 +2011,7 @@ export class ProjectService {
             WHERE pid IN {pids:Array(String)}
               AND host IS NOT NULL
               AND host != ''
+              ${search ? `AND host ILIKE {search:String}` : ''}
             GROUP BY host, pid
           ),
           hostStats AS (
@@ -2034,6 +2044,7 @@ export class ProjectService {
               AND created BETWEEN ${timeFrameClause.currentStart} AND ${timeFrameClause.currentEnd}
               AND host IS NOT NULL
               AND host != ''
+              ${search ? `AND host ILIKE {search:String}` : ''}
             GROUP BY host
           )
           SELECT *
@@ -2081,8 +2092,6 @@ export class ProjectService {
               count() as total_visits
             FROM analytics
             WHERE pid IN {pids:Array(String)}
-              AND host IS NOT NULL
-              AND host != ''
             GROUP BY pid
           )
           SELECT *
@@ -2102,8 +2111,6 @@ export class ProjectService {
           FROM analytics
           WHERE pid IN {pids:Array(String)}
             AND created BETWEEN ${timeFrameClause.currentStart} AND ${timeFrameClause.currentEnd}
-            AND host IS NOT NULL
-            AND host != ''
           GROUP BY pid
           ORDER BY visits ${options.mode === 'high-traffic' ? 'DESC' : 'ASC'}
           LIMIT {limit:UInt32}
@@ -2123,6 +2130,7 @@ export class ProjectService {
           pids: chunk,
           limit: options.take || 10,
           offset: options.skip || 0,
+          search: `%${search}%`,
         },
         format: 'JSONEachRow',
       })
@@ -2131,19 +2139,16 @@ export class ProjectService {
       const chunkResults = await result.json()
       allResults = allResults.concat(chunkResults)
 
-      // Get total count for this chunk
+      // Get total count for this chunk -- todo: fix is required
       const countQuery = `
         WITH hostStats AS (
           SELECT 
-            host,
             pid,
             count() as visits
           FROM analytics
           WHERE pid IN {pids:Array(String)}
-            AND host IS NOT NULL 
-            AND host != ''
             AND created BETWEEN ${timeFrameClause.currentStart} AND ${timeFrameClause.currentEnd}
-          GROUP BY host, pid
+          GROUP BY pid
         )
         SELECT count() as total FROM hostStats
       `
@@ -2153,6 +2158,7 @@ export class ProjectService {
         query: countQuery,
         query_params: {
           pids: chunk,
+          search: `%${search}%`,
         },
         format: 'JSONEachRow',
       })
