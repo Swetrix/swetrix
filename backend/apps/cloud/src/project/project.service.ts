@@ -2017,11 +2017,11 @@ export class ProjectService {
           hostStats AS (
             SELECT 
               host,
-              groupArray(DISTINCT pid) as pids,
+              pid,
               max(last_visit) as last_visit,
               sum(total_visits) as total_visits
             FROM last_visits
-            GROUP BY host
+            GROUP BY host, pid
           )
           SELECT *
           FROM hostStats
@@ -2037,7 +2037,7 @@ export class ProjectService {
           WITH hostStats AS (
             SELECT 
               host,
-              groupArray(DISTINCT pid) as pids,
+              pid,
               count() as visits
             FROM analytics
             WHERE pid IN {pids:Array(String)}
@@ -2045,7 +2045,7 @@ export class ProjectService {
               AND host IS NOT NULL
               AND host != ''
               ${search ? `AND host ILIKE {search:String}` : ''}
-            GROUP BY host
+            GROUP BY host, pid
           )
           SELECT *
           FROM hostStats
