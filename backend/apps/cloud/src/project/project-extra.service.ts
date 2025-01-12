@@ -242,7 +242,7 @@ export class ProjectExtraService {
         query = `
           WITH 
             currentPeriod AS (
-              SELECT host, pid, count() as visits
+              SELECT pid, host, count() as visits
               FROM analytics
               WHERE pid IN {pids:Array(String)}
                 AND created BETWEEN ${timeFrameClause.currentStart} AND ${timeFrameClause.currentEnd}
@@ -252,7 +252,7 @@ export class ProjectExtraService {
               GROUP BY host, pid
             ),
             previousPeriod AS (
-              SELECT host, pid, count() as visits
+              SELECT pid, host, count() as visits
               FROM analytics
               WHERE pid IN {pids:Array(String)}
                 AND created BETWEEN ${timeFrameClause.previousStart} AND ${timeFrameClause.previousEnd}
@@ -260,32 +260,23 @@ export class ProjectExtraService {
                 AND host != ''
                 ${search ? `AND host ILIKE {search:String}` : ''}
               GROUP BY host, pid
-            ),
-            hostStats AS (
-              SELECT 
-                cp.host,
-                cp.pid,
-                sum(cp.visits) as current_visits,
-                sum(pp.visits) as previous_visits
-              FROM currentPeriod cp
-              JOIN previousPeriod pp ON cp.host = pp.host AND cp.pid = pp.pid
-              GROUP BY cp.host, cp.pid
             )
           SELECT 
-            host,
-            pid,
-            current_visits,
-            previous_visits,
-            ((current_visits - previous_visits) / previous_visits * 100) as percentage_change
-          FROM hostStats
-          WHERE previous_visits > 0
+            cp.pid,
+            cp.host,
+            cp.visits as current_visits,
+            pp.visits as previous_visits,
+            ((cp.visits - pp.visits) / pp.visits * 100) as percentage_change
+          FROM currentPeriod cp
+          JOIN previousPeriod pp ON cp.pid = pp.pid AND cp.host = pp.host
+          WHERE pp.visits > 0
           ORDER BY abs(percentage_change) DESC
         `
 
         countQuery = `
           WITH 
             currentPeriod AS (
-              SELECT host, pid, count() as visits
+              SELECT pid, host, count() as visits
               FROM analytics
               WHERE pid IN {pids:Array(String)}
                 AND created BETWEEN ${timeFrameClause.currentStart} AND ${timeFrameClause.currentEnd}
@@ -294,8 +285,8 @@ export class ProjectExtraService {
                 ${search ? `AND host ILIKE {search:String}` : ''}
               GROUP BY host, pid
             ),
-            previousPeriod AS (
-              SELECT host, pid, count() as visits
+						previousPeriod AS (
+              SELECT pid, host, count() as visits
               FROM analytics
               WHERE pid IN {pids:Array(String)}
                 AND created BETWEEN ${timeFrameClause.previousStart} AND ${timeFrameClause.previousEnd}
@@ -303,16 +294,11 @@ export class ProjectExtraService {
                 AND host != ''
                 ${search ? `AND host ILIKE {search:String}` : ''}
               GROUP BY host, pid
-            ),
-            hostStats AS (
-              SELECT 
-                cp.host,
-                cp.pid
-              FROM currentPeriod cp
-              JOIN previousPeriod pp ON cp.host = pp.host AND cp.pid = pp.pid
-              WHERE pp.visits > 0
             )
-          SELECT count() as total FROM hostStats
+          SELECT count() as total
+					FROM currentPeriod cp
+          JOIN previousPeriod pp ON cp.pid = pp.pid AND cp.host = pp.host
+					WHERE pp.visits > 0
         `
       } else if (options.mode === 'lost-traffic') {
         query = `
@@ -443,21 +429,17 @@ export class ProjectExtraService {
               AND created BETWEEN ${timeFrameClause.currentStart} AND ${timeFrameClause.currentEnd}
             GROUP BY pid
           ),
-          previousPeriod AS (
+					previousPeriod AS (
             SELECT pid, count() as visits
             FROM analytics
             WHERE pid IN {pids:Array(String)}
               AND created BETWEEN ${timeFrameClause.previousStart} AND ${timeFrameClause.previousEnd}
             GROUP BY pid
-          ),
-          projectStats AS (
-            SELECT 
-              cp.pid
-            FROM currentPeriod cp
-            JOIN previousPeriod pp ON cp.pid = pp.pid
-            WHERE pp.visits > 0
           )
-        SELECT count() as total FROM projectStats
+        SELECT count() as total FROM currentPeriod cp
+        JOIN previousPeriod pp ON cp.pid = pp.pid
+        WHERE pp.visits > 0
+
       `
     } else if (options.mode === 'lost-traffic') {
       query = `
