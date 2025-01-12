@@ -62,8 +62,6 @@ export class ProjectExtraService {
         )
         SELECT *
         FROM hostStats
-        LIMIT {limit:UInt32}
-        OFFSET {offset:UInt32}
       `
 
     // Execute query for each chunk and combine results
@@ -76,8 +74,6 @@ export class ProjectExtraService {
         query,
         query_params: {
           pids: chunk,
-          limit: options.take || 10,
-          offset: options.skip || 0,
           search: `%${search}%`,
         },
         format: 'JSONEachRow',
@@ -87,6 +83,12 @@ export class ProjectExtraService {
       const chunkResults = await result.json()
       allResults = allResults.concat(chunkResults)
 
+      if (allResults.length >= options.take) {
+        break
+      }
+    }
+
+    for (const chunk of chunks) {
       // Get total count for this chunk
       const countQuery = `
         WITH hostStats AS (
@@ -278,8 +280,6 @@ export class ProjectExtraService {
           FROM hostStats
           WHERE previous_visits > 0
           ORDER BY abs(percentage_change) DESC
-          LIMIT {limit:UInt32}
-          OFFSET {offset:UInt32}
         `
 
         countQuery = `
@@ -343,8 +343,6 @@ export class ProjectExtraService {
           WHERE last_visit < (now() - INTERVAL 48 HOUR)
             AND total_visits > 0
           ORDER BY last_visit DESC
-          LIMIT {limit:UInt32}
-          OFFSET {offset:UInt32}
         `
 
         countQuery = `
@@ -390,8 +388,6 @@ export class ProjectExtraService {
           SELECT *
           FROM hostStats
           ORDER BY visits ${options.mode === 'high-traffic' ? 'DESC' : 'ASC'}
-          LIMIT {limit:UInt32}
-          OFFSET {offset:UInt32}
         `
 
         countQuery = `
@@ -436,8 +432,6 @@ export class ProjectExtraService {
           JOIN previousPeriod pp ON cp.pid = pp.pid
           WHERE pp.visits > 0
           ORDER BY abs(percentage_change) DESC
-          LIMIT {limit:UInt32}
-          OFFSET {offset:UInt32}
         `
 
       countQuery = `
@@ -481,8 +475,6 @@ export class ProjectExtraService {
           WHERE last_visit < (now() - INTERVAL 48 HOUR)
             AND total_visits > 0
           ORDER BY last_visit DESC
-          LIMIT {limit:UInt32}
-          OFFSET {offset:UInt32}
         `
 
       countQuery = `
@@ -510,8 +502,6 @@ export class ProjectExtraService {
             AND created BETWEEN ${timeFrameClause.currentStart} AND ${timeFrameClause.currentEnd}
           GROUP BY pid
           ORDER BY visits ${options.mode === 'high-traffic' ? 'DESC' : 'ASC'}
-          LIMIT {limit:UInt32}
-          OFFSET {offset:UInt32}
         `
 
       countQuery = `
@@ -537,8 +527,6 @@ export class ProjectExtraService {
         query,
         query_params: {
           pids: chunk,
-          limit: options.take || 10,
-          offset: options.skip || 0,
           search: `%${search}%`,
         },
         format: 'JSONEachRow',
@@ -548,6 +536,12 @@ export class ProjectExtraService {
       const chunkResults = await result.json()
       allResults = allResults.concat(chunkResults)
 
+      if (allResults.length >= options.take) {
+        break
+      }
+    }
+
+    for (const chunk of chunks) {
       // eslint-disable-next-line no-await-in-loop
       const countResult = await clickhouse.query({
         query: countQuery,
