@@ -1952,6 +1952,7 @@ export class ProjectService {
     // Build the appropriate Clickhouse query based on mode
     const timeFrameClause = this.getTimeFrameClause(options.period)
     let query = ''
+    let countQuery = ''
 
     if (isHostnameNavigationEnabled) {
       if (options.mode === 'performance') {
@@ -1999,6 +2000,39 @@ export class ProjectService {
           LIMIT {limit:UInt32}
           OFFSET {offset:UInt32}
         `
+
+        countQuery = `
+          WITH 
+            currentPeriod AS (
+              SELECT host, pid, count() as visits
+              FROM analytics
+              WHERE pid IN {pids:Array(String)}
+                AND created BETWEEN ${timeFrameClause.currentStart} AND ${timeFrameClause.currentEnd}
+                AND host IS NOT NULL
+                AND host != ''
+                ${search ? `AND host ILIKE {search:String}` : ''}
+              GROUP BY host, pid
+            ),
+            previousPeriod AS (
+              SELECT host, pid, count() as visits
+              FROM analytics
+              WHERE pid IN {pids:Array(String)}
+                AND created BETWEEN ${timeFrameClause.previousStart} AND ${timeFrameClause.previousEnd}
+                AND host IS NOT NULL
+                AND host != ''
+                ${search ? `AND host ILIKE {search:String}` : ''}
+              GROUP BY host, pid
+            ),
+            hostStats AS (
+              SELECT 
+                cp.host,
+                cp.pid
+              FROM currentPeriod cp
+              JOIN previousPeriod pp ON cp.host = pp.host AND cp.pid = pp.pid
+              WHERE pp.visits > 0
+            )
+          SELECT count() as total FROM hostStats
+        `
       } else if (options.mode === 'lost-traffic') {
         query = `
           WITH last_visits AS (
@@ -2031,6 +2065,31 @@ export class ProjectService {
           LIMIT {limit:UInt32}
           OFFSET {offset:UInt32}
         `
+
+        countQuery = `
+          WITH last_visits AS (
+            SELECT 
+              host,
+              pid,
+              max(created) as last_visit,
+              count() as total_visits
+            FROM analytics
+            WHERE pid IN {pids:Array(String)}
+              AND host IS NOT NULL
+              AND host != ''
+              ${search ? `AND host ILIKE {search:String}` : ''}
+            GROUP BY host, pid
+          ),
+          hostStats AS (
+            SELECT 
+              host,
+              pid
+            FROM last_visits
+            WHERE last_visit < (now() - INTERVAL 48 HOUR)
+              AND total_visits > 0
+          )
+          SELECT count() as total FROM hostStats
+        `
       } else {
         // High/Low traffic query
         query = `
@@ -2052,6 +2111,22 @@ export class ProjectService {
           ORDER BY visits ${options.mode === 'high-traffic' ? 'DESC' : 'ASC'}
           LIMIT {limit:UInt32}
           OFFSET {offset:UInt32}
+        `
+
+        countQuery = `
+          WITH hostStats AS (
+            SELECT 
+              host,
+              pid
+            FROM analytics
+            WHERE pid IN {pids:Array(String)}
+              AND created BETWEEN ${timeFrameClause.currentStart} AND ${timeFrameClause.currentEnd}
+              AND host IS NOT NULL
+              AND host != ''
+              ${search ? `AND host ILIKE {search:String}` : ''}
+            GROUP BY host, pid
+          )
+          SELECT count() as total FROM hostStats
         `
       }
     } else if (options.mode === 'performance') {
@@ -2083,6 +2158,32 @@ export class ProjectService {
           LIMIT {limit:UInt32}
           OFFSET {offset:UInt32}
         `
+
+      countQuery = `
+        WITH 
+          currentPeriod AS (
+            SELECT pid, count() as visits
+            FROM analytics
+            WHERE pid IN {pids:Array(String)}
+              AND created BETWEEN ${timeFrameClause.currentStart} AND ${timeFrameClause.currentEnd}
+            GROUP BY pid
+          ),
+          previousPeriod AS (
+            SELECT pid, count() as visits
+            FROM analytics
+            WHERE pid IN {pids:Array(String)}
+              AND created BETWEEN ${timeFrameClause.previousStart} AND ${timeFrameClause.previousEnd}
+            GROUP BY pid
+          ),
+          projectStats AS (
+            SELECT 
+              cp.pid
+            FROM currentPeriod cp
+            JOIN previousPeriod pp ON cp.pid = pp.pid
+            WHERE pp.visits > 0
+          )
+        SELECT count() as total FROM projectStats
+      `
     } else if (options.mode === 'lost-traffic') {
       query = `
           WITH last_visits AS (
@@ -2102,6 +2203,21 @@ export class ProjectService {
           LIMIT {limit:UInt32}
           OFFSET {offset:UInt32}
         `
+
+      countQuery = `
+        WITH last_visits AS (
+          SELECT 
+            pid,
+            max(created) as last_visit,
+            count() as total_visits
+          FROM analytics
+          WHERE pid IN {pids:Array(String)}
+          GROUP BY pid
+          HAVING last_visit < (now() - INTERVAL 48 HOUR)
+            AND total_visits > 0
+        )
+        SELECT count() as total FROM last_visits
+      `
     } else {
       // High/Low traffic query
       query = `
@@ -2116,6 +2232,18 @@ export class ProjectService {
           LIMIT {limit:UInt32}
           OFFSET {offset:UInt32}
         `
+
+      countQuery = `
+        WITH projectStats AS (
+          SELECT 
+            pid
+          FROM analytics
+          WHERE pid IN {pids:Array(String)}
+            AND created BETWEEN ${timeFrameClause.currentStart} AND ${timeFrameClause.currentEnd}
+          GROUP BY pid
+        )
+        SELECT count() as total FROM projectStats
+      `
     }
 
     // Execute query for each chunk and combine results
@@ -2138,20 +2266,6 @@ export class ProjectService {
       // eslint-disable-next-line no-await-in-loop
       const chunkResults = await result.json()
       allResults = allResults.concat(chunkResults)
-
-      // Get total count for this chunk -- todo: fix is required
-      const countQuery = `
-        WITH hostStats AS (
-          SELECT 
-            pid,
-            count() as visits
-          FROM analytics
-          WHERE pid IN {pids:Array(String)}
-            AND created BETWEEN ${timeFrameClause.currentStart} AND ${timeFrameClause.currentEnd}
-          GROUP BY pid
-        )
-        SELECT count() as total FROM hostStats
-      `
 
       // eslint-disable-next-line no-await-in-loop
       const countResult = await clickhouse.query({
