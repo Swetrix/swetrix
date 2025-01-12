@@ -2177,7 +2177,18 @@ const ViewProject = () => {
     loadAnalytics()
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, areFiltersParsed, activeTab, customMetrics, filters, authLoading, project, isActiveCompare])
+  }, [
+    mode,
+    areFiltersParsed,
+    activeTab,
+    customMetrics,
+    filters,
+    authLoading,
+    project,
+    isActiveCompare,
+    period,
+    timeBucket,
+  ])
 
   useEffect(() => {
     if (!areFiltersParsed || activeTab !== PROJECT_TABS.performance || authLoading || !project) return
@@ -2194,6 +2205,8 @@ const ViewProject = () => {
     authLoading,
     project,
     isActiveCompare,
+    period,
+    timeBucket,
   ])
 
   useEffect(() => {
