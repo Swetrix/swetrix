@@ -3567,6 +3567,7 @@ const ViewProject = () => {
                       </div>
                       {activeTab === PROJECT_TABS.funnels && (
                         <button
+                          type='button'
                           onClick={() => setActiveFunnel(null)}
                           className='mx-auto mb-4 mt-2 flex items-center text-base font-normal text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100 lg:mx-0 lg:mt-0'
                         >
@@ -3683,6 +3684,7 @@ const ViewProject = () => {
                 {activeTab === PROJECT_TABS.sessions && activePSID && (
                   <>
                     <button
+                      type='button'
                       onClick={() => {
                         setActiveSession(null)
                         setActivePSID(null)
@@ -3759,6 +3761,7 @@ const ViewProject = () => {
                 {activeTab === PROJECT_TABS.errors && activeEID && (
                   <>
                     <button
+                      type='button'
                       onClick={() => {
                         setActiveError(null)
                         setActiveEID(null)

@@ -46,6 +46,7 @@ export const Tabs = ({ activeTab, setActiveTab, className, isLoading }: TabsProp
       return (
         <button
           key={tab.id}
+          type='button'
           onClick={() => {
             if (isLoading) {
               return

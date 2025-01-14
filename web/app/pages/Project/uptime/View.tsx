@@ -401,6 +401,7 @@ const Uptime = () => {
           </div>
         </div>
         <button
+          type='button'
           onClick={() => setActiveMonitor(null)}
           className='mx-auto mb-4 mt-2 flex items-center text-base font-normal text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100 lg:mx-0 lg:mt-0'
         >

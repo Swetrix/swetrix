@@ -669,6 +669,7 @@
     },
     "projects": "Projects",
     "addProject": "Add project",
+    "noProjectsFound": "No projects found within this organisation",
     "modals": {
       "remove": {
         "title": "Remove {{project}}?",

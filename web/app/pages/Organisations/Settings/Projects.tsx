@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { toast } from 'sonner'
-import { InformationCircleIcon, MagnifyingGlassIcon, FolderPlusIcon } from '@heroicons/react/24/outline'
+import { InformationCircleIcon, MagnifyingGlassIcon, FolderPlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { useTranslation } from 'react-i18next'
 import _isEmpty from 'lodash/isEmpty'
 import _replace from 'lodash/replace'
@@ -25,7 +25,8 @@ interface SelectAProjectProps {
   onSelect: (project: Project) => void
 }
 
-const PAGINATION_ENTRIES = 5
+const PROJECT_SELECT_PAGE_SIZE = 5
+const PROJECT_LIST_PAGE_SIZE = 2
 
 const SelectAProject = ({ onSelect }: SelectAProjectProps) => {
   const { t } = useTranslation('common')
@@ -37,15 +38,15 @@ const SelectAProject = ({ onSelect }: SelectAProjectProps) => {
   const [total, setTotal] = useState(0)
 
   const debouncedSearch = useDebounce(search, 500)
-  const pageAmount = Math.ceil(total / PAGINATION_ENTRIES)
+  const pageAmount = Math.ceil(total / PROJECT_SELECT_PAGE_SIZE)
 
   useEffect(() => {
     const loadProjects = async () => {
       setIsLoading(true)
       try {
         const { results, total: totalCount } = await getProjectsAvailableForOrganisation(
-          PAGINATION_ENTRIES,
-          (currentPage - 1) * PAGINATION_ENTRIES,
+          PROJECT_SELECT_PAGE_SIZE,
+          (currentPage - 1) * PROJECT_SELECT_PAGE_SIZE,
           debouncedSearch,
         )
         setProjects(results)
@@ -113,7 +114,7 @@ const SelectAProject = ({ onSelect }: SelectAProjectProps) => {
           pageAmount={pageAmount}
           setPage={setCurrentPage}
           total={total}
-          pageSize={PAGINATION_ENTRIES}
+          pageSize={PROJECT_SELECT_PAGE_SIZE}
         />
       ) : null}
     </div>
@@ -126,7 +127,7 @@ const NoProjects = () => {
   return (
     <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
       <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>
-        <h2 className='mb-8 px-4 text-center text-xl leading-snug'>{t('project.settings.noPeople')}</h2>
+        <h2 className='mb-8 px-4 text-center text-xl leading-snug'>{t('organisations.noProjectsFound')}</h2>
       </div>
     </div>
   )
@@ -182,7 +183,20 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
   const [isActionLoading, setIsActionLoading] = useState(false)
   const [selectedProject, setSelectedProject] = useState<any>(null)
 
+  const [currentPage, setCurrentPage] = useState(1)
+  const [search, setSearch] = useState('')
+  const [isSearchActive, setIsSearchActive] = useState(false)
   const { projects } = organisation
+
+  const pageAmount = Math.ceil(projects.length / PROJECT_LIST_PAGE_SIZE)
+
+  const filteredProjects = useMemo(() => {
+    if (!search) {
+      return projects
+    }
+
+    return projects.filter((project) => project.name.toLowerCase().includes(search.toLowerCase()))
+  }, [projects, search])
 
   const removeProject = async (projectId: string) => {
     if (isActionLoading) {
@@ -231,6 +245,22 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
       <div className='mb-3 flex items-center justify-between'>
         <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
           {t('organisations.projects')}
+          {isSearchActive ? (
+            <XMarkIcon
+              className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50'
+              onClick={() => {
+                setSearch('')
+                setIsSearchActive(false)
+              }}
+            />
+          ) : (
+            <MagnifyingGlassIcon
+              className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50'
+              onClick={() => {
+                setIsSearchActive(true)
+              }}
+            />
+          )}
         </h3>
         <Button
           className='h-8 pl-2'
@@ -247,14 +277,28 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
           </>
         </Button>
       </div>
+      {isSearchActive && (
+        <div className='relative w-full'>
+          <div className='pointer-events-none absolute inset-y-0 left-0 hidden items-center sm:flex'>
+            <MagnifyingGlassIcon className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50' />
+          </div>
+          <input
+            type='text'
+            onChange={(e) => setSearch(e.target.value)}
+            value={search}
+            className='block h-8 w-full rounded-lg border-none bg-gray-50 p-2.5 text-sm text-gray-900 ring-1 ring-gray-300 focus:ring-gray-500 dark:bg-slate-900 dark:text-white dark:placeholder-gray-400 dark:ring-slate-600 dark:focus:ring-slate-200 sm:pl-10'
+            placeholder={t('project.search')}
+          />
+        </div>
+      )}
       <div>
-        {_isEmpty(projects) ? (
+        {_isEmpty(filteredProjects) ? (
           <NoProjects />
         ) : (
           <div className='mt-3 flex flex-col'>
-            <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 md:overflow-x-visible lg:-mx-8'>
-              <div className='inline-block min-w-full py-2 md:px-6 lg:px-8'>
-                <div className='shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
+            <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8'>
+              <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
+                <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
                   <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
                     <thead>
                       <tr className='dark:bg-slate-800'>
@@ -269,7 +313,10 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
                     </thead>
                     <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
                       <ProjectList
-                        projects={projects}
+                        projects={filteredProjects.slice(
+                          (currentPage - 1) * PROJECT_LIST_PAGE_SIZE,
+                          currentPage * PROJECT_LIST_PAGE_SIZE,
+                        )}
                         onRemove={(project) => {
                           setProjectToRemove(project)
                           setShowDeleteModal(true)
@@ -278,6 +325,16 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
                     </tbody>
                   </table>
                 </div>
+                {pageAmount > 1 ? (
+                  <Pagination
+                    className='mt-4 px-2'
+                    page={currentPage}
+                    pageAmount={pageAmount}
+                    setPage={setCurrentPage}
+                    total={projects.length}
+                    pageSize={PROJECT_LIST_PAGE_SIZE}
+                  />
+                ) : null}
               </div>
             </div>
           </div>

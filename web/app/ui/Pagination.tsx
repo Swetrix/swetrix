@@ -41,6 +41,7 @@ const Pagination = ({
     >
       <div className='flex flex-1 justify-between sm:hidden'>
         <button
+          type='button'
           onClick={() => {
             if (page === 1) {
               return
@@ -60,6 +61,7 @@ const Pagination = ({
           {t('project.prev')}
         </button>
         <button
+          type='button'
           onClick={() => {
             if (page === pageAmount) {
               return
@@ -97,6 +99,7 @@ const Pagination = ({
           )}
           <nav className='isolate inline-flex -space-x-px rounded-md shadow-sm' aria-label='Pagination'>
             <button
+              type='button'
               onClick={() => {
                 if (page === 1) {
                   return
@@ -120,6 +123,7 @@ const Pagination = ({
               if (item === DOTS) {
                 return (
                   <button
+                    type='button'
                     key={item + index}
                     onClick={() => {
                       const lastShownPage = paginationRange[index - 1] as number
@@ -137,6 +141,7 @@ const Pagination = ({
 
               return (
                 <button
+                  type='button'
                   key={item}
                   onClick={() => setPage(item)}
                   className={cx(
@@ -152,6 +157,7 @@ const Pagination = ({
               )
             })}
             <button
+              type='button'
               onClick={() => {
                 if (page === pageAmount) {
                   return
