@@ -26,7 +26,7 @@ interface SelectAProjectProps {
 }
 
 const PROJECT_SELECT_PAGE_SIZE = 5
-const PROJECT_LIST_PAGE_SIZE = 2
+const PROJECT_LIST_PAGE_SIZE = 20
 
 const SelectAProject = ({ onSelect }: SelectAProjectProps) => {
   const { t } = useTranslation('common')
