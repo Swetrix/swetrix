@@ -188,15 +188,15 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
   const [isSearchActive, setIsSearchActive] = useState(false)
   const { projects } = organisation
 
-  const pageAmount = Math.ceil(projects.length / PROJECT_LIST_PAGE_SIZE)
-
   const filteredProjects = useMemo(() => {
     if (!search) {
       return projects
     }
 
-    return projects.filter((project) => project.name.toLowerCase().includes(search.toLowerCase()))
+    return projects.filter((project) => project.name.toLowerCase().includes(search))
   }, [projects, search])
+
+  const pageAmount = Math.ceil(filteredProjects.length / PROJECT_LIST_PAGE_SIZE)
 
   const removeProject = async (projectId: string) => {
     if (isActionLoading) {
@@ -284,7 +284,10 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
           </div>
           <input
             type='text'
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value.toLowerCase())
+              setCurrentPage(1)
+            }}
             value={search}
             className='block h-8 w-full rounded-lg border-none bg-gray-50 p-2.5 text-sm text-gray-900 ring-1 ring-gray-300 focus:ring-gray-500 dark:bg-slate-900 dark:text-white dark:placeholder-gray-400 dark:ring-slate-600 dark:focus:ring-slate-200 sm:pl-10'
             placeholder={t('project.search')}
