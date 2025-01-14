@@ -3,7 +3,6 @@ import { Link, useNavigate } from '@remix-run/react'
 import { useTranslation, Trans } from 'react-i18next'
 import _size from 'lodash/size'
 import _keys from 'lodash/keys'
-import _omit from 'lodash/omit'
 import _isEmpty from 'lodash/isEmpty'
 
 import { getAccessToken, setAccessToken } from '~/utils/accessToken'
@@ -127,7 +126,9 @@ const Signup = ({ ssrTheme }: SignupProps) => {
       const refCode = getCookie(REFERRAL_COOKIE)
 
       const { user, accessToken, refreshToken } = await signup({
-        ..._omit(data, ['dontRemember']),
+        email: data.email,
+        password: data.password,
+        checkIfLeaked: data.checkIfLeaked,
         refCode: refCode || undefined,
       })
 

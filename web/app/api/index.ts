@@ -111,7 +111,7 @@ export const login = (credentials: { email: string; password: string }) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const signup = (data: { email: string; password: string; refCode?: string }) =>
+export const signup = (data: { email: string; password: string; refCode?: string; checkIfLeaked?: boolean }) =>
   api
     .post('v1/auth/register', data)
     .then((response): Auth => response.data)
