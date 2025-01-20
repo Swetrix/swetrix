@@ -3,6 +3,7 @@ import { Link } from '@remix-run/react'
 import { toast } from 'sonner'
 import cx from 'clsx'
 import _size from 'lodash/size'
+import _round from 'lodash/round'
 import _isNumber from 'lodash/isNumber'
 import _replace from 'lodash/replace'
 import _find from 'lodash/find'
@@ -25,12 +26,14 @@ import { authActions } from '~/lib/reducers/auth'
 import Spin from '~/ui/icons/Spin'
 import useFeatureFlag from '~/hooks/useFeatureFlag'
 import { FeatureFlag } from '~/lib/models/User'
+import { DASHBOARD_TABS } from './Tabs'
 
 interface ProjectCardProps {
   live?: string | number | null
   overallStats?: OverallObject
   project: Project
   activePeriod: string
+  activeTab: (typeof DASHBOARD_TABS)[number]['id']
 }
 
 interface MiniCardProps {
@@ -81,7 +84,7 @@ const MiniCard = ({ labelTKey, total = 0, percChange }: MiniCardProps) => {
   )
 }
 
-export const ProjectCard = ({ live = null, project, overallStats, activePeriod }: ProjectCardProps) => {
+export const ProjectCard = ({ live = null, project, overallStats, activePeriod, activeTab }: ProjectCardProps) => {
   const { t } = useTranslation('common')
   const [showInviteModal, setShowInviteModal] = useState(false)
   const isHostnameNavigationEnabled = useFeatureFlag(FeatureFlag['dashboard-hostname-cards'])
@@ -231,6 +234,12 @@ export const ProjectCard = ({ live = null, project, overallStats, activePeriod }
               labelTKey={project.isCaptchaProject ? 'dashboard.captchaEvents' : 'dashboard.pageviews'}
               // @ts-expect-error
               total={project?.trafficStats?.visits}
+              percChange={
+                activeTab === 'performance'
+                  ? // @ts-expect-error
+                    _round(project?.trafficStats?.percentageChange, 2)
+                  : undefined
+              }
             />
           ) : (
             <MiniCard
