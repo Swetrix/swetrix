@@ -76,7 +76,7 @@ const Organisations = ({ membership }: OrganisationsProps) => {
         {organisation.name}
       </td>
       <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-white'>
-        {t(`organisations.settings.roles.${role}.name`)}
+        {t(`organisations.role.${role}.name`)}
       </td>
       <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-white'>
         {language === 'en'
