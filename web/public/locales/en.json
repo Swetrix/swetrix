@@ -688,6 +688,8 @@
     "delete": "Delete organisation"
   },
   "dashboard": {
+    "gridView": "Grid view",
+    "listView": "List view",
     "uptime": "Uptime",
     "captcha": "CAPTCHA",
     "newProject": "New project",

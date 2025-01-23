@@ -7,6 +7,7 @@ import _map from 'lodash/map'
 import { useTranslation } from 'react-i18next'
 import { FolderPlusIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { XCircleIcon } from '@heroicons/react/24/solid'
+import { StretchHorizontal as StretchHorizontalIcon, LayoutGrid as LayoutGridIcon } from 'lucide-react'
 import cx from 'clsx'
 
 import Modal from '~/ui/Modal'
@@ -18,6 +19,7 @@ import DashboardLockedBanner from '~/components/DashboardLockedBanner'
 import useDebounce from '~/hooks/useDebounce'
 import useFeatureFlag from '~/hooks/useFeatureFlag'
 import { FeatureFlag } from '~/lib/models/User'
+import { getItem, setItem } from '~/utils/localstorage'
 
 import Pagination from '~/ui/Pagination'
 import { useSelector } from 'react-redux'
@@ -32,6 +34,12 @@ import { PeriodSelector } from './PeriodSelector'
 
 const PAGE_SIZE_OPTIONS = [12, 24, 48, 96]
 
+const DASHBOARD_VIEW_KEY = 'dashboard_view'
+const DASHBOARD_VIEW = {
+  GRID: 'grid',
+  LIST: 'list',
+} as const
+
 const Dashboard = () => {
   const { user, loading: authLoading } = useSelector((state: StateType) => state.auth)
   const showPeriodSelector = useFeatureFlag(FeatureFlag['dashboard-period-selector'])
@@ -41,6 +49,7 @@ const Dashboard = () => {
   const { t } = useTranslation('common')
   const [isSearchActive, setIsSearchActive] = useState(false)
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
+  const [viewMode, setViewMode] = useState(getItem(DASHBOARD_VIEW_KEY) || DASHBOARD_VIEW.GRID)
 
   const [projects, setProjects] = useState<Project[]>([])
   const [paginationTotal, setPaginationTotal] = useState(0)
@@ -249,6 +258,44 @@ const Dashboard = () => {
                 )}
               </div>
               <div className='flex items-center gap-2'>
+                <ClientOnly fallback={null}>
+                  {() => (
+                    <div className='space-x-2 sm:mr-3 lg:px-3'>
+                      <button
+                        type='button'
+                        title={t('dashboard.gridView')}
+                        onClick={() => {
+                          setViewMode(DASHBOARD_VIEW.GRID)
+                          setItem(DASHBOARD_VIEW_KEY, DASHBOARD_VIEW.GRID)
+                        }}
+                        className={cx(
+                          'rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                          viewMode === DASHBOARD_VIEW.GRID
+                            ? 'bg-gray-100 text-gray-900 dark:bg-slate-700 dark:text-gray-50'
+                            : 'text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:hover:bg-slate-700',
+                        )}
+                      >
+                        <LayoutGridIcon className='h-5 w-5 [&_path]:stroke-[3.5%]' />
+                      </button>
+                      <button
+                        type='button'
+                        title={t('dashboard.listView')}
+                        onClick={() => {
+                          setViewMode(DASHBOARD_VIEW.LIST)
+                          setItem(DASHBOARD_VIEW_KEY, DASHBOARD_VIEW.LIST)
+                        }}
+                        className={cx(
+                          'rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                          viewMode === DASHBOARD_VIEW.LIST
+                            ? 'bg-gray-100 text-gray-900 dark:bg-slate-700 dark:text-gray-50'
+                            : 'text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:hover:bg-slate-700',
+                        )}
+                      >
+                        <StretchHorizontalIcon className='h-5 w-5' />
+                      </button>
+                    </div>
+                  )}
+                </ClientOnly>
                 {activeTab === 'lost-traffic' ? null : showPeriodSelector ? (
                   <PeriodSelector
                     activePeriod={activePeriod}
@@ -296,13 +343,13 @@ const Dashboard = () => {
             )}
             {isLoading || isLoading === null ? (
               <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-                <ProjectCardSkeleton />
+                <ProjectCardSkeleton viewMode={viewMode} />
               </div>
             ) : (
               <ClientOnly
                 fallback={
                   <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-                    <ProjectCardSkeleton />
+                    <ProjectCardSkeleton viewMode={viewMode} />
                   </div>
                 }
               >
@@ -311,7 +358,14 @@ const Dashboard = () => {
                     {_isEmpty(projects) ? (
                       <NoProjects onClick={onNewProject} />
                     ) : (
-                      <div className='grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
+                      <div
+                        className={cx(
+                          'grid gap-x-6 gap-y-3',
+                          viewMode === DASHBOARD_VIEW.GRID
+                            ? 'grid-cols-1 lg:grid-cols-3 lg:gap-y-6'
+                            : 'grid-cols-1 gap-y-3',
+                        )}
+                      >
                         {_map(projects, (project) => (
                           <ProjectCard
                             key={project.id}
@@ -320,10 +374,11 @@ const Dashboard = () => {
                             overallStats={overallStats[project.id]}
                             activePeriod={activePeriod}
                             activeTab={activeTab}
+                            viewMode={viewMode}
                           />
                         ))}
                         {_size(projects) % 12 !== 0 && activeTab === 'default' ? (
-                          <AddProject sitesCount={_size(projects)} onClick={onNewProject} />
+                          <AddProject sitesCount={_size(projects)} onClick={onNewProject} viewMode={viewMode} />
                         ) : null}
                       </div>
                     )}

@@ -34,6 +34,7 @@ interface ProjectCardProps {
   project: Project
   activePeriod: string
   activeTab: (typeof DASHBOARD_TABS)[number]['id']
+  viewMode: 'grid' | 'list'
 }
 
 interface MiniCardProps {
@@ -84,7 +85,14 @@ const MiniCard = ({ labelTKey, total = 0, percChange }: MiniCardProps) => {
   )
 }
 
-export const ProjectCard = ({ live = null, project, overallStats, activePeriod, activeTab }: ProjectCardProps) => {
+export const ProjectCard = ({
+  live = null,
+  project,
+  overallStats,
+  activePeriod,
+  activeTab,
+  viewMode,
+}: ProjectCardProps) => {
   const { t } = useTranslation('common')
   const [showInviteModal, setShowInviteModal] = useState(false)
   const isHostnameNavigationEnabled = useFeatureFlag(FeatureFlag['dashboard-hostname-cards'])
@@ -206,9 +214,12 @@ export const ProjectCard = ({ live = null, project, overallStats, activePeriod, 
         search: searchParams,
       }}
       onClick={onElementClick}
-      className='min-h-[153.1px] cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 dark:border-slate-800/25 dark:bg-slate-800 dark:hover:bg-slate-700'
+      className={cx(
+        'cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 dark:border-slate-800/25 dark:bg-slate-800 dark:hover:bg-slate-700',
+        viewMode === 'list' ? 'flex items-center justify-between px-6 py-4' : 'min-h-[153.1px]',
+      )}
     >
-      <div className='px-4 py-4'>
+      <div className={cx('flex flex-col', viewMode === 'list' ? 'flex-1' : 'px-4 py-4')}>
         <div className='flex items-center justify-between'>
           <p className='truncate text-lg font-semibold text-slate-900 dark:text-gray-50'>{name}</p>
 
@@ -221,39 +232,39 @@ export const ProjectCard = ({ live = null, project, overallStats, activePeriod, 
             </Link>
           )}
         </div>
-        <div className='mt-1 flex flex-shrink-0 flex-wrap gap-2'>
+        <div className={cx('flex flex-shrink-0 flex-wrap gap-2', viewMode === 'list' ? 'mt-0.5' : 'mt-1')}>
           {badges.length > 0 ? (
             badges.map((badge) => <Badge key={badge.label} {...badge} />)
           ) : (
             <Badge label='I' colour='slate' className='invisible' />
           )}
         </div>
-        <div className='mt-4 flex flex-shrink-0 gap-5'>
-          {isHostnameNavigationEnabled ? (
-            <MiniCard
-              labelTKey={project.isCaptchaProject ? 'dashboard.captchaEvents' : 'dashboard.pageviews'}
-              // @ts-expect-error
-              total={project?.trafficStats?.visits}
-              percChange={
-                activeTab === 'performance'
-                  ? // @ts-expect-error
-                    _round(project?.trafficStats?.percentageChange, 2)
-                  : undefined
-              }
-            />
-          ) : (
-            <MiniCard
-              labelTKey={project.isCaptchaProject ? 'dashboard.captchaEvents' : 'dashboard.pageviews'}
-              total={live === 'N/A' ? 'N/A' : (overallStats?.current.all ?? null)}
-              percChange={
-                live === 'N/A'
-                  ? 0
-                  : calculateRelativePercentage(overallStats?.previous.all ?? 0, overallStats?.current.all ?? 0)
-              }
-            />
-          )}
-          {project.isAnalyticsProject && <MiniCard labelTKey='dashboard.liveVisitors' total={live} />}
-        </div>
+      </div>
+      <div className={cx('flex flex-shrink-0 gap-5', viewMode === 'list' ? 'ml-4' : 'mt-4 px-4 pb-4')}>
+        {isHostnameNavigationEnabled ? (
+          <MiniCard
+            labelTKey={project.isCaptchaProject ? 'dashboard.captchaEvents' : 'dashboard.pageviews'}
+            // @ts-expect-error
+            total={project?.trafficStats?.visits}
+            percChange={
+              activeTab === 'performance'
+                ? // @ts-expect-error
+                  _round(project?.trafficStats?.percentageChange, 2)
+                : undefined
+            }
+          />
+        ) : (
+          <MiniCard
+            labelTKey={project.isCaptchaProject ? 'dashboard.captchaEvents' : 'dashboard.pageviews'}
+            total={live === 'N/A' ? 'N/A' : (overallStats?.current.all ?? null)}
+            percChange={
+              live === 'N/A'
+                ? 0
+                : calculateRelativePercentage(overallStats?.previous.all ?? 0, overallStats?.current.all ?? 0)
+            }
+          />
+        )}
+        {project.isAnalyticsProject && <MiniCard labelTKey='dashboard.liveVisitors' total={live} />}
       </div>
       {project.role !== 'owner' && !project.isAccessConfirmed && (
         <Modal
@@ -276,28 +287,40 @@ export const ProjectCard = ({ live = null, project, overallStats, activePeriod, 
   )
 }
 
-export const ProjectCardSkeleton = () => {
+interface ProjectCardSkeletonProps {
+  viewMode: 'grid' | 'list'
+}
+
+export const ProjectCardSkeleton = ({ viewMode }: ProjectCardSkeletonProps) => {
   return (
-    <div className='grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
-      {_map(Array(12), (_, index) => (
+    <div
+      className={cx(
+        'grid gap-x-6 gap-y-3',
+        viewMode === 'grid' ? 'grid-cols-1 lg:grid-cols-3 lg:gap-y-6' : 'grid-cols-1 gap-y-3',
+      )}
+    >
+      {_map(Array(viewMode === 'grid' ? 12 : 8), (_, index) => (
         <div
           key={index}
-          className='min-h-[153.1px] animate-pulse cursor-wait overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-slate-800/25 dark:bg-slate-800'
+          className={cx(
+            'animate-pulse cursor-wait overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-slate-800/25 dark:bg-slate-800',
+            viewMode === 'list' ? 'flex items-center justify-between px-6 py-4' : 'min-h-[153.1px]',
+          )}
         >
-          <div className='px-4 py-4'>
+          <div className={cx('flex flex-col', viewMode === 'list' ? 'flex-1' : 'px-4 py-4')}>
             <div className='flex items-center justify-between'>
               <div className='h-6 w-3/4 rounded bg-gray-200 dark:bg-slate-700' />
               <div className='h-6 w-6 rounded-[3px] bg-gray-200 dark:bg-slate-700' />
             </div>
-            <div className='mt-1.5 flex flex-shrink-0 flex-wrap gap-2'>
+            <div className={cx('flex flex-shrink-0 flex-wrap gap-2', viewMode === 'list' ? 'mt-0.5' : 'mt-1.5')}>
               <div className='h-6 w-16 rounded bg-gray-200 dark:bg-slate-700' />
               <div className='h-6 w-16 rounded bg-gray-200 dark:bg-slate-700' />
               <div className='h-6 w-16 rounded bg-gray-200 dark:bg-slate-700' />
             </div>
-            <div className='mt-[1.375rem] flex flex-shrink-0 gap-5'>
-              <div className='h-10 w-24 rounded bg-gray-200 dark:bg-slate-700' />
-              <div className='h-10 w-24 rounded bg-gray-200 dark:bg-slate-700' />
-            </div>
+          </div>
+          <div className={cx('flex flex-shrink-0 gap-5', viewMode === 'list' ? 'ml-4' : 'mt-[1.375rem] px-4 pb-4')}>
+            <div className='h-10 w-24 rounded bg-gray-200 dark:bg-slate-700' />
+            <div className='h-10 w-24 rounded bg-gray-200 dark:bg-slate-700' />
           </div>
         </div>
       ))}
