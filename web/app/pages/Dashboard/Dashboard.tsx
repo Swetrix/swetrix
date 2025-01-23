@@ -31,6 +31,7 @@ import { Overall, Project } from '~/lib/models/Project'
 import { getProjects, getLiveVisitors, getOverallStats, getOverallStatsCaptcha } from '~/api'
 import { DASHBOARD_TABS, Tabs } from './Tabs'
 import { PeriodSelector } from './PeriodSelector'
+import useBreakpoint from '~/hooks/useBreakpoint'
 
 const PAGE_SIZE_OPTIONS = [12, 24, 48, 96]
 
@@ -50,6 +51,7 @@ const Dashboard = () => {
   const [isSearchActive, setIsSearchActive] = useState(false)
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
   const [viewMode, setViewMode] = useState(defaultViewMode)
+  const isAboveLgBreakpoint = useBreakpoint('lg')
 
   const [projects, setProjects] = useState<Project[]>([])
   const [paginationTotal, setPaginationTotal] = useState(0)
@@ -214,6 +216,8 @@ const Dashboard = () => {
     setCookie('dashboard_view', mode, 7884000) // 3 months
   }
 
+  const _viewMode = isAboveLgBreakpoint ? viewMode : 'grid'
+
   return (
     <>
       <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
@@ -262,8 +266,15 @@ const Dashboard = () => {
                   </div>
                 )}
               </div>
-              <div className='flex items-center gap-2'>
-                <div className='space-x-2 sm:mr-3 lg:px-3'>
+              <div className='flex items-center gap-1'>
+                {activeTab === 'lost-traffic' ? null : showPeriodSelector ? (
+                  <PeriodSelector
+                    activePeriod={activePeriod}
+                    setActivePeriod={setActivePeriod}
+                    isLoading={isLoading === null || isLoading}
+                  />
+                ) : null}
+                <div className='ml-1 hidden space-x-2 sm:mr-3 lg:block lg:px-3'>
                   <button
                     type='button'
                     title={t('dashboard.gridView')}
@@ -295,13 +306,6 @@ const Dashboard = () => {
                     <StretchHorizontalIcon className='h-5 w-5' />
                   </button>
                 </div>
-                {activeTab === 'lost-traffic' ? null : showPeriodSelector ? (
-                  <PeriodSelector
-                    activePeriod={activePeriod}
-                    setActivePeriod={setActivePeriod}
-                    isLoading={isLoading === null || isLoading}
-                  />
-                ) : null}
                 <Link
                   to={routes.new_project}
                   onClick={onNewProject}
@@ -342,13 +346,13 @@ const Dashboard = () => {
             )}
             {isLoading || isLoading === null ? (
               <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-                <ProjectCardSkeleton viewMode={viewMode} />
+                <ProjectCardSkeleton viewMode={_viewMode} />
               </div>
             ) : (
               <ClientOnly
                 fallback={
                   <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-                    <ProjectCardSkeleton viewMode={viewMode} />
+                    <ProjectCardSkeleton viewMode={_viewMode} />
                   </div>
                 }
               >
@@ -360,7 +364,7 @@ const Dashboard = () => {
                       <div
                         className={cx(
                           'grid gap-x-6 gap-y-3',
-                          viewMode === DASHBOARD_VIEW.GRID
+                          _viewMode === DASHBOARD_VIEW.GRID
                             ? 'grid-cols-1 lg:grid-cols-3 lg:gap-y-6'
                             : 'grid-cols-1 gap-y-3',
                         )}
@@ -373,11 +377,11 @@ const Dashboard = () => {
                             overallStats={overallStats[project.id]}
                             activePeriod={activePeriod}
                             activeTab={activeTab}
-                            viewMode={viewMode}
+                            viewMode={_viewMode}
                           />
                         ))}
                         {_size(projects) % 12 !== 0 && activeTab === 'default' ? (
-                          <AddProject sitesCount={_size(projects)} onClick={onNewProject} viewMode={viewMode} />
+                          <AddProject sitesCount={_size(projects)} onClick={onNewProject} viewMode={_viewMode} />
                         ) : null}
                       </div>
                     )}
