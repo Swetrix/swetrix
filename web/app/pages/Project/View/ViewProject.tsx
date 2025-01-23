@@ -2715,6 +2715,44 @@ const ViewProject = () => {
   const setChartTypeOnClick = (type: string) => {
     setItem('chartType', type)
     setChartType(type)
+
+    if (activeTab === PROJECT_TABS.traffic) {
+      const bbSettings = getSettings(
+        chartData,
+        timeBucket,
+        activeChartMetrics,
+        !_includes(noRegionPeriods, activePeriod?.period),
+        timeFormat,
+        rotateXAxis,
+        type,
+        customEventsChartData,
+        dataChartCompare,
+      )
+
+      setMainChart(() => {
+        const generate = bb.generate(bbSettings)
+        generate.data.names(dataNames)
+        return generate
+      })
+    }
+
+    if (activeTab === PROJECT_TABS.performance) {
+      const bbPerfSettings = getSettingsPerf(
+        chartDataPerf,
+        timeBucket,
+        activeChartMetricsPerf,
+        rotateXAxis,
+        type,
+        timeFormat,
+        dataChartPerfCompare,
+      )
+
+      setMainChart(() => {
+        const generate = bb.generate(bbPerfSettings)
+        generate.data.names(dataNamesPerf)
+        return generate
+      })
+    }
   }
 
   /* KEYBOARD SHORTCUTS */
