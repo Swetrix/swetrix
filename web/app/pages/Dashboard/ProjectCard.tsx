@@ -220,19 +220,19 @@ export const ProjectCard = ({
       )}
     >
       <div className={cx('flex flex-col', viewMode === 'list' ? 'flex-1' : 'px-4 py-4')}>
-        <div className='flex items-center justify-between'>
+        <div className={cx('flex items-center', viewMode === 'grid' ? 'justify-between' : 'justify-start gap-1')}>
           <p className='truncate text-lg font-semibold text-slate-900 dark:text-gray-50'>{name}</p>
 
           {role !== 'viewer' && (
             <Link onClick={(e) => e.stopPropagation()} to={_replace(routes.project_settings, ':id', id)}>
               <AdjustmentsVerticalIcon
-                className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500'
+                className='size-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500'
                 aria-label={`${t('project.settings.settings')} ${name}`}
               />
             </Link>
           )}
         </div>
-        <div className={cx('flex flex-shrink-0 flex-wrap gap-2', viewMode === 'list' ? 'mt-0.5' : 'mt-1')}>
+        <div className='mt-1 flex flex-shrink-0 flex-wrap gap-2'>
           {badges.length > 0 ? (
             badges.map((badge) => <Badge key={badge.label} {...badge} />)
           ) : (
@@ -308,11 +308,11 @@ export const ProjectCardSkeleton = ({ viewMode }: ProjectCardSkeletonProps) => {
           )}
         >
           <div className={cx('flex flex-col', viewMode === 'list' ? 'flex-1' : 'px-4 py-4')}>
-            <div className='flex items-center justify-between'>
-              <div className='h-6 w-3/4 rounded bg-gray-200 dark:bg-slate-700' />
-              <div className='h-6 w-6 rounded-[3px] bg-gray-200 dark:bg-slate-700' />
+            <div className={cx('flex items-center', viewMode === 'grid' ? 'justify-between' : 'justify-start gap-1')}>
+              <div className='h-6 w-3/4 max-w-80 rounded bg-gray-200 dark:bg-slate-700' />
+              <div className='size-6 rounded-[3px] bg-gray-200 dark:bg-slate-700' />
             </div>
-            <div className={cx('flex flex-shrink-0 flex-wrap gap-2', viewMode === 'list' ? 'mt-0.5' : 'mt-1.5')}>
+            <div className='mt-1 flex flex-shrink-0 flex-wrap gap-2'>
               <div className='h-6 w-16 rounded bg-gray-200 dark:bg-slate-700' />
               <div className='h-6 w-16 rounded bg-gray-200 dark:bg-slate-700' />
               <div className='h-6 w-16 rounded bg-gray-200 dark:bg-slate-700' />

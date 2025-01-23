@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link } from '@remix-run/react'
+import { Link, useLoaderData } from '@remix-run/react'
 import { ClientOnly } from 'remix-utils/client-only'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
@@ -19,7 +19,7 @@ import DashboardLockedBanner from '~/components/DashboardLockedBanner'
 import useDebounce from '~/hooks/useDebounce'
 import useFeatureFlag from '~/hooks/useFeatureFlag'
 import { FeatureFlag } from '~/lib/models/User'
-import { getItem, setItem } from '~/utils/localstorage'
+import { setCookie } from '~/utils/cookie'
 
 import Pagination from '~/ui/Pagination'
 import { useSelector } from 'react-redux'
@@ -34,13 +34,13 @@ import { PeriodSelector } from './PeriodSelector'
 
 const PAGE_SIZE_OPTIONS = [12, 24, 48, 96]
 
-const DASHBOARD_VIEW_KEY = 'dashboard_view'
 const DASHBOARD_VIEW = {
   GRID: 'grid',
   LIST: 'list',
 } as const
 
 const Dashboard = () => {
+  const { viewMode: defaultViewMode } = useLoaderData<any>()
   const { user, loading: authLoading } = useSelector((state: StateType) => state.auth)
   const showPeriodSelector = useFeatureFlag(FeatureFlag['dashboard-period-selector'])
   const showTabs = useFeatureFlag(FeatureFlag['dashboard-analytics-tabs'])
@@ -49,7 +49,7 @@ const Dashboard = () => {
   const { t } = useTranslation('common')
   const [isSearchActive, setIsSearchActive] = useState(false)
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
-  const [viewMode, setViewMode] = useState(getItem(DASHBOARD_VIEW_KEY) || DASHBOARD_VIEW.GRID)
+  const [viewMode, setViewMode] = useState(defaultViewMode)
 
   const [projects, setProjects] = useState<Project[]>([])
   const [paginationTotal, setPaginationTotal] = useState(0)
@@ -209,6 +209,11 @@ const Dashboard = () => {
     setPage(1) // Reset to first page when changing page size
   }
 
+  const handleViewModeChange = (mode: 'grid' | 'list') => {
+    setViewMode(mode)
+    setCookie('dashboard_view', mode, 7884000) // 3 months
+  }
+
   return (
     <>
       <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
@@ -258,44 +263,38 @@ const Dashboard = () => {
                 )}
               </div>
               <div className='flex items-center gap-2'>
-                <ClientOnly fallback={null}>
-                  {() => (
-                    <div className='space-x-2 sm:mr-3 lg:px-3'>
-                      <button
-                        type='button'
-                        title={t('dashboard.gridView')}
-                        onClick={() => {
-                          setViewMode(DASHBOARD_VIEW.GRID)
-                          setItem(DASHBOARD_VIEW_KEY, DASHBOARD_VIEW.GRID)
-                        }}
-                        className={cx(
-                          'rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
-                          viewMode === DASHBOARD_VIEW.GRID
-                            ? 'bg-gray-100 text-gray-900 dark:bg-slate-700 dark:text-gray-50'
-                            : 'text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:hover:bg-slate-700',
-                        )}
-                      >
-                        <LayoutGridIcon className='h-5 w-5 [&_path]:stroke-[3.5%]' />
-                      </button>
-                      <button
-                        type='button'
-                        title={t('dashboard.listView')}
-                        onClick={() => {
-                          setViewMode(DASHBOARD_VIEW.LIST)
-                          setItem(DASHBOARD_VIEW_KEY, DASHBOARD_VIEW.LIST)
-                        }}
-                        className={cx(
-                          'rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
-                          viewMode === DASHBOARD_VIEW.LIST
-                            ? 'bg-gray-100 text-gray-900 dark:bg-slate-700 dark:text-gray-50'
-                            : 'text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:hover:bg-slate-700',
-                        )}
-                      >
-                        <StretchHorizontalIcon className='h-5 w-5' />
-                      </button>
-                    </div>
-                  )}
-                </ClientOnly>
+                <div className='space-x-2 sm:mr-3 lg:px-3'>
+                  <button
+                    type='button'
+                    title={t('dashboard.gridView')}
+                    onClick={() => {
+                      handleViewModeChange(DASHBOARD_VIEW.GRID)
+                    }}
+                    className={cx(
+                      'rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                      viewMode === DASHBOARD_VIEW.GRID
+                        ? 'bg-gray-100 text-gray-900 dark:bg-slate-700 dark:text-gray-50'
+                        : 'text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:hover:bg-slate-700',
+                    )}
+                  >
+                    <LayoutGridIcon className='h-5 w-5 [&_path]:stroke-[3.5%]' />
+                  </button>
+                  <button
+                    type='button'
+                    title={t('dashboard.listView')}
+                    onClick={() => {
+                      handleViewModeChange(DASHBOARD_VIEW.LIST)
+                    }}
+                    className={cx(
+                      'rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                      viewMode === DASHBOARD_VIEW.LIST
+                        ? 'bg-gray-100 text-gray-900 dark:bg-slate-700 dark:text-gray-50'
+                        : 'text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:hover:bg-slate-700',
+                    )}
+                  >
+                    <StretchHorizontalIcon className='h-5 w-5' />
+                  </button>
+                </div>
                 {activeTab === 'lost-traffic' ? null : showPeriodSelector ? (
                   <PeriodSelector
                     activePeriod={activePeriod}
