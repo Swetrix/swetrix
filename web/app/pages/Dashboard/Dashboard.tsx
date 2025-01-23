@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useLoaderData } from '@remix-run/react'
+import { Link, useLoaderData, useSearchParams } from '@remix-run/react'
 import { ClientOnly } from 'remix-utils/client-only'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'
@@ -46,6 +46,7 @@ const Dashboard = () => {
   const showPeriodSelector = useFeatureFlag(FeatureFlag['dashboard-period-selector'])
   const showTabs = useFeatureFlag(FeatureFlag['dashboard-analytics-tabs'])
   const isHostnameNavigationEnabled = useFeatureFlag(FeatureFlag['dashboard-hostname-cards'])
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const { t } = useTranslation('common')
   const [isSearchActive, setIsSearchActive] = useState(false)
@@ -55,21 +56,76 @@ const Dashboard = () => {
 
   const [projects, setProjects] = useState<Project[]>([])
   const [paginationTotal, setPaginationTotal] = useState(0)
-  const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0])
+  const [page, setPage] = useState(() => {
+    const pageParam = searchParams.get('page')
+    return pageParam ? parseInt(pageParam, 10) : 1
+  })
+  const [pageSize, setPageSize] = useState(() => {
+    const pageSizeParam = searchParams.get('pageSize')
+    return pageSizeParam && PAGE_SIZE_OPTIONS.includes(parseInt(pageSizeParam, 10))
+      ? parseInt(pageSizeParam, 10)
+      : PAGE_SIZE_OPTIONS[0]
+  })
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [liveStats, setLiveStats] = useState<Record<string, number>>({})
   const [overallStats, setOverallStats] = useState<Overall>({})
 
-  const [activeTab, setActiveTab] = useState<(typeof DASHBOARD_TABS)[number]['id']>(DASHBOARD_TABS[0].id)
-  const [activePeriod, setActivePeriod] = useState('7d')
+  const [activeTab, setActiveTab] = useState<(typeof DASHBOARD_TABS)[number]['id']>(() => {
+    const tabParam = searchParams.get('tab')
+    return tabParam && DASHBOARD_TABS.some((tab) => tab.id === tabParam)
+      ? (tabParam as (typeof DASHBOARD_TABS)[number]['id'])
+      : DASHBOARD_TABS[0].id
+  })
+  const [activePeriod, setActivePeriod] = useState(() => {
+    const periodParam = searchParams.get('period')
+    return periodParam || '7d'
+  })
 
   const pageAmount = Math.ceil(paginationTotal / pageSize)
 
   // This search represents what's inside the search input
   const [search, setSearch] = useState('')
   const debouncedSearch = useDebounce(search, 500)
+
+  // Update URL only when values are explicitly changed
+  const updateURL = (params: Record<string, string>) => {
+    const newSearchParams = new URLSearchParams(searchParams)
+    Object.entries(params).forEach(([key, value]) => {
+      newSearchParams.set(key, value)
+    })
+    setSearchParams(newSearchParams)
+  }
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage)
+    updateURL({ page: newPage.toString() })
+  }
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size)
+    setPage(1)
+    updateURL({ pageSize: size.toString(), page: '1' })
+  }
+
+  const handleTabChange = (newTab: (typeof DASHBOARD_TABS)[number]['id']) => {
+    setActiveTab(newTab)
+    setPage(1)
+    updateURL({ tab: newTab, page: '1' })
+  }
+
+  const handlePeriodChange = (period: string) => {
+    setActivePeriod(period)
+    setPage(1)
+    updateURL({ period, page: '1' })
+  }
+
+  const handleViewModeChange = (mode: 'grid' | 'list') => {
+    setViewMode(mode)
+    setCookie('dashboard_view', mode, 7884000) // 3 months
+  }
+
+  const _viewMode = isAboveLgBreakpoint ? viewMode : 'grid'
 
   const onNewProject = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (user.isActive || isSelfhosted) {
@@ -206,18 +262,6 @@ const Dashboard = () => {
     setSearch(e.target.value)
   }
 
-  const handlePageSizeChange = (size: number) => {
-    setPageSize(size)
-    setPage(1) // Reset to first page when changing page size
-  }
-
-  const handleViewModeChange = (mode: 'grid' | 'list') => {
-    setViewMode(mode)
-    setCookie('dashboard_view', mode, 7884000) // 3 months
-  }
-
-  const _viewMode = isAboveLgBreakpoint ? viewMode : 'grid'
-
   return (
     <>
       <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
@@ -270,7 +314,7 @@ const Dashboard = () => {
                 {activeTab === 'lost-traffic' ? null : showPeriodSelector ? (
                   <PeriodSelector
                     activePeriod={activePeriod}
-                    setActivePeriod={setActivePeriod}
+                    setActivePeriod={handlePeriodChange}
                     isLoading={isLoading === null || isLoading}
                   />
                 ) : null}
@@ -339,7 +383,14 @@ const Dashboard = () => {
             {showTabs && (
               <Tabs
                 activeTab={activeTab}
-                setActiveTab={setActiveTab}
+                setActiveTab={(tab) => {
+                  if (typeof tab === 'function') {
+                    const newTab = tab(activeTab)
+                    handleTabChange(newTab)
+                  } else {
+                    handleTabChange(tab)
+                  }
+                }}
                 isLoading={isLoading === null || isLoading}
                 className='mb-4'
               />
@@ -394,7 +445,7 @@ const Dashboard = () => {
                 className='mt-4'
                 page={page}
                 pageAmount={pageAmount}
-                setPage={setPage}
+                setPage={handlePageChange}
                 total={paginationTotal}
                 pageSize={pageSize}
                 pageSizeOptions={PAGE_SIZE_OPTIONS}
