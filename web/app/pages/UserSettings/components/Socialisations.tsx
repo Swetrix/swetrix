@@ -130,7 +130,7 @@ const Socialisations = () => {
   return (
     <>
       <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>{t('profileSettings.socialisationsDesc')}</p>
-      <div className='mt-2 overflow-hidden bg-white shadow dark:bg-slate-800 sm:rounded-md'>
+      <div className='mt-2 overflow-hidden bg-white shadow-sm dark:bg-slate-800 sm:rounded-md'>
         <ul className='divide-y divide-gray-200 dark:divide-slate-700'>
           {_map(AVAILABLE_SSO_PROVIDERS, ({ name, key, icons }) => {
             const [connected, unlinkable] = getStatusByUser(user, key)
@@ -142,7 +142,7 @@ const Socialisations = () => {
               <li key={key}>
                 <div className='items-center px-1 py-4 sm:flex sm:px-6'>
                   <div className='flex min-w-0 flex-1 items-center'>
-                    <div className='hidden flex-shrink-0 sm:block'>
+                    <div className='hidden shrink-0 sm:block'>
                       {theme === 'dark' ? (
                         <Light className='h-12 max-h-12 w-12 max-w-12 rounded-full' />
                       ) : (
@@ -154,13 +154,10 @@ const Socialisations = () => {
                         <p className='text-md font-medium text-gray-800 dark:text-gray-50'>{name}</p>
                         <p className='mt-2 flex items-center text-sm text-gray-500 dark:text-gray-100'>
                           {status === 'notConnected' && (
-                            <XCircleIcon className='mr-1.5 h-5 w-5 flex-shrink-0 text-red-400' aria-hidden='true' />
+                            <XCircleIcon className='mr-1.5 h-5 w-5 shrink-0 text-red-400' aria-hidden='true' />
                           )}
                           {status === 'connected' && (
-                            <CheckCircleIcon
-                              className='mr-1.5 h-5 w-5 flex-shrink-0 text-green-400'
-                              aria-hidden='true'
-                            />
+                            <CheckCircleIcon className='mr-1.5 h-5 w-5 shrink-0 text-green-400' aria-hidden='true' />
                           )}
                           {t(`common.${status}`)}
                         </p>

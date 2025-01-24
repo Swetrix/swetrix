@@ -1,6 +1,57 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@plugin "@tailwindcss/forms";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  /* Colors */
+  --color-gray-750: oklch(23.11% 0.0357 262.54); /* Converting #141d2e to OKLCH */
+
+  /* Custom Properties */
+  --width-card-toggle: calc(100% - 3rem);
+  
+  /* Minimum Heights */
+  --min-height-72: 18rem;
+  --min-height-page: calc(100vh - 74px);
+  --min-height-min-footer: calc(100vh - 148px);
+}
+
+/* Custom Animations */
+@keyframes ping-op {
+  0% {
+    opacity: 0.75;
+  }
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes appear {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  75%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Custom Animation Classes */
+@layer utilities {
+  .animate-ping-slow {
+    animation: ping-op 3s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+  .animate-appear {
+    animation: appear 0.5s cubic-bezier(0, 0, 0.2, 1) 1;
+  }
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@custom-variant has-hover (@media (hover: hover) and (pointer: fine));
+@custom-variant no-hover (@media not all and (hover: hover) and (pointer: fine));
 
 @keyframes move-x {
   0% {
@@ -8,5 +59,22 @@
   }
   100% {
     transform: translateX(var(--move-x-to));
+  }
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
+
+@layer base {
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-gray-400);
   }
 }

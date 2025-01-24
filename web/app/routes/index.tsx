@@ -357,7 +357,7 @@ const FeatureBlock = ({ heading, description, children, className, dark }: Featu
     variants={{ idle: {}, active: {} }}
     data-dark={dark ? 'true' : undefined}
     className={clsx(
-      'group relative flex flex-col overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-black/5 data-[dark]:bg-slate-800 data-[dark]:ring-white/15',
+      'shadow-xs group relative flex flex-col overflow-hidden rounded-lg bg-white ring-1 ring-black/5 data-[dark]:bg-slate-800 data-[dark]:ring-white/15',
       className,
     )}
   >
@@ -665,7 +665,7 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
           dark={theme === 'dark'}
         >
           <div className='relative h-80 overflow-hidden px-10 pt-5'>
-            <div className='absolute top-2 rotate-2 rounded-sm bg-slate-200 p-4 text-slate-900 opacity-70 transition-opacity group-hover:opacity-90 dark:bg-slate-700 dark:text-gray-50'>
+            <div className='rounded-xs absolute top-2 rotate-2 bg-slate-200 p-4 text-slate-900 opacity-70 transition-opacity group-hover:opacity-90 dark:bg-slate-700 dark:text-gray-50'>
               <p className='mb-4 text-sm'>
                 We use cookies to enhance your experience. By continuing to visit this site you agree to our use of
                 cookies.
@@ -673,7 +673,7 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
               <div className='max-w-max rounded-md bg-slate-800 p-2 text-gray-50'>Accept</div>
             </div>
 
-            <div className='absolute bottom-0 left-0 mb-4 flex max-w-max -rotate-12 gap-2 rounded-sm bg-slate-100 p-4 text-slate-900 transition-transform group-hover:-rotate-6 dark:bg-gray-900 dark:text-gray-50'>
+            <div className='rounded-xs absolute bottom-0 left-0 mb-4 flex max-w-max -rotate-12 gap-2 bg-slate-100 p-4 text-slate-900 transition-transform group-hover:-rotate-6 dark:bg-gray-900 dark:text-gray-50'>
               <p className='text-md flex'>
                 <Cookie className='mr-2 text-slate-700' size={24} />
                 Hello there, We use cookies!
@@ -681,7 +681,7 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
               <div className='max-w-max rounded-md bg-slate-800 px-1 text-gray-50'>Okay</div>
             </div>
 
-            <div className='absolute bottom-20 left-12 mb-4 flex max-w-max -rotate-6 rounded-sm bg-slate-100 p-4 text-slate-900 transition-transform group-hover:scale-95 dark:bg-gray-800 dark:text-gray-50'>
+            <div className='rounded-xs absolute bottom-20 left-12 mb-4 flex max-w-max -rotate-6 bg-slate-100 p-4 text-slate-900 transition-transform group-hover:scale-95 dark:bg-gray-800 dark:text-gray-50'>
               <p className='text-md flex max-w-[40ch]'>
                 This website uses cookies to ensure you get the best experience on our website
               </p>
@@ -835,7 +835,7 @@ const Hero = ({
             <div className='mt-10 flex flex-col items-center justify-center sm:flex-row'>
               <Link
                 to={routesPath.signup}
-                className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white shadow-sm ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600 sm:mr-6 sm:max-w-[210px]'
+                className='shadow-xs group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600 sm:mr-6 sm:max-w-[210px]'
                 aria-label={t('titles.signup')}
               >
                 <span className='mr-1 text-base font-semibold'>{t('main.startAFreeTrial')}</span>
@@ -843,7 +843,7 @@ const Hero = ({
               </Link>
               <a
                 href={LIVE_DEMO_URL}
-                className='mt-2 flex h-12 w-full items-center justify-center rounded-md bg-transparent text-slate-900 shadow-sm ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-200 dark:text-white dark:ring-white/20 dark:hover:bg-gray-800 sm:mt-0 sm:max-w-[210px]'
+                className='shadow-xs mt-2 flex h-12 w-full items-center justify-center rounded-md bg-transparent text-slate-900 ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-200 dark:text-white dark:ring-white/20 dark:hover:bg-gray-800 sm:mt-0 sm:max-w-[210px]'
                 target='_blank'
                 rel='noopener noreferrer'
                 aria-label={`${t('common.liveDemo')} (opens in a new tab)`}

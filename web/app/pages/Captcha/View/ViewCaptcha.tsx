@@ -618,7 +618,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
                     title={t('project.refreshStats')}
                     onClick={refreshStats}
                     className={cx(
-                      'relative mr-3 rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-sm focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                      'hover:shadow-xs focus:outline-hidden relative mr-3 rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                       {
                         'cursor-not-allowed opacity-50': authLoading || dataLoading,
                       },
@@ -635,7 +635,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
                     onSelect={(item) => item.onClick()}
                     className={cx('mr-3', { hidden: isPanelsDataEmpty || analyticsLoading })}
                     chevron='mini'
-                    buttonClassName='!p-2 rounded-md hover:bg-white hover:shadow-sm dark:hover:bg-slate-800 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200'
+                    buttonClassName='!p-2 rounded-md hover:bg-white hover:shadow-xs dark:hover:bg-slate-800 focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200'
                     headless
                   />
                   <div
@@ -650,9 +650,9 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
                       title={t('project.barChart')}
                       onClick={() => setChartTypeOnClick(chartTypes.bar)}
                       className={cx(
-                        'relative rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                        'focus:outline-hidden relative rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                         {
-                          'bg-white stroke-white shadow-sm dark:bg-slate-800 dark:stroke-slate-800':
+                          'shadow-xs bg-white stroke-white dark:bg-slate-800 dark:stroke-slate-800':
                             chartType === chartTypes.bar,
                           'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200':
                             chartType !== chartTypes.bar,
@@ -666,9 +666,9 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
                       title={t('project.lineChart')}
                       onClick={() => setChartTypeOnClick(chartTypes.line)}
                       className={cx(
-                        'relative rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                        'focus:outline-hidden relative rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                         {
-                          'bg-white stroke-white shadow-sm dark:bg-slate-800 dark:stroke-slate-800':
+                          'shadow-xs bg-white stroke-white dark:bg-slate-800 dark:stroke-slate-800':
                             chartType === chartTypes.line,
                           'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200':
                             chartType !== chartTypes.line,

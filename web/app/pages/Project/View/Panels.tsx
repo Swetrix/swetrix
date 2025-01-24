@@ -128,7 +128,7 @@ const PanelContainer = ({
 }: PanelContainerProps) => (
   <div
     className={cx(
-      'relative max-h-96 min-h-72 overflow-hidden rounded-lg bg-white px-4 pt-5 shadow dark:border dark:border-slate-800/50 dark:bg-slate-800/25 sm:px-6 sm:pt-6',
+      'relative max-h-96 min-h-72 overflow-hidden rounded-lg bg-white px-4 pt-5 shadow-sm dark:border dark:border-slate-800/50 dark:bg-slate-800/25 sm:px-6 sm:pt-6',
       {
         'pb-12': !noSwitch,
         'pb-5': noSwitch,
@@ -281,7 +281,7 @@ const getPieOptions = (customs: any, uniques: number, t: any) => {
           <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-700 rounded-md shadow-md px-3 py-1'>
             {{
               <li class='flex'>
-                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
+                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:{=COLOR}></div>
                 <span>{=NAME}</span>
               </li>
               <hr class='border-gray-200 dark:border-slate-600' />
@@ -937,7 +937,7 @@ const CustomEvents = ({
             <div className='flex w-[4.5rem] justify-between'>
               <Button
                 className={cx(
-                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow dark:bg-slate-800 dark:text-gray-200',
+                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow-sm dark:bg-slate-800 dark:text-gray-200',
                   {
                     'cursor-not-allowed opacity-50': !canGoPrev(),
                     'hover:bg-gray-200 hover:dark:bg-slate-700': canGoPrev(),
@@ -952,7 +952,7 @@ const CustomEvents = ({
               </Button>
               <Button
                 className={cx(
-                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow dark:bg-slate-800 dark:text-gray-200',
+                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow-sm dark:bg-slate-800 dark:text-gray-200',
                   {
                     'cursor-not-allowed opacity-50': !canGoNext(),
                     'hover:bg-gray-200 hover:dark:bg-slate-700': canGoNext(),
@@ -1334,7 +1334,7 @@ const PageProperties = ({
             <div className='flex w-[4.5rem] justify-between'>
               <Button
                 className={cx(
-                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow dark:bg-slate-800 dark:text-gray-200',
+                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow-sm dark:bg-slate-800 dark:text-gray-200',
                   {
                     'cursor-not-allowed opacity-50': !canGoPrev(),
                     'hover:bg-gray-200 hover:dark:bg-slate-700': canGoPrev(),
@@ -1349,7 +1349,7 @@ const PageProperties = ({
               </Button>
               <Button
                 className={cx(
-                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow dark:bg-slate-800 dark:text-gray-200',
+                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow-sm dark:bg-slate-800 dark:text-gray-200',
                   {
                     'cursor-not-allowed opacity-50': !canGoNext(),
                     'hover:bg-gray-200 hover:dark:bg-slate-700': canGoNext(),
@@ -1509,7 +1509,7 @@ const Panel = ({
             <button
               type='button'
               onClick={() => setIsReversedUserFlow((prev) => !prev)}
-              className='mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-none dark:border-gray-600 dark:bg-slate-700 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700 sm:ml-3 sm:mt-0 sm:w-auto sm:text-sm'
+              className='shadow-xs mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 dark:border-none dark:border-gray-600 dark:bg-slate-700 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700 sm:ml-3 sm:mt-0 sm:w-auto sm:text-sm'
             >
               {t('project.reverse')}
             </button>
@@ -1546,7 +1546,7 @@ const Panel = ({
             <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-700 rounded-md shadow-md px-3 py-1'>
               {{
                 <li class='flex'>
-                  <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
+                  <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:{=COLOR}></div>
                   <span>{=NAME}</span>
                 </li>
                 <hr class='border-gray-200 dark:border-slate-600' />
@@ -1628,7 +1628,7 @@ const Panel = ({
           return (
             <Fragment key={`${id}-${entryName}-${Object.values(rest).join('-')}`}>
               <div
-                className={cx('mt-[0.32rem] flex justify-between rounded first:mt-0 dark:text-gray-50', {
+                className={cx('mt-[0.32rem] flex justify-between rounded-sm first:mt-0 dark:text-gray-50', {
                   'group cursor-pointer hover:bg-gray-100 hover:dark:bg-slate-700': !hideFilters && !dataLoading,
                   'cursor-wait': dataLoading,
                 })}
@@ -1694,7 +1694,7 @@ const Panel = ({
             <div className='flex w-[4.5rem] justify-between'>
               <Button
                 className={cx(
-                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow dark:bg-slate-800 dark:text-gray-200',
+                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow-sm dark:bg-slate-800 dark:text-gray-200',
                   {
                     'cursor-not-allowed opacity-50': !canGoPrev(),
                     'hover:bg-gray-200 hover:dark:bg-slate-700': canGoPrev(),
@@ -1709,7 +1709,7 @@ const Panel = ({
               </Button>
               <Button
                 className={cx(
-                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow dark:bg-slate-800 dark:text-gray-200',
+                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow-sm dark:bg-slate-800 dark:text-gray-200',
                   {
                     'cursor-not-allowed opacity-50': !canGoNext(),
                     'hover:bg-gray-200 hover:dark:bg-slate-700': canGoNext(),

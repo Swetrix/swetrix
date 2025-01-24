@@ -82,7 +82,7 @@ const ReferralPage = ({ ssrTheme }: ReferralPageProps) => {
                 <div className='mt-4 flex flex-col items-center sm:flex-row'>
                   <Link
                     to={`/ref/${id}${routes.signup}`}
-                    className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white shadow-sm ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600 sm:mr-6 sm:max-w-[210px]'
+                    className='shadow-xs group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600 sm:mr-6 sm:max-w-[210px]'
                     aria-label={t('titles.signup')}
                   >
                     <span className='mr-1 text-base font-semibold transition-transform group-hover:scale-[1.15]'>
@@ -92,7 +92,7 @@ const ReferralPage = ({ ssrTheme }: ReferralPageProps) => {
                   </Link>
                   <Link
                     to={`/ref/${id}/index#core-analytics`}
-                    className='mt-2 flex h-12 w-full items-center justify-center rounded-md bg-transparent text-slate-900 shadow-sm ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-200 dark:text-white dark:ring-white/20 dark:hover:bg-gray-800 sm:mt-0 sm:max-w-[210px]'
+                    className='shadow-xs mt-2 flex h-12 w-full items-center justify-center rounded-md bg-transparent text-slate-900 ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-200 dark:text-white dark:ring-white/20 dark:hover:bg-gray-800 sm:mt-0 sm:max-w-[210px]'
                     aria-label={t('titles.signup')}
                   >
                     <span className='text-base font-semibold'>{t('common.learnMore')}</span>

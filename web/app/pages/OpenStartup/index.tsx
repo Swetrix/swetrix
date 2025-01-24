@@ -337,7 +337,7 @@ const getSettings = () => {
             {{
               <li class='flex justify-between'>
                 <div class='flex justify-items-start'>
-                  <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
+                  <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:{=COLOR}></div>
                   <span>{=NAME}</span>
                 </div>
                 <span class='pl-4'>{=VALUE} US\$</span>

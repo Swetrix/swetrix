@@ -241,7 +241,7 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
           {isSubscriber && nextBillDate && (
             <div className='mt-5 max-w-prose rounded-md bg-blue-50 p-4 dark:bg-blue-600/30'>
               <div className='flex'>
-                <div className='flex-shrink-0'>
+                <div className='shrink-0'>
                   <InformationCircleIcon aria-hidden='true' className='h-5 w-5 text-blue-400 dark:text-blue-100' />
                 </div>
                 <p className='ml-3 text-sm font-medium text-blue-700 dark:text-blue-100'>
@@ -258,7 +258,7 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
           {cancellationEffectiveDate && (
             <div className='mt-5 max-w-prose rounded-md bg-blue-50 p-4 dark:bg-blue-600/30'>
               <div className='flex'>
-                <div className='flex-shrink-0'>
+                <div className='shrink-0'>
                   <InformationCircleIcon aria-hidden='true' className='h-5 w-5 text-blue-400 dark:text-blue-100' />
                 </div>
                 <div className='ml-3'>
@@ -280,7 +280,7 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
           {isTrial && trialMessage && (
             <div className='mt-5 max-w-prose rounded-md bg-blue-50 p-4 dark:bg-blue-600/30'>
               <div className='flex'>
-                <div className='flex-shrink-0'>
+                <div className='shrink-0'>
                   <InformationCircleIcon aria-hidden='true' className='h-5 w-5 text-blue-400 dark:text-blue-100' />
                 </div>
                 <p className='ml-3 text-sm font-medium text-blue-700 dark:text-blue-100'>{trialMessage}</p>
@@ -290,7 +290,7 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
           {isNoSub && (
             <div className='mt-5 max-w-prose rounded-md bg-red-50 p-4 dark:bg-red-600/30'>
               <div className='flex'>
-                <div className='flex-shrink-0'>
+                <div className='shrink-0'>
                   <ExclamationTriangleIcon aria-hidden='true' className='h-5 w-5 text-red-400 dark:text-red-100' />
                 </div>
                 <div className='ml-3'>

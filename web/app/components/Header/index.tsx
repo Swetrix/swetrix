@@ -228,7 +228,7 @@ const ThemeMenu = ({ theme, switchTheme }: { theme: string; switchTheme: (i: str
         leaveFrom='transform opacity-100 scale-100'
         leaveTo='transform opacity-0 scale-95'
       >
-        <MenuItems className='absolute right-0 z-30 mt-2 w-36 min-w-max origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-slate-200 focus:outline-none dark:bg-slate-900 dark:ring-slate-800'>
+        <MenuItems className='focus:outline-hidden absolute right-0 z-30 mt-2 w-36 min-w-max origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800'>
           <MenuItem>
             {({ active }) => (
               <div
@@ -305,7 +305,7 @@ const ProfileMenu = ({
             leaveFrom='transform opacity-100 scale-100'
             leaveTo='transform opacity-0 scale-95'
           >
-            <MenuItems className='absolute right-0 z-30 mt-2 w-60 min-w-max origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-slate-200 focus:outline-none dark:bg-slate-900 dark:ring-slate-800'>
+            <MenuItems className='focus:outline-hidden absolute right-0 z-30 mt-2 w-60 min-w-max origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800'>
               <div className='border-b-[1px] border-gray-200 dark:border-slate-700/50'>
                 <MenuItem>
                   <p className='truncate px-4 py-2' role='none'>
@@ -328,7 +328,7 @@ const ProfileMenu = ({
                         <MenuButton className='flex w-full justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-50 hover:dark:bg-slate-800'>
                           <div className='flex'>
                             <Flag
-                              className='mr-1.5 rounded-sm'
+                              className='rounded-xs mr-1.5'
                               country={languageFlag[language]}
                               size={20}
                               alt=''
@@ -357,7 +357,7 @@ const ProfileMenu = ({
                         leaveTo='transform opacity-0 scale-95'
                       >
                         <MenuItems
-                          className='absolute right-0 z-50 mt-1 w-full min-w-max origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-slate-200 focus:outline-none dark:bg-slate-800 dark:ring-slate-800'
+                          className='focus:outline-hidden absolute right-0 z-50 mt-1 w-full min-w-max origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-800'
                           static
                         >
                           {_map(whitelist, (lng) => (
@@ -371,7 +371,7 @@ const ProfileMenu = ({
                                 <div className='flex'>
                                   <div className='pt-1'>
                                     <Flag
-                                      className='mr-1.5 rounded-sm'
+                                      className='rounded-xs mr-1.5'
                                       country={languageFlag[lng]}
                                       size={20}
                                       alt={languageFlag[lng]}
@@ -723,7 +723,7 @@ const NotAuthedHeader = ({
               title={
                 <>
                   <Flag
-                    className='mr-1.5 rounded-sm'
+                    className='rounded-xs mr-1.5'
                     country={languageFlag[language]}
                     size={18}
                     alt=''
@@ -735,7 +735,7 @@ const NotAuthedHeader = ({
               labelExtractor={(lng: string) => (
                 <div className='flex'>
                   <div className='pt-1'>
-                    <Flag className='mr-1.5 rounded-sm' country={languageFlag[lng]} size={21} alt={languageFlag[lng]} />
+                    <Flag className='rounded-xs mr-1.5' country={languageFlag[lng]} size={21} alt={languageFlag[lng]} />
                   </div>
                   {languages[lng]}
                 </div>
@@ -940,7 +940,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                       <MenuButton className='flex w-full items-center justify-between rounded-lg py-2 pl-3 pr-3.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'>
                         <div className='flex'>
                           <Flag
-                            className='mr-1.5 rounded-sm'
+                            className='rounded-xs mr-1.5'
                             country={languageFlag[language]}
                             size={20}
                             alt=''
@@ -965,7 +965,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                         leaveTo='transform opacity-0 scale-95'
                       >
                         <MenuItems
-                          className='absolute right-0 z-50 mt-1 w-full min-w-max origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-slate-200 focus:outline-none dark:bg-slate-800 dark:ring-slate-800'
+                          className='focus:outline-hidden absolute right-0 z-50 mt-1 w-full min-w-max origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-slate-200 dark:bg-slate-800 dark:ring-slate-800'
                           static
                         >
                           {_map(whitelist, (lng) => (
@@ -979,7 +979,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                                 <div className='flex'>
                                   <div className='pt-1'>
                                     <Flag
-                                      className='mr-1.5 rounded-sm'
+                                      className='rounded-xs mr-1.5'
                                       country={languageFlag[lng]}
                                       size={20}
                                       alt={languageFlag[lng]}

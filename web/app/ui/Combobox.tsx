@@ -49,7 +49,7 @@ const Combobox = ({
         <div className='relative w-full cursor-default rounded-lg'>
           <HeadlessCombobox.Input
             className={cx(
-              'relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 sm:text-sm',
+              'shadow-xs focus:outline-hidden relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 sm:text-sm',
               buttonClassName,
             )}
             // @ts-ignore
@@ -68,7 +68,7 @@ const Combobox = ({
           leaveTo='opacity-0'
           afterLeave={() => setQuery('')}
         >
-          <HeadlessCombobox.Options className='absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-slate-800 sm:text-sm'>
+          <HeadlessCombobox.Options className='focus:outline-hidden absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/50 dark:bg-slate-800 sm:text-sm'>
             {_isEmpty(filteredItems) && !_isEmpty(query) ? (
               <div className='relative cursor-default select-none px-4 py-2 text-gray-900 dark:text-white'>
                 {t('common.nothingFound')}

@@ -48,10 +48,10 @@ const NoNotificationChannelSet = () => {
             </span>
             <p className='ml-3 font-medium text-black'>{t('alert.noNotificationChannel')}</p>
           </div>
-          <div className='order-3 mt-2 w-full flex-shrink-0 sm:order-2 sm:mt-0 sm:w-auto'>
+          <div className='order-3 mt-2 w-full shrink-0 sm:order-2 sm:mt-0 sm:w-auto'>
             <Link
               to={routes.user_settings}
-              className='flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-gray-50 px-4 py-2 text-sm font-medium text-gray-800 shadow-sm hover:bg-yellow-50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
+              className='shadow-xs flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-gray-50 px-4 py-2 text-sm font-medium text-gray-800 hover:bg-yellow-50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
             >
               {t('common.fixIt')}
             </Link>
@@ -286,13 +286,13 @@ const ProjectAlerts = ({ projectId }: ProjectAlertsProps) => {
                 <button
                   type='button'
                   onClick={() => window.location.reload()}
-                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
+                  className='shadow-xs focus:outline-hidden inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
                 >
                   {t('dashboard.reloadPage')}
                 </button>
                 <Link
                   to={routes.contact}
-                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700 dark:focus:ring-gray-50'
+                  className='focus:outline-hidden inline-flex items-center rounded-md border border-transparent bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700 dark:focus:ring-gray-50'
                 >
                   {t('notFoundPage.support')}
                 </Link>

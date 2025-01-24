@@ -46,7 +46,7 @@ const MultiSelect = ({
               setSelected(!selected)
             }}
           >
-            <div className='w-ful my-2 flex rounded border bg-white p-1 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'>
+            <div className='w-ful shadow-xs focus:outline-hidden my-2 flex rounded-sm border bg-white p-1 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'>
               <div className='flex flex-auto flex-wrap'>
                 {!_isEmpty(label) ? (
                   _map(label, (item) => (
@@ -92,7 +92,7 @@ const MultiSelect = ({
                 <button
                   type='button'
                   onClick={() => setSelected(!selected)}
-                  className='h-6 w-6 cursor-pointer text-gray-600 outline-none focus:outline-none dark:text-gray-300'
+                  className='outline-hidden focus:outline-hidden h-6 w-6 cursor-pointer text-gray-600 dark:text-gray-300'
                 >
                   <svg
                     xmlns='http://www.w3.org/2000/svg'
@@ -113,12 +113,12 @@ const MultiSelect = ({
             </div>
           </div>
           {selected && (
-            <div className='top-100 lef-0 max-h-select z-40 max-h-[200px] w-full overflow-y-auto overflow-x-hidden rounded bg-white shadow dark:bg-slate-800'>
+            <div className='top-100 lef-0 max-h-select z-40 max-h-[200px] w-full overflow-y-auto overflow-x-hidden rounded-sm bg-white shadow-sm dark:bg-slate-800'>
               <div className='flex w-full flex-col'>
                 {onSearch && (
                   <div className='relative w-full cursor-pointer rounded-t border-b border-gray-100 hover:bg-indigo-100 dark:border-slate-700 dark:hover:bg-slate-700'>
                     <input
-                      className='focus:box-shadow-none relative flex w-full items-center overflow-x-auto border-l-2 border-transparent bg-white p-2 pl-2 hover:border-b-indigo-100 focus:border-transparent focus:outline-none focus:ring-0 dark:bg-slate-800 dark:hover:border-b-slate-700'
+                      className='focus:box-shadow-none focus:outline-hidden relative flex w-full items-center overflow-x-auto border-l-2 border-transparent bg-white p-2 pl-2 hover:border-b-indigo-100 focus:border-transparent focus:ring-0 dark:bg-slate-800 dark:hover:border-b-slate-700'
                       placeholder={searchPlaseholder}
                       onChange={(e) => {
                         e.preventDefault()

@@ -39,7 +39,7 @@ const Textarea = ({
         rows={rows}
         name={name}
         className={cx(
-          'block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-800/25 dark:bg-slate-800 dark:text-gray-50 dark:placeholder-gray-400 sm:text-sm',
+          'shadow-xs block w-full rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-800/25 dark:bg-slate-800 dark:text-gray-50 dark:placeholder-gray-400 sm:text-sm',
           {
             'text-red-900 placeholder-red-300 ring-1 ring-red-600': isError,
             'cursor-text': disabled,

@@ -262,13 +262,13 @@ const Dashboard = () => {
                 <button
                   type='button'
                   onClick={() => window.location.reload()}
-                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
+                  className='shadow-xs focus:outline-hidden inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
                 >
                   {t('dashboard.reloadPage')}
                 </button>
                 <Link
                   to={routes.contact}
-                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700 dark:focus:ring-gray-50'
+                  className='focus:outline-hidden inline-flex items-center rounded-md border border-transparent bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700 dark:focus:ring-gray-50'
                 >
                   {t('notFoundPage.support')}
                 </Link>
@@ -360,7 +360,7 @@ const Dashboard = () => {
                       handleViewModeChange(DASHBOARD_VIEW.GRID)
                     }}
                     className={cx(
-                      'rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                      'focus:outline-hidden rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                       viewMode === DASHBOARD_VIEW.GRID
                         ? 'bg-gray-100 text-gray-900 dark:bg-slate-700 dark:text-gray-50'
                         : 'text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:hover:bg-slate-700',
@@ -375,7 +375,7 @@ const Dashboard = () => {
                       handleViewModeChange(DASHBOARD_VIEW.LIST)
                     }}
                     className={cx(
-                      'rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                      'focus:outline-hidden rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                       viewMode === DASHBOARD_VIEW.LIST
                         ? 'bg-gray-100 text-gray-900 dark:bg-slate-700 dark:text-gray-50'
                         : 'text-gray-700 hover:bg-gray-50 dark:text-gray-50 dark:hover:bg-slate-700',
@@ -387,7 +387,7 @@ const Dashboard = () => {
                 <Link
                   to={routes.new_project}
                   onClick={onNewProject}
-                  className='inline-flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-slate-900 px-3 py-2 !pl-2 text-center text-sm font-medium leading-4 text-white shadow-sm hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
+                  className='shadow-xs focus:outline-hidden inline-flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-slate-900 px-3 py-2 !pl-2 text-center text-sm font-medium leading-4 text-white hover:bg-slate-700 focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
                 >
                   <FolderPlusIcon className='mr-1 h-5 w-5' />
                   {t('dashboard.newProject')}

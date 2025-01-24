@@ -13,7 +13,7 @@ interface CCRowProps {
 
 const CCRow = ({ cc, name, language, size = 21, spaces = 2 }: CCRowProps) => (
   <>
-    <Flag className='rounded-sm' country={cc} size={size} alt='' aria-hidden='true' />
+    <Flag className='rounded-xs' country={cc} size={size} alt='' aria-hidden='true' />
     <span
       dangerouslySetInnerHTML={{
         __html: _fill(Array(spaces), '&nbsp;').join(''),

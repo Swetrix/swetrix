@@ -28,7 +28,7 @@ export const ConveyorBelt = () => {
             maskRepeat: 'no-repeat',
           }}
         />
-        <div className='relative flex size-24 items-center justify-center rounded-xl bg-gradient-to-t from-white/45 to-white/75 shadow outline outline-offset-[-5px] outline-white/5 ring-1 ring-inset ring-white/10 group-data-[dark]:from-slate-700/45 group-data-[dark]:to-slate-700/75'>
+        <div className='relative flex size-24 items-center justify-center rounded-xl bg-gradient-to-t from-white/45 to-white/75 shadow-sm outline outline-offset-[-5px] outline-white/5 ring-1 ring-inset ring-white/10 group-data-[dark]:from-slate-700/45 group-data-[dark]:to-slate-700/75'>
           <img src='/logo512.png' alt='' className='object-contain' />
         </div>
       </div>

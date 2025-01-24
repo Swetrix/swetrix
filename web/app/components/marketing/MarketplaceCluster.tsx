@@ -43,7 +43,7 @@ const Circles = () => {
 
 const MainLogo = () => {
   return (
-    <div className='absolute left-44 top-32 flex size-16 items-center justify-center rounded-full bg-white shadow ring-1 ring-black/5'>
+    <div className='absolute left-44 top-32 flex size-16 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-black/5'>
       <img src='/logo512.png' alt='' className='h-9 fill-black' />
     </div>
   )
@@ -78,7 +78,7 @@ const Logo = ({
         },
       }}
       style={{ left, top } as React.CSSProperties}
-      className='absolute flex size-16 items-center justify-center rounded-full bg-white shadow ring-1 ring-black/5 group-data-[dark]:bg-slate-700/60'
+      className='absolute flex size-16 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-black/5 group-data-[dark]:bg-slate-700/60'
     >
       <img src={src} alt='' className='size-10' />
     </motion.div>

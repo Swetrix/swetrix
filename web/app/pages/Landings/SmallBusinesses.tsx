@@ -99,7 +99,7 @@ const SmallBusinesses = () => {
               <div className='mt-10 flex flex-col items-center justify-center sm:flex-row'>
                 <Link
                   to={routesPath.signup}
-                  className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white shadow-sm ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600 sm:mr-6 sm:max-w-[210px]'
+                  className='shadow-xs group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600 sm:mr-6 sm:max-w-[210px]'
                   aria-label={t('titles.signup')}
                 >
                   <span className='mr-1 text-base font-semibold'>{t('main.startAFreeTrial')}</span>
@@ -107,7 +107,7 @@ const SmallBusinesses = () => {
                 </Link>
                 <a
                   href={LIVE_DEMO_URL}
-                  className='mt-2 flex h-12 w-full items-center justify-center rounded-md bg-transparent text-slate-900 shadow-sm ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-200 dark:text-white dark:ring-white/20 dark:hover:bg-gray-800 sm:mt-0 sm:max-w-[210px]'
+                  className='shadow-xs mt-2 flex h-12 w-full items-center justify-center rounded-md bg-transparent text-slate-900 ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-200 dark:text-white dark:ring-white/20 dark:hover:bg-gray-800 sm:mt-0 sm:max-w-[210px]'
                   target='_blank'
                   rel='noopener noreferrer'
                   aria-label={`${t('common.liveDemo')} (opens in a new tab)`}

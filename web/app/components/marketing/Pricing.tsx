@@ -333,7 +333,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
             className='arrows-handle mt-5 h-2 w-full appearance-none rounded-full bg-gray-200 dark:bg-slate-600'
             onChange={onSelectPlanChange}
           />
-          <div className='relative mt-5 divide-y rounded-2xl border shadow-sm ring-1 ring-gray-200 dark:ring-slate-700'>
+          <div className='shadow-xs relative mt-5 divide-y rounded-2xl border ring-1 ring-gray-200 dark:ring-slate-700'>
             {user.planCode === selectedTier.planCode && (
               <div className='absolute left-5 top-0 translate-y-px transform'>
                 <div className='flex -translate-y-1/2 transform justify-center'>
@@ -390,7 +390,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
                       </Button>
                     ) : (
                       <Link
-                        className='relative inline-flex select-none items-center rounded-md border border-transparent bg-slate-900 px-4 py-2 text-sm font-medium leading-4 text-gray-50 shadow-sm hover:bg-slate-700 dark:bg-indigo-700 dark:hover:bg-indigo-800'
+                        className='shadow-xs relative inline-flex select-none items-center rounded-md border border-transparent bg-slate-900 px-4 py-2 text-sm font-medium leading-4 text-gray-50 hover:bg-slate-700 dark:bg-indigo-700 dark:hover:bg-indigo-800'
                         to={routes.signup}
                         aria-label={t('titles.signup')}
                       >
@@ -412,7 +412,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
               <ul className='mt-6 grid grid-cols-2 gap-4'>
                 {_map(planFeatures, (feature) => (
                   <li key={feature} className='flex space-x-3'>
-                    <CheckIcon className='h-5 w-5 flex-shrink-0 text-green-500' aria-hidden='true' />
+                    <CheckIcon className='h-5 w-5 shrink-0 text-green-500' aria-hidden='true' />
                     <span className='text-sm text-gray-700 dark:text-gray-200'>{feature}</span>
                   </li>
                 ))}
@@ -503,7 +503,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
               <div>
                 <h2 className='text-base font-bold'>{t('billing.dueNow')}</h2>
                 <p className='text-sm'>{t('billing.dueNowDescription')}</p>
-                <div className='mt-2 overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
+                <div className='mt-2 overflow-hidden shadow-sm ring-1 ring-black/50 md:rounded-lg'>
                   <table className='200 min-w-full divide-y divide-gray-300 dark:divide-gray-500'>
                     <thead className='bg-gray-50 dark:bg-slate-800'>
                       <tr>
@@ -549,7 +549,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
                   </p>
                 )}
                 <h2 className='mt-5 text-base font-bold'>{t('billing.nextPayment')}</h2>
-                <div className='mt-2 overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
+                <div className='mt-2 overflow-hidden shadow-sm ring-1 ring-black/50 md:rounded-lg'>
                   <table className='200 min-w-full divide-y divide-gray-300 dark:divide-gray-500'>
                     <thead className='bg-gray-50 dark:bg-slate-800'>
                       <tr>

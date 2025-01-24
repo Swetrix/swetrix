@@ -66,7 +66,7 @@ const Modal = ({
           leaveFrom='opacity-100'
           leaveTo='opacity-0'
         >
-          <div className='fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-opacity-55' />
+          <div className='fixed inset-0 bg-gray-500/75 transition-opacity dark:bg-gray-500/55' />
         </TransitionChild>
 
         {/* This element is to trick the browser into centering the modal contents. */}
@@ -95,27 +95,27 @@ const Modal = ({
           >
             <div className='sm:flex sm:items-start'>
               {type === 'success' && (
-                <div className='mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-green-100 sm:mr-3 sm:h-10 sm:w-10'>
+                <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-100 sm:mr-3 sm:h-10 sm:w-10'>
                   <CheckIcon className='h-6 w-6 text-green-600' aria-hidden='true' />
                 </div>
               )}
               {type === 'error' && (
-                <div className='mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mr-3 sm:h-10 sm:w-10'>
+                <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mr-3 sm:h-10 sm:w-10'>
                   <ExclamationTriangleIcon className='h-6 w-6 text-red-600' aria-hidden='true' />
                 </div>
               )}
               {type === 'info' && (
-                <div className='mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-center sm:mr-3 sm:h-10 sm:w-10'>
+                <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-100 text-center sm:mr-3 sm:h-10 sm:w-10'>
                   <InformationCircleIcon className='h-6 w-6 text-blue-600' aria-hidden='true' />
                 </div>
               )}
               {type === 'warning' && (
-                <div className='mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-orange-100 sm:mr-3 sm:h-10 sm:w-10'>
+                <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange-100 sm:mr-3 sm:h-10 sm:w-10'>
                   <ExclamationTriangleIcon className='h-6 w-6 text-amber-600' aria-hidden='true' />
                 </div>
               )}
               {type === 'confirmed' && (
-                <div className='mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-green-100 sm:mr-3 sm:h-10 sm:w-10'>
+                <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-100 sm:mr-3 sm:h-10 sm:w-10'>
                   <UserGroupIcon className='h-6 w-6 text-green-600' aria-hidden='true' />
                 </div>
               )}
@@ -153,7 +153,7 @@ const Modal = ({
                 <button
                   type='button'
                   className={cx(
-                    'inline-flex w-full justify-center rounded-md px-4 py-2 text-base font-medium text-white shadow-sm sm:ml-3 sm:w-auto sm:text-sm',
+                    'shadow-xs inline-flex w-full justify-center rounded-md px-4 py-2 text-base font-medium text-white sm:ml-3 sm:w-auto sm:text-sm',
                     {
                       'bg-indigo-600': submitType === 'regular',
                       'bg-red-600': submitType === 'danger',
@@ -171,7 +171,7 @@ const Modal = ({
               {closeText && (
                 <button
                   type='button'
-                  className='mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-none dark:border-gray-600 dark:bg-slate-800 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700 sm:ml-3 sm:mt-0 sm:w-auto sm:text-sm'
+                  className='shadow-xs mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 dark:border-none dark:border-gray-600 dark:bg-slate-800 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700 sm:ml-3 sm:mt-0 sm:w-auto sm:text-sm'
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()

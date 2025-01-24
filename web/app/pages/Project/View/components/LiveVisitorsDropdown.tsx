@@ -84,7 +84,7 @@ const LiveVisitorsDropdown = ({ live, onSessionSelect }: LiveVisitorsDropdownPro
                           to={stringifiedUrl}
                         >
                           <div className='table-cell rounded-l-lg bg-gray-100 pr-2 align-middle group-hover:bg-gray-200 dark:bg-slate-800 dark:group-hover:bg-slate-700'>
-                            <Flag className='m-2 rounded-sm' country={cc} size={21} alt='' aria-hidden='true' />
+                            <Flag className='rounded-xs m-2' country={cc} size={21} alt='' aria-hidden='true' />
                           </div>
                           <div className='table-cell bg-gray-100 pr-2 align-middle group-hover:bg-gray-200 dark:bg-slate-800 dark:group-hover:bg-slate-700'>
                             {os}

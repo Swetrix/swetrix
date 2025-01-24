@@ -53,7 +53,7 @@ export const LogoTimeline = () => {
             maskRepeat: 'no-repeat',
           }}
         />
-        <div className='relative flex size-24 items-center justify-center rounded-xl bg-gradient-to-t from-white/5 to-white/25 shadow outline outline-offset-[-5px] outline-white/5 ring-1 ring-inset ring-white/10 group-data-[dark]:from-slate-700/5 group-data-[dark]:to-slate-700/25'>
+        <div className='relative flex size-24 items-center justify-center rounded-xl bg-gradient-to-t from-white/5 to-white/25 shadow-sm outline outline-offset-[-5px] outline-white/5 ring-1 ring-inset ring-white/10 group-data-[dark]:from-slate-700/5 group-data-[dark]:to-slate-700/25'>
           <img src='/logo512.png' alt='' className='object-contain' />
         </div>
       </div>

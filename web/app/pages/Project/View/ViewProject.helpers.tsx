@@ -641,7 +641,7 @@ const getSettings = (
               return `
               <li class='flex justify-between'>
                 <div class='flex justify-items-start'>
-                  <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                  <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
                   <span>${el.name}</span>
                 </div>
                 <span class='pl-4'>${getStringFromTime(getTimeFromSeconds(el.value))}</span>
@@ -656,7 +656,7 @@ const getSettings = (
             return `
             <li class='flex justify-between'>
               <div class='flex justify-items-start'>
-                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
                 <span>${el.name}</span>
               </div>
               <span class='pl-4'>${el.value}</span>
@@ -696,7 +696,7 @@ const getSettings = (
               return `
               <div class='flex justify-between'>
               <div class='flex justify-items-start'>
-                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(id)}></div>
+                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(id)}></div>
                 <span>${name}</span>
               </div>
             </div>
@@ -721,7 +721,7 @@ const getSettings = (
             return `
             <div class='flex justify-between'>
               <div class='flex justify-items-start'>
-                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(id)}></div>
+                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(id)}></div>
                 <span>${name}</span>
               </div>
             </div>
@@ -846,7 +846,7 @@ const getSettingsSession = (
               return `
               <li class='flex justify-between'>
                 <div class='flex justify-items-start'>
-                  <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                  <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
                   <span>${el.name}</span>
                 </div>
                 <span class='pl-4'>${getStringFromTime(getTimeFromSeconds(el.value))}</span>
@@ -861,7 +861,7 @@ const getSettingsSession = (
             return `
             <li class='flex justify-between'>
               <div class='flex justify-items-start'>
-                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
                 <span>${el.name}</span>
               </div>
               <span class='pl-4'>${el.value}</span>
@@ -986,7 +986,7 @@ const getSettingsError = (
             (el: { id: string; index: number; name: string; value: string; x: Date }) => `
             <li class='flex justify-between'>
               <div class='flex justify-items-start'>
-                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
                 <span>${el.name}</span>
               </div>
               <span class='pl-4'>${el.value}</span>
@@ -1101,7 +1101,7 @@ const getSettingsFunnels = (funnel: AnalyticsFunnel[], totalPageviews: number, t
         const events = `
           <tr class='tracking-tight'>
             <td class='pr-7'>
-              <div class='w-3 h-3 rounded-sm mr-1 float-left mt-1.5' style=background-color:${color('events')}></div>
+              <div class='w-3 h-3 rounded-xs mr-1 float-left mt-1.5' style=background-color:${color('events')}></div>
               <span class='font-semibold'>
                 ${_startsWith(step.value, '/') ? t('project.visitors') : t('project.events')}
               </span>
@@ -1118,7 +1118,7 @@ const getSettingsFunnels = (funnel: AnalyticsFunnel[], totalPageviews: number, t
         const dropoff = `
           <tr class='tracking-tight'>
             <td class='pr-7'>
-              <div class='w-3 h-3 rounded-sm mr-1 float-left mt-1.5' style="background-color:${color(
+              <div class='w-3 h-3 rounded-xs mr-1 float-left mt-1.5' style="background-color:${color(
                 'dropoff',
               )}"}></div>
               <span class='font-semibold'>
@@ -1253,7 +1253,7 @@ const getSettingsUptime = (
             (el: { id: string; index: number; name: string; value: string; x: Date }) => `
             <li class='flex justify-between'>
               <div class='flex justify-items-start'>
-                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
                 <span>${el.name}</span>
               </div>
               <span class='pl-4'>${getStringFromTime(getTimeFromSeconds(el.value), true)}</span>
@@ -1445,7 +1445,7 @@ const getSettingsPerf = (
           return `
           <li class='flex justify-between'>
             <div class='flex justify-items-start'>
-              <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+              <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
               <span>${el.name}</span>
             </div>
             <span class='pl-4'>${getStringFromTime(getTimeFromSeconds(el.value), true)}</span>
@@ -1476,7 +1476,7 @@ const getSettingsPerf = (
           return `
           <div class='flex justify-between'>
             <div class='flex justify-items-start'>
-              <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(id)}></div>
+              <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(id)}></div>
               <span>${name}</span>
             </div>
           </div>

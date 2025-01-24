@@ -46,7 +46,7 @@ export const DitchGoogle = ({ screenshot: { light, dark }, theme }: DitchGoogleP
             <p className='mb-9 text-base font-medium text-gray-300 sm:text-lg'>{t('main.whyDitch')}</p>
             <Link
               to={routes.signup}
-              className='group flex h-[50px] w-full max-w-[210px] items-center justify-center rounded-md border border-transparent bg-indigo-600 text-white shadow-sm transition-all !duration-300 hover:bg-indigo-700 sm:mr-6'
+              className='shadow-xs group flex h-[50px] w-full max-w-[210px] items-center justify-center rounded-md border border-transparent bg-indigo-600 text-white transition-all !duration-300 hover:bg-indigo-700 sm:mr-6'
               aria-label={t('titles.signup')}
             >
               <span className='mr-1 text-base font-semibold'>{t('main.start')}</span>

@@ -105,7 +105,7 @@ export const Filter = ({
           onClick={() => onRemoveFilter(column, filter)}
           type='button'
           className={cx(
-            'ml-0.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-gray-800 hover:bg-gray-300 hover:text-gray-900 focus:bg-gray-300 focus:text-gray-900 focus:outline-none dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300 dark:focus:bg-gray-800 dark:focus:text-gray-300',
+            'focus:outline-hidden ml-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-gray-800 hover:bg-gray-300 hover:text-gray-900 focus:bg-gray-300 focus:text-gray-900 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300 dark:focus:bg-gray-800 dark:focus:text-gray-300',
             {
               'cursor-wait': dataLoading,
             },
@@ -138,12 +138,9 @@ const Filters = ({ onRemoveFilter, onChangeExclusive, tnMapping, resetFilters }:
   }
 
   return (
-    <div className='flex items-center justify-between rounded-md bg-slate-200 p-1 shadow dark:border dark:border-slate-800/50 dark:bg-slate-800/25'>
+    <div className='flex items-center justify-between rounded-md bg-slate-200 p-1 shadow-sm dark:border dark:border-slate-800/50 dark:bg-slate-800/25'>
       <div className='flex items-center'>
-        <FilterIcon
-          className='box-content size-6 flex-shrink-0 px-1 text-gray-700 dark:text-gray-200'
-          strokeWidth={1.5}
-        />
+        <FilterIcon className='box-content size-6 shrink-0 px-1 text-gray-700 dark:text-gray-200' strokeWidth={1.5} />
         <div className='flex flex-wrap'>
           {_map(filters, (props) => {
             const { column, filter } = props
@@ -165,7 +162,7 @@ const Filters = ({ onRemoveFilter, onChangeExclusive, tnMapping, resetFilters }:
       </div>
       <XMarkIcon
         className={cx(
-          'box-content size-6 flex-shrink-0 cursor-pointer stroke-2 px-1 text-gray-800 hover:text-gray-600 dark:text-gray-200 dark:hover:text-gray-300',
+          'box-content size-6 shrink-0 cursor-pointer stroke-2 px-1 text-gray-800 hover:text-gray-600 dark:text-gray-200 dark:hover:text-gray-300',
           {
             'cursor-wait': dataLoading,
           },

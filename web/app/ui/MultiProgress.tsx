@@ -16,7 +16,7 @@ interface MultiProgressProps {
 
 const MultiProgress = ({ progress, theme, className }: MultiProgressProps) => (
   <div className='relative'>
-    <div className={cx('flex h-5 overflow-hidden rounded bg-gray-200 text-xs dark:bg-slate-600', className)}>
+    <div className={cx('flex h-5 overflow-hidden rounded-sm bg-gray-200 text-xs dark:bg-slate-600', className)}>
       {_map(progress, ({ value, lightColour, darkColour }) => (
         <div
           key={`${value}-${lightColour}-${darkColour}`}

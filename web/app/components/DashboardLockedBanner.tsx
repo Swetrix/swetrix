@@ -41,10 +41,10 @@ const DashboardLockedBanner = () => {
               </span>
               <p className='ml-3 font-medium text-black'>{t('dashboard.accountLocked')}</p>
             </div>
-            <div className='order-3 mt-2 w-full flex-shrink-0 sm:order-2 sm:mt-0 sm:w-auto'>
+            <div className='order-3 mt-2 w-full shrink-0 sm:order-2 sm:mt-0 sm:w-auto'>
               <span
                 onClick={() => setShowMoreInfoModal(true)}
-                className='flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-gray-50 px-4 py-2 text-sm font-medium text-yellow-600 shadow-sm hover:bg-yellow-50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
+                className='shadow-xs flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-gray-50 px-4 py-2 text-sm font-medium text-yellow-600 hover:bg-yellow-50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
               >
                 {t('common.learnMore')}
               </span>

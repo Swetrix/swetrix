@@ -8,7 +8,7 @@ const socialIcons: {
 } = {
   LinkedIn: (
     <img
-      className='h-6 w-6 rounded bg-white opacity-75 hover:opacity-90'
+      className='h-6 w-6 rounded-sm bg-white opacity-75 hover:opacity-90'
       aria-hidden='true'
       src='/assets/linkedin.svg'
       alt='LinkedIn'
