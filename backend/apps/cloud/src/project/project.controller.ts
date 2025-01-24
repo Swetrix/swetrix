@@ -156,6 +156,11 @@ export class ProjectController {
     required: false,
     type: String,
   })
+  @ApiQuery({
+    name: 'sort',
+    required: false,
+    type: String,
+  })
   @ApiResponse({ status: 200, type: [Project] })
   @Auth([], true)
   async get(
@@ -175,11 +180,21 @@ export class ProjectController {
     period: '1h' | '1d' | '7d' | '4w' | '3M' | '12M' | '24M' | 'all' = '7d',
     @Query('use-hostname-navigation')
     useHostnameNavigation: string = 'false',
+    @Query('sort')
+    sort?: 'alpha_asc' | 'alpha_desc' | 'date_asc' | 'date_desc',
   ): Promise<Pagination<Project> | Project[] | object> {
     const isHostnameNavigationEnabled = useHostnameNavigation === 'true'
 
     this.logger.log(
-      { userId, take, skip, mode, timeFrame: period, useHostnameNavigation },
+      {
+        userId,
+        take,
+        skip,
+        mode,
+        timeFrame: period,
+        useHostnameNavigation,
+        sort,
+      },
       'GET /project',
     )
 
@@ -192,19 +207,28 @@ export class ProjectController {
     }
 
     if (!mode || mode === 'default') {
-      let paginated: Pagination<Project>
+      let paginated
 
       if (isHostnameNavigationEnabled) {
         paginated = await this.projectExtraService.paginateHostnameNavigation(
-          { take, skip, period },
+          {
+            take,
+            skip,
+            period,
+            sort,
+          },
           userId,
           search,
         )
       } else {
         paginated = await this.projectService.paginate(
-          { take, skip },
+          {
+            take,
+            skip,
+          },
           userId,
           search,
+          sort,
         )
       }
 
@@ -217,6 +241,7 @@ export class ProjectController {
         skip,
         mode,
         period,
+        sort,
       },
       userId,
       search,

@@ -14,6 +14,14 @@ dayjs.extend(utc)
 interface TrafficPaginationOptions extends PaginationOptionsInterface {
   mode?: 'high-traffic' | 'low-traffic' | 'performance' | 'lost-traffic'
   period?: '1h' | '1d' | '7d' | '4w' | '3M' | '12M' | '24M' | 'all'
+  sort?:
+    | 'alpha_asc'
+    | 'alpha_desc'
+    | 'date_asc'
+    | 'date_desc'
+    | 'pageviews_asc'
+    | 'pageviews_desc'
+    | 'last_visit_desc'
 }
 
 @Injectable()
@@ -58,7 +66,10 @@ export class ProjectExtraService {
             ${search ? `AND host ILIKE {search:String}` : ''}
             AND created BETWEEN ${timeFrameClause.currentStart} AND ${timeFrameClause.currentEnd}
           GROUP BY host, pid
-          ORDER BY visits DESC
+          ${options.sort === 'alpha_asc' ? 'ORDER BY host ASC' : ''}
+          ${options.sort === 'alpha_desc' ? 'ORDER BY host DESC' : ''}
+          ${options.sort === 'pageviews_asc' ? 'ORDER BY visits ASC' : ''}
+          ${options.sort === 'pageviews_desc' ? 'ORDER BY visits DESC' : ''}
         )
         SELECT *
         FROM hostStats
@@ -149,7 +160,7 @@ export class ProjectExtraService {
 
         return chResults.map(chResult => ({
           ...project,
-          name: chResult.host || project.name,
+          name: (chResult.host || project.name) as string,
           trafficStats: {
             visits: chResult.visits || 0,
           },
@@ -158,9 +169,19 @@ export class ProjectExtraService {
       .flat()
 
     const results = new Pagination<Project>({
-      results: enrichedProjects.sort(
-        (a, b) => (b.trafficStats?.visits || 0) - (a.trafficStats?.visits || 0),
-      ),
+      results: enrichedProjects.sort((a, b) => {
+        switch (options.sort) {
+          case 'alpha_asc':
+            return a.name.localeCompare(b.name)
+          case 'alpha_desc':
+            return b.name.localeCompare(a.name)
+          case 'pageviews_asc':
+            return (a.trafficStats?.visits || 0) - (b.trafficStats?.visits || 0)
+          case 'pageviews_desc':
+          default:
+            return (b.trafficStats?.visits || 0) - (a.trafficStats?.visits || 0)
+        }
+      }),
       total,
     })
 
@@ -232,7 +253,6 @@ export class ProjectExtraService {
       chunks.push(projectIds.slice(i, i + CHUNK_SIZE))
     }
 
-    // Build the appropriate Clickhouse query based on mode
     const timeFrameClause = this.getTimeFrameClause(options.period)
     let query = ''
     let countQuery = ''
@@ -328,7 +348,9 @@ export class ProjectExtraService {
           FROM hostStats
           WHERE last_visit < (now() - INTERVAL 48 HOUR)
             AND total_visits > 0
-          ORDER BY last_visit DESC
+          ${options.sort === 'alpha_asc' ? 'ORDER BY host ASC' : ''}
+          ${options.sort === 'alpha_desc' ? 'ORDER BY host DESC' : ''}
+          ${options.sort === 'last_visit_desc' || !options.sort ? 'ORDER BY last_visit DESC' : ''}
         `
 
         countQuery = `
@@ -567,7 +589,7 @@ export class ProjectExtraService {
 
         return chResults.map(chResult => ({
           ...project,
-          name: chResult.host || project.name,
+          name: (chResult.host || project.name) as string,
           trafficStats: {
             visits: chResult.visits || chResult.current_visits || 0,
             percentageChange: chResult.percentage_change,
@@ -591,6 +613,17 @@ export class ProjectExtraService {
 
         if (options.mode === 'low-traffic') {
           return (a.trafficStats.visits || 0) - (b.trafficStats.visits || 0)
+        }
+
+        if (options.mode === 'lost-traffic' && isHostnameNavigationEnabled) {
+          switch (options.sort) {
+            case 'alpha_asc':
+              return a.name.localeCompare(b.name)
+            case 'alpha_desc':
+              return b.name.localeCompare(a.name)
+            default:
+              return (b.trafficStats.visits || 0) - (a.trafficStats.visits || 0)
+          }
         }
 
         return (b.trafficStats.visits || 0) - (a.trafficStats.visits || 0)

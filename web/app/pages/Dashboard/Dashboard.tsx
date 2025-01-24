@@ -31,6 +31,7 @@ import { Overall, Project } from '~/lib/models/Project'
 import { getProjects, getLiveVisitors, getOverallStats, getOverallStatsCaptcha } from '~/api'
 import { DASHBOARD_TABS, Tabs } from './Tabs'
 import { PeriodSelector } from './PeriodSelector'
+import { SortSelector, SORT_OPTIONS } from './SortSelector'
 import useBreakpoint from '~/hooks/useBreakpoint'
 
 const PAGE_SIZE_OPTIONS = [12, 24, 48, 96]
@@ -82,6 +83,11 @@ const Dashboard = () => {
     return periodParam || '7d'
   })
 
+  const [sortBy, setSortBy] = useState(() => {
+    const sortParam = searchParams.get('sort')
+    return sortParam && Object.values(SORT_OPTIONS).includes(sortParam as any) ? sortParam : SORT_OPTIONS.ALPHA_ASC
+  })
+
   const pageAmount = Math.ceil(paginationTotal / pageSize)
 
   // This search represents what's inside the search input
@@ -120,6 +126,12 @@ const Dashboard = () => {
     updateURL({ period, page: '1' })
   }
 
+  const handleSortChange = (sort: string) => {
+    setSortBy(sort)
+    setPage(1)
+    updateURL({ sort, page: '1' })
+  }
+
   const handleViewModeChange = (mode: 'grid' | 'list') => {
     setViewMode(mode)
     setCookie('dashboard_view', mode, 7884000) // 3 months
@@ -143,6 +155,7 @@ const Dashboard = () => {
     tab?: string,
     period?: string,
     isHostnameNavigationEnabled?: boolean,
+    sort?: string,
   ) => {
     if (isLoading) {
       return
@@ -150,7 +163,7 @@ const Dashboard = () => {
     setIsLoading(true)
 
     try {
-      const result = await getProjects(take, skip, search, tab, period, isHostnameNavigationEnabled)
+      const result = await getProjects(take, skip, search, tab, period, isHostnameNavigationEnabled, sort)
       setProjects(result.results)
       setPaginationTotal(result.total)
     } catch (reason: any) {
@@ -165,10 +178,18 @@ const Dashboard = () => {
       return
     }
 
-    loadProjects(pageSize, (page - 1) * pageSize, debouncedSearch, activeTab, activePeriod, isHostnameNavigationEnabled)
+    loadProjects(
+      pageSize,
+      (page - 1) * pageSize,
+      debouncedSearch,
+      activeTab,
+      activePeriod,
+      isHostnameNavigationEnabled,
+      sortBy,
+    )
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, pageSize, debouncedSearch, activeTab, activePeriod, isHostnameNavigationEnabled, authLoading])
+  }, [page, pageSize, debouncedSearch, activeTab, activePeriod, isHostnameNavigationEnabled, authLoading, sortBy])
 
   // Set up interval for live visitors
   useEffect(() => {
@@ -310,7 +331,7 @@ const Dashboard = () => {
                   </div>
                 )}
               </div>
-              <div className='flex items-center gap-1'>
+              <div className='flex flex-wrap items-center gap-1'>
                 {activeTab === 'lost-traffic' ? null : showPeriodSelector ? (
                   <PeriodSelector
                     activePeriod={activePeriod}
@@ -318,6 +339,14 @@ const Dashboard = () => {
                     isLoading={isLoading === null || isLoading}
                   />
                 ) : null}
+                {['high-traffic', 'low-traffic', 'performance'].includes(activeTab) ? null : (
+                  <SortSelector
+                    activeTab={activeTab}
+                    activeSort={sortBy}
+                    setActiveSort={handleSortChange}
+                    isLoading={isLoading === null || isLoading}
+                  />
+                )}
                 <div className='ml-1 hidden space-x-2 sm:mr-3 lg:block lg:px-3'>
                   <button
                     type='button'
@@ -422,7 +451,7 @@ const Dashboard = () => {
                       >
                         {_map(projects, (project) => (
                           <ProjectCard
-                            key={project.id}
+                            key={`${project.id}-${project.name}`}
                             project={project}
                             live={liveStats[project.id] ?? (_isEmpty(liveStats) ? null : 'N/A')}
                             overallStats={overallStats[project.id]}

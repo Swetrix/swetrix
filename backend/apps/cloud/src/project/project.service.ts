@@ -453,6 +453,7 @@ export class ProjectService {
     options: PaginationOptionsInterface,
     userId: string,
     search?: string,
+    sort?: string,
   ): Promise<Pagination<Project>> {
     const queryBuilder = this.projectsRepository
       .createQueryBuilder('project')
@@ -505,10 +506,25 @@ export class ProjectService {
         .setParameter('search', search ? `%${search.trim()}%` : '')
     }
 
-    queryBuilder
-      .orderBy('project.name', 'ASC')
-      .skip(options.skip || 0)
-      .take(options.take || 100)
+    // Add sorting based on options.sort
+    switch (sort) {
+      case 'alpha_asc':
+        queryBuilder.orderBy('project.name', 'ASC')
+        break
+      case 'alpha_desc':
+        queryBuilder.orderBy('project.name', 'DESC')
+        break
+      case 'date_asc':
+        queryBuilder.orderBy('project.created', 'ASC')
+        break
+      case 'date_desc':
+        queryBuilder.orderBy('project.created', 'DESC')
+        break
+      default:
+        queryBuilder.orderBy('project.name', 'ASC')
+    }
+
+    queryBuilder.skip(options.skip || 0).take(options.take || 100)
 
     const [results, total] = await queryBuilder.getManyAndCount()
     const processedResults = await processProjectsUser(results, [

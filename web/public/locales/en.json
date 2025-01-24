@@ -690,6 +690,13 @@
   "dashboard": {
     "gridView": "Grid view",
     "listView": "List view",
+    "sortAlphaAsc": "A to Z",
+    "sortAlphaDesc": "Z to A",
+    "sortDateAsc": "Oldest first",
+    "sortDateDesc": "Newest first",
+    "pageviewsDesc": "Most pageviews",
+    "pageviewsAsc": "Least pageviews",
+    "lastVisitDesc": "Recently visited first",
     "uptime": "Uptime",
     "captcha": "CAPTCHA",
     "newProject": "New project",

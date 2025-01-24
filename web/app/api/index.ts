@@ -272,10 +272,11 @@ export const getProjects = (
   mode?: string,
   period?: string,
   useHostnameNavigation?: boolean,
+  sort?: string,
 ) =>
   api
     .get(
-      `/project?take=${take}&skip=${skip}&search=${search}&mode=${mode}&period=${period}&use-hostname-navigation=${useHostnameNavigation}`,
+      `/project?take=${take}&skip=${skip}&search=${search}&mode=${mode}&period=${period}&use-hostname-navigation=${useHostnameNavigation}&sort=${sort}`,
     )
     .then(
       (
