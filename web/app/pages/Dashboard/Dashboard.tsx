@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Link, useLoaderData, useSearchParams } from '@remix-run/react'
 import { ClientOnly } from 'remix-utils/client-only'
 import _isEmpty from 'lodash/isEmpty'
@@ -51,6 +51,7 @@ const Dashboard = () => {
 
   const { t } = useTranslation('common')
   const [isSearchActive, setIsSearchActive] = useState(false)
+  const searchInputRef = useRef<HTMLInputElement>(null)
   const [showActivateEmailModal, setShowActivateEmailModal] = useState(false)
   const [viewMode, setViewMode] = useState(defaultViewMode)
   const isAboveLgBreakpoint = useBreakpoint('lg')
@@ -307,6 +308,9 @@ const Dashboard = () => {
                       className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50'
                       onClick={() => {
                         setIsSearchActive(true)
+                        setTimeout(() => {
+                          searchInputRef.current?.focus()
+                        }, 100)
                       }}
                     />
                   )}
@@ -321,6 +325,7 @@ const Dashboard = () => {
                         <MagnifyingGlassIcon className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50' />
                       </div>
                       <input
+                        ref={searchInputRef}
                         type='text'
                         onChange={onSearch}
                         value={search}
