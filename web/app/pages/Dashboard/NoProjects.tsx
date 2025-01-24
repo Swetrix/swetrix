@@ -4,13 +4,26 @@ import { Link } from '@remix-run/react'
 import { useTranslation } from 'react-i18next'
 
 import routes from '~/utils/routes'
+import { DASHBOARD_TABS } from './Tabs'
 
 interface NoProjectsProps {
   onClick: (e: React.MouseEvent<HTMLAnchorElement>) => void
+  activeTab: (typeof DASHBOARD_TABS)[number]['id']
+  search: string
 }
 
-export const NoProjects = ({ onClick }: NoProjectsProps) => {
+export const NoProjects = ({ onClick, activeTab, search }: NoProjectsProps) => {
   const { t } = useTranslation('common')
+
+  if (activeTab !== 'default' || search) {
+    return (
+      <div className='mt-5 flex flex-col py-6 sm:px-6 lg:px-8'>
+        <div className='mx-auto w-full max-w-6xl text-gray-900 dark:text-gray-50'>
+          <h3 className='mb-8 text-center text-xl leading-snug'>{t('dashboard.noProjectsForCriteria')}</h3>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <Link

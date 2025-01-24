@@ -696,6 +696,7 @@
     "sortDateDesc": "Newest first",
     "pageviewsDesc": "Most pageviews",
     "pageviewsAsc": "Least pageviews",
+    "noProjectsForCriteria": "No projects found for the selected criteria",
     "lastVisitDesc": "Recently visited first",
     "uptime": "Uptime",
     "captcha": "CAPTCHA",

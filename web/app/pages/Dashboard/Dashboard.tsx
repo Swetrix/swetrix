@@ -439,7 +439,7 @@ const Dashboard = () => {
                 {() => (
                   <>
                     {_isEmpty(projects) ? (
-                      <NoProjects onClick={onNewProject} />
+                      <NoProjects search={debouncedSearch} activeTab={activeTab} onClick={onNewProject} />
                     ) : (
                       <div
                         className={cx(
