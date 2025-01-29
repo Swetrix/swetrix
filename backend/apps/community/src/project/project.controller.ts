@@ -98,6 +98,11 @@ export class ProjectController {
   @ApiQuery({ name: 'take', required: false })
   @ApiQuery({ name: 'skip', required: false })
   @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({
+    name: 'sort',
+    required: false,
+    type: String,
+  })
   @ApiResponse({ status: 200, type: [Project] })
   @Auth([], true)
   async get(
@@ -105,10 +110,12 @@ export class ProjectController {
     @Query('take') take: number | undefined,
     @Query('skip') skip: number | undefined,
     @Query('search') search: string | undefined,
+    @Query('sort')
+    sort?: 'alpha_asc' | 'alpha_desc' | 'date_asc' | 'date_desc',
   ): Promise<Pagination<Project> | Project[] | object> {
-    this.logger.log({ userId, take, skip }, 'GET /project')
+    this.logger.log({ userId, take, skip, sort }, 'GET /project')
 
-    const chResults = await getProjectsClickhouse(search)
+    const chResults = await getProjectsClickhouse(search, sort)
     const formatted = _map(chResults, this.projectService.formatFromClickhouse)
 
     const pidsWithData =
