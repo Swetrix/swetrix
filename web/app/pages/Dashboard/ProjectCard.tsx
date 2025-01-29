@@ -47,8 +47,6 @@ const MiniCard = ({ labelTKey, total, percChange }: MiniCardProps) => {
   const { t } = useTranslation('common')
   const statsDidGrowUp = percChange ? percChange >= 0 : false
 
-  console.log('MiniCard total', total)
-
   return (
     <div>
       <p className='text-sm text-gray-500 dark:text-gray-300'>{t(labelTKey)}</p>
@@ -201,9 +199,6 @@ export const ProjectCard = ({ live, project, overallStats, activePeriod, activeT
 
     return params.toString()
   }, [showPeriodSelector, activePeriod, isHostnameNavigationEnabled, project.name])
-
-  console.log('project:', project)
-  console.log('ProjectCard live', live)
 
   return (
     <Link
