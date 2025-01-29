@@ -28,7 +28,7 @@ const FeatureFlagsPage = () => {
     }
 
     if (user) {
-      setFlags(user.featureFlags)
+      setFlags(user.featureFlags ?? [])
       setInitialised(true)
       return
     }

@@ -158,6 +158,7 @@ export class ProjectController {
       role: userId ? 'owner' : 'viewer',
       isLocked: false,
       isAccessConfirmed: true,
+      isAnalyticsProject: true,
     }))
 
     return {
@@ -598,6 +599,7 @@ export class ProjectController {
       role: userId ? 'owner' : 'viewer',
       isLocked: false,
       isAccessConfirmed: true,
+      isAnalyticsProject: true,
     })
   }
 
