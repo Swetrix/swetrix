@@ -70,7 +70,6 @@ export const headers: HeadersFunction = () => ({
   'Permissions-Policy': 'interest-cohort=()',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'X-Powered-By': 'Mountain Dew',
-  'X-XSS-Protection': '1; mode=block',
   // Theme detection headers (browser hints)
   'Accept-CH': 'Sec-CH-Prefers-Color-Scheme',
   Vary: 'Sec-CH-Prefers-Color-Scheme',
