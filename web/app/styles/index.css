@@ -273,3 +273,21 @@ code {
   background-repeat: no-repeat;
   cursor: grab;
 }
+
+/* hover-always: visible on hover for devices that support it, 
+   and always visible for devices that don't support hover */
+@media (hover: hover) and (pointer: fine) {
+  .hover-always-overflow {
+    overflow: hidden;
+  }
+  
+  .hover-always-overflow:hover {
+    overflow: auto;
+  }
+}
+
+@media not all and (hover: hover) and (pointer: fine) {
+  .hover-always-overflow {
+    overflow: auto;
+  }
+}

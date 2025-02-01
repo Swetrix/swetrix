@@ -50,9 +50,6 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-@custom-variant has-hover (@media (hover: hover) and (pointer: fine));
-@custom-variant no-hover (@media not all and (hover: hover) and (pointer: fine));
-
 @keyframes move-x {
   0% {
     transform: translateX(var(--move-x-from));
