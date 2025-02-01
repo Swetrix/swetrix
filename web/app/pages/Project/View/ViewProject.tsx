@@ -2888,7 +2888,7 @@ const ViewProject = () => {
                 to={tabUrl}
                 onClick={handleClick}
                 className={cx(
-                  'text-md group inline-flex cursor-pointer items-center whitespace-nowrap border-b-2 px-1 py-2 font-bold',
+                  'text-md group inline-flex cursor-pointer items-center border-b-2 px-1 py-2 font-bold whitespace-nowrap',
                   {
                     'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50': isCurrent,
                     'border-transparent text-gray-500 dark:text-gray-400': !isCurrent,
@@ -2904,7 +2904,7 @@ const ViewProject = () => {
                     isCurrent
                       ? 'text-slate-900 dark:text-gray-50'
                       : 'text-gray-500 group-hover:text-gray-500 dark:text-gray-400 dark:group-hover:text-gray-300',
-                    '-ml-0.5 mr-2 h-5 w-5',
+                    'mr-2 -ml-0.5 h-5 w-5',
                   )}
                   aria-hidden='true'
                   strokeWidth={1.5}
@@ -2940,13 +2940,13 @@ const ViewProject = () => {
       <>
         {!embedded && <Header ssrTheme={ssrTheme} authenticated={authenticated} />}
         <div
-          className={cx('mx-auto w-full max-w-[1584px] bg-gray-50 px-2 py-6 dark:bg-slate-900 sm:px-4 lg:px-8', {
+          className={cx('mx-auto w-full max-w-[1584px] bg-gray-50 px-2 py-6 sm:px-4 lg:px-8 dark:bg-slate-900', {
             'min-h-min-footer': !embedded,
             'min-h-[100vh]': embedded,
           })}
         >
           <TabsSelector />
-          <h2 className='mt-2 break-words break-all text-center text-xl font-bold text-gray-900 dark:text-gray-50 sm:text-left'>
+          <h2 className='mt-2 text-center text-xl font-bold break-words break-all text-gray-900 sm:text-left dark:text-gray-50'>
             {project.name}
           </h2>
           <LockedDashboard user={user} project={project} />
@@ -2961,13 +2961,13 @@ const ViewProject = () => {
       <>
         {!embedded && <Header ssrTheme={ssrTheme} authenticated={authenticated} />}
         <div
-          className={cx('mx-auto w-full max-w-[1584px] bg-gray-50 px-2 py-6 dark:bg-slate-900 sm:px-4 lg:px-8', {
+          className={cx('mx-auto w-full max-w-[1584px] bg-gray-50 px-2 py-6 sm:px-4 lg:px-8 dark:bg-slate-900', {
             'min-h-min-footer': !embedded,
             'min-h-[100vh]': embedded,
           })}
         >
           <TabsSelector />
-          <h2 className='mt-2 break-words break-all text-center text-xl font-bold text-gray-900 dark:text-gray-50 sm:text-left'>
+          <h2 className='mt-2 text-center text-xl font-bold break-words break-all text-gray-900 sm:text-left dark:text-gray-50'>
             {project.name}
           </h2>
           <WaitingForAnEvent project={project} />
@@ -2986,13 +2986,13 @@ const ViewProject = () => {
       <>
         {!embedded && <Header ssrTheme={ssrTheme} authenticated={authenticated} />}
         <div
-          className={cx('mx-auto w-full max-w-[1584px] bg-gray-50 px-2 py-6 dark:bg-slate-900 sm:px-4 lg:px-8', {
+          className={cx('mx-auto w-full max-w-[1584px] bg-gray-50 px-2 py-6 sm:px-4 lg:px-8 dark:bg-slate-900', {
             'min-h-min-footer': !embedded,
             'min-h-[100vh]': embedded,
           })}
         >
           <TabsSelector />
-          <h2 className='mt-2 break-words break-all text-center text-xl font-bold text-gray-900 dark:text-gray-50 sm:text-left'>
+          <h2 className='mt-2 text-center text-xl font-bold break-words break-all text-gray-900 sm:text-left dark:text-gray-50'>
             {project.name}
           </h2>
           <WaitingForAnError />
@@ -3069,7 +3069,7 @@ const ViewProject = () => {
                     <>
                       <div className='mt-2 flex flex-col items-center justify-between lg:flex-row lg:items-start'>
                         <div className='flex flex-wrap items-center space-x-5'>
-                          <h2 className='break-words break-all text-xl font-bold text-gray-900 dark:text-gray-50'>
+                          <h2 className='text-xl font-bold break-words break-all text-gray-900 dark:text-gray-50'>
                             {/* If tab is funnels - then display a funnel name, otherwise a project name */}
                             {activeTab === PROJECT_TABS.funnels ? activeFunnel?.name : project.name}
                           </h2>
@@ -3091,7 +3091,7 @@ const ViewProject = () => {
                                 title={t('project.refreshStats')}
                                 onClick={refreshStats}
                                 className={cx(
-                                  'hover:shadow-xs focus:outline-hidden relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                                  'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-xs focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                                   {
                                     'cursor-not-allowed opacity-50': authLoading || dataLoading,
                                   },
@@ -3117,7 +3117,7 @@ const ViewProject = () => {
                                     setShowFiltersSearch(true)
                                   }}
                                   className={cx(
-                                    'hover:shadow-xs focus:outline-hidden relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                                    'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-xs focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                                     {
                                       'cursor-not-allowed opacity-50': authLoading || dataLoading,
                                     },
@@ -3263,7 +3263,7 @@ const ViewProject = () => {
                               )}
                               <div
                                 className={cx(
-                                  'space-x-2 border-gray-200 dark:border-gray-600 sm:mr-3 lg:border-x lg:px-3',
+                                  'space-x-2 border-gray-200 sm:mr-3 lg:border-x lg:px-3 dark:border-gray-600',
                                   {
                                     hidden:
                                       isPanelsDataEmpty ||
@@ -3279,9 +3279,9 @@ const ViewProject = () => {
                                   title={t('project.barChart')}
                                   onClick={() => setChartTypeOnClick(chartTypes.bar)}
                                   className={cx(
-                                    'focus:outline-hidden relative rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                                    'relative rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                                     {
-                                      'shadow-xs bg-white stroke-white dark:bg-slate-800 dark:stroke-slate-800':
+                                      'bg-white stroke-white shadow-xs dark:bg-slate-800 dark:stroke-slate-800':
                                         chartType === chartTypes.bar,
                                       'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200':
                                         chartType !== chartTypes.bar,
@@ -3295,9 +3295,9 @@ const ViewProject = () => {
                                   title={t('project.lineChart')}
                                   onClick={() => setChartTypeOnClick(chartTypes.line)}
                                   className={cx(
-                                    'focus:outline-hidden relative rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                                    'relative rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                                     {
-                                      'shadow-xs bg-white stroke-white dark:bg-slate-800 dark:stroke-slate-800':
+                                      'bg-white stroke-white shadow-xs dark:bg-slate-800 dark:stroke-slate-800':
                                         chartType === chartTypes.line,
                                       'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200':
                                         chartType !== chartTypes.line,
@@ -3461,7 +3461,7 @@ const ViewProject = () => {
                               title={t('project.refreshStats')}
                               onClick={refreshStats}
                               className={cx(
-                                'hover:shadow-xs focus:outline-hidden relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                                'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-xs focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                                 {
                                   'cursor-not-allowed opacity-50': authLoading || dataLoading,
                                 },
@@ -3473,7 +3473,7 @@ const ViewProject = () => {
                           {activeTab === PROJECT_TABS.performance && !isPanelsDataEmptyPerf && (
                             <Dropdown
                               items={chartMetricsPerf}
-                              className='min-w-[170px] xs:min-w-0'
+                              className='xs:min-w-0 min-w-[170px]'
                               title={
                                 <p>
                                   {
@@ -3496,7 +3496,7 @@ const ViewProject = () => {
                             <Dropdown
                               disabled={activeChartMetricsPerf === CHART_METRICS_MAPPING_PERF.quantiles}
                               items={chartMeasuresPerf}
-                              className='min-w-[170px] xs:min-w-0'
+                              className='xs:min-w-0 min-w-[170px]'
                               title={
                                 <p>
                                   {_find(chartMeasuresPerf, ({ id: chartId }) => chartId === activePerfMeasure)?.label}
@@ -3553,7 +3553,7 @@ const ViewProject = () => {
                           />
                           {isActiveCompare && activeTab !== PROJECT_TABS.errors && (
                             <>
-                              <div className='text-md mx-2 whitespace-pre-line font-medium text-gray-600 dark:text-gray-200'>
+                              <div className='text-md mx-2 font-medium whitespace-pre-line text-gray-600 dark:text-gray-200'>
                                 vs
                               </div>
                               <Dropdown
@@ -3609,7 +3609,7 @@ const ViewProject = () => {
                         <button
                           type='button'
                           onClick={() => setActiveFunnel(null)}
-                          className='mx-auto mb-4 mt-2 flex items-center text-base font-normal text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100 lg:mx-0 lg:mt-0'
+                          className='mx-auto mt-2 mb-4 flex items-center text-base font-normal text-gray-900 underline decoration-dashed hover:decoration-solid lg:mx-0 lg:mt-0 dark:text-gray-100'
                         >
                           <ChevronLeftIcon className='h-4 w-4' />
                           {t('project.backToFunnels')}
@@ -3623,10 +3623,10 @@ const ViewProject = () => {
                       <BellRingIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
                       <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>
                     </div>
-                    <p className='mt-2 whitespace-pre-wrap text-lg text-gray-100'>{t('dashboard.alertsDesc')}</p>
+                    <p className='mt-2 text-lg whitespace-pre-wrap text-gray-100'>{t('dashboard.alertsDesc')}</p>
                     <Link
                       to={routes.signup}
-                      className='mt-6 inline-block select-none rounded-md border border-transparent bg-white px-3 py-2 text-base font-medium text-gray-700 hover:bg-indigo-50'
+                      className='mt-6 inline-block rounded-md border border-transparent bg-white px-3 py-2 text-base font-medium text-gray-700 select-none hover:bg-indigo-50'
                       aria-label={t('titles.signup')}
                     >
                       {t('common.getStarted')}
@@ -3658,19 +3658,19 @@ const ViewProject = () => {
                       <FilterIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
                       <p className='text-3xl font-bold'>{t('dashboard.funnels')}</p>
                     </div>
-                    <p className='mt-2 whitespace-pre-wrap text-lg text-gray-100'>{t('dashboard.funnelsDesc')}</p>
+                    <p className='mt-2 text-lg whitespace-pre-wrap text-gray-100'>{t('dashboard.funnelsDesc')}</p>
                     {authenticated ? (
                       <button
                         type='button'
                         onClick={() => setIsNewFunnelOpened(true)}
-                        className='mt-6 inline-block select-none rounded-md border border-transparent bg-white px-3 py-2 text-base font-medium text-gray-700 hover:bg-indigo-50'
+                        className='mt-6 inline-block rounded-md border border-transparent bg-white px-3 py-2 text-base font-medium text-gray-700 select-none hover:bg-indigo-50'
                       >
                         {t('dashboard.newFunnel')}
                       </button>
                     ) : (
                       <Link
                         to={routes.signup}
-                        className='mt-6 inline-block select-none rounded-md border border-transparent bg-white px-3 py-2 text-base font-medium text-gray-700 hover:bg-indigo-50'
+                        className='mt-6 inline-block rounded-md border border-transparent bg-white px-3 py-2 text-base font-medium text-gray-700 select-none hover:bg-indigo-50'
                         aria-label={t('titles.signup')}
                       >
                         {t('common.getStarted')}
@@ -3708,7 +3708,7 @@ const ViewProject = () => {
                         title={t('project.refreshStats')}
                         onClick={() => loadSessions()}
                         className={cx(
-                          'hover:shadow-xs focus:outline-hidden relative mx-auto mt-2 flex items-center rounded-md bg-gray-50 p-2 text-sm font-medium text-gray-700 hover:bg-white focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                          'relative mx-auto mt-2 flex items-center rounded-md bg-gray-50 p-2 text-sm font-medium text-gray-700 hover:bg-white hover:shadow-xs focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                           {
                             'cursor-not-allowed opacity-50': sessionsLoading || sessionsLoading === null,
                             hidden: sessionsLoading && _isEmpty(sessions),
@@ -3731,7 +3731,7 @@ const ViewProject = () => {
                         searchParams.delete('psid')
                         setSearchParams(searchParams)
                       }}
-                      className='mx-auto mb-4 mt-2 flex items-center text-base font-normal text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100 lg:mx-0'
+                      className='mx-auto mt-2 mb-4 flex items-center text-base font-normal text-gray-900 underline decoration-dashed hover:decoration-solid lg:mx-0 dark:text-gray-100'
                     >
                       <ChevronLeftIcon className='h-4 w-4' />
                       {t('project.backToSessions')}
@@ -3785,7 +3785,7 @@ const ViewProject = () => {
                         title={t('project.refreshStats')}
                         onClick={() => loadErrors()}
                         className={cx(
-                          'hover:shadow-xs focus:outline-hidden relative mx-auto mt-2 flex items-center rounded-md bg-gray-50 p-2 text-sm font-medium text-gray-700 hover:bg-white focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                          'relative mx-auto mt-2 flex items-center rounded-md bg-gray-50 p-2 text-sm font-medium text-gray-700 hover:bg-white hover:shadow-xs focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                           {
                             'cursor-not-allowed opacity-50': errorsLoading,
                             hidden: errorsLoading && _isEmpty(errors),
@@ -3808,7 +3808,7 @@ const ViewProject = () => {
                         searchParams.delete('eid')
                         setSearchParams(searchParams)
                       }}
-                      className='mx-auto mb-4 mt-2 flex items-center text-base font-normal text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100 lg:mx-0 lg:mt-0'
+                      className='mx-auto mt-2 mb-4 flex items-center text-base font-normal text-gray-900 underline decoration-dashed hover:decoration-solid lg:mx-0 lg:mt-0 dark:text-gray-100'
                     >
                       <ChevronLeftIcon className='h-4 w-4' />
                       {t('project.backToErrors')}

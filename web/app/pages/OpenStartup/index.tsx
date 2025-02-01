@@ -389,7 +389,7 @@ const OpenStartup = () => {
 
   return (
     <div className='min-h-page bg-gray-50 dark:bg-slate-900'>
-      <div className='mx-auto w-11/12 whitespace-pre-line px-4 pb-16 pt-12 sm:px-6 md:w-4/5 lg:px-8'>
+      <div className='mx-auto w-11/12 px-4 pt-12 pb-16 whitespace-pre-line sm:px-6 md:w-4/5 lg:px-8'>
         <h1 className='text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>{t('titles.open')}</h1>
 
         <p className='mt-2 text-lg tracking-tight text-gray-900 dark:text-gray-50'>{t('open.desc')}</p>

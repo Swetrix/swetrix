@@ -56,7 +56,7 @@ const Modal = ({
       onClose={onClose}
       static
     >
-      <div className='min-h-screen flex items-end justify-center px-4 pb-20 pt-4 text-center sm:block sm:p-0'>
+      <div className='flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0'>
         <TransitionChild
           as={Fragment}
           enter='ease-out duration-300'
@@ -84,7 +84,7 @@ const Modal = ({
         >
           <DialogPanel
             className={cx(
-              'inline-block transform rounded-lg bg-white px-4 pb-4 pt-5 text-left align-bottom shadow-xl transition-all dark:bg-slate-900 sm:my-8 sm:px-5 sm:py-4 sm:align-middle',
+              'inline-block transform rounded-lg bg-white px-4 pt-5 pb-4 text-left align-bottom shadow-xl transition-all sm:my-8 sm:px-5 sm:py-4 sm:align-middle dark:bg-slate-900',
               {
                 'sm:w-full sm:max-w-lg': size === 'regular',
                 'w-full max-w-5xl': size === 'large',
@@ -123,7 +123,7 @@ const Modal = ({
                 {title && (
                   <DialogTitle
                     as='h3'
-                    className={cx('flex items-center text-lg font-medium leading-6 text-gray-900 dark:text-gray-50', {
+                    className={cx('flex items-center text-lg leading-6 font-medium text-gray-900 dark:text-gray-50', {
                       'justify-between': !closeText,
                       'justify-center sm:justify-start': closeText,
                     })}
@@ -144,7 +144,7 @@ const Modal = ({
                     )}
                   </DialogTitle>
                 )}
-                <div className='mt-2 whitespace-pre-line text-sm text-gray-600 dark:text-gray-200'>{message}</div>
+                <div className='mt-2 text-sm whitespace-pre-line text-gray-600 dark:text-gray-200'>{message}</div>
               </div>
             </div>
             <div className='px-4 py-3 sm:flex sm:flex-row-reverse sm:px-0 sm:pb-0'>
@@ -153,7 +153,7 @@ const Modal = ({
                 <button
                   type='button'
                   className={cx(
-                    'shadow-xs inline-flex w-full justify-center rounded-md px-4 py-2 text-base font-medium text-white sm:ml-3 sm:w-auto sm:text-sm',
+                    'inline-flex w-full justify-center rounded-md px-4 py-2 text-base font-medium text-white shadow-xs sm:ml-3 sm:w-auto sm:text-sm',
                     {
                       'bg-indigo-600': submitType === 'regular',
                       'bg-red-600': submitType === 'danger',
@@ -171,7 +171,7 @@ const Modal = ({
               {closeText && (
                 <button
                   type='button'
-                  className='shadow-xs mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 dark:border-none dark:border-gray-600 dark:bg-slate-800 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700 sm:ml-3 sm:mt-0 sm:w-auto sm:text-sm'
+                  className='mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-xs hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:border-none dark:border-gray-600 dark:bg-slate-800 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700'
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()

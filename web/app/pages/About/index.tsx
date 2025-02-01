@@ -54,8 +54,8 @@ const Teammate = ({ photo, name, role, socials, desc }: TeammateProps) => (
         style={{ aspectRatio: '1 / 1' }}
       />
     </div>
-    <div className='mb-4 mt-5 text-center md:mb-0 md:mt-0 md:w-3/5 md:text-start'>
-      <p className='mt-2 text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50 lg:mt-0'>{name}</p>
+    <div className='mt-5 mb-4 text-center md:mt-0 md:mb-0 md:w-3/5 md:text-start'>
+      <p className='mt-2 text-3xl font-bold tracking-tight text-gray-900 lg:mt-0 dark:text-gray-50'>{name}</p>
       <p className='text-xl tracking-tight text-gray-900 dark:text-gray-50'>{role}</p>
       <div className='mt-2 flex justify-center space-x-4 md:justify-start'>
         {_map(socials, (value, key) => (
@@ -73,7 +73,7 @@ const Teammate = ({ photo, name, role, socials, desc }: TeammateProps) => (
           </a>
         ))}
       </div>
-      <p className='mt-2 whitespace-pre-line text-lg tracking-tight text-gray-900 dark:text-gray-50 lg:mt-5'>{desc}</p>
+      <p className='mt-2 text-lg tracking-tight whitespace-pre-line text-gray-900 lg:mt-5 dark:text-gray-50'>{desc}</p>
     </div>
   </div>
 )
@@ -125,7 +125,7 @@ const team = [
 const About = () => (
   <div>
     <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-      <div className='mx-auto max-w-7xl whitespace-pre-line px-4 pb-16 pt-12 sm:px-6 lg:px-8'>
+      <div className='mx-auto max-w-7xl px-4 pt-12 pb-16 whitespace-pre-line sm:px-6 lg:px-8'>
         <h1 className='text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>
           We're changing the way web analytics is done
         </h1>

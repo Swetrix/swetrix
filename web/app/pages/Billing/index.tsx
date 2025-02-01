@@ -223,11 +223,11 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
     <div className='min-h-page bg-gray-50 dark:bg-slate-900'>
       <DashboardLockedBanner />
 
-      <div className='mx-auto w-11/12 whitespace-pre-line px-4 pt-12 sm:px-6 md:w-5/6'>
+      <div className='mx-auto w-11/12 px-4 pt-12 whitespace-pre-line sm:px-6 md:w-5/6'>
         <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50'>{t('billing.title')}</h1>
       </div>
 
-      <div className='mx-auto mt-5 grid w-11/12 gap-8 whitespace-pre-line px-4 pb-16 sm:px-6 md:w-5/6 lg:grid-cols-2'>
+      <div className='mx-auto mt-5 grid w-11/12 gap-8 px-4 pb-16 whitespace-pre-line sm:px-6 md:w-5/6 lg:grid-cols-2'>
         <div>
           <h2 id='billing' className='mb-2 text-2xl font-medium tracking-tight text-gray-900 dark:text-gray-50'>
             {t('billing.subscription')}

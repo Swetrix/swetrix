@@ -244,10 +244,10 @@ const Signup = ({ ssrTheme }: SignupProps) => {
 
   return (
     <div>
-      <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8'>
-        <div className='min-h-full flex flex-1 flex-col justify-center py-6 sm:px-6 lg:px-8'>
+      <div className='min-h-min-footer flex flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
+        <div className='flex min-h-full flex-1 flex-col justify-center py-6 sm:px-6 lg:px-8'>
           <div className='sm:mx-auto sm:w-full sm:max-w-md'>
-            <h2 className='text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-gray-50'>
+            <h2 className='text-center text-2xl leading-9 font-bold tracking-tight text-gray-900 dark:text-gray-50'>
               {t('auth.signup.trial', {
                 amount: TRIAL_DAYS,
               })}
@@ -255,7 +255,7 @@ const Signup = ({ ssrTheme }: SignupProps) => {
             <p className='text-center text-base text-gray-900 dark:text-gray-50'>{t('auth.signup.noCC')}</p>
           </div>
           <div className='mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]'>
-            <div className='bg-white px-6 py-12 shadow-sm dark:bg-slate-800/20 dark:ring-1 dark:ring-slate-800 sm:rounded-lg sm:px-12'>
+            <div className='bg-white px-6 py-12 shadow-sm sm:rounded-lg sm:px-12 dark:bg-slate-800/20 dark:ring-1 dark:ring-slate-800'>
               <form className='space-y-6' onSubmit={handleSubmit}>
                 <Input
                   name='email'
@@ -366,7 +366,7 @@ const Signup = ({ ssrTheme }: SignupProps) => {
                   <div className='absolute inset-0 flex items-center' aria-hidden='true'>
                     <div className='w-full border-t border-gray-200 dark:border-gray-600' />
                   </div>
-                  <div className='relative flex justify-center text-sm font-medium leading-6'>
+                  <div className='relative flex justify-center text-sm leading-6 font-medium'>
                     <span className='bg-white px-6 text-gray-900 dark:bg-slate-800/20 dark:text-gray-50'>
                       {t('auth.common.orContinueWith')}
                     </span>
@@ -388,7 +388,7 @@ const Signup = ({ ssrTheme }: SignupProps) => {
                   url: (
                     <Link
                       to={routes.signin}
-                      className='font-semibold leading-6 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                      className='leading-6 font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
                       aria-label={t('titles.signin')}
                     />
                   ),

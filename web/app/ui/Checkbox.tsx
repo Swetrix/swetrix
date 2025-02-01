@@ -21,7 +21,7 @@ const Checkbox = ({ label, hint, name, className, onChange, checked, hintClassNa
         name={name}
         checked={checked}
         onChange={onChange}
-        className='group size-4 shrink-0 rounded-sm bg-white ring-1 ring-inset ring-gray-200 data-[checked]:bg-slate-900 data-[checked]:ring-slate-900 dark:bg-white/10 dark:ring-white/15 dark:data-[checked]:bg-white dark:data-[checked]:ring-white/15'
+        className='group size-4 shrink-0 rounded-sm bg-white ring-1 ring-gray-200 ring-inset data-[checked]:bg-slate-900 data-[checked]:ring-slate-900 dark:bg-white/10 dark:ring-white/15 dark:data-[checked]:bg-white dark:data-[checked]:ring-white/15'
       >
         <CheckIcon className='hidden size-4 text-white group-data-[checked]:block dark:text-black' />
       </HeadlessCheckbox>

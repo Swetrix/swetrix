@@ -58,9 +58,9 @@ function Dropdown<T>({
               className={cx(buttonClassName, {
                 'justify-between': aside,
                 'justify-center': !aside,
-                'shadow-xs focus:outline-hidden inline-flex w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100 dark:border-gray-800 dark:bg-slate-800 dark:hover:bg-slate-700 md:px-4':
+                'inline-flex w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium shadow-xs hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100 focus:outline-hidden md:px-4 dark:border-gray-800 dark:bg-slate-800 dark:hover:bg-slate-700':
                   !headless,
-                'outline-hidden group inline-flex w-full px-3 py-2 text-sm font-medium md:px-4': headless,
+                'group inline-flex w-full px-3 py-2 text-sm font-medium outline-hidden md:px-4': headless,
                 'text-gray-700 dark:text-gray-50': !disabled,
                 'cursor-not-allowed text-gray-500 dark:text-gray-400': disabled,
               })}
@@ -100,7 +100,7 @@ function Dropdown<T>({
             <MenuItems
               static
               className={cx(
-                'focus:outline-hidden absolute right-0 z-50 mt-2 w-40 min-w-max origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black/50 dark:bg-slate-800',
+                'absolute right-0 z-50 mt-2 w-40 min-w-max origin-top-right rounded-md bg-white ring-1 shadow-lg ring-black/50 focus:outline-hidden dark:bg-slate-800',
                 menuItemsClassName,
                 {
                   'divide-y divide-gray-100 dark:divide-gray-600': header,

@@ -58,10 +58,10 @@ const Session = ({ session, onClick, timeFormat }: SessionProps) => {
       }}
       to={stringifiedUrl}
     >
-      <li className='relative mb-4 flex cursor-pointer justify-between gap-x-6 rounded-lg bg-gray-200/60 px-4 py-4 hover:bg-gray-200 dark:bg-[#162032] dark:hover:bg-slate-800 sm:px-6'>
+      <li className='relative mb-4 flex cursor-pointer justify-between gap-x-6 rounded-lg bg-gray-200/60 px-4 py-4 hover:bg-gray-200 sm:px-6 dark:bg-[#162032] dark:hover:bg-slate-800'>
         <div className='flex min-w-0 gap-x-4'>
           <div className='min-w-0 flex-auto'>
-            <p className='flex items-center gap-x-2 text-sm font-semibold leading-6 text-gray-900 dark:text-gray-50'>
+            <p className='flex items-center gap-x-2 text-sm leading-6 font-semibold text-gray-900 dark:text-gray-50'>
               {date}
             </p>
             <p className='mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500 dark:text-gray-300'>
@@ -73,7 +73,7 @@ const Session = ({ session, onClick, timeFormat }: SessionProps) => {
               <Separator />
               {session.br}
             </p>
-            <p className='mt-1 flex text-xs leading-5 text-gray-500 dark:text-gray-300 sm:hidden'>{pageviewCount}</p>
+            <p className='mt-1 flex text-xs leading-5 text-gray-500 sm:hidden dark:text-gray-300'>{pageviewCount}</p>
           </div>
         </div>
         <div className='flex shrink-0 items-center gap-x-4'>

@@ -136,7 +136,7 @@
   .hover-always-overflow {
     overflow: hidden;
   }
-  
+
   .hover-always-overflow:hover {
     overflow: auto;
   }

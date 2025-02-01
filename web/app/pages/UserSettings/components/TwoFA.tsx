@@ -180,7 +180,7 @@ const TwoFA = () => {
         <div className='mt-4 w-max bg-white p-4'>
           <QRCode value={twoFAConfigData?.otpauthUrl || ''} />
         </div>
-        <p className='mt-2 whitespace-pre-line text-base text-gray-900 dark:text-gray-50'>
+        <p className='mt-2 text-base whitespace-pre-line text-gray-900 dark:text-gray-50'>
           {t('profileSettings.2faQRAlt', { key: twoFAConfigData?.secret || '' })}
         </p>
         <div className='mt-4 flex items-center'>
@@ -196,7 +196,7 @@ const TwoFA = () => {
           />
           <Button
             className={cx('ml-2', {
-              'mt-8 xs:mt-4': _isNull(twoFACodeError),
+              'xs:mt-4 mt-8': _isNull(twoFACodeError),
               'mb-1': !_isNull(twoFACodeError),
             })}
             onClick={_enable2FA}

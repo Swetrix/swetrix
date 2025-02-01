@@ -228,11 +228,11 @@ const Footer = ({ authenticated, showDBIPMessage }: FooterProps) => {
   }
 
   return (
-    <footer className='bg-gray-800 dark:bg-gray-750' aria-labelledby='footer-heading'>
+    <footer className='dark:bg-gray-750 bg-gray-800' aria-labelledby='footer-heading'>
       <h2 id='footer-heading' className='sr-only'>
         Footer
       </h2>
-      <div className='w-11/12 px-4 pb-5 pt-8 sm:px-6 lg:px-8'>
+      <div className='w-11/12 px-4 pt-8 pb-5 sm:px-6 lg:px-8'>
         <div className='xl:grid xl:grid-cols-2 xl:gap-8'>
           <div className='space-y-5 xl:col-span-1'>
             <div className='flex flex-wrap gap-5'>
@@ -305,7 +305,7 @@ const Footer = ({ authenticated, showDBIPMessage }: FooterProps) => {
           <div className='mt-12 xl:mt-0'>
             <div className='grid grid-cols-2 gap-8 md:grid-cols-3'>
               <div>
-                <h3 className='text-sm font-semibold uppercase tracking-wider text-white'>{t('footer.features')}</h3>
+                <h3 className='text-sm font-semibold tracking-wider text-white uppercase'>{t('footer.features')}</h3>
                 <ul className='mt-4 space-y-4'>
                   {_map(navigation.features, (data) => {
                     const { value, key, href, internal } = data
@@ -335,7 +335,7 @@ const Footer = ({ authenticated, showDBIPMessage }: FooterProps) => {
                 </ul>
               </div>
               <div>
-                <h3 className='text-sm font-semibold uppercase tracking-wider text-white'>{t('footer.company')}</h3>
+                <h3 className='text-sm font-semibold tracking-wider text-white uppercase'>{t('footer.company')}</h3>
                 <ul className='mt-4 space-y-4'>
                   {_map(navigation.company, ({ key, href, internal }) => (
                     <li key={key}>
@@ -359,7 +359,7 @@ const Footer = ({ authenticated, showDBIPMessage }: FooterProps) => {
                 </ul>
               </div>
               <div className='mt-12 md:mt-0'>
-                <h3 className='text-sm font-semibold uppercase tracking-wider text-white'>{t('footer.legal')}</h3>
+                <h3 className='text-sm font-semibold tracking-wider text-white uppercase'>{t('footer.legal')}</h3>
                 <ul className='mt-4 space-y-4'>
                   {_map(navigation.legal, (func) => {
                     const { key, href, internal } = func(authenticated)

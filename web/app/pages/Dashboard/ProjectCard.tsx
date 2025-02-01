@@ -53,7 +53,7 @@ const MiniCard = ({ labelTKey, total, percChange }: MiniCardProps) => {
 
       <div className='flex font-bold'>
         {total === null ? (
-          <Spin className='!ml-0 mt-2' />
+          <Spin className='mt-2 !ml-0' />
         ) : (
           <>
             <p className='text-xl text-gray-700 dark:text-gray-100'>{_isNumber(total) ? nFormatter(total) : total}</p>

@@ -6,7 +6,7 @@ import { CONTACT_EMAIL } from '~/lib/constants'
 const Terms = () => {
   return (
     <div className='bg-gray-50 dark:bg-slate-900'>
-      <div className='mx-auto w-11/12 px-4 pb-16 pt-12 sm:px-6 md:w-4/5 lg:px-8'>
+      <div className='mx-auto w-11/12 px-4 pt-12 pb-16 sm:px-6 md:w-4/5 lg:px-8'>
         <h1 className='text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>
           Swetrix Terms and Conditions
         </h1>
@@ -296,7 +296,7 @@ const Terms = () => {
           .
         </p>
 
-        <hr className='mb-4 mt-10 border-gray-200 dark:border-gray-600' />
+        <hr className='mt-10 mb-4 border-gray-200 dark:border-gray-600' />
         <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           <i>Last updated: February 2, 2024.</i>
         </p>

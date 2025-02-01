@@ -49,14 +49,14 @@ function Select<T>({
       {({ open }) => (
         <>
           {label ? (
-            <Label className='mb-1 block whitespace-pre-line text-sm font-medium text-gray-700 dark:text-gray-100'>
+            <Label className='mb-1 block text-sm font-medium whitespace-pre-line text-gray-700 dark:text-gray-100'>
               {label}
             </Label>
           ) : null}
           <div className={cx('relative', className)}>
             <ListboxButton
               className={cx(
-                'shadow-xs focus:outline-hidden relative w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 sm:text-sm',
+                'relative w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-left shadow-xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden sm:text-sm dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50',
                 buttonClassName,
               )}
             >
@@ -81,13 +81,13 @@ function Select<T>({
             >
               <ListboxOptions
                 static
-                className='focus:outline-hidden absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/50 dark:bg-slate-800 sm:text-sm'
+                className='absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base ring-1 shadow-lg ring-black/50 focus:outline-hidden sm:text-sm dark:bg-slate-800'
               >
                 {_map(items, (item, index) => (
                   <ListboxOption
                     key={keyExtractor ? keyExtractor(item, index) : (item as Key)}
                     className={({ active }) =>
-                      cx('relative cursor-default select-none py-2 pl-8 pr-4 dark:text-white', {
+                      cx('relative cursor-default py-2 pr-4 pl-8 select-none dark:text-white', {
                         'bg-indigo-600 text-white': active,
                         'text-gray-900': !active,
                       })
@@ -134,7 +134,7 @@ function Select<T>({
             </Transition>
           </div>
           {hint && (
-            <Description className='mt-2 whitespace-pre-line text-sm text-gray-500 dark:text-gray-300'>
+            <Description className='mt-2 text-sm whitespace-pre-line text-gray-500 dark:text-gray-300'>
               {hint}
             </Description>
           )}

@@ -119,7 +119,7 @@ const ModalMessage = ({
 
   return (
     <>
-      <p className='mb-4 mt-1 text-sm italic text-gray-500 dark:text-gray-300'>{t('project.settings.resetHint')}</p>
+      <p className='mt-1 mb-4 text-sm text-gray-500 italic dark:text-gray-300'>{t('project.settings.resetHint')}</p>
       <div className='mt-6'>
         <nav className='-mb-px flex space-x-6'>
           {_map(DELETE_DATA_MODAL_TABS, (tabDelete) => (
@@ -127,7 +127,7 @@ const ModalMessage = ({
               key={tabDelete.name}
               type='button'
               onClick={() => setTab(tabDelete.name)}
-              className={cx('text-md whitespace-nowrap border-b-2 px-1 pb-2 font-medium', {
+              className={cx('text-md border-b-2 px-1 pb-2 font-medium whitespace-nowrap', {
                 'border-indigo-500 text-indigo-600 dark:border-gray-50 dark:text-gray-50': tabDelete.name === tab,
                 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
                   tab !== tabDelete.name,
@@ -140,10 +140,10 @@ const ModalMessage = ({
       </div>
       {tab === DELETE_DATA_MODAL_TABS[1].name && (
         <>
-          <p className='mb-2 mt-4 text-sm text-gray-500 dark:text-gray-300'>
+          <p className='mt-4 mb-2 text-sm text-gray-500 dark:text-gray-300'>
             {t('project.settings.reseted.partiallyDesc')}
           </p>
-          <p className='mb-2 mt-1 text-sm italic text-gray-500 dark:text-gray-300'>
+          <p className='mt-1 mb-2 text-sm text-gray-500 italic dark:text-gray-300'>
             {t('project.settings.reseted.partiallyHint')}
           </p>
           <input
@@ -161,13 +161,13 @@ const ModalMessage = ({
         </>
       )}
       {tab === DELETE_DATA_MODAL_TABS[0].name && (
-        <p className='mb-4 mt-4 text-sm italic text-gray-500 dark:text-gray-300'>
+        <p className='mt-4 mb-4 text-sm text-gray-500 italic dark:text-gray-300'>
           {t('project.settings.reseted.allHint')}
         </p>
       )}
       {tab === DELETE_DATA_MODAL_TABS[2].name && (
         <div className='min-h-[410px]'>
-          <p className='mb-4 mt-4 text-sm italic text-gray-500 dark:text-gray-300'>
+          <p className='mt-4 mb-4 text-sm text-gray-500 italic dark:text-gray-300'>
             {t('project.settings.reseted.viaFiltersHint')}
           </p>
           <div>
@@ -235,7 +235,7 @@ const ModalMessage = ({
                 }
               />
             ) : (
-              <p className='mb-4 mt-4 text-sm italic text-gray-500 dark:text-gray-300'>
+              <p className='mt-4 mb-4 text-sm text-gray-500 italic dark:text-gray-300'>
                 {t('project.settings.reseted.noFilters')}
               </p>
             )}
@@ -553,7 +553,7 @@ const ProjectSettings = () => {
 
   if (isLoading || isLoading === null || !project) {
     return (
-      <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8'>
+      <div className='min-h-min-footer flex flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
         <Loader />
       </div>
     )
@@ -561,13 +561,13 @@ const ProjectSettings = () => {
 
   if (error && !isLoading) {
     return (
-      <div className='min-h-page bg-gray-50 px-4 py-16 dark:bg-slate-900 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
+      <div className='min-h-page bg-gray-50 px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8 dark:bg-slate-900'>
         <div className='mx-auto max-w-max'>
           <main className='sm:flex'>
             <XCircleIcon className='h-12 w-12 text-red-400' aria-hidden='true' />
             <div className='sm:ml-6'>
               <div className='max-w-prose sm:border-l sm:border-gray-200 sm:pl-6'>
-                <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50 sm:text-5xl'>
+                <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl dark:text-gray-50'>
                   {t('apiNotifications.somethingWentWrong')}
                 </h1>
                 <p className='mt-4 text-2xl font-medium tracking-tight text-gray-700 dark:text-gray-200'>
@@ -578,13 +578,13 @@ const ProjectSettings = () => {
                 <button
                   type='button'
                   onClick={() => window.location.reload()}
-                  className='shadow-xs focus:outline-hidden inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
+                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-xs hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden'
                 >
                   {t('dashboard.reloadPage')}
                 </button>
                 <Link
                   to={routes.contact}
-                  className='focus:outline-hidden inline-flex items-center rounded-md border border-transparent bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700 dark:focus:ring-gray-50'
+                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700 dark:focus:ring-gray-50'
                 >
                   {t('notFoundPage.support')}
                 </Link>
@@ -597,7 +597,7 @@ const ProjectSettings = () => {
   }
 
   return (
-    <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 pb-40 dark:bg-slate-900 sm:px-6 lg:px-8'>
+    <div className='min-h-min-footer flex flex-col bg-gray-50 px-4 py-6 pb-40 sm:px-6 lg:px-8 dark:bg-slate-900'>
       <form className='mx-auto w-full max-w-7xl' onSubmit={handleSubmit}>
         <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{title}</h2>
         <h3 className='mt-4 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('profileSettings.general')}</h3>
@@ -783,13 +783,13 @@ const ProjectSettings = () => {
         </div>
         {!isSelfhosted && (
           <>
-            <hr className='mt-8 border-gray-200 dark:border-gray-600 xs:mt-2 sm:mt-5' />
+            <hr className='xs:mt-2 mt-8 border-gray-200 sm:mt-5 dark:border-gray-600' />
             <Emails projectId={id} />
           </>
         )}
         {!isSelfhosted && (
           <>
-            <hr className='mt-2 border-gray-200 dark:border-gray-600 sm:mt-5' />
+            <hr className='mt-2 border-gray-200 sm:mt-5 dark:border-gray-600' />
             <People project={project} />
           </>
         )}
@@ -843,7 +843,7 @@ const ProjectSettings = () => {
         title={t('project.settings.protected')}
         message={
           <div>
-            <p className='mb-4 mt-1 text-sm text-gray-500 dark:text-gray-300'>{t('project.settings.protectedHint')}</p>
+            <p className='mt-1 mb-4 text-sm text-gray-500 dark:text-gray-300'>{t('project.settings.protectedHint')}</p>
             <Input
               name='password'
               type='password'

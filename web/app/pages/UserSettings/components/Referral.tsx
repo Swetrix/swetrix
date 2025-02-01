@@ -245,18 +245,18 @@ const Referral = () => {
           />
         </div>
       ) : (
-        <Spin className='!ml-0 mt-2' />
+        <Spin className='mt-2 !ml-0' />
       )}
       <h3 className='mt-5 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
         {t('profileSettings.referral.activeReferrals')}
       </h3>
       {!_isEmpty(activeReferrals) ? (
-        <table className='200 mt-2 min-w-full divide-y divide-gray-300 shadow-sm ring-1 ring-black/50 dark:divide-gray-500 md:rounded-lg'>
+        <table className='200 mt-2 min-w-full divide-y divide-gray-300 ring-1 shadow-sm ring-black/50 md:rounded-lg dark:divide-gray-500'>
           <thead className='bg-gray-50 dark:bg-slate-800'>
             <tr>
               <th
                 scope='col'
-                className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-50'
+                className='py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 dark:text-gray-50'
               >
                 {t('profileSettings.referral.activeReferralsTable.plan')}
               </th>
@@ -287,15 +287,15 @@ const Referral = () => {
 
               return (
                 <tr key={index}>
-                  <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50 sm:pl-6'>
+                  <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 sm:pl-6 dark:text-gray-50'>
                     {currencySymbol}
                     {planPrice}/{tBillingFrequency}
                   </td>
-                  <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50'>
+                  <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-gray-50'>
                     {currencySymbol}
                     {referrerCut}/{tBillingFrequency}
                   </td>
-                  <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50'>
+                  <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-gray-50'>
                     {language === 'en'
                       ? dayjs(created).locale(language).format('MMMM D, YYYY')
                       : dayjs(created).locale(language).format('D MMMM, YYYY')}
@@ -306,7 +306,7 @@ const Referral = () => {
           </tbody>
         </table>
       ) : uiIsLoading ? (
-        <Spin className='!ml-0 mt-2' />
+        <Spin className='mt-2 !ml-0' />
       ) : (
         <p className='mt-2 text-sm text-gray-900 dark:text-gray-50'>
           {t('profileSettings.referral.noActiveReferrals')}

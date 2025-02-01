@@ -44,7 +44,7 @@ const EventsRunningOutBanner = () => {
             <div className='order-3 mt-2 w-full shrink-0 sm:order-2 sm:mt-0 sm:w-auto'>
               <span
                 onClick={() => setShowMoreInfoModal(true)}
-                className='shadow-xs flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-gray-50 px-4 py-2 text-sm font-medium text-yellow-600 hover:bg-yellow-50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
+                className='flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-gray-50 px-4 py-2 text-sm font-medium text-yellow-600 shadow-xs hover:bg-yellow-50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
               >
                 {t('common.learnMore')}
               </span>
@@ -53,7 +53,7 @@ const EventsRunningOutBanner = () => {
               <button
                 type='button'
                 onClick={closeHandler}
-                className='focus:outline-hidden -mr-1 flex rounded-md p-2 hover:bg-yellow-500 focus:ring-2 focus:ring-white sm:-mr-2'
+                className='-mr-1 flex rounded-md p-2 hover:bg-yellow-500 focus:ring-2 focus:ring-white focus:outline-hidden sm:-mr-2'
               >
                 <span className='sr-only'>{t('common.close')}</span>
                 <XMarkIcon className='h-6 w-6 text-black' aria-hidden='true' />

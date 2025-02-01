@@ -24,7 +24,7 @@ const MultiProgress = ({ progress, theme, className }: MultiProgressProps) => (
             width: `${value}%`,
             backgroundColor: theme === 'dark' ? darkColour : lightColour,
           }}
-          className='flex flex-col justify-center whitespace-nowrap text-center text-white shadow-none'
+          className='flex flex-col justify-center text-center whitespace-nowrap text-white shadow-none'
         />
       ))}
     </div>

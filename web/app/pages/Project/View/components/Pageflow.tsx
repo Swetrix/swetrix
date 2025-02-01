@@ -62,7 +62,7 @@ export const Pageflow = ({ pages, timeFormat }: PageflowProps) => {
               <div className='relative pb-8'>
                 {index !== pages.length - 1 ? (
                   <span
-                    className='absolute left-4 top-4 -ml-px h-full w-0.5 bg-slate-200 dark:bg-slate-700'
+                    className='absolute top-4 left-4 -ml-px h-full w-0.5 bg-slate-200 dark:bg-slate-700'
                     aria-hidden='true'
                   />
                 ) : null}
@@ -90,7 +90,7 @@ export const Pageflow = ({ pages, timeFormat }: PageflowProps) => {
                         }}
                       />
                     </div>
-                    <div className='whitespace-nowrap text-right text-sm text-gray-700 dark:text-gray-300'>
+                    <div className='text-right text-sm whitespace-nowrap text-gray-700 dark:text-gray-300'>
                       <time dateTime={created}>{displayCreated}</time>
                     </div>
                   </div>

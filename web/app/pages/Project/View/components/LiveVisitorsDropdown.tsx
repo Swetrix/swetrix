@@ -53,7 +53,7 @@ const LiveVisitorsDropdown = ({ live, onSessionSelect }: LiveVisitorsDropdownPro
         {show ? <ChevronUpIcon className='ml-1 inline h-4 w-4' /> : <ChevronDownIcon className='ml-1 inline h-4 w-4' />}
         {show ? (
           <div
-            className={`scrollbar-thin absolute right-0 top-3 z-10 mt-2 max-h-[200px] cursor-auto overflow-y-auto rounded-md border border-gray-200 bg-white text-gray-900 shadow-lg dark:border-slate-700/50 dark:bg-slate-900 ${
+            className={`scrollbar-thin absolute top-3 right-0 z-10 mt-2 max-h-[200px] cursor-auto overflow-y-auto rounded-md border border-gray-200 bg-white text-gray-900 shadow-lg dark:border-slate-700/50 dark:bg-slate-900 ${
               liveInfo.length === 0 ? 'min-w-[200px]' : 'min-w-max'
             }`}
           >
@@ -84,7 +84,7 @@ const LiveVisitorsDropdown = ({ live, onSessionSelect }: LiveVisitorsDropdownPro
                           to={stringifiedUrl}
                         >
                           <div className='table-cell rounded-l-lg bg-gray-100 pr-2 align-middle group-hover:bg-gray-200 dark:bg-slate-800 dark:group-hover:bg-slate-700'>
-                            <Flag className='rounded-xs m-2' country={cc} size={21} alt='' aria-hidden='true' />
+                            <Flag className='m-2 rounded-xs' country={cc} size={21} alt='' aria-hidden='true' />
                           </div>
                           <div className='table-cell bg-gray-100 pr-2 align-middle group-hover:bg-gray-200 dark:bg-slate-800 dark:group-hover:bg-slate-700'>
                             {os}
@@ -103,7 +103,7 @@ const LiveVisitorsDropdown = ({ live, onSessionSelect }: LiveVisitorsDropdownPro
               )}
             </div>
             <XMarkIcon
-              className='absolute right-2 top-2 h-5 w-5 cursor-pointer text-gray-900 dark:text-gray-50'
+              className='absolute top-2 right-2 h-5 w-5 cursor-pointer text-gray-900 dark:text-gray-50'
               onClick={() => setShow(!show)}
             />
           </div>

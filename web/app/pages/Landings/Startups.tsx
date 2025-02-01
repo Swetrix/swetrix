@@ -53,7 +53,7 @@ const Startups = () => {
           <rect width='100%' height='100%' strokeWidth={0} fill='url(#rect-pattern)' />
         </svg>
         <div
-          className='absolute left-[calc(50%-4rem)] top-10 -z-10 transform-gpu blur-3xl sm:left-[calc(50%-18rem)] lg:left-48 lg:top-[calc(50%-30rem)] xl:left-[calc(50%-24rem)]'
+          className='absolute top-10 left-[calc(50%-4rem)] -z-10 transform-gpu blur-3xl sm:left-[calc(50%-18rem)] lg:top-[calc(50%-30rem)] lg:left-48 xl:left-[calc(50%-24rem)]'
           aria-hidden='true'
         >
           <div
@@ -75,14 +75,14 @@ const Startups = () => {
             {t('main.ukrSupport')}
           </a>
           <SquareArrowOutUpRightIcon
-            className='ml-1 hidden h-4 w-4 text-slate-800 dark:text-white md:block'
+            className='ml-1 hidden h-4 w-4 text-slate-800 md:block dark:text-white'
             strokeWidth={1.5}
           />
         </div>
-        <div className='relative mx-auto min-h-[740px] pb-5 pt-10 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
+        <div className='relative mx-auto min-h-[740px] pt-10 pb-5 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
           <div className='relative z-20 flex flex-col content-between justify-center'>
             <div className='relative mx-auto flex flex-col px-4 text-left'>
-              <h1 className='mx-auto max-w-4xl text-center text-4xl font-extrabold text-slate-900 dark:text-white sm:text-5xl sm:leading-none md:text-5xl lg:text-5xl xl:text-6xl xl:leading-[110%]'>
+              <h1 className='mx-auto max-w-4xl text-center text-4xl font-extrabold text-slate-900 sm:text-5xl sm:leading-none md:text-5xl lg:text-5xl xl:text-6xl xl:leading-[110%] dark:text-white'>
                 <Trans
                   t={t}
                   i18nKey='startups.slogan'
@@ -93,13 +93,13 @@ const Startups = () => {
                   }}
                 />
               </h1>
-              <p className='mx-auto mt-4 max-w-6xl text-center text-base leading-8 text-slate-900 dark:text-slate-300 sm:text-xl lg:text-lg xl:text-lg'>
+              <p className='mx-auto mt-4 max-w-6xl text-center text-base leading-8 text-slate-900 sm:text-xl lg:text-lg xl:text-lg dark:text-slate-300'>
                 {t('startups.description')}
               </p>
               <div className='mt-10 flex flex-col items-center justify-center sm:flex-row'>
                 <Link
                   to={routesPath.signup}
-                  className='shadow-xs group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600 sm:mr-6 sm:max-w-[210px]'
+                  className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white ring-1 shadow-xs ring-slate-900 transition-all !duration-300 hover:bg-slate-700 sm:mr-6 sm:max-w-[210px] dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600'
                   aria-label={t('titles.signup')}
                 >
                   <span className='mr-1 text-base font-semibold transition-transform group-hover:scale-[1.15]'>
@@ -109,7 +109,7 @@ const Startups = () => {
                 </Link>
                 <a
                   href={LIVE_DEMO_URL}
-                  className='shadow-xs mt-2 flex h-12 w-full items-center justify-center rounded-md bg-transparent text-slate-900 ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-200 dark:text-white dark:ring-white/20 dark:hover:bg-gray-800 sm:mt-0 sm:max-w-[210px]'
+                  className='mt-2 flex h-12 w-full items-center justify-center rounded-md bg-transparent text-slate-900 ring-1 shadow-xs ring-slate-900 transition-all !duration-300 hover:bg-slate-200 sm:mt-0 sm:max-w-[210px] dark:text-white dark:ring-white/20 dark:hover:bg-gray-800'
                   target='_blank'
                   rel='noopener noreferrer'
                   aria-label={`${t('common.liveDemo')} (opens in a new tab)`}
@@ -137,7 +137,7 @@ const Startups = () => {
               />
               <img
                 src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
-                className='relative w-full rounded-xl shadow-2xl ring-1 ring-gray-900/10 dark:ring-white/10'
+                className='relative w-full rounded-xl ring-1 shadow-2xl ring-gray-900/10 dark:ring-white/10'
                 width='100%'
                 height='auto'
                 alt='Swetrix Analytics dashboard'
@@ -147,7 +147,7 @@ const Startups = () => {
         </div>
       </div>
 
-      <div className='mx-auto mb-6 mt-12 max-w-5xl px-5'>
+      <div className='mx-auto mt-12 mb-6 max-w-5xl px-5'>
         {_map(t('startups.whyUs', { returnObjects: true }), (item: { name: string; desc: string[] }) => (
           <div key={item.name} className='mb-10 text-slate-900 last:mb-0 dark:text-white'>
             <h2 className='mb-5 text-4xl font-extrabold'>{item.name}</h2>

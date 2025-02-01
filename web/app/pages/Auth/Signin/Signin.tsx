@@ -261,10 +261,10 @@ const Signin = ({ ssrTheme }: SigninProps) => {
 
   if (isTwoFARequired) {
     return (
-      <div className='flex min-h-page flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8'>
+      <div className='min-h-page flex flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
         <form className='mx-auto max-w-prose' onSubmit={_submit2FA}>
           <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{t('auth.signin.2fa')}</h2>
-          <p className='mt-4 whitespace-pre-line text-base text-gray-900 dark:text-gray-50'>
+          <p className='mt-4 text-base whitespace-pre-line text-gray-900 dark:text-gray-50'>
             {t('auth.signin.2faDesc')}
           </p>
           <Input
@@ -277,7 +277,7 @@ const Signin = ({ ssrTheme }: SigninProps) => {
             error={twoFACodeError}
           />
           <div className='mt-3 flex justify-between'>
-            <div className='whitespace-pre-line text-sm text-gray-600 dark:text-gray-400'>
+            <div className='text-sm whitespace-pre-line text-gray-600 dark:text-gray-400'>
               {!isSelfhosted && (
                 <Trans
                   t={t}
@@ -301,14 +301,14 @@ const Signin = ({ ssrTheme }: SigninProps) => {
   }
 
   return (
-    <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8'>
+    <div className='min-h-min-footer flex flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
       <div className='sm:mx-auto sm:w-full sm:max-w-md'>
-        <h2 className='text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-gray-50'>
+        <h2 className='text-center text-2xl leading-9 font-bold tracking-tight text-gray-900 dark:text-gray-50'>
           {t('auth.signin.title')}
         </h2>
       </div>
       <div className='mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]'>
-        <div className='bg-white px-6 py-12 shadow-sm dark:bg-slate-800/20 dark:ring-1 dark:ring-slate-800 sm:rounded-lg sm:px-12'>
+        <div className='bg-white px-6 py-12 shadow-sm sm:rounded-lg sm:px-12 dark:bg-slate-800/20 dark:ring-1 dark:ring-slate-800'>
           <form className='space-y-6' onSubmit={handleSubmit}>
             <Input
               name='email'
@@ -364,7 +364,7 @@ const Signin = ({ ssrTheme }: SigninProps) => {
                 <div className='absolute inset-0 flex items-center' aria-hidden='true'>
                   <div className='w-full border-t border-gray-200 dark:border-gray-600' />
                 </div>
-                <div className='relative flex justify-center text-sm font-medium leading-6'>
+                <div className='relative flex justify-center text-sm leading-6 font-medium'>
                   <span className='bg-white px-6 text-gray-900 dark:bg-slate-800/20 dark:text-gray-50'>
                     {t('auth.common.orContinueWith')}
                   </span>
@@ -379,7 +379,7 @@ const Signin = ({ ssrTheme }: SigninProps) => {
         </div>
 
         {!isSelfhosted && (
-          <p className='mb-4 mt-10 text-center text-sm text-gray-500 dark:text-gray-200'>
+          <p className='mt-10 mb-4 text-center text-sm text-gray-500 dark:text-gray-200'>
             <Trans
               t={t}
               i18nKey='auth.signin.notAMember'
@@ -388,7 +388,7 @@ const Signin = ({ ssrTheme }: SigninProps) => {
                 url: (
                   <Link
                     to={routes.signup}
-                    className='font-semibold leading-6 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                    className='leading-6 font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
                     aria-label={t('titles.signup')}
                   />
                 ),

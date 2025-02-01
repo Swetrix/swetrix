@@ -42,10 +42,10 @@ export default function PostSlug() {
       <div className='mx-auto max-w-[52rem] px-4 pb-28 sm:px-6 md:px-8 lg:max-w-6xl xl:px-12'>
         <div className='overflow-hidden'>
           <div className='max-w-8xl mx-auto'>
-            <div className='flex px-4 pb-10 pt-8 lg:px-8'>
+            <div className='flex px-4 pt-8 pb-10 lg:px-8'>
               <Link
                 to='/blog'
-                className='group flex text-sm font-semibold leading-6 text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white'
+                className='group flex text-sm leading-6 font-semibold text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white'
               >
                 <svg
                   viewBox='0 -9 3 24'
@@ -68,7 +68,7 @@ export default function PostSlug() {
             <div className='mx-auto max-w-3xl pb-28'>
               <main className='bg-gray-50 dark:bg-slate-900'>
                 <article className='relative pt-10'>
-                  <h1 className='text-2xl font-extrabold tracking-tight text-slate-900 dark:text-slate-200 md:text-3xl'>
+                  <h1 className='text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl dark:text-slate-200'>
                     {post.title}
                   </h1>
                   <div className='text-sm leading-6'>
@@ -81,7 +81,7 @@ export default function PostSlug() {
                   </div>
                   <div className='mt-6'>
                     <ul className='-mx-5 -mt-6 flex flex-wrap text-sm leading-6'>
-                      <li className='mt-6 flex items-center whitespace-nowrap px-5 font-medium'>
+                      <li className='mt-6 flex items-center px-5 font-medium whitespace-nowrap'>
                         <div className='text-sm leading-4'>
                           {post?.author && <div className='text-slate-900 dark:text-slate-200'>{post.author}</div>}
                           {post?.nickname && (

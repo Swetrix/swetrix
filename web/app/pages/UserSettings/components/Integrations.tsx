@@ -231,7 +231,7 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
       return (
         <>
           <Button
-            className='mb-2 mt-2'
+            className='mt-2 mb-2'
             onClick={() => {
               setIntegrationInput(null)
               setIntegrationConfigurating(null)
@@ -287,7 +287,7 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
       return (
         <>
           <Button
-            className='mb-2 mt-2'
+            className='mt-2 mb-2'
             onClick={() => {
               setIntegrationInput(null)
               setIntegrationConfigurating(null)
@@ -340,7 +340,7 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
       return (
         <>
           <Button
-            className='mb-2 mt-2'
+            className='mt-2 mb-2'
             onClick={() => {
               setIntegrationInput(null)
               setIntegrationConfigurating(null)
@@ -395,7 +395,7 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
   return (
     <>
       <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>{t('profileSettings.integrationsDesc')}</p>
-      <div className='mt-2 overflow-hidden bg-white shadow-sm dark:bg-slate-800 sm:rounded-md'>
+      <div className='mt-2 overflow-hidden bg-white shadow-sm sm:rounded-md dark:bg-slate-800'>
         <ul className='divide-y divide-gray-200 dark:divide-slate-700'>
           {_map(available, ({ name, key, description, Icon }) => {
             const { connected, confirmed, id } = getIntegrationStatus(key)

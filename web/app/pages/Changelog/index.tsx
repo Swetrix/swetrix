@@ -424,11 +424,11 @@ const Changelog = () => {
 
   return (
     <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-      <div className='mx-auto w-11/12 whitespace-pre-line px-4 pb-16 pt-12 sm:px-6 md:w-4/5 lg:px-8'>
+      <div className='mx-auto w-11/12 px-4 pt-12 pb-16 whitespace-pre-line sm:px-6 md:w-4/5 lg:px-8'>
         <h1 className='text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>{t('titles.changelog')}</h1>
 
         <div className='relative mt-10 sm:ml-[calc(2rem+1px)] sm:pb-12 md:ml-[calc(3.5rem+1px)] lg:ml-[calc(11rem)]'>
-          <div className='absolute bottom-0 right-full top-3 mr-7 hidden w-px bg-slate-200 dark:bg-slate-700 sm:block md:mr-[3.25rem]' />
+          <div className='absolute top-3 right-full bottom-0 mr-7 hidden w-px bg-slate-200 sm:block md:mr-[3.25rem] dark:bg-slate-700' />
           <div className='space-y-16'>
             {_map(changelog, (item) => {
               const date = dayjs.utc(item.date).format('YYYY-MM-DDT00:00:00.000Z')
@@ -436,10 +436,10 @@ const Changelog = () => {
 
               return (
                 <div key={item.date} className='group relative'>
-                  <div className='absolute -inset-x-4 -inset-y-2.5 group-hover:bg-slate-50/70 dark:group-hover:bg-slate-800/50 sm:rounded-2xl md:-inset-x-6 md:-inset-y-4' />
+                  <div className='absolute -inset-x-4 -inset-y-2.5 group-hover:bg-slate-50/70 sm:rounded-2xl md:-inset-x-6 md:-inset-y-4 dark:group-hover:bg-slate-800/50' />
                   <svg
                     viewBox='0 0 9 9'
-                    className='absolute right-full top-2 mr-6 hidden h-[calc(0.5rem+1px)] w-[calc(0.5rem+1px)] overflow-visible text-slate-200 dark:text-slate-600 sm:block md:mr-12'
+                    className='absolute top-2 right-full mr-6 hidden h-[calc(0.5rem+1px)] w-[calc(0.5rem+1px)] overflow-visible text-slate-200 sm:block md:mr-12 dark:text-slate-600'
                   >
                     <circle
                       cx='4.5'
@@ -451,7 +451,7 @@ const Changelog = () => {
                     />
                   </svg>
                   <div className='relative'>
-                    <ul className='dark:prose-dark prose prose-slate relative top-7 mb-4 mt-2 list-disc text-base text-gray-900 prose-a:relative prose-a:z-10 dark:text-gray-50 lg:top-0 lg:block'>
+                    <ul className='dark:prose-dark prose prose-slate prose-a:relative prose-a:z-10 relative top-7 mt-2 mb-4 list-disc text-base text-gray-900 lg:top-0 lg:block dark:text-gray-50'>
                       {_map(item.changes, (change) => (
                         // @ts-ignore
                         <li key={change} className='whitespace-pre-line'>
@@ -459,9 +459,9 @@ const Changelog = () => {
                         </li>
                       ))}
                     </ul>
-                    <dl className='absolute left-1.5 top-0 lg:left-auto lg:right-full lg:mr-[calc(5rem+1px)]'>
+                    <dl className='absolute top-0 left-1.5 lg:right-full lg:left-auto lg:mr-[calc(5rem+1px)]'>
                       <dt className='sr-only'>Date</dt>
-                      <dd className='whitespace-nowrap text-sm leading-6 text-slate-700 dark:text-slate-300'>
+                      <dd className='text-sm leading-6 whitespace-nowrap text-slate-700 dark:text-slate-300'>
                         <time dateTime={date}>{displayDate}</time>
                       </dd>
                     </dl>

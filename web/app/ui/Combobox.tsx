@@ -49,7 +49,7 @@ const Combobox = ({
         <div className='relative w-full cursor-default rounded-lg'>
           <HeadlessCombobox.Input
             className={cx(
-              'shadow-xs focus:outline-hidden relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 sm:text-sm',
+              'relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-left shadow-xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden sm:text-sm dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50',
               buttonClassName,
             )}
             // @ts-ignore
@@ -68,9 +68,9 @@ const Combobox = ({
           leaveTo='opacity-0'
           afterLeave={() => setQuery('')}
         >
-          <HeadlessCombobox.Options className='focus:outline-hidden absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/50 dark:bg-slate-800 sm:text-sm'>
+          <HeadlessCombobox.Options className='absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base ring-1 shadow-lg ring-black/50 focus:outline-hidden sm:text-sm dark:bg-slate-800'>
             {_isEmpty(filteredItems) && !_isEmpty(query) ? (
-              <div className='relative cursor-default select-none px-4 py-2 text-gray-900 dark:text-white'>
+              <div className='relative cursor-default px-4 py-2 text-gray-900 select-none dark:text-white'>
                 {t('common.nothingFound')}
               </div>
             ) : (
@@ -78,7 +78,7 @@ const Combobox = ({
                 <HeadlessCombobox.Option
                   key={keyExtractor ? keyExtractor(item, index) : item}
                   className={({ active }) =>
-                    cx('relative cursor-default select-none py-2 pl-8 pr-4 dark:text-white', {
+                    cx('relative cursor-default py-2 pr-4 pl-8 select-none dark:text-white', {
                       'bg-indigo-600 text-white': active,
                       'text-gray-900': !active,
                     })

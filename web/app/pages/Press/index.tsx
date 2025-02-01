@@ -23,7 +23,7 @@ const LogoComponent = ({
 }: LogoComponentProps) => (
   <p>
     <b className={`font-bold tracking-tight ${textColor}`}>{description}</b>
-    <img className='mb-2 mt-5 h-16 sm:h-20' src={logoSVG || logoPNG} alt={description} />
+    <img className='mt-5 mb-2 h-16 sm:h-20' src={logoSVG || logoPNG} alt={description} />
     {logoSVG && (
       <a
         href={logoSVG}
@@ -53,7 +53,7 @@ const Press = () => {
 
   return (
     <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
-      <div className='mx-auto w-11/12 whitespace-pre-line px-4 pb-16 pt-12 sm:px-6 md:w-4/5 lg:px-8'>
+      <div className='mx-auto w-11/12 px-4 pt-12 pb-16 whitespace-pre-line sm:px-6 md:w-4/5 lg:px-8'>
         <h1 className='text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>{t('titles.press')}</h1>
         <p className='mt-2 text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           <Trans

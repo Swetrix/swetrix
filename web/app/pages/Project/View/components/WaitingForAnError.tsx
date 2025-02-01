@@ -13,13 +13,13 @@ const WaitingForAnError = () => {
     <div className='px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
       <div className='mx-auto max-w-max'>
         <main className='sm:flex'>
-          <BugIcon className='-ml-1.5 mb-2 h-12 w-12 text-gray-900 dark:text-gray-50 sm:m-0 sm:h-20 sm:w-20' />
+          <BugIcon className='mb-2 -ml-1.5 h-12 w-12 text-gray-900 sm:m-0 sm:h-20 sm:w-20 dark:text-gray-50' />
           <div className='sm:ml-6'>
             <div className='sm:border-l sm:border-gray-200 sm:pl-6'>
-              <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50 sm:text-5xl'>
+              <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl dark:text-gray-50'>
                 {t('project.waitingError.title')}
               </h1>
-              <p className='mt-2 max-w-[80ch] whitespace-pre-line text-base text-gray-700 dark:text-gray-300'>
+              <p className='mt-2 max-w-[80ch] text-base whitespace-pre-line text-gray-700 dark:text-gray-300'>
                 <Trans
                   t={t}
                   i18nKey='project.waitingError.desc'

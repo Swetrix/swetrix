@@ -60,10 +60,10 @@ const HotkeysList = ({ title, hotkeys }: HotkeysListProps) => (
       <tbody className='divide-y divide-gray-200 dark:divide-gray-800'>
         {_map(hotkeys, (action, label) => (
           <tr key={label}>
-            <td className='whitespace-nowrap py-2 pl-4 pr-3 text-left text-sm text-gray-900 dark:text-gray-50 sm:pl-0'>
+            <td className='py-2 pr-3 pl-4 text-left text-sm whitespace-nowrap text-gray-900 sm:pl-0 dark:text-gray-50'>
               {label}
             </td>
-            <td className='whitespace-nowrap py-2 pl-4 pr-3 text-left text-sm text-gray-900 dark:text-gray-50 sm:pl-0'>
+            <td className='py-2 pr-3 pl-4 text-left text-sm whitespace-nowrap text-gray-900 sm:pl-0 dark:text-gray-50'>
               <Badge colour='slate' label={action} />
             </td>
           </tr>

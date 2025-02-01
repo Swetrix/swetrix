@@ -22,13 +22,13 @@ const WaitingForAnEvent = ({ project }: WaitingForAnEventProps) => {
     <div className='px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
       <div className='mx-auto max-w-max'>
         <main className='sm:flex'>
-          <PulsatingCircle type='giant' className='-ml-1.5 mb-2 sm:m-0' />
+          <PulsatingCircle type='giant' className='mb-2 -ml-1.5 sm:m-0' />
           <div className='sm:ml-6'>
             <div className='sm:border-l sm:border-gray-200 sm:pl-6'>
-              <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50 sm:text-5xl'>
+              <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl dark:text-gray-50'>
                 {t('project.waiting.title')}
               </h1>
-              <p className='mt-2 max-w-prose whitespace-pre-line text-base text-gray-700 dark:text-gray-300'>
+              <p className='mt-2 max-w-prose text-base whitespace-pre-line text-gray-700 dark:text-gray-300'>
                 <Trans
                   // @ts-ignore
                   t={t}
