@@ -23,27 +23,10 @@ import { CompassIcon, FileTextIcon, MapPinIcon, MonitorCog, TabletSmartphoneIcon
 
 const PANELS_ORDER = ['cc', 'br', 'os', 'dv']
 
-const CHART_METRICS_MAPPING = {
-  results: 'results',
-}
-
 // function to filter the data for the chart
-const getColumns = (
-  chart: {
-    x: string[]
-    results: string[]
-  },
-  activeChartMetrics: {
-    [key: string]: boolean
-  },
-) => {
-  const { results } = activeChartMetrics
-
+const getColumns = (chart: { x: string[]; results: string[] }) => {
   const columns = [['x', ..._map(chart.x, (el) => dayjs(el).toDate())]]
-
-  if (results) {
-    columns.push(['results', ...chart.results])
-  }
+  columns.push(['results', ...chart.results])
 
   return columns
 }
@@ -55,9 +38,6 @@ const noRegionPeriods = ['custom', 'yesterday']
 const getSettings = (
   chart: any,
   timeBucket: string,
-  activeChartMetrics: {
-    [key: string]: boolean
-  },
   applyRegions: boolean,
   timeFormat: string,
   rotateXAxis: boolean,
@@ -90,12 +70,9 @@ const getSettings = (
   return {
     data: {
       x: 'x',
-      columns: getColumns(
-        {
-          ...chart,
-        },
-        activeChartMetrics,
-      ),
+      columns: getColumns({
+        ...chart,
+      }),
       types: {
         results: chartType === chartTypes.line ? area() : bar(),
       },
@@ -225,6 +202,5 @@ export {
   noRegionPeriods,
   getSettings,
   getColumns,
-  CHART_METRICS_MAPPING,
   PANELS_ORDER,
 }

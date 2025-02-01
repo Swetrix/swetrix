@@ -17,8 +17,6 @@ import _replace from 'lodash/replace'
 import _find from 'lodash/find'
 import _filter from 'lodash/filter'
 import _startsWith from 'lodash/startsWith'
-import _debounce from 'lodash/debounce'
-import _some from 'lodash/some'
 
 import LineChart from '~/ui/icons/LineChart'
 import BarChart from '~/ui/icons/BarChart'
@@ -42,7 +40,6 @@ import {
 import { CaptchaProject } from '~/lib/models/Project'
 import Loader from '~/ui/Loader'
 import Dropdown from '~/ui/Dropdown'
-import Checkbox from '~/ui/Checkbox'
 import FlatPicker from '~/ui/Flatpicker'
 import routes from '~/utils/routes'
 import { getProject, getCaptchaData } from '~/api'
@@ -56,7 +53,6 @@ import {
   validTimeBacket,
   noRegionPeriods,
   getSettings,
-  CHART_METRICS_MAPPING,
   getColumns,
   PANELS_ORDER,
 } from './ViewCaptcha.helpers'
@@ -128,12 +124,6 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
   )
   const [chartData, setChartData] = useState<any>({})
   const [dataLoading, setDataLoading] = useState(false)
-  const [activeChartMetrics, setActiveChartMetrics] = useState<{
-    [key: string]: boolean
-  }>({
-    [CHART_METRICS_MAPPING.results]: true,
-  })
-  const checkIfAllMetricsAreDisabled = useMemo(() => !_some(activeChartMetrics, (value) => value), [activeChartMetrics])
   const [filters, setFilters] = useState<any[]>([])
   const tnMapping = typeNameMapping(t)
   const refCalendar = useRef(null)
@@ -167,26 +157,11 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
     document.title = pageTitle
   }, [project, t])
 
-  const chartMetrics = useMemo(() => {
-    return [
-      {
-        id: CHART_METRICS_MAPPING.results,
-        label: t('project.results'),
-        active: activeChartMetrics[CHART_METRICS_MAPPING.results],
-      },
-    ]
-  }, [t, activeChartMetrics])
-
   const dataNames = useMemo(() => {
     return {
       results: t('project.results'),
     }
   }, [t])
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const switchActiveChartMetric = _debounce((pairID) => {
-    setActiveChartMetrics((prev) => ({ ...prev, [pairID]: !prev[pairID] }))
-  })
 
   const onErrorLoading = () => {
     toast.error(t('project.noExist'))
@@ -252,7 +227,6 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
         const bbSettings: any = getSettings(
           chart,
           newTimebucket,
-          activeChartMetrics,
           applyRegions,
           timeFormat,
           rotateXAxias,
@@ -287,10 +261,10 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
   useEffect(() => {
     if (mainChart) {
       mainChart.load({
-        columns: getColumns({ ...chartData }, activeChartMetrics),
+        columns: getColumns({ ...chartData }),
       })
     }
-  }, [chartData, mainChart, activeChartMetrics])
+  }, [chartData, mainChart])
 
   useEffect(() => {
     if (!areFiltersParsed || authLoading || !project) return
@@ -729,7 +703,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
                       className={cx('space-x-2 border-gray-200 dark:border-gray-600 sm:mr-3 lg:border-x lg:px-3', {
                         // TODO: Fix a crash when user selects 'bar' chart and refreshes the page:
                         // Uncaught TypeError: can't access property "create", point5 is undefined
-                        hidden: isPanelsDataEmpty || analyticsLoading || checkIfAllMetricsAreDisabled || true,
+                        hidden: isPanelsDataEmpty || analyticsLoading || true,
                       })}
                     >
                       <button
@@ -765,33 +739,6 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
                         <LineChart className='h-5 w-5 [&_path]:stroke-[3.5%]' />
                       </button>
                     </div>
-                    {!isPanelsDataEmpty && (
-                      <Dropdown
-                        items={chartMetrics}
-                        title={t('project.metricVis')}
-                        className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
-                        labelExtractor={(pair) => {
-                          const { label, active } = pair
-
-                          return (
-                            <Checkbox
-                              className={cx('px-4 py-2', { hidden: isPanelsDataEmpty || analyticsLoading })}
-                              label={label}
-                              checked={active}
-                              onChange={() => {}}
-                            />
-                          )
-                        }}
-                        keyExtractor={(pair) => pair.id}
-                        onSelect={({ id: pairID }) => {
-                          switchActiveChartMetric(pairID)
-                        }}
-                        buttonClassName='!px-3'
-                        selectItemClassName='group text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 block text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'
-                        chevron='mini'
-                        headless
-                      />
-                    )}
                     <TBPeriodSelector
                       activePeriod={activePeriod}
                       updateTimebucket={updateTimebucket}
@@ -834,11 +781,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
                 {analyticsLoading && <Loader />}
                 {isPanelsDataEmpty && <NoEvents filters={filters} resetFilters={resetFilters} />}
                 <div className={cx('pt-4', { hidden: isPanelsDataEmpty || analyticsLoading })}>
-                  <div
-                    className={cx('h-80', {
-                      hidden: checkIfAllMetricsAreDisabled,
-                    })}
-                  >
+                  <div className='h-80'>
                     <div className='h-80 [&_svg]:!overflow-visible' id='captchaChart' />
                   </div>
                   <Filters
