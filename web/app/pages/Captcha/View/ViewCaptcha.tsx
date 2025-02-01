@@ -38,7 +38,7 @@ import {
   isBrowser,
   ThemeType,
 } from '~/lib/constants'
-import { CaptchaProject, Project } from '~/lib/models/Project'
+import { CaptchaProject } from '~/lib/models/Project'
 import Loader from '~/ui/Loader'
 import Dropdown from '~/ui/Dropdown'
 import Checkbox from '~/ui/Checkbox'
@@ -147,19 +147,18 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
 
   const _theme = isBrowser ? theme : ssrTheme
 
-  const { name } = project as Project
-
   useEffect(() => {
-    let pageTitle = name
-
-    if (!name) {
-      pageTitle = t('titles.main')
+    if (!project) {
+      // TODO: Probably should display something like "Loading..."
+      return
     }
+
+    let pageTitle = project.name || t('titles.main')
 
     pageTitle += ` ${TITLE_SUFFIX}`
 
     document.title = pageTitle
-  }, [name, t])
+  }, [project, t])
 
   const chartMetrics = useMemo(() => {
     return [
@@ -611,7 +610,9 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
               ref={dashboardRef}
             >
               <div className='mt-2 flex flex-col items-center justify-between lg:flex-row lg:items-start'>
-                <h2 className='break-words break-all text-xl font-bold text-gray-900 dark:text-gray-50'>{name}</h2>
+                <h2 className='break-words break-all text-xl font-bold text-gray-900 dark:text-gray-50'>
+                  {project.name}
+                </h2>
                 <div className='mx-auto mt-3 flex w-full max-w-[420px] flex-wrap items-center justify-between sm:mx-0 sm:w-auto sm:max-w-none lg:mt-0'>
                   <button
                     type='button'
