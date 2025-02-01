@@ -87,11 +87,11 @@ const Problem = () => {
         <h2 className='mb-6 text-4xl font-extrabold text-gray-50 sm:text-5xl sm:leading-none md:mb-8'>
           {t('main.problem.title')}
         </h2>
-        <p className='mx-auto mb-12 max-w-prose text-lg font-bold leading-relaxed text-gray-100 opacity-80 md:mb-20'>
+        <p className='mx-auto mb-12 max-w-prose font-mono text-lg leading-relaxed font-bold text-gray-100 opacity-80 md:mb-20'>
           {t('main.problem.description')}
         </p>
 
-        <div className='flex flex-col items-center justify-center gap-6 text-gray-50 md:flex-row md:items-start'>
+        <div className='flex flex-col items-center justify-center gap-6 font-mono text-gray-50 md:flex-row md:items-start'>
           <div className='flex w-full flex-col items-center justify-center gap-2 md:w-48'>
             <span className='text-4xl'>🤔</span>
             <p className='font-bold'>{t('main.problem.step1')}</p>
@@ -128,7 +128,7 @@ const Problem = () => {
             </p>
           </div>
           <svg
-            className='w-12 shrink-0 fill-gray-200 opacity-70 md:-rotate-90 md:-scale-x-100'
+            className='w-12 shrink-0 fill-gray-200 opacity-70 md:-scale-x-100 md:-rotate-90'
             viewBox='0 0 138 138'
             fill='none'
             xmlns='http://www.w3.org/2000/svg'
@@ -165,13 +165,13 @@ interface FeedbackProps {
 }
 
 const Feedback = ({ name, title, feedback, logoUrl, photoUrl }: FeedbackProps) => (
-  <section className='relative isolate z-10 bg-white px-6 py-24 dark:bg-slate-900 sm:py-32 lg:px-8'>
+  <section className='relative isolate z-10 bg-white px-6 py-24 font-mono sm:py-32 lg:px-8 dark:bg-slate-900'>
     <div className='absolute inset-0 -z-10 bg-[radial-gradient(45rem_50rem_at_top,theme(colors.indigo.100),white)] opacity-20 blur-3xl dark:bg-[radial-gradient(45rem_50rem_at_top,theme(colors.indigo.400),theme(colors.slate.900))]' />
-    <div className='absolute inset-y-0 right-1/2 -z-10 mr-16 w-[200%] origin-bottom-left skew-x-[-30deg] border-r-2 border-slate-900/10 bg-white dark:border-slate-50/50 dark:bg-slate-900 sm:mr-28 lg:mr-0 xl:mr-16 xl:origin-center' />
+    <div className='absolute inset-y-0 right-1/2 -z-10 mr-16 w-[200%] origin-bottom-left skew-x-[-30deg] border-r-2 border-slate-900/10 bg-white sm:mr-28 lg:mr-0 xl:mr-16 xl:origin-center dark:border-slate-50/50 dark:bg-slate-900' />
     <div className='mx-auto max-w-2xl lg:max-w-4xl'>
       <img alt='' src={logoUrl} className='mx-auto h-12' />
       <figure className='mt-10'>
-        <blockquote className='text-center text-xl font-semibold leading-8 text-gray-900 dark:text-gray-50 sm:text-2xl sm:leading-9'>
+        <blockquote className='text-center text-xl leading-8 font-semibold text-gray-900 sm:text-2xl sm:leading-9 dark:text-gray-50'>
           <p>
             <span>“</span>
             {feedback}
@@ -201,7 +201,7 @@ const FeedbackHighlight = ({ children }: FeedbackHighlightProps) => (
   <span className='bg-yellow-100/80 dark:bg-yellow-400/40'>{children}</span>
 )
 
-const OpensourceAdvantages = ({ theme }: { theme: 'dark' | 'light' }) => {
+const WeAreOpensource = ({ theme }: { theme: 'dark' | 'light' }) => {
   const { t } = useTranslation('common')
 
   return (
@@ -221,7 +221,7 @@ const OpensourceAdvantages = ({ theme }: { theme: 'dark' | 'light' }) => {
         />
       </picture>
       <div className='w-full max-w-lg lg:ml-5'>
-        <h2 className='text-4xl font-extrabold text-slate-900 dark:text-white md:text-4xl'>
+        <h2 className='text-4xl font-extrabold text-slate-900 md:text-4xl dark:text-white'>
           <Trans
             t={t}
             i18nKey='main.weAreOpensource'
@@ -239,10 +239,13 @@ const OpensourceAdvantages = ({ theme }: { theme: 'dark' | 'light' }) => {
             }}
           />
         </h2>
-        <hr className='border-1 my-6 max-w-[346px] border-slate-300 dark:border-slate-700' />
+        <hr className='my-6 max-w-[346px] border-1 border-slate-300 dark:border-slate-700' />
         <div className='mb-9 w-full max-w-md lg:mb-0'>
           {_map(t('main.opensource', { returnObjects: true }), (item: { desc: string }) => (
-            <p key={item.desc} className='mb-3 flex items-center text-sm leading-6 text-slate-700 dark:text-gray-300'>
+            <p
+              key={item.desc}
+              className='mb-3 flex items-center font-mono text-sm leading-6 text-slate-700 dark:text-gray-300'
+            >
               <span>
                 <CheckIcon className='mr-4 h-6 w-6 text-green-500' />
               </span>
@@ -283,7 +286,7 @@ const Testimonials = () => {
   const { stats } = useSelector((state: StateType) => state.ui.misc)
 
   return (
-    <div className='mt-8 flex flex-col items-center justify-center gap-3 md:flex-row'>
+    <div className='mt-8 flex flex-col items-center justify-center gap-3 font-mono md:flex-row'>
       <div className='flex -space-x-5 overflow-hidden'>
         {_map(REVIEWERS, ({ name, image }) => (
           <div
@@ -337,7 +340,7 @@ const Testimonials = () => {
 
 const Highlighted = ({ children }: { children: React.ReactNode }) => (
   <span className='relative whitespace-nowrap'>
-    <span className='absolute -bottom-1 -left-2 -right-2 -top-1 -rotate-1 bg-slate-900 dark:bg-gray-200 md:-bottom-0 md:-left-3 md:-right-3 md:-top-0' />
+    <span className='absolute -top-1 -right-2 -bottom-1 -left-2 -rotate-1 bg-slate-900 md:-top-0 md:-right-3 md:-bottom-0 md:-left-3 dark:bg-gray-200' />
     <span className='relative text-gray-50 dark:text-slate-900'>{children}</span>
   </span>
 )
@@ -357,7 +360,7 @@ const FeatureBlock = ({ heading, description, children, className, dark }: Featu
     variants={{ idle: {}, active: {} }}
     data-dark={dark ? 'true' : undefined}
     className={clsx(
-      'shadow-xs group relative flex flex-col overflow-hidden rounded-lg bg-white ring-1 ring-black/5 data-[dark]:bg-slate-800 data-[dark]:ring-white/15',
+      'group relative flex flex-col overflow-hidden rounded-lg bg-white ring-1 shadow-xs ring-black/5 data-[dark]:bg-slate-800 data-[dark]:ring-white/15',
       className,
     )}
   >
@@ -367,7 +370,9 @@ const FeatureBlock = ({ heading, description, children, className, dark }: Featu
       <h3 className='mt-1 text-2xl/8 font-medium tracking-tight text-gray-950 group-data-[dark]:text-white'>
         {heading}
       </h3>
-      <p className='mt-2 max-w-[600px] text-sm/6 text-gray-600 group-data-[dark]:text-gray-400'>{description}</p>
+      <p className='mt-2 max-w-[600px] font-mono text-sm/6 text-gray-600 group-data-[dark]:text-gray-400'>
+        {description}
+      </p>
     </div>
   </motion.div>
 )
@@ -422,11 +427,13 @@ const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
   ]
 
   return (
-    <section className='relative mx-auto max-w-7xl bg-white px-6 py-14 dark:bg-slate-900 lg:px-8'>
+    <section className='relative mx-auto max-w-7xl bg-white px-6 py-14 lg:px-8 dark:bg-slate-900'>
       <div className='relative mx-auto w-fit'>
         <div>
-          <p className='mb-4 text-sm font-medium text-slate-800 dark:text-gray-200'>{t('main.butThereIsASolution')}</p>
-          <h2 className='relative z-20 text-4xl font-extrabold text-slate-900 dark:text-white sm:text-5xl'>
+          <p className='mb-4 font-mono text-sm font-medium text-slate-800 dark:text-gray-200'>
+            {t('main.butThereIsASolution')}
+          </p>
+          <h2 className='relative z-20 text-4xl font-extrabold text-slate-900 sm:text-5xl dark:text-white'>
             {t('main.knowYourCustomers')}
           </h2>
         </div>
@@ -435,11 +442,11 @@ const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
         <FeatureBlock
           heading={t('main.insights.title')}
           description={t('main.insights.description')}
-          className='max-lg:rounded-t-4xl lg:rounded-tl-4xl lg:col-span-3'
+          className='max-lg:rounded-t-4xl lg:col-span-3 lg:rounded-tl-4xl'
           dark={theme === 'dark'}
         >
           <div
-            className='absolute -top-40 left-60 right-0 z-10 h-full w-full rotate-45 transform-gpu overflow-hidden blur-3xl'
+            className='absolute -top-40 right-0 left-60 z-10 h-full w-full rotate-45 transform-gpu overflow-hidden blur-3xl'
             aria-hidden='true'
           >
             <div
@@ -462,11 +469,11 @@ const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
         <FeatureBlock
           heading={t('main.painPoints.title')}
           description={t('main.painPoints.description')}
-          className='lg:rounded-tr-4xl lg:col-span-3'
+          className='lg:col-span-3 lg:rounded-tr-4xl'
           dark={theme === 'dark'}
         >
           <div
-            className='absolute -top-40 left-60 right-0 z-10 h-full w-full rotate-45 transform-gpu overflow-hidden blur-3xl'
+            className='absolute -top-40 right-0 left-60 z-10 h-full w-full rotate-45 transform-gpu overflow-hidden blur-3xl'
             aria-hidden='true'
           >
             <div
@@ -489,7 +496,7 @@ const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
         <FeatureBlock
           heading={t('main.customisation.title')}
           description={t('main.customisation.description')}
-          className='lg:rounded-bl-4xl lg:col-span-2'
+          className='lg:col-span-2 lg:rounded-bl-4xl'
           dark={theme === 'dark'}
         >
           <MarketplaceCluster />
@@ -505,7 +512,7 @@ const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
         <FeatureBlock
           heading={t('main.sessions.title')}
           description={t('main.sessions.description')}
-          className='max-lg:rounded-b-4xl lg:rounded-br-4xl lg:col-span-2'
+          className='max-lg:rounded-b-4xl lg:col-span-2 lg:rounded-br-4xl'
           dark={theme === 'dark'}
         >
           <div className='relative space-y-2 overflow-hidden px-10 pt-5'>
@@ -604,12 +611,12 @@ const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
 
             <SdurMetric />
 
-            <div className='absolute bottom-0 right-0 rotate-12 rounded-md bg-gray-50 px-2 py-1 opacity-20 transition-all group-hover:rotate-6 group-hover:scale-110 group-hover:opacity-50 dark:bg-slate-700/60'>
+            <div className='absolute right-0 bottom-0 rotate-12 rounded-md bg-gray-50 px-2 py-1 opacity-20 transition-all group-hover:scale-110 group-hover:rotate-6 group-hover:opacity-50 dark:bg-slate-700/60'>
               {['/home', '/product', 'SALE'].map((path, index) => (
                 <div key={path} className='relative pb-8'>
                   {index !== 2 ? (
                     <span
-                      className='absolute left-4 top-4 -ml-px h-full w-0.5 bg-slate-200 dark:bg-slate-700'
+                      className='absolute top-4 left-4 -ml-px h-full w-0.5 bg-slate-200 dark:bg-slate-700'
                       aria-hidden='true'
                     />
                   ) : null}
@@ -651,9 +658,9 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
   const { t } = useTranslation('common')
 
   return (
-    <section className='relative mx-auto max-w-7xl bg-white px-6 py-14 dark:bg-slate-900 lg:px-8'>
+    <section className='relative mx-auto max-w-7xl bg-white px-6 py-14 lg:px-8 dark:bg-slate-900'>
       <div className='relative mx-auto w-fit'>
-        <h2 className='relative z-20 text-4xl font-extrabold text-slate-900 dark:text-white sm:text-5xl'>
+        <h2 className='relative z-20 text-4xl font-extrabold text-slate-900 sm:text-5xl dark:text-white'>
           {t('main.coreFeatures')}
         </h2>
       </div>
@@ -661,11 +668,11 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
         <FeatureBlock
           heading={t('main.cookies.title')}
           description={t('main.cookies.description')}
-          className='max-lg:rounded-t-4xl lg:rounded-tl-4xl lg:col-span-4'
+          className='max-lg:rounded-t-4xl lg:col-span-4 lg:rounded-tl-4xl'
           dark={theme === 'dark'}
         >
           <div className='relative h-80 overflow-hidden px-10 pt-5'>
-            <div className='rounded-xs absolute top-2 rotate-2 bg-slate-200 p-4 text-slate-900 opacity-70 transition-opacity group-hover:opacity-90 dark:bg-slate-700 dark:text-gray-50'>
+            <div className='absolute top-2 rotate-2 rounded-xs bg-slate-200 p-4 text-slate-900 opacity-70 transition-opacity group-hover:opacity-90 dark:bg-slate-700 dark:text-gray-50'>
               <p className='mb-4 text-sm'>
                 We use cookies to enhance your experience. By continuing to visit this site you agree to our use of
                 cookies.
@@ -673,7 +680,7 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
               <div className='max-w-max rounded-md bg-slate-800 p-2 text-gray-50'>Accept</div>
             </div>
 
-            <div className='rounded-xs absolute bottom-0 left-0 mb-4 flex max-w-max -rotate-12 gap-2 bg-slate-100 p-4 text-slate-900 transition-transform group-hover:-rotate-6 dark:bg-gray-900 dark:text-gray-50'>
+            <div className='absolute bottom-0 left-0 mb-4 flex max-w-max -rotate-12 gap-2 rounded-xs bg-slate-100 p-4 text-slate-900 transition-transform group-hover:-rotate-6 dark:bg-gray-900 dark:text-gray-50'>
               <p className='text-md flex'>
                 <Cookie className='mr-2 text-slate-700' size={24} />
                 Hello there, We use cookies!
@@ -681,13 +688,13 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
               <div className='max-w-max rounded-md bg-slate-800 px-1 text-gray-50'>Okay</div>
             </div>
 
-            <div className='rounded-xs absolute bottom-20 left-12 mb-4 flex max-w-max -rotate-6 bg-slate-100 p-4 text-slate-900 transition-transform group-hover:scale-95 dark:bg-gray-800 dark:text-gray-50'>
+            <div className='absolute bottom-20 left-12 mb-4 flex max-w-max -rotate-6 rounded-xs bg-slate-100 p-4 text-slate-900 transition-transform group-hover:scale-95 dark:bg-gray-800 dark:text-gray-50'>
               <p className='text-md flex max-w-[40ch]'>
                 This website uses cookies to ensure you get the best experience on our website
               </p>
             </div>
 
-            <div className='absolute bottom-10 right-0 rotate-12 rounded-md bg-gray-100 p-2 text-slate-900 opacity-90 transition-transform group-hover:rotate-3 group-hover:scale-110 dark:bg-gray-900'>
+            <div className='absolute right-0 bottom-10 rotate-12 rounded-md bg-gray-100 p-2 text-slate-900 opacity-90 transition-transform group-hover:scale-110 group-hover:rotate-3 dark:bg-gray-900'>
               <p className='text-md flex'>
                 <Cookie className='mr-2 text-slate-700 dark:text-gray-100' size={24} />
                 <span className='max-w-[35ch] dark:text-gray-50'>
@@ -708,7 +715,7 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
         <FeatureBlock
           heading={t('main.utms.title')}
           description={t('main.utms.description')}
-          className='lg:rounded-bl-4xl lg:col-span-2'
+          className='lg:col-span-2 lg:rounded-bl-4xl'
           dark={theme === 'dark'}
         >
           <ConveyorBelt />
@@ -720,7 +727,7 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
           dark={theme === 'dark'}
         >
           <div
-            className='absolute -top-40 left-60 right-0 z-10 h-full w-full rotate-45 transform-gpu overflow-hidden blur-3xl'
+            className='absolute -top-40 right-0 left-60 z-10 h-full w-full rotate-45 transform-gpu overflow-hidden blur-3xl'
             aria-hidden='true'
           >
             <div
@@ -744,11 +751,11 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
         <FeatureBlock
           heading={t('main.eCommerce.title')}
           description={t('main.eCommerce.description')}
-          className='lg:rounded-tr-4xl lg:col-span-4'
+          className='lg:col-span-4 lg:rounded-tr-4xl'
           dark={theme === 'dark'}
         >
           <div
-            className='absolute -top-40 left-60 right-0 z-10 h-full w-full rotate-45 transform-gpu overflow-hidden blur-3xl'
+            className='absolute -top-40 right-0 left-60 z-10 h-full w-full rotate-45 transform-gpu overflow-hidden blur-3xl'
             aria-hidden='true'
           >
             <div
@@ -804,7 +811,7 @@ const Hero = ({
         <rect width='100%' height='100%' strokeWidth={0} fill='url(#rect-pattern)' />
       </svg>
       <div
-        className='absolute left-[calc(50%-4rem)] top-10 -z-10 transform-gpu blur-3xl sm:left-[calc(50%-18rem)] lg:left-48 lg:top-[calc(50%-30rem)] xl:left-[calc(50%-24rem)]'
+        className='absolute top-10 left-[calc(50%-4rem)] -z-10 transform-gpu blur-3xl sm:left-[calc(50%-18rem)] lg:top-[calc(50%-30rem)] lg:left-48 xl:left-[calc(50%-24rem)]'
         aria-hidden='true'
       >
         <div
@@ -816,10 +823,10 @@ const Hero = ({
         />
       </div>
       <Header ssrTheme={ssrTheme} authenticated={authenticated} transparent />
-      <div className='relative mx-auto min-h-[740px] pb-5 pt-10 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
+      <div className='relative mx-auto min-h-[740px] pt-10 pb-5 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
         <div className='relative z-20 flex flex-col content-between justify-center'>
           <div className='relative mx-auto flex flex-col px-4 text-left'>
-            <h1 className='mx-auto max-w-4xl text-center text-4xl font-extrabold tracking-[-0.4px] text-slate-900 dark:text-white sm:text-5xl sm:leading-none lg:text-6xl xl:text-7xl'>
+            <h1 className='mx-auto max-w-4xl text-center text-4xl font-extrabold tracking-[-0.4px] text-slate-900 sm:text-5xl sm:leading-none lg:text-6xl xl:text-7xl dark:text-white'>
               <Trans
                 t={t}
                 i18nKey='main.slogan'
@@ -829,13 +836,13 @@ const Hero = ({
                 }}
               />
             </h1>
-            <p className='mx-auto mt-4 max-w-4xl text-center text-base leading-relaxed tracking-wide text-slate-900 dark:text-slate-300 sm:text-lg lg:text-xl'>
+            <p className='mx-auto mt-4 max-w-4xl text-center font-mono text-base leading-relaxed tracking-wide text-slate-900 sm:text-lg lg:text-xl dark:text-slate-300'>
               {t('main.description')}
             </p>
             <div className='mt-10 flex flex-col items-center justify-center sm:flex-row'>
               <Link
                 to={routesPath.signup}
-                className='shadow-xs group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600 sm:mr-6 sm:max-w-[210px]'
+                className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 font-mono text-white ring-1 shadow-xs ring-slate-900 transition-all !duration-300 hover:bg-slate-700 sm:mr-6 sm:max-w-[210px] dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600'
                 aria-label={t('titles.signup')}
               >
                 <span className='mr-1 text-base font-semibold'>{t('main.startAFreeTrial')}</span>
@@ -843,7 +850,7 @@ const Hero = ({
               </Link>
               <a
                 href={LIVE_DEMO_URL}
-                className='shadow-xs mt-2 flex h-12 w-full items-center justify-center rounded-md bg-transparent text-slate-900 ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-200 dark:text-white dark:ring-white/20 dark:hover:bg-gray-800 sm:mt-0 sm:max-w-[210px]'
+                className='mt-2 flex h-12 w-full items-center justify-center rounded-md bg-transparent font-mono text-slate-900 ring-1 shadow-xs ring-slate-900 transition-all !duration-300 hover:bg-slate-200 sm:mt-0 sm:max-w-[210px] dark:text-white dark:ring-white/20 dark:hover:bg-gray-800'
                 target='_blank'
                 rel='noopener noreferrer'
                 aria-label={`${t('common.liveDemo')} (opens in a new tab)`}
@@ -865,7 +872,7 @@ const Hero = ({
             />
             <img
               src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
-              className='relative w-full rounded-xl shadow-2xl ring-1 ring-gray-900/10 dark:ring-white/10'
+              className='relative w-full rounded-xl ring-1 shadow-2xl ring-gray-900/10 dark:ring-white/10'
               width='100%'
               height='auto'
               alt='Swetrix Analytics dashboard'
@@ -928,7 +935,7 @@ export default function Index() {
           }
         />
 
-        <OpensourceAdvantages theme={theme} />
+        <WeAreOpensource theme={theme} />
 
         <DitchGoogle
           screenshot={{

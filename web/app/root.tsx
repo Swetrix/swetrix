@@ -226,7 +226,7 @@ export default function App() {
   useChangeLanguage(locale)
 
   return (
-    <html className={cx('font-swetrix antialiased', theme)} lang={locale} dir={i18n.dir()}>
+    <html className={cx('font-sans antialiased', theme)} lang={locale} dir={i18n.dir()}>
       <head>
         <meta charSet='utf-8' />
         <SEO />
