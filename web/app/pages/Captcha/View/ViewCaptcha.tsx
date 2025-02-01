@@ -272,7 +272,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
     loadCaptcha()
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [areFiltersParsed, filters, authLoading, project, period, timeBucket])
+  }, [areFiltersParsed, filters, authLoading, project, dateRange, period, timeBucket])
 
   // this funtion is used for requesting the data from the API when the filter is changed
   const filterHandler = (column: any, filter: any, isExclusive: boolean = false) => {
