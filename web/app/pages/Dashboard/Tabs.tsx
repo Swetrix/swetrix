@@ -39,7 +39,7 @@ interface TabsProps {
 }
 
 export const Tabs = ({ activeTab, setActiveTab, className, isLoading }: TabsProps) => (
-  <nav className={cx('-mb-px flex space-x-4 overflow-x-auto', className)} aria-label='Tabs'>
+  <nav className={cx('-mb-px flex space-x-4 overflow-x-auto font-mono', className)} aria-label='Tabs'>
     {_map(DASHBOARD_TABS, (tab) => {
       const isCurrent = tab.id === activeTab
 

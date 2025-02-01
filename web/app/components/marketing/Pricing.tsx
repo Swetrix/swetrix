@@ -254,7 +254,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
 
   return (
     <>
-      <div id='pricing' className={cx({ 'bg-white dark:bg-slate-900/75': !authenticated })}>
+      <div id='pricing' className={cx('font-mono', { 'bg-white dark:bg-slate-900/75': !authenticated })}>
         <div
           className={cx('max-w-max whitespace-pre-line', {
             'px-4 py-24 sm:px-6 lg:px-8': !authenticated,
@@ -264,10 +264,10 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
           <div className='sm:align-center sm:flex sm:flex-col'>
             {!authenticated && (
               <>
-                <h2 className='text-3xl font-extrabold text-gray-900 sm:text-center dark:text-gray-50'>
+                <h2 className='font-sans text-4xl font-extrabold text-gray-900 sm:text-center dark:text-gray-50'>
                   {t('pricing.title')}
                 </h2>
-                <p className='my-5 max-w-prose text-xl leading-relaxed text-slate-900 sm:text-center dark:text-slate-300'>
+                <p className='my-5 text-lg leading-relaxed text-slate-900 sm:text-center dark:text-slate-300'>
                   {t('pricing.adv', {
                     amount: TRIAL_DAYS,
                   })}

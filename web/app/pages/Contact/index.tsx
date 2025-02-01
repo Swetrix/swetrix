@@ -23,7 +23,7 @@ const Panel = ({ href, title, description }: PanelProps) => (
       strokeWidth={1.5}
     />
     <h3 className='text-lg leading-7 font-semibold text-gray-900 dark:text-gray-100'>{title}</h3>
-    <p className='mt-3 text-sm leading-6 text-gray-600 dark:text-gray-200'>{description}</p>
+    <p className='mt-3 font-mono text-sm leading-6 text-gray-600 dark:text-gray-200'>{description}</p>
   </a>
 )
 
@@ -34,7 +34,7 @@ const Contact = () => {
     <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
       <div className='mx-auto w-11/12 px-4 pt-12 pb-16 whitespace-pre-line sm:px-6 md:w-4/5 lg:px-8'>
         <h1 className='text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>{t('titles.contact')}</h1>
-        <div className='mt-2 text-lg tracking-tight text-gray-900 dark:text-gray-50'>
+        <div className='mt-2 font-mono text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           <Trans
             t={t}
             i18nKey='contact.description'

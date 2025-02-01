@@ -264,7 +264,7 @@ const Signin = ({ ssrTheme }: SigninProps) => {
       <div className='min-h-page flex flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
         <form className='mx-auto max-w-prose' onSubmit={_submit2FA}>
           <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{t('auth.signin.2fa')}</h2>
-          <p className='mt-4 text-base whitespace-pre-line text-gray-900 dark:text-gray-50'>
+          <p className='mt-4 font-mono text-base whitespace-pre-line text-gray-900 dark:text-gray-50'>
             {t('auth.signin.2faDesc')}
           </p>
           <Input
@@ -277,7 +277,7 @@ const Signin = ({ ssrTheme }: SigninProps) => {
             error={twoFACodeError}
           />
           <div className='mt-3 flex justify-between'>
-            <div className='text-sm whitespace-pre-line text-gray-600 dark:text-gray-400'>
+            <div className='font-mono text-sm whitespace-pre-line text-gray-600 dark:text-gray-400'>
               {!isSelfhosted && (
                 <Trans
                   t={t}
@@ -307,7 +307,7 @@ const Signin = ({ ssrTheme }: SigninProps) => {
           {t('auth.signin.title')}
         </h2>
       </div>
-      <div className='mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]'>
+      <div className='mt-10 font-mono sm:mx-auto sm:w-full sm:max-w-[480px]'>
         <div className='bg-white px-6 py-12 shadow-sm sm:rounded-lg sm:px-12 dark:bg-slate-800/20 dark:ring-1 dark:ring-slate-800'>
           <form className='space-y-6' onSubmit={handleSubmit}>
             <Input

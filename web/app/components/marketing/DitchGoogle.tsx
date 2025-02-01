@@ -16,7 +16,7 @@ export const DitchGoogle = ({ screenshot: { light, dark }, theme }: DitchGoogleP
   const { t } = useTranslation('common')
 
   return (
-    <div className='bg-white px-4 pb-12 font-mono md:px-8 dark:bg-slate-900'>
+    <div className='bg-white px-4 pb-12 md:px-8 dark:bg-slate-900'>
       <section
         className='relative isolate mx-auto w-full max-w-7xl overflow-hidden bg-slate-800 lg:h-[450px]'
         style={{ borderRadius: '100px 30px 30px 30px' }}
@@ -34,7 +34,7 @@ export const DitchGoogle = ({ screenshot: { light, dark }, theme }: DitchGoogleP
         </div>
         <div className='flex flex-col items-start justify-between pt-8 pl-8 sm:pl-14 md:flex-row lg:pl-28'>
           <div className='mb-16 w-full max-w-[520px] pt-14 pr-3 md:mb-0'>
-            <h2 className='mb-3 text-2xl leading-9 font-bold text-white sm:text-4xl sm:leading-[48px] md:text-[28px] md:leading-10 lg:text-[33px] lg:leading-[48px]'>
+            <h2 className='mb-3 text-2xl leading-9 font-bold text-white sm:text-4xl sm:leading-[48px] md:text-[32px] md:leading-10 lg:text-[36px] lg:leading-[48px]'>
               <Trans
                 t={t}
                 i18nKey='main.timeToDitchGoogleAnalytics'
@@ -43,10 +43,10 @@ export const DitchGoogle = ({ screenshot: { light, dark }, theme }: DitchGoogleP
                 }}
               />
             </h2>
-            <p className='mb-9 text-base font-medium text-gray-300 sm:text-lg'>{t('main.whyDitch')}</p>
+            <p className='mb-9 font-mono text-base font-medium text-gray-300 lg:text-lg'>{t('main.whyDitch')}</p>
             <Link
               to={routes.signup}
-              className='group flex h-[50px] w-full max-w-[210px] items-center justify-center rounded-md border border-transparent bg-indigo-600 text-white shadow-xs transition-all !duration-300 hover:bg-indigo-700 sm:mr-6'
+              className='group flex h-[50px] w-full max-w-[210px] items-center justify-center rounded-md border border-transparent bg-indigo-600 font-mono text-white shadow-xs transition-all !duration-300 hover:bg-indigo-700 sm:mr-6'
               aria-label={t('titles.signup')}
             >
               <span className='mr-1 text-base font-semibold'>{t('main.start')}</span>

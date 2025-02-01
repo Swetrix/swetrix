@@ -6,7 +6,7 @@ const Logo = ({ label, className }: { label: string; className: string }) => {
     <div
       className={clsx(
         className,
-        'absolute top-[calc(50%-1rem)] items-center gap-2 px-3 py-1 whitespace-nowrap',
+        'absolute top-[calc(50%-1rem)] flex items-center gap-2 px-3 py-1 whitespace-nowrap',
         'bg-gray-700 bg-gradient-to-t from-50% ring-1 ring-white/10 ring-inset',
         '[animation-iteration-count:infinite] [animation-name:move-x] [animation-play-state:paused] [animation-timing-function:linear] group-hover:[animation-play-state:running]',
       )}

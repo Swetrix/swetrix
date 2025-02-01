@@ -20,11 +20,11 @@ const NotFound = () => {
               <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl dark:text-gray-50'>
                 {t('notFoundPage.title')}
               </h1>
-              <p className='mt-1 text-base whitespace-pre-line text-gray-500 dark:text-gray-300'>
+              <p className='mt-1 font-mono text-base whitespace-pre-line text-gray-500 dark:text-gray-300'>
                 {t('notFoundPage.description')}
               </p>
             </div>
-            <div className='mt-8 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>
+            <div className='mt-8 flex space-x-3 font-mono sm:border-l sm:border-transparent sm:pl-6'>
               <Link
                 to={routes.main}
                 className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-xs hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden'

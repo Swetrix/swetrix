@@ -37,7 +37,10 @@ const Pagination = ({
 
   return (
     <div
-      className={cx('flex items-center justify-between border-t border-gray-200 py-3 dark:border-gray-700', className)}
+      className={cx(
+        'flex items-center justify-between border-t border-gray-200 py-3 font-mono dark:border-gray-700',
+        className,
+      )}
     >
       <div className='flex flex-1 justify-between sm:hidden'>
         <button

@@ -136,13 +136,8 @@ const PanelContainer = ({
     )}
   >
     <div className='mb-2 flex items-center justify-between'>
-      <h3 className='flex items-center text-lg leading-6 font-semibold text-gray-900 dark:text-gray-50'>
-        {icon && (
-          <>
-            {icon}
-            &nbsp;
-          </>
-        )}
+      <h3 className='flex items-center font-mono text-lg leading-6 font-semibold text-gray-900 dark:text-gray-50'>
+        {icon && <span className='mr-1'>{icon}</span>}
         {name}
       </h3>
       <div className='flex'>
@@ -924,7 +919,7 @@ const CustomEvents = ({
       </table>
       {/* for pagination in tabs */}
       {_size(keys) > ENTRIES_PER_CUSTOM_EVENTS_PANEL && (
-        <div className='absolute bottom-0 w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)]'>
+        <div className='absolute bottom-0 w-[calc(100%-2rem)] font-mono sm:w-[calc(100%-3rem)]'>
           <div className='mb-2 flex justify-between select-none'>
             <div>
               <span className='text-xs font-light text-gray-500 lowercase dark:text-gray-200'>
@@ -1321,7 +1316,7 @@ const PageProperties = ({
       </table>
       {/* for pagination in tabs */}
       {_size(keys) > ENTRIES_PER_CUSTOM_EVENTS_PANEL && (
-        <div className='absolute bottom-0 w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)]'>
+        <div className='absolute bottom-0 w-[calc(100%-2rem)] font-mono sm:w-[calc(100%-3rem)]'>
           <div className='mb-2 flex justify-between select-none'>
             <div>
               <span className='text-xs font-light text-gray-500 lowercase dark:text-gray-200'>
@@ -1617,7 +1612,7 @@ const Panel = ({
       activeTab={activeTab}
     >
       {_isEmpty(data) ? (
-        <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
+        <p className='mt-1 font-mono text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
       ) : (
         _map(entriesToDisplay, (entry) => {
           const { count, name: entryName, ...rest } = entry
@@ -1688,7 +1683,7 @@ const Panel = ({
       )}
       {/* for pagination in tabs */}
       {_size(entries) > ENTRIES_PER_PANEL && (
-        <div className='absolute bottom-0 w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)]'>
+        <div className='absolute bottom-0 w-[calc(100%-2rem)] font-mono sm:w-[calc(100%-3rem)]'>
           <div className='mb-2 flex justify-between select-none'>
             <div>
               <span className='text-xs font-light text-gray-500 lowercase dark:text-gray-200'>

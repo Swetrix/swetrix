@@ -54,7 +54,7 @@ const Teammate = ({ photo, name, role, socials, desc }: TeammateProps) => (
         style={{ aspectRatio: '1 / 1' }}
       />
     </div>
-    <div className='mt-5 mb-4 text-center md:mt-0 md:mb-0 md:w-3/5 md:text-start'>
+    <div className='mt-5 mb-4 text-center font-mono md:mt-0 md:mb-0 md:w-3/5 md:text-start'>
       <p className='mt-2 text-3xl font-bold tracking-tight text-gray-900 lg:mt-0 dark:text-gray-50'>{name}</p>
       <p className='text-xl tracking-tight text-gray-900 dark:text-gray-50'>{role}</p>
       <div className='mt-2 flex justify-center space-x-4 md:justify-start'>
@@ -110,16 +110,6 @@ const team = [
       Github: 'https://github.com/kruzhambus',
     },
   },
-  {
-    name: 'Yevhenii Kulisidi',
-    role: 'Lead Backend Developer.',
-    photo: '/assets/team/yevhenii.png',
-    desc: 'I am a backend engineer specialising in Node.js and TypeScript. I mainly work on the Swetrix API, focusing on its scalability, efficiency and integration.',
-    socials: {
-      LinkedIn: 'https://www.linkedin.com/in/kulisidi/',
-      Github: 'https://github.com/yevheniikulisidi',
-    },
-  },
 ] as const
 
 const About = () => (
@@ -161,7 +151,7 @@ const About = () => (
         </div>
 
         <hr className='mt-10 border-gray-200 dark:border-gray-600' />
-        <p className='mt-2 text-lg tracking-tight text-gray-900 dark:text-gray-50'>
+        <p className='mt-2 font-mono text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           If you have read this far, why not&nbsp;
           <a
             href={`mailto:${CONTACT_EMAIL}`}

@@ -87,14 +87,14 @@ const Problem = () => {
         <h2 className='mb-6 text-4xl font-extrabold text-gray-50 sm:text-5xl sm:leading-none md:mb-8'>
           {t('main.problem.title')}
         </h2>
-        <p className='mx-auto mb-12 max-w-prose font-mono text-lg leading-relaxed font-bold text-gray-100 opacity-80 md:mb-20'>
+        <p className='mx-auto mb-12 max-w-prose font-mono text-base leading-relaxed font-semibold text-gray-100 md:mb-20 md:text-lg'>
           {t('main.problem.description')}
         </p>
 
         <div className='flex flex-col items-center justify-center gap-6 font-mono text-gray-50 md:flex-row md:items-start'>
-          <div className='flex w-full flex-col items-center justify-center gap-2 md:w-48'>
+          <div className='flex w-full flex-col items-center justify-center gap-2 md:w-56'>
             <span className='text-4xl'>🤔</span>
-            <p className='font-bold'>{t('main.problem.step1')}</p>
+            <p className='font-semibold'>{t('main.problem.step1')}</p>
           </div>
           <svg
             className='w-12 shrink-0 fill-gray-200 opacity-70 max-md:-scale-x-100 md:-rotate-90'
@@ -115,9 +115,9 @@ const Problem = () => {
               />
             </g>
           </svg>
-          <div className='flex w-full flex-col items-center justify-center gap-2 md:w-48'>
+          <div className='flex w-full flex-col items-center justify-center gap-2 md:w-56'>
             <span className='text-4xl'>😕</span>
-            <p className='font-bold'>
+            <p className='font-semibold'>
               <Trans
                 t={t}
                 i18nKey='main.problem.step2'
@@ -146,9 +146,9 @@ const Problem = () => {
               />
             </g>
           </svg>
-          <div className='flex w-full flex-col items-center justify-center gap-2 md:w-48'>
+          <div className='flex w-full flex-col items-center justify-center gap-2 md:w-56'>
             <span className='text-4xl'>📉</span>
-            <p className='font-bold'>{t('main.problem.step3')}</p>
+            <p className='font-semibold'>{t('main.problem.step3')}</p>
           </div>
         </div>
       </div>
@@ -221,7 +221,7 @@ const WeAreOpensource = ({ theme }: { theme: 'dark' | 'light' }) => {
         />
       </picture>
       <div className='w-full max-w-lg lg:ml-5'>
-        <h2 className='text-4xl font-extrabold text-slate-900 md:text-4xl dark:text-white'>
+        <h2 className='text-4xl font-extrabold text-slate-900 dark:text-white'>
           <Trans
             t={t}
             i18nKey='main.weAreOpensource'
@@ -367,10 +367,10 @@ const FeatureBlock = ({ heading, description, children, className, dark }: Featu
     <div className='relative h-80 shrink-0'>{children}</div>
 
     <div className='relative p-10'>
-      <h3 className='mt-1 text-2xl/8 font-medium tracking-tight text-gray-950 group-data-[dark]:text-white'>
+      <h3 className='mt-1 text-2xl/8 font-semibold tracking-tight text-gray-950 group-data-[dark]:text-white'>
         {heading}
       </h3>
-      <p className='mt-2 max-w-[600px] font-mono text-sm/6 text-gray-600 group-data-[dark]:text-gray-400'>
+      <p className='mt-2 max-w-[600px] font-mono text-sm/6 text-gray-600 group-data-[dark]:text-gray-400 lg:text-base/6'>
         {description}
       </p>
     </div>
@@ -671,7 +671,7 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
           className='max-lg:rounded-t-4xl lg:col-span-4 lg:rounded-tl-4xl'
           dark={theme === 'dark'}
         >
-          <div className='relative h-80 overflow-hidden px-10 pt-5'>
+          <div className='relative h-80 overflow-hidden px-10 pt-5 font-mono'>
             <div className='absolute top-2 rotate-2 rounded-xs bg-slate-200 p-4 text-slate-900 opacity-70 transition-opacity group-hover:opacity-90 dark:bg-slate-700 dark:text-gray-50'>
               <p className='mb-4 text-sm'>
                 We use cookies to enhance your experience. By continuing to visit this site you agree to our use of
@@ -826,7 +826,7 @@ const Hero = ({
       <div className='relative mx-auto min-h-[740px] pt-10 pb-5 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
         <div className='relative z-20 flex flex-col content-between justify-center'>
           <div className='relative mx-auto flex flex-col px-4 text-left'>
-            <h1 className='mx-auto max-w-4xl text-center text-4xl font-extrabold tracking-[-0.4px] text-slate-900 sm:text-5xl sm:leading-none lg:text-6xl xl:text-7xl dark:text-white'>
+            <h1 className='mx-auto max-w-5xl text-center text-4xl font-extrabold tracking-[-0.4px] text-slate-900 sm:text-5xl sm:leading-none lg:text-6xl xl:text-7xl dark:text-white'>
               <Trans
                 t={t}
                 i18nKey='main.slogan'
@@ -836,7 +836,7 @@ const Hero = ({
                 }}
               />
             </h1>
-            <p className='mx-auto mt-4 max-w-4xl text-center font-mono text-base leading-relaxed tracking-wide text-slate-900 sm:text-lg lg:text-xl dark:text-slate-300'>
+            <p className='mx-auto mt-4 max-w-4xl text-center font-mono text-base text-slate-900 sm:text-lg dark:text-slate-300'>
               {t('main.description')}
             </p>
             <div className='mt-10 flex flex-col items-center justify-center sm:flex-row'>

@@ -119,7 +119,7 @@ const Modal = ({
                   <UserGroupIcon className='h-6 w-6 text-green-600' aria-hidden='true' />
                 </div>
               )}
-              <div className='mt-3 w-full text-center sm:mt-0 sm:text-left'>
+              <div className='mt-3 w-full text-center font-mono sm:mt-0 sm:text-left'>
                 {title && (
                   <DialogTitle
                     as='h3'
@@ -147,7 +147,7 @@ const Modal = ({
                 <div className='mt-2 text-sm whitespace-pre-line text-gray-600 dark:text-gray-200'>{message}</div>
               </div>
             </div>
-            <div className='px-4 py-3 sm:flex sm:flex-row-reverse sm:px-0 sm:pb-0'>
+            <div className='px-4 py-3 font-mono sm:flex sm:flex-row-reverse sm:px-0 sm:pb-0'>
               {customButtons}
               {submitText && (
                 <button

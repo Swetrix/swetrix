@@ -252,9 +252,9 @@ const Signup = ({ ssrTheme }: SignupProps) => {
                 amount: TRIAL_DAYS,
               })}
             </h2>
-            <p className='text-center text-base text-gray-900 dark:text-gray-50'>{t('auth.signup.noCC')}</p>
+            <p className='text-center font-mono text-base text-gray-900 dark:text-gray-50'>{t('auth.signup.noCC')}</p>
           </div>
-          <div className='mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]'>
+          <div className='mt-10 font-mono sm:mx-auto sm:w-full sm:max-w-[480px]'>
             <div className='bg-white px-6 py-12 shadow-sm sm:rounded-lg sm:px-12 dark:bg-slate-800/20 dark:ring-1 dark:ring-slate-800'>
               <form className='space-y-6' onSubmit={handleSubmit}>
                 <Input

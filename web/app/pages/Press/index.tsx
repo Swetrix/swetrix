@@ -5,8 +5,8 @@ import { useTranslation, Trans } from 'react-i18next'
 
 import routes from '~/utils/routes'
 
-const FONT_INTER_URL = 'https://rsms.me/inter/'
-const FONT_NAME = 'Inter'
+const FONT_URL = 'https://vercel.com/font/'
+const FONT_NAME = 'Geist'
 
 interface LogoComponentProps {
   description: string
@@ -97,8 +97,8 @@ const Press = () => {
             components={{
               url: (
                 <a
-                  aria-label='Inter font website (opens in a new tab)'
-                  href={FONT_INTER_URL}
+                  aria-label='Font website (opens in a new tab)'
+                  href={FONT_URL}
                   className='font-medium text-indigo-400 hover:text-indigo-500 hover:underline dark:text-indigo-400 dark:hover:text-indigo-500'
                   target='_blank'
                   rel='noopener noreferrer'

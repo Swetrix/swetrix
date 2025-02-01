@@ -22,7 +22,7 @@ const TooltipContent = forwardRef<
         // 'transform-gpu transition-all duration-300 ease-in-out',
         // 'data-[state=closed]:scale-90 data-[state=delayed-open]:scale-100',
         // 'data-[state=closed]:opacity-0 data-[state=delayed-open]:opacity-100',
-        'z-50 max-w-80 overflow-hidden rounded-md bg-slate-800 px-3 py-1.5 text-xs text-white ring-1 ring-slate-900/80',
+        'z-50 max-w-80 overflow-hidden rounded-md bg-slate-800 px-3 py-1.5 font-mono text-xs text-white ring-1 ring-slate-900/80',
         className,
       )}
       {...props}

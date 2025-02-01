@@ -59,19 +59,13 @@ html.light .bb-xgrid-focus {
 }
 
 .bb-axis {
-  font-family:
-    'Inter',
-    'Cantarell',
-    'Roboto',
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Helvetica Neue',
-    'Oxygen',
-    'Ubuntu',
-    sans-serif;
+  font-family: var(--font-mono);
   font-weight: 500;
   letter-spacing: 0.02em;
+}
+
+.bb-legend {
+  font-family: var(--font-sans);
 }
 
 .bb-line {

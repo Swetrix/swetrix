@@ -33,7 +33,7 @@ const Textarea = ({
   const isError = !_isEmpty(error)
 
   return (
-    <Field as='div' className={className}>
+    <Field as='div' className={cx('font-mono', className)}>
       {label && <Label className='flex text-sm font-medium text-gray-700 dark:text-gray-200'>{label}</Label>}
       <HeadlessTextarea
         rows={rows}

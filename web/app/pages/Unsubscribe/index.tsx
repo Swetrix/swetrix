@@ -77,7 +77,7 @@ const Unsubscribe = ({ type }: UnsubscribeProps) => {
                   {error}
                 </h1>
               </div>
-              <div className='mt-8 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>
+              <div className='mt-8 flex space-x-3 font-mono sm:border-l sm:border-transparent sm:pl-6'>
                 {authenticated ? (
                   <Link
                     to={routes.dashboard}
@@ -118,7 +118,7 @@ const Unsubscribe = ({ type }: UnsubscribeProps) => {
                 {t('unsubscribe.success')}
               </h1>
             </div>
-            <div className='mt-8 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>
+            <div className='mt-8 flex space-x-3 font-mono sm:border-l sm:border-transparent sm:pl-6'>
               {authenticated ? (
                 <Link
                   to={routes.dashboard}

@@ -49,7 +49,7 @@ const Button = ({
     disabled={disabled || loading}
     type={type}
     className={cx(
-      'relative inline-flex items-center rounded-md border leading-4 font-medium select-none',
+      'relative inline-flex items-center rounded-md border font-mono leading-4 font-medium select-none',
       {
         'border-transparent bg-slate-900 text-gray-50 shadow-xs hover:bg-slate-700 dark:border-slate-700/50 dark:bg-slate-800 dark:hover:bg-slate-700':
           primary,

@@ -87,11 +87,11 @@ export default function Posts() {
                       {post.title}
                     </h3>
                     {post.intro && (
-                      <div className='prose prose-slate prose-a:relative prose-a:z-10 mt-2 mb-4 line-clamp-2 dark:text-slate-400'>
+                      <div className='prose prose-slate prose-a:relative prose-a:z-10 mt-2 mb-4 line-clamp-2 font-mono dark:text-slate-400'>
                         <p>{post.intro}</p>
                       </div>
                     )}
-                    <dl className='absolute top-0 left-0 lg:right-full lg:left-auto lg:mr-[calc(5rem+1px)]'>
+                    <dl className='absolute top-0 left-0 font-mono uppercase lg:right-full lg:left-auto lg:mr-[calc(5rem+1px)]'>
                       <dt className='sr-only'>Date</dt>
                       <dd className='text-sm leading-6 whitespace-nowrap dark:text-slate-400'>
                         <time dateTime={post.date}>{post.date}</time>
@@ -99,7 +99,7 @@ export default function Posts() {
                     </dl>
                   </div>
                   <Link
-                    className='flex items-center text-sm font-medium text-indigo-600 dark:text-gray-50'
+                    className='flex items-center font-mono text-sm font-medium text-indigo-600 dark:text-gray-50'
                     to={post.slug}
                   >
                     <span className='absolute -inset-x-4 -inset-y-2.5 sm:rounded-2xl md:-inset-x-6 md:-inset-y-4'></span>

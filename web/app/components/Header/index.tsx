@@ -479,6 +479,12 @@ const ProfileMenu = ({
   )
 }
 
+const Separator = () => (
+  <svg viewBox='0 0 2 2' className='h-0.5 w-0.5 flex-none fill-gray-400'>
+    <circle cx={1} cy={1} r={1} />
+  </svg>
+)
+
 const AuthedHeader = ({
   user,
   switchTheme,
@@ -504,7 +510,7 @@ const AuthedHeader = ({
 
   return (
     <header
-      className={cx('relative overflow-x-clip', {
+      className={cx('relative overflow-x-clip font-mono', {
         'border-b border-gray-200 bg-gray-50 dark:border-slate-600/40 dark:bg-slate-900': colourBackground,
       })}
     >
@@ -641,7 +647,7 @@ const NotAuthedHeader = ({
 
   return (
     <header
-      className={cx('relative overflow-x-clip', {
+      className={cx('relative overflow-x-clip font-mono', {
         'border-b border-gray-200 bg-gray-50 dark:border-slate-600/40 dark:bg-slate-900': colourBackground,
       })}
     >
@@ -718,7 +724,7 @@ const NotAuthedHeader = ({
             {/* Language selector */}
             <Dropdown
               items={whitelist}
-              buttonClassName='!py-0 inline-flex items-center [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 text-sm font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+              buttonClassName='!py-0 inline-flex items-center [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 font-semibold leading-6 !text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
               selectItemClassName='text-gray-700 block px-4 py-2 text-base cursor-pointer hover:bg-gray-200 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700'
               title={
                 <>
@@ -746,7 +752,7 @@ const NotAuthedHeader = ({
             <ThemeMenu theme={theme} switchTheme={switchTheme} />
             {!refPage && (
               <>
-                <span className='text-slate-700'>|</span>
+                <Separator />
                 <Link
                   to={routes.signin}
                   className='flex items-center text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
@@ -889,7 +895,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
       )}
 
       {/* Mobile header popup */}
-      <Dialog className='lg:hidden' open={mobileMenuOpen} onClose={setMobileMenuOpen}>
+      <Dialog className='font-mono lg:hidden' open={mobileMenuOpen} onClose={setMobileMenuOpen}>
         <div className='fixed inset-0 z-10' />
         <Dialog.Panel className='fixed inset-y-0 top-0 right-0 z-30 w-full overflow-y-auto border-gray-300/80 bg-gray-100/80 p-4 backdrop-blur-2xl sm:max-w-sm sm:border dark:border-slate-900/80 dark:bg-slate-800/80'>
           <div className='flex items-center justify-between'>

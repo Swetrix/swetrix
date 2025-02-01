@@ -395,7 +395,7 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
   return (
     <>
       <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>{t('profileSettings.integrationsDesc')}</p>
-      <div className='mt-2 overflow-hidden bg-white shadow-sm sm:rounded-md dark:bg-slate-800'>
+      <div className='mt-2 overflow-hidden bg-white font-mono shadow-sm sm:rounded-md dark:bg-slate-800'>
         <ul className='divide-y divide-gray-200 dark:divide-slate-700'>
           {_map(available, ({ name, key, description, Icon }) => {
             const { connected, confirmed, id } = getIntegrationStatus(key)

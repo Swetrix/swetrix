@@ -1,6 +1,6 @@
 import React, { memo } from 'react'
 import { Link } from '@remix-run/react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import _map from 'lodash/map'
 import Flag from '~/ui/Flag'
 
@@ -160,7 +160,7 @@ const SelfHostedFooter = () => {
   const { t } = useTranslation('common')
 
   return (
-    <footer className='border-t border-gray-200 bg-gray-50 dark:border-slate-800/50 dark:bg-slate-900'>
+    <footer className='border-t border-gray-200 bg-gray-50 font-mono dark:border-slate-800/50 dark:bg-slate-900'>
       <div className='mx-auto max-w-7xl overflow-hidden px-4 py-8 sm:px-6 lg:px-8'>
         <nav className='-mx-5 -my-2 flex flex-wrap justify-center' aria-label='Footer'>
           <div className='px-5 py-2'>
@@ -217,10 +217,7 @@ interface FooterProps {
 }
 
 const Footer = ({ authenticated, showDBIPMessage }: FooterProps) => {
-  const {
-    t,
-    i18n: { language },
-  } = useTranslation('common')
+  const { t } = useTranslation('common')
   const year = new Date().getFullYear()
 
   if (isSelfhosted) {
@@ -228,7 +225,7 @@ const Footer = ({ authenticated, showDBIPMessage }: FooterProps) => {
   }
 
   return (
-    <footer className='dark:bg-gray-750 bg-gray-800' aria-labelledby='footer-heading'>
+    <footer className='dark:bg-gray-750 bg-gray-800 font-mono' aria-labelledby='footer-heading'>
       <h2 id='footer-heading' className='sr-only'>
         Footer
       </h2>
@@ -243,35 +240,12 @@ const Footer = ({ authenticated, showDBIPMessage }: FooterProps) => {
               <br />
               {t('footer.description')}
             </p>
-            <div>
-              <p className='flex text-base text-gray-300'>
-                {t('footer.madeIn')}
-                <a
-                  className='ml-1 flex text-blue-400 hover:underline hover:opacity-80'
-                  href={`https://${language}.wikipedia.org/wiki/Ukraine`}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  aria-label='Ukraine Wikipedia page (opens in a new tab)'
-                >
-                  <Flag country='UA' size={18} alt='' aria-hidden='true' />
-                  &nbsp;
-                  {t('footer.ukraine')}
-                </a>
-              </p>
-              <p className='flex text-base text-gray-300'>
-                {t('footer.hostedIn')}
-                <a
-                  className='ml-1 flex text-blue-400 hover:underline hover:opacity-80'
-                  href={`https://${language}.wikipedia.org/wiki/European_Union`}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  aria-label='European Union Wikipedia page (opens in a new tab)'
-                >
-                  <Flag country='EU' size={18} alt='' aria-hidden='true' />
-                  &nbsp;
-                  {t('footer.eu')}
-                </a>
-              </p>
+            <div className='flex text-gray-300'>
+              <Trans t={t} i18nKey='footer.madeInHostedIn'>
+                <Flag className='mx-[1ch]' country='GB' size={18} alt='GB' aria-hidden='true' />
+                <Flag className='mx-[1ch]' country='UA' size={18} alt='UA' aria-hidden='true' />
+                <Flag className='mx-[1ch]' country='EU' size={18} alt='EU' aria-hidden='true' />
+              </Trans>
             </div>
             <div className='flex space-x-4'>
               {_map(navigation.social, (item) => (

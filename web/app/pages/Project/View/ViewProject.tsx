@@ -2865,7 +2865,7 @@ const ViewProject = () => {
         />
       </div>
       <div className='hidden sm:block'>
-        <nav className='-mb-px flex space-x-4 overflow-x-auto' aria-label='Tabs'>
+        <nav className='-mb-px flex space-x-4 overflow-x-auto font-mono' aria-label='Tabs'>
           {_map(tabs, (tab) => {
             const isCurrent = tab.id === activeTab
 
@@ -2946,7 +2946,7 @@ const ViewProject = () => {
           })}
         >
           <TabsSelector />
-          <h2 className='mt-2 text-center text-xl font-bold break-words break-all text-gray-900 sm:text-left dark:text-gray-50'>
+          <h2 className='mt-2 text-center font-mono text-xl font-bold break-words break-all text-gray-900 sm:text-left dark:text-gray-50'>
             {project.name}
           </h2>
           <LockedDashboard user={user} project={project} />
@@ -2967,7 +2967,7 @@ const ViewProject = () => {
           })}
         >
           <TabsSelector />
-          <h2 className='mt-2 text-center text-xl font-bold break-words break-all text-gray-900 sm:text-left dark:text-gray-50'>
+          <h2 className='mt-2 text-center font-mono text-xl font-bold break-words break-all text-gray-900 sm:text-left dark:text-gray-50'>
             {project.name}
           </h2>
           <WaitingForAnEvent project={project} />
@@ -2992,7 +2992,7 @@ const ViewProject = () => {
           })}
         >
           <TabsSelector />
-          <h2 className='mt-2 text-center text-xl font-bold break-words break-all text-gray-900 sm:text-left dark:text-gray-50'>
+          <h2 className='mt-2 text-center font-mono text-xl font-bold break-words break-all text-gray-900 sm:text-left dark:text-gray-50'>
             {project.name}
           </h2>
           <WaitingForAnError />
@@ -3069,7 +3069,7 @@ const ViewProject = () => {
                     <>
                       <div className='mt-2 flex flex-col items-center justify-between lg:flex-row lg:items-start'>
                         <div className='flex flex-wrap items-center space-x-5'>
-                          <h2 className='text-xl font-bold break-words break-all text-gray-900 dark:text-gray-50'>
+                          <h2 className='font-mono text-xl font-bold break-words break-all text-gray-900 dark:text-gray-50'>
                             {/* If tab is funnels - then display a funnel name, otherwise a project name */}
                             {activeTab === PROJECT_TABS.funnels ? activeFunnel?.name : project.name}
                           </h2>
@@ -3553,7 +3553,7 @@ const ViewProject = () => {
                           />
                           {isActiveCompare && activeTab !== PROJECT_TABS.errors && (
                             <>
-                              <div className='text-md mx-2 font-medium whitespace-pre-line text-gray-600 dark:text-gray-200'>
+                              <div className='text-md mx-2 font-mono font-medium whitespace-pre-line text-gray-600 dark:text-gray-200'>
                                 vs
                               </div>
                               <Dropdown

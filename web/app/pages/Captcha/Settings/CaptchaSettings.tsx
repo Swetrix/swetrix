@@ -458,7 +458,7 @@ const CaptchaSettings = ({ isSettings }: CaptchaSettingsProps) => {
             <hr className='mt-2 border-gray-200 sm:mt-5 dark:border-gray-600' />
           </>
         ) : (
-          <p className='mt-1 mb-4 text-sm text-gray-500 italic dark:text-gray-300'>
+          <p className='mt-1 mb-4 font-mono text-sm text-gray-500 italic dark:text-gray-300'>
             {t('project.settings.createHint')}
           </p>
         )}

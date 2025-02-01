@@ -459,7 +459,7 @@ const Changelog = () => {
                         </li>
                       ))}
                     </ul>
-                    <dl className='absolute top-0 left-1.5 lg:right-full lg:left-auto lg:mr-[calc(5rem+1px)]'>
+                    <dl className='absolute top-0 left-1.5 font-mono uppercase lg:right-full lg:left-auto lg:mr-[calc(5rem+1px)]'>
                       <dt className='sr-only'>Date</dt>
                       <dd className='text-sm leading-6 whitespace-nowrap text-slate-700 dark:text-slate-300'>
                         <time dateTime={date}>{displayDate}</time>

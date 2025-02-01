@@ -102,7 +102,7 @@ class FlatPicker extends React.Component<
     }
 
     return (
-      <div className={cx('flatpicker-custom h-0', className)}>
+      <div className={cx('flatpicker-custom h-0 font-mono', className)}>
         <Flatpickr
           id='calendar'
           value={value}

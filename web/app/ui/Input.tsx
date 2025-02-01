@@ -36,7 +36,7 @@ const Input = ({
   return (
     <Field as='div' className={className}>
       {label ? (
-        <Label className='mb-1 flex text-sm font-medium text-gray-700 dark:text-gray-200'>
+        <Label className='mb-1 flex font-mono text-sm font-medium text-gray-700 dark:text-gray-200'>
           {label}
           {isBeta && (
             <div className='ml-5'>
@@ -51,7 +51,7 @@ const Input = ({
       <HeadlessInput
         type={type}
         className={cx(
-          'block w-full rounded-md border-gray-300 shadow-xs sm:text-sm dark:border-slate-800/25 dark:bg-slate-800 dark:text-gray-50 dark:placeholder-gray-400',
+          'block w-full rounded-md border-gray-300 font-mono shadow-xs sm:text-sm dark:border-slate-800/25 dark:bg-slate-800 dark:text-gray-50 dark:placeholder-gray-400',
           {
             'text-red-900 placeholder-red-300 ring-1 ring-red-600': isError,
             'cursor-text': disabled,
@@ -62,7 +62,7 @@ const Input = ({
         invalid={isError}
         {...rest}
       />
-      {isError ? <p className='mt-2 text-sm text-red-600 dark:text-red-500'>{error}</p> : null}
+      {isError ? <p className='mt-2 font-mono text-sm text-red-600 dark:text-red-500'>{error}</p> : null}
       {hint && hintPosition === 'bottom' ? (
         <Description className='mt-2 text-sm whitespace-pre-line text-gray-500 dark:text-gray-300'>{hint}</Description>
       ) : null}

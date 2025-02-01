@@ -176,7 +176,9 @@ const NewProject = () => {
           </div>
         )}
 
-        <p className='mt-1 mb-4 text-sm text-gray-500 italic dark:text-gray-300'>{t('project.settings.createHint')}</p>
+        <p className='mt-1 mb-4 font-mono text-sm text-gray-500 italic dark:text-gray-300'>
+          {t('project.settings.createHint')}
+        </p>
 
         <div>
           <Button
