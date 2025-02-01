@@ -242,7 +242,7 @@ interface ViewProjectContextType {
   refCalendar: React.MutableRefObject<any>
 }
 
-const ViewProjectContext = createContext<ViewProjectContextType | undefined>(undefined)
+export const ViewProjectContext = createContext<ViewProjectContextType | undefined>(undefined)
 
 export const useViewProjectContext = () => {
   const context = useContext(ViewProjectContext)
