@@ -18,7 +18,7 @@ import { ExternalScripts } from 'remix-utils/external-scripts'
 import { getCookie, generateCookieString } from '~/utils/cookie'
 import { ExclamationTriangleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 import { Provider } from 'react-redux'
-import clsx from 'clsx'
+import cx from 'clsx'
 import _replace from 'lodash/replace'
 import BillboardCss from 'billboard.js/dist/billboard.min.css'
 
@@ -89,14 +89,14 @@ export function ErrorBoundary() {
       </head>
       <body>
         {/* Using style because for some reason min-h-screen doesn't work */}
-        <div style={{ minHeight: '100vh' }} className='flex flex-col bg-gray-50 pb-12 pt-16 dark:bg-slate-900'>
+        <div style={{ minHeight: '100vh' }} className='flex flex-col bg-gray-50 pt-16 pb-12 dark:bg-slate-900'>
           <div className='mx-auto flex w-full max-w-7xl flex-grow flex-col justify-center px-4 sm:px-6 lg:px-8'>
             <div className='flex shrink-0 justify-center'>
               <ExclamationTriangleIcon className='h-24 w-auto text-yellow-400 dark:text-yellow-600' />
             </div>
             <div className='py-8'>
               <div className='text-center'>
-                <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50 sm:text-5xl'>
+                <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl dark:text-gray-50'>
                   Uh-oh..
                 </h1>
                 <p className='mt-2 text-base font-medium text-gray-800 dark:text-gray-300'>
@@ -133,7 +133,7 @@ export function ErrorBoundary() {
                         )}
                       </span>
                       {crashStackShown && (
-                        <span className='whitespace-pre-line text-sm text-gray-600 dark:text-gray-400'>
+                        <span className='text-sm whitespace-pre-line text-gray-600 dark:text-gray-400'>
                           {error.stack}
                         </span>
                       )}
@@ -226,7 +226,7 @@ export default function App() {
   useChangeLanguage(locale)
 
   return (
-    <html className={theme} lang={locale} dir={i18n.dir()}>
+    <html className={cx('font-swetrix antialiased', theme)} lang={locale} dir={i18n.dir()}>
       <head>
         <meta charSet='utf-8' />
         <SEO />
@@ -255,7 +255,7 @@ export default function App() {
         />
       </head>
       <body
-        className={clsx({
+        className={cx({
           'bg-white': theme === 'light',
           'bg-slate-900': theme === 'dark',
         })}

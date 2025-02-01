@@ -4,6 +4,9 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
+  /* Fonts */
+  --font-swetrix: 'Inter', 'Cantarell', 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Oxygen', 'Ubuntu', sans-serif;
+
   /* Colors */
   --color-gray-750: oklch(23.11% 0.0357 262.54); /* Converting #141d2e to OKLCH */
   
@@ -28,6 +31,11 @@
 @layer utilities {
   .animate-ping-slow {
     animation: ping-op 3s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+
+  .antialiased {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
