@@ -242,7 +242,7 @@ interface ViewProjectContextType {
   refCalendar: React.MutableRefObject<any>
 }
 
-const ViewProjectContext = createContext<ViewProjectContextType | undefined>(undefined)
+export const ViewProjectContext = createContext<ViewProjectContextType | undefined>(undefined)
 
 export const useViewProjectContext = () => {
   const context = useContext(ViewProjectContext)
@@ -2186,6 +2186,7 @@ const ViewProject = () => {
     authLoading,
     project,
     isActiveCompare,
+    dateRange,
     period,
     timeBucket,
   ])
@@ -2205,6 +2206,7 @@ const ViewProject = () => {
     authLoading,
     project,
     isActiveCompare,
+    dateRange,
     period,
     timeBucket,
   ])
@@ -2215,7 +2217,7 @@ const ViewProject = () => {
     loadFunnelsData()
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeFunnel, activeTab, authLoading, project])
+  }, [activeFunnel, activeTab, authLoading, project, dateRange, period, timeBucket])
 
   useEffect(() => {
     if (authLoading || !areFiltersParsed || activeTab !== PROJECT_TABS.sessions || authLoading || !project) {

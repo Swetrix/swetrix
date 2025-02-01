@@ -43,7 +43,7 @@ interface MiniCardProps {
   percChange?: number
 }
 
-const MiniCard = ({ labelTKey, total = 0, percChange }: MiniCardProps) => {
+const MiniCard = ({ labelTKey, total, percChange }: MiniCardProps) => {
   const { t } = useTranslation('common')
   const statsDidGrowUp = percChange ? percChange >= 0 : false
 
@@ -85,14 +85,7 @@ const MiniCard = ({ labelTKey, total = 0, percChange }: MiniCardProps) => {
   )
 }
 
-export const ProjectCard = ({
-  live = null,
-  project,
-  overallStats,
-  activePeriod,
-  activeTab,
-  viewMode,
-}: ProjectCardProps) => {
+export const ProjectCard = ({ live, project, overallStats, activePeriod, activeTab, viewMode }: ProjectCardProps) => {
   const { t } = useTranslation('common')
   const [showInviteModal, setShowInviteModal] = useState(false)
   const isHostnameNavigationEnabled = useFeatureFlag(FeatureFlag['dashboard-hostname-cards'])
@@ -264,7 +257,7 @@ export const ProjectCard = ({
             }
           />
         )}
-        {project.isAnalyticsProject && <MiniCard labelTKey='dashboard.liveVisitors' total={live} />}
+        {project.isAnalyticsProject ? <MiniCard labelTKey='dashboard.liveVisitors' total={live} /> : null}
       </div>
       {project.role !== 'owner' && !project.isAccessConfirmed && (
         <Modal

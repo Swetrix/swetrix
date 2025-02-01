@@ -206,7 +206,20 @@ const getProjectClickhouse = async (id: string): Promise<Project> => {
 
 const getProjectsClickhouse = async (
   search: string = null,
+  sort: 'alpha_asc' | 'alpha_desc' | 'date_asc' | 'date_desc' = 'alpha_asc',
 ): Promise<Project[]> => {
+  let orderBy = 'ORDER BY created ASC'
+
+  if (sort === 'alpha_asc') {
+    orderBy = 'ORDER BY name ASC'
+  } else if (sort === 'alpha_desc') {
+    orderBy = 'ORDER BY name DESC'
+  } else if (sort === 'date_asc') {
+    orderBy = 'ORDER BY created ASC'
+  } else if (sort === 'date_desc') {
+    orderBy = 'ORDER BY created DESC'
+  }
+
   if (search) {
     const query = `
         SELECT
@@ -215,7 +228,7 @@ const getProjectsClickhouse = async (
         WHERE
           name ILIKE {search:String} OR
           id ILIKE {search:String}
-        ORDER BY created ASC
+        ${orderBy}
       `
 
     const { data } = await clickhouse
@@ -230,7 +243,7 @@ const getProjectsClickhouse = async (
     return data
   }
 
-  const query = 'SELECT * FROM project ORDER BY created ASC;'
+  const query = `SELECT * FROM project ${orderBy};`
 
   const { data } = await clickhouse
     .query({

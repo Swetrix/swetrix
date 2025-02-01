@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { useNavigate } from '@remix-run/react'
 
@@ -35,9 +35,17 @@ export const withAuthentication = <P extends PropsType>(WrappedComponent: any, a
     const navigate = useNavigate()
     const authenticated = loading ? !!accessToken : reduxAuthenticated
 
+    // We need to use ref to avoid 404 errors - https://github.com/remix-run/react-router/pull/12853
+    const navigating = useRef(false)
+
     useEffect(() => {
+      if (navigating.current) {
+        return
+      }
+
       if (shouldBeAuthenticated !== authenticated) {
         navigate(redirectPath)
+        navigating.current = true
       }
       // TODO: Investigate this later. https://github.com/remix-run/react-router/discussions/8465
       // eslint-disable-next-line react-hooks/exhaustive-deps
