@@ -6,48 +6,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-.loader.available {
-  opacity: 0;
-}
-
-.loader {
-  background-color: #f9fafb;
-  width: 100%;
-  height: 100%;
-  position: fixed;
-  opacity: 1;
-  pointer-events: none;
-  -webkit-transition: opacity cubic-bezier(0.4, 0, 0.2, 1) 436ms;
-  -moz-transition: opacity cubic-bezier(0.4, 0, 0.2, 1) 436ms;
-  transition: opacity cubic-bezier(0.4, 0, 0.2, 1) 436ms;
-  z-index: 9999;
-}
-
-.logo-frame {
-  display: -webkit-flex;
-  display: -moz-flex;
-  display: flex;
-  -webkit-flex-direction: column;
-  -moz-flex-direction: column;
-  flex-direction: column;
-  -webkit-justify-content: center;
-  -moz-justify-content: center;
-  justify-content: center;
-  -webkit-animation: fadein 436ms;
-  -moz-animation: fadein 436ms;
-  animation: fadein 436ms;
-  height: 98%;
-}
-
-.logo-frame-img {
-  font-size: 30px;
-  padding-left: 10px;
-  padding-right: 10px;
-  -webkit-align-self: center;
-  -moz-align-self: center;
-  align-self: center;
-}
-
 .loader-head {
   background-color: #c6dafc;
   height: 4px;
@@ -81,36 +39,6 @@ body {
   -webkit-animation: second 2s linear infinite;
   -moz-animation: second 2s linear infinite;
   animation: second 2s linear infinite;
-}
-
-@-webkit-keyframes fadein {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@-moz-keyframes fadein {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fadein {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
 }
 
 @keyframes first {
@@ -170,55 +98,12 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Temporary solution: this WILL override all the other colour - background colour transitions */
-/* Do not use animations for people with vestibular motion disorders */
-* {
-  transition-property: background-color, color, border-color, fill, stroke;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 200ms;
-}
-
-@media (prefers-reduced-motion) {
-  * {
-    transition: none !important;
-  }
-}
-
 body {
   margin: 0;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
-}
-
-.label {
-  text-overflow: clip;
-  white-space: nowrap;
-  overflow-x: auto;
-  scrollbar-width: thin;
-}
-
 .scrollbar-thin {
   scrollbar-width: thin;
-}
-
-.disabled {
-  opacity: 0.8;
-  cursor: not-allowed;
-}
-
-.hoverable {
-  transition: opacity 300ms;
-}
-
-.hoverable:hover {
-  opacity: 0.75;
-}
-
-/* adaptive panels buttons next and prev */
-.w-card-toggle-sm {
-  width: calc(100% - 2rem);
 }
 
 /* custom scrollbar */

@@ -74,7 +74,7 @@ const TrackingSnippet = ({ onClose, isOpened, pid }: TrackingSnippetProps) => {
               }}
             />
           </p>
-          <Textarea className='mt-2' value={snippet} rows={17} readOnly />
+          <Textarea className='mt-2 font-mono' value={snippet} rows={17} readOnly />
           <p className='mt-4'>
             <Trans
               t={t}

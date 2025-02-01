@@ -128,7 +128,7 @@ const PanelContainer = ({
 }: PanelContainerProps) => (
   <div
     className={cx(
-      'relative max-h-96 min-h-72 overflow-hidden rounded-lg bg-white px-4 pt-5 shadow-sm dark:border dark:border-slate-800/50 dark:bg-slate-800/25 sm:px-6 sm:pt-6',
+      'relative max-h-96 min-h-72 overflow-hidden rounded-lg bg-white px-4 pt-5 shadow-sm sm:px-6 sm:pt-6 dark:border dark:border-slate-800/50 dark:bg-slate-800/25',
       {
         'pb-12': !noSwitch,
         'pb-5': noSwitch,
@@ -136,7 +136,7 @@ const PanelContainer = ({
     )}
   >
     <div className='mb-2 flex items-center justify-between'>
-      <h3 className='flex items-center text-lg font-semibold leading-6 text-gray-900 dark:text-gray-50'>
+      <h3 className='flex items-center text-lg leading-6 font-semibold text-gray-900 dark:text-gray-50'>
         {icon && (
           <>
             {icon}
@@ -748,11 +748,11 @@ const CustomEvents = ({
               >
                 <td className='flex items-center py-1 text-left'>
                   {loadingEvents[ev] ? (
-                    <Spin className='ml-1 mr-2' />
+                    <Spin className='mr-2 ml-1' />
                   ) : activeEvents[ev] ? (
-                    <ChevronUpIcon className='h-5 w-auto pl-1 pr-2 text-gray-500 hover:opacity-80 dark:text-gray-300' />
+                    <ChevronUpIcon className='h-5 w-auto pr-2 pl-1 text-gray-500 hover:opacity-80 dark:text-gray-300' />
                   ) : (
-                    <ChevronDownIcon className='h-5 w-auto pl-1 pr-2 text-gray-500 hover:opacity-80 dark:text-gray-300' />
+                    <ChevronDownIcon className='h-5 w-auto pr-2 pl-1 text-gray-500 hover:opacity-80 dark:text-gray-300' />
                   )}
                   {ev}
                 </td>
@@ -924,10 +924,10 @@ const CustomEvents = ({
       </table>
       {/* for pagination in tabs */}
       {_size(keys) > ENTRIES_PER_CUSTOM_EVENTS_PANEL && (
-        <div className='w-card-toggle-sm absolute bottom-0 sm:!w-card-toggle'>
-          <div className='mb-2 flex select-none justify-between'>
+        <div className='absolute bottom-0 w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)]'>
+          <div className='mb-2 flex justify-between select-none'>
             <div>
-              <span className='text-xs font-light lowercase text-gray-500 dark:text-gray-200'>
+              <span className='text-xs font-light text-gray-500 lowercase dark:text-gray-200'>
                 {_size(keys)} {t('project.results')}
               </span>
               <span className='text-xs font-light text-gray-500 dark:text-gray-200'>
@@ -1194,11 +1194,11 @@ const PageProperties = ({
               >
                 <td className='flex items-center py-1 text-left'>
                   {loadingDetails[tag] ? (
-                    <Spin className='ml-1 mr-2' />
+                    <Spin className='mr-2 ml-1' />
                   ) : activeProperties[tag] ? (
-                    <ChevronUpIcon className='h-5 w-auto pl-1 pr-2 text-gray-500 hover:opacity-80 dark:text-gray-300' />
+                    <ChevronUpIcon className='h-5 w-auto pr-2 pl-1 text-gray-500 hover:opacity-80 dark:text-gray-300' />
                   ) : (
-                    <ChevronDownIcon className='h-5 w-auto pl-1 pr-2 text-gray-500 hover:opacity-80 dark:text-gray-300' />
+                    <ChevronDownIcon className='h-5 w-auto pr-2 pl-1 text-gray-500 hover:opacity-80 dark:text-gray-300' />
                   )}
                   {tag}
                 </td>
@@ -1321,10 +1321,10 @@ const PageProperties = ({
       </table>
       {/* for pagination in tabs */}
       {_size(keys) > ENTRIES_PER_CUSTOM_EVENTS_PANEL && (
-        <div className='w-card-toggle-sm absolute bottom-0 sm:!w-card-toggle'>
-          <div className='mb-2 flex select-none justify-between'>
+        <div className='absolute bottom-0 w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)]'>
+          <div className='mb-2 flex justify-between select-none'>
             <div>
-              <span className='text-xs font-light lowercase text-gray-500 dark:text-gray-200'>
+              <span className='text-xs font-light text-gray-500 lowercase dark:text-gray-200'>
                 {_size(keys)} {t('project.results')}
               </span>
               <span className='text-xs font-light text-gray-500 dark:text-gray-200'>
@@ -1509,7 +1509,7 @@ const Panel = ({
             <button
               type='button'
               onClick={() => setIsReversedUserFlow((prev) => !prev)}
-              className='shadow-xs mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 dark:border-none dark:border-gray-600 dark:bg-slate-700 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700 sm:ml-3 sm:mt-0 sm:w-auto sm:text-sm'
+              className='mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-xs hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:border-none dark:border-gray-600 dark:bg-slate-700 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700'
             >
               {t('project.reverse')}
             </button>
@@ -1636,9 +1636,12 @@ const Panel = ({
               >
                 {linkContent ? (
                   <a
-                    className={cx('label flex items-center text-blue-600 hover:underline dark:text-blue-500', {
-                      capitalize,
-                    })}
+                    className={cx(
+                      'scrollbar-thin flex items-center overflow-x-auto text-clip whitespace-nowrap text-blue-600 hover:underline dark:text-blue-500',
+                      {
+                        capitalize,
+                      },
+                    )}
                     href={rowData as string}
                     target='_blank'
                     rel='noopener noreferrer nofollow'
@@ -1647,17 +1650,21 @@ const Panel = ({
                     {rowData}
                     {!hideFilters && (
                       <FilterIcon
-                        className='min-h-4 ml-2 hidden size-4 min-w-4 text-gray-500 group-hover:block dark:text-gray-300'
+                        className='ml-2 hidden size-4 min-h-4 min-w-4 text-gray-500 group-hover:block dark:text-gray-300'
                         strokeWidth={1.5}
                       />
                     )}
                   </a>
                 ) : (
-                  <span className={cx('label flex items-center', { capitalize })}>
+                  <span
+                    className={cx('scrollbar-thin flex items-center overflow-x-auto text-clip whitespace-nowrap', {
+                      capitalize,
+                    })}
+                  >
                     {rowData}
                     {!hideFilters && (
                       <FilterIcon
-                        className='min-h-4 ml-2 hidden size-4 min-w-4 text-gray-500 group-hover:block dark:text-gray-300'
+                        className='ml-2 hidden size-4 min-h-4 min-w-4 text-gray-500 group-hover:block dark:text-gray-300'
                         strokeWidth={1.5}
                       />
                     )}
@@ -1681,10 +1688,10 @@ const Panel = ({
       )}
       {/* for pagination in tabs */}
       {_size(entries) > ENTRIES_PER_PANEL && (
-        <div className='w-card-toggle-sm absolute bottom-0 sm:!w-card-toggle'>
-          <div className='mb-2 flex select-none justify-between'>
+        <div className='absolute bottom-0 w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)]'>
+          <div className='mb-2 flex justify-between select-none'>
             <div>
-              <span className='text-xs font-light lowercase text-gray-500 dark:text-gray-200'>
+              <span className='text-xs font-light text-gray-500 lowercase dark:text-gray-200'>
                 {_size(entries)} {t('project.results')}
               </span>
               <span className='text-xs font-light text-gray-500 dark:text-gray-200'>
