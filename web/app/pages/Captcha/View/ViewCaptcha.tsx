@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo, memo, useRef } from 'react'
 import { toast } from 'sonner'
 import useSize from '~/hooks/useSize'
-import { useNavigate } from '@remix-run/react'
+import { useNavigate, useSearchParams } from '@remix-run/react'
 import { ClientOnly } from 'remix-utils/client-only'
 import bb from 'billboard.js'
 import { GlobeAltIcon } from '@heroicons/react/24/outline'
@@ -71,6 +71,7 @@ import TBPeriodSelector from './components/TBPeriodSelector'
 import UIActions from '~/lib/reducers/ui'
 import { DownloadIcon, RotateCw, SettingsIcon } from 'lucide-react'
 import { ViewProjectContext } from '~/pages/Project/View/ViewProject'
+import { parseFiltersFromUrl } from '~/pages/Project/View/utils/filters'
 
 const PageLoader = () => (
   <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
@@ -140,6 +141,8 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
   const [dateRange, setDateRange] = useState<Date[] | null>(
     localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null,
   )
+
+  const [searchParams] = useSearchParams()
 
   const timeFormat = useMemo(() => user.timeFormat || TimeFormat['12-hour'], [user])
   const [ref, size] = useSize() as any
@@ -290,12 +293,12 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
   }, [chartData, mainChart, activeChartMetrics])
 
   useEffect(() => {
-    if (!areFiltersParsed) return
+    if (!areFiltersParsed || authLoading || !project) return
 
     loadCaptcha()
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [areFiltersParsed, filters])
+  }, [areFiltersParsed, filters, authLoading, project, period, timeBucket])
 
   // this funtion is used for requesting the data from the API when the filter is changed
   const filterHandler = (column: any, filter: any, isExclusive: boolean = false) => {
@@ -436,6 +439,56 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
     } catch (reason) {
       console.error('[ERROR](useEffect) Setting filters failed:', reason)
     }
+
+    setAreFiltersParsed(true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    parseFiltersFromUrl('', searchParams, setFilters)
+
+    const parsePeriodFilters = () => {
+      try {
+        const intialPeriod = captchaProjectsViewPrefs
+          ? searchParams.get('period') || captchaProjectsViewPrefs[id]?.period
+          : searchParams.get('period') || '7d'
+
+        if (!_includes(validPeriods, intialPeriod)) {
+          return
+        }
+
+        if (intialPeriod === 'custom') {
+          // @ts-expect-error
+          const from = new Date(searchParams.get('from'))
+          // @ts-expect-error
+          const to = new Date(searchParams.get('to'))
+          if (from.getDate() && to.getDate()) {
+            onRangeDateChange([from, to], true)
+            setDateRange([from, to])
+          }
+          return
+        }
+
+        setPeriodPairs(captchaTbPeriodPairs(t, undefined, undefined, language))
+        setDateRange(null)
+        updatePeriod({
+          period: intialPeriod,
+        })
+      } catch {}
+    }
+
+    parsePeriodFilters()
+
+    try {
+      const initialTimeBucket = searchParams.get('timeBucket')
+
+      if (_includes(validTimeBacket, initialTimeBucket)) {
+        const newPeriodFull = _find(periodPairs, (el) => el.period === period)
+        if (_includes(newPeriodFull?.tbs, initialTimeBucket)) {
+          setTimebucket(initialTimeBucket || periodPairs[3].tbs[1])
+        }
+      }
+    } catch {}
 
     setAreFiltersParsed(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
