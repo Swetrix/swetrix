@@ -211,7 +211,7 @@ const OrganisationSettings = () => {
 
   if (isLoading || isLoading === null || !organisation) {
     return (
-      <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8'>
+      <div className='min-h-min-footer flex flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
         <Loader />
       </div>
     )
@@ -219,13 +219,13 @@ const OrganisationSettings = () => {
 
   if (error && !isLoading) {
     return (
-      <div className='min-h-page bg-gray-50 px-4 py-16 dark:bg-slate-900 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8'>
+      <div className='min-h-page bg-gray-50 px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8 dark:bg-slate-900'>
         <div className='mx-auto max-w-max'>
           <main className='sm:flex'>
             <XCircleIcon className='h-12 w-12 text-red-400' aria-hidden='true' />
             <div className='sm:ml-6'>
               <div className='max-w-prose sm:border-l sm:border-gray-200 sm:pl-6'>
-                <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50 sm:text-5xl'>
+                <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl dark:text-gray-50'>
                   {t('apiNotifications.somethingWentWrong')}
                 </h1>
                 <p className='mt-4 text-2xl font-medium tracking-tight text-gray-700 dark:text-gray-200'>
@@ -236,13 +236,13 @@ const OrganisationSettings = () => {
                 <button
                   type='button'
                   onClick={() => window.location.reload()}
-                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2'
+                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden'
                 >
                   {t('dashboard.reloadPage')}
                 </button>
                 <Link
                   to={routes.contact}
-                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700 dark:focus:ring-gray-50'
+                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-200 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700 dark:focus:ring-gray-50'
                 >
                   {t('notFoundPage.support')}
                 </Link>
@@ -255,7 +255,7 @@ const OrganisationSettings = () => {
   }
 
   return (
-    <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 pb-40 dark:bg-slate-900 sm:px-6 lg:px-8'>
+    <div className='min-h-min-footer flex flex-col bg-gray-50 px-4 py-6 pb-40 sm:px-6 lg:px-8 dark:bg-slate-900'>
       <form className='mx-auto w-full max-w-7xl' onSubmit={handleSubmit}>
         <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{title}</h2>
         <h3 className='mt-4 text-lg font-bold text-gray-900 dark:text-gray-50'>{t('profileSettings.general')}</h3>
@@ -296,7 +296,7 @@ const OrganisationSettings = () => {
             </div>
           ) : null}
         </div>
-        <hr className='mt-2 border-gray-200 dark:border-gray-600 sm:mt-5' />
+        <hr className='mt-2 border-gray-200 sm:mt-5 dark:border-gray-600' />
         <People organisation={organisation} reloadOrganisation={reloadOrganisation} />
         <Projects organisation={organisation} reloadOrganisation={reloadOrganisation} />
       </form>

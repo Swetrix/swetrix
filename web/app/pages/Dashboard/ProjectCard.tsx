@@ -48,12 +48,12 @@ const MiniCard = ({ labelTKey, total, percChange }: MiniCardProps) => {
   const statsDidGrowUp = percChange ? percChange >= 0 : false
 
   return (
-    <div>
+    <div className='font-mono'>
       <p className='text-sm text-gray-500 dark:text-gray-300'>{t(labelTKey)}</p>
 
       <div className='flex font-bold'>
         {total === null ? (
-          <Spin className='!ml-0 mt-2' />
+          <Spin className='mt-2 !ml-0' />
         ) : (
           <>
             <p className='text-xl text-gray-700 dark:text-gray-100'>{_isNumber(total) ? nFormatter(total) : total}</p>
@@ -66,12 +66,12 @@ const MiniCard = ({ labelTKey, total, percChange }: MiniCardProps) => {
               >
                 {statsDidGrowUp ? (
                   <>
-                    <ChevronUpIcon className='h-4 w-4 flex-shrink-0 self-center text-green-500' />
+                    <ChevronUpIcon className='h-4 w-4 shrink-0 self-center text-green-500' />
                     <span className='sr-only'>{t('dashboard.inc')}</span>
                   </>
                 ) : (
                   <>
-                    <ChevronDownIcon className='h-4 w-4 flex-shrink-0 self-center text-red-500' />
+                    <ChevronDownIcon className='h-4 w-4 shrink-0 self-center text-red-500' />
                     <span className='sr-only'>{t('dashboard.dec')}</span>
                   </>
                 )}
@@ -214,7 +214,7 @@ export const ProjectCard = ({ live, project, overallStats, activePeriod, activeT
     >
       <div className={cx('flex flex-col', viewMode === 'list' ? 'flex-1' : 'px-4 py-4')}>
         <div className={cx('flex items-center', viewMode === 'grid' ? 'justify-between' : 'justify-start gap-1')}>
-          <p className='truncate text-lg font-semibold text-slate-900 dark:text-gray-50'>{name}</p>
+          <p className='truncate font-mono text-lg font-semibold text-slate-900 dark:text-gray-50'>{name}</p>
 
           {role !== 'viewer' && (
             <Link onClick={(e) => e.stopPropagation()} to={_replace(routes.project_settings, ':id', id)}>
@@ -225,7 +225,7 @@ export const ProjectCard = ({ live, project, overallStats, activePeriod, activeT
             </Link>
           )}
         </div>
-        <div className='mt-1 flex flex-shrink-0 flex-wrap gap-2'>
+        <div className='mt-1 flex shrink-0 flex-wrap gap-2'>
           {badges.length > 0 ? (
             badges.map((badge) => <Badge key={badge.label} {...badge} />)
           ) : (
@@ -233,7 +233,7 @@ export const ProjectCard = ({ live, project, overallStats, activePeriod, activeT
           )}
         </div>
       </div>
-      <div className={cx('flex flex-shrink-0 gap-5', viewMode === 'list' ? 'ml-4' : 'mt-4 px-4 pb-4')}>
+      <div className={cx('flex shrink-0 gap-5', viewMode === 'list' ? 'ml-4' : 'mt-4 px-4 pb-4')}>
         {isHostnameNavigationEnabled ? (
           <MiniCard
             labelTKey={project.isCaptchaProject ? 'dashboard.captchaEvents' : 'dashboard.pageviews'}
@@ -302,18 +302,18 @@ export const ProjectCardSkeleton = ({ viewMode }: ProjectCardSkeletonProps) => {
         >
           <div className={cx('flex flex-col', viewMode === 'list' ? 'flex-1' : 'px-4 py-4')}>
             <div className={cx('flex items-center', viewMode === 'grid' ? 'justify-between' : 'justify-start gap-1')}>
-              <div className='h-6 w-3/4 max-w-80 rounded bg-gray-200 dark:bg-slate-700' />
+              <div className='h-6 w-3/4 max-w-80 rounded-sm bg-gray-200 dark:bg-slate-700' />
               <div className='size-6 rounded-[3px] bg-gray-200 dark:bg-slate-700' />
             </div>
-            <div className='mt-1 flex flex-shrink-0 flex-wrap gap-2'>
-              <div className='h-6 w-16 rounded bg-gray-200 dark:bg-slate-700' />
-              <div className='h-6 w-16 rounded bg-gray-200 dark:bg-slate-700' />
-              <div className='h-6 w-16 rounded bg-gray-200 dark:bg-slate-700' />
+            <div className='mt-1 flex shrink-0 flex-wrap gap-2'>
+              <div className='h-6 w-16 rounded-sm bg-gray-200 dark:bg-slate-700' />
+              <div className='h-6 w-16 rounded-sm bg-gray-200 dark:bg-slate-700' />
+              <div className='h-6 w-16 rounded-sm bg-gray-200 dark:bg-slate-700' />
             </div>
           </div>
-          <div className={cx('flex flex-shrink-0 gap-5', viewMode === 'list' ? 'ml-4' : 'mt-[1.375rem] px-4 pb-4')}>
-            <div className='h-10 w-24 rounded bg-gray-200 dark:bg-slate-700' />
-            <div className='h-10 w-24 rounded bg-gray-200 dark:bg-slate-700' />
+          <div className={cx('flex shrink-0 gap-5', viewMode === 'list' ? 'ml-4' : 'mt-[1.375rem] px-4 pb-4')}>
+            <div className='h-10 w-24 rounded-sm bg-gray-200 dark:bg-slate-700' />
+            <div className='h-10 w-24 rounded-sm bg-gray-200 dark:bg-slate-700' />
           </div>
         </div>
       ))}

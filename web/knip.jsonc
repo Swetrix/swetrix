@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "ignoreDependencies": ["eslint-plugin-jsx-a11y", "@typescript-eslint/typescript-estree", "@typescript-eslint/parser"],
+  "ignoreDependencies": ["eslint-plugin-jsx-a11y", "@typescript-eslint/typescript-estree", "@typescript-eslint/parser", "@tailwindcss/forms", "@tailwindcss/typography", "tailwindcss", "postcss"],
   "ignoreBinaries": ["flyctl"],
   "ignore": ["./ecosystem.config.js"]
 }

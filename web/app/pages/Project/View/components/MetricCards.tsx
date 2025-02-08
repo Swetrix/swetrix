@@ -72,12 +72,14 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   classes,
 }) => (
   <div className={cx('flex flex-col', classes?.container)}>
-    <div className={cx('whitespace-nowrap text-4xl font-bold text-slate-900 dark:text-gray-50', classes?.value)}>
+    <div
+      className={cx('font-mono text-4xl font-bold whitespace-nowrap text-slate-900 dark:text-gray-50', classes?.value)}
+    >
       {valueMapper ? valueMapper(value, 'main') : value}
     </div>
     <div
       className={cx(
-        'flex items-center whitespace-nowrap text-sm font-bold',
+        'flex items-center font-mono text-sm font-bold whitespace-nowrap',
         {
           'space-x-2': _isNumber(change),
         },
@@ -115,10 +117,10 @@ export const MetricCardSelect = ({ values, valueMapper, selectLabel, classes }: 
 
   return (
     <div className={cx('flex flex-col', classes?.container)}>
-      <div className={cx('whitespace-nowrap text-4xl font-bold text-slate-900 dark:text-gray-50', classes?.value)}>
+      <div className={cx('text-4xl font-bold whitespace-nowrap text-slate-900 dark:text-gray-50', classes?.value)}>
         {valueMapper ? valueMapper(values[selected], selected) : values[selected].value}
       </div>
-      <div className='relative flex items-center whitespace-nowrap text-sm font-bold'>
+      <div className='relative flex items-center text-sm font-bold whitespace-nowrap'>
         <OutsideClickHandler onOutsideClick={() => setShow(false)}>
           <span
             className={cx('cursor-pointer text-slate-900 dark:text-gray-50', classes?.label)}
@@ -128,7 +130,7 @@ export const MetricCardSelect = ({ values, valueMapper, selectLabel, classes }: 
             {show ? <ChevronUpIcon className='inline h-4 w-4' /> : <ChevronDownIcon className='inline h-4 w-4' />}
           </span>
           {show && (
-            <div className='top-15 absolute z-10 mt-2 max-h-[200px] min-w-[250px] overflow-auto rounded-md border border-gray-200 bg-white text-gray-900 shadow-lg dark:border-slate-700/50 dark:bg-slate-900'>
+            <div className='absolute top-15 z-10 mt-2 max-h-[200px] min-w-[250px] overflow-auto rounded-md border border-black/10 bg-white text-gray-900 dark:border-slate-700/50 dark:bg-slate-900'>
               <div className='flex w-full flex-col p-2'>
                 <p className='px-1 text-sm font-semibold text-gray-900 dark:text-gray-50'>{selectLabel}</p>
                 {_map(values, ({ label }, index) => (
@@ -142,7 +144,7 @@ export const MetricCardSelect = ({ values, valueMapper, selectLabel, classes }: 
                 ))}
               </div>
               <XMarkIcon
-                className='absolute right-2 top-2 h-5 w-5 cursor-pointer text-gray-900 dark:text-gray-50'
+                className='absolute top-2 right-2 h-5 w-5 cursor-pointer text-gray-900 dark:text-gray-50'
                 onClick={() => setShow(!show)}
               />
             </div>

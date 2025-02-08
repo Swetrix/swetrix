@@ -74,7 +74,7 @@ const SelectAProject = ({ onSelect }: SelectAProjectProps) => {
           </div>
           <input
             type='text'
-            className='block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 dark:bg-slate-800 dark:text-white dark:ring-slate-600 dark:focus:ring-slate-400 sm:text-sm sm:leading-6'
+            className='block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-gray-300 ring-inset placeholder:text-gray-400 focus:ring-2 focus:ring-indigo-600 focus:ring-inset sm:text-sm sm:leading-6 dark:bg-slate-800 dark:text-white dark:ring-slate-600 dark:focus:ring-slate-400'
             placeholder={t('project.search')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -144,12 +144,12 @@ const ProjectList = ({ projects, onRemove }: ProjectListProps) => {
 
   return projects.map((project) => (
     <tr key={project.id} className='dark:bg-slate-800'>
-      <td className='whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6'>
+      <td className='py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-6 dark:text-white'>
         <Link to={_replace(routes.project, ':id', project.id)} className='hover:underline'>
           {project.name}
         </Link>
       </td>
-      <td className='relative whitespace-nowrap py-4 pr-2 text-sm font-medium'>
+      <td className='relative py-4 pr-2 text-sm font-medium whitespace-nowrap'>
         <div className='flex items-center justify-end'>
           {project.admin.email !== user.email ? (
             <Tooltip
@@ -241,7 +241,7 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
   }
 
   return (
-    <div className='mb-6 mt-6'>
+    <div className='mt-6 mb-6'>
       <div className='mb-3 flex items-center justify-between'>
         <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
           {t('organisations.projects')}
@@ -289,7 +289,7 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
               setCurrentPage(1)
             }}
             value={search}
-            className='block h-8 w-full rounded-lg border-none bg-gray-50 p-2.5 text-sm text-gray-900 ring-1 ring-gray-300 focus:ring-gray-500 dark:bg-slate-900 dark:text-white dark:placeholder-gray-400 dark:ring-slate-600 dark:focus:ring-slate-200 sm:pl-10'
+            className='block h-8 w-full rounded-lg border-none bg-gray-50 p-2.5 text-sm text-gray-900 ring-1 ring-gray-300 focus:ring-gray-500 sm:pl-10 dark:bg-slate-900 dark:text-white dark:placeholder-gray-400 dark:ring-slate-600 dark:focus:ring-slate-200'
             placeholder={t('project.search')}
           />
         </div>
@@ -301,13 +301,13 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
           <div className='mt-3 flex flex-col'>
             <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8'>
               <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
-                <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
+                <div className='overflow-hidden ring-1 ring-black/10 md:rounded-lg'>
                   <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
                     <thead>
                       <tr className='dark:bg-slate-800'>
                         <th
                           scope='col'
-                          className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6'
+                          className='py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'
                         >
                           {t('common.name')}
                         </th>
@@ -352,7 +352,7 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
         customButtons={
           <button
             type='button'
-            className='inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm'
+            className='inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm'
             onClick={onAddProject}
             disabled={!selectedProject || isActionLoading}
           >

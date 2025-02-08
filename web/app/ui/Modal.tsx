@@ -56,7 +56,7 @@ const Modal = ({
       onClose={onClose}
       static
     >
-      <div className='min-h-screen flex items-end justify-center px-4 pb-20 pt-4 text-center sm:block sm:p-0'>
+      <div className='flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0'>
         <TransitionChild
           as={Fragment}
           enter='ease-out duration-300'
@@ -66,7 +66,7 @@ const Modal = ({
           leaveFrom='opacity-100'
           leaveTo='opacity-0'
         >
-          <div className='fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-opacity-55' />
+          <div className='fixed inset-0 bg-gray-500/75 transition-opacity dark:bg-gray-500/55' />
         </TransitionChild>
 
         {/* This element is to trick the browser into centering the modal contents. */}
@@ -84,7 +84,7 @@ const Modal = ({
         >
           <DialogPanel
             className={cx(
-              'inline-block transform rounded-lg bg-white px-4 pb-4 pt-5 text-left align-bottom shadow-xl transition-all dark:bg-slate-900 sm:my-8 sm:px-5 sm:py-4 sm:align-middle',
+              'inline-block transform rounded-lg bg-white px-4 pt-5 pb-4 text-left align-bottom transition-all sm:my-8 sm:px-5 sm:py-4 sm:align-middle dark:bg-slate-900',
               {
                 'sm:w-full sm:max-w-lg': size === 'regular',
                 'w-full max-w-5xl': size === 'large',
@@ -95,27 +95,27 @@ const Modal = ({
           >
             <div className='sm:flex sm:items-start'>
               {type === 'success' && (
-                <div className='mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-green-100 sm:mr-3 sm:h-10 sm:w-10'>
+                <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-100 sm:mr-3 sm:h-10 sm:w-10'>
                   <CheckIcon className='h-6 w-6 text-green-600' aria-hidden='true' />
                 </div>
               )}
               {type === 'error' && (
-                <div className='mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mr-3 sm:h-10 sm:w-10'>
+                <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mr-3 sm:h-10 sm:w-10'>
                   <ExclamationTriangleIcon className='h-6 w-6 text-red-600' aria-hidden='true' />
                 </div>
               )}
               {type === 'info' && (
-                <div className='mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 text-center sm:mr-3 sm:h-10 sm:w-10'>
+                <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-100 text-center sm:mr-3 sm:h-10 sm:w-10'>
                   <InformationCircleIcon className='h-6 w-6 text-blue-600' aria-hidden='true' />
                 </div>
               )}
               {type === 'warning' && (
-                <div className='mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-orange-100 sm:mr-3 sm:h-10 sm:w-10'>
+                <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange-100 sm:mr-3 sm:h-10 sm:w-10'>
                   <ExclamationTriangleIcon className='h-6 w-6 text-amber-600' aria-hidden='true' />
                 </div>
               )}
               {type === 'confirmed' && (
-                <div className='mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-green-100 sm:mr-3 sm:h-10 sm:w-10'>
+                <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-100 sm:mr-3 sm:h-10 sm:w-10'>
                   <UserGroupIcon className='h-6 w-6 text-green-600' aria-hidden='true' />
                 </div>
               )}
@@ -123,7 +123,7 @@ const Modal = ({
                 {title && (
                   <DialogTitle
                     as='h3'
-                    className={cx('flex items-center text-lg font-medium leading-6 text-gray-900 dark:text-gray-50', {
+                    className={cx('flex items-center text-lg leading-6 font-medium text-gray-900 dark:text-gray-50', {
                       'justify-between': !closeText,
                       'justify-center sm:justify-start': closeText,
                     })}
@@ -144,16 +144,16 @@ const Modal = ({
                     )}
                   </DialogTitle>
                 )}
-                <div className='mt-2 whitespace-pre-line text-sm text-gray-600 dark:text-gray-200'>{message}</div>
+                <div className='mt-2 text-sm whitespace-pre-line text-gray-600 dark:text-gray-200'>{message}</div>
               </div>
             </div>
-            <div className='px-4 py-3 sm:flex sm:flex-row-reverse sm:px-0 sm:pb-0'>
+            <div className='px-4 py-3 font-mono sm:flex sm:flex-row-reverse sm:px-0 sm:pb-0'>
               {customButtons}
               {submitText && (
                 <button
                   type='button'
                   className={cx(
-                    'inline-flex w-full justify-center rounded-md px-4 py-2 text-base font-medium text-white shadow-sm sm:ml-3 sm:w-auto sm:text-sm',
+                    'inline-flex w-full justify-center rounded-md px-4 py-2 text-base font-medium text-white sm:ml-3 sm:w-auto sm:text-sm',
                     {
                       'bg-indigo-600': submitType === 'regular',
                       'bg-red-600': submitType === 'danger',
@@ -171,7 +171,7 @@ const Modal = ({
               {closeText && (
                 <button
                   type='button'
-                  className='mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-none dark:border-gray-600 dark:bg-slate-800 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700 sm:ml-3 sm:mt-0 sm:w-auto sm:text-sm'
+                  className='mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:border-none dark:border-gray-600 dark:bg-slate-800 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700'
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()

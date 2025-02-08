@@ -337,7 +337,7 @@ const getSettings = () => {
             {{
               <li class='flex justify-between'>
                 <div class='flex justify-items-start'>
-                  <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
+                  <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:{=COLOR}></div>
                   <span>{=NAME}</span>
                 </div>
                 <span class='pl-4'>{=VALUE} US\$</span>
@@ -389,7 +389,7 @@ const OpenStartup = () => {
 
   return (
     <div className='min-h-page bg-gray-50 dark:bg-slate-900'>
-      <div className='mx-auto w-11/12 whitespace-pre-line px-4 pb-16 pt-12 sm:px-6 md:w-4/5 lg:px-8'>
+      <div className='mx-auto w-11/12 px-4 pt-12 pb-16 whitespace-pre-line sm:px-6 md:w-4/5 lg:px-8'>
         <h1 className='text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>{t('titles.open')}</h1>
 
         <p className='mt-2 text-lg tracking-tight text-gray-900 dark:text-gray-50'>{t('open.desc')}</p>

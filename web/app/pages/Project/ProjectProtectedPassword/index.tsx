@@ -117,7 +117,7 @@ const ProjectProtectedPassword = ({ ssrTheme, embedded, isAuth }: ProjectProtect
   return (
     <>
       {!embedded && <Header ssrTheme={ssrTheme} authenticated={isAuth} />}
-      <div className='flex min-h-page flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8'>
+      <div className='min-h-page flex flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
         <form className='mx-auto w-full max-w-7xl' onSubmit={handleSubmit}>
           <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{t('titles.passwordProtected')}</h2>
           <Input

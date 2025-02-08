@@ -116,7 +116,7 @@ const InteractiveMap = ({ data, onClickCountry, total }: InteractiveMapProps) =>
       <div>
         {hoverShow && cursorPosition && (
           <div
-            className='dark:shadow-gray-850 dark:border-gray-850 absolute z-30 rounded-md border bg-gray-100 p-1 text-xs dark:bg-slate-900 dark:text-gray-200'
+            className='absolute z-30 rounded-md border bg-gray-100 p-1 text-xs dark:bg-slate-900 dark:text-gray-200'
             style={{
               top: cursorPosition.pageY + 20,
               left: cursorPosition.pageX - 20,

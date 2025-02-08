@@ -231,7 +231,7 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
       return (
         <>
           <Button
-            className='mb-2 mt-2'
+            className='mt-2 mb-2'
             onClick={() => {
               setIntegrationInput(null)
               setIntegrationConfigurating(null)
@@ -287,7 +287,7 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
       return (
         <>
           <Button
-            className='mb-2 mt-2'
+            className='mt-2 mb-2'
             onClick={() => {
               setIntegrationInput(null)
               setIntegrationConfigurating(null)
@@ -340,7 +340,7 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
       return (
         <>
           <Button
-            className='mb-2 mt-2'
+            className='mt-2 mb-2'
             onClick={() => {
               setIntegrationInput(null)
               setIntegrationConfigurating(null)
@@ -395,7 +395,7 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
   return (
     <>
       <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>{t('profileSettings.integrationsDesc')}</p>
-      <div className='mt-2 overflow-hidden bg-white shadow dark:bg-slate-800 sm:rounded-md'>
+      <div className='mt-2 overflow-hidden bg-white font-mono ring-1 ring-black/10 sm:rounded-md dark:bg-slate-800'>
         <ul className='divide-y divide-gray-200 dark:divide-slate-700'>
           {_map(available, ({ name, key, description, Icon }) => {
             const { connected, confirmed, id } = getIntegrationStatus(key)
@@ -404,7 +404,7 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
             return (
               <li key={key} className='items-center px-1 py-4 sm:flex sm:px-6'>
                 <div className='flex min-w-0 flex-1 items-center'>
-                  <div className='hidden flex-shrink-0 sm:block'>
+                  <div className='hidden shrink-0 sm:block'>
                     <Icon className='size-12 max-h-12 max-w-12' />
                   </div>
                   <div className='min-w-0 flex-1 px-2 sm:px-4 md:grid md:grid-cols-2 md:gap-4'>
@@ -423,13 +423,13 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
                       )}
                       <p className='mt-2 flex items-center text-sm text-gray-500 dark:text-gray-100'>
                         {status === 'notConnected' && (
-                          <XCircleIcon className='mr-1.5 h-5 w-5 flex-shrink-0 text-red-400' aria-hidden='true' />
+                          <XCircleIcon className='mr-1.5 h-5 w-5 shrink-0 text-red-400' aria-hidden='true' />
                         )}
                         {status === 'pending' && (
-                          <ClockIcon className='mr-1.5 h-5 w-5 flex-shrink-0 text-yellow-400' aria-hidden='true' />
+                          <ClockIcon className='mr-1.5 h-5 w-5 shrink-0 text-yellow-400' aria-hidden='true' />
                         )}
                         {status === 'connected' && (
-                          <CheckCircleIcon className='mr-1.5 h-5 w-5 flex-shrink-0 text-green-400' aria-hidden='true' />
+                          <CheckCircleIcon className='mr-1.5 h-5 w-5 shrink-0 text-green-400' aria-hidden='true' />
                         )}
                         {t(`common.${status}`)}
                       </p>

@@ -1,6 +1,13 @@
 import React, { Fragment, memo, useState } from 'react'
 import cx from 'clsx'
-import { Combobox as HeadlessCombobox, Transition } from '@headlessui/react'
+import {
+  Combobox as HeadlessCombobox,
+  Transition,
+  ComboboxInput,
+  ComboboxButton,
+  ComboboxOptions,
+  ComboboxOption,
+} from '@headlessui/react'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/solid'
 import { useTranslation } from 'react-i18next'
 import _isEmpty from 'lodash/isEmpty'
@@ -45,11 +52,11 @@ const Combobox = ({
 
   return (
     <HeadlessCombobox disabled={disabled} value={title} onChange={onSelect}>
-      <div className={cx('relative mt-1', className)}>
+      <div className={cx('relative mt-1 font-mono', className)}>
         <div className='relative w-full cursor-default rounded-lg'>
-          <HeadlessCombobox.Input
+          <ComboboxInput
             className={cx(
-              'relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 sm:text-sm',
+              'relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-left focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden sm:text-sm dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50',
               buttonClassName,
             )}
             // @ts-ignore
@@ -57,9 +64,9 @@ const Combobox = ({
             onChange={(event) => setQuery(event.target.value)}
             placeholder={placeholder}
           />
-          <HeadlessCombobox.Button className='absolute inset-y-0 right-0 flex items-center pr-2'>
+          <ComboboxButton className='absolute inset-y-0 right-0 flex items-center pr-2'>
             <ChevronUpDownIcon className='h-5 w-5 text-gray-400' aria-hidden='true' />
-          </HeadlessCombobox.Button>
+          </ComboboxButton>
         </div>
         <Transition
           as={Fragment}
@@ -68,17 +75,17 @@ const Combobox = ({
           leaveTo='opacity-0'
           afterLeave={() => setQuery('')}
         >
-          <HeadlessCombobox.Options className='absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-slate-800 sm:text-sm'>
+          <ComboboxOptions className='absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base ring-1 ring-black/10 focus:outline-hidden sm:text-sm dark:bg-slate-800'>
             {_isEmpty(filteredItems) && !_isEmpty(query) ? (
-              <div className='relative cursor-default select-none px-4 py-2 text-gray-900 dark:text-white'>
+              <div className='relative cursor-default px-4 py-2 text-gray-900 select-none dark:text-white'>
                 {t('common.nothingFound')}
               </div>
             ) : (
               _map(filteredItems, (item, index) => (
-                <HeadlessCombobox.Option
+                <ComboboxOption
                   key={keyExtractor ? keyExtractor(item, index) : item}
                   className={({ active }) =>
-                    cx('relative cursor-default select-none py-2 pl-8 pr-4 dark:text-white', {
+                    cx('relative cursor-default py-2 pr-4 pl-8 select-none dark:text-white', {
                       'bg-indigo-600 text-white': active,
                       'text-gray-900': !active,
                     })
@@ -102,10 +109,10 @@ const Combobox = ({
                       ) : null}
                     </>
                   )}
-                </HeadlessCombobox.Option>
+                </ComboboxOption>
               ))
             )}
-          </HeadlessCombobox.Options>
+          </ComboboxOptions>
         </Transition>
       </div>
     </HeadlessCombobox>

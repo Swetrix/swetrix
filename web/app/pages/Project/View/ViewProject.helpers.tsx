@@ -629,7 +629,7 @@ const getSettings = (
         }
 
         if (_isEmpty(compareChart)) {
-          return `<ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
+          return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
           <li class='font-semibold'>${
             timeFormat === TimeFormat['24-hour']
               ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
@@ -641,7 +641,7 @@ const getSettings = (
               return `
               <li class='flex justify-between'>
                 <div class='flex justify-items-start'>
-                  <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                  <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
                   <span>${el.name}</span>
                 </div>
                 <span class='pl-4'>${getStringFromTime(getTimeFromSeconds(el.value))}</span>
@@ -656,7 +656,7 @@ const getSettings = (
             return `
             <li class='flex justify-between'>
               <div class='flex justify-items-start'>
-                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
                 <span>${el.name}</span>
               </div>
               <span class='pl-4'>${el.value}</span>
@@ -666,7 +666,7 @@ const getSettings = (
         }
 
         return `
-        <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
+        <ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
           ${_map(item, (el: { id: string; index: number; name: string; value: string; x: Date }) => {
             const { id, index, name, value, x } = el
 
@@ -696,7 +696,7 @@ const getSettings = (
               return `
               <div class='flex justify-between'>
               <div class='flex justify-items-start'>
-                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(id)}></div>
+                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(id)}></div>
                 <span>${name}</span>
               </div>
             </div>
@@ -721,7 +721,7 @@ const getSettings = (
             return `
             <div class='flex justify-between'>
               <div class='flex justify-items-start'>
-                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(id)}></div>
+                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(id)}></div>
                 <span>${name}</span>
               </div>
             </div>
@@ -834,7 +834,7 @@ const getSettingsSession = (
     },
     tooltip: {
       contents: (item: any, _: any, __: any, color: any) => {
-        return `<ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
           <li class='font-semibold'>${
             timeFormat === TimeFormat['24-hour']
               ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
@@ -846,7 +846,7 @@ const getSettingsSession = (
               return `
               <li class='flex justify-between'>
                 <div class='flex justify-items-start'>
-                  <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                  <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
                   <span>${el.name}</span>
                 </div>
                 <span class='pl-4'>${getStringFromTime(getTimeFromSeconds(el.value))}</span>
@@ -861,7 +861,7 @@ const getSettingsSession = (
             return `
             <li class='flex justify-between'>
               <div class='flex justify-items-start'>
-                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
                 <span>${el.name}</span>
               </div>
               <span class='pl-4'>${el.value}</span>
@@ -974,7 +974,7 @@ const getSettingsError = (
     },
     tooltip: {
       contents: (item: any, _: any, __: any, color: any) => {
-        return `<ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
           <li class='font-semibold'>${
             timeFormat === TimeFormat['24-hour']
               ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
@@ -986,7 +986,7 @@ const getSettingsError = (
             (el: { id: string; index: number; name: string; value: string; x: Date }) => `
             <li class='flex justify-between'>
               <div class='flex justify-items-start'>
-                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
                 <span>${el.name}</span>
               </div>
               <span class='pl-4'>${el.value}</span>
@@ -1101,7 +1101,7 @@ const getSettingsFunnels = (funnel: AnalyticsFunnel[], totalPageviews: number, t
         const events = `
           <tr class='tracking-tight'>
             <td class='pr-7'>
-              <div class='w-3 h-3 rounded-sm mr-1 float-left mt-1.5' style=background-color:${color('events')}></div>
+              <div class='w-3 h-3 rounded-xs mr-1 float-left mt-1.5' style=background-color:${color('events')}></div>
               <span class='font-semibold'>
                 ${_startsWith(step.value, '/') ? t('project.visitors') : t('project.events')}
               </span>
@@ -1118,7 +1118,7 @@ const getSettingsFunnels = (funnel: AnalyticsFunnel[], totalPageviews: number, t
         const dropoff = `
           <tr class='tracking-tight'>
             <td class='pr-7'>
-              <div class='w-3 h-3 rounded-sm mr-1 float-left mt-1.5' style="background-color:${color(
+              <div class='w-3 h-3 rounded-xs mr-1 float-left mt-1.5' style="background-color:${color(
                 'dropoff',
               )}"}></div>
               <span class='font-semibold'>
@@ -1137,7 +1137,7 @@ const getSettingsFunnels = (funnel: AnalyticsFunnel[], totalPageviews: number, t
         `
 
         return `
-          <div class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
+          <div class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
             ${title}
             <hr class='border-gray-200 dark:border-gray-600' />
             <table class='table-fixed'>
@@ -1241,7 +1241,7 @@ const getSettingsUptime = (
     },
     tooltip: {
       contents: (item: any, _: any, __: any, color: any) => {
-        return `<ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
           <li class='font-semibold'>${
             timeFormat === TimeFormat['24-hour']
               ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
@@ -1253,7 +1253,7 @@ const getSettingsUptime = (
             (el: { id: string; index: number; name: string; value: string; x: Date }) => `
             <li class='flex justify-between'>
               <div class='flex justify-items-start'>
-                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
                 <span>${el.name}</span>
               </div>
               <span class='pl-4'>${getStringFromTime(getTimeFromSeconds(el.value), true)}</span>
@@ -1434,7 +1434,7 @@ const getSettingsPerf = (
     tooltip: {
       contents: (item: any, _: any, __: any, color: any) => {
         if (_isEmpty(compareChart)) {
-          return `<ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
+          return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
         <li class='font-semibold'>${
           timeFormat === TimeFormat['24-hour']
             ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
@@ -1445,7 +1445,7 @@ const getSettingsPerf = (
           return `
           <li class='flex justify-between'>
             <div class='flex justify-items-start'>
-              <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+              <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
               <span>${el.name}</span>
             </div>
             <span class='pl-4'>${getStringFromTime(getTimeFromSeconds(el.value), true)}</span>
@@ -1455,7 +1455,7 @@ const getSettingsPerf = (
         }
 
         return `
-      <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
+      <ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
         ${_map(item, (el: { id: string; index: number; name: string; value: string; x: Date }) => {
           const { id, index, name, value, x } = el
 
@@ -1476,7 +1476,7 @@ const getSettingsPerf = (
           return `
           <div class='flex justify-between'>
             <div class='flex justify-items-start'>
-              <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(id)}></div>
+              <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(id)}></div>
               <span>${name}</span>
             </div>
           </div>

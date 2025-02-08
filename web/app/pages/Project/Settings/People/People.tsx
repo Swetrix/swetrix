@@ -27,7 +27,7 @@ const NoPeople = () => {
   const { t } = useTranslation('common')
 
   return (
-    <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
+    <div className='flex flex-col py-6 font-mono sm:px-6 lg:px-8'>
       <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>
         <h2 className='mb-8 px-4 text-center text-xl leading-snug'>{t('project.settings.noPeople')}</h2>
       </div>
@@ -63,22 +63,22 @@ const UsersList = ({ data, onRemove, language, authedUserEmail }: UsersListProps
 
   return (
     <tr className='dark:bg-slate-800'>
-      <td className='whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6'>
+      <td className='py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-6 dark:text-white'>
         {user.email}
       </td>
-      <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-white'>
+      <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-white'>
         {language === 'en'
           ? dayjs(created).locale(language).format('MMMM D, YYYY')
           : dayjs(created).locale(language).format('D MMMM, YYYY')}
       </td>
-      <td className='relative whitespace-nowrap py-4 pr-2 text-right text-sm font-medium'>
+      <td className='relative py-4 pr-2 text-right text-sm font-medium whitespace-nowrap'>
         {confirmed ? (
           <div>
             <button
               onClick={() => setOpen(!open)}
               type='button'
               disabled={user.email === authedUserEmail}
-              className='inline-flex items-center rounded-full border border-gray-200 bg-white py-0.5 pl-2 pr-1 text-sm font-medium leading-5 text-gray-700 shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-80 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-gray-600'
+              className='inline-flex items-center rounded-full border border-gray-200 bg-white py-0.5 pr-1 pl-2 text-sm leading-5 font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-80 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-gray-600'
             >
               {t(`project.settings.roles.${role}.name`)}
               <ChevronDownIcon style={{ transform: open ? 'rotate(180deg)' : '' }} className='ml-0.5 h-4 w-4 pt-px' />
@@ -86,7 +86,7 @@ const UsersList = ({ data, onRemove, language, authedUserEmail }: UsersListProps
             {open && (
               <ul
                 ref={openRef}
-                className='absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 rounded-md bg-white text-left shadow-lg focus:outline-none dark:divide-gray-700 dark:bg-slate-900'
+                className='absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 rounded-md bg-white text-left focus:outline-hidden dark:divide-gray-700 dark:bg-slate-900'
               >
                 {_map(roles, (itRole, index) => (
                   <li
@@ -262,7 +262,7 @@ const People = ({ project }: PeopleProps) => {
   }
 
   return (
-    <div className='mb-6 mt-6'>
+    <div className='mt-6 mb-6'>
       <div className='mb-3 flex items-center justify-between'>
         <div>
           <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
@@ -281,16 +281,16 @@ const People = ({ project }: PeopleProps) => {
         {_isEmpty(share) ? (
           <NoPeople />
         ) : (
-          <div className='mt-3 flex flex-col'>
+          <div className='mt-3 flex flex-col font-mono'>
             <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 md:overflow-x-visible lg:-mx-8'>
               <div className='inline-block min-w-full py-2 md:px-6 lg:px-8'>
-                <div className='shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
+                <div className='ring-1 ring-black/10 md:rounded-lg'>
                   <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
                     <thead>
                       <tr className='dark:bg-slate-800'>
                         <th
                           scope='col'
-                          className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6'
+                          className='py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'
                         >
                           {t('auth.common.email')}
                         </th>
@@ -347,7 +347,7 @@ const People = ({ project }: PeopleProps) => {
         customButtons={
           <button
             type='button'
-            className='inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm'
+            className='inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm'
             onClick={handleSubmit}
           >
             {t('common.invite')}
@@ -425,7 +425,7 @@ const People = ({ project }: PeopleProps) => {
                 {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
                 <label
                   className={cx(
-                    'relative flex cursor-pointer rounded-bl-md rounded-br-md border border-gray-200 p-4 dark:border-gray-500',
+                    'relative flex cursor-pointer rounded-br-md rounded-bl-md border border-gray-200 p-4 dark:border-gray-500',
                     {
                       'z-10 border-indigo-200 bg-indigo-50 dark:border-indigo-800/40 dark:bg-indigo-600/40':
                         form.role === 'viewer',

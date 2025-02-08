@@ -1,19 +1,14 @@
 import type { SitemapFunction } from 'remix-sitemap'
-import type { LoaderFunction, LinksFunction, MetaFunction } from '@remix-run/node'
+import type { LoaderFunction, MetaFunction } from '@remix-run/node'
 import { redirect, data } from '@remix-run/node'
 import _map from 'lodash/map'
 import _last from 'lodash/last'
 import _join from 'lodash/join'
 import _isString from 'lodash/isString'
-import singlePostCss from '~/css/mdfile.css'
 import { getPost, getSlugFromFilename, getDateFromFilename } from '~/utils/getPosts'
 import { getSitemap } from '~/api'
 import { isSelfhosted, TITLE_SUFFIX, getOgImageUrl, isDisableMarketingPages } from '~/lib/constants'
 import Post from '~/pages/Blog/Post'
-
-export const links: LinksFunction = () => {
-  return [{ rel: 'stylesheet', href: singlePostCss }]
-}
 
 export const meta: MetaFunction = (loaderData: any) => {
   const ogImageUrl = getOgImageUrl(loaderData?.data?.title)

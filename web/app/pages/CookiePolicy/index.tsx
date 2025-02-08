@@ -13,7 +13,7 @@ const typesOfCookies = [
 const CookiePolicy = () => {
   return (
     <div className='bg-gray-50 dark:bg-slate-900'>
-      <div className='mx-auto w-11/12 px-4 pb-16 pt-12 sm:px-6 md:w-4/5 lg:px-8'>
+      <div className='mx-auto w-11/12 px-4 pt-12 pb-16 sm:px-6 md:w-4/5 lg:px-8'>
         <h1 className='text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>Cookie Policy</h1>
         <p className='mt-4 text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           Part of the provision of our service and this website relies on the collection of cookies. Depending on their
@@ -36,13 +36,13 @@ const CookiePolicy = () => {
           <div className='mt-2 flex flex-col'>
             <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8'>
               <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
-                <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
+                <div className='overflow-hidden ring-1 ring-black/5 md:rounded-lg'>
                   <table className='200 w-full min-w-full divide-y divide-gray-300 dark:divide-gray-500'>
                     <thead className='bg-gray-50 dark:bg-slate-800'>
                       <tr>
                         <th
                           scope='col'
-                          className='w-1/5 py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-50 sm:pl-6'
+                          className='w-1/5 py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-gray-50'
                         >
                           Cookie
                         </th>
@@ -57,8 +57,8 @@ const CookiePolicy = () => {
                     <tbody className='divide-y divide-gray-200 bg-white dark:divide-gray-600 dark:bg-slate-800'>
                       {_map(typesOfCookies, ({ cookie, description }) => (
                         <tr key={cookie}>
-                          <td className='w-1/5 px-3 py-4 text-sm text-gray-900 dark:text-gray-50 sm:pl-6'>{cookie}</td>
-                          <td className='w-4/5 break-words px-3 py-4 text-sm text-gray-900 dark:text-gray-50'>
+                          <td className='w-1/5 px-3 py-4 text-sm text-gray-900 sm:pl-6 dark:text-gray-50'>{cookie}</td>
+                          <td className='w-4/5 px-3 py-4 text-sm break-words text-gray-900 dark:text-gray-50'>
                             {description}
                           </td>
                         </tr>
@@ -80,7 +80,7 @@ const CookiePolicy = () => {
           disable our cookies, you may experience some inconvenience when using our website.
         </p>
 
-        <hr className='mb-4 mt-10 border-gray-200 dark:border-gray-600' />
+        <hr className='mt-10 mb-4 border-gray-200 dark:border-gray-600' />
         <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           <i>Last updated: February 4, 2023.</i>
         </p>

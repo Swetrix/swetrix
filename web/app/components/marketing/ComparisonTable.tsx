@@ -97,11 +97,11 @@ export const ComparisonTable = ({ className }: ComparisonTableProps) => {
   const { t } = useTranslation('common')
 
   return (
-    <div className={cx('py-20 text-lg tracking-tight text-gray-50', className)}>
+    <div className={cx('py-20 font-mono text-lg tracking-tight text-gray-50', className)}>
       <div className='mt-2 flex flex-col'>
         <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8'>
           <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
-            <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
+            <div className='overflow-hidden ring-1 ring-black/5 md:rounded-lg'>
               <table className='w-full min-w-full divide-y divide-slate-500'>
                 <thead className='bg-gray-100 dark:bg-slate-800'>
                   <tr>
@@ -110,7 +110,7 @@ export const ComparisonTable = ({ className }: ComparisonTableProps) => {
                       <th
                         scope='col'
                         key={key}
-                        className='w-1/6 py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-slate-800 dark:text-gray-50 sm:pl-6'
+                        className='w-1/6 py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-slate-800 sm:pl-6 dark:text-gray-50'
                       >
                         {item}
                       </th>
@@ -120,18 +120,18 @@ export const ComparisonTable = ({ className }: ComparisonTableProps) => {
                 <tbody className='divide-y divide-slate-300 bg-gray-50 dark:divide-slate-700 dark:bg-slate-800'>
                   {_map(COMPETITOR_FEATURE_TABLE.Swetrix, (_, key) => (
                     <tr key={key}>
-                      <td className='w-1/6 px-3 py-4 text-sm text-slate-700 dark:text-gray-50 sm:pl-6'>{t(key)}</td>
+                      <td className='w-1/6 px-3 py-4 text-sm text-slate-700 sm:pl-6 dark:text-gray-50'>{t(key)}</td>
                       {_map(SWETRIX_AND_COMPETITORS_LIST, (service) => (
                         <td key={`${key}-${service}`} className='w-1/6 px-3 py-4 text-sm text-gray-50 sm:pl-6'>
                           {COMPETITOR_FEATURE_TABLE[service][key] && (
                             <CheckIcon
-                              className='h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-500'
+                              className='h-5 w-5 shrink-0 text-green-600 dark:text-green-500'
                               aria-label={t('common.yes')}
                             />
                           )}
                           {!COMPETITOR_FEATURE_TABLE[service][key] && (
                             <XMarkIcon
-                              className='h-5 w-5 flex-shrink-0 text-red-600 dark:text-red-500'
+                              className='h-5 w-5 shrink-0 text-red-600 dark:text-red-500'
                               aria-label={t('common.no')}
                             />
                           )}

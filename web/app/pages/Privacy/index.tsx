@@ -51,7 +51,7 @@ const serviceProviders: {
 const Features = () => {
   return (
     <div className='bg-gray-50 dark:bg-slate-900'>
-      <div className='mx-auto w-11/12 px-4 pb-16 pt-12 sm:px-6 md:w-4/5 lg:px-8'>
+      <div className='mx-auto w-11/12 px-4 pt-12 pb-16 sm:px-6 md:w-4/5 lg:px-8'>
         <h1 className='text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>Privacy Policy</h1>
         <p className='mt-4 text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           This Swetrix Privacy Policy (“Policy”, "Privacy Policy") outlines the personal information that we gather, how
@@ -283,13 +283,13 @@ const Features = () => {
           <div className='mt-8 flex flex-col'>
             <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8'>
               <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
-                <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
+                <div className='overflow-hidden ring-1 ring-black/10 md:rounded-lg'>
                   <table className='200 min-w-full divide-y divide-gray-300 dark:divide-gray-500'>
                     <thead className='bg-gray-50 dark:bg-slate-800'>
                       <tr>
                         <th
                           scope='col'
-                          className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-50 sm:pl-6'
+                          className='py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-gray-50'
                         >
                           Company
                         </th>
@@ -316,16 +316,16 @@ const Features = () => {
                     <tbody className='divide-y divide-gray-200 bg-white dark:divide-gray-600 dark:bg-slate-800'>
                       {_map(serviceProviders, ({ company, purpose, dataSubjects, location }) => (
                         <tr key={company}>
-                          <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50 sm:pl-6'>
+                          <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 sm:pl-6 dark:text-gray-50'>
                             {company}
                           </td>
-                          <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50'>
+                          <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-gray-50'>
                             {purpose}
                           </td>
-                          <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50'>
+                          <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-gray-50'>
                             {dataSubjects}
                           </td>
-                          <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50'>
+                          <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-gray-50'>
                             {location}
                           </td>
                         </tr>
@@ -461,7 +461,7 @@ const Features = () => {
           .
         </p>
 
-        <hr className='mb-4 mt-10 border-gray-200 dark:border-gray-600' />
+        <hr className='mt-10 mb-4 border-gray-200 dark:border-gray-600' />
         <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
           <i>Last updated: July 23, 2023.</i>
         </p>

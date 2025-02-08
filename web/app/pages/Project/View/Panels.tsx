@@ -128,7 +128,7 @@ const PanelContainer = ({
 }: PanelContainerProps) => (
   <div
     className={cx(
-      'relative max-h-96 min-h-72 overflow-hidden rounded-lg bg-white px-4 pt-5 shadow dark:border dark:border-slate-800/50 dark:bg-slate-800/25 sm:px-6 sm:pt-6',
+      'relative max-h-96 min-h-72 overflow-hidden rounded-lg border border-gray-300 bg-white px-4 pt-5 sm:px-6 sm:pt-6 dark:border-slate-800/50 dark:bg-slate-800/25',
       {
         'pb-12': !noSwitch,
         'pb-5': noSwitch,
@@ -136,13 +136,8 @@ const PanelContainer = ({
     )}
   >
     <div className='mb-2 flex items-center justify-between'>
-      <h3 className='flex items-center text-lg font-semibold leading-6 text-gray-900 dark:text-gray-50'>
-        {icon && (
-          <>
-            {icon}
-            &nbsp;
-          </>
-        )}
+      <h3 className='flex items-center font-mono text-lg leading-6 font-semibold text-gray-900 dark:text-gray-50'>
+        {icon && <span className='mr-1'>{icon}</span>}
         {name}
       </h3>
       <div className='flex'>
@@ -179,23 +174,14 @@ const PanelContainer = ({
         )}
 
         {type === 'pg' && activeTab !== PROJECT_TABS.performance && activeTab !== PROJECT_TABS.errors && (
-          <>
-            <WorkflowIcon
-              className={cx(iconClassName, 'ml-2 cursor-pointer', {
-                'text-slate-900 dark:text-gray-50': activeFragment === 1,
-                'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
-              })}
-              onClick={() => setActiveFragment(1)}
-              strokeWidth={1.5}
-            />
-            <MaximizeIcon
-              className={cx(iconClassName, 'ml-2 cursor-pointer text-slate-400 dark:text-slate-500', {
-                hidden: activeFragment === 0,
-              })}
-              onClick={onExpandClick}
-              strokeWidth={1.5}
-            />
-          </>
+          <WorkflowIcon
+            className={cx(iconClassName, 'ml-2 cursor-pointer', {
+              'text-slate-900 dark:text-gray-50': activeFragment === 1,
+              'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
+            })}
+            onClick={onExpandClick}
+            strokeWidth={1.5}
+          />
         )}
 
         {/* if this tab using Circle showing stats panel */}
@@ -281,7 +267,7 @@ const getPieOptions = (customs: any, uniques: number, t: any) => {
           <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-700 rounded-md shadow-md px-3 py-1'>
             {{
               <li class='flex'>
-                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
+                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:{=COLOR}></div>
                 <span>{=NAME}</span>
               </li>
               <hr class='border-gray-200 dark:border-slate-600' />
@@ -690,7 +676,7 @@ const CustomEvents = ({
   }, [chartData, customsEventsData, t]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const CustomEventsTable = () => (
-    <div className='overflow-y-auto'>
+    <div className='overflow-y-auto font-mono'>
       <table className='w-full border-separate border-spacing-y-1'>
         <thead>
           <tr className='text-base text-gray-900 dark:text-gray-50'>
@@ -748,11 +734,11 @@ const CustomEvents = ({
               >
                 <td className='flex items-center py-1 text-left'>
                   {loadingEvents[ev] ? (
-                    <Spin className='ml-1 mr-2' />
+                    <Spin className='mr-2 ml-1' />
                   ) : activeEvents[ev] ? (
-                    <ChevronUpIcon className='h-5 w-auto pl-1 pr-2 text-gray-500 hover:opacity-80 dark:text-gray-300' />
+                    <ChevronUpIcon className='h-5 w-auto pr-2 pl-1 text-gray-500 hover:opacity-80 dark:text-gray-300' />
                   ) : (
-                    <ChevronDownIcon className='h-5 w-auto pl-1 pr-2 text-gray-500 hover:opacity-80 dark:text-gray-300' />
+                    <ChevronDownIcon className='h-5 w-auto pr-2 pl-1 text-gray-500 hover:opacity-80 dark:text-gray-300' />
                   )}
                   {ev}
                 </td>
@@ -795,7 +781,7 @@ const CustomEvents = ({
         activeFragment={activeFragment}
         onExpandClick={() => setDetailsOpened(true)}
       >
-        <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
+        <p className='mt-1 font-mono text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
       </PanelContainer>
     )
   }
@@ -811,7 +797,7 @@ const CustomEvents = ({
         onExpandClick={() => setDetailsOpened(true)}
       >
         {_isEmpty(chartData) ? (
-          <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
+          <p className='mt-1 font-mono text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
         ) : (
           <Chart options={chartOptions} current='panels-ce' />
         )}
@@ -856,7 +842,7 @@ const CustomEvents = ({
       activeFragment={activeFragment}
       onExpandClick={() => setDetailsOpened(true)}
     >
-      <table className='table-fixed'>
+      <table className='table-fixed font-mono'>
         <thead>
           <tr className='text-gray-900 dark:text-gray-50'>
             <th
@@ -924,10 +910,10 @@ const CustomEvents = ({
       </table>
       {/* for pagination in tabs */}
       {_size(keys) > ENTRIES_PER_CUSTOM_EVENTS_PANEL && (
-        <div className='w-card-toggle-sm absolute bottom-0 sm:!w-card-toggle'>
-          <div className='mb-2 flex select-none justify-between'>
+        <div className='absolute bottom-0 w-[calc(100%-2rem)] font-mono sm:w-[calc(100%-3rem)]'>
+          <div className='mb-2 flex justify-between select-none'>
             <div>
-              <span className='text-xs font-light lowercase text-gray-500 dark:text-gray-200'>
+              <span className='text-xs font-light text-gray-500 lowercase dark:text-gray-200'>
                 {_size(keys)} {t('project.results')}
               </span>
               <span className='text-xs font-light text-gray-500 dark:text-gray-200'>
@@ -937,10 +923,10 @@ const CustomEvents = ({
             <div className='flex w-[4.5rem] justify-between'>
               <Button
                 className={cx(
-                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow dark:bg-slate-800 dark:text-gray-200',
+                  'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
                   {
                     'cursor-not-allowed opacity-50': !canGoPrev(),
-                    'hover:bg-gray-200 hover:dark:bg-slate-700': canGoPrev(),
+                    'hover:bg-gray-100 hover:dark:bg-slate-700': canGoPrev(),
                   },
                 )}
                 type='button'
@@ -952,10 +938,10 @@ const CustomEvents = ({
               </Button>
               <Button
                 className={cx(
-                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow dark:bg-slate-800 dark:text-gray-200',
+                  'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
                   {
                     'cursor-not-allowed opacity-50': !canGoNext(),
-                    'hover:bg-gray-200 hover:dark:bg-slate-700': canGoNext(),
+                    'hover:bg-gray-100 hover:dark:bg-slate-700': canGoNext(),
                   },
                 )}
                 onClick={onNext}
@@ -1194,11 +1180,11 @@ const PageProperties = ({
               >
                 <td className='flex items-center py-1 text-left'>
                   {loadingDetails[tag] ? (
-                    <Spin className='ml-1 mr-2' />
+                    <Spin className='mr-2 ml-1' />
                   ) : activeProperties[tag] ? (
-                    <ChevronUpIcon className='h-5 w-auto pl-1 pr-2 text-gray-500 hover:opacity-80 dark:text-gray-300' />
+                    <ChevronUpIcon className='h-5 w-auto pr-2 pl-1 text-gray-500 hover:opacity-80 dark:text-gray-300' />
                   ) : (
-                    <ChevronDownIcon className='h-5 w-auto pl-1 pr-2 text-gray-500 hover:opacity-80 dark:text-gray-300' />
+                    <ChevronDownIcon className='h-5 w-auto pr-2 pl-1 text-gray-500 hover:opacity-80 dark:text-gray-300' />
                   )}
                   {tag}
                 </td>
@@ -1240,7 +1226,7 @@ const PageProperties = ({
         activeFragment={activeFragment}
         onExpandClick={() => setDetailsOpened(true)}
       >
-        <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
+        <p className='mt-1 font-mono text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
       </PanelContainer>
     )
   }
@@ -1321,10 +1307,10 @@ const PageProperties = ({
       </table>
       {/* for pagination in tabs */}
       {_size(keys) > ENTRIES_PER_CUSTOM_EVENTS_PANEL && (
-        <div className='w-card-toggle-sm absolute bottom-0 sm:!w-card-toggle'>
-          <div className='mb-2 flex select-none justify-between'>
+        <div className='absolute bottom-0 w-[calc(100%-2rem)] font-mono sm:w-[calc(100%-3rem)]'>
+          <div className='mb-2 flex justify-between select-none'>
             <div>
-              <span className='text-xs font-light lowercase text-gray-500 dark:text-gray-200'>
+              <span className='text-xs font-light text-gray-500 lowercase dark:text-gray-200'>
                 {_size(keys)} {t('project.results')}
               </span>
               <span className='text-xs font-light text-gray-500 dark:text-gray-200'>
@@ -1334,10 +1320,10 @@ const PageProperties = ({
             <div className='flex w-[4.5rem] justify-between'>
               <Button
                 className={cx(
-                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow dark:bg-slate-800 dark:text-gray-200',
+                  'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
                   {
                     'cursor-not-allowed opacity-50': !canGoPrev(),
-                    'hover:bg-gray-200 hover:dark:bg-slate-700': canGoPrev(),
+                    'hover:bg-gray-100 hover:dark:bg-slate-700': canGoPrev(),
                   },
                 )}
                 type='button'
@@ -1349,10 +1335,10 @@ const PageProperties = ({
               </Button>
               <Button
                 className={cx(
-                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow dark:bg-slate-800 dark:text-gray-200',
+                  'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
                   {
                     'cursor-not-allowed opacity-50': !canGoNext(),
-                    'hover:bg-gray-200 hover:dark:bg-slate-700': canGoNext(),
+                    'hover:bg-gray-100 hover:dark:bg-slate-700': canGoNext(),
                   },
                 )}
                 onClick={onNext}
@@ -1425,7 +1411,7 @@ const Panel = ({
   const entries = useMemo(() => _orderBy(data, 'count', 'desc'), [data])
   const entriesToDisplay = _slice(entries, currentIndex, currentIndex + ENTRIES_PER_PANEL)
   const [activeFragment, setActiveFragment] = useState(0)
-  const [modal, setModal] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const [isReversedUserFlow, setIsReversedUserFlow] = useState(false)
   const canGoPrev = () => page > 0
   const canGoNext = () => page < _floor((_size(entries) - 1) / ENTRIES_PER_PANEL)
@@ -1473,52 +1459,15 @@ const Panel = ({
         type={id}
         activeFragment={activeFragment}
         setActiveFragment={_setActiveFragment}
-        onExpandClick={() => setModal(true)}
+        onExpandClick={() => setIsModalOpen(true)}
         customTabs={customTabs}
       >
         <InteractiveMap data={data} total={total} onClickCountry={(key) => _onFilter(id, key)} />
         <Modal
-          onClose={() => setModal(false)}
+          onClose={() => setIsModalOpen(false)}
           closeText={t('common.close')}
-          isOpened={modal}
+          isOpened={isModalOpen}
           message={<InteractiveMap data={data} total={total} onClickCountry={(key) => _onFilter(id, key)} />}
-          size='large'
-        />
-      </PanelContainer>
-    )
-  }
-
-  // User flow tab for the Page panel
-  if (id === 'pg' && activeFragment === 1) {
-    return (
-      <PanelContainer
-        name={name}
-        icon={icon}
-        type={id}
-        activeFragment={activeFragment}
-        setActiveFragment={_setActiveFragment}
-        onExpandClick={() => setModal(true)}
-        customTabs={customTabs}
-      >
-        <UserFlow isReversed={isReversedUserFlow} setReversed={() => setIsReversedUserFlow((prev) => !prev)} />
-        <Modal
-          onClose={() => setModal(false)}
-          closeText={t('common.close')}
-          isOpened={modal}
-          customButtons={
-            <button
-              type='button'
-              onClick={() => setIsReversedUserFlow((prev) => !prev)}
-              className='mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-none dark:border-gray-600 dark:bg-slate-700 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700 sm:ml-3 sm:mt-0 sm:w-auto sm:text-sm'
-            >
-              {t('project.reverse')}
-            </button>
-          }
-          message={
-            <div className='h-[500px] dark:text-gray-800'>
-              <UserFlow isReversed={isReversedUserFlow} setReversed={() => setIsReversedUserFlow((prev) => !prev)} />
-            </div>
-          }
           size='large'
         />
       </PanelContainer>
@@ -1546,7 +1495,7 @@ const Panel = ({
             <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-700 rounded-md shadow-md px-3 py-1'>
               {{
                 <li class='flex'>
-                  <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:{=COLOR}></div>
+                  <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:{=COLOR}></div>
                   <span>{=NAME}</span>
                 </li>
                 <hr class='border-gray-200 dark:border-slate-600' />
@@ -1575,7 +1524,7 @@ const Panel = ({
         activeTab={activeTab}
       >
         {_isEmpty(data) ? (
-          <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
+          <p className='mt-1 font-mono text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
         ) : (
           <Chart options={options} current={`Panels-${id}`} />
         )}
@@ -1595,7 +1544,7 @@ const Panel = ({
         type={id}
         activeFragment={activeFragment}
         setActiveFragment={_setActiveFragment}
-        onExpandClick={() => setModal(true)}
+        onExpandClick={() => setIsModalOpen(true)}
         customTabs={customTabs}
         activeTab={activeTab}
         isCustomContent
@@ -1613,11 +1562,12 @@ const Panel = ({
       type={id}
       activeFragment={activeFragment}
       setActiveFragment={_setActiveFragment}
+      onExpandClick={() => setIsModalOpen(true)}
       customTabs={customTabs}
       activeTab={activeTab}
     >
       {_isEmpty(data) ? (
-        <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
+        <p className='mt-1 font-mono text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
       ) : (
         _map(entriesToDisplay, (entry) => {
           const { count, name: entryName, ...rest } = entry
@@ -1628,7 +1578,7 @@ const Panel = ({
           return (
             <Fragment key={`${id}-${entryName}-${Object.values(rest).join('-')}`}>
               <div
-                className={cx('mt-[0.32rem] flex justify-between rounded first:mt-0 dark:text-gray-50', {
+                className={cx('mt-[0.32rem] flex justify-between rounded-sm font-mono first:mt-0 dark:text-gray-50', {
                   'group cursor-pointer hover:bg-gray-100 hover:dark:bg-slate-700': !hideFilters && !dataLoading,
                   'cursor-wait': dataLoading,
                 })}
@@ -1636,43 +1586,39 @@ const Panel = ({
               >
                 {linkContent ? (
                   <a
-                    className={cx('label flex items-center text-blue-600 hover:underline dark:text-blue-500', {
-                      capitalize,
-                    })}
+                    className={cx(
+                      'scrollbar-thin flex flex-1 items-center overflow-hidden text-clip whitespace-nowrap text-blue-600 hover:underline dark:text-blue-500',
+                      {
+                        capitalize,
+                      },
+                    )}
                     href={rowData as string}
                     target='_blank'
                     rel='noopener noreferrer nofollow'
                     aria-label={`${rowData} (opens in a new tab)`}
                   >
-                    {rowData}
-                    {!hideFilters && (
-                      <FilterIcon
-                        className='min-h-4 ml-2 hidden size-4 min-w-4 text-gray-500 group-hover:block dark:text-gray-300'
-                        strokeWidth={1.5}
-                      />
-                    )}
+                    <span className='flex items-center truncate'>{rowData}</span>
                   </a>
                 ) : (
-                  <span className={cx('label flex items-center', { capitalize })}>
-                    {rowData}
-                    {!hideFilters && (
-                      <FilterIcon
-                        className='min-h-4 ml-2 hidden size-4 min-w-4 text-gray-500 group-hover:block dark:text-gray-300'
-                        strokeWidth={1.5}
-                      />
+                  <span
+                    className={cx(
+                      'scrollbar-thin flex flex-1 items-center overflow-hidden text-clip whitespace-nowrap',
+                      {
+                        capitalize,
+                      },
                     )}
+                  >
+                    <span className='flex items-center truncate'>{rowData}</span>
                   </span>
                 )}
-                <span className='ml-3 dark:text-gray-50'>
-                  {activeTab === PROJECT_TABS.traffic ? nFormatter(valueData, 1) : valueData}
-                  &nbsp;
-                  {activeTab !== PROJECT_TABS.performance && (
-                    <span className='font-light text-gray-500 dark:text-gray-200'>
-                      ({perc}
-                      %)
-                    </span>
-                  )}
-                </span>
+                <div className='flex min-w-fit items-center pl-2'>
+                  <span className='mr-1 hidden text-gray-500 group-hover:inline dark:text-gray-200'>
+                    ({_round((count / total) * 100, 2)}%)
+                  </span>
+                  <span className='dark:text-gray-50'>
+                    {activeTab === PROJECT_TABS.traffic ? nFormatter(valueData, 1) : valueData}
+                  </span>
+                </div>
               </div>
               <Progress now={perc} />
             </Fragment>
@@ -1681,10 +1627,10 @@ const Panel = ({
       )}
       {/* for pagination in tabs */}
       {_size(entries) > ENTRIES_PER_PANEL && (
-        <div className='w-card-toggle-sm absolute bottom-0 sm:!w-card-toggle'>
-          <div className='mb-2 flex select-none justify-between'>
+        <div className='absolute bottom-0 w-[calc(100%-2rem)] font-mono sm:w-[calc(100%-3rem)]'>
+          <div className='mb-2 flex justify-between select-none'>
             <div>
-              <span className='text-xs font-light lowercase text-gray-500 dark:text-gray-200'>
+              <span className='text-xs font-light text-gray-500 lowercase dark:text-gray-200'>
                 {_size(entries)} {t('project.results')}
               </span>
               <span className='text-xs font-light text-gray-500 dark:text-gray-200'>
@@ -1694,10 +1640,10 @@ const Panel = ({
             <div className='flex w-[4.5rem] justify-between'>
               <Button
                 className={cx(
-                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow dark:bg-slate-800 dark:text-gray-200',
+                  'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
                   {
                     'cursor-not-allowed opacity-50': !canGoPrev(),
-                    'hover:bg-gray-200 hover:dark:bg-slate-700': canGoPrev(),
+                    'hover:bg-gray-100 hover:dark:bg-slate-700': canGoPrev(),
                   },
                 )}
                 type='button'
@@ -1709,10 +1655,10 @@ const Panel = ({
               </Button>
               <Button
                 className={cx(
-                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow dark:bg-slate-800 dark:text-gray-200',
+                  'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
                   {
                     'cursor-not-allowed opacity-50': !canGoNext(),
-                    'hover:bg-gray-200 hover:dark:bg-slate-700': canGoNext(),
+                    'hover:bg-gray-100 hover:dark:bg-slate-700': canGoNext(),
                   },
                 )}
                 onClick={onNext}
@@ -1725,6 +1671,31 @@ const Panel = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* PAGE - User flow modal */}
+      {id === 'pg' && (
+        <Modal
+          onClose={() => setIsModalOpen(false)}
+          closeText={t('common.close')}
+          isOpened={isModalOpen}
+          title={t('project.userFlow.title')}
+          customButtons={
+            <button
+              type='button'
+              onClick={() => setIsReversedUserFlow((prev) => !prev)}
+              className='mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:border-none dark:border-gray-600 dark:bg-slate-700 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700'
+            >
+              {t('project.reverse')}
+            </button>
+          }
+          message={
+            <div className='h-[500px] dark:text-gray-800'>
+              <UserFlow isReversed={isReversedUserFlow} setReversed={() => setIsReversedUserFlow((prev) => !prev)} />
+            </div>
+          }
+          size='large'
+        />
       )}
     </PanelContainer>
   )

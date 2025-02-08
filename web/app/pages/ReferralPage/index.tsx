@@ -45,7 +45,7 @@ const ReferralPage = ({ ssrTheme }: ReferralPageProps) => {
             <rect width='100%' height='100%' strokeWidth={0} fill='url(#rect-pattern)' />
           </svg>
           <div
-            className='absolute left-[calc(50%-4rem)] top-10 -z-10 transform-gpu blur-3xl sm:left-[calc(50%-18rem)] lg:left-48 lg:top-[calc(50%-30rem)] xl:left-[calc(50%-24rem)]'
+            className='absolute top-10 left-[calc(50%-4rem)] -z-10 transform-gpu blur-3xl sm:left-[calc(50%-18rem)] lg:top-[calc(50%-30rem)] lg:left-48 xl:left-[calc(50%-24rem)]'
             aria-hidden='true'
           >
             <div
@@ -57,10 +57,10 @@ const ReferralPage = ({ ssrTheme }: ReferralPageProps) => {
             />
           </div>
           <Header ssrTheme={ssrTheme} authenticated={false} refPage transparent />
-          <div className='relative mx-auto min-h-[740px] pb-5 pt-10 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
+          <div className='relative mx-auto min-h-[740px] pt-10 pb-5 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
             <div className='relative z-20 flex flex-row content-between justify-center lg:justify-start 2xl:mr-[14vw] 2xl:justify-center'>
-              <div className='relative px-4 text-left lg:mr-14 lg:mt-0'>
-                <h1 className='max-w-2xl text-2xl font-extrabold text-slate-900 dark:text-white sm:text-4xl sm:leading-none md:text-5xl xl:leading-[110%]'>
+              <div className='relative px-4 text-left lg:mt-0 lg:mr-14'>
+                <h1 className='max-w-2xl text-2xl font-extrabold text-slate-900 sm:text-4xl sm:leading-none md:text-5xl xl:leading-[110%] dark:text-white'>
                   <Trans
                     t={t}
                     i18nKey='main.slogan'
@@ -71,10 +71,10 @@ const ReferralPage = ({ ssrTheme }: ReferralPageProps) => {
                     }}
                   />
                 </h1>
-                <p className='mt-5 text-base text-slate-700 dark:text-slate-300 sm:text-xl lg:text-lg xl:text-lg'>
+                <p className='mt-5 text-base text-slate-700 sm:text-xl lg:text-lg xl:text-lg dark:text-slate-300'>
                   {t('referral.desc')}
                 </p>
-                <h2 className='mt-10 text-xl font-medium text-slate-900 dark:text-white sm:text-xl sm:leading-none md:text-xl xl:leading-[110%]'>
+                <h2 className='mt-10 text-xl font-medium text-slate-900 sm:text-xl sm:leading-none md:text-xl xl:leading-[110%] dark:text-white'>
                   {t('referral.buttons', {
                     discount: REFERRAL_DISCOUNT,
                   })}
@@ -82,7 +82,7 @@ const ReferralPage = ({ ssrTheme }: ReferralPageProps) => {
                 <div className='mt-4 flex flex-col items-center sm:flex-row'>
                   <Link
                     to={`/ref/${id}${routes.signup}`}
-                    className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white shadow-sm ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600 sm:mr-6 sm:max-w-[210px]'
+                    className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 sm:mr-6 sm:max-w-[210px] dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600'
                     aria-label={t('titles.signup')}
                   >
                     <span className='mr-1 text-base font-semibold transition-transform group-hover:scale-[1.15]'>
@@ -92,7 +92,7 @@ const ReferralPage = ({ ssrTheme }: ReferralPageProps) => {
                   </Link>
                   <Link
                     to={`/ref/${id}/index#core-analytics`}
-                    className='mt-2 flex h-12 w-full items-center justify-center rounded-md bg-transparent text-slate-900 shadow-sm ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-200 dark:text-white dark:ring-white/20 dark:hover:bg-gray-800 sm:mt-0 sm:max-w-[210px]'
+                    className='mt-2 flex h-12 w-full items-center justify-center rounded-md bg-transparent text-slate-900 ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-200 sm:mt-0 sm:max-w-[210px] dark:text-white dark:ring-white/20 dark:hover:bg-gray-800'
                     aria-label={t('titles.signup')}
                   >
                     <span className='text-base font-semibold'>{t('common.learnMore')}</span>
@@ -114,7 +114,7 @@ const ReferralPage = ({ ssrTheme }: ReferralPageProps) => {
                   />
                   <img
                     src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
-                    className='relative h-full min-w-[880px] rounded-xl shadow-2xl ring-1 ring-gray-900/10 dark:ring-white/10'
+                    className='relative h-full min-w-[880px] rounded-xl ring-2 ring-gray-900/10 dark:ring-white/10'
                     width='100%'
                     height='auto'
                     alt='Swetrix Analytics dashboard'
@@ -130,7 +130,7 @@ const ReferralPage = ({ ssrTheme }: ReferralPageProps) => {
                 />
                 <img
                   src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
-                  className='relative w-full rounded-xl shadow-2xl ring-1 ring-gray-900/10 dark:ring-white/10'
+                  className='relative w-full rounded-xl ring-2 ring-gray-900/10 dark:ring-white/10'
                   width='100%'
                   height='auto'
                   alt='Swetrix Analytics dashboard'

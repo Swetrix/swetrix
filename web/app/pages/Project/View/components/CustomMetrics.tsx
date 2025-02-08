@@ -49,12 +49,12 @@ const CustomMetric = ({ metric, onRemove }: CustomMetricProps) => {
   }, [t, metric])
 
   return (
-    <span className='m-1 inline-flex items-center rounded-md bg-gray-50 py-0.5 pl-2.5 pr-1 text-sm font-medium text-gray-800 dark:bg-slate-800 dark:text-gray-50'>
+    <span className='m-1 inline-flex items-center rounded-md bg-gray-50 py-0.5 pr-1 pl-2.5 text-sm font-medium text-gray-800 dark:bg-slate-800 dark:text-gray-50'>
       {displayValue}
       <button
         onClick={onRemove}
         type='button'
-        className='ml-0.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-gray-800 hover:bg-gray-300 hover:text-gray-900 focus:bg-gray-300 focus:text-gray-900 focus:outline-none dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300 dark:focus:bg-gray-800 dark:focus:text-gray-300'
+        className='ml-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-gray-800 hover:bg-gray-300 hover:text-gray-900 focus:bg-gray-300 focus:text-gray-900 focus:outline-hidden dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300 dark:focus:bg-gray-800 dark:focus:text-gray-300'
       >
         <span className='sr-only'>Remove filter</span>
         <svg className='h-2 w-2' stroke='currentColor' fill='none' viewBox='0 0 8 8'>
@@ -77,9 +77,9 @@ const CustomMetrics = ({ metrics, onRemoveMetric, resetMetrics }: FiltersProps) 
   }
 
   return (
-    <div className='mt-2 flex items-center justify-between rounded-md bg-slate-200 p-1 shadow dark:border dark:border-slate-800/50 dark:bg-slate-800/25'>
+    <div className='mt-2 flex items-center justify-between rounded-md border border-gray-300 bg-slate-200 p-1 dark:border-slate-800/50 dark:bg-slate-800/25'>
       <div className='flex items-center'>
-        <ScaleIcon className='box-content size-6 flex-shrink-0 px-1 text-gray-700 dark:text-gray-200' />
+        <ScaleIcon className='box-content size-6 shrink-0 px-1 text-gray-700 dark:text-gray-200' />
         <div className='flex flex-wrap'>
           {_map(metrics, (metric) => (
             <CustomMetric
@@ -93,7 +93,7 @@ const CustomMetrics = ({ metrics, onRemoveMetric, resetMetrics }: FiltersProps) 
         </div>
       </div>
       <XMarkIcon
-        className='box-content size-6 flex-shrink-0 cursor-pointer stroke-2 px-1 text-gray-800 hover:text-gray-600 dark:text-gray-200 dark:hover:text-gray-300'
+        className='box-content size-6 shrink-0 cursor-pointer stroke-2 px-1 text-gray-800 hover:text-gray-600 dark:text-gray-200 dark:hover:text-gray-300'
         onClick={resetMetrics}
       />
     </div>

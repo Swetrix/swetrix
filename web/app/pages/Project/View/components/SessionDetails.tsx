@@ -97,7 +97,7 @@ export const SessionDetails = ({ details }: SessionDetailsProps) => {
 
           return (
             <div className='flex items-center'>
-              <CCRow spaces={1} size={26} cc={value} language={language} />
+              <CCRow size={26} cc={value} language={language} />
             </div>
           )
         }}

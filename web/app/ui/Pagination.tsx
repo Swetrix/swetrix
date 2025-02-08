@@ -37,7 +37,10 @@ const Pagination = ({
 
   return (
     <div
-      className={cx('flex items-center justify-between border-t border-gray-200 py-3 dark:border-gray-700', className)}
+      className={cx(
+        'flex items-center justify-between border-t border-gray-200 py-3 font-mono dark:border-gray-700',
+        className,
+      )}
     >
       <div className='flex flex-1 justify-between sm:hidden'>
         <button
@@ -97,7 +100,7 @@ const Pagination = ({
               labelClassName='!overflow-visible'
             />
           )}
-          <nav className='isolate inline-flex -space-x-px rounded-md shadow-sm' aria-label='Pagination'>
+          <nav className='isolate inline-flex -space-x-px rounded-md' aria-label='Pagination'>
             <button
               type='button'
               onClick={() => {

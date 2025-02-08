@@ -9,7 +9,7 @@ interface SpinProps {
 const Spin = ({ className, alwaysLight }: SpinProps) => (
   <svg
     className={cx(
-      '-ml-1 mr-2 h-4 w-4 animate-spin text-slate-900 dark:text-white',
+      'mr-2 -ml-1 h-4 w-4 animate-spin text-slate-900 dark:text-white',
       {
         'text-slate-900 dark:text-white': !alwaysLight,
         'text-white': alwaysLight,

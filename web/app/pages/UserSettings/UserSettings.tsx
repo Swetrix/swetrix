@@ -441,7 +441,7 @@ const UserSettings = () => {
   }
 
   return (
-    <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8'>
+    <div className='min-h-min-footer flex flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
       <form className='mx-auto w-full max-w-7xl' onSubmit={handleSubmit}>
         <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{t('titles.profileSettings')}</h2>
         {/* Tabs selector */}
@@ -473,7 +473,7 @@ const UserSettings = () => {
                       key={tab.id}
                       onClick={onClick}
                       className={cx(
-                        'text-md group inline-flex cursor-pointer items-center whitespace-nowrap border-b-2 px-1 py-2 font-bold',
+                        'text-md group inline-flex cursor-pointer items-center border-b-2 px-1 py-2 font-mono font-bold whitespace-nowrap',
                         {
                           'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50': isCurrent,
                           'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
@@ -487,7 +487,7 @@ const UserSettings = () => {
                           isCurrent
                             ? 'text-slate-900 dark:text-gray-50'
                             : 'text-gray-500 group-hover:text-gray-500 dark:text-gray-400 dark:group-hover:text-gray-300',
-                          '-ml-0.5 mr-2 h-5 w-5',
+                          'mr-2 -ml-0.5 h-5 w-5',
                         )}
                         aria-hidden='true'
                         strokeWidth={1.5}
@@ -654,16 +654,16 @@ const UserSettings = () => {
                       </h3>
                       <div>
                         {!_isEmpty(user.sharedProjects) ? (
-                          <div className='mt-3 flex flex-col'>
+                          <div className='mt-3 flex flex-col font-mono'>
                             <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8'>
                               <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
-                                <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
+                                <div className='overflow-hidden ring-1 ring-black/10 md:rounded-lg'>
                                   <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
                                     <thead>
                                       <tr className='dark:bg-slate-800'>
                                         <th
                                           scope='col'
-                                          className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6'
+                                          className='py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'
                                         >
                                           {t('profileSettings.sharedTable.project')}
                                         </th>
@@ -679,7 +679,7 @@ const UserSettings = () => {
                                         >
                                           {t('profileSettings.sharedTable.joinedOn')}
                                         </th>
-                                        <th scope='col' className='relative py-3.5 pl-3 pr-4 sm:pr-6' />
+                                        <th scope='col' className='relative py-3.5 pr-4 pl-3 sm:pr-6' />
                                       </tr>
                                     </thead>
                                     <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
@@ -704,16 +704,16 @@ const UserSettings = () => {
                       </h3>
                       <div>
                         {!_isEmpty(user.organisationMemberships) ? (
-                          <div className='mt-3 flex flex-col'>
+                          <div className='mt-3 flex flex-col font-mono'>
                             <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8'>
                               <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
-                                <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
+                                <div className='overflow-hidden ring-1 ring-black/10 md:rounded-lg'>
                                   <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
                                     <thead>
                                       <tr className='dark:bg-slate-800'>
                                         <th
                                           scope='col'
-                                          className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6'
+                                          className='py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'
                                         >
                                           {t('profileSettings.organisationsTable.organisation')}
                                         </th>
@@ -729,7 +729,7 @@ const UserSettings = () => {
                                         >
                                           {t('profileSettings.organisationsTable.joinedOn')}
                                         </th>
-                                        <th scope='col' className='relative py-3.5 pl-3 pr-4 sm:pr-6' />
+                                        <th scope='col' className='relative py-3.5 pr-4 pl-3 sm:pr-6' />
                                       </tr>
                                     </thead>
                                     <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
@@ -753,7 +753,7 @@ const UserSettings = () => {
                           className='mt-4 flex max-w-max cursor-pointer pl-0 text-blue-600 underline hover:text-indigo-800 dark:hover:text-indigo-600'
                           onClick={() => onEmailConfirm(setError)}
                         >
-                          <EnvelopeIcon className='mr-2 mt-0.5 h-6 w-6 text-blue-500' />
+                          <EnvelopeIcon className='mt-0.5 mr-2 h-6 w-6 text-blue-500' />
                           {t('profileSettings.noLink')}
                         </div>
                       )}

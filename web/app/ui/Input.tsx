@@ -36,7 +36,7 @@ const Input = ({
   return (
     <Field as='div' className={className}>
       {label ? (
-        <Label className='mb-1 flex text-sm font-medium text-gray-700 dark:text-gray-200'>
+        <Label className='mb-1 flex font-mono text-sm font-medium text-gray-900 dark:text-gray-200'>
           {label}
           {isBeta && (
             <div className='ml-5'>
@@ -46,14 +46,15 @@ const Input = ({
         </Label>
       ) : null}
       {hint && hintPosition === 'top' ? (
-        <Description className='mt-1 whitespace-pre-line text-sm text-gray-500 dark:text-gray-300'>{hint}</Description>
+        <Description className='mt-1 text-sm whitespace-pre-line text-gray-500 dark:text-gray-300'>{hint}</Description>
       ) : null}
       <HeadlessInput
         type={type}
         className={cx(
-          'block w-full rounded-md border-gray-300 shadow-sm dark:border-slate-800/25 dark:bg-slate-800 dark:text-gray-50 dark:placeholder-gray-400 sm:text-sm',
+          'w-full rounded-md border-0 font-mono ring-1 shadow-xs focus:ring-indigo-500 sm:text-sm dark:bg-slate-800 dark:text-gray-50 dark:placeholder-gray-400',
           {
-            'text-red-900 placeholder-red-300 ring-1 ring-red-600': isError,
+            'text-red-900 placeholder-red-300 ring-red-600': isError,
+            'ring-gray-300 dark:ring-slate-800/50': !isError,
             'cursor-text': disabled,
           },
           classes?.input,
@@ -62,9 +63,9 @@ const Input = ({
         invalid={isError}
         {...rest}
       />
-      {isError ? <p className='mt-2 text-sm text-red-600 dark:text-red-500'>{error}</p> : null}
+      {isError ? <p className='mt-2 font-mono text-sm text-red-600 dark:text-red-500'>{error}</p> : null}
       {hint && hintPosition === 'bottom' ? (
-        <Description className='mt-2 whitespace-pre-line text-sm text-gray-500 dark:text-gray-300'>{hint}</Description>
+        <Description className='mt-2 text-sm whitespace-pre-line text-gray-500 dark:text-gray-300'>{hint}</Description>
       ) : null}
     </Field>
   )

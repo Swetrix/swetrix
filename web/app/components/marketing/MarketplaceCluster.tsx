@@ -21,9 +21,9 @@ const Circle = ({ size, delay, opacity }: { size: number; delay: number; opacity
       }}
       style={{ '--opacity': opacity } as React.CSSProperties}
       className={clsx(
-        'absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full',
+        'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full',
         'bg-[radial-gradient(circle,transparent_25%,color-mix(in_srgb,_theme(colors.blue.500)_var(--opacity),transparent)_100%)]',
-        'ring-1 ring-inset ring-blue-500/[8%]',
+        'ring-1 ring-blue-500/[8%] ring-inset',
       )}
     />
   )
@@ -43,7 +43,7 @@ const Circles = () => {
 
 const MainLogo = () => {
   return (
-    <div className='absolute left-44 top-32 flex size-16 items-center justify-center rounded-full bg-white shadow ring-1 ring-black/5'>
+    <div className='absolute top-32 left-44 flex size-16 items-center justify-center rounded-full bg-white ring-1 shadow-sm ring-black/5'>
       <img src='/logo512.png' alt='' className='h-9 fill-black' />
     </div>
   )
@@ -78,7 +78,7 @@ const Logo = ({
         },
       }}
       style={{ left, top } as React.CSSProperties}
-      className='absolute flex size-16 items-center justify-center rounded-full bg-white shadow ring-1 ring-black/5 group-data-[dark]:bg-slate-700/60'
+      className='absolute flex size-16 items-center justify-center rounded-full bg-white ring-1 shadow-sm ring-black/5 group-data-[dark]:bg-slate-700/60'
     >
       <img src={src} alt='' className='size-10' />
     </motion.div>

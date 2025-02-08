@@ -26,7 +26,7 @@ export const ErrorDetails = ({ details }: ErrorDetailsProps) => {
   return (
     <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
       <div className='flex flex-col'>
-        <p className='font-bold text-slate-900 dark:text-gray-50 max-md:text-xl md:text-3xl'>{`${details.name}${details.message ? `: ${details.message}` : ''}`}</p>
+        <p className='font-bold text-slate-900 max-md:text-xl md:text-3xl dark:text-gray-50'>{`${details.name}${details.message ? `: ${details.message}` : ''}`}</p>
         <p className='text-sm font-medium text-slate-700 dark:text-gray-200'>
           {t('dashboard.atFile', {
             filename: details.filename ?? 'Unknown file',

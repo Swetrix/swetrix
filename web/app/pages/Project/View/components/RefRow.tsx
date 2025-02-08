@@ -13,7 +13,7 @@ const RefRow = ({ rowName }: { rowName: string }) => {
   const linkClassName = 'text-blue-600 hover:underline dark:text-blue-500'
 
   return (
-    <div className='scrollbar-thin flex items-center overflow-hidden hover-always:overflow-auto'>
+    <div className='scrollbar-thin hover-always-overflow flex items-center'>
       {isUrl && (
         <img
           className='float-left mr-1.5 size-5'

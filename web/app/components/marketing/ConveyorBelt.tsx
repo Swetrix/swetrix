@@ -6,8 +6,8 @@ const Logo = ({ label, className }: { label: string; className: string }) => {
     <div
       className={clsx(
         className,
-        'absolute top-[calc(50%-1rem)] items-center gap-2 whitespace-nowrap px-3 py-1',
-        'bg-gray-700 bg-gradient-to-t from-50% ring-1 ring-inset ring-white/10',
+        'absolute top-[calc(50%-1rem)] flex items-center gap-2 px-3 py-1 whitespace-nowrap',
+        'bg-gray-700 bg-gradient-to-t from-50% ring-1 ring-white/10 ring-inset',
         '[animation-iteration-count:infinite] [animation-name:move-x] [animation-play-state:paused] [animation-timing-function:linear] group-hover:[animation-play-state:running]',
       )}
     >
@@ -28,11 +28,11 @@ export const ConveyorBelt = () => {
             maskRepeat: 'no-repeat',
           }}
         />
-        <div className='relative flex size-24 items-center justify-center rounded-xl bg-gradient-to-t from-white/45 to-white/75 shadow outline outline-offset-[-5px] outline-white/5 ring-1 ring-inset ring-white/10 group-data-[dark]:from-slate-700/45 group-data-[dark]:to-slate-700/75'>
+        <div className='relative flex size-24 items-center justify-center rounded-xl bg-gradient-to-t from-white/45 to-white/75 ring-1 shadow-sm ring-white/10 outline outline-offset-[-5px] outline-white/5 ring-inset group-data-[dark]:from-slate-700/45 group-data-[dark]:to-slate-700/75'>
           <img src='/logo512.png' alt='' className='object-contain' />
         </div>
       </div>
-      <div className='absolute inset-0 grid grid-cols-1 pt-8 [container-type:inline-size]'>
+      <div className='[container-type:inline-size] absolute inset-0 grid grid-cols-1 pt-8'>
         <div className='group relative'>
           <div className='absolute inset-x-0 top-1/2 h-0.5 bg-gradient-to-r from-black/15 from-[2px] to-[2px] bg-[length:12px_100%] group-data-[dark]:from-white/15' />
           <Logo

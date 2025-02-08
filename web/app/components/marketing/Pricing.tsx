@@ -254,7 +254,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
 
   return (
     <>
-      <div id='pricing' className={cx({ 'bg-white dark:bg-slate-900/75': !authenticated })}>
+      <div id='pricing' className={cx('font-mono', { 'bg-white dark:bg-slate-900/75': !authenticated })}>
         <div
           className={cx('max-w-max whitespace-pre-line', {
             'px-4 py-24 sm:px-6 lg:px-8': !authenticated,
@@ -264,10 +264,10 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
           <div className='sm:align-center sm:flex sm:flex-col'>
             {!authenticated && (
               <>
-                <h2 className='text-3xl font-extrabold text-gray-900 dark:text-gray-50 sm:text-center'>
+                <h2 className='font-sans text-4xl font-extrabold text-gray-900 sm:text-center dark:text-gray-50'>
                   {t('pricing.title')}
                 </h2>
-                <p className='my-5 max-w-prose text-xl leading-relaxed text-slate-900 dark:text-slate-300 sm:text-center'>
+                <p className='my-5 text-lg leading-relaxed text-slate-900 sm:text-center dark:text-slate-300'>
                   {t('pricing.adv', {
                     amount: TRIAL_DAYS,
                   })}
@@ -285,7 +285,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
                 <RadioGroup
                   value={billingFrequency}
                   onChange={setBillingFrequency}
-                  className='grid grid-cols-2 gap-x-1 rounded-md p-1 text-center text-xs font-semibold leading-5 ring-1 ring-inset ring-gray-200 dark:ring-slate-700'
+                  className='grid grid-cols-2 gap-x-1 rounded-md p-1 text-center text-xs leading-5 font-semibold ring-1 ring-gray-200 ring-inset dark:ring-slate-700'
                 >
                   <RadioGroup.Label className='sr-only'>{t('pricing.frequency')}</RadioGroup.Label>
                   <RadioGroup.Option
@@ -312,7 +312,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
                   >
                     <Badge
                       label={t('billing.xMonthsFree', { amount: 2 })}
-                      className='absolute -left-1 -top-5 w-max max-w-[200px]'
+                      className='absolute -top-5 -left-1 w-max max-w-[200px]'
                       colour='yellow'
                     />
                     <span>{t('pricing.yearlyBilling')}</span>
@@ -333,20 +333,20 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
             className='arrows-handle mt-5 h-2 w-full appearance-none rounded-full bg-gray-200 dark:bg-slate-600'
             onChange={onSelectPlanChange}
           />
-          <div className='relative mt-5 divide-y rounded-2xl border shadow-sm ring-1 ring-gray-200 dark:ring-slate-700'>
+          <div className='relative mt-5 divide-y rounded-2xl border ring-1 ring-gray-200 dark:ring-slate-700'>
             {user.planCode === selectedTier.planCode && (
-              <div className='absolute left-5 top-0 translate-y-px transform'>
+              <div className='absolute top-0 left-5 translate-y-px transform'>
                 <div className='flex -translate-y-1/2 transform justify-center'>
-                  <span className='inline-flex rounded-full bg-indigo-600 px-4 py-1 text-sm font-semibold uppercase tracking-wider text-white'>
+                  <span className='inline-flex rounded-full bg-indigo-600 px-4 py-1 text-sm font-semibold tracking-wider text-white uppercase'>
                     {t('pricing.currentPlan')}
                   </span>
                 </div>
               </div>
             )}
             {selectedTier.legacy && (
-              <div className='absolute right-5 top-0 translate-y-px transform'>
+              <div className='absolute top-0 right-5 translate-y-px transform'>
                 <div className='flex -translate-y-1/2 transform justify-center'>
-                  <span className='inline-flex rounded-full bg-amber-400 px-2 py-1 text-sm font-semibold uppercase tracking-wider text-white'>
+                  <span className='inline-flex rounded-full bg-amber-400 px-2 py-1 text-sm font-semibold tracking-wider text-white uppercase'>
                     {t('pricing.legacy')}
                   </span>
                 </div>
@@ -390,7 +390,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
                       </Button>
                     ) : (
                       <Link
-                        className='relative inline-flex select-none items-center rounded-md border border-transparent bg-slate-900 px-4 py-2 text-sm font-medium leading-4 text-gray-50 shadow-sm hover:bg-slate-700 dark:bg-indigo-700 dark:hover:bg-indigo-800'
+                        className='relative inline-flex items-center rounded-md border border-transparent bg-slate-900 px-4 py-2 text-sm leading-4 font-medium text-gray-50 select-none hover:bg-slate-700 dark:bg-indigo-700 dark:hover:bg-indigo-800'
                         to={routes.signup}
                         aria-label={t('titles.signup')}
                       >
@@ -404,15 +404,15 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
             <div className='border-none px-6'>
               <hr className='mx-auto w-full border border-gray-300 dark:border-slate-800' />
             </div>
-            <div className='border-none px-6 pb-8 pt-6'>
-              <h3 className='text-xs font-medium uppercase tracking-wide text-gray-900 dark:text-gray-50'>
+            <div className='border-none px-6 pt-6 pb-8'>
+              <h3 className='text-xs font-medium tracking-wide text-gray-900 uppercase dark:text-gray-50'>
                 {t('pricing.whatIncl')}
               </h3>
               {/* space-y-4 */}
               <ul className='mt-6 grid grid-cols-2 gap-4'>
                 {_map(planFeatures, (feature) => (
                   <li key={feature} className='flex space-x-3'>
-                    <CheckIcon className='h-5 w-5 flex-shrink-0 text-green-500' aria-hidden='true' />
+                    <CheckIcon className='h-5 w-5 shrink-0 text-green-500' aria-hidden='true' />
                     <span className='text-sm text-gray-700 dark:text-gray-200'>{feature}</span>
                   </li>
                 ))}
@@ -431,7 +431,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
                 url: (
                   <Link
                     to={routes.contact}
-                    className='font-semibold leading-6 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                    className='leading-6 font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
                     aria-label={t('footer.tos')}
                   />
                 ),
@@ -503,13 +503,13 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
               <div>
                 <h2 className='text-base font-bold'>{t('billing.dueNow')}</h2>
                 <p className='text-sm'>{t('billing.dueNowDescription')}</p>
-                <div className='mt-2 overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
+                <div className='mt-2 overflow-hidden ring-1 ring-black/5 md:rounded-lg'>
                   <table className='200 min-w-full divide-y divide-gray-300 dark:divide-gray-500'>
                     <thead className='bg-gray-50 dark:bg-slate-800'>
                       <tr>
                         <th
                           scope='col'
-                          className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-50 sm:pl-6'
+                          className='py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-gray-50'
                         >
                           {t('common.amount')}
                         </th>
@@ -523,10 +523,10 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
                     </thead>
                     <tbody className='divide-y divide-gray-200 bg-white dark:divide-gray-600 dark:bg-slate-800'>
                       <tr>
-                        <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50 sm:pl-6'>
+                        <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 sm:pl-6 dark:text-gray-50'>
                           {`${subUpdatePreview.immediatePayment.symbol}${subUpdatePreview.immediatePayment.amount}`}
                         </td>
-                        <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50'>
+                        <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-gray-50'>
                           {language === 'en'
                             ? dayjs(subUpdatePreview.immediatePayment.date).locale(language).format('MMMM D, YYYY')
                             : dayjs(subUpdatePreview.immediatePayment.date).locale(language).format('D MMMM, YYYY')}
@@ -549,13 +549,13 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
                   </p>
                 )}
                 <h2 className='mt-5 text-base font-bold'>{t('billing.nextPayment')}</h2>
-                <div className='mt-2 overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
+                <div className='mt-2 overflow-hidden ring-1 ring-black/5 md:rounded-lg'>
                   <table className='200 min-w-full divide-y divide-gray-300 dark:divide-gray-500'>
                     <thead className='bg-gray-50 dark:bg-slate-800'>
                       <tr>
                         <th
                           scope='col'
-                          className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-50 sm:pl-6'
+                          className='py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-gray-50'
                         >
                           {t('common.amount')}
                         </th>
@@ -569,10 +569,10 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
                     </thead>
                     <tbody className='divide-y divide-gray-200 bg-white dark:divide-gray-600 dark:bg-slate-800'>
                       <tr>
-                        <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50 sm:pl-6'>
+                        <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 sm:pl-6 dark:text-gray-50'>
                           {`${subUpdatePreview.nextPayment.symbol}${subUpdatePreview.nextPayment.amount}`}
                         </td>
-                        <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-50'>
+                        <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-gray-50'>
                           {language === 'en'
                             ? dayjs(subUpdatePreview.nextPayment.date).locale(language).format('MMMM D, YYYY')
                             : dayjs(subUpdatePreview.nextPayment.date).locale(language).format('D MMMM, YYYY')}

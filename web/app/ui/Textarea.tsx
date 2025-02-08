@@ -33,15 +33,16 @@ const Textarea = ({
   const isError = !_isEmpty(error)
 
   return (
-    <Field as='div' className={className}>
-      {label && <Label className='flex text-sm font-medium text-gray-700 dark:text-gray-200'>{label}</Label>}
+    <Field as='div' className={cx('font-mono', className)}>
+      {label && <Label className='flex text-sm font-medium text-gray-900 dark:text-gray-200'>{label}</Label>}
       <HeadlessTextarea
         rows={rows}
         name={name}
         className={cx(
-          'block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-800/25 dark:bg-slate-800 dark:text-gray-50 dark:placeholder-gray-400 sm:text-sm',
+          'w-full rounded-md border-0 font-mono ring-1 focus:ring-indigo-500 sm:text-sm dark:bg-slate-800 dark:text-gray-50 dark:placeholder-gray-400',
           {
-            'text-red-900 placeholder-red-300 ring-1 ring-red-600': isError,
+            'text-red-900 placeholder-red-300 ring-red-600': isError,
+            'ring-gray-300 dark:ring-slate-800/50': !isError,
             'cursor-text': disabled,
           },
         )}
@@ -54,7 +55,7 @@ const Textarea = ({
       />
       {isError && <p className='mt-2 text-sm text-red-600 dark:text-red-500'>{error}</p>}
       {hint && (
-        <Description className='mt-2 whitespace-pre-line text-sm text-gray-500 dark:text-gray-300'>{hint}</Description>
+        <Description className='mt-2 text-sm whitespace-pre-line text-gray-500 dark:text-gray-300'>{hint}</Description>
       )}
     </Field>
   )

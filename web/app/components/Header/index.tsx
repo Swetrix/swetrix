@@ -16,6 +16,7 @@ import {
   MenuButton,
   MenuItem,
   MenuItems,
+  DialogPanel,
 } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
@@ -49,6 +50,7 @@ import Flag from '~/ui/Flag'
 import { User } from '~/lib/models/User'
 import { useAppDispatch, StateType } from '~/lib/store'
 import { logout } from '~/utils/auth'
+import SwetrixLogo from '~/ui/icons/SwetrixLogo'
 
 dayjs.extend(utc)
 dayjs.extend(duration)
@@ -103,7 +105,7 @@ const SolutionsMenu = () => {
     <Popover>
       {({ open }) => (
         <>
-          <PopoverButton className='inline-flex items-center gap-x-1 text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
+          <PopoverButton className='inline-flex items-center gap-x-1 text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
             <span>{t('header.solutions.title')}</span>
             <ChevronDownIcon
               className={clsx('h-3 w-3 stroke-2 transition-all', {
@@ -210,7 +212,7 @@ const ThemeMenu = ({ theme, switchTheme }: { theme: string; switchTheme: (i: str
   return (
     <Menu as='div' className='relative ml-3'>
       <div>
-        <MenuButton className='flex items-center justify-center text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
+        <MenuButton className='flex items-center justify-center text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
           <span className='sr-only'>{t('header.switchTheme')}</span>
           {theme === 'dark' ? (
             <SunIcon className='h-6 w-6 cursor-pointer text-gray-200 hover:text-gray-300' aria-hidden='true' />
@@ -228,7 +230,7 @@ const ThemeMenu = ({ theme, switchTheme }: { theme: string; switchTheme: (i: str
         leaveFrom='transform opacity-100 scale-100'
         leaveTo='transform opacity-0 scale-95'
       >
-        <MenuItems className='absolute right-0 z-30 mt-2 w-36 min-w-max origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-slate-200 focus:outline-none dark:bg-slate-900 dark:ring-slate-800'>
+        <MenuItems className='absolute right-0 z-30 mt-2 w-36 min-w-max origin-top-right rounded-md bg-white py-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-900 dark:ring-slate-800'>
           <MenuItem>
             {({ active }) => (
               <div
@@ -286,7 +288,7 @@ const ProfileMenu = ({
       {({ open }) => (
         <>
           <div>
-            <MenuButton className='flex items-center justify-center text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
+            <MenuButton className='flex items-center justify-center text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
               <span>{t('common.account')}</span>
               <ChevronDownIcon
                 className={cx('ml-1 h-4 w-4 transform-gpu stroke-2 transition-transform', {
@@ -305,7 +307,7 @@ const ProfileMenu = ({
             leaveFrom='transform opacity-100 scale-100'
             leaveTo='transform opacity-0 scale-95'
           >
-            <MenuItems className='absolute right-0 z-30 mt-2 w-60 min-w-max origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-slate-200 focus:outline-none dark:bg-slate-900 dark:ring-slate-800'>
+            <MenuItems className='absolute right-0 z-30 mt-2 w-60 min-w-max origin-top-right rounded-md bg-white py-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-900 dark:ring-slate-800'>
               <div className='border-b-[1px] border-gray-200 dark:border-slate-700/50'>
                 <MenuItem>
                   <p className='truncate px-4 py-2' role='none'>
@@ -328,7 +330,7 @@ const ProfileMenu = ({
                         <MenuButton className='flex w-full justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-50 hover:dark:bg-slate-800'>
                           <div className='flex'>
                             <Flag
-                              className='mr-1.5 rounded-sm'
+                              className='mr-1.5 rounded-xs'
                               country={languageFlag[language]}
                               size={20}
                               alt=''
@@ -357,7 +359,7 @@ const ProfileMenu = ({
                         leaveTo='transform opacity-0 scale-95'
                       >
                         <MenuItems
-                          className='absolute right-0 z-50 mt-1 w-full min-w-max origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-slate-200 focus:outline-none dark:bg-slate-800 dark:ring-slate-800'
+                          className='absolute right-0 z-50 mt-1 w-full min-w-max origin-top-right rounded-md bg-white py-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-800 dark:ring-slate-800'
                           static
                         >
                           {_map(whitelist, (lng) => (
@@ -371,7 +373,7 @@ const ProfileMenu = ({
                                 <div className='flex'>
                                   <div className='pt-1'>
                                     <Flag
-                                      className='mr-1.5 rounded-sm'
+                                      className='mr-1.5 rounded-xs'
                                       country={languageFlag[lng]}
                                       size={20}
                                       alt={languageFlag[lng]}
@@ -479,6 +481,12 @@ const ProfileMenu = ({
   )
 }
 
+const Separator = () => (
+  <svg viewBox='0 0 2 2' className='h-0.5 w-0.5 flex-none fill-gray-400'>
+    <circle cx={1} cy={1} r={1} />
+  </svg>
+)
+
 const AuthedHeader = ({
   user,
   switchTheme,
@@ -492,7 +500,7 @@ const AuthedHeader = ({
 }: {
   user: User
   switchTheme: (thm?: string) => void
-  theme: string
+  theme: 'dark' | 'light'
   onLanguageChange: (lng: string) => void
   rawStatus: string | number
   status: string
@@ -504,7 +512,7 @@ const AuthedHeader = ({
 
   return (
     <header
-      className={cx('relative overflow-x-clip', {
+      className={cx('relative overflow-x-clip font-mono', {
         'border-b border-gray-200 bg-gray-50 dark:border-slate-600/40 dark:bg-slate-900': colourBackground,
       })}
     >
@@ -513,21 +521,14 @@ const AuthedHeader = ({
           <div className='flex items-center'>
             {/* Logo */}
             <Link to={routes.main}>
-              <span className='sr-only'>Swetrix</span>
-              <img
-                className='-translate-y-[3px]'
-                height='28px'
-                width='126.35px'
-                src={theme === 'dark' ? '/assets/logo_white.png' : '/assets/logo_blue.png'}
-                alt=''
-              />
+              <SwetrixLogo theme={theme} />
             </Link>
 
             <div className='ml-10 hidden gap-4 space-x-1 lg:flex'>
               {user?.planCode === 'trial' && (
                 <Link
                   to={routes.billing}
-                  className={cx('text-base font-semibold leading-6', {
+                  className={cx('text-base leading-6 font-semibold', {
                     'text-amber-600 hover:text-amber-500': rawStatus === TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS,
                     'text-rose-600 hover:text-rose-500':
                       rawStatus === TRIAL_STATUS_MAPPING.ENDS_TODAY ||
@@ -542,7 +543,7 @@ const AuthedHeader = ({
               {user?.planCode === 'none' && (
                 <Link
                   to={routes.billing}
-                  className='text-base font-semibold leading-6 text-rose-600 hover:text-rose-500'
+                  className='text-base leading-6 font-semibold text-rose-600 hover:text-rose-500'
                   key='NoSubscription'
                 >
                   {t('billing.inactive')}
@@ -554,7 +555,7 @@ const AuthedHeader = ({
                   href={`https://swetrix.com${routes.blog}`}
                   target='_blank'
                   rel='noopener noreferrer'
-                  className='text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                  className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
                 >
                   {t('footer.blog')}
                 </a>
@@ -562,14 +563,14 @@ const AuthedHeader = ({
               {!isSelfhosted && !isDisableMarketingPages && (
                 <Link
                   to={routes.blog}
-                  className='text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                  className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
                 >
                   {t('footer.blog')}
                 </Link>
               )}
               <a
                 href={DOCS_URL}
-                className='text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
                 target='_blank'
                 rel='noreferrer noopener'
               >
@@ -577,13 +578,13 @@ const AuthedHeader = ({
               </a>
               <Link
                 to={routes.dashboard}
-                className='text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
               >
                 {t('common.dashboard')}
               </Link>
             </div>
           </div>
-          <div className='ml-1 hidden flex-wrap items-center justify-center space-x-2 space-y-1 sm:space-y-0 lg:ml-10 lg:flex lg:space-x-4'>
+          <div className='ml-1 hidden flex-wrap items-center justify-center space-y-1 space-x-2 sm:space-y-0 lg:ml-10 lg:flex lg:space-x-4'>
             <ThemeMenu theme={theme} switchTheme={switchTheme} />
             <ProfileMenu user={user} logoutHandler={logoutHandler} onLanguageChange={onLanguageChange} />
           </div>
@@ -607,7 +608,7 @@ const AuthedHeader = ({
             <button
               type='button'
               onClick={openMenu}
-              className='flex items-center gap-x-1 text-sm font-semibold leading-6 text-slate-700 hover:text-slate-600 dark:text-gray-200 dark:hover:text-gray-300'
+              className='flex items-center gap-x-1 text-sm leading-6 font-semibold text-slate-700 hover:text-slate-600 dark:text-gray-200 dark:hover:text-gray-300'
             >
               <span className='sr-only'>{t('common.openMenu')}</span>
               <Bars3Icon className='h-8 w-8 flex-none' aria-hidden='true' />
@@ -628,7 +629,7 @@ const NotAuthedHeader = ({
   openMenu,
 }: {
   switchTheme: (a?: string) => void
-  theme: string
+  theme: 'dark' | 'light'
   onLanguageChange: (lang: string) => void
   colourBackground: boolean
   refPage?: boolean
@@ -641,7 +642,7 @@ const NotAuthedHeader = ({
 
   return (
     <header
-      className={cx('relative overflow-x-clip', {
+      className={cx('relative overflow-x-clip font-mono', {
         'border-b border-gray-200 bg-gray-50 dark:border-slate-600/40 dark:bg-slate-900': colourBackground,
       })}
     >
@@ -650,26 +651,10 @@ const NotAuthedHeader = ({
           <div className='flex items-center'>
             {/* Logo */}
             {refPage ? (
-              <span>
-                <span className='sr-only'>Swetrix</span>
-                <img
-                  className='-translate-y-[3px]'
-                  height='28px'
-                  width='126.35px'
-                  src={theme === 'dark' ? '/assets/logo_white.png' : '/assets/logo_blue.png'}
-                  alt=''
-                />
-              </span>
+              <SwetrixLogo theme={theme} />
             ) : (
               <Link to={routes.main}>
-                <span className='sr-only'>Swetrix</span>
-                <img
-                  className='-translate-y-[3px]'
-                  height='28px'
-                  width='126.35px'
-                  src={theme === 'dark' ? '/assets/logo_white.png' : '/assets/logo_blue.png'}
-                  alt=''
-                />
+                <SwetrixLogo theme={theme} />
               </Link>
             )}
 
@@ -681,7 +666,7 @@ const NotAuthedHeader = ({
                     href={`https://swetrix.com${routes.blog}`}
                     target='_blank'
                     rel='noopener noreferrer'
-                    className='text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                    className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
                   >
                     {t('footer.blog')}
                   </a>
@@ -689,7 +674,7 @@ const NotAuthedHeader = ({
                 {!isSelfhosted && !isDisableMarketingPages && (
                   <Link
                     to={routes.blog}
-                    className='text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                    className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
                   >
                     {t('footer.blog')}
                   </Link>
@@ -697,7 +682,7 @@ const NotAuthedHeader = ({
                 {!isSelfhosted && !isDisableMarketingPages && (
                   <Link
                     to={`${routes.main}#pricing`}
-                    className='text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                    className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
                     key='Pricing'
                   >
                     {t('common.pricing')}
@@ -705,7 +690,7 @@ const NotAuthedHeader = ({
                 )}
                 <a
                   href={DOCS_URL}
-                  className='text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                  className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
                   target='_blank'
                   rel='noreferrer noopener'
                 >
@@ -714,16 +699,16 @@ const NotAuthedHeader = ({
               </div>
             )}
           </div>
-          <div className='ml-1 hidden flex-wrap items-center justify-center space-x-2 space-y-1 sm:space-y-0 lg:ml-10 lg:flex lg:space-x-4'>
+          <div className='ml-1 hidden flex-wrap items-center justify-center space-y-1 space-x-2 sm:space-y-0 lg:ml-10 lg:flex lg:space-x-4'>
             {/* Language selector */}
             <Dropdown
               items={whitelist}
-              buttonClassName='!py-0 inline-flex items-center [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 text-sm font-semibold leading-6 text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+              buttonClassName='!py-0 inline-flex items-center [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 font-semibold leading-6 !text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
               selectItemClassName='text-gray-700 block px-4 py-2 text-base cursor-pointer hover:bg-gray-200 dark:text-gray-50 dark:bg-slate-800 dark:hover:bg-slate-700'
               title={
                 <>
                   <Flag
-                    className='mr-1.5 rounded-sm'
+                    className='mr-1.5 rounded-xs'
                     country={languageFlag[language]}
                     size={18}
                     alt=''
@@ -735,7 +720,7 @@ const NotAuthedHeader = ({
               labelExtractor={(lng: string) => (
                 <div className='flex'>
                   <div className='pt-1'>
-                    <Flag className='mr-1.5 rounded-sm' country={languageFlag[lng]} size={21} alt={languageFlag[lng]} />
+                    <Flag className='mr-1.5 rounded-xs' country={languageFlag[lng]} size={21} alt={languageFlag[lng]} />
                   </div>
                   {languages[lng]}
                 </div>
@@ -746,13 +731,13 @@ const NotAuthedHeader = ({
             <ThemeMenu theme={theme} switchTheme={switchTheme} />
             {!refPage && (
               <>
-                <span className='text-slate-700'>|</span>
+                <Separator />
                 <Link
                   to={routes.signin}
-                  className='flex items-center text-base font-semibold leading-6 text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                  className='flex items-center text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
                 >
                   {t('auth.common.signin')}
-                  <ArrowRightIcon className='ml-1 mt-[1px] h-4 w-4 stroke-2' />
+                  <ArrowRightIcon className='mt-[1px] ml-1 h-4 w-4 stroke-2' />
                 </Link>
               </>
             )}
@@ -777,7 +762,7 @@ const NotAuthedHeader = ({
             <button
               type='button'
               onClick={openMenu}
-              className='flex items-center gap-x-1 text-sm font-semibold leading-6 text-slate-700 hover:text-slate-600 dark:text-gray-200 dark:hover:text-gray-300'
+              className='flex items-center gap-x-1 text-sm leading-6 font-semibold text-slate-700 hover:text-slate-600 dark:text-gray-200 dark:hover:text-gray-300'
             >
               <span className='sr-only'>{t('common.openMenu')}</span>
               <Bars3Icon className='h-8 w-8 flex-none' aria-hidden='true' />
@@ -889,20 +874,11 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
       )}
 
       {/* Mobile header popup */}
-      <Dialog className='lg:hidden' open={mobileMenuOpen} onClose={setMobileMenuOpen}>
+      <Dialog className='font-mono lg:hidden' open={mobileMenuOpen} onClose={setMobileMenuOpen}>
         <div className='fixed inset-0 z-10' />
-        <Dialog.Panel className='fixed inset-y-0 right-0 top-0 z-30 w-full overflow-y-auto border-gray-300/80 bg-gray-100/80 p-4 backdrop-blur-2xl dark:border-slate-900/80 dark:bg-slate-800/80 sm:max-w-sm sm:border'>
+        <DialogPanel className='fixed inset-y-0 top-0 right-0 z-30 w-full overflow-y-auto border-gray-300/80 bg-gray-100/80 p-4 backdrop-blur-2xl sm:max-w-sm sm:border dark:border-slate-900/80 dark:bg-slate-800/80'>
           <div className='flex items-center justify-between'>
-            <div>
-              <span className='sr-only'>Swetrix</span>
-              <img
-                className='-translate-y-[3px]'
-                height='28px'
-                width='126.35px'
-                src={theme === 'dark' ? '/assets/logo_white.png' : '/assets/logo_blue.png'}
-                alt=''
-              />
-            </div>
+            <SwetrixLogo theme={theme} />
             <div className='flex items-center justify-center space-x-3'>
               {/* Theme switch */}
               {theme === 'dark' ? (
@@ -923,7 +899,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
               <button
                 type='button'
                 onClick={() => setMobileMenuOpen(false)}
-                className='flex items-center gap-x-1 text-sm font-semibold leading-6 text-slate-700 hover:text-slate-600 dark:text-gray-200 dark:hover:text-gray-300'
+                className='flex items-center gap-x-1 text-sm leading-6 font-semibold text-slate-700 hover:text-slate-600 dark:text-gray-200 dark:hover:text-gray-300'
               >
                 <span className='sr-only'>{t('common.openMenu')}</span>
                 <XMarkIcon className='h-8 w-8 flex-none' aria-hidden='true' />
@@ -937,10 +913,10 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                 <Menu as='div' className='-mx-3'>
                   {({ open }) => (
                     <>
-                      <MenuButton className='flex w-full items-center justify-between rounded-lg py-2 pl-3 pr-3.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'>
+                      <MenuButton className='flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'>
                         <div className='flex'>
                           <Flag
-                            className='mr-1.5 rounded-sm'
+                            className='mr-1.5 rounded-xs'
                             country={languageFlag[language]}
                             size={20}
                             alt=''
@@ -965,7 +941,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                         leaveTo='transform opacity-0 scale-95'
                       >
                         <MenuItems
-                          className='absolute right-0 z-50 mt-1 w-full min-w-max origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-slate-200 focus:outline-none dark:bg-slate-800 dark:ring-slate-800'
+                          className='absolute right-0 z-50 mt-1 w-full min-w-max origin-top-right rounded-md bg-white py-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-800 dark:ring-slate-800'
                           static
                         >
                           {_map(whitelist, (lng) => (
@@ -979,7 +955,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                                 <div className='flex'>
                                   <div className='pt-1'>
                                     <Flag
-                                      className='mr-1.5 rounded-sm'
+                                      className='mr-1.5 rounded-xs'
                                       country={languageFlag[lng]}
                                       size={20}
                                       alt={languageFlag[lng]}
@@ -999,7 +975,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                   <Disclosure as='div' className='-mx-3'>
                     {({ open }) => (
                       <>
-                        <Disclosure.Button className='flex w-full items-center justify-between rounded-lg py-2 pl-3 pr-3.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'>
+                        <Disclosure.Button className='flex w-full items-center justify-between rounded-lg py-2 pr-3.5 pl-3 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'>
                           {t('header.solutions.title')}
                           <ChevronDownIcon
                             className={cx(open ? 'rotate-180' : '', 'h-5 w-5 flex-none')}
@@ -1051,7 +1027,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                     to={routes.billing}
                     onClick={() => setMobileMenuOpen(false)}
                     className={cx(
-                      '-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 hover:bg-gray-300/50 dark:hover:bg-slate-700/80',
+                      '-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold hover:bg-gray-300/50 dark:hover:bg-slate-700/80',
                       {
                         'text-amber-600': rawStatus === TRIAL_STATUS_MAPPING.ENDS_IN_X_DAYS,
                         'text-rose-600':
@@ -1069,7 +1045,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                   <Link
                     to={routes.billing}
                     onClick={() => setMobileMenuOpen(false)}
-                    className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-rose-600 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'
+                    className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-rose-600 hover:bg-gray-300/50 dark:hover:bg-slate-700/80'
                     key='NoSubscription'
                   >
                     {t('billing.inactive')}
@@ -1079,7 +1055,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                   <Link
                     to={routes.billing}
                     onClick={() => setMobileMenuOpen(false)}
-                    className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
+                    className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
                     key='Billing'
                   >
                     {t('common.billing')}
@@ -1089,7 +1065,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                   <Link
                     to={`${routes.main}#pricing`}
                     onClick={() => setMobileMenuOpen(false)}
-                    className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
+                    className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
                     key='Pricing'
                   >
                     {t('common.pricing')}
@@ -1101,7 +1077,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                     href={`https://swetrix.com${routes.blog}`}
                     target='_blank'
                     rel='noopener noreferrer'
-                    className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
+                    className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
                   >
                     {t('footer.blog')}
                   </a>
@@ -1110,7 +1086,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                   <Link
                     to={routes.blog}
                     onClick={() => setMobileMenuOpen(false)}
-                    className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
+                    className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
                   >
                     {t('footer.blog')}
                   </Link>
@@ -1118,7 +1094,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                 <a
                   href={DOCS_URL}
                   onClick={() => setMobileMenuOpen(false)}
-                  className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
+                  className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
                   target='_blank'
                   rel='noreferrer noopener'
                 >
@@ -1128,7 +1104,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                   <Link
                     to={routes.dashboard}
                     onClick={() => setMobileMenuOpen(false)}
-                    className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
+                    className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
                   >
                     {t('common.dashboard')}
                   </Link>
@@ -1140,7 +1116,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                     <Link
                       to={routes.user_settings}
                       onClick={() => setMobileMenuOpen(false)}
-                      className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
+                      className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
                     >
                       {t('common.accountSettings')}
                     </Link>
@@ -1148,13 +1124,13 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                       <Link
                         to={routes.organisations}
                         onClick={() => setMobileMenuOpen(false)}
-                        className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
+                        className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
                       >
                         {t('organisations.organisations')}
                       </Link>
                     )}
                     <span
-                      className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
+                      className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
                       onClick={logoutHandler}
                     >
                       {t('common.logout')}
@@ -1165,14 +1141,14 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                     <Link
                       to={routes.signin}
                       onClick={() => setMobileMenuOpen(false)}
-                      className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
+                      className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
                     >
                       {t('auth.common.signin')}
                     </Link>
                     <Link
                       to={routes.signup}
                       onClick={() => setMobileMenuOpen(false)}
-                      className='-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
+                      className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
                       aria-label={t('titles.signup')}
                     >
                       {t('common.getStarted')}
@@ -1182,7 +1158,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
               </div>
             </div>
           </div>
-        </Dialog.Panel>
+        </DialogPanel>
       </Dialog>
     </Popover>
   )

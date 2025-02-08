@@ -60,12 +60,7 @@ const UserFlow = ({ setReversed, isReversed }: UserFlowProps) => {
   useEffect(() => {
     fetchUserFlow()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period, timeBucket, from, to, timezone, projectId])
-
-  useEffect(() => {
-    fetchUserFlow()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters])
+  }, [filters, period, timeBucket, from, to, timezone, projectId])
 
   if (isLoading || isLoading === null) {
     return <Loader />
@@ -86,7 +81,7 @@ const UserFlow = ({ setReversed, isReversed }: UserFlowProps) => {
           onClick={() => {
             setReversed()
           }}
-          className='mt-2 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-none dark:border-gray-600 dark:bg-slate-700 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700 sm:w-auto sm:text-sm'
+          className='mt-2 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 sm:w-auto sm:text-sm dark:border-none dark:border-gray-600 dark:bg-slate-700 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700'
         >
           {t('project.reverse')}
         </button>

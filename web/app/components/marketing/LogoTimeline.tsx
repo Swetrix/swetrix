@@ -30,8 +30,8 @@ const Logo = ({ label, icon, className }: { label: string; icon: React.ReactNode
     <div
       className={clsx(
         className,
-        'absolute top-2 grid grid-cols-[1rem,1fr] items-center gap-2 whitespace-nowrap px-3 py-1',
-        'rounded-full bg-gradient-to-t from-gray-800 from-50% to-gray-700 ring-1 ring-inset ring-white/10',
+        'absolute top-2 flex items-center gap-2 px-3 py-1 whitespace-nowrap',
+        'rounded-full bg-gradient-to-t from-gray-800 from-50% to-gray-700 ring-1 ring-white/10 ring-inset',
         '[--move-x-from:-100%] [--move-x-to:calc(100%+100cqw)] [animation-iteration-count:infinite] [animation-name:move-x] [animation-play-state:paused] [animation-timing-function:linear] group-hover:[animation-play-state:running]',
       )}
     >
@@ -53,11 +53,11 @@ export const LogoTimeline = () => {
             maskRepeat: 'no-repeat',
           }}
         />
-        <div className='relative flex size-24 items-center justify-center rounded-xl bg-gradient-to-t from-white/5 to-white/25 shadow outline outline-offset-[-5px] outline-white/5 ring-1 ring-inset ring-white/10 group-data-[dark]:from-slate-700/5 group-data-[dark]:to-slate-700/25'>
+        <div className='relative flex size-24 items-center justify-center rounded-xl bg-gradient-to-t from-white/5 to-white/25 ring-1 shadow-sm ring-white/10 outline outline-offset-[-5px] outline-white/5 ring-inset group-data-[dark]:from-slate-700/5 group-data-[dark]:to-slate-700/25'>
           <img src='/logo512.png' alt='' className='object-contain' />
         </div>
       </div>
-      <div className='absolute inset-0 grid grid-cols-1 pt-8 [container-type:inline-size]'>
+      <div className='[container-type:inline-size] absolute inset-0 grid grid-cols-1 pt-8'>
         <Row>
           <Logo
             label='React'

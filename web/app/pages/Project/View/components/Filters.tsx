@@ -16,10 +16,8 @@ import { FilterIcon } from 'lucide-react'
 interface FilterProps {
   column: string
   filter: string
-  isExclusive: boolean
-  // eslint-disable-next-line no-shadow
+  isExclusive: Boolean
   onRemoveFilter: (column: string, filter: string) => void
-  // eslint-disable-next-line no-shadow
   onChangeExclusive: (column: string, filter: string, isExclusive: boolean) => void
   tnMapping: Record<string, string>
   canChangeExclusive?: boolean
@@ -77,7 +75,7 @@ export const Filter = ({
     <span
       title={truncatedFilter === displayFilter ? undefined : displayFilter}
       className={cx(
-        'm-1 inline-flex items-center rounded-md bg-gray-50 py-0.5 pl-2.5 pr-1 text-sm font-medium text-gray-800 dark:bg-slate-800 dark:text-gray-50',
+        'm-1 inline-flex items-center rounded-md bg-gray-50 py-0.5 pr-1 pl-2.5 font-mono text-sm font-medium text-gray-800 dark:bg-slate-800 dark:text-gray-50',
         {
           'pr-2': !removable,
         },
@@ -97,7 +95,7 @@ export const Filter = ({
       ) : (
         <span>{t(`common.${isExclusive ? 'isNot' : 'is'}`)}</span>
       )}
-      &nbsp; &quot;
+      &nbsp;&quot;
       {truncatedFilter}
       &quot;
       {removable && (
@@ -105,7 +103,7 @@ export const Filter = ({
           onClick={() => onRemoveFilter(column, filter)}
           type='button'
           className={cx(
-            'ml-0.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-gray-800 hover:bg-gray-300 hover:text-gray-900 focus:bg-gray-300 focus:text-gray-900 focus:outline-none dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300 dark:focus:bg-gray-800 dark:focus:text-gray-300',
+            'ml-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-gray-800 hover:bg-gray-300 hover:text-gray-900 focus:bg-gray-300 focus:text-gray-900 focus:outline-hidden dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300 dark:focus:bg-gray-800 dark:focus:text-gray-300',
             {
               'cursor-wait': dataLoading,
             },
@@ -122,9 +120,7 @@ export const Filter = ({
 }
 
 interface FiltersProps {
-  // eslint-disable-next-line no-shadow
   onRemoveFilter: (column: string, filter: string) => void
-  // eslint-disable-next-line no-shadow
   onChangeExclusive: (column: string, filter: string, isExclusive: boolean) => void
   tnMapping: Record<string, string>
   resetFilters: () => void
@@ -138,12 +134,9 @@ const Filters = ({ onRemoveFilter, onChangeExclusive, tnMapping, resetFilters }:
   }
 
   return (
-    <div className='flex items-center justify-between rounded-md bg-slate-200 p-1 shadow dark:border dark:border-slate-800/50 dark:bg-slate-800/25'>
+    <div className='flex items-center justify-between rounded-md border border-gray-300 bg-slate-200 p-1 dark:border-slate-800/50 dark:bg-slate-800/25'>
       <div className='flex items-center'>
-        <FilterIcon
-          className='box-content size-6 flex-shrink-0 px-1 text-gray-700 dark:text-gray-200'
-          strokeWidth={1.5}
-        />
+        <FilterIcon className='box-content size-6 shrink-0 px-1 text-gray-700 dark:text-gray-200' strokeWidth={1.5} />
         <div className='flex flex-wrap'>
           {_map(filters, (props) => {
             const { column, filter } = props
@@ -165,7 +158,7 @@ const Filters = ({ onRemoveFilter, onChangeExclusive, tnMapping, resetFilters }:
       </div>
       <XMarkIcon
         className={cx(
-          'box-content size-6 flex-shrink-0 cursor-pointer stroke-2 px-1 text-gray-800 hover:text-gray-600 dark:text-gray-200 dark:hover:text-gray-300',
+          'box-content size-6 shrink-0 cursor-pointer stroke-2 px-1 text-gray-800 hover:text-gray-600 dark:text-gray-200 dark:hover:text-gray-300',
           {
             'cursor-wait': dataLoading,
           },

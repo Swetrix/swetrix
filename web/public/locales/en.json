@@ -124,7 +124,8 @@
     "notSet": "Not set",
     "remove": "Remove",
     "pagination": "Showing <0>{{start}}</0> to <0>{{end}}</0> of <0>{{total}}</0> results",
-    "resultsPerPage": "Results per page"
+    "resultsPerPage": "Results per page",
+    "communityEdition": "Community Edition"
   },
   "featureFlags": {
     "title": "Feature Flags",
@@ -1139,6 +1140,7 @@
     "page": "Page",
     "reverse": "Reverse",
     "userFlow": {
+      "title": "User flow",
       "noData": "User flow is not available yet due to lack of data, or you disabled this feature in the tracking script parameters"
     },
     "noDateRange": "Please select a date range",
@@ -1353,8 +1355,7 @@
   "footer": {
     "slogan": "The best apps need the best services.",
     "description": "Swetrix is a powerful analytics platform that respects user privacy.",
-    "madeIn": "Made in",
-    "hostedIn": "Hosted in the",
+    "madeInHostedIn": "Made in <0></0> / <1></1>, hosted in <2></2>",
     "ukraine": "Ukraine",
     "eu": "European Union",
     "support": "Support",

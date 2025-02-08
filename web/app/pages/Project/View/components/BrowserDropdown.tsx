@@ -35,7 +35,7 @@ const BrowserDropdown = ({ onSelect, title }: BrowserDropdownProps) => {
         {title} {show ? <ChevronUpIcon className='inline size-4' /> : <ChevronDownIcon className='inline size-4' />}
       </span>
       {show && (
-        <div className='top-15 absolute left-5 z-10 mt-2 max-h-[200px] min-w-[250px] overflow-auto rounded-md border border-gray-200 bg-white text-gray-900 shadow-lg dark:border-slate-700/50 dark:bg-slate-900'>
+        <div className='absolute top-12 left-5 z-10 mt-2 max-h-[200px] min-w-[250px] overflow-auto rounded-md border border-gray-200 bg-white text-gray-900 dark:border-slate-700/50 dark:bg-slate-900'>
           <div className='flex w-full flex-col p-2'>
             <p className='px-1 text-sm font-semibold text-gray-900 dark:text-gray-50'>{t('project.browserInfo')}</p>
             {_map(OPTIONS, ({ label, value }) => (
@@ -49,7 +49,7 @@ const BrowserDropdown = ({ onSelect, title }: BrowserDropdownProps) => {
             ))}
           </div>
           <XMarkIcon
-            className='absolute right-2 top-2 h-5 w-5 cursor-pointer text-gray-900 dark:text-gray-50'
+            className='absolute top-2 right-2 h-5 w-5 cursor-pointer text-gray-900 dark:text-gray-50'
             onClick={() => setShow(!show)}
           />
         </div>

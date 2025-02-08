@@ -100,14 +100,14 @@ const CreateNewPassword = () => {
 
   return (
     <div>
-      <div className='flex min-h-min-footer flex-col bg-gray-50 px-4 py-6 dark:bg-slate-900 sm:px-6 lg:px-8'>
+      <div className='min-h-min-footer flex flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
         <div className='sm:mx-auto sm:w-full sm:max-w-md'>
-          <h2 className='text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-gray-50'>
+          <h2 className='text-center text-2xl leading-9 font-bold tracking-tight text-gray-900 dark:text-gray-50'>
             {t('auth.recovery.title')}
           </h2>
         </div>
-        <div className='mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]'>
-          <div className='bg-white px-6 py-12 shadow dark:bg-slate-800/20 dark:ring-1 dark:ring-slate-800 sm:rounded-lg sm:px-12'>
+        <div className='mt-10 font-mono sm:mx-auto sm:w-full sm:max-w-[480px]'>
+          <div className='bg-white px-6 py-12 ring-1 ring-gray-200 sm:rounded-lg sm:px-12 dark:bg-slate-800/20 dark:ring-slate-800'>
             <form className='space-y-6' onSubmit={handleSubmit}>
               <Input
                 name='password'
@@ -131,7 +131,7 @@ const CreateNewPassword = () => {
               </Button>
             </form>
           </div>
-          <p className='mb-4 mt-10 text-center text-sm text-gray-500 dark:text-gray-200'>
+          <p className='mt-10 mb-4 text-center text-sm text-gray-500 dark:text-gray-200'>
             <Trans
               t={t}
               i18nKey='auth.signup.alreadyAMember'
@@ -140,7 +140,7 @@ const CreateNewPassword = () => {
                 url: (
                   <Link
                     to={routes.signin}
-                    className='font-semibold leading-6 text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                    className='leading-6 font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
                     aria-label={t('footer.tos')}
                   />
                 ),

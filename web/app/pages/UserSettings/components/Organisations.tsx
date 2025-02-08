@@ -2,6 +2,7 @@ import React, { memo, useState } from 'react'
 import dayjs from 'dayjs'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
+import cx from 'clsx'
 import _map from 'lodash/map'
 import _filter from 'lodash/filter'
 
@@ -72,18 +73,22 @@ const Organisations = ({ membership }: OrganisationsProps) => {
 
   return (
     <tr className='dark:bg-slate-800'>
-      <td className='whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6'>
+      <td className='py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-6 dark:text-white'>
         {organisation.name}
       </td>
-      <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-white'>
+      <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-white'>
         {t(`organisations.role.${role}.name`)}
       </td>
-      <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-white'>
+      <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-white'>
         {language === 'en'
           ? dayjs(created).locale(language).format('MMMM D, YYYY')
           : dayjs(created).locale(language).format('D MMMM, YYYY')}
       </td>
-      <td className='relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6'>
+      <td
+        className={cx('relative py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-6', {
+          hidden: role === 'owner',
+        })}
+      >
         {confirmed ? (
           <Button onClick={() => setShowDeleteModal(true)} danger small>
             {t('common.quit')}

@@ -114,7 +114,7 @@ const getSettings = (
     },
     tooltip: {
       contents: (item: any, _: any, __: any, color: any) => {
-        return `<ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-800 rounded-md shadow-md px-3 py-1'>
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
           <li class='font-semibold'>${
             timeFormat === TimeFormat['24-hour']
               ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
@@ -125,7 +125,7 @@ const getSettings = (
             return `
             <li class='flex justify-between'>
               <div class='flex justify-items-start'>
-                <div class='w-3 h-3 rounded-sm mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
+                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
                 <span>${el.name}</span>
               </div>
               <span class='pl-4'>${el.value}</span>

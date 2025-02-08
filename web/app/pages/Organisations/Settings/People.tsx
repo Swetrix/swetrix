@@ -63,22 +63,22 @@ const UsersList = ({ members, onRemove }: UsersListProps) => {
 
   return members.map((member) => (
     <tr key={member.id} className='dark:bg-slate-800'>
-      <td className='whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6'>
+      <td className='py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-6 dark:text-white'>
         {member.user.email}
       </td>
-      <td className='whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-white'>
+      <td className='px-3 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-white'>
         {language === 'en'
           ? dayjs(member.created).locale(language).format('MMMM D, YYYY')
           : dayjs(member.created).locale(language).format('D MMMM, YYYY')}
       </td>
-      <td className='relative whitespace-nowrap py-4 pr-2 text-right text-sm font-medium'>
+      <td className='relative py-4 pr-2 text-right text-sm font-medium whitespace-nowrap'>
         {member.confirmed ? (
           <div>
             <button
               onClick={() => setRoleEditDropdownId((prev) => (prev === member.id ? null : member.id))}
               type='button'
               disabled={member.user.email === user.email || member.role === 'owner'}
-              className='inline-flex items-center rounded-full border border-gray-200 bg-white py-0.5 pl-2 pr-1 text-sm font-medium leading-5 text-gray-700 shadow-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-80 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-gray-600'
+              className='inline-flex items-center rounded-full border border-gray-200 bg-white py-0.5 pr-1 pl-2 text-sm leading-5 font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-80 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-gray-600'
             >
               {t(`organisations.role.${member.role}.name`)}
               <ChevronDownIcon
@@ -89,7 +89,7 @@ const UsersList = ({ members, onRemove }: UsersListProps) => {
             {roleEditDropdownId === member.id ? (
               <ul
                 ref={openRef}
-                className='absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 rounded-md bg-white text-left shadow-lg focus:outline-none dark:divide-gray-700 dark:bg-slate-900'
+                className='absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 rounded-md bg-white text-left focus:outline-hidden dark:divide-gray-700 dark:bg-slate-900'
               >
                 {_map(roles, (itRole, index) => (
                   <li
@@ -110,7 +110,7 @@ const UsersList = ({ members, onRemove }: UsersListProps) => {
                         </span>
                       )}
                     </div>
-                    <p className='mt-1 whitespace-normal text-sm text-gray-500 group-hover:text-gray-200'>
+                    <p className='mt-1 text-sm whitespace-normal text-gray-500 group-hover:text-gray-200'>
                       {t(`organisations.role.${itRole}.desc`)}
                     </p>
                   </li>
@@ -271,7 +271,7 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
   }
 
   return (
-    <div className='mb-6 mt-6'>
+    <div className='mt-6 mb-6'>
       <div className='mb-3 flex items-center justify-between'>
         <div>
           <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
@@ -293,13 +293,13 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
           <div className='mt-3 flex flex-col'>
             <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8'>
               <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
-                <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg'>
+                <div className='overflow-hidden ring-1 ring-black/10 md:rounded-lg'>
                   <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
                     <thead>
                       <tr className='dark:bg-slate-800'>
                         <th
                           scope='col'
-                          className='py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6'
+                          className='py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-white'
                         >
                           {t('auth.common.email')}
                         </th>
@@ -347,7 +347,7 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
         customButtons={
           <button
             type='button'
-            className='inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm'
+            className='inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm'
             onClick={handleSubmit}
           >
             {t('common.invite')}
@@ -428,7 +428,7 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
                 {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
                 <label
                   className={cx(
-                    'relative flex cursor-pointer rounded-bl-md rounded-br-md border border-gray-200 p-4 dark:border-gray-500',
+                    'relative flex cursor-pointer rounded-br-md rounded-bl-md border border-gray-200 p-4 dark:border-gray-500',
                     {
                       'z-10 border-indigo-200 bg-indigo-50 dark:border-indigo-800/40 dark:bg-indigo-600/40':
                         form.role === 'viewer',
