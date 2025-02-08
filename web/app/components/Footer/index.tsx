@@ -7,8 +7,6 @@ import Flag from '~/ui/Flag'
 import {
   isSelfhosted,
   DONATE_URL,
-  FIREFOX_ADDON_URL,
-  CHROME_EXTENSION_URL,
   GITHUB_URL,
   LINKEDIN_URL,
   STATUSPAGE_URL,
@@ -133,25 +131,6 @@ const navigation = {
           src='/assets/linkedin.svg'
           alt='LinkedIn'
         />
-      ),
-    },
-    {
-      name: 'Firefox Addon',
-      href: FIREFOX_ADDON_URL,
-      icon: () => (
-        <img
-          className='h-6 w-6 opacity-75 hover:opacity-90'
-          aria-hidden='true'
-          src='/assets/firefox.svg'
-          alt='Firefox'
-        />
-      ),
-    },
-    {
-      name: 'Chrome Extension',
-      href: CHROME_EXTENSION_URL,
-      icon: () => (
-        <img className='h-6 w-6 opacity-75 hover:opacity-90' aria-hidden='true' src='/assets/chrome.svg' alt='Chrome' />
       ),
     },
   ],
