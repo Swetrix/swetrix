@@ -36,7 +36,7 @@ const Input = ({
   return (
     <Field as='div' className={className}>
       {label ? (
-        <Label className='mb-1 flex font-mono text-sm font-medium text-gray-700 dark:text-gray-200'>
+        <Label className='mb-1 flex font-mono text-sm font-medium text-gray-900 dark:text-gray-200'>
           {label}
           {isBeta && (
             <div className='ml-5'>

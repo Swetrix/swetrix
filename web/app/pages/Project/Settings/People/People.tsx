@@ -27,7 +27,7 @@ const NoPeople = () => {
   const { t } = useTranslation('common')
 
   return (
-    <div className='flex flex-col py-6 sm:px-6 lg:px-8'>
+    <div className='flex flex-col py-6 font-mono sm:px-6 lg:px-8'>
       <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>
         <h2 className='mb-8 px-4 text-center text-xl leading-snug'>{t('project.settings.noPeople')}</h2>
       </div>
@@ -281,7 +281,7 @@ const People = ({ project }: PeopleProps) => {
         {_isEmpty(share) ? (
           <NoPeople />
         ) : (
-          <div className='mt-3 flex flex-col'>
+          <div className='mt-3 flex flex-col font-mono'>
             <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 md:overflow-x-visible lg:-mx-8'>
               <div className='inline-block min-w-full py-2 md:px-6 lg:px-8'>
                 <div className='ring-1 shadow-sm ring-black/5 md:rounded-lg'>
