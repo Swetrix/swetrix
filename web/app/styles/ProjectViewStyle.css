@@ -8,50 +8,44 @@
 
 /* dark theme config */
 html.dark .bb-legend-item text {
-  fill: #d1d5db;
+  fill: var(--color-gray-300);
 }
 
 html.dark .bb-axis {
-  fill: #d1d5db;
+  fill: var(--color-gray-300);
 }
 
 html.dark .bb-axis .domain {
-  stroke: #334155;
+  stroke: var(--color-slate-700);
 }
 
 html.dark .bb-axis .tick line {
-  stroke: #334155;
+  stroke: var(--color-slate-700);
 }
 
 html.dark .bb-xgrid-focus {
-  /* slate-600 */
-  stroke: #475569;
+  stroke: var(--color-slate-600);
 }
 
 /* light theme config */
 html.light .bb-legend-item text {
-  /* gray-800 */
-  fill: #1f2937;
+  fill: var(--color-gray-800);
 }
 
 html.light .bb-axis {
-  /* gray-700 */
-  fill: #374151;
+  fill: var(--color-gray-700);
 }
 
 html.light .bb-axis .domain {
-  /* slate-400 */
-  stroke: #94a3b8;
+  stroke: var(--color-gray-300);
 }
 
 html.light .bb-axis .tick line {
-  /* slate-400 */
-  stroke: #94a3b8;
+  stroke: var(--color-gray-300);
 }
 
 html.light .bb-xgrid-focus {
-  /* slate-400 */
-  stroke: #94a3b8;
+  stroke: var(--color-gray-300);
 }
 
 .bb-xgrid-focus {
@@ -78,27 +72,27 @@ html.light .bb-xgrid-focus {
 }
 
 .bb-target-unique .bb-bar {
-  stroke: #2563eb !important;
+  stroke: var(--color-blue-600) !important;
 }
 
 .bb-target-results .bb-bar {
-  stroke: #2563eb !important;
+  stroke: var(--color-blue-600) !important;
 }
 
 .bb-target-total .bb-bar {
-  stroke: #d97706 !important;
+  stroke: var(--color-amber-600) !important;
 }
 
 .bb-target-sessionDuration .bb-bar {
-  stroke: #c945ed !important;
+  stroke: var(--color-fuchsia-500) !important;
 }
 
 .bb-target-bounce .bb-bar {
-  stroke: #2ac4b3 !important;
+  stroke: var(--color-teal-400) !important;
 }
 
 .bb-target-viewsPerUnique .bb-bar {
-  stroke: #f87171 !important;
+  stroke: var(--color-red-400) !important;
 }
 
 .bb-target-dns .bb-bar {
@@ -126,7 +120,7 @@ html.light .bb-xgrid-focus {
 }
 
 .bb-target-ttfb .bb-bar {
-  stroke: #00a8e8 !important;
+  stroke: var(--color-sky-500) !important;
 }
 
 .bb-target-frontend .bb-bar {
@@ -138,7 +132,7 @@ html.light .bb-xgrid-focus {
 }
 
 .bb-target-backend .bb-bar {
-  stroke: #00a8e8 !important;
+  stroke: var(--color-sky-500) !important;
 }
 
 .bb-target-p50 .bb-bar {
@@ -154,7 +148,7 @@ html.light .bb-xgrid-focus {
 }
 
 .bb-target-events .bb-bar {
-  stroke: #2563eb !important;
+  stroke: var(--color-blue-500) !important;
 }
 
 .bb-target-dropoff .bb-bar {
@@ -178,7 +172,7 @@ html.light .bb-xgrid-focus {
 }
 
 .bb-target-occurrences .bb-bar {
-  stroke: #dc2626 !important;
+  stroke: var(--color-red-600) !important;
 }
 
 @media (max-width: 640px) {
