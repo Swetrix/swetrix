@@ -14,7 +14,6 @@ import { getAccessToken } from '~/utils/accessToken'
 import _map from 'lodash/map'
 import { ComparisonTable } from '~/components/marketing/ComparisonTable'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
-import { SquareArrowOutUpRightIcon } from 'lucide-react'
 
 interface LoaderProps {
   theme: 'dark' | 'light'
@@ -65,20 +64,6 @@ const Marketers = () => {
           />
         </div>
         <Header ssrTheme={ssrTheme} authenticated={authenticated} transparent />
-        <div className='flex items-center justify-center px-2 py-2'>
-          <a
-            href='https://u24.gov.ua/'
-            target='_blank'
-            rel='noreferrer noopener'
-            className='border-b-2 border-transparent text-center text-slate-900 hover:border-slate-900 dark:text-white dark:hover:border-white'
-          >
-            {t('main.ukrSupport')}
-          </a>
-          <SquareArrowOutUpRightIcon
-            className='ml-1 hidden h-4 w-4 text-slate-800 md:block dark:text-white'
-            strokeWidth={1.5}
-          />
-        </div>
         <div className='relative mx-auto min-h-[740px] pt-10 pb-5 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
           <div className='relative z-20 flex flex-col content-between justify-center'>
             <div className='relative mx-auto flex flex-col px-4 text-left'>
@@ -93,10 +78,10 @@ const Marketers = () => {
                   }}
                 />
               </h1>
-              <p className='mx-auto mt-4 max-w-6xl text-center text-base leading-8 text-slate-900 sm:text-xl lg:text-lg xl:text-lg dark:text-slate-300'>
+              <p className='mx-auto mt-4 max-w-6xl text-center font-mono text-base leading-8 text-slate-900 sm:text-xl lg:text-lg xl:text-lg dark:text-slate-300'>
                 {t('marketers.description')}
               </p>
-              <div className='mt-10 flex flex-col items-center justify-center sm:flex-row'>
+              <div className='mt-10 flex flex-col items-center justify-center font-mono sm:flex-row'>
                 <Link
                   to={routesPath.signup}
                   className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white ring-1 shadow-xs ring-slate-900 transition-all !duration-300 hover:bg-slate-700 sm:mr-6 sm:max-w-[210px] dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600'
@@ -117,7 +102,7 @@ const Marketers = () => {
               </div>
               <a
                 href={BOOK_A_CALL_URL}
-                className='mx-auto mt-8 flex max-w-max items-center border-0 font-bold text-slate-900 hover:underline dark:text-gray-100'
+                className='mx-auto mt-8 flex max-w-max items-center border-0 font-mono font-bold text-slate-900 hover:underline dark:text-gray-100'
                 target='_blank'
                 rel='noopener noreferrer'
                 aria-label={`${t('common.bookACall')} (opens in a new tab)`}
@@ -150,7 +135,7 @@ const Marketers = () => {
           <div key={item.name} className='mb-10 text-slate-900 last:mb-0 dark:text-white'>
             <h2 className='mb-5 text-4xl font-extrabold'>{item.name}</h2>
             {_map(item.desc, (descText) => (
-              <p key={descText} className='mb-5 text-lg'>
+              <p key={descText} className='mb-5 font-mono text-lg'>
                 <Trans
                   t={t}
                   components={{
