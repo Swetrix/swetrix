@@ -100,7 +100,7 @@ function Dropdown<T>({
             <MenuItems
               static
               className={cx(
-                'absolute right-0 z-50 mt-2 w-40 min-w-max origin-top-right rounded-md bg-white font-mono ring-1 shadow-lg ring-black/50 focus:outline-hidden dark:bg-slate-800',
+                'absolute right-0 z-50 mt-2 w-40 min-w-max origin-top-right rounded-md bg-white font-mono ring-1 shadow-lg ring-black/5 focus:outline-hidden dark:bg-slate-800',
                 menuItemsClassName,
                 {
                   'divide-y divide-gray-100 dark:divide-gray-600': header,

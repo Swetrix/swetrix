@@ -301,7 +301,7 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
           <div className='mt-3 flex flex-col'>
             <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8'>
               <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
-                <div className='overflow-hidden ring-1 shadow-sm ring-black/50 md:rounded-lg'>
+                <div className='overflow-hidden ring-1 shadow-sm ring-black/5 md:rounded-lg'>
                   <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
                     <thead>
                       <tr className='dark:bg-slate-800'>

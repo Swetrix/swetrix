@@ -503,7 +503,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
               <div>
                 <h2 className='text-base font-bold'>{t('billing.dueNow')}</h2>
                 <p className='text-sm'>{t('billing.dueNowDescription')}</p>
-                <div className='mt-2 overflow-hidden ring-1 shadow-sm ring-black/50 md:rounded-lg'>
+                <div className='mt-2 overflow-hidden ring-1 shadow-sm ring-black/5 md:rounded-lg'>
                   <table className='200 min-w-full divide-y divide-gray-300 dark:divide-gray-500'>
                     <thead className='bg-gray-50 dark:bg-slate-800'>
                       <tr>
@@ -549,7 +549,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
                   </p>
                 )}
                 <h2 className='mt-5 text-base font-bold'>{t('billing.nextPayment')}</h2>
-                <div className='mt-2 overflow-hidden ring-1 shadow-sm ring-black/50 md:rounded-lg'>
+                <div className='mt-2 overflow-hidden ring-1 shadow-sm ring-black/5 md:rounded-lg'>
                   <table className='200 min-w-full divide-y divide-gray-300 dark:divide-gray-500'>
                     <thead className='bg-gray-50 dark:bg-slate-800'>
                       <tr>

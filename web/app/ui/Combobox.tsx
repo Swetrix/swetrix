@@ -68,7 +68,7 @@ const Combobox = ({
           leaveTo='opacity-0'
           afterLeave={() => setQuery('')}
         >
-          <HeadlessCombobox.Options className='absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base ring-1 shadow-lg ring-black/50 focus:outline-hidden sm:text-sm dark:bg-slate-800'>
+          <HeadlessCombobox.Options className='absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base ring-1 shadow-lg ring-black/5 focus:outline-hidden sm:text-sm dark:bg-slate-800'>
             {_isEmpty(filteredItems) && !_isEmpty(query) ? (
               <div className='relative cursor-default px-4 py-2 text-gray-900 select-none dark:text-white'>
                 {t('common.nothingFound')}
