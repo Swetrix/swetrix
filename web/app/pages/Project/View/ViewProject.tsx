@@ -3616,10 +3616,12 @@ const ViewProject = () => {
                       <BellRingIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
                       <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>
                     </div>
-                    <p className='mt-2 text-lg whitespace-pre-wrap text-gray-100'>{t('dashboard.alertsDesc')}</p>
+                    <p className='mt-2 font-mono text-sm whitespace-pre-wrap text-gray-100'>
+                      {t('dashboard.alertsDesc')}
+                    </p>
                     <Link
                       to={routes.signup}
-                      className='mt-6 inline-block rounded-md border border-transparent bg-white px-3 py-2 text-base font-medium text-gray-700 select-none hover:bg-indigo-50'
+                      className='mt-6 rounded-md border border-transparent bg-white px-3 py-2 font-mono text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
                       aria-label={t('titles.signup')}
                     >
                       {t('common.getStarted')}
@@ -3651,19 +3653,21 @@ const ViewProject = () => {
                       <FilterIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
                       <p className='text-3xl font-bold'>{t('dashboard.funnels')}</p>
                     </div>
-                    <p className='mt-2 text-lg whitespace-pre-wrap text-gray-100'>{t('dashboard.funnelsDesc')}</p>
+                    <p className='mt-2 font-mono text-sm whitespace-pre-wrap text-gray-100'>
+                      {t('dashboard.funnelsDesc')}
+                    </p>
                     {authenticated ? (
                       <button
                         type='button'
                         onClick={() => setIsNewFunnelOpened(true)}
-                        className='mt-6 inline-block rounded-md border border-transparent bg-white px-3 py-2 text-base font-medium text-gray-700 select-none hover:bg-indigo-50'
+                        className='mt-6 rounded-md border border-transparent bg-white px-3 py-2 font-mono text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
                       >
                         {t('dashboard.newFunnel')}
                       </button>
                     ) : (
                       <Link
                         to={routes.signup}
-                        className='mt-6 inline-block rounded-md border border-transparent bg-white px-3 py-2 text-base font-medium text-gray-700 select-none hover:bg-indigo-50'
+                        className='mt-6 rounded-md border border-transparent bg-white px-3 py-2 font-mono text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
                         aria-label={t('titles.signup')}
                       >
                         {t('common.getStarted')}
@@ -4043,7 +4047,7 @@ const ViewProject = () => {
                   </>
                 )}
                 {activeTab === PROJECT_TABS.alerts && project.role === 'owner' && authenticated && (
-                  <ProjectAlertsView projectId={id} />
+                  <ProjectAlertsView />
                 )}
                 {analyticsLoading && (activeTab === PROJECT_TABS.traffic || activeTab === PROJECT_TABS.performance) && (
                   <Loader />

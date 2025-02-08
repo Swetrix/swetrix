@@ -19,7 +19,7 @@ const WaitingForAnError = () => {
               <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl dark:text-gray-50'>
                 {t('project.waitingError.title')}
               </h1>
-              <p className='mt-2 max-w-[80ch] text-base whitespace-pre-line text-gray-700 dark:text-gray-300'>
+              <p className='mt-4 max-w-[100ch] font-mono text-sm whitespace-pre-line text-gray-800 dark:text-gray-200'>
                 <Trans
                   t={t}
                   i18nKey='project.waitingError.desc'

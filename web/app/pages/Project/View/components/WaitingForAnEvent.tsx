@@ -28,7 +28,7 @@ const WaitingForAnEvent = ({ project }: WaitingForAnEventProps) => {
               <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl dark:text-gray-50'>
                 {t('project.waiting.title')}
               </h1>
-              <p className='mt-2 max-w-prose text-base whitespace-pre-line text-gray-700 dark:text-gray-300'>
+              <p className='mt-4 max-w-[100ch] font-mono text-sm whitespace-pre-line text-gray-800 dark:text-gray-200'>
                 <Trans
                   // @ts-ignore
                   t={t}

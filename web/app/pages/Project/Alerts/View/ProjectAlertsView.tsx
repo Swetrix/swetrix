@@ -1,4 +1,4 @@
-import React, { useMemo, memo, useState, useEffect } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import dayjs from 'dayjs'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
@@ -16,6 +16,7 @@ import {
   ExclamationTriangleIcon,
   XCircleIcon,
 } from '@heroicons/react/24/outline'
+import cx from 'clsx'
 
 import routes from '~/utils/routes'
 import Button from '~/ui/Button'
@@ -28,9 +29,10 @@ import { Alerts } from '~/lib/models/Alerts'
 import Loader from '~/ui/Loader'
 import Pagination from '~/ui/Pagination'
 import { Trash2Icon, BellRingIcon } from 'lucide-react'
+import { useViewProjectContext } from '../../View/ViewProject'
 
-const Separator = () => (
-  <svg viewBox='0 0 2 2' className='h-0.5 w-0.5 flex-none fill-gray-400'>
+const Separator = ({ className }: { className?: string }) => (
+  <svg viewBox='0 0 2 2' className={cx('h-0.5 w-0.5 flex-none fill-gray-400', className)}>
     <circle cx={1} cy={1} r={1} />
   </svg>
 )
@@ -91,17 +93,17 @@ const AlertCard = ({
     <>
       <li
         onClick={() => openAlert(id)}
-        className='min-h-[120px] cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 dark:border-slate-800/25 dark:bg-[#162032] dark:hover:bg-slate-800'
+        className='min-h-[120px] cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 font-mono hover:bg-gray-100 dark:border-slate-800/25 dark:bg-[#162032] dark:hover:bg-slate-800'
       >
         <div className='px-4 py-4'>
           <div className='flex justify-between'>
             <div>
-              <p className='flex items-center gap-x-2 text-lg text-slate-900 dark:text-gray-50'>
-                <span className='font-semibold'>{name}</span>
-                <Separator />
-                <span>{queryMetricTMapping[queryMetric]}</span>
+              <p className='flex items-baseline gap-x-2 text-lg text-slate-900 dark:text-gray-50'>
+                <span className='text-base font-semibold'>{name}</span>
+                <Separator className='self-center' />
+                <span className='text-sm'>{queryMetricTMapping[queryMetric]}</span>
               </p>
-              <p className='text-base text-slate-900 dark:text-gray-50'>
+              <p className='text-sm text-slate-900 dark:text-gray-50'>
                 {lastTriggered
                   ? t('alert.lastTriggeredOn', {
                       date:
@@ -170,7 +172,7 @@ const AddAlert = ({ handleNewAlert, isLimitReached }: AddAlertProps) => {
         ) : (
           <PlusCircleIcon className='mx-auto h-12 w-12 text-gray-400 group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400' />
         )}
-        <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
+        <span className='mt-2 block font-mono text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
           {t('alert.add')}
         </span>
       </div>
@@ -178,11 +180,8 @@ const AddAlert = ({ handleNewAlert, isLimitReached }: AddAlertProps) => {
   )
 }
 
-interface ProjectAlertsProps {
-  projectId: string
-}
-
-const ProjectAlerts = ({ projectId }: ProjectAlertsProps) => {
+const ProjectAlerts = () => {
+  const { projectId } = useViewProjectContext()
   const { t } = useTranslation()
   const { user, authenticated } = useSelector((state: StateType) => state.auth)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
@@ -321,10 +320,10 @@ const ProjectAlerts = ({ projectId }: ProjectAlertsProps) => {
               <BellRingIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
               <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>
             </div>
-            <p className='mt-2 text-lg whitespace-pre-wrap text-gray-100'>{t('dashboard.alertsDesc')}</p>
+            <p className='mt-2 font-mono text-sm whitespace-pre-wrap text-gray-100'>{t('dashboard.alertsDesc')}</p>
             <Button
               onClick={handleNewAlert}
-              className='mt-6 rounded-md border border-transparent bg-white px-3 py-2 text-base font-medium text-gray-700 hover:bg-indigo-50 md:px-4'
+              className='mt-6 rounded-md border border-transparent bg-white px-3 py-2 font-mono text-sm font-medium text-gray-700 hover:bg-indigo-50 md:px-4'
               secondary
               large
             >
@@ -367,4 +366,4 @@ const ProjectAlerts = ({ projectId }: ProjectAlertsProps) => {
   )
 }
 
-export default memo(ProjectAlerts)
+export default ProjectAlerts
