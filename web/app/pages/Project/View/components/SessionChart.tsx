@@ -22,10 +22,7 @@ export const SessionChart = ({
   chartType,
   dataNames,
 }: SessionChartProps) => {
-  // const [bbChart, setBBChart] = useState<bb.Chart | null>(null)
-
   useEffect(() => {
-    // @ts-ignore
     const bbSettings: bb.ChartOptions = getSettingsSession(
       chart,
       timeBucket as string,
@@ -36,12 +33,6 @@ export const SessionChart = ({
 
     const generate = bb.generate(bbSettings)
     generate.data.names(dataNames)
-
-    // setBBChart(() => {
-    //   const generate = bb.generate(bbSettings)
-    //   generate.data.names(dataNames)
-    //   return generate
-    // })
   }, [chart, timeBucket, timeFormat, rotateXAxis, chartType, dataNames])
 
   return <div className='mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible' id='sessionChart' />

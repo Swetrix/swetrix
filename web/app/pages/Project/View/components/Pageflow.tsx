@@ -21,7 +21,14 @@ interface PageflowProps {
 }
 
 const KeyValue = ({ evKey, evValue }: { evKey: string; evValue: string }) => (
-  <li className='text-xs'>
+  <li
+    // Using style until support for break-anywhere is added to Tailwind
+    // https://github.com/tailwindlabs/tailwindcss/pull/12128
+    style={{
+      overflowWrap: 'anywhere',
+    }}
+    className='text-[11px]'
+  >
     {evKey}: {evValue}
   </li>
 )
@@ -46,7 +53,7 @@ export const Pageflow = ({ pages, timeFormat }: PageflowProps) => {
   } = useTranslation('common')
 
   return (
-    <div className='flow-root'>
+    <div className='flow-root font-mono'>
       <ul className='-mb-8'>
         {_map(pages, ({ value, created, type, metadata }, index) => {
           const displayCreated = new Date(created).toLocaleDateString(language, {
