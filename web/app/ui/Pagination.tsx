@@ -100,7 +100,7 @@ const Pagination = ({
               labelClassName='!overflow-visible'
             />
           )}
-          <nav className='isolate inline-flex -space-x-px rounded-md shadow-xs' aria-label='Pagination'>
+          <nav className='isolate inline-flex -space-x-px rounded-md' aria-label='Pagination'>
             <button
               type='button'
               onClick={() => {

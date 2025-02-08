@@ -333,7 +333,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
             className='arrows-handle mt-5 h-2 w-full appearance-none rounded-full bg-gray-200 dark:bg-slate-600'
             onChange={onSelectPlanChange}
           />
-          <div className='relative mt-5 divide-y rounded-2xl border ring-1 shadow-xs ring-gray-200 dark:ring-slate-700'>
+          <div className='relative mt-5 divide-y rounded-2xl border ring-1 ring-gray-200 dark:ring-slate-700'>
             {user.planCode === selectedTier.planCode && (
               <div className='absolute top-0 left-5 translate-y-px transform'>
                 <div className='flex -translate-y-1/2 transform justify-center'>
@@ -390,7 +390,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
                       </Button>
                     ) : (
                       <Link
-                        className='relative inline-flex items-center rounded-md border border-transparent bg-slate-900 px-4 py-2 text-sm leading-4 font-medium text-gray-50 shadow-xs select-none hover:bg-slate-700 dark:bg-indigo-700 dark:hover:bg-indigo-800'
+                        className='relative inline-flex items-center rounded-md border border-transparent bg-slate-900 px-4 py-2 text-sm leading-4 font-medium text-gray-50 select-none hover:bg-slate-700 dark:bg-indigo-700 dark:hover:bg-indigo-800'
                         to={routes.signup}
                         aria-label={t('titles.signup')}
                       >
@@ -503,7 +503,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
               <div>
                 <h2 className='text-base font-bold'>{t('billing.dueNow')}</h2>
                 <p className='text-sm'>{t('billing.dueNowDescription')}</p>
-                <div className='mt-2 overflow-hidden ring-1 shadow-sm ring-black/5 md:rounded-lg'>
+                <div className='mt-2 overflow-hidden ring-1 ring-black/5 md:rounded-lg'>
                   <table className='200 min-w-full divide-y divide-gray-300 dark:divide-gray-500'>
                     <thead className='bg-gray-50 dark:bg-slate-800'>
                       <tr>
@@ -549,7 +549,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
                   </p>
                 )}
                 <h2 className='mt-5 text-base font-bold'>{t('billing.nextPayment')}</h2>
-                <div className='mt-2 overflow-hidden ring-1 shadow-sm ring-black/5 md:rounded-lg'>
+                <div className='mt-2 overflow-hidden ring-1 ring-black/5 md:rounded-lg'>
                   <table className='200 min-w-full divide-y divide-gray-300 dark:divide-gray-500'>
                     <thead className='bg-gray-50 dark:bg-slate-800'>
                       <tr>

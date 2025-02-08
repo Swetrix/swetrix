@@ -56,7 +56,7 @@ function Select<T>({
           <div className={cx('relative font-mono', className)}>
             <ListboxButton
               className={cx(
-                'relative w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-left shadow-xs focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden sm:text-sm dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50',
+                'relative w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-left focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden sm:text-sm dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50',
                 buttonClassName,
               )}
             >
@@ -81,7 +81,7 @@ function Select<T>({
             >
               <ListboxOptions
                 static
-                className='absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base ring-1 shadow-lg ring-black/5 focus:outline-hidden sm:text-sm dark:bg-slate-800'
+                className='absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base ring-1 ring-black/10 focus:outline-hidden sm:text-sm dark:bg-slate-800'
               >
                 {_map(items, (item, index) => (
                   <ListboxOption

@@ -58,7 +58,7 @@ export default function ConfirmOrganisationInvitation() {
               <div className='mt-8 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>
                 <Link
                   to={routes.dashboard}
-                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-xs hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden'
+                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden'
                 >
                   {t('common.dashboard')}
                 </Link>
@@ -90,7 +90,7 @@ export default function ConfirmOrganisationInvitation() {
             <div className='mt-8 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>
               <Link
                 to={routes.dashboard}
-                className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-xs hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden'
+                className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden'
               >
                 {t('common.dashboard')}
               </Link>

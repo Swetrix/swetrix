@@ -28,7 +28,7 @@ const Teammate = ({ photo, name, role, socials, desc }: TeammateProps) => (
       <img
         alt={name}
         src={photo}
-        className='size-80 rounded-full object-cover shadow-lg'
+        className='size-80 rounded-full border border-gray-200 object-cover dark:border-slate-800/50'
         style={{ aspectRatio: '1 / 1' }}
       />
     </div>
@@ -122,7 +122,7 @@ const About = () => (
 
         <h2 className='mt-6 text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>Meet our team</h2>
 
-        <div className='divide-y divide-gray-300/80'>
+        <div className='divide-y divide-gray-300/80 dark:divide-slate-500/50'>
           {_map(team, (el) => (
             <Teammate key={el.name} {...el} />
           ))}

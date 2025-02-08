@@ -84,7 +84,7 @@ const Marketers = () => {
               <div className='mt-10 flex flex-col items-center justify-center font-mono sm:flex-row'>
                 <Link
                   to={routesPath.signup}
-                  className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white ring-1 shadow-xs ring-slate-900 transition-all !duration-300 hover:bg-slate-700 sm:mr-6 sm:max-w-[210px] dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600'
+                  className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 sm:mr-6 sm:max-w-[210px] dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600'
                   aria-label={t('titles.signup')}
                 >
                   <span className='mr-1 text-base font-semibold'>{t('main.startAFreeTrial')}</span>
@@ -120,7 +120,7 @@ const Marketers = () => {
               />
               <img
                 src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
-                className='relative w-full rounded-xl ring-1 shadow-2xl ring-gray-900/10 dark:ring-white/10'
+                className='relative w-full rounded-xl ring-2 ring-gray-900/10 dark:ring-white/10'
                 width='100%'
                 height='auto'
                 alt='Swetrix Analytics dashboard'

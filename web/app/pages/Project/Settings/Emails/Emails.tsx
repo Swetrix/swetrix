@@ -185,7 +185,7 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
             <button
               onClick={() => setOpen(!open)}
               type='button'
-              className='inline-flex items-center rounded-full border border-gray-200 bg-white py-0.5 pr-1 pl-2 text-sm leading-5 font-medium text-gray-700 shadow-xs hover:bg-gray-50 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-gray-600'
+              className='inline-flex items-center rounded-full border border-gray-200 bg-white py-0.5 pr-1 pl-2 text-sm leading-5 font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-gray-600'
             >
               {t(`profileSettings.${_toLower(reportFrequency)}`)}
               <ChevronDownIcon style={{ transform: open ? 'rotate(180deg)' : '' }} className='ml-0.5 h-4 w-4 pt-px' />
@@ -193,7 +193,7 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
             {open && (
               <ul
                 ref={openRef}
-                className='absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 rounded-md bg-white text-left shadow-lg focus:outline-hidden dark:divide-gray-700 dark:bg-slate-900'
+                className='absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 rounded-md bg-white text-left focus:outline-hidden dark:divide-gray-700 dark:bg-slate-900'
               >
                 {_map(reportFrequencyForEmailsOptions, (item, index) => (
                   <li
@@ -409,7 +409,7 @@ const Emails = ({ projectId }: { projectId: string }) => {
           <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 md:overflow-x-visible lg:-mx-8'>
             <div className='inline-block min-w-full py-2 md:px-6 lg:px-8'>
               {!loading && !_isEmpty(emails) && (
-                <div className='font-mono ring-1 shadow-sm ring-black/5 md:rounded-lg'>
+                <div className='font-mono ring-1 ring-black/10 md:rounded-lg'>
                   <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
                     <thead>
                       <tr className='dark:bg-slate-800'>
@@ -455,7 +455,7 @@ const Emails = ({ projectId }: { projectId: string }) => {
         customButtons={
           <button
             type='button'
-            className='inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-xs hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm'
+            className='inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm'
             onClick={handleSubmit}
           >
             {t('project.emails.add')}

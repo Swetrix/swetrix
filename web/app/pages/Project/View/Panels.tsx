@@ -923,10 +923,10 @@ const CustomEvents = ({
             <div className='flex w-[4.5rem] justify-between'>
               <Button
                 className={cx(
-                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow-sm dark:bg-slate-800 dark:text-gray-200',
+                  'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
                   {
                     'cursor-not-allowed opacity-50': !canGoPrev(),
-                    'hover:bg-gray-200 hover:dark:bg-slate-700': canGoPrev(),
+                    'hover:bg-gray-100 hover:dark:bg-slate-700': canGoPrev(),
                   },
                 )}
                 type='button'
@@ -938,10 +938,10 @@ const CustomEvents = ({
               </Button>
               <Button
                 className={cx(
-                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow-sm dark:bg-slate-800 dark:text-gray-200',
+                  'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
                   {
                     'cursor-not-allowed opacity-50': !canGoNext(),
-                    'hover:bg-gray-200 hover:dark:bg-slate-700': canGoNext(),
+                    'hover:bg-gray-100 hover:dark:bg-slate-700': canGoNext(),
                   },
                 )}
                 onClick={onNext}
@@ -1320,10 +1320,10 @@ const PageProperties = ({
             <div className='flex w-[4.5rem] justify-between'>
               <Button
                 className={cx(
-                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow-sm dark:bg-slate-800 dark:text-gray-200',
+                  'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
                   {
                     'cursor-not-allowed opacity-50': !canGoPrev(),
-                    'hover:bg-gray-200 hover:dark:bg-slate-700': canGoPrev(),
+                    'hover:bg-gray-100 hover:dark:bg-slate-700': canGoPrev(),
                   },
                 )}
                 type='button'
@@ -1335,10 +1335,10 @@ const PageProperties = ({
               </Button>
               <Button
                 className={cx(
-                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow-sm dark:bg-slate-800 dark:text-gray-200',
+                  'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
                   {
                     'cursor-not-allowed opacity-50': !canGoNext(),
-                    'hover:bg-gray-200 hover:dark:bg-slate-700': canGoNext(),
+                    'hover:bg-gray-100 hover:dark:bg-slate-700': canGoNext(),
                   },
                 )}
                 onClick={onNext}
@@ -1640,10 +1640,10 @@ const Panel = ({
             <div className='flex w-[4.5rem] justify-between'>
               <Button
                 className={cx(
-                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow-sm dark:bg-slate-800 dark:text-gray-200',
+                  'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
                   {
                     'cursor-not-allowed opacity-50': !canGoPrev(),
-                    'hover:bg-gray-200 hover:dark:bg-slate-700': canGoPrev(),
+                    'hover:bg-gray-100 hover:dark:bg-slate-700': canGoPrev(),
                   },
                 )}
                 type='button'
@@ -1655,10 +1655,10 @@ const Panel = ({
               </Button>
               <Button
                 className={cx(
-                  'border-none bg-gray-100 px-1.5 py-0.5 font-light text-gray-500 shadow-sm dark:bg-slate-800 dark:text-gray-200',
+                  'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
                   {
                     'cursor-not-allowed opacity-50': !canGoNext(),
-                    'hover:bg-gray-200 hover:dark:bg-slate-700': canGoNext(),
+                    'hover:bg-gray-100 hover:dark:bg-slate-700': canGoNext(),
                   },
                 )}
                 onClick={onNext}
@@ -1684,7 +1684,7 @@ const Panel = ({
             <button
               type='button'
               onClick={() => setIsReversedUserFlow((prev) => !prev)}
-              className='mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-xs hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:border-none dark:border-gray-600 dark:bg-slate-700 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700'
+              className='mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:border-none dark:border-gray-600 dark:bg-slate-700 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700'
             >
               {t('project.reverse')}
             </button>

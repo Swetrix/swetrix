@@ -292,7 +292,7 @@ const CaptchaSettings = ({ isSettings }: CaptchaSettingsProps) => {
                 <button
                   type='button'
                   onClick={() => window.location.reload()}
-                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-xs hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden'
+                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden'
                 >
                   {t('dashboard.reloadPage')}
                 </button>

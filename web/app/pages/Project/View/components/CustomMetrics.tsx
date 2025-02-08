@@ -77,7 +77,7 @@ const CustomMetrics = ({ metrics, onRemoveMetric, resetMetrics }: FiltersProps) 
   }
 
   return (
-    <div className='mt-2 flex items-center justify-between rounded-md bg-slate-200 p-1 shadow-sm dark:border dark:border-slate-800/50 dark:bg-slate-800/25'>
+    <div className='mt-2 flex items-center justify-between rounded-md border border-gray-300 bg-slate-200 p-1 dark:border-slate-800/50 dark:bg-slate-800/25'>
       <div className='flex items-center'>
         <ScaleIcon className='box-content size-6 shrink-0 px-1 text-gray-700 dark:text-gray-200' />
         <div className='flex flex-wrap'>

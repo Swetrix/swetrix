@@ -16,10 +16,8 @@ import { FilterIcon } from 'lucide-react'
 interface FilterProps {
   column: string
   filter: string
-  isExclusive: boolean
-  // eslint-disable-next-line no-shadow
+  isExclusive: Boolean
   onRemoveFilter: (column: string, filter: string) => void
-  // eslint-disable-next-line no-shadow
   onChangeExclusive: (column: string, filter: string, isExclusive: boolean) => void
   tnMapping: Record<string, string>
   canChangeExclusive?: boolean
@@ -122,9 +120,7 @@ export const Filter = ({
 }
 
 interface FiltersProps {
-  // eslint-disable-next-line no-shadow
   onRemoveFilter: (column: string, filter: string) => void
-  // eslint-disable-next-line no-shadow
   onChangeExclusive: (column: string, filter: string, isExclusive: boolean) => void
   tnMapping: Record<string, string>
   resetFilters: () => void
@@ -138,7 +134,7 @@ const Filters = ({ onRemoveFilter, onChangeExclusive, tnMapping, resetFilters }:
   }
 
   return (
-    <div className='flex items-center justify-between rounded-md bg-slate-200 p-1 shadow-sm dark:border dark:border-slate-800/50 dark:bg-slate-800/25'>
+    <div className='flex items-center justify-between rounded-md border border-gray-300 bg-slate-200 p-1 dark:border-slate-800/50 dark:bg-slate-800/25'>
       <div className='flex items-center'>
         <FilterIcon className='box-content size-6 shrink-0 px-1 text-gray-700 dark:text-gray-200' strokeWidth={1.5} />
         <div className='flex flex-wrap'>

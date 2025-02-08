@@ -251,7 +251,7 @@ const Referral = () => {
         {t('profileSettings.referral.activeReferrals')}
       </h3>
       {!_isEmpty(activeReferrals) ? (
-        <table className='200 mt-2 min-w-full divide-y divide-gray-300 ring-1 shadow-sm ring-black/5 md:rounded-lg dark:divide-gray-500'>
+        <table className='200 mt-2 min-w-full divide-y divide-gray-300 ring-1 ring-black/10 md:rounded-lg dark:divide-gray-500'>
           <thead className='bg-gray-50 dark:bg-slate-800'>
             <tr>
               <th

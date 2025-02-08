@@ -230,7 +230,7 @@ const ThemeMenu = ({ theme, switchTheme }: { theme: string; switchTheme: (i: str
         leaveFrom='transform opacity-100 scale-100'
         leaveTo='transform opacity-0 scale-95'
       >
-        <MenuItems className='absolute right-0 z-30 mt-2 w-36 min-w-max origin-top-right rounded-md bg-white py-1 ring-1 shadow-lg ring-slate-200 focus:outline-hidden dark:bg-slate-900 dark:ring-slate-800'>
+        <MenuItems className='absolute right-0 z-30 mt-2 w-36 min-w-max origin-top-right rounded-md bg-white py-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-900 dark:ring-slate-800'>
           <MenuItem>
             {({ active }) => (
               <div
@@ -307,7 +307,7 @@ const ProfileMenu = ({
             leaveFrom='transform opacity-100 scale-100'
             leaveTo='transform opacity-0 scale-95'
           >
-            <MenuItems className='absolute right-0 z-30 mt-2 w-60 min-w-max origin-top-right rounded-md bg-white py-1 ring-1 shadow-lg ring-slate-200 focus:outline-hidden dark:bg-slate-900 dark:ring-slate-800'>
+            <MenuItems className='absolute right-0 z-30 mt-2 w-60 min-w-max origin-top-right rounded-md bg-white py-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-900 dark:ring-slate-800'>
               <div className='border-b-[1px] border-gray-200 dark:border-slate-700/50'>
                 <MenuItem>
                   <p className='truncate px-4 py-2' role='none'>
@@ -359,7 +359,7 @@ const ProfileMenu = ({
                         leaveTo='transform opacity-0 scale-95'
                       >
                         <MenuItems
-                          className='absolute right-0 z-50 mt-1 w-full min-w-max origin-top-right rounded-md bg-white py-1 ring-1 shadow-lg ring-slate-200 focus:outline-hidden dark:bg-slate-800 dark:ring-slate-800'
+                          className='absolute right-0 z-50 mt-1 w-full min-w-max origin-top-right rounded-md bg-white py-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-800 dark:ring-slate-800'
                           static
                         >
                           {_map(whitelist, (lng) => (
@@ -941,7 +941,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                         leaveTo='transform opacity-0 scale-95'
                       >
                         <MenuItems
-                          className='absolute right-0 z-50 mt-1 w-full min-w-max origin-top-right rounded-md bg-white py-1 ring-1 shadow-lg ring-slate-200 focus:outline-hidden dark:bg-slate-800 dark:ring-slate-800'
+                          className='absolute right-0 z-50 mt-1 w-full min-w-max origin-top-right rounded-md bg-white py-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-800 dark:ring-slate-800'
                           static
                         >
                           {_map(whitelist, (lng) => (

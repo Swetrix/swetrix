@@ -360,7 +360,7 @@ const FeatureBlock = ({ heading, description, children, className, dark }: Featu
     variants={{ idle: {}, active: {} }}
     data-dark={dark ? 'true' : undefined}
     className={clsx(
-      'group relative flex flex-col overflow-hidden rounded-lg bg-white ring-1 shadow-xs ring-black/5 data-[dark]:bg-slate-800 data-[dark]:ring-white/15',
+      'group relative flex flex-col overflow-hidden rounded-lg bg-white ring-1 ring-black/5 data-[dark]:bg-slate-800 data-[dark]:ring-white/15',
       className,
     )}
   >
@@ -842,7 +842,7 @@ const Hero = ({
             <div className='mt-10 flex flex-col items-center justify-center sm:flex-row'>
               <Link
                 to={routesPath.signup}
-                className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 font-mono text-white ring-1 shadow-xs ring-slate-900 transition-all !duration-300 hover:bg-slate-700 sm:mr-6 sm:max-w-[210px] dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600'
+                className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 font-mono text-white ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 sm:mr-6 sm:max-w-[210px] dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600'
                 aria-label={t('titles.signup')}
               >
                 <span className='mr-1 text-base font-semibold'>{t('main.startAFreeTrial')}</span>
@@ -872,7 +872,7 @@ const Hero = ({
             />
             <img
               src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
-              className='relative w-full rounded-xl ring-1 shadow-2xl ring-gray-900/10 dark:ring-white/10'
+              className='relative w-full rounded-xl ring-2 ring-gray-900/10 dark:ring-white/10'
               width='100%'
               height='auto'
               alt='Swetrix Analytics dashboard'

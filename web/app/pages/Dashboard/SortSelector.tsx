@@ -123,7 +123,7 @@ export const SortSelector = ({ activeSort, setActiveSort, isLoading, activeTab }
             leaveTo='opacity-0 translate-y-1'
           >
             <PopoverPanel className='absolute right-2.5 z-20 mt-3 w-max max-w-sm transform px-4 font-mono sm:px-0 md:left-auto md:transform-none lg:max-w-3xl'>
-              <div className='overflow-hidden rounded-lg bg-gray-50 p-1 ring-1 shadow-lg ring-black/5 dark:bg-slate-800'>
+              <div className='overflow-hidden rounded-lg bg-gray-50 p-1 ring-1 ring-black/10 dark:bg-slate-800'>
                 <ul className='w-full text-left'>
                   {_map(sortOptions, (item) => (
                     <PopoverButton

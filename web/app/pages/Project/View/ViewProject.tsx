@@ -3091,7 +3091,7 @@ const ViewProject = () => {
                                 title={t('project.refreshStats')}
                                 onClick={refreshStats}
                                 className={cx(
-                                  'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-xs focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                                  'relative rounded-md border border-gray-50/0 bg-gray-50 p-2 text-sm font-medium hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
                                   {
                                     'cursor-not-allowed opacity-50': authLoading || dataLoading,
                                   },
@@ -3117,7 +3117,7 @@ const ViewProject = () => {
                                     setShowFiltersSearch(true)
                                   }}
                                   className={cx(
-                                    'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-xs focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                                    'relative rounded-md border border-gray-50/0 bg-gray-50 p-2 text-sm font-medium hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
                                     {
                                       'cursor-not-allowed opacity-50': authLoading || dataLoading,
                                     },
@@ -3220,7 +3220,7 @@ const ViewProject = () => {
                                     }
                                   }}
                                   chevron='mini'
-                                  buttonClassName='!p-2 rounded-md hover:bg-white hover:shadow-xs dark:hover:bg-slate-800 focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200'
+                                  buttonClassName='!p-2 rounded-md hover:bg-white border border-gray-50/0 hover:border-gray-300 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200'
                                   headless
                                 />
                               )}
@@ -3257,7 +3257,7 @@ const ViewProject = () => {
                                     item.onClick(panelsData, t)
                                   }}
                                   chevron='mini'
-                                  buttonClassName='!p-2 rounded-md hover:bg-white hover:shadow-xs dark:hover:bg-slate-800 focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:dark:ring-gray-200 focus:dark:border-gray-200'
+                                  buttonClassName='!p-2 rounded-md hover:bg-white border border-gray-50/0 hover:border-gray-300 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:dark:ring-gray-200'
                                   headless
                                 />
                               )}
@@ -3281,7 +3281,7 @@ const ViewProject = () => {
                                   className={cx(
                                     'relative rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                                     {
-                                      'bg-white stroke-white shadow-xs dark:bg-slate-800 dark:stroke-slate-800':
+                                      'border border-gray-300 bg-white stroke-white dark:border-slate-800/50 dark:bg-slate-800 dark:stroke-slate-800':
                                         chartType === chartTypes.bar,
                                       'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200':
                                         chartType !== chartTypes.bar,
@@ -3297,7 +3297,7 @@ const ViewProject = () => {
                                   className={cx(
                                     'relative rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                                     {
-                                      'bg-white stroke-white shadow-xs dark:bg-slate-800 dark:stroke-slate-800':
+                                      'border border-gray-300 bg-white stroke-white dark:border-slate-800/50 dark:bg-slate-800 dark:stroke-slate-800':
                                         chartType === chartTypes.line,
                                       'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200':
                                         chartType !== chartTypes.line,
@@ -3461,7 +3461,7 @@ const ViewProject = () => {
                               title={t('project.refreshStats')}
                               onClick={refreshStats}
                               className={cx(
-                                'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-xs focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                                'relative rounded-md border border-gray-50/0 bg-gray-50 p-2 text-sm font-medium hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
                                 {
                                   'cursor-not-allowed opacity-50': authLoading || dataLoading,
                                 },
@@ -3708,7 +3708,7 @@ const ViewProject = () => {
                         title={t('project.refreshStats')}
                         onClick={() => loadSessions()}
                         className={cx(
-                          'relative mx-auto mt-2 flex items-center rounded-md bg-gray-50 p-2 text-sm font-medium text-gray-700 hover:bg-white hover:shadow-xs focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                          'relative mx-auto mt-2 flex items-center rounded-md border border-gray-50/0 bg-gray-50 p-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
                           {
                             'cursor-not-allowed opacity-50': sessionsLoading || sessionsLoading === null,
                             hidden: sessionsLoading && _isEmpty(sessions),
@@ -3785,7 +3785,7 @@ const ViewProject = () => {
                         title={t('project.refreshStats')}
                         onClick={() => loadErrors()}
                         className={cx(
-                          'relative mx-auto mt-2 flex items-center rounded-md bg-gray-50 p-2 text-sm font-medium text-gray-700 hover:bg-white hover:shadow-xs focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                          'relative mx-auto mt-2 flex items-center rounded-md border border-gray-50/0 bg-gray-50 p-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
                           {
                             'cursor-not-allowed opacity-50': errorsLoading,
                             hidden: errorsLoading && _isEmpty(errors),

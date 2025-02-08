@@ -46,7 +46,7 @@ const MultiSelect = ({
               setSelected(!selected)
             }}
           >
-            <div className='w-ful my-2 flex rounded-sm border bg-white p-1 text-sm font-medium text-gray-700 shadow-xs hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100 focus:outline-hidden dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'>
+            <div className='w-ful my-2 flex rounded-sm border bg-white p-1 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100 focus:outline-hidden dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'>
               <div className='flex flex-auto flex-wrap'>
                 {!_isEmpty(label) ? (
                   _map(label, (item) => (
@@ -113,12 +113,12 @@ const MultiSelect = ({
             </div>
           </div>
           {selected && (
-            <div className='lef-0 max-h-select top-100 z-40 max-h-[200px] w-full overflow-x-hidden overflow-y-auto rounded-sm bg-white shadow-sm dark:bg-slate-800'>
+            <div className='lef-0 max-h-select top-100 z-40 max-h-[200px] w-full overflow-x-hidden overflow-y-auto rounded-sm bg-white dark:bg-slate-800'>
               <div className='flex w-full flex-col'>
                 {onSearch && (
                   <div className='relative w-full cursor-pointer rounded-t border-b border-gray-100 hover:bg-indigo-100 dark:border-slate-700 dark:hover:bg-slate-700'>
                     <input
-                      className='focus:box-shadow-none relative flex w-full items-center overflow-x-auto border-l-2 border-transparent bg-white p-2 pl-2 hover:border-b-indigo-100 focus:border-transparent focus:ring-0 focus:outline-hidden dark:bg-slate-800 dark:hover:border-b-slate-700'
+                      className='relative flex w-full items-center overflow-x-auto border-l-2 border-transparent bg-white p-2 pl-2 hover:border-b-indigo-100 focus:border-transparent focus:ring-0 focus:outline-hidden dark:bg-slate-800 dark:hover:border-b-slate-700'
                       placeholder={searchPlaseholder}
                       onChange={(e) => {
                         e.preventDefault()

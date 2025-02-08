@@ -301,7 +301,7 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
           <div className='mt-3 flex flex-col'>
             <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8'>
               <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
-                <div className='overflow-hidden ring-1 shadow-sm ring-black/5 md:rounded-lg'>
+                <div className='overflow-hidden ring-1 ring-black/10 md:rounded-lg'>
                   <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
                     <thead>
                       <tr className='dark:bg-slate-800'>
@@ -352,7 +352,7 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
         customButtons={
           <button
             type='button'
-            className='inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white shadow-xs hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm'
+            className='inline-flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-base font-medium text-white hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm'
             onClick={onAddProject}
             disabled={!selectedProject || isActionLoading}
           >

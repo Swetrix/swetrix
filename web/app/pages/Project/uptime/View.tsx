@@ -333,7 +333,7 @@ const Uptime = () => {
                 <button
                   type='button'
                   onClick={() => window.location.reload()}
-                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-xs hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden'
+                  className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden'
                 >
                   {t('dashboard.reloadPage')}
                 </button>
@@ -374,7 +374,7 @@ const Uptime = () => {
               title={t('project.refreshStats')}
               onClick={() => loadMonitorData(activeMonitor.monitor)}
               className={cx(
-                'relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white hover:shadow-xs focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
+                'hover: relative rounded-md bg-gray-50 p-2 text-sm font-medium hover:bg-white focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:hover:bg-slate-800 focus:dark:border-gray-200 focus:dark:ring-gray-200',
                 {
                   'cursor-not-allowed opacity-50': isProjectLoading || isMonitorLoading,
                 },

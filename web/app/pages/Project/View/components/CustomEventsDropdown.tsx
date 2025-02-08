@@ -35,7 +35,7 @@ const CustomEventsDropdown = ({ onSelect, title }: CustomEventsDropdownProps) =>
         {title} {show ? <ChevronUpIcon className='inline h-4 w-4' /> : <ChevronDownIcon className='inline h-4 w-4' />}
       </span>
       {show && (
-        <div className='absolute top-15 left-5 z-10 mt-2 max-h-[200px] min-w-[250px] overflow-auto rounded-md border border-gray-200 bg-white text-gray-900 shadow-lg dark:border-slate-700/50 dark:bg-slate-900'>
+        <div className='absolute top-12 left-5 z-10 mt-2 max-h-[200px] min-w-[250px] overflow-auto rounded-md border border-gray-200 bg-white text-gray-900 dark:border-slate-700/50 dark:bg-slate-900'>
           <div className='flex w-full flex-col p-2'>
             <p className='px-1 text-sm font-semibold text-gray-900 dark:text-gray-50'>{t('project.metadata')}</p>
             {_map(OPTIONS, ({ label, value }) => (

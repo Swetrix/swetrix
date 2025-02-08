@@ -53,7 +53,7 @@ const LiveVisitorsDropdown = ({ live, onSessionSelect }: LiveVisitorsDropdownPro
         {show ? <ChevronUpIcon className='ml-1 inline h-4 w-4' /> : <ChevronDownIcon className='ml-1 inline h-4 w-4' />}
         {show ? (
           <div
-            className={`scrollbar-thin absolute top-3 right-0 z-10 mt-2 max-h-[200px] cursor-auto overflow-y-auto rounded-md border border-gray-200 bg-white text-gray-900 shadow-lg dark:border-slate-700/50 dark:bg-slate-900 ${
+            className={`scrollbar-thin absolute top-3 right-0 z-10 mt-2 max-h-[200px] cursor-auto overflow-y-auto rounded-md border border-black/10 bg-white text-gray-900 dark:border-slate-700/50 dark:bg-slate-900 ${
               liveInfo.length === 0 ? 'min-w-[200px]' : 'min-w-max'
             }`}
           >
