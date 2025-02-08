@@ -370,7 +370,7 @@ const FeatureBlock = ({ heading, description, children, className, dark }: Featu
       <h3 className='mt-1 text-2xl/8 font-semibold tracking-tight text-gray-950 group-data-[dark]:text-white'>
         {heading}
       </h3>
-      <p className='mt-2 max-w-[600px] font-mono text-sm/6 text-gray-600 group-data-[dark]:text-gray-400 lg:text-base/6'>
+      <p className='mt-2 max-w-[800px] font-mono text-sm/6 text-gray-800 group-data-[dark]:text-gray-200'>
         {description}
       </p>
     </div>
