@@ -20,23 +20,8 @@
   ],
   "screenshots": [
     {
-      "src": "assets/screenshot_dark.png",
+      "src": "assets/screenshot_dark.webp",
       "sizes": "2212x1566",
-      "type": "image/webp"
-    },
-    {
-      "src": "assets/swe2.png",
-      "sizes": "2842x1576",
-      "type": "image/webp"
-    },
-    {
-      "src": "assets/swe3.png",
-      "sizes": "2838x1576",
-      "type": "image/webp"
-    },
-    {
-      "src": "assets/swe4.png",
-      "sizes": "1511x901",
       "type": "image/webp"
     }
   ],
