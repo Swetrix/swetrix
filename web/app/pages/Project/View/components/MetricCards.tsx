@@ -115,7 +115,7 @@ export const MetricCardSelect = ({ values, valueMapper, selectLabel, classes }: 
   }
 
   return (
-    <div className={cx('flex flex-col', classes?.container)}>
+    <div className={cx('flex flex-col font-mono', classes?.container)}>
       <div className={cx('text-4xl font-bold whitespace-nowrap text-slate-900 dark:text-gray-50', classes?.value)}>
         {valueMapper ? valueMapper(values[selected], selected) : values[selected].value}
       </div>
@@ -129,7 +129,7 @@ export const MetricCardSelect = ({ values, valueMapper, selectLabel, classes }: 
             {show ? <ChevronUpIcon className='inline h-4 w-4' /> : <ChevronDownIcon className='inline h-4 w-4' />}
           </span>
           {show && (
-            <div className='absolute top-15 z-10 mt-2 max-h-[200px] min-w-[250px] overflow-auto rounded-md border border-black/10 bg-white text-gray-900 dark:border-slate-700/50 dark:bg-slate-900'>
+            <div className='absolute top-4 z-10 mt-2 max-h-[200px] min-w-[250px] overflow-auto rounded-md border border-black/10 bg-white text-gray-900 dark:border-slate-700/50 dark:bg-slate-900'>
               <div className='flex w-full flex-col p-2'>
                 <p className='px-1 text-sm font-semibold text-gray-900 dark:text-gray-50'>{selectLabel}</p>
                 {_map(values, ({ label }, index) => (
