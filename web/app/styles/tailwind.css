@@ -14,7 +14,6 @@
   --color-gray-750: oklch(23.11% 0.0357 262.54); /* Converting #141d2e to OKLCH */
 
   /* Minimum Heights */
-  --min-height-72: 18rem;
   --min-height-page: calc(100vh - 74px);
   --min-height-min-footer: calc(100vh - 148px);
 }

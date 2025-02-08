@@ -128,7 +128,7 @@ const PanelContainer = ({
 }: PanelContainerProps) => (
   <div
     className={cx(
-      'relative max-h-96 min-h-72 overflow-hidden rounded-lg border border-gray-300 bg-white px-4 pt-5 sm:px-6 sm:pt-6 dark:border-slate-800/50 dark:bg-slate-800/25',
+      'relative max-h-96 min-h-[17rem] overflow-hidden rounded-lg border border-gray-300 bg-white px-4 pt-5 sm:px-6 sm:pt-6 dark:border-slate-800/50 dark:bg-slate-800/25',
       {
         'pb-12': !noSwitch,
         'pb-5': noSwitch,
