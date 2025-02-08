@@ -26,8 +26,8 @@ export const ErrorDetails = ({ details }: ErrorDetailsProps) => {
   return (
     <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
       <div className='flex flex-col font-mono'>
-        <p className='font-bold text-slate-900 max-md:text-xl md:text-3xl dark:text-gray-50'>{`${details.name}${details.message ? `: ${details.message}` : ''}`}</p>
-        <p className='text-sm font-bold text-slate-900 dark:text-gray-50'>
+        <p className='font-bold text-slate-900 max-md:text-xl md:text-2xl dark:text-gray-50'>{`${details.name}${details.message ? `: ${details.message}` : ''}`}</p>
+        <p className='text-sm font-bold text-slate-800 dark:text-gray-200'>
           {t('dashboard.atFile', {
             filename: details.filename ?? 'Unknown file',
             lineno: details.lineno ?? 'N/A',
@@ -38,7 +38,8 @@ export const ErrorDetails = ({ details }: ErrorDetailsProps) => {
 
       <MetricCard
         classes={{
-          value: 'max-md:text-xl md:text-3xl',
+          value: 'max-md:text-xl md:text-2xl',
+          label: '[&_span]:!text-slate-800 dark:[&_span]:!text-gray-200',
         }}
         label={t('dashboard.firstSeen')}
         value={details.first_seen || 'N/A'}
@@ -49,7 +50,8 @@ export const ErrorDetails = ({ details }: ErrorDetailsProps) => {
 
       <MetricCard
         classes={{
-          value: 'max-md:text-xl md:text-3xl',
+          value: 'max-md:text-xl md:text-2xl',
+          label: '[&_span]:!text-slate-800 dark:[&_span]:!text-gray-200',
         }}
         label={t('dashboard.lastSeen')}
         value={details.last_seen || 'N/A'}
