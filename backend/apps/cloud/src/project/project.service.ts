@@ -34,8 +34,6 @@ import _reduce from 'lodash/reduce'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import { compareSync } from 'bcrypt'
-import { InjectQueue } from '@nestjs/bull'
-import { Queue } from 'bullmq'
 
 import { UserService } from '../user/user.service'
 import { ActionTokensService } from '../action-tokens/action-tokens.service'
@@ -82,10 +80,6 @@ import { ReportFrequency } from './enums'
 import { nFormatter } from '../common/utils'
 import { browserArgs } from '../og-image/og-image.service'
 import { CreateProjectViewDto } from './dto/create-project-view.dto'
-import { CreateMonitorHttpRequestDTO } from './dto/create-monitor.dto'
-import { MonitorEntity } from './entity/monitor.entity'
-import { UpdateMonitorHttpRequestDTO } from './dto/update-monitor.dto'
-import { HttpRequestOptions } from './interfaces/http-request-options.interface'
 import { Organisation } from '../organisation/entity/organisation.entity'
 import { OrganisationRole } from '../organisation/entity/organisation-member.entity'
 
@@ -315,12 +309,9 @@ export class ProjectService {
     private readonly projectSubscriberRepository: Repository<ProjectSubscriber>,
     @InjectRepository(Funnel)
     private readonly funnelRepository: Repository<Funnel>,
-    @InjectRepository(MonitorEntity)
-    private readonly monitorRepository: Repository<MonitorEntity>,
     private readonly actionTokens: ActionTokensService,
     private readonly mailerService: MailerService,
     private readonly userService: UserService,
-    @InjectQueue('monitor') private monitorQueue: Queue,
   ) {}
 
   async getRedisProject(pid: string): Promise<Project | null> {
@@ -1565,152 +1556,6 @@ export class ProjectService {
         _includes(ALL_COLUMNS, column as string) ||
         _includes(TRAFFIC_METAKEY_COLUMNS, column as string),
     )
-  }
-
-  async findMonitorById(
-    id: number,
-    projectId: string,
-    options?: Omit<FindOneOptions<MonitorEntity>, 'where'>,
-  ): Promise<MonitorEntity | undefined> {
-    return this.monitorRepository.findOne({
-      where: {
-        id,
-        project: {
-          id: projectId,
-        },
-      },
-      ...options,
-    })
-  }
-
-  async createMonitor(
-    {
-      type,
-      name,
-      url,
-      interval,
-      retries,
-      retryInterval,
-      timeout,
-      acceptedStatusCodes,
-      description,
-      httpOptions,
-    }: CreateMonitorHttpRequestDTO,
-    projectId: string,
-  ): Promise<MonitorEntity> {
-    const monitor = this.monitorRepository.create({
-      type,
-      name,
-      url,
-      interval,
-      retries,
-      retryInterval,
-      timeout,
-      acceptedStatusCodes,
-      description,
-      httpOptions,
-      project: { id: projectId },
-    })
-
-    return this.monitorRepository.save(monitor)
-  }
-
-  async getMonitor(monitorId: number) {
-    return this.monitorRepository.findOne({
-      where: {
-        id: monitorId,
-      },
-      relations: ['project'],
-    })
-  }
-
-  async paginateMonitors(
-    options: PaginationOptionsInterface,
-    where: FindManyOptions<MonitorEntity>['where'],
-  ): Promise<Pagination<MonitorEntity>> {
-    const [results, total] = await this.monitorRepository.findAndCount({
-      take: options.take || 100,
-      skip: options.skip || 0,
-      where,
-      order: {
-        name: 'ASC',
-      },
-      relations: ['project'],
-    })
-
-    return new Pagination<MonitorEntity>({
-      results,
-      total,
-    })
-  }
-
-  async updateMonitor(
-    monitorId: number,
-    {
-      type,
-      name,
-      url,
-      interval,
-      retries,
-      retryInterval,
-      timeout,
-      acceptedStatusCodes,
-      description,
-      httpOptions,
-    }: UpdateMonitorHttpRequestDTO,
-  ): Promise<void> {
-    await this.monitorRepository.update(
-      { id: monitorId },
-      {
-        type,
-        name,
-        url,
-        interval,
-        retries,
-        retryInterval,
-        timeout,
-        acceptedStatusCodes,
-        description,
-        httpOptions,
-      },
-    )
-  }
-
-  async deleteMonitor(monitorId: number) {
-    return this.monitorRepository.delete(monitorId)
-  }
-
-  async sendHttpRequest(
-    monitorId: number,
-    monitorHttpRequestDto: HttpRequestOptions,
-  ) {
-    await this.monitorQueue.add(
-      'http-request',
-      { ...monitorHttpRequestDto, monitorId },
-      {
-        repeat: { every: monitorHttpRequestDto.interval * 1000 },
-        jobId: monitorId.toString(),
-      },
-    )
-  }
-
-  async updateHttpRequest(
-    monitorId: number,
-    updatedHttpRequestDto: HttpRequestOptions,
-  ): Promise<void> {
-    await this.deleteHttpRequest(monitorId)
-
-    await this.sendHttpRequest(monitorId, {
-      ...updatedHttpRequestDto,
-      timeout: updatedHttpRequestDto.timeout * 1000,
-    })
-  }
-
-  async deleteHttpRequest(monitorId: number) {
-    const job = await this.monitorQueue.getJob(monitorId.toString())
-    if (job) {
-      await job.remove()
-    }
   }
 
   async addProjectToOrganisation(organisationId: string, projectId: string) {

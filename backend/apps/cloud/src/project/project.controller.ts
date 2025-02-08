@@ -33,7 +33,6 @@ import {
   ApiOkResponse,
   ApiNoContentResponse,
 } from '@nestjs/swagger'
-import { Equal } from 'typeorm'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _trim from 'lodash/trim'
@@ -107,9 +106,6 @@ import { ProjectIdDto } from './dto/project-id.dto'
 import { CreateProjectViewDto } from './dto/create-project-view.dto'
 import { UpdateProjectViewDto } from './dto/update-project-view.dto'
 import { ProjectViewIdsDto } from './dto/project-view-ids.dto'
-import { CreateMonitorHttpRequestDTO } from './dto/create-monitor.dto'
-import { MonitorEntity } from './entity/monitor.entity'
-import { UpdateMonitorHttpRequestDTO } from './dto/update-monitor.dto'
 import { BulkAddUsersDto } from './dto/bulk-add-users.dto'
 import { BulkAddUsersResponse } from './interfaces/bulk-add-users'
 import { OrganisationService } from '../organisation/organisation.service'
@@ -2223,179 +2219,5 @@ export class ProjectController {
     }
 
     await this.projectsViewsRepository.deleteProjectView(params.viewId)
-  }
-
-  @ApiOperation({ summary: 'Get monitors for a project' })
-  @ApiBearerAuth()
-  @ApiOkResponse({ type: MonitorEntity })
-  @Get(':projectId/monitors')
-  @Auth([], true, true)
-  public async getProjectMonitors(
-    @Param() { projectId }: ProjectIdDto,
-    @CurrentUserId() userId: string,
-    @Query('take') take: number | undefined,
-    @Query('skip') skip: number | undefined,
-    @Headers() headers: { 'x-password'?: string },
-  ): Promise<Pagination<MonitorEntity>> {
-    this.logger.log({ userId, take, skip }, 'GET /project/:projectId/monitors')
-
-    const project = await this.projectService.getFullProject(projectId)
-
-    if (!project) {
-      throw new NotFoundException('Project not found.')
-    }
-
-    this.projectService.allowedToView(project, userId, headers['x-password'])
-
-    const result = await this.projectService.paginateMonitors(
-      {
-        take,
-        skip,
-      },
-      { project: Equal(project.id) },
-    )
-
-    // @ts-expect-error
-    result.results = _map(result.results, monitor => ({
-      ..._omit(monitor, ['project']),
-      projectId: monitor.project.id,
-    }))
-
-    return result
-  }
-
-  @ApiOperation({ summary: 'Create monitor for the project' })
-  @ApiBearerAuth()
-  @ApiOkResponse({ type: MonitorEntity })
-  @Post(':projectId/monitor')
-  @Auth([], true, true)
-  public async createMonitor(
-    @Param() { projectId }: ProjectIdDto,
-    @Body() body: CreateMonitorHttpRequestDTO,
-    @CurrentUserId() userId: string,
-  ): Promise<MonitorEntity> {
-    const project = await this.projectService.getFullProject(projectId)
-
-    if (!project) {
-      throw new NotFoundException('Project not found.')
-    }
-
-    const user = await this.userService.findUserV2(userId, ['roles'])
-
-    if (!user) {
-      throw new NotFoundException('User not found.')
-    }
-
-    this.projectService.allowedToManage(project, userId, user.roles)
-
-    const monitor = await this.projectService.createMonitor(body, projectId)
-
-    // Create a job in service for sending httpRequest
-    await this.projectService.sendHttpRequest(monitor.id, {
-      ...monitor,
-      timeout: monitor.timeout * 1000,
-    })
-
-    return monitor
-  }
-
-  @ApiOperation({ summary: 'Get monitor for the project' })
-  @ApiBearerAuth()
-  @ApiOkResponse({ type: MonitorEntity })
-  @Get(':projectId/monitor/:monitorId')
-  @Auth([], true, true)
-  public async getMonitor(
-    @Param() { projectId }: ProjectIdDto,
-    @Param('monitorId') monitorId: number,
-    @CurrentUserId() userId: string,
-  ): Promise<MonitorEntity> {
-    const project = await this.projectService.getFullProject(projectId)
-
-    if (!project) {
-      throw new NotFoundException('Project not found.')
-    }
-
-    this.projectService.allowedToManage(project, userId)
-
-    const monitor = await this.projectService.getMonitor(monitorId)
-
-    if (!monitor) {
-      throw new NotFoundException('Monitor not found.')
-    }
-
-    return monitor
-  }
-
-  @ApiOperation({ summary: 'Update monitor for the project' })
-  @ApiBearerAuth()
-  @ApiOkResponse({ type: MonitorEntity })
-  @Patch(':projectId/monitor/:monitorId')
-  @Auth([], true, true)
-  public async updateMonitor(
-    @Param() { projectId }: ProjectIdDto,
-    @Param('monitorId') monitorId: number,
-    @Body() body: UpdateMonitorHttpRequestDTO,
-    @CurrentUserId() userId: string,
-  ): Promise<void> {
-    const project = await this.projectService.getFullProject(projectId)
-
-    if (!project) {
-      throw new NotFoundException('Project not found.')
-    }
-
-    const user = await this.userService.findUserV2(userId, ['roles'])
-
-    if (!user) {
-      throw new NotFoundException('User not found.')
-    }
-
-    this.projectService.allowedToManage(project, userId, user.roles)
-
-    const monitor = await this.projectService.getMonitor(monitorId)
-
-    if (!monitor) {
-      throw new NotFoundException('Monitor not found.')
-    }
-
-    const updatedMonitor = await this.projectService.updateMonitor(
-      monitorId,
-      body,
-    )
-
-    await this.projectService.updateHttpRequest(monitor.id, monitor)
-    return updatedMonitor
-  }
-
-  @ApiOperation({ summary: 'Delete monitor from the project' })
-  @ApiBearerAuth()
-  @ApiOkResponse({ description: 'Monitor deleted successfully' })
-  @Delete(':projectId/monitor/:monitorId')
-  @Auth([], true, true)
-  public async deleteMonitor(
-    @Param() { projectId }: ProjectIdDto,
-    @Param('monitorId') monitorId: number,
-    @CurrentUserId() userId: string,
-  ): Promise<void> {
-    const project = await this.projectService.getFullProject(projectId)
-
-    if (!project) {
-      throw new NotFoundException('Project not found.')
-    }
-    const user = await this.userService.findUserV2(userId, ['roles'])
-
-    if (!user) {
-      throw new NotFoundException('User not found.')
-    }
-
-    this.projectService.allowedToManage(project, userId, user.roles)
-
-    const monitor = await this.projectService.getMonitor(monitorId)
-
-    if (!monitor) {
-      throw new NotFoundException('Monitor not found.')
-    }
-
-    this.projectService.deleteMonitor(monitorId)
-    this.projectService.deleteHttpRequest(monitorId)
   }
 }

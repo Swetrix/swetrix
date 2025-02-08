@@ -265,7 +265,7 @@ export const getPageMeta = (t: typeof i18next.t, url?: string, _pathname?: strin
 
   // organisation, project_settings, captcha_settings, project, captcha titles are set dynamically
 
-  // todo: create_alert, alert_settings, project_protected_password, create_monitor, monitor_settings,
+  // todo: create_alert, alert_settings, project_protected_password
 
   result.prefixLessTitle = result.title
   result.title += ` ${TITLE_SUFFIX}`

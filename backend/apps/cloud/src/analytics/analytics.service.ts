@@ -36,7 +36,6 @@ import {
   HttpStatus,
   UnprocessableEntityException,
   PreconditionFailedException,
-  ForbiddenException,
 } from '@nestjs/common'
 import { isbot } from 'isbot'
 
@@ -46,7 +45,6 @@ import {
   UNIQUE_SESSION_LIFE_TIME,
   REDIS_SESSION_SALT_KEY,
   TRAFFIC_COLUMNS,
-  UPTIME_COLUMNS,
   ALL_COLUMNS,
   CAPTCHA_COLUMNS,
   ERROR_COLUMNS,
@@ -98,7 +96,6 @@ import {
   PropertiesCHResponse,
   IPageProperty,
   ICustomEvent,
-  BirdseyeCHUptimeResponse,
 } from './interfaces'
 import { ErrorDto } from './dto/error.dto'
 import { GetPagePropertyMetaDto } from './dto/get-page-property-meta.dto'
@@ -247,7 +244,7 @@ const generateParamsQuery = (
   subQuery: string,
   customEVFilterApplied: boolean,
   isPageInclusiveFilterSet: boolean,
-  type: 'traffic' | 'performance' | 'captcha' | 'errors' | 'uptime',
+  type: 'traffic' | 'performance' | 'captcha' | 'errors',
   measure?: PerfMeasure,
 ): string => {
   let columns = [`${col} as name`]
@@ -284,10 +281,6 @@ const generateParamsQuery = (
   }
 
   if (type === 'captcha') {
-    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
-  }
-
-  if (type === 'uptime') {
     return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
   }
 
@@ -377,14 +370,6 @@ export class AnalyticsService {
 
     if (isbot(userAgent)) {
       throw new BadRequestException('Bot traffic detected')
-    }
-  }
-
-  async checkUptimeAccess(pid: string, monitorId: number) {
-    const monitor = await this.projectService.findMonitorById(monitorId, pid)
-
-    if (!monitor) {
-      throw new ForbiddenException('You are not allowed to view this project')
     }
   }
 
@@ -1413,171 +1398,6 @@ export class AnalyticsService {
     return result
   }
 
-  async getUptimeSummary(
-    monitorIds: number[],
-    period?: string,
-    from?: string,
-    to?: string,
-    timezone?: string,
-  ): Promise<IOverallCaptcha> {
-    // eslint-disable-next-line
-    let _from: string
-    // eslint-disable-next-line
-    let _to: string
-
-    if (_isEmpty(period) || ['today', 'yesterday', 'custom'].includes(period)) {
-      const safeTimezone = this.getSafeTimezone(timezone)
-
-      const { groupFrom, groupTo } = this.getGroupFromTo(
-        from,
-        to,
-        ['today', 'yesterday'].includes(period) ? TimeBucketType.HOUR : null,
-        period,
-        safeTimezone,
-      )
-
-      _from = groupFrom
-      _to = groupTo
-    }
-
-    const result = {}
-
-    const promises = monitorIds.map(async monitorId => {
-      try {
-        if (period === 'all') {
-          const queryAll = `
-            SELECT
-              coalesce(divide(avg(responseTime), 1000), 0) as avg,
-              coalesce(divide(max(responseTime), 1000), 0) as max,
-              coalesce(divide(min(responseTime), 1000), 0) as min
-            FROM
-              monitor_responses
-            WHERE
-              monitorId={monitorId:UInt64}
-          `
-
-          const { data } = await clickhouse
-            .query({
-              query: queryAll,
-              query_params: { monitorId },
-            })
-            .then(resultSet => resultSet.json<BirdseyeCHUptimeResponse>())
-
-          result[monitorId] = {
-            current: {
-              avg: data[0].avg || 0,
-              min: data[0].min || 0,
-              max: data[0].max || 0,
-            },
-            previous: {
-              avg: 0,
-              min: 0,
-              max: 0,
-            },
-            avgChange: data[0].avg || 0,
-            minChange: data[0].min || 0,
-            maxChange: data[0].max || 0,
-          }
-          return
-        }
-
-        let now: string
-        let periodFormatted: string
-        let periodSubtracted: string
-
-        if (_from && _to) {
-          // diff may be 0 (when selecting data for 1 day), so let's make it 1 to grab some data for the prev day as well
-          const diff = dayjs(_to).diff(dayjs(_from), 'days') || 1
-
-          now = _to
-          periodFormatted = _from
-          periodSubtracted = dayjs(_from)
-            .subtract(diff, 'days')
-            .format('YYYY-MM-DD HH:mm:ss')
-        } else {
-          const amountToSubtract = parseInt(period, 10)
-          const unit = _replace(period, /[0-9]/g, '') as dayjs.ManipulateType
-
-          now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-          const periodRaw = dayjs.utc().subtract(amountToSubtract, unit)
-          periodFormatted = periodRaw.format('YYYY-MM-DD HH:mm:ss')
-          periodSubtracted = periodRaw
-            .subtract(amountToSubtract, unit)
-            .format('YYYY-MM-DD HH:mm:ss')
-        }
-
-        const queryCurrent = `
-          SELECT
-            1 AS sortOrder,
-            coalesce(divide(avg(responseTime), 1000), 0) as avg,
-            coalesce(divide(max(responseTime), 1000), 0) as max,
-            coalesce(divide(min(responseTime), 1000), 0) as min
-          FROM
-            monitor_responses
-          WHERE
-            monitorId={monitorId:UInt64}
-            AND created BETWEEN {periodFormatted:String} AND {now:String}
-        `
-
-        const queryPrevious = `
-          SELECT
-            2 AS sortOrder,
-            coalesce(divide(avg(responseTime), 1000), 0) as avg,
-            coalesce(divide(max(responseTime), 1000), 0) as max,
-            coalesce(divide(min(responseTime), 1000), 0) as min
-          FROM
-            monitor_responses
-          WHERE
-            monitorId={monitorId:UInt64}
-            AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}
-        `
-
-        const query = `${queryCurrent} UNION ALL ${queryPrevious}`
-
-        let { data } = await clickhouse
-          .query({
-            query,
-            query_params: {
-              monitorId,
-              periodFormatted,
-              periodSubtracted,
-              now,
-            },
-          })
-          .then(resultSet => resultSet.json<BirdseyeCHUptimeResponse>())
-
-        data = _sortBy(data, 'sortOrder')
-
-        const currentPeriod = data[0]
-        const previousPeriod = data[1]
-
-        result[monitorId] = {
-          current: {
-            avg: currentPeriod.avg || 0,
-            min: currentPeriod.min || 0,
-            max: currentPeriod.max || 0,
-          },
-          previous: {
-            avg: previousPeriod.avg || 0,
-            min: previousPeriod.min || 0,
-            max: previousPeriod.max || 0,
-          },
-          avgChange: currentPeriod.avg - previousPeriod.avg,
-          minChange: currentPeriod.min - previousPeriod.min,
-          maxChange: currentPeriod.max - previousPeriod.max,
-        }
-      } catch {
-        throw new InternalServerErrorException(
-          "Can't process the provided PID. Please, try again later.",
-        )
-      }
-    })
-
-    await Promise.all(promises)
-
-    return result
-  }
-
   convertSummaryToObsoleteFormat(summary: IOverall): any {
     const result = {}
 
@@ -2124,7 +1944,7 @@ export class AnalyticsService {
     subQuery: string,
     customEVFilterApplied: boolean,
     paramsData: any,
-    type: 'traffic' | 'performance' | 'captcha' | 'errors' | 'uptime',
+    type: 'traffic' | 'performance' | 'captcha' | 'errors',
     measure?: PerfMeasure,
   ) {
     // We need this to display all the pageview related data (e.g. country, browser) when user applies an inclusive filter on the Page column
@@ -2151,10 +1971,6 @@ export class AnalyticsService {
 
     if (type === 'performance') {
       columns = PERFORMANCE_COLUMNS
-    }
-
-    if (type === 'uptime') {
-      columns = UPTIME_COLUMNS
     }
 
     // Build a single query combining all metrics
@@ -2699,29 +2515,6 @@ export class AnalyticsService {
     return baseQuery
   }
 
-  generateMonitorResponsesAggregationQuery(timeBucket: TimeBucketType): string {
-    const timeBucketFunc = timeBucketConversion[timeBucket]
-    const [selector, groupBy] = this.getGroupSubquery(timeBucket)
-
-    const baseQuery = `
-      SELECT
-        ${selector},
-        round(divide(avg(responseTime), 1000), 2) as avgResponseTime
-      FROM (
-        SELECT responseTime,
-          ${timeBucketFunc}(created) as tz_created
-        FROM monitor_responses
-        WHERE
-          monitorId = {monitorId:UInt64}
-          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
-      ) as subquery
-      GROUP BY ${groupBy}
-      ORDER BY ${groupBy}
-    `
-
-    return baseQuery
-  }
-
   async groupByTimeBucket(
     timeBucket: TimeBucketType,
     from: string,
@@ -2987,24 +2780,6 @@ export class AnalyticsService {
     }
   }
 
-  extractUptimeChartData(result, x: string[]): any {
-    const avgResponseTime = Array(x.length).fill(0)
-
-    for (let row = 0; row < _size(result); ++row) {
-      const dateString = this.generateDateString(result[row])
-
-      const index = x.indexOf(dateString)
-
-      if (index !== -1) {
-        avgResponseTime[index] = result[row].avgResponseTime
-      }
-    }
-
-    return {
-      avgResponseTime,
-    }
-  }
-
   async groupCaptchaByTimeBucket(
     timeBucket: TimeBucketType,
     from: string,
@@ -3127,64 +2902,6 @@ export class AnalyticsService {
         chart = {
           x: this.shiftToTimezone(x, safeTimezone, format),
           occurrences: count,
-        }
-      })(),
-    ]
-
-    await Promise.all(promises)
-
-    return Promise.resolve({
-      params,
-      chart,
-    })
-  }
-
-  async groupMonitorResponsesByTimeBucket(
-    timeBucket: TimeBucketType,
-    from: string,
-    to: string,
-    subQuery: string,
-    paramsData: any,
-    safeTimezone: string,
-  ): Promise<object | void> {
-    const params: unknown = {}
-    let chart: unknown = {}
-
-    const promises = [
-      // Params
-      // (async () => {
-      //   params = await this.generateParams(
-      //     null,
-      //     subQuery,
-      //     false,
-      //     paramsData,
-      //     'uptime',
-      //   )
-
-      //   if (!_some(_values(params), val => !_isEmpty(val))) {
-      //     throw new BadRequestException(
-      //       'There are no uptime details for specified time frame',
-      //     )
-      //   }
-      // })(),
-
-      // Chart data
-      (async () => {
-        const { x, format } = this.generateUTCXAxis(timeBucket, from, to)
-
-        const query = this.generateMonitorResponsesAggregationQuery(timeBucket)
-
-        const { data } = await clickhouse
-          .query({
-            query,
-            query_params: paramsData.params,
-          })
-          .then(resultSet => resultSet.json<any>())
-        const { avgResponseTime } = this.extractUptimeChartData(data, x)
-
-        chart = {
-          x: this.shiftToTimezone(x, safeTimezone, format),
-          avgResponseTime,
         }
       })(),
     ]

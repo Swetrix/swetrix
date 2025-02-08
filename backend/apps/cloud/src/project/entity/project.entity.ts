@@ -16,7 +16,6 @@ import { ProjectSubscriber } from './project-subscriber.entity'
 import { Funnel } from './funnel.entity'
 import { CAPTCHA_SECRET_KEY_LENGTH } from '../../common/constants'
 import { ProjectViewEntity } from './project-view.entity'
-import { MonitorEntity } from './monitor.entity'
 import { Organisation } from '../../organisation/entity/organisation.entity'
 
 export enum BotsProtectionLevel {
@@ -132,9 +131,6 @@ export class Project {
 
   @OneToMany(() => ProjectViewEntity, projectView => projectView.id)
   views: ProjectViewEntity[]
-
-  @OneToMany(() => MonitorEntity, monitor => monitor.id)
-  monitors: MonitorEntity[]
 
   @ManyToOne(() => Organisation, org => org.projects, { nullable: true })
   organisation: Organisation | null
