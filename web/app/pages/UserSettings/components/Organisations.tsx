@@ -2,6 +2,7 @@ import React, { memo, useState } from 'react'
 import dayjs from 'dayjs'
 import { toast } from 'sonner'
 import { useTranslation } from 'react-i18next'
+import cx from 'clsx'
 import _map from 'lodash/map'
 import _filter from 'lodash/filter'
 
@@ -83,7 +84,11 @@ const Organisations = ({ membership }: OrganisationsProps) => {
           ? dayjs(created).locale(language).format('MMMM D, YYYY')
           : dayjs(created).locale(language).format('D MMMM, YYYY')}
       </td>
-      <td className='relative py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-6'>
+      <td
+        className={cx('relative py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-6', {
+          hidden: role === 'owner',
+        })}
+      >
         {confirmed ? (
           <Button onClick={() => setShowDeleteModal(true)} danger small>
             {t('common.quit')}
