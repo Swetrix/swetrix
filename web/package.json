@@ -31,7 +31,7 @@
     "@remix-run/v1-route-convention": "^0.1.4",
     "@swetrix/sdk": "^1.1.0",
     "@tailwindcss/forms": "^0.5.10",
-    "@tailwindcss/postcss": "^4.0.3",
+    "@tailwindcss/postcss": "^4.0.4",
     "@types/ua-parser-js": "^0.7.39",
     "axios": "^1.7.9",
     "axios-auth-refresh": "^3.3.6",
@@ -148,7 +148,7 @@
     "knip": "^5.41.1",
     "postcss": "^8.5.1",
     "prettier": "^3.4.2",
-    "tailwindcss": "^4.0.3",
+    "tailwindcss": "^4.0.4",
     "typescript": "^5.7.2"
   },
   "engines": {
