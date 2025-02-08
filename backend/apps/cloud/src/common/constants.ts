@@ -114,8 +114,6 @@ const TRAFFIC_COLUMNS = [
   'co',
 ]
 
-const UPTIME_COLUMNS = ['region', 'statusCode']
-
 const TRAFFIC_METAKEY_COLUMNS = ['tag:key', 'tag:value']
 
 const ERROR_COLUMNS = [
@@ -208,7 +206,6 @@ export {
   getRedisUserUsageInfoKey,
   redisUserUsageinfoCacheTimeout,
   TRAFFIC_COLUMNS,
-  UPTIME_COLUMNS,
   TRAFFIC_METAKEY_COLUMNS,
   CAPTCHA_COLUMNS,
   ERROR_COLUMNS,

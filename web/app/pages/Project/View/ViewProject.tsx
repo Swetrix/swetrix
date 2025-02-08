@@ -14,7 +14,7 @@ import { ClientOnly } from 'remix-utils/client-only'
 import useSize from '~/hooks/useSize'
 import { useNavigate, Link, useSearchParams, useLoaderData } from '@remix-run/react'
 import bb from 'billboard.js'
-import { MagnifyingGlassIcon, ChevronLeftIcon, GlobeAltIcon, ClockIcon } from '@heroicons/react/24/outline'
+import { MagnifyingGlassIcon, ChevronLeftIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
 import {
   BugIcon,
   GaugeIcon,
@@ -161,7 +161,6 @@ import LiveVisitorsDropdown from './components/LiveVisitorsDropdown'
 import CountryDropdown from './components/CountryDropdown'
 import { MetricCard, MetricCards, PerformanceMetricCards } from './components/MetricCards'
 import ProjectAlertsView from '../Alerts/View'
-import Uptime from '../uptime/View'
 import UTMDropdown from './components/UTMDropdown'
 import TBPeriodSelector from './components/TBPeriodSelector'
 import { Session } from './interfaces/session'
@@ -880,11 +879,6 @@ const ViewProject = () => {
         id: PROJECT_TABS.alerts,
         label: t('dashboard.alerts'),
         icon: BellRingIcon,
-      },
-      ['79eF2Z9rNNvv', 'STEzHcB1rALV'].includes(id) && {
-        id: PROJECT_TABS.uptime,
-        label: t('dashboard.uptime'),
-        icon: ClockIcon,
       },
       ...adminTabs,
     ].filter((x) => !!x)
@@ -2956,7 +2950,7 @@ const ViewProject = () => {
     )
   }
 
-  if (!project.isDataExists && !_includes([PROJECT_TABS.errors, PROJECT_TABS.uptime], activeTab) && !analyticsLoading) {
+  if (!project.isDataExists && activeTab !== PROJECT_TABS.errors && !analyticsLoading) {
     return (
       <>
         {!embedded && <Header ssrTheme={ssrTheme} authenticated={authenticated} />}
@@ -3063,7 +3057,6 @@ const ViewProject = () => {
               >
                 <TabsSelector />
                 {activeTab !== PROJECT_TABS.alerts &&
-                  activeTab !== PROJECT_TABS.uptime &&
                   (activeTab !== PROJECT_TABS.sessions || !activePSID) &&
                   (activeFunnel || activeTab !== PROJECT_TABS.funnels) && (
                     <>
@@ -4052,7 +4045,6 @@ const ViewProject = () => {
                 {activeTab === PROJECT_TABS.alerts && project.role === 'owner' && authenticated && (
                   <ProjectAlertsView projectId={id} />
                 )}
-                {activeTab === PROJECT_TABS.uptime && <Uptime />}
                 {analyticsLoading && (activeTab === PROJECT_TABS.traffic || activeTab === PROJECT_TABS.performance) && (
                   <Loader />
                 )}

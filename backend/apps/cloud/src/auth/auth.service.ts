@@ -469,7 +469,7 @@ export class AuthService {
     await this.userService.deleteAllRefreshTokens(userId)
   }
 
-  async validateApiKey(apiKey: string): Promise<User | null> {
+  async findUserByApiKey(apiKey: string): Promise<User | null> {
     return this.userService.findUserByApiKey(apiKey)
   }
 

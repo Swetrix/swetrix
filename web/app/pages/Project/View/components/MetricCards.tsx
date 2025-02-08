@@ -10,7 +10,6 @@ import { nFormatter, getStringFromTime, getTimeFromSeconds } from '~/utils/gener
 import { OverallObject, OverallPerformanceObject } from '~/lib/models/Project'
 import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { Badge } from '~/ui/Badge'
-import { MonitorOverallObject } from '~/lib/models/Uptime'
 
 interface MetricCardProps {
   label: string
@@ -228,46 +227,6 @@ export const MetricCards = memo(({ overall, overallCompare, activePeriodCompare 
   )
 })
 
-interface MetricCardsUptimeProps {
-  overall: MonitorOverallObject
-}
-
-export const MetricCardsUptime = memo(({ overall }: MetricCardsUptimeProps) => {
-  const { t } = useTranslation()
-
-  return (
-    <>
-      <MetricCard
-        label={t('monitor.metrics.avg')}
-        value={overall.current.avg}
-        change={overall.avgChange}
-        goodChangeDirection='up'
-        valueMapper={(value, type) =>
-          `${type === 'badge' && value > 0 ? '+' : ''}${getStringFromTime(getTimeFromSeconds(value), true)}`
-        }
-      />
-      <MetricCard
-        label={t('monitor.metrics.min')}
-        value={overall.current.min}
-        change={overall.minChange}
-        goodChangeDirection='up'
-        valueMapper={(value, type) =>
-          `${type === 'badge' && value > 0 ? '+' : ''}${getStringFromTime(getTimeFromSeconds(value), true)}`
-        }
-      />
-      <MetricCard
-        label={t('monitor.metrics.max')}
-        value={overall.current.max}
-        change={overall.maxChange}
-        goodChangeDirection='up'
-        valueMapper={(value, type) =>
-          `${type === 'badge' && value > 0 ? '+' : ''}${getStringFromTime(getTimeFromSeconds(value), true)}`
-        }
-      />
-    </>
-  )
-})
-
 interface PerformanceMetricCardsProps {
   overall: Partial<OverallPerformanceObject>
   overallCompare?: Partial<OverallPerformanceObject>
@@ -326,5 +285,4 @@ export const PerformanceMetricCards = memo(
 )
 
 MetricCards.displayName = 'MetricCards'
-MetricCardsUptime.displayName = 'MetricCardsUptime'
 PerformanceMetricCards.displayName = 'PerformanceMetricCards'

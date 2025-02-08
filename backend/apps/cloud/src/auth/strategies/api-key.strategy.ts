@@ -12,12 +12,19 @@ export class ApiKeyStrategy extends PassportStrategy(
     super(
       { header: 'X-Api-Key', prefix: '' },
       true,
-      // eslint-disable-next-line consistent-return
-      async (apiKey: string, done: any) => {
-        const user = await this.authService.validateApiKey(apiKey)
-        if (!user) return done(new UnauthorizedException(), false)
-        done(null, user)
+      // TODO: What the fuck is this? As of Nest V 11 - this code should not work.
+      // Test is later on. https://github.com/nestjs/passport/pull/1439
+      // @ts-expect-error
+      async (apiKey: string, done: (err: any, user: any) => void) => {
+        return this.validate(apiKey, done)
       },
     )
+  }
+
+  async validate(apiKey: string, done: (err: any, user: any) => void) {
+    const user = await this.authService.findUserByApiKey(apiKey)
+    if (!user) return done(new UnauthorizedException(), false)
+
+    return done(null, user)
   }
 }

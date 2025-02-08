@@ -20,6 +20,5 @@ export enum LetterTemplate {
   UsageOverLimit = 'usage-over-limit',
   DashboardLockedExceedingLimits = 'dashboard-locked-exceeding-limits',
   DashboardLockedPaymentFailure = 'dashboard-locked-payment-failure',
-  UptimeMonitoringFailure = 'uptime-monitoring-failure',
   OrganisationInvitation = 'organisation-invitation',
 }

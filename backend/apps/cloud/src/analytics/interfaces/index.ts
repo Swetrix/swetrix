@@ -22,12 +22,6 @@ export interface BirdseyeCHResponse {
   sdur: number
 }
 
-export interface BirdseyeCHUptimeResponse {
-  avg: number
-  min: number
-  max: number
-}
-
 export interface PerformanceCHResponse {
   year: number
   month: number
