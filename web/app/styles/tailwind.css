@@ -70,3 +70,15 @@
     color: var(--color-gray-400);
   }
 }
+
+/* Buttons should have a pointer cursor by default */
+@layer base {
+  button,
+  [role='button'] {
+    cursor: pointer;
+  }
+  button:disabled,
+  [role='button']:disabled {
+    cursor: default;
+  }
+}
