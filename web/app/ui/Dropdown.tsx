@@ -51,41 +51,39 @@ function Dropdown<T>({
       {({ open, close }) => (
         <>
           {!_isEmpty(desc) && <p className='mb-2 text-sm text-gray-900'>{desc}</p>}
-          <div>
-            <MenuButton
-              onClick={onClick}
-              disabled={disabled}
-              className={cx(buttonClassName, {
-                'justify-between': aside,
-                'justify-center': !aside,
-                'inline-flex w-full rounded-md border border-gray-300 bg-white px-3 py-2 font-mono text-sm font-medium hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100 focus:outline-hidden md:px-4 dark:border-gray-800 dark:bg-slate-800 dark:hover:bg-slate-700':
-                  !headless,
-                'group inline-flex w-full px-3 py-2 font-mono text-sm font-medium outline-hidden md:px-4': headless,
-                'text-gray-700 dark:text-gray-50': !disabled,
-                'cursor-not-allowed text-gray-500 dark:text-gray-400': disabled,
-              })}
-            >
-              {title}
-              {chevron === 'regular' && (
-                <ChevronDownIcon
-                  className={cx('-mr-1 ml-2 h-5 w-5 transform-gpu transition-transform', {
-                    'group-hover:text-gray-500': headless,
-                    'rotate-180': open,
-                  })}
-                  aria-hidden='true'
-                />
-              )}
-              {chevron === 'mini' && (
-                <ChevronDownIconMini
-                  className={cx('-mr-1 ml-1 h-5 w-5 transform-gpu transition-transform', {
-                    'group-hover:text-gray-500': headless,
-                    'rotate-180': open,
-                  })}
-                  aria-hidden='true'
-                />
-              )}
-            </MenuButton>
-          </div>
+          <MenuButton
+            onClick={onClick}
+            disabled={disabled}
+            className={cx(buttonClassName, {
+              'justify-between': aside,
+              'justify-center': !aside,
+              'inline-flex w-full rounded-md border border-gray-300 bg-white px-3 py-2 font-mono text-sm font-medium hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-100 focus:outline-hidden md:px-4 dark:border-gray-800 dark:bg-slate-800 dark:hover:bg-slate-700':
+                !headless,
+              'group inline-flex w-full px-3 py-2 font-mono text-sm font-medium outline-hidden md:px-4': headless,
+              'text-gray-700 dark:text-gray-50': !disabled,
+              'cursor-not-allowed text-gray-500 dark:text-gray-400': disabled,
+            })}
+          >
+            {title}
+            {chevron === 'regular' && (
+              <ChevronDownIcon
+                className={cx('-mr-1 ml-2 h-5 w-5 transform-gpu transition-transform', {
+                  'group-hover:text-gray-500': headless,
+                  'rotate-180': open,
+                })}
+                aria-hidden='true'
+              />
+            )}
+            {chevron === 'mini' && (
+              <ChevronDownIconMini
+                className={cx('-mr-1 ml-1 h-5 w-5 transform-gpu transition-transform', {
+                  'group-hover:text-gray-500': headless,
+                  'rotate-180': open,
+                })}
+                aria-hidden='true'
+              />
+            )}
+          </MenuButton>
 
           <Transition
             show={open}

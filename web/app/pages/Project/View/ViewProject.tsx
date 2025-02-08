@@ -2646,10 +2646,6 @@ const ViewProject = () => {
     })
   }
 
-  const onMeasureChange = (measure: string) => {
-    setActivePerfMeasure(measure)
-  }
-
   const openSettingsHandler = () => {
     navigate(_replace(routes.project_settings, ':id', id))
   }
@@ -3466,7 +3462,7 @@ const ViewProject = () => {
                           {activeTab === PROJECT_TABS.performance && !isPanelsDataEmptyPerf && (
                             <Dropdown
                               items={chartMetricsPerf}
-                              className='xs:min-w-0 min-w-[170px]'
+                              className='xs:min-w-0'
                               title={
                                 <p>
                                   {
@@ -3489,7 +3485,7 @@ const ViewProject = () => {
                             <Dropdown
                               disabled={activeChartMetricsPerf === CHART_METRICS_MAPPING_PERF.quantiles}
                               items={chartMeasuresPerf}
-                              className='xs:min-w-0 min-w-[170px]'
+                              className='xs:min-w-0'
                               title={
                                 <p>
                                   {_find(chartMeasuresPerf, ({ id: chartId }) => chartId === activePerfMeasure)?.label}
@@ -3498,7 +3494,7 @@ const ViewProject = () => {
                               labelExtractor={(pair) => pair.label}
                               keyExtractor={(pair) => pair.id}
                               onSelect={({ id: pairID }) => {
-                                onMeasureChange(pairID)
+                                setActivePerfMeasure(pairID)
                               }}
                               buttonClassName='!px-2.5'
                               chevron='mini'
