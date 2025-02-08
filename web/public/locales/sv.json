@@ -1236,17 +1236,6 @@
     "title": "Beta",
     "description": "Denna funktion är i Beta-fasen. Använd den med försiktighet eftersom det kan finnas biverkningar."
   },
-  "press": {
-    "description": "Our assets for use in your articles and other media. If you use any of the assets below, we'd be grateful if you'd leave a link to one of our pages on your website. If you need other assets or have any questions, please <url>contact us</url>.",
-    "logos": "Logos",
-    "logo": "Logo",
-    "logoNoText": "Logo without text",
-    "logoWhiteText": "Logo with white text",
-    "font": {
-      "title": "Font",
-      "description": "We use {{font}} font on Swetrix websites. See more information about it on it's <url>official website</url>."
-    }
-  },
   "open": {
     "desc": "Swetrix is an Open Startup, we share our metrics, such as revenue, losses, amount of users, etc. with the public.",
     "updated": "This page is updated regularly.",
@@ -1274,7 +1263,6 @@
     "contact": "Have something to ask?",
     "changelog": "Changelog",
     "main": "Understand the story behind your customer clicks and scrolls",
-    "press": "Media & Press",
     "socialisation": "Socialisation",
     "open": "Open startup",
     "passwordProtected": "This project is password protected",
@@ -1339,7 +1327,6 @@
     "donate": "Donera",
     "changelog": "Changelog",
     "captcha": "CAPTCHA",
-    "press": "Media & Press",
     "open": "Open startup",
     "about": "Om oss",
     "features": "Funktioner",

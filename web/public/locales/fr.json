@@ -1236,17 +1236,6 @@
     "title": "Bêta",
     "description": "Cette fonctionnalité est en phase Bêta. Utilisez-la avec prudence car il peut y avoir des effets secondaires."
   },
-  "press": {
-    "description": "Nos ressources à utiliser dans vos articles et autres médias. Si vous utilisez l'une des ressources ci-dessous, nous serions reconnaissants si vous laissiez un lien vers l'une de nos pages sur votre site web. Si vous avez besoin d'autres ressources ou si vous avez des questions, veuillez <url>nous contacter</url>.",
-    "logos": "Logos",
-    "logo": "Logo",
-    "logoNoText": "Logo sans texte",
-    "logoWhiteText": "Logo avec texte blanc",
-    "font": {
-      "title": "Police",
-      "description": "Nous utilisons la police {{font}} sur les sites web de Swetrix. Voir plus d'informations à ce sujet sur son <url>site officiel</url>."
-    }
-  },
   "open": {
     "desc": "Swetrix est une Startup Ouverte, nous partageons nos métriques, telles que les revenus, les pertes, le nombre d'utilisateurs, etc. avec le public.",
     "updated": "Cette page est mise à jour régulièrement.",
@@ -1274,7 +1263,6 @@
     "contact": "Contact",
     "changelog": "Journal des modifications",
     "main": "Analyse open-source ultime pour satisfaire tous vos besoins",
-    "press": "Médias & Presse",
     "socialisation": "Socialisation",
     "open": "Startup ouverte",
     "passwordProtected": "Ce projet est protégé par mot de passe",
@@ -1339,7 +1327,6 @@
     "donate": "Faire un don",
     "changelog": "Journal des modifications",
     "captcha": "CAPTCHA",
-    "press": "Médias & Presse",
     "open": "Startup ouverte",
     "about": "À propos de nous",
     "features": "Fonctionnalités",
