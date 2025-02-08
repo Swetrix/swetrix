@@ -3598,9 +3598,9 @@ const ViewProject = () => {
                         <button
                           type='button'
                           onClick={() => setActiveFunnel(null)}
-                          className='mx-auto mt-2 mb-4 flex items-center text-base font-normal text-gray-900 underline decoration-dashed hover:decoration-solid lg:mx-0 lg:mt-0 dark:text-gray-100'
+                          className='mx-auto mt-2 mb-4 flex items-center font-mono text-sm text-gray-900 underline decoration-dashed hover:decoration-solid lg:mx-0 lg:mt-0 dark:text-gray-100'
                         >
-                          <ChevronLeftIcon className='h-4 w-4' />
+                          <ChevronLeftIcon className='mr-1 size-3' />
                           {t('project.backToFunnels')}
                         </button>
                       )}
@@ -3724,9 +3724,9 @@ const ViewProject = () => {
                         searchParams.delete('psid')
                         setSearchParams(searchParams)
                       }}
-                      className='mx-auto mt-2 mb-4 flex items-center text-base font-normal text-gray-900 underline decoration-dashed hover:decoration-solid lg:mx-0 dark:text-gray-100'
+                      className='mx-auto mt-2 mb-4 flex items-center font-mono text-sm text-gray-900 underline decoration-dashed hover:decoration-solid lg:mx-0 dark:text-gray-100'
                     >
-                      <ChevronLeftIcon className='h-4 w-4' />
+                      <ChevronLeftIcon className='mr-1 size-3' />
                       {t('project.backToSessions')}
                     </button>
                     {activeSession?.details && <SessionDetails details={activeSession?.details} />}
@@ -3801,9 +3801,9 @@ const ViewProject = () => {
                         searchParams.delete('eid')
                         setSearchParams(searchParams)
                       }}
-                      className='mx-auto mt-2 mb-4 flex items-center text-base font-normal text-gray-900 underline decoration-dashed hover:decoration-solid lg:mx-0 lg:mt-0 dark:text-gray-100'
+                      className='mx-auto mt-2 mb-4 flex items-center font-mono text-sm text-gray-900 underline decoration-dashed hover:decoration-solid lg:mx-0 lg:mt-0 dark:text-gray-100'
                     >
-                      <ChevronLeftIcon className='h-4 w-4' />
+                      <ChevronLeftIcon className='mr-1 size-3' />
                       {t('project.backToErrors')}
                     </button>
                     {activeError?.details && <ErrorDetails details={activeError.details} />}
