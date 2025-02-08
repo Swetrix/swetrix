@@ -1,13 +1,8 @@
-import type { LoaderFunction, LinksFunction, MetaFunction } from '@remix-run/node'
+import type { LoaderFunction, MetaFunction } from '@remix-run/node'
 import { redirect, data } from '@remix-run/node'
-import singlePostCss from '~/css/mdfile.css'
 import { getPost } from '~/utils/getPosts'
 import { isSelfhosted, TITLE_SUFFIX, getOgImageUrl, isDisableMarketingPages } from '~/lib/constants'
 import Post from '~/pages/Blog/Post'
-
-export const links: LinksFunction = () => {
-  return [{ rel: 'stylesheet', href: singlePostCss }]
-}
 
 export const meta: MetaFunction = (loaderData: any) => {
   const ogImageUrl = getOgImageUrl(loaderData?.data?.title)

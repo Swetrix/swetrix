@@ -96,7 +96,7 @@ export default function PostSlug() {
                       </li>
                     </ul>
                   </div>
-                  <div className='single_post mt-6'>
+                  <div className='prose prose-slate mt-6'>
                     <div dangerouslySetInnerHTML={{ __html: post.html }} />
                   </div>
                 </article>
