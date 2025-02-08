@@ -82,7 +82,8 @@ export const SessionDetails = ({ details }: SessionDetailsProps) => {
     <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
       <MetricCardSelect
         classes={{
-          value: 'max-md:text-xl md:text-3xl',
+          value: 'max-md:text-xl md:text-2xl',
+          label: '[&_span]:!text-slate-800 dark:[&_span]:!text-gray-200',
         }}
         values={geo}
         selectLabel={t('project.geo')}
@@ -104,14 +105,16 @@ export const SessionDetails = ({ details }: SessionDetailsProps) => {
       />
       <MetricCardSelect
         classes={{
-          value: 'max-md:text-xl md:text-3xl',
+          value: 'max-md:text-xl md:text-2xl',
+          label: '[&_span]:!text-slate-800 dark:[&_span]:!text-gray-200',
         }}
         values={os}
         selectLabel={t('project.osInfo')}
       />
       <MetricCard
         classes={{
-          value: 'max-md:text-xl md:text-3xl',
+          value: 'max-md:text-xl md:text-2xl',
+          label: '[&_span]:!text-slate-800 dark:[&_span]:!text-gray-200',
         }}
         label={t('project.mapping.dv')}
         value={details.dv || 'N/A'}
@@ -119,14 +122,16 @@ export const SessionDetails = ({ details }: SessionDetailsProps) => {
       />
       <MetricCardSelect
         classes={{
-          value: 'max-md:text-xl md:text-3xl',
+          value: 'max-md:text-xl md:text-2xl',
+          label: '[&_span]:!text-slate-800 dark:[&_span]:!text-gray-200',
         }}
         values={browser}
         selectLabel={t('project.browserInfo')}
       />
       <MetricCard
         classes={{
-          value: 'max-md:text-xl md:text-3xl',
+          value: 'max-md:text-xl md:text-2xl',
+          label: '[&_span]:!text-slate-800 dark:[&_span]:!text-gray-200',
         }}
         label={t('project.mapping.lc')}
         value={details.lc || 'N/A'}
@@ -140,7 +145,8 @@ export const SessionDetails = ({ details }: SessionDetailsProps) => {
       />
       <MetricCard
         classes={{
-          value: 'max-md:text-xl md:text-3xl',
+          value: 'max-md:text-xl md:text-2xl',
+          label: '[&_span]:!text-slate-800 dark:[&_span]:!text-gray-200',
         }}
         label={t('project.mapping.ref')}
         value={details.ref || 'N/A'}
@@ -160,14 +166,16 @@ export const SessionDetails = ({ details }: SessionDetailsProps) => {
       />
       <MetricCardSelect
         classes={{
-          value: 'max-md:text-xl md:text-3xl',
+          value: 'max-md:text-xl md:text-2xl',
+          label: '[&_span]:!text-slate-800 dark:[&_span]:!text-gray-200',
         }}
         values={utm}
         selectLabel={t('project.campaigns')}
       />
       <MetricCard
         classes={{
-          value: 'max-md:text-xl md:text-3xl',
+          value: 'max-md:text-xl md:text-2xl',
+          label: '[&_span]:!text-slate-800 dark:[&_span]:!text-gray-200',
         }}
         label={t('dashboard.sessionDuration')}
         value={details.sdur as number}
