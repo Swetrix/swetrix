@@ -23,6 +23,7 @@ import {
 } from '~/lib/constants'
 import routesPath from '~/utils/routes'
 import { SquareArrowOutUpRightIcon } from 'lucide-react'
+import SwetrixLogo from '~/ui/icons/SwetrixLogo'
 
 const CONTACT_US_URL = `https://swetrix.com${routesPath.contact}`
 const ABOUT_US_URL = `https://swetrix.com${routesPath.about}`
@@ -232,9 +233,7 @@ const Footer = ({ authenticated, showDBIPMessage }: FooterProps) => {
       <div className='w-11/12 px-4 pt-8 pb-5 sm:px-6 lg:px-8'>
         <div className='xl:grid xl:grid-cols-2 xl:gap-8'>
           <div className='space-y-5 xl:col-span-1'>
-            <div className='flex flex-wrap gap-5'>
-              <img height='28px' width='126.35px' src='/assets/logo_white.png' loading='lazy' alt='Swetrix Analytics' />
-            </div>
+            <SwetrixLogo theme='dark' lazy />
             <p className='text-base text-gray-300'>
               {t('footer.slogan')}
               <br />

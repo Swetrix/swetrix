@@ -16,6 +16,7 @@ import {
   MenuButton,
   MenuItem,
   MenuItems,
+  DialogPanel,
 } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
@@ -49,6 +50,7 @@ import Flag from '~/ui/Flag'
 import { User } from '~/lib/models/User'
 import { useAppDispatch, StateType } from '~/lib/store'
 import { logout } from '~/utils/auth'
+import SwetrixLogo from '~/ui/icons/SwetrixLogo'
 
 dayjs.extend(utc)
 dayjs.extend(duration)
@@ -498,7 +500,7 @@ const AuthedHeader = ({
 }: {
   user: User
   switchTheme: (thm?: string) => void
-  theme: string
+  theme: 'dark' | 'light'
   onLanguageChange: (lng: string) => void
   rawStatus: string | number
   status: string
@@ -519,14 +521,7 @@ const AuthedHeader = ({
           <div className='flex items-center'>
             {/* Logo */}
             <Link to={routes.main}>
-              <span className='sr-only'>Swetrix</span>
-              <img
-                className='-translate-y-[3px]'
-                height='28px'
-                width='126.35px'
-                src={theme === 'dark' ? '/assets/logo_white.png' : '/assets/logo_blue.png'}
-                alt=''
-              />
+              <SwetrixLogo theme={theme} />
             </Link>
 
             <div className='ml-10 hidden gap-4 space-x-1 lg:flex'>
@@ -634,7 +629,7 @@ const NotAuthedHeader = ({
   openMenu,
 }: {
   switchTheme: (a?: string) => void
-  theme: string
+  theme: 'dark' | 'light'
   onLanguageChange: (lang: string) => void
   colourBackground: boolean
   refPage?: boolean
@@ -656,26 +651,10 @@ const NotAuthedHeader = ({
           <div className='flex items-center'>
             {/* Logo */}
             {refPage ? (
-              <span>
-                <span className='sr-only'>Swetrix</span>
-                <img
-                  className='-translate-y-[3px]'
-                  height='28px'
-                  width='126.35px'
-                  src={theme === 'dark' ? '/assets/logo_white.png' : '/assets/logo_blue.png'}
-                  alt=''
-                />
-              </span>
+              <SwetrixLogo theme={theme} />
             ) : (
               <Link to={routes.main}>
-                <span className='sr-only'>Swetrix</span>
-                <img
-                  className='-translate-y-[3px]'
-                  height='28px'
-                  width='126.35px'
-                  src={theme === 'dark' ? '/assets/logo_white.png' : '/assets/logo_blue.png'}
-                  alt=''
-                />
+                <SwetrixLogo theme={theme} />
               </Link>
             )}
 
@@ -897,18 +876,9 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
       {/* Mobile header popup */}
       <Dialog className='font-mono lg:hidden' open={mobileMenuOpen} onClose={setMobileMenuOpen}>
         <div className='fixed inset-0 z-10' />
-        <Dialog.Panel className='fixed inset-y-0 top-0 right-0 z-30 w-full overflow-y-auto border-gray-300/80 bg-gray-100/80 p-4 backdrop-blur-2xl sm:max-w-sm sm:border dark:border-slate-900/80 dark:bg-slate-800/80'>
+        <DialogPanel className='fixed inset-y-0 top-0 right-0 z-30 w-full overflow-y-auto border-gray-300/80 bg-gray-100/80 p-4 backdrop-blur-2xl sm:max-w-sm sm:border dark:border-slate-900/80 dark:bg-slate-800/80'>
           <div className='flex items-center justify-between'>
-            <div>
-              <span className='sr-only'>Swetrix</span>
-              <img
-                className='-translate-y-[3px]'
-                height='28px'
-                width='126.35px'
-                src={theme === 'dark' ? '/assets/logo_white.png' : '/assets/logo_blue.png'}
-                alt=''
-              />
-            </div>
+            <SwetrixLogo theme={theme} />
             <div className='flex items-center justify-center space-x-3'>
               {/* Theme switch */}
               {theme === 'dark' ? (
@@ -1188,7 +1158,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
               </div>
             </div>
           </div>
-        </Dialog.Panel>
+        </DialogPanel>
       </Dialog>
     </Popover>
   )
