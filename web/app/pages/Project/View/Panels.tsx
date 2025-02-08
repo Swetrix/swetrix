@@ -685,7 +685,7 @@ const CustomEvents = ({
   }, [chartData, customsEventsData, t]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const CustomEventsTable = () => (
-    <div className='overflow-y-auto'>
+    <div className='overflow-y-auto font-mono'>
       <table className='w-full border-separate border-spacing-y-1'>
         <thead>
           <tr className='text-base text-gray-900 dark:text-gray-50'>
@@ -790,7 +790,7 @@ const CustomEvents = ({
         activeFragment={activeFragment}
         onExpandClick={() => setDetailsOpened(true)}
       >
-        <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
+        <p className='mt-1 font-mono text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
       </PanelContainer>
     )
   }
@@ -806,7 +806,7 @@ const CustomEvents = ({
         onExpandClick={() => setDetailsOpened(true)}
       >
         {_isEmpty(chartData) ? (
-          <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
+          <p className='mt-1 font-mono text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
         ) : (
           <Chart options={chartOptions} current='panels-ce' />
         )}
@@ -851,7 +851,7 @@ const CustomEvents = ({
       activeFragment={activeFragment}
       onExpandClick={() => setDetailsOpened(true)}
     >
-      <table className='table-fixed'>
+      <table className='table-fixed font-mono'>
         <thead>
           <tr className='text-gray-900 dark:text-gray-50'>
             <th
@@ -1235,7 +1235,7 @@ const PageProperties = ({
         activeFragment={activeFragment}
         onExpandClick={() => setDetailsOpened(true)}
       >
-        <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
+        <p className='mt-1 font-mono text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
       </PanelContainer>
     )
   }
@@ -1570,7 +1570,7 @@ const Panel = ({
         activeTab={activeTab}
       >
         {_isEmpty(data) ? (
-          <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
+          <p className='mt-1 font-mono text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
         ) : (
           <Chart options={options} current={`Panels-${id}`} />
         )}
@@ -1623,7 +1623,7 @@ const Panel = ({
           return (
             <Fragment key={`${id}-${entryName}-${Object.values(rest).join('-')}`}>
               <div
-                className={cx('mt-[0.32rem] flex justify-between rounded-sm first:mt-0 dark:text-gray-50', {
+                className={cx('mt-[0.32rem] flex justify-between rounded-sm font-mono first:mt-0 dark:text-gray-50', {
                   'group cursor-pointer hover:bg-gray-100 hover:dark:bg-slate-700': !hideFilters && !dataLoading,
                   'cursor-wait': dataLoading,
                 })}
@@ -1632,7 +1632,7 @@ const Panel = ({
                 {linkContent ? (
                   <a
                     className={cx(
-                      'scrollbar-thin flex items-center overflow-x-auto text-clip whitespace-nowrap text-blue-600 hover:underline dark:text-blue-500',
+                      'scrollbar-thin flex flex-1 items-center overflow-hidden text-clip whitespace-nowrap text-blue-600 hover:underline dark:text-blue-500',
                       {
                         capitalize,
                       },
@@ -1642,39 +1642,28 @@ const Panel = ({
                     rel='noopener noreferrer nofollow'
                     aria-label={`${rowData} (opens in a new tab)`}
                   >
-                    {rowData}
-                    {!hideFilters && (
-                      <FilterIcon
-                        className='ml-2 hidden size-4 min-h-4 min-w-4 text-gray-500 group-hover:block dark:text-gray-300'
-                        strokeWidth={1.5}
-                      />
-                    )}
+                    <span className='flex items-center truncate'>{rowData}</span>
                   </a>
                 ) : (
                   <span
-                    className={cx('scrollbar-thin flex items-center overflow-x-auto text-clip whitespace-nowrap', {
-                      capitalize,
-                    })}
-                  >
-                    {rowData}
-                    {!hideFilters && (
-                      <FilterIcon
-                        className='ml-2 hidden size-4 min-h-4 min-w-4 text-gray-500 group-hover:block dark:text-gray-300'
-                        strokeWidth={1.5}
-                      />
+                    className={cx(
+                      'scrollbar-thin flex flex-1 items-center overflow-hidden text-clip whitespace-nowrap',
+                      {
+                        capitalize,
+                      },
                     )}
+                  >
+                    <span className='flex items-center truncate'>{rowData}</span>
                   </span>
                 )}
-                <span className='ml-3 dark:text-gray-50'>
-                  {activeTab === PROJECT_TABS.traffic ? nFormatter(valueData, 1) : valueData}
-                  &nbsp;
-                  {activeTab !== PROJECT_TABS.performance && (
-                    <span className='font-light text-gray-500 dark:text-gray-200'>
-                      ({perc}
-                      %)
-                    </span>
-                  )}
-                </span>
+                <div className='flex min-w-fit items-center pl-2'>
+                  <span className='mr-1 hidden text-gray-500 group-hover:inline dark:text-gray-200'>
+                    ({_round((count / total) * 100, 2)}%)
+                  </span>
+                  <span className='dark:text-gray-50'>
+                    {activeTab === PROJECT_TABS.traffic ? nFormatter(valueData, 1) : valueData}
+                  </span>
+                </div>
               </div>
               <Progress now={perc} />
             </Fragment>

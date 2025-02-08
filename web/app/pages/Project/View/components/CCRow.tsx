@@ -1,5 +1,4 @@
 import React, { memo } from 'react'
-import _fill from 'lodash/fill'
 import countries from '~/utils/isoCountries'
 import Flag from '~/ui/Flag'
 
@@ -8,17 +7,12 @@ interface CCRowProps {
   name?: string
   language: string
   size?: number
-  spaces?: number
 }
 
-const CCRow = ({ cc, name, language, size = 21, spaces = 2 }: CCRowProps) => (
+const CCRow = ({ cc, name, language, size = 21 }: CCRowProps) => (
   <>
     <Flag className='rounded-xs' country={cc} size={size} alt='' aria-hidden='true' />
-    <span
-      dangerouslySetInnerHTML={{
-        __html: _fill(Array(spaces), '&nbsp;').join(''),
-      }}
-    />
+    &nbsp;
     {name || countries.getName(cc, language)}
   </>
 )
