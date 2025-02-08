@@ -77,7 +77,7 @@ export const Filter = ({
     <span
       title={truncatedFilter === displayFilter ? undefined : displayFilter}
       className={cx(
-        'm-1 inline-flex items-center rounded-md bg-gray-50 py-0.5 pr-1 pl-2.5 text-sm font-medium text-gray-800 dark:bg-slate-800 dark:text-gray-50',
+        'm-1 inline-flex items-center rounded-md bg-gray-50 py-0.5 pr-1 pl-2.5 font-mono text-sm font-medium text-gray-800 dark:bg-slate-800 dark:text-gray-50',
         {
           'pr-2': !removable,
         },
@@ -97,7 +97,7 @@ export const Filter = ({
       ) : (
         <span>{t(`common.${isExclusive ? 'isNot' : 'is'}`)}</span>
       )}
-      &nbsp; &quot;
+      &nbsp;&quot;
       {truncatedFilter}
       &quot;
       {removable && (
