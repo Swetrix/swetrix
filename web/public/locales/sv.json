@@ -124,7 +124,8 @@
     "notSet": "Not set",
     "remove": "Remove",
     "pagination": "Showing <0>{{start}}</0> to <0>{{end}}</0> of <0>{{total}}</0> results",
-    "resultsPerPage": "Results per page"
+    "resultsPerPage": "Results per page",
+    "communityEdition": "Community Edition"
   },
   "featureFlags": {
     "title": "Feature Flags",
@@ -688,7 +689,16 @@
     "delete": "Delete organisation"
   },
   "dashboard": {
-    "uptime": "Uptime",
+    "gridView": "Grid view",
+    "listView": "List view",
+    "sortAlphaAsc": "A to Z",
+    "sortAlphaDesc": "Z to A",
+    "sortDateAsc": "Oldest first",
+    "sortDateDesc": "Newest first",
+    "pageviewsDesc": "Most pageviews",
+    "pageviewsAsc": "Least pageviews",
+    "noProjectsForCriteria": "No projects found for the selected criteria",
+    "lastVisitDesc": "Recently visited first",
     "captcha": "CAPTCHA",
     "newProject": "Nytt projekt",
     "newFunnel": "New funnel",
@@ -737,7 +747,6 @@
     "alerts": "Alerts",
     "alertsDesc": "Automated alerts is a powerful tool that allows you to run automated tasks when specific events occur.\nWe can automatically monitor your project for traffic spikes and notify you via Telegram.",
     "funnelsDesc": "Funnels is a powerful tool that allows you to track the conversion rate of your users through a series of steps.\nThe analysis provided by the marketing funnel gives you the ability to discover potential problems, improve your website, and boost your conversion rate.",
-    "uptimeDesc": "Swetrix uptime is a powerful tool that allows you to monitor the uptime of your websites.\nThe analysis provided by the uptime gives you the ability to discover potential problems before your customers notice them.",
     "frontend": "Frontend",
     "backend": "Backend",
     "network": "Nätverk",
@@ -755,43 +764,6 @@
     "average": "Average",
     "median": "Median",
     "xPercentile": "{{x}}th percentile"
-  },
-  "monitor": {
-    "create": "Create a monitor",
-    "settingsOf": "Settings of {{name}}",
-    "delete": "Delete monitor",
-    "monitorCreated": "Uptime monitor created",
-    "monitorUpdated": "Uptime monitor has been updated",
-    "monitorDeleted": "Uptime monitor deleted",
-    "qDelete": "Delete the monitor?",
-    "deleteHint": "This action is irreversible.\nThe uptime monitor and all the data related to it will be deleted from our servers.",
-    "noEvents": "No monitor events found",
-    "noEventsDesc": "No events have been recorded for the specified period, please try a different period.",
-    "form": {
-      "name": "Monitor name",
-      "type": "Monitor type",
-      "url": "URL to monitor",
-      "interval": "Monitor interval",
-      "intervalHint": "We will check the URL every {{intervalTranslated}}",
-      "retries": "Monitor retries",
-      "retriesHint": "We will retry the URL {{retries}} times before marking it as failed",
-      "retryInterval": "Monitor retry interval",
-      "retryIntervalHint": "We will retry the URL every {{retryIntervalTranslated}}",
-      "timeout": "Monitor timeout",
-      "timeoutHint": "We will cancel the request to the URL if it takes longer than {{x}} seconds and mark it as failed",
-      "acceptedStatusCodes": "Monitor accepted status codes (comma-separated)",
-      "description": "Monitor description"
-    },
-    "error": {
-      "urlInvalid": "Ange en giltig URL",
-      "acceptedStatusCodesNotValid": "Some of the values provided are not valid HTTP status codes"
-    },
-    "backToMonitors": "Back to monitors list",
-    "metrics": {
-      "avg": "Avg. response time",
-      "min": "Min. response time",
-      "max": "Max. response time"
-    }
   },
   "alert": {
     "create": "Create an alert",
@@ -1129,6 +1101,7 @@
     "page": "Sida",
     "reverse": "Reverse",
     "userFlow": {
+      "title": "User flow",
       "noData": "User flow is not available yet due to lack of data, or you disabled this feature in the tracking script parameters"
     },
     "noDateRange": "Please select a date range",
@@ -1343,8 +1316,7 @@
   "footer": {
     "slogan": "De bästa apparna behöver de bästa tjänsterna.",
     "description": "Swetrix är en kraftfull analytics plattform som respekterar användarnas integritet.",
-    "madeIn": "Tillverkad i",
-    "hostedIn": "Värd i den",
+    "madeInHostedIn": "Made in <0></0> / <1></1>, hosted in <2></2>",
     "ukraine": "Ukraina",
     "eu": "Europeiska unionen",
     "support": "Support",

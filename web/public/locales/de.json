@@ -124,7 +124,8 @@
     "notSet": "Not set",
     "remove": "Remove",
     "pagination": "Showing <0>{{start}}</0> to <0>{{end}}</0> of <0>{{total}}</0> results",
-    "resultsPerPage": "Results per page"
+    "resultsPerPage": "Results per page",
+    "communityEdition": "Community Edition"
   },
   "featureFlags": {
     "title": "Feature Flags",
@@ -688,7 +689,16 @@
     "delete": "Delete organisation"
   },
   "dashboard": {
-    "uptime": "Verfügbarkeit",
+    "gridView": "Grid view",
+    "listView": "List view",
+    "sortAlphaAsc": "A to Z",
+    "sortAlphaDesc": "Z to A",
+    "sortDateAsc": "Oldest first",
+    "sortDateDesc": "Newest first",
+    "pageviewsDesc": "Most pageviews",
+    "pageviewsAsc": "Least pageviews",
+    "noProjectsForCriteria": "No projects found for the selected criteria",
+    "lastVisitDesc": "Recently visited first",
     "captcha": "CAPTCHA",
     "newProject": "Neues Projekt",
     "newFunnel": "Neuer Trichter",
@@ -737,7 +747,6 @@
     "alerts": "Alarme",
     "alertsDesc": "Automatisierte Alarme sind ein leistungsstarkes Tool, mit dem Sie automatisierte Aufgaben ausführen können, wenn bestimmte Ereignisse auftreten.\nWir können Ihr Projekt automatisch auf Stacheln überwachen und Sie per Telegram benachrichtigen.",
     "funnelsDesc": "Trichter ist ein leistungsfähiges Tool, mit dem Sie die Konversionsrate Ihrer Benutzer durch eine Reihe von Schritten verfolgen können.\nDie Analyse des Marketing-Trichters gibt Ihnen die Möglichkeit, potenzielle Probleme zu entdecken, Ihre Website zu verbessern und Ihre Konversionsrate zu erhöhen.",
-    "uptimeDesc": "Swetrix Uptime ist ein leistungsstarkes Tool, mit dem Sie die Verfügbarkeit Ihrer Websites überwachen können.\nDie von Uptime bereitgestellte Analyse gibt Ihnen die Möglichkeit, potenzielle Probleme zu entdecken, bevor Ihre Kunden sie bemerken.",
     "frontend": "Frontend",
     "backend": "Backend",
     "network": "Netzwerk",
@@ -755,43 +764,6 @@
     "average": "Durchschnitt",
     "median": "Median",
     "xPercentile": "{{x}} Perzentil"
-  },
-  "monitor": {
-    "create": "Überwachung einrichten",
-    "settingsOf": "Einstellungen für {{name}}",
-    "delete": "Überwachung löschen",
-    "monitorCreated": "Überwachung eingerichtet",
-    "monitorUpdated": "Überwachung aktualisiert",
-    "monitorDeleted": "Überwachung gelöscht",
-    "qDelete": "Möchten Sie Ihre Überwachung löschen?",
-    "deleteHint": "Diese Aktion ist unumkehrbar.\nDie Überwachung und alle damit verbundenen Daten werden von unseren Servern gelöscht.",
-    "noEvents": "Keine Überwachungs-Ereignisse gefunden",
-    "noEventsDesc": "Für den angegebenen Zeitraum wurden keine Ereignisse erfasst. Bitte versuchen Sie einen anderen Zeitraum.",
-    "form": {
-      "name": "Überwachungsname",
-      "type": "Überwachungs-Typ",
-      "url": "Zu überwachende URL",
-      "interval": "Überwachungsintervall",
-      "intervalHint": "Wir werden die URL alle {{intervalTranslated}} überprüfen",
-      "retries": "Wiederholungsversuche",
-      "retriesHint": "Wir werden die URL {{retries}} mal aufrufen, bevor wir sie als fehlgeschlagen markieren",
-      "retryInterval": "Überwachungsintervall",
-      "retryIntervalHint": "Wir werden die URL alle {{retryIntervalTranslated}} überprüfen",
-      "timeout": "Antwortzeitlimit",
-      "timeoutHint": "Wir brechen die Anfrage an die URL ab, wenn die Antwort länger als {{x}} Sekunden braucht und markieren sie als fehlgeschlagen",
-      "acceptedStatusCodes": "Akzeptierte Statuscodes (kommasepariert)",
-      "description": "Beschreibung der Überwachung"
-    },
-    "error": {
-      "urlInvalid": "Bitte geben Sie eine gültige URL ein",
-      "acceptedStatusCodesNotValid": "Einige der angegebenen Werte sind keine gültigen HTTP Status Codes"
-    },
-    "backToMonitors": "Zurück zur Liste Ihrer Überwachungen",
-    "metrics": {
-      "avg": "Durchschnittliche Antwortzeit",
-      "min": "Min. Antwortzeit",
-      "max": "Max. Antwortzeit"
-    }
   },
   "alert": {
     "create": "Alarm einrichten",
@@ -1129,6 +1101,7 @@
     "page": "Seite",
     "reverse": "Umkehren",
     "userFlow": {
+      "title": "User flow",
       "noData": "Benutzerfluss ist aufgrund fehlender Daten noch nicht verfügbar, oder Sie haben diese Funktion in den Tracking-Skriptparametern deaktiviert"
     },
     "noDateRange": "Bitte geben Sie eine Datumsspanne ein",
@@ -1343,8 +1316,7 @@
   "footer": {
     "slogan": "Die besten Apps brauchen den besten Service.",
     "description": "Swetrix ist eine leistungsstarke Analyseplattform, welche die Privatsphäre der Nutzer respektiert.",
-    "madeIn": "Entwickelt in der",
-    "hostedIn": "Betrieben in der",
+    "madeInHostedIn": "Made in <0></0> / <1></1>, hosted in <2></2>",
     "ukraine": "Ukraine",
     "eu": "Europäischen Union",
     "support": "Kundendienst",
