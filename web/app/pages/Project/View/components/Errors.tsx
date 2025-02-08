@@ -92,7 +92,7 @@ const ErrorItem = ({ error, onClick }: ErrorItemProps) => {
             {error.message ? (
               <p className='mt-1 flex text-sm leading-5 text-gray-500 dark:text-gray-300'>{error.message}</p>
             ) : null}
-            <p className='mt-1 flex items-center gap-x-2 text-base text-sm leading-5 text-gray-500 dark:text-gray-300'>
+            <p className='mt-1 flex items-center gap-x-2 text-sm leading-5 text-gray-500 dark:text-gray-300'>
               <Badge className='mr-2 sm:hidden' label={status.label} colour={status.colour} />
               {lastSeen}
               <Separator className='sm:hidden' />
