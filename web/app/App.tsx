@@ -40,9 +40,8 @@ const App = ({ ssrTheme, ssrAuthenticated }: AppProps) => {
   const authenticated = isBrowser ? (loading ? !!accessToken : reduxAuthenticated) : ssrAuthenticated
   const theme = isBrowser ? reduxTheme : ssrTheme
 
-  // prettier-ignore
   useEffect(() => {
-    (async () => {
+    void (async () => {
       if (accessToken && !reduxAuthenticated) {
         try {
           const { user, totalMonthlyEvents } = await authMe()
@@ -73,14 +72,6 @@ const App = ({ ssrTheme, ssrAuthenticated }: AppProps) => {
         dispatch(UIActions.setLastBlogPost(lastBlogPost))
         dispatch(UIActions.setGeneralStats(generalStats))
       }
-
-      // yield put(sagaActions.loadMetainfo())
-
-      // const lastBlogPost: {
-      //   title: string
-      //   handle: string
-      // } = yield call(getLastPost)
-      // yield put(UIActions.setLastBlogPost(lastBlogPost))
 
       dispatch(authActions.finishLoading())
     })()
