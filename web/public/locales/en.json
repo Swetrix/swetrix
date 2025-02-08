@@ -1140,6 +1140,7 @@
     "page": "Page",
     "reverse": "Reverse",
     "userFlow": {
+      "title": "User flow",
       "noData": "User flow is not available yet due to lack of data, or you disabled this feature in the tracking script parameters"
     },
     "noDateRange": "Please select a date range",

@@ -60,12 +60,7 @@ const UserFlow = ({ setReversed, isReversed }: UserFlowProps) => {
   useEffect(() => {
     fetchUserFlow()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period, timeBucket, from, to, timezone, projectId])
-
-  useEffect(() => {
-    fetchUserFlow()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters])
+  }, [filters, period, timeBucket, from, to, timezone, projectId])
 
   if (isLoading || isLoading === null) {
     return <Loader />

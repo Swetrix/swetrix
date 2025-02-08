@@ -174,23 +174,14 @@ const PanelContainer = ({
         )}
 
         {type === 'pg' && activeTab !== PROJECT_TABS.performance && activeTab !== PROJECT_TABS.errors && (
-          <>
-            <WorkflowIcon
-              className={cx(iconClassName, 'ml-2 cursor-pointer', {
-                'text-slate-900 dark:text-gray-50': activeFragment === 1,
-                'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
-              })}
-              onClick={() => setActiveFragment(1)}
-              strokeWidth={1.5}
-            />
-            <MaximizeIcon
-              className={cx(iconClassName, 'ml-2 cursor-pointer text-slate-400 dark:text-slate-500', {
-                hidden: activeFragment === 0,
-              })}
-              onClick={onExpandClick}
-              strokeWidth={1.5}
-            />
-          </>
+          <WorkflowIcon
+            className={cx(iconClassName, 'ml-2 cursor-pointer', {
+              'text-slate-900 dark:text-gray-50': activeFragment === 1,
+              'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
+            })}
+            onClick={onExpandClick}
+            strokeWidth={1.5}
+          />
         )}
 
         {/* if this tab using Circle showing stats panel */}
@@ -1420,7 +1411,7 @@ const Panel = ({
   const entries = useMemo(() => _orderBy(data, 'count', 'desc'), [data])
   const entriesToDisplay = _slice(entries, currentIndex, currentIndex + ENTRIES_PER_PANEL)
   const [activeFragment, setActiveFragment] = useState(0)
-  const [modal, setModal] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const [isReversedUserFlow, setIsReversedUserFlow] = useState(false)
   const canGoPrev = () => page > 0
   const canGoNext = () => page < _floor((_size(entries) - 1) / ENTRIES_PER_PANEL)
@@ -1468,52 +1459,15 @@ const Panel = ({
         type={id}
         activeFragment={activeFragment}
         setActiveFragment={_setActiveFragment}
-        onExpandClick={() => setModal(true)}
+        onExpandClick={() => setIsModalOpen(true)}
         customTabs={customTabs}
       >
         <InteractiveMap data={data} total={total} onClickCountry={(key) => _onFilter(id, key)} />
         <Modal
-          onClose={() => setModal(false)}
+          onClose={() => setIsModalOpen(false)}
           closeText={t('common.close')}
-          isOpened={modal}
+          isOpened={isModalOpen}
           message={<InteractiveMap data={data} total={total} onClickCountry={(key) => _onFilter(id, key)} />}
-          size='large'
-        />
-      </PanelContainer>
-    )
-  }
-
-  // User flow tab for the Page panel
-  if (id === 'pg' && activeFragment === 1) {
-    return (
-      <PanelContainer
-        name={name}
-        icon={icon}
-        type={id}
-        activeFragment={activeFragment}
-        setActiveFragment={_setActiveFragment}
-        onExpandClick={() => setModal(true)}
-        customTabs={customTabs}
-      >
-        <UserFlow isReversed={isReversedUserFlow} setReversed={() => setIsReversedUserFlow((prev) => !prev)} />
-        <Modal
-          onClose={() => setModal(false)}
-          closeText={t('common.close')}
-          isOpened={modal}
-          customButtons={
-            <button
-              type='button'
-              onClick={() => setIsReversedUserFlow((prev) => !prev)}
-              className='mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-xs hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:border-none dark:border-gray-600 dark:bg-slate-700 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700'
-            >
-              {t('project.reverse')}
-            </button>
-          }
-          message={
-            <div className='h-[500px] dark:text-gray-800'>
-              <UserFlow isReversed={isReversedUserFlow} setReversed={() => setIsReversedUserFlow((prev) => !prev)} />
-            </div>
-          }
           size='large'
         />
       </PanelContainer>
@@ -1590,7 +1544,7 @@ const Panel = ({
         type={id}
         activeFragment={activeFragment}
         setActiveFragment={_setActiveFragment}
-        onExpandClick={() => setModal(true)}
+        onExpandClick={() => setIsModalOpen(true)}
         customTabs={customTabs}
         activeTab={activeTab}
         isCustomContent
@@ -1608,6 +1562,7 @@ const Panel = ({
       type={id}
       activeFragment={activeFragment}
       setActiveFragment={_setActiveFragment}
+      onExpandClick={() => setIsModalOpen(true)}
       customTabs={customTabs}
       activeTab={activeTab}
     >
@@ -1716,6 +1671,31 @@ const Panel = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* PAGE - User flow modal */}
+      {id === 'pg' && (
+        <Modal
+          onClose={() => setIsModalOpen(false)}
+          closeText={t('common.close')}
+          isOpened={isModalOpen}
+          title={t('project.userFlow.title')}
+          customButtons={
+            <button
+              type='button'
+              onClick={() => setIsReversedUserFlow((prev) => !prev)}
+              className='mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-xs hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:border-none dark:border-gray-600 dark:bg-slate-700 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700'
+            >
+              {t('project.reverse')}
+            </button>
+          }
+          message={
+            <div className='h-[500px] dark:text-gray-800'>
+              <UserFlow isReversed={isReversedUserFlow} setReversed={() => setIsReversedUserFlow((prev) => !prev)} />
+            </div>
+          }
+          size='large'
+        />
       )}
     </PanelContainer>
   )
