@@ -1,7 +1,7 @@
 import React, { memo } from 'react'
 import { Link } from '@remix-run/react'
 import { Trans, useTranslation } from 'react-i18next'
-import { SiDiscord, SiGithub, SiLinkedin, SiX } from '@icons-pack/react-simple-icons'
+import { SiDiscord, SiGithub, SiX } from '@icons-pack/react-simple-icons'
 import _map from 'lodash/map'
 import Flag from '~/ui/Flag'
 
@@ -23,6 +23,7 @@ import {
 import routesPath from '~/utils/routes'
 import { SquareArrowOutUpRightIcon } from 'lucide-react'
 import SwetrixLogo from '~/ui/icons/SwetrixLogo'
+import LinkedIn from '~/ui/icons/LinkedIn'
 
 const CONTACT_US_URL = `https://swetrix.com${routesPath.contact}`
 const ABOUT_US_URL = `https://swetrix.com${routesPath.about}`
@@ -105,7 +106,7 @@ const navigation = {
     {
       name: 'LinkedIn',
       href: LINKEDIN_URL,
-      icon: (props: React.SVGProps<SVGSVGElement>) => <SiLinkedin {...props} />,
+      icon: (props: React.SVGProps<SVGSVGElement>) => <LinkedIn {...props} />,
     },
   ],
 }

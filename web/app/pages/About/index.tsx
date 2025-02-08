@@ -2,12 +2,13 @@ import React from 'react'
 import _map from 'lodash/map'
 
 import { CONTACT_EMAIL, GITHUB_URL } from '~/lib/constants'
-import { SiGithub, SiLinkedin, SiX } from '@icons-pack/react-simple-icons'
+import { SiGithub, SiX } from '@icons-pack/react-simple-icons'
+import LinkedIn from '~/ui/icons/LinkedIn'
 
 const socialIcons: {
   [key: string]: React.ReactNode
 } = {
-  LinkedIn: <SiLinkedin className='h-6 w-6' />,
+  LinkedIn: <LinkedIn className='h-6 w-6' />,
   Github: <SiGithub className='h-6 w-6' />,
   Twitter: <SiX className='h-6 w-6' />,
 }

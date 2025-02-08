@@ -24,6 +24,7 @@ module.exports = {
     'billboard.js',
     /^remix-utils.*/,
     /^remix-i18next.*/,
+    'lucide-react',
   ],
   // eslint-disable-next-line no-undef
   serverMinify: process.env.NODE_ENV === 'production',
