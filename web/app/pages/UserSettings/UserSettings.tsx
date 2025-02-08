@@ -556,11 +556,11 @@ const UserSettings = () => {
                     <>
                       <span
                         onClick={toggleShowPasswordFields}
-                        className='mt-2 flex max-w-max cursor-pointer items-center text-gray-900 hover:underline dark:text-gray-50'
+                        className='mt-2 flex max-w-max cursor-pointer items-center font-mono text-sm text-gray-900 hover:underline dark:text-gray-50'
                       >
                         {t('auth.common.changePassword')}
                         <ChevronDownIcon
-                          className={cx('ml-2 h-4 w-4', {
+                          className={cx('ml-2 size-3', {
                             'rotate-180': showPasswordFields,
                           })}
                         />
