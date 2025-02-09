@@ -1,27 +1,27 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { toast } from 'sonner'
 import { ChevronDownIcon, CheckIcon } from '@heroicons/react/24/solid'
-import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
 import dayjs from 'dayjs'
-import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
+import _keys from 'lodash/keys'
 import _map from 'lodash/map'
+import { Trash2Icon, UserRoundPlusIcon } from 'lucide-react'
+import React, { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
+import { toast } from 'sonner'
 
 import { deleteShareProjectUsers, shareProject, changeShareRole } from '~/api'
-import { isValidEmail } from '~/utils/validator'
-import Input from '~/ui/Input'
+import useOnClickOutside from '~/hooks/useOnClickOutside'
+import { roles, INVITATION_EXPIRES_IN } from '~/lib/constants'
+import { Role } from '~/lib/models/Organisation'
+import { Project, ShareOwnerProject } from '~/lib/models/Project'
+import { StateType } from '~/lib/store'
+import PaidFeature from '~/modals/PaidFeature'
 import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
+import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
-import PaidFeature from '~/modals/PaidFeature'
-import { roles, INVITATION_EXPIRES_IN } from '~/lib/constants'
-import useOnClickOutside from '~/hooks/useOnClickOutside'
-import { Project, ShareOwnerProject } from '~/lib/models/Project'
-import { Role } from '~/lib/models/Organisation'
-import { useSelector } from 'react-redux'
-import { StateType } from '~/lib/store'
-import { Trash2Icon, UserRoundPlusIcon } from 'lucide-react'
+import { isValidEmail } from '~/utils/validator'
 
 const NoPeople = () => {
   const { t } = useTranslation('common')
@@ -83,7 +83,7 @@ const UsersList = ({ data, onRemove, language, authedUserEmail }: UsersListProps
               {t(`project.settings.roles.${role}.name`)}
               <ChevronDownIcon style={{ transform: open ? 'rotate(180deg)' : '' }} className='ml-0.5 h-4 w-4 pt-px' />
             </button>
-            {open && (
+            {open ? (
               <ul
                 ref={openRef}
                 className='absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 rounded-md bg-white text-left focus:outline-hidden dark:divide-gray-700 dark:bg-slate-900'
@@ -105,11 +105,11 @@ const UsersList = ({ data, onRemove, language, authedUserEmail }: UsersListProps
                         {t(`project.settings.roles.${itRole}.shortDesc`)}
                       </p>
                     </div>
-                    {role === itRole && (
+                    {role === itRole ? (
                       <span className='text-indigo-600 group-hover:text-gray-200'>
                         <CheckIcon className='ml-1 h-7 w-7 pt-px' />
                       </span>
-                    )}
+                    ) : null}
                   </li>
                 ))}
                 <li
@@ -119,7 +119,7 @@ const UsersList = ({ data, onRemove, language, authedUserEmail }: UsersListProps
                   <p className='font-bold text-red-600 dark:text-red-500'>{t('project.settings.removeMember')}</p>
                 </li>
               </ul>
-            )}
+            ) : null}
           </div>
         ) : (
           <div className='flex items-center justify-end'>
@@ -371,7 +371,7 @@ const People = ({ project }: PeopleProps) => {
               placeholder='you@example.com'
               className='mt-4'
               onChange={handleInput}
-              error={beenSubmitted && errors.email}
+              error={beenSubmitted ? errors.email : null}
             />
             <fieldset className='mt-4'>
               {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
@@ -462,11 +462,11 @@ const People = ({ project }: PeopleProps) => {
                   </div>
                 </label>
               </div>
-              {errors.role && (
+              {errors.role ? (
                 <p className='mt-2 text-sm text-red-600 dark:text-red-500' id='email-error'>
                   {errors.role}
                 </p>
-              )}
+              ) : null}
             </fieldset>
           </div>
         }

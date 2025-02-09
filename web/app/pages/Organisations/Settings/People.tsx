@@ -1,25 +1,25 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { toast } from 'sonner'
 import { ChevronDownIcon, CheckIcon } from '@heroicons/react/24/solid'
-import { useTranslation } from 'react-i18next'
 import cx from 'clsx'
 import dayjs from 'dayjs'
-import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
+import _keys from 'lodash/keys'
 import _map from 'lodash/map'
+import { Trash2Icon, UserRoundPlusIcon } from 'lucide-react'
+import React, { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
+import { toast } from 'sonner'
 
-import { isValidEmail } from '~/utils/validator'
-import Input from '~/ui/Input'
+import { changeOrganisationRole, inviteOrganisationMember, removeOrganisationMember } from '~/api'
+import useOnClickOutside from '~/hooks/useOnClickOutside'
+import { roles, INVITATION_EXPIRES_IN } from '~/lib/constants'
+import { DetailedOrganisation, Role } from '~/lib/models/Organisation'
+import { StateType } from '~/lib/store'
 import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
+import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
-import { roles, INVITATION_EXPIRES_IN } from '~/lib/constants'
-import useOnClickOutside from '~/hooks/useOnClickOutside'
-import { DetailedOrganisation, Role } from '~/lib/models/Organisation'
-import { useSelector } from 'react-redux'
-import { StateType } from '~/lib/store'
-import { changeOrganisationRole, inviteOrganisationMember, removeOrganisationMember } from '~/api'
-import { Trash2Icon, UserRoundPlusIcon } from 'lucide-react'
+import { isValidEmail } from '~/utils/validator'
 
 const NoPeople = () => {
   const { t } = useTranslation('common')
@@ -104,11 +104,11 @@ const UsersList = ({ members, onRemove }: UsersListProps) => {
                       <p className='truncate font-bold text-gray-700 group-hover:text-gray-200 dark:text-gray-200'>
                         {t(`organisations.role.${itRole}.name`)}
                       </p>
-                      {member.role === itRole && (
+                      {member.role === itRole ? (
                         <span className='ml-3 flex-none text-indigo-600 group-hover:text-gray-200'>
                           <CheckIcon className='size-5' />
                         </span>
-                      )}
+                      ) : null}
                     </div>
                     <p className='mt-1 text-sm whitespace-normal text-gray-500 group-hover:text-gray-200'>
                       {t(`organisations.role.${itRole}.desc`)}
@@ -374,7 +374,7 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
               placeholder='you@example.com'
               className='mt-4'
               onChange={handleInput}
-              error={beenSubmitted && errors.email}
+              error={beenSubmitted ? errors.email : null}
             />
             <fieldset className='mt-4'>
               {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
@@ -465,11 +465,11 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
                   </div>
                 </label>
               </div>
-              {errors.role && (
+              {errors.role ? (
                 <p className='mt-2 text-sm text-red-600 dark:text-red-500' id='email-error'>
                   {errors.role}
                 </p>
-              )}
+              ) : null}
             </fieldset>
           </div>
         }

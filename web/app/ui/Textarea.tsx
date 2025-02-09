@@ -1,7 +1,7 @@
-import React, { memo } from 'react'
 import { Description, Field, Label, Textarea as HeadlessTextarea } from '@headlessui/react'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
+import React, { memo } from 'react'
 
 interface TextareaProps {
   value: string | number
@@ -34,7 +34,7 @@ const Textarea = ({
 
   return (
     <Field as='div' className={cx('font-mono', className)}>
-      {label && <Label className='flex text-sm font-medium text-gray-900 dark:text-gray-200'>{label}</Label>}
+      {label ? <Label className='flex text-sm font-medium text-gray-900 dark:text-gray-200'>{label}</Label> : null}
       <HeadlessTextarea
         rows={rows}
         name={name}
@@ -53,10 +53,10 @@ const Textarea = ({
         readOnly={readOnly}
         invalid={isError}
       />
-      {isError && <p className='mt-2 text-sm text-red-600 dark:text-red-500'>{error}</p>}
-      {hint && (
+      {isError ? <p className='mt-2 text-sm text-red-600 dark:text-red-500'>{error}</p> : null}
+      {hint ? (
         <Description className='mt-2 text-sm whitespace-pre-line text-gray-500 dark:text-gray-300'>{hint}</Description>
-      )}
+      ) : null}
     </Field>
   )
 }

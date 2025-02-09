@@ -1,8 +1,8 @@
-import React, { memo } from 'react'
+import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import Tooltip from './Tooltip'
 import { Badge } from './Badge'
+import Tooltip from './Tooltip'
 
 interface BetaProps {
   className?: string

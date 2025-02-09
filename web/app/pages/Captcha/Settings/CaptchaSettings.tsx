@@ -1,21 +1,21 @@
-import React, { useState, useEffect, memo } from 'react'
-import { Link, useNavigate } from 'react-router'
-import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
+import { ExclamationTriangleIcon, XCircleIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
+import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
-import _size from 'lodash/size'
-import _replace from 'lodash/replace'
-import _join from 'lodash/join'
 import _isString from 'lodash/isString'
-import _split from 'lodash/split'
+import _join from 'lodash/join'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
-import _includes from 'lodash/includes'
-import { ExclamationTriangleIcon, XCircleIcon } from '@heroicons/react/24/outline'
+import _replace from 'lodash/replace'
+import _size from 'lodash/size'
+import _split from 'lodash/split'
+import { Trash2Icon } from 'lucide-react'
+import React, { useState, useEffect, memo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
+import { Link, useNavigate } from 'react-router'
+import { toast } from 'sonner'
 
-import { withAuthentication, auth } from '~/hoc/protected'
-import { TITLE_SUFFIX } from '~/lib/constants'
 import {
   createProject,
   updateProject,
@@ -24,18 +24,18 @@ import {
   reGenerateCaptchaSecretKey,
   getProject,
 } from '~/api'
-import Input from '~/ui/Input'
-import Loader from '~/ui/Loader'
+import { withAuthentication, auth } from '~/hoc/protected'
+import { useRequiredParams } from '~/hooks/useRequiredParams'
+import { TITLE_SUFFIX } from '~/lib/constants'
+import { CaptchaProject } from '~/lib/models/Project'
+import { StateType } from '~/lib/store'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
+import Input from '~/ui/Input'
+import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
 import { trackCustom } from '~/utils/analytics'
 import routes from '~/utils/routes'
-import { CaptchaProject } from '~/lib/models/Project'
-import { useRequiredParams } from '~/hooks/useRequiredParams'
-import { useSelector } from 'react-redux'
-import { StateType } from '~/lib/store'
-import { Trash2Icon } from 'lucide-react'
 
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
@@ -463,7 +463,7 @@ const CaptchaSettings = ({ isSettings }: CaptchaSettingsProps) => {
           </p>
         )}
 
-        {!isSettings && (
+        {!isSettings ? (
           <div>
             <Button
               className='mr-2 border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
@@ -477,7 +477,7 @@ const CaptchaSettings = ({ isSettings }: CaptchaSettingsProps) => {
               {t('common.save')}
             </Button>
           </div>
-        )}
+        ) : null}
       </form>
       <Modal
         onClose={() => setShowDelete(false)}

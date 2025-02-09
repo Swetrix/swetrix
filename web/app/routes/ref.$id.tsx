@@ -1,8 +1,8 @@
 import type { LoaderFunctionArgs } from 'react-router'
 import { useLoaderData, redirect } from 'react-router'
-import ReferralPage from '~/pages/ReferralPage'
 
 import { isSelfhosted } from '~/lib/constants'
+import ReferralPage from '~/pages/ReferralPage'
 import { detectTheme } from '~/utils/server'
 
 export async function loader({ request }: LoaderFunctionArgs) {

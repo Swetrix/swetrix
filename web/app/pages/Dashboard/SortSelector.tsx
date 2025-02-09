@@ -1,15 +1,17 @@
-import React, { Fragment, useEffect, useMemo } from 'react'
 import { Popover, PopoverButton, PopoverPanel, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
-import { useTranslation } from 'react-i18next'
-import _map from 'lodash/map'
 import cx from 'clsx'
+import _map from 'lodash/map'
 import { ArrowUpDown } from 'lucide-react'
-import { DASHBOARD_TABS } from './Tabs'
+import { Fragment, useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
+
 import useFeatureFlag from '~/hooks/useFeatureFlag'
 import { FeatureFlag } from '~/lib/models/User'
-import { useSelector } from 'react-redux'
 import { StateType } from '~/lib/store'
+
+import { DASHBOARD_TABS } from './Tabs'
 
 interface SortSelectorProps {
   activeSort: string

@@ -1,6 +1,7 @@
 import type { LoaderFunction } from 'react-router'
-import type { SitemapFunction } from 'remix-sitemap'
 import { data } from 'react-router'
+import type { SitemapFunction } from 'remix-sitemap'
+
 import NotFound from '~/pages/NotFound'
 
 export const sitemap: SitemapFunction = () => ({

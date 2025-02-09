@@ -1,7 +1,8 @@
 import { redirect } from 'react-router'
-import Contact from '~/pages/Contact'
-import { isDisableMarketingPages, isSelfhosted } from '~/lib/constants'
 import { SitemapFunction } from 'remix-sitemap'
+
+import { isDisableMarketingPages, isSelfhosted } from '~/lib/constants'
+import Contact from '~/pages/Contact'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 1,

@@ -1,11 +1,14 @@
+import { ChevronRightIcon } from '@heroicons/react/24/outline'
+import _map from 'lodash/map'
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
-import { useTranslation } from 'react-i18next'
-import _map from 'lodash/map'
-import { ChevronRightIcon } from '@heroicons/react/24/outline'
+
 import Loader from '~/ui/Loader'
+
 import { Session as SessionType } from '../interfaces/session'
+
 import CCRow from './CCRow'
 
 interface SessionsProps {

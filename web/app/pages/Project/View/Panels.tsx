@@ -1,45 +1,27 @@
-import React, { memo, useState, useEffect, useMemo, Fragment } from 'react'
-import InnerHTML from 'dangerously-set-html-content'
-import { ArrowLongRightIcon, ArrowLongLeftIcon } from '@heroicons/react/24/solid'
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
-import cx from 'clsx'
+import { ArrowLongRightIcon, ArrowLongLeftIcon } from '@heroicons/react/24/solid'
 import { pie } from 'billboard.js'
-import _keys from 'lodash/keys'
-import _values from 'lodash/values'
-import _map from 'lodash/map'
+import cx from 'clsx'
+import InnerHTML from 'dangerously-set-html-content'
+import _ceil from 'lodash/ceil'
+import _find from 'lodash/find'
+import _floor from 'lodash/floor'
+import _fromPairs from 'lodash/fromPairs'
+import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
 import _isString from 'lodash/isString'
+import _keys from 'lodash/keys'
+import _map from 'lodash/map'
 import _orderBy from 'lodash/orderBy'
 import _reduce from 'lodash/reduce'
+import _reverse from 'lodash/reverse'
 import _round from 'lodash/round'
-import _find from 'lodash/find'
-import _includes from 'lodash/includes'
-import _floor from 'lodash/floor'
 import _size from 'lodash/size'
 import _slice from 'lodash/slice'
-import _sum from 'lodash/sum'
-import _ceil from 'lodash/ceil'
 import _sortBy from 'lodash/sortBy'
-import _fromPairs from 'lodash/fromPairs'
+import _sum from 'lodash/sum'
 import _toPairs from 'lodash/toPairs'
-import _reverse from 'lodash/reverse'
-
-import { nFormatter } from '~/utils/generic'
-import Progress from '~/ui/Progress'
-import Sort from '~/ui/icons/Sort'
-import Modal from '~/ui/Modal'
-import Button from '~/ui/Button'
-import Chart from '~/ui/Chart'
-import { PROJECT_TABS } from '~/lib/constants'
-import { Entry } from '~/lib/models/Entry'
-import InteractiveMap from './components/InteractiveMap'
-import UserFlow from './components/UserFlow'
-import { iconClassName } from './ViewProject.helpers'
-import Spin from '~/ui/icons/Spin'
-import { useTranslation } from 'react-i18next'
-import CustomEventsDropdown from './components/CustomEventsDropdown'
-import { Customs, Filter, Properties } from './interfaces/traffic'
-import { useViewProjectContext } from './ViewProject'
+import _values from 'lodash/values'
 import {
   AlignJustifyIcon,
   ChartPieIcon,
@@ -49,6 +31,25 @@ import {
   FilterIcon,
   PuzzleIcon,
 } from 'lucide-react'
+import React, { memo, useState, useEffect, useMemo, Fragment } from 'react'
+import { useTranslation } from 'react-i18next'
+
+import { PROJECT_TABS } from '~/lib/constants'
+import { Entry } from '~/lib/models/Entry'
+import Button from '~/ui/Button'
+import Chart from '~/ui/Chart'
+import Sort from '~/ui/icons/Sort'
+import Spin from '~/ui/icons/Spin'
+import Modal from '~/ui/Modal'
+import Progress from '~/ui/Progress'
+import { nFormatter } from '~/utils/generic'
+
+import CustomEventsDropdown from './components/CustomEventsDropdown'
+import InteractiveMap from './components/InteractiveMap'
+import UserFlow from './components/UserFlow'
+import { Customs, Filter, Properties } from './interfaces/traffic'
+import { useViewProjectContext } from './ViewProject'
+import { iconClassName } from './ViewProject.helpers'
 
 const ENTRIES_PER_PANEL = 5
 const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 6
@@ -137,11 +138,11 @@ const PanelContainer = ({
   >
     <div className='mb-2 flex items-center justify-between'>
       <h3 className='flex items-center font-mono text-lg leading-6 font-semibold text-gray-900 dark:text-gray-50'>
-        {icon && <span className='mr-1'>{icon}</span>}
+        {icon ? <span className='mr-1'>{icon}</span> : null}
         {name}
       </h3>
       <div className='flex'>
-        {(checkIfBarsNeeded(type) || checkCustomTabs(type, customTabs)) && (
+        {checkIfBarsNeeded(type) || checkCustomTabs(type, customTabs) ? (
           <AlignJustifyIcon
             className={cx(iconClassName, 'cursor-pointer', {
               'text-slate-900 dark:text-gray-50': activeFragment === 0,
@@ -150,10 +151,10 @@ const PanelContainer = ({
             onClick={() => setActiveFragment(0)}
             strokeWidth={1.5}
           />
-        )}
+        ) : null}
 
         {/* if it is a Country tab  */}
-        {(type === 'cc' || type === 'rg' || type === 'ct') && (
+        {type === 'cc' || type === 'rg' || type === 'ct' ? (
           <>
             <MapIcon
               className={cx(iconClassName, 'ml-2 cursor-pointer', {
@@ -171,9 +172,9 @@ const PanelContainer = ({
               strokeWidth={1.5}
             />
           </>
-        )}
+        ) : null}
 
-        {type === 'pg' && activeTab !== PROJECT_TABS.performance && activeTab !== PROJECT_TABS.errors && (
+        {type === 'pg' && activeTab !== PROJECT_TABS.performance && activeTab !== PROJECT_TABS.errors ? (
           <WorkflowIcon
             className={cx(iconClassName, 'ml-2 cursor-pointer', {
               'text-slate-900 dark:text-gray-50': activeFragment === 1,
@@ -182,10 +183,10 @@ const PanelContainer = ({
             onClick={onExpandClick}
             strokeWidth={1.5}
           />
-        )}
+        ) : null}
 
         {/* if this tab using Circle showing stats panel */}
-        {(type === 'ce' || type === 'os' || type === 'br' || type === 'dv') && (
+        {type === 'ce' || type === 'os' || type === 'br' || type === 'dv' ? (
           <ChartPieIcon
             className={cx(iconClassName, 'ml-2 cursor-pointer', {
               'text-slate-900 dark:text-gray-50': activeFragment === 1,
@@ -194,10 +195,10 @@ const PanelContainer = ({
             onClick={() => setActiveFragment(1)}
             strokeWidth={1.5}
           />
-        )}
+        ) : null}
 
         {/* if it is a 'Custom events' tab  */}
-        {(type === 'ce' || type === 'props') && (
+        {type === 'ce' || type === 'props' ? (
           <>
             <MaximizeIcon
               className={cx(iconClassName, 'ml-2 cursor-pointer text-slate-400 dark:text-slate-500')}
@@ -205,9 +206,9 @@ const PanelContainer = ({
               strokeWidth={1.5}
             />
           </>
-        )}
+        ) : null}
 
-        {checkCustomTabs(type, customTabs) && (
+        {checkCustomTabs(type, customTabs) ? (
           <>
             {/* This is a temp fix to prevent multiple tabs of the same extensionID be displayed */}
             {/* TODO: Investigate the issue and fix it */}
@@ -234,7 +235,7 @@ const PanelContainer = ({
               )
             })}
           </>
-        )}
+        ) : null}
       </div>
     </div>
     {/* for other tabs */}
@@ -392,8 +393,8 @@ const KVTable = ({ listId, data, displayKeyAsHeader, onClick }: KVTableProps) =>
             {displayKeyAsHeader ? listId : t('project.value')}
             <Sort
               className='ml-1'
-              sortByAscend={sort.label === 'event' && sort.sortByAscend}
-              sortByDescend={sort.label === 'event' && sort.sortByDescend}
+              sortByAscend={sort.label === 'event' ? sort.sortByAscend : null}
+              sortByDescend={sort.label === 'event' ? sort.sortByDescend : null}
             />
           </th>
           <th className='w-[30%] sm:w-1/6'>
@@ -401,8 +402,8 @@ const KVTable = ({ listId, data, displayKeyAsHeader, onClick }: KVTableProps) =>
               {t('project.quantity')}
               <Sort
                 className='ml-1'
-                sortByAscend={sort.label === 'quantity' && sort.sortByAscend}
-                sortByDescend={sort.label === 'quantity' && sort.sortByDescend}
+                sortByAscend={sort.label === 'quantity' ? sort.sortByAscend : null}
+                sortByDescend={sort.label === 'quantity' ? sort.sortByDescend : null}
               />
             </p>
           </th>
@@ -411,8 +412,8 @@ const KVTable = ({ listId, data, displayKeyAsHeader, onClick }: KVTableProps) =>
               {t('project.conversion')}
               <Sort
                 className='ml-1'
-                sortByAscend={sort.label === 'conversion' && sort.sortByAscend}
-                sortByDescend={sort.label === 'conversion' && sort.sortByDescend}
+                sortByAscend={sort.label === 'conversion' ? sort.sortByAscend : null}
+                sortByDescend={sort.label === 'conversion' ? sort.sortByDescend : null}
               />
             </p>
           </th>
@@ -687,8 +688,8 @@ const CustomEvents = ({
               {t('project.event')}
               <Sort
                 className='ml-1'
-                sortByAscend={sort.label === 'event' && sort.sortByAscend}
-                sortByDescend={sort.label === 'event' && sort.sortByDescend}
+                sortByAscend={sort.label === 'event' ? sort.sortByAscend : null}
+                sortByDescend={sort.label === 'event' ? sort.sortByDescend : null}
               />
             </th>
             <th className='w-[30%] sm:w-1/6'>
@@ -699,8 +700,8 @@ const CustomEvents = ({
                 {t('project.quantity')}
                 <Sort
                   className='ml-1'
-                  sortByAscend={sort.label === 'quantity' && sort.sortByAscend}
-                  sortByDescend={sort.label === 'quantity' && sort.sortByDescend}
+                  sortByAscend={sort.label === 'quantity' ? sort.sortByAscend : null}
+                  sortByDescend={sort.label === 'quantity' ? sort.sortByDescend : null}
                 />
                 &nbsp;&nbsp;
               </p>
@@ -713,8 +714,8 @@ const CustomEvents = ({
                 {t('project.conversion')}
                 <Sort
                   className='ml-1'
-                  sortByAscend={sort.label === 'conversion' && sort.sortByAscend}
-                  sortByDescend={sort.label === 'conversion' && sort.sortByDescend}
+                  sortByAscend={sort.label === 'conversion' ? sort.sortByAscend : null}
+                  sortByDescend={sort.label === 'conversion' ? sort.sortByDescend : null}
                 />
               </p>
             </th>
@@ -750,7 +751,7 @@ const CustomEvents = ({
                   {uniques === 0 ? 100 : _round((customsEventsData[ev] / uniques) * 100, 2)}%
                 </td>
               </tr>
-              {activeEvents[ev] && !loadingEvents[ev] && (
+              {activeEvents[ev] && !loadingEvents[ev] ? (
                 <tr>
                   <td className='pl-9' colSpan={3}>
                     <KVTableContainer
@@ -764,7 +765,7 @@ const CustomEvents = ({
                     />
                   </td>
                 </tr>
-              )}
+              ) : null}
             </Fragment>
           ))}
         </tbody>
@@ -828,7 +829,7 @@ const CustomEvents = ({
         isCustomContent
       >
         {/* Using this instead of dangerouslySetInnerHTML to support script tags */}
-        {tabContent && <InnerHTML className='absolute overflow-auto' html={tabContent} />}
+        {tabContent ? <InnerHTML className='absolute overflow-auto' html={tabContent} /> : null}
       </PanelContainer>
     )
   }
@@ -852,8 +853,8 @@ const CustomEvents = ({
               {t('project.event')}
               <Sort
                 className='ml-1'
-                sortByAscend={sort.label === 'event' && sort.sortByAscend}
-                sortByDescend={sort.label === 'event' && sort.sortByDescend}
+                sortByAscend={sort.label === 'event' ? sort.sortByAscend : null}
+                sortByDescend={sort.label === 'event' ? sort.sortByDescend : null}
               />
             </th>
             <th className='w-1/6 text-right'>
@@ -861,8 +862,8 @@ const CustomEvents = ({
                 {t('project.quantity')}
                 <Sort
                   className='ml-1'
-                  sortByAscend={sort.label === 'quantity' && sort.sortByAscend}
-                  sortByDescend={sort.label === 'quantity' && sort.sortByDescend}
+                  sortByAscend={sort.label === 'quantity' ? sort.sortByAscend : null}
+                  sortByDescend={sort.label === 'quantity' ? sort.sortByDescend : null}
                 />
                 &nbsp;&nbsp;
               </p>
@@ -872,8 +873,8 @@ const CustomEvents = ({
                 {t('project.conversion')}
                 <Sort
                   className='ml-1'
-                  sortByAscend={sort.label === 'conversion' && sort.sortByAscend}
-                  sortByDescend={sort.label === 'conversion' && sort.sortByDescend}
+                  sortByAscend={sort.label === 'conversion' ? sort.sortByAscend : null}
+                  sortByDescend={sort.label === 'conversion' ? sort.sortByDescend : null}
                 />
               </p>
             </th>
@@ -909,7 +910,7 @@ const CustomEvents = ({
         </tbody>
       </table>
       {/* for pagination in tabs */}
-      {_size(keys) > ENTRIES_PER_CUSTOM_EVENTS_PANEL && (
+      {_size(keys) > ENTRIES_PER_CUSTOM_EVENTS_PANEL ? (
         <div className='absolute bottom-0 w-[calc(100%-2rem)] font-mono sm:w-[calc(100%-3rem)]'>
           <div className='mb-2 flex justify-between select-none'>
             <div>
@@ -954,7 +955,7 @@ const CustomEvents = ({
             </div>
           </div>
         </div>
-      )}
+      ) : null}
       <Modal
         onClose={onModalClose}
         isOpened={detailsOpened}
@@ -1133,8 +1134,8 @@ const PageProperties = ({
               {t('project.property')}
               <Sort
                 className='ml-1'
-                sortByAscend={sort.label === 'event' && sort.sortByAscend}
-                sortByDescend={sort.label === 'event' && sort.sortByDescend}
+                sortByAscend={sort.label === 'event' ? sort.sortByAscend : null}
+                sortByDescend={sort.label === 'event' ? sort.sortByDescend : null}
               />
             </th>
             <th className='w-[30%] sm:w-1/6'>
@@ -1145,8 +1146,8 @@ const PageProperties = ({
                 {t('project.quantity')}
                 <Sort
                   className='ml-1'
-                  sortByAscend={sort.label === 'quantity' && sort.sortByAscend}
-                  sortByDescend={sort.label === 'quantity' && sort.sortByDescend}
+                  sortByAscend={sort.label === 'quantity' ? sort.sortByAscend : null}
+                  sortByDescend={sort.label === 'quantity' ? sort.sortByDescend : null}
                 />
                 &nbsp;&nbsp;
               </p>
@@ -1159,8 +1160,8 @@ const PageProperties = ({
                 {t('project.conversion')}
                 <Sort
                   className='ml-1'
-                  sortByAscend={sort.label === 'conversion' && sort.sortByAscend}
-                  sortByDescend={sort.label === 'conversion' && sort.sortByDescend}
+                  sortByAscend={sort.label === 'conversion' ? sort.sortByAscend : null}
+                  sortByDescend={sort.label === 'conversion' ? sort.sortByDescend : null}
                 />
               </p>
             </th>
@@ -1196,7 +1197,7 @@ const PageProperties = ({
                   {uniques === 0 ? 100 : _round((processedProperties[tag] / uniques) * 100, 2)}%
                 </td>
               </tr>
-              {activeProperties[tag] && !loadingDetails[tag] && (
+              {activeProperties[tag] && !loadingDetails[tag] ? (
                 <tr>
                   <td className='pl-9' colSpan={3}>
                     <KVTableContainer
@@ -1209,7 +1210,7 @@ const PageProperties = ({
                     />
                   </td>
                 </tr>
-              )}
+              ) : null}
             </Fragment>
           ))}
         </tbody>
@@ -1249,8 +1250,8 @@ const PageProperties = ({
               {t('project.property')}
               <Sort
                 className='ml-1'
-                sortByAscend={sort.label === 'event' && sort.sortByAscend}
-                sortByDescend={sort.label === 'event' && sort.sortByDescend}
+                sortByAscend={sort.label === 'event' ? sort.sortByAscend : null}
+                sortByDescend={sort.label === 'event' ? sort.sortByDescend : null}
               />
             </th>
             <th className='w-1/6 text-right'>
@@ -1258,8 +1259,8 @@ const PageProperties = ({
                 {t('project.quantity')}
                 <Sort
                   className='ml-1'
-                  sortByAscend={sort.label === 'quantity' && sort.sortByAscend}
-                  sortByDescend={sort.label === 'quantity' && sort.sortByDescend}
+                  sortByAscend={sort.label === 'quantity' ? sort.sortByAscend : null}
+                  sortByDescend={sort.label === 'quantity' ? sort.sortByDescend : null}
                 />
                 &nbsp;&nbsp;
               </p>
@@ -1269,8 +1270,8 @@ const PageProperties = ({
                 {t('project.conversion')}
                 <Sort
                   className='ml-1'
-                  sortByAscend={sort.label === 'conversion' && sort.sortByAscend}
-                  sortByDescend={sort.label === 'conversion' && sort.sortByDescend}
+                  sortByAscend={sort.label === 'conversion' ? sort.sortByAscend : null}
+                  sortByDescend={sort.label === 'conversion' ? sort.sortByDescend : null}
                 />
               </p>
             </th>
@@ -1306,7 +1307,7 @@ const PageProperties = ({
         </tbody>
       </table>
       {/* for pagination in tabs */}
-      {_size(keys) > ENTRIES_PER_CUSTOM_EVENTS_PANEL && (
+      {_size(keys) > ENTRIES_PER_CUSTOM_EVENTS_PANEL ? (
         <div className='absolute bottom-0 w-[calc(100%-2rem)] font-mono sm:w-[calc(100%-3rem)]'>
           <div className='mb-2 flex justify-between select-none'>
             <div>
@@ -1351,7 +1352,7 @@ const PageProperties = ({
             </div>
           </div>
         </div>
-      )}
+      ) : null}
       <Modal
         onClose={onModalClose}
         isOpened={detailsOpened}
@@ -1626,7 +1627,7 @@ const Panel = ({
         })
       )}
       {/* for pagination in tabs */}
-      {_size(entries) > ENTRIES_PER_PANEL && (
+      {_size(entries) > ENTRIES_PER_PANEL ? (
         <div className='absolute bottom-0 w-[calc(100%-2rem)] font-mono sm:w-[calc(100%-3rem)]'>
           <div className='mb-2 flex justify-between select-none'>
             <div>
@@ -1671,10 +1672,10 @@ const Panel = ({
             </div>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* PAGE - User flow modal */}
-      {id === 'pg' && (
+      {id === 'pg' ? (
         <Modal
           onClose={() => setIsModalOpen(false)}
           closeText={t('common.close')}
@@ -1696,7 +1697,7 @@ const Panel = ({
           }
           size='large'
         />
-      )}
+      ) : null}
     </PanelContainer>
   )
 }

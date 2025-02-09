@@ -7,7 +7,7 @@ import { isBrowser } from '~/lib/constants'
  * how any localStorage item was modified after first access
  */
 
-type currentLocalStorageType = { [key: string]: string | null }
+type currentLocalStorageType = Record<string, string | null>
 const currentLocalStorage: currentLocalStorageType = {}
 
 type setItemType = (key: string, value: string) => void

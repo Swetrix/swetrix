@@ -1,5 +1,3 @@
-import React from 'react'
-
 const Slack = ({ className }: { className?: string }) => (
   <svg className={className} viewBox='0 0 127 127'>
     <title>Slack</title>

@@ -1,20 +1,20 @@
-import React, { useState, useEffect, memo } from 'react'
-import { Link, useNavigate } from 'react-router'
-import { useTranslation } from 'react-i18next'
-import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
-import _size from 'lodash/size'
+import _keys from 'lodash/keys'
 import _replace from 'lodash/replace'
-
-import routes from '~/utils/routes'
-import Input from '~/ui/Input'
-import Button from '~/ui/Button'
-import { checkPassword } from '~/api'
+import _size from 'lodash/size'
+import React, { useState, useEffect, memo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useDispatch } from 'react-redux'
-import UIActions from '~/lib/reducers/ui'
-import Header from '~/components/Header'
+import { Link, useNavigate } from 'react-router'
+
+import { checkPassword } from '~/api'
 import Footer from '~/components/Footer'
+import Header from '~/components/Header'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
+import UIActions from '~/lib/reducers/ui'
+import Button from '~/ui/Button'
+import Input from '~/ui/Input'
+import routes from '~/utils/routes'
 
 interface ProjectProtectedPasswordForm {
   password: string
@@ -116,7 +116,7 @@ const ProjectProtectedPassword = ({ ssrTheme, embedded, isAuth }: ProjectProtect
 
   return (
     <>
-      {!embedded && <Header ssrTheme={ssrTheme} authenticated={isAuth} />}
+      {!embedded ? <Header ssrTheme={ssrTheme} authenticated={isAuth} /> : null}
       <div className='min-h-page flex flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
         <form className='mx-auto w-full max-w-7xl' onSubmit={handleSubmit}>
           <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{t('titles.passwordProtected')}</h2>
@@ -128,7 +128,7 @@ const ProjectProtectedPassword = ({ ssrTheme, embedded, isAuth }: ProjectProtect
             placeholder={t('auth.common.password')}
             className='mt-4'
             onChange={handleInput}
-            error={beenSubmitted && errors.password}
+            error={beenSubmitted ? errors.password : null}
           />
           <div className='mt-5'>
             <Button
@@ -147,7 +147,7 @@ const ProjectProtectedPassword = ({ ssrTheme, embedded, isAuth }: ProjectProtect
           </div>
         </form>
       </div>
-      {!embedded && <Footer authenticated={isAuth} />}
+      {!embedded ? <Footer authenticated={isAuth} /> : null}
     </>
   )
 }

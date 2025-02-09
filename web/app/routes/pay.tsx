@@ -1,14 +1,15 @@
-import { redirect } from 'react-router'
 import { useEffect } from 'react'
+import { redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 import { ExternalScriptsHandle } from 'remix-utils/external-scripts'
+
 import { isSelfhosted } from '~/lib/constants'
 
 export const sitemap: SitemapFunction = () => ({
   exclude: true,
 })
 
-export let handle: ExternalScriptsHandle = {
+export const handle: ExternalScriptsHandle = {
   scripts: [
     {
       src: 'https://cdn.paddle.com/paddle/v2/paddle.js',

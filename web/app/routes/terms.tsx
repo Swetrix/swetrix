@@ -1,5 +1,6 @@
-import Terms from '~/pages/Terms'
 import type { SitemapFunction } from 'remix-sitemap'
+
+import Terms from '~/pages/Terms'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 0.9,

@@ -1,32 +1,32 @@
-import React, { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router'
-import { useTranslation, Trans } from 'react-i18next'
-import _size from 'lodash/size'
-import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
-
-import { getAccessToken, setAccessToken } from '~/utils/accessToken'
-import GoogleAuth from '~/components/GoogleAuth'
-import GithubAuth from '~/components/GithubAuth'
-import routes from '~/utils/routes'
-import Input from '~/ui/Input'
-import Checkbox from '~/ui/Checkbox'
-import Tooltip from '~/ui/Tooltip'
-import Button from '~/ui/Button'
-import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS, MAX_PASSWORD_CHARS } from '~/utils/validator'
-import { HAVE_I_BEEN_PWNED_URL, REFERRAL_COOKIE, TRIAL_DAYS } from '~/lib/constants'
-import { trackCustom } from '~/utils/analytics'
-import { StateType, useAppDispatch } from '~/lib/store'
+import _keys from 'lodash/keys'
+import _size from 'lodash/size'
+import React, { useState, useEffect } from 'react'
+import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'
-import { delay, openBrowserWindow } from '~/utils/generic'
+import { Link, useNavigate } from 'react-router'
 import { toast } from 'sonner'
+
 import { generateSSOAuthURL, getJWTBySSOHash, signup } from '~/api'
-import { deleteCookie, getCookie } from '~/utils/cookie'
-import { authActions } from '~/lib/reducers/auth'
-import { setRefreshToken } from '~/utils/refreshToken'
-import { shouldShowLowEventsBanner } from '~/utils/auth'
-import UIActions from '~/lib/reducers/ui'
+import GithubAuth from '~/components/GithubAuth'
+import GoogleAuth from '~/components/GoogleAuth'
+import { HAVE_I_BEEN_PWNED_URL, REFERRAL_COOKIE, TRIAL_DAYS } from '~/lib/constants'
 import { SSOProvider } from '~/lib/models/Auth'
+import { authActions } from '~/lib/reducers/auth'
+import UIActions from '~/lib/reducers/ui'
+import { StateType, useAppDispatch } from '~/lib/store'
+import Button from '~/ui/Button'
+import Checkbox from '~/ui/Checkbox'
+import Input from '~/ui/Input'
+import Tooltip from '~/ui/Tooltip'
+import { getAccessToken, setAccessToken } from '~/utils/accessToken'
+import { trackCustom } from '~/utils/analytics'
+import { shouldShowLowEventsBanner } from '~/utils/auth'
+import { deleteCookie, getCookie } from '~/utils/cookie'
+import { delay, openBrowserWindow } from '~/utils/generic'
+import { setRefreshToken } from '~/utils/refreshToken'
+import routes from '~/utils/routes'
+import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS, MAX_PASSWORD_CHARS } from '~/utils/validator'
 
 interface SignupForm {
   email: string
@@ -207,7 +207,7 @@ const Signup = ({ ssrTheme }: SignupProps) => {
           navigate(routes.dashboard)
 
           return
-        } catch (reason) {
+        } catch {
           // Authentication is not finished yet
         }
 

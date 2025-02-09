@@ -1,5 +1,6 @@
-import { marked, type Tokens } from 'marked'
 import _isEmpty from 'lodash/isEmpty'
+import { marked, type Tokens } from 'marked'
+
 import { getBlogPost, getBlogPostWithCategory } from '~/api'
 
 const renderer = new marked.Renderer()

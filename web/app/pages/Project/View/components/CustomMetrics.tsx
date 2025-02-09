@@ -1,7 +1,7 @@
 import { ScaleIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import React, { memo, useMemo } from 'react'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
+import { memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { ProjectViewCustomEvent } from '../interfaces/traffic'

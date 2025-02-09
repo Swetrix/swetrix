@@ -1,9 +1,9 @@
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline'
-import { Link, useParams } from 'react-router'
-import { acceptOrganisationInvitation } from '~/api'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link, useParams } from 'react-router'
 
+import { acceptOrganisationInvitation } from '~/api'
 import Loader from '~/ui/Loader'
 import routes from '~/utils/routes'
 

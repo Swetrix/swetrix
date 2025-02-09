@@ -1,25 +1,24 @@
-import React, { useState, useEffect, useMemo } from 'react'
-import { toast } from 'sonner'
-import { useLoaderData, useNavigate, Link } from 'react-router'
-import { useTranslation } from 'react-i18next'
-import cx from 'clsx'
-import _isEmpty from 'lodash/isEmpty'
-import _size from 'lodash/size'
-import _replace from 'lodash/replace'
-import _find from 'lodash/find'
-import _join from 'lodash/join'
-import _isString from 'lodash/isString'
-import _split from 'lodash/split'
-import _keys from 'lodash/keys'
-import _filter from 'lodash/filter'
-import _map from 'lodash/map'
-import _toUpper from 'lodash/toUpper'
-import _includes from 'lodash/includes'
 import { XCircleIcon } from '@heroicons/react/24/outline'
+import cx from 'clsx'
+import _filter from 'lodash/filter'
+import _find from 'lodash/find'
+import _includes from 'lodash/includes'
+import _isEmpty from 'lodash/isEmpty'
+import _isString from 'lodash/isString'
+import _join from 'lodash/join'
+import _keys from 'lodash/keys'
+import _map from 'lodash/map'
+import _replace from 'lodash/replace'
+import _size from 'lodash/size'
+import _split from 'lodash/split'
+import _toUpper from 'lodash/toUpper'
+import { ArrowLeftRight, RotateCcw, Trash2Icon } from 'lucide-react'
+import React, { useState, useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
+import { useLoaderData, useNavigate, Link } from 'react-router'
+import { toast } from 'sonner'
 
-import { withAuthentication, auth } from '~/hoc/protected'
-import { isSelfhosted, TITLE_SUFFIX, FILTERS_PANELS_ORDER, isBrowser } from '~/lib/constants'
-import { Project } from '~/lib/models/Project'
 import {
   updateProject,
   deleteProject,
@@ -31,26 +30,28 @@ import {
   getProject,
   assignProjectToOrganisation,
 } from '~/api'
-import Input from '~/ui/Input'
+import { withAuthentication, auth } from '~/hoc/protected'
+import { useRequiredParams } from '~/hooks/useRequiredParams'
+import { isSelfhosted, TITLE_SUFFIX, FILTERS_PANELS_ORDER, isBrowser } from '~/lib/constants'
+import { Project } from '~/lib/models/Project'
+import { StateType } from '~/lib/store'
 import Button from '~/ui/Button'
-import Loader from '~/ui/Loader'
 import Checkbox from '~/ui/Checkbox'
-import Modal from '~/ui/Modal'
+import Dropdown from '~/ui/Dropdown'
 import FlatPicker from '~/ui/Flatpicker'
+import Input from '~/ui/Input'
+import Loader from '~/ui/Loader'
+import Modal from '~/ui/Modal'
+import MultiSelect from '~/ui/MultiSelect'
+import Select from '~/ui/Select'
 import countries from '~/utils/isoCountries'
 import routes from '~/utils/routes'
-import Dropdown from '~/ui/Dropdown'
-import MultiSelect from '~/ui/MultiSelect'
+
 import CCRow from '../View/components/CCRow'
 import { getFormatDate } from '../View/ViewProject.helpers'
 
-import People from './People'
 import Emails from './Emails'
-import Select from '~/ui/Select'
-import { useRequiredParams } from '~/hooks/useRequiredParams'
-import { ArrowLeftRight, RotateCcw, Trash2Icon } from 'lucide-react'
-import { StateType } from '~/lib/store'
-import { useSelector } from 'react-redux'
+import People from './People'
 
 const MAX_NAME_LENGTH = 50
 const MAX_ORIGINS_LENGTH = 300
@@ -138,7 +139,7 @@ const ModalMessage = ({
           ))}
         </nav>
       </div>
-      {tab === DELETE_DATA_MODAL_TABS[1].name && (
+      {tab === DELETE_DATA_MODAL_TABS[1].name ? (
         <>
           <p className='mt-4 mb-2 text-sm text-gray-500 dark:text-gray-300'>
             {t('project.settings.reseted.partiallyDesc')}
@@ -159,13 +160,13 @@ const ModalMessage = ({
             value={dateRange}
           />
         </>
-      )}
-      {tab === DELETE_DATA_MODAL_TABS[0].name && (
+      ) : null}
+      {tab === DELETE_DATA_MODAL_TABS[0].name ? (
         <p className='mt-4 mb-4 text-sm text-gray-500 italic dark:text-gray-300'>
           {t('project.settings.reseted.allHint')}
         </p>
-      )}
-      {tab === DELETE_DATA_MODAL_TABS[2].name && (
+      ) : null}
+      {tab === DELETE_DATA_MODAL_TABS[2].name ? (
         <div className='min-h-[410px]'>
           <p className='mt-4 mb-4 text-sm text-gray-500 italic dark:text-gray-300'>
             {t('project.settings.reseted.viaFiltersHint')}
@@ -241,7 +242,7 @@ const ModalMessage = ({
             )}
           </div>
         </div>
-      )}
+      ) : null}
     </>
   )
 }
@@ -716,7 +717,7 @@ const ProjectSettings = () => {
           label={t('project.settings.protected')}
           hint={t('project.settings.protectedHint')}
         />
-        {organisations.length > 1 && (
+        {organisations.length > 1 ? (
           <div className='mt-4'>
             <Select
               items={organisations}
@@ -739,7 +740,7 @@ const ProjectSettings = () => {
               title={organisations.find((org) => org.id === form.organisationId)?.name}
             />
           </div>
-        )}
+        ) : null}
         <div className='mt-8 flex flex-wrap justify-center gap-2 sm:justify-between'>
           <div className='flex flex-wrap items-center gap-2'>
             <Button
@@ -758,14 +759,14 @@ const ProjectSettings = () => {
           </div>
           {project.role === 'owner' ? (
             <div className='flex flex-wrap justify-center gap-2'>
-              {!isSelfhosted && (
+              {!isSelfhosted ? (
                 <Button onClick={() => setShowTransfer(true)} semiDanger semiSmall>
                   <>
                     <ArrowLeftRight className='mr-1 h-5 w-5' />
                     {t('project.settings.transfer')}
                   </>
                 </Button>
-              )}
+              ) : null}
               <Button onClick={() => !setResetting && setShowReset(true)} loading={isDeleting} semiDanger semiSmall>
                 <>
                   <RotateCcw className='mr-1 h-5 w-5' />
@@ -781,18 +782,18 @@ const ProjectSettings = () => {
             </div>
           ) : null}
         </div>
-        {!isSelfhosted && (
+        {!isSelfhosted ? (
           <>
             <hr className='xs:mt-2 mt-8 border-gray-200 sm:mt-5 dark:border-gray-600' />
             <Emails projectId={id} />
           </>
-        )}
-        {!isSelfhosted && (
+        ) : null}
+        {!isSelfhosted ? (
           <>
             <hr className='mt-2 border-gray-200 sm:mt-5 dark:border-gray-600' />
             <People project={project} />
           </>
-        )}
+        ) : null}
       </form>
       <Modal
         onClose={() => setShowDelete(false)}

@@ -1,10 +1,10 @@
-import React, { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
 import _map from 'lodash/map'
+import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
-import Modal from '~/ui/Modal'
 import { Badge } from '~/ui/Badge'
+import Modal from '~/ui/Modal'
 
 interface ViewProjectHotkeysProps {
   onClose: () => void
@@ -13,7 +13,7 @@ interface ViewProjectHotkeysProps {
 
 interface HotkeysListProps {
   title: string
-  hotkeys: { [key: string]: string }
+  hotkeys: Record<string, string>
 }
 
 const getHotkeys = (t: TFunction) => ({

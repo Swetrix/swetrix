@@ -1,6 +1,5 @@
-import React from 'react'
-import { useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
 
 import Modal from '~/ui/Modal'
 import routes from '~/utils/routes'

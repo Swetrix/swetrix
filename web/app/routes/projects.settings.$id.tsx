@@ -1,4 +1,5 @@
 import type { LoaderFunctionArgs } from 'react-router'
+
 import ProjectSettings from '~/pages/Project/Settings'
 
 export async function loader({ request }: LoaderFunctionArgs) {

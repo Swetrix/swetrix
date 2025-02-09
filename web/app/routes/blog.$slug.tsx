@@ -1,14 +1,15 @@
-import type { SitemapFunction } from 'remix-sitemap'
-import type { LoaderFunction, MetaFunction } from 'react-router'
-import { redirect, data } from 'react-router'
-import _map from 'lodash/map'
-import _last from 'lodash/last'
-import _join from 'lodash/join'
 import _isString from 'lodash/isString'
-import { getPost, getSlugFromFilename, getDateFromFilename } from '~/utils/getPosts'
+import _join from 'lodash/join'
+import _last from 'lodash/last'
+import _map from 'lodash/map'
+import { redirect, data } from 'react-router'
+import type { LoaderFunction, MetaFunction } from 'react-router'
+import type { SitemapFunction } from 'remix-sitemap'
+
 import { getSitemap } from '~/api'
 import { isSelfhosted, TITLE_SUFFIX, getOgImageUrl, isDisableMarketingPages } from '~/lib/constants'
 import Post from '~/pages/Blog/Post'
+import { getPost, getSlugFromFilename, getDateFromFilename } from '~/utils/getPosts'
 
 export const meta: MetaFunction = (loaderData: any) => {
   const ogImageUrl = getOgImageUrl(loaderData?.data?.title)

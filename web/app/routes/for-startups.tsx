@@ -1,10 +1,10 @@
-import Startups from '~/pages/Landings/Startups'
 import type { LoaderFunctionArgs } from 'react-router'
 import { redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
-import { detectTheme, isAuthenticated } from '~/utils/server'
 import { isDisableMarketingPages, isSelfhosted } from '~/lib/constants'
+import Startups from '~/pages/Landings/Startups'
+import { detectTheme, isAuthenticated } from '~/utils/server'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 0.9,

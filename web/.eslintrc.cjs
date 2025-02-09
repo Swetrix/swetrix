@@ -1,9 +1,3 @@
-/**
- * This is intended to be a basic starting point for linting in the Indie Stack.
- * It relies on recommended configs out of the box for simplicity, but you can
- * and should modify this configuration to best suit your team's needs.
- */
-
 /** @type {import('eslint').Linter.Config} */
 module.exports = {
   root: true,
@@ -47,13 +41,21 @@ module.exports = {
       },
       rules: {
         'react/jsx-no-leaked-render': ['warn', { validStrategies: ['ternary'] }],
+        'react/prop-types': 'off',
+
+        // TODO: Re-enable these rules in future
+        'jsx-a11y/anchor-has-content': 'off',
+        'jsx-a11y/click-events-have-key-events': 'off',
+        'jsx-a11y/no-noninteractive-element-interactions': 'off',
+        'react/no-unescaped-entities': 'off',
+        'jsx-a11y/no-static-element-interactions': 'off',
       },
     },
 
     // Typescript
     {
       files: ['**/*.{ts,tsx}'],
-      plugins: ['@typescript-eslint', 'import'],
+      plugins: ['@typescript-eslint', 'import', 'unused-imports'],
       parser: '@typescript-eslint/parser',
       settings: {
         'import/internal-regex': '^~/',
@@ -65,6 +67,8 @@ module.exports = {
             alwaysTryTypes: true,
           },
         },
+        'jsx-quotes': ['error', 'prefer-single'],
+        'comma-dangle': ['warn', 'always-multiline'],
       },
       extends: [
         'plugin:@typescript-eslint/recommended',
@@ -83,14 +87,21 @@ module.exports = {
           },
         ],
         '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
+        '@typescript-eslint/prefer-for-of': 'off',
+        '@typescript-eslint/ban-ts-comment': 'off',
+        '@typescript-eslint/no-empty-function': 'off',
+        'unused-imports/no-unused-imports': 'error',
+        'unused-imports/no-unused-vars': [
+          'warn',
+          {
+            vars: 'all',
+            varsIgnorePattern: '^_',
+            args: 'after-used',
+            argsIgnorePattern: '^_',
+          },
+        ],
       },
-    },
-
-    // Markdown
-    {
-      files: ['**/*.md'],
-      plugins: ['markdown'],
-      extends: ['plugin:markdown/recommended-legacy', 'prettier'],
     },
 
     // Node

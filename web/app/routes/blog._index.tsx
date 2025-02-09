@@ -1,10 +1,11 @@
+import _filter from 'lodash/filter'
+import _isEmpty from 'lodash/isEmpty'
+import _map from 'lodash/map'
 import type { LoaderFunction, MetaFunction } from 'react-router'
 import { redirect, Link, useLoaderData } from 'react-router'
-import _map from 'lodash/map'
-import _isEmpty from 'lodash/isEmpty'
-import _filter from 'lodash/filter'
-import { isDisableMarketingPages, isSelfhosted, TITLE_SUFFIX } from '~/lib/constants'
+
 import { getBlogPosts } from '~/api'
+import { isDisableMarketingPages, isSelfhosted, TITLE_SUFFIX } from '~/lib/constants'
 
 export const loader: LoaderFunction = async () => {
   if (isSelfhosted || isDisableMarketingPages) {
@@ -85,11 +86,11 @@ export default function Posts() {
                     <h3 className='pt-8 text-base font-semibold tracking-tight text-slate-900 lg:pt-0 dark:text-slate-200'>
                       {post.title}
                     </h3>
-                    {post.intro && (
+                    {post.intro ? (
                       <div className='prose prose-slate prose-a:relative prose-a:z-10 mt-2 mb-4 line-clamp-2 font-mono dark:text-slate-400'>
                         <p>{post.intro}</p>
                       </div>
-                    )}
+                    ) : null}
                     <dl className='absolute top-0 left-0 font-mono uppercase lg:right-full lg:left-auto lg:mr-[calc(5rem+1px)]'>
                       <dt className='sr-only'>Date</dt>
                       <dd className='text-sm leading-6 whitespace-nowrap dark:text-slate-400'>

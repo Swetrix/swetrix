@@ -1,9 +1,8 @@
-import React from 'react'
-import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
 
-import routes from '~/utils/routes'
 import { isSelfhosted } from '~/lib/constants'
+import routes from '~/utils/routes'
 
 const CONTACT_US_URL = `https://swetrix.com${routes.contact}`
 

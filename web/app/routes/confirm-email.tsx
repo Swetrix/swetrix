@@ -1,8 +1,9 @@
-import CheckYourInbox from '~/pages/Auth/CheckYourInbox'
-import type { SitemapFunction } from 'remix-sitemap'
-import type { HeadersFunction, LoaderFunctionArgs } from 'react-router'
+import type { HeadersFunction } from 'react-router'
 import { redirect } from 'react-router'
+import type { SitemapFunction } from 'remix-sitemap'
+
 import { isSelfhosted } from '~/lib/constants'
+import CheckYourInbox from '~/pages/Auth/CheckYourInbox'
 
 export const headers: HeadersFunction = ({ parentHeaders }) => {
   parentHeaders.set('X-Frame-Options', 'DENY')
@@ -13,7 +14,7 @@ export const sitemap: SitemapFunction = () => ({
   exclude: true,
 })
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader() {
   if (isSelfhosted) {
     return redirect('/login', 302)
   }

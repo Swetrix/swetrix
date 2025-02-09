@@ -1,18 +1,19 @@
-import type { EntryContext } from 'react-router'
-import { PassThrough } from 'node:stream'
 import { resolve as feResolve } from 'node:path'
-import { createInstance } from 'i18next'
-import { I18nextProvider, initReactI18next } from 'react-i18next'
+import { PassThrough } from 'node:stream'
+
 import { createReadableStreamFromReadable } from '@react-router/node'
+import { createInstance } from 'i18next'
 import FSBackend from 'i18next-fs-backend'
-import { ServerRouter } from 'react-router'
 import { isbot } from 'isbot'
 import { renderToPipeableStream } from 'react-dom/server'
+import { I18nextProvider, initReactI18next } from 'react-i18next'
+import { ServerRouter } from 'react-router'
+import type { EntryContext } from 'react-router'
 import { createSitemapGenerator } from 'remix-sitemap'
 
-import { MAIN_URL } from './lib/constants'
-import i18next from './i18next.server'
 import i18n, { detectLanguage } from './i18n'
+import i18next from './i18next.server'
+import { MAIN_URL } from './lib/constants'
 
 // Reject/cancel all pending promises after 5 seconds
 const streamTimeout = 5000
@@ -30,7 +31,7 @@ export default async function handleRequest(
   reactRouterContext: EntryContext,
 ) {
   if (isSitemapUrl(request)) {
-    // @ts-ignore
+    // @ts-expect-error
     const stm = await sitemap(request, reactRouterContext)
     return stm
   }

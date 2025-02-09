@@ -1,12 +1,14 @@
-import React from 'react'
-import { useTranslation } from 'react-i18next'
 import _capitalize from 'lodash/capitalize'
 import _size from 'lodash/size'
 import _truncate from 'lodash/truncate'
+import { useTranslation } from 'react-i18next'
+
 import { getLocaleDisplayName, getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
+
 import { SessionDetails as Details } from '../interfaces/session'
-import { MetricCard, MetricCardSelect } from './MetricCards'
+
 import CCRow from './CCRow'
+import { MetricCard, MetricCardSelect } from './MetricCards'
 
 interface SessionDetailsProps {
   details: Details

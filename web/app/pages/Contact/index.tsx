@@ -1,6 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-has-content */
 import { SquareArrowOutUpRightIcon } from 'lucide-react'
-import React from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 
 import { CONTACT_EMAIL, TWITTER_URL, TWITTER_USERNAME, DISCORD_URL, DOCS_URL, BOOK_A_CALL_URL } from '~/lib/constants'

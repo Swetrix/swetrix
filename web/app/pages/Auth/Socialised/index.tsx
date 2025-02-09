@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router'
-import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
-import _split from 'lodash/split'
 import _replace from 'lodash/replace'
+import _split from 'lodash/split'
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
 
 import { processSSOToken } from '~/api'
 import { SSO_PROVIDERS } from '~/lib/constants'

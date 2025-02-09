@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react'
-import bb from 'billboard.js'
+import billboard from 'billboard.js'
+import { useEffect } from 'react'
 import 'billboard.js/dist/theme/datalab.css?url'
 import 'billboard.js/dist/billboard.css?url'
 
@@ -30,7 +30,7 @@ const Chart = ({ current, options }: ChartProps) => {
   // Render the chart
   const renderChart = () => {
     if (current !== null) {
-      chartInstance = bb.generate({
+      chartInstance = billboard.generate({
         ...options,
         bindto: `#${current}`,
       })

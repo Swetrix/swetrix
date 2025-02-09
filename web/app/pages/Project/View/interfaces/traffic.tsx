@@ -31,17 +31,11 @@ interface Param {
   count: number
 }
 
-export interface Params {
-  [key: string]: Param[]
-}
+export type Params = Record<string, Param[]>
 
-export interface Customs {
-  [key: string]: number
-}
+export type Customs = Record<string, number>
 
-export interface Properties {
-  [key: string]: number
-}
+export type Properties = Record<string, number>
 
 interface Metric {
   sum: number

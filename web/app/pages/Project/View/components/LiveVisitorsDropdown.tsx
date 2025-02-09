@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react'
+import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import _map from 'lodash/map'
+import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import OutsideClickHandler from 'react-outside-click-handler'
-import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { Link } from 'react-router'
 
 import { getLiveVisitorsInfo, GetLiveVisitorsInfo } from '~/api'
-import PulsatingCircle from '~/ui/icons/PulsatingCircle'
-import Flag from '~/ui/Flag'
-import { useViewProjectContext } from '../ViewProject'
-import { Link } from 'react-router'
 import { PROJECT_TABS } from '~/lib/constants'
+import Flag from '~/ui/Flag'
+import PulsatingCircle from '~/ui/icons/PulsatingCircle'
+
+import { useViewProjectContext } from '../ViewProject'
 
 interface LiveVisitorsDropdownProps {
   live: number | string

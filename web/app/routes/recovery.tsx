@@ -1,7 +1,8 @@
-import ForgotPassword from '~/pages/Auth/ForgotPassword'
 import type { HeadersFunction } from 'react-router'
 import { redirect } from 'react-router'
+
 import { isSelfhosted } from '~/lib/constants'
+import ForgotPassword from '~/pages/Auth/ForgotPassword'
 
 export const headers: HeadersFunction = ({ parentHeaders }) => {
   parentHeaders.set('X-Frame-Options', 'DENY')

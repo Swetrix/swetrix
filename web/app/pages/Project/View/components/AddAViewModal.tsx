@@ -1,28 +1,30 @@
+import { XMarkIcon } from '@heroicons/react/24/outline'
+import _filter from 'lodash/filter'
+import _find from 'lodash/find'
+import _isEmpty from 'lodash/isEmpty'
+import _map from 'lodash/map'
+import _reduce from 'lodash/reduce'
+import _size from 'lodash/size'
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import _isEmpty from 'lodash/isEmpty'
-import _reduce from 'lodash/reduce'
-import _filter from 'lodash/filter'
-import _map from 'lodash/map'
-import _find from 'lodash/find'
-import _size from 'lodash/size'
 import { toast } from 'sonner'
 
+import { getFilters, createProjectView, updateProjectView } from '~/api'
+import { FILTERS_PANELS_ORDER } from '~/lib/constants'
+import Combobox from '~/ui/Combobox'
+import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
 import Select from '~/ui/Select'
-import Combobox from '~/ui/Combobox'
-import { FILTERS_PANELS_ORDER } from '~/lib/constants'
 import countries from '~/utils/isoCountries'
-import { getFilters, createProjectView, updateProjectView } from '~/api'
-import { Filter } from './Filters'
-import Input from '~/ui/Input'
+
 import {
   Filter as FilterType,
   ProjectView,
   ProjectViewCustomEvent,
   ProjectViewCustomEventMetaValueType,
 } from '../interfaces/traffic'
-import { XMarkIcon } from '@heroicons/react/24/outline'
+
+import { Filter } from './Filters'
 
 interface AddAViewModalProps {
   projectPassword?: string
@@ -219,7 +221,7 @@ const AddAViewModal = ({
 
   const getFiltersList = useCallback(
     async (category: string) => {
-      let result = await getFilters(pid, category, projectPassword)
+      const result = await getFilters(pid, category, projectPassword)
 
       setSearchList(result)
     },
@@ -387,7 +389,7 @@ const AddAViewModal = ({
               _isEmpty(filterType) ? t('project.settings.reseted.selectFilters') : t(`project.mapping.${filterType}`)
             }
           />
-          {filterType && !_isEmpty(searchList) && (
+          {filterType && !_isEmpty(searchList) ? (
             <>
               <p className='mt-5 text-sm font-medium text-gray-700 dark:text-gray-200'>{t('project.filters')}</p>
               <Combobox
@@ -403,7 +405,7 @@ const AddAViewModal = ({
                 placeholder={t('project.settings.reseted.filtersPlaceholder')}
               />
             </>
-          )}
+          ) : null}
           <div className='mt-2'>
             {_map(activeFilters, ({ filter, column, isExclusive }) => (
               <Filter
@@ -469,14 +471,14 @@ const AddAViewModal = ({
               />
             ))}
           </div>
-          {customEvents.length < MAX_METRICS_IN_VIEW && (
+          {customEvents.length < MAX_METRICS_IN_VIEW ? (
             <InlineButton
               text={t('project.addAMetric')}
               onClick={() => {
                 setCustomEvents((prev) => [...prev, { ...EMPTY_CUSTOM_EVENT, id: Math.random().toString() }])
               }}
             />
-          )}
+          ) : null}
         </div>
       }
       submitType='regular'

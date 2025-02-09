@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
-import cx from 'clsx'
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
-import _map from 'lodash/map'
+import cx from 'clsx'
 import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
+import _map from 'lodash/map'
+import { useState } from 'react'
 
 interface MultiSelectProps {
   className?: string
@@ -112,10 +112,10 @@ const MultiSelect = ({
               </div>
             </div>
           </div>
-          {selected && (
+          {selected ? (
             <div className='lef-0 max-h-select top-100 z-40 max-h-[200px] w-full overflow-x-hidden overflow-y-auto rounded-sm bg-white dark:bg-slate-800'>
               <div className='flex w-full flex-col'>
-                {onSearch && (
+                {onSearch ? (
                   <div className='relative w-full cursor-pointer rounded-t border-b border-gray-100 hover:bg-indigo-100 dark:border-slate-700 dark:hover:bg-slate-700'>
                     <input
                       className='relative flex w-full items-center overflow-x-auto border-l-2 border-transparent bg-white p-2 pl-2 hover:border-b-indigo-100 focus:border-transparent focus:ring-0 focus:outline-hidden dark:bg-slate-800 dark:hover:border-b-slate-700'
@@ -132,7 +132,7 @@ const MultiSelect = ({
                       aria-hidden='true'
                     />
                   </div>
-                )}
+                ) : null}
                 {_map(items, (item) => (
                   <div
                     key={keyExtractor ? `${keyExtractor(item)}select` : `${item}select`}
@@ -155,10 +155,10 @@ const MultiSelect = ({
                 ))}
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
-      {hint && <p className='mt-2 text-sm whitespace-pre-line text-gray-500 dark:text-gray-300'>{hint}</p>}
+      {hint ? <p className='mt-2 text-sm whitespace-pre-line text-gray-500 dark:text-gray-300'>{hint}</p> : null}
     </div>
   )
 }

@@ -1,10 +1,10 @@
-import React from 'react'
+import _find from 'lodash/find'
+import _includes from 'lodash/includes'
+import _reduce from 'lodash/reduce'
+import { useTranslation } from 'react-i18next'
 import spacetime from 'spacetime'
 import soft from 'timezone-soft'
-import { useTranslation } from 'react-i18next'
-import _find from 'lodash/find'
-import _reduce from 'lodash/reduce'
-import _includes from 'lodash/includes'
+
 import timezones from '~/lib/constants/timezones'
 
 import Select from './Select'

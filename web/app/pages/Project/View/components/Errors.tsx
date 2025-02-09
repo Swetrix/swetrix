@@ -1,14 +1,16 @@
+import { ChevronRightIcon } from '@heroicons/react/24/outline'
+import cx from 'clsx'
+import _map from 'lodash/map'
 import React, { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
-import { useTranslation } from 'react-i18next'
-import _map from 'lodash/map'
-import cx from 'clsx'
-import { ChevronRightIcon } from '@heroicons/react/24/outline'
-import Loader from '~/ui/Loader'
-import { SwetrixError } from '../interfaces/error'
-import { getRelativeDateIfPossible } from '~/utils/date'
+
 import { Badge } from '~/ui/Badge'
+import Loader from '~/ui/Loader'
+import { getRelativeDateIfPossible } from '~/utils/date'
+
+import { SwetrixError } from '../interfaces/error'
 
 interface ErrorsProps {
   errors: SwetrixError[]

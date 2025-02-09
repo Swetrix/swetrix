@@ -1,15 +1,16 @@
-import React, { memo, useState, useMemo } from 'react'
 import cx from 'clsx'
 import _map from 'lodash/map'
 import _reduce from 'lodash/reduce'
+import React, { memo, useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import countries from '~/utils/isoCountries'
-import { PROJECT_TABS } from '~/lib/constants'
-import { getTimeFromSeconds, getStringFromTime, nFormatter } from '~/utils/generic'
+import { useSearchParams } from 'react-router'
 
+import { PROJECT_TABS } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
 import countriesList from '~/utils/countries'
-import { useSearchParams } from 'react-router'
+import { getTimeFromSeconds, getStringFromTime, nFormatter } from '~/utils/generic'
+import countries from '~/utils/isoCountries'
+
 import { useViewProjectContext } from '../ViewProject'
 
 interface InteractiveMapProps {
@@ -28,9 +29,7 @@ interface DataHover {
   data: number
 }
 
-interface CountryMap {
-  [key: string]: number
-}
+type CountryMap = Record<string, number>
 
 const InteractiveMap = ({ data, onClickCountry, total }: InteractiveMapProps) => {
   const { dataLoading } = useViewProjectContext()
@@ -114,7 +113,7 @@ const InteractiveMap = ({ data, onClickCountry, total }: InteractiveMapProps) =>
         </g>
       </svg>
       <div>
-        {hoverShow && cursorPosition && (
+        {hoverShow && cursorPosition ? (
           <div
             className='absolute z-30 rounded-md border bg-gray-100 p-1 text-xs dark:bg-slate-900 dark:text-gray-200'
             style={{
@@ -136,7 +135,7 @@ const InteractiveMap = ({ data, onClickCountry, total }: InteractiveMapProps) =>
                 : getStringFromTime(getTimeFromSeconds(dataHover.data), true)}
             </strong>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   )

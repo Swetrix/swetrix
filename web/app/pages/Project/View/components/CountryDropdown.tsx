@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
+import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import _map from 'lodash/map'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import OutsideClickHandler from 'react-outside-click-handler'
-import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
 interface CountryDropdownProps {
   onSelect: any
@@ -38,7 +38,7 @@ const CountryDropdown = ({ onSelect, title }: CountryDropdownProps) => {
       <span className='cursor-pointer' onClick={() => setShow(!show)}>
         {title} {show ? <ChevronUpIcon className='inline h-4 w-4' /> : <ChevronDownIcon className='inline h-4 w-4' />}
       </span>
-      {show && (
+      {show ? (
         <div className='absolute top-12 left-5 z-10 mt-2 max-h-[200px] min-w-[250px] overflow-auto rounded-md border border-gray-200 bg-white text-gray-900 dark:border-slate-700/50 dark:bg-slate-900'>
           <div className='flex w-full flex-col p-2'>
             <p className='px-1 text-sm font-semibold text-gray-900 dark:text-gray-50'>{t('project.geo')}</p>
@@ -57,7 +57,7 @@ const CountryDropdown = ({ onSelect, title }: CountryDropdownProps) => {
             onClick={() => setShow(!show)}
           />
         </div>
-      )}
+      ) : null}
     </OutsideClickHandler>
   )
 }

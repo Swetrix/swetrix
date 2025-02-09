@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router'
-import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
-
-import Loader from '~/ui/Loader'
+import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
 
 import { confirmTransferProject } from '~/api'
+import Loader from '~/ui/Loader'
 import routes from '~/utils/routes'
 
 const TransferProjectConfirm = () => {

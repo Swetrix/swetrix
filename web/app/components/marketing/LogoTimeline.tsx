@@ -1,5 +1,3 @@
-import React from 'react'
-import clsx from 'clsx'
 import {
   SiFramer,
   SiGhost,
@@ -14,6 +12,8 @@ import {
   SiWix,
   SiWordpress,
 } from '@icons-pack/react-simple-icons'
+import clsx from 'clsx'
+import React from 'react'
 
 const Row = ({ children }: { children: React.ReactNode }) => {
   return (

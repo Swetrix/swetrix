@@ -1,10 +1,11 @@
-import React, { Fragment, useMemo } from 'react'
 import { Popover, PopoverButton, PopoverPanel, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
-import { useTranslation } from 'react-i18next'
-import _map from 'lodash/map'
 import cx from 'clsx'
+import _map from 'lodash/map'
 import { CalendarIcon } from 'lucide-react'
+import { Fragment, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+
 import { KEY_FOR_ALL_TIME } from '~/lib/constants'
 
 interface PeriodSelectorProps {

@@ -1,10 +1,10 @@
-import React, { memo } from 'react'
-import { useTranslation, Trans } from 'react-i18next'
 import _isEmpty from 'lodash/isEmpty'
+import { memo } from 'react'
+import { useTranslation, Trans } from 'react-i18next'
 
-import Button from '~/ui/Button'
 import { DOCS_CAPTCHA_URL } from '~/lib/constants'
 import { Filter } from '~/pages/Project/View/interfaces/traffic'
+import Button from '~/ui/Button'
 
 interface NoEventsProps {
   filters: Filter[]
@@ -35,13 +35,13 @@ const NoEvents = ({ filters, resetFilters }: NoEventsProps) => {
             }}
           />
         </h2>
-        {!_isEmpty(filters) && (
+        {!_isEmpty(filters) ? (
           <div className='!mx-auto !flex'>
             <Button onClick={resetFilters} className='!mx-auto !flex' primary giant>
               {t('project.resetFilters')}
             </Button>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   )

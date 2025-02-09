@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+
 import { ENTRIES_PER_PAGE_DASHBOARD } from '~/lib/constants'
 
 export const DOTS = '...'
@@ -11,7 +12,7 @@ const range = (start: number, end: number) => {
 export const usePagination = (
   totalCount: number,
   currentPage: number,
-  siblingCount: number = 1,
+  siblingCount = 1,
   pageSize: number = ENTRIES_PER_PAGE_DASHBOARD,
 ): any[] => {
   const paginationRange = useMemo(() => {

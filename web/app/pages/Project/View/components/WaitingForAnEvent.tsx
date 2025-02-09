@@ -1,11 +1,12 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router'
-import { User } from '~/lib/models/User'
-import { ProjectForShared } from '~/lib/models/SharedProject'
+import { useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import routes from '~/utils/routes'
-import PulsatingCircle from '~/ui/icons/PulsatingCircle'
+import { Link } from 'react-router'
+
+import { ProjectForShared } from '~/lib/models/SharedProject'
+import { User } from '~/lib/models/User'
 import TrackingSnippet from '~/modals/TrackingSnippet'
+import PulsatingCircle from '~/ui/icons/PulsatingCircle'
+import routes from '~/utils/routes'
 
 interface WaitingForAnEventProps {
   user?: User
@@ -30,7 +31,6 @@ const WaitingForAnEvent = ({ project }: WaitingForAnEventProps) => {
               </h1>
               <p className='mt-4 max-w-[100ch] font-mono text-sm whitespace-pre-line text-gray-800 dark:text-gray-200'>
                 <Trans
-                  // @ts-ignore
                   t={t}
                   i18nKey='project.waiting.desc'
                   components={{
@@ -51,6 +51,7 @@ const WaitingForAnEvent = ({ project }: WaitingForAnEventProps) => {
                     ),
                     snippet: (
                       <span
+                        tabIndex={0}
                         role='button'
                         className='cursor-pointer font-medium text-indigo-600 hover:underline dark:text-indigo-400'
                         onClick={() => setIsModalOpened(true)}

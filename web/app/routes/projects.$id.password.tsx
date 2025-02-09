@@ -1,7 +1,7 @@
-import ProjectProtectedPassword from '~/pages/Project/ProjectProtectedPassword'
 import type { LoaderFunctionArgs } from 'react-router'
 import { useLoaderData } from 'react-router'
 
+import ProjectProtectedPassword from '~/pages/Project/ProjectProtectedPassword'
 import { detectTheme, isEmbedded, getProjectPassword, isAuthenticated } from '~/utils/server'
 
 export async function loader({ request }: LoaderFunctionArgs) {

@@ -1,7 +1,8 @@
-import Imprint from '~/pages/Imprint'
-import type { SitemapFunction } from 'remix-sitemap'
 import { redirect } from 'react-router'
+import type { SitemapFunction } from 'remix-sitemap'
+
 import { isDisableMarketingPages, isSelfhosted } from '~/lib/constants'
+import Imprint from '~/pages/Imprint'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 0.9,

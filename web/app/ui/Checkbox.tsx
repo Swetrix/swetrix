@@ -1,7 +1,7 @@
-import React, { memo } from 'react'
 import { Checkbox as HeadlessCheckbox, Description, Field, Label } from '@headlessui/react'
 import { CheckIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
+import React, { memo } from 'react'
 
 interface CheckboxProps {
   label: React.ReactNode
@@ -27,9 +27,9 @@ const Checkbox = ({ label, hint, name, className, onChange, checked, hintClassNa
       </HeadlessCheckbox>
       <Label className='cursor-pointer font-mono text-sm font-medium text-gray-900 dark:text-gray-200'>{label}</Label>
     </div>
-    {hint && (
+    {hint ? (
       <Description className={cx('mt-1 text-sm text-gray-500 dark:text-gray-300', hintClassName)}>{hint}</Description>
-    )}
+    ) : null}
   </Field>
 )
 

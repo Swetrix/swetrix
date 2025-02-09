@@ -1,7 +1,8 @@
-import React, { memo } from 'react'
 import { Description, Field, Input as HeadlessInput, Label } from '@headlessui/react'
 import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
+import React, { memo } from 'react'
+
 import Beta from '~/ui/Beta'
 
 interface InputProps {
@@ -38,11 +39,11 @@ const Input = ({
       {label ? (
         <Label className='mb-1 flex font-mono text-sm font-medium text-gray-900 dark:text-gray-200'>
           {label}
-          {isBeta && (
+          {isBeta ? (
             <div className='ml-5'>
               <Beta />
             </div>
-          )}
+          ) : null}
         </Label>
       ) : null}
       {hint && hintPosition === 'top' ? (

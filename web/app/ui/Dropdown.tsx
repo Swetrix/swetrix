@@ -1,10 +1,11 @@
-import React, { memo, Fragment, Key } from 'react'
 import { Menu, MenuButton, MenuItems, MenuItem, Transition } from '@headlessui/react'
-import { ChevronDownIcon } from '@heroicons/react/24/solid'
 import { ChevronDownIcon as ChevronDownIconMini } from '@heroicons/react/20/solid'
+import { ChevronDownIcon } from '@heroicons/react/24/solid'
 import cx from 'clsx'
-import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
+import _map from 'lodash/map'
+import React, { memo, Fragment, Key } from 'react'
+
 import Spin from './icons/Spin'
 
 interface DropdownProps<T> {
@@ -50,7 +51,7 @@ function Dropdown<T>({
     <Menu as='div' className={cx('relative inline-block text-left', className)}>
       {({ open, close }) => (
         <>
-          {!_isEmpty(desc) && <p className='mb-2 text-sm text-gray-900'>{desc}</p>}
+          {!_isEmpty(desc) ? <p className='mb-2 text-sm text-gray-900'>{desc}</p> : null}
           <MenuButton
             onClick={onClick}
             disabled={disabled}
@@ -65,7 +66,7 @@ function Dropdown<T>({
             })}
           >
             {title}
-            {chevron === 'regular' && (
+            {chevron === 'regular' ? (
               <ChevronDownIcon
                 className={cx('-mr-1 ml-2 h-5 w-5 transform-gpu transition-transform', {
                   'group-hover:text-gray-500': headless,
@@ -73,8 +74,8 @@ function Dropdown<T>({
                 })}
                 aria-hidden='true'
               />
-            )}
-            {chevron === 'mini' && (
+            ) : null}
+            {chevron === 'mini' ? (
               <ChevronDownIconMini
                 className={cx('-mr-1 ml-1 h-5 w-5 transform-gpu transition-transform', {
                   'group-hover:text-gray-500': headless,
@@ -82,7 +83,7 @@ function Dropdown<T>({
                 })}
                 aria-hidden='true'
               />
-            )}
+            ) : null}
           </MenuButton>
 
           <Transition

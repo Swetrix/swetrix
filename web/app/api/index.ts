@@ -1,23 +1,23 @@
 /* eslint-disable implicit-arrow-linebreak */
 import axios, { AxiosResponse } from 'axios'
 import createAuthRefreshInterceptor from 'axios-auth-refresh'
-import _map from 'lodash/map'
-import _isEmpty from 'lodash/isEmpty'
 import _isArray from 'lodash/isArray'
+import _isEmpty from 'lodash/isEmpty'
+import _map from 'lodash/map'
 
-import { store } from '~/lib/store'
-import { authActions } from '~/lib/reducers/auth'
-import { getAccessToken, removeAccessToken, setAccessToken } from '~/utils/accessToken'
-import { getRefreshToken, removeRefreshToken } from '~/utils/refreshToken'
 import { DEFAULT_ALERTS_TAKE, API_URL } from '~/lib/constants'
-import { User, FeatureFlag } from '~/lib/models/User'
-import { Auth } from '~/lib/models/Auth'
-import { Project, Overall, LiveStats, Funnel } from '~/lib/models/Project'
 import { Alerts } from '~/lib/models/Alerts'
-import { Subscriber } from '~/lib/models/Subscriber'
-import { Filter, ProjectViewCustomEvent } from '~/pages/Project/View/interfaces/traffic'
+import { Auth } from '~/lib/models/Auth'
 import { Role } from '~/lib/models/Organisation'
+import { Project, Overall, LiveStats, Funnel } from '~/lib/models/Project'
+import { Subscriber } from '~/lib/models/Subscriber'
+import { User, FeatureFlag } from '~/lib/models/User'
+import { authActions } from '~/lib/reducers/auth'
+import { store } from '~/lib/store'
+import { Filter, ProjectViewCustomEvent } from '~/pages/Project/View/interfaces/traffic'
+import { getAccessToken, removeAccessToken, setAccessToken } from '~/utils/accessToken'
 import { logout } from '~/utils/auth'
+import { getRefreshToken, removeRefreshToken } from '~/utils/refreshToken'
 
 const api = axios.create({
   baseURL: API_URL,
@@ -85,7 +85,7 @@ export const logoutApi = (refreshToken: string | null) =>
         Authorization: `Bearer ${refreshToken}`,
       },
     })
-    .then((response): {} => {
+    .then((response) => {
       removeAccessToken()
       removeRefreshToken()
       return response.data
@@ -129,7 +129,7 @@ export const deleteUser = (deletionFeedback?: string) =>
         feedback: deletionFeedback,
       },
     })
-    .then((response): {} => response.data)
+    .then((response) => response.data)
     .catch((error) => {
       throw new Error(JSON.stringify(error.response.data))
     })
@@ -265,8 +265,8 @@ export const verifyShare = ({ path, id }: { path: string; id: string }) =>
     })
 
 export const getProjects = (
-  take: number = 0,
-  skip: number = 0,
+  take = 0,
+  skip = 0,
   search?: string,
   mode?: string,
   period?: string,
@@ -290,7 +290,7 @@ export const getProjects = (
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getProjectsAvailableForOrganisation = (take: number = 0, skip: number = 0, search?: string) =>
+export const getProjectsAvailableForOrganisation = (take = 0, skip = 0, search?: string) =>
   api
     .get(`/project/available-for-organisation?take=${take}&skip=${skip}&search=${search}`)
     .then((response) => response.data)
@@ -298,7 +298,7 @@ export const getProjectsAvailableForOrganisation = (take: number = 0, skip: numb
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getOrganisations = (take: number = 0, skip: number = 0, search?: string) =>
+export const getOrganisations = (take = 0, skip = 0, search?: string) =>
   api
     .get(`/organisation?take=${take}&skip=${skip}&search=${search}`)
     .then((response) => response.data)
@@ -464,13 +464,13 @@ export const resetCaptchaProject = (id: string) =>
 
 export const getProjectData = (
   pid: string,
-  tb: string = 'hour',
-  period: string = '1d',
+  tb = 'hour',
+  period = '1d',
   filters: Filter[] = [],
   metrics: ProjectViewCustomEvent[] = [],
-  from: string = '',
-  to: string = '',
-  timezone: string = '',
+  from = '',
+  to = '',
+  timezone = '',
   password: string | undefined = '',
   mode: 'periodical' | 'cumulative' = 'periodical',
 ) =>
@@ -493,11 +493,11 @@ export const getProjectData = (
 export const getCustomEventsMetadata = (
   pid: string,
   event: string,
-  tb: string = 'hour',
-  period: string = '1d',
-  from: string = '',
-  to: string = '',
-  timezone: string = '',
+  tb = 'hour',
+  period = '1d',
+  from = '',
+  to = '',
+  timezone = '',
   password: string | undefined = '',
 ) =>
   api
@@ -517,12 +517,12 @@ export const getCustomEventsMetadata = (
 export const getPropertyMetadata = (
   pid: string,
   property: string,
-  tb: string = 'hour',
-  period: string = '1d',
-  from: string = '',
-  to: string = '',
+  tb = 'hour',
+  period = '1d',
+  from = '',
+  to = '',
   filters: any[] = [],
-  timezone: string = '',
+  timezone = '',
   password: string | undefined = '',
 ) =>
   api
@@ -543,12 +543,12 @@ export const getPropertyMetadata = (
 
 export const getTrafficCompareData = (
   pid: string,
-  tb: string = 'hour',
-  period: string = '3d',
+  tb = 'hour',
+  period = '3d',
   filters: any[] = [],
-  from: string = '',
-  to: string = '',
-  timezone: string = '',
+  from = '',
+  to = '',
+  timezone = '',
   password: string | undefined = '',
   mode: 'periodical' | 'cumulative' = 'periodical',
 ) =>
@@ -570,13 +570,13 @@ export const getTrafficCompareData = (
 
 export const getPerformanceCompareData = (
   pid: string,
-  tb: string = 'hour',
-  period: string = '3d',
+  tb = 'hour',
+  period = '3d',
   filters: any[] = [],
-  from: string = '',
-  to: string = '',
-  timezone: string = '',
-  measure: string = '',
+  from = '',
+  to = '',
+  timezone = '',
+  measure = '',
   password: string | undefined = '',
 ) =>
   api
@@ -597,13 +597,13 @@ export const getPerformanceCompareData = (
 
 export const getPerfData = (
   pid: string,
-  tb: string = 'hour',
-  period: string = '3d',
+  tb = 'hour',
+  period = '3d',
   filters: any[] = [],
-  from: string = '',
-  to: string = '',
-  timezone: string = '',
-  measure: string = '',
+  from = '',
+  to = '',
+  timezone = '',
+  measure = '',
   password: string | undefined = '',
 ) =>
   api
@@ -624,13 +624,13 @@ export const getPerfData = (
 
 export const getSessions = (
   pid: string,
-  period: string = '3d',
+  period = '3d',
   filters: any[] = [],
-  from: string = '',
-  to: string = '',
-  take: number = 30,
-  skip: number = 0,
-  timezone: string = '',
+  from = '',
+  to = '',
+  take = 30,
+  skip = 0,
+  timezone = '',
   password: string | undefined = '',
 ) =>
   api
@@ -651,14 +651,14 @@ export const getSessions = (
 
 export const getErrors = (
   pid: string,
-  period: string = '3d',
+  period = '3d',
   filters: any[] = [],
   options: any = {},
-  from: string = '',
-  to: string = '',
-  take: number = 30,
-  skip: number = 0,
-  timezone: string = '',
+  from = '',
+  to = '',
+  take = 30,
+  skip = 0,
+  timezone = '',
   password: string | undefined = '',
 ) =>
   api
@@ -677,7 +677,7 @@ export const getErrors = (
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getSession = (pid: string, psid: string, timezone: string = '', password: string | undefined = '') =>
+export const getSession = (pid: string, psid: string, timezone = '', password: string | undefined = '') =>
   api
     .get(`log/session?pid=${pid}&psid=${psid}&timezone=${timezone}`, {
       headers: {
@@ -692,11 +692,11 @@ export const getSession = (pid: string, psid: string, timezone: string = '', pas
 export const getError = (
   pid: string,
   eid: string,
-  period: string = '7d',
+  period = '7d',
   filters: any[] = [],
-  from: string = '',
-  to: string = '',
-  timezone: string = '',
+  from = '',
+  to = '',
+  timezone = '',
   password: string | undefined = '',
 ) =>
   api
@@ -715,11 +715,11 @@ export const getError = (
 
 export const getFunnelData = (
   pid: string,
-  period: string = '3d',
-  from: string = '',
-  to: string = '',
-  timezone: string = '',
-  funnelId: string = '',
+  period = '3d',
+  from = '',
+  to = '',
+  timezone = '',
+  funnelId = '',
   password: string | undefined = '',
 ) =>
   api
@@ -793,14 +793,7 @@ export const deleteProjectView = (pid: string, viewId: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getCaptchaData = (
-  pid: string,
-  tb: string = 'hour',
-  period: string = '3d',
-  filters: any[] = [],
-  from: string = '',
-  to: string = '',
-) =>
+export const getCaptchaData = (pid: string, tb = 'hour', period = '3d', filters: any[] = [], from = '', to = '') =>
   api
     .get(
       `log/captcha?pid=${pid}&timeBucket=${tb}&period=${period}&filters=${JSON.stringify(
@@ -1043,7 +1036,7 @@ export const removeTgIntegration = (tgID: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getProjectAlerts = (projectId: string, take: number = DEFAULT_ALERTS_TAKE, skip: number = 0) =>
+export const getProjectAlerts = (projectId: string, take: number = DEFAULT_ALERTS_TAKE, skip = 0) =>
   api
     .get(`/alert/project/${projectId}?take=${take}&skip=${skip}`)
     .then(
@@ -1067,7 +1060,7 @@ export const getAlert = (alertId: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export interface CreateAlert extends Omit<Alerts, 'id' | 'lastTrigger' | 'lastTriggered' | 'created'> {}
+export type CreateAlert = Omit<Alerts, 'id' | 'lastTrigger' | 'lastTriggered' | 'created'>
 
 export const createAlert = (data: CreateAlert) =>
   api
@@ -1186,12 +1179,12 @@ export const confirmSubscriberInvite = (id: string, token: string) =>
 
 export const getProjectDataCustomEvents = (
   pid: string,
-  tb: string = 'hour',
-  period: string = '3d',
+  tb = 'hour',
+  period = '3d',
   filters: any[] = [],
-  from: string = '',
-  to: string = '',
-  timezone: string = '',
+  from = '',
+  to = '',
+  timezone = '',
   customEvents: string[] = [],
   password: string | undefined = '',
 ) =>
@@ -1313,12 +1306,12 @@ export const deletePartially = (
 
 export const getUserFlow = (
   pid: string,
-  tb: string = 'hour',
-  period: string = '3d',
+  tb = 'hour',
+  period = '3d',
   filters: any[] = [],
-  from: string = '',
-  to: string = '',
-  timezone: string = '',
+  from = '',
+  to = '',
+  timezone = '',
   password: string | undefined = '',
 ) =>
   api
@@ -1344,7 +1337,7 @@ export const checkPassword = (pid: string, password: string) =>
         'x-password': password,
       },
     })
-    .then((response): Boolean => response.data)
+    .then((response): boolean => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })

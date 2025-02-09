@@ -1,18 +1,18 @@
-import { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { useTranslation } from 'react-i18next'
 import { Switch } from '@headlessui/react'
-import { toast } from 'sonner'
 import cx from 'clsx'
-
-import { StateType } from '~/lib/store'
-import { FeatureFlag } from '~/lib/models/User'
-import { withAuthentication, auth } from '~/hoc/protected'
-import { setFeatureFlags } from '~/api'
+import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router'
-import routes from '~/utils/routes'
-import Loader from '~/ui/Loader'
+import { toast } from 'sonner'
+
+import { setFeatureFlags } from '~/api'
+import { withAuthentication, auth } from '~/hoc/protected'
+import { FeatureFlag } from '~/lib/models/User'
 import { authActions } from '~/lib/reducers/auth'
+import { StateType } from '~/lib/store'
+import Loader from '~/ui/Loader'
+import routes from '~/utils/routes'
 
 const FeatureFlagsPage = () => {
   const { t } = useTranslation('common')

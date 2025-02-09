@@ -1,19 +1,19 @@
-import React, { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import _map from 'lodash/map'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
+import _map from 'lodash/map'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
 
+import { authMe, generateSSOAuthURL, linkBySSOHash, unlinkSSO } from '~/api'
+import { SSO_PROVIDERS } from '~/lib/constants'
+import { User } from '~/lib/models/User'
+import { authActions } from '~/lib/reducers/auth'
+import { StateType, useAppDispatch } from '~/lib/store'
 import Button from '~/ui/Button'
-import Google from '~/ui/icons/GoogleG'
 import GithubDark from '~/ui/icons/GithubDark'
 import GithubLight from '~/ui/icons/GithubLight'
-import { User } from '~/lib/models/User'
-import { SSO_PROVIDERS } from '~/lib/constants'
-import { StateType, useAppDispatch } from '~/lib/store'
-import { useSelector } from 'react-redux'
-import { authMe, generateSSOAuthURL, linkBySSOHash, unlinkSSO } from '~/api'
-import { authActions } from '~/lib/reducers/auth'
+import Google from '~/ui/icons/GoogleG'
 import { delay, openBrowserWindow } from '~/utils/generic'
 
 const AVAILABLE_SSO_PROVIDERS = [
@@ -95,7 +95,7 @@ const Socialisations = () => {
 
           setIsLoading(false)
           return
-        } catch (reason) {
+        } catch {
           // Authentication is not finished yet
         }
 
@@ -153,35 +153,35 @@ const Socialisations = () => {
                       <div>
                         <p className='text-md font-medium text-gray-800 dark:text-gray-50'>{name}</p>
                         <p className='mt-2 flex items-center text-sm text-gray-500 dark:text-gray-100'>
-                          {status === 'notConnected' && (
+                          {status === 'notConnected' ? (
                             <XCircleIcon className='mr-1.5 h-5 w-5 shrink-0 text-red-400' aria-hidden='true' />
-                          )}
-                          {status === 'connected' && (
+                          ) : null}
+                          {status === 'connected' ? (
                             <CheckCircleIcon className='mr-1.5 h-5 w-5 shrink-0 text-green-400' aria-hidden='true' />
-                          )}
+                          ) : null}
                           {t(`common.${status}`)}
                         </p>
                       </div>
                     </div>
                   </div>
                   <div className='mt-2 flex justify-center sm:mt-0 sm:block'>
-                    {connected && !unlinkable && (
+                    {connected && !unlinkable ? (
                       <Button onClick={() => toast.error(t('profileSettings.cantUnlinkSocialisation'))} small danger>
                         {t('common.unlink')}
                       </Button>
-                    )}
+                    ) : null}
 
-                    {connected && unlinkable && (
+                    {connected && unlinkable ? (
                       <Button onClick={() => onUnlinkSSO(key)} loading={isLoading} small danger>
                         {t('common.unlink')}
                       </Button>
-                    )}
+                    ) : null}
 
-                    {!connected && (
+                    {!connected ? (
                       <Button onClick={() => linkSSO(key)} loading={isLoading} small primary>
                         {t('common.link')}
                       </Button>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               </li>

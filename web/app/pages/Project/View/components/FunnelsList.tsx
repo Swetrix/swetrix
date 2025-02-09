@@ -1,10 +1,10 @@
-import React from 'react'
-import _map from 'lodash/map'
-import cx from 'clsx'
-import { useTranslation } from 'react-i18next'
 import { AdjustmentsVerticalIcon, PlusCircleIcon } from '@heroicons/react/24/outline'
-import { Funnel } from '~/lib/models/Project'
+import cx from 'clsx'
+import _map from 'lodash/map'
 import { Trash2Icon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+
+import { Funnel } from '~/lib/models/Project'
 
 interface FunnelsListProps {
   funnels?: any[]
@@ -58,7 +58,7 @@ const FunnelCard = ({
             >
               <AdjustmentsVerticalIcon className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500' />
             </button>
-            {allowedToManage && (
+            {allowedToManage ? (
               <Trash2Icon
                 onClick={(e) => {
                   e.stopPropagation()
@@ -74,7 +74,7 @@ const FunnelCard = ({
                 )}
                 strokeWidth={1.5}
               />
-            )}
+            ) : null}
           </div>
         </div>
       </div>
@@ -125,7 +125,7 @@ const FunnelsList = ({
         allowedToManage={allowedToManage}
       />
     ))}
-    {authenticated && allowedToManage && <AddFunnel openFunnelSettings={openFunnelSettings} />}
+    {authenticated && allowedToManage ? <AddFunnel openFunnelSettings={openFunnelSettings} /> : null}
   </ul>
 )
 

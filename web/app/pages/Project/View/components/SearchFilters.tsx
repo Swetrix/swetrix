@@ -1,19 +1,21 @@
-import React, { useState, useEffect, useCallback } from 'react'
-import { useTranslation } from 'react-i18next'
-import _isEmpty from 'lodash/isEmpty'
 import _filter from 'lodash/filter'
-import _map from 'lodash/map'
 import _find from 'lodash/find'
+import _isEmpty from 'lodash/isEmpty'
+import _map from 'lodash/map'
+import { useState, useEffect, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 
-import Modal from '~/ui/Modal'
-import Checkbox from '~/ui/Checkbox'
-import Select from '~/ui/Select'
-import Combobox from '~/ui/Combobox'
-import { FILTERS_PANELS_ORDER, ERRORS_FILTERS_PANELS_ORDER } from '~/lib/constants'
-import countries from '~/utils/isoCountries'
 import { getFilters, getErrorsFilters } from '~/api'
-import { Filter } from './Filters'
+import { FILTERS_PANELS_ORDER, ERRORS_FILTERS_PANELS_ORDER } from '~/lib/constants'
+import Checkbox from '~/ui/Checkbox'
+import Combobox from '~/ui/Combobox'
+import Modal from '~/ui/Modal'
+import Select from '~/ui/Select'
+import countries from '~/utils/isoCountries'
+
 import { Filter as FilterType } from '../interfaces/traffic'
+
+import { Filter } from './Filters'
 
 interface SearchFiltersProps {
   projectPassword?: string
@@ -120,7 +122,7 @@ const SearchFilters = ({
               _isEmpty(filterType) ? t('project.settings.reseted.selectFilters') : t(`project.mapping.${filterType}`)
             }
           />
-          {!_isEmpty(filters) && (
+          {!_isEmpty(filters) ? (
             <>
               <p className='mt-5 text-sm font-medium text-gray-700 dark:text-gray-200'>{t('project.currentFilters')}</p>
               {_map(filters, ({ column, filter, isExclusive }) => (
@@ -137,8 +139,8 @@ const SearchFilters = ({
                 />
               ))}
             </>
-          )}
-          {filterType && !_isEmpty(searchList) && (
+          ) : null}
+          {filterType && !_isEmpty(searchList) ? (
             <>
               <p className='mt-5 text-sm font-medium text-gray-700 dark:text-gray-200'>{t('project.filters')}</p>
               <Combobox
@@ -154,7 +156,7 @@ const SearchFilters = ({
                 placeholder={t('project.settings.reseted.filtersPlaceholder')}
               />
             </>
-          )}
+          ) : null}
           <div className='mt-2'>
             {_map(activeFilters, ({ filter, column, isExclusive }) => (
               <Filter
@@ -191,7 +193,7 @@ const SearchFilters = ({
               />
             ))}
           </div>
-          {!_isEmpty(activeFilters) && (
+          {!_isEmpty(activeFilters) ? (
             <Checkbox
               checked={Boolean(override)}
               onChange={setOverride}
@@ -199,7 +201,7 @@ const SearchFilters = ({
               className='mt-4'
               label={t('project.overrideCurrentlyFilters')}
             />
-          )}
+          ) : null}
         </div>
       }
       submitType='regular'

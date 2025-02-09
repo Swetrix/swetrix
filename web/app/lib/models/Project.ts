@@ -17,9 +17,7 @@ export interface OverallObject {
   customEVFilterApplied?: boolean
 }
 
-export interface Overall {
-  [key: string]: OverallObject
-}
+export type Overall = Record<string, OverallObject>
 
 export interface OverallPerformanceObject {
   current: {
@@ -42,9 +40,7 @@ interface UserShareProject {
   id: string
 }
 
-export interface LiveStats {
-  [key: string]: number
-}
+export type LiveStats = Record<string, number>
 
 export interface ShareOwnerProject {
   id: string

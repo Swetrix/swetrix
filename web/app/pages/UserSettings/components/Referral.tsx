@@ -1,15 +1,12 @@
-import React, { useState, useEffect } from 'react'
-import { useTranslation, Trans } from 'react-i18next'
 import dayjs from 'dayjs'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
+import React, { useState, useEffect } from 'react'
+import { useTranslation, Trans } from 'react-i18next'
+import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
 
 import { generateRefCode, getPayoutsInfo, getReferrals, setPaypalEmail } from '~/api'
-import Tooltip from '~/ui/Tooltip'
-import Highlighted from '~/ui/Highlighted'
-import Input from '~/ui/Input'
-import Button from '~/ui/Button'
 import {
   REF_URL_PREFIX,
   DOCS_REFERRAL_PROGRAM_URL,
@@ -21,12 +18,15 @@ import {
   MERCHANT_FEE,
   REFERRAL_CUT,
 } from '~/lib/constants'
-import { isValidEmail } from '~/utils/validator'
-import { useSelector } from 'react-redux'
-import { StateType, useAppDispatch } from '~/lib/store'
-import { authActions } from '~/lib/reducers/auth'
 import { User } from '~/lib/models/User'
+import { authActions } from '~/lib/reducers/auth'
+import { StateType, useAppDispatch } from '~/lib/store'
+import Button from '~/ui/Button'
+import Highlighted from '~/ui/Highlighted'
 import Spin from '~/ui/icons/Spin'
+import Input from '~/ui/Input'
+import Tooltip from '~/ui/Tooltip'
+import { isValidEmail } from '~/utils/validator'
 
 const Referral = () => {
   const { user } = useSelector((state: StateType) => state.auth)
@@ -277,7 +277,7 @@ const Referral = () => {
           </thead>
           <tbody className='divide-y divide-gray-200 bg-white dark:divide-gray-600 dark:bg-slate-800'>
             {_map(activeReferrals, ({ billingFrequency, created, planCode, tierCurrency }, index) => {
-              // @ts-ignore
+              // @ts-expect-error
               const planPrice = PLAN_LIMITS[planCode].price[tierCurrency][billingFrequency]
               const referrerCut = calculateReferralCut(planPrice)
               const currencySymbol = CURRENCIES[tierCurrency as 'EUR' | 'USD' | 'GBP'].symbol

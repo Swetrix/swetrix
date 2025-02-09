@@ -1,10 +1,10 @@
-import ViewProject from '~/pages/Project/View'
-import type { LinksFunction, LoaderFunctionArgs, MetaFunction } from 'react-router'
 import _split from 'lodash/split'
+import type { LinksFunction, LoaderFunctionArgs, MetaFunction } from 'react-router'
 
 import { API_URL } from '~/lib/constants'
-import { detectTheme, isEmbedded, isAuthenticated, getProjectPassword, getProjectTabs } from '~/utils/server'
+import ViewProject from '~/pages/Project/View'
 import ProjectViewStyle from '~/styles/ProjectViewStyle.css?url'
+import { detectTheme, isEmbedded, isAuthenticated, getProjectPassword, getProjectTabs } from '~/utils/server'
 
 export const links: LinksFunction = () => [{ rel: 'stylesheet', href: ProjectViewStyle }]
 

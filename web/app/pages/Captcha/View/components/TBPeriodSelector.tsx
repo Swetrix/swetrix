@@ -1,12 +1,13 @@
-import React, { memo, Fragment, useMemo } from 'react'
 import { Popover, PopoverButton, PopoverPanel, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
-import { useTranslation } from 'react-i18next'
-import _map from 'lodash/map'
-import _includes from 'lodash/includes'
 import cx from 'clsx'
-import { ALL_PERIODS } from '~/lib/constants'
+import _includes from 'lodash/includes'
+import _map from 'lodash/map'
 import { CalendarIcon } from 'lucide-react'
+import React, { memo, Fragment, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+
+import { ALL_PERIODS } from '~/lib/constants'
 
 interface TBPeriodSelectorProps {
   title: string | number | React.ReactNode

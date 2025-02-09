@@ -1,13 +1,13 @@
 /* eslint-disable no-useless-escape */
-import React, { useEffect } from 'react'
-import bb, { bar, line } from 'billboard.js'
+import billboard, { bar, line } from 'billboard.js'
+import { useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { Link } from 'react-router'
 import { useSelector } from 'react-redux'
+import { Link } from 'react-router'
 
-import { nFormatterSeparated } from '~/utils/generic'
-import { StateType } from '~/lib/store/index'
 import { LIVE_DEMO_URL } from '~/lib/constants'
+import { StateType } from '~/lib/store/index'
+import { nFormatterSeparated } from '~/utils/generic'
 
 // This should be generated on the API side, will be done later.
 // MRR taken from Profitwell dashboard
@@ -383,8 +383,8 @@ const OpenStartup = () => {
   useEffect(() => {
     const bbSettings = getSettings()
 
-    // @ts-ignore
-    bb.generate(bbSettings)
+    // @ts-expect-error
+    billboard.generate(bbSettings)
   }, [])
 
   return (
@@ -414,21 +414,21 @@ const OpenStartup = () => {
           {t('main.users')}
           {': '}
           {users[0]}
-          {users[1] && <span className='text-gray-900 dark:text-indigo-200'>{users[1]}+</span>}
+          {users[1] ? <span className='text-gray-900 dark:text-indigo-200'>{users[1]}+</span> : null}
         </p>
 
         <p className='text-md mt-2 tracking-tight text-gray-900 dark:text-gray-50'>
           {t('main.websites')}
           {': '}
           {websites[0]}
-          {websites[1] && <span className='text-gray-900 dark:text-indigo-200'>{websites[1]}+</span>}
+          {websites[1] ? <span className='text-gray-900 dark:text-indigo-200'>{websites[1]}+</span> : null}
         </p>
 
         <p className='text-md mt-2 tracking-tight text-gray-900 dark:text-gray-50'>
           {t('main.pageviews')}
           {': '}
           {events[0]}
-          {events[1] && <span className='text-gray-900 dark:text-indigo-200'>{events[1]}+</span>}
+          {events[1] ? <span className='text-gray-900 dark:text-indigo-200'>{events[1]}+</span> : null}
         </p>
 
         <p className='mt-2 text-lg tracking-tight text-gray-900 dark:text-gray-50'>

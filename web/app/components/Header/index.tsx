@@ -1,10 +1,5 @@
 /* eslint-disable jsx-a11y/anchor-is-valid, react/no-unstable-nested-components */
-import React, { memo, Fragment, useMemo, useState } from 'react'
 
-import { Link } from 'react-router'
-import { useSelector } from 'react-redux'
-import { useTranslation } from 'react-i18next'
-import i18next from 'i18next'
 import {
   Popover,
   Transition,
@@ -18,22 +13,25 @@ import {
   MenuItems,
   DialogPanel,
 } from '@headlessui/react'
-import { Bars3Icon, XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
+import { Bars3Icon, XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
 import { SiYoutube } from '@icons-pack/react-simple-icons'
-import dayjs from 'dayjs'
-import utc from 'dayjs/plugin/utc'
-import duration from 'dayjs/plugin/duration'
-import _map from 'lodash/map'
-import _includes from 'lodash/includes'
-import _startsWith from 'lodash/startsWith'
 import cx, { clsx } from 'clsx'
+import dayjs from 'dayjs'
+import duration from 'dayjs/plugin/duration'
+import utc from 'dayjs/plugin/utc'
+import { type t as i18nextT } from 'i18next'
+import { changeLanguage } from 'i18next'
+import _includes from 'lodash/includes'
+import _map from 'lodash/map'
+import _startsWith from 'lodash/startsWith'
 import { GaugeIcon, ChartPieIcon, BugIcon, PuzzleIcon, PhoneIcon } from 'lucide-react'
+import { memo, Fragment, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
+import { Link } from 'react-router'
 
-import routes from '~/utils/routes'
-import { authActions } from '~/lib/reducers/auth'
-import UIActions from '~/lib/reducers/ui'
 import {
   whitelist,
   languages,
@@ -45,12 +43,15 @@ import {
   CAPTCHA_URL,
   isDisableMarketingPages,
 } from '~/lib/constants'
+import { User } from '~/lib/models/User'
+import { authActions } from '~/lib/reducers/auth'
+import UIActions from '~/lib/reducers/ui'
+import { useAppDispatch, StateType } from '~/lib/store'
 import Dropdown from '~/ui/Dropdown'
 import Flag from '~/ui/Flag'
-import { User } from '~/lib/models/User'
-import { useAppDispatch, StateType } from '~/lib/store'
-import { logout } from '~/utils/auth'
 import SwetrixLogo from '~/ui/icons/SwetrixLogo'
+import { logout } from '~/utils/auth'
+import routes from '~/utils/routes'
 
 dayjs.extend(utc)
 dayjs.extend(duration)
@@ -64,7 +65,7 @@ const TRIAL_STATUS_MAPPING = {
   ENDS_IN_X_DAYS: 4,
 }
 
-const getSolutions = (t: typeof i18next.t) => [
+const getSolutions = (t: typeof i18nextT) => [
   {
     name: t('header.solutions.analytics.title'),
     description: t('header.solutions.analytics.desc'),
@@ -91,7 +92,7 @@ const getSolutions = (t: typeof i18next.t) => [
   },
 ]
 
-const getCallsToAction = (t: typeof i18next.t) => [
+const getCallsToAction = (t: typeof i18nextT) => [
   { name: t('header.watchDemo'), link: 'https://www.youtube.com/watch?v=XBp38fZREIE', icon: SiYoutube },
   { name: t('header.contactSales'), link: routes.contact, icon: PhoneIcon },
 ]
@@ -269,15 +270,7 @@ const ThemeMenu = ({ theme, switchTheme }: { theme: string; switchTheme: (i: str
   )
 }
 
-const ProfileMenu = ({
-  user,
-  logoutHandler,
-  onLanguageChange,
-}: {
-  user: User
-  logoutHandler: () => void
-  onLanguageChange: (l: string) => void
-}) => {
+const ProfileMenu = ({ user, logoutHandler }: { user: User; logoutHandler: () => void }) => {
   const {
     t,
     i18n: { language },
@@ -368,7 +361,7 @@ const ProfileMenu = ({
                                 className='block cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-600'
                                 role='menuitem'
                                 tabIndex={0}
-                                onClick={() => onLanguageChange(lng)}
+                                onClick={() => changeLanguage(lng)}
                               >
                                 <div className='flex'>
                                   <div className='pt-1'>
@@ -419,7 +412,7 @@ const ProfileMenu = ({
                     )}
                   </MenuItem>
                 )}
-                {!isSelfhosted && (
+                {!isSelfhosted ? (
                   <MenuItem>
                     {({ active }) => (
                       <Link
@@ -432,7 +425,7 @@ const ProfileMenu = ({
                       </Link>
                     )}
                   </MenuItem>
-                )}
+                ) : null}
               </div>
 
               <MenuItem>
@@ -447,7 +440,7 @@ const ProfileMenu = ({
                   </Link>
                 )}
               </MenuItem>
-              {!isSelfhosted && (
+              {!isSelfhosted ? (
                 <MenuItem>
                   {({ active }) => (
                     <Link
@@ -460,7 +453,7 @@ const ProfileMenu = ({
                     </Link>
                   )}
                 </MenuItem>
-              )}
+              ) : null}
               <MenuItem>
                 {({ active }) => (
                   <p
@@ -491,7 +484,6 @@ const AuthedHeader = ({
   user,
   switchTheme,
   theme,
-  onLanguageChange,
   rawStatus,
   status,
   logoutHandler,
@@ -501,7 +493,6 @@ const AuthedHeader = ({
   user: User
   switchTheme: (thm?: string) => void
   theme: 'dark' | 'light'
-  onLanguageChange: (lng: string) => void
   rawStatus: string | number
   status: string
   logoutHandler: () => void
@@ -525,7 +516,7 @@ const AuthedHeader = ({
             </Link>
 
             <div className='ml-10 hidden gap-4 space-x-1 lg:flex'>
-              {user?.planCode === 'trial' && (
+              {user?.planCode === 'trial' ? (
                 <Link
                   to={routes.billing}
                   className={cx('text-base leading-6 font-semibold', {
@@ -539,8 +530,8 @@ const AuthedHeader = ({
                 >
                   {status}
                 </Link>
-              )}
-              {user?.planCode === 'none' && (
+              ) : null}
+              {user?.planCode === 'none' ? (
                 <Link
                   to={routes.billing}
                   className='text-base leading-6 font-semibold text-rose-600 hover:text-rose-500'
@@ -548,9 +539,9 @@ const AuthedHeader = ({
                 >
                   {t('billing.inactive')}
                 </Link>
-              )}
-              {!isSelfhosted && !isDisableMarketingPages && <SolutionsMenu />}
-              {isSelfhosted && !isDisableMarketingPages && (
+              ) : null}
+              {!isSelfhosted && !isDisableMarketingPages ? <SolutionsMenu /> : null}
+              {isSelfhosted && !isDisableMarketingPages ? (
                 <a
                   href={`https://swetrix.com${routes.blog}`}
                   target='_blank'
@@ -559,15 +550,15 @@ const AuthedHeader = ({
                 >
                   {t('footer.blog')}
                 </a>
-              )}
-              {!isSelfhosted && !isDisableMarketingPages && (
+              ) : null}
+              {!isSelfhosted && !isDisableMarketingPages ? (
                 <Link
                   to={routes.blog}
                   className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
                 >
                   {t('footer.blog')}
                 </Link>
-              )}
+              ) : null}
               <a
                 href={DOCS_URL}
                 className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
@@ -586,7 +577,7 @@ const AuthedHeader = ({
           </div>
           <div className='ml-1 hidden flex-wrap items-center justify-center space-y-1 space-x-2 sm:space-y-0 lg:ml-10 lg:flex lg:space-x-4'>
             <ThemeMenu theme={theme} switchTheme={switchTheme} />
-            <ProfileMenu user={user} logoutHandler={logoutHandler} onLanguageChange={onLanguageChange} />
+            <ProfileMenu user={user} logoutHandler={logoutHandler} />
           </div>
           <div className='flex items-center justify-center space-x-3 lg:hidden'>
             {/* Theme switch */}
@@ -623,14 +614,12 @@ const AuthedHeader = ({
 const NotAuthedHeader = ({
   switchTheme,
   theme,
-  onLanguageChange,
   colourBackground,
   refPage,
   openMenu,
 }: {
   switchTheme: (a?: string) => void
   theme: 'dark' | 'light'
-  onLanguageChange: (lang: string) => void
   colourBackground: boolean
   refPage?: boolean
   openMenu: () => void
@@ -658,10 +647,10 @@ const NotAuthedHeader = ({
               </Link>
             )}
 
-            {!refPage && (
+            {!refPage ? (
               <div className='ml-10 hidden items-center gap-4 space-x-1 lg:flex'>
-                {!isSelfhosted && !isDisableMarketingPages && <SolutionsMenu />}
-                {isSelfhosted && !isDisableMarketingPages && (
+                {!isSelfhosted && !isDisableMarketingPages ? <SolutionsMenu /> : null}
+                {isSelfhosted && !isDisableMarketingPages ? (
                   <a
                     href={`https://swetrix.com${routes.blog}`}
                     target='_blank'
@@ -670,16 +659,16 @@ const NotAuthedHeader = ({
                   >
                     {t('footer.blog')}
                   </a>
-                )}
-                {!isSelfhosted && !isDisableMarketingPages && (
+                ) : null}
+                {!isSelfhosted && !isDisableMarketingPages ? (
                   <Link
                     to={routes.blog}
                     className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
                   >
                     {t('footer.blog')}
                   </Link>
-                )}
-                {!isSelfhosted && !isDisableMarketingPages && (
+                ) : null}
+                {!isSelfhosted && !isDisableMarketingPages ? (
                   <Link
                     to={`${routes.main}#pricing`}
                     className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
@@ -687,7 +676,7 @@ const NotAuthedHeader = ({
                   >
                     {t('common.pricing')}
                   </Link>
-                )}
+                ) : null}
                 <a
                   href={DOCS_URL}
                   className='text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
@@ -697,7 +686,7 @@ const NotAuthedHeader = ({
                   {t('common.docs')}
                 </a>
               </div>
-            )}
+            ) : null}
           </div>
           <div className='ml-1 hidden flex-wrap items-center justify-center space-y-1 space-x-2 sm:space-y-0 lg:ml-10 lg:flex lg:space-x-4'>
             {/* Language selector */}
@@ -725,11 +714,13 @@ const NotAuthedHeader = ({
                   {languages[lng]}
                 </div>
               )}
-              onSelect={onLanguageChange}
+              onSelect={(lng: string) => {
+                changeLanguage(lng)
+              }}
               headless
             />
             <ThemeMenu theme={theme} switchTheme={switchTheme} />
-            {!refPage && (
+            {!refPage ? (
               <>
                 <Separator />
                 <Link
@@ -740,7 +731,7 @@ const NotAuthedHeader = ({
                   <ArrowRightIcon className='mt-[1px] ml-1 h-4 w-4 stroke-2' />
                 </Link>
               </>
-            )}
+            ) : null}
           </div>
           <div className='flex items-center justify-center space-x-3 lg:hidden'>
             {/* Theme switch */}
@@ -839,10 +830,6 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
     dispatch(UIActions.setTheme(newTheme as 'light' | 'dark'))
   }
 
-  const onLanguageChange = (id: string) => {
-    i18next.changeLanguage(id)
-  }
-
   const openMenu = () => {
     setMobileMenuOpen(true)
   }
@@ -858,7 +845,6 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
           logoutHandler={logoutHandler}
           switchTheme={switchTheme}
           theme={theme}
-          onLanguageChange={onLanguageChange}
           colourBackground={!transparent}
           openMenu={openMenu}
         />
@@ -866,7 +852,6 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
         <NotAuthedHeader
           switchTheme={switchTheme}
           theme={theme}
-          onLanguageChange={onLanguageChange}
           colourBackground={!transparent}
           refPage={refPage}
           openMenu={openMenu}
@@ -950,7 +935,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                                 className='block cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-600'
                                 role='menuitem'
                                 tabIndex={0}
-                                onClick={() => onLanguageChange(lng)}
+                                onClick={() => changeLanguage(lng)}
                               >
                                 <div className='flex'>
                                   <div className='pt-1'>
@@ -971,7 +956,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                     </>
                   )}
                 </Menu>
-                {!isSelfhosted && (
+                {!isSelfhosted ? (
                   <Disclosure as='div' className='-mx-3'>
                     {({ open }) => (
                       <>
@@ -1021,8 +1006,8 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                       </>
                     )}
                   </Disclosure>
-                )}
-                {!isSelfhosted && authenticated && user?.planCode === 'trial' && (
+                ) : null}
+                {!isSelfhosted && authenticated && user?.planCode === 'trial' ? (
                   <Link
                     to={routes.billing}
                     onClick={() => setMobileMenuOpen(false)}
@@ -1040,8 +1025,8 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                   >
                     {status}
                   </Link>
-                )}
-                {!isSelfhosted && authenticated && user?.planCode === 'none' && (
+                ) : null}
+                {!isSelfhosted && authenticated && user?.planCode === 'none' ? (
                   <Link
                     to={routes.billing}
                     onClick={() => setMobileMenuOpen(false)}
@@ -1050,8 +1035,8 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                   >
                     {t('billing.inactive')}
                   </Link>
-                )}
-                {!isSelfhosted && authenticated && user?.planCode !== 'none' && user?.planCode !== 'trial' && (
+                ) : null}
+                {!isSelfhosted && authenticated && user?.planCode !== 'none' && user?.planCode !== 'trial' ? (
                   <Link
                     to={routes.billing}
                     onClick={() => setMobileMenuOpen(false)}
@@ -1060,8 +1045,8 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                   >
                     {t('common.billing')}
                   </Link>
-                )}
-                {!isSelfhosted && !isDisableMarketingPages && !authenticated && (
+                ) : null}
+                {!isSelfhosted && !isDisableMarketingPages && !authenticated ? (
                   <Link
                     to={`${routes.main}#pricing`}
                     onClick={() => setMobileMenuOpen(false)}
@@ -1070,8 +1055,8 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                   >
                     {t('common.pricing')}
                   </Link>
-                )}
-                {isSelfhosted && !isDisableMarketingPages && (
+                ) : null}
+                {isSelfhosted && !isDisableMarketingPages ? (
                   <a
                     onClick={() => setMobileMenuOpen(false)}
                     href={`https://swetrix.com${routes.blog}`}
@@ -1081,8 +1066,8 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                   >
                     {t('footer.blog')}
                   </a>
-                )}
-                {!isSelfhosted && !isDisableMarketingPages && (
+                ) : null}
+                {!isSelfhosted && !isDisableMarketingPages ? (
                   <Link
                     to={routes.blog}
                     onClick={() => setMobileMenuOpen(false)}
@@ -1090,7 +1075,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                   >
                     {t('footer.blog')}
                   </Link>
-                )}
+                ) : null}
                 <a
                   href={DOCS_URL}
                   onClick={() => setMobileMenuOpen(false)}
@@ -1100,7 +1085,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                 >
                   {t('common.docs')}
                 </a>
-                {authenticated && (
+                {authenticated ? (
                   <Link
                     to={routes.dashboard}
                     onClick={() => setMobileMenuOpen(false)}
@@ -1108,7 +1093,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                   >
                     {t('common.dashboard')}
                   </Link>
-                )}
+                ) : null}
               </div>
               <div className='space-y-2 py-6'>
                 {authenticated ? (
@@ -1120,7 +1105,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                     >
                       {t('common.accountSettings')}
                     </Link>
-                    {!isSelfhosted && (
+                    {!isSelfhosted ? (
                       <Link
                         to={routes.organisations}
                         onClick={() => setMobileMenuOpen(false)}
@@ -1128,7 +1113,7 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
                       >
                         {t('organisations.organisations')}
                       </Link>
-                    )}
+                    ) : null}
                     <span
                       className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
                       onClick={logoutHandler}

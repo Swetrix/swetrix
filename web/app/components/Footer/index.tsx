@@ -1,9 +1,9 @@
-import React, { memo } from 'react'
-import { Link } from 'react-router'
-import { Trans, useTranslation } from 'react-i18next'
 import { SiDiscord, SiGithub, SiX } from '@icons-pack/react-simple-icons'
 import _map from 'lodash/map'
-import Flag from '~/ui/Flag'
+import { SquareArrowOutUpRightIcon } from 'lucide-react'
+import React, { memo } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
 
 import {
   isSelfhosted,
@@ -20,10 +20,10 @@ import {
   DISCORD_URL,
   CAPTCHA_URL,
 } from '~/lib/constants'
-import routesPath from '~/utils/routes'
-import { SquareArrowOutUpRightIcon } from 'lucide-react'
-import SwetrixLogo from '~/ui/icons/SwetrixLogo'
+import Flag from '~/ui/Flag'
 import LinkedIn from '~/ui/icons/LinkedIn'
+import SwetrixLogo from '~/ui/icons/SwetrixLogo'
+import routesPath from '~/utils/routes'
 
 const CONTACT_US_URL = `https://swetrix.com${routesPath.contact}`
 const ABOUT_US_URL = `https://swetrix.com${routesPath.about}`
@@ -311,7 +311,7 @@ const Footer = ({ authenticated, showDBIPMessage }: FooterProps) => {
                     )
                   })}
 
-                  {showDBIPMessage && (
+                  {showDBIPMessage ? (
                     <li>
                       <a
                         className='text-base text-gray-300 hover:text-white'
@@ -323,7 +323,7 @@ const Footer = ({ authenticated, showDBIPMessage }: FooterProps) => {
                         IP Geolocation by DB-IP
                       </a>
                     </li>
-                  )}
+                  ) : null}
                 </ul>
               </div>
             </div>

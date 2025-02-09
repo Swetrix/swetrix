@@ -1,22 +1,23 @@
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import React, { memo } from 'react'
 import cx from 'clsx'
-import _truncate from 'lodash/truncate'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
-import _startsWith from 'lodash/startsWith'
 import _replace from 'lodash/replace'
+import _startsWith from 'lodash/startsWith'
+import _truncate from 'lodash/truncate'
+import { FilterIcon } from 'lucide-react'
+import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import countries from '~/utils/isoCountries'
 import { getLocaleDisplayName } from '~/utils/generic'
+import countries from '~/utils/isoCountries'
+
 import { useViewProjectContext } from '../ViewProject'
-import { FilterIcon } from 'lucide-react'
 
 interface FilterProps {
   column: string
   filter: string
-  isExclusive: Boolean
+  isExclusive: boolean
   onRemoveFilter: (column: string, filter: string) => void
   onChangeExclusive: (column: string, filter: string, isExclusive: boolean) => void
   tnMapping: Record<string, string>
@@ -98,7 +99,7 @@ export const Filter = ({
       &nbsp;&quot;
       {truncatedFilter}
       &quot;
-      {removable && (
+      {removable ? (
         <button
           onClick={() => onRemoveFilter(column, filter)}
           type='button'
@@ -114,7 +115,7 @@ export const Filter = ({
             <path strokeLinecap='round' strokeWidth='1.5' d='M1 1l6 6m0-6L1 7' />
           </svg>
         </button>
-      )}
+      ) : null}
     </span>
   )
 }

@@ -1,42 +1,25 @@
-import React from 'react'
-import type { ChartOptions, GridLineOptions } from 'billboard.js'
-import type i18next from 'i18next'
-import filesaver from 'file-saver'
 import { LanguageIcon, ArrowRightCircleIcon } from '@heroicons/react/24/outline'
-import dayjs from 'dayjs'
+import type { ChartOptions, GridLineOptions } from 'billboard.js'
 import { area, areaSpline, spline, bar, line } from 'billboard.js'
-import _forEach from 'lodash/forEach'
-import _map from 'lodash/map'
-import _split from 'lodash/split'
-import _replace from 'lodash/replace'
-import _isEmpty from 'lodash/isEmpty'
-import _startsWith from 'lodash/startsWith'
-import _keys from 'lodash/keys'
-import _size from 'lodash/size'
-import _round from 'lodash/round'
+import * as d3 from 'd3'
+import dayjs from 'dayjs'
+import filesaver from 'file-saver'
+import type i18next from 'i18next'
+import JSZip from 'jszip'
 import _fill from 'lodash/fill'
+import _forEach from 'lodash/forEach'
+import _includes from 'lodash/includes'
+import _isEmpty from 'lodash/isEmpty'
+import _keys from 'lodash/keys'
+import _map from 'lodash/map'
 import _reduce from 'lodash/reduce'
+import _replace from 'lodash/replace'
+import _round from 'lodash/round'
+import _size from 'lodash/size'
+import _split from 'lodash/split'
+import _startsWith from 'lodash/startsWith'
 import _toNumber from 'lodash/toNumber'
 import _toString from 'lodash/toString'
-import _includes from 'lodash/includes'
-import JSZip from 'jszip'
-// @ts-ignore
-import * as d3 from 'd3'
-
-import {
-  TimeFormat,
-  chartTypes,
-  tbsFormatMapper,
-  tbsFormatMapper24h,
-  tbsFormatMapperTooltip,
-  tbsFormatMapperTooltip24h,
-  PROJECT_TABS,
-  isSelfhosted,
-} from '~/lib/constants'
-import { Entry } from '~/lib/models/Entry'
-import { getTimeFromSeconds, getStringFromTime, sumArrays, nFormatter } from '~/utils/generic'
-import countries from '~/utils/isoCountries'
-import { AnalyticsFunnel } from '~/lib/models/Project'
 import {
   CompassIcon,
   CpuIcon,
@@ -51,6 +34,21 @@ import {
   TvIcon,
   WatchIcon,
 } from 'lucide-react'
+
+import {
+  TimeFormat,
+  chartTypes,
+  tbsFormatMapper,
+  tbsFormatMapper24h,
+  tbsFormatMapperTooltip,
+  tbsFormatMapperTooltip24h,
+  PROJECT_TABS,
+  isSelfhosted,
+} from '~/lib/constants'
+import { Entry } from '~/lib/models/Entry'
+import { AnalyticsFunnel } from '~/lib/models/Project'
+import { getTimeFromSeconds, getStringFromTime, sumArrays, nFormatter } from '~/utils/generic'
+import countries from '~/utils/isoCountries'
 
 const { saveAs } = filesaver
 
@@ -128,9 +126,7 @@ const onCSVExportClick = (
     types: any
   },
   pid: string,
-  tnMapping: {
-    [key: string]: string
-  },
+  tnMapping: Record<string, string>,
   language: string,
 ) => {
   const { data: rowData, types } = data
@@ -194,15 +190,9 @@ const CHART_MEASURES_MAPPING_PERF = {
 
 // function to filter the data for the chart
 const getColumns = (
-  chart: {
-    [key: string]: string[]
-  },
-  activeChartMetrics: {
-    [key: string]: boolean
-  },
-  compareChart?: {
-    [key: string]: string[]
-  },
+  chart: Record<string, string[]>,
+  activeChartMetrics: Record<string, boolean>,
+  compareChart?: Record<string, string[]>,
 ) => {
   const { views, bounce, viewsPerUnique, unique, trendlines, sessionDuration, occurrences, avgResponseTime } =
     activeChartMetrics
@@ -272,13 +262,9 @@ const getColumns = (
 }
 
 const getColumnsPerf = (
-  chart: {
-    [key: string]: string[]
-  },
+  chart: Record<string, string[]>,
   activeChartMetrics: string,
-  compareChart?: {
-    [key: string]: string[]
-  },
+  compareChart?: Record<string, string[]>,
 ) => {
   const columns: any[] = [['x', ..._map(chart.x, (el) => dayjs(el).toDate())]]
 
@@ -380,13 +366,7 @@ const getColumnsPerf = (
   return columns
 }
 
-const getValueForTooltipPerfomance = (
-  chart: {
-    [key: string]: string[]
-  },
-  id: string,
-  index: number,
-) => {
+const getValueForTooltipPerfomance = (chart: Record<string, string[]>, id: string, index: number) => {
   if (id === 'p50' || id === 'p75' || id === 'p95') {
     return chart[id] ? chart[id][index] : 0
   }
@@ -451,19 +431,13 @@ const noRegionPeriods = ['custom', 'yesterday']
 const getSettings = (
   chart: any,
   timeBucket: string,
-  activeChartMetrics: {
-    [key: string]: boolean
-  },
+  activeChartMetrics: Record<string, boolean>,
   applyRegions: boolean,
   timeFormat: string,
   rotateXAxis: boolean,
   chartType: string,
-  customEvents?: {
-    [key: string]: string[]
-  },
-  compareChart?: {
-    [key: string]: string[]
-  },
+  customEvents?: Record<string, string[]>,
+  compareChart?: Record<string, string[]>,
 ): ChartOptions => {
   const xAxisSize = _size(chart.x)
   const lines: GridLineOptions[] = []
@@ -475,9 +449,7 @@ const getSettings = (
       })
     : []
 
-  let customEventsColors: {
-    [key: string]: string
-  } = {}
+  let customEventsColors: Record<string, string> = {}
 
   if (_isEmpty(compareChart)) {
     _forEach(_keys(customEvents), (el) => {
@@ -591,11 +563,12 @@ const getSettings = (
         tick: {
           fit: true,
           rotate: rotateXAxis ? 45 : 0,
-          // @ts-expect-error
+
           format:
+            // @ts-expect-error
             timeFormat === TimeFormat['24-hour']
-              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x)
-              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
+              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x as unknown as Date)
+              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x as unknown as Date),
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
@@ -622,9 +595,7 @@ const getSettings = (
     },
     tooltip: {
       contents: (item, _, __, color) => {
-        const typesOptionsToTypesCompare: {
-          [key: string]: string
-        } = {
+        const typesOptionsToTypesCompare: Record<string, string> = {
           unique: 'uniques',
           total: 'visits',
           sessionDuration: 'sdur',
@@ -678,8 +649,8 @@ const getSettings = (
                 : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())
             const xDataValue =
               timeFormat === TimeFormat['24-hour']
-                ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x)
-                : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x)
+                ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x as unknown as Date)
+                : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x as unknown as Date)
             const valueCompare =
               id === 'sessionDuration'
                 ? getStringFromTime(getTimeFromSeconds(compareChart?.[typesOptionsToTypesCompare?.[id]]?.[index]))
@@ -817,11 +788,12 @@ const getSettingsSession = (
         tick: {
           fit: true,
           rotate: rotateXAxis ? 45 : 0,
-          // @ts-expect-error
+
           format:
+            // @ts-expect-error
             timeFormat === TimeFormat['24-hour']
-              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x)
-              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
+              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x as unknown as Date)
+              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x as unknown as Date),
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
@@ -957,11 +929,11 @@ const getSettingsError = (
         tick: {
           fit: true,
           rotate: rotateXAxis ? 45 : 0,
-          // @ts-expect-error
           format:
+            // @ts-expect-error
             timeFormat === TimeFormat['24-hour']
-              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x)
-              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
+              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x as unknown as Date)
+              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x as unknown as Date),
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
@@ -1186,17 +1158,13 @@ const perfomanceChartCompare = [
 ]
 
 const getSettingsPerf = (
-  chart: {
-    [key: string]: string[]
-  },
+  chart: Record<string, string[]>,
   timeBucket: string,
   activeChartMetrics: string,
   rotateXAxis: boolean,
   chartType: string,
   timeFormat: string,
-  compareChart?: {
-    [key: string]: string[]
-  },
+  compareChart?: Record<string, string[]>,
 ): ChartOptions => {
   const xAxisSize = _size(chart.x)
 
@@ -1283,11 +1251,12 @@ const getSettingsPerf = (
         tick: {
           fit: true,
           rotate: rotateXAxis ? 45 : 0,
-          // @ts-expect-error
+
           format:
+            // @ts-expect-error
             timeFormat === TimeFormat['24-hour']
-              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x)
-              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
+              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x as unknown as Date)
+              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x as unknown as Date),
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',
@@ -1342,8 +1311,8 @@ const getSettingsPerf = (
               : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(dayjs(compareChart?.x[index]).toDate())
           const xDataValue =
             timeFormat === TimeFormat['24-hour']
-              ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x)
-              : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x)
+              ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(x as unknown as Date)
+              : d3.timeFormat(tbsFormatMapperTooltip[timeBucket])(x as unknown as Date)
           const valueCompare = getValueForTooltipPerfomance(compareChart, id, index)
 
           if (_includes(perfomanceChartCompare, id)) {

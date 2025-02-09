@@ -1,7 +1,7 @@
-import Signin from '~/pages/Auth/Signin'
 import type { HeadersFunction, LoaderFunctionArgs } from 'react-router'
 import { useLoaderData } from 'react-router'
 
+import Signin from '~/pages/Auth/Signin'
 import { detectTheme } from '~/utils/server'
 
 export const headers: HeadersFunction = ({ parentHeaders }) => {

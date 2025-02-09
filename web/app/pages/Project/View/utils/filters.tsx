@@ -1,11 +1,12 @@
-import React from 'react'
-import { Filter } from '../interfaces/traffic'
 import _includes from 'lodash/includes'
-import _replace from 'lodash/replace'
-import _startsWith from 'lodash/startsWith'
-import _some from 'lodash/some'
 import _keys from 'lodash/keys'
 import _reduce from 'lodash/reduce'
+import _replace from 'lodash/replace'
+import _some from 'lodash/some'
+import _startsWith from 'lodash/startsWith'
+import React from 'react'
+
+import { Filter } from '../interfaces/traffic'
 
 export const ERROR_FILTERS_MAPPING = {
   showResolved: 'showResolved',

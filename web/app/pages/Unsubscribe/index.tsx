@@ -1,12 +1,12 @@
-import React, { useState, useEffect, memo } from 'react'
-import { useParams, Link } from 'react-router'
-import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import _isString from 'lodash/isString'
+import { useState, useEffect, memo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
+import { useParams, Link } from 'react-router'
 
-import { StateType } from '~/lib/store'
 import { unsubscribeFromEmailReports, unsubscribeFromEmailReports3rdParty } from '~/api'
+import { StateType } from '~/lib/store'
 import Loader from '~/ui/Loader'
 import routes from '~/utils/routes'
 

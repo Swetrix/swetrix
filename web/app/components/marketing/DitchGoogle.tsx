@@ -1,6 +1,6 @@
-import { Link } from 'react-router'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { Trans, useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
 
 import routes from '~/utils/routes'
 

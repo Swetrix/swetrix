@@ -1,23 +1,22 @@
 import { AdjustmentsVerticalIcon } from '@heroicons/react/24/outline'
-import { Link } from 'react-router'
-import React, { useState, useMemo } from 'react'
-import { toast } from 'sonner'
-import _size from 'lodash/size'
-import _replace from 'lodash/replace'
+import cx from 'clsx'
 import _find from 'lodash/find'
 import _map from 'lodash/map'
+import _replace from 'lodash/replace'
+import _size from 'lodash/size'
+import React, { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import cx from 'clsx'
-
-import Modal from '~/ui/Modal'
-import { Badge, BadgeProps } from '~/ui/Badge'
-import routes from '~/utils/routes'
-
-import { DetailedOrganisation } from '~/lib/models/Organisation'
 import { useSelector } from 'react-redux'
-import { StateType, useAppDispatch } from '~/lib/store'
+import { Link } from 'react-router'
+import { toast } from 'sonner'
+
 import { acceptOrganisationInvitation } from '~/api'
+import { DetailedOrganisation } from '~/lib/models/Organisation'
 import { authActions } from '~/lib/reducers/auth'
+import { StateType, useAppDispatch } from '~/lib/store'
+import { Badge, BadgeProps } from '~/ui/Badge'
+import Modal from '~/ui/Modal'
+import routes from '~/utils/routes'
 
 interface OrganisationCardProps {
   organisation: DetailedOrganisation
@@ -146,7 +145,7 @@ export const OrganisationCard = ({ organisation, reloadOrganisations }: Organisa
           ))}
         </div>
       </div>
-      {!membership?.confirmed && (
+      {!membership?.confirmed ? (
         <Modal
           onClose={() => {
             setShowInviteModal(false)
@@ -162,7 +161,7 @@ export const OrganisationCard = ({ organisation, reloadOrganisations }: Organisa
           message={t('dashboard.invitationDesc', { project: name })}
           isOpened={showInviteModal}
         />
-      )}
+      ) : null}
     </CardWrapper>
   )
 }

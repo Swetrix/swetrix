@@ -1,7 +1,8 @@
 /* eslint-disable react/button-has-type */
-import React, { memo } from 'react'
 import { Button as HeadlessButton } from '@headlessui/react'
 import cx from 'clsx'
+import React, { memo } from 'react'
+
 import Spin from './icons/Spin'
 
 interface ButtonProps extends React.ComponentPropsWithoutRef<typeof HeadlessButton> {
@@ -70,7 +71,7 @@ const Button = ({
       className,
     )}
   >
-    {loading && <Spin alwaysLight />}
+    {loading ? <Spin alwaysLight /> : null}
     {text || children}
   </HeadlessButton>
 )

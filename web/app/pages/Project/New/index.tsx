@@ -1,23 +1,23 @@
+import _isEmpty from 'lodash/isEmpty'
+import _keys from 'lodash/keys'
+import _size from 'lodash/size'
 import React, { useState, useEffect, useMemo } from 'react'
-import { Link, useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
+import { Link, useNavigate } from 'react-router'
 import { toast } from 'sonner'
-import _isEmpty from 'lodash/isEmpty'
-import _size from 'lodash/size'
-import _keys from 'lodash/keys'
 
+import { createProject } from '~/api'
 import { withAuthentication, auth } from '~/hoc/protected'
 import { isSelfhosted, TITLE_SUFFIX } from '~/lib/constants'
 import { Project } from '~/lib/models/Project'
-import { createProject } from '~/api'
-import Input from '~/ui/Input'
+import { useAppDispatch, StateType } from '~/lib/store'
 import Button from '~/ui/Button'
+import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
+import Select from '~/ui/Select'
 import { trackCustom } from '~/utils/analytics'
 import routes from '~/utils/routes'
-import { useAppDispatch, StateType } from '~/lib/store'
-import Select from '~/ui/Select'
 
 const MAX_NAME_LENGTH = 50
 
@@ -152,7 +152,7 @@ const NewProject = () => {
           error={beenSubmitted ? errors.name : null}
         />
 
-        {organisations.length > 1 && (
+        {organisations.length > 1 ? (
           <div className='mt-4'>
             <Select
               items={organisations}
@@ -174,7 +174,7 @@ const NewProject = () => {
               title={organisations.find((org) => org.id === form.organisationId)?.name}
             />
           </div>
-        )}
+        ) : null}
 
         <p className='mt-1 mb-4 font-mono text-sm text-gray-500 italic dark:text-gray-300'>
           {t('project.settings.createHint')}

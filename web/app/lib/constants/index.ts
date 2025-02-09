@@ -1,5 +1,6 @@
-/* eslint-disable no-undef */
+import { t as i18nextT } from 'i18next'
 import _endsWith from 'lodash/endsWith'
+
 import { Role } from '~/lib/models/Organisation'
 
 const displayDateOptions: Intl.DateTimeFormatOptions = {
@@ -8,7 +9,7 @@ const displayDateOptions: Intl.DateTimeFormatOptions = {
   day: 'numeric',
 }
 
-const getCustomLabel = (dates: Date[], t: Function, language?: string): string => {
+const getCustomLabel = (dates: Date[], t: typeof i18nextT, language?: string): string => {
   if (dates) {
     let from: string
     let to: string
@@ -45,7 +46,7 @@ export interface TBPeriodPairsProps {
 }
 
 export const tbPeriodPairs = (
-  t: Function,
+  t: typeof i18nextT,
   tbs?: string[] | null,
   dates?: Date[],
   language?: string,
@@ -120,7 +121,7 @@ export const tbPeriodPairs = (
 ]
 
 export const captchaTbPeriodPairs = (
-  t: Function,
+  t: typeof i18nextT,
   tbs?: string[] | null,
   dates?: Date[],
   language?: string,
@@ -198,7 +199,7 @@ export const ERROR_PERIOD_PAIRS = ['1h', '1d', '7d', '4w', '3M', '12M']
 export const FUNNELS_PERIOD_PAIRS = ['1h', '1d', '7d', '4w', '3M', '12M', 'custom']
 
 export const tbPeriodPairsCompare = (
-  t: Function,
+  t: typeof i18nextT,
   dates?: Date[],
   language?: string,
 ): {
@@ -384,11 +385,11 @@ export const getOgImageUrl = (title: string) => {
 }
 
 // Cookies
-export const GDPR_REQUEST: string = 'gdpr_request'
-export const CONFIRMATION_TIMEOUT: string = 'confirmation_timeout'
-export const LOW_EVENTS_WARNING: string = 'low_events_warning'
-export const TOKEN: string = 'access_token'
-export const REFRESH_TOKEN: string = 'refresh_token'
+export const GDPR_REQUEST = 'gdpr_request'
+export const CONFIRMATION_TIMEOUT = 'confirmation_timeout'
+export const LOW_EVENTS_WARNING = 'low_events_warning'
+export const TOKEN = 'access_token'
+export const REFRESH_TOKEN = 'refresh_token'
 
 // LocalStorage
 export const LS_PROJECTS_PROTECTED = 'projects_protected'
@@ -495,12 +496,13 @@ const GBP = {
   code: 'GBP',
 }
 
-type ICurrencies = {
-  [key in 'EUR' | 'USD' | 'GBP']: {
+type ICurrencies = Record<
+  'EUR' | 'USD' | 'GBP',
+  {
     symbol: string
     code: string
   }
-}
+>
 
 export const CURRENCIES: ICurrencies = {
   EUR,

@@ -1,5 +1,6 @@
-import type { SitemapFunction } from 'remix-sitemap'
 import { redirect } from 'react-router'
+import type { SitemapFunction } from 'remix-sitemap'
+
 import { isSelfhosted } from '~/lib/constants'
 import Unsubscribe from '~/pages/Unsubscribe'
 

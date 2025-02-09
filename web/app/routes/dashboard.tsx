@@ -1,6 +1,7 @@
 import type { LoaderFunction } from 'react-router'
-import Dashboard from '~/pages/Dashboard'
 import type { SitemapFunction } from 'remix-sitemap'
+
+import Dashboard from '~/pages/Dashboard'
 
 export const sitemap: SitemapFunction = () => ({
   exclude: true,

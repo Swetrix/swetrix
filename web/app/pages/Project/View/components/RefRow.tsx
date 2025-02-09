@@ -14,7 +14,7 @@ const RefRow = ({ rowName }: { rowName: string }) => {
 
   return (
     <div className='scrollbar-thin hover-always-overflow flex items-center'>
-      {isUrl && (
+      {isUrl ? (
         <img
           className='float-left mr-1.5 size-5'
           src={`https://icons.duckduckgo.com/ip3/${url?.hostname}.ico`}
@@ -22,7 +22,7 @@ const RefRow = ({ rowName }: { rowName: string }) => {
           alt=''
           aria-hidden='true'
         />
-      )}
+      ) : null}
       {isUrl ? (
         <a
           className={linkClassName}

@@ -1,26 +1,26 @@
-import React, { useEffect } from 'react'
-import { useLocation, Outlet } from 'react-router'
-import { useSelector } from 'react-redux'
-import { useTranslation } from 'react-i18next'
-import _some from 'lodash/some'
-import _includes from 'lodash/includes'
-import _startsWith from 'lodash/startsWith'
 import _endsWith from 'lodash/endsWith'
+import _includes from 'lodash/includes'
+import _some from 'lodash/some'
+import _startsWith from 'lodash/startsWith'
+import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
+import { useLocation, Outlet } from 'react-router'
 import 'dayjs/locale/uk'
-
-import Header from '~/components/Header'
-import Footer from '~/components/Footer'
-
 import { Toaster } from 'sonner'
-import { getAccessToken } from '~/utils/accessToken'
-import { authActions } from '~/lib/reducers/auth'
-import { StateType, useAppDispatch } from '~/lib/store'
+
+import Footer from '~/components/Footer'
+import Header from '~/components/Header'
 import { isBrowser, isSelfhosted } from '~/lib/constants'
+import { authActions } from '~/lib/reducers/auth'
+import UIActions from '~/lib/reducers/ui'
+import { StateType, useAppDispatch } from '~/lib/store'
+import { getAccessToken } from '~/utils/accessToken'
+import { logout, shouldShowLowEventsBanner } from '~/utils/auth'
 import routesPath from '~/utils/routes'
 import { getPageMeta } from '~/utils/server'
+
 import { authMe, getGeneralStats, getInstalledExtensions, getLastPost, getPaymentMetainfo } from './api'
-import UIActions from '~/lib/reducers/ui'
-import { logout, shouldShowLowEventsBanner } from '~/utils/auth'
 
 interface AppProps {
   ssrTheme: 'dark' | 'light'
@@ -106,9 +106,9 @@ const App = ({ ssrTheme, ssrAuthenticated }: AppProps) => {
 
   return (
     <>
-      {!_includes(routesWithOutHeader, pathname) && !isReferralPage && !isProjectViewPage && (
+      {!_includes(routesWithOutHeader, pathname) && !isReferralPage && !isProjectViewPage ? (
         <Header ssrTheme={ssrTheme} authenticated={authenticated} />
-      )}
+      ) : null}
       <Outlet />
       <Toaster
         theme={theme}
@@ -116,7 +116,7 @@ const App = ({ ssrTheme, ssrAuthenticated }: AppProps) => {
           duration: 5000,
         }}
       />
-      {!isReferralPage && !isProjectViewPage && <Footer authenticated={authenticated} />}
+      {!isReferralPage && !isProjectViewPage ? <Footer authenticated={authenticated} /> : null}
     </>
   )
 }

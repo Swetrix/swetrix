@@ -1,17 +1,17 @@
-import React, { memo, useState } from 'react'
 import dayjs from 'dayjs'
-import { toast } from 'sonner'
-import { useTranslation } from 'react-i18next'
-import _map from 'lodash/map'
 import _filter from 'lodash/filter'
+import _map from 'lodash/map'
+import { memo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
+import { toast } from 'sonner'
 
-import Button from '~/ui/Button'
-import Modal from '~/ui/Modal'
 import { rejectProjectShare, acceptProjectShare } from '~/api'
 import { SharedProject } from '~/lib/models/SharedProject'
-import { StateType, useAppDispatch } from '~/lib/store'
 import { authActions } from '~/lib/reducers/auth'
-import { useSelector } from 'react-redux'
+import { StateType, useAppDispatch } from '~/lib/store'
+import Button from '~/ui/Button'
+import Modal from '~/ui/Modal'
 
 interface ProjectListProps {
   item: SharedProject
