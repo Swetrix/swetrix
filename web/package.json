@@ -29,7 +29,6 @@
     "@remix-run/node": "^2.15.3",
     "@remix-run/react": "^2.15.3",
     "@remix-run/serve": "^2.15.3",
-    "@remix-run/v1-route-convention": "^0.1.4",
     "@swetrix/sdk": "^1.1.0",
     "@tailwindcss/postcss": "^4.0.4",
     "@types/ua-parser-js": "^0.7.39",
