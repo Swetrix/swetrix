@@ -2,8 +2,8 @@ import { ChevronUpDownIcon, ChevronUpIcon, ChevronDownIcon } from '@heroicons/re
 import cx from 'clsx'
 
 interface SortProps {
-  sortByAscend?: boolean
-  sortByDescend?: boolean
+  sortByAscend: boolean | null
+  sortByDescend: boolean | null
   className?: string
 }
 

@@ -84,7 +84,6 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
       : [user.planCode, ...STANDARD_PLANS]
     : STANDARD_PLANS
 
-  // @ts-expect-error
   const [selectedTier, setSelectedTier] = useState<any>(authenticated ? PLAN_LIMITS[user.planCode] : PLAN_LIMITS.hobby)
   const planFeatures = getPaidFeatures(t, selectedTier)
   const currency = CURRENCIES[currencyCode]
@@ -157,7 +156,6 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
 
       setPlanCodeLoading(tier.planCode)
 
-      // @ts-expect-error
       if (!window.Paddle) {
         toast.error('Payment script has not yet loaded! Please, try again.')
         setPlanCodeLoading(null)
@@ -168,7 +166,6 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
         user.referrerID && (user.planCode === 'trial' || user.planCode === 'none') && !user.cancellationEffectiveDate
       const coupon = discountMayBeApplied ? REFERRAL_DISCOUNT_CODE : undefined
 
-      // @ts-expect-error
       window.Paddle.Checkout.open({
         product: billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid,
         email: user.email,
@@ -228,7 +225,6 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
     }
   }
 
-  // @ts-expect-error
   const userPlancodeID = PLAN_LIMITS[user.planCode]?.index
   const planCodeID = selectedTier.index
   const downgrade = planCodeID < userPlancodeID
@@ -426,7 +422,6 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
               values={{
                 amount: 10,
               }}
-              // @ts-expect-error
               components={{
                 url: (
                   <Link
