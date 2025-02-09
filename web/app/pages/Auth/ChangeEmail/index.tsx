@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from '@remix-run/react'
+import { useParams, Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import _isString from 'lodash/isString'

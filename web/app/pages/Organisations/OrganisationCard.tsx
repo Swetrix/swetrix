@@ -1,5 +1,5 @@
 import { AdjustmentsVerticalIcon } from '@heroicons/react/24/outline'
-import { Link } from '@remix-run/react'
+import { Link } from 'react-router'
 import React, { useState, useMemo } from 'react'
 import { toast } from 'sonner'
 import _size from 'lodash/size'

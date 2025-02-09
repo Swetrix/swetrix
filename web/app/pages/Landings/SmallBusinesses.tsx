@@ -1,4 +1,4 @@
-import { Link, useLoaderData } from '@remix-run/react'
+import { Link, useLoaderData } from 'react-router'
 
 import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'

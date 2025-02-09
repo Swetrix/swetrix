@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Link, useLoaderData, useSearchParams } from '@remix-run/react'
+import { Link, useLoaderData, useSearchParams } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'

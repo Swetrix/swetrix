@@ -1,4 +1,4 @@
-import { Link } from '@remix-run/react'
+import { Link } from 'react-router'
 import { useTranslation, Trans } from 'react-i18next'
 import routes from '~/utils/routes'
 import { ERROR_TRACKING_DOCS_URL } from '~/lib/constants'

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link, useParams } from '@remix-run/react'
+import { Link, useParams } from 'react-router'
 import { useSelector } from 'react-redux'
 import { useTranslation, Trans } from 'react-i18next'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'

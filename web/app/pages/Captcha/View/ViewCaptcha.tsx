@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo, memo, useRef } from 'react'
 import { toast } from 'sonner'
 import useSize from '~/hooks/useSize'
-import { useNavigate, useSearchParams } from '@remix-run/react'
+import { useNavigate, useSearchParams } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 import bb from 'billboard.js'
 import { GlobeAltIcon } from '@heroicons/react/24/outline'

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Link } from '@remix-run/react'
+import { Link } from 'react-router'
 import { toast } from 'sonner'
 import { ClientOnly } from 'remix-utils/client-only'
 import _isEmpty from 'lodash/isEmpty'

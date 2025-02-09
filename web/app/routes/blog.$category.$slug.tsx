@@ -1,5 +1,5 @@
-import type { LoaderFunction, MetaFunction } from '@remix-run/node'
-import { redirect, data } from '@remix-run/node'
+import type { LoaderFunction, MetaFunction } from 'react-router'
+import { redirect, data } from 'react-router'
 import { getPost } from '~/utils/getPosts'
 import { isSelfhosted, TITLE_SUFFIX, getOgImageUrl, isDisableMarketingPages } from '~/lib/constants'
 import Post from '~/pages/Blog/Post'

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from '@remix-run/react'
+import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { XCircleIcon, InformationCircleIcon } from '@heroicons/react/24/solid'
 

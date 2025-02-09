@@ -1,6 +1,6 @@
 import ForgotPassword from '~/pages/Auth/ForgotPassword'
-import type { HeadersFunction } from '@remix-run/node'
-import { redirect } from '@remix-run/node'
+import type { HeadersFunction } from 'react-router'
+import { redirect } from 'react-router'
 import { isSelfhosted } from '~/lib/constants'
 
 export const headers: HeadersFunction = ({ parentHeaders }) => {

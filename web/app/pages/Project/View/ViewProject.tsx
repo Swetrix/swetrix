@@ -12,7 +12,7 @@ import React, {
 } from 'react'
 import { ClientOnly } from 'remix-utils/client-only'
 import useSize from '~/hooks/useSize'
-import { useNavigate, Link, useSearchParams, useLoaderData } from '@remix-run/react'
+import { useNavigate, Link, useSearchParams, useLoaderData } from 'react-router'
 import bb from 'billboard.js'
 import { MagnifyingGlassIcon, ChevronLeftIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
 import {

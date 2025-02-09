@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { useLocation } from '@remix-run/react'
+import { useLocation } from 'react-router'
 import _startsWith from 'lodash/startsWith'
 import _toUpper from 'lodash/toUpper'
 import { getPageMeta } from '~/utils/server'

@@ -1,5 +1,5 @@
 import React, { memo } from 'react'
-import { Link } from '@remix-run/react'
+import { Link } from 'react-router'
 import { Trans, useTranslation } from 'react-i18next'
 import { SiDiscord, SiGithub, SiX } from '@icons-pack/react-simple-icons'
 import _map from 'lodash/map'

@@ -3,7 +3,7 @@ import React from 'react'
 import _map from 'lodash/map'
 import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
-import { Link } from '@remix-run/react'
+import { Link } from 'react-router'
 
 import { SWETRIX_VS_GOOGLE, DOCS_URL, CAPTCHA_URL, DOCS_CAPTCHA_URL } from '~/lib/constants'
 import routes from '~/utils/routes'

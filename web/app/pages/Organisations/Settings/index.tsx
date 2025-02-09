@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { toast } from 'sonner'
-import { Link, useNavigate } from '@remix-run/react'
+import { Link, useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import _isEmpty from 'lodash/isEmpty'
 import _size from 'lodash/size'

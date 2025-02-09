@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid, react/no-unstable-nested-components */
 import React, { memo, Fragment, useMemo, useState } from 'react'
 
-import { Link } from '@remix-run/react'
+import { Link } from 'react-router'
 import { useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import i18next from 'i18next'

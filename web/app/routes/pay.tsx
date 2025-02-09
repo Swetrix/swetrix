@@ -1,4 +1,4 @@
-import { redirect } from '@remix-run/node'
+import { redirect } from 'react-router'
 import { useEffect } from 'react'
 import type { SitemapFunction } from 'remix-sitemap'
 import { ExternalScriptsHandle } from 'remix-utils/external-scripts'

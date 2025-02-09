@@ -8,7 +8,7 @@ import { getLiveVisitorsInfo, GetLiveVisitorsInfo } from '~/api'
 import PulsatingCircle from '~/ui/icons/PulsatingCircle'
 import Flag from '~/ui/Flag'
 import { useViewProjectContext } from '../ViewProject'
-import { Link } from '@remix-run/react'
+import { Link } from 'react-router'
 import { PROJECT_TABS } from '~/lib/constants'
 
 interface LiveVisitorsDropdownProps {

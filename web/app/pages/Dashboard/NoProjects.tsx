@@ -1,6 +1,6 @@
 import React from 'react'
 import { FolderPlusIcon } from '@heroicons/react/24/outline'
-import { Link } from '@remix-run/react'
+import { Link } from 'react-router'
 import { useTranslation } from 'react-i18next'
 
 import routes from '~/utils/routes'

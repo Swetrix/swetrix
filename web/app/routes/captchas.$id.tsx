@@ -1,8 +1,8 @@
 import CaptchaView from '~/pages/Captcha/View'
-import type { LinksFunction, LoaderFunctionArgs } from '@remix-run/node'
+import type { LinksFunction, LoaderFunctionArgs } from 'react-router'
 import ProjectViewStyle from '~/styles/ProjectViewStyle.css?url'
 import { detectTheme } from '~/utils/server'
-import { useLoaderData } from '@remix-run/react'
+import { useLoaderData } from 'react-router'
 
 export const links: LinksFunction = () => [{ rel: 'stylesheet', href: ProjectViewStyle }]
 

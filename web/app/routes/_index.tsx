@@ -1,6 +1,5 @@
-import type { LoaderFunctionArgs } from '@remix-run/node'
-import { useLoaderData, Link } from '@remix-run/react'
-import { redirect } from '@remix-run/node'
+import type { LoaderFunctionArgs } from 'react-router'
+import { useLoaderData, Link, redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 import { UAParser } from 'ua-parser-js'
 import { motion } from 'framer-motion'
@@ -49,7 +48,6 @@ export const sitemap: SitemapFunction = () => ({
 })
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  console.log('Index loader')
   if (isSelfhosted || isDisableMarketingPages) {
     return redirect('/login', 302)
   }
@@ -887,8 +885,6 @@ const Hero = ({
 
 export default function Index() {
   const { theme: ssrTheme, isAuth } = useLoaderData<typeof loader>()
-
-  console.log('Index component')
 
   const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
   const { authenticated: reduxAuthenticated, loading } = useSelector((state: StateType) => state.auth)

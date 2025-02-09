@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { useNavigate, Link } from '@remix-run/react'
+import { useNavigate, Link } from 'react-router'
 import { useTranslation, Trans } from 'react-i18next'
 import { toast } from 'sonner'
 import { ExclamationTriangleIcon, XCircleIcon } from '@heroicons/react/24/outline'

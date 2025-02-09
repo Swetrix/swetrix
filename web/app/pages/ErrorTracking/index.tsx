@@ -1,4 +1,4 @@
-import { Link } from '@remix-run/react'
+import { Link } from 'react-router'
 import React, { memo } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'

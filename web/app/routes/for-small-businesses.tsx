@@ -1,6 +1,6 @@
 import SmallBusinesses from '~/pages/Landings/SmallBusinesses'
-import type { LoaderFunctionArgs } from '@remix-run/node'
-import { redirect } from '@remix-run/node'
+import type { LoaderFunctionArgs } from 'react-router'
+import { redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 
 import { detectTheme, isAuthenticated } from '~/utils/server'

@@ -1,5 +1,5 @@
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline'
-import { Link, useParams } from '@remix-run/react'
+import { Link, useParams } from 'react-router'
 import { acceptOrganisationInvitation } from '~/api'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'

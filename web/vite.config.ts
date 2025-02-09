@@ -1,4 +1,4 @@
-import { vitePlugin as remix } from '@remix-run/dev'
+import { reactRouter } from '@react-router/dev/vite'
 import { defineConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
@@ -32,19 +32,5 @@ export default defineConfig({
       include: ['axios-auth-refresh', '@swetrix/sdk'],
     },
   },
-  plugins: [
-    remix({
-      ignoredRouteFiles: ['**/.*'],
-      appDirectory: 'app',
-      future: {
-        v3_fetcherPersist: true,
-        v3_throwAbortReason: true,
-        v3_lazyRouteDiscovery: true,
-        v3_singleFetch: true,
-        v3_relativeSplatPath: true,
-        unstable_optimizeDeps: true,
-      },
-    }),
-    tsconfigPaths(),
-  ],
+  plugins: [reactRouter(), tsconfigPaths()],
 })

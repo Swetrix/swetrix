@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Link, useLoaderData, useLocation } from '@remix-run/react'
+import { Link, useLoaderData, useLocation } from 'react-router'
 import NotFound from '~/pages/NotFound'
 import { trackPageview } from '~/utils/analytics'
 import { useTranslation } from 'react-i18next'

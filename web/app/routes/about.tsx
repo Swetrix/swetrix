@@ -1,4 +1,4 @@
-import { redirect } from '@remix-run/node'
+import { redirect } from 'react-router'
 import About from '~/pages/About'
 import { isDisableMarketingPages, isSelfhosted } from '~/lib/constants'
 import { SitemapFunction } from 'remix-sitemap'

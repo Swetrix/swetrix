@@ -1,6 +1,6 @@
 import type { SitemapFunction } from 'remix-sitemap'
-import type { LoaderFunction, MetaFunction } from '@remix-run/node'
-import { redirect, data } from '@remix-run/node'
+import type { LoaderFunction, MetaFunction } from 'react-router'
+import { redirect, data } from 'react-router'
 import _map from 'lodash/map'
 import _last from 'lodash/last'
 import _join from 'lodash/join'

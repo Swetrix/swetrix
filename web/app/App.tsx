@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { useLocation, Outlet } from '@remix-run/react'
+import { useLocation, Outlet } from 'react-router'
 import { useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next'
 import _some from 'lodash/some'

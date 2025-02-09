@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react'
 import bb, { bar, line } from 'billboard.js'
 import { useTranslation, Trans } from 'react-i18next'
-import { Link } from '@remix-run/react'
+import { Link } from 'react-router'
 import { useSelector } from 'react-redux'
 
 import { nFormatterSeparated } from '~/utils/generic'

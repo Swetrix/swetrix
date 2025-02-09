@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { Link } from '@remix-run/react'
+import { Link } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 import { useTranslation } from 'react-i18next'
 import _map from 'lodash/map'

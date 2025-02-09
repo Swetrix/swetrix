@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect } from 'react'
-import { useNavigate } from '@remix-run/react'
+import { useNavigate } from 'react-router'
 import { useTranslation, Trans } from 'react-i18next'
 import { EnvelopeIcon } from '@heroicons/react/24/outline'
 import { useSelector } from 'react-redux'

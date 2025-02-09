@@ -1,6 +1,6 @@
 import ProjectProtectedPassword from '~/pages/Project/ProjectProtectedPassword'
-import type { LoaderFunctionArgs } from '@remix-run/node'
-import { useLoaderData } from '@remix-run/react'
+import type { LoaderFunctionArgs } from 'react-router'
+import { useLoaderData } from 'react-router'
 
 import { detectTheme, isEmbedded, getProjectPassword, isAuthenticated } from '~/utils/server'
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Link, useNavigate } from '@remix-run/react'
+import { Link, useNavigate } from 'react-router'
 import { useTranslation, Trans } from 'react-i18next'
 import _size from 'lodash/size'
 import _keys from 'lodash/keys'

@@ -1,7 +1,7 @@
 import ChangeEmail from '~/pages/Auth/ChangeEmail'
 import type { SitemapFunction } from 'remix-sitemap'
-import type { HeadersFunction } from '@remix-run/node'
-import { redirect } from '@remix-run/node'
+import type { HeadersFunction } from 'react-router'
+import { redirect } from 'react-router'
 
 import { isSelfhosted } from '~/lib/constants'
 

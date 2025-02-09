@@ -1,6 +1,6 @@
 import Signin from '~/pages/Auth/Signin'
-import type { HeadersFunction, LoaderFunctionArgs } from '@remix-run/node'
-import { useLoaderData } from '@remix-run/react'
+import type { HeadersFunction, LoaderFunctionArgs } from 'react-router'
+import { useLoaderData } from 'react-router'
 
 import { detectTheme } from '~/utils/server'
 

@@ -1,5 +1,5 @@
 import ViewProject from '~/pages/Project/View'
-import type { LinksFunction, LoaderFunctionArgs, MetaFunction } from '@remix-run/node'
+import type { LinksFunction, LoaderFunctionArgs, MetaFunction } from 'react-router'
 import _split from 'lodash/split'
 
 import { API_URL } from '~/lib/constants'

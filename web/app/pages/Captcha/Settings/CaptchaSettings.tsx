@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo } from 'react'
-import { Link, useNavigate } from '@remix-run/react'
+import { Link, useNavigate } from 'react-router'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import cx from 'clsx'

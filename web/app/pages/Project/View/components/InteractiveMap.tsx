@@ -9,7 +9,7 @@ import { getTimeFromSeconds, getStringFromTime, nFormatter } from '~/utils/gener
 
 import { Entry } from '~/lib/models/Entry'
 import countriesList from '~/utils/countries'
-import { useSearchParams } from '@remix-run/react'
+import { useSearchParams } from 'react-router'
 import { useViewProjectContext } from '../ViewProject'
 
 interface InteractiveMapProps {

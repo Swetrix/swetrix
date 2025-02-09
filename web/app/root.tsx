@@ -1,8 +1,9 @@
 /* eslint-disable no-undef */
-import type { LinksFunction, LoaderFunctionArgs, HeadersFunction } from '@remix-run/node'
-import { data, redirect } from '@remix-run/node'
+import type { LinksFunction, LoaderFunctionArgs, HeadersFunction } from 'react-router'
 import { useState } from 'react'
 import {
+  data,
+  redirect,
   Links,
   Meta,
   Scripts,
@@ -10,7 +11,7 @@ import {
   ScrollRestoration,
   isRouteErrorResponse,
   useRouteError,
-} from '@remix-run/react'
+} from 'react-router'
 import { store } from '~/lib/store'
 import { CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted, I18N_CACHE_BREAKER } from '~/lib/constants'
 import { ExternalScripts } from 'remix-utils/external-scripts'

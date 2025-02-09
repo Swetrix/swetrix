@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link } from '@remix-run/react'
+import { Link } from 'react-router'
 import { User } from '~/lib/models/User'
 import { ProjectForShared } from '~/lib/models/SharedProject'
 import { useTranslation, Trans } from 'react-i18next'

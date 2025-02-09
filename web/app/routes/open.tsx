@@ -1,6 +1,6 @@
 import OpenStartup from '~/pages/OpenStartup'
-import { redirect } from '@remix-run/node'
-import type { LinksFunction } from '@remix-run/node'
+import { redirect } from 'react-router'
+import type { LinksFunction } from 'react-router'
 import { isDisableMarketingPages, isSelfhosted } from '~/lib/constants'
 import type { SitemapFunction } from 'remix-sitemap'
 import Style from '~/styles/ProjectViewStyle.css?url'

@@ -1,6 +1,6 @@
 import Imprint from '~/pages/Imprint'
 import type { SitemapFunction } from 'remix-sitemap'
-import { redirect } from '@remix-run/node'
+import { redirect } from 'react-router'
 import { isDisableMarketingPages, isSelfhosted } from '~/lib/constants'
 
 export const sitemap: SitemapFunction = () => ({

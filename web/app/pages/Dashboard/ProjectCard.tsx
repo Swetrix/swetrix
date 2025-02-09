@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import { Link } from '@remix-run/react'
+import { Link } from 'react-router'
 import { toast } from 'sonner'
 import cx from 'clsx'
 import _size from 'lodash/size'

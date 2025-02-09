@@ -1,6 +1,6 @@
 import VerifyEmail from '~/pages/Auth/VerifyEmail'
 import type { SitemapFunction } from 'remix-sitemap'
-import { redirect } from '@remix-run/node'
+import { redirect } from 'react-router'
 import { isSelfhosted } from '~/lib/constants'
 
 export const sitemap: SitemapFunction = () => ({

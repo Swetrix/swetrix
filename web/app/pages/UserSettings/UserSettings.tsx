@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 import React, { useState, useEffect, memo, useMemo } from 'react'
 import type i18next from 'i18next'
-import { useNavigate } from '@remix-run/react'
+import { useNavigate } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'

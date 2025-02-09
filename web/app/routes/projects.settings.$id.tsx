@@ -1,4 +1,4 @@
-import type { LoaderFunctionArgs } from '@remix-run/node'
+import type { LoaderFunctionArgs } from 'react-router'
 import ProjectSettings from '~/pages/Project/Settings'
 
 export async function loader({ request }: LoaderFunctionArgs) {

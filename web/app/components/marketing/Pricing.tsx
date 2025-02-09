@@ -2,7 +2,7 @@
 import React, { memo, useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { ClientOnly } from 'remix-utils/client-only'
-import { Link } from '@remix-run/react'
+import { Link } from 'react-router'
 import { CheckIcon } from '@heroicons/react/24/solid'
 import dayjs from 'dayjs'
 import _map from 'lodash/map'

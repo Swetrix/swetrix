@@ -1,7 +1,7 @@
 import CheckYourInbox from '~/pages/Auth/CheckYourInbox'
 import type { SitemapFunction } from 'remix-sitemap'
-import type { HeadersFunction, LoaderFunctionArgs } from '@remix-run/node'
-import { redirect } from '@remix-run/node'
+import type { HeadersFunction, LoaderFunctionArgs } from 'react-router'
+import { redirect } from 'react-router'
 import { isSelfhosted } from '~/lib/constants'
 
 export const headers: HeadersFunction = ({ parentHeaders }) => {

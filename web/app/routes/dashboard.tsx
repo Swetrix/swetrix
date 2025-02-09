@@ -1,4 +1,4 @@
-import type { LoaderFunction } from '@remix-run/node'
+import type { LoaderFunction } from 'react-router'
 import Dashboard from '~/pages/Dashboard'
 import type { SitemapFunction } from 'remix-sitemap'
 
