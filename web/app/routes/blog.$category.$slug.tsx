@@ -1,8 +1,9 @@
-import type { LoaderFunction, MetaFunction } from '@remix-run/node'
-import { redirect, data } from '@remix-run/node'
-import { getPost } from '~/utils/getPosts'
+import type { LoaderFunction, MetaFunction } from 'react-router'
+import { redirect, data } from 'react-router'
+
 import { isSelfhosted, TITLE_SUFFIX, getOgImageUrl, isDisableMarketingPages } from '~/lib/constants'
 import Post from '~/pages/Blog/Post'
+import { getPost } from '~/utils/getPosts'
 
 export const meta: MetaFunction = (loaderData: any) => {
   const ogImageUrl = getOgImageUrl(loaderData?.data?.title)

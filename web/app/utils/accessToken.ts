@@ -1,5 +1,7 @@
 import _isEmpty from 'lodash/isEmpty'
+
 import { TOKEN, isBrowser } from '~/lib/constants'
+
 import { getCookie, setCookie, deleteCookie } from './cookie'
 
 // 14 weeks in seconds

@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react'
-import bb from 'billboard.js'
+import billboard from 'billboard.js'
+import { useEffect } from 'react'
+
 import { getSettingsSession } from '../ViewProject.helpers'
 
 interface SessionChartProps {
@@ -31,7 +32,7 @@ export const SessionChart = ({
       chartType,
     )
 
-    const generate = bb.generate(bbSettings)
+    const generate = billboard.generate(bbSettings)
     generate.data.names(dataNames)
   }, [chart, timeBucket, timeFormat, rotateXAxis, chartType, dataNames])
 

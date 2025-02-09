@@ -1,31 +1,31 @@
-import React, { useState, useEffect, memo } from 'react'
-import { Link, useNavigate, useSearchParams } from '@remix-run/react'
-import { useTranslation, Trans } from 'react-i18next'
-import _keys from 'lodash/keys'
-import _omit from 'lodash/omit'
 import _isEmpty from 'lodash/isEmpty'
 import _isString from 'lodash/isString'
+import _keys from 'lodash/keys'
+import _omit from 'lodash/omit'
+import React, { useState, useEffect, memo } from 'react'
+import { useTranslation, Trans } from 'react-i18next'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
-import GoogleAuth from '~/components/GoogleAuth'
+import { generateSSOAuthURL, getInstalledExtensions, getJWTBySSOHash, login, submit2FA } from '~/api'
 import GithubAuth from '~/components/GithubAuth'
+import GoogleAuth from '~/components/GoogleAuth'
 import { withAuthentication, auth } from '~/hoc/protected'
-import routes from '~/utils/routes'
-import Input from '~/ui/Input'
+import { isSelfhosted, REFERRAL_COOKIE, TRIAL_DAYS } from '~/lib/constants'
+import { SSOProvider } from '~/lib/models/Auth'
+import { authActions } from '~/lib/reducers/auth'
+import UIActions from '~/lib/reducers/ui'
+import { useAppDispatch } from '~/lib/store'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
-import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS } from '~/utils/validator'
-import { isSelfhosted, REFERRAL_COOKIE, TRIAL_DAYS } from '~/lib/constants'
-import { generateSSOAuthURL, getInstalledExtensions, getJWTBySSOHash, login, submit2FA } from '~/api'
+import Input from '~/ui/Input'
 import { setAccessToken, removeAccessToken } from '~/utils/accessToken'
-import { setRefreshToken, removeRefreshToken } from '~/utils/refreshToken'
-import { useAppDispatch } from '~/lib/store'
-import { authActions } from '~/lib/reducers/auth'
-import { delay, openBrowserWindow } from '~/utils/generic'
-import { deleteCookie, getCookie } from '~/utils/cookie'
 import { shouldShowLowEventsBanner } from '~/utils/auth'
-import UIActions from '~/lib/reducers/ui'
-import { SSOProvider } from '~/lib/models/Auth'
+import { deleteCookie, getCookie } from '~/utils/cookie'
+import { delay, openBrowserWindow } from '~/utils/generic'
+import { setRefreshToken, removeRefreshToken } from '~/utils/refreshToken'
+import routes from '~/utils/routes'
+import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS } from '~/utils/validator'
 
 interface SigninForm {
   email: string
@@ -147,7 +147,7 @@ const Signin = ({ ssrTheme }: SigninProps) => {
           navigate(routes.dashboard)
 
           return
-        } catch (reason) {
+        } catch {
           // Authentication is not finished yet
         }
 
@@ -278,7 +278,7 @@ const Signin = ({ ssrTheme }: SigninProps) => {
           />
           <div className='mt-3 flex justify-between'>
             <div className='font-mono text-sm whitespace-pre-line text-gray-600 dark:text-gray-400'>
-              {!isSelfhosted && (
+              {!isSelfhosted ? (
                 <Trans
                   t={t}
                   i18nKey='auth.signin.2faUnavailable'
@@ -289,7 +289,7 @@ const Signin = ({ ssrTheme }: SigninProps) => {
                     ),
                   }}
                 />
-              )}
+              ) : null}
             </div>
             <Button type='submit' loading={isLoading} primary large>
               {t('common.continue')}
@@ -341,7 +341,7 @@ const Signin = ({ ssrTheme }: SigninProps) => {
                 name='dontRemember'
                 label={t('auth.common.noRemember')}
               />
-              {!isSelfhosted && (
+              {!isSelfhosted ? (
                 <div className='text-sm leading-6'>
                   <Link
                     to={routes.reset_password}
@@ -350,7 +350,7 @@ const Signin = ({ ssrTheme }: SigninProps) => {
                     {t('auth.signin.forgot')}
                   </Link>
                 </div>
-              )}
+              ) : null}
             </div>
 
             <Button className='w-full justify-center' type='submit' loading={isLoading} primary giant>
@@ -358,7 +358,7 @@ const Signin = ({ ssrTheme }: SigninProps) => {
             </Button>
           </form>
 
-          {!isSelfhosted && (
+          {!isSelfhosted ? (
             <div>
               <div className='relative mt-10'>
                 <div className='absolute inset-0 flex items-center' aria-hidden='true'>
@@ -375,10 +375,10 @@ const Signin = ({ ssrTheme }: SigninProps) => {
                 <GithubAuth onClick={() => onSsoLogin('github')} ssrTheme={ssrTheme} disabled={isLoading} />
               </div>
             </div>
-          )}
+          ) : null}
         </div>
 
-        {!isSelfhosted && (
+        {!isSelfhosted ? (
           <p className='mt-10 mb-4 text-center text-sm text-gray-500 dark:text-gray-200'>
             <Trans
               t={t}
@@ -398,7 +398,7 @@ const Signin = ({ ssrTheme }: SigninProps) => {
               }}
             />
           </p>
-        )}
+        ) : null}
       </div>
     </div>
   )

@@ -1,3 +1,4 @@
+import { logoutAllApi, logoutApi } from '~/api'
 import {
   isSelfhosted,
   LOW_EVENTS_WARNING,
@@ -5,11 +6,11 @@ import {
   LS_VIEW_PREFS_SETTING,
   SHOW_BANNER_AT_PERC,
 } from '~/lib/constants'
-import { logoutAllApi, logoutApi } from '~/api'
-import { getCookie } from './cookie'
-import { getRefreshToken, removeRefreshToken } from './refreshToken'
+
 import { removeAccessToken } from './accessToken'
+import { getCookie } from './cookie'
 import { removeItem } from './localstorage'
+import { getRefreshToken, removeRefreshToken } from './refreshToken'
 
 export const shouldShowLowEventsBanner = (totalMonthlyEvents: number, maxEventsCount: number) => {
   if (isSelfhosted) {

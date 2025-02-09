@@ -1,6 +1,6 @@
-import React from 'react'
-import _toLower from 'lodash/toLower'
 import _includes from 'lodash/includes'
+import _toLower from 'lodash/toLower'
+import React from 'react'
 
 interface FlagProps extends React.HTMLAttributes<HTMLImageElement> {
   country: string

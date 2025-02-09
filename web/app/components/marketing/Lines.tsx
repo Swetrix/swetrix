@@ -1,5 +1,3 @@
-import React from 'react'
-
 export const Lines = () => (
   <div className='pointer-events-none relative'>
     <div className='absolute top-[32rem] right-[-48rem] h-px w-[800%] rotate-6 bg-gradient-to-l from-slate-600 opacity-10 dark:from-slate-400' />

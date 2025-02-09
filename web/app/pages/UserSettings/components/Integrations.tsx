@@ -1,21 +1,21 @@
-import React, { useState, memo } from 'react'
-import type i18next from 'i18next'
-import { useTranslation, Trans } from 'react-i18next'
-import _map from 'lodash/map'
-import _isString from 'lodash/isString'
 import { CheckCircleIcon, XCircleIcon, ClockIcon } from '@heroicons/react/24/solid'
+import type i18next from 'i18next'
+import _isString from 'lodash/isString'
+import _map from 'lodash/map'
+import React, { useState, memo } from 'react'
+import { useTranslation, Trans } from 'react-i18next'
+import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
 
-import Input from '~/ui/Input'
-import Button from '~/ui/Button'
-import Telegram from '~/ui/icons/Telegram'
-import Slack from '~/ui/icons/Slack'
-import Discord from '~/ui/icons/Discord'
 import { removeTgIntegration } from '~/api'
 import { User } from '~/lib/models/User'
-import { StateType, useAppDispatch } from '~/lib/store'
-import { useSelector } from 'react-redux'
 import { authActions } from '~/lib/reducers/auth'
+import { StateType, useAppDispatch } from '~/lib/store'
+import Button from '~/ui/Button'
+import Discord from '~/ui/icons/Discord'
+import Slack from '~/ui/icons/Slack'
+import Telegram from '~/ui/icons/Telegram'
+import Input from '~/ui/Input'
 
 const getAvailableIntegrations = (
   t: typeof i18next.t,
@@ -415,22 +415,22 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
                       </p>
                     </div>
                     <div>
-                      {id && (
+                      {id ? (
                         <p className='text-sm text-gray-900 dark:text-gray-50'>
                           {t('profileSettings.chatID')}
                           {`: ${id}`}
                         </p>
-                      )}
+                      ) : null}
                       <p className='mt-2 flex items-center text-sm text-gray-500 dark:text-gray-100'>
-                        {status === 'notConnected' && (
+                        {status === 'notConnected' ? (
                           <XCircleIcon className='mr-1.5 h-5 w-5 shrink-0 text-red-400' aria-hidden='true' />
-                        )}
-                        {status === 'pending' && (
+                        ) : null}
+                        {status === 'pending' ? (
                           <ClockIcon className='mr-1.5 h-5 w-5 shrink-0 text-yellow-400' aria-hidden='true' />
-                        )}
-                        {status === 'connected' && (
+                        ) : null}
+                        {status === 'connected' ? (
                           <CheckCircleIcon className='mr-1.5 h-5 w-5 shrink-0 text-green-400' aria-hidden='true' />
-                        )}
+                        ) : null}
                         {t(`common.${status}`)}
                       </p>
                     </div>

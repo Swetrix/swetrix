@@ -1,15 +1,16 @@
 {
-  "include": ["remix.env.d.ts", "**/*.ts", "**/*.tsx"],
+  "include": ["**/*.ts", "**/*.tsx", ".react-router/types/**/*"],
   "compilerOptions": {
-    "lib": ["DOM", "DOM.Iterable", "ES2020"],
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "types": ["@react-router/node", "vite/client"],
     "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "isolatedModules": true,
     "esModuleInterop": true,
     "jsx": "react-jsx",
-    // We need Bundler instead of Node so IDE would not complain for imports from remix-utils/*
-    "moduleResolution": "Bundler",
     "resolveJsonModule": true,
-    "target": "ES2019",
+    "target": "ES2022",
     "strict": true,
     "allowJs": true,
     "forceConsistentCasingInFileNames": true,
@@ -17,6 +18,7 @@
     "paths": {
       "~/*": ["./app/*"]
     },
+    "rootDirs": [".", "./.react-router/types"],
 
     // Remix takes care of building everything in `remix build`.
     "noEmit": true

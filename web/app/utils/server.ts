@@ -1,9 +1,10 @@
 import type i18next from 'i18next'
-import routes from '~/utils/routes'
 import _includes from 'lodash/includes'
 import _split from 'lodash/split'
 import _startsWith from 'lodash/startsWith'
+
 import { TITLE_SUFFIX, SUPPORTED_THEMES, ThemeType } from '~/lib/constants'
+import routes from '~/utils/routes'
 
 /**
  * Function detects theme based on user's browser hints and cookies

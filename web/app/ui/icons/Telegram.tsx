@@ -1,5 +1,3 @@
-import React from 'react'
-
 const Telegram = ({ className }: { className?: string }) => (
   <svg className={className} viewBox='0 0 1000 1000'>
     <title>Telegram</title>

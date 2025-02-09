@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react'
-import { Link, useLoaderData, useLocation } from '@remix-run/react'
+import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link, useLoaderData, useLocation } from 'react-router'
+
 import NotFound from '~/pages/NotFound'
 import { trackPageview } from '~/utils/analytics'
-import { useTranslation } from 'react-i18next'
 
 interface Post {
   slug: string
@@ -81,8 +82,10 @@ export default function PostSlug() {
                     <ul className='-mx-5 -mt-6 flex flex-wrap text-sm leading-6'>
                       <li className='mt-6 flex items-center px-5 font-medium whitespace-nowrap'>
                         <div className='text-sm leading-4'>
-                          {post?.author && <div className='text-slate-900 dark:text-slate-200'>{post.author}</div>}
-                          {post?.nickname && (
+                          {post?.author ? (
+                            <div className='text-slate-900 dark:text-slate-200'>{post.author}</div>
+                          ) : null}
+                          {post?.nickname ? (
                             <div className='mt-1'>
                               <a
                                 href={`https://github.com/${post.nickname}`}
@@ -91,7 +94,7 @@ export default function PostSlug() {
                                 @{post.nickname}
                               </a>
                             </div>
-                          )}
+                          ) : null}
                         </div>
                       </li>
                     </ul>

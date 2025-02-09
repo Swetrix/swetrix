@@ -1,12 +1,12 @@
-import React, { memo, useState } from 'react'
 import { ExclamationTriangleIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { useSelector } from 'react-redux'
-import { useAppDispatch, StateType } from '~/lib/store'
+import { memo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
 
-import Modal from '~/ui/Modal'
-import UIActions from '~/lib/reducers/ui'
 import { SHOW_BANNER_AT_PERC } from '~/lib/constants'
+import UIActions from '~/lib/reducers/ui'
+import { useAppDispatch, StateType } from '~/lib/store'
+import Modal from '~/ui/Modal'
 
 const EventsRunningOutBanner = () => {
   const { t } = useTranslation('common')

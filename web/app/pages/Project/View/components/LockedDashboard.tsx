@@ -1,9 +1,10 @@
-import React, { useMemo } from 'react'
 import { LockClosedIcon } from '@heroicons/react/24/outline'
-import { Link } from '@remix-run/react'
-import { User, DashboardBlockReason } from '~/lib/models/User'
-import { ProjectForShared } from '~/lib/models/SharedProject'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
+
+import { ProjectForShared } from '~/lib/models/SharedProject'
+import { User, DashboardBlockReason } from '~/lib/models/User'
 import routes from '~/utils/routes'
 
 interface LockedDashboardProps {
@@ -49,16 +50,16 @@ const LockedDashboard = ({ user, project }: LockedDashboardProps) => {
               </h1>
               <p className='mt-1 max-w-prose text-base whitespace-pre-line text-gray-700 dark:text-gray-300'>
                 {message}
-                {project.role === 'owner' && (
+                {project.role === 'owner' ? (
                   <>
                     <br />
                     <br />
                     {t('project.locked.resolve')}
                   </>
-                )}
+                ) : null}
               </p>
             </div>
-            {project.role === 'owner' && (
+            {project.role === 'owner' ? (
               <div className='mt-8 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>
                 <Link
                   to={routes.billing}
@@ -73,7 +74,7 @@ const LockedDashboard = ({ user, project }: LockedDashboardProps) => {
                   {t('notFoundPage.support')}
                 </Link>
               </div>
-            )}
+            ) : null}
           </div>
         </main>
       </div>

@@ -1,22 +1,26 @@
-import type { LoaderFunctionArgs } from '@remix-run/node'
-import { useLoaderData, Link } from '@remix-run/react'
-import { redirect } from '@remix-run/node'
-import type { SitemapFunction } from 'remix-sitemap'
-import { UAParser } from 'ua-parser-js'
+import { ArrowRightIcon } from '@heroicons/react/20/solid'
+import { CheckIcon, CursorArrowRaysIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
+import { StarIcon } from '@heroicons/react/24/solid'
+import clsx from 'clsx'
 import { motion } from 'framer-motion'
-
-import { detectTheme, isAuthenticated } from '~/utils/server'
-
+import _map from 'lodash/map'
+import { Cookie, FileTextIcon } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'
+import type { LoaderFunctionArgs } from 'react-router'
+import { useLoaderData, Link, redirect } from 'react-router'
+import type { SitemapFunction } from 'remix-sitemap'
 import { ClientOnly } from 'remix-utils/client-only'
-import { StarIcon } from '@heroicons/react/24/solid'
-import { ArrowRightIcon } from '@heroicons/react/20/solid'
-import _map from 'lodash/map'
+import { UAParser } from 'ua-parser-js'
 
-import routesPath from '~/utils/routes'
-import { getAccessToken } from '~/utils/accessToken'
-import { getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
+import Header from '~/components/Header'
+import { ConveyorBelt } from '~/components/marketing/ConveyorBelt'
+import { DitchGoogle } from '~/components/marketing/DitchGoogle'
+import { Lines } from '~/components/marketing/Lines'
+import { LogoTimeline } from '~/components/marketing/LogoTimeline'
+import { MarketplaceCluster } from '~/components/marketing/MarketplaceCluster'
+import Pricing from '~/components/marketing/Pricing'
 import {
   GITHUB_URL,
   LIVE_DEMO_URL,
@@ -28,20 +32,12 @@ import {
   isDisableMarketingPages,
 } from '~/lib/constants'
 import { StateType } from '~/lib/store/index'
-import { Cookie, FileTextIcon } from 'lucide-react'
-
-import Header from '~/components/Header'
-import Pricing from '~/components/marketing/Pricing'
-import { DitchGoogle } from '~/components/marketing/DitchGoogle'
-import { Lines } from '~/components/marketing/Lines'
-import React, { useEffect, useState } from 'react'
-import clsx from 'clsx'
-import { MetricCard, MetricCardSelect } from '~/pages/Project/View/components/MetricCards'
 import CCRow from '~/pages/Project/View/components/CCRow'
-import { CheckIcon, CursorArrowRaysIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
-import { LogoTimeline } from '~/components/marketing/LogoTimeline'
-import { MarketplaceCluster } from '~/components/marketing/MarketplaceCluster'
-import { ConveyorBelt } from '~/components/marketing/ConveyorBelt'
+import { MetricCard, MetricCardSelect } from '~/pages/Project/View/components/MetricCards'
+import { getAccessToken } from '~/utils/accessToken'
+import { getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
+import routesPath from '~/utils/routes'
+import { detectTheme, isAuthenticated } from '~/utils/server'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 1,
@@ -919,7 +915,7 @@ export default function Index() {
         <CoreFeatures theme={theme} />
 
         {/* Hiding the Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
-        {!authenticated && <Pricing authenticated={false} />}
+        {!authenticated ? <Pricing authenticated={false} /> : null}
 
         <Feedback
           name='Alper Alkan'

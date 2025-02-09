@@ -1,38 +1,38 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { Link, useLoaderData, useSearchParams } from '@remix-run/react'
-import { ClientOnly } from 'remix-utils/client-only'
-import _isEmpty from 'lodash/isEmpty'
-import _size from 'lodash/size'
-import _map from 'lodash/map'
-import { useTranslation } from 'react-i18next'
 import { FolderPlusIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { XCircleIcon } from '@heroicons/react/24/solid'
-import { StretchHorizontal as StretchHorizontalIcon, LayoutGrid as LayoutGridIcon } from 'lucide-react'
 import cx from 'clsx'
+import _isEmpty from 'lodash/isEmpty'
+import _map from 'lodash/map'
+import _size from 'lodash/size'
+import { StretchHorizontal as StretchHorizontalIcon, LayoutGrid as LayoutGridIcon } from 'lucide-react'
+import React, { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
+import { Link, useLoaderData, useSearchParams } from 'react-router'
+import { ClientOnly } from 'remix-utils/client-only'
 
-import Modal from '~/ui/Modal'
-import { withAuthentication, auth } from '~/hoc/protected'
-import routes from '~/utils/routes'
-import { isSelfhosted, LIVE_VISITORS_UPDATE_INTERVAL } from '~/lib/constants'
-import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
+import { getProjects, getLiveVisitors, getOverallStats, getOverallStatsCaptcha } from '~/api'
 import DashboardLockedBanner from '~/components/DashboardLockedBanner'
+import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
+import { withAuthentication, auth } from '~/hoc/protected'
+import useBreakpoint from '~/hooks/useBreakpoint'
 import useDebounce from '~/hooks/useDebounce'
 import useFeatureFlag from '~/hooks/useFeatureFlag'
-import { FeatureFlag } from '~/lib/models/User'
-import { setCookie } from '~/utils/cookie'
-
-import Pagination from '~/ui/Pagination'
-import { useSelector } from 'react-redux'
-import { StateType } from '~/lib/store'
-import { ProjectCard, ProjectCardSkeleton } from './ProjectCard'
-import { NoProjects } from './NoProjects'
-import { AddProject } from './AddProject'
+import { isSelfhosted, LIVE_VISITORS_UPDATE_INTERVAL } from '~/lib/constants'
 import { Overall, Project } from '~/lib/models/Project'
-import { getProjects, getLiveVisitors, getOverallStats, getOverallStatsCaptcha } from '~/api'
-import { DASHBOARD_TABS, Tabs } from './Tabs'
+import { FeatureFlag } from '~/lib/models/User'
+import { StateType } from '~/lib/store'
+import Modal from '~/ui/Modal'
+import Pagination from '~/ui/Pagination'
+import { setCookie } from '~/utils/cookie'
+import routes from '~/utils/routes'
+
+import { AddProject } from './AddProject'
+import { NoProjects } from './NoProjects'
 import { PeriodSelector } from './PeriodSelector'
+import { ProjectCard, ProjectCardSkeleton } from './ProjectCard'
 import { SortSelector, SORT_OPTIONS } from './SortSelector'
-import useBreakpoint from '~/hooks/useBreakpoint'
+import { DASHBOARD_TABS, Tabs } from './Tabs'
 
 const PAGE_SIZE_OPTIONS = [12, 24, 48, 96]
 
@@ -315,7 +315,7 @@ const Dashboard = () => {
                     />
                   )}
                 </h2>
-                {isSearchActive && (
+                {isSearchActive ? (
                   <div className='hidden w-full max-w-md items-center px-2 pb-1 font-mono sm:ml-5 sm:flex'>
                     <label htmlFor='simple-search' className='sr-only'>
                       Search
@@ -334,7 +334,7 @@ const Dashboard = () => {
                       />
                     </div>
                   </div>
-                )}
+                ) : null}
               </div>
               <div className='flex flex-wrap items-center gap-1'>
                 {activeTab === 'lost-traffic' ? null : showPeriodSelector ? (
@@ -394,7 +394,7 @@ const Dashboard = () => {
                 </Link>
               </div>
             </div>
-            {isSearchActive && (
+            {isSearchActive ? (
               <div className='mb-2 flex w-full items-center sm:hidden'>
                 <label htmlFor='search-projects' className='sr-only'>
                   Search
@@ -413,8 +413,8 @@ const Dashboard = () => {
                   />
                 </div>
               </div>
-            )}
-            {showTabs && (
+            ) : null}
+            {showTabs ? (
               <Tabs
                 activeTab={activeTab}
                 setActiveTab={(tab) => {
@@ -428,7 +428,7 @@ const Dashboard = () => {
                 isLoading={isLoading === null || isLoading}
                 className='mb-4'
               />
-            )}
+            ) : null}
             {isLoading || isLoading === null ? (
               <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
                 <ProjectCardSkeleton viewMode={_viewMode} />

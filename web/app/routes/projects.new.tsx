@@ -1,5 +1,6 @@
-import NewProject from '~/pages/Project/New'
 import type { SitemapFunction } from 'remix-sitemap'
+
+import NewProject from '~/pages/Project/New'
 
 export const sitemap: SitemapFunction = () => ({
   exclude: true,

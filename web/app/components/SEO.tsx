@@ -1,10 +1,11 @@
-import { useTranslation } from 'react-i18next'
-import { useLocation } from '@remix-run/react'
 import _startsWith from 'lodash/startsWith'
 import _toUpper from 'lodash/toUpper'
-import { getPageMeta } from '~/utils/server'
+import { useTranslation } from 'react-i18next'
+import { useLocation } from 'react-router'
+
 import { getOgImageUrl } from '~/lib/constants'
 import routes from '~/utils/routes'
+import { getPageMeta } from '~/utils/server'
 
 export const SEO = () => {
   const {
@@ -22,7 +23,7 @@ export const SEO = () => {
 
   return (
     <>
-      {!isBlogPage && (
+      {!isBlogPage ? (
         <>
           <title>{title}</title>
           <meta property='og:title' content='Swetrix' />
@@ -39,26 +40,26 @@ export const SEO = () => {
             property='og:description'
             content='Swetrix is a cookieless, privacy-first and GDPR-compliant Google Analytics alternative'
           />
-          {isMainPage && (
+          {isMainPage ? (
             <>
               <meta name='twitter:image' content='https://swetrix.com/assets/og_image.png' />
               <meta property='og:image' content='https://swetrix.com/assets/og_image.png' />
             </>
-          )}
-          {isErrorsPage && (
+          ) : null}
+          {isErrorsPage ? (
             <>
               <meta name='twitter:image' content='https://swetrix.com/assets/og_image_errors.png' />
               <meta property='og:image' content='https://swetrix.com/assets/og_image_errors.png' />
             </>
-          )}
-          {!isProjectViewPage && !isMainPage && !isErrorsPage && (
+          ) : null}
+          {!isProjectViewPage && !isMainPage && !isErrorsPage ? (
             <>
               <meta name='twitter:image' content={ogImageUrl} />
               <meta property='og:image' content={ogImageUrl} />
             </>
-          )}
+          ) : null}
         </>
-      )}
+      ) : null}
       <meta name='theme-color' content='#818cf8' />
       <meta name='twitter:site' content='@swetrix' />
       <meta name='twitter:card' content='summary_large_image' />

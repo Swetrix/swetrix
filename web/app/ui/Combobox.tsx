@@ -1,5 +1,3 @@
-import React, { Fragment, memo, useState } from 'react'
-import cx from 'clsx'
 import {
   Combobox as HeadlessCombobox,
   Transition,
@@ -9,12 +7,14 @@ import {
   ComboboxOption,
 } from '@headlessui/react'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/solid'
-import { useTranslation } from 'react-i18next'
+import cx from 'clsx'
+import _filter from 'lodash/filter'
+import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
-import _filter from 'lodash/filter'
 import _toLower from 'lodash/toLower'
-import _includes from 'lodash/includes'
+import { Fragment, memo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface SelectProps {
   title?: string
@@ -59,7 +59,7 @@ const Combobox = ({
               'relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-left focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden sm:text-sm dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50',
               buttonClassName,
             )}
-            // @ts-ignore
+            // @ts-expect-error
             displayValue={(item) => (labelExtractor ? labelExtractor(item, 0) : item)}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={placeholder}

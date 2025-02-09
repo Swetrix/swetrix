@@ -1,32 +1,32 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { useNavigate, Link } from '@remix-run/react'
-import { useTranslation, Trans } from 'react-i18next'
-import { toast } from 'sonner'
 import { ExclamationTriangleIcon, XCircleIcon } from '@heroicons/react/24/outline'
-
+import { clsx as cx } from 'clsx'
+import _findKey from 'lodash/findKey'
 import _isEmpty from 'lodash/isEmpty'
-import _size from 'lodash/size'
-import _split from 'lodash/split'
 import _keys from 'lodash/keys'
 import _reduce from 'lodash/reduce'
-import _values from 'lodash/values'
-import _findKey from 'lodash/findKey'
+import _size from 'lodash/size'
+import _split from 'lodash/split'
 import _toNumber from 'lodash/toNumber'
-import { clsx as cx } from 'clsx'
-import Input from '~/ui/Input'
-import Button from '~/ui/Button'
-import Checkbox from '~/ui/Checkbox'
-import Modal from '~/ui/Modal'
-import { PROJECT_TABS, QUERY_CONDITION, QUERY_METRIC, QUERY_TIME } from '~/lib/constants'
+import _values from 'lodash/values'
+import React, { useEffect, useMemo, useState } from 'react'
+import { useTranslation, Trans } from 'react-i18next'
+import { useSelector } from 'react-redux'
+import { useNavigate, Link } from 'react-router'
+import { toast } from 'sonner'
+
 import { createAlert, updateAlert, deleteAlert, CreateAlert, getAlert } from '~/api'
 import { withAuthentication, auth } from '~/hoc/protected'
-import routes from '~/utils/routes'
-import Select from '~/ui/Select'
+import { useRequiredParams } from '~/hooks/useRequiredParams'
+import { PROJECT_TABS, QUERY_CONDITION, QUERY_METRIC, QUERY_TIME } from '~/lib/constants'
 import { Alerts } from '~/lib/models/Alerts'
 import { StateType } from '~/lib/store'
-import { useSelector } from 'react-redux'
-import { useRequiredParams } from '~/hooks/useRequiredParams'
+import Button from '~/ui/Button'
+import Checkbox from '~/ui/Checkbox'
+import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
+import Modal from '~/ui/Modal'
+import Select from '~/ui/Select'
+import routes from '~/utils/routes'
 
 const INTEGRATIONS_LINK = `${routes.user_settings}#integrations`
 
@@ -50,9 +50,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
     queryCustomEvent: '',
   })
   const [validated, setValidated] = useState(false)
-  const [errors, setErrors] = useState<{
-    [key: string]: string
-  }>({})
+  const [errors, setErrors] = useState<Record<string, string>>({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showModal, setShowModal] = useState(false)
 
@@ -103,9 +101,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, id, isSettings])
 
-  const queryTimeTMapping: {
-    [key: string]: string
-  } = useMemo(() => {
+  const queryTimeTMapping: Record<string, string> = useMemo(() => {
     const values = _values(QUERY_TIME)
 
     return _reduce(
@@ -135,9 +131,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
     )
   }, [t])
 
-  const queryConditionTMapping: {
-    [key: string]: string
-  } = useMemo(() => {
+  const queryConditionTMapping: Record<string, string> = useMemo(() => {
     const values = _values(QUERY_CONDITION)
 
     return _reduce(
@@ -170,9 +164,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
   }, [alert])
 
   const validate = () => {
-    const allErrors: {
-      [key: string]: string
-    } = {}
+    const allErrors: Record<string, string> = {}
 
     if (_isEmpty(form.name) || _size(form.name) < 3) {
       allErrors.name = t('alert.noNameError')
@@ -205,7 +197,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
         })
     } else {
       createAlert(data as CreateAlert)
-        .then((res) => {
+        .then(() => {
           navigate(`/projects/${pid}?tab=${PROJECT_TABS.alerts}`)
           toast.success(t('alertsSettings.alertCreated'))
         })
@@ -313,7 +305,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
     >
       <form className='mx-auto w-full max-w-7xl' onSubmit={handleSubmit}>
         <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{title}</h2>
-        {!authLoading && !isIntegrationLinked && (
+        {!authLoading && !isIntegrationLinked ? (
           <div className='mt-2 flex items-center rounded-sm bg-blue-50 px-5 py-3 text-base whitespace-pre-wrap dark:bg-slate-800 dark:text-gray-50'>
             <ExclamationTriangleIcon className='mr-1 h-5 w-5' />
             <Trans
@@ -325,7 +317,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
               }}
             />
           </div>
-        )}
+        ) : null}
         <Input
           name='name'
           label={t('alert.name')}
@@ -366,7 +358,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
             capitalise
           />
         </div>
-        {form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS && (
+        {form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS ? (
           <Input
             name='queryCustomEvent'
             label={t('alert.customEvent')}
@@ -376,7 +368,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
             onChange={handleInput}
             error={beenSubmitted ? errors.queryCustomEvent : null}
           />
-        )}
+        ) : null}
         <div className='mt-4'>
           <Select
             id='queryCondition'
@@ -434,7 +426,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
               <Button
                 className='mr-2 border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
                 as={Link}
-                // @ts-ignore
+                // @ts-expect-error
                 to={`/projects/${pid}?tab=${PROJECT_TABS.alerts}`}
                 secondary
                 regular
@@ -451,7 +443,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
             <Button
               className='mr-2 border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
               as={Link}
-              // @ts-ignore
+              // @ts-expect-error
               to={`/projects/${pid}?tab=${PROJECT_TABS.alerts}`}
               secondary
               regular

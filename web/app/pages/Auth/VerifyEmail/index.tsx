@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react'
-import { useDispatch } from 'react-redux'
-import { useParams, Link } from '@remix-run/react'
-import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import _isString from 'lodash/isString'
+import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useDispatch } from 'react-redux'
+import { useParams, Link } from 'react-router'
 
-import Loader from '~/ui/Loader'
-import routes from '~/utils/routes'
 import { verifyEmail } from '~/api'
 import { authActions } from '~/lib/reducers/auth'
+import Loader from '~/ui/Loader'
+import routes from '~/utils/routes'
 
 const VerifyEmail = () => {
   const { t } = useTranslation('common')

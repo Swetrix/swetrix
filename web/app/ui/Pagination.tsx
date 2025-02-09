@@ -1,9 +1,11 @@
-import React, { memo } from 'react'
-import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
-import _map from 'lodash/map'
 import cx from 'clsx'
+import _map from 'lodash/map'
+import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
+import { memo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
+
 import { usePagination, DOTS } from '~/hooks/usePagination'
+
 import Select from './Select'
 
 interface PaginationProps {
@@ -91,7 +93,7 @@ const Pagination = ({
           </Trans>
         </p>
         <div className='flex items-center gap-4'>
-          {pageSizeOptions && onPageSizeChange && (
+          {pageSizeOptions && onPageSizeChange ? (
             <Select<string>
               label={t('common.resultsPerPage')}
               title={pageSize.toString()}
@@ -99,7 +101,7 @@ const Pagination = ({
               onSelect={(item) => onPageSizeChange(Number(item))}
               labelClassName='!overflow-visible'
             />
-          )}
+          ) : null}
           <nav className='isolate inline-flex -space-x-px rounded-md' aria-label='Pagination'>
             <button
               type='button'

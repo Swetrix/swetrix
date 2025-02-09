@@ -1,7 +1,8 @@
-import VerifyEmail from '~/pages/Auth/VerifyEmail'
+import { redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
-import { redirect } from '@remix-run/node'
+
 import { isSelfhosted } from '~/lib/constants'
+import VerifyEmail from '~/pages/Auth/VerifyEmail'
 
 export const sitemap: SitemapFunction = () => ({
   exclude: true,

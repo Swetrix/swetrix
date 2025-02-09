@@ -1,12 +1,16 @@
-import React, { memo, useMemo, useState, useEffect } from 'react'
+import { ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
+import dayjs from 'dayjs'
+import duration from 'dayjs/plugin/duration'
+import utc from 'dayjs/plugin/utc'
+import _round from 'lodash/round'
+import { memo, useMemo, useState, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'
-import dayjs from 'dayjs'
-import utc from 'dayjs/plugin/utc'
-import duration from 'dayjs/plugin/duration'
-import { ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/react/24/outline'
-import _round from 'lodash/round'
+import { toast } from 'sonner'
 
+import { getUsageInfo } from '~/api'
+import DashboardLockedBanner from '~/components/DashboardLockedBanner'
+import { withAuthentication, auth } from '~/hoc/protected'
 import {
   isSelfhosted,
   PADDLE_JS_URL,
@@ -15,20 +19,17 @@ import {
   paddleLanguageMapping,
   isBrowser,
 } from '~/lib/constants'
-import { loadScript } from '~/utils/generic'
-import Loader from '~/ui/Loader'
+import { UsageInfo } from '~/lib/models/Usageinfo'
+import UIActions from '~/lib/reducers/ui'
 import { useAppDispatch, StateType } from '~/lib/store'
-import { withAuthentication, auth } from '~/hoc/protected'
-import Modal from '~/ui/Modal'
 import Button from '~/ui/Button'
+import Loader from '~/ui/Loader'
+import Modal from '~/ui/Modal'
 import MultiProgress from '~/ui/MultiProgress'
 import Tooltip from '~/ui/Tooltip'
-import UIActions from '~/lib/reducers/ui'
+import { loadScript } from '~/utils/generic'
+
 import Pricing from '../../components/marketing/Pricing'
-import DashboardLockedBanner from '~/components/DashboardLockedBanner'
-import { UsageInfo } from '~/lib/models/Usageinfo'
-import { getUsageInfo } from '~/api'
-import { toast } from 'sonner'
 
 dayjs.extend(utc)
 dayjs.extend(duration)
@@ -238,7 +239,7 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
           <p className='max-w-prose font-mono text-base tracking-tight text-gray-900 dark:text-gray-50'>
             {t('billing.membersNotification')}
           </p>
-          {isSubscriber && nextBillDate && (
+          {isSubscriber && nextBillDate ? (
             <div className='mt-5 max-w-prose rounded-md bg-blue-50 p-4 font-mono dark:bg-blue-600/30'>
               <div className='flex'>
                 <div className='shrink-0'>
@@ -254,8 +255,8 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
                 </p>
               </div>
             </div>
-          )}
-          {cancellationEffectiveDate && (
+          ) : null}
+          {cancellationEffectiveDate ? (
             <div className='mt-5 max-w-prose rounded-md bg-blue-50 p-4 font-mono dark:bg-blue-600/30'>
               <div className='flex'>
                 <div className='shrink-0'>
@@ -276,8 +277,8 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
                 </div>
               </div>
             </div>
-          )}
-          {isTrial && trialMessage && (
+          ) : null}
+          {isTrial && trialMessage ? (
             <div className='mt-5 max-w-prose rounded-md bg-blue-50 p-4 font-mono dark:bg-blue-600/30'>
               <div className='flex'>
                 <div className='shrink-0'>
@@ -286,8 +287,8 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
                 <p className='ml-3 text-sm font-medium text-blue-700 dark:text-blue-100'>{trialMessage}</p>
               </div>
             </div>
-          )}
-          {isNoSub && (
+          ) : null}
+          {isNoSub ? (
             <div className='mt-5 max-w-prose rounded-md bg-red-50 p-4 font-mono dark:bg-red-600/30'>
               <div className='flex'>
                 <div className='shrink-0'>
@@ -303,7 +304,7 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
                 </div>
               </div>
             </div>
-          )}
+          ) : null}
 
           {isLoading ? (
             <Loader />
@@ -311,16 +312,16 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
             <div className='mt-8 flex flex-col'>
               <Pricing authenticated={authenticated} isBillingPage />
               <div className='mt-2 space-y-2'>
-                {subUpdateURL && (
+                {subUpdateURL ? (
                   <Button className='mr-2' onClick={onUpdatePaymentDetails} type='button' primary large>
                     {t('billing.update')}
                   </Button>
-                )}
-                {subCancelURL && (
+                ) : null}
+                {subCancelURL ? (
                   <Button onClick={() => setIsCancelSubModalOpened(true)} type='button' semiDanger large>
                     {t('billing.cancelSub')}
                   </Button>
-                )}
+                ) : null}
               </div>
             </div>
           )}

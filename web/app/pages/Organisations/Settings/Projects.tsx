@@ -1,25 +1,25 @@
-import React, { useState, useEffect, useMemo } from 'react'
-import { toast } from 'sonner'
 import { InformationCircleIcon, MagnifyingGlassIcon, FolderPlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { useTranslation } from 'react-i18next'
-import _isEmpty from 'lodash/isEmpty'
-import _replace from 'lodash/replace'
-import _map from 'lodash/map'
 import _filter from 'lodash/filter'
-
-import Button from '~/ui/Button'
-import Modal from '~/ui/Modal'
-import { DetailedOrganisation } from '~/lib/models/Organisation'
+import _isEmpty from 'lodash/isEmpty'
+import _map from 'lodash/map'
+import _replace from 'lodash/replace'
+import { useState, useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
-import { StateType } from '~/lib/store'
-import Tooltip from '~/ui/Tooltip'
+import { Link } from 'react-router'
+import { toast } from 'sonner'
+
 import { removeProjectFromOrganisation, getProjectsAvailableForOrganisation, addProjectToOrganisation } from '~/api'
-import { Link } from '@remix-run/react'
-import routes from '~/utils/routes'
-import Loader from '~/ui/Loader'
-import Pagination from '~/ui/Pagination'
 import useDebounce from '~/hooks/useDebounce'
+import { DetailedOrganisation } from '~/lib/models/Organisation'
 import { Project } from '~/lib/models/Project'
+import { StateType } from '~/lib/store'
+import Button from '~/ui/Button'
+import Loader from '~/ui/Loader'
+import Modal from '~/ui/Modal'
+import Pagination from '~/ui/Pagination'
+import Tooltip from '~/ui/Tooltip'
+import routes from '~/utils/routes'
 
 interface SelectAProjectProps {
   onSelect: (project: Project) => void
@@ -277,7 +277,7 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
           </>
         </Button>
       </div>
-      {isSearchActive && (
+      {isSearchActive ? (
         <div className='relative w-full'>
           <div className='pointer-events-none absolute inset-y-0 left-0 hidden items-center sm:flex'>
             <MagnifyingGlassIcon className='ml-2 h-5 w-5 cursor-pointer text-gray-900 hover:opacity-80 dark:text-gray-50' />
@@ -293,7 +293,7 @@ export const Projects = ({ organisation, reloadOrganisation }: ProjectsProps) =>
             placeholder={t('project.search')}
           />
         </div>
-      )}
+      ) : null}
       <div>
         {_isEmpty(filteredProjects) ? (
           <NoProjects />

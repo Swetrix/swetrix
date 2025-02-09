@@ -1,10 +1,9 @@
-import Singup from '~/pages/Auth/Signup'
+import type { HeadersFunction, LoaderFunctionArgs } from 'react-router'
+import { useLoaderData, redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
-import type { HeadersFunction, LoaderFunctionArgs } from '@remix-run/node'
-import { useLoaderData } from '@remix-run/react'
-import { redirect } from '@remix-run/node'
 
 import { isSelfhosted } from '~/lib/constants'
+import Singup from '~/pages/Auth/Signup'
 import { detectTheme } from '~/utils/server'
 
 export const headers: HeadersFunction = ({ parentHeaders }) => {

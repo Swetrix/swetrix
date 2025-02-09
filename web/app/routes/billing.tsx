@@ -1,10 +1,9 @@
-import type { LoaderFunctionArgs } from '@remix-run/node'
-import { useLoaderData } from '@remix-run/react'
-import { data, redirect } from '@remix-run/node'
+import type { LoaderFunctionArgs } from 'react-router'
+import { useLoaderData, data, redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
-import Billing from '~/pages/Billing'
 
 import { isSelfhosted } from '~/lib/constants'
+import Billing from '~/pages/Billing'
 import { isAuthenticated, detectTheme } from '~/utils/server'
 
 export const sitemap: SitemapFunction = () => ({

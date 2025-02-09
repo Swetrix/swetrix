@@ -1,7 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { getItem, removeItem, setItem } from '~/utils/localstorage'
+
 import { LS_VIEW_PREFS_SETTING, LS_CAPTCHA_VIEW_PREFS_SETTING, isBrowser } from '~/lib/constants'
 import { filterInvalidViewPrefs } from '~/pages/Project/View/utils/filters'
+import { getItem, removeItem, setItem } from '~/utils/localstorage'
 
 const getInitialViewPrefs = (LS_VIEW: string) => {
   if (!isBrowser) {
@@ -22,13 +23,14 @@ const getInitialViewPrefs = (LS_VIEW: string) => {
 interface InitialState {
   captchaProjectsViewPrefs: any
   customEventsPrefs: any
-  projectViewPrefs: {
-    [key: string]: {
+  projectViewPrefs: Record<
+    string,
+    {
       period: string
       timeBucket: string
       rangeDate?: Date[]
     }
-  } | null
+  > | null
 }
 
 const initialState: InitialState = {
@@ -56,13 +58,14 @@ const cacheSlice = createSlice({
             period,
             timeBucket,
           }
-      const storedPrefs = getItem(LS_VIEW_PREFS_SETTING) as {
-        [key: string]: {
+      const storedPrefs = getItem(LS_VIEW_PREFS_SETTING) as Record<
+        string,
+        {
           period: string
           timeBucket: string
           rangeDate?: Date[]
         }
-      }
+      >
       if (typeof storedPrefs === 'object' && storedPrefs !== null) {
         storedPrefs[pid] = viewPrefs
         setItem(LS_VIEW_PREFS_SETTING, JSON.stringify(storedPrefs))
@@ -89,13 +92,14 @@ const cacheSlice = createSlice({
             period,
             timeBucket,
           }
-      const storedPrefs = getItem(LS_CAPTCHA_VIEW_PREFS_SETTING) as {
-        [key: string]: {
+      const storedPrefs = getItem(LS_CAPTCHA_VIEW_PREFS_SETTING) as Record<
+        string,
+        {
           period: string
           timeBucket: string
           rangeDate?: Date[]
         }
-      }
+      >
       if (typeof storedPrefs === 'object' && storedPrefs !== null) {
         storedPrefs[pid] = viewPrefs
         setItem(LS_CAPTCHA_VIEW_PREFS_SETTING, JSON.stringify(storedPrefs))

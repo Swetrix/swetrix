@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react'
-import { Link, useNavigate, useParams } from '@remix-run/react'
-import { useTranslation, Trans } from 'react-i18next'
-import _size from 'lodash/size'
-import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
+import _keys from 'lodash/keys'
+import _size from 'lodash/size'
+import React, { useState, useEffect } from 'react'
+import { useTranslation, Trans } from 'react-i18next'
+import { Link, useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 
 import { createNewPassword } from '~/api'
 import { withAuthentication, auth } from '~/hoc/protected'
-import routes from '~/utils/routes'
-import Input from '~/ui/Input'
 import Button from '~/ui/Button'
+import Input from '~/ui/Input'
+import routes from '~/utils/routes'
 import { isValidPassword, MIN_PASSWORD_CHARS, MAX_PASSWORD_CHARS } from '~/utils/validator'
 
 interface FormSubmitData {
@@ -116,7 +116,7 @@ const CreateNewPassword = () => {
                 hint={t('auth.common.hint', { amount: MIN_PASSWORD_CHARS })}
                 value={form.password}
                 onChange={handleInput}
-                error={beenSubmitted && errors.password}
+                error={beenSubmitted ? errors.password : null}
               />
               <Input
                 name='repeat'
@@ -124,7 +124,7 @@ const CreateNewPassword = () => {
                 label={t('auth.common.repeat')}
                 value={form.repeat}
                 onChange={handleInput}
-                error={beenSubmitted && errors.repeat}
+                error={beenSubmitted ? errors.repeat : null}
               />
               <Button className='w-full justify-center' type='submit' loading={isLoading} primary giant>
                 {t('auth.recovery.save')}

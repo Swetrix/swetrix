@@ -1,5 +1,4 @@
 /* eslint-disable react/no-unescaped-entities */
-import React from 'react'
 import _map from 'lodash/map'
 
 const typesOfCookies = [

@@ -1,51 +1,29 @@
 /* eslint-disable no-param-reassign */
-import React, { useState, useEffect, memo, useMemo } from 'react'
-import type i18next from 'i18next'
-import { useNavigate } from '@remix-run/react'
-import { ClientOnly } from 'remix-utils/client-only'
-import { useTranslation } from 'react-i18next'
-import { toast } from 'sonner'
-import _size from 'lodash/size'
-import _isEmpty from 'lodash/isEmpty'
-import _isNull from 'lodash/isNull'
-import _findIndex from 'lodash/findIndex'
-import _map from 'lodash/map'
-import _keys from 'lodash/keys'
-import _find from 'lodash/find'
 import {
   EnvelopeIcon,
   ExclamationTriangleIcon,
   ChevronDownIcon,
   CursorArrowRaysIcon,
 } from '@heroicons/react/24/outline'
+import cx from 'clsx'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
-import cx from 'clsx'
+import type i18next from 'i18next'
+import _find from 'lodash/find'
+import _findIndex from 'lodash/findIndex'
+import _isEmpty from 'lodash/isEmpty'
+import _isNull from 'lodash/isNull'
+import _keys from 'lodash/keys'
+import _map from 'lodash/map'
+import _size from 'lodash/size'
+import { DownloadIcon, MessageSquareTextIcon, MonitorIcon, UserRoundIcon } from 'lucide-react'
+import React, { useState, useEffect, memo, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router'
+import { ClientOnly } from 'remix-utils/client-only'
+import { toast } from 'sonner'
 
-import {
-  reportFrequencies,
-  DEFAULT_TIMEZONE,
-  CONFIRMATION_TIMEOUT,
-  GDPR_REQUEST,
-  GDPR_EXPORT_TIMEFRAME,
-  TimeFormat,
-  isSelfhosted,
-} from '~/lib/constants'
-import { User } from '~/lib/models/User'
-import { withAuthentication, auth } from '~/hoc/protected'
-import Input from '~/ui/Input'
-import Button from '~/ui/Button'
-import Modal from '~/ui/Modal'
-import Select from '~/ui/Select'
-import Checkbox from '~/ui/Checkbox'
-import PaidFeature from '~/modals/PaidFeature'
-import TimezonePicker from '~/ui/TimezonePicker'
-import Textarea from '~/ui/Textarea'
-import Loader from '~/ui/Loader'
-import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS } from '~/utils/validator'
-import routes from '~/utils/routes'
-import { trackCustom } from '~/utils/analytics'
-import { getCookie, setCookie } from '~/utils/cookie'
 import {
   confirmEmail,
   exportUserData,
@@ -56,21 +34,44 @@ import {
   changeUserDetails,
   deleteUser,
 } from '~/api'
-import ProjectList from './components/ProjectList'
-import TwoFA from './components/TwoFA'
+import { withAuthentication, auth } from '~/hoc/protected'
+import {
+  reportFrequencies,
+  DEFAULT_TIMEZONE,
+  CONFIRMATION_TIMEOUT,
+  GDPR_REQUEST,
+  GDPR_EXPORT_TIMEFRAME,
+  TimeFormat,
+  isSelfhosted,
+} from '~/lib/constants'
+import { User } from '~/lib/models/User'
+import { authActions } from '~/lib/reducers/auth'
+import { StateType, useAppDispatch } from '~/lib/store'
+import PaidFeature from '~/modals/PaidFeature'
+import Button from '~/ui/Button'
+import Checkbox from '~/ui/Checkbox'
+import Input from '~/ui/Input'
+import Loader from '~/ui/Loader'
+import Modal from '~/ui/Modal'
+import Select from '~/ui/Select'
+import Textarea from '~/ui/Textarea'
+import TimezonePicker from '~/ui/TimezonePicker'
+import { removeAccessToken } from '~/utils/accessToken'
+import { trackCustom } from '~/utils/analytics'
+import { logout } from '~/utils/auth'
+import { getCookie, setCookie } from '~/utils/cookie'
+import { removeRefreshToken } from '~/utils/refreshToken'
+import routes from '~/utils/routes'
+import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS } from '~/utils/validator'
+
 import Integrations from './components/Integrations'
-import Socialisations from './components/Socialisations'
-import Referral from './components/Referral'
+import NoOrganisations from './components/NoOrganisations'
 import NoSharedProjects from './components/NoSharedProjects'
 import Organisations from './components/Organisations'
-import NoOrganisations from './components/NoOrganisations'
-import { useSelector } from 'react-redux'
-import { StateType, useAppDispatch } from '~/lib/store'
-import { authActions } from '~/lib/reducers/auth'
-import { removeRefreshToken } from '~/utils/refreshToken'
-import { removeAccessToken } from '~/utils/accessToken'
-import { logout } from '~/utils/auth'
-import { DownloadIcon, MessageSquareTextIcon, MonitorIcon, UserRoundIcon } from 'lucide-react'
+import ProjectList from './components/ProjectList'
+import Referral from './components/Referral'
+import Socialisations from './components/Socialisations'
+import TwoFA from './components/TwoFA'
 
 dayjs.extend(utc)
 
@@ -149,9 +150,7 @@ const UserSettings = () => {
   const [reportFrequency, setReportFrequency] = useState(user.reportFrequency)
   const [formPresetted, setFormPresetted] = useState(false)
   const [validated, setValidated] = useState(false)
-  const [errors, setErrors] = useState<{
-    [key: string]: string
-  }>({})
+  const [errors, setErrors] = useState<Record<string, string>>({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [showAPIDeleteModal, setShowAPIDeleteModal] = useState(false)
@@ -166,9 +165,7 @@ const UserSettings = () => {
   const activeTabLabel = useMemo(() => _find(tabs, (tab) => tab.id === activeTab)?.label, [tabs, activeTab])
 
   const validate = () => {
-    const allErrors = {} as {
-      [key: string]: string
-    }
+    const allErrors = {} as Record<string, string>
 
     if (!isValidEmail(form.email)) {
       allErrors.email = t('auth.common.badEmailError')
@@ -565,7 +562,7 @@ const UserSettings = () => {
                           })}
                         />
                       </span>
-                      {showPasswordFields && (
+                      {showPasswordFields ? (
                         <div className='mt-4 grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-6'>
                           <Input
                             name='password'
@@ -589,7 +586,7 @@ const UserSettings = () => {
                             error={beenSubmitted ? errors.repeat : null}
                           />
                         </div>
-                      )}
+                      ) : null}
                       <Button className='mt-4' type='submit' primary large>
                         {t('profileSettings.update')}
                       </Button>
@@ -748,7 +745,7 @@ const UserSettings = () => {
                       </div>
 
                       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-                      {!user.isActive && (
+                      {!user.isActive ? (
                         <div
                           className='mt-4 flex max-w-max cursor-pointer pl-0 text-blue-600 underline hover:text-indigo-800 dark:hover:text-indigo-600'
                           onClick={() => onEmailConfirm(setError)}
@@ -756,7 +753,7 @@ const UserSettings = () => {
                           <EnvelopeIcon className='mt-0.5 mr-2 h-6 w-6 text-blue-500' />
                           {t('profileSettings.noLink')}
                         </div>
-                      )}
+                      ) : null}
                       <div className='mt-4 flex flex-wrap justify-center gap-2 sm:justify-between'>
                         <Button onClick={() => setShowExportModal(true)} semiSmall primary>
                           <>
@@ -847,7 +844,7 @@ const UserSettings = () => {
             if (activeTab === TAB_MAPPING.COMMUNICATIONS) {
               return (
                 <>
-                  {!isSelfhosted && (
+                  {!isSelfhosted ? (
                     <>
                       {/* Email reports frequency selector (e.g. monthly, weekly, etc.) */}
                       <h3 className='mt-2 text-lg font-bold text-gray-900 dark:text-gray-50'>
@@ -882,7 +879,7 @@ const UserSettings = () => {
                         {t('profileSettings.integrations')}
                       </h3>
                       <Integrations handleIntegrationSave={handleIntegrationSave} />
-                      {user.isTelegramChatIdConfirmed && (
+                      {user.isTelegramChatIdConfirmed ? (
                         <Checkbox
                           checked={user.receiveLoginNotifications}
                           onChange={handleReceiveLoginNotifications}
@@ -891,9 +888,9 @@ const UserSettings = () => {
                           className='mt-4'
                           label={t('profileSettings.receiveLoginNotifications')}
                         />
-                      )}
+                      ) : null}
                     </>
-                  )}
+                  ) : null}
                 </>
               )
             }

@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react'
-import { useParams, Link } from '@remix-run/react'
-import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import _split from 'lodash/split'
+import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useParams, Link } from 'react-router'
 
+import { verifyShare } from '~/api'
 import Loader from '~/ui/Loader'
 import routes from '~/utils/routes'
-import { verifyShare } from '~/api'
 
 const ConfirmShare = () => {
   const { t } = useTranslation('common')

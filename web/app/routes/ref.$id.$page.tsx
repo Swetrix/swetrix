@@ -1,5 +1,5 @@
-import type { LoaderFunctionArgs } from '@remix-run/node'
-import { redirect } from '@remix-run/node'
+import type { LoaderFunctionArgs } from 'react-router'
+import { redirect } from 'react-router'
 
 import { isSelfhosted, REFERRAL_COOKIE, REFERRAL_COOKIE_DAYS } from '~/lib/constants'
 import { generateCookieString } from '~/utils/cookie'

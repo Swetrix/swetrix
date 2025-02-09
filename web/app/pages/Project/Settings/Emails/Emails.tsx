@@ -1,28 +1,26 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { toast } from 'sonner'
 import { ChevronDownIcon, CheckIcon } from '@heroicons/react/24/outline'
-import { useTranslation } from 'react-i18next'
+import cx from 'clsx'
 import dayjs from 'dayjs'
-import _keys from 'lodash/keys'
-import _isEmpty from 'lodash/isEmpty'
 import _filter from 'lodash/filter'
+import _isEmpty from 'lodash/isEmpty'
+import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _toLower from 'lodash/toLower'
+import { MailPlusIcon, Trash2Icon } from 'lucide-react'
+import React, { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 
 import { addSubscriber, removeSubscriber, getSubscribers, updateSubscriber } from '~/api'
-
-import { isValidEmail } from '~/utils/validator'
 import useOnClickOutside from '~/hooks/useOnClickOutside'
 import { reportFrequencyForEmailsOptions } from '~/lib/constants'
-
-import Input from '~/ui/Input'
-import Button from '~/ui/Button'
-import Modal from '~/ui/Modal'
-import Loader from '~/ui/Loader'
-import cx from 'clsx'
-import { Badge } from '~/ui/Badge'
 import { Subscriber } from '~/lib/models/Subscriber'
-import { MailPlusIcon, Trash2Icon } from 'lucide-react'
+import { Badge } from '~/ui/Badge'
+import Button from '~/ui/Button'
+import Input from '~/ui/Input'
+import Loader from '~/ui/Loader'
+import Modal from '~/ui/Modal'
+import { isValidEmail } from '~/utils/validator'
 
 interface ModalMessageProps {
   handleInput: (e: React.ChangeEvent<HTMLInputElement>) => void
@@ -52,7 +50,7 @@ const ModalMessage = ({ handleInput, beenSubmitted, errors, form }: ModalMessage
         placeholder='you@example.com'
         className='mt-4'
         onChange={handleInput}
-        error={beenSubmitted && errors.email}
+        error={beenSubmitted ? errors.email : null}
       />
       <fieldset className='mt-4'>
         <legend className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
@@ -74,11 +72,11 @@ const ModalMessage = ({ handleInput, beenSubmitted, errors, form }: ModalMessage
             />
           ))}
         </div>
-        {errors.reportFrequency && (
+        {errors.reportFrequency ? (
           <p className='mt-2 text-sm text-red-600 dark:text-red-500' id='reportFrequency-error'>
             {errors.reportFrequency}
           </p>
-        )}
+        ) : null}
       </fieldset>
     </div>
   )
@@ -190,7 +188,7 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
               {t(`profileSettings.${_toLower(reportFrequency)}`)}
               <ChevronDownIcon style={{ transform: open ? 'rotate(180deg)' : '' }} className='ml-0.5 h-4 w-4 pt-px' />
             </button>
-            {open && (
+            {open ? (
               <ul
                 ref={openRef}
                 className='absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-200 rounded-md bg-white text-left focus:outline-hidden dark:divide-gray-700 dark:bg-slate-900'
@@ -209,11 +207,11 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
                         {t(`profileSettings.${_toLower(item.label)}`)}
                       </p>
                     </div>
-                    {reportFrequency === item.value && (
+                    {reportFrequency === item.value ? (
                       <span className='text-indigo-600 group-hover:text-gray-200'>
                         <CheckIcon className='ml-1 h-7 w-7 pt-px' />
                       </span>
-                    )}
+                    ) : null}
                   </li>
                 ))}
                 <li
@@ -223,7 +221,7 @@ const EmailList = ({ data, onRemove, setEmails }: EmailListProps) => {
                   <p className='font-bold text-red-600 dark:text-red-500'>{t('project.settings.removeMember')}</p>
                 </li>
               </ul>
-            )}
+            ) : null}
           </div>
         ) : (
           <div className='flex items-center justify-end'>
@@ -408,7 +406,7 @@ const Emails = ({ projectId }: { projectId: string }) => {
         <div className='mt-3 flex flex-col'>
           <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 md:overflow-x-visible lg:-mx-8'>
             <div className='inline-block min-w-full py-2 md:px-6 lg:px-8'>
-              {!loading && !_isEmpty(emails) && (
+              {!loading && !_isEmpty(emails) ? (
                 <div className='font-mono ring-1 ring-black/10 md:rounded-lg'>
                   <table className='min-w-full divide-y divide-gray-300 dark:divide-gray-600'>
                     <thead>
@@ -443,9 +441,9 @@ const Emails = ({ projectId }: { projectId: string }) => {
                     </tbody>
                   </table>
                 </div>
-              )}
-              {_isEmpty(emails) && <NoSubscribers />}
-              {loading && <Loader />}
+              ) : null}
+              {_isEmpty(emails) ? <NoSubscribers /> : null}
+              {loading ? <Loader /> : null}
             </div>
           </div>
         </div>

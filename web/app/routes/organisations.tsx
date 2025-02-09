@@ -1,7 +1,8 @@
-import { redirect } from '@remix-run/node'
+import { redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
-import Organisations from '~/pages/Organisations'
+
 import { isSelfhosted } from '~/lib/constants'
+import Organisations from '~/pages/Organisations'
 
 export const sitemap: SitemapFunction = () => ({
   exclude: true,

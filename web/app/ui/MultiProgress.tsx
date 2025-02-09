@@ -1,6 +1,6 @@
-import React, { memo } from 'react'
 import cx from 'clsx'
 import _map from 'lodash/map'
+import { memo } from 'react'
 
 interface Progress {
   value: number

@@ -1,9 +1,9 @@
-import ChangeEmail from '~/pages/Auth/ChangeEmail'
+import type { HeadersFunction } from 'react-router'
+import { redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
-import type { HeadersFunction } from '@remix-run/node'
-import { redirect } from '@remix-run/node'
 
 import { isSelfhosted } from '~/lib/constants'
+import ChangeEmail from '~/pages/Auth/ChangeEmail'
 
 export const headers: HeadersFunction = ({ parentHeaders }) => {
   parentHeaders.set('X-Frame-Options', 'DENY')

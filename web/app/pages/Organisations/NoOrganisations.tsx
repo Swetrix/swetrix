@@ -1,5 +1,5 @@
-import { useTranslation } from 'react-i18next'
 import { BuildingOffice2Icon } from '@heroicons/react/24/outline'
+import { useTranslation } from 'react-i18next'
 
 interface NoOrganisationsProps {
   onClick: () => void

@@ -1,10 +1,11 @@
-import React, { memo } from 'react'
-import { useTranslation } from 'react-i18next'
 import _isEmpty from 'lodash/isEmpty'
+import { memo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { Filter } from '../interfaces/traffic'
-import Filters from './Filters'
 import { typeNameMapping } from '../ViewProject.helpers'
+
+import Filters from './Filters'
 
 interface NoEventsProps {
   filters: Filter[]

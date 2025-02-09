@@ -1,5 +1,3 @@
-import React, { Fragment, memo } from 'react'
-import cx from 'clsx'
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react'
 import {
   CheckIcon,
@@ -8,7 +6,11 @@ import {
   UserGroupIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline'
+import cx from 'clsx'
+import React, { Fragment, memo } from 'react'
+
 import Beta from '~/ui/Beta'
+
 import Spin from './icons/Spin'
 
 interface ModalProps {
@@ -94,33 +96,33 @@ const Modal = ({
             )}
           >
             <div className='sm:flex sm:items-start'>
-              {type === 'success' && (
+              {type === 'success' ? (
                 <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-100 sm:mr-3 sm:h-10 sm:w-10'>
                   <CheckIcon className='h-6 w-6 text-green-600' aria-hidden='true' />
                 </div>
-              )}
-              {type === 'error' && (
+              ) : null}
+              {type === 'error' ? (
                 <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-100 sm:mr-3 sm:h-10 sm:w-10'>
                   <ExclamationTriangleIcon className='h-6 w-6 text-red-600' aria-hidden='true' />
                 </div>
-              )}
-              {type === 'info' && (
+              ) : null}
+              {type === 'info' ? (
                 <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-100 text-center sm:mr-3 sm:h-10 sm:w-10'>
                   <InformationCircleIcon className='h-6 w-6 text-blue-600' aria-hidden='true' />
                 </div>
-              )}
-              {type === 'warning' && (
+              ) : null}
+              {type === 'warning' ? (
                 <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange-100 sm:mr-3 sm:h-10 sm:w-10'>
                   <ExclamationTriangleIcon className='h-6 w-6 text-amber-600' aria-hidden='true' />
                 </div>
-              )}
-              {type === 'confirmed' && (
+              ) : null}
+              {type === 'confirmed' ? (
                 <div className='mx-auto flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-green-100 sm:mr-3 sm:h-10 sm:w-10'>
                   <UserGroupIcon className='h-6 w-6 text-green-600' aria-hidden='true' />
                 </div>
-              )}
+              ) : null}
               <div className='mt-3 w-full text-center sm:mt-0 sm:text-left'>
-                {title && (
+                {title ? (
                   <DialogTitle
                     as='h3'
                     className={cx('flex items-center text-lg leading-6 font-medium text-gray-900 dark:text-gray-50', {
@@ -130,9 +132,9 @@ const Modal = ({
                   >
                     <div>
                       {title}
-                      {isBeta && <Beta className='ml-10' />}
+                      {isBeta ? <Beta className='ml-10' /> : null}
                     </div>
-                    {!closeText && (
+                    {!closeText ? (
                       <XMarkIcon
                         className='size-6 cursor-pointer stroke-2 text-gray-700 hover:text-gray-500 dark:text-gray-200 dark:hover:text-gray-300'
                         onClick={(e) => {
@@ -141,15 +143,15 @@ const Modal = ({
                           onClose?.()
                         }}
                       />
-                    )}
+                    ) : null}
                   </DialogTitle>
-                )}
+                ) : null}
                 <div className='mt-2 text-sm whitespace-pre-line text-gray-600 dark:text-gray-200'>{message}</div>
               </div>
             </div>
             <div className='px-4 py-3 font-mono sm:flex sm:flex-row-reverse sm:px-0 sm:pb-0'>
               {customButtons}
-              {submitText && (
+              {submitText ? (
                 <button
                   type='button'
                   className={cx(
@@ -164,11 +166,11 @@ const Modal = ({
                   )}
                   onClick={onSubmit}
                 >
-                  {isLoading && <Spin alwaysLight />}
+                  {isLoading ? <Spin alwaysLight /> : null}
                   {submitText}
                 </button>
-              )}
-              {closeText && (
+              ) : null}
+              {closeText ? (
                 <button
                   type='button'
                   className='mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:border-none dark:border-gray-600 dark:bg-slate-800 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700'
@@ -180,7 +182,7 @@ const Modal = ({
                 >
                   {closeText}
                 </button>
-              )}
+              ) : null}
             </div>
           </DialogPanel>
         </TransitionChild>

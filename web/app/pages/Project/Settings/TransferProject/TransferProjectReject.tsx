@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react'
-import { Link } from '@remix-run/react'
-import { useTranslation } from 'react-i18next'
 import { XCircleIcon, InformationCircleIcon } from '@heroicons/react/24/solid'
-
-import Loader from '~/ui/Loader'
+import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
 
 import { rejectTransferProject } from '~/api'
+import Loader from '~/ui/Loader'
 import routes from '~/utils/routes'
 
 const TransferProjectReject = () => {

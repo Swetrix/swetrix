@@ -1,5 +1,3 @@
-import React from 'react'
-
 const GoogleGSVG = ({ className }: { className?: string }) => (
   <svg className={className} viewBox='0 0 186.69 190.5'>
     <g transform='translate(1184.583 765.171)'>

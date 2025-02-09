@@ -1,18 +1,19 @@
-import type { EntryContext } from '@remix-run/node'
-import { PassThrough } from 'node:stream'
 import { resolve as feResolve } from 'node:path'
+import { PassThrough } from 'node:stream'
+
+import { createReadableStreamFromReadable } from '@react-router/node'
 import { createInstance } from 'i18next'
-import { I18nextProvider, initReactI18next } from 'react-i18next'
-import { createReadableStreamFromReadable } from '@remix-run/node'
 import FSBackend from 'i18next-fs-backend'
-import { RemixServer } from '@remix-run/react'
 import { isbot } from 'isbot'
 import { renderToPipeableStream } from 'react-dom/server'
+import { I18nextProvider, initReactI18next } from 'react-i18next'
+import { ServerRouter } from 'react-router'
+import type { EntryContext } from 'react-router'
 import { createSitemapGenerator } from 'remix-sitemap'
 
-import { MAIN_URL } from './lib/constants'
-import i18next from './i18next.server'
 import i18n, { detectLanguage } from './i18n'
+import i18next from './i18next.server'
+import { MAIN_URL } from './lib/constants'
 
 // Reject/cancel all pending promises after 5 seconds
 const streamTimeout = 5000
@@ -27,17 +28,17 @@ export default async function handleRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
-  remixContext: EntryContext,
+  reactRouterContext: EntryContext,
 ) {
   if (isSitemapUrl(request)) {
-    // @ts-ignore
-    const stm = await sitemap(request, remixContext)
+    // @ts-expect-error
+    const stm = await sitemap(request, reactRouterContext)
     return stm
   }
 
   const instance = createInstance()
   const lng = detectLanguage(request)
-  const ns = i18next.getRouteNamespaces(remixContext)
+  const ns = i18next.getRouteNamespaces(reactRouterContext)
 
   await instance
     .use(initReactI18next)
@@ -58,7 +59,7 @@ export default async function handleRequest(
 
     const { pipe, abort } = renderToPipeableStream(
       <I18nextProvider i18n={instance}>
-        <RemixServer context={remixContext} url={request.url} />
+        <ServerRouter context={reactRouterContext} url={request.url} />
       </I18nextProvider>,
       {
         [callbackName]: () => {

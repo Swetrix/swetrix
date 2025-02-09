@@ -1,19 +1,17 @@
-import React, { useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useSelector } from 'react-redux'
-import { useNavigate } from '@remix-run/react'
+import { useNavigate } from 'react-router'
 
-import { getAccessToken } from '~/utils/accessToken'
 import { StateType } from '~/lib/store'
+import { getAccessToken } from '~/utils/accessToken'
 import routes from '~/utils/routes'
 
-type AuthParamType = {
+interface AuthParamType {
   shouldBeAuthenticated: boolean
   redirectPath: string
 }
 
-type PropsType = {
-  [key: string]: any
-}
+type PropsType = Record<string, any>
 
 export const auth = {
   authenticated: {

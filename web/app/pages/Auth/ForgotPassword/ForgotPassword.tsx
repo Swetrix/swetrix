@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react'
-import { Link, useNavigate } from '@remix-run/react'
-import { useTranslation, Trans } from 'react-i18next'
-import _keys from 'lodash/keys'
 import _isEmpty from 'lodash/isEmpty'
+import _keys from 'lodash/keys'
+import React, { useState, useEffect } from 'react'
+import { useTranslation, Trans } from 'react-i18next'
+import { Link, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
 import { forgotPassword } from '~/api'
 import { withAuthentication, auth } from '~/hoc/protected'
-import routes from '~/utils/routes'
-import Input from '~/ui/Input'
-import Button from '~/ui/Button'
 import { TRIAL_DAYS } from '~/lib/constants'
+import Button from '~/ui/Button'
+import Input from '~/ui/Input'
+import routes from '~/utils/routes'
 import { isValidEmail } from '~/utils/validator'
 
 const ForgotPassword = () => {
@@ -100,7 +100,7 @@ const ForgotPassword = () => {
                 label={t('auth.common.email')}
                 value={form.email}
                 onChange={handleInput}
-                error={beenSubmitted && errors.email}
+                error={beenSubmitted ? errors.email : null}
               />
               <Button className='w-full justify-center' type='submit' loading={isLoading} primary giant>
                 {t('auth.forgot.reset')}

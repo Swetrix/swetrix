@@ -1,23 +1,23 @@
-import { Link } from '@remix-run/react'
-import React, { memo } from 'react'
+import { ArrowRightIcon } from '@heroicons/react/20/solid'
+import { ChevronRightIcon } from '@heroicons/react/24/solid'
+import _isEmpty from 'lodash/isEmpty'
+import _map from 'lodash/map'
+import { memo } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'
+import { Link } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
-import { ChevronRightIcon } from '@heroicons/react/24/solid'
-import { ArrowRightIcon } from '@heroicons/react/20/solid'
-import _map from 'lodash/map'
-import _isEmpty from 'lodash/isEmpty'
 
-import routesPath from '~/utils/routes'
-import { getAccessToken } from '~/utils/accessToken'
-import { nFormatterSeparated } from '~/utils/generic'
+import Header from '~/components/Header'
+import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import { PERFORMANCE_LIVE_DEMO_URL, isBrowser } from '~/lib/constants'
 import { StateType } from '~/lib/store/index'
 import BackgroundSvg from '~/ui/icons/BackgroundSvg'
+import { getAccessToken } from '~/utils/accessToken'
+import { nFormatterSeparated } from '~/utils/generic'
+import routesPath from '~/utils/routes'
 
-import Header from '~/components/Header'
 import Pricing from '../../components/marketing/Pricing'
-import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 
 const Lines = () => (
   <div className='pointer-events-none relative'>
@@ -55,7 +55,7 @@ export const PeopleLoveSwetrix = () => {
             {() => (
               <p className='text-center text-5xl font-extrabold text-indigo-700'>
                 {users[0]}
-                {users[1] && <span className='text-gray-900 dark:text-indigo-200'>{users[1]}+</span>}
+                {users[1] ? <span className='text-gray-900 dark:text-indigo-200'>{users[1]}+</span> : null}
               </p>
             )}
           </ClientOnly>
@@ -67,7 +67,7 @@ export const PeopleLoveSwetrix = () => {
             {() => (
               <p className='text-center text-5xl font-extrabold text-indigo-700'>
                 {websites[0]}
-                {websites[1] && <span className='text-gray-900 dark:text-indigo-200'>{websites[1]}+</span>}
+                {websites[1] ? <span className='text-gray-900 dark:text-indigo-200'>{websites[1]}+</span> : null}
               </p>
             )}
           </ClientOnly>
@@ -79,7 +79,7 @@ export const PeopleLoveSwetrix = () => {
             {() => (
               <p className='text-center text-5xl font-extrabold text-indigo-700'>
                 {events[0]}
-                {events[1] && <span className='text-gray-900 dark:text-indigo-200'>{events[1]}+</span>}
+                {events[1] ? <span className='text-gray-900 dark:text-indigo-200'>{events[1]}+</span> : null}
               </p>
             )}
           </ClientOnly>
@@ -281,7 +281,7 @@ const Performance = ({ ssrTheme, ssrAuthenticated }: PerformanceProps) => {
         </div>
 
         {/* For now let's hide Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
-        {!authenticated && <Pricing authenticated={false} />}
+        {!authenticated ? <Pricing authenticated={false} /> : null}
 
         <DitchGoogle
           screenshot={{

@@ -1,7 +1,7 @@
-import React from 'react'
 import cx from 'clsx'
-import { isSelfhosted } from '~/lib/constants'
 import { useTranslation } from 'react-i18next'
+
+import { isSelfhosted } from '~/lib/constants'
 
 interface SwetrixLogoProps {
   className?: string

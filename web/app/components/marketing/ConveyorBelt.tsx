@@ -1,4 +1,3 @@
-import React from 'react'
 import clsx from 'clsx'
 
 const Logo = ({ label, className }: { label: string; className: string }) => {

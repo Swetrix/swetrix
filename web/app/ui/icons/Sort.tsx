@@ -1,10 +1,9 @@
-import React from 'react'
 import { ChevronUpDownIcon, ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 
 interface SortProps {
-  sortByAscend?: boolean
-  sortByDescend?: boolean
+  sortByAscend: boolean | null
+  sortByDescend: boolean | null
   className?: string
 }
 

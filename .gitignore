@@ -62,3 +62,5 @@ web/build
 web/public/build
 crowdin.yml
 .cache
+web/vite.config.ts.timestamp*
+web/.react-router/

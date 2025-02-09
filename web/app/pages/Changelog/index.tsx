@@ -1,9 +1,8 @@
 /* eslint-disable jsx-a11y/anchor-has-content */
-import React from 'react'
+import dayjs from 'dayjs'
 import _map from 'lodash/map'
 import { useTranslation } from 'react-i18next'
-import dayjs from 'dayjs'
-import { Link } from '@remix-run/react'
+import { Link } from 'react-router'
 
 import { SWETRIX_VS_GOOGLE, DOCS_URL, CAPTCHA_URL, DOCS_CAPTCHA_URL } from '~/lib/constants'
 import routes from '~/utils/routes'
@@ -453,7 +452,7 @@ const Changelog = () => {
                   <div className='relative'>
                     <ul className='dark:prose-dark prose prose-slate prose-a:relative prose-a:z-10 relative top-7 mt-2 mb-4 list-disc text-base text-gray-900 lg:top-0 lg:block dark:text-gray-50'>
                       {_map(item.changes, (change) => (
-                        // @ts-ignore
+                        // @ts-expect-error
                         <li key={change} className='whitespace-pre-line'>
                           {change}
                         </li>

@@ -1,8 +1,9 @@
-import { Link } from '@remix-run/react'
-import { useTranslation, Trans } from 'react-i18next'
-import routes from '~/utils/routes'
-import { ERROR_TRACKING_DOCS_URL } from '~/lib/constants'
 import { BugIcon } from 'lucide-react'
+import { useTranslation, Trans } from 'react-i18next'
+import { Link } from 'react-router'
+
+import { ERROR_TRACKING_DOCS_URL } from '~/lib/constants'
+import routes from '~/utils/routes'
 
 const TROUBLESHOOTING_URL = 'https://docs.swetrix.com/troubleshooting'
 

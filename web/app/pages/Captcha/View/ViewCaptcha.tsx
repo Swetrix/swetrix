@@ -1,27 +1,28 @@
 /* eslint-disable react/no-unstable-nested-components, react/display-name */
-import React, { useState, useEffect, useMemo, memo, useRef } from 'react'
-import { toast } from 'sonner'
-import useSize from '~/hooks/useSize'
-import { useNavigate, useSearchParams } from '@remix-run/react'
-import { ClientOnly } from 'remix-utils/client-only'
-import bb from 'billboard.js'
 import { GlobeAltIcon } from '@heroicons/react/24/outline'
+import billboard from 'billboard.js'
 import cx from 'clsx'
-import { useTranslation } from 'react-i18next'
-import _keys from 'lodash/keys'
-import _map from 'lodash/map'
-import _includes from 'lodash/includes'
-import _last from 'lodash/last'
-import _isEmpty from 'lodash/isEmpty'
-import _replace from 'lodash/replace'
-import _find from 'lodash/find'
 import _filter from 'lodash/filter'
+import _find from 'lodash/find'
+import _includes from 'lodash/includes'
+import _isEmpty from 'lodash/isEmpty'
+import _keys from 'lodash/keys'
+import _last from 'lodash/last'
+import _map from 'lodash/map'
+import _replace from 'lodash/replace'
 import _startsWith from 'lodash/startsWith'
+import { DownloadIcon, RotateCw, SettingsIcon } from 'lucide-react'
+import { useState, useEffect, useMemo, memo, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
+import { useNavigate, useSearchParams } from 'react-router'
+import { ClientOnly } from 'remix-utils/client-only'
+import { toast } from 'sonner'
 
-import LineChart from '~/ui/icons/LineChart'
-import BarChart from '~/ui/icons/BarChart'
-import { getItem, setItem } from '~/utils/localstorage'
+import { getProject, getCaptchaData } from '~/api'
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
+import { useRequiredParams } from '~/hooks/useRequiredParams'
+import useSize from '~/hooks/useSize'
 import {
   captchaTbPeriodPairs,
   timeBucketToDays,
@@ -38,12 +39,25 @@ import {
   DEFAULT_TIMEZONE,
 } from '~/lib/constants'
 import { CaptchaProject } from '~/lib/models/Project'
-import Loader from '~/ui/Loader'
+import UIActions from '~/lib/reducers/ui'
+import { StateType, useAppDispatch } from '~/lib/store'
+import { Panel } from '~/pages/Project/View/Panels'
+import { parseFiltersFromUrl } from '~/pages/Project/View/utils/filters'
+import { ViewProjectContext } from '~/pages/Project/View/ViewProject'
+import { deviceIconMapping, onCSVExportClick } from '~/pages/Project/View/ViewProject.helpers'
 import Dropdown from '~/ui/Dropdown'
 import FlatPicker from '~/ui/Flatpicker'
+import BarChart from '~/ui/icons/BarChart'
+import LineChart from '~/ui/icons/LineChart'
+import Loader from '~/ui/Loader'
+import { getItem, setItem } from '~/utils/localstorage'
 import routes from '~/utils/routes'
-import { getProject, getCaptchaData } from '~/api'
-import { Panel } from '~/pages/Project/View/Panels'
+
+import CCRow from '../../Project/View/components/CCRow'
+
+import Filters from './components/Filters'
+import NoEvents from './components/NoEvents'
+import TBPeriodSelector from './components/TBPeriodSelector'
 import {
   getFormatDate,
   panelIconMapping,
@@ -56,18 +70,6 @@ import {
   getColumns,
   PANELS_ORDER,
 } from './ViewCaptcha.helpers'
-import { deviceIconMapping, onCSVExportClick } from '~/pages/Project/View/ViewProject.helpers'
-import CCRow from '../../Project/View/components/CCRow'
-import NoEvents from './components/NoEvents'
-import { useRequiredParams } from '~/hooks/useRequiredParams'
-import { useSelector } from 'react-redux'
-import { StateType, useAppDispatch } from '~/lib/store'
-import Filters from './components/Filters'
-import TBPeriodSelector from './components/TBPeriodSelector'
-import UIActions from '~/lib/reducers/ui'
-import { DownloadIcon, RotateCw, SettingsIcon } from 'lucide-react'
-import { ViewProjectContext } from '~/pages/Project/View/ViewProject'
-import { parseFiltersFromUrl } from '~/pages/Project/View/utils/filters'
 
 const PageLoader = () => (
   <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
@@ -242,7 +244,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
 
         setIsPanelsDataEmpty(false)
         setMainChart(() => {
-          const generete = bb.generate(bbSettings)
+          const generete = billboard.generate(bbSettings)
           generete.data.names(dataNames)
           return generete
         })
@@ -275,7 +277,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
   }, [areFiltersParsed, filters, authLoading, project, dateRange, period, timeBucket])
 
   // this funtion is used for requesting the data from the API when the filter is changed
-  const filterHandler = (column: any, filter: any, isExclusive: boolean = false) => {
+  const filterHandler = (column: any, filter: any, isExclusive = false) => {
     let newFilters
 
     // eslint-disable-next-line no-lonely-if
@@ -286,7 +288,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
       setFilters(newFilters)
 
       // removing filter from the page URL
-      // @ts-ignore
+      // @ts-expect-error
       const url = new URL(window.location)
       url.searchParams.delete(column)
       const { pathname, search } = url
@@ -298,7 +300,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
       setFilters(newFilters)
 
       // storing filter in the page URL
-      // @ts-ignore
+      // @ts-expect-error
       const url = new URL(window.location)
       url.searchParams.append(column, filter)
       const { pathname, search } = url
@@ -321,7 +323,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
     setFilters(newFilters)
 
     // storing exclusive filter in the page URL
-    // @ts-ignore
+    // @ts-expect-error
     const url = new URL(window.location)
 
     url.searchParams.delete(column)
@@ -342,7 +344,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
   // Parsing initial filters from the address bar
   useEffect(() => {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       const url = new URL(window.location)
       const { searchParams } = url
       const intialTimeBucket: string = searchParams.get('timeBucket') || ''
@@ -363,7 +365,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
     }
 
     try {
-      // @ts-ignore
+      // @ts-expect-error
       const url = new URL(window.location)
       const { searchParams } = url
       const intialPeriod = captchaProjectsViewPrefs
@@ -374,9 +376,9 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
       }
 
       if (intialPeriod === 'custom') {
-        // @ts-ignore
+        // @ts-expect-error
         const from = new Date(searchParams.get('from'))
-        // @ts-ignore
+        // @ts-expect-error
         const to = new Date(searchParams.get('to'))
         if (from.getDate() && to.getDate()) {
           onRangeDateChange([from, to], true)
@@ -393,7 +395,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
     }
 
     try {
-      // @ts-ignore
+      // @ts-expect-error
       const url = new URL(window.location)
       const { searchParams } = url
       const initialFilters: any[] = []
@@ -448,7 +450,9 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
         updatePeriod({
           period: intialPeriod,
         })
-      } catch {}
+      } catch {
+        //
+      }
     }
 
     parsePeriodFilters()
@@ -462,7 +466,9 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
           setTimebucket(initialTimeBucket || periodPairs[3].tbs[1])
         }
       }
-    } catch {}
+    } catch {
+      //
+    }
 
     setAreFiltersParsed(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -470,7 +476,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
 
   const onRangeDateChange = (dates: Date[], onRender?: any) => {
     const days = Math.ceil(Math.abs(dates[1].getTime() - dates[0].getTime()) / (1000 * 3600 * 24))
-    // @ts-ignore
+    // @ts-expect-error
     const url = new URL(window.location)
 
     // setting allowed time buckets for the specified date range (period)
@@ -544,7 +550,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
   const updatePeriod = (newPeriod: any) => {
     const newPeriodFull = _find(periodPairs, (el) => el.period === newPeriod.period)
     let tb: any = timeBucket
-    // @ts-ignore
+    // @ts-expect-error
     const url = new URL(window.location)
     if (_isEmpty(newPeriodFull)) return
 
@@ -575,7 +581,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
   }
 
   const updateTimebucket = (newTimebucket: string) => {
-    // @ts-ignore
+    // @ts-expect-error
     const url = new URL(window.location)
     url.searchParams.delete('timeBucket')
     url.searchParams.append('timeBucket', newTimebucket)
@@ -597,7 +603,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
   }
 
   const resetFilters = () => {
-    // @ts-ignore
+    // @ts-expect-error
     const url: URL = new URL(window.location)
     const { searchParams } = url
     for (const [key] of Array.from(searchParams.entries())) {
@@ -748,7 +754,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
                       onSelect={(pair) => {
                         if (pair.isCustomDate) {
                           setTimeout(() => {
-                            // @ts-ignore
+                            // @ts-expect-error
                             refCalendar.current.openCalendar()
                           }, 100)
                         } else {
@@ -758,7 +764,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
                         }
                       }}
                     />
-                    {(project.role === 'admin' || project.role === 'owner') && (
+                    {project.role === 'admin' || project.role === 'owner' ? (
                       <button
                         type='button'
                         onClick={openSettingsHandler}
@@ -769,7 +775,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
                           {t('common.settings')}
                         </>
                       </button>
-                    )}
+                    ) : null}
                     <FlatPicker
                       ref={refCalendar}
                       onChange={(date) => setDateRange(date)}
@@ -778,8 +784,8 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
                     />
                   </div>
                 </div>
-                {analyticsLoading && <Loader />}
-                {isPanelsDataEmpty && <NoEvents filters={filters} resetFilters={resetFilters} />}
+                {analyticsLoading ? <Loader /> : null}
+                {isPanelsDataEmpty ? <NoEvents filters={filters} resetFilters={resetFilters} /> : null}
                 <div className={cx('pt-4', { hidden: isPanelsDataEmpty || analyticsLoading })}>
                   <div className='h-80'>
                     <div className='h-80 [&_svg]:!overflow-visible' id='captchaChart' />
@@ -791,85 +797,94 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
                     tnMapping={tnMapping}
                     resetFilters={resetFilters}
                   />
-                  {dataLoading && (
+                  {dataLoading ? (
                     <div className='static mt-4 !bg-transparent' id='loader'>
                       <div className='loader-head dark:!bg-slate-800'>
                         <div className='first dark:!bg-slate-600' />
                         <div className='second dark:!bg-slate-600' />
                       </div>
                     </div>
-                  )}
+                  ) : null}
                   <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
-                    {!_isEmpty(panelsData.types) &&
-                      _map(PANELS_ORDER, (type: keyof typeof tnMapping) => {
-                        const panelName = tnMapping[type]
-                        const panelIcon = panelIconMapping[type]
+                    {!_isEmpty(panelsData.types)
+                      ? _map(PANELS_ORDER, (type: keyof typeof tnMapping) => {
+                          const panelName = tnMapping[type]
+                          const panelIcon = panelIconMapping[type]
 
-                        if (type === 'cc') {
-                          const rowMapper = (entry: any) => {
-                            const { name: entryName, cc } = entry
+                          if (type === 'cc') {
+                            const rowMapper = (entry: any) => {
+                              const { name: entryName, cc } = entry
 
-                            if (cc) {
-                              return <CCRow cc={cc} name={entryName} language={language} />
+                              if (cc) {
+                                return <CCRow cc={cc} name={entryName} language={language} />
+                              }
+
+                              return <CCRow cc={entryName} language={language} />
                             }
 
-                            return <CCRow cc={entryName} language={language} />
+                            return (
+                              <Panel
+                                key={type}
+                                icon={panelIcon}
+                                id={type}
+                                onFilter={filterHandler}
+                                name={panelName}
+                                data={panelsData.data[type]}
+                                rowMapper={rowMapper}
+                              />
+                            )
                           }
 
-                          return (
-                            <Panel
-                              key={type}
-                              icon={panelIcon}
-                              id={type}
-                              onFilter={filterHandler}
-                              name={panelName}
-                              data={panelsData.data[type]}
-                              rowMapper={rowMapper}
-                            />
-                          )
-                        }
+                          if (type === 'dv') {
+                            return (
+                              <Panel
+                                key={type}
+                                icon={panelIcon}
+                                id={type}
+                                onFilter={filterHandler}
+                                name={panelName}
+                                data={panelsData.data[type]}
+                                rowMapper={(entry: { name: keyof typeof deviceIconMapping }) => {
+                                  const { name: entryName } = entry
 
-                        if (type === 'dv') {
-                          return (
-                            <Panel
-                              key={type}
-                              icon={panelIcon}
-                              id={type}
-                              onFilter={filterHandler}
-                              name={panelName}
-                              data={panelsData.data[type]}
-                              rowMapper={(entry: { name: keyof typeof deviceIconMapping }) => {
-                                const { name: entryName } = entry
+                                  const icon = deviceIconMapping[entryName]
 
-                                const icon = deviceIconMapping[entryName]
+                                  if (!icon) {
+                                    return entryName
+                                  }
 
-                                if (!icon) {
-                                  return entryName
-                                }
+                                  return (
+                                    <>
+                                      {icon}
+                                      &nbsp;
+                                      {entryName}
+                                    </>
+                                  )
+                                }}
+                                capitalize
+                              />
+                            )
+                          }
 
+                          if (type === 'br') {
+                            const rowMapper = (entry: any) => {
+                              const { name: entryName } = entry
+                              // @ts-expect-error
+                              const logoUrl = BROWSER_LOGO_MAP[entryName]
+
+                              if (!logoUrl) {
                                 return (
                                   <>
-                                    {icon}
+                                    <GlobeAltIcon className='h-5 w-5' />
                                     &nbsp;
                                     {entryName}
                                   </>
                                 )
-                              }}
-                              capitalize
-                            />
-                          )
-                        }
+                              }
 
-                        if (type === 'br') {
-                          const rowMapper = (entry: any) => {
-                            const { name: entryName } = entry
-                            // @ts-ignore
-                            const logoUrl = BROWSER_LOGO_MAP[entryName]
-
-                            if (!logoUrl) {
                               return (
                                 <>
-                                  <GlobeAltIcon className='h-5 w-5' />
+                                  <img src={logoUrl} className='h-5 w-5' alt='' />
                                   &nbsp;
                                   {entryName}
                                 </>
@@ -877,11 +892,60 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
                             }
 
                             return (
-                              <>
-                                <img src={logoUrl} className='h-5 w-5' alt='' />
-                                &nbsp;
-                                {entryName}
-                              </>
+                              <Panel
+                                key={type}
+                                icon={panelIcon}
+                                id={type}
+                                onFilter={filterHandler}
+                                name={panelName}
+                                data={panelsData.data[type]}
+                                rowMapper={rowMapper}
+                              />
+                            )
+                          }
+
+                          if (type === 'os') {
+                            const rowMapper = (entry: any) => {
+                              const { name: entryName } = entry
+                              // @ts-expect-error
+                              const logoPathLight = OS_LOGO_MAP[entryName]
+                              // @ts-expect-error
+                              const logoPathDark = OS_LOGO_MAP_DARK[entryName]
+
+                              let logoPath = _theme === 'dark' ? logoPathDark : logoPathLight
+                              logoPath ||= logoPathLight
+
+                              if (!logoPath) {
+                                return (
+                                  <>
+                                    <GlobeAltIcon className='h-5 w-5' />
+                                    &nbsp;
+                                    {entryName}
+                                  </>
+                                )
+                              }
+
+                              const logoUrl = `/${logoPath}`
+
+                              return (
+                                <>
+                                  <img src={logoUrl} className='h-5 w-5 dark:fill-gray-50' alt='' />
+                                  &nbsp;
+                                  {entryName}
+                                </>
+                              )
+                            }
+
+                            return (
+                              <Panel
+                                key={type}
+                                icon={panelIcon}
+                                id={type}
+                                onFilter={filterHandler}
+                                name={panelName}
+                                data={panelsData.data[type]}
+                                rowMapper={rowMapper}
+                              />
                             )
                           }
 
@@ -893,67 +957,10 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
                               onFilter={filterHandler}
                               name={panelName}
                               data={panelsData.data[type]}
-                              rowMapper={rowMapper}
                             />
                           )
-                        }
-
-                        if (type === 'os') {
-                          const rowMapper = (entry: any) => {
-                            const { name: entryName } = entry
-                            // @ts-ignore
-                            const logoPathLight = OS_LOGO_MAP[entryName]
-                            // @ts-ignore
-                            const logoPathDark = OS_LOGO_MAP_DARK[entryName]
-
-                            let logoPath = _theme === 'dark' ? logoPathDark : logoPathLight
-                            logoPath ||= logoPathLight
-
-                            if (!logoPath) {
-                              return (
-                                <>
-                                  <GlobeAltIcon className='h-5 w-5' />
-                                  &nbsp;
-                                  {entryName}
-                                </>
-                              )
-                            }
-
-                            const logoUrl = `/${logoPath}`
-
-                            return (
-                              <>
-                                <img src={logoUrl} className='h-5 w-5 dark:fill-gray-50' alt='' />
-                                &nbsp;
-                                {entryName}
-                              </>
-                            )
-                          }
-
-                          return (
-                            <Panel
-                              key={type}
-                              icon={panelIcon}
-                              id={type}
-                              onFilter={filterHandler}
-                              name={panelName}
-                              data={panelsData.data[type]}
-                              rowMapper={rowMapper}
-                            />
-                          )
-                        }
-
-                        return (
-                          <Panel
-                            key={type}
-                            icon={panelIcon}
-                            id={type}
-                            onFilter={filterHandler}
-                            name={panelName}
-                            data={panelsData.data[type]}
-                          />
-                        )
-                      })}
+                        })
+                      : null}
                   </div>
                 </div>
               </div>

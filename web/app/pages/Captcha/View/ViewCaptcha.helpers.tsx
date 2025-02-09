@@ -1,12 +1,12 @@
-import React from 'react'
-import type i18next from 'i18next'
-// @ts-ignore
 import { LanguageIcon, ArrowRightCircleIcon } from '@heroicons/react/24/outline'
-import dayjs from 'dayjs'
 import { area, bar } from 'billboard.js'
 import type { ChartOptions } from 'billboard.js'
+import * as d3 from 'd3'
+import dayjs from 'dayjs'
+import type i18next from 'i18next'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
+import { CompassIcon, FileTextIcon, MapPinIcon, MonitorCog, TabletSmartphoneIcon } from 'lucide-react'
 
 import {
   TimeFormat,
@@ -16,10 +16,7 @@ import {
   tbsFormatMapperTooltip,
   tbsFormatMapperTooltip24h,
 } from '~/lib/constants'
-// @ts-ignore
-import * as d3 from 'd3'
 import { nFormatter } from '~/utils/generic'
-import { CompassIcon, FileTextIcon, MapPinIcon, MonitorCog, TabletSmartphoneIcon } from 'lucide-react'
 
 const PANELS_ORDER = ['cc', 'br', 'os', 'dv']
 
@@ -95,11 +92,11 @@ const getSettings = (
         tick: {
           fit: true,
           rotate: rotateXAxis ? 45 : 0,
-          // @ts-expect-error
           format:
+            // @ts-expect-error
             timeFormat === TimeFormat['24-hour']
-              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x)
-              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x),
+              ? (x: string) => d3.timeFormat(tbsFormatMapper24h[timeBucket])(x as unknown as Date)
+              : (x: string) => d3.timeFormat(tbsFormatMapper[timeBucket])(x as unknown as Date),
         },
         localtime: timeFormat === TimeFormat['24-hour'],
         type: 'timeseries',

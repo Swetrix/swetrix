@@ -10,17 +10,17 @@ const DIVISIONS = [
   { amount: Number.POSITIVE_INFINITY, name: 'years' },
 ]
 
-// @ts-ignore
+// @ts-expect-error
 const formatTimeAgo = (date, language?: string) => {
   const rtf = new Intl.RelativeTimeFormat(language)
 
-  // @ts-ignore
+  // @ts-expect-error
   let duration = (date - new Date()) / 1000
 
   for (let i = 0; i < DIVISIONS.length; i++) {
     const division = DIVISIONS[i]
     if (Math.abs(duration) < division.amount) {
-      // @ts-ignore
+      // @ts-expect-error
       return rtf.format(Math.round(duration), division.name)
     }
     duration /= division.amount

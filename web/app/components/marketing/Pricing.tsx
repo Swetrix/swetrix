@@ -1,20 +1,19 @@
 /* eslint-disable no-confusing-arrow */
-import React, { memo, useState, useEffect } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
-import { ClientOnly } from 'remix-utils/client-only'
-import { Link } from '@remix-run/react'
-import { CheckIcon } from '@heroicons/react/24/solid'
-import dayjs from 'dayjs'
-import _map from 'lodash/map'
-import _isNil from 'lodash/isNil'
-import _includes from 'lodash/includes'
-import { Trans, useTranslation } from 'react-i18next'
 import { RadioGroup } from '@headlessui/react'
+import { CheckIcon } from '@heroicons/react/24/solid'
 import cx from 'clsx'
+import dayjs from 'dayjs'
+import _includes from 'lodash/includes'
+import _isNil from 'lodash/isNil'
+import _map from 'lodash/map'
+import React, { memo, useState, useEffect } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
+import { useSelector, useDispatch } from 'react-redux'
+import { Link } from 'react-router'
+import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 
-import Modal from '~/ui/Modal'
-import Button from '~/ui/Button'
+import { authMe, previewSubscriptionUpdate, changeSubscriptionPlan } from '~/api'
 import {
   CONTACT_EMAIL,
   paddleLanguageMapping,
@@ -26,12 +25,13 @@ import {
   TRIAL_DAYS,
 } from '~/lib/constants'
 import { authActions } from '~/lib/reducers/auth'
-import { authMe, previewSubscriptionUpdate, changeSubscriptionPlan } from '~/api'
-import routes from '~/utils/routes'
 import { AppDispatch, StateType } from '~/lib/store'
-import Loader from '~/ui/Loader'
 import { Badge } from '~/ui/Badge'
+import Button from '~/ui/Button'
+import Loader from '~/ui/Loader'
+import Modal from '~/ui/Modal'
 import { logout } from '~/utils/auth'
+import routes from '~/utils/routes'
 
 const getPaidFeatures = (t: any, tier: any) => {
   return [
@@ -84,7 +84,6 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
       : [user.planCode, ...STANDARD_PLANS]
     : STANDARD_PLANS
 
-  // @ts-ignore
   const [selectedTier, setSelectedTier] = useState<any>(authenticated ? PLAN_LIMITS[user.planCode] : PLAN_LIMITS.hobby)
   const planFeatures = getPaidFeatures(t, selectedTier)
   const currency = CURRENCIES[currencyCode]
@@ -93,7 +92,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
     const index = Number(e.target.value)
     const planCode = PLAN_CODES_ARRAY[index]
 
-    // @ts-ignore
+    // @ts-expect-error
     setSelectedTier(PLAN_LIMITS[planCode])
   }
 
@@ -157,7 +156,6 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
 
       setPlanCodeLoading(tier.planCode)
 
-      // @ts-ignore
       if (!window.Paddle) {
         toast.error('Payment script has not yet loaded! Please, try again.')
         setPlanCodeLoading(null)
@@ -168,7 +166,6 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
         user.referrerID && (user.planCode === 'trial' || user.planCode === 'none') && !user.cancellationEffectiveDate
       const coupon = discountMayBeApplied ? REFERRAL_DISCOUNT_CODE : undefined
 
-      // @ts-ignore
       window.Paddle.Checkout.open({
         product: billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid,
         email: user.email,
@@ -228,7 +225,6 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
     }
   }
 
-  // @ts-ignore
   const userPlancodeID = PLAN_LIMITS[user.planCode]?.index
   const planCodeID = selectedTier.index
   const downgrade = planCodeID < userPlancodeID
@@ -262,7 +258,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
           })}
         >
           <div className='sm:align-center sm:flex sm:flex-col'>
-            {!authenticated && (
+            {!authenticated ? (
               <>
                 <h2 className='font-sans text-4xl font-extrabold text-gray-900 sm:text-center dark:text-gray-50'>
                   {t('pricing.title')}
@@ -273,7 +269,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
                   })}
                 </p>
               </>
-            )}
+            ) : null}
             <div className='flex justify-between'>
               <div>
                 <h3 className='text-lg font-medium tracking-tight text-gray-900 dark:text-gray-50'>
@@ -334,7 +330,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
             onChange={onSelectPlanChange}
           />
           <div className='relative mt-5 divide-y rounded-2xl border ring-1 ring-gray-200 dark:ring-slate-700'>
-            {user.planCode === selectedTier.planCode && (
+            {user.planCode === selectedTier.planCode ? (
               <div className='absolute top-0 left-5 translate-y-px transform'>
                 <div className='flex -translate-y-1/2 transform justify-center'>
                   <span className='inline-flex rounded-full bg-indigo-600 px-4 py-1 text-sm font-semibold tracking-wider text-white uppercase'>
@@ -342,8 +338,8 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
                   </span>
                 </div>
               </div>
-            )}
-            {selectedTier.legacy && (
+            ) : null}
+            {selectedTier.legacy ? (
               <div className='absolute top-0 right-5 translate-y-px transform'>
                 <div className='flex -translate-y-1/2 transform justify-center'>
                   <span className='inline-flex rounded-full bg-amber-400 px-2 py-1 text-sm font-semibold tracking-wider text-white uppercase'>
@@ -351,7 +347,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
                   </span>
                 </div>
               </div>
-            )}
+            ) : null}
             <div className='border-none p-6'>
               <ClientOnly fallback={<Loader />}>
                 {() => (
@@ -426,7 +422,6 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
               values={{
                 amount: 10,
               }}
-              // @ts-ignore
               components={{
                 url: (
                   <Link
@@ -478,8 +473,8 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
         isLoading={isSubUpdating}
         message={
           <>
-            {subUpdatePreview === null && <Loader />}
-            {subUpdatePreview === false && (
+            {subUpdatePreview === null ? <Loader /> : null}
+            {subUpdatePreview === false ? (
               <p className='whitespace-pre-line'>
                 <Trans
                   t={t}
@@ -498,8 +493,8 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
                   }}
                 />
               </p>
-            )}
-            {subUpdatePreview && (
+            ) : null}
+            {subUpdatePreview ? (
               <div>
                 <h2 className='text-base font-bold'>{t('billing.dueNow')}</h2>
                 <p className='text-sm'>{t('billing.dueNowDescription')}</p>
@@ -535,7 +530,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
                     </tbody>
                   </table>
                 </div>
-                {subUpdatePreview.immediatePayment.amount < 0 && (
+                {subUpdatePreview.immediatePayment.amount < 0 ? (
                   <p className='mt-2 italic'>
                     {t('billing.negativePayment', {
                       currency: subUpdatePreview.immediatePayment.symbol,
@@ -547,7 +542,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
                       nextPaymentAmount: subUpdatePreview.nextPayment.amount,
                     })}
                   </p>
-                )}
+                ) : null}
                 <h2 className='mt-5 text-base font-bold'>{t('billing.nextPayment')}</h2>
                 <div className='mt-2 overflow-hidden ring-1 ring-black/5 md:rounded-lg'>
                   <table className='200 min-w-full divide-y divide-gray-300 dark:divide-gray-500'>
@@ -582,7 +577,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
                   </table>
                 </div>
               </div>
-            )}
+            ) : null}
           </>
         }
         isOpened={isNewPlanConfirmationModalOpened}

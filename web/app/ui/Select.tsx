@@ -1,5 +1,3 @@
-import React, { Fragment, Key, memo } from 'react'
-import cx from 'clsx'
 import {
   Listbox,
   Transition,
@@ -10,7 +8,9 @@ import {
   ListboxOption,
 } from '@headlessui/react'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/24/solid'
+import cx from 'clsx'
 import _map from 'lodash/map'
+import React, { Fragment, Key, memo } from 'react'
 
 interface SelectProps<T> {
   title?: string
@@ -110,13 +110,13 @@ function Select<T>({
                           {labelExtractor ? labelExtractor(item, index) : (item as React.ReactNode)}
                         </span>
 
-                        {iconExtractor && (
+                        {iconExtractor ? (
                           <span className={cx('absolute inset-y-0 left-0 flex items-center pl-1.5')}>
                             {iconExtractor(item, index)}
                           </span>
-                        )}
+                        ) : null}
 
-                        {selected && (
+                        {selected ? (
                           <span
                             className={cx('absolute inset-y-0 left-0 flex items-center pl-1.5', {
                               'text-white': active,
@@ -125,7 +125,7 @@ function Select<T>({
                           >
                             <CheckIcon className='h-5 w-5' aria-hidden='true' />
                           </span>
-                        )}
+                        ) : null}
                       </>
                     )}
                   </ListboxOption>
@@ -133,11 +133,11 @@ function Select<T>({
               </ListboxOptions>
             </Transition>
           </div>
-          {hint && (
+          {hint ? (
             <Description className='mt-2 font-mono text-sm whitespace-pre-line text-gray-500 dark:text-gray-300'>
               {hint}
             </Description>
-          )}
+          ) : null}
         </>
       )}
     </Listbox>

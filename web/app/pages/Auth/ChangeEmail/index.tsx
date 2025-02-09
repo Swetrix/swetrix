@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
-import { useParams, Link } from '@remix-run/react'
-import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import _isString from 'lodash/isString'
+import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useParams, Link } from 'react-router'
 
 import { confirmChangeEmail } from '~/api'
 import Loader from '~/ui/Loader'

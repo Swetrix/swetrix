@@ -1,5 +1,5 @@
-import React from 'react'
 import cx from 'clsx'
+import React from 'react'
 
 interface BackgroundSvgProps {
   className?: string

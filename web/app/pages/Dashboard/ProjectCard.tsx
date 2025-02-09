@@ -1,31 +1,30 @@
-import React, { useState, useMemo } from 'react'
-import { Link } from '@remix-run/react'
-import { toast } from 'sonner'
-import cx from 'clsx'
-import _size from 'lodash/size'
-import _round from 'lodash/round'
-import _isNumber from 'lodash/isNumber'
-import _replace from 'lodash/replace'
-import _find from 'lodash/find'
-import _map from 'lodash/map'
-import { useTranslation } from 'react-i18next'
-import { AdjustmentsVerticalIcon } from '@heroicons/react/24/outline'
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
-
-import Modal from '~/ui/Modal'
-import { Badge, BadgeProps } from '~/ui/Badge'
-import routes from '~/utils/routes'
-import { nFormatter, calculateRelativePercentage } from '~/utils/generic'
+import { AdjustmentsVerticalIcon } from '@heroicons/react/24/outline'
+import cx from 'clsx'
+import _find from 'lodash/find'
+import _isNumber from 'lodash/isNumber'
+import _map from 'lodash/map'
+import _replace from 'lodash/replace'
+import _round from 'lodash/round'
+import _size from 'lodash/size'
+import React, { useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
+import { Link } from 'react-router'
+import { toast } from 'sonner'
 
 import { acceptProjectShare } from '~/api'
-
-import { OverallObject, Project } from '~/lib/models/Project'
-import { useSelector } from 'react-redux'
-import { StateType, useAppDispatch } from '~/lib/store'
-import { authActions } from '~/lib/reducers/auth'
-import Spin from '~/ui/icons/Spin'
 import useFeatureFlag from '~/hooks/useFeatureFlag'
+import { OverallObject, Project } from '~/lib/models/Project'
 import { FeatureFlag } from '~/lib/models/User'
+import { authActions } from '~/lib/reducers/auth'
+import { StateType, useAppDispatch } from '~/lib/store'
+import { Badge, BadgeProps } from '~/ui/Badge'
+import Spin from '~/ui/icons/Spin'
+import Modal from '~/ui/Modal'
+import { nFormatter, calculateRelativePercentage } from '~/utils/generic'
+import routes from '~/utils/routes'
+
 import { DASHBOARD_TABS } from './Tabs'
 
 interface ProjectCardProps {
@@ -57,7 +56,7 @@ const MiniCard = ({ labelTKey, total, percChange }: MiniCardProps) => {
         ) : (
           <>
             <p className='text-xl text-gray-700 dark:text-gray-100'>{_isNumber(total) ? nFormatter(total) : total}</p>
-            {_isNumber(percChange) && (
+            {_isNumber(percChange) ? (
               <p
                 className={cx('flex items-center text-xs', {
                   'text-green-600': statsDidGrowUp,
@@ -77,7 +76,7 @@ const MiniCard = ({ labelTKey, total, percChange }: MiniCardProps) => {
                 )}
                 {nFormatter(percChange)}%
               </p>
-            )}
+            ) : null}
           </>
         )}
       </div>
@@ -216,14 +215,14 @@ export const ProjectCard = ({ live, project, overallStats, activePeriod, activeT
         <div className={cx('flex items-center', viewMode === 'grid' ? 'justify-between' : 'justify-start gap-1')}>
           <p className='truncate font-mono text-lg font-semibold text-slate-900 dark:text-gray-50'>{name}</p>
 
-          {role !== 'viewer' && (
+          {role !== 'viewer' ? (
             <Link onClick={(e) => e.stopPropagation()} to={_replace(routes.project_settings, ':id', id)}>
               <AdjustmentsVerticalIcon
                 className='size-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500'
                 aria-label={`${t('project.settings.settings')} ${name}`}
               />
             </Link>
-          )}
+          ) : null}
         </div>
         <div className='mt-1 flex shrink-0 flex-wrap gap-2'>
           {badges.length > 0 ? (
@@ -259,7 +258,7 @@ export const ProjectCard = ({ live, project, overallStats, activePeriod, activeT
         )}
         {project.isAnalyticsProject ? <MiniCard labelTKey='dashboard.liveVisitors' total={live} /> : null}
       </div>
-      {project.role !== 'owner' && !project.isAccessConfirmed && (
+      {project.role !== 'owner' && !project.isAccessConfirmed ? (
         <Modal
           onClose={() => {
             setShowInviteModal(false)
@@ -275,7 +274,7 @@ export const ProjectCard = ({ live, project, overallStats, activePeriod, activeT
           message={t('dashboard.invitationDesc', { project: name })}
           isOpened={showInviteModal}
         />
-      )}
+      ) : null}
     </Link>
   )
 }

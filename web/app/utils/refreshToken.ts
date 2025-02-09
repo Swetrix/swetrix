@@ -1,6 +1,7 @@
 import _isEmpty from 'lodash/isEmpty'
 
 import { REFRESH_TOKEN, isBrowser } from '~/lib/constants'
+
 import { getCookie, setCookie, deleteCookie } from './cookie'
 
 // 14 weeks in seconds
@@ -20,7 +21,7 @@ export const getRefreshToken = () => {
   return refreshToken
 }
 
-export const setRefreshToken = (token: string, temporary: boolean = false) => {
+export const setRefreshToken = (token: string, temporary = false) => {
   if (!isBrowser) {
     return null
   }

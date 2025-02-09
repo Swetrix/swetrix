@@ -1,18 +1,18 @@
-import React, { useState, useEffect, useMemo } from 'react'
-import _map from 'lodash/map'
+import cx from 'clsx'
 import _every from 'lodash/every'
 import _isUndefined from 'lodash/isUndefined'
-import cx from 'clsx'
+import _map from 'lodash/map'
+import { Trash2Icon } from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import Modal from '~/ui/Modal'
-import Input from '~/ui/Input'
-import Combobox from '~/ui/Combobox'
-import { MIN_FUNNEL_STEPS, MAX_FUNNEL_STEPS } from '~/lib/constants'
 import { getFilters } from '~/api'
+import { MIN_FUNNEL_STEPS, MAX_FUNNEL_STEPS } from '~/lib/constants'
 import { Funnel } from '~/lib/models/Project'
 import { ProjectForShared } from '~/lib/models/SharedProject'
-import { Trash2Icon } from 'lucide-react'
+import Combobox from '~/ui/Combobox'
+import Input from '~/ui/Input'
+import Modal from '~/ui/Modal'
 
 interface NewFunnelProps {
   project: ProjectForShared
@@ -137,7 +137,7 @@ const NewFunnel = ({
                 title={step || ''}
                 disabled={!allowedToManage}
               />
-              {steps.length > MIN_FUNNEL_STEPS && allowedToManage && (
+              {steps.length > MIN_FUNNEL_STEPS && allowedToManage ? (
                 <Trash2Icon
                   role='button'
                   aria-label='Remove step'
@@ -149,20 +149,20 @@ const NewFunnel = ({
                   }}
                   strokeWidth={1.5}
                 />
-              )}
+              ) : null}
             </div>
           ))}
-          {steps.length < MAX_FUNNEL_STEPS && allowedToManage && (
-            <p
+          {steps.length < MAX_FUNNEL_STEPS && allowedToManage ? (
+            <button
+              type='button'
               onClick={() => {
                 setSteps([...steps, null])
               }}
-              role='button'
               className='mt-2 cursor-pointer text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
             >
               + {t('modals.funnels.addStep')}
-            </p>
-          )}
+            </button>
+          ) : null}
         </div>
       }
       title={funnel ? t('modals.funnels.editTitle') : t('modals.funnels.addTitle')}

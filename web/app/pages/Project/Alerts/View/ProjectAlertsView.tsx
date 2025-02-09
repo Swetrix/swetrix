@@ -1,14 +1,3 @@
-import React, { useMemo, useState, useEffect } from 'react'
-import dayjs from 'dayjs'
-import _map from 'lodash/map'
-import _isEmpty from 'lodash/isEmpty'
-import _replace from 'lodash/replace'
-import _values from 'lodash/values'
-import _reduce from 'lodash/reduce'
-import { useNavigate, Link } from '@remix-run/react'
-import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
-import { toast } from 'sonner'
 import {
   CurrencyDollarIcon,
   AdjustmentsVerticalIcon,
@@ -17,18 +6,30 @@ import {
   XCircleIcon,
 } from '@heroicons/react/24/outline'
 import cx from 'clsx'
-
-import routes from '~/utils/routes'
-import Button from '~/ui/Button'
-import Modal from '~/ui/Modal'
-import PaidFeature from '~/modals/PaidFeature'
-import { QUERY_METRIC, PLAN_LIMITS, DEFAULT_ALERTS_TAKE } from '~/lib/constants'
-import { deleteAlert as deleteAlertApi, getProjectAlerts } from '~/api'
-import { StateType } from '~/lib/store'
-import { Alerts } from '~/lib/models/Alerts'
-import Loader from '~/ui/Loader'
-import Pagination from '~/ui/Pagination'
+import dayjs from 'dayjs'
+import _isEmpty from 'lodash/isEmpty'
+import _map from 'lodash/map'
+import _reduce from 'lodash/reduce'
+import _replace from 'lodash/replace'
+import _values from 'lodash/values'
 import { Trash2Icon, BellRingIcon } from 'lucide-react'
+import { useMemo, useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
+import { useNavigate, Link } from 'react-router'
+import { toast } from 'sonner'
+
+import { deleteAlert as deleteAlertApi, getProjectAlerts } from '~/api'
+import { QUERY_METRIC, PLAN_LIMITS, DEFAULT_ALERTS_TAKE } from '~/lib/constants'
+import { Alerts } from '~/lib/models/Alerts'
+import { StateType } from '~/lib/store'
+import PaidFeature from '~/modals/PaidFeature'
+import Button from '~/ui/Button'
+import Loader from '~/ui/Loader'
+import Modal from '~/ui/Modal'
+import Pagination from '~/ui/Pagination'
+import routes from '~/utils/routes'
+
 import { useViewProjectContext } from '../../View/ViewProject'
 
 const Separator = ({ className }: { className?: string }) => (
@@ -200,7 +201,7 @@ const ProjectAlerts = () => {
   const limits = PLAN_LIMITS[user?.planCode] || PLAN_LIMITS.trial
   const isLimitReached = authenticated && total >= limits?.maxAlerts
 
-  const loadAlerts = async (take: number, skip: number, search?: string) => {
+  const loadAlerts = async (take: number, skip: number) => {
     if (isLoading) {
       return
     }
@@ -223,9 +224,7 @@ const ProjectAlerts = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page])
 
-  const queryMetricTMapping: {
-    [key: string]: string
-  } = useMemo(() => {
+  const queryMetricTMapping: Record<string, string> = useMemo(() => {
     const values = _values(QUERY_METRIC)
 
     return _reduce(
@@ -327,13 +326,13 @@ const ProjectAlerts = () => {
               secondary
               large
             >
-              {isLimitReached && <CurrencyDollarIcon className='mr-1 h-5 w-5' />}
+              {isLimitReached ? <CurrencyDollarIcon className='mr-1 h-5 w-5' /> : null}
               {t('alert.add')}
             </Button>
           </div>
         ) : (
           <>
-            {!isIntegrationLinked && <NoNotificationChannelSet />}
+            {!isIntegrationLinked ? <NoNotificationChannelSet /> : null}
             <ul className='mt-4 grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
               {_map(alerts, (alert) => (
                 <AlertCard

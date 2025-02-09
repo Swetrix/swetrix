@@ -1,5 +1,6 @@
+import billboard from 'billboard.js'
 import { useEffect } from 'react'
-import bb from 'billboard.js'
+
 import { getSettingsError } from '../ViewProject.helpers'
 
 interface ErrorChartProps {
@@ -16,7 +17,6 @@ interface ErrorChartProps {
 
 export const ErrorChart = ({ chart, timeBucket, timeFormat, rotateXAxis, chartType, dataNames }: ErrorChartProps) => {
   useEffect(() => {
-    // @ts-ignore
     const bbSettings: bb.ChartOptions = getSettingsError(
       chart,
       timeBucket as string,
@@ -25,7 +25,7 @@ export const ErrorChart = ({ chart, timeBucket, timeFormat, rotateXAxis, chartTy
       chartType,
     )
 
-    const generate = bb.generate(bbSettings)
+    const generate = billboard.generate(bbSettings)
     generate.data.names(dataNames)
   }, [chart, timeBucket, timeFormat, rotateXAxis, chartType, dataNames])
 

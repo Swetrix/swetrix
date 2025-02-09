@@ -1,6 +1,7 @@
-import React, { memo } from 'react'
-import countries from '~/utils/isoCountries'
+import { memo } from 'react'
+
 import Flag from '~/ui/Flag'
+import countries from '~/utils/isoCountries'
 
 interface CCRowProps {
   cc: string

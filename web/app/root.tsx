@@ -1,43 +1,43 @@
 /* eslint-disable no-undef */
-import type { LinksFunction, LoaderFunctionArgs, HeadersFunction } from '@remix-run/node'
-import { data, redirect } from '@remix-run/node'
+import { ExclamationTriangleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
+import BillboardCss from 'billboard.js/dist/billboard.min.css?url'
+import cx from 'clsx'
+import FlatpickrDarkCss from 'flatpickr/dist/themes/dark.css?url'
+import FlatpickrLightCss from 'flatpickr/dist/themes/light.css?url'
+import _replace from 'lodash/replace'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Provider } from 'react-redux'
+import type { LinksFunction, LoaderFunctionArgs, HeadersFunction } from 'react-router'
 import {
+  data,
+  redirect,
   Links,
-  LiveReload,
   Meta,
   Scripts,
   useLoaderData,
   ScrollRestoration,
   isRouteErrorResponse,
   useRouteError,
-} from '@remix-run/react'
-import { store } from '~/lib/store'
-import { CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted, I18N_CACHE_BREAKER } from '~/lib/constants'
-import { ExternalScripts } from 'remix-utils/external-scripts'
-import { getCookie, generateCookieString } from '~/utils/cookie'
-import { ExclamationTriangleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
-import { Provider } from 'react-redux'
-import cx from 'clsx'
-import _replace from 'lodash/replace'
-import BillboardCss from 'billboard.js/dist/billboard.min.css'
-
-import { trackViews, trackErrors } from '~/utils/analytics'
+} from 'react-router'
 import { useChangeLanguage } from 'remix-i18next/react'
-import { useTranslation } from 'react-i18next'
-import AppWrapper from './App'
-import { detectLanguage } from './i18n'
-import { detectTheme, isAuthenticated, isWWW } from '~/utils/server'
+import { ExternalScripts } from 'remix-utils/external-scripts'
+
 import { LocaleLinks } from '~/components/LocaleLinks'
 import { SEO } from '~/components/SEO'
+import { CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted, I18N_CACHE_BREAKER } from '~/lib/constants'
+import { store } from '~/lib/store'
+import FlatpickerCss from '~/styles/Flatpicker.css?url'
+import FontsCss from '~/styles/fonts.css?url'
+import mainCss from '~/styles/index.css?url'
+import sonnerCss from '~/styles/sonner.css?url'
+import tailwindCss from '~/styles/tailwind.css?url'
+import { trackViews, trackErrors } from '~/utils/analytics'
+import { getCookie, generateCookieString } from '~/utils/cookie'
+import { detectTheme, isAuthenticated, isWWW } from '~/utils/server'
 
-import mainCss from '~/styles/index.css'
-import tailwindCss from '~/styles/tailwind.css'
-import sonnerCss from '~/styles/sonner.css'
-import FlatpickerCss from '~/styles/Flatpicker.css'
-import FlatpickrLightCss from 'flatpickr/dist/themes/light.css'
-import FlatpickrDarkCss from 'flatpickr/dist/themes/dark.css'
-import FontsCss from '~/styles/fonts.css'
+import AppWrapper from './App'
+import { detectLanguage } from './i18n'
 
 trackViews()
 trackErrors()
@@ -132,11 +132,11 @@ export function ErrorBoundary() {
                           </>
                         )}
                       </span>
-                      {crashStackShown && (
+                      {crashStackShown ? (
                         <span className='text-sm whitespace-pre-line text-gray-600 dark:text-gray-400'>
                           {error.stack}
                         </span>
-                      )}
+                      ) : null}
                     </>
                   ) : (
                     <>Unknown error</>
@@ -148,7 +148,6 @@ export function ErrorBoundary() {
         </div>
         <ScrollRestoration />
         <Scripts />
-        <LiveReload />
       </body>
     </html>
   )
@@ -237,8 +236,8 @@ export default function App() {
         <Meta />
         <meta name='viewport' content='width=device-width,initial-scale=1' />
         <Links />
-        {theme === 'dark' && <link rel='stylesheet' href={FlatpickrDarkCss} />}
-        {theme === 'light' && <link rel='stylesheet' href={FlatpickrLightCss} />}
+        {theme === 'dark' ? <link rel='stylesheet' href={FlatpickrDarkCss} /> : null}
+        {theme === 'light' ? <link rel='stylesheet' href={FlatpickrLightCss} /> : null}
         <LocaleLinks />
         <link
           rel='preload'
@@ -266,7 +265,6 @@ export default function App() {
         <ScrollRestoration />
         <ExternalScripts />
         <Scripts />
-        <LiveReload />
       </body>
     </html>
   )

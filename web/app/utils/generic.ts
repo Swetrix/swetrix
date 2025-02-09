@@ -1,8 +1,8 @@
 import _find from 'lodash/find'
-import _replace from 'lodash/replace'
-import _round from 'lodash/round'
 import _map from 'lodash/map'
 import _reduce from 'lodash/reduce'
+import _replace from 'lodash/replace'
+import _round from 'lodash/round'
 
 import { isBrowser } from '~/lib/constants'
 
@@ -129,7 +129,7 @@ export const getLocaleDisplayName = (locale: string, language: string): string =
 
   try {
     return languageNames.of(locale) || locale
-  } catch (reason) {
+  } catch {
     return locale
   }
 }

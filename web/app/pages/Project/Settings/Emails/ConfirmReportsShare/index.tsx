@@ -1,11 +1,10 @@
-import React, { useState, useEffect, memo } from 'react'
-import { useParams, Link } from '@remix-run/react'
-import { useTranslation } from 'react-i18next'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
-
-import Loader from '~/ui/Loader'
+import { useState, useEffect, memo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useParams, Link } from 'react-router'
 
 import { confirmSubscriberInvite } from '~/api'
+import Loader from '~/ui/Loader'
 import routes from '~/utils/routes'
 
 const ConfirmReportsShare = () => {

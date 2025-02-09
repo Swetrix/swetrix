@@ -1,32 +1,31 @@
-import React, { useState, useEffect, useCallback } from 'react'
-import { Link } from '@remix-run/react'
-import { toast } from 'sonner'
-import { ClientOnly } from 'remix-utils/client-only'
-import _isEmpty from 'lodash/isEmpty'
-import _size from 'lodash/size'
-import _map from 'lodash/map'
-import { useTranslation } from 'react-i18next'
 import { MagnifyingGlassIcon, XMarkIcon, BuildingOffice2Icon } from '@heroicons/react/24/outline'
 import { XCircleIcon } from '@heroicons/react/24/solid'
-
-import Modal from '~/ui/Modal'
-import { withAuthentication, auth } from '~/hoc/protected'
-import Loader from '~/ui/Loader'
-import routes from '~/utils/routes'
-import { ENTRIES_PER_PAGE_DASHBOARD } from '~/lib/constants'
-import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
-import useDebounce from '~/hooks/useDebounce'
+import _isEmpty from 'lodash/isEmpty'
+import _map from 'lodash/map'
+import _size from 'lodash/size'
+import React, { useState, useEffect, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
+import { useSelector } from 'react-redux'
+import { Link } from 'react-router'
+import { ClientOnly } from 'remix-utils/client-only'
+import { toast } from 'sonner'
 
 import { createOrganisation, getOrganisations } from '~/api'
-
-import Pagination from '~/ui/Pagination'
+import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
+import { withAuthentication, auth } from '~/hoc/protected'
+import useDebounce from '~/hooks/useDebounce'
+import { ENTRIES_PER_PAGE_DASHBOARD } from '~/lib/constants'
 import { DetailedOrganisation } from '~/lib/models/Organisation'
-import Input from '~/ui/Input'
-import { OrganisationCard } from './OrganisationCard'
-import { NoOrganisations } from './NoOrganisations'
-import { AddOrganisation } from './AddOrganisation'
-import { useSelector } from 'react-redux'
 import { StateType } from '~/lib/store'
+import Input from '~/ui/Input'
+import Loader from '~/ui/Loader'
+import Modal from '~/ui/Modal'
+import Pagination from '~/ui/Pagination'
+import routes from '~/utils/routes'
+
+import { AddOrganisation } from './AddOrganisation'
+import { NoOrganisations } from './NoOrganisations'
+import { OrganisationCard } from './OrganisationCard'
 
 const Organisations = () => {
   const { loading: authLoading } = useSelector((state: StateType) => state.auth)
@@ -199,7 +198,7 @@ const Organisations = () => {
                     />
                   )}
                 </h2>
-                {isSearchActive && (
+                {isSearchActive ? (
                   <div className='hidden w-full max-w-md items-center px-2 pb-1 sm:ml-5 sm:flex'>
                     <label htmlFor='simple-search' className='sr-only'>
                       Search
@@ -217,7 +216,7 @@ const Organisations = () => {
                       />
                     </div>
                   </div>
-                )}
+                ) : null}
               </div>
               <span
                 onClick={onNewOrganisation}
@@ -227,7 +226,7 @@ const Organisations = () => {
                 {t('organisations.new')}
               </span>
             </div>
-            {isSearchActive && (
+            {isSearchActive ? (
               <div className='mb-2 flex w-full items-center sm:hidden'>
                 <label htmlFor='simple-search' className='sr-only'>
                   Search
@@ -245,7 +244,7 @@ const Organisations = () => {
                   />
                 </div>
               </div>
-            )}
+            ) : null}
             {authLoading || isLoading || isLoading === null ? (
               <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
                 <Loader />
@@ -312,11 +311,11 @@ const Organisations = () => {
               value={newOrganisationName}
               onChange={(e) => setNewOrganisationName(e.target.value)}
             />
-            {newOrganisationError && (
+            {newOrganisationError ? (
               <p className='mt-2 text-sm font-medium text-red-500'>
                 {t('apiNotifications.errorOccured', { error: newOrganisationError })}
               </p>
-            )}
+            ) : null}
           </div>
         }
         title={t('organisations.create')}

@@ -1,11 +1,13 @@
-import { useEffect, useState, memo, useMemo } from 'react'
-import { toast } from 'sonner'
 import { ResponsiveSankey } from '@nivo/sankey'
-import { UserFlowType } from '~/lib/models/UserFlow'
 import _isEmpty from 'lodash/isEmpty'
-import { getUserFlow } from '~/api'
-import Loader from '~/ui/Loader'
+import { useEffect, useState, memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
+
+import { getUserFlow } from '~/api'
+import { UserFlowType } from '~/lib/models/UserFlow'
+import Loader from '~/ui/Loader'
+
 import { useViewProjectContext } from '../ViewProject'
 import { getFormatDate } from '../ViewProject.helpers'
 

@@ -1,15 +1,15 @@
-import React, { useMemo, useEffect } from 'react'
-import { useNavigate } from '@remix-run/react'
-import { useTranslation, Trans } from 'react-i18next'
 import { EnvelopeIcon } from '@heroicons/react/24/outline'
+import { useMemo, useEffect } from 'react'
+import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router'
 
-import Loader from '~/ui/Loader'
 import { withAuthentication } from '~/hoc/protected'
 import { authActions } from '~/lib/reducers/auth'
 import { StateType, useAppDispatch } from '~/lib/store'
-import routes from '~/utils/routes'
+import Loader from '~/ui/Loader'
 import { logout } from '~/utils/auth'
+import routes from '~/utils/routes'
 
 const CheckYourInbox = () => {
   const { t } = useTranslation('common')
@@ -63,6 +63,7 @@ const CheckYourInbox = () => {
                   components={{
                     url: (
                       <span
+                        tabIndex={0}
                         role='button'
                         className='cursor-pointer font-medium text-indigo-600 hover:underline dark:text-indigo-400'
                         onClick={() => {

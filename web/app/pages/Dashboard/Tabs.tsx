@@ -1,7 +1,7 @@
-import React from 'react'
-import _map from 'lodash/map'
 import cx from 'clsx'
+import _map from 'lodash/map'
 import { FlameIcon, LayoutListIcon, PowerOffIcon, TrendingDownIcon, TrendingUpIcon } from 'lucide-react'
+import React from 'react'
 
 export const DASHBOARD_TABS = [
   {

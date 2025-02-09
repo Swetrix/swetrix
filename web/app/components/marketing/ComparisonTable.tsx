@@ -1,17 +1,13 @@
-import _map from 'lodash/map'
-import { useTranslation } from 'react-i18next'
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/solid'
 import cx from 'clsx'
+import _map from 'lodash/map'
+import { useTranslation } from 'react-i18next'
 
 const COMPETITORS_LIST = ['Google Analytics', 'Fathom', 'Plausible', 'Simple Analytics']
 const SWETRIX_AND_COMPETITORS_LIST = ['Swetrix', ...COMPETITORS_LIST]
 
 // The order in the table is defined by the Swetrix object
-const COMPETITOR_FEATURE_TABLE: {
-  [key: string]: {
-    [key: string]: boolean
-  }
-} = {
+const COMPETITOR_FEATURE_TABLE: Record<string, Record<string, boolean>> = {
   Swetrix: {
     'main.competitiveFeatures.gdpr': true, // GDPR-compatible
     'main.competitiveFeatures.open': true, // Open-source
@@ -123,18 +119,18 @@ export const ComparisonTable = ({ className }: ComparisonTableProps) => {
                       <td className='w-1/6 px-3 py-4 text-sm text-slate-700 sm:pl-6 dark:text-gray-50'>{t(key)}</td>
                       {_map(SWETRIX_AND_COMPETITORS_LIST, (service) => (
                         <td key={`${key}-${service}`} className='w-1/6 px-3 py-4 text-sm text-gray-50 sm:pl-6'>
-                          {COMPETITOR_FEATURE_TABLE[service][key] && (
+                          {COMPETITOR_FEATURE_TABLE[service][key] ? (
                             <CheckIcon
                               className='h-5 w-5 shrink-0 text-green-600 dark:text-green-500'
                               aria-label={t('common.yes')}
                             />
-                          )}
-                          {!COMPETITOR_FEATURE_TABLE[service][key] && (
+                          ) : null}
+                          {!COMPETITOR_FEATURE_TABLE[service][key] ? (
                             <XMarkIcon
                               className='h-5 w-5 shrink-0 text-red-600 dark:text-red-500'
                               aria-label={t('common.no')}
                             />
-                          )}
+                          ) : null}
                         </td>
                       ))}
                     </tr>

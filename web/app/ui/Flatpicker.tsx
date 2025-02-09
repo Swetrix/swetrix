@@ -1,9 +1,9 @@
 /* eslint-disable react/no-unused-class-component-methods, class-methods-use-this */
-import React, { memo, createRef } from 'react'
-import Flatpickr from 'react-flatpickr'
+import cx from 'clsx'
 import _size from 'lodash/size'
 import _split from 'lodash/split'
-import cx from 'clsx'
+import React, { memo, createRef } from 'react'
+import Flatpickr from 'react-flatpickr'
 
 import { MAX_MONTHS_IN_PAST } from '~/lib/constants'
 

@@ -1,9 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+
 import { LOW_EVENTS_WARNING, LS_PROJECTS_PROTECTED } from '~/lib/constants'
+import { Metainfo } from '~/lib/models/Metainfo'
+import { Stats } from '~/lib/models/Stats'
 import { setCookie } from '~/utils/cookie'
 import { secondsTillNextMonth } from '~/utils/generic'
-import { Stats } from '~/lib/models/Stats'
-import { Metainfo } from '~/lib/models/Metainfo'
 import { getItem, setItem } from '~/utils/localstorage'
 
 interface InitialState {
@@ -14,9 +15,7 @@ interface InitialState {
   showNoEventsLeftBanner: boolean
   lastBlogPost: any
   extensions: any[]
-  projectPasswords: {
-    [key: string]: string
-  }
+  projectPasswords: Record<string, string>
 }
 
 const initialState: InitialState = {

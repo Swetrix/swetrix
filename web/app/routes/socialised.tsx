@@ -1,5 +1,6 @@
-import Socialised from '~/pages/Auth/Socialised'
 import type { SitemapFunction } from 'remix-sitemap'
+
+import Socialised from '~/pages/Auth/Socialised'
 
 export const sitemap: SitemapFunction = () => ({
   exclude: true,

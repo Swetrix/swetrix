@@ -1,9 +1,8 @@
-import type { LoaderFunctionArgs } from '@remix-run/node'
-import { useLoaderData } from '@remix-run/react'
-import { redirect } from '@remix-run/node'
-import ReferralPage from '~/pages/ReferralPage'
+import type { LoaderFunctionArgs } from 'react-router'
+import { useLoaderData, redirect } from 'react-router'
 
 import { isSelfhosted } from '~/lib/constants'
+import ReferralPage from '~/pages/ReferralPage'
 import { detectTheme } from '~/utils/server'
 
 export async function loader({ request }: LoaderFunctionArgs) {

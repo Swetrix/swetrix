@@ -1,10 +1,10 @@
-import ViewProject from '~/pages/Project/View'
-import type { LinksFunction, LoaderFunctionArgs, MetaFunction } from '@remix-run/node'
 import _split from 'lodash/split'
+import type { LinksFunction, LoaderFunctionArgs, MetaFunction } from 'react-router'
 
 import { API_URL } from '~/lib/constants'
+import ViewProject from '~/pages/Project/View'
+import ProjectViewStyle from '~/styles/ProjectViewStyle.css?url'
 import { detectTheme, isEmbedded, isAuthenticated, getProjectPassword, getProjectTabs } from '~/utils/server'
-import ProjectViewStyle from '~/styles/ProjectViewStyle.css'
 
 export const links: LinksFunction = () => [{ rel: 'stylesheet', href: ProjectViewStyle }]
 

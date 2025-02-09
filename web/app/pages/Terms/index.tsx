@@ -1,5 +1,4 @@
 /* eslint-disable react/no-unescaped-entities */
-import React from 'react'
 
 import { CONTACT_EMAIL } from '~/lib/constants'
 
