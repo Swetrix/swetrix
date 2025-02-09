@@ -1,8 +1,7 @@
 import Singup from '~/pages/Auth/Signup'
 import type { SitemapFunction } from 'remix-sitemap'
 import type { HeadersFunction, LoaderFunctionArgs } from 'react-router'
-import { useLoaderData } from 'react-router'
-import { redirect } from 'react-router'
+import { useLoaderData, redirect } from 'react-router'
 
 import { isSelfhosted } from '~/lib/constants'
 import { detectTheme } from '~/utils/server'

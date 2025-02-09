@@ -1,6 +1,5 @@
 import type { LoaderFunction, MetaFunction } from 'react-router'
-import { redirect } from 'react-router'
-import { Link, useLoaderData } from 'react-router'
+import { redirect, Link, useLoaderData } from 'react-router'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
 import _filter from 'lodash/filter'

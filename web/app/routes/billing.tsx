@@ -1,6 +1,5 @@
 import type { LoaderFunctionArgs } from 'react-router'
-import { useLoaderData } from 'react-router'
-import { data, redirect } from 'react-router'
+import { useLoaderData, data, redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 import Billing from '~/pages/Billing'
 

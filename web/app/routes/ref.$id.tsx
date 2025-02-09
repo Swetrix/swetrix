@@ -1,6 +1,5 @@
 import type { LoaderFunctionArgs } from 'react-router'
-import { useLoaderData } from 'react-router'
-import { redirect } from 'react-router'
+import { useLoaderData, redirect } from 'react-router'
 import ReferralPage from '~/pages/ReferralPage'
 
 import { isSelfhosted } from '~/lib/constants'
