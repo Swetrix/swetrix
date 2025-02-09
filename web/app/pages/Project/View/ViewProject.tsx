@@ -3056,8 +3056,8 @@ const ViewProject = () => {
                   (activeTab !== PROJECT_TABS.sessions || !activePSID) &&
                   (activeFunnel || activeTab !== PROJECT_TABS.funnels) && (
                     <>
-                      <div className='mt-2 flex flex-col items-center justify-between lg:flex-row lg:items-start'>
-                        <div className='flex flex-wrap items-center space-x-5'>
+                      <div className='mt-2 flex flex-col items-center justify-between lg:flex-row'>
+                        <div className='flex flex-wrap items-center justify-center gap-x-5 gap-y-2'>
                           <h2 className='font-mono text-xl font-bold break-words break-all text-gray-900 dark:text-gray-50'>
                             {/* If tab is funnels - then display a funnel name, otherwise a project name */}
                             {activeTab === PROJECT_TABS.funnels ? activeFunnel?.name : project.name}
