@@ -1,6 +1,7 @@
 const fs = require('fs')
 const { execSync } = require('child_process')
 
+// eslint-disable-next-line no-undef
 const args = process.argv.slice(2)
 
 function parseArgs(args) {
@@ -51,7 +52,7 @@ function flyImport(secrets) {
   const command = ['flyctl', 'secrets', 'import', ...buildSecrets]
 
   console.log(`Running command: ${command.join(' ')}`)
-  // execSync(command.join(' '), { stdio: 'inherit' })
+  execSync(command.join(' '), { stdio: 'inherit' })
 }
 
 const parsedArgs = parseArgs(args)
