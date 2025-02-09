@@ -1,15 +1,16 @@
 {
   "private": true,
   "sideEffects": false,
+  "type": "module",
   "license": "AGPL-3.0",
   "scripts": {
-    "build": "remix build",
-    "dev": "remix dev",
+    "build": "remix vite:build",
+    "dev": "remix vite:dev",
     "deploy": "flyctl deploy --remote-only",
     "import-env": "node fly_import_env.js --env-file .env",
-    "dev:staging": "cross-env STAGING=true remix dev",
-    "start": "remix-serve ./build/index.js",
-    "start:staging": "cross-env STAGING=true remix-serve ./build/index.js",
+    "dev:staging": "cross-env STAGING=true remix vite:dev",
+    "start": "remix-serve ./build/server/index.js",
+    "start:staging": "cross-env STAGING=true remix-serve ./build/server/index.js",
     "typecheck": "tsc",
     "lint": "eslint app",
     "lint:fix": "eslint app --fix",
@@ -149,7 +150,9 @@
     "postcss": "^8.5.1",
     "prettier": "^3.4.2",
     "tailwindcss": "^4.0.4",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "vite": "^5.4.14",
+    "vite-tsconfig-paths": "^5.1.4"
   },
   "engines": {
     "node": ">=20"

@@ -1,6 +1,6 @@
 import CaptchaView from '~/pages/Captcha/View'
 import type { LinksFunction, LoaderFunctionArgs } from '@remix-run/node'
-import ProjectViewStyle from '~/styles/ProjectViewStyle.css'
+import ProjectViewStyle from '~/styles/ProjectViewStyle.css?url'
 import { detectTheme } from '~/utils/server'
 import { useLoaderData } from '@remix-run/react'
 

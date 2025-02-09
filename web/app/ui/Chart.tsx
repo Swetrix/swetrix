@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import bb from 'billboard.js'
-import 'billboard.js/dist/theme/datalab.css'
-import 'billboard.js/dist/billboard.css'
+import 'billboard.js/dist/theme/datalab.css?url'
+import 'billboard.js/dist/billboard.css?url'
 
 // Define the prop types for the component
 interface ChartProps {

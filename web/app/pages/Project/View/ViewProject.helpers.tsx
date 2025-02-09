@@ -1,7 +1,7 @@
 import React from 'react'
 import type { ChartOptions, GridLineOptions } from 'billboard.js'
 import type i18next from 'i18next'
-import { saveAs } from 'file-saver'
+import filesaver from 'file-saver'
 import { LanguageIcon, ArrowRightCircleIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
 import { area, areaSpline, spline, bar, line } from 'billboard.js'
@@ -51,6 +51,8 @@ import {
   TvIcon,
   WatchIcon,
 } from 'lucide-react'
+
+const { saveAs } = filesaver
 
 const getAvg = (arr: any) => {
   const total = _reduce(arr, (acc, c) => acc + c, 0)

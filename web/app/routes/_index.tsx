@@ -49,6 +49,7 @@ export const sitemap: SitemapFunction = () => ({
 })
 
 export async function loader({ request }: LoaderFunctionArgs) {
+  console.log('Index loader')
   if (isSelfhosted || isDisableMarketingPages) {
     return redirect('/login', 302)
   }
@@ -886,6 +887,8 @@ const Hero = ({
 
 export default function Index() {
   const { theme: ssrTheme, isAuth } = useLoaderData<typeof loader>()
+
+  console.log('Index component')
 
   const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
   const { authenticated: reduxAuthenticated, loading } = useSelector((state: StateType) => state.auth)

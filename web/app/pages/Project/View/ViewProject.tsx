@@ -53,6 +53,7 @@ import _size from 'lodash/size'
 import _truncate from 'lodash/truncate'
 import _isString from 'lodash/isString'
 import { toast } from 'sonner'
+import SwetrixSDK from '@swetrix/sdk'
 
 import { periodToCompareDate } from '~/utils/compareConvertDate'
 
@@ -207,7 +208,6 @@ import { StateType, useAppDispatch } from '~/lib/store'
 import UIActions from '~/lib/reducers/ui'
 import { useSelector } from 'react-redux'
 import PageDropdown from './components/PageDropdown'
-const SwetrixSDK = require('@swetrix/sdk')
 
 const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
 const SESSIONS_TAKE = 30
@@ -2383,7 +2383,7 @@ const ViewProject = () => {
           onRemoveExportDataRow: (label: any) => {
             setCustomExportTypes((prev) => _filter(prev, (row) => row.label !== label))
           },
-          onAddPanelTab: (extensionID: string, panelID: string, tabContent: any, onOpen: (a: any) => void) => {
+          onAddPanelTab: (extensionID: string, panelID: string, tabContent?: string, onOpen?: (a: any) => void) => {
             setCustomPanelTabs((prev) => [
               ...prev,
               {

@@ -4,7 +4,6 @@ import { data, redirect } from '@remix-run/node'
 import { useState } from 'react'
 import {
   Links,
-  LiveReload,
   Meta,
   Scripts,
   useLoaderData,
@@ -20,7 +19,7 @@ import { ExclamationTriangleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroic
 import { Provider } from 'react-redux'
 import cx from 'clsx'
 import _replace from 'lodash/replace'
-import BillboardCss from 'billboard.js/dist/billboard.min.css'
+import BillboardCss from 'billboard.js/dist/billboard.min.css?url'
 
 import { trackViews, trackErrors } from '~/utils/analytics'
 import { useChangeLanguage } from 'remix-i18next/react'
@@ -31,13 +30,13 @@ import { detectTheme, isAuthenticated, isWWW } from '~/utils/server'
 import { LocaleLinks } from '~/components/LocaleLinks'
 import { SEO } from '~/components/SEO'
 
-import mainCss from '~/styles/index.css'
-import tailwindCss from '~/styles/tailwind.css'
-import sonnerCss from '~/styles/sonner.css'
-import FlatpickerCss from '~/styles/Flatpicker.css'
-import FlatpickrLightCss from 'flatpickr/dist/themes/light.css'
-import FlatpickrDarkCss from 'flatpickr/dist/themes/dark.css'
-import FontsCss from '~/styles/fonts.css'
+import mainCss from '~/styles/index.css?url'
+import tailwindCss from '~/styles/tailwind.css?url'
+import sonnerCss from '~/styles/sonner.css?url'
+import FlatpickerCss from '~/styles/Flatpicker.css?url'
+import FlatpickrLightCss from 'flatpickr/dist/themes/light.css?url'
+import FlatpickrDarkCss from 'flatpickr/dist/themes/dark.css?url'
+import FontsCss from '~/styles/fonts.css?url'
 
 trackViews()
 trackErrors()
@@ -148,7 +147,6 @@ export function ErrorBoundary() {
         </div>
         <ScrollRestoration />
         <Scripts />
-        <LiveReload />
       </body>
     </html>
   )
@@ -266,7 +264,6 @@ export default function App() {
         <ScrollRestoration />
         <ExternalScripts />
         <Scripts />
-        <LiveReload />
       </body>
     </html>
   )

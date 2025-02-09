@@ -1,11 +1,11 @@
 /* eslint-disable implicit-arrow-linebreak */
 import axios, { AxiosResponse } from 'axios'
 import createAuthRefreshInterceptor from 'axios-auth-refresh'
-import { store } from '~/lib/store'
 import _map from 'lodash/map'
 import _isEmpty from 'lodash/isEmpty'
 import _isArray from 'lodash/isArray'
 
+import { store } from '~/lib/store'
 import { authActions } from '~/lib/reducers/auth'
 import { getAccessToken, removeAccessToken, setAccessToken } from '~/utils/accessToken'
 import { getRefreshToken, removeRefreshToken } from '~/utils/refreshToken'
