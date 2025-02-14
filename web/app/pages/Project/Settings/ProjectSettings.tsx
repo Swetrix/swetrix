@@ -678,7 +678,9 @@ const ProjectSettings = () => {
             }))
           }
           name='active'
-          className='mt-2'
+          classes={{
+            label: 'mt-2',
+          }}
           label={t('project.settings.enabled')}
           hint={t('project.settings.enabledHint')}
         />
@@ -693,7 +695,9 @@ const ProjectSettings = () => {
             }
           }}
           name='public'
-          className='mt-4'
+          classes={{
+            label: 'mt-4',
+          }}
           label={t('project.settings.public')}
           hint={t('project.settings.publicHint')}
         />
@@ -713,7 +717,9 @@ const ProjectSettings = () => {
             }
           }}
           name='isPasswordProtected'
-          className='mt-4'
+          classes={{
+            label: 'mt-4',
+          }}
           label={t('project.settings.protected')}
           hint={t('project.settings.protectedHint')}
         />

@@ -48,9 +48,11 @@ const LiveVisitorsDropdown = ({ live, onSessionSelect }: LiveVisitorsDropdownPro
         onClick={() => setShow(!show)}
       >
         <PulsatingCircle className='mr-1.5' type='small' />
-        {t('dashboard.xLiveVisitors', {
-          amount: live || 0,
-        })}{' '}
+        <span className='tracking-tighter'>
+          {t('dashboard.xLiveVisitors', {
+            amount: live || 0,
+          })}{' '}
+        </span>
         {show ? <ChevronUpIcon className='ml-1 inline h-4 w-4' /> : <ChevronDownIcon className='ml-1 inline h-4 w-4' />}
         {show ? (
           <div

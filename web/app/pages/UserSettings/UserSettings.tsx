@@ -834,7 +834,9 @@ const UserSettings = () => {
                     onChange={handleShowLiveVisitorsSave}
                     disabled={settingUpdating}
                     name='active'
-                    className='mt-4'
+                    classes={{
+                      label: 'mt-4',
+                    }}
                     label={t('profileSettings.showVisitorsInTitle')}
                   />
                 </>
@@ -885,7 +887,9 @@ const UserSettings = () => {
                           onChange={handleReceiveLoginNotifications}
                           disabled={settingUpdating}
                           name='receiveLoginNotifications'
-                          className='mt-4'
+                          classes={{
+                            label: 'mt-4',
+                          }}
                           label={t('profileSettings.receiveLoginNotifications')}
                         />
                       ) : null}

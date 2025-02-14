@@ -9,7 +9,7 @@ export interface BadgeProps {
 export const Badge = ({ label, className, colour }: BadgeProps) => (
   <span
     className={cx(
-      'inline-flex items-center rounded-md px-2 py-1 font-mono text-xs font-medium ring-1 ring-inset',
+      'inline-flex items-center rounded-md px-2 py-1 font-mono text-xs font-medium tracking-tight ring-1 ring-inset',
       className,
       {
         'bg-slate-50 text-slate-600 ring-slate-500/10 dark:bg-slate-400/10 dark:text-slate-400 dark:ring-slate-400/20':

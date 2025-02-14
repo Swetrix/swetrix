@@ -3317,7 +3317,7 @@ const ViewProject = () => {
                               if (pairID === CHART_METRICS_MAPPING.customEvents) {
                                 if (_isEmpty(panelsData.customs)) {
                                   return (
-                                    <span className='flex cursor-not-allowed items-center px-4 py-2'>
+                                    <span className='flex cursor-not-allowed items-center px-4 py-2 tracking-tighter'>
                                       <BanIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
                                       {label}
                                     </span>
@@ -3326,12 +3326,16 @@ const ViewProject = () => {
 
                                 return (
                                   <Dropdown
-                                    menuItemsClassName='max-w-[300px] max-h-[300px] overflow-auto'
+                                    menuItemsClassName='max-w-[300px] max-h-[300px] overflow-auto tracking-tighter'
                                     items={chartMetricsCustomEvents}
                                     title={label}
                                     labelExtractor={(event) => (
                                       <Checkbox
-                                        className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}
+                                        classes={{
+                                          label: cx('tracking-tighter', {
+                                            hidden: analyticsLoading,
+                                          }),
+                                        }}
                                         label={
                                           _size(event.label) > CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH ? (
                                             <span title={event.label}>
@@ -3349,7 +3353,7 @@ const ViewProject = () => {
                                         checked={event.active}
                                       />
                                     )}
-                                    buttonClassName='group-hover:bg-gray-200 dark:group-hover:bg-slate-700 px-4 py-2 inline-flex w-full bg-white text-sm font-medium text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800'
+                                    buttonClassName='group-hover:bg-gray-200 dark:group-hover:bg-slate-700 px-4 py-2 inline-flex w-full bg-white text-sm font-medium tracking-tighter text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800'
                                     keyExtractor={(event) => event.id}
                                     onSelect={(event, e) => {
                                       e?.stopPropagation()
@@ -3365,7 +3369,9 @@ const ViewProject = () => {
 
                               return (
                                 <Checkbox
-                                  className={cx('px-4 py-2', { hidden: isPanelsDataEmpty || analyticsLoading })}
+                                  classes={{
+                                    label: cx('px-4 py-2 tracking-tighter', { hidden: analyticsLoading }),
+                                  }}
                                   label={label}
                                   disabled={conflicted}
                                   checked={active}
@@ -3375,7 +3381,7 @@ const ViewProject = () => {
                                 />
                               )
                             }}
-                            buttonClassName='!px-2.5'
+                            buttonClassName='!px-2.5 tracking-tighter'
                             selectItemClassName='group text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 block text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'
                             keyExtractor={(pair) => pair.id}
                             onSelect={({ id: pairID, conflicts }) => {
@@ -3428,7 +3434,9 @@ const ViewProject = () => {
 
                               return (
                                 <Checkbox
-                                  className='px-4 py-2'
+                                  classes={{
+                                    label: 'px-4 py-2',
+                                  }}
                                   label={label}
                                   checked={active}
                                   onChange={() => switchActiveErrorFilter(pairID)}

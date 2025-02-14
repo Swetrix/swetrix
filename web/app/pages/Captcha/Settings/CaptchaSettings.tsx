@@ -399,7 +399,9 @@ const CaptchaSettings = ({ isSettings }: CaptchaSettingsProps) => {
                 }))
               }
               name='active'
-              className='mt-4'
+              classes={{
+                label: 'mt-4',
+              }}
               label={t('project.captcha.settings.enabled')}
               hint={t('project.captcha.settings.enabledHint')}
             />
@@ -412,7 +414,9 @@ const CaptchaSettings = ({ isSettings }: CaptchaSettingsProps) => {
                 }))
               }
               name='public'
-              className='mt-4'
+              classes={{
+                label: 'mt-4',
+              }}
               label={t('project.settings.public')}
               hint={t('project.settings.publicHint')}
             />
@@ -458,7 +462,7 @@ const CaptchaSettings = ({ isSettings }: CaptchaSettingsProps) => {
             <hr className='mt-2 border-gray-200 sm:mt-5 dark:border-gray-600' />
           </>
         ) : (
-          <p className='mt-1 mb-4 font-mono text-sm text-gray-500 italic dark:text-gray-300'>
+          <p className='mt-1 mb-4 font-mono text-sm tracking-tighter text-gray-500 italic dark:text-gray-300'>
             {t('project.settings.createHint')}
           </p>
         )}

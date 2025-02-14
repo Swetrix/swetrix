@@ -7,16 +7,18 @@ interface CheckboxProps {
   label: React.ReactNode
   hint?: React.ReactNode
   name?: string
-  className?: string
   onChange?: (checked: boolean) => void
   checked?: boolean
-  hintClassName?: string
   disabled?: boolean
+  classes?: {
+    label?: string
+    hint?: string
+  }
 }
 
-const Checkbox = ({ label, hint, name, className, onChange, checked, hintClassName, disabled }: CheckboxProps) => (
-  <Field className={className} disabled={disabled}>
-    <div className='flex items-center gap-2'>
+const Checkbox = ({ label, hint, name, onChange, checked, disabled, classes }: CheckboxProps) => (
+  <Field disabled={disabled}>
+    <div className={cx('flex items-center gap-2', classes?.label)}>
       <HeadlessCheckbox
         name={name}
         checked={checked}
@@ -28,7 +30,7 @@ const Checkbox = ({ label, hint, name, className, onChange, checked, hintClassNa
       <Label className='cursor-pointer font-mono text-sm font-medium text-gray-900 dark:text-gray-200'>{label}</Label>
     </div>
     {hint ? (
-      <Description className={cx('mt-1 text-sm text-gray-500 dark:text-gray-300', hintClassName)}>{hint}</Description>
+      <Description className={cx('mt-1 text-sm text-gray-500 dark:text-gray-300', classes?.hint)}>{hint}</Description>
     ) : null}
   </Field>
 )

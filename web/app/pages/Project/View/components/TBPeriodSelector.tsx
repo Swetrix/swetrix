@@ -39,7 +39,7 @@ const TBPeriodSelector = ({ items, title, onSelect, activePeriod, classes }: TBP
     <Popover className='relative'>
       {({ open }) => (
         <>
-          <PopoverButton className='group inline-flex w-full px-2.5 py-2 font-mono text-sm font-medium text-gray-700 outline-hidden md:px-4 dark:text-gray-50'>
+          <PopoverButton className='group inline-flex w-full px-2.5 py-2 font-mono text-sm font-medium tracking-tighter text-gray-700 outline-hidden md:px-4 dark:text-gray-50'>
             <CalendarIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
             <span>{title}</span>
             <ChevronDownIcon
@@ -81,20 +81,23 @@ const TBPeriodSelector = ({ items, title, onSelect, activePeriod, classes }: TBP
 
                         updateTimebucket(value)
                       }}
-                      className={cx('relative inline-flex items-center text-sm font-medium capitalize', {
-                        'text-gray-900 dark:text-gray-50': timeBucket === value,
-                        'text-gray-700 dark:text-gray-300': available && timeBucket !== value,
-                        'text-gray-400 dark:text-gray-500': !available && timeBucket !== value,
-                        'cursor-pointer': available && !dataLoading,
-                        'cursor-wait': available && dataLoading,
-                        'cursor-default': !available,
-                      })}
+                      className={cx(
+                        'relative inline-flex items-center text-sm font-medium tracking-tighter capitalize',
+                        {
+                          'text-gray-900 dark:text-gray-50': timeBucket === value,
+                          'text-gray-700 dark:text-gray-300': available && timeBucket !== value,
+                          'text-gray-400 dark:text-gray-500': !available && timeBucket !== value,
+                          'cursor-pointer': available && !dataLoading,
+                          'cursor-wait': available && dataLoading,
+                          'cursor-default': !available,
+                        },
+                      )}
                     >
                       {label}
                     </PopoverButton>
                   ))}
                 </div>
-                <ul className={cx('w-full text-left', classes?.periods)}>
+                <ul className={cx('w-full text-left tracking-tighter', classes?.periods)}>
                   {_map(items, (item) => (
                     <PopoverButton
                       as='li'

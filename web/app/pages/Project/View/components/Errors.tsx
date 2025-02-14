@@ -87,7 +87,7 @@ const ErrorItem = ({ error, onClick }: ErrorItemProps) => {
               {error.filename ? (
                 <>
                   <Separator className='self-center' />
-                  <span className='mx-1 text-xs font-normal text-gray-500'>{error.filename}</span>
+                  <span className='mx-1 text-xs font-normal tracking-tighter text-gray-500'>{error.filename}</span>
                 </>
               ) : null}
             </p>

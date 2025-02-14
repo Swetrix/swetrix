@@ -198,7 +198,9 @@ const SearchFilters = ({
               checked={Boolean(override)}
               onChange={setOverride}
               name='overrideCurrentlyFilters'
-              className='mt-4'
+              classes={{
+                label: 'mt-4',
+              }}
               label={t('project.overrideCurrentlyFilters')}
             />
           ) : null}
