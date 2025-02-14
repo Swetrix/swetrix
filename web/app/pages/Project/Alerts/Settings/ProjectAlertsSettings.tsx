@@ -336,7 +336,9 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
             }))
           }
           name='active'
-          className='mt-4'
+          classes={{
+            label: 'mt-4',
+          }}
           label={t('alert.enabled')}
           hint={t('alert.enabledHint')}
         />

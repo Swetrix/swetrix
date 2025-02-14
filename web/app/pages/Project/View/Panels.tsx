@@ -843,7 +843,7 @@ const CustomEvents = ({
       activeFragment={activeFragment}
       onExpandClick={() => setDetailsOpened(true)}
     >
-      <table className='table-fixed font-mono'>
+      <table className='table-fixed font-mono tracking-tighter'>
         <thead>
           <tr className='text-gray-900 dark:text-gray-50'>
             <th
@@ -1240,7 +1240,7 @@ const PageProperties = ({
       activeFragment={activeFragment}
       onExpandClick={() => setDetailsOpened(true)}
     >
-      <table className='table-fixed'>
+      <table className='table-fixed tracking-tighter'>
         <thead>
           <tr className='text-gray-900 dark:text-gray-50'>
             <th
@@ -1598,7 +1598,7 @@ const Panel = ({
                     rel='noopener noreferrer nofollow'
                     aria-label={`${rowData} (opens in a new tab)`}
                   >
-                    <span className='flex items-center truncate'>{rowData}</span>
+                    <span className='flex items-center truncate tracking-tighter'>{rowData}</span>
                   </a>
                 ) : (
                   <span
@@ -1609,10 +1609,10 @@ const Panel = ({
                       },
                     )}
                   >
-                    <span className='flex items-center truncate'>{rowData}</span>
+                    <span className='flex items-center truncate tracking-tighter'>{rowData}</span>
                   </span>
                 )}
-                <div className='flex min-w-fit items-center pl-2'>
+                <div className='flex min-w-fit items-center pl-2 tracking-tight'>
                   <span className='mr-1 hidden text-gray-500 group-hover:inline dark:text-gray-200'>
                     ({_round((count / total) * 100, 2)}%)
                   </span>
@@ -1628,7 +1628,7 @@ const Panel = ({
       )}
       {/* for pagination in tabs */}
       {_size(entries) > ENTRIES_PER_PANEL ? (
-        <div className='absolute bottom-0 w-[calc(100%-2rem)] font-mono sm:w-[calc(100%-3rem)]'>
+        <div className='absolute bottom-0 w-[calc(100%-2rem)] font-mono tracking-tight sm:w-[calc(100%-3rem)]'>
           <div className='mb-2 flex justify-between select-none'>
             <div>
               <span className='text-xs font-light text-gray-500 lowercase dark:text-gray-200'>

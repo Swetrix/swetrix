@@ -28,9 +28,14 @@ export const AddProject = ({ onClick, sitesCount, viewMode }: AddProjectProps) =
             }),
       )}
     >
-      <div className={cx('flex items-center font-mono', viewMode === 'list' && 'gap-2')}>
-        <FolderPlusIcon className='h-12 w-12 text-gray-400 group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400' />
-        <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
+      <div className={cx(viewMode === 'list' && 'flex items-center')}>
+        <FolderPlusIcon
+          className={cx(
+            'h-12 w-12 text-gray-400 group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400',
+            viewMode === 'list' ? 'mr-2' : 'mx-auto',
+          )}
+        />
+        <span className='mt-2 block font-mono text-sm font-semibold tracking-tight text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
           {t('dashboard.newProject')}
         </span>
       </div>

@@ -40,7 +40,7 @@ const Pagination = ({
   return (
     <div
       className={cx(
-        'flex items-center justify-between border-t border-gray-200 py-3 font-mono dark:border-gray-700',
+        'flex items-center justify-between border-t border-gray-200 py-3 font-mono tracking-tighter dark:border-gray-700',
         className,
       )}
     >

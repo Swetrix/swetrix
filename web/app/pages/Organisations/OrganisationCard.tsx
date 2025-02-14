@@ -128,7 +128,7 @@ export const OrganisationCard = ({ organisation, reloadOrganisations }: Organisa
     >
       <div className='px-4 py-4'>
         <div className='flex items-center justify-between'>
-          <p className='truncate text-lg font-semibold text-slate-900 dark:text-gray-50'>{name}</p>
+          <p className='truncate text-lg font-semibold tracking-tight text-slate-900 dark:text-gray-50'>{name}</p>
 
           <div className='flex items-center gap-2' onClick={(e) => e.stopPropagation()}>
             {membership?.role === 'viewer' ? null : (
