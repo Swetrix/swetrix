@@ -317,7 +317,9 @@ const Signup = ({ ssrTheme }: SignupProps) => {
                       />
                     </span>
                   }
-                  hintClassName='!text-red-600 dark:!text-red-500'
+                  classes={{
+                    hint: '!text-red-600 dark:!text-red-500',
+                  }}
                   hint={beenSubmitted ? errors.tos : ''}
                 />
                 <div className='flex'>
