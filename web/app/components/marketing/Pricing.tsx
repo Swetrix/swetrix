@@ -250,7 +250,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
 
   return (
     <>
-      <div id='pricing' className={cx('font-mono', { 'bg-white dark:bg-slate-900/75': !authenticated })}>
+      <div id='pricing' className={cx('font-mono tracking-tight', { 'bg-white dark:bg-slate-900/75': !authenticated })}>
         <div
           className={cx('max-w-max whitespace-pre-line', {
             'px-4 py-24 sm:px-6 lg:px-8': !authenticated,
@@ -415,7 +415,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
               </ul>
             </div>
           </div>
-          <p className='mt-5 text-base tracking-tight text-gray-900 dark:text-gray-50'>
+          <p className='mt-5 font-sans text-base tracking-normal text-gray-900 dark:text-gray-50'>
             <Trans
               t={t}
               i18nKey='billing.contact'

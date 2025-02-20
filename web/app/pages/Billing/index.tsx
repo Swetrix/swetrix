@@ -233,10 +233,10 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
           <h2 id='billing' className='mb-2 text-2xl font-medium tracking-tight text-gray-900 dark:text-gray-50'>
             {t('billing.subscription')}
           </h2>
-          <p className='mt-1 font-mono text-base tracking-tight text-gray-900 dark:text-gray-50'>
+          <p className='mt-1 text-base tracking-tight text-gray-900 dark:text-gray-50'>
             {isSubscriber ? t('billing.selectPlan') : t('billing.changePlan')}
           </p>
-          <p className='max-w-prose font-mono text-base tracking-tight text-gray-900 dark:text-gray-50'>
+          <p className='max-w-prose text-base tracking-tight text-gray-900 dark:text-gray-50'>
             {t('billing.membersNotification')}
           </p>
           {isSubscriber && nextBillDate ? (
@@ -331,14 +331,14 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
           <h2 id='usage' className='text-2xl font-medium tracking-tight text-gray-900 dark:text-gray-50'>
             {t('billing.planUsage')}
           </h2>
-          <p className='mt-1 max-w-prose font-mono text-base tracking-tight text-gray-900 dark:text-gray-50'>
+          <p className='mt-1 max-w-prose text-base tracking-tight text-gray-900 dark:text-gray-50'>
             {t('billing.planUsageDesc')}
           </p>
 
           {isLoading ? (
             <Loader />
           ) : (
-            <div className='mt-2 font-mono text-lg tracking-tight text-gray-900 dark:text-gray-50'>
+            <div className='mt-2 text-lg tracking-tight text-gray-900 dark:text-gray-50'>
               <p className='mb-1 text-base font-medium tracking-tight text-gray-900 dark:text-gray-50'>
                 {t('billing.xofy', {
                   x: usageInfo.total || 0,
@@ -348,7 +348,7 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
 
               <Tooltip
                 text={
-                  <div>
+                  <div className='font-mono'>
                     <p>
                       {t('billing.usageOverview', {
                         tracked: usageInfo.total || 0,
