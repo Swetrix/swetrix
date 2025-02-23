@@ -5,10 +5,11 @@
 
 @theme {
   /* Fonts */
-  --font-sans: 'Geist', 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Oxygen', 'Ubuntu',
-    sans-serif;
-  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Roboto Mono, Menlo, Monaco, Liberation Mono,
-    DejaVu Sans Mono, Courier New, monospace;
+  --font-sans:
+    'Geist', 'Roboto', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Oxygen', 'Ubuntu', sans-serif;
+  --font-mono:
+    'Geist Mono', ui-monospace, SFMono-Regular, Roboto Mono, Menlo, Monaco, Liberation Mono, DejaVu Sans Mono,
+    Courier New, monospace;
 
   /* Colors */
   --color-gray-750: oklch(23.11% 0.0357 262.54); /* Converting #141d2e to OKLCH */

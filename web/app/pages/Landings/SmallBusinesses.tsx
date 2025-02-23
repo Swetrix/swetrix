@@ -89,7 +89,7 @@ const SmallBusinesses = () => {
                 </Link>
                 <a
                   href={LIVE_DEMO_URL}
-                  className='mt-2 flex h-12 w-full items-center justify-center rounded-md bg-transparent text-slate-900 ring-1 shadow-xs ring-slate-900 transition-all !duration-300 hover:bg-slate-200 sm:mt-0 sm:max-w-[210px] dark:text-white dark:ring-white/20 dark:hover:bg-gray-800'
+                  className='mt-2 flex h-12 w-full items-center justify-center rounded-md bg-transparent text-slate-900 shadow-xs ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-200 sm:mt-0 sm:max-w-[210px] dark:text-white dark:ring-white/20 dark:hover:bg-gray-800'
                   target='_blank'
                   rel='noopener noreferrer'
                   aria-label={`${t('common.liveDemo')} (opens in a new tab)`}

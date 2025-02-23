@@ -198,22 +198,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
       }
     : undefined
 
-  return data(
-    {
-      locale,
-      url,
-      theme,
-      REMIX_ENV,
-      isAuthed,
-      pathname: urlObject.pathname,
-    },
-    init,
-  )
+  return data({ locale, url, theme, REMIX_ENV, isAuthed, pathname: urlObject.pathname }, init)
 }
 
-export const handle = {
-  i18n: 'common',
-}
+export const handle = { i18n: 'common' }
 
 export default function App() {
   const { locale, url, theme, REMIX_ENV, isAuthed } = useLoaderData<any>()
@@ -248,17 +236,10 @@ export default function App() {
         />
         <script
           // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{
-            __html: `window.REMIX_ENV = ${JSON.stringify(REMIX_ENV)}`,
-          }}
+          dangerouslySetInnerHTML={{ __html: `window.REMIX_ENV = ${JSON.stringify(REMIX_ENV)}` }}
         />
       </head>
-      <body
-        className={cx({
-          'bg-white': theme === 'light',
-          'bg-slate-900': theme === 'dark',
-        })}
-      >
+      <body className={cx({ 'bg-white': theme === 'light', 'bg-slate-900': theme === 'dark' })}>
         <Provider store={store}>
           <AppWrapper ssrTheme={theme} ssrAuthenticated={isAuthed} />
         </Provider>

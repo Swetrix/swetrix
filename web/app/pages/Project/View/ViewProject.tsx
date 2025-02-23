@@ -3073,7 +3073,7 @@ const ViewProject = () => {
                           />
                         ) : null}
                       </div>
-                      <div className='mx-auto mt-3 flex w-full max-w-[420px] flex-wrap items-center justify-center gap-y-1 space-x-2 sm:mx-0 sm:w-auto sm:max-w-none sm:flex-nowrap sm:justify-between lg:mt-0'>
+                      <div className='mx-auto mt-3 flex w-full max-w-[420px] flex-wrap items-center justify-center space-x-2 gap-y-1 sm:mx-0 sm:w-auto sm:max-w-none sm:flex-nowrap sm:justify-between lg:mt-0'>
                         {activeTab !== PROJECT_TABS.funnels ? (
                           <>
                             <button
