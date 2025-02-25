@@ -1,8 +1,8 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "ignoreDependencies": ["eslint-plugin-jsx-a11y", "@typescript-eslint/typescript-estree", "@typescript-eslint/parser", "@tailwindcss/forms", "@tailwindcss/typography", "tailwindcss", "@react-router/fs-routes"],
+  "ignoreDependencies": ["@typescript-eslint/typescript-estree", "@tailwindcss/forms", "@tailwindcss/typography", "tailwindcss", "eslint-import-resolver-node", "@types/ua-parser-js"],
   "ignoreBinaries": ["flyctl"],
-  "ignore": ["./ecosystem.config.js", "./app/routes.ts", "./react-router.config.ts"],
+  "ignore": ["./ecosystem.config.js", "./app/routes.ts", "./react-router.config.ts", "./app/routes/[robots.txt].tsx"],
   "entry": ["./app/root.tsx"],
   "project": ["./app/**/*.{js,ts,tsx,jsx,cjs}"],
   "paths": {

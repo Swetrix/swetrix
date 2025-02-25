@@ -59,6 +59,6 @@ jobs:
       - name: Web TypeScript Validation
         run: npm run typecheck
         working-directory: web
-      # - name: Web Knip Validation
-      #   run: npm run knip
-      #   working-directory: web
+      - name: Web Knip Validation
+        run: npm run knip
+        working-directory: web
