@@ -257,7 +257,19 @@ const financeData = {
     'Technical Expenses': -96, // cloud hosting, mail, accounting
     'Business Expenses': -1859, // google ads + marketing freelancer + gov
     MRR: 291,
-    Revenue: 1059, // TODO
+    Revenue: 1059,
+  },
+  '2025-01-01': {
+    'Technical Expenses': -123, // cloud hosting, mail, accounting
+    'Business Expenses': -362, // google ads + office
+    MRR: 298,
+    Revenue: 178,
+  },
+  '2025-02-01': {
+    'Technical Expenses': -144, // cloud hosting, mail, accounting
+    'Business Expenses': -42, // gov
+    MRR: 311,
+    Revenue: 1312,
   },
 }
 
