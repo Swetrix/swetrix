@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 import _map from 'lodash/map'
 
 import { CONTACT_EMAIL, SECURITY_EMAIL, DOCS_URL } from '~/lib/constants'

@@ -1,5 +1,3 @@
-/* eslint-disable jsx-a11y/anchor-is-valid, react/no-unstable-nested-components */
-
 import {
   Popover,
   Transition,

@@ -597,7 +597,6 @@ const ViewProject = () => {
     }
 
     return findActivePeriod?.countDays || 0
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActiveCompare, period])
 
   useEffect(() => {
@@ -915,7 +914,6 @@ const ViewProject = () => {
     })
   }
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const switchActiveErrorFilter = useCallback(
     _debounce((pairID: string) => {
       setErrorOptions((prev) => ({ ...prev, [pairID]: !prev[pairID] }))
@@ -1095,7 +1093,6 @@ const ViewProject = () => {
     if (activeTab === PROJECT_TABS.traffic) {
       loadCustomEvents()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeChartMetricsCustomEvents])
 
   const compareDisable = () => {
@@ -1473,7 +1470,6 @@ const ViewProject = () => {
         setActivePSID(psid)
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading])
 
   useEffect(() => {
@@ -1482,7 +1478,6 @@ const ViewProject = () => {
     }
 
     loadSession(activePSID)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period, dateRange, timeBucket, activePSID])
 
   useEffect(() => {
@@ -1491,7 +1486,6 @@ const ViewProject = () => {
     }
 
     loadError(activeEID)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period, dateRange, timeBucket, activeEID, filtersSubError, areFiltersParsed])
 
   const loadSessions = async (forcedSkip?: number) => {
@@ -1748,7 +1742,6 @@ const ViewProject = () => {
       let newTimebucket = timeBucket
 
       if (period === KEY_FOR_ALL_TIME && !_isEmpty(dataPerf.timeBucket)) {
-        // eslint-disable-next-line prefer-destructuring
         newTimebucket = _includes(dataPerf.timeBucket, timeBucket) ? timeBucket : dataPerf.timeBucket[0]
         setPeriodPairs((prev) => {
           const newPeriodPairs = _map(prev, (item) => {
@@ -2170,8 +2163,6 @@ const ViewProject = () => {
     if (!areFiltersParsed || activeTab !== PROJECT_TABS.traffic || authLoading || !project) return
 
     loadAnalytics()
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     mode,
     areFiltersParsed,
@@ -2190,8 +2181,6 @@ const ViewProject = () => {
     if (!areFiltersParsed || activeTab !== PROJECT_TABS.performance || authLoading || !project) return
 
     loadAnalyticsPerf()
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     areFiltersParsed,
     activeTab,
@@ -2210,8 +2199,6 @@ const ViewProject = () => {
     if (activeTab !== PROJECT_TABS.funnels || authLoading || !project) return
 
     loadFunnelsData()
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeFunnel, activeTab, authLoading, project, dateRange, period, timeBucket])
 
   useEffect(() => {
@@ -2220,8 +2207,6 @@ const ViewProject = () => {
     }
 
     loadSessions()
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     activeTab,
     dateRange,
@@ -2241,8 +2226,6 @@ const ViewProject = () => {
     }
 
     loadErrors()
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     activeTab,
     errorOptions,
@@ -2260,7 +2243,6 @@ const ViewProject = () => {
   useEffect(() => {
     searchParams.set('tab', activeTab)
     setSearchParams(searchParams)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab])
 
   useEffect(() => {
@@ -2343,7 +2325,7 @@ const ViewProject = () => {
         return generate
       })
     }
-  }, [authLoading, activeChartMetrics, chartData, chartDataPerf, activeChartMetricsPerf, dataChartCompare]) // eslint-disable-line
+  }, [authLoading, activeChartMetrics, chartData, chartDataPerf, activeChartMetricsPerf, dataChartCompare])
 
   useEffect(() => {
     let sdk: any | null = null
@@ -2432,7 +2414,7 @@ const ViewProject = () => {
       timeBucket,
       dateRange: period === 'custom' ? dateRange : null,
     })
-  }, [sdkInstance]) // eslint-disable-line
+  }, [sdkInstance])
 
   useEffect(() => {
     sdkInstance?._emitEvent('clientinfo', {
@@ -2455,7 +2437,7 @@ const ViewProject = () => {
       created,
       isPublic,
     })
-  }, [sdkInstance, project]) // eslint-disable-line
+  }, [sdkInstance, project])
 
   useEffect(() => {
     setPeriodPairs(tbPeriodPairs(t, undefined, undefined, language))
@@ -2477,13 +2459,11 @@ const ViewProject = () => {
   const onRangeDateChange = (dates: Date[], onRender?: boolean) => {
     const days = Math.ceil(Math.abs(dates[1].getTime() - dates[0].getTime()) / (1000 * 3600 * 24))
 
-    // eslint-disable-next-line no-restricted-syntax
     for (const index in timeBucketToDays) {
       if (timeBucketToDays[index].lt >= days) {
         let eventEmitTimeBucket = timeBucket
 
         if (!onRender && !_includes(timeBucketToDays[index].tb, timeBucket)) {
-          // eslint-disable-next-line prefer-destructuring
           eventEmitTimeBucket = timeBucketToDays[index].tb[0]
           searchParams.set('timeBucket', eventEmitTimeBucket)
           setTimebucket(eventEmitTimeBucket)
@@ -2525,13 +2505,13 @@ const ViewProject = () => {
     if (!_isEmpty(activeChartMetricsCustomEvents)) {
       setActiveChartMetricsCustomEvents([])
     }
-  }, [period, filters]) // eslint-disable-line
+  }, [period, filters])
 
   useEffect(() => {
     if (dateRange && areFiltersParsed) {
       onRangeDateChange(dateRange)
     }
-  }, [dateRange, t, areFiltersParsed]) // eslint-disable-line
+  }, [dateRange, t, areFiltersParsed])
 
   useEffect(() => {
     if (!project || project.isLocked) {
@@ -2579,7 +2559,7 @@ const ViewProject = () => {
         console.error('[ERROR] (getProject)', reason)
         onErrorLoading()
       })
-  }, [authLoading, project, id]) // eslint-disable-line
+  }, [authLoading, project, id])
 
   const updatePeriod = (newPeriod: { period: string; label?: string }) => {
     if (period === newPeriod.period) {

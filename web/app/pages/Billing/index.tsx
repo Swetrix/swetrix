@@ -94,7 +94,7 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
     const eventCallback = (data: any) => {
       dispatch(UIActions.setPaddleLastEvent(data))
     }
-    // eslint-disable-next-line no-use-before-define
+
     const interval = setInterval(paddleSetup, 200)
 
     // prettier-ignore
@@ -312,12 +312,12 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
             <div className='mt-8 flex flex-col'>
               <Pricing authenticated={authenticated} isBillingPage />
               <div className='mt-2 space-y-2'>
-                {subUpdateURL ? (
+                {subUpdateURL && !cancellationEffectiveDate ? (
                   <Button className='mr-2' onClick={onUpdatePaymentDetails} type='button' primary large>
                     {t('billing.update')}
                   </Button>
                 ) : null}
-                {subCancelURL ? (
+                {subCancelURL && !cancellationEffectiveDate ? (
                   <Button onClick={() => setIsCancelSubModalOpened(true)} type='button' semiDanger large>
                     {t('billing.cancelSub')}
                   </Button>

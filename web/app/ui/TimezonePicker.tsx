@@ -20,7 +20,7 @@ const options = _reduce(
     const altName = now.isDST() ? tzStrings[0].daylight?.name : tzStrings[0].standard?.name
 
     const min = tz.current.offset * 60
-    // eslint-disable-next-line prefer-template
+
     const hr = `${(min / 60) ^ 0}:` + (min % 60 === 0 ? '00' : Math.abs(min % 60))
     const label = `(GMT${_includes(hr, '-') ? hr : `+${hr}`}) ${zone[1]}`
 

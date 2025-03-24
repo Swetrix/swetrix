@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/anchor-has-content */
 import dayjs from 'dayjs'
 import _map from 'lodash/map'
 import { useTranslation } from 'react-i18next'

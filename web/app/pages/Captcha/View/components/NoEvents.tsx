@@ -23,7 +23,6 @@ const NoEvents = ({ filters, resetFilters }: NoEventsProps) => {
             t={t}
             i18nKey='project.noCaptchaEv'
             components={{
-              // eslint-disable-next-line jsx-a11y/anchor-has-content
               url: (
                 <a
                   href={DOCS_CAPTCHA_URL}

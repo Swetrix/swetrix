@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 import { ExclamationTriangleIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 import BillboardCss from 'billboard.js/dist/billboard.min.css?url'
 import cx from 'clsx'
@@ -234,10 +233,7 @@ export default function App() {
           type='application/json'
           crossOrigin='anonymous'
         />
-        <script
-          // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{ __html: `window.REMIX_ENV = ${JSON.stringify(REMIX_ENV)}` }}
-        />
+        <script dangerouslySetInnerHTML={{ __html: `window.REMIX_ENV = ${JSON.stringify(REMIX_ENV)}` }} />
       </head>
       <body className={cx({ 'bg-white': theme === 'light', 'bg-slate-900': theme === 'dark' })}>
         <Provider store={store}>

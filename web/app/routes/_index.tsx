@@ -222,7 +222,6 @@ const WeAreOpensource = ({ theme }: { theme: 'dark' | 'light' }) => {
             t={t}
             i18nKey='main.weAreOpensource'
             components={{
-              // eslint-disable-next-line jsx-a11y/anchor-has-content
               url: (
                 <a
                   href={GITHUB_URL}

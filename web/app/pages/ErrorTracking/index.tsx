@@ -185,11 +185,10 @@ const ErrorTracking = ({ ssrTheme, ssrAuthenticated }: ErrorTrackingProps) => {
               t={t}
               i18nKey='errors.fast.desc'
               components={{
-                // eslint-disable-next-line jsx-a11y/anchor-has-content
                 indexUrl: (
                   <Link to={routesPath.main} className='font-medium text-red-600 hover:underline dark:text-red-400' />
                 ),
-                // eslint-disable-next-line jsx-a11y/anchor-has-content
+
                 perfUrl: (
                   <Link
                     to={routesPath.performance}

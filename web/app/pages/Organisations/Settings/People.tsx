@@ -377,7 +377,7 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
               error={beenSubmitted ? errors.email : null}
             />
             <fieldset className='mt-4'>
-              {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
+              {}
               <label className='block text-sm font-medium text-gray-700 dark:text-gray-300' htmlFor='role'>
                 {t('project.settings.role')}
               </label>

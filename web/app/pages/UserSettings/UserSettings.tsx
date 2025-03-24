@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import {
   EnvelopeIcon,
   ExclamationTriangleIcon,
@@ -190,7 +189,6 @@ const UserSettings = () => {
   const onSubmit = async (data: any, callback: (isSuccess: boolean) => void = () => {}) => {
     delete data.repeat
 
-    // eslint-disable-next-line no-restricted-syntax
     for (const key in data) {
       if (data[key] === '') {
         delete data[key]

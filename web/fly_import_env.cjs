@@ -1,7 +1,7 @@
 const fs = require('fs')
 const { execSync } = require('child_process')
 
-// eslint-disable-next-line no-undef
+ 
 const args = process.argv.slice(2)
 
 function parseArgs(args) {

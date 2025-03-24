@@ -136,7 +136,6 @@ const CreateNewPassword = () => {
               t={t}
               i18nKey='auth.signup.alreadyAMember'
               components={{
-                // eslint-disable-next-line jsx-a11y/anchor-has-content
                 url: (
                   <Link
                     to={routes.signin}

@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/anchor-has-content */
 import { SquareArrowOutUpRightIcon } from 'lucide-react'
 import { useTranslation, Trans } from 'react-i18next'
 

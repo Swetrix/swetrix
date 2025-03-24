@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unstable-nested-components, react/display-name */
 import { GlobeAltIcon } from '@heroicons/react/24/outline'
 import billboard from 'billboard.js'
 import cx from 'clsx'
@@ -201,7 +200,6 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
       let newTimebucket = timeBucket
 
       if (period === KEY_FOR_ALL_TIME && !_isEmpty(timeBucketFromResponse)) {
-        // eslint-disable-next-line prefer-destructuring
         newTimebucket = _includes(timeBucketFromResponse, timeBucket) ? timeBucket : timeBucketFromResponse[0]
         setPeriodPairs((prev) => {
           // find in prev state period === KEY_FOR_ALL_TIME and change tbs
@@ -280,7 +278,6 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
   const filterHandler = (column: any, filter: any, isExclusive = false) => {
     let newFilters
 
-    // eslint-disable-next-line no-lonely-if
     if (_find(filters, (f) => f.column === column) /* && f.filter === filter) */) {
       // selected filter is already included into the filters array -> removing it
       // removing filter from the state
@@ -480,13 +477,12 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
     const url = new URL(window.location)
 
     // setting allowed time buckets for the specified date range (period)
-    // eslint-disable-next-line no-restricted-syntax
+
     for (const index in timeBucketToDays) {
       if (timeBucketToDays[index].lt >= days) {
         let eventEmitTimeBucket = timeBucket
 
         if (!onRender && !_includes(timeBucketToDays[index].tb, timeBucket)) {
-          // eslint-disable-next-line prefer-destructuring
           eventEmitTimeBucket = timeBucketToDays[index].tb[0]
           url.searchParams.delete('timeBucket')
           url.searchParams.append('timeBucket', eventEmitTimeBucket)

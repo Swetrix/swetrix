@@ -1,5 +1,4 @@
-/* eslint-disable no-confusing-arrow */
-import { RadioGroup } from '@headlessui/react'
+import { Label, Radio, RadioGroup } from '@headlessui/react'
 import { CheckIcon } from '@heroicons/react/24/solid'
 import cx from 'clsx'
 import dayjs from 'dayjs'
@@ -142,43 +141,46 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
   }
 
   const onPlanChange = async (tier: { planCode: string; name: string; pid: string; ypid: string }) => {
-    if (
-      planCodeLoading === null &&
-      (user.planCode !== tier.planCode ||
-        (user.billingFrequency !== billingFrequency && user.planCode !== 'free' && user.planCode !== 'trial'))
-    ) {
-      if (user.subID && user.planCode !== 'none') {
-        const planId = Number(billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid)
-        setNewPlanId(planId)
-        await loadSubUpdatePreview(planId)
-        return
-      }
+    const isSelectingDifferentPlan =
+      user.planCode !== tier.planCode ||
+      user.billingFrequency !== billingFrequency ||
+      !['free', 'trial', 'none'].includes(user.planCode)
 
-      setPlanCodeLoading(tier.planCode)
-
-      if (!window.Paddle) {
-        toast.error('Payment script has not yet loaded! Please, try again.')
-        setPlanCodeLoading(null)
-        return
-      }
-
-      const discountMayBeApplied =
-        user.referrerID && (user.planCode === 'trial' || user.planCode === 'none') && !user.cancellationEffectiveDate
-      const coupon = discountMayBeApplied ? REFERRAL_DISCOUNT_CODE : undefined
-
-      window.Paddle.Checkout.open({
-        product: billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid,
-        email: user.email,
-        passthrough: JSON.stringify({
-          uid: user.id,
-        }),
-        locale: paddleLanguageMapping[language] || language,
-        title: tier.name,
-        displayModeTheme: theme,
-        country: metainfo.country,
-        coupon,
-      })
+    if (planCodeLoading || !isSelectingDifferentPlan) {
+      return
     }
+
+    if (user.subID && !user.cancellationEffectiveDate && user.planCode !== 'none') {
+      const planId = Number(billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid)
+      setNewPlanId(planId)
+      await loadSubUpdatePreview(planId)
+      return
+    }
+
+    setPlanCodeLoading(tier.planCode)
+
+    if (!window.Paddle) {
+      toast.error('Payment script has not yet loaded! Please, try again.')
+      setPlanCodeLoading(null)
+      return
+    }
+
+    const discountMayBeApplied =
+      user.referrerID && (user.planCode === 'trial' || user.planCode === 'none') && !user.cancellationEffectiveDate
+    const coupon = discountMayBeApplied ? REFERRAL_DISCOUNT_CODE : undefined
+
+    window.Paddle.Checkout.open({
+      product: billingFrequency === BillingFrequency.monthly ? tier.pid : tier.ypid,
+      email: user.email,
+      passthrough: JSON.stringify({
+        uid: user.id,
+      }),
+      locale: paddleLanguageMapping[language] || language,
+      title: tier.name,
+      displayModeTheme: theme,
+      country: metainfo.country,
+      coupon,
+    })
   }
 
   const closeUpdateModal = (force?: boolean) => {
@@ -227,20 +229,17 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
 
   const userPlancodeID = PLAN_LIMITS[user.planCode]?.index
   const planCodeID = selectedTier.index
-  const downgrade = planCodeID < userPlancodeID
+  const downgrade = !user.cancellationEffectiveDate && planCodeID < userPlancodeID
 
   let action: string
 
-  if (planCodeID > userPlancodeID) {
+  if (user.cancellationEffectiveDate || ['free', 'trial', 'none'].includes(user.planCode)) {
+    action = t('pricing.subscribe')
+  } else if (planCodeID > userPlancodeID) {
     action = t('pricing.upgrade')
   } else if (downgrade) {
     action = t('pricing.downgrade')
-  } else if (
-    user.billingFrequency === billingFrequency ||
-    user.planCode === 'free' ||
-    user.planCode === 'trial' ||
-    user.planCode === 'none'
-  ) {
+  } else if (user.billingFrequency === billingFrequency) {
     action = t('pricing.yourPlan')
   } else if (billingFrequency === BillingFrequency.monthly) {
     action = t('pricing.switchToMonthly')
@@ -283,8 +282,8 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
                   onChange={setBillingFrequency}
                   className='grid grid-cols-2 gap-x-1 rounded-md p-1 text-center text-xs leading-5 font-semibold ring-1 ring-gray-200 ring-inset dark:ring-slate-700'
                 >
-                  <RadioGroup.Label className='sr-only'>{t('pricing.frequency')}</RadioGroup.Label>
-                  <RadioGroup.Option
+                  <Label className='sr-only'>{t('pricing.frequency')}</Label>
+                  <Radio
                     key={BillingFrequency.monthly}
                     value={BillingFrequency.monthly}
                     className={({ checked }) =>
@@ -295,8 +294,8 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
                     }
                   >
                     <span>{t('pricing.monthlyBilling')}</span>
-                  </RadioGroup.Option>
-                  <RadioGroup.Option
+                  </Radio>
+                  <Radio
                     key={BillingFrequency.yearly}
                     value={BillingFrequency.yearly}
                     className={({ checked }) =>
@@ -306,13 +305,13 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
                       )
                     }
                   >
-                    <Badge
+                    {/* <Badge
                       label={t('billing.xMonthsFree', { amount: 2 })}
                       className='absolute -top-5 -left-1 w-max max-w-[200px]'
                       colour='yellow'
-                    />
+                    /> */}
                     <span>{t('pricing.yearlyBilling')}</span>
-                  </RadioGroup.Option>
+                  </Radio>
                 </RadioGroup>
               </div>
             </div>
@@ -331,20 +330,16 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
           />
           <div className='relative mt-5 divide-y rounded-2xl border ring-1 ring-gray-200 dark:ring-slate-700'>
             {user.planCode === selectedTier.planCode ? (
-              <div className='absolute top-0 left-5 translate-y-px transform'>
-                <div className='flex -translate-y-1/2 transform justify-center'>
-                  <span className='inline-flex rounded-full bg-indigo-600 px-4 py-1 text-sm font-semibold tracking-wider text-white uppercase'>
-                    {t('pricing.currentPlan')}
-                  </span>
+              <div className='absolute top-0 left-5 translate-y-px transform border-none'>
+                <div className='flex -translate-y-1/2 transform justify-center bg-gray-50 dark:bg-slate-900'>
+                  <Badge label={t('pricing.currentPlan')} colour='indigo' />
                 </div>
               </div>
             ) : null}
             {selectedTier.legacy ? (
-              <div className='absolute top-0 right-5 translate-y-px transform'>
-                <div className='flex -translate-y-1/2 transform justify-center'>
-                  <span className='inline-flex rounded-full bg-amber-400 px-2 py-1 text-sm font-semibold tracking-wider text-white uppercase'>
-                    {t('pricing.legacy')}
-                  </span>
+              <div className='absolute top-0 right-5 translate-y-px transform border-none'>
+                <div className='flex -translate-y-1/2 transform justify-center bg-gray-50 dark:bg-slate-900'>
+                  <Badge label={t('pricing.legacy')} colour='yellow' />
                 </div>
               </div>
             ) : null}

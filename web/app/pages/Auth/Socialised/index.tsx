@@ -58,7 +58,7 @@ const Socialised = () => {
 
     setLoading(true)
     processCode()
-  }, []) // eslint-disable-line
+  }, [])
 
   if (loading) {
     return (

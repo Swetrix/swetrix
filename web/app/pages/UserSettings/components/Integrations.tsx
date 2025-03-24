@@ -246,7 +246,6 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
               t={t}
               i18nKey='profileSettings.integrationsList.tgHint'
               components={{
-                // eslint-disable-next-line jsx-a11y/anchor-has-content
                 url: (
                   <a
                     href={TG_BOT_URL}
@@ -302,7 +301,6 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
               t={t}
               i18nKey='profileSettings.integrationsList.slackHint'
               components={{
-                // eslint-disable-next-line jsx-a11y/anchor-has-content
                 url: (
                   <a
                     href={SLACK_WEBHOOKS_HELP}
@@ -355,7 +353,6 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
               t={t}
               i18nKey='profileSettings.integrationsList.discordHint'
               components={{
-                // eslint-disable-next-line jsx-a11y/anchor-has-content
                 url: (
                   <a
                     href={DISCORD_WEBHOOKS_HELP}

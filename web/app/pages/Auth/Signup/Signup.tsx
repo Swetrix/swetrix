@@ -173,7 +173,6 @@ const Signup = ({ ssrTheme }: SignupProps) => {
 
       const refCode = getCookie(REFERRAL_COOKIE) as string
 
-      // eslint-disable-next-line no-constant-condition
       while (true) {
         await delay(HASH_CHECK_FREQUENCY)
 
@@ -297,7 +296,6 @@ const Signup = ({ ssrTheme }: SignupProps) => {
                         t={t}
                         i18nKey='auth.signup.tos'
                         components={{
-                          // eslint-disable-next-line jsx-a11y/anchor-has-content
                           tos: (
                             <Link
                               to={routes.terms}
@@ -305,7 +303,7 @@ const Signup = ({ ssrTheme }: SignupProps) => {
                               aria-label={t('footer.tos')}
                             />
                           ),
-                          // eslint-disable-next-line jsx-a11y/anchor-has-content
+
                           pp: (
                             <Link
                               to={routes.privacy}
@@ -341,7 +339,6 @@ const Signup = ({ ssrTheme }: SignupProps) => {
                         t={t}
                         i18nKey='auth.common.checkLeakedPasswordDesc'
                         components={{
-                          // eslint-disable-next-line jsx-a11y/anchor-has-content
                           db: (
                             <a
                               href={HAVE_I_BEEN_PWNED_URL}
@@ -386,7 +383,6 @@ const Signup = ({ ssrTheme }: SignupProps) => {
                 t={t}
                 i18nKey='auth.signup.alreadyAMember'
                 components={{
-                  // eslint-disable-next-line jsx-a11y/anchor-has-content
                   url: (
                     <Link
                       to={routes.signin}

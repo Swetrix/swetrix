@@ -1,6 +1,14 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "ignoreDependencies": ["@typescript-eslint/typescript-estree", "@tailwindcss/forms", "@tailwindcss/typography", "tailwindcss", "eslint-import-resolver-node", "@types/ua-parser-js"],
+  "ignoreDependencies": [
+    "@typescript-eslint/typescript-estree",
+    "@tailwindcss/forms",
+    "@tailwindcss/typography",
+    "tailwindcss",
+    "eslint-import-resolver-node",
+    "@types/ua-parser-js",
+    "eslint-import-resolver-typescript"
+  ],
   "ignoreBinaries": ["flyctl"],
   "ignore": ["./ecosystem.config.js", "./app/routes.ts", "./react-router.config.ts", "./app/routes/[robots.txt].tsx"],
   "entry": ["./app/root.tsx"],

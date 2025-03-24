@@ -1,5 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
-
 import { CONTACT_EMAIL } from '~/lib/constants'
 
 const Imprint = () => {

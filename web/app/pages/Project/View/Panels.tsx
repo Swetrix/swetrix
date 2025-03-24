@@ -71,11 +71,9 @@ const removeDuplicates = (arr: any[], keys: string[]) => {
   const uniqueObjects: any[] = []
 
   const isDuplicate = (obj: any) => {
-    // eslint-disable-next-line
     for (const uniqueObj of uniqueObjects) {
       let isMatch = true
 
-      // eslint-disable-next-line
       for (const key of keys) {
         if (uniqueObj[key] !== obj[key]) {
           isMatch = false
@@ -89,7 +87,6 @@ const removeDuplicates = (arr: any[], keys: string[]) => {
     return false
   }
 
-  // eslint-disable-next-line
   for (const obj of arr) {
     if (!isDuplicate(obj)) {
       uniqueObjects.push(obj)

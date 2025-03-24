@@ -1,4 +1,3 @@
-/* eslint-disable react/button-has-type */
 import { Button as HeadlessButton } from '@headlessui/react'
 import cx from 'clsx'
 import React, { memo } from 'react'

@@ -112,7 +112,6 @@ const ForgotPassword = () => {
               t={t}
               i18nKey='auth.signin.notAMember'
               components={{
-                // eslint-disable-next-line jsx-a11y/anchor-has-content
                 url: (
                   <Link
                     to={routes.signup}

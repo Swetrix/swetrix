@@ -1174,6 +1174,7 @@
     "title": "Simple, traffic-based pricing",
     "adv": "Try Swetrix on your website for {{amount}} days - completely free of charge.\nNo credit card required. No strings attached.",
     "currentPlan": "Current plan",
+    "subscribe": "Subscribe",
     "free": "Free",
     "legacy": "Legacy",
     "perMonth": "mo",

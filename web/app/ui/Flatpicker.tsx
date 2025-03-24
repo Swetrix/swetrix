@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unused-class-component-methods, class-methods-use-this */
 import cx from 'clsx'
 import _size from 'lodash/size'
 import _split from 'lodash/split'
@@ -58,7 +57,7 @@ class FlatPicker extends React.Component<
     if (this.calendar.current) {
       this.setState({
         maxDate: 'today',
-        // eslint-disable-next-line react/destructuring-assignment
+
         minDate: this.removeMonths(new Date(), this.props?.maxDateMonths || MAX_MONTHS_IN_PAST),
       })
       this.calendar.current.flatpickr.open()

@@ -25,7 +25,6 @@ const WaitingForAnError = () => {
                   t={t}
                   i18nKey='project.waitingError.desc'
                   components={{
-                    // eslint-disable-next-line jsx-a11y/anchor-has-content
                     turl: (
                       <a
                         href={TROUBLESHOOTING_URL}

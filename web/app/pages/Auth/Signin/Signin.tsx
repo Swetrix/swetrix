@@ -111,7 +111,6 @@ const Signin = ({ ssrTheme }: SigninProps) => {
 
       const refCode = getCookie(REFERRAL_COOKIE) as string
 
-      // eslint-disable-next-line no-constant-condition
       while (true) {
         await delay(HASH_CHECK_FREQUENCY)
 
@@ -283,7 +282,6 @@ const Signin = ({ ssrTheme }: SigninProps) => {
                   t={t}
                   i18nKey='auth.signin.2faUnavailable'
                   components={{
-                    // eslint-disable-next-line jsx-a11y/anchor-has-content
                     ctl: (
                       <Link to={routes.contact} className='underline hover:text-gray-900 dark:hover:text-gray-200' />
                     ),
@@ -384,7 +382,6 @@ const Signin = ({ ssrTheme }: SigninProps) => {
               t={t}
               i18nKey='auth.signin.notAMember'
               components={{
-                // eslint-disable-next-line jsx-a11y/anchor-has-content
                 url: (
                   <Link
                     to={routes.signup}

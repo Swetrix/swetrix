@@ -242,14 +242,13 @@ const Performance = ({ ssrTheme, ssrAuthenticated }: PerformanceProps) => {
               t={t}
               i18nKey='performance.fast.desc'
               components={{
-                // eslint-disable-next-line jsx-a11y/anchor-has-content
                 indexUrl: (
                   <Link
                     to={routesPath.main}
                     className='font-medium text-orange-600 hover:underline dark:text-orange-400'
                   />
                 ),
-                // eslint-disable-next-line jsx-a11y/anchor-has-content
+
                 wpostatsUrl: (
                   <a
                     href='https://wpostats.com/?utm_source=swetrix.com'

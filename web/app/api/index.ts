@@ -1,4 +1,3 @@
-/* eslint-disable implicit-arrow-linebreak */
 import axios, { AxiosResponse } from 'axios'
 import createAuthRefreshInterceptor from 'axios-auth-refresh'
 import _isArray from 'lodash/isArray'
@@ -34,7 +33,7 @@ const refreshAuthLogic = (failedRequest: { response: AxiosResponse }) =>
     .then((tokenRefreshResponse) => {
       const { accessToken } = tokenRefreshResponse.data
       setAccessToken(accessToken)
-      // eslint-disable-next-line
+
       failedRequest.response.config.headers.Authorization = `Bearer ${accessToken}`
       return Promise.resolve()
     })
@@ -53,7 +52,6 @@ api.interceptors.request.use(
   (config) => {
     const token = getAccessToken()
     if (token) {
-      // eslint-disable-next-line no-param-reassign
       config.headers.Authorization = `Bearer ${token}`
     }
     return config

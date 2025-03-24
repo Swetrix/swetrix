@@ -312,7 +312,6 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
               t={t}
               i18nKey='alert.noIntegration'
               components={{
-                // eslint-disable-next-line jsx-a11y/anchor-has-content
                 url: <Link to={INTEGRATIONS_LINK} className='text-blue-600 hover:underline dark:text-blue-500' />,
               }}
             />

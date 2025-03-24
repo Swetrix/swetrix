@@ -80,7 +80,6 @@ const Socialisations = () => {
       // Closing the authorisation window after the session expires
       setTimeout(authWindow.close, expiresIn)
 
-      // eslint-disable-next-line no-constant-condition
       while (true) {
         await delay(HASH_CHECK_FREQUENCY)
 

@@ -187,7 +187,6 @@ const ModalMessage = ({
               <MultiSelect
                 className='max-w-max'
                 items={searchList}
-                // eslint-disable-next-line react/no-unstable-nested-components
                 labelExtractor={(item) => {
                   if (filterType === 'cc') {
                     return <CCRow cc={item} language={language} />
@@ -195,7 +194,6 @@ const ModalMessage = ({
 
                   return item
                 }}
-                // eslint-disable-next-line react/no-unstable-nested-components
                 itemExtractor={(item) => {
                   if (filterType === 'cc') {
                     return <CCRow cc={item} language={language} />

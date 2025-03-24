@@ -1,4 +1,3 @@
-/* eslint-disable consistent-return */
 import _get from 'lodash/get'
 import type { MutableRefObject } from 'react'
 import { useEffect, useRef, useState } from 'react'
