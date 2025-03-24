@@ -382,6 +382,12 @@ export class UserService {
       throw new BadRequestException('You are already subscribed to this plan')
     }
 
+    if (user.cancellationEffectiveDate) {
+      throw new BadRequestException(
+        'Cannot preview a subscription change as it has been cancelled, please subscribe to a new plan',
+      )
+    }
+
     const url = 'https://vendors.paddle.com/api/2.0/subscription/preview_update'
 
     let preview: any = {}
@@ -441,6 +447,12 @@ export class UserService {
       user.billingFrequency === billingFrequency
     ) {
       throw new BadRequestException('You are already subscribed to this plan')
+    }
+
+    if (user.cancellationEffectiveDate) {
+      throw new BadRequestException(
+        'Cannot change your subscription as it has been cancelled, please subscribe to a new plan',
+      )
     }
 
     const url = 'https://vendors.paddle.com/api/2.0/subscription/users/update'
