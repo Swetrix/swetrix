@@ -15,6 +15,7 @@ module.exports = {
           'integrations/framer',
           'integrations/wix',
           'integrations/ghost',
+          'integrations/docusaurus',
           'integrations/django',
           'integrations/google-tag-manager',
           'integrations/sveltekit',
