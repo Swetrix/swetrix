@@ -15,7 +15,7 @@ After you sign up on Swetrix and create a new project, the only thing left is to
 <script src="https://swetrix.org/swetrix.js" defer></script>
 ```
 
-1. In the `Scripts in Footer` section you need to add the following:
+5. In the `Scripts in Footer` section you need to add the following:
 ```html
 <script>
   document.addEventListener('DOMContentLoaded', function () {
