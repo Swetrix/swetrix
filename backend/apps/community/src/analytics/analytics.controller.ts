@@ -84,6 +84,12 @@ dayjs.extend(dayjsTimezone)
 
 export const DEFAULT_MEASURE = 'median'
 
+// Silent 200 response for bots
+// https://github.com/Swetrix/swetrix/issues/371
+const BOT_RESPONSE = {
+  message: 'Bot traffic detected, opinion rejected :D',
+}
+
 // Performance object validator: none of the values cannot be bigger than 1000 * 60 * 5 (5 minutes) and are >= 0
 const MAX_PERFORMANCE_VALUE = 1000 * 60 * 5
 const isPerformanceValid = (perf: any) => {
@@ -907,7 +913,12 @@ export class AnalyticsController {
 
     this.analyticsService.validateCustomEVMeta(eventsDTO.meta)
 
-    await this.analyticsService.throwIfBot(eventsDTO.pid, userAgent)
+    const isBot = await this.analyticsService.isBot(eventsDTO.pid, userAgent)
+
+    if (isBot) {
+      return BOT_RESPONSE
+    }
+
     await this.analyticsService.validate(eventsDTO, origin, ip)
 
     if (eventsDTO.unique) {
@@ -981,6 +992,8 @@ export class AnalyticsController {
         'Error occured while saving the custom event',
       )
     }
+
+    return {}
   }
 
   @Post('hb')
@@ -994,7 +1007,11 @@ export class AnalyticsController {
     const { pid } = logDTO
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    await this.analyticsService.throwIfBot(logDTO.pid, userAgent)
+    const isBot = await this.analyticsService.isBot(logDTO.pid, userAgent)
+
+    if (isBot) {
+      return BOT_RESPONSE
+    }
 
     await this.analyticsService.validateHeartbeat(logDTO, origin, ip)
 
@@ -1010,6 +1027,8 @@ export class AnalyticsController {
     await redis.set(sessionHash, psid, 'EX', UNIQUE_SESSION_LIFE_TIME)
 
     await this.analyticsService.processInteractionSD(psid, pid)
+
+    return {}
   }
 
   @Post()
@@ -1019,7 +1038,11 @@ export class AnalyticsController {
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    await this.analyticsService.throwIfBot(logDTO.pid, userAgent)
+    const isBot = await this.analyticsService.isBot(logDTO.pid, userAgent)
+
+    if (isBot) {
+      return BOT_RESPONSE
+    }
 
     await this.analyticsService.validate(logDTO, origin, ip)
 
@@ -1134,6 +1157,8 @@ export class AnalyticsController {
         'Error occured while saving the log data',
       )
     }
+
+    return {}
   }
 
   // Fallback for logging pageviews for users with JavaScript disabled
@@ -1149,9 +1174,9 @@ export class AnalyticsController {
     const { 'user-agent': userAgent, origin } = headers
     const { pid } = data
 
-    try {
-      await this.analyticsService.throwIfBot(pid, userAgent)
-    } catch {
+    const isBot = await this.analyticsService.isBot(pid, userAgent)
+
+    if (isBot) {
       res.writeHead(200, { 'Content-Type': 'image/gif' })
       return res.end(TRANSPARENT_GIF_BUFFER, 'binary')
     }
@@ -1459,7 +1484,11 @@ export class AnalyticsController {
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    await this.analyticsService.throwIfBot(errorDTO.pid, userAgent)
+    const isBot = await this.analyticsService.isBot(errorDTO.pid, userAgent)
+
+    if (isBot) {
+      return BOT_RESPONSE
+    }
 
     await this.analyticsService.validate(errorDTO, origin, ip)
 
@@ -1513,6 +1542,8 @@ export class AnalyticsController {
         'Error occured while saving the custom event',
       )
     }
+
+    return {}
   }
 
   // Update error(s) status

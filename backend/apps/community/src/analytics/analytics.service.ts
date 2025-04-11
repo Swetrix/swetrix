@@ -329,16 +329,14 @@ export class AnalyticsService {
     this.projectService.allowedToView(project, uid, password)
   }
 
-  async throwIfBot(pid: string, userAgent: string) {
+  async isBot(pid: string, userAgent: string) {
     const project = await this.projectService.getRedisProject(pid)
 
     if (project.botsProtectionLevel === BotsProtectionLevel.OFF) {
-      return
+      return false
     }
 
-    if (isbot(userAgent)) {
-      throw new BadRequestException('Bot traffic detected')
-    }
+    return isbot(userAgent)
   }
 
   checkOrigin(project: Project, origin: string): void {
@@ -785,7 +783,7 @@ export class AnalyticsService {
       }
 
       return pages
-    } catch (e) {
+    } catch (reason) {
       throw new UnprocessableEntityException(
         'Cannot process the provided array of pages',
       )
@@ -892,7 +890,7 @@ export class AnalyticsService {
 
     try {
       parsed = JSON.parse(filters)
-    } catch (e) {
+    } catch {
       console.error(`Cannot parse the filters array: ${filters}`)
       return [query, params, parsed, customEVFilterApplied]
     }
@@ -3390,7 +3388,7 @@ export class AnalyticsService {
 
     try {
       parsedOptions = JSON.parse(options)
-    } catch (reason) {
+    } catch {
       console.error('[getErrorsList] Failed to parse options:', options)
     }
 

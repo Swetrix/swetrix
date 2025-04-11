@@ -361,16 +361,14 @@ export class AnalyticsService {
     }
   }
 
-  async throwIfBot(pid: string, userAgent: string) {
+  async isBot(pid: string, userAgent: string) {
     const project = await this.projectService.getRedisProject(pid)
 
     if (project.botsProtectionLevel === BotsProtectionLevel.OFF) {
-      return
+      return false
     }
 
-    if (isbot(userAgent)) {
-      throw new BadRequestException('Bot traffic detected')
-    }
+    return isbot(userAgent)
   }
 
   checkOrigin(project: Project, origin: string): void {
