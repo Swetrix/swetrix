@@ -51,10 +51,6 @@ export function getProjectTabs(request: Request): string[] {
   return _split(tabs, ',')
 }
 
-export function getProjectPassword(request: Request): string | null {
-  return new URL(request.url).searchParams.get('password')
-}
-
 function getAccessToken(request: Request): string | null {
   const cookie = request.headers.get('Cookie')
   const accessToken = cookie?.match(/(?<=access_token=)[^;]*/)?.[0]

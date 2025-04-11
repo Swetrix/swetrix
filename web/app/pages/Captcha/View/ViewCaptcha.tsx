@@ -16,11 +16,9 @@ import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { useNavigate, useSearchParams } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
-import { toast } from 'sonner'
 
-import { getProject, getCaptchaData } from '~/api'
+import { getCaptchaData } from '~/api'
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
-import { useRequiredParams } from '~/hooks/useRequiredParams'
 import useSize from '~/hooks/useSize'
 import {
   captchaTbPeriodPairs,
@@ -37,10 +35,9 @@ import {
   ThemeType,
   DEFAULT_TIMEZONE,
 } from '~/lib/constants'
-import { CaptchaProject } from '~/lib/models/Project'
-import UIActions from '~/lib/reducers/ui'
-import { StateType, useAppDispatch } from '~/lib/store'
+import { StateType } from '~/lib/store'
 import { Panel } from '~/pages/Project/View/Panels'
+import { useCurrentProject } from '~/pages/Project/View/providers/CurrentProjectProvider'
 import { parseFiltersFromUrl } from '~/pages/Project/View/utils/filters'
 import { ViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { deviceIconMapping, onCSVExportClick } from '~/pages/Project/View/ViewProject.helpers'
@@ -81,11 +78,10 @@ interface ViewCaptchaProps {
 }
 
 const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
+  const { id, project, preferences, updatePreferences } = useCurrentProject()
+
   const { loading: authLoading, user } = useSelector((state: StateType) => state.auth)
   const { theme } = useSelector((state: StateType) => state.ui.theme)
-  const { captchaProjectsViewPrefs } = useSelector((state: StateType) => state.ui.cache)
-
-  const dispatch = useAppDispatch()
 
   const {
     t,
@@ -93,23 +89,14 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
   } = useTranslation('common')
   const [periodPairs, setPeriodPairs] = useState(captchaTbPeriodPairs(t, undefined, undefined, language))
   const dashboardRef = useRef(null)
-  const { id } = useRequiredParams<{ id: string }>()
   const navigate = useNavigate()
-
-  const [project, setProject] = useState<CaptchaProject | null>(null)
 
   const [areFiltersParsed, setAreFiltersParsed] = useState(false)
   const [panelsData, setPanelsData] = useState<any>({})
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
-  const [period, setPeriod] = useState<string>(
-    captchaProjectsViewPrefs ? captchaProjectsViewPrefs[id]?.period || periodPairs[4].period : periodPairs[4].period,
-  )
-  const [timeBucket, setTimebucket] = useState<string>(
-    captchaProjectsViewPrefs
-      ? captchaProjectsViewPrefs[id]?.timeBucket || periodPairs[4].tbs[1]
-      : periodPairs[4].tbs[1],
-  )
+  const [period, setPeriod] = useState<string>(preferences?.period || periodPairs[4].period)
+  const [timeBucket, setTimebucket] = useState<string>(preferences?.timeBucket || periodPairs[4].tbs[1])
   const activePeriod: {
     period: string
     label: string
@@ -128,9 +115,8 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
   const [filters, setFilters] = useState<any[]>([])
   const tnMapping = typeNameMapping(t)
   const refCalendar = useRef(null)
-  const localStorageDateRange = captchaProjectsViewPrefs ? captchaProjectsViewPrefs[id]?.rangeDate : null
   const [dateRange, setDateRange] = useState<Date[] | null>(
-    localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null,
+    preferences?.rangeDate ? [new Date(preferences.rangeDate[0]), new Date(preferences.rangeDate[1])] : null,
   )
 
   const [searchParams] = useSearchParams()
@@ -163,11 +149,6 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
       results: t('project.results'),
     }
   }, [t])
-
-  const onErrorLoading = () => {
-    toast.error(t('project.noExist'))
-    navigate(routes.dashboard)
-  }
 
   const loadCaptcha = async () => {
     setDataLoading(true)
@@ -365,14 +346,12 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
       // @ts-expect-error
       const url = new URL(window.location)
       const { searchParams } = url
-      const intialPeriod = captchaProjectsViewPrefs
-        ? searchParams.get('period') || captchaProjectsViewPrefs[id]?.period
-        : searchParams.get('period') || '7d'
-      if (!_includes(validPeriods, intialPeriod)) {
+      const initialPeriod = searchParams.get('period') || preferences?.period || '7d'
+      if (!_includes(validPeriods, initialPeriod)) {
         return
       }
 
-      if (intialPeriod === 'custom') {
+      if (initialPeriod === 'custom') {
         // @ts-expect-error
         const from = new Date(searchParams.get('from'))
         // @ts-expect-error
@@ -386,7 +365,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
 
       setPeriodPairs(captchaTbPeriodPairs(t, undefined, undefined, language))
       setDateRange(null)
-      updatePeriod({ period: intialPeriod })
+      updatePeriod({ period: initialPeriod })
     } catch (reason) {
       console.error('[ERROR](useEffect) Setting period failed:', reason)
     }
@@ -422,15 +401,13 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
 
     const parsePeriodFilters = () => {
       try {
-        const intialPeriod = captchaProjectsViewPrefs
-          ? searchParams.get('period') || captchaProjectsViewPrefs[id]?.period
-          : searchParams.get('period') || '7d'
+        const initialPeriod = searchParams.get('period') || preferences?.period || '7d'
 
-        if (!_includes(validPeriods, intialPeriod)) {
+        if (!_includes(validPeriods, initialPeriod)) {
           return
         }
 
-        if (intialPeriod === 'custom') {
+        if (initialPeriod === 'custom') {
           // @ts-expect-error
           const from = new Date(searchParams.get('from'))
           // @ts-expect-error
@@ -445,7 +422,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
         setPeriodPairs(captchaTbPeriodPairs(t, undefined, undefined, language))
         setDateRange(null)
         updatePeriod({
-          period: intialPeriod,
+          period: initialPeriod,
         })
       } catch {
         //
@@ -504,14 +481,11 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
         setPeriodPairs(captchaTbPeriodPairs(t, timeBucketToDays[index].tb, dates, language))
         setPeriod('custom')
 
-        dispatch(
-          UIActions.setCaptchaProjectViewPrefs({
-            pid: id,
-            period: 'custom',
-            timeBucket: timeBucketToDays[4].tb[0],
-            rangeDate: dates,
-          }),
-        )
+        updatePreferences({
+          period: 'custom',
+          timeBucket: timeBucketToDays[index].tb[0],
+          rangeDate: dates,
+        })
 
         break
       }
@@ -523,25 +497,6 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
       onRangeDateChange(dateRange)
     }
   }, [dateRange, areFiltersParsed]) // eslint-disable-line
-
-  useEffect(() => {
-    if (authLoading || !_isEmpty(project)) {
-      return
-    }
-
-    getProject(id)
-      .then((result) => {
-        if (_isEmpty(result)) {
-          onErrorLoading()
-        } else {
-          setProject(result as CaptchaProject)
-        }
-      })
-      .catch((reason) => {
-        console.error(reason)
-        onErrorLoading()
-      })
-  }, [authLoading, project, id]) // eslint-disable-line
 
   const updatePeriod = (newPeriod: any) => {
     const newPeriodFull = _find(periodPairs, (el) => el.period === newPeriod.period)
@@ -562,13 +517,10 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
       url.searchParams.delete('from')
       url.searchParams.delete('to')
       url.searchParams.append('period', newPeriod.period)
-      dispatch(
-        UIActions.setCaptchaProjectViewPrefs({
-          pid: id,
-          period: newPeriod.period,
-          timeBucket: tb,
-        }),
-      )
+      updatePreferences({
+        period: newPeriod.period,
+        timeBucket: tb,
+      })
       setPeriod(newPeriod.period)
       setDateRange(null)
     }
@@ -584,14 +536,9 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
     const { pathname, search } = url
     navigate(`${pathname}${search}`)
     setTimebucket(newTimebucket)
-    dispatch(
-      UIActions.setCaptchaProjectViewPrefs({
-        pid: id,
-        period,
-        timeBucket: newTimebucket,
-        rangeDate: dateRange,
-      }),
-    )
+    updatePreferences({
+      timeBucket: newTimebucket,
+    })
   }
 
   const openSettingsHandler = () => {

@@ -7,12 +7,9 @@ import { isBrowser } from '~/lib/constants'
  * how any localStorage item was modified after first access
  */
 
-type currentLocalStorageType = Record<string, string | null>
-const currentLocalStorage: currentLocalStorageType = {}
+const currentLocalStorage: Record<string, string> = {}
 
-type setItemType = (key: string, value: string) => void
-
-export const setItem: setItemType = (key, value) => {
+export const setItem = (key: string, value: string) => {
   currentLocalStorage[key] = value
 
   if (!isBrowser) {
@@ -22,18 +19,20 @@ export const setItem: setItemType = (key, value) => {
   localStorage.setItem(key, value)
 }
 
-type getItemType = (key: string) => any
-
-export const getItem: getItemType = (key) => {
+export const getItem = (key: string): Record<string, any> | string | null => {
   if (currentLocalStorage[key]) {
     return currentLocalStorage[key]
   }
 
   if (!isBrowser) {
-    return
+    return null
   }
 
-  const storedValue: any = localStorage.getItem(key)
+  const storedValue: string | null = localStorage.getItem(key)
+
+  if (storedValue === null) {
+    return null
+  }
 
   try {
     return JSON.parse(storedValue)
@@ -42,9 +41,7 @@ export const getItem: getItemType = (key) => {
   }
 }
 
-type removeItemType = (key: string) => void
-
-export const removeItem: removeItemType = (key) => {
+export const removeItem = (key: string) => {
   delete currentLocalStorage[key]
 
   if (!isBrowser) {

@@ -57,20 +57,18 @@ import { toast } from 'sonner'
 
 import {
   getProjectData,
-  getProject,
   getOverallStats,
   getLiveVisitors,
   getPerfData,
   getProjectDataCustomEvents,
   getTrafficCompareData,
   getPerformanceCompareData,
-  checkPassword,
   getCustomEventsMetadata,
   addFunnel,
   updateFunnel,
   deleteFunnel,
   getFunnelData,
-  getFunnels,
+  // getFunnels,
   getPerformanceOverallStats,
   getSessions,
   getSession,
@@ -84,7 +82,6 @@ import {
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import Footer from '~/components/Footer'
 import Header from '~/components/Header'
-import { useRequiredParams } from '~/hooks/useRequiredParams'
 import useSize from '~/hooks/useSize'
 import {
   tbPeriodPairs,
@@ -103,8 +100,7 @@ import {
   tbPeriodPairsCompare,
   PERIOD_PAIRS_COMPARE,
   FILTERS_PERIOD_PAIRS,
-  LS_IS_ACTIVE_COMPARE,
-  LS_PROJECTS_PROTECTED,
+  LS_IS_ACTIVE_COMPARE_KEY,
   isBrowser,
   TITLE_SUFFIX,
   KEY_FOR_ALL_TIME,
@@ -119,9 +115,8 @@ import {
   ThemeType,
 } from '~/lib/constants'
 import { CountryEntry } from '~/lib/models/Entry'
-import { Project, Funnel, AnalyticsFunnel, OverallObject, OverallPerformanceObject } from '~/lib/models/Project'
-import UIActions from '~/lib/reducers/ui'
-import { StateType, useAppDispatch } from '~/lib/store'
+import { Funnel, AnalyticsFunnel, OverallObject, OverallPerformanceObject } from '~/lib/models/Project'
+import { StateType } from '~/lib/store'
 import NewFunnel from '~/modals/NewFunnel'
 import ViewProjectHotkeys from '~/modals/ViewProjectHotkeys'
 import Checkbox from '~/ui/Checkbox'
@@ -134,7 +129,7 @@ import Select from '~/ui/Select'
 import { trackCustom } from '~/utils/analytics'
 import { periodToCompareDate } from '~/utils/compareConvertDate'
 import { getTimeFromSeconds, getStringFromTime, getLocaleDisplayName, nLocaleFormatter } from '~/utils/generic'
-import { getItem, setItem, removeItem } from '~/utils/localstorage'
+import { getItem, setItem } from '~/utils/localstorage'
 import routes from '~/utils/routes'
 
 import ProjectAlertsView from '../Alerts/View'
@@ -180,6 +175,7 @@ import {
   TrafficLogResponse,
 } from './interfaces/traffic'
 import { Panel, Metadata } from './Panels'
+import { useCurrentProject, useProjectPassword } from './providers/CurrentProjectProvider'
 import {
   handleNavigationParams,
   updateFilterState,
@@ -255,29 +251,26 @@ export const useViewProjectContext = () => {
 }
 
 const ViewProject = () => {
-  const dispatch = useAppDispatch()
+  const { id, project, preferences, updatePreferences } = useCurrentProject()
+  const projectPassword = useProjectPassword(id)
 
   const {
     theme: ssrTheme,
     embedded,
     isAuth: ssrAuthenticated,
-    queryPassword,
     tabs: projectQueryTabs,
   } = useLoaderData<{
     theme: ThemeType
     embedded: boolean
     isAuth: boolean
-    queryPassword: string | null
     tabs: string[]
   }>()
-
-  const { projectViewPrefs, customEventsPrefs } = useSelector((state: StateType) => state.ui.cache)
 
   const { loading: authLoading, authenticated: csrAuthenticated, user } = useSelector((state: StateType) => state.auth)
 
   const { theme } = useSelector((state: StateType) => state.ui.theme)
 
-  const { extensions, projectPasswords } = useSelector((state: StateType) => state.ui.misc)
+  const { extensions } = useSelector((state: StateType) => state.ui.misc)
 
   const authenticated = isBrowser ? (authLoading ? ssrAuthenticated : csrAuthenticated) : ssrAuthenticated
   const { timezone = DEFAULT_TIMEZONE } = user || {}
@@ -299,18 +292,11 @@ const ViewProject = () => {
 
   const dashboardRef = useRef<HTMLDivElement>(null)
 
-  const { id } = useRequiredParams<{ id: string }>()
   const navigate = useNavigate()
 
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const [project, setProject] = useState<Project | null>(null)
   const [liveVisitors, setLiveVisitors] = useState<number>(0)
-
-  const projectPassword = useMemo(
-    () => projectPasswords[id] || queryPassword || (getItem(LS_PROJECTS_PROTECTED)?.[id] as string) || '',
-    [id, projectPasswords, queryPassword],
-  )
 
   const [areFiltersParsed, setAreFiltersParsed] = useState(false)
 
@@ -328,12 +314,8 @@ const ViewProject = () => {
   const [isNewFunnelOpened, setIsNewFunnelOpened] = useState(false)
   const [isAddAViewOpened, setIsAddAViewOpened] = useState(false)
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
-  const [period, setPeriod] = useState(
-    projectViewPrefs ? projectViewPrefs[id]?.period || periodPairs[4].period : periodPairs[4].period,
-  )
-  const [timeBucket, setTimebucket] = useState(
-    projectViewPrefs ? projectViewPrefs[id]?.timeBucket || periodPairs[4].tbs[1] : periodPairs[4].tbs[1],
-  )
+  const [period, setPeriod] = useState(preferences.period || periodPairs[4].period)
+  const [timeBucket, setTimebucket] = useState(preferences.timeBucket || periodPairs[4].tbs[1])
   const activePeriod = useMemo(() => _find(periodPairs, (p) => p.period === period), [period, periodPairs])
   const [chartData, setChartData] = useState<any>({})
   const [mainChart, setMainChart] = useState<any>(null)
@@ -368,9 +350,8 @@ const ViewProject = () => {
   const tnMapping = typeNameMapping(t)
   const refCalendar = useRef(null)
   const refCalendarCompare = useRef(null)
-  const localStorageDateRange = projectViewPrefs ? projectViewPrefs[id]?.rangeDate : null
   const [dateRange, setDateRange] = useState<null | Date[]>(
-    localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null,
+    preferences.rangeDate ? [new Date(preferences.rangeDate[0]), new Date(preferences.rangeDate[1])] : null,
   )
   const [activeTab, setActiveTab] = useState(() => {
     const tab = searchParams.get('tab') as keyof typeof PROJECT_TABS
@@ -469,8 +450,9 @@ const ViewProject = () => {
     }
 
     try {
-      const funnels = await getFunnels(id, projectPassword)
-      setProject((prev) => (prev ? { ...prev, funnels } : null))
+      // const funnels = await getFunnels(id, projectPassword)
+      // TODO
+      // setProject((prev) => (prev ? { ...prev, funnels } : null))
     } catch (reason: any) {
       console.error('[ERROR] (onFunnelCreate)(getFunnels)', reason)
     }
@@ -494,8 +476,9 @@ const ViewProject = () => {
     }
 
     try {
-      const funnels = await getFunnels(id, projectPassword)
-      setProject((prev) => (prev ? { ...prev, funnels } : null))
+      // const funnels = await getFunnels(id, projectPassword)
+      // TODO
+      // setProject((prev) => (prev ? { ...prev, funnels } : null))
     } catch (reason: any) {
       console.error('[ERROR] (onFunnelCreate)(getFunnels)', reason)
     }
@@ -519,8 +502,9 @@ const ViewProject = () => {
     }
 
     try {
-      const funnels = await getFunnels(id, projectPassword)
-      setProject((prev) => (prev ? { ...prev, funnels } : null))
+      // const funnels = await getFunnels(id, projectPassword)
+      // TODO
+      // setProject((prev) => (prev ? { ...prev, funnels } : null))
     } catch (reason: any) {
       console.error('[ERROR] (onFunnelCreate)(getFunnels)', reason)
     }
@@ -549,10 +533,10 @@ const ViewProject = () => {
   const rotateXAxis = useMemo(() => size.width > 0 && size.width < 500, [size])
   const customEventsChartData = useMemo(
     () =>
-      _pickBy(customEventsPrefs[id], (value, keyCustomEvents) =>
+      _pickBy(preferences.customEvents, (value, keyCustomEvents) =>
         _includes(activeChartMetricsCustomEvents, keyCustomEvents),
       ),
-    [customEventsPrefs, id, activeChartMetricsCustomEvents],
+    [preferences.customEvents, id, activeChartMetricsCustomEvents],
   )
   const [chartType, setChartType] = useState((getItem('chartType') as string) || chartTypes.line)
 
@@ -563,7 +547,7 @@ const ViewProject = () => {
     }[]
   >(tbPeriodPairsCompare(t, undefined, language))
   const [isActiveCompare, setIsActiveCompare] = useState(() => {
-    const activeCompare = getItem(LS_IS_ACTIVE_COMPARE)
+    const activeCompare = getItem(LS_IS_ACTIVE_COMPARE_KEY)
 
     if (typeof activeCompare === 'string') {
       return activeCompare === 'true'
@@ -983,31 +967,6 @@ const ViewProject = () => {
     setErrorStatusUpdating(false)
   }
 
-  const onErrorLoading = () => {
-    if (projectPassword) {
-      checkPassword(id, projectPassword).then((res) => {
-        if (res) {
-          navigate({
-            pathname: _replace(routes.project, ':id', id),
-            search: `?theme=${ssrTheme}&embedded=${embedded}`,
-          })
-          return
-        }
-
-        toast.error(t('apiNotifications.incorrectPassword'))
-        navigate({
-          pathname: _replace(routes.project_protected_password, ':id', id),
-          search: `?theme=${ssrTheme}&embedded=${embedded}`,
-        })
-        removeItem(LS_PROJECTS_PROTECTED)
-      })
-      return
-    }
-
-    toast.error(t('project.noExist'))
-    navigate(routes.dashboard)
-  }
-
   const loadCustomEvents = async () => {
     if (_isEmpty(panelsData.customs)) {
       return
@@ -1059,12 +1018,9 @@ const ViewProject = () => {
 
       const events = data?.chart ? data.chart.events : customEventsChartData
 
-      dispatch(
-        UIActions.setCustomEventsPrefs({
-          pid: id,
-          data: events,
-        }),
-      )
+      updatePreferences({
+        customEvents: events,
+      })
 
       const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
       const bbSettings = getSettings(
@@ -1243,12 +1199,9 @@ const ViewProject = () => {
 
       customEventsChart = customEventsChart?.chart ? customEventsChart.chart.events : customEventsChartData
 
-      dispatch(
-        UIActions.setCustomEventsPrefs({
-          pid: id,
-          data: customEventsChart,
-        }),
-      )
+      updatePreferences({
+        customEvents: customEventsChart,
+      })
 
       data.overall = rawOverall[id]
       setOverall(rawOverall[id])
@@ -2073,15 +2026,13 @@ const ViewProject = () => {
 
     const parsePeriodFilters = () => {
       try {
-        const intialPeriod = projectViewPrefs
-          ? searchParams.get('period') || projectViewPrefs[id]?.period
-          : searchParams.get('period') || '7d'
+        const initialPeriod = searchParams.get('period') || preferences.period || '7d'
 
-        if (!_includes(validPeriods, intialPeriod)) {
+        if (!_includes(validPeriods, initialPeriod)) {
           return
         }
 
-        if (intialPeriod === 'custom') {
+        if (initialPeriod === 'custom') {
           // @ts-expect-error
           const from = new Date(searchParams.get('from'))
           // @ts-expect-error
@@ -2096,7 +2047,7 @@ const ViewProject = () => {
         setPeriodPairs(tbPeriodPairs(t, undefined, undefined, language))
         setDateRange(null)
         updatePeriod({
-          period: intialPeriod,
+          period: initialPeriod,
         })
       } catch {
         //
@@ -2477,14 +2428,11 @@ const ViewProject = () => {
         setPeriodPairs(tbPeriodPairs(t, timeBucketToDays[index].tb, dates, language))
         setPeriod('custom')
 
-        dispatch(
-          UIActions.setProjectViewPrefs({
-            pid: id,
-            period: 'custom',
-            timeBucket: timeBucketToDays[index].tb[0],
-            rangeDate: dates,
-          }),
-        )
+        updatePreferences({
+          period: 'custom',
+          timeBucket: timeBucketToDays[index].tb[0],
+          rangeDate: dates,
+        })
 
         setCanLoadMoreSessions(false)
         resetSessions()
@@ -2534,33 +2482,6 @@ const ViewProject = () => {
     return () => clearInterval(interval)
   }, [project, projectPassword])
 
-  useEffect(() => {
-    if (authLoading || !_isEmpty(project)) {
-      return
-    }
-
-    getProject(id, projectPassword)
-      .then((result) => {
-        if (_isEmpty(result)) {
-          onErrorLoading()
-        }
-
-        if (result.isPasswordProtected && !result.role && _isEmpty(projectPassword)) {
-          navigate({
-            pathname: _replace(routes.project_protected_password, ':id', id),
-            search: `?theme=${ssrTheme}&embedded=${embedded}`,
-          })
-          return
-        }
-
-        setProject(result)
-      })
-      .catch((reason) => {
-        console.error('[ERROR] (getProject)', reason)
-        onErrorLoading()
-      })
-  }, [authLoading, project, id])
-
   const updatePeriod = (newPeriod: { period: string; label?: string }) => {
     if (period === newPeriod.period) {
       return
@@ -2580,13 +2501,10 @@ const ViewProject = () => {
       searchParams.delete('from')
       searchParams.delete('to')
       searchParams.set('period', newPeriod.period)
-      dispatch(
-        UIActions.setProjectViewPrefs({
-          pid: id,
-          period: newPeriod.period,
-          timeBucket: tb,
-        }),
-      )
+      updatePreferences({
+        period: newPeriod.period,
+        timeBucket: tb,
+      })
       setPeriod(newPeriod.period)
 
       setCanLoadMoreSessions(false)
@@ -2612,14 +2530,9 @@ const ViewProject = () => {
     searchParams.set('timeBucket', newTimebucket)
     setSearchParams(searchParams)
     setTimebucket(newTimebucket)
-    dispatch(
-      UIActions.setProjectViewPrefs({
-        pid: id,
-        period,
-        timeBucket: newTimebucket,
-        rangeDate: dateRange as Date[],
-      }),
-    )
+    updatePreferences({
+      timeBucket: newTimebucket,
+    })
     sdkInstance?._emitEvent('timeupdate', {
       period,
       timeBucket: newTimebucket,

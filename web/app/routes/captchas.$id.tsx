@@ -1,7 +1,9 @@
 import type { LinksFunction, LoaderFunctionArgs } from 'react-router'
 import { useLoaderData } from 'react-router'
 
-import CaptchaView from '~/pages/Captcha/View'
+import { useRequiredParams } from '~/hooks/useRequiredParams'
+import ViewCaptcha from '~/pages/Captcha/View'
+import { CurrentProjectProvider } from '~/pages/Project/View/providers/CurrentProjectProvider'
 import ProjectViewStyle from '~/styles/ProjectViewStyle.css?url'
 import { detectTheme } from '~/utils/server'
 
@@ -17,6 +19,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export default function Index() {
   const { theme } = useLoaderData<typeof loader>()
+  const { id } = useRequiredParams<{ id: string }>()
 
-  return <CaptchaView ssrTheme={theme} />
+  return (
+    <CurrentProjectProvider id={id}>
+      <ViewCaptcha ssrTheme={theme} />
+    </CurrentProjectProvider>
+  )
 }

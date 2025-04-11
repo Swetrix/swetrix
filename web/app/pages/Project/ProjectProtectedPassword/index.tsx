@@ -4,17 +4,17 @@ import _replace from 'lodash/replace'
 import _size from 'lodash/size'
 import React, { useState, useEffect, memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useDispatch } from 'react-redux'
 import { Link, useNavigate } from 'react-router'
 
 import { checkPassword } from '~/api'
 import Footer from '~/components/Footer'
 import Header from '~/components/Header'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
-import UIActions from '~/lib/reducers/ui'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import routes from '~/utils/routes'
+
+import { setProjectPassword } from '../View/utils/cache'
 
 interface ProjectProtectedPasswordForm {
   password: string
@@ -41,7 +41,6 @@ const ProjectProtectedPassword = ({ ssrTheme, embedded, isAuth }: ProjectProtect
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
-  const dispatch = useDispatch()
 
   const validate = () => {
     const allErrors = {} as {
@@ -72,12 +71,7 @@ const ProjectProtectedPassword = ({ ssrTheme, embedded, isAuth }: ProjectProtect
       await checkPassword(id, data.password)
         .then((result) => {
           if (result) {
-            dispatch(
-              UIActions.setProjectPassword({
-                id,
-                password: data.password,
-              }),
-            )
+            setProjectPassword(id, data.password)
             navigate({
               pathname: _replace(routes.project, ':id', id),
               search: `?embedded=${embedded}&theme=${ssrTheme}`,

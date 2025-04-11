@@ -2,18 +2,16 @@ import type { LoaderFunctionArgs } from 'react-router'
 import { useLoaderData } from 'react-router'
 
 import ProjectProtectedPassword from '~/pages/Project/ProjectProtectedPassword'
-import { detectTheme, isEmbedded, getProjectPassword, isAuthenticated } from '~/utils/server'
+import { detectTheme, isEmbedded, isAuthenticated } from '~/utils/server'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const embedded = isEmbedded(request)
-  const queryPassword = getProjectPassword(request)
   const [theme] = detectTheme(request)
   const isAuth = isAuthenticated(request)
 
   return {
     theme,
     embedded,
-    queryPassword,
     isAuth,
   }
 }
