@@ -1,12 +1,12 @@
 /* eslint-disable no-useless-escape */
 import billboard, { bar, line } from 'billboard.js'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { Link } from 'react-router'
 
+import { getGeneralStats } from '~/api'
 import { LIVE_DEMO_URL } from '~/lib/constants'
-import { StateType } from '~/lib/store/index'
+import { Stats } from '~/lib/models/Stats'
 import { nFormatterSeparated } from '~/utils/generic'
 
 // This should be generated on the API side, will be done later.
@@ -386,13 +386,17 @@ const getSettings = () => {
 
 const OpenStartup = () => {
   const { t }: any = useTranslation('common')
-  const { stats } = useSelector((state: StateType) => state.ui.misc)
+  const [stats, setStats] = useState<Stats>({} as Stats)
 
   const events = nFormatterSeparated(Number(stats.events), 1)
   const users = nFormatterSeparated(Number(stats.users), 1)
   const websites = nFormatterSeparated(Number(stats.projects), 1)
 
   useEffect(() => {
+    getGeneralStats()
+      .then((stats) => setStats(stats))
+      .catch(console.error)
+
     const bbSettings = getSettings()
 
     // @ts-expect-error

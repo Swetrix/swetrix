@@ -7,6 +7,7 @@ interface AuthState {
   authenticated: boolean
   loading: boolean
   dontRemember: boolean
+  extensions: any[]
 }
 
 const initialState: AuthState = {
@@ -14,6 +15,9 @@ const initialState: AuthState = {
   authenticated: false,
   loading: true,
   dontRemember: false,
+
+  // TODO: Only load extensions per project; migrate this to useCurrentProject
+  extensions: [],
 }
 
 const authSlice = createSlice({
@@ -39,6 +43,9 @@ const authSlice = createSlice({
     },
     setUser: (state, { payload }: PayloadAction<User>) => {
       state.user = payload
+    },
+    setExtensions(state, { payload }: PayloadAction<any[]>) {
+      state.extensions = payload
     },
   },
 })

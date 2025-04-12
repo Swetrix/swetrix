@@ -268,7 +268,7 @@ const ViewProject = () => {
 
   const { theme } = useSelector((state: StateType) => state.ui.theme)
 
-  const { extensions } = useSelector((state: StateType) => state.ui.misc)
+  const { extensions } = useSelector((state: StateType) => state.auth)
 
   const authenticated = isBrowser ? (authLoading ? ssrAuthenticated : csrAuthenticated) : ssrAuthenticated
   const { timezone = DEFAULT_TIMEZONE } = user || {}

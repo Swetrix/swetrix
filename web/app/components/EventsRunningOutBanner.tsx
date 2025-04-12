@@ -1,25 +1,39 @@
 import { ExclamationTriangleIcon, XMarkIcon } from '@heroicons/react/24/outline'
-import { memo, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 
-import { SHOW_BANNER_AT_PERC } from '~/lib/constants'
-import UIActions from '~/lib/reducers/ui'
-import { useAppDispatch, StateType } from '~/lib/store'
+import { LOW_EVENTS_WARNING, SHOW_BANNER_AT_PERC } from '~/lib/constants'
+import { StateType } from '~/lib/store'
 import Modal from '~/ui/Modal'
+import { shouldShowLowEventsBanner } from '~/utils/auth'
+import { setCookie } from '~/utils/cookie'
+import { secondsTillNextMonth } from '~/utils/generic'
 
 const EventsRunningOutBanner = () => {
   const { t } = useTranslation('common')
-  const dispatch = useAppDispatch()
-  const showNoEventsLeftBanner = useSelector((state: StateType) => state.ui.misc.showNoEventsLeftBanner)
-  const dashboardBlockReason = useSelector((state: StateType) => state.auth.user.dashboardBlockReason)
+  const [shouldShowBanner, setShouldShowBanner] = useState(false)
+  const { dashboardBlockReason, totalMonthlyEvents, maxEventsCount } = useSelector(
+    (state: StateType) => state.auth.user,
+  )
   const [showMoreInfoModal, setShowMoreInfoModal] = useState(false)
 
+  useEffect(() => {
+    if (!totalMonthlyEvents || !maxEventsCount) {
+      return
+    }
+
+    setShouldShowBanner(shouldShowLowEventsBanner(totalMonthlyEvents, maxEventsCount))
+  }, [totalMonthlyEvents, maxEventsCount])
+
   const closeHandler = () => {
-    dispatch(UIActions.setShowNoEventsLeftBanner(false))
+    setShouldShowBanner(false)
+
+    const maxAge = secondsTillNextMonth() + 86400
+    setCookie(LOW_EVENTS_WARNING, 1, maxAge)
   }
 
-  if (!showNoEventsLeftBanner || dashboardBlockReason) {
+  if (!shouldShowBanner || dashboardBlockReason) {
     return null
   }
 

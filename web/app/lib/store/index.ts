@@ -4,13 +4,11 @@ import { useDispatch } from 'react-redux'
 import { isDevelopment } from '~/lib/constants'
 
 import authSlice from '../reducers/auth'
-import miscSlice from '../reducers/ui/misc'
 import themeSlice from '../reducers/ui/theme'
 
 const rootReducer = combineReducers({
   auth: authSlice,
   ui: combineReducers({
-    misc: miscSlice,
     theme: themeSlice,
   }),
 })

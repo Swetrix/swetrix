@@ -12,7 +12,7 @@ import { Link } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 
-import { authMe, previewSubscriptionUpdate, changeSubscriptionPlan } from '~/api'
+import { authMe, previewSubscriptionUpdate, changeSubscriptionPlan, getPaymentMetainfo } from '~/api'
 import {
   CONTACT_EMAIL,
   paddleLanguageMapping,
@@ -23,6 +23,7 @@ import {
   STANDARD_PLANS,
   TRIAL_DAYS,
 } from '~/lib/constants'
+import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import { authActions } from '~/lib/reducers/auth'
 import { AppDispatch, StateType } from '~/lib/store'
 import { Badge } from '~/ui/Badge'
@@ -49,9 +50,12 @@ const getPaidFeatures = (t: any, tier: any) => {
 interface PricingProps {
   authenticated: boolean
   isBillingPage?: boolean
+  lastEvent?: {
+    event: string
+  } | null
 }
 
-const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
+const Pricing = ({ authenticated, isBillingPage, lastEvent }: PricingProps) => {
   const {
     t,
     i18n: { language },
@@ -59,8 +63,9 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
   const dispatch = useDispatch<AppDispatch>()
   const { user } = useSelector((state: StateType) => state.auth)
   const { theme } = useSelector((state: StateType) => state.ui.theme)
-  const { paddle, metainfo } = useSelector((state: StateType) => state.ui.misc)
-  const { lastEvent } = paddle
+
+  const [metainfo, setMetainfo] = useState<Metainfo>(DEFAULT_METAINFO)
+
   const currencyCode = user?.tierCurrency || metainfo.code
 
   const [planCodeLoading, setPlanCodeLoading] = useState<string | null>(null)
@@ -96,6 +101,20 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
   }
 
   useEffect(() => {
+    const abortController = new AbortController()
+
+    getPaymentMetainfo({ signal: abortController.signal })
+      .then(setMetainfo)
+      .catch(() => {})
+
+    return () => abortController.abort()
+  }, [])
+
+  useEffect(() => {
+    if (!lastEvent) {
+      return
+    }
+
     const lastEventHandler = async (data: { event: string }) => {
       if (_isNil(data)) {
         return

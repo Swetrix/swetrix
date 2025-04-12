@@ -14,13 +14,11 @@ import { withAuthentication, auth } from '~/hoc/protected'
 import { isSelfhosted, REFERRAL_COOKIE, TRIAL_DAYS } from '~/lib/constants'
 import { SSOProvider } from '~/lib/models/Auth'
 import { authActions } from '~/lib/reducers/auth'
-import UIActions from '~/lib/reducers/ui'
 import { useAppDispatch } from '~/lib/store'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
 import { setAccessToken, removeAccessToken } from '~/utils/accessToken'
-import { shouldShowLowEventsBanner } from '~/utils/auth'
 import { deleteCookie, getCookie } from '~/utils/cookie'
 import { delay, openBrowserWindow } from '~/utils/generic'
 import { setRefreshToken, removeRefreshToken } from '~/utils/refreshToken'
@@ -131,13 +129,9 @@ const Signin = ({ ssrTheme }: SigninProps) => {
             return
           }
 
-          dispatch(authActions.authSuccessful(user))
+          dispatch(authActions.authSuccessful({ ...user, totalMonthlyEvents }))
           setAccessToken(accessToken, false)
           setRefreshToken(refreshToken)
-
-          if (shouldShowLowEventsBanner(totalMonthlyEvents, user.maxEventsCount)) {
-            dispatch(UIActions.setShowNoEventsLeftBanner(true))
-          }
 
           await loadExtensions()
 
@@ -168,7 +162,7 @@ const Signin = ({ ssrTheme }: SigninProps) => {
     }
 
     const extensions = await getInstalledExtensions()
-    dispatch(UIActions.setExtensions(extensions))
+    dispatch(authActions.setExtensions(extensions))
   }
 
   const onSubmit = async (data: SigninForm) => {
@@ -194,13 +188,9 @@ const Signin = ({ ssrTheme }: SigninProps) => {
         return
       }
 
-      dispatch(authActions.authSuccessful(user))
+      dispatch(authActions.authSuccessful({ ...user, totalMonthlyEvents }))
       setAccessToken(accessToken, dontRemember)
       setRefreshToken(refreshToken)
-
-      if (shouldShowLowEventsBanner(totalMonthlyEvents, user.maxEventsCount)) {
-        dispatch(UIActions.setShowNoEventsLeftBanner(true))
-      }
 
       await loadExtensions()
 

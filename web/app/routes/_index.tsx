@@ -14,6 +14,7 @@ import type { SitemapFunction } from 'remix-sitemap'
 import { ClientOnly } from 'remix-utils/client-only'
 import { UAParser } from 'ua-parser-js'
 
+import { getGeneralStats, getPaymentMetainfo } from '~/api'
 import Header from '~/components/Header'
 import { ConveyorBelt } from '~/components/marketing/ConveyorBelt'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
@@ -31,6 +32,8 @@ import {
   BROWSER_LOGO_MAP,
   isDisableMarketingPages,
 } from '~/lib/constants'
+import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
+import { Stats } from '~/lib/models/Stats'
 import { StateType } from '~/lib/store/index'
 import CCRow from '~/pages/Project/View/components/CCRow'
 import { MetricCard, MetricCardSelect } from '~/pages/Project/View/components/MetricCards'
@@ -278,7 +281,13 @@ const REVIEWERS = [
 
 const Testimonials = () => {
   const { t } = useTranslation('common')
-  const { stats } = useSelector((state: StateType) => state.ui.misc)
+  const [stats, setStats] = useState<Stats>({} as Stats)
+
+  useEffect(() => {
+    getGeneralStats()
+      .then((stats) => setStats(stats))
+      .catch(console.error)
+  }, [])
 
   return (
     <div className='mt-8 flex flex-col items-center justify-center gap-3 font-mono md:flex-row'>
@@ -402,7 +411,17 @@ const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
     t,
     i18n: { language },
   } = useTranslation('common')
-  const { metainfo } = useSelector((state: StateType) => state.ui.misc)
+  const [metainfo, setMetainfo] = useState<Metainfo>(DEFAULT_METAINFO)
+
+  useEffect(() => {
+    const abortController = new AbortController()
+
+    getPaymentMetainfo({ signal: abortController.signal })
+      .then(setMetainfo)
+      .catch(() => {})
+
+    return () => abortController.abort()
+  }, [])
 
   const { deviceInfo } = useLoaderData<typeof loader>()
 

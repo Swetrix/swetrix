@@ -6,7 +6,7 @@ import { ProjectPreferences } from '../providers/CurrentProjectProvider'
 
 import { filterInvalidPreferences } from './filters'
 
-export const getAllProjectPreferences = (): Record<string, ProjectPreferences> => {
+const getAllProjectPreferences = (): Record<string, ProjectPreferences> => {
   if (!isBrowser) {
     return {}
   }
@@ -37,7 +37,7 @@ export const setProjectPreferences = (id: Project['id'], preferences: ProjectPre
   )
 }
 
-export const getAllProjectPasswords = () => (getItem(LS_PROJECTS_PROTECTED_KEY) as Record<string, string>) || {}
+const getAllProjectPasswords = () => (getItem(LS_PROJECTS_PROTECTED_KEY) as Record<string, string>) || {}
 
 export const setProjectPassword = (id: Project['id'], password: string) => {
   setItem(

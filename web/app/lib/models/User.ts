@@ -75,4 +75,7 @@ export interface User {
   dashboardBlockReason: DashboardBlockReason
   isAccountBillingSuspended: boolean
   organisationMemberships: OrganisationMembership[]
+
+  // Does not come from User directly; we need it for the EventsRunningOutBanner
+  totalMonthlyEvents: number
 }

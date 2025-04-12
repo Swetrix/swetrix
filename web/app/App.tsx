@@ -13,14 +13,13 @@ import Footer from '~/components/Footer'
 import Header from '~/components/Header'
 import { isBrowser, isSelfhosted } from '~/lib/constants'
 import { authActions } from '~/lib/reducers/auth'
-import UIActions from '~/lib/reducers/ui'
 import { StateType, useAppDispatch } from '~/lib/store'
 import { getAccessToken } from '~/utils/accessToken'
-import { logout, shouldShowLowEventsBanner } from '~/utils/auth'
+import { logout } from '~/utils/auth'
 import routesPath from '~/utils/routes'
 import { getPageMeta } from '~/utils/server'
 
-import { authMe, getGeneralStats, getInstalledExtensions, getLastPost, getPaymentMetainfo } from './api'
+import { authMe, getInstalledExtensions } from './api'
 
 interface AppProps {
   ssrTheme: 'dark' | 'light'
@@ -45,32 +44,17 @@ const App = ({ ssrTheme, ssrAuthenticated }: AppProps) => {
       if (accessToken && !reduxAuthenticated) {
         try {
           const { user, totalMonthlyEvents } = await authMe()
-          dispatch(authActions.authSuccessful(user))
-
-          if (shouldShowLowEventsBanner(totalMonthlyEvents, user.maxEventsCount)) {
-            dispatch(UIActions.setShowNoEventsLeftBanner(true))
-          }
+          dispatch(authActions.authSuccessful({ ...user, totalMonthlyEvents }))
 
           if (!isSelfhosted) {
             const extensions = await getInstalledExtensions()
-            dispatch(UIActions.setExtensions(extensions))
+            dispatch(authActions.setExtensions(extensions))
           }
         } catch (reason) {
           dispatch(authActions.logout())
           logout()
           console.error(`[ERROR] Error while getting user: ${reason}`)
         }
-      }
-
-      if (!isSelfhosted) {
-        const [metainfo, lastBlogPost, generalStats] = await Promise.all([
-          getPaymentMetainfo(),
-          getLastPost(),
-          getGeneralStats(),
-        ])
-        dispatch(UIActions.setMetainfo(metainfo))
-        dispatch(UIActions.setLastBlogPost(lastBlogPost))
-        dispatch(UIActions.setGeneralStats(generalStats))
       }
 
       dispatch(authActions.finishLoading())

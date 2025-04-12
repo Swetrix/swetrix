@@ -2,15 +2,17 @@ import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { ChevronRightIcon } from '@heroicons/react/24/solid'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
-import { memo } from 'react'
+import { memo, useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { Link } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 
+import { getGeneralStats, getLastPost } from '~/api'
 import Header from '~/components/Header'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import { PERFORMANCE_LIVE_DEMO_URL, isBrowser } from '~/lib/constants'
+import { Stats } from '~/lib/models/Stats'
 import { StateType } from '~/lib/store/index'
 import BackgroundSvg from '~/ui/icons/BackgroundSvg'
 import { getAccessToken } from '~/utils/accessToken'
@@ -33,7 +35,13 @@ interface PerformanceProps {
 
 export const PeopleLoveSwetrix = () => {
   const { t } = useTranslation('common')
-  const { stats } = useSelector((state: StateType) => state.ui.misc)
+  const [stats, setStats] = useState<Stats>({} as Stats)
+
+  useEffect(() => {
+    getGeneralStats()
+      .then((stats) => setStats(stats))
+      .catch(console.error)
+  }, [])
 
   const events = nFormatterSeparated(Number(stats.events))
   const users = nFormatterSeparated(Number(stats.users))
@@ -94,10 +102,20 @@ const Performance = ({ ssrTheme, ssrAuthenticated }: PerformanceProps) => {
   const { t } = useTranslation('common')
   const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
   const { authenticated: reduxAuthenticated, loading } = useSelector((state: StateType) => state.auth)
-  const { lastBlogPost } = useSelector((state: StateType) => state.ui.misc)
+  const [lastBlogPost, setLastBlogPost] = useState<Awaited<ReturnType<typeof getLastPost>> | null>(null)
   const theme = isBrowser ? reduxTheme : ssrTheme
   const accessToken = getAccessToken()
   const authenticated = isBrowser ? (loading ? !!accessToken : reduxAuthenticated) : ssrAuthenticated
+
+  useEffect(() => {
+    const abortController = new AbortController()
+
+    getLastPost({ signal: abortController.signal })
+      .then(setLastBlogPost)
+      .catch(() => {})
+
+    return () => abortController.abort()
+  }, [])
 
   return (
     <div className='overflow-hidden'>

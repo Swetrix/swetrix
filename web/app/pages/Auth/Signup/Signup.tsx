@@ -13,7 +13,6 @@ import GoogleAuth from '~/components/GoogleAuth'
 import { HAVE_I_BEEN_PWNED_URL, REFERRAL_COOKIE, TRIAL_DAYS } from '~/lib/constants'
 import { SSOProvider } from '~/lib/models/Auth'
 import { authActions } from '~/lib/reducers/auth'
-import UIActions from '~/lib/reducers/ui'
 import { StateType, useAppDispatch } from '~/lib/store'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
@@ -21,7 +20,6 @@ import Input from '~/ui/Input'
 import Tooltip from '~/ui/Tooltip'
 import { getAccessToken, setAccessToken } from '~/utils/accessToken'
 import { trackCustom } from '~/utils/analytics'
-import { shouldShowLowEventsBanner } from '~/utils/auth'
 import { deleteCookie, getCookie } from '~/utils/cookie'
 import { delay, openBrowserWindow } from '~/utils/generic'
 import { setRefreshToken } from '~/utils/refreshToken'
@@ -193,13 +191,9 @@ const Signup = ({ ssrTheme }: SignupProps) => {
             return
           }
 
-          dispatch(authActions.authSuccessful(user))
+          dispatch(authActions.authSuccessful({ ...user, totalMonthlyEvents }))
           setAccessToken(accessToken, false)
           setRefreshToken(refreshToken)
-
-          if (shouldShowLowEventsBanner(totalMonthlyEvents, user.maxEventsCount)) {
-            dispatch(UIActions.setShowNoEventsLeftBanner(true))
-          }
 
           dispatch(authActions.finishLoading())
 

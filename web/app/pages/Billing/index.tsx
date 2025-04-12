@@ -8,7 +8,7 @@ import { useTranslation, Trans } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
 
-import { getUsageInfo } from '~/api'
+import { getPaymentMetainfo, getUsageInfo } from '~/api'
 import DashboardLockedBanner from '~/components/DashboardLockedBanner'
 import { withAuthentication, auth } from '~/hoc/protected'
 import {
@@ -19,9 +19,9 @@ import {
   paddleLanguageMapping,
   isBrowser,
 } from '~/lib/constants'
+import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import { UsageInfo } from '~/lib/models/Usageinfo'
-import UIActions from '~/lib/reducers/ui'
-import { useAppDispatch, StateType } from '~/lib/store'
+import { StateType } from '~/lib/store'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
@@ -41,7 +41,12 @@ interface BillingProps {
 
 const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
   const [isCancelSubModalOpened, setIsCancelSubModalOpened] = useState(false)
-  const { metainfo } = useSelector((state: StateType) => state.ui.misc)
+
+  const [metainfo, setMetainfo] = useState<Metainfo>(DEFAULT_METAINFO)
+  const [lastEvent, setLastEvent] = useState<{
+    event: string
+  } | null>(null)
+
   const { user, loading: authLoading } = useSelector((state: StateType) => state.auth)
   const { theme: reduxTheme } = useSelector((state: StateType) => state.ui.theme)
   const theme = isBrowser ? reduxTheme : ssrTheme
@@ -57,7 +62,6 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
     customEventsPerc: 0,
     captchaPerc: 0,
   })
-  const dispatch = useAppDispatch()
   const {
     t,
     i18n: { language },
@@ -82,13 +86,19 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
 
   const [isLoading, setIsLoading] = useState(true)
 
+  useEffect(() => {
+    const abortController = new AbortController()
+
+    getPaymentMetainfo({ signal: abortController.signal })
+      .then(setMetainfo)
+      .catch(() => {})
+
+    return () => abortController.abort()
+  }, [])
+
   // Paddle (payment processor) set-up
   useEffect(() => {
     loadScript(PADDLE_JS_URL)
-
-    const eventCallback = (data: any) => {
-      dispatch(UIActions.setPaddleLastEvent(data))
-    }
 
     const interval = setInterval(paddleSetup, 200)
 
@@ -99,12 +109,12 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
       } else if ((window as any)?.Paddle) {
         (window as any).Paddle.Setup({
           vendor: PADDLE_VENDOR_ID,
-          eventCallback,
+          eventCallback: setLastEvent,
         })
         clearInterval(interval)
       }
     }
-  }, []) // eslint-disable-line
+  }, [])
 
   const loadUsageInfo = async () => {
     if (!isLoading) {
@@ -305,7 +315,7 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
             <Loader />
           ) : (
             <div className='mt-8 flex flex-col'>
-              <Pricing authenticated={authenticated} isBillingPage />
+              <Pricing authenticated={authenticated} isBillingPage lastEvent={lastEvent} />
               <div className='mt-2 space-y-2'>
                 {subUpdateURL && !cancellationEffectiveDate ? (
                   <Button className='mr-2' onClick={onUpdatePaymentDetails} type='button' primary large>

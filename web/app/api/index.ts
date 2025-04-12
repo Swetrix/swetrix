@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from 'axios'
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import createAuthRefreshInterceptor from 'axios-auth-refresh'
 import _isArray from 'lodash/isArray'
 import _isEmpty from 'lodash/isEmpty'
@@ -7,8 +7,10 @@ import _map from 'lodash/map'
 import { DEFAULT_ALERTS_TAKE, API_URL } from '~/lib/constants'
 import { Alerts } from '~/lib/models/Alerts'
 import { Auth } from '~/lib/models/Auth'
+import { Metainfo } from '~/lib/models/Metainfo'
 import { Role } from '~/lib/models/Organisation'
 import { Project, Overall, LiveStats, Funnel } from '~/lib/models/Project'
+import { Stats } from '~/lib/models/Stats'
 import { Subscriber } from '~/lib/models/Subscriber'
 import { User, FeatureFlag } from '~/lib/models/User'
 import { authActions } from '~/lib/reducers/auth'
@@ -888,7 +890,7 @@ export const getLiveVisitors = (pids: string[], password?: string): Promise<Live
 export const getGeneralStats = () =>
   api
     .get('log/generalStats')
-    .then((response) => response.data)
+    .then((response): Stats => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -1340,10 +1342,10 @@ export const checkPassword = (pid: string, password: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getPaymentMetainfo = () =>
+export const getPaymentMetainfo = (config?: AxiosRequestConfig) =>
   api
-    .get('user/metainfo')
-    .then((response) => response.data)
+    .get('user/metainfo', config)
+    .then((response): Metainfo => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -1452,9 +1454,9 @@ export const getBlogPostWithCategory = (category: string, slug: string) =>
       throw error
     })
 
-export const getLastPost = () =>
+export const getLastPost = (config?: AxiosRequestConfig) =>
   api
-    .get('v1/blog/last-post')
+    .get('v1/blog/last-post', config)
     .then(
       (
         response,
