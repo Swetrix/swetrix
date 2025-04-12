@@ -14,6 +14,7 @@ import routes from '~/utils/routes'
 
 import { getProjectPreferences, setProjectPreferences } from '../pages/Project/View/utils/cache'
 import { CHART_METRICS_MAPPING } from '../pages/Project/View/ViewProject.helpers'
+
 import { useTheme } from './ThemeProvider'
 
 interface CurrentProjectContextType {
