@@ -4,7 +4,7 @@ import { getItem, removeItem, setItem } from '~/utils/localstorage'
 
 import { ProjectPreferences } from '../providers/CurrentProjectProvider'
 
-import { filterInvalidViewPrefs } from './filters'
+import { filterInvalidPreferences } from './filters'
 
 export const getAllProjectPreferences = (): Record<string, ProjectPreferences> => {
   if (!isBrowser) {
@@ -14,7 +14,7 @@ export const getAllProjectPreferences = (): Record<string, ProjectPreferences> =
   const storedPrefs = (getItem(LS_VIEW_PREFS_SETTING) as Record<string, ProjectPreferences>) || {}
 
   try {
-    return filterInvalidViewPrefs(storedPrefs)
+    return filterInvalidPreferences(storedPrefs)
   } catch {
     removeItem(LS_VIEW_PREFS_SETTING)
   }

@@ -13,6 +13,7 @@ import { getItem, removeItem } from '~/utils/localstorage'
 import routes from '~/utils/routes'
 
 import { getProjectPreferences, setProjectPreferences } from '../utils/cache'
+import { CHART_METRICS_MAPPING } from '../ViewProject.helpers'
 
 interface CurrentProjectContextType {
   id: string
@@ -117,6 +118,7 @@ export type ProjectPreferences = {
   timeBucket?: string
   rangeDate?: Date[]
   customEvents?: any
+  metricsVisualisation?: Record<keyof typeof CHART_METRICS_MAPPING, boolean>
 }
 
 const useProjectPreferences = (id: string) => {

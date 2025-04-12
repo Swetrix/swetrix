@@ -167,7 +167,7 @@ const CHART_METRICS_MAPPING = {
   sessionDuration: 'sessionDuration',
   customEvents: 'customEvents',
   cumulativeMode: 'cumulativeMode',
-}
+} as const
 
 const CHART_METRICS_MAPPING_PERF = {
   quantiles: 'quantiles',

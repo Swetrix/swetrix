@@ -296,7 +296,7 @@ const ViewProject = () => {
 
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const [liveVisitors, setLiveVisitors] = useState<number>(0)
+  const [liveVisitors, setLiveVisitors] = useState(0)
 
   const [areFiltersParsed, setAreFiltersParsed] = useState(false)
 
@@ -320,7 +320,7 @@ const ViewProject = () => {
   const [chartData, setChartData] = useState<any>({})
   const [mainChart, setMainChart] = useState<any>(null)
   const [dataLoading, setDataLoading] = useState(false)
-  const [activeChartMetrics, setActiveChartMetrics] = useState<Record<string, boolean>>({
+  const [activeChartMetrics, setActiveChartMetrics] = useState<Record<keyof typeof CHART_METRICS_MAPPING, boolean>>({
     [CHART_METRICS_MAPPING.unique]: true,
     [CHART_METRICS_MAPPING.views]: false,
     [CHART_METRICS_MAPPING.sessionDuration]: false,
@@ -328,6 +328,8 @@ const ViewProject = () => {
     [CHART_METRICS_MAPPING.viewsPerUnique]: false,
     [CHART_METRICS_MAPPING.trendlines]: false,
     [CHART_METRICS_MAPPING.cumulativeMode]: false,
+    [CHART_METRICS_MAPPING.customEvents]: false,
+    ...(preferences.metricsVisualisation || {}),
   })
   const [errorOptions, setErrorOptions] = useState<Record<string, boolean>>({
     [ERROR_FILTERS_MAPPING.showResolved]: false,
@@ -872,7 +874,7 @@ const ViewProject = () => {
 
   const activeTabLabel = useMemo(() => _find(tabs, (tab) => tab.id === activeTab)?.label, [tabs, activeTab])
 
-  const switchTrafficChartMetric = (pairID: string, conflicts?: string[]) => {
+  const switchTrafficChartMetric = (pairID: keyof typeof CHART_METRICS_MAPPING, conflicts?: string[]) => {
     if (isConflicted(conflicts)) {
       toast.error(t('project.conflictMetric'))
       return
@@ -882,7 +884,13 @@ const ViewProject = () => {
       return
     }
 
-    setActiveChartMetrics((prev) => ({ ...prev, [pairID]: !prev[pairID] }))
+    setActiveChartMetrics((prev) => {
+      const newActiveChartMetrics = { ...prev, [pairID]: !prev[pairID] }
+      updatePreferences({
+        metricsVisualisation: newActiveChartMetrics,
+      })
+      return newActiveChartMetrics
+    })
   }
 
   const switchCustomEventChart = (id: string) => {
