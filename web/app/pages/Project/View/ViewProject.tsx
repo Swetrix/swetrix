@@ -133,7 +133,7 @@ import { getItem, setItem } from '~/utils/localstorage'
 import routes from '~/utils/routes'
 
 import ProjectAlertsView from '../Alerts/View'
-import { useCurrentProject, useProjectPassword } from '../providers/CurrentProjectProvider'
+import { useCurrentProject, useProjectPassword } from '../../../providers/CurrentProjectProvider'
 
 import AddAViewModal from './components/AddAViewModal'
 import BrowserDropdown from './components/BrowserDropdown'

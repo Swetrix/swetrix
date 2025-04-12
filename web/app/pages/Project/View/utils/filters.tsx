@@ -6,7 +6,7 @@ import _some from 'lodash/some'
 import _startsWith from 'lodash/startsWith'
 import React from 'react'
 
-import { ProjectPreferences } from '../../providers/CurrentProjectProvider'
+import { ProjectPreferences } from '../../../../providers/CurrentProjectProvider'
 import { Filter } from '../interfaces/traffic'
 
 export const ERROR_FILTERS_MAPPING = {

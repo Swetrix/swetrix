@@ -36,7 +36,7 @@ import {
   DEFAULT_TIMEZONE,
 } from '~/lib/constants'
 import { StateType } from '~/lib/store'
-import { useCurrentProject } from '~/pages/Project/providers/CurrentProjectProvider'
+import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { Panel } from '~/pages/Project/View/Panels'
 import { parseFiltersFromUrl } from '~/pages/Project/View/utils/filters'
 import { ViewProjectContext } from '~/pages/Project/View/ViewProject'

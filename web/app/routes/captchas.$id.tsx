@@ -3,7 +3,7 @@ import { useLoaderData } from 'react-router'
 
 import { useRequiredParams } from '~/hooks/useRequiredParams'
 import ViewCaptcha from '~/pages/Captcha/View'
-import { CurrentProjectProvider } from '~/pages/Project/providers/CurrentProjectProvider'
+import { CurrentProjectProvider } from '~/providers/CurrentProjectProvider'
 import ProjectViewStyle from '~/styles/ProjectViewStyle.css?url'
 import { detectTheme } from '~/utils/server'
 

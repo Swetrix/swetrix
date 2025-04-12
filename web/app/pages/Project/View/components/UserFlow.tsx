@@ -8,7 +8,7 @@ import { getUserFlow } from '~/api'
 import { UserFlowType } from '~/lib/models/UserFlow'
 import Loader from '~/ui/Loader'
 
-import { useCurrentProject, useProjectPassword } from '../../providers/CurrentProjectProvider'
+import { useCurrentProject, useProjectPassword } from '../../../../providers/CurrentProjectProvider'
 import { useViewProjectContext } from '../ViewProject'
 import { getFormatDate } from '../ViewProject.helpers'
 

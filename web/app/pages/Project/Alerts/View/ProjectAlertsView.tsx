@@ -30,7 +30,7 @@ import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
 import routes from '~/utils/routes'
 
-import { useCurrentProject } from '../../providers/CurrentProjectProvider'
+import { useCurrentProject } from '../../../../providers/CurrentProjectProvider'
 
 const Separator = ({ className }: { className?: string }) => (
   <svg viewBox='0 0 2 2' className={cx('h-0.5 w-0.5 flex-none fill-gray-400', className)}>

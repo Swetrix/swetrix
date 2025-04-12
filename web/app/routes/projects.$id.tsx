@@ -3,7 +3,7 @@ import { type LinksFunction, type LoaderFunctionArgs, type MetaFunction } from '
 
 import { useRequiredParams } from '~/hooks/useRequiredParams'
 import { API_URL } from '~/lib/constants'
-import { CurrentProjectProvider } from '~/pages/Project/providers/CurrentProjectProvider'
+import { CurrentProjectProvider } from '~/providers/CurrentProjectProvider'
 import ViewProject from '~/pages/Project/View'
 import ProjectViewStyle from '~/styles/ProjectViewStyle.css?url'
 import { detectTheme, isEmbedded, isAuthenticated, getProjectTabs } from '~/utils/server'
