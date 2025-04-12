@@ -10,7 +10,7 @@ import { PROJECT_TABS } from '~/lib/constants'
 import Flag from '~/ui/Flag'
 import PulsatingCircle from '~/ui/icons/PulsatingCircle'
 
-import { useCurrentProject, useProjectPassword } from '../providers/CurrentProjectProvider'
+import { useCurrentProject, useProjectPassword } from '../../providers/CurrentProjectProvider'
 
 interface LiveVisitorsDropdownProps {
   live: number | string

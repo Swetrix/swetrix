@@ -2,7 +2,7 @@ import { isBrowser, LS_PROJECTS_PROTECTED_KEY, LS_VIEW_PREFS_SETTING } from '~/l
 import { type Project } from '~/lib/models/Project'
 import { getItem, removeItem, setItem } from '~/utils/localstorage'
 
-import { ProjectPreferences } from '../providers/CurrentProjectProvider'
+import { ProjectPreferences } from '../../providers/CurrentProjectProvider'
 
 import { filterInvalidPreferences } from './filters'
 

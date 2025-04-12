@@ -133,6 +133,7 @@ import { getItem, setItem } from '~/utils/localstorage'
 import routes from '~/utils/routes'
 
 import ProjectAlertsView from '../Alerts/View'
+import { useCurrentProject, useProjectPassword } from '../providers/CurrentProjectProvider'
 
 import AddAViewModal from './components/AddAViewModal'
 import BrowserDropdown from './components/BrowserDropdown'
@@ -175,7 +176,6 @@ import {
   TrafficLogResponse,
 } from './interfaces/traffic'
 import { Panel, Metadata } from './Panels'
-import { useCurrentProject, useProjectPassword } from './providers/CurrentProjectProvider'
 import {
   handleNavigationParams,
   updateFilterState,

@@ -36,8 +36,8 @@ import {
   DEFAULT_TIMEZONE,
 } from '~/lib/constants'
 import { StateType } from '~/lib/store'
+import { useCurrentProject } from '~/pages/Project/providers/CurrentProjectProvider'
 import { Panel } from '~/pages/Project/View/Panels'
-import { useCurrentProject } from '~/pages/Project/View/providers/CurrentProjectProvider'
 import { parseFiltersFromUrl } from '~/pages/Project/View/utils/filters'
 import { ViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { deviceIconMapping, onCSVExportClick } from '~/pages/Project/View/ViewProject.helpers'

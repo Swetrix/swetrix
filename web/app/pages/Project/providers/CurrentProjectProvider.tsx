@@ -12,8 +12,8 @@ import { type StateType } from '~/lib/store'
 import { getItem, removeItem } from '~/utils/localstorage'
 import routes from '~/utils/routes'
 
-import { getProjectPreferences, setProjectPreferences } from '../utils/cache'
-import { CHART_METRICS_MAPPING } from '../ViewProject.helpers'
+import { getProjectPreferences, setProjectPreferences } from '../View/utils/cache'
+import { CHART_METRICS_MAPPING } from '../View/ViewProject.helpers'
 
 interface CurrentProjectContextType {
   id: string
