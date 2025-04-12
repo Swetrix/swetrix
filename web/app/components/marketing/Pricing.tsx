@@ -26,6 +26,7 @@ import {
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import { authActions } from '~/lib/reducers/auth'
 import { AppDispatch, StateType } from '~/lib/store'
+import { useTheme } from '~/providers/ThemeProvider'
 import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
@@ -62,7 +63,7 @@ const Pricing = ({ authenticated, isBillingPage, lastEvent }: PricingProps) => {
   } = useTranslation('common')
   const dispatch = useDispatch<AppDispatch>()
   const { user } = useSelector((state: StateType) => state.auth)
-  const { theme } = useSelector((state: StateType) => state.ui.theme)
+  const { theme } = useTheme()
 
   const [metainfo, setMetainfo] = useState<Metainfo>(DEFAULT_METAINFO)
 

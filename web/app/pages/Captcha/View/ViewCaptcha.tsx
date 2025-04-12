@@ -11,7 +11,7 @@ import _map from 'lodash/map'
 import _replace from 'lodash/replace'
 import _startsWith from 'lodash/startsWith'
 import { DownloadIcon, RotateCw, SettingsIcon } from 'lucide-react'
-import { useState, useEffect, useMemo, memo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { useNavigate, useSearchParams } from 'react-router'
@@ -31,16 +31,15 @@ import {
   BROWSER_LOGO_MAP,
   OS_LOGO_MAP,
   OS_LOGO_MAP_DARK,
-  isBrowser,
-  ThemeType,
   DEFAULT_TIMEZONE,
 } from '~/lib/constants'
 import { StateType } from '~/lib/store'
-import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { Panel } from '~/pages/Project/View/Panels'
 import { parseFiltersFromUrl } from '~/pages/Project/View/utils/filters'
 import { ViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { deviceIconMapping, onCSVExportClick } from '~/pages/Project/View/ViewProject.helpers'
+import { useCurrentProject } from '~/providers/CurrentProjectProvider'
+import { useTheme } from '~/providers/ThemeProvider'
 import Dropdown from '~/ui/Dropdown'
 import FlatPicker from '~/ui/Flatpicker'
 import BarChart from '~/ui/icons/BarChart'
@@ -73,15 +72,11 @@ const PageLoader = () => (
   </div>
 )
 
-interface ViewCaptchaProps {
-  ssrTheme: ThemeType
-}
-
-const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
+const ViewCaptcha = () => {
   const { id, project, preferences, updatePreferences } = useCurrentProject()
 
   const { loading: authLoading, user } = useSelector((state: StateType) => state.auth)
-  const { theme } = useSelector((state: StateType) => state.ui.theme)
+  const { theme } = useTheme()
 
   const {
     t,
@@ -126,8 +121,6 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
   const rotateXAxias = useMemo(() => size.width > 0 && size.width < 500, [size])
   const [chartType, setChartType] = useState<string>((getItem('chartType') as string) || chartTypes.line)
   const [mainChart, setMainChart] = useState<any>(null)
-
-  const _theme = isBrowser ? theme : ssrTheme
 
   const { timezone = DEFAULT_TIMEZONE } = user || {}
 
@@ -854,7 +847,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
                               // @ts-expect-error
                               const logoPathDark = OS_LOGO_MAP_DARK[entryName]
 
-                              let logoPath = _theme === 'dark' ? logoPathDark : logoPathLight
+                              let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
                               logoPath ||= logoPathLight
 
                               if (!logoPath) {
@@ -914,4 +907,4 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
   )
 }
 
-export default memo(ViewCaptcha)
+export default ViewCaptcha

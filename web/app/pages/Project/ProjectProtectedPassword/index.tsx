@@ -10,6 +10,7 @@ import { checkPassword } from '~/api'
 import Footer from '~/components/Footer'
 import Header from '~/components/Header'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
+import { useTheme } from '~/providers/ThemeProvider'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import routes from '~/utils/routes'
@@ -23,12 +24,12 @@ interface ProjectProtectedPasswordForm {
 const MAX_PASSWORD_LENGTH = 80
 
 interface ProjectProtectedPasswordProps {
-  ssrTheme: 'light' | 'dark'
   embedded: boolean
   isAuth: boolean
 }
 
-const ProjectProtectedPassword = ({ ssrTheme, embedded, isAuth }: ProjectProtectedPasswordProps) => {
+const ProjectProtectedPassword = ({ embedded, isAuth }: ProjectProtectedPasswordProps) => {
+  const { theme } = useTheme()
   const { t } = useTranslation('common')
   const [form, setForm] = useState<ProjectProtectedPasswordForm>({
     password: '',
@@ -74,7 +75,7 @@ const ProjectProtectedPassword = ({ ssrTheme, embedded, isAuth }: ProjectProtect
             setProjectPassword(id, data.password)
             navigate({
               pathname: _replace(routes.project, ':id', id),
-              search: `?embedded=${embedded}&theme=${ssrTheme}`,
+              search: `?embedded=${embedded}&theme=${theme}`,
             })
             return
           }
@@ -110,7 +111,7 @@ const ProjectProtectedPassword = ({ ssrTheme, embedded, isAuth }: ProjectProtect
 
   return (
     <>
-      {!embedded ? <Header ssrTheme={ssrTheme} authenticated={isAuth} /> : null}
+      {!embedded ? <Header authenticated={isAuth} /> : null}
       <div className='min-h-page flex flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
         <form className='mx-auto w-full max-w-7xl' onSubmit={handleSubmit}>
           <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{t('titles.passwordProtected')}</h2>

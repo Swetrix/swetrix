@@ -31,13 +31,9 @@ interface SigninForm {
   dontRemember: boolean
 }
 
-interface SigninProps {
-  ssrTheme: string
-}
-
 const HASH_CHECK_FREQUENCY = 1000
 
-const Signin = ({ ssrTheme }: SigninProps) => {
+const Signin = () => {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -360,7 +356,7 @@ const Signin = ({ ssrTheme }: SigninProps) => {
               </div>
               <div className='mt-6 grid grid-cols-2 gap-4'>
                 <GoogleAuth onClick={() => onSsoLogin('google')} disabled={isLoading} />
-                <GithubAuth onClick={() => onSsoLogin('github')} ssrTheme={ssrTheme} disabled={isLoading} />
+                <GithubAuth onClick={() => onSsoLogin('github')} disabled={isLoading} />
               </div>
             </div>
           ) : null}

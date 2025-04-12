@@ -4,7 +4,7 @@ import type { SitemapFunction } from 'remix-sitemap'
 
 import { isDisableMarketingPages, isSelfhosted } from '~/lib/constants'
 import Startups from '~/pages/Landings/Startups'
-import { detectTheme, isAuthenticated } from '~/utils/server'
+import { isAuthenticated } from '~/utils/server'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 0.9,
@@ -17,9 +17,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   const isAuth = isAuthenticated(request)
-  const [theme] = detectTheme(request)
 
-  return { theme, isAuth }
+  return { isAuth }
 }
 
 export default function Index() {

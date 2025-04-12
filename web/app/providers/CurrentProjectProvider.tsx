@@ -2,11 +2,11 @@ import _replace from 'lodash/replace'
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
-import { useLoaderData, useNavigate, useSearchParams } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
 import { checkPassword, getProject } from '~/api'
-import { LS_PROJECTS_PROTECTED_KEY, ThemeType } from '~/lib/constants'
+import { LS_PROJECTS_PROTECTED_KEY } from '~/lib/constants'
 import { type Project } from '~/lib/models/Project'
 import { type StateType } from '~/lib/store'
 import { getItem, removeItem } from '~/utils/localstorage'
@@ -14,6 +14,7 @@ import routes from '~/utils/routes'
 
 import { getProjectPreferences, setProjectPreferences } from '../pages/Project/View/utils/cache'
 import { CHART_METRICS_MAPPING } from '../pages/Project/View/ViewProject.helpers'
+import { useTheme } from './ThemeProvider'
 
 interface CurrentProjectContextType {
   id: string
@@ -47,6 +48,7 @@ const useIsEmbedded = () => {
 }
 
 const useProject = (id: string) => {
+  const { theme } = useTheme()
   const { t } = useTranslation('common')
   const navigate = useNavigate()
   const { loading: authLoading } = useSelector((state: StateType) => state.auth)
@@ -54,17 +56,13 @@ const useProject = (id: string) => {
   const isEmbedded = useIsEmbedded()
   const [project, setProject] = useState<Project | null>(null)
 
-  const { theme: ssrTheme } = useLoaderData<{
-    theme: ThemeType
-  }>()
-
   const onErrorLoading = useCallback(() => {
     if (projectPassword) {
       checkPassword(id, projectPassword).then((res) => {
         if (res) {
           navigate({
             pathname: _replace(routes.project, ':id', id),
-            search: `?theme=${ssrTheme}&embedded=${isEmbedded}`,
+            search: `?theme=${theme}&embedded=${isEmbedded}`,
           })
           return
         }
@@ -72,7 +70,7 @@ const useProject = (id: string) => {
         toast.error(t('apiNotifications.incorrectPassword'))
         navigate({
           pathname: _replace(routes.project_protected_password, ':id', id),
-          search: `?theme=${ssrTheme}&embedded=${isEmbedded}`,
+          search: `?theme=${theme}&embedded=${isEmbedded}`,
         })
         removeItem(LS_PROJECTS_PROTECTED_KEY)
       })
@@ -81,7 +79,7 @@ const useProject = (id: string) => {
 
     toast.error(t('project.noExist'))
     navigate(routes.dashboard)
-  }, [id, projectPassword, navigate, t, isEmbedded, ssrTheme])
+  }, [id, projectPassword, navigate, t, isEmbedded, theme])
 
   useEffect(() => {
     if (authLoading || project) {
@@ -97,7 +95,7 @@ const useProject = (id: string) => {
         if (result.isPasswordProtected && !result.role && projectPassword) {
           navigate({
             pathname: _replace(routes.project_protected_password, ':id', id),
-            search: `?theme=${ssrTheme}&embedded=${isEmbedded}`,
+            search: `?theme=${theme}&embedded=${isEmbedded}`,
           })
           return
         }
@@ -108,7 +106,7 @@ const useProject = (id: string) => {
         console.error('[ERROR] (getProject)', reason)
         onErrorLoading()
       })
-  }, [authLoading, project, id, projectPassword, navigate, onErrorLoading, isEmbedded, ssrTheme])
+  }, [authLoading, project, id, projectPassword, navigate, onErrorLoading, isEmbedded, theme])
 
   return project
 }

@@ -3,10 +3,10 @@ import { type LinksFunction, type LoaderFunctionArgs, type MetaFunction } from '
 
 import { useRequiredParams } from '~/hooks/useRequiredParams'
 import { API_URL } from '~/lib/constants'
-import { CurrentProjectProvider } from '~/providers/CurrentProjectProvider'
 import ViewProject from '~/pages/Project/View'
+import { CurrentProjectProvider } from '~/providers/CurrentProjectProvider'
 import ProjectViewStyle from '~/styles/ProjectViewStyle.css?url'
-import { detectTheme, isEmbedded, isAuthenticated, getProjectTabs } from '~/utils/server'
+import { isEmbedded, isAuthenticated, getProjectTabs } from '~/utils/server'
 
 export const links: LinksFunction = () => [{ rel: 'stylesheet', href: ProjectViewStyle }]
 
@@ -23,12 +23,10 @@ export const meta: MetaFunction = ({ location }) => {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const embedded = isEmbedded(request)
-  const [theme] = detectTheme(request)
   const isAuth = isAuthenticated(request)
   const tabs = getProjectTabs(request)
 
   return {
-    theme,
     embedded,
     isAuth,
     tabs,

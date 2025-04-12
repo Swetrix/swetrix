@@ -35,13 +35,9 @@ interface SignupForm {
   checkIfLeaked: boolean
 }
 
-interface SignupProps {
-  ssrTheme: string
-}
-
 const HASH_CHECK_FREQUENCY = 1000
 
-const Signup = ({ ssrTheme }: SignupProps) => {
+const Signup = () => {
   const dispatch = useAppDispatch()
   const { authenticated: reduxAuthenticated, loading } = useSelector((state: StateType) => state.auth)
   const { t } = useTranslation('common')
@@ -367,7 +363,7 @@ const Signup = ({ ssrTheme }: SignupProps) => {
                 </div>
                 <div className='mt-6 grid grid-cols-2 gap-4'>
                   <GoogleAuth onClick={() => onSsoLogin('google')} disabled={isLoading} />
-                  <GithubAuth onClick={() => onSsoLogin('github')} ssrTheme={ssrTheme} disabled={isLoading} />
+                  <GithubAuth onClick={() => onSsoLogin('github')} disabled={isLoading} />
                 </div>
               </div>
             </div>

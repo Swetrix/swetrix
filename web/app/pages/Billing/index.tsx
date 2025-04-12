@@ -22,6 +22,7 @@ import {
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import { UsageInfo } from '~/lib/models/Usageinfo'
 import { StateType } from '~/lib/store'
+import { useTheme } from '~/providers/ThemeProvider'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
@@ -36,10 +37,9 @@ dayjs.extend(duration)
 
 interface BillingProps {
   ssrAuthenticated: boolean
-  ssrTheme: 'dark' | 'light'
 }
 
-const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
+const Billing = ({ ssrAuthenticated }: BillingProps) => {
   const [isCancelSubModalOpened, setIsCancelSubModalOpened] = useState(false)
 
   const [metainfo, setMetainfo] = useState<Metainfo>(DEFAULT_METAINFO)
@@ -48,8 +48,7 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
   } | null>(null)
 
   const { user, loading: authLoading } = useSelector((state: StateType) => state.auth)
-  const { theme: reduxTheme } = useSelector((state: StateType) => state.ui.theme)
-  const theme = isBrowser ? reduxTheme : ssrTheme
+  const { theme } = useTheme()
   const reduxAuthenticated = useSelector((state: StateType) => state.auth.authenticated)
   const [usageInfo, setUsageInfo] = useState<UsageInfo>({
     total: 0,
@@ -391,7 +390,6 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
                 }
                 tooltipNode={
                   <MultiProgress
-                    theme={theme}
                     className='w-[85vw] max-w-[25rem]'
                     progress={[
                       {

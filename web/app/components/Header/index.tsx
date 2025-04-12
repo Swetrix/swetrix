@@ -21,7 +21,6 @@ import duration from 'dayjs/plugin/duration'
 import utc from 'dayjs/plugin/utc'
 import { type t as i18nextT } from 'i18next'
 import { changeLanguage } from 'i18next'
-import _includes from 'lodash/includes'
 import _map from 'lodash/map'
 import _startsWith from 'lodash/startsWith'
 import { GaugeIcon, ChartPieIcon, BugIcon, PuzzleIcon, PhoneIcon } from 'lucide-react'
@@ -36,15 +35,13 @@ import {
   languageFlag,
   isSelfhosted,
   DOCS_URL,
-  SUPPORTED_THEMES,
-  isBrowser,
   CAPTCHA_URL,
   isDisableMarketingPages,
 } from '~/lib/constants'
 import { User } from '~/lib/models/User'
 import { authActions } from '~/lib/reducers/auth'
-import UIActions from '~/lib/reducers/ui'
 import { useAppDispatch, StateType } from '~/lib/store'
+import { useTheme } from '~/providers/ThemeProvider'
 import Dropdown from '~/ui/Dropdown'
 import Flag from '~/ui/Flag'
 import SwetrixLogo from '~/ui/icons/SwetrixLogo'
@@ -205,7 +202,8 @@ const SolutionsMenu = () => {
   )
 }
 
-const ThemeMenu = ({ theme, switchTheme }: { theme: string; switchTheme: (i: string) => void }) => {
+const ThemeMenu = () => {
+  const { theme, setTheme } = useTheme()
   const { t } = useTranslation('common')
 
   return (
@@ -239,7 +237,7 @@ const ThemeMenu = ({ theme, switchTheme }: { theme: string; switchTheme: (i: str
                     'bg-gray-100 dark:bg-slate-800': active,
                   },
                 )}
-                onClick={() => switchTheme('light')}
+                onClick={() => setTheme('light')}
               >
                 <SunIcon className='mr-2 h-5 w-5 text-indigo-600 dark:text-gray-200' aria-hidden='true' />
                 {t('header.light')}
@@ -255,7 +253,7 @@ const ThemeMenu = ({ theme, switchTheme }: { theme: string; switchTheme: (i: str
                     'bg-gray-100 dark:bg-slate-800': active,
                   },
                 )}
-                onClick={() => switchTheme('dark')}
+                onClick={() => setTheme('dark')}
               >
                 <MoonIcon className='mr-2 h-5 w-5 text-gray-200 dark:text-indigo-400' aria-hidden='true' />
                 {t('header.dark')}
@@ -480,8 +478,6 @@ const Separator = () => (
 
 const AuthedHeader = ({
   user,
-  switchTheme,
-  theme,
   rawStatus,
   status,
   logoutHandler,
@@ -489,14 +485,13 @@ const AuthedHeader = ({
   openMenu,
 }: {
   user: User
-  switchTheme: (thm?: string) => void
-  theme: 'dark' | 'light'
   rawStatus: string | number
   status: string
   logoutHandler: () => void
   colourBackground: boolean
   openMenu: () => void
 }) => {
+  const { theme, setTheme } = useTheme()
   const { t } = useTranslation('common')
 
   return (
@@ -510,7 +505,7 @@ const AuthedHeader = ({
           <div className='flex items-center'>
             {/* Logo */}
             <Link to={routes.main}>
-              <SwetrixLogo theme={theme} />
+              <SwetrixLogo />
             </Link>
 
             <div className='ml-10 hidden gap-4 space-x-1 lg:flex'>
@@ -574,7 +569,7 @@ const AuthedHeader = ({
             </div>
           </div>
           <div className='ml-1 hidden flex-wrap items-center justify-center space-y-1 space-x-2 sm:space-y-0 lg:ml-10 lg:flex lg:space-x-4'>
-            <ThemeMenu theme={theme} switchTheme={switchTheme} />
+            <ThemeMenu />
             <ProfileMenu user={user} logoutHandler={logoutHandler} />
           </div>
           <div className='flex items-center justify-center space-x-3 lg:hidden'>
@@ -582,14 +577,14 @@ const AuthedHeader = ({
             {theme === 'dark' ? (
               <div className='rotate-180 transition-all duration-1000 ease-in-out'>
                 <SunIcon
-                  onClick={() => switchTheme()}
+                  onClick={() => setTheme('light')}
                   className='h-8 w-8 cursor-pointer text-gray-200 hover:text-gray-300'
                 />
               </div>
             ) : (
               <div className='transition-all duration-1000 ease-in-out'>
                 <MoonIcon
-                  onClick={() => switchTheme()}
+                  onClick={() => setTheme('dark')}
                   className='h-8 w-8 cursor-pointer text-slate-700 hover:text-slate-600'
                 />
               </div>
@@ -610,18 +605,15 @@ const AuthedHeader = ({
 }
 
 const NotAuthedHeader = ({
-  switchTheme,
-  theme,
   colourBackground,
   refPage,
   openMenu,
 }: {
-  switchTheme: (a?: string) => void
-  theme: 'dark' | 'light'
   colourBackground: boolean
   refPage?: boolean
   openMenu: () => void
 }) => {
+  const { theme, setTheme } = useTheme()
   const {
     t,
     i18n: { language },
@@ -638,10 +630,10 @@ const NotAuthedHeader = ({
           <div className='flex items-center'>
             {/* Logo */}
             {refPage ? (
-              <SwetrixLogo theme={theme} />
+              <SwetrixLogo />
             ) : (
               <Link to={routes.main}>
-                <SwetrixLogo theme={theme} />
+                <SwetrixLogo />
               </Link>
             )}
 
@@ -717,7 +709,7 @@ const NotAuthedHeader = ({
               }}
               headless
             />
-            <ThemeMenu theme={theme} switchTheme={switchTheme} />
+            <ThemeMenu />
             {!refPage ? (
               <>
                 <Separator />
@@ -736,14 +728,14 @@ const NotAuthedHeader = ({
             {theme === 'dark' ? (
               <div className='rotate-180 transition-all duration-1000 ease-in-out'>
                 <SunIcon
-                  onClick={() => switchTheme()}
+                  onClick={() => setTheme('light')}
                   className='h-8 w-8 cursor-pointer text-gray-200 hover:text-gray-300'
                 />
               </div>
             ) : (
               <div className='transition-all duration-1000 ease-in-out'>
                 <MoonIcon
-                  onClick={() => switchTheme()}
+                  onClick={() => setTheme('dark')}
                   className='h-8 w-8 cursor-pointer text-slate-700 hover:text-slate-600'
                 />
               </div>
@@ -764,22 +756,20 @@ const NotAuthedHeader = ({
 }
 
 interface HeaderProps {
-  ssrTheme: 'dark' | 'light'
   authenticated: boolean
   refPage?: boolean
   transparent?: boolean
 }
 
-const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) => {
+const Header = ({ authenticated, refPage, transparent }: HeaderProps) => {
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
   const dispatch = useAppDispatch()
   const { user } = useSelector((state: StateType) => state.auth)
-  const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const theme = isBrowser ? reduxTheme : ssrTheme
+  const { theme, setTheme } = useTheme()
 
   const solutions = getSolutions(t)
 
@@ -823,11 +813,6 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
     logout()
   }
 
-  const switchTheme = (_theme?: string) => {
-    const newTheme = (_includes(SUPPORTED_THEMES, _theme) && _theme) || (theme === 'dark' ? 'light' : 'dark')
-    dispatch(UIActions.setTheme(newTheme as 'light' | 'dark'))
-  }
-
   const openMenu = () => {
     setMobileMenuOpen(true)
   }
@@ -841,19 +826,11 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
           rawStatus={rawStatus || ''}
           status={status || ''}
           logoutHandler={logoutHandler}
-          switchTheme={switchTheme}
-          theme={theme}
           colourBackground={!transparent}
           openMenu={openMenu}
         />
       ) : (
-        <NotAuthedHeader
-          switchTheme={switchTheme}
-          theme={theme}
-          colourBackground={!transparent}
-          refPage={refPage}
-          openMenu={openMenu}
-        />
+        <NotAuthedHeader colourBackground={!transparent} refPage={refPage} openMenu={openMenu} />
       )}
 
       {/* Mobile header popup */}
@@ -861,20 +838,20 @@ const Header = ({ ssrTheme, authenticated, refPage, transparent }: HeaderProps) 
         <div className='fixed inset-0 z-10' />
         <DialogPanel className='fixed inset-y-0 top-0 right-0 z-30 w-full overflow-y-auto border-gray-300/80 bg-gray-100/80 p-4 backdrop-blur-2xl sm:max-w-sm sm:border dark:border-slate-900/80 dark:bg-slate-800/80'>
           <div className='flex items-center justify-between'>
-            <SwetrixLogo theme={theme} />
+            <SwetrixLogo />
             <div className='flex items-center justify-center space-x-3'>
               {/* Theme switch */}
               {theme === 'dark' ? (
                 <div className='rotate-180 transition-all duration-1000 ease-in-out'>
                   <SunIcon
-                    onClick={() => switchTheme()}
+                    onClick={() => setTheme('light')}
                     className='h-8 w-8 cursor-pointer text-gray-200 hover:text-gray-300'
                   />
                 </div>
               ) : (
                 <div className='transition-all duration-1000 ease-in-out'>
                   <MoonIcon
-                    onClick={() => switchTheme()}
+                    onClick={() => setTheme('dark')}
                     className='h-8 w-8 cursor-pointer text-slate-700 hover:text-slate-600'
                   />
                 </div>

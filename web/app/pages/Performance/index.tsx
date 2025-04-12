@@ -14,6 +14,7 @@ import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import { PERFORMANCE_LIVE_DEMO_URL, isBrowser } from '~/lib/constants'
 import { Stats } from '~/lib/models/Stats'
 import { StateType } from '~/lib/store/index'
+import { useTheme } from '~/providers/ThemeProvider'
 import BackgroundSvg from '~/ui/icons/BackgroundSvg'
 import { getAccessToken } from '~/utils/accessToken'
 import { nFormatterSeparated } from '~/utils/generic'
@@ -29,7 +30,6 @@ const Lines = () => (
 )
 
 interface PerformanceProps {
-  ssrTheme: 'dark' | 'light'
   ssrAuthenticated: boolean
 }
 
@@ -98,12 +98,11 @@ export const PeopleLoveSwetrix = () => {
   )
 }
 
-const Performance = ({ ssrTheme, ssrAuthenticated }: PerformanceProps) => {
+const Performance = ({ ssrAuthenticated }: PerformanceProps) => {
   const { t } = useTranslation('common')
-  const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
+  const { theme } = useTheme()
   const { authenticated: reduxAuthenticated, loading } = useSelector((state: StateType) => state.auth)
   const [lastBlogPost, setLastBlogPost] = useState<Awaited<ReturnType<typeof getLastPost>> | null>(null)
-  const theme = isBrowser ? reduxTheme : ssrTheme
   const accessToken = getAccessToken()
   const authenticated = isBrowser ? (loading ? !!accessToken : reduxAuthenticated) : ssrAuthenticated
 
@@ -151,7 +150,7 @@ const Performance = ({ ssrTheme, ssrAuthenticated }: PerformanceProps) => {
               }}
             />
           </div>
-          <Header ssrTheme={ssrTheme} authenticated={authenticated} transparent />
+          <Header authenticated={authenticated} transparent />
           <div className='relative mx-auto min-h-[740px] pt-10 pb-5 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
             <div className='relative z-20 flex flex-row content-between justify-center lg:justify-start 2xl:mr-[14vw] 2xl:justify-center'>
               <div className='relative px-4 text-left lg:mt-0 lg:mr-14'>
@@ -305,16 +304,15 @@ const Performance = ({ ssrTheme, ssrAuthenticated }: PerformanceProps) => {
             dark: '/assets/screenshot_perf_dark.png',
             light: '/assets/screenshot_perf_light.png',
           }}
-          theme={theme}
         />
 
         {/* Become a developer */}
         <section className='relative bg-white pt-20 pb-44 dark:bg-slate-900'>
           <div className='absolute top-16 right-0 z-0'>
-            <BackgroundSvg theme={theme} type='threecircle' />
+            <BackgroundSvg type='threecircle' />
           </div>
           <div className='absolute top-52 -left-9 rotate-90'>
-            <BackgroundSvg theme={theme} type='shapes' />
+            <BackgroundSvg type='shapes' />
           </div>
           <PeopleLoveSwetrix />
         </section>

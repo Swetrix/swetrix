@@ -4,7 +4,7 @@ import type { SitemapFunction } from 'remix-sitemap'
 
 import { isDisableMarketingPages, isSelfhosted } from '~/lib/constants'
 import ErrorTracking from '~/pages/ErrorTracking'
-import { detectTheme, isAuthenticated } from '~/utils/server'
+import { isAuthenticated } from '~/utils/server'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 1,
@@ -16,14 +16,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect('/login', 302)
   }
 
-  const [theme] = detectTheme(request)
   const isAuth = isAuthenticated(request)
 
-  return { theme, isAuth }
+  return { isAuth }
 }
 
 export default function Index() {
-  const { theme, isAuth } = useLoaderData<typeof loader>()
+  const { isAuth } = useLoaderData<typeof loader>()
 
-  return <ErrorTracking ssrTheme={theme} ssrAuthenticated={isAuth} />
+  return <ErrorTracking ssrAuthenticated={isAuth} />
 }

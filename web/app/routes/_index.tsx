@@ -37,10 +37,11 @@ import { Stats } from '~/lib/models/Stats'
 import { StateType } from '~/lib/store/index'
 import CCRow from '~/pages/Project/View/components/CCRow'
 import { MetricCard, MetricCardSelect } from '~/pages/Project/View/components/MetricCards'
+import { useTheme } from '~/providers/ThemeProvider'
 import { getAccessToken } from '~/utils/accessToken'
 import { getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
 import routesPath from '~/utils/routes'
-import { detectTheme, isAuthenticated } from '~/utils/server'
+import { isAuthenticated } from '~/utils/server'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 1,
@@ -52,7 +53,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return redirect('/login', 302)
   }
 
-  const [theme] = detectTheme(request)
   const isAuth = isAuthenticated(request)
 
   const userAgent = request.headers.get('user-agent')
@@ -74,7 +74,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
   }
 
-  return { theme, isAuth, deviceInfo }
+  return { isAuth, deviceInfo }
 }
 
 const Problem = () => {
@@ -200,7 +200,8 @@ const FeedbackHighlight = ({ children }: FeedbackHighlightProps) => (
   <span className='bg-yellow-100/80 dark:bg-yellow-400/40'>{children}</span>
 )
 
-const WeAreOpensource = ({ theme }: { theme: 'dark' | 'light' }) => {
+const WeAreOpensource = () => {
+  const { theme } = useTheme()
   const { t } = useTranslation('common')
 
   return (
@@ -406,7 +407,8 @@ const SdurMetric = () => {
   )
 }
 
-const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
+const FeatureBlocks = () => {
+  const { theme } = useTheme()
   const {
     t,
     i18n: { language },
@@ -668,7 +670,8 @@ const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
   )
 }
 
-const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
+const CoreFeatures = () => {
+  const { theme } = useTheme()
   const { t } = useTranslation('common')
 
   return (
@@ -794,15 +797,8 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
   )
 }
 
-const Hero = ({
-  theme,
-  ssrTheme,
-  authenticated,
-}: {
-  theme: 'dark' | 'light'
-  ssrTheme: 'dark' | 'light'
-  authenticated: boolean
-}) => {
+const Hero = ({ authenticated }: { authenticated: boolean }) => {
+  const { theme } = useTheme()
   const { t } = useTranslation('common')
 
   return (
@@ -836,7 +832,7 @@ const Hero = ({
           }}
         />
       </div>
-      <Header ssrTheme={ssrTheme} authenticated={authenticated} transparent />
+      <Header authenticated={authenticated} transparent />
       <div className='relative mx-auto min-h-[740px] pt-10 pb-5 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
         <div className='relative z-20 flex flex-col content-between justify-center'>
           <div className='relative mx-auto flex flex-col px-4 text-left'>
@@ -899,22 +895,21 @@ const Hero = ({
 }
 
 export default function Index() {
-  const { theme: ssrTheme, isAuth } = useLoaderData<typeof loader>()
+  const { isAuth } = useLoaderData<typeof loader>()
 
-  const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
+  const { theme } = useTheme()
   const { authenticated: reduxAuthenticated, loading } = useSelector((state: StateType) => state.auth)
-  const theme = isBrowser ? reduxTheme : ssrTheme
   const accessToken = getAccessToken()
   const authenticated = isBrowser ? (loading ? !!accessToken : reduxAuthenticated) : isAuth
 
   return (
     <div className='overflow-hidden'>
       <main className='bg-white dark:bg-slate-900'>
-        <Hero theme={theme} ssrTheme={ssrTheme} authenticated={authenticated} />
+        <Hero authenticated={authenticated} />
 
         <Problem />
 
-        <FeatureBlocks theme={theme} />
+        <FeatureBlocks />
 
         <Feedback
           name='Alex Bowles'
@@ -930,7 +925,7 @@ export default function Index() {
           }
         />
 
-        <CoreFeatures theme={theme} />
+        <CoreFeatures />
 
         {/* Hiding the Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
         {!authenticated ? <Pricing authenticated={false} /> : null}
@@ -949,14 +944,13 @@ export default function Index() {
           }
         />
 
-        <WeAreOpensource theme={theme} />
+        <WeAreOpensource />
 
         <DitchGoogle
           screenshot={{
             dark: '/assets/screenshot_dark.png',
             light: '/assets/screenshot_light.png',
           }}
-          theme={theme}
         />
       </main>
     </div>

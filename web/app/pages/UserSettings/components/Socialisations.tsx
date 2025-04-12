@@ -10,6 +10,7 @@ import { SSO_PROVIDERS } from '~/lib/constants'
 import { User } from '~/lib/models/User'
 import { authActions } from '~/lib/reducers/auth'
 import { StateType, useAppDispatch } from '~/lib/store'
+import { useTheme } from '~/providers/ThemeProvider'
 import Button from '~/ui/Button'
 import GithubDark from '~/ui/icons/GithubDark'
 import GithubLight from '~/ui/icons/GithubLight'
@@ -56,7 +57,7 @@ const HASH_CHECK_FREQUENCY = 1000 // 1 second
 
 const Socialisations = () => {
   const { user } = useSelector((state: StateType) => state.auth)
-  const { theme } = useSelector((state: StateType) => state.ui.theme)
+  const { theme } = useTheme()
   const dispatch = useAppDispatch()
   const { t } = useTranslation('common')
   const [isLoading, setIsLoading] = useState(false)

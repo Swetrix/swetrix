@@ -20,24 +20,23 @@ import routesPath from '~/utils/routes'
 import { getPageMeta } from '~/utils/server'
 
 import { authMe, getInstalledExtensions } from './api'
+import { useTheme } from './providers/ThemeProvider'
 
 interface AppProps {
-  ssrTheme: 'dark' | 'light'
   ssrAuthenticated: boolean
 }
 
 const TITLE_BLACKLIST = ['/projects/', '/captchas/', '/blog']
 
-const App = ({ ssrTheme, ssrAuthenticated }: AppProps) => {
+const App = ({ ssrAuthenticated }: AppProps) => {
   const dispatch = useAppDispatch()
   const { pathname } = useLocation()
   const { t } = useTranslation('common')
   const { loading } = useSelector((state: StateType) => state.auth)
   const reduxAuthenticated = useSelector((state: StateType) => state.auth.authenticated)
-  const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
+  const { theme } = useTheme()
   const accessToken = getAccessToken()
   const authenticated = isBrowser ? (loading ? !!accessToken : reduxAuthenticated) : ssrAuthenticated
-  const theme = isBrowser ? reduxTheme : ssrTheme
 
   useEffect(() => {
     void (async () => {
@@ -91,7 +90,7 @@ const App = ({ ssrTheme, ssrAuthenticated }: AppProps) => {
   return (
     <>
       {!_includes(routesWithOutHeader, pathname) && !isReferralPage && !isProjectViewPage ? (
-        <Header ssrTheme={ssrTheme} authenticated={authenticated} />
+        <Header authenticated={authenticated} />
       ) : null}
       <Outlet />
       <Toaster

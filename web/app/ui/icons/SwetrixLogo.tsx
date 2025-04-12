@@ -2,14 +2,15 @@ import cx from 'clsx'
 import { useTranslation } from 'react-i18next'
 
 import { isSelfhosted } from '~/lib/constants'
+import { useTheme } from '~/providers/ThemeProvider'
 
 interface SwetrixLogoProps {
   className?: string
-  theme?: 'dark' | 'light'
   lazy?: boolean
 }
 
-const SwetrixLogo = ({ className, theme = 'dark', lazy }: SwetrixLogoProps) => {
+const SwetrixLogo = ({ className, lazy }: SwetrixLogoProps) => {
+  const { theme } = useTheme()
   const { t } = useTranslation()
 
   return (

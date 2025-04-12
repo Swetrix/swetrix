@@ -112,13 +112,13 @@ import {
   ERROR_PANELS_ORDER,
   ERROR_PERIOD_PAIRS,
   FUNNELS_PERIOD_PAIRS,
-  ThemeType,
 } from '~/lib/constants'
 import { CountryEntry } from '~/lib/models/Entry'
 import { Funnel, AnalyticsFunnel, OverallObject, OverallPerformanceObject } from '~/lib/models/Project'
 import { StateType } from '~/lib/store'
 import NewFunnel from '~/modals/NewFunnel'
 import ViewProjectHotkeys from '~/modals/ViewProjectHotkeys'
+import { useTheme } from '~/providers/ThemeProvider'
 import Checkbox from '~/ui/Checkbox'
 import Dropdown from '~/ui/Dropdown'
 import FlatPicker from '~/ui/Flatpicker'
@@ -132,8 +132,8 @@ import { getTimeFromSeconds, getStringFromTime, getLocaleDisplayName, nLocaleFor
 import { getItem, setItem } from '~/utils/localstorage'
 import routes from '~/utils/routes'
 
-import ProjectAlertsView from '../Alerts/View'
 import { useCurrentProject, useProjectPassword } from '../../../providers/CurrentProjectProvider'
+import ProjectAlertsView from '../Alerts/View'
 
 import AddAViewModal from './components/AddAViewModal'
 import BrowserDropdown from './components/BrowserDropdown'
@@ -253,12 +253,10 @@ const ViewProject = () => {
   const projectPassword = useProjectPassword(id)
 
   const {
-    theme: ssrTheme,
     embedded,
     isAuth: ssrAuthenticated,
     tabs: projectQueryTabs,
   } = useLoaderData<{
-    theme: ThemeType
     embedded: boolean
     isAuth: boolean
     tabs: string[]
@@ -266,7 +264,7 @@ const ViewProject = () => {
 
   const { loading: authLoading, authenticated: csrAuthenticated, user } = useSelector((state: StateType) => state.auth)
 
-  const { theme } = useSelector((state: StateType) => state.ui.theme)
+  const { theme } = useTheme()
 
   const { extensions } = useSelector((state: StateType) => state.auth)
 
@@ -277,8 +275,6 @@ const ViewProject = () => {
     t,
     i18n: { language },
   } = useTranslation('common')
-
-  const _theme = isBrowser ? theme : ssrTheme
 
   const [periodPairs, setPeriodPairs] = useState<TBPeriodPairsProps[]>(tbPeriodPairs(t, undefined, undefined, language))
 
@@ -2812,7 +2808,7 @@ const ViewProject = () => {
   if (authLoading || !project) {
     return (
       <>
-        {!embedded ? <Header ssrTheme={ssrTheme} authenticated={authenticated} /> : null}
+        {!embedded ? <Header authenticated={authenticated} /> : null}
         <div
           className={cx('min-h-min-footer bg-gray-50 dark:bg-slate-900', {
             'min-h-min-footer': !embedded,
@@ -2829,7 +2825,7 @@ const ViewProject = () => {
   if (project.isLocked) {
     return (
       <>
-        {!embedded ? <Header ssrTheme={ssrTheme} authenticated={authenticated} /> : null}
+        {!embedded ? <Header authenticated={authenticated} /> : null}
         <div
           className={cx('mx-auto w-full max-w-[1584px] bg-gray-50 px-2 py-6 sm:px-4 lg:px-8 dark:bg-slate-900', {
             'min-h-min-footer': !embedded,
@@ -2850,7 +2846,7 @@ const ViewProject = () => {
   if (!project.isDataExists && activeTab !== PROJECT_TABS.errors && !analyticsLoading) {
     return (
       <>
-        {!embedded ? <Header ssrTheme={ssrTheme} authenticated={authenticated} /> : null}
+        {!embedded ? <Header authenticated={authenticated} /> : null}
         <div
           className={cx('mx-auto w-full max-w-[1584px] bg-gray-50 px-2 py-6 sm:px-4 lg:px-8 dark:bg-slate-900', {
             'min-h-min-footer': !embedded,
@@ -2875,7 +2871,7 @@ const ViewProject = () => {
   ) {
     return (
       <>
-        {!embedded ? <Header ssrTheme={ssrTheme} authenticated={authenticated} /> : null}
+        {!embedded ? <Header authenticated={authenticated} /> : null}
         <div
           className={cx('mx-auto w-full max-w-[1584px] bg-gray-50 px-2 py-6 sm:px-4 lg:px-8 dark:bg-slate-900', {
             'min-h-min-footer': !embedded,
@@ -2935,7 +2931,7 @@ const ViewProject = () => {
           }}
         >
           <>
-            {!embedded ? <Header ssrTheme={ssrTheme} authenticated={authenticated} /> : null}
+            {!embedded ? <Header authenticated={authenticated} /> : null}
             <EventsRunningOutBanner />
             <div
               ref={ref}
@@ -3821,7 +3817,7 @@ const ViewProject = () => {
                                 // @ts-expect-error
                                 const logoPathDark = OS_LOGO_MAP_DARK[logoKey]
 
-                                let logoPath = _theme === 'dark' ? logoPathDark : logoPathLight
+                                let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
                                 logoPath ||= logoPathLight
 
                                 if (!logoPath) {
@@ -4126,7 +4122,7 @@ const ViewProject = () => {
                                 // @ts-expect-error
                                 const logoPathDark = OS_LOGO_MAP_DARK[logoKey]
 
-                                let logoPath = _theme === 'dark' ? logoPathDark : logoPathLight
+                                let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
                                 logoPath ||= logoPathLight
 
                                 if (!logoPath) {
