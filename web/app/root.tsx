@@ -228,6 +228,7 @@ export default function App() {
         <Meta />
         <meta name='viewport' content='width=device-width,initial-scale=1' />
         <Links />
+        {/* TODO: We should not load Flatpicker styles globally; load them within the FlatPicker component */}
         {theme === 'dark' ? <link rel='stylesheet' href={FlatpickrDarkCss} /> : null}
         {theme === 'light' ? <link rel='stylesheet' href={FlatpickrLightCss} /> : null}
         <LocaleLinks />
