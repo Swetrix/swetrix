@@ -520,6 +520,7 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
       updatePreferences({
         period: newPeriod.period,
         timeBucket: tb,
+        rangeDate: undefined,
       })
       setPeriod(newPeriod.period)
       setDateRange(null)

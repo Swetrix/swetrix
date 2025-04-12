@@ -125,22 +125,7 @@ const useProjectPreferences = (id: string) => {
   const updatePreferences = useCallback(
     (prefs: ProjectPreferences) => {
       setPreferences((prev) => {
-        const { period, timeBucket, rangeDate, ...rest } = prefs
-
-        // This bullshit is needed for backward compatibility with the old Redux state preferences
-        // One day I'll refactor the code properly, until then, here's a TODO so I don't forget
-        const viewPrefs = rangeDate
-          ? {
-              period,
-              timeBucket,
-              rangeDate,
-            }
-          : {
-              period,
-              timeBucket,
-            }
-
-        const newPrefs = { ...prev, ...viewPrefs, ...rest }
+        const newPrefs = { ...prev, ...prefs }
         setProjectPreferences(id, newPrefs)
         return newPrefs
       })

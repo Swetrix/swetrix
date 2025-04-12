@@ -2504,6 +2504,7 @@ const ViewProject = () => {
       updatePreferences({
         period: newPeriod.period,
         timeBucket: tb,
+        rangeDate: undefined,
       })
       setPeriod(newPeriod.period)
 
