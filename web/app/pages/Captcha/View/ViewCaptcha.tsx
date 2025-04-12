@@ -586,8 +586,6 @@ const ViewCaptcha = ({ ssrTheme }: ViewCaptchaProps) => {
         <ViewProjectContext.Provider
           value={{
             // States
-            projectId: project?.id,
-            projectPassword: '',
             timezone,
             dateRange,
             isLoading: authLoading,

@@ -212,8 +212,6 @@ const ERRORS_TAKE = 30
 
 interface ViewProjectContextType {
   // States
-  projectId: string
-  projectPassword: string
   timezone: string
   dateRange: Date[] | null
   isLoading: boolean
@@ -2901,8 +2899,6 @@ const ViewProject = () => {
         <ViewProjectContext.Provider
           value={{
             // States
-            projectId: project?.id,
-            projectPassword,
             timezone,
             dateRange,
             isLoading: authLoading,

@@ -30,7 +30,7 @@ import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
 import routes from '~/utils/routes'
 
-import { useViewProjectContext } from '../../View/ViewProject'
+import { useCurrentProject } from '../../View/providers/CurrentProjectProvider'
 
 const Separator = ({ className }: { className?: string }) => (
   <svg viewBox='0 0 2 2' className={cx('h-0.5 w-0.5 flex-none fill-gray-400', className)}>
@@ -182,7 +182,7 @@ const AddAlert = ({ handleNewAlert, isLimitReached }: AddAlertProps) => {
 }
 
 const ProjectAlerts = () => {
-  const { projectId } = useViewProjectContext()
+  const { id } = useCurrentProject()
   const { t } = useTranslation()
   const { user, authenticated } = useSelector((state: StateType) => state.auth)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
@@ -208,7 +208,7 @@ const ProjectAlerts = () => {
     setIsLoading(true)
 
     try {
-      const result = await getProjectAlerts(projectId, take, skip)
+      const result = await getProjectAlerts(id, take, skip)
       setAlerts(result.results)
       setTotal(result.total)
     } catch (reason: any) {
@@ -253,7 +253,7 @@ const ProjectAlerts = () => {
       return
     }
 
-    navigate(_replace(routes.create_alert, ':pid', projectId))
+    navigate(_replace(routes.create_alert, ':pid', id))
   }
 
   const onDelete = async (id: string) => {
@@ -339,7 +339,7 @@ const ProjectAlerts = () => {
                   key={alert.id}
                   {...alert}
                   openAlert={(id) => {
-                    navigate(_replace(_replace(routes.alert_settings, ':pid', projectId), ':id', id))
+                    navigate(_replace(_replace(routes.alert_settings, ':pid', id), ':id', id))
                   }}
                   deleteAlert={onDelete}
                   queryMetricTMapping={queryMetricTMapping}
