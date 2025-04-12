@@ -9,7 +9,6 @@ import { secondsTillNextMonth } from '~/utils/generic'
 interface InitialState {
   stats: Stats
   metainfo: Metainfo
-  paddleLoaded: boolean
   paddle: any
   showNoEventsLeftBanner: boolean
   lastBlogPost: any
@@ -29,7 +28,6 @@ const initialState: InitialState = {
     symbol: '$',
     code: 'USD',
   },
-  paddleLoaded: false,
   paddle: {},
   showNoEventsLeftBanner: false,
   lastBlogPost: null,

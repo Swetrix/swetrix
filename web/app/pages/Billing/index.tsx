@@ -45,7 +45,6 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
   const { user, loading: authLoading } = useSelector((state: StateType) => state.auth)
   const { theme: reduxTheme } = useSelector((state: StateType) => state.ui.theme)
   const theme = isBrowser ? reduxTheme : ssrTheme
-  const paddleLoaded = useSelector((state: StateType) => state.ui.misc.paddleLoaded)
   const reduxAuthenticated = useSelector((state: StateType) => state.auth.authenticated)
   const [usageInfo, setUsageInfo] = useState<UsageInfo>({
     total: 0,
@@ -85,10 +84,6 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
 
   // Paddle (payment processor) set-up
   useEffect(() => {
-    if (paddleLoaded) {
-      return
-    }
-
     loadScript(PADDLE_JS_URL)
 
     const eventCallback = (data: any) => {
@@ -109,7 +104,7 @@ const Billing = ({ ssrAuthenticated, ssrTheme }: BillingProps) => {
         clearInterval(interval)
       }
     }
-  }, [paddleLoaded]) // eslint-disable-line
+  }, []) // eslint-disable-line
 
   const loadUsageInfo = async () => {
     if (!isLoading) {
