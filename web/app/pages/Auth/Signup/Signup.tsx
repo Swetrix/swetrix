@@ -55,7 +55,7 @@ const Signup = () => {
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
-  const { isAuthenticated, setUser, setTotalMonthlyEvents } = useAuth()
+  const { isAuthenticated, setUser, setTotalMonthlyEvents, setIsAuthenticated } = useAuth()
 
   const validate = () => {
     const allErrors = {} as {
@@ -126,6 +126,7 @@ const Signup = () => {
       }
 
       setUser(user)
+      setIsAuthenticated(true)
       setAccessToken(accessToken, dontRemember)
       setRefreshToken(refreshToken)
       setIsLoading(false)
@@ -181,6 +182,7 @@ const Signup = () => {
           }
 
           setUser(user)
+          setIsAuthenticated(true)
           setTotalMonthlyEvents(totalMonthlyEvents)
           setAccessToken(accessToken, false)
           setRefreshToken(refreshToken)

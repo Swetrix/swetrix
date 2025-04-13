@@ -51,7 +51,7 @@ const Signin = () => {
   const [isTwoFARequired, setIsTwoFARequired] = useState(searchParams.get('show_2fa_screen') === 'true')
   const [twoFACode, setTwoFACode] = useState('')
   const [twoFACodeError, setTwoFACodeError] = useState<string | null>(null)
-  const { setUser, setTotalMonthlyEvents } = useAuth()
+  const { setUser, setTotalMonthlyEvents, setIsAuthenticated } = useAuth()
 
   const validate = () => {
     const allErrors = {} as {
@@ -125,6 +125,7 @@ const Signin = () => {
           }
 
           setUser(user)
+          setIsAuthenticated(true)
           setTotalMonthlyEvents(totalMonthlyEvents)
           setAccessToken(accessToken, false)
           setRefreshToken(refreshToken)
@@ -171,6 +172,7 @@ const Signin = () => {
       }
 
       setUser(user)
+      setIsAuthenticated(true)
       setTotalMonthlyEvents(totalMonthlyEvents)
       setAccessToken(accessToken, dontRemember)
       setRefreshToken(refreshToken)
@@ -199,6 +201,7 @@ const Signin = () => {
       setAccessToken(accessToken)
       setRefreshToken(refreshToken)
       setUser(user)
+      setIsAuthenticated(true)
     } catch (reason) {
       if (_isString(reason)) {
         toast.error(reason)

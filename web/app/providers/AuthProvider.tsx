@@ -14,6 +14,7 @@ interface AuthContextType {
   mergeUser: (newUser: Partial<User>) => void
   setTotalMonthlyEvents: (totalMonthlyEvents: number) => void
   loadUser: (signal?: AbortSignal) => Promise<void>
+  setIsAuthenticated: (isAuthenticated: boolean) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -53,12 +54,14 @@ export const AuthProvider = ({ children, initialIsAuthenticated }: AuthProviderP
         const { user, totalMonthlyEvents } = await authMe({ signal })
         setUser(user)
         setTotalMonthlyEvents(totalMonthlyEvents)
+        setIsAuthenticated(true)
       } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {
           return
         }
 
         logout()
+        setIsAuthenticated(false)
       } finally {
         setIsLoading(false)
       }
@@ -92,6 +95,7 @@ export const AuthProvider = ({ children, initialIsAuthenticated }: AuthProviderP
         setUser,
         mergeUser,
         loadUser,
+        setIsAuthenticated,
       }}
     >
       {children}
