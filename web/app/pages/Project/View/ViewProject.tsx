@@ -67,7 +67,6 @@ import {
   updateFunnel,
   deleteFunnel,
   getFunnelData,
-  // getFunnels,
   getPerformanceOverallStats,
   getSessions,
   getSession,
@@ -77,6 +76,7 @@ import {
   getPropertyMetadata,
   getProjectViews,
   deleteProjectView,
+  getFunnels,
 } from '~/api'
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import Footer from '~/components/Footer'
@@ -247,7 +247,7 @@ export const useViewProjectContext = () => {
 }
 
 const ViewProject = () => {
-  const { id, project, preferences, updatePreferences, extensions } = useCurrentProject()
+  const { id, project, preferences, updatePreferences, extensions, mergeProject } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
 
   const { embedded, tabs: projectQueryTabs } = useLoaderData<{
@@ -436,9 +436,8 @@ const ViewProject = () => {
     }
 
     try {
-      // const funnels = await getFunnels(id, projectPassword)
-      // TODO
-      // setProject((prev) => (prev ? { ...prev, funnels } : null))
+      const funnels = await getFunnels(id, projectPassword)
+      mergeProject({ funnels })
     } catch (reason: any) {
       console.error('[ERROR] (onFunnelCreate)(getFunnels)', reason)
     }
@@ -462,9 +461,8 @@ const ViewProject = () => {
     }
 
     try {
-      // const funnels = await getFunnels(id, projectPassword)
-      // TODO
-      // setProject((prev) => (prev ? { ...prev, funnels } : null))
+      const funnels = await getFunnels(id, projectPassword)
+      mergeProject({ funnels })
     } catch (reason: any) {
       console.error('[ERROR] (onFunnelCreate)(getFunnels)', reason)
     }
@@ -488,9 +486,8 @@ const ViewProject = () => {
     }
 
     try {
-      // const funnels = await getFunnels(id, projectPassword)
-      // TODO
-      // setProject((prev) => (prev ? { ...prev, funnels } : null))
+      const funnels = await getFunnels(id, projectPassword)
+      mergeProject({ funnels })
     } catch (reason: any) {
       console.error('[ERROR] (onFunnelCreate)(getFunnels)', reason)
     }

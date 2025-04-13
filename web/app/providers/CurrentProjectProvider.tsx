@@ -22,6 +22,7 @@ interface CurrentProjectContextType {
   preferences: ProjectPreferences
   extensions: Extension[]
   updatePreferences: (prefs: ProjectPreferences) => void
+  mergeProject: (project: Partial<Project>) => void
 }
 
 const CurrentProjectContext = createContext<CurrentProjectContextType | undefined>(undefined)
@@ -109,7 +110,17 @@ const useProject = (id: string) => {
       })
   }, [authLoading, project, id, projectPassword, navigate, onErrorLoading, isEmbedded, theme])
 
-  return project
+  const mergeProject = useCallback((project: Partial<Project>) => {
+    setProject((prev) => {
+      if (!prev) {
+        return null
+      }
+
+      return { ...prev, ...project }
+    })
+  }, [])
+
+  return { project, mergeProject }
 }
 
 export type ProjectPreferences = {
@@ -138,7 +149,7 @@ const useProjectPreferences = (id: string) => {
 }
 
 export const CurrentProjectProvider = ({ children, id }: CurrentProjectProviderProps) => {
-  const project = useProject(id)
+  const { project, mergeProject } = useProject(id)
   const { isAuthenticated } = useAuth()
   const { preferences, updatePreferences } = useProjectPreferences(id)
   const [extensions, setExtensions] = useState<Extension[]>([])
@@ -162,7 +173,7 @@ export const CurrentProjectProvider = ({ children, id }: CurrentProjectProviderP
   }, [project, isAuthenticated])
 
   return (
-    <CurrentProjectContext.Provider value={{ id, project, preferences, updatePreferences, extensions }}>
+    <CurrentProjectContext.Provider value={{ id, project, preferences, updatePreferences, extensions, mergeProject }}>
       {children}
     </CurrentProjectContext.Provider>
   )
