@@ -95,7 +95,7 @@ const useProject = (id: string) => {
           onErrorLoading()
         }
 
-        if (result.isPasswordProtected && !result.role && projectPassword) {
+        if (result.isPasswordProtected && !result.role && !projectPassword) {
           navigate({
             pathname: _replace(routes.project_protected_password, ':id', id),
             search: `?theme=${theme}&embedded=${isEmbedded}`,
