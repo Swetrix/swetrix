@@ -240,7 +240,8 @@ export const useViewProjectContext = () => {
   const context = useContext(ViewProjectContext)
 
   if (context === undefined) {
-    throw new Error('useViewProjectContext must be used within a ViewProjectContextProvider')
+    // throw new Error('useViewProjectContext must be used within a ViewProjectContextProvider')
+    return {}
   }
 
   return context
