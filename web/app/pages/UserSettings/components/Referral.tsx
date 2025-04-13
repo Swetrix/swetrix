@@ -3,7 +3,6 @@ import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import React, { useState, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
 
 import { generateRefCode, getPayoutsInfo, getReferrals, setPaypalEmail } from '~/api'
@@ -19,8 +18,7 @@ import {
   REFERRAL_CUT,
 } from '~/lib/constants'
 import { User } from '~/lib/models/User'
-import { authActions } from '~/lib/reducers/auth'
-import { StateType, useAppDispatch } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import Button from '~/ui/Button'
 import Highlighted from '~/ui/Highlighted'
 import Spin from '~/ui/icons/Spin'
@@ -29,8 +27,7 @@ import Tooltip from '~/ui/Tooltip'
 import { isValidEmail } from '~/utils/validator'
 
 const Referral = () => {
-  const { user } = useSelector((state: StateType) => state.auth)
-  const dispatch = useAppDispatch()
+  const { user, mergeUser } = useAuth()
 
   const {
     t,
@@ -39,7 +36,7 @@ const Referral = () => {
   const [refCodeGenerating, setRefCodeGenerating] = useState(false)
   const [paypalInputError, setPaypalInputError] = useState<string | null>(null)
   const [isPaypalEmailLoading, setIsPaypalEmailLoading] = useState(false)
-  const [paypalEmailAddress, setPaypalEmailAddress] = useState<string | null>(user.paypalPaymentsEmail)
+  const [paypalEmailAddress, setPaypalEmailAddress] = useState<string | null>(user?.paypalPaymentsEmail || null)
 
   const [referralStatistics, setReferralStatistics] = useState<{
     trials: number
@@ -80,7 +77,7 @@ const Referral = () => {
   }, [])
 
   const onRefCodeGenerate = async () => {
-    if (refCodeGenerating || user.refCode) {
+    if (refCodeGenerating || user?.refCode) {
       return
     }
 
@@ -88,11 +85,9 @@ const Referral = () => {
 
     try {
       const { refCode } = await generateRefCode()
-      dispatch(
-        authActions.mergeUser({
-          refCode,
-        }),
-      )
+      mergeUser({
+        refCode,
+      })
     } catch {
       toast.error(t('apiNotifications.somethingWentWrong'))
     } finally {
@@ -119,11 +114,9 @@ const Referral = () => {
 
     try {
       await setPaypalEmail(paypalEmailAddress)
-      dispatch(
-        authActions.mergeUser({
-          paypalPaymentsEmail: paypalEmailAddress,
-        }),
-      )
+      mergeUser({
+        paypalPaymentsEmail: paypalEmailAddress,
+      })
       toast.success(t('profileSettings.referral.payoutEmailUpdated'))
     } catch (reason) {
       console.error('[Referral][updatePaypalEmail] Something went wrong whilst updating paypal email', reason)
@@ -175,7 +168,7 @@ const Referral = () => {
       <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
         {t('profileSettings.referral.referralLinkDesc')}
       </p>
-      {user.refCode ? (
+      {user?.refCode ? (
         <div className='grid grid-cols-1 gap-x-4 gap-y-6 lg:grid-cols-2'>
           <Input
             label={t('profileSettings.referral.yourReferralLink')}

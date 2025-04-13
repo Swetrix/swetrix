@@ -7,7 +7,6 @@ import _size from 'lodash/size'
 import { StretchHorizontal as StretchHorizontalIcon, LayoutGrid as LayoutGridIcon } from 'lucide-react'
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { Link, useLoaderData, useSearchParams } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 
@@ -21,7 +20,7 @@ import useFeatureFlag from '~/hooks/useFeatureFlag'
 import { isSelfhosted, LIVE_VISITORS_UPDATE_INTERVAL } from '~/lib/constants'
 import { Overall, Project } from '~/lib/models/Project'
 import { FeatureFlag } from '~/lib/models/User'
-import { StateType } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
 import { setCookie } from '~/utils/cookie'
@@ -43,7 +42,7 @@ const DASHBOARD_VIEW = {
 
 const Dashboard = () => {
   const { viewMode: defaultViewMode } = useLoaderData<any>()
-  const { user, loading: authLoading } = useSelector((state: StateType) => state.auth)
+  const { user, isLoading: authLoading } = useAuth()
   const showPeriodSelector = useFeatureFlag(FeatureFlag['dashboard-period-selector'])
   const showTabs = useFeatureFlag(FeatureFlag['dashboard-analytics-tabs'])
   const isHostnameNavigationEnabled = useFeatureFlag(FeatureFlag['dashboard-hostname-cards'])
@@ -141,7 +140,7 @@ const Dashboard = () => {
   const _viewMode = isAboveLgBreakpoint ? viewMode : 'grid'
 
   const onNewProject = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (user.isActive || isSelfhosted) {
+    if (user?.isActive || isSelfhosted) {
       return
     }
 

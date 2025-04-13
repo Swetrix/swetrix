@@ -1,17 +1,20 @@
 import cx from 'clsx'
 import { useTranslation } from 'react-i18next'
 
-import { isSelfhosted } from '~/lib/constants'
+import { isSelfhosted, ThemeType } from '~/lib/constants'
 import { useTheme } from '~/providers/ThemeProvider'
 
 interface SwetrixLogoProps {
   className?: string
   lazy?: boolean
+  theme?: ThemeType
 }
 
-const SwetrixLogo = ({ className, lazy }: SwetrixLogoProps) => {
-  const { theme } = useTheme()
+const SwetrixLogo = ({ className, lazy, theme: themeOverride }: SwetrixLogoProps) => {
+  const { theme: currentTheme } = useTheme()
   const { t } = useTranslation()
+
+  const theme = themeOverride || currentTheme
 
   return (
     <div className={cx('flex -translate-y-[2px] items-center gap-2 select-none', className)}>

@@ -1,9 +1,7 @@
 import { useEffect, useRef } from 'react'
-import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router'
 
-import { StateType } from '~/lib/store'
-import { getAccessToken } from '~/utils/accessToken'
+import { useAuth } from '~/providers/AuthProvider'
 import routes from '~/utils/routes'
 
 interface AuthParamType {
@@ -25,13 +23,10 @@ export const auth = {
 }
 
 export const withAuthentication = <P extends PropsType>(WrappedComponent: any, authParam: AuthParamType) => {
-  const accessToken = getAccessToken()
-
   const WithAuthentication = (props: P) => {
     const { shouldBeAuthenticated, redirectPath } = authParam
-    const { authenticated: reduxAuthenticated, loading } = useSelector((state: StateType) => state.auth)
     const navigate = useNavigate()
-    const authenticated = loading ? !!accessToken : reduxAuthenticated
+    const { isAuthenticated } = useAuth()
 
     // We need to use ref to avoid 404 errors - https://github.com/remix-run/react-router/pull/12853
     const navigating = useRef(false)
@@ -41,13 +36,13 @@ export const withAuthentication = <P extends PropsType>(WrappedComponent: any, a
         return
       }
 
-      if (shouldBeAuthenticated !== authenticated) {
+      if (shouldBeAuthenticated !== isAuthenticated) {
         navigate(redirectPath)
         navigating.current = true
       }
       // TODO: Investigate this later. https://github.com/remix-run/react-router/discussions/8465
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [authenticated, shouldBeAuthenticated])
+    }, [isAuthenticated, shouldBeAuthenticated])
 
     // if (!selector) {
     //   return null

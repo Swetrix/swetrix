@@ -20,6 +20,7 @@ import {
   DISCORD_URL,
   CAPTCHA_URL,
 } from '~/lib/constants'
+import { useAuth } from '~/providers/AuthProvider'
 import Flag from '~/ui/Flag'
 import LinkedIn from '~/ui/icons/LinkedIn'
 import SwetrixLogo from '~/ui/icons/SwetrixLogo'
@@ -166,11 +167,11 @@ const SelfHostedFooter = () => {
 }
 
 interface FooterProps {
-  authenticated?: boolean
   showDBIPMessage?: boolean
 }
 
-const Footer = ({ authenticated, showDBIPMessage }: FooterProps) => {
+const Footer = ({ showDBIPMessage }: FooterProps) => {
+  const { isAuthenticated } = useAuth()
   const { t } = useTranslation('common')
   const year = new Date().getFullYear()
 
@@ -288,7 +289,7 @@ const Footer = ({ authenticated, showDBIPMessage }: FooterProps) => {
                 <h3 className='text-sm font-semibold tracking-wider text-white uppercase'>{t('footer.legal')}</h3>
                 <ul className='mt-4 space-y-4'>
                   {_map(navigation.legal, (func) => {
-                    const { key, href, internal } = func(authenticated)
+                    const { key, href, internal } = func(isAuthenticated)
 
                     return (
                       <li key={key}>

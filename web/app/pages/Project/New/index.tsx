@@ -3,7 +3,6 @@ import _keys from 'lodash/keys'
 import _size from 'lodash/size'
 import React, { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
@@ -11,7 +10,7 @@ import { createProject } from '~/api'
 import { withAuthentication, auth } from '~/hoc/protected'
 import { isSelfhosted, TITLE_SUFFIX } from '~/lib/constants'
 import { Project } from '~/lib/models/Project'
-import { useAppDispatch, StateType } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
@@ -24,8 +23,7 @@ const MAX_NAME_LENGTH = 50
 const DEFAULT_PROJECT_NAME = 'Untitled Project'
 
 const NewProject = () => {
-  const dispatch = useAppDispatch()
-  const { user, loading } = useSelector((state: StateType) => state.auth)
+  const { user, isLoading } = useAuth()
   const { t } = useTranslation('common')
   const navigate = useNavigate()
 
@@ -46,15 +44,15 @@ const NewProject = () => {
         id: undefined,
         name: t('common.notSet'),
       },
-      ...(user.organisationMemberships || [])
+      ...(user?.organisationMemberships || [])
         .filter((om) => om.confirmed && (om.role === 'admin' || om.role === 'owner'))
         .map((om) => om.organisation),
     ],
-    [user.organisationMemberships, t],
+    [user?.organisationMemberships, t],
   )
 
   useEffect(() => {
-    if (loading) {
+    if (isLoading || !user) {
       return
     }
 
@@ -62,7 +60,7 @@ const NewProject = () => {
       toast.error(t('project.settings.verify'))
       navigate(routes.dashboard)
     }
-  }, [user, navigate, dispatch, t, loading])
+  }, [user, navigate, t, isLoading])
 
   const onSubmit = async (data: Partial<Project>) => {
     if (!projectSaving) {
@@ -130,7 +128,7 @@ const NewProject = () => {
     document.title = `${t('project.settings.create')} ${TITLE_SUFFIX}`
   }, [t])
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className='min-h-min-footer flex flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
         <Loader />

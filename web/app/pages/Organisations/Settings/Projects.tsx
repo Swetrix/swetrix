@@ -5,7 +5,6 @@ import _map from 'lodash/map'
 import _replace from 'lodash/replace'
 import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { Link } from 'react-router'
 import { toast } from 'sonner'
 
@@ -13,7 +12,7 @@ import { removeProjectFromOrganisation, getProjectsAvailableForOrganisation, add
 import useDebounce from '~/hooks/useDebounce'
 import { DetailedOrganisation } from '~/lib/models/Organisation'
 import { Project } from '~/lib/models/Project'
-import { StateType } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
@@ -140,7 +139,7 @@ interface ProjectListProps {
 
 const ProjectList = ({ projects, onRemove }: ProjectListProps) => {
   const { t } = useTranslation('common')
-  const { user } = useSelector((state: StateType) => state.auth)
+  const { user } = useAuth()
 
   return projects.map((project) => (
     <tr key={project.id} className='dark:bg-slate-800'>
@@ -151,7 +150,7 @@ const ProjectList = ({ projects, onRemove }: ProjectListProps) => {
       </td>
       <td className='relative py-4 pr-2 text-sm font-medium whitespace-nowrap'>
         <div className='flex items-center justify-end'>
-          {project.admin.email !== user.email ? (
+          {project.admin.email !== user?.email ? (
             <Tooltip
               className='mr-2'
               text={t('organisations.projectOwnedBy', { email: project.admin.email })}

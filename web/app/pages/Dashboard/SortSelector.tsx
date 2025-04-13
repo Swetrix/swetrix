@@ -5,11 +5,10 @@ import _map from 'lodash/map'
 import { ArrowUpDown } from 'lucide-react'
 import { Fragment, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 
 import useFeatureFlag from '~/hooks/useFeatureFlag'
 import { FeatureFlag } from '~/lib/models/User'
-import { StateType } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 
 import { DASHBOARD_TABS } from './Tabs'
 
@@ -33,7 +32,7 @@ export const SORT_OPTIONS = {
 export const SortSelector = ({ activeSort, setActiveSort, isLoading, activeTab }: SortSelectorProps) => {
   const { t } = useTranslation('common')
 
-  const { loading: authLoading } = useSelector((state: StateType) => state.auth)
+  const { isLoading: authLoading } = useAuth()
 
   const isHostnameNavigationEnabled = useFeatureFlag(FeatureFlag['dashboard-hostname-cards'])
 

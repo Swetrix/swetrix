@@ -6,7 +6,6 @@ import FlatpickrLightCss from 'flatpickr/dist/themes/light.css?url'
 import _replace from 'lodash/replace'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Provider } from 'react-redux'
 import type { LinksFunction, LoaderFunctionArgs, HeadersFunction } from 'react-router'
 import {
   redirect,
@@ -24,7 +23,6 @@ import { ExternalScripts } from 'remix-utils/external-scripts'
 import { LocaleLinks } from '~/components/LocaleLinks'
 import { SEO } from '~/components/SEO'
 import { CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted, I18N_CACHE_BREAKER } from '~/lib/constants'
-import { store } from '~/lib/store'
 import FlatpickerCss from '~/styles/Flatpicker.css?url'
 import FontsCss from '~/styles/fonts.css?url'
 import mainCss from '~/styles/index.css?url'
@@ -36,6 +34,7 @@ import { detectTheme, isAuthenticated, isWWW } from '~/utils/server'
 
 import AppWrapper from './App'
 import { detectLanguage } from './i18n'
+import { AuthProvider } from './providers/AuthProvider'
 import { ThemeProvider, useTheme } from './providers/ThemeProvider'
 
 trackViews()
@@ -199,9 +198,9 @@ const Body = () => {
 
   return (
     <body className={cx(theme, { 'bg-white': theme === 'light', 'bg-slate-900': theme === 'dark' })}>
-      <Provider store={store}>
-        <AppWrapper ssrAuthenticated={isAuthed} />
-      </Provider>
+      <AuthProvider initialIsAuthenticated={isAuthed}>
+        <AppWrapper />
+      </AuthProvider>
       <ScrollRestoration />
       <ExternalScripts />
       <Scripts />

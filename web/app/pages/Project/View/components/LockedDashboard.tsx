@@ -4,15 +4,16 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
 import { ProjectForShared } from '~/lib/models/SharedProject'
-import { User, DashboardBlockReason } from '~/lib/models/User'
+import { DashboardBlockReason } from '~/lib/models/User'
+import { useAuth } from '~/providers/AuthProvider'
 import routes from '~/utils/routes'
 
 interface LockedDashboardProps {
-  user?: User
   project: ProjectForShared
 }
 
-const LockedDashboard = ({ user, project }: LockedDashboardProps) => {
+const LockedDashboard = ({ project }: LockedDashboardProps) => {
+  const { user } = useAuth()
   const { t } = useTranslation('common')
 
   const message = useMemo(() => {

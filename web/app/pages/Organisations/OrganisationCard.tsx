@@ -6,14 +6,12 @@ import _replace from 'lodash/replace'
 import _size from 'lodash/size'
 import React, { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { Link } from 'react-router'
 import { toast } from 'sonner'
 
 import { acceptOrganisationInvitation } from '~/api'
 import { DetailedOrganisation } from '~/lib/models/Organisation'
-import { authActions } from '~/lib/reducers/auth'
-import { StateType, useAppDispatch } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import { Badge, BadgeProps } from '~/ui/Badge'
 import Modal from '~/ui/Modal'
 import routes from '~/utils/routes'
@@ -25,13 +23,15 @@ interface OrganisationCardProps {
 
 export const OrganisationCard = ({ organisation, reloadOrganisations }: OrganisationCardProps) => {
   const { t } = useTranslation('common')
-  const { user } = useSelector((state: StateType) => state.auth)
-  const dispatch = useAppDispatch()
+  const { user, mergeUser } = useAuth()
   const [showInviteModal, setShowInviteModal] = useState(false)
 
   const { name, members } = organisation
 
-  const membership = useMemo(() => _find(members, (member) => member.user.email === user.email), [members, user.email])
+  const membership = useMemo(
+    () => _find(members, (member) => member.user.email === user?.email),
+    [members, user?.email],
+  )
 
   const badges = useMemo(() => {
     const list: BadgeProps[] = []
@@ -67,16 +67,14 @@ export const OrganisationCard = ({ organisation, reloadOrganisations }: Organisa
 
       await reloadOrganisations()
 
-      dispatch(
-        authActions.mergeUser({
-          organisationMemberships: _map(user.organisationMemberships, (item) => {
-            if (item.id === membership.id) {
-              return { ...item, confirmed: true }
-            }
-            return item
-          }),
+      mergeUser({
+        organisationMemberships: _map(user?.organisationMemberships, (item) => {
+          if (item.id === membership.id) {
+            return { ...item, confirmed: true }
+          }
+          return item
         }),
-      )
+      })
 
       toast.success(t('apiNotifications.acceptOrganisationInvitation'))
     } catch (reason: any) {

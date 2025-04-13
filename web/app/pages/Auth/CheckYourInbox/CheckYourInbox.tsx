@@ -1,21 +1,17 @@
 import { EnvelopeIcon } from '@heroicons/react/24/outline'
 import { useMemo, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router'
 
 import { withAuthentication } from '~/hoc/protected'
-import { authActions } from '~/lib/reducers/auth'
-import { StateType, useAppDispatch } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import Loader from '~/ui/Loader'
-import { logout } from '~/utils/auth'
 import routes from '~/utils/routes'
 
 const CheckYourInbox = () => {
   const { t } = useTranslation('common')
-  const { loading, user } = useSelector((state: StateType) => state.auth)
+  const { user, isLoading, logout } = useAuth()
   const navigate = useNavigate()
-  const dispatch = useAppDispatch()
 
   const message = useMemo(() => {
     return t('auth.confirm.linkSent', { email: user?.email })
@@ -28,7 +24,7 @@ const CheckYourInbox = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.isActive])
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
         <Loader />
@@ -67,7 +63,6 @@ const CheckYourInbox = () => {
                         role='button'
                         className='cursor-pointer font-medium text-indigo-600 hover:underline dark:text-indigo-400'
                         onClick={() => {
-                          dispatch(authActions.logout())
                           logout()
                         }}
                       />

@@ -4,61 +4,23 @@ import _some from 'lodash/some'
 import _startsWith from 'lodash/startsWith'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { useLocation, Outlet } from 'react-router'
 import 'dayjs/locale/uk'
 import { Toaster } from 'sonner'
 
 import Footer from '~/components/Footer'
 import Header from '~/components/Header'
-import { isBrowser, isSelfhosted } from '~/lib/constants'
-import { authActions } from '~/lib/reducers/auth'
-import { StateType, useAppDispatch } from '~/lib/store'
-import { getAccessToken } from '~/utils/accessToken'
-import { logout } from '~/utils/auth'
 import routesPath from '~/utils/routes'
 import { getPageMeta } from '~/utils/server'
 
-import { authMe, getInstalledExtensions } from './api'
 import { useTheme } from './providers/ThemeProvider'
-
-interface AppProps {
-  ssrAuthenticated: boolean
-}
 
 const TITLE_BLACKLIST = ['/projects/', '/captchas/', '/blog']
 
-const App = ({ ssrAuthenticated }: AppProps) => {
-  const dispatch = useAppDispatch()
+const App = () => {
   const { pathname } = useLocation()
   const { t } = useTranslation('common')
-  const { loading } = useSelector((state: StateType) => state.auth)
-  const reduxAuthenticated = useSelector((state: StateType) => state.auth.authenticated)
   const { theme } = useTheme()
-  const accessToken = getAccessToken()
-  const authenticated = isBrowser ? (loading ? !!accessToken : reduxAuthenticated) : ssrAuthenticated
-
-  useEffect(() => {
-    void (async () => {
-      if (accessToken && !reduxAuthenticated) {
-        try {
-          const { user, totalMonthlyEvents } = await authMe()
-          dispatch(authActions.authSuccessful({ ...user, totalMonthlyEvents }))
-
-          if (!isSelfhosted) {
-            const extensions = await getInstalledExtensions()
-            dispatch(authActions.setExtensions(extensions))
-          }
-        } catch (reason) {
-          dispatch(authActions.logout())
-          logout()
-          console.error(`[ERROR] Error while getting user: ${reason}`)
-        }
-      }
-
-      dispatch(authActions.finishLoading())
-    })()
-  }, [reduxAuthenticated]) // eslint-disable-line
 
   useEffect(() => {
     if (_some(TITLE_BLACKLIST, (page) => _startsWith(pathname, page))) {
@@ -89,9 +51,7 @@ const App = ({ ssrAuthenticated }: AppProps) => {
 
   return (
     <>
-      {!_includes(routesWithOutHeader, pathname) && !isReferralPage && !isProjectViewPage ? (
-        <Header authenticated={authenticated} />
-      ) : null}
+      {!_includes(routesWithOutHeader, pathname) && !isReferralPage && !isProjectViewPage ? <Header /> : null}
       <Outlet />
       <Toaster
         theme={theme}
@@ -99,7 +59,7 @@ const App = ({ ssrAuthenticated }: AppProps) => {
           duration: 5000,
         }}
       />
-      {!isReferralPage && !isProjectViewPage ? <Footer authenticated={authenticated} /> : null}
+      {!isReferralPage && !isProjectViewPage ? <Footer /> : null}
     </>
   )
 }

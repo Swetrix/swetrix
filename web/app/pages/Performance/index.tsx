@@ -2,21 +2,19 @@ import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { ChevronRightIcon } from '@heroicons/react/24/solid'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
-import { memo, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { Link } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 
 import { getGeneralStats, getLastPost } from '~/api'
 import Header from '~/components/Header'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
-import { PERFORMANCE_LIVE_DEMO_URL, isBrowser } from '~/lib/constants'
+import { PERFORMANCE_LIVE_DEMO_URL } from '~/lib/constants'
 import { Stats } from '~/lib/models/Stats'
-import { StateType } from '~/lib/store/index'
+import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import BackgroundSvg from '~/ui/icons/BackgroundSvg'
-import { getAccessToken } from '~/utils/accessToken'
 import { nFormatterSeparated } from '~/utils/generic'
 import routesPath from '~/utils/routes'
 
@@ -28,10 +26,6 @@ const Lines = () => (
     <div className='absolute top-[22.26rem] -left-60 ml-[-0.5px] h-96 w-[2px] rotate-[96deg] rounded-full bg-gradient-to-t from-orange-600 opacity-50 xl:top-[23.5rem] dark:from-orange-700' />
   </div>
 )
-
-interface PerformanceProps {
-  ssrAuthenticated: boolean
-}
 
 export const PeopleLoveSwetrix = () => {
   const { t } = useTranslation('common')
@@ -98,13 +92,11 @@ export const PeopleLoveSwetrix = () => {
   )
 }
 
-const Performance = ({ ssrAuthenticated }: PerformanceProps) => {
+const Performance = () => {
   const { t } = useTranslation('common')
   const { theme } = useTheme()
-  const { authenticated: reduxAuthenticated, loading } = useSelector((state: StateType) => state.auth)
   const [lastBlogPost, setLastBlogPost] = useState<Awaited<ReturnType<typeof getLastPost>> | null>(null)
-  const accessToken = getAccessToken()
-  const authenticated = isBrowser ? (loading ? !!accessToken : reduxAuthenticated) : ssrAuthenticated
+  const { isAuthenticated } = useAuth()
 
   useEffect(() => {
     const abortController = new AbortController()
@@ -150,7 +142,7 @@ const Performance = ({ ssrAuthenticated }: PerformanceProps) => {
               }}
             />
           </div>
-          <Header authenticated={authenticated} transparent />
+          <Header transparent />
           <div className='relative mx-auto min-h-[740px] pt-10 pb-5 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
             <div className='relative z-20 flex flex-row content-between justify-center lg:justify-start 2xl:mr-[14vw] 2xl:justify-center'>
               <div className='relative px-4 text-left lg:mt-0 lg:mr-14'>
@@ -297,7 +289,7 @@ const Performance = ({ ssrAuthenticated }: PerformanceProps) => {
         </div>
 
         {/* For now let's hide Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
-        {!authenticated ? <Pricing authenticated={false} /> : null}
+        {isAuthenticated ? null : <Pricing authenticated={false} />}
 
         <DitchGoogle
           screenshot={{
@@ -322,4 +314,4 @@ const Performance = ({ ssrAuthenticated }: PerformanceProps) => {
   )
 }
 
-export default memo(Performance)
+export default Performance

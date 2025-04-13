@@ -5,7 +5,6 @@ import _size from 'lodash/size'
 import { Trash2Icon } from 'lucide-react'
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
@@ -14,7 +13,7 @@ import { withAuthentication, auth } from '~/hoc/protected'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
 import { TITLE_SUFFIX } from '~/lib/constants'
 import { DetailedOrganisation } from '~/lib/models/Organisation'
-import { StateType } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
@@ -35,7 +34,7 @@ const OrganisationSettings = () => {
   const { id } = useRequiredParams<{ id: string }>()
   const navigate = useNavigate()
 
-  const { loading: authLoading, user } = useSelector((state: StateType) => state.auth)
+  const { user, isLoading: authLoading } = useAuth()
 
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<{

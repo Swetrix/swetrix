@@ -3,13 +3,11 @@ import _filter from 'lodash/filter'
 import _map from 'lodash/map'
 import { memo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
 
 import { rejectProjectShare, acceptProjectShare } from '~/api'
 import { SharedProject } from '~/lib/models/SharedProject'
-import { authActions } from '~/lib/reducers/auth'
-import { StateType, useAppDispatch } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import Button from '~/ui/Button'
 import Modal from '~/ui/Modal'
 
@@ -22,8 +20,7 @@ const ProjectList = ({ item }: ProjectListProps) => {
     t,
     i18n: { language },
   } = useTranslation('common')
-  const { user } = useSelector((state: StateType) => state.auth)
-  const dispatch = useAppDispatch()
+  const { user, mergeUser } = useAuth()
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const { created, confirmed, id, role, project } = item
@@ -31,11 +28,9 @@ const ProjectList = ({ item }: ProjectListProps) => {
   const onQuit = async () => {
     try {
       await rejectProjectShare(item.id)
-      dispatch(
-        authActions.mergeUser({
-          sharedProjects: _filter(user.sharedProjects, (share) => share.id !== item.id),
-        }),
-      )
+      mergeUser({
+        sharedProjects: _filter(user?.sharedProjects, (share) => share.id !== item.id),
+      })
       toast.success(t('apiNotifications.quitProject'))
     } catch (reason) {
       console.error(`[ERROR] Error while quitting project: ${reason}`)
@@ -47,16 +42,14 @@ const ProjectList = ({ item }: ProjectListProps) => {
     try {
       await acceptProjectShare(id)
 
-      dispatch(
-        authActions.mergeUser({
-          sharedProjects: _map(user.sharedProjects, (item) => {
-            if (item.id === id) {
-              return { ...item, confirmed: true }
-            }
-            return item
-          }),
+      mergeUser({
+        sharedProjects: _map(user?.sharedProjects, (item) => {
+          if (item.id === id) {
+            return { ...item, confirmed: true }
+          }
+          return item
         }),
-      )
+      })
 
       toast.success(t('apiNotifications.acceptInvitation'))
     } catch (reason) {

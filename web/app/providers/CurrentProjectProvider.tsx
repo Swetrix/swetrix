@@ -1,26 +1,26 @@
 import _replace from 'lodash/replace'
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { useNavigate, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
-import { checkPassword, getProject } from '~/api'
-import { LS_PROJECTS_PROTECTED_KEY } from '~/lib/constants'
-import { type Project } from '~/lib/models/Project'
-import { type StateType } from '~/lib/store'
+import { checkPassword, getInstalledExtensions, getProject } from '~/api'
+import { isSelfhosted, LS_PROJECTS_PROTECTED_KEY } from '~/lib/constants'
+import { Extension, type Project } from '~/lib/models/Project'
 import { getItem, removeItem } from '~/utils/localstorage'
 import routes from '~/utils/routes'
 
 import { getProjectPreferences, setProjectPreferences } from '../pages/Project/View/utils/cache'
 import { CHART_METRICS_MAPPING } from '../pages/Project/View/ViewProject.helpers'
 
+import { useAuth } from './AuthProvider'
 import { useTheme } from './ThemeProvider'
 
 interface CurrentProjectContextType {
   id: string
   project: Project | null
   preferences: ProjectPreferences
+  extensions: Extension[]
   updatePreferences: (prefs: ProjectPreferences) => void
 }
 
@@ -52,7 +52,7 @@ const useProject = (id: string) => {
   const { theme } = useTheme()
   const { t } = useTranslation('common')
   const navigate = useNavigate()
-  const { loading: authLoading } = useSelector((state: StateType) => state.auth)
+  const { isLoading: authLoading } = useAuth()
   const projectPassword = useProjectPassword(id)
   const isEmbedded = useIsEmbedded()
   const [project, setProject] = useState<Project | null>(null)
@@ -139,9 +139,30 @@ const useProjectPreferences = (id: string) => {
 
 export const CurrentProjectProvider = ({ children, id }: CurrentProjectProviderProps) => {
   const project = useProject(id)
+  const { isAuthenticated } = useAuth()
   const { preferences, updatePreferences } = useProjectPreferences(id)
+  const [extensions, setExtensions] = useState<Extension[]>([])
+
+  useEffect(() => {
+    if (!project || isSelfhosted || !isAuthenticated) {
+      return
+    }
+
+    const abortController = new AbortController()
+
+    getInstalledExtensions(100, 0, { signal: abortController.signal })
+      .then(({ extensions }) => {
+        setExtensions(extensions)
+      })
+      .catch((reason) => {
+        console.error('[ERROR] (CurrentProjectProvider -> getInstalledExtensions)', reason)
+      })
+
+    return () => abortController.abort()
+  }, [project, isAuthenticated])
+
   return (
-    <CurrentProjectContext.Provider value={{ id, project, preferences, updatePreferences }}>
+    <CurrentProjectContext.Provider value={{ id, project, preferences, updatePreferences, extensions }}>
       {children}
     </CurrentProjectContext.Provider>
   )

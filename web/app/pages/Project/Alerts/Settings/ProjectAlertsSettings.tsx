@@ -10,7 +10,6 @@ import _toNumber from 'lodash/toNumber'
 import _values from 'lodash/values'
 import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { useNavigate, Link } from 'react-router'
 import { toast } from 'sonner'
 
@@ -19,7 +18,7 @@ import { withAuthentication, auth } from '~/hoc/protected'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
 import { PROJECT_TABS, QUERY_CONDITION, QUERY_METRIC, QUERY_TIME } from '~/lib/constants'
 import { Alerts } from '~/lib/models/Alerts'
-import { StateType } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
@@ -35,7 +34,7 @@ interface ProjectAlertsSettingsProps {
 }
 
 const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
-  const { user, loading: authLoading } = useSelector((state: StateType) => state.auth)
+  const { user, isLoading: authLoading } = useAuth()
 
   const navigate = useNavigate()
   const { id, pid } = useRequiredParams<{ id: string; pid: string }>()

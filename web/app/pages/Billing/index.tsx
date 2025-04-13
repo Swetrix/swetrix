@@ -5,23 +5,15 @@ import utc from 'dayjs/plugin/utc'
 import _round from 'lodash/round'
 import { memo, useMemo, useState, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
 
 import { getPaymentMetainfo, getUsageInfo } from '~/api'
 import DashboardLockedBanner from '~/components/DashboardLockedBanner'
 import { withAuthentication, auth } from '~/hoc/protected'
-import {
-  isSelfhosted,
-  PADDLE_JS_URL,
-  PADDLE_VENDOR_ID,
-  CONTACT_EMAIL,
-  paddleLanguageMapping,
-  isBrowser,
-} from '~/lib/constants'
+import { isSelfhosted, PADDLE_JS_URL, PADDLE_VENDOR_ID, CONTACT_EMAIL, paddleLanguageMapping } from '~/lib/constants'
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import { UsageInfo } from '~/lib/models/Usageinfo'
-import { StateType } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
@@ -35,11 +27,7 @@ import Pricing from '../../components/marketing/Pricing'
 dayjs.extend(utc)
 dayjs.extend(duration)
 
-interface BillingProps {
-  ssrAuthenticated: boolean
-}
-
-const Billing = ({ ssrAuthenticated }: BillingProps) => {
+const Billing = () => {
   const [isCancelSubModalOpened, setIsCancelSubModalOpened] = useState(false)
 
   const [metainfo, setMetainfo] = useState<Metainfo>(DEFAULT_METAINFO)
@@ -47,9 +35,9 @@ const Billing = ({ ssrAuthenticated }: BillingProps) => {
     event: string
   } | null>(null)
 
-  const { user, loading: authLoading } = useSelector((state: StateType) => state.auth)
+  const { user, isLoading: authLoading } = useAuth()
   const { theme } = useTheme()
-  const reduxAuthenticated = useSelector((state: StateType) => state.auth.authenticated)
+  const { isAuthenticated } = useAuth()
   const [usageInfo, setUsageInfo] = useState<UsageInfo>({
     total: 0,
     traffic: 0,
@@ -65,7 +53,6 @@ const Billing = ({ ssrAuthenticated }: BillingProps) => {
     t,
     i18n: { language },
   } = useTranslation('common')
-  const authenticated = isBrowser ? reduxAuthenticated : ssrAuthenticated
   const {
     nextBillDate,
     planCode,
@@ -74,14 +61,14 @@ const Billing = ({ ssrAuthenticated }: BillingProps) => {
     timeFormat,
     cancellationEffectiveDate,
     subCancelURL,
-    maxEventsCount,
-  } = user
+    maxEventsCount = 0,
+  } = user || {}
 
-  const isSubscriber = user.planCode !== 'none' && user.planCode !== 'trial' && user.planCode !== 'free'
+  const isSubscriber = !['none', 'trial', 'free'].includes(planCode || '')
   const isTrial = planCode === 'trial'
   const isNoSub = planCode === 'none'
 
-  const totalUsage = _round((usageInfo.total / maxEventsCount) * 100, 2) || 0
+  const totalUsage = maxEventsCount ? _round((usageInfo.total / maxEventsCount) * 100, 2) : 0
 
   const [isLoading, setIsLoading] = useState(true)
 
@@ -314,7 +301,7 @@ const Billing = ({ ssrAuthenticated }: BillingProps) => {
             <Loader />
           ) : (
             <div className='mt-8 flex flex-col'>
-              <Pricing authenticated={authenticated} isBillingPage lastEvent={lastEvent} />
+              <Pricing authenticated={isAuthenticated} isBillingPage lastEvent={lastEvent} />
               <div className='mt-2 space-y-2'>
                 {subUpdateURL && !cancellationEffectiveDate ? (
                   <Button className='mr-2' onClick={onUpdatePaymentDetails} type='button' primary large>

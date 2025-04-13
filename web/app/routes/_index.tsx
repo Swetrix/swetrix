@@ -7,7 +7,6 @@ import _map from 'lodash/map'
 import { Cookie, FileTextIcon } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import type { LoaderFunctionArgs } from 'react-router'
 import { useLoaderData, Link, redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
@@ -25,7 +24,6 @@ import Pricing from '~/components/marketing/Pricing'
 import {
   GITHUB_URL,
   LIVE_DEMO_URL,
-  isBrowser,
   isSelfhosted,
   OS_LOGO_MAP,
   OS_LOGO_MAP_DARK,
@@ -34,11 +32,10 @@ import {
 } from '~/lib/constants'
 import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
 import { Stats } from '~/lib/models/Stats'
-import { StateType } from '~/lib/store/index'
 import CCRow from '~/pages/Project/View/components/CCRow'
 import { MetricCard, MetricCardSelect } from '~/pages/Project/View/components/MetricCards'
+import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
-import { getAccessToken } from '~/utils/accessToken'
 import { getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
 import routesPath from '~/utils/routes'
 import { isAuthenticated } from '~/utils/server'
@@ -797,7 +794,7 @@ const CoreFeatures = () => {
   )
 }
 
-const Hero = ({ authenticated }: { authenticated: boolean }) => {
+const Hero = () => {
   const { theme } = useTheme()
   const { t } = useTranslation('common')
 
@@ -832,7 +829,7 @@ const Hero = ({ authenticated }: { authenticated: boolean }) => {
           }}
         />
       </div>
-      <Header authenticated={authenticated} transparent />
+      <Header transparent />
       <div className='relative mx-auto min-h-[740px] pt-10 pb-5 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
         <div className='relative z-20 flex flex-col content-between justify-center'>
           <div className='relative mx-auto flex flex-col px-4 text-left'>
@@ -895,17 +892,13 @@ const Hero = ({ authenticated }: { authenticated: boolean }) => {
 }
 
 export default function Index() {
-  const { isAuth } = useLoaderData<typeof loader>()
-
   const { theme } = useTheme()
-  const { authenticated: reduxAuthenticated, loading } = useSelector((state: StateType) => state.auth)
-  const accessToken = getAccessToken()
-  const authenticated = isBrowser ? (loading ? !!accessToken : reduxAuthenticated) : isAuth
+  const { isAuthenticated } = useAuth()
 
   return (
     <div className='overflow-hidden'>
       <main className='bg-white dark:bg-slate-900'>
-        <Hero authenticated={authenticated} />
+        <Hero />
 
         <Problem />
 
@@ -928,7 +921,7 @@ export default function Index() {
         <CoreFeatures />
 
         {/* Hiding the Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
-        {!authenticated ? <Pricing authenticated={false} /> : null}
+        {!isAuthenticated ? <Pricing authenticated={false} /> : null}
 
         <Feedback
           name='Alper Alkan'

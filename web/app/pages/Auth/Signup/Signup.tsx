@@ -3,7 +3,6 @@ import _keys from 'lodash/keys'
 import _size from 'lodash/size'
 import React, { useState, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
@@ -12,13 +11,12 @@ import GithubAuth from '~/components/GithubAuth'
 import GoogleAuth from '~/components/GoogleAuth'
 import { HAVE_I_BEEN_PWNED_URL, REFERRAL_COOKIE, TRIAL_DAYS } from '~/lib/constants'
 import { SSOProvider } from '~/lib/models/Auth'
-import { authActions } from '~/lib/reducers/auth'
-import { StateType, useAppDispatch } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
 import Tooltip from '~/ui/Tooltip'
-import { getAccessToken, setAccessToken } from '~/utils/accessToken'
+import { setAccessToken } from '~/utils/accessToken'
 import { trackCustom } from '~/utils/analytics'
 import { deleteCookie, getCookie } from '~/utils/cookie'
 import { delay, openBrowserWindow } from '~/utils/generic'
@@ -38,8 +36,6 @@ interface SignupForm {
 const HASH_CHECK_FREQUENCY = 1000
 
 const Signup = () => {
-  const dispatch = useAppDispatch()
-  const { authenticated: reduxAuthenticated, loading } = useSelector((state: StateType) => state.auth)
   const { t } = useTranslation('common')
   const [form, setForm] = useState<SignupForm>({
     email: '',
@@ -59,8 +55,7 @@ const Signup = () => {
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
-  const accessToken = getAccessToken()
-  const authenticated = loading ? !!accessToken : reduxAuthenticated
+  const { isAuthenticated, setUser, setTotalMonthlyEvents } = useAuth()
 
   const validate = () => {
     const allErrors = {} as {
@@ -101,11 +96,11 @@ const Signup = () => {
   }, [form]) // eslint-disable-line
 
   useEffect(() => {
-    if (authenticated && !beenSubmitted) {
+    if (isAuthenticated && !beenSubmitted) {
       navigate(routes.dashboard)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authenticated, beenSubmitted])
+  }, [isAuthenticated, beenSubmitted])
 
   const onSubmit = async (data: SignupForm) => {
     if (isLoading) {
@@ -130,8 +125,7 @@ const Signup = () => {
         deleteCookie(REFERRAL_COOKIE)
       }
 
-      dispatch(authActions.authSuccessful(user))
-      dispatch(authActions.setDontRemember(dontRemember))
+      setUser(user)
       setAccessToken(accessToken, dontRemember)
       setRefreshToken(refreshToken)
       setIsLoading(false)
@@ -143,8 +137,6 @@ const Signup = () => {
     } catch (reason) {
       toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
       setIsLoading(false)
-    } finally {
-      dispatch(authActions.finishLoading())
     }
   }
 
@@ -181,17 +173,17 @@ const Signup = () => {
           if (user.isTwoFactorAuthenticationEnabled) {
             setAccessToken(accessToken, true)
             setRefreshToken(refreshToken)
-            dispatch(authActions.mergeUser(user))
+            setUser(user)
+            setTotalMonthlyEvents(totalMonthlyEvents)
             navigate(`${routes.signin}?show_2fa_screen=true`)
             setIsLoading(false)
             return
           }
 
-          dispatch(authActions.authSuccessful({ ...user, totalMonthlyEvents }))
+          setUser(user)
+          setTotalMonthlyEvents(totalMonthlyEvents)
           setAccessToken(accessToken, false)
           setRefreshToken(refreshToken)
-
-          dispatch(authActions.finishLoading())
 
           navigate(routes.dashboard)
 

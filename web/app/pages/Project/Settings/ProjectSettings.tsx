@@ -15,7 +15,6 @@ import _toUpper from 'lodash/toUpper'
 import { ArrowLeftRight, RotateCcw, Trash2Icon } from 'lucide-react'
 import React, { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { useLoaderData, useNavigate, Link } from 'react-router'
 import { toast } from 'sonner'
 
@@ -34,7 +33,7 @@ import { withAuthentication, auth } from '~/hoc/protected'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
 import { isSelfhosted, TITLE_SUFFIX, FILTERS_PANELS_ORDER, isBrowser } from '~/lib/constants'
 import { Project } from '~/lib/models/Project'
-import { StateType } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import Dropdown from '~/ui/Dropdown'
@@ -253,7 +252,7 @@ interface Form extends Partial<Project> {
 const DEFAULT_PROJECT_NAME = 'Untitled Project'
 
 const ProjectSettings = () => {
-  const { user, loading: authLoading } = useSelector((state: StateType) => state.auth)
+  const { user, isLoading: authLoading } = useAuth()
 
   const { t } = useTranslation('common')
   const { id } = useRequiredParams<{ id: string }>()
@@ -315,11 +314,11 @@ const ProjectSettings = () => {
         id: undefined,
         name: t('common.notSet'),
       },
-      ...(user.organisationMemberships || [])
+      ...(user?.organisationMemberships || [])
         .filter((om) => om.confirmed && (om.role === 'admin' || om.role === 'owner'))
         .map((om) => om.organisation),
     ],
-    [user.organisationMemberships, t],
+    [user?.organisationMemberships, t],
   )
 
   const assignOrganisation = async (organisationId?: string) => {

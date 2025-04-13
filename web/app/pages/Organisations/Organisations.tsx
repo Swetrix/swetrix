@@ -5,7 +5,6 @@ import _map from 'lodash/map'
 import _size from 'lodash/size'
 import React, { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { Link } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
@@ -16,7 +15,7 @@ import { withAuthentication, auth } from '~/hoc/protected'
 import useDebounce from '~/hooks/useDebounce'
 import { ENTRIES_PER_PAGE_DASHBOARD } from '~/lib/constants'
 import { DetailedOrganisation } from '~/lib/models/Organisation'
-import { StateType } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import Input from '~/ui/Input'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
@@ -28,7 +27,7 @@ import { NoOrganisations } from './NoOrganisations'
 import { OrganisationCard } from './OrganisationCard'
 
 const Organisations = () => {
-  const { loading: authLoading } = useSelector((state: StateType) => state.auth)
+  const { isLoading: authLoading } = useAuth()
 
   const { t } = useTranslation('common')
   const [isSearchActive, setIsSearchActive] = useState(false)

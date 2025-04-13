@@ -1,10 +1,9 @@
 import { ExclamationTriangleIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { memo, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 
 import { LOW_EVENTS_WARNING, SHOW_BANNER_AT_PERC } from '~/lib/constants'
-import { StateType } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import Modal from '~/ui/Modal'
 import { shouldShowLowEventsBanner } from '~/utils/auth'
 import { setCookie } from '~/utils/cookie'
@@ -13,18 +12,23 @@ import { secondsTillNextMonth } from '~/utils/generic'
 const EventsRunningOutBanner = () => {
   const { t } = useTranslation('common')
   const [shouldShowBanner, setShouldShowBanner] = useState(false)
-  const { dashboardBlockReason, totalMonthlyEvents, maxEventsCount } = useSelector(
-    (state: StateType) => state.auth.user,
-  )
   const [showMoreInfoModal, setShowMoreInfoModal] = useState(false)
 
+  const { user, totalMonthlyEvents } = useAuth()
+
   useEffect(() => {
+    if (!user) {
+      return
+    }
+
+    const { maxEventsCount } = user
+
     if (!totalMonthlyEvents || !maxEventsCount) {
       return
     }
 
     setShouldShowBanner(shouldShowLowEventsBanner(totalMonthlyEvents, maxEventsCount))
-  }, [totalMonthlyEvents, maxEventsCount])
+  }, [user, totalMonthlyEvents])
 
   const closeHandler = () => {
     setShouldShowBanner(false)
@@ -33,7 +37,7 @@ const EventsRunningOutBanner = () => {
     setCookie(LOW_EVENTS_WARNING, 1, maxAge)
   }
 
-  if (!shouldShowBanner || dashboardBlockReason) {
+  if (!shouldShowBanner || user?.dashboardBlockReason) {
     return null
   }
 

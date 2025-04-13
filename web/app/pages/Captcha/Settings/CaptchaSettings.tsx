@@ -12,7 +12,6 @@ import _split from 'lodash/split'
 import { Trash2Icon } from 'lucide-react'
 import React, { useState, useEffect, memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
@@ -28,7 +27,7 @@ import { withAuthentication, auth } from '~/hoc/protected'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
 import { TITLE_SUFFIX } from '~/lib/constants'
 import { CaptchaProject } from '~/lib/models/Project'
-import { StateType } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
@@ -54,7 +53,7 @@ interface CaptchaSettingsProps {
 }
 
 const CaptchaSettings = ({ isSettings }: CaptchaSettingsProps) => {
-  const { loading: authLoading } = useSelector((state: StateType) => state.auth)
+  const { isLoading: authLoading } = useAuth()
 
   const { t } = useTranslation('common')
   const { id } = useRequiredParams<{

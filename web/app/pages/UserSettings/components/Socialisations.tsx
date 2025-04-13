@@ -2,14 +2,12 @@ import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import _map from 'lodash/map'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
 
-import { authMe, generateSSOAuthURL, linkBySSOHash, unlinkSSO } from '~/api'
+import { generateSSOAuthURL, linkBySSOHash, unlinkSSO } from '~/api'
 import { SSO_PROVIDERS } from '~/lib/constants'
 import { User } from '~/lib/models/User'
-import { authActions } from '~/lib/reducers/auth'
-import { StateType, useAppDispatch } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Button from '~/ui/Button'
 import GithubDark from '~/ui/icons/GithubDark'
@@ -37,7 +35,11 @@ const AVAILABLE_SSO_PROVIDERS = [
   },
 ]
 
-const getStatusByUser = (user: User, socialisation: string) => {
+const getStatusByUser = (user: User | null, socialisation: string) => {
+  if (!user) {
+    return [false, false]
+  }
+
   if (socialisation === SSO_PROVIDERS.GOOGLE) {
     const connected = user.googleId
     const unlinkable = !user.registeredWithGoogle
@@ -56,9 +58,8 @@ const getStatusByUser = (user: User, socialisation: string) => {
 const HASH_CHECK_FREQUENCY = 1000 // 1 second
 
 const Socialisations = () => {
-  const { user } = useSelector((state: StateType) => state.auth)
+  const { user, loadUser } = useAuth()
   const { theme } = useTheme()
-  const dispatch = useAppDispatch()
   const { t } = useTranslation('common')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -88,8 +89,7 @@ const Socialisations = () => {
           await linkBySSOHash(uuid, provider)
           authWindow.close()
 
-          const { user } = await authMe()
-          dispatch(authActions.authSuccessful(user))
+          await loadUser()
 
           toast.success(t('apiNotifications.socialAccountLinked'))
 
@@ -116,8 +116,7 @@ const Socialisations = () => {
 
     try {
       await unlinkSSO(provider)
-      const { user } = await authMe()
-      dispatch(authActions.authSuccessful(user))
+      await loadUser()
 
       toast.success(t('apiNotifications.socialAccountUninked'))
     } catch (reason) {

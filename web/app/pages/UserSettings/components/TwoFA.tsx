@@ -4,20 +4,17 @@ import _isString from 'lodash/isString'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import QRCode from 'react-qr-code'
-import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
 
 import { generate2FA, enable2FA, disable2FA } from '~/api'
-import { authActions } from '~/lib/reducers/auth'
-import { StateType, useAppDispatch } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import { setAccessToken } from '~/utils/accessToken'
 import { setRefreshToken } from '~/utils/refreshToken'
 
 const TwoFA = () => {
-  const dispatch = useAppDispatch()
-  const { user, dontRemember } = useSelector((state: StateType) => state.auth)
+  const { user, mergeUser } = useAuth()
 
   const { t } = useTranslation('common')
   const [twoFAConfigurating, setTwoFAConfigurating] = useState(false)
@@ -30,7 +27,7 @@ const TwoFA = () => {
   const [twoFACode, setTwoFACode] = useState('')
   const [twoFACodeError, setTwoFACodeError] = useState<string | null>(null)
   const [twoFARecovery, setTwoFARecovery] = useState<string | null>(null)
-  const { isTwoFactorAuthenticationEnabled } = user
+  const { isTwoFactorAuthenticationEnabled } = user || {}
 
   const handle2FAInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const {
@@ -70,8 +67,9 @@ const TwoFA = () => {
       try {
         const { twoFactorRecoveryCode, accessToken, refreshToken } = await enable2FA(twoFACode)
         setRefreshToken(refreshToken)
-        setAccessToken(accessToken, dontRemember)
-        dispatch(authActions.mergeUser({ isTwoFactorAuthenticationEnabled: true }))
+        // TODO: Should probably pass dontRemember here if user session is temporary
+        setAccessToken(accessToken)
+        mergeUser({ isTwoFactorAuthenticationEnabled: true })
         setTwoFARecovery(twoFactorRecoveryCode)
       } catch (reason) {
         if (_isString(reason)) {
@@ -91,7 +89,7 @@ const TwoFA = () => {
 
       try {
         await disable2FA(twoFACode)
-        dispatch(authActions.mergeUser({ isTwoFactorAuthenticationEnabled: false }))
+        mergeUser({ isTwoFactorAuthenticationEnabled: false })
       } catch (reason) {
         if (_isString(reason)) {
           toast.error(reason)

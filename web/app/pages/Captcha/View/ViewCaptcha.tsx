@@ -13,7 +13,6 @@ import _startsWith from 'lodash/startsWith'
 import { DownloadIcon, RotateCw, SettingsIcon } from 'lucide-react'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { useNavigate, useSearchParams } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 
@@ -33,11 +32,11 @@ import {
   OS_LOGO_MAP_DARK,
   DEFAULT_TIMEZONE,
 } from '~/lib/constants'
-import { StateType } from '~/lib/store'
 import { Panel } from '~/pages/Project/View/Panels'
 import { parseFiltersFromUrl } from '~/pages/Project/View/utils/filters'
 import { ViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { deviceIconMapping, onCSVExportClick } from '~/pages/Project/View/ViewProject.helpers'
+import { useAuth } from '~/providers/AuthProvider'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Dropdown from '~/ui/Dropdown'
@@ -75,7 +74,7 @@ const PageLoader = () => (
 const ViewCaptcha = () => {
   const { id, project, preferences, updatePreferences } = useCurrentProject()
 
-  const { loading: authLoading, user } = useSelector((state: StateType) => state.auth)
+  const { user, isLoading: authLoading } = useAuth()
   const { theme } = useTheme()
 
   const {
@@ -116,7 +115,7 @@ const ViewCaptcha = () => {
 
   const [searchParams] = useSearchParams()
 
-  const timeFormat = useMemo(() => user.timeFormat || TimeFormat['12-hour'], [user])
+  const timeFormat = useMemo(() => user?.timeFormat || TimeFormat['12-hour'], [user])
   const [ref, size] = useSize() as any
   const rotateXAxias = useMemo(() => size.width > 0 && size.width < 500, [size])
   const [chartType, setChartType] = useState<string>((getItem('chartType') as string) || chartTypes.line)

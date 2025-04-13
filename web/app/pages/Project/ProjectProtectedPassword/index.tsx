@@ -25,10 +25,9 @@ const MAX_PASSWORD_LENGTH = 80
 
 interface ProjectProtectedPasswordProps {
   embedded: boolean
-  isAuth: boolean
 }
 
-const ProjectProtectedPassword = ({ embedded, isAuth }: ProjectProtectedPasswordProps) => {
+const ProjectProtectedPassword = ({ embedded }: ProjectProtectedPasswordProps) => {
   const { theme } = useTheme()
   const { t } = useTranslation('common')
   const [form, setForm] = useState<ProjectProtectedPasswordForm>({
@@ -111,7 +110,7 @@ const ProjectProtectedPassword = ({ embedded, isAuth }: ProjectProtectedPassword
 
   return (
     <>
-      {!embedded ? <Header authenticated={isAuth} /> : null}
+      {!embedded ? <Header /> : null}
       <div className='min-h-page flex flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
         <form className='mx-auto w-full max-w-7xl' onSubmit={handleSubmit}>
           <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{t('titles.passwordProtected')}</h2>
@@ -142,7 +141,7 @@ const ProjectProtectedPassword = ({ embedded, isAuth }: ProjectProtectedPassword
           </div>
         </form>
       </div>
-      {!embedded ? <Footer authenticated={isAuth} /> : null}
+      {!embedded ? <Footer /> : null}
     </>
   )
 }

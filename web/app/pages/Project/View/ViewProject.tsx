@@ -50,7 +50,6 @@ import React, {
 } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { useNavigate, Link, useSearchParams, useLoaderData } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
@@ -101,7 +100,6 @@ import {
   PERIOD_PAIRS_COMPARE,
   FILTERS_PERIOD_PAIRS,
   LS_IS_ACTIVE_COMPARE_KEY,
-  isBrowser,
   TITLE_SUFFIX,
   KEY_FOR_ALL_TIME,
   MARKETPLACE_URL,
@@ -115,9 +113,9 @@ import {
 } from '~/lib/constants'
 import { CountryEntry } from '~/lib/models/Entry'
 import { Funnel, AnalyticsFunnel, OverallObject, OverallPerformanceObject } from '~/lib/models/Project'
-import { StateType } from '~/lib/store'
 import NewFunnel from '~/modals/NewFunnel'
 import ViewProjectHotkeys from '~/modals/ViewProjectHotkeys'
+import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Checkbox from '~/ui/Checkbox'
 import Dropdown from '~/ui/Dropdown'
@@ -249,26 +247,18 @@ export const useViewProjectContext = () => {
 }
 
 const ViewProject = () => {
-  const { id, project, preferences, updatePreferences } = useCurrentProject()
+  const { id, project, preferences, updatePreferences, extensions } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
 
-  const {
-    embedded,
-    isAuth: ssrAuthenticated,
-    tabs: projectQueryTabs,
-  } = useLoaderData<{
+  const { embedded, tabs: projectQueryTabs } = useLoaderData<{
     embedded: boolean
-    isAuth: boolean
     tabs: string[]
   }>()
 
-  const { loading: authLoading, authenticated: csrAuthenticated, user } = useSelector((state: StateType) => state.auth)
-
   const { theme } = useTheme()
 
-  const { extensions } = useSelector((state: StateType) => state.auth)
+  const { isAuthenticated, user, isLoading: authLoading } = useAuth()
 
-  const authenticated = isBrowser ? (authLoading ? ssrAuthenticated : csrAuthenticated) : ssrAuthenticated
   const { timezone = DEFAULT_TIMEZONE } = user || {}
 
   const {
@@ -524,7 +514,7 @@ const ViewProject = () => {
   const [isPanelsDataEmptyPerf, setIsPanelsDataEmptyPerf] = useState(false)
   const [panelsDataPerf, setPanelsDataPerf] = useState<any>({})
 
-  const timeFormat = useMemo<'12-hour' | '24-hour'>(() => user.timeFormat || TimeFormat['12-hour'], [user])
+  const timeFormat = useMemo<'12-hour' | '24-hour'>(() => user?.timeFormat || TimeFormat['12-hour'], [user])
   const [ref, size] = useSize()
   const rotateXAxis = useMemo(() => size.width > 0 && size.width < 500, [size])
   const customEventsChartData = useMemo(
@@ -2808,7 +2798,7 @@ const ViewProject = () => {
   if (authLoading || !project) {
     return (
       <>
-        {!embedded ? <Header authenticated={authenticated} /> : null}
+        {!embedded ? <Header /> : null}
         <div
           className={cx('min-h-min-footer bg-gray-50 dark:bg-slate-900', {
             'min-h-min-footer': !embedded,
@@ -2817,7 +2807,7 @@ const ViewProject = () => {
         >
           <Loader />
         </div>
-        {!embedded ? <Footer authenticated={authenticated} /> : null}
+        {!embedded ? <Footer /> : null}
       </>
     )
   }
@@ -2825,7 +2815,7 @@ const ViewProject = () => {
   if (project.isLocked) {
     return (
       <>
-        {!embedded ? <Header authenticated={authenticated} /> : null}
+        {!embedded ? <Header /> : null}
         <div
           className={cx('mx-auto w-full max-w-[1584px] bg-gray-50 px-2 py-6 sm:px-4 lg:px-8 dark:bg-slate-900', {
             'min-h-min-footer': !embedded,
@@ -2836,9 +2826,9 @@ const ViewProject = () => {
           <h2 className='mt-2 text-center font-mono text-xl font-bold break-words break-all text-gray-900 sm:text-left dark:text-gray-50'>
             {project.name}
           </h2>
-          <LockedDashboard user={user} project={project} />
+          <LockedDashboard project={project} />
         </div>
-        {!embedded ? <Footer authenticated={authenticated} /> : null}
+        {!embedded ? <Footer /> : null}
       </>
     )
   }
@@ -2846,7 +2836,7 @@ const ViewProject = () => {
   if (!project.isDataExists && activeTab !== PROJECT_TABS.errors && !analyticsLoading) {
     return (
       <>
-        {!embedded ? <Header authenticated={authenticated} /> : null}
+        {!embedded ? <Header /> : null}
         <div
           className={cx('mx-auto w-full max-w-[1584px] bg-gray-50 px-2 py-6 sm:px-4 lg:px-8 dark:bg-slate-900', {
             'min-h-min-footer': !embedded,
@@ -2859,7 +2849,7 @@ const ViewProject = () => {
           </h2>
           <WaitingForAnEvent project={project} />
         </div>
-        {!embedded ? <Footer authenticated={authenticated} /> : null}
+        {!embedded ? <Footer /> : null}
       </>
     )
   }
@@ -2871,7 +2861,7 @@ const ViewProject = () => {
   ) {
     return (
       <>
-        {!embedded ? <Header authenticated={authenticated} /> : null}
+        {!embedded ? <Header /> : null}
         <div
           className={cx('mx-auto w-full max-w-[1584px] bg-gray-50 px-2 py-6 sm:px-4 lg:px-8 dark:bg-slate-900', {
             'min-h-min-footer': !embedded,
@@ -2884,7 +2874,7 @@ const ViewProject = () => {
           </h2>
           <WaitingForAnError />
         </div>
-        {!embedded ? <Footer authenticated={authenticated} /> : null}
+        {!embedded ? <Footer /> : null}
       </>
     )
   }
@@ -2931,7 +2921,7 @@ const ViewProject = () => {
           }}
         >
           <>
-            {!embedded ? <Header authenticated={authenticated} /> : null}
+            {!embedded ? <Header /> : null}
             <EventsRunningOutBanner />
             <div
               ref={ref}
@@ -3509,7 +3499,7 @@ const ViewProject = () => {
                     ) : null}
                   </>
                 ) : null}
-                {activeTab === PROJECT_TABS.alerts && (project.role !== 'owner' || !authenticated) ? (
+                {activeTab === PROJECT_TABS.alerts && (project.role !== 'owner' || !isAuthenticated) ? (
                   <div className='mt-5 rounded-xl bg-gray-700 p-5'>
                     <div className='flex items-center text-gray-50'>
                       <BellRingIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
@@ -3542,7 +3532,7 @@ const ViewProject = () => {
                     funnels={project.funnels}
                     deleteFunnel={onFunnelDelete}
                     loading={funnelActionLoading}
-                    authenticated={authenticated}
+                    authenticated={isAuthenticated}
                     allowedToManage={allowedToManage}
                   />
                 ) : null}
@@ -3555,7 +3545,7 @@ const ViewProject = () => {
                     <p className='mt-2 font-mono text-sm whitespace-pre-wrap text-gray-100'>
                       {t('dashboard.funnelsDesc')}
                     </p>
-                    {authenticated ? (
+                    {isAuthenticated ? (
                       <button
                         type='button'
                         onClick={() => setIsNewFunnelOpened(true)}
@@ -3948,7 +3938,7 @@ const ViewProject = () => {
                     {!errorLoading && _isEmpty(activeError) ? <NoErrorDetails /> : null}
                   </>
                 ) : null}
-                {activeTab === PROJECT_TABS.alerts && project.role === 'owner' && authenticated ? (
+                {activeTab === PROJECT_TABS.alerts && project.role === 'owner' && isAuthenticated ? (
                   <ProjectAlertsView />
                 ) : null}
                 {analyticsLoading && (activeTab === PROJECT_TABS.traffic || activeTab === PROJECT_TABS.performance) ? (
@@ -4564,7 +4554,7 @@ const ViewProject = () => {
               pid={id}
               tnMapping={tnMapping}
             />
-            {!embedded ? <Footer authenticated={authenticated} showDBIPMessage /> : null}
+            {!embedded ? <Footer showDBIPMessage /> : null}
           </>
         </ViewProjectContext.Provider>
       )}

@@ -26,7 +26,6 @@ import _startsWith from 'lodash/startsWith'
 import { GaugeIcon, ChartPieIcon, BugIcon, PuzzleIcon, PhoneIcon } from 'lucide-react'
 import { memo, Fragment, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { Link } from 'react-router'
 
 import {
@@ -38,14 +37,11 @@ import {
   CAPTCHA_URL,
   isDisableMarketingPages,
 } from '~/lib/constants'
-import { User } from '~/lib/models/User'
-import { authActions } from '~/lib/reducers/auth'
-import { useAppDispatch, StateType } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Dropdown from '~/ui/Dropdown'
 import Flag from '~/ui/Flag'
 import SwetrixLogo from '~/ui/icons/SwetrixLogo'
-import { logout } from '~/utils/auth'
 import routes from '~/utils/routes'
 
 dayjs.extend(utc)
@@ -266,7 +262,8 @@ const ThemeMenu = () => {
   )
 }
 
-const ProfileMenu = ({ user, logoutHandler }: { user: User; logoutHandler: () => void }) => {
+const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
+  const { user } = useAuth()
   const {
     t,
     i18n: { language },
@@ -477,20 +474,19 @@ const Separator = () => (
 )
 
 const AuthedHeader = ({
-  user,
   rawStatus,
   status,
   logoutHandler,
   colourBackground,
   openMenu,
 }: {
-  user: User
   rawStatus: string | number
   status: string
   logoutHandler: () => void
   colourBackground: boolean
   openMenu: () => void
 }) => {
+  const { user } = useAuth()
   const { theme, setTheme } = useTheme()
   const { t } = useTranslation('common')
 
@@ -570,7 +566,7 @@ const AuthedHeader = ({
           </div>
           <div className='ml-1 hidden flex-wrap items-center justify-center space-y-1 space-x-2 sm:space-y-0 lg:ml-10 lg:flex lg:space-x-4'>
             <ThemeMenu />
-            <ProfileMenu user={user} logoutHandler={logoutHandler} />
+            <ProfileMenu logoutHandler={logoutHandler} />
           </div>
           <div className='flex items-center justify-center space-x-3 lg:hidden'>
             {/* Theme switch */}
@@ -756,18 +752,16 @@ const NotAuthedHeader = ({
 }
 
 interface HeaderProps {
-  authenticated: boolean
   refPage?: boolean
   transparent?: boolean
 }
 
-const Header = ({ authenticated, refPage, transparent }: HeaderProps) => {
+const Header = ({ refPage, transparent }: HeaderProps) => {
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
-  const dispatch = useAppDispatch()
-  const { user } = useSelector((state: StateType) => state.auth)
+  const { isAuthenticated, user, logout } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { theme, setTheme } = useTheme()
 
@@ -809,7 +803,6 @@ const Header = ({ authenticated, refPage, transparent }: HeaderProps) => {
 
   const logoutHandler = () => {
     setMobileMenuOpen(false)
-    dispatch(authActions.logout())
     logout()
   }
 
@@ -820,9 +813,8 @@ const Header = ({ authenticated, refPage, transparent }: HeaderProps) => {
   return (
     <Popover>
       {/* Computer / Laptop / Tablet layout header */}
-      {authenticated ? (
+      {isAuthenticated ? (
         <AuthedHeader
-          user={user}
           rawStatus={rawStatus || ''}
           status={status || ''}
           logoutHandler={logoutHandler}
@@ -982,7 +974,7 @@ const Header = ({ authenticated, refPage, transparent }: HeaderProps) => {
                     )}
                   </Disclosure>
                 ) : null}
-                {!isSelfhosted && authenticated && user?.planCode === 'trial' ? (
+                {!isSelfhosted && isAuthenticated && user?.planCode === 'trial' ? (
                   <Link
                     to={routes.billing}
                     onClick={() => setMobileMenuOpen(false)}
@@ -1001,7 +993,7 @@ const Header = ({ authenticated, refPage, transparent }: HeaderProps) => {
                     {status}
                   </Link>
                 ) : null}
-                {!isSelfhosted && authenticated && user?.planCode === 'none' ? (
+                {!isSelfhosted && isAuthenticated && user?.planCode === 'none' ? (
                   <Link
                     to={routes.billing}
                     onClick={() => setMobileMenuOpen(false)}
@@ -1011,7 +1003,7 @@ const Header = ({ authenticated, refPage, transparent }: HeaderProps) => {
                     {t('billing.inactive')}
                   </Link>
                 ) : null}
-                {!isSelfhosted && authenticated && user?.planCode !== 'none' && user?.planCode !== 'trial' ? (
+                {!isSelfhosted && isAuthenticated && user?.planCode !== 'none' && user?.planCode !== 'trial' ? (
                   <Link
                     to={routes.billing}
                     onClick={() => setMobileMenuOpen(false)}
@@ -1021,7 +1013,7 @@ const Header = ({ authenticated, refPage, transparent }: HeaderProps) => {
                     {t('common.billing')}
                   </Link>
                 ) : null}
-                {!isSelfhosted && !isDisableMarketingPages && !authenticated ? (
+                {!isSelfhosted && !isDisableMarketingPages && !isAuthenticated ? (
                   <Link
                     to={`${routes.main}#pricing`}
                     onClick={() => setMobileMenuOpen(false)}
@@ -1060,7 +1052,7 @@ const Header = ({ authenticated, refPage, transparent }: HeaderProps) => {
                 >
                   {t('common.docs')}
                 </a>
-                {authenticated ? (
+                {isAuthenticated ? (
                   <Link
                     to={routes.dashboard}
                     onClick={() => setMobileMenuOpen(false)}
@@ -1071,7 +1063,7 @@ const Header = ({ authenticated, refPage, transparent }: HeaderProps) => {
                 ) : null}
               </div>
               <div className='space-y-2 py-6'>
-                {authenticated ? (
+                {isAuthenticated ? (
                   <>
                     <Link
                       to={routes.user_settings}
