@@ -72,7 +72,7 @@ const useProject = (id: string) => {
 
         toast.error(t('apiNotifications.incorrectPassword'))
         navigate({
-          pathname: _replace(routes.project_protected_password, ':id', id),
+          pathname: _replace(routes.project_protected_password, ':pid', id),
           search: `?theme=${theme}&embedded=${isEmbedded}`,
         })
         removeItem(LS_PROJECTS_PROTECTED_KEY)
@@ -97,7 +97,7 @@ const useProject = (id: string) => {
 
         if (result.isPasswordProtected && !result.role && !projectPassword) {
           navigate({
-            pathname: _replace(routes.project_protected_password, ':id', id),
+            pathname: _replace(routes.project_protected_password, ':pid', id),
             search: `?theme=${theme}&embedded=${isEmbedded}`,
           })
           return

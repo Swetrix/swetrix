@@ -37,7 +37,7 @@ const ProjectProtectedPassword = ({ embedded }: ProjectProtectedPasswordProps) =
   const [errors, setErrors] = useState<{
     password?: string
   }>({})
-  const { id } = useRequiredParams<{ id: string }>()
+  const { pid } = useRequiredParams<{ pid: string }>()
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
@@ -68,12 +68,12 @@ const ProjectProtectedPassword = ({ embedded }: ProjectProtectedPasswordProps) =
   const onSubmit = async (data: ProjectProtectedPasswordForm) => {
     if (!isLoading) {
       setIsLoading(true)
-      await checkPassword(id, data.password)
+      await checkPassword(pid, data.password)
         .then((result) => {
           if (result) {
-            setProjectPassword(id, data.password)
+            setProjectPassword(pid, data.password)
             navigate({
-              pathname: _replace(routes.project, ':id', id),
+              pathname: _replace(routes.project, ':id', pid),
               search: `?embedded=${embedded}&theme=${theme}`,
             })
             return
