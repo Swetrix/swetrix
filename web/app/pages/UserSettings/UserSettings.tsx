@@ -326,7 +326,7 @@ const UserSettings = () => {
   const onAccountDelete = async () => {
     try {
       await deleteUser(deletionFeedback)
-      logout(true)
+      logout()
       toast.success(t('apiNotifications.accountDeleted'))
       trackCustom('ACCOUNT_DELETED', {
         reason_stated: deletionFeedback ? 'true' : 'false',

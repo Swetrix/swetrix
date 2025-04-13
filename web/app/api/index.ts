@@ -14,9 +14,9 @@ import { Stats } from '~/lib/models/Stats'
 import { Subscriber } from '~/lib/models/Subscriber'
 import { User, FeatureFlag } from '~/lib/models/User'
 import { Filter, ProjectViewCustomEvent } from '~/pages/Project/View/interfaces/traffic'
-import { getAccessToken, removeAccessToken, setAccessToken } from '~/utils/accessToken'
+import { getAccessToken, setAccessToken } from '~/utils/accessToken'
 import { logout } from '~/utils/auth'
-import { getRefreshToken, removeRefreshToken } from '~/utils/refreshToken'
+import { getRefreshToken } from '~/utils/refreshToken'
 
 const api = axios.create({
   baseURL: API_URL,
@@ -78,11 +78,7 @@ export const logoutApi = (refreshToken: string | null) =>
         Authorization: `Bearer ${refreshToken}`,
       },
     })
-    .then((response) => {
-      removeAccessToken()
-      removeRefreshToken()
-      return response.data
-    })
+    .then((response) => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })

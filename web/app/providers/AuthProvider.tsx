@@ -1,3 +1,4 @@
+import { isCancel } from 'axios'
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 
 import { authMe } from '~/api'
@@ -56,7 +57,7 @@ export const AuthProvider = ({ children, initialIsAuthenticated }: AuthProviderP
         setTotalMonthlyEvents(totalMonthlyEvents)
         setIsAuthenticated(true)
       } catch (error) {
-        if (error instanceof Error && error.name === 'AbortError') {
+        if (isCancel(error)) {
           return
         }
 
