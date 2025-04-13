@@ -3,21 +3,18 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
-import { ProjectForShared } from '~/lib/models/SharedProject'
 import { DashboardBlockReason } from '~/lib/models/User'
 import { useAuth } from '~/providers/AuthProvider'
+import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import routes from '~/utils/routes'
 
-interface LockedDashboardProps {
-  project: ProjectForShared
-}
-
-const LockedDashboard = ({ project }: LockedDashboardProps) => {
+const LockedDashboard = () => {
+  const { project } = useCurrentProject()
   const { user } = useAuth()
   const { t } = useTranslation('common')
 
   const message = useMemo(() => {
-    if (project.role === 'owner') {
+    if (project?.role === 'owner') {
       if (user?.dashboardBlockReason === DashboardBlockReason.exceeding_plan_limits) {
         return t('project.locked.descExceedingTier')
       }
@@ -32,7 +29,7 @@ const LockedDashboard = ({ project }: LockedDashboardProps) => {
       }
     }
 
-    if (project.role === 'admin' || project.role === 'viewer') {
+    if (project?.role === 'admin' || project?.role === 'viewer') {
       return t('project.locked.descSharedProject')
     }
 
@@ -51,7 +48,7 @@ const LockedDashboard = ({ project }: LockedDashboardProps) => {
               </h1>
               <p className='mt-1 max-w-prose text-base whitespace-pre-line text-gray-700 dark:text-gray-300'>
                 {message}
-                {project.role === 'owner' ? (
+                {project?.role === 'owner' ? (
                   <>
                     <br />
                     <br />
@@ -60,7 +57,7 @@ const LockedDashboard = ({ project }: LockedDashboardProps) => {
                 ) : null}
               </p>
             </div>
-            {project.role === 'owner' ? (
+            {project?.role === 'owner' ? (
               <div className='mt-8 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>
                 <Link
                   to={routes.billing}

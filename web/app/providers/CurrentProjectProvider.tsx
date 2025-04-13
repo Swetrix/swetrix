@@ -21,6 +21,7 @@ interface CurrentProjectContextType {
   project: Project | null
   preferences: ProjectPreferences
   extensions: Extension[]
+  allowedToManage: boolean
   updatePreferences: (prefs: ProjectPreferences) => void
   mergeProject: (project: Partial<Project>) => void
 }
@@ -173,7 +174,17 @@ export const CurrentProjectProvider = ({ children, id }: CurrentProjectProviderP
   }, [project, isAuthenticated])
 
   return (
-    <CurrentProjectContext.Provider value={{ id, project, preferences, updatePreferences, extensions, mergeProject }}>
+    <CurrentProjectContext.Provider
+      value={{
+        id,
+        project,
+        preferences,
+        updatePreferences,
+        extensions,
+        mergeProject,
+        allowedToManage: project?.role === 'owner' || project?.role === 'admin',
+      }}
+    >
       {children}
     </CurrentProjectContext.Provider>
   )

@@ -2,20 +2,13 @@ import { useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import { Link } from 'react-router'
 
-import { ProjectForShared } from '~/lib/models/SharedProject'
-import { User } from '~/lib/models/User'
 import TrackingSnippet from '~/modals/TrackingSnippet'
 import PulsatingCircle from '~/ui/icons/PulsatingCircle'
 import routes from '~/utils/routes'
 
-interface WaitingForAnEventProps {
-  user?: User
-  project: ProjectForShared
-}
-
 const TROUBLESHOOTING_URL = 'https://docs.swetrix.com/troubleshooting'
 
-const WaitingForAnEvent = ({ project }: WaitingForAnEventProps) => {
+const WaitingForAnEvent = () => {
   const { t } = useTranslation('common')
   const [isModalOpened, setIsModalOpened] = useState(false)
 
@@ -63,7 +56,7 @@ const WaitingForAnEvent = ({ project }: WaitingForAnEventProps) => {
           </div>
         </main>
       </div>
-      <TrackingSnippet isOpened={isModalOpened} onClose={() => setIsModalOpened(false)} pid={project.id} />
+      <TrackingSnippet isOpened={isModalOpened} onClose={() => setIsModalOpened(false)} />
     </div>
   )
 }

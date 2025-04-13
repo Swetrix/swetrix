@@ -11,6 +11,7 @@ import { toast } from 'sonner'
 
 import { getFilters, createProjectView, updateProjectView } from '~/api'
 import { FILTERS_PANELS_ORDER } from '~/lib/constants'
+import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
 import Combobox from '~/ui/Combobox'
 import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
@@ -27,9 +28,7 @@ import {
 import { Filter } from './Filters'
 
 interface AddAViewModalProps {
-  projectPassword?: string
   onSubmit: () => void
-  pid: string
   showModal: boolean
   setShowModal: (show: boolean) => void
   tnMapping: Record<string, string>
@@ -196,15 +195,9 @@ interface AddAViewModalErrors {
 
 const MAX_METRICS_IN_VIEW = 3
 
-const AddAViewModal = ({
-  onSubmit,
-  pid,
-  showModal,
-  setShowModal,
-  tnMapping,
-  projectPassword,
-  defaultView,
-}: AddAViewModalProps) => {
+const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultView }: AddAViewModalProps) => {
+  const { id } = useCurrentProject()
+  const projectPassword = useProjectPassword(id)
   const {
     t,
     i18n: { language },
@@ -221,11 +214,11 @@ const AddAViewModal = ({
 
   const getFiltersList = useCallback(
     async (category: string) => {
-      const result = await getFilters(pid, category, projectPassword)
+      const result = await getFilters(id, category, projectPassword)
 
       setSearchList(result)
     },
-    [pid, projectPassword],
+    [id, projectPassword],
   )
 
   useEffect(() => {
@@ -336,10 +329,10 @@ const AddAViewModal = ({
     try {
       // updating an existing view
       if (defaultView?.id) {
-        await updateProjectView(pid, defaultView?.id, name, activeFilters, customEvents)
+        await updateProjectView(id, defaultView?.id, name, activeFilters, customEvents)
       } else {
         // crating a new one
-        await createProjectView(pid, name, 'traffic', activeFilters, customEvents)
+        await createProjectView(id, name, 'traffic', activeFilters, customEvents)
       }
     } catch (reason) {
       console.error('[ERROR] onViewCreate:', reason)

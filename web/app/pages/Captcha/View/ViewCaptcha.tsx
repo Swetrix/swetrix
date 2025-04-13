@@ -587,7 +587,6 @@ const ViewCaptcha = () => {
             periodPairs,
             timeFormat,
             size,
-            allowedToManage: project.role === 'admin' || project.role === 'owner',
             dataLoading,
             activeTab: 'traffic',
             filters,

@@ -219,7 +219,6 @@ interface ViewProjectContextType {
   periodPairs: TBPeriodPairsProps[]
   timeFormat: '12-hour' | '24-hour'
   size: ReturnType<typeof useSize>[1]
-  allowedToManage: boolean
   dataLoading: boolean
   activeTab: keyof typeof PROJECT_TABS
   filters: Filter[]
@@ -240,15 +239,14 @@ export const useViewProjectContext = () => {
   const context = useContext(ViewProjectContext)
 
   if (context === undefined) {
-    // throw new Error('useViewProjectContext must be used within a ViewProjectContextProvider')
-    return {}
+    throw new Error('useViewProjectContext must be used within a ViewProjectContextProvider')
   }
 
   return context
 }
 
 const ViewProject = () => {
-  const { id, project, preferences, updatePreferences, extensions, mergeProject } = useCurrentProject()
+  const { id, project, preferences, updatePreferences, extensions, mergeProject, allowedToManage } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
 
   const { embedded, tabs: projectQueryTabs } = useLoaderData<{
@@ -778,8 +776,6 @@ const ViewProject = () => {
     }),
     [t],
   )
-
-  const allowedToManage = project?.role === 'owner' || project?.role === 'admin'
 
   const dataNamesFunnel = useMemo(
     () => ({
@@ -2824,7 +2820,7 @@ const ViewProject = () => {
           <h2 className='mt-2 text-center font-mono text-xl font-bold break-words break-all text-gray-900 sm:text-left dark:text-gray-50'>
             {project.name}
           </h2>
-          <LockedDashboard project={project} />
+          <LockedDashboard />
         </div>
         {!embedded ? <Footer /> : null}
       </>
@@ -2845,7 +2841,7 @@ const ViewProject = () => {
           <h2 className='mt-2 text-center font-mono text-xl font-bold break-words break-all text-gray-900 sm:text-left dark:text-gray-50'>
             {project.name}
           </h2>
-          <WaitingForAnEvent project={project} />
+          <WaitingForAnEvent />
         </div>
         {!embedded ? <Footer /> : null}
       </>
@@ -2892,7 +2888,6 @@ const ViewProject = () => {
             periodPairs,
             timeFormat,
             size,
-            allowedToManage,
             dataLoading,
             activeTab,
             filters:
@@ -4347,7 +4342,6 @@ const ViewProject = () => {
 
                               return (
                                 <Panel
-                                  projectPassword={projectPassword}
                                   key={countryActiveTab}
                                   icon={panelIcon}
                                   id={countryActiveTab}
@@ -4365,7 +4359,6 @@ const ViewProject = () => {
                             if (type === 'dv') {
                               return (
                                 <Panel
-                                  projectPassword={projectPassword}
                                   key={type}
                                   icon={panelIcon}
                                   id={type}
@@ -4400,7 +4393,6 @@ const ViewProject = () => {
                             if (type === 'pg') {
                               return (
                                 <Panel
-                                  projectPassword={projectPassword}
                                   key={pageActiveTab}
                                   icon={panelIcon}
                                   id={pageActiveTab}
@@ -4498,12 +4490,8 @@ const ViewProject = () => {
             </div>
             <ViewProjectHotkeys isOpened={isHotkeysHelpOpened} onClose={() => setIsHotkeysHelpOpened(false)} />
             <NewFunnel
-              project={project}
-              projectPassword={projectPassword}
-              pid={id}
               funnel={funnelToEdit}
               isOpened={isNewFunnelOpened}
-              allowedToManage={allowedToManage}
               onClose={() => {
                 setIsNewFunnelOpened(false)
                 setFunnelToEdit(undefined)
@@ -4520,11 +4508,9 @@ const ViewProject = () => {
             />
             <SearchFilters
               type={activeTab === PROJECT_TABS.errors ? 'errors' : 'traffic'}
-              projectPassword={projectPassword}
               showModal={showFiltersSearch}
               setShowModal={setShowFiltersSearch}
               setProjectFilter={onFilterSearch}
-              pid={id}
               tnMapping={tnMapping}
               filters={
                 activeTab === PROJECT_TABS.performance
@@ -4537,7 +4523,6 @@ const ViewProject = () => {
               }
             />
             <AddAViewModal
-              projectPassword={projectPassword}
               showModal={isAddAViewOpened}
               setShowModal={(show) => {
                 setIsAddAViewOpened(show)
@@ -4549,7 +4534,6 @@ const ViewProject = () => {
                 setProjectViewToUpdate(undefined)
               }}
               defaultView={projectViewToUpdate}
-              pid={id}
               tnMapping={tnMapping}
             />
             {!embedded ? <Footer showDBIPMessage /> : null}
