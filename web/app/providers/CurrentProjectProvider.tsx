@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 import { checkPassword, getInstalledExtensions, getProject } from '~/api'
 import { isSelfhosted, LS_PROJECTS_PROTECTED_KEY } from '~/lib/constants'
 import { Extension, type Project } from '~/lib/models/Project'
-import { getItem, removeItem } from '~/utils/localstorage'
+import { getItemJSON, removeItem } from '~/utils/localstorage'
 import routes from '~/utils/routes'
 
 import { getProjectPreferences, setProjectPreferences } from '../pages/Project/View/utils/cache'
@@ -37,7 +37,7 @@ export const useProjectPassword = (id: string) => {
   const [searchParams] = useSearchParams()
 
   const projectPassword = useMemo(
-    () => searchParams.get('password') || (getItem(LS_PROJECTS_PROTECTED_KEY) as Record<string, string>)?.[id] || '',
+    () => searchParams.get('password') || getItemJSON(LS_PROJECTS_PROTECTED_KEY)?.[id] || '',
     [id, searchParams],
   )
 

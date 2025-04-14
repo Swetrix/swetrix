@@ -19,7 +19,7 @@ export const setItem = (key: string, value: string) => {
   localStorage.setItem(key, value)
 }
 
-export const getItem = (key: string): Record<string, any> | string | null => {
+export const getItem = (key: string): string | null => {
   if (currentLocalStorage[key]) {
     return currentLocalStorage[key]
   }
@@ -28,17 +28,21 @@ export const getItem = (key: string): Record<string, any> | string | null => {
     return null
   }
 
-  const storedValue: string | null = localStorage.getItem(key)
+  return localStorage.getItem(key)
+}
 
-  if (storedValue === null) {
-    return null
+export const getItemJSON = (key: string): Record<string, any> | null => {
+  const value = getItem(key)
+
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value)
+    } catch {
+      return null
+    }
   }
 
-  try {
-    return JSON.parse(storedValue)
-  } catch {
-    return storedValue
-  }
+  return value
 }
 
 export const removeItem = (key: string) => {

@@ -520,7 +520,7 @@ const ViewProject = () => {
       ),
     [preferences.customEvents, id, activeChartMetricsCustomEvents],
   )
-  const [chartType, setChartType] = useState((getItem('chartType') as string) || chartTypes.line)
+  const [chartType, setChartType] = useState(getItem('chartType') || chartTypes.line)
 
   const [periodPairsCompare, setPeriodPairsCompare] = useState<
     {
@@ -528,19 +528,7 @@ const ViewProject = () => {
       period: string
     }[]
   >(tbPeriodPairsCompare(t, undefined, language))
-  const [isActiveCompare, setIsActiveCompare] = useState(() => {
-    const activeCompare = getItem(LS_IS_ACTIVE_COMPARE_KEY)
-
-    if (typeof activeCompare === 'string') {
-      return activeCompare === 'true'
-    }
-
-    if (typeof activeCompare === 'boolean') {
-      return activeCompare
-    }
-
-    return false
-  })
+  const [isActiveCompare, setIsActiveCompare] = useState(getItem(LS_IS_ACTIVE_COMPARE_KEY) === 'true')
   const [activePeriodCompare, setActivePeriodCompare] = useState(periodPairsCompare[0].period)
   const activeDropdownLabelCompare = useMemo(
     () => _find(periodPairsCompare, (p) => p.period === activePeriodCompare)?.label,

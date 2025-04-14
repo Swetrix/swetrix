@@ -118,7 +118,7 @@ const ViewCaptcha = () => {
   const timeFormat = useMemo(() => user?.timeFormat || TimeFormat['12-hour'], [user])
   const [ref, size] = useSize() as any
   const rotateXAxias = useMemo(() => size.width > 0 && size.width < 500, [size])
-  const [chartType, setChartType] = useState<string>((getItem('chartType') as string) || chartTypes.line)
+  const [chartType, setChartType] = useState(getItem('chartType') || chartTypes.line)
   const [mainChart, setMainChart] = useState<any>(null)
 
   const { timezone = DEFAULT_TIMEZONE } = user || {}
