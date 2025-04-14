@@ -38,7 +38,6 @@ import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import { getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
 import routesPath from '~/utils/routes'
-import { isAuthenticated } from '~/utils/server'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 1,
@@ -49,8 +48,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (isSelfhosted || isDisableMarketingPages) {
     return redirect('/login', 302)
   }
-
-  const isAuth = isAuthenticated(request)
 
   const userAgent = request.headers.get('user-agent')
 
@@ -71,7 +68,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
   }
 
-  return { isAuth, deviceInfo }
+  return { deviceInfo }
 }
 
 const Problem = () => {
