@@ -1,45 +1,18 @@
 import type { LoaderFunction, MetaFunction } from 'react-router'
 import { redirect, data } from 'react-router'
 
-import { isSelfhosted, TITLE_SUFFIX, getOgImageUrl, isDisableMarketingPages } from '~/lib/constants'
+import { isSelfhosted, getOgImageUrl, isDisableMarketingPages } from '~/lib/constants'
 import Post from '~/pages/Blog/Post'
 import { getPost } from '~/utils/getPosts'
+import { getDescription, getPreviewImage, getTitle } from '~/utils/seo'
 
 export const meta: MetaFunction = (loaderData: any) => {
   const ogImageUrl = getOgImageUrl(loaderData?.data?.title)
 
   return [
-    {
-      title: `${loaderData?.data?.title || 'Blog'} ${TITLE_SUFFIX}`,
-    },
-    {
-      property: 'og:title',
-      content: `${loaderData?.data?.title || 'Blog'} ${TITLE_SUFFIX}`,
-    },
-    {
-      property: 'twitter:title',
-      content: `${loaderData?.data?.title || 'Blog'} ${TITLE_SUFFIX}`,
-    },
-    {
-      property: 'og:description',
-      content: loaderData?.data?.intro || '',
-    },
-    {
-      property: 'twitter:description',
-      content: loaderData?.data?.intro || '',
-    },
-    {
-      property: 'description',
-      content: loaderData?.data?.intro || '',
-    },
-    {
-      property: 'og:image',
-      content: ogImageUrl,
-    },
-    {
-      property: 'twitter:image',
-      content: ogImageUrl,
-    },
+    ...getTitle(loaderData?.data?.title || 'Blog'),
+    ...getDescription(loaderData?.data?.intro || ''),
+    ...getPreviewImage(ogImageUrl),
   ]
 }
 

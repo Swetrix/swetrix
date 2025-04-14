@@ -5,7 +5,8 @@ import type { LoaderFunction, MetaFunction } from 'react-router'
 import { redirect, Link, useLoaderData } from 'react-router'
 
 import { getBlogPosts } from '~/api'
-import { isDisableMarketingPages, isSelfhosted, TITLE_SUFFIX } from '~/lib/constants'
+import { isDisableMarketingPages, isSelfhosted } from '~/lib/constants'
+import { getTitle } from '~/utils/seo'
 
 export const loader: LoaderFunction = async () => {
   if (isSelfhosted || isDisableMarketingPages) {
@@ -28,19 +29,7 @@ export const loader: LoaderFunction = async () => {
 }
 
 export const meta: MetaFunction = () => {
-  return [
-    {
-      title: `Blog ${TITLE_SUFFIX}`,
-    },
-    {
-      property: 'og:title',
-      content: `Blog ${TITLE_SUFFIX}`,
-    },
-    {
-      property: 'twitter:title',
-      content: `Blog ${TITLE_SUFFIX}`,
-    },
-  ]
+  return [...getTitle('Blog')]
 }
 
 export default function Posts() {
