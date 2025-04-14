@@ -2,7 +2,7 @@ import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _replace from 'lodash/replace'
 import _size from 'lodash/size'
-import React, { useState, useEffect, memo } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 
@@ -22,11 +22,7 @@ interface ProjectProtectedPasswordForm {
 
 const MAX_PASSWORD_LENGTH = 80
 
-interface ProjectProtectedPasswordProps {
-  embedded: boolean
-}
-
-const ProjectProtectedPassword = ({ embedded }: ProjectProtectedPasswordProps) => {
+const ProjectProtectedPassword = () => {
   const { t } = useTranslation('common')
   const [form, setForm] = useState<ProjectProtectedPasswordForm>({
     password: '',
@@ -40,6 +36,8 @@ const ProjectProtectedPassword = ({ embedded }: ProjectProtectedPasswordProps) =
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+
+  const isEmbedded = searchParams.get('embedded') === 'true'
 
   const validate = () => {
     const allErrors = {} as {
@@ -124,7 +122,7 @@ const ProjectProtectedPassword = ({ embedded }: ProjectProtectedPasswordProps) =
 
   return (
     <>
-      {!embedded ? <Header /> : null}
+      {!isEmbedded ? <Header /> : null}
       <div className='min-h-page flex flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
         <form className='mx-auto w-full max-w-7xl' onSubmit={handleSubmit}>
           <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{t('titles.passwordProtected')}</h2>
@@ -155,9 +153,9 @@ const ProjectProtectedPassword = ({ embedded }: ProjectProtectedPasswordProps) =
           </div>
         </form>
       </div>
-      {!embedded ? <Footer /> : null}
+      {!isEmbedded ? <Footer /> : null}
     </>
   )
 }
 
-export default memo(ProjectProtectedPassword)
+export default ProjectProtectedPassword

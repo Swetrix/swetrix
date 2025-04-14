@@ -249,8 +249,7 @@ const ViewProject = () => {
   const { id, project, preferences, updatePreferences, extensions, mergeProject, allowedToManage } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
 
-  const { embedded, tabs: projectQueryTabs } = useLoaderData<{
-    embedded: boolean
+  const { tabs: projectQueryTabs } = useLoaderData<{
     tabs: string[]
   }>()
 
@@ -278,6 +277,8 @@ const ViewProject = () => {
   const navigate = useNavigate()
 
   const [searchParams, setSearchParams] = useSearchParams()
+
+  const isEmbedded = searchParams.get('embedded') === 'true'
 
   const [liveVisitors, setLiveVisitors] = useState(0)
 
@@ -2780,16 +2781,16 @@ const ViewProject = () => {
   if (authLoading || !project) {
     return (
       <>
-        {!embedded ? <Header /> : null}
+        {!isEmbedded ? <Header /> : null}
         <div
           className={cx('min-h-min-footer bg-gray-50 dark:bg-slate-900', {
-            'min-h-min-footer': !embedded,
-            'min-h-[100vh]': embedded,
+            'min-h-min-footer': !isEmbedded,
+            'min-h-[100vh]': isEmbedded,
           })}
         >
           <Loader />
         </div>
-        {!embedded ? <Footer /> : null}
+        {!isEmbedded ? <Footer /> : null}
       </>
     )
   }
@@ -2797,11 +2798,11 @@ const ViewProject = () => {
   if (project.isLocked) {
     return (
       <>
-        {!embedded ? <Header /> : null}
+        {!isEmbedded ? <Header /> : null}
         <div
           className={cx('mx-auto w-full max-w-[1584px] bg-gray-50 px-2 py-6 sm:px-4 lg:px-8 dark:bg-slate-900', {
-            'min-h-min-footer': !embedded,
-            'min-h-[100vh]': embedded,
+            'min-h-min-footer': !isEmbedded,
+            'min-h-[100vh]': isEmbedded,
           })}
         >
           <TabsSelector />
@@ -2810,7 +2811,7 @@ const ViewProject = () => {
           </h2>
           <LockedDashboard />
         </div>
-        {!embedded ? <Footer /> : null}
+        {!isEmbedded ? <Footer /> : null}
       </>
     )
   }
@@ -2818,11 +2819,11 @@ const ViewProject = () => {
   if (!project.isDataExists && activeTab !== PROJECT_TABS.errors && !analyticsLoading) {
     return (
       <>
-        {!embedded ? <Header /> : null}
+        {!isEmbedded ? <Header /> : null}
         <div
           className={cx('mx-auto w-full max-w-[1584px] bg-gray-50 px-2 py-6 sm:px-4 lg:px-8 dark:bg-slate-900', {
-            'min-h-min-footer': !embedded,
-            'min-h-[100vh]': embedded,
+            'min-h-min-footer': !isEmbedded,
+            'min-h-[100vh]': isEmbedded,
           })}
         >
           <TabsSelector />
@@ -2831,7 +2832,7 @@ const ViewProject = () => {
           </h2>
           <WaitingForAnEvent />
         </div>
-        {!embedded ? <Footer /> : null}
+        {!isEmbedded ? <Footer /> : null}
       </>
     )
   }
@@ -2843,11 +2844,11 @@ const ViewProject = () => {
   ) {
     return (
       <>
-        {!embedded ? <Header /> : null}
+        {!isEmbedded ? <Header /> : null}
         <div
           className={cx('mx-auto w-full max-w-[1584px] bg-gray-50 px-2 py-6 sm:px-4 lg:px-8 dark:bg-slate-900', {
-            'min-h-min-footer': !embedded,
-            'min-h-[100vh]': embedded,
+            'min-h-min-footer': !isEmbedded,
+            'min-h-[100vh]': isEmbedded,
           })}
         >
           <TabsSelector />
@@ -2856,7 +2857,7 @@ const ViewProject = () => {
           </h2>
           <WaitingForAnError />
         </div>
-        {!embedded ? <Footer /> : null}
+        {!isEmbedded ? <Footer /> : null}
       </>
     )
   }
@@ -2902,18 +2903,18 @@ const ViewProject = () => {
           }}
         >
           <>
-            {!embedded ? <Header /> : null}
+            {!isEmbedded ? <Header /> : null}
             <EventsRunningOutBanner />
             <div
               ref={ref}
               className={cx('bg-gray-50 dark:bg-slate-900', {
-                'min-h-[100vh]': analyticsLoading && embedded,
+                'min-h-[100vh]': analyticsLoading && isEmbedded,
               })}
             >
               <div
                 className={cx('mx-auto w-full max-w-[1584px] px-2 py-6 sm:px-4 lg:px-8', {
-                  'min-h-min-footer': !embedded,
-                  'min-h-[100vh]': embedded,
+                  'min-h-min-footer': !isEmbedded,
+                  'min-h-[100vh]': isEmbedded,
                 })}
                 ref={dashboardRef}
               >
@@ -4524,7 +4525,7 @@ const ViewProject = () => {
               defaultView={projectViewToUpdate}
               tnMapping={tnMapping}
             />
-            {!embedded ? <Footer showDBIPMessage /> : null}
+            {!isEmbedded ? <Footer showDBIPMessage /> : null}
           </>
         </ViewProjectContext.Provider>
       )}

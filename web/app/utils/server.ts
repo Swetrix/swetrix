@@ -37,10 +37,6 @@ export function detectTheme(request: Request): ThemeType {
   return 'light'
 }
 
-export function isEmbedded(request: Request): boolean {
-  return new URL(request.url).searchParams.get('embedded') === 'true'
-}
-
 export function getProjectTabs(request: Request): string[] {
   const tabs = new URL(request.url).searchParams.get('tabs')
 
