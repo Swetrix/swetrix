@@ -136,9 +136,9 @@ const ProjectProtectedPassword = () => {
             onChange={handleInput}
             error={beenSubmitted ? errors.password : null}
           />
-          <div className='mt-5'>
+          <div className='mt-5 flex gap-2'>
             <Button
-              className='mr-2 border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
+              className='border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
               as={Link}
               // @ts-expect-error
               to={routes.main}
