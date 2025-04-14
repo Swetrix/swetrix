@@ -48,7 +48,7 @@ const ErrorTracking = () => {
         {/* first block with live demo */}
         <div className='relative isolate overflow-x-clip'>
           <svg
-            className='absolute inset-0 -z-10 h-full w-full stroke-gray-200 [mask-image:radial-gradient(100%_100%_at_top_right,white,transparent)] dark:stroke-white/10'
+            className='absolute inset-0 -z-10 h-full w-full [mask-image:radial-gradient(100%_100%_at_top_right,white,transparent)] stroke-gray-200 dark:stroke-white/10'
             aria-hidden='true'
           >
             <defs>
