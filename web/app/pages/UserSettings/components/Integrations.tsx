@@ -4,13 +4,11 @@ import _isString from 'lodash/isString'
 import _map from 'lodash/map'
 import React, { useState, memo } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
 
 import { removeTgIntegration } from '~/api'
 import { User } from '~/lib/models/User'
-import { authActions } from '~/lib/reducers/auth'
-import { StateType, useAppDispatch } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import Button from '~/ui/Button'
 import Discord from '~/ui/icons/Discord'
 import Slack from '~/ui/icons/Slack'
@@ -56,8 +54,7 @@ interface IntegrationsProps {
 }
 
 const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
-  const dispatch = useAppDispatch()
-  const { user } = useSelector((state: StateType) => state.auth)
+  const { user, mergeUser } = useAuth()
 
   const { t } = useTranslation('common')
   const available = getAvailableIntegrations(t)
@@ -126,6 +123,10 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
   }
 
   const getIntegrationStatus = (key: string) => {
+    if (!user) {
+      return {}
+    }
+
     if (key === 'telegram') {
       return {
         connected: user.telegramChatId,
@@ -154,7 +155,7 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
   }
 
   const removeIntegration = async (key: string) => {
-    if (isRemovalLoading) {
+    if (isRemovalLoading || !user) {
       return
     }
 
@@ -167,12 +168,10 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
         } else {
           throw new Error('No chat ID')
         }
-        dispatch(
-          authActions.mergeUser({
-            isTelegramChatIdConfirmed: false,
-            telegramChatId: null,
-          }),
-        )
+        mergeUser({
+          isTelegramChatIdConfirmed: false,
+          telegramChatId: null,
+        })
       } catch (reason) {
         if (_isString(reason)) {
           toast.error(reason)
@@ -195,11 +194,9 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
             toast.error(t('apiNotifications.integrationRemovalError'))
           }
 
-          dispatch(
-            authActions.mergeUser({
-              slackWebhookUrl: null,
-            }),
-          )
+          mergeUser({
+            slackWebhookUrl: null,
+          })
           setIsRemovalLoading(false)
         },
       )
@@ -215,11 +212,9 @@ const Integrations = ({ handleIntegrationSave }: IntegrationsProps) => {
             toast.error(t('apiNotifications.integrationRemovalError'))
           }
 
-          dispatch(
-            authActions.mergeUser({
-              discordWebhookUrl: null,
-            }),
-          )
+          mergeUser({
+            discordWebhookUrl: null,
+          })
           setIsRemovalLoading(false)
         },
       )

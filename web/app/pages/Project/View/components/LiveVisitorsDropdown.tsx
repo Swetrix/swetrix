@@ -10,7 +10,7 @@ import { PROJECT_TABS } from '~/lib/constants'
 import Flag from '~/ui/Flag'
 import PulsatingCircle from '~/ui/icons/PulsatingCircle'
 
-import { useViewProjectContext } from '../ViewProject'
+import { useCurrentProject, useProjectPassword } from '../../../../providers/CurrentProjectProvider'
 
 interface LiveVisitorsDropdownProps {
   live: number | string
@@ -18,7 +18,8 @@ interface LiveVisitorsDropdownProps {
 }
 
 const LiveVisitorsDropdown = ({ live, onSessionSelect }: LiveVisitorsDropdownProps) => {
-  const { projectId, projectPassword } = useViewProjectContext()
+  const { id } = useCurrentProject()
+  const projectPassword = useProjectPassword(id)
   const { t } = useTranslation()
   const [show, setShow] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -26,7 +27,7 @@ const LiveVisitorsDropdown = ({ live, onSessionSelect }: LiveVisitorsDropdownPro
 
   const getLiveVisitors = async () => {
     try {
-      const info = await getLiveVisitorsInfo(projectId, projectPassword)
+      const info = await getLiveVisitorsInfo(id, projectPassword)
       setLiveInfo(info)
     } catch (reason) {
       console.error('[LiveVisitorsDropdown] getLiveVisitors:', reason)

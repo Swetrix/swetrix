@@ -4,13 +4,11 @@ import _filter from 'lodash/filter'
 import _map from 'lodash/map'
 import { memo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
 
 import { rejectOrganisationInvitation, acceptOrganisationInvitation } from '~/api'
 import { OrganisationMembership } from '~/lib/models/Organisation'
-import { authActions } from '~/lib/reducers/auth'
-import { StateType, useAppDispatch } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import Button from '~/ui/Button'
 import Modal from '~/ui/Modal'
 
@@ -19,8 +17,7 @@ interface OrganisationsProps {
 }
 
 const Organisations = ({ membership }: OrganisationsProps) => {
-  const { user } = useSelector((state: StateType) => state.auth)
-  const dispatch = useAppDispatch()
+  const { user, mergeUser } = useAuth()
   const {
     t,
     i18n: { language },
@@ -33,14 +30,12 @@ const Organisations = ({ membership }: OrganisationsProps) => {
     try {
       await rejectOrganisationInvitation(membership.id)
 
-      dispatch(
-        authActions.mergeUser({
-          organisationMemberships: _filter(
-            user.organisationMemberships,
-            (userMembership) => userMembership.id !== membership.id,
-          ),
-        }),
-      )
+      mergeUser({
+        organisationMemberships: _filter(
+          user?.organisationMemberships,
+          (userMembership) => userMembership.id !== membership.id,
+        ),
+      })
 
       toast.success(t('apiNotifications.quitOrganisation'))
     } catch (reason) {
@@ -53,16 +48,14 @@ const Organisations = ({ membership }: OrganisationsProps) => {
     try {
       await acceptOrganisationInvitation(membership.id)
 
-      dispatch(
-        authActions.mergeUser({
-          organisationMemberships: _map(user.organisationMemberships, (item) => {
-            if (item.id === membership.id) {
-              return { ...item, confirmed: true }
-            }
-            return item
-          }),
+      mergeUser({
+        organisationMemberships: _map(user?.organisationMemberships, (item) => {
+          if (item.id === membership.id) {
+            return { ...item, confirmed: true }
+          }
+          return item
         }),
-      )
+      })
 
       toast.success(t('apiNotifications.acceptInvitation'))
     } catch (reason) {

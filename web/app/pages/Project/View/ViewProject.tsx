@@ -50,27 +50,23 @@ import React, {
 } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
-import { useNavigate, Link, useSearchParams, useLoaderData } from 'react-router'
+import { useNavigate, Link, useSearchParams } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 
 import {
   getProjectData,
-  getProject,
   getOverallStats,
   getLiveVisitors,
   getPerfData,
   getProjectDataCustomEvents,
   getTrafficCompareData,
   getPerformanceCompareData,
-  checkPassword,
   getCustomEventsMetadata,
   addFunnel,
   updateFunnel,
   deleteFunnel,
   getFunnelData,
-  getFunnels,
   getPerformanceOverallStats,
   getSessions,
   getSession,
@@ -80,11 +76,11 @@ import {
   getPropertyMetadata,
   getProjectViews,
   deleteProjectView,
+  getFunnels,
 } from '~/api'
 import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import Footer from '~/components/Footer'
 import Header from '~/components/Header'
-import { useRequiredParams } from '~/hooks/useRequiredParams'
 import useSize from '~/hooks/useSize'
 import {
   tbPeriodPairs,
@@ -103,9 +99,7 @@ import {
   tbPeriodPairsCompare,
   PERIOD_PAIRS_COMPARE,
   FILTERS_PERIOD_PAIRS,
-  LS_IS_ACTIVE_COMPARE,
-  LS_PROJECTS_PROTECTED,
-  isBrowser,
+  LS_IS_ACTIVE_COMPARE_KEY,
   TITLE_SUFFIX,
   KEY_FOR_ALL_TIME,
   MARKETPLACE_URL,
@@ -116,14 +110,13 @@ import {
   ERROR_PANELS_ORDER,
   ERROR_PERIOD_PAIRS,
   FUNNELS_PERIOD_PAIRS,
-  ThemeType,
 } from '~/lib/constants'
 import { CountryEntry } from '~/lib/models/Entry'
-import { Project, Funnel, AnalyticsFunnel, OverallObject, OverallPerformanceObject } from '~/lib/models/Project'
-import UIActions from '~/lib/reducers/ui'
-import { StateType, useAppDispatch } from '~/lib/store'
+import { Funnel, AnalyticsFunnel, OverallObject, OverallPerformanceObject } from '~/lib/models/Project'
 import NewFunnel from '~/modals/NewFunnel'
 import ViewProjectHotkeys from '~/modals/ViewProjectHotkeys'
+import { useAuth } from '~/providers/AuthProvider'
+import { useTheme } from '~/providers/ThemeProvider'
 import Checkbox from '~/ui/Checkbox'
 import Dropdown from '~/ui/Dropdown'
 import FlatPicker from '~/ui/Flatpicker'
@@ -134,9 +127,10 @@ import Select from '~/ui/Select'
 import { trackCustom } from '~/utils/analytics'
 import { periodToCompareDate } from '~/utils/compareConvertDate'
 import { getTimeFromSeconds, getStringFromTime, getLocaleDisplayName, nLocaleFormatter } from '~/utils/generic'
-import { getItem, setItem, removeItem } from '~/utils/localstorage'
+import { getItem, setItem } from '~/utils/localstorage'
 import routes from '~/utils/routes'
 
+import { useCurrentProject, useProjectPassword } from '../../../providers/CurrentProjectProvider'
 import ProjectAlertsView from '../Alerts/View'
 
 import AddAViewModal from './components/AddAViewModal'
@@ -216,8 +210,6 @@ const ERRORS_TAKE = 30
 
 interface ViewProjectContextType {
   // States
-  projectId: string
-  projectPassword: string
   timezone: string
   dateRange: Date[] | null
   isLoading: boolean
@@ -227,7 +219,6 @@ interface ViewProjectContextType {
   periodPairs: TBPeriodPairsProps[]
   timeFormat: '12-hour' | '24-hour'
   size: ReturnType<typeof useSize>[1]
-  allowedToManage: boolean
   dataLoading: boolean
   activeTab: keyof typeof PROJECT_TABS
   filters: Filter[]
@@ -255,39 +246,19 @@ export const useViewProjectContext = () => {
 }
 
 const ViewProject = () => {
-  const dispatch = useAppDispatch()
+  const { id, project, preferences, updatePreferences, extensions, mergeProject, allowedToManage } = useCurrentProject()
+  const projectPassword = useProjectPassword(id)
 
-  const {
-    theme: ssrTheme,
-    embedded,
-    isAuth: ssrAuthenticated,
-    queryPassword,
-    tabs: projectQueryTabs,
-  } = useLoaderData<{
-    theme: ThemeType
-    embedded: boolean
-    isAuth: boolean
-    queryPassword: string | null
-    tabs: string[]
-  }>()
+  const { theme } = useTheme()
 
-  const { projectViewPrefs, customEventsPrefs } = useSelector((state: StateType) => state.ui.cache)
+  const { isAuthenticated, user, isLoading: authLoading } = useAuth()
 
-  const { loading: authLoading, authenticated: csrAuthenticated, user } = useSelector((state: StateType) => state.auth)
-
-  const { theme } = useSelector((state: StateType) => state.ui.theme)
-
-  const { extensions, projectPasswords } = useSelector((state: StateType) => state.ui.misc)
-
-  const authenticated = isBrowser ? (authLoading ? ssrAuthenticated : csrAuthenticated) : ssrAuthenticated
   const { timezone = DEFAULT_TIMEZONE } = user || {}
 
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
-
-  const _theme = isBrowser ? theme : ssrTheme
 
   const [periodPairs, setPeriodPairs] = useState<TBPeriodPairsProps[]>(tbPeriodPairs(t, undefined, undefined, language))
 
@@ -299,18 +270,14 @@ const ViewProject = () => {
 
   const dashboardRef = useRef<HTMLDivElement>(null)
 
-  const { id } = useRequiredParams<{ id: string }>()
   const navigate = useNavigate()
 
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const [project, setProject] = useState<Project | null>(null)
-  const [liveVisitors, setLiveVisitors] = useState<number>(0)
+  const isEmbedded = searchParams.get('embedded') === 'true'
+  const projectQueryTabs = searchParams.get('tabs') ? searchParams.get('tabs')?.split(',') : []
 
-  const projectPassword = useMemo(
-    () => projectPasswords[id] || queryPassword || (getItem(LS_PROJECTS_PROTECTED)?.[id] as string) || '',
-    [id, projectPasswords, queryPassword],
-  )
+  const [liveVisitors, setLiveVisitors] = useState(0)
 
   const [areFiltersParsed, setAreFiltersParsed] = useState(false)
 
@@ -328,17 +295,13 @@ const ViewProject = () => {
   const [isNewFunnelOpened, setIsNewFunnelOpened] = useState(false)
   const [isAddAViewOpened, setIsAddAViewOpened] = useState(false)
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
-  const [period, setPeriod] = useState(
-    projectViewPrefs ? projectViewPrefs[id]?.period || periodPairs[4].period : periodPairs[4].period,
-  )
-  const [timeBucket, setTimebucket] = useState(
-    projectViewPrefs ? projectViewPrefs[id]?.timeBucket || periodPairs[4].tbs[1] : periodPairs[4].tbs[1],
-  )
+  const [period, setPeriod] = useState(preferences.period || periodPairs[4].period)
+  const [timeBucket, setTimebucket] = useState(preferences.timeBucket || periodPairs[4].tbs[1])
   const activePeriod = useMemo(() => _find(periodPairs, (p) => p.period === period), [period, periodPairs])
   const [chartData, setChartData] = useState<any>({})
   const [mainChart, setMainChart] = useState<any>(null)
   const [dataLoading, setDataLoading] = useState(false)
-  const [activeChartMetrics, setActiveChartMetrics] = useState<Record<string, boolean>>({
+  const [activeChartMetrics, setActiveChartMetrics] = useState<Record<keyof typeof CHART_METRICS_MAPPING, boolean>>({
     [CHART_METRICS_MAPPING.unique]: true,
     [CHART_METRICS_MAPPING.views]: false,
     [CHART_METRICS_MAPPING.sessionDuration]: false,
@@ -346,6 +309,8 @@ const ViewProject = () => {
     [CHART_METRICS_MAPPING.viewsPerUnique]: false,
     [CHART_METRICS_MAPPING.trendlines]: false,
     [CHART_METRICS_MAPPING.cumulativeMode]: false,
+    [CHART_METRICS_MAPPING.customEvents]: false,
+    ...(preferences.metricsVisualisation || {}),
   })
   const [errorOptions, setErrorOptions] = useState<Record<string, boolean>>({
     [ERROR_FILTERS_MAPPING.showResolved]: false,
@@ -368,9 +333,8 @@ const ViewProject = () => {
   const tnMapping = typeNameMapping(t)
   const refCalendar = useRef(null)
   const refCalendarCompare = useRef(null)
-  const localStorageDateRange = projectViewPrefs ? projectViewPrefs[id]?.rangeDate : null
   const [dateRange, setDateRange] = useState<null | Date[]>(
-    localStorageDateRange ? [new Date(localStorageDateRange[0]), new Date(localStorageDateRange[1])] : null,
+    preferences.rangeDate ? [new Date(preferences.rangeDate[0]), new Date(preferences.rangeDate[1])] : null,
   )
   const [activeTab, setActiveTab] = useState(() => {
     const tab = searchParams.get('tab') as keyof typeof PROJECT_TABS
@@ -470,7 +434,7 @@ const ViewProject = () => {
 
     try {
       const funnels = await getFunnels(id, projectPassword)
-      setProject((prev) => (prev ? { ...prev, funnels } : null))
+      mergeProject({ funnels })
     } catch (reason: any) {
       console.error('[ERROR] (onFunnelCreate)(getFunnels)', reason)
     }
@@ -495,7 +459,7 @@ const ViewProject = () => {
 
     try {
       const funnels = await getFunnels(id, projectPassword)
-      setProject((prev) => (prev ? { ...prev, funnels } : null))
+      mergeProject({ funnels })
     } catch (reason: any) {
       console.error('[ERROR] (onFunnelCreate)(getFunnels)', reason)
     }
@@ -520,7 +484,7 @@ const ViewProject = () => {
 
     try {
       const funnels = await getFunnels(id, projectPassword)
-      setProject((prev) => (prev ? { ...prev, funnels } : null))
+      mergeProject({ funnels })
     } catch (reason: any) {
       console.error('[ERROR] (onFunnelCreate)(getFunnels)', reason)
     }
@@ -544,17 +508,17 @@ const ViewProject = () => {
   const [isPanelsDataEmptyPerf, setIsPanelsDataEmptyPerf] = useState(false)
   const [panelsDataPerf, setPanelsDataPerf] = useState<any>({})
 
-  const timeFormat = useMemo<'12-hour' | '24-hour'>(() => user.timeFormat || TimeFormat['12-hour'], [user])
+  const timeFormat = useMemo<'12-hour' | '24-hour'>(() => user?.timeFormat || TimeFormat['12-hour'], [user])
   const [ref, size] = useSize()
   const rotateXAxis = useMemo(() => size.width > 0 && size.width < 500, [size])
   const customEventsChartData = useMemo(
     () =>
-      _pickBy(customEventsPrefs[id], (value, keyCustomEvents) =>
+      _pickBy(preferences.customEvents, (value, keyCustomEvents) =>
         _includes(activeChartMetricsCustomEvents, keyCustomEvents),
       ),
-    [customEventsPrefs, id, activeChartMetricsCustomEvents],
+    [preferences.customEvents, id, activeChartMetricsCustomEvents],
   )
-  const [chartType, setChartType] = useState((getItem('chartType') as string) || chartTypes.line)
+  const [chartType, setChartType] = useState(getItem('chartType') || chartTypes.line)
 
   const [periodPairsCompare, setPeriodPairsCompare] = useState<
     {
@@ -562,19 +526,7 @@ const ViewProject = () => {
       period: string
     }[]
   >(tbPeriodPairsCompare(t, undefined, language))
-  const [isActiveCompare, setIsActiveCompare] = useState(() => {
-    const activeCompare = getItem(LS_IS_ACTIVE_COMPARE)
-
-    if (typeof activeCompare === 'string') {
-      return activeCompare === 'true'
-    }
-
-    if (typeof activeCompare === 'boolean') {
-      return activeCompare
-    }
-
-    return false
-  })
+  const [isActiveCompare, setIsActiveCompare] = useState(getItem(LS_IS_ACTIVE_COMPARE_KEY) === 'true')
   const [activePeriodCompare, setActivePeriodCompare] = useState(periodPairsCompare[0].period)
   const activeDropdownLabelCompare = useMemo(
     () => _find(periodPairsCompare, (p) => p.period === activePeriodCompare)?.label,
@@ -811,8 +763,6 @@ const ViewProject = () => {
     [t],
   )
 
-  const allowedToManage = project?.role === 'owner' || project?.role === 'admin'
-
   const dataNamesFunnel = useMemo(
     () => ({
       dropoff: t('project.dropoff'),
@@ -888,7 +838,7 @@ const ViewProject = () => {
 
   const activeTabLabel = useMemo(() => _find(tabs, (tab) => tab.id === activeTab)?.label, [tabs, activeTab])
 
-  const switchTrafficChartMetric = (pairID: string, conflicts?: string[]) => {
+  const switchTrafficChartMetric = (pairID: keyof typeof CHART_METRICS_MAPPING, conflicts?: string[]) => {
     if (isConflicted(conflicts)) {
       toast.error(t('project.conflictMetric'))
       return
@@ -898,7 +848,13 @@ const ViewProject = () => {
       return
     }
 
-    setActiveChartMetrics((prev) => ({ ...prev, [pairID]: !prev[pairID] }))
+    setActiveChartMetrics((prev) => {
+      const newActiveChartMetrics = { ...prev, [pairID]: !prev[pairID] }
+      updatePreferences({
+        metricsVisualisation: newActiveChartMetrics,
+      })
+      return newActiveChartMetrics
+    })
   }
 
   const switchCustomEventChart = (id: string) => {
@@ -983,31 +939,6 @@ const ViewProject = () => {
     setErrorStatusUpdating(false)
   }
 
-  const onErrorLoading = () => {
-    if (projectPassword) {
-      checkPassword(id, projectPassword).then((res) => {
-        if (res) {
-          navigate({
-            pathname: _replace(routes.project, ':id', id),
-            search: `?theme=${ssrTheme}&embedded=${embedded}`,
-          })
-          return
-        }
-
-        toast.error(t('apiNotifications.incorrectPassword'))
-        navigate({
-          pathname: _replace(routes.project_protected_password, ':id', id),
-          search: `?theme=${ssrTheme}&embedded=${embedded}`,
-        })
-        removeItem(LS_PROJECTS_PROTECTED)
-      })
-      return
-    }
-
-    toast.error(t('project.noExist'))
-    navigate(routes.dashboard)
-  }
-
   const loadCustomEvents = async () => {
     if (_isEmpty(panelsData.customs)) {
       return
@@ -1059,12 +990,9 @@ const ViewProject = () => {
 
       const events = data?.chart ? data.chart.events : customEventsChartData
 
-      dispatch(
-        UIActions.setCustomEventsPrefs({
-          pid: id,
-          data: events,
-        }),
-      )
+      updatePreferences({
+        customEvents: events,
+      })
 
       const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
       const bbSettings = getSettings(
@@ -1243,12 +1171,9 @@ const ViewProject = () => {
 
       customEventsChart = customEventsChart?.chart ? customEventsChart.chart.events : customEventsChartData
 
-      dispatch(
-        UIActions.setCustomEventsPrefs({
-          pid: id,
-          data: customEventsChart,
-        }),
-      )
+      updatePreferences({
+        customEvents: customEventsChart,
+      })
 
       data.overall = rawOverall[id]
       setOverall(rawOverall[id])
@@ -2073,15 +1998,13 @@ const ViewProject = () => {
 
     const parsePeriodFilters = () => {
       try {
-        const intialPeriod = projectViewPrefs
-          ? searchParams.get('period') || projectViewPrefs[id]?.period
-          : searchParams.get('period') || '7d'
+        const initialPeriod = searchParams.get('period') || preferences.period || '7d'
 
-        if (!_includes(validPeriods, intialPeriod)) {
+        if (!_includes(validPeriods, initialPeriod)) {
           return
         }
 
-        if (intialPeriod === 'custom') {
+        if (initialPeriod === 'custom') {
           // @ts-expect-error
           const from = new Date(searchParams.get('from'))
           // @ts-expect-error
@@ -2096,7 +2019,7 @@ const ViewProject = () => {
         setPeriodPairs(tbPeriodPairs(t, undefined, undefined, language))
         setDateRange(null)
         updatePeriod({
-          period: intialPeriod,
+          period: initialPeriod,
         })
       } catch {
         //
@@ -2477,14 +2400,11 @@ const ViewProject = () => {
         setPeriodPairs(tbPeriodPairs(t, timeBucketToDays[index].tb, dates, language))
         setPeriod('custom')
 
-        dispatch(
-          UIActions.setProjectViewPrefs({
-            pid: id,
-            period: 'custom',
-            timeBucket: timeBucketToDays[index].tb[0],
-            rangeDate: dates,
-          }),
-        )
+        updatePreferences({
+          period: 'custom',
+          timeBucket: timeBucketToDays[index].tb[0],
+          rangeDate: dates,
+        })
 
         setCanLoadMoreSessions(false)
         resetSessions()
@@ -2534,33 +2454,6 @@ const ViewProject = () => {
     return () => clearInterval(interval)
   }, [project, projectPassword])
 
-  useEffect(() => {
-    if (authLoading || !_isEmpty(project)) {
-      return
-    }
-
-    getProject(id, projectPassword)
-      .then((result) => {
-        if (_isEmpty(result)) {
-          onErrorLoading()
-        }
-
-        if (result.isPasswordProtected && !result.role && _isEmpty(projectPassword)) {
-          navigate({
-            pathname: _replace(routes.project_protected_password, ':id', id),
-            search: `?theme=${ssrTheme}&embedded=${embedded}`,
-          })
-          return
-        }
-
-        setProject(result)
-      })
-      .catch((reason) => {
-        console.error('[ERROR] (getProject)', reason)
-        onErrorLoading()
-      })
-  }, [authLoading, project, id])
-
   const updatePeriod = (newPeriod: { period: string; label?: string }) => {
     if (period === newPeriod.period) {
       return
@@ -2580,13 +2473,11 @@ const ViewProject = () => {
       searchParams.delete('from')
       searchParams.delete('to')
       searchParams.set('period', newPeriod.period)
-      dispatch(
-        UIActions.setProjectViewPrefs({
-          pid: id,
-          period: newPeriod.period,
-          timeBucket: tb,
-        }),
-      )
+      updatePreferences({
+        period: newPeriod.period,
+        timeBucket: tb,
+        rangeDate: undefined,
+      })
       setPeriod(newPeriod.period)
 
       setCanLoadMoreSessions(false)
@@ -2612,14 +2503,9 @@ const ViewProject = () => {
     searchParams.set('timeBucket', newTimebucket)
     setSearchParams(searchParams)
     setTimebucket(newTimebucket)
-    dispatch(
-      UIActions.setProjectViewPrefs({
-        pid: id,
-        period,
-        timeBucket: newTimebucket,
-        rangeDate: dateRange as Date[],
-      }),
-    )
+    updatePreferences({
+      timeBucket: newTimebucket,
+    })
     sdkInstance?._emitEvent('timeupdate', {
       period,
       timeBucket: newTimebucket,
@@ -2892,16 +2778,16 @@ const ViewProject = () => {
   if (authLoading || !project) {
     return (
       <>
-        {!embedded ? <Header ssrTheme={ssrTheme} authenticated={authenticated} /> : null}
+        {!isEmbedded ? <Header /> : null}
         <div
           className={cx('min-h-min-footer bg-gray-50 dark:bg-slate-900', {
-            'min-h-min-footer': !embedded,
-            'min-h-[100vh]': embedded,
+            'min-h-min-footer': !isEmbedded,
+            'min-h-[100vh]': isEmbedded,
           })}
         >
           <Loader />
         </div>
-        {!embedded ? <Footer authenticated={authenticated} /> : null}
+        {!isEmbedded ? <Footer /> : null}
       </>
     )
   }
@@ -2909,20 +2795,20 @@ const ViewProject = () => {
   if (project.isLocked) {
     return (
       <>
-        {!embedded ? <Header ssrTheme={ssrTheme} authenticated={authenticated} /> : null}
+        {!isEmbedded ? <Header /> : null}
         <div
           className={cx('mx-auto w-full max-w-[1584px] bg-gray-50 px-2 py-6 sm:px-4 lg:px-8 dark:bg-slate-900', {
-            'min-h-min-footer': !embedded,
-            'min-h-[100vh]': embedded,
+            'min-h-min-footer': !isEmbedded,
+            'min-h-[100vh]': isEmbedded,
           })}
         >
           <TabsSelector />
           <h2 className='mt-2 text-center font-mono text-xl font-bold break-words break-all text-gray-900 sm:text-left dark:text-gray-50'>
             {project.name}
           </h2>
-          <LockedDashboard user={user} project={project} />
+          <LockedDashboard />
         </div>
-        {!embedded ? <Footer authenticated={authenticated} /> : null}
+        {!isEmbedded ? <Footer /> : null}
       </>
     )
   }
@@ -2930,20 +2816,20 @@ const ViewProject = () => {
   if (!project.isDataExists && activeTab !== PROJECT_TABS.errors && !analyticsLoading) {
     return (
       <>
-        {!embedded ? <Header ssrTheme={ssrTheme} authenticated={authenticated} /> : null}
+        {!isEmbedded ? <Header /> : null}
         <div
           className={cx('mx-auto w-full max-w-[1584px] bg-gray-50 px-2 py-6 sm:px-4 lg:px-8 dark:bg-slate-900', {
-            'min-h-min-footer': !embedded,
-            'min-h-[100vh]': embedded,
+            'min-h-min-footer': !isEmbedded,
+            'min-h-[100vh]': isEmbedded,
           })}
         >
           <TabsSelector />
           <h2 className='mt-2 text-center font-mono text-xl font-bold break-words break-all text-gray-900 sm:text-left dark:text-gray-50'>
             {project.name}
           </h2>
-          <WaitingForAnEvent project={project} />
+          <WaitingForAnEvent />
         </div>
-        {!embedded ? <Footer authenticated={authenticated} /> : null}
+        {!isEmbedded ? <Footer /> : null}
       </>
     )
   }
@@ -2955,11 +2841,11 @@ const ViewProject = () => {
   ) {
     return (
       <>
-        {!embedded ? <Header ssrTheme={ssrTheme} authenticated={authenticated} /> : null}
+        {!isEmbedded ? <Header /> : null}
         <div
           className={cx('mx-auto w-full max-w-[1584px] bg-gray-50 px-2 py-6 sm:px-4 lg:px-8 dark:bg-slate-900', {
-            'min-h-min-footer': !embedded,
-            'min-h-[100vh]': embedded,
+            'min-h-min-footer': !isEmbedded,
+            'min-h-[100vh]': isEmbedded,
           })}
         >
           <TabsSelector />
@@ -2968,7 +2854,7 @@ const ViewProject = () => {
           </h2>
           <WaitingForAnError />
         </div>
-        {!embedded ? <Footer authenticated={authenticated} /> : null}
+        {!isEmbedded ? <Footer /> : null}
       </>
     )
   }
@@ -2979,8 +2865,6 @@ const ViewProject = () => {
         <ViewProjectContext.Provider
           value={{
             // States
-            projectId: project?.id,
-            projectPassword,
             timezone,
             dateRange,
             isLoading: authLoading,
@@ -2990,7 +2874,6 @@ const ViewProject = () => {
             periodPairs,
             timeFormat,
             size,
-            allowedToManage,
             dataLoading,
             activeTab,
             filters:
@@ -3017,18 +2900,18 @@ const ViewProject = () => {
           }}
         >
           <>
-            {!embedded ? <Header ssrTheme={ssrTheme} authenticated={authenticated} /> : null}
+            {!isEmbedded ? <Header /> : null}
             <EventsRunningOutBanner />
             <div
               ref={ref}
               className={cx('bg-gray-50 dark:bg-slate-900', {
-                'min-h-[100vh]': analyticsLoading && embedded,
+                'min-h-[100vh]': analyticsLoading && isEmbedded,
               })}
             >
               <div
                 className={cx('mx-auto w-full max-w-[1584px] px-2 py-6 sm:px-4 lg:px-8', {
-                  'min-h-min-footer': !embedded,
-                  'min-h-[100vh]': embedded,
+                  'min-h-min-footer': !isEmbedded,
+                  'min-h-[100vh]': isEmbedded,
                 })}
                 ref={dashboardRef}
               >
@@ -3595,7 +3478,7 @@ const ViewProject = () => {
                     ) : null}
                   </>
                 ) : null}
-                {activeTab === PROJECT_TABS.alerts && (project.role !== 'owner' || !authenticated) ? (
+                {activeTab === PROJECT_TABS.alerts && (project.role !== 'owner' || !isAuthenticated) ? (
                   <div className='mt-5 rounded-xl bg-gray-700 p-5'>
                     <div className='flex items-center text-gray-50'>
                       <BellRingIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
@@ -3628,7 +3511,7 @@ const ViewProject = () => {
                     funnels={project.funnels}
                     deleteFunnel={onFunnelDelete}
                     loading={funnelActionLoading}
-                    authenticated={authenticated}
+                    authenticated={isAuthenticated}
                     allowedToManage={allowedToManage}
                   />
                 ) : null}
@@ -3641,7 +3524,7 @@ const ViewProject = () => {
                     <p className='mt-2 font-mono text-sm whitespace-pre-wrap text-gray-100'>
                       {t('dashboard.funnelsDesc')}
                     </p>
-                    {authenticated ? (
+                    {isAuthenticated ? (
                       <button
                         type='button'
                         onClick={() => setIsNewFunnelOpened(true)}
@@ -3903,7 +3786,7 @@ const ViewProject = () => {
                                 // @ts-expect-error
                                 const logoPathDark = OS_LOGO_MAP_DARK[logoKey]
 
-                                let logoPath = _theme === 'dark' ? logoPathDark : logoPathLight
+                                let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
                                 logoPath ||= logoPathLight
 
                                 if (!logoPath) {
@@ -4034,7 +3917,7 @@ const ViewProject = () => {
                     {!errorLoading && _isEmpty(activeError) ? <NoErrorDetails /> : null}
                   </>
                 ) : null}
-                {activeTab === PROJECT_TABS.alerts && project.role === 'owner' && authenticated ? (
+                {activeTab === PROJECT_TABS.alerts && project.role === 'owner' && isAuthenticated ? (
                   <ProjectAlertsView />
                 ) : null}
                 {analyticsLoading && (activeTab === PROJECT_TABS.traffic || activeTab === PROJECT_TABS.performance) ? (
@@ -4208,7 +4091,7 @@ const ViewProject = () => {
                                 // @ts-expect-error
                                 const logoPathDark = OS_LOGO_MAP_DARK[logoKey]
 
-                                let logoPath = _theme === 'dark' ? logoPathDark : logoPathLight
+                                let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
                                 logoPath ||= logoPathLight
 
                                 if (!logoPath) {
@@ -4445,7 +4328,6 @@ const ViewProject = () => {
 
                               return (
                                 <Panel
-                                  projectPassword={projectPassword}
                                   key={countryActiveTab}
                                   icon={panelIcon}
                                   id={countryActiveTab}
@@ -4463,7 +4345,6 @@ const ViewProject = () => {
                             if (type === 'dv') {
                               return (
                                 <Panel
-                                  projectPassword={projectPassword}
                                   key={type}
                                   icon={panelIcon}
                                   id={type}
@@ -4498,7 +4379,6 @@ const ViewProject = () => {
                             if (type === 'pg') {
                               return (
                                 <Panel
-                                  projectPassword={projectPassword}
                                   key={pageActiveTab}
                                   icon={panelIcon}
                                   id={pageActiveTab}
@@ -4596,12 +4476,8 @@ const ViewProject = () => {
             </div>
             <ViewProjectHotkeys isOpened={isHotkeysHelpOpened} onClose={() => setIsHotkeysHelpOpened(false)} />
             <NewFunnel
-              project={project}
-              projectPassword={projectPassword}
-              pid={id}
               funnel={funnelToEdit}
               isOpened={isNewFunnelOpened}
-              allowedToManage={allowedToManage}
               onClose={() => {
                 setIsNewFunnelOpened(false)
                 setFunnelToEdit(undefined)
@@ -4618,11 +4494,9 @@ const ViewProject = () => {
             />
             <SearchFilters
               type={activeTab === PROJECT_TABS.errors ? 'errors' : 'traffic'}
-              projectPassword={projectPassword}
               showModal={showFiltersSearch}
               setShowModal={setShowFiltersSearch}
               setProjectFilter={onFilterSearch}
-              pid={id}
               tnMapping={tnMapping}
               filters={
                 activeTab === PROJECT_TABS.performance
@@ -4635,7 +4509,6 @@ const ViewProject = () => {
               }
             />
             <AddAViewModal
-              projectPassword={projectPassword}
               showModal={isAddAViewOpened}
               setShowModal={(show) => {
                 setIsAddAViewOpened(show)
@@ -4647,10 +4520,9 @@ const ViewProject = () => {
                 setProjectViewToUpdate(undefined)
               }}
               defaultView={projectViewToUpdate}
-              pid={id}
               tnMapping={tnMapping}
             />
-            {!embedded ? <Footer authenticated={authenticated} showDBIPMessage /> : null}
+            {!isEmbedded ? <Footer showDBIPMessage /> : null}
           </>
         </ViewProjectContext.Provider>
       )}

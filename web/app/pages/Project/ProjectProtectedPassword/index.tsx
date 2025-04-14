@@ -2,19 +2,19 @@ import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
 import _replace from 'lodash/replace'
 import _size from 'lodash/size'
-import React, { useState, useEffect, memo } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useDispatch } from 'react-redux'
-import { Link, useNavigate } from 'react-router'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 
 import { checkPassword } from '~/api'
 import Footer from '~/components/Footer'
 import Header from '~/components/Header'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
-import UIActions from '~/lib/reducers/ui'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import routes from '~/utils/routes'
+
+import { setProjectPassword } from '../View/utils/cache'
 
 interface ProjectProtectedPasswordForm {
   password: string
@@ -22,13 +22,7 @@ interface ProjectProtectedPasswordForm {
 
 const MAX_PASSWORD_LENGTH = 80
 
-interface ProjectProtectedPasswordProps {
-  ssrTheme: 'light' | 'dark'
-  embedded: boolean
-  isAuth: boolean
-}
-
-const ProjectProtectedPassword = ({ ssrTheme, embedded, isAuth }: ProjectProtectedPasswordProps) => {
+const ProjectProtectedPassword = () => {
   const { t } = useTranslation('common')
   const [form, setForm] = useState<ProjectProtectedPasswordForm>({
     password: '',
@@ -37,11 +31,13 @@ const ProjectProtectedPassword = ({ ssrTheme, embedded, isAuth }: ProjectProtect
   const [errors, setErrors] = useState<{
     password?: string
   }>({})
-  const { id } = useRequiredParams<{ id: string }>()
+  const { pid } = useRequiredParams<{ pid: string }>()
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
-  const dispatch = useDispatch()
+  const [searchParams] = useSearchParams()
+
+  const isEmbedded = searchParams.get('embedded') === 'true'
 
   const validate = () => {
     const allErrors = {} as {
@@ -67,32 +63,42 @@ const ProjectProtectedPassword = ({ ssrTheme, embedded, isAuth }: ProjectProtect
   }, [form]) // eslint-disable-line
 
   const onSubmit = async (data: ProjectProtectedPasswordForm) => {
-    if (!isLoading) {
-      setIsLoading(true)
-      await checkPassword(id, data.password)
-        .then((result) => {
-          if (result) {
-            dispatch(
-              UIActions.setProjectPassword({
-                id,
-                password: data.password,
-              }),
-            )
-            navigate({
-              pathname: _replace(routes.project, ':id', id),
-              search: `?embedded=${embedded}&theme=${ssrTheme}`,
-            })
-            return
-          }
-          setErrors({
-            password: t('apiNotifications.incorrectPassword'),
-          })
-        })
-        .catch(console.error)
-        .finally(() => {
-          setIsLoading(false)
-        })
+    if (isLoading) {
+      return
     }
+
+    setIsLoading(true)
+    await checkPassword(pid, data.password)
+      .then((result) => {
+        if (result) {
+          const searchParamsObj = new URLSearchParams()
+
+          if (searchParams.has('theme')) {
+            searchParamsObj.set('theme', searchParams.get('theme')!)
+          }
+
+          if (searchParams.has('embedded')) {
+            searchParamsObj.set('embedded', searchParams.get('embedded')!)
+          }
+
+          const searchString = searchParamsObj.toString()
+          const search = searchString ? `?${searchString}` : undefined
+
+          setProjectPassword(pid, data.password)
+          navigate({
+            pathname: _replace(routes.project, ':id', pid),
+            search,
+          })
+          return
+        }
+        setErrors({
+          password: t('apiNotifications.incorrectPassword'),
+        })
+      })
+      .catch(console.error)
+      .finally(() => {
+        setIsLoading(false)
+      })
   }
 
   const handleInput = ({ target }: { target: HTMLInputElement }) => {
@@ -116,7 +122,7 @@ const ProjectProtectedPassword = ({ ssrTheme, embedded, isAuth }: ProjectProtect
 
   return (
     <>
-      {!embedded ? <Header ssrTheme={ssrTheme} authenticated={isAuth} /> : null}
+      {!isEmbedded ? <Header /> : null}
       <div className='min-h-page flex flex-col bg-gray-50 px-4 py-6 sm:px-6 lg:px-8 dark:bg-slate-900'>
         <form className='mx-auto w-full max-w-7xl' onSubmit={handleSubmit}>
           <h2 className='mt-2 text-3xl font-bold text-gray-900 dark:text-gray-50'>{t('titles.passwordProtected')}</h2>
@@ -130,9 +136,9 @@ const ProjectProtectedPassword = ({ ssrTheme, embedded, isAuth }: ProjectProtect
             onChange={handleInput}
             error={beenSubmitted ? errors.password : null}
           />
-          <div className='mt-5'>
+          <div className='mt-5 flex gap-2'>
             <Button
-              className='mr-2 border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
+              className='border-indigo-100 dark:border-slate-700/50 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
               as={Link}
               // @ts-expect-error
               to={routes.main}
@@ -147,9 +153,9 @@ const ProjectProtectedPassword = ({ ssrTheme, embedded, isAuth }: ProjectProtect
           </div>
         </form>
       </div>
-      {!embedded ? <Footer authenticated={isAuth} /> : null}
+      {!isEmbedded ? <Footer /> : null}
     </>
   )
 }
 
-export default memo(ProjectProtectedPassword)
+export default ProjectProtectedPassword

@@ -9,36 +9,24 @@ import { useTranslation } from 'react-i18next'
 import { getFilters } from '~/api'
 import { MIN_FUNNEL_STEPS, MAX_FUNNEL_STEPS } from '~/lib/constants'
 import { Funnel } from '~/lib/models/Project'
-import { ProjectForShared } from '~/lib/models/SharedProject'
+import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
 import Combobox from '~/ui/Combobox'
 import Input from '~/ui/Input'
 import Modal from '~/ui/Modal'
 
 interface NewFunnelProps {
-  project: ProjectForShared
   onClose: () => void
   onSubmit: (name: string, steps: string[]) => Promise<void>
   isOpened: boolean
-  pid: string
   loading: boolean
-  allowedToManage: boolean
   funnel?: Funnel
-  projectPassword?: string
 }
 
 const INITIAL_FUNNEL_STEPS = [null, null]
 
-const NewFunnel = ({
-  onClose,
-  onSubmit,
-  isOpened,
-  pid,
-  funnel,
-  loading,
-  project,
-  projectPassword,
-  allowedToManage,
-}: NewFunnelProps) => {
+const NewFunnel = ({ onClose, onSubmit, isOpened, funnel, loading }: NewFunnelProps) => {
+  const { project, id, allowedToManage } = useCurrentProject()
+  const projectPassword = useProjectPassword(id)
   const { t } = useTranslation('common')
   const [name, setName] = useState(funnel?.name || '')
   const [steps, setSteps] = useState<any[]>(funnel?.steps || INITIAL_FUNNEL_STEPS)
@@ -57,7 +45,7 @@ const NewFunnel = ({
   useEffect(() => {
     // if project.name is underfined - that means that project is not loaded yet
     // (it may be password protected, hence making a filters list request will fail with 403)
-    if (_isUndefined(project.name) || !isOpened) {
+    if (_isUndefined(project?.name) || !isOpened) {
       return
     }
 
@@ -67,10 +55,10 @@ const NewFunnel = ({
 
       const promises = [
         (async () => {
-          pgFilters = await getFilters(pid, 'pg', projectPassword)
+          pgFilters = await getFilters(id, 'pg', projectPassword)
         })(),
         (async () => {
-          ceFilters = await getFilters(pid, 'ev', projectPassword)
+          ceFilters = await getFilters(id, 'ev', projectPassword)
         })(),
       ]
 
@@ -84,7 +72,7 @@ const NewFunnel = ({
     }
 
     getFiltersData()
-  }, [pid, project, isOpened, projectPassword])
+  }, [id, project, isOpened, projectPassword])
 
   const _onClose = () => {
     setTimeout(() => {

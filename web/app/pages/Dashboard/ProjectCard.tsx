@@ -9,7 +9,6 @@ import _round from 'lodash/round'
 import _size from 'lodash/size'
 import React, { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { Link } from 'react-router'
 import { toast } from 'sonner'
 
@@ -17,8 +16,7 @@ import { acceptProjectShare } from '~/api'
 import useFeatureFlag from '~/hooks/useFeatureFlag'
 import { OverallObject, Project } from '~/lib/models/Project'
 import { FeatureFlag } from '~/lib/models/User'
-import { authActions } from '~/lib/reducers/auth'
-import { StateType, useAppDispatch } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import { Badge, BadgeProps } from '~/ui/Badge'
 import Spin from '~/ui/icons/Spin'
 import Modal from '~/ui/Modal'
@@ -90,11 +88,12 @@ export const ProjectCard = ({ live, project, overallStats, activePeriod, activeT
   const isHostnameNavigationEnabled = useFeatureFlag(FeatureFlag['dashboard-hostname-cards'])
   const showPeriodSelector = useFeatureFlag(FeatureFlag['dashboard-period-selector'])
 
-  const { user } = useSelector((state: StateType) => state.auth)
+  const { user, mergeUser } = useAuth()
 
-  const dispatch = useAppDispatch()
-
-  const shareId = useMemo(() => _find(project.share, (item) => item.user.id === user.id)?.id, [project.share, user.id])
+  const shareId = useMemo(
+    () => _find(project.share, (item) => item.user.id === user?.id)?.id,
+    [project.share, user?.id],
+  )
 
   const { id, name, public: isPublic, active, isTransferring, share, organisation, role } = project
 
@@ -157,17 +156,15 @@ export const ProjectCard = ({ live, project, overallStats, activePeriod, activeT
 
       await acceptProjectShare(shareId)
 
-      dispatch(
-        authActions.mergeUser({
-          sharedProjects: user.sharedProjects?.map((item) => {
-            if (item.id === shareId) {
-              return { ...item, isAccessConfirmed: true }
-            }
+      mergeUser({
+        sharedProjects: user?.sharedProjects?.map((item) => {
+          if (item.id === shareId) {
+            return { ...item, isAccessConfirmed: true }
+          }
 
-            return item
-          }),
+          return item
         }),
-      )
+      })
 
       toast.success(t('apiNotifications.acceptInvitation'))
     } catch (reason: any) {

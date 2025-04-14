@@ -2,20 +2,19 @@ import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import _isString from 'lodash/isString'
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useDispatch } from 'react-redux'
 import { useParams, Link } from 'react-router'
 
 import { verifyEmail } from '~/api'
-import { authActions } from '~/lib/reducers/auth'
+import { useAuth } from '~/providers/AuthProvider'
 import Loader from '~/ui/Loader'
 import routes from '~/utils/routes'
 
 const VerifyEmail = () => {
   const { t } = useTranslation('common')
-  const dispatch = useDispatch()
   const { id } = useParams()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const { mergeUser } = useAuth()
 
   useEffect(() => {
     setLoading(true)
@@ -29,11 +28,10 @@ const VerifyEmail = () => {
     const verify = async () => {
       try {
         await verifyEmail({ id })
-        dispatch(authActions.mergeUser({ isActive: true }))
+        mergeUser({ isActive: true })
       } catch (reason: any) {
         setError(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
       } finally {
-        dispatch(authActions.finishLoading())
         setLoading(false)
       }
     }

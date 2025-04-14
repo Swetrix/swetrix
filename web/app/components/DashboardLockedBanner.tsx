@@ -1,16 +1,17 @@
 import { LockClosedIcon } from '@heroicons/react/24/outline'
 import { memo, useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 
 import { DashboardBlockReason } from '~/lib/models/User'
-import { StateType } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import Modal from '~/ui/Modal'
 
 const DashboardLockedBanner = () => {
   const { t } = useTranslation('common')
-  const dashboardBlockReason = useSelector((state: StateType) => state.auth.user.dashboardBlockReason)
+  const { user } = useAuth()
   const [showMoreInfoModal, setShowMoreInfoModal] = useState(false)
+
+  const dashboardBlockReason = user?.dashboardBlockReason
 
   const message = useMemo(() => {
     if (dashboardBlockReason === DashboardBlockReason.exceeding_plan_limits) {

@@ -7,14 +7,13 @@ import _map from 'lodash/map'
 import { Trash2Icon, UserRoundPlusIcon } from 'lucide-react'
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
 
 import { changeOrganisationRole, inviteOrganisationMember, removeOrganisationMember } from '~/api'
 import useOnClickOutside from '~/hooks/useOnClickOutside'
 import { roles, INVITATION_EXPIRES_IN } from '~/lib/constants'
 import { DetailedOrganisation, Role } from '~/lib/models/Organisation'
-import { StateType } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
@@ -43,7 +42,7 @@ const UsersList = ({ members, onRemove }: UsersListProps) => {
     t,
     i18n: { language },
   } = useTranslation('common')
-  const { user } = useSelector((state: StateType) => state.auth)
+  const { user } = useAuth()
 
   const [roleEditDropdownId, setRoleEditDropdownId] = useState<string | null>(null)
   const openRef = useRef<HTMLUListElement>(null)
@@ -77,7 +76,7 @@ const UsersList = ({ members, onRemove }: UsersListProps) => {
             <button
               onClick={() => setRoleEditDropdownId((prev) => (prev === member.id ? null : member.id))}
               type='button'
-              disabled={member.user.email === user.email || member.role === 'owner'}
+              disabled={member.user.email === user?.email || member.role === 'owner'}
               className='inline-flex items-center rounded-full border border-gray-200 bg-white py-0.5 pr-1 pl-2 text-sm leading-5 font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-80 dark:border-gray-600 dark:bg-slate-800 dark:text-gray-200 dark:hover:bg-gray-600'
             >
               {t(`organisations.role.${member.role}.name`)}

@@ -2,6 +2,8 @@ import cx from 'clsx'
 import _map from 'lodash/map'
 import { memo } from 'react'
 
+import { useTheme } from '~/providers/ThemeProvider'
+
 interface Progress {
   value: number
   lightColour: string
@@ -10,25 +12,28 @@ interface Progress {
 
 interface MultiProgressProps {
   progress: Progress[]
-  theme: 'dark' | 'light'
   className?: string
 }
 
-const MultiProgress = ({ progress, theme, className }: MultiProgressProps) => (
-  <div className='relative'>
-    <div className={cx('flex h-5 overflow-hidden rounded-sm bg-gray-200 text-xs dark:bg-slate-600', className)}>
-      {_map(progress, ({ value, lightColour, darkColour }) => (
-        <div
-          key={`${value}-${lightColour}-${darkColour}`}
-          style={{
-            width: `${value}%`,
-            backgroundColor: theme === 'dark' ? darkColour : lightColour,
-          }}
-          className='flex flex-col justify-center text-center whitespace-nowrap text-white shadow-none'
-        />
-      ))}
+const MultiProgress = ({ progress, className }: MultiProgressProps) => {
+  const { theme } = useTheme()
+
+  return (
+    <div className='relative'>
+      <div className={cx('flex h-5 overflow-hidden rounded-sm bg-gray-200 text-xs dark:bg-slate-600', className)}>
+        {_map(progress, ({ value, lightColour, darkColour }) => (
+          <div
+            key={`${value}-${lightColour}-${darkColour}`}
+            style={{
+              width: `${value}%`,
+              backgroundColor: theme === 'dark' ? darkColour : lightColour,
+            }}
+            className='flex flex-col justify-center text-center whitespace-nowrap text-white shadow-none'
+          />
+        ))}
+      </div>
     </div>
-  </div>
-)
+  )
+}
 
 export default memo(MultiProgress)

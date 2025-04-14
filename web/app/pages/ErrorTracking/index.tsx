@@ -2,18 +2,18 @@ import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { ChevronRightIcon } from '@heroicons/react/24/solid'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
-import { memo } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { Link } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 
+import { getLastPost } from '~/api'
 import Header from '~/components/Header'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
-import { ERROR_TRACKING_LIVE_DEMO_URL, isBrowser } from '~/lib/constants'
-import { StateType } from '~/lib/store/index'
+import { ERROR_TRACKING_LIVE_DEMO_URL } from '~/lib/constants'
+import { useAuth } from '~/providers/AuthProvider'
+import { useTheme } from '~/providers/ThemeProvider'
 import BackgroundSvg from '~/ui/icons/BackgroundSvg'
-import { getAccessToken } from '~/utils/accessToken'
 import routesPath from '~/utils/routes'
 
 import Pricing from '../../components/marketing/Pricing'
@@ -26,19 +26,21 @@ const Lines = () => (
   </div>
 )
 
-interface ErrorTrackingProps {
-  ssrTheme: 'dark' | 'light'
-  ssrAuthenticated: boolean
-}
-
-const ErrorTracking = ({ ssrTheme, ssrAuthenticated }: ErrorTrackingProps) => {
+const ErrorTracking = () => {
   const { t } = useTranslation('common')
-  const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
-  const { authenticated: reduxAuthenticated, loading } = useSelector((state: StateType) => state.auth)
-  const { lastBlogPost } = useSelector((state: StateType) => state.ui.misc)
-  const theme = isBrowser ? reduxTheme : ssrTheme
-  const accessToken = getAccessToken()
-  const authenticated = isBrowser ? (loading ? !!accessToken : reduxAuthenticated) : ssrAuthenticated
+  const { theme } = useTheme()
+  const [lastBlogPost, setLastBlogPost] = useState<Awaited<ReturnType<typeof getLastPost>> | null>(null)
+  const { isAuthenticated } = useAuth()
+
+  useEffect(() => {
+    const abortController = new AbortController()
+
+    getLastPost({ signal: abortController.signal })
+      .then(setLastBlogPost)
+      .catch(() => {})
+
+    return () => abortController.abort()
+  }, [])
 
   return (
     <div className='overflow-hidden'>
@@ -74,7 +76,7 @@ const ErrorTracking = ({ ssrTheme, ssrAuthenticated }: ErrorTrackingProps) => {
               }}
             />
           </div>
-          <Header ssrTheme={ssrTheme} authenticated={authenticated} transparent />
+          <Header transparent />
           <div className='relative mx-auto min-h-[740px] pt-10 pb-5 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
             <div className='relative z-20 flex flex-row content-between justify-center lg:justify-start 2xl:mr-[14vw] 2xl:justify-center'>
               <div className='relative px-4 text-left lg:mt-0 lg:mr-14'>
@@ -224,23 +226,22 @@ const ErrorTracking = ({ ssrTheme, ssrAuthenticated }: ErrorTrackingProps) => {
         </div>
 
         {/* For now let's hide Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
-        {!authenticated ? <Pricing authenticated={false} /> : null}
+        {!isAuthenticated ? <Pricing authenticated={false} /> : null}
 
         <DitchGoogle
           screenshot={{
             dark: '/assets/screenshot_errors_dark.png',
             light: '/assets/screenshot_errors_light.png',
           }}
-          theme={theme}
         />
 
         {/* Become a developer */}
         <section className='relative bg-white pt-20 pb-44 dark:bg-slate-900'>
           <div className='absolute top-16 right-0 z-0'>
-            <BackgroundSvg theme={theme} type='threecircle' />
+            <BackgroundSvg type='threecircle' />
           </div>
           <div className='absolute top-52 -left-9 rotate-90'>
-            <BackgroundSvg theme={theme} type='shapes' />
+            <BackgroundSvg type='shapes' />
           </div>
           <PeopleLoveSwetrix />
         </section>
@@ -250,4 +251,4 @@ const ErrorTracking = ({ ssrTheme, ssrAuthenticated }: ErrorTrackingProps) => {
   )
 }
 
-export default memo(ErrorTracking)
+export default ErrorTracking

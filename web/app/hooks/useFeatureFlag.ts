@@ -1,10 +1,8 @@
-import { useSelector } from 'react-redux'
-
 import { FeatureFlag } from '~/lib/models/User'
-import { StateType } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 
 const useFeatureFlag = (flag: FeatureFlag): boolean => {
-  const { user } = useSelector((state: StateType) => state.auth)
+  const { user } = useAuth()
 
   if (!user?.featureFlags) {
     return false

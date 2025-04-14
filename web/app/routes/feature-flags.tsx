@@ -2,28 +2,25 @@ import { Switch } from '@headlessui/react'
 import cx from 'clsx'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
 import { setFeatureFlags } from '~/api'
 import { withAuthentication, auth } from '~/hoc/protected'
 import { FeatureFlag } from '~/lib/models/User'
-import { authActions } from '~/lib/reducers/auth'
-import { StateType } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import Loader from '~/ui/Loader'
 import routes from '~/utils/routes'
 
 const FeatureFlagsPage = () => {
   const { t } = useTranslation('common')
-  const { user, loading } = useSelector((state: StateType) => state.auth)
+  const { user, isLoading, mergeUser } = useAuth()
   const [flags, setFlags] = useState<FeatureFlag[]>([])
   const [initialised, setInitialised] = useState(false)
   const navigate = useNavigate()
-  const dispatch = useDispatch()
 
   useEffect(() => {
-    if (loading || initialised) {
+    if (isLoading || initialised) {
       return
     }
 
@@ -34,7 +31,7 @@ const FeatureFlagsPage = () => {
     }
 
     navigate(routes.main)
-  }, [loading, user, navigate, initialised])
+  }, [isLoading, user, navigate, initialised])
 
   const handleToggle = async (flag: FeatureFlag) => {
     try {
@@ -42,7 +39,7 @@ const FeatureFlagsPage = () => {
 
       await setFeatureFlags(newFlags)
       setFlags(newFlags)
-      dispatch(authActions.mergeUser({ featureFlags: newFlags }))
+      mergeUser({ featureFlags: newFlags })
       toast.success(t('featureFlags.updated'))
     } catch (error) {
       console.error('Failed to update feature flags:', error)
@@ -50,7 +47,7 @@ const FeatureFlagsPage = () => {
     }
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
         <Loader />

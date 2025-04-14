@@ -7,13 +7,13 @@ import _map from 'lodash/map'
 import { Cookie, FileTextIcon } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import type { LoaderFunctionArgs } from 'react-router'
 import { useLoaderData, Link, redirect } from 'react-router'
 import type { SitemapFunction } from 'remix-sitemap'
 import { ClientOnly } from 'remix-utils/client-only'
 import { UAParser } from 'ua-parser-js'
 
+import { getGeneralStats, getPaymentMetainfo } from '~/api'
 import Header from '~/components/Header'
 import { ConveyorBelt } from '~/components/marketing/ConveyorBelt'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
@@ -24,20 +24,20 @@ import Pricing from '~/components/marketing/Pricing'
 import {
   GITHUB_URL,
   LIVE_DEMO_URL,
-  isBrowser,
   isSelfhosted,
   OS_LOGO_MAP,
   OS_LOGO_MAP_DARK,
   BROWSER_LOGO_MAP,
   isDisableMarketingPages,
 } from '~/lib/constants'
-import { StateType } from '~/lib/store/index'
+import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
+import { Stats } from '~/lib/models/Stats'
 import CCRow from '~/pages/Project/View/components/CCRow'
 import { MetricCard, MetricCardSelect } from '~/pages/Project/View/components/MetricCards'
-import { getAccessToken } from '~/utils/accessToken'
+import { useAuth } from '~/providers/AuthProvider'
+import { useTheme } from '~/providers/ThemeProvider'
 import { getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
 import routesPath from '~/utils/routes'
-import { detectTheme, isAuthenticated } from '~/utils/server'
 
 export const sitemap: SitemapFunction = () => ({
   priority: 1,
@@ -48,9 +48,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (isSelfhosted || isDisableMarketingPages) {
     return redirect('/login', 302)
   }
-
-  const [theme] = detectTheme(request)
-  const isAuth = isAuthenticated(request)
 
   const userAgent = request.headers.get('user-agent')
 
@@ -71,7 +68,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
   }
 
-  return { theme, isAuth, deviceInfo }
+  return { deviceInfo }
 }
 
 const Problem = () => {
@@ -197,7 +194,8 @@ const FeedbackHighlight = ({ children }: FeedbackHighlightProps) => (
   <span className='bg-yellow-100/80 dark:bg-yellow-400/40'>{children}</span>
 )
 
-const WeAreOpensource = ({ theme }: { theme: 'dark' | 'light' }) => {
+const WeAreOpensource = () => {
+  const { theme } = useTheme()
   const { t } = useTranslation('common')
 
   return (
@@ -278,7 +276,13 @@ const REVIEWERS = [
 
 const Testimonials = () => {
   const { t } = useTranslation('common')
-  const { stats } = useSelector((state: StateType) => state.ui.misc)
+  const [stats, setStats] = useState<Stats>({} as Stats)
+
+  useEffect(() => {
+    getGeneralStats()
+      .then((stats) => setStats(stats))
+      .catch(console.error)
+  }, [])
 
   return (
     <div className='mt-8 flex flex-col items-center justify-center gap-3 font-mono md:flex-row'>
@@ -397,12 +401,23 @@ const SdurMetric = () => {
   )
 }
 
-const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
+const FeatureBlocks = () => {
+  const { theme } = useTheme()
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
-  const { metainfo } = useSelector((state: StateType) => state.ui.misc)
+  const [metainfo, setMetainfo] = useState<Metainfo>(DEFAULT_METAINFO)
+
+  useEffect(() => {
+    const abortController = new AbortController()
+
+    getPaymentMetainfo({ signal: abortController.signal })
+      .then(setMetainfo)
+      .catch(() => {})
+
+    return () => abortController.abort()
+  }, [])
 
   const { deviceInfo } = useLoaderData<typeof loader>()
 
@@ -649,7 +664,8 @@ const FeatureBlocks = ({ theme }: { theme: 'dark' | 'light' }) => {
   )
 }
 
-const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
+const CoreFeatures = () => {
+  const { theme } = useTheme()
   const { t } = useTranslation('common')
 
   return (
@@ -775,15 +791,8 @@ const CoreFeatures = ({ theme }: { theme: 'dark' | 'light' }) => {
   )
 }
 
-const Hero = ({
-  theme,
-  ssrTheme,
-  authenticated,
-}: {
-  theme: 'dark' | 'light'
-  ssrTheme: 'dark' | 'light'
-  authenticated: boolean
-}) => {
+const Hero = () => {
+  const { theme } = useTheme()
   const { t } = useTranslation('common')
 
   return (
@@ -817,7 +826,7 @@ const Hero = ({
           }}
         />
       </div>
-      <Header ssrTheme={ssrTheme} authenticated={authenticated} transparent />
+      <Header transparent />
       <div className='relative mx-auto min-h-[740px] pt-10 pb-5 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
         <div className='relative z-20 flex flex-col content-between justify-center'>
           <div className='relative mx-auto flex flex-col px-4 text-left'>
@@ -880,22 +889,17 @@ const Hero = ({
 }
 
 export default function Index() {
-  const { theme: ssrTheme, isAuth } = useLoaderData<typeof loader>()
-
-  const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
-  const { authenticated: reduxAuthenticated, loading } = useSelector((state: StateType) => state.auth)
-  const theme = isBrowser ? reduxTheme : ssrTheme
-  const accessToken = getAccessToken()
-  const authenticated = isBrowser ? (loading ? !!accessToken : reduxAuthenticated) : isAuth
+  const { theme } = useTheme()
+  const { isAuthenticated } = useAuth()
 
   return (
     <div className='overflow-hidden'>
       <main className='bg-white dark:bg-slate-900'>
-        <Hero theme={theme} ssrTheme={ssrTheme} authenticated={authenticated} />
+        <Hero />
 
         <Problem />
 
-        <FeatureBlocks theme={theme} />
+        <FeatureBlocks />
 
         <Feedback
           name='Alex Bowles'
@@ -911,10 +915,10 @@ export default function Index() {
           }
         />
 
-        <CoreFeatures theme={theme} />
+        <CoreFeatures />
 
         {/* Hiding the Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
-        {!authenticated ? <Pricing authenticated={false} /> : null}
+        {!isAuthenticated ? <Pricing authenticated={false} /> : null}
 
         <Feedback
           name='Alper Alkan'
@@ -930,14 +934,13 @@ export default function Index() {
           }
         />
 
-        <WeAreOpensource theme={theme} />
+        <WeAreOpensource />
 
         <DitchGoogle
           screenshot={{
             dark: '/assets/screenshot_dark.png',
             light: '/assets/screenshot_light.png',
           }}
-          theme={theme}
         />
       </main>
     </div>

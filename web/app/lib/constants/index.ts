@@ -392,8 +392,8 @@ export const TOKEN = 'access_token'
 export const REFRESH_TOKEN = 'refresh_token'
 
 // LocalStorage
-export const LS_PROJECTS_PROTECTED = 'projects_protected'
-export const LS_IS_ACTIVE_COMPARE = 'is-active-compare'
+export const LS_PROJECTS_PROTECTED_KEY = 'projects_protected'
+export const LS_IS_ACTIVE_COMPARE_KEY = 'is-active-compare'
 
 // Funnels
 export const MIN_FUNNEL_STEPS = 2

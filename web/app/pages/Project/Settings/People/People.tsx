@@ -7,7 +7,6 @@ import _map from 'lodash/map'
 import { Trash2Icon, UserRoundPlusIcon } from 'lucide-react'
 import React, { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { toast } from 'sonner'
 
 import { deleteShareProjectUsers, shareProject, changeShareRole } from '~/api'
@@ -15,8 +14,8 @@ import useOnClickOutside from '~/hooks/useOnClickOutside'
 import { roles, INVITATION_EXPIRES_IN } from '~/lib/constants'
 import { Role } from '~/lib/models/Organisation'
 import { Project, ShareOwnerProject } from '~/lib/models/Project'
-import { StateType } from '~/lib/store'
 import PaidFeature from '~/modals/PaidFeature'
+import { useAuth } from '~/providers/AuthProvider'
 import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
@@ -144,7 +143,7 @@ interface PeopleProps {
 }
 
 const People = ({ project }: PeopleProps) => {
-  const { user: currentUser } = useSelector((state: StateType) => state.auth)
+  const { user: currentUser } = useAuth()
 
   const [showModal, setShowModal] = useState(false)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)

@@ -18,7 +18,6 @@ import _size from 'lodash/size'
 import { DownloadIcon, MessageSquareTextIcon, MonitorIcon, UserRoundIcon } from 'lucide-react'
 import React, { useState, useEffect, memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
@@ -44,9 +43,8 @@ import {
   isSelfhosted,
 } from '~/lib/constants'
 import { User } from '~/lib/models/User'
-import { authActions } from '~/lib/reducers/auth'
-import { StateType, useAppDispatch } from '~/lib/store'
 import PaidFeature from '~/modals/PaidFeature'
+import { useAuth } from '~/providers/AuthProvider'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
@@ -55,11 +53,8 @@ import Modal from '~/ui/Modal'
 import Select from '~/ui/Select'
 import Textarea from '~/ui/Textarea'
 import TimezonePicker from '~/ui/TimezonePicker'
-import { removeAccessToken } from '~/utils/accessToken'
 import { trackCustom } from '~/utils/analytics'
-import { logout } from '~/utils/auth'
 import { getCookie, setCookie } from '~/utils/cookie'
-import { removeRefreshToken } from '~/utils/refreshToken'
 import routes from '~/utils/routes'
 import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS } from '~/utils/validator'
 
@@ -130,23 +125,22 @@ interface Form extends Partial<User> {
 }
 
 const UserSettings = () => {
-  const { user, loading } = useSelector((state: StateType) => state.auth)
-  const dispatch = useAppDispatch()
+  const { user, isLoading, logout, setUser, mergeUser } = useAuth()
 
   const navigate = useNavigate()
   const { t } = useTranslation('common')
   const [activeTab, setActiveTab] = useState(TAB_MAPPING.ACCOUNT)
   const [form, setForm] = useState<Form>({
-    email: user.email || '',
+    email: user?.email || '',
     password: '',
     repeat: '',
-    timeFormat: user.timeFormat || TimeFormat['12-hour'],
+    timeFormat: user?.timeFormat || TimeFormat['12-hour'],
   })
   const [showPasswordFields, setShowPasswordFields] = useState(false)
-  const [timezone, setTimezone] = useState(user.timezone || DEFAULT_TIMEZONE)
+  const [timezone, setTimezone] = useState(user?.timezone || DEFAULT_TIMEZONE)
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
   const [isPasswordChangeModalOpened, setIsPasswordChangeModalOpened] = useState(false)
-  const [reportFrequency, setReportFrequency] = useState(user.reportFrequency)
+  const [reportFrequency, setReportFrequency] = useState(user?.reportFrequency)
   const [formPresetted, setFormPresetted] = useState(false)
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -197,25 +191,13 @@ const UserSettings = () => {
 
     try {
       const result = await changeUserDetails(data)
-      dispatch(authActions.setUser(result))
+      setUser(result)
       toast.success(t('profileSettings.updated'))
     } catch (reason: any) {
       toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
     } finally {
       callback(true)
-      dispatch(authActions.finishLoading())
     }
-  }
-
-  const logoutLocal = () => {
-    dispatch(authActions.logout())
-    removeRefreshToken()
-    removeAccessToken()
-  }
-
-  const logoutAll = () => {
-    dispatch(authActions.logout())
-    logout(true)
   }
 
   useEffect(() => {
@@ -223,17 +205,19 @@ const UserSettings = () => {
   }, [form]) // eslint-disable-line
 
   useEffect(() => {
-    if (!loading && !formPresetted) {
-      setForm((prev) => ({
-        ...prev,
-        email: user.email || '',
-        timeFormat: user.timeFormat || TimeFormat['12-hour'],
-      }))
-      setTimezone(user.timezone || DEFAULT_TIMEZONE)
-      setReportFrequency(user.reportFrequency)
-      setFormPresetted(true)
+    if (isLoading || !user || formPresetted) {
+      return
     }
-  }, [loading, user, formPresetted])
+
+    setForm((prev) => ({
+      ...prev,
+      email: user.email || '',
+      timeFormat: user.timeFormat || TimeFormat['12-hour'],
+    }))
+    setTimezone(user.timezone || DEFAULT_TIMEZONE)
+    setReportFrequency(user.reportFrequency)
+    setFormPresetted(true)
+  }, [isLoading, user, formPresetted])
 
   const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { target } = event
@@ -287,7 +271,7 @@ const UserSettings = () => {
 
     try {
       await setShowLiveVisitorsInTitle(checked)
-      dispatch(authActions.mergeUser({ showLiveVisitorsInTitle: checked }))
+      mergeUser({ showLiveVisitorsInTitle: checked })
       toast.success(t('profileSettings.updated'))
     } catch (reason: any) {
       toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
@@ -305,7 +289,7 @@ const UserSettings = () => {
 
     try {
       await receiveLoginNotification(checked)
-      dispatch(authActions.mergeUser({ receiveLoginNotifications: checked }))
+      mergeUser({ receiveLoginNotifications: checked })
       toast.success(t('profileSettings.updated'))
     } catch {
       toast.error(t('apiNotifications.somethingWentWrong'))
@@ -342,7 +326,7 @@ const UserSettings = () => {
   const onAccountDelete = async () => {
     try {
       await deleteUser(deletionFeedback)
-      dispatch(authActions.logout())
+      logout()
       toast.success(t('apiNotifications.accountDeleted'))
       trackCustom('ACCOUNT_DELETED', {
         reason_stated: deletionFeedback ? 'true' : 'false',
@@ -350,12 +334,10 @@ const UserSettings = () => {
       navigate(routes.main)
     } catch (reason: any) {
       toast.error(t(`apiNotifications.${reason}`, 'apiNotifications.somethingWentWrong'))
-    } finally {
-      dispatch(authActions.finishLoading())
     }
   }
 
-  const onExport = async (exportedAt: string) => {
+  const onExport = async (exportedAt: string | null) => {
     try {
       if (
         getCookie(GDPR_REQUEST) ||
@@ -401,7 +383,7 @@ const UserSettings = () => {
   const onApiKeyGenerate = async () => {
     try {
       const { apiKey } = await generateApiKey()
-      dispatch(authActions.mergeUser({ apiKey }))
+      mergeUser({ apiKey })
     } catch (reason: any) {
       toast.error(reason)
     }
@@ -410,7 +392,7 @@ const UserSettings = () => {
   const onApiKeyDelete = async () => {
     try {
       await deleteApiKey()
-      dispatch(authActions.mergeUser({ apiKey: null }))
+      mergeUser({ apiKey: null })
     } catch (reason: any) {
       toast.error(reason)
     }
@@ -497,7 +479,7 @@ const UserSettings = () => {
         </div>
         <ClientOnly fallback={<Loader />}>
           {() => {
-            if (loading) {
+            if (isLoading) {
               return <Loader />
             }
 
@@ -526,7 +508,7 @@ const UserSettings = () => {
                       <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
                         {t('profileSettings.apiKey')}
                       </h3>
-                      {user.apiKey ? (
+                      {user?.apiKey ? (
                         <>
                           <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
                             {t('profileSettings.apiKeyWarning')}
@@ -595,7 +577,7 @@ const UserSettings = () => {
                       <h3 className='mt-2 flex items-center text-lg font-bold text-gray-900 dark:text-gray-50'>
                         {t('profileSettings.apiKey')}
                       </h3>
-                      {user.apiKey ? (
+                      {user?.apiKey ? (
                         <>
                           <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>
                             {t('profileSettings.apiKeyWarning')}
@@ -615,7 +597,7 @@ const UserSettings = () => {
                           {t('profileSettings.noApiKey')}
                         </p>
                       )}
-                      {user.apiKey ? (
+                      {user?.apiKey ? (
                         <Button className='mt-4' onClick={() => setShowAPIDeleteModal(true)} danger large>
                           {t('profileSettings.deleteApiKeyBtn')}
                         </Button>
@@ -648,7 +630,7 @@ const UserSettings = () => {
                         {t('profileSettings.shared')}
                       </h3>
                       <div>
-                        {!_isEmpty(user.sharedProjects) ? (
+                        {!_isEmpty(user?.sharedProjects) ? (
                           <div className='mt-3 flex flex-col font-mono'>
                             <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8'>
                               <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
@@ -678,7 +660,7 @@ const UserSettings = () => {
                                       </tr>
                                     </thead>
                                     <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
-                                      {_map(user.sharedProjects, (item) => (
+                                      {_map(user?.sharedProjects, (item) => (
                                         <ProjectList key={item.id} item={item} />
                                       ))}
                                     </tbody>
@@ -698,7 +680,7 @@ const UserSettings = () => {
                         {t('profileSettings.organisations')}
                       </h3>
                       <div>
-                        {!_isEmpty(user.organisationMemberships) ? (
+                        {!_isEmpty(user?.organisationMemberships) ? (
                           <div className='mt-3 flex flex-col font-mono'>
                             <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8'>
                               <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
@@ -728,7 +710,7 @@ const UserSettings = () => {
                                       </tr>
                                     </thead>
                                     <tbody className='divide-y divide-gray-300 dark:divide-gray-600'>
-                                      {_map(user.organisationMemberships, (membership) => (
+                                      {_map(user?.organisationMemberships, (membership) => (
                                         <Organisations key={membership.id} membership={membership} />
                                       ))}
                                     </tbody>
@@ -743,7 +725,7 @@ const UserSettings = () => {
                       </div>
 
                       <hr className='mt-5 border-gray-200 dark:border-gray-600' />
-                      {!user.isActive ? (
+                      {!user?.isActive ? (
                         <div
                           className='mt-4 flex max-w-max cursor-pointer pl-0 text-blue-600 underline hover:text-indigo-800 dark:hover:text-indigo-600'
                           onClick={() => onEmailConfirm(setError)}
@@ -760,7 +742,13 @@ const UserSettings = () => {
                           </>
                         </Button>
                         <div className='flex flex-wrap justify-center gap-2'>
-                          <Button onClick={logoutAll} semiSmall semiDanger>
+                          <Button
+                            onClick={() => {
+                              logout(true)
+                            }}
+                            semiSmall
+                            semiDanger
+                          >
                             <>
                               {/* We need this div for the button to match the height of the button after it */}
                               <div className='h-5' />
@@ -828,7 +816,7 @@ const UserSettings = () => {
                     {t('profileSettings.uiSettings')}
                   </h3>
                   <Checkbox
-                    checked={user.showLiveVisitorsInTitle}
+                    checked={user?.showLiveVisitorsInTitle}
                     onChange={handleShowLiveVisitorsSave}
                     disabled={settingUpdating}
                     name='active'
@@ -879,9 +867,9 @@ const UserSettings = () => {
                         {t('profileSettings.integrations')}
                       </h3>
                       <Integrations handleIntegrationSave={handleIntegrationSave} />
-                      {user.isTelegramChatIdConfirmed ? (
+                      {user?.isTelegramChatIdConfirmed ? (
                         <Checkbox
-                          checked={user.receiveLoginNotifications}
+                          checked={user?.receiveLoginNotifications}
                           onChange={handleReceiveLoginNotifications}
                           disabled={settingUpdating}
                           name='receiveLoginNotifications'
@@ -921,7 +909,7 @@ const UserSettings = () => {
         onClose={() => setShowExportModal(false)}
         onSubmit={() => {
           setShowExportModal(false)
-          onExport(user.exportedAt)
+          onExport(user?.exportedAt || null)
         }}
         submitText={t('common.continue')}
         closeText={t('common.close')}
@@ -991,7 +979,7 @@ const UserSettings = () => {
           handleSubmit(null, true, (isSuccess: boolean) => {
             // password has been changed, let's log out the user as all the sessions are now invalid
             if (isSuccess) {
-              logoutLocal()
+              logout()
             }
           })
         }}

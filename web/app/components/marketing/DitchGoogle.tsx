@@ -2,6 +2,7 @@ import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
+import { useTheme } from '~/providers/ThemeProvider'
 import routes from '~/utils/routes'
 
 interface DitchGoogleProps {
@@ -9,11 +10,11 @@ interface DitchGoogleProps {
     light: string
     dark: string
   }
-  theme: 'dark' | 'light'
 }
 
-export const DitchGoogle = ({ screenshot: { light, dark }, theme }: DitchGoogleProps) => {
+export const DitchGoogle = ({ screenshot: { light, dark } }: DitchGoogleProps) => {
   const { t } = useTranslation('common')
+  const { theme } = useTheme()
 
   return (
     <div className='bg-white px-4 pb-12 md:px-8 dark:bg-slate-900'>

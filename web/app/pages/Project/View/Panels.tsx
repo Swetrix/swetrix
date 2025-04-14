@@ -1699,7 +1699,7 @@ const Panel = ({
   )
 }
 
-const PanelMemo = memo(Panel)
-const MetadataMemo = memo(Metadata)
+const PanelMemo = memo(Panel) as typeof Panel
+const MetadataMemo = memo(Metadata) as typeof Metadata
 
 export { PanelMemo as Panel, MetadataMemo as Metadata }

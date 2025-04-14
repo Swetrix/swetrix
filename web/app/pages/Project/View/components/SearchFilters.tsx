@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 
 import { getFilters, getErrorsFilters } from '~/api'
 import { FILTERS_PANELS_ORDER, ERRORS_FILTERS_PANELS_ORDER } from '~/lib/constants'
+import { useCurrentProject, useProjectPassword } from '~/providers/CurrentProjectProvider'
 import Checkbox from '~/ui/Checkbox'
 import Combobox from '~/ui/Combobox'
 import Modal from '~/ui/Modal'
@@ -18,9 +19,7 @@ import { Filter as FilterType } from '../interfaces/traffic'
 import { Filter } from './Filters'
 
 interface SearchFiltersProps {
-  projectPassword?: string
   setProjectFilter: (filters: FilterType[], override: boolean) => void
-  pid: string
   showModal: boolean
   setShowModal: (show: boolean) => void
   tnMapping: Record<string, string>
@@ -28,16 +27,9 @@ interface SearchFiltersProps {
   type: 'traffic' | 'errors'
 }
 
-const SearchFilters = ({
-  setProjectFilter,
-  pid,
-  showModal,
-  setShowModal,
-  tnMapping,
-  filters,
-  projectPassword,
-  type,
-}: SearchFiltersProps) => {
+const SearchFilters = ({ setProjectFilter, showModal, setShowModal, tnMapping, filters, type }: SearchFiltersProps) => {
+  const { id } = useCurrentProject()
+  const projectPassword = useProjectPassword(id)
   const {
     t,
     i18n: { language },
@@ -52,14 +44,14 @@ const SearchFilters = ({
       let result: any[]
 
       if (type === 'errors') {
-        result = await getErrorsFilters(pid, category, projectPassword)
+        result = await getErrorsFilters(id, category, projectPassword)
       } else {
-        result = await getFilters(pid, category, projectPassword)
+        result = await getFilters(id, category, projectPassword)
       }
 
       setSearchList(result)
     },
-    [pid, projectPassword, type],
+    [id, projectPassword, type],
   )
 
   useEffect(() => {

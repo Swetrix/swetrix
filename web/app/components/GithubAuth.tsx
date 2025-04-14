@@ -1,25 +1,21 @@
 import cx from 'clsx'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 
-import { isBrowser } from '~/lib/constants'
-import { StateType } from '~/lib/store/index'
+import { useTheme } from '~/providers/ThemeProvider'
 import Button from '~/ui/Button'
 import GithubDarkSVG from '~/ui/icons/GithubDark'
 import GithubLightSVG from '~/ui/icons/GithubLight'
 
 interface GoogleAuthProps {
-  ssrTheme: string
   isMiniButton?: boolean
   className?: string
   onClick: () => void
   disabled?: boolean
 }
 
-const GithubAuth = ({ isMiniButton, className, ssrTheme, onClick, disabled }: GoogleAuthProps) => {
+const GithubAuth = ({ isMiniButton, className, onClick, disabled }: GoogleAuthProps) => {
   const { t } = useTranslation()
-  const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
-  const theme = isBrowser ? reduxTheme : ssrTheme
+  const { theme } = useTheme()
 
   if (isMiniButton) {
     return (

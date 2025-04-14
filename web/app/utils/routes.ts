@@ -31,7 +31,7 @@ const routes = Object.freeze({
   transfer_confirm: '/project/transfer/confirm',
   transfer_reject: '/project/transfer/cancel',
   socialised: '/socialised',
-  project_protected_password: '/projects/:id/password',
+  project_protected_password: '/projects/:pid/password',
   open: '/open',
   ref: '/ref/:id',
   blog: '/blog',

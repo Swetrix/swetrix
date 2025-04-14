@@ -8,6 +8,7 @@ import { getUserFlow } from '~/api'
 import { UserFlowType } from '~/lib/models/UserFlow'
 import Loader from '~/ui/Loader'
 
+import { useCurrentProject, useProjectPassword } from '../../../../providers/CurrentProjectProvider'
 import { useViewProjectContext } from '../ViewProject'
 import { getFormatDate } from '../ViewProject.helpers'
 
@@ -17,7 +18,9 @@ interface UserFlowProps {
 }
 
 const UserFlow = ({ setReversed, isReversed }: UserFlowProps) => {
-  const { dateRange, period, timeBucket, timezone, projectPassword, projectId, filters } = useViewProjectContext()
+  const { dateRange, period, timeBucket, timezone, filters } = useViewProjectContext()
+  const { id } = useCurrentProject()
+  const projectPassword = useProjectPassword(id)
   const { t } = useTranslation('common')
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
   const [userFlow, setUserFlow] = useState<{
@@ -42,7 +45,7 @@ const UserFlow = ({ setReversed, isReversed }: UserFlowProps) => {
 
     try {
       const { ascending, descending } = await getUserFlow(
-        projectId,
+        id,
         timeBucket,
         period,
         filters,
@@ -62,7 +65,7 @@ const UserFlow = ({ setReversed, isReversed }: UserFlowProps) => {
   useEffect(() => {
     fetchUserFlow()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters, period, timeBucket, from, to, timezone, projectId])
+  }, [filters, period, timeBucket, from, to, timezone, id])
 
   if (isLoading || isLoading === null) {
     return <Loader />

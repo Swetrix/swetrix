@@ -6,6 +6,7 @@ import _some from 'lodash/some'
 import _startsWith from 'lodash/startsWith'
 import React from 'react'
 
+import { ProjectPreferences } from '../../../../providers/CurrentProjectProvider'
 import { Filter } from '../interfaces/traffic'
 
 export const ERROR_FILTERS_MAPPING = {
@@ -40,7 +41,9 @@ const validFilters = [
 // this is done to build a connnection between dynamic column and value (e.g. for custom event metadata or page properties)
 const validDynamicFilters = ['ev:key:', 'tag:key:']
 
-export const filterInvalidViewPrefs = (prefs: any): any => {
+export const filterInvalidPreferences = (
+  prefs: Record<string, ProjectPreferences>,
+): Record<string, ProjectPreferences> => {
   const pids = _keys(prefs)
   const filtered = _reduce(
     pids,

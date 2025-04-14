@@ -1,6 +1,5 @@
 import type i18next from 'i18next'
 import _includes from 'lodash/includes'
-import _split from 'lodash/split'
 import _startsWith from 'lodash/startsWith'
 
 import { TITLE_SUFFIX, SUPPORTED_THEMES, ThemeType } from '~/lib/constants'
@@ -9,12 +8,12 @@ import routes from '~/utils/routes'
 /**
  * Function detects theme based on user's browser hints and cookies
  */
-export function detectTheme(request: Request): [ThemeType, boolean] {
+export function detectTheme(request: Request): ThemeType {
   // Stage 1: Check if theme is set via `theme` query param
   const queryTheme = new URL(request.url).searchParams.get('theme') as ThemeType | null
 
   if (queryTheme && _includes(SUPPORTED_THEMES, queryTheme)) {
-    return [queryTheme, false]
+    return queryTheme
   }
 
   // Stage 2: Check if user has set theme manually
@@ -22,7 +21,7 @@ export function detectTheme(request: Request): [ThemeType, boolean] {
   const theme = cookie?.match(/(?<=colour-theme=)[^;]*/)?.[0] as ThemeType
 
   if (_includes(SUPPORTED_THEMES, theme)) {
-    return [theme, false]
+    return theme
   }
 
   // Stage 3: Try to detect theme based on Sec-CH browser hints
@@ -31,28 +30,10 @@ export function detectTheme(request: Request): [ThemeType, boolean] {
   const hintedTheme = request.headers.get('Sec-CH-Prefers-Color-Scheme') as ThemeType
 
   if (_includes(SUPPORTED_THEMES, hintedTheme)) {
-    return [hintedTheme, true]
+    return hintedTheme
   }
 
-  return ['light', false]
-}
-
-export function isEmbedded(request: Request): boolean {
-  return new URL(request.url).searchParams.get('embedded') === 'true'
-}
-
-export function getProjectTabs(request: Request): string[] {
-  const tabs = new URL(request.url).searchParams.get('tabs')
-
-  if (!tabs) {
-    return []
-  }
-
-  return _split(tabs, ',')
-}
-
-export function getProjectPassword(request: Request): string | null {
-  return new URL(request.url).searchParams.get('password')
+  return 'light'
 }
 
 function getAccessToken(request: Request): string | null {

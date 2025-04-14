@@ -7,12 +7,11 @@ import _isNil from 'lodash/isNil'
 import _map from 'lodash/map'
 import React, { memo, useState, useEffect } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { useSelector, useDispatch } from 'react-redux'
 import { Link } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 
-import { authMe, previewSubscriptionUpdate, changeSubscriptionPlan } from '~/api'
+import { previewSubscriptionUpdate, changeSubscriptionPlan, getPaymentMetainfo } from '~/api'
 import {
   CONTACT_EMAIL,
   paddleLanguageMapping,
@@ -23,13 +22,13 @@ import {
   STANDARD_PLANS,
   TRIAL_DAYS,
 } from '~/lib/constants'
-import { authActions } from '~/lib/reducers/auth'
-import { AppDispatch, StateType } from '~/lib/store'
+import { DEFAULT_METAINFO, Metainfo } from '~/lib/models/Metainfo'
+import { useAuth } from '~/providers/AuthProvider'
+import { useTheme } from '~/providers/ThemeProvider'
 import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
-import { logout } from '~/utils/auth'
 import routes from '~/utils/routes'
 
 const getPaidFeatures = (t: any, tier: any) => {
@@ -49,18 +48,21 @@ const getPaidFeatures = (t: any, tier: any) => {
 interface PricingProps {
   authenticated: boolean
   isBillingPage?: boolean
+  lastEvent?: {
+    event: string
+  } | null
 }
 
-const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
+const Pricing = ({ authenticated, isBillingPage, lastEvent }: PricingProps) => {
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
-  const dispatch = useDispatch<AppDispatch>()
-  const { user } = useSelector((state: StateType) => state.auth)
-  const { theme } = useSelector((state: StateType) => state.ui.theme)
-  const { paddle, metainfo } = useSelector((state: StateType) => state.ui.misc)
-  const { lastEvent } = paddle
+  const { user, loadUser } = useAuth()
+  const { theme } = useTheme()
+
+  const [metainfo, setMetainfo] = useState<Metainfo>(DEFAULT_METAINFO)
+
   const currencyCode = user?.tierCurrency || metainfo.code
 
   const [planCodeLoading, setPlanCodeLoading] = useState<string | null>(null)
@@ -78,12 +80,12 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
   const [billingFrequency, setBillingFrequency] = useState(user?.billingFrequency || BillingFrequency.monthly)
 
   const PLAN_CODES_ARRAY = authenticated
-    ? _includes(STANDARD_PLANS, user.planCode)
+    ? _includes(STANDARD_PLANS, user?.planCode)
       ? STANDARD_PLANS
-      : [user.planCode, ...STANDARD_PLANS]
+      : [user?.planCode, ...STANDARD_PLANS]
     : STANDARD_PLANS
 
-  const [selectedTier, setSelectedTier] = useState<any>(authenticated ? PLAN_LIMITS[user.planCode] : PLAN_LIMITS.hobby)
+  const [selectedTier, setSelectedTier] = useState(PLAN_LIMITS[user?.planCode || 'hobby'])
   const planFeatures = getPaidFeatures(t, selectedTier)
   const currency = CURRENCIES[currencyCode]
 
@@ -96,6 +98,20 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
   }
 
   useEffect(() => {
+    const abortController = new AbortController()
+
+    getPaymentMetainfo({ signal: abortController.signal })
+      .then(setMetainfo)
+      .catch(() => {})
+
+    return () => abortController.abort()
+  }, [])
+
+  useEffect(() => {
+    if (!lastEvent) {
+      return
+    }
+
     const lastEventHandler = async (data: { event: string }) => {
       if (_isNil(data)) {
         return
@@ -104,16 +120,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
       if (data.event === 'Checkout.Complete') {
         // giving some time to the API to process tier upgrate via Paddle webhook
         setTimeout(async () => {
-          try {
-            const { user } = await authMe()
-
-            dispatch(authActions.authSuccessful(user))
-            dispatch(authActions.finishLoading())
-          } catch (reason) {
-            dispatch(authActions.logout())
-            logout()
-            console.error(`[ERROR] Error while getting user after subscription update: ${reason}`)
-          }
+          await loadUser()
 
           toast.success(t('apiNotifications.subscriptionUpdated'))
         }, 3000)
@@ -126,7 +133,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
     }
 
     lastEventHandler(lastEvent)
-  }, [lastEvent, dispatch, t])
+  }, [lastEvent, t, loadUser])
 
   const loadSubUpdatePreview = async (planId: number) => {
     setIsNewPlanConfirmationModalOpened(true)
@@ -141,6 +148,10 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
   }
 
   const onPlanChange = async (tier: { planCode: string; name: string; pid: string; ypid: string }) => {
+    if (!user) {
+      return
+    }
+
     const isSelectingDifferentPlan =
       user.planCode !== tier.planCode ||
       user.billingFrequency !== billingFrequency ||
@@ -200,16 +211,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
     try {
       await changeSubscriptionPlan(newPlanId as number)
 
-      try {
-        const { user } = await authMe()
-
-        dispatch(authActions.authSuccessful(user))
-        dispatch(authActions.finishLoading())
-      } catch (reason) {
-        dispatch(authActions.logout())
-        logout()
-        console.error(`[ERROR] Error while getting user after subscription update: ${reason}`)
-      }
+      await loadUser()
 
       toast.success(t('apiNotifications.subscriptionUpdated'))
       closeUpdateModal(true)
@@ -221,25 +223,29 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
   }
 
   const downgradeHandler = (tier: { planCode: string; name: string; pid: string; ypid: string }) => {
+    if (!user) {
+      return
+    }
+
     if (planCodeLoading === null && user.planCode !== tier.planCode) {
       setDowngradeTo(tier)
       setShowDowngradeModal(true)
     }
   }
 
-  const userPlancodeID = PLAN_LIMITS[user.planCode]?.index
+  const userPlancodeID = user?.planCode ? PLAN_LIMITS[user.planCode]?.index : 0
   const planCodeID = selectedTier.index
-  const downgrade = !user.cancellationEffectiveDate && planCodeID < userPlancodeID
+  const downgrade = !user?.cancellationEffectiveDate && planCodeID < userPlancodeID
 
   let action: string
 
-  if (user.cancellationEffectiveDate || ['free', 'trial', 'none'].includes(user.planCode)) {
+  if (user?.cancellationEffectiveDate || ['free', 'trial', 'none'].includes(user?.planCode || '')) {
     action = t('pricing.subscribe')
   } else if (planCodeID > userPlancodeID) {
     action = t('pricing.upgrade')
   } else if (downgrade) {
     action = t('pricing.downgrade')
-  } else if (user.billingFrequency === billingFrequency) {
+  } else if (user?.billingFrequency === billingFrequency) {
     action = t('pricing.yourPlan')
   } else if (billingFrequency === BillingFrequency.monthly) {
     action = t('pricing.switchToMonthly')
@@ -329,7 +335,7 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
             onChange={onSelectPlanChange}
           />
           <div className='relative mt-5 divide-y rounded-2xl border ring-1 ring-gray-200 dark:ring-slate-700'>
-            {user.planCode === selectedTier.planCode ? (
+            {user?.planCode === selectedTier.planCode ? (
               <div className='absolute top-0 left-5 translate-y-px transform border-none'>
                 <div className='flex -translate-y-1/2 transform justify-center bg-gray-50 dark:bg-slate-900'>
                   <Badge label={t('pricing.currentPlan')} colour='indigo' />
@@ -362,17 +368,16 @@ const Pricing = ({ authenticated, isBillingPage }: PricingProps) => {
 
                     {authenticated ? (
                       <Button
+                        // @ts-expect-error TODO fix this later
                         onClick={() => (downgrade ? downgradeHandler(selectedTier) : onPlanChange(selectedTier))}
                         type='button'
                         className='mt-2 sm:mt-0'
                         loading={planCodeLoading === selectedTier.planCode}
                         disabled={
                           planCodeLoading !== null ||
-                          (selectedTier.planCode === user.planCode &&
-                            (user.billingFrequency === billingFrequency ||
-                              user.planCode === 'free' ||
-                              user.planCode === 'trial' ||
-                              user.planCode === 'none'))
+                          (selectedTier.planCode === user?.planCode &&
+                            (user?.billingFrequency === billingFrequency ||
+                              ['free', 'trial', 'none'].includes(user?.planCode || '')))
                         }
                         primary
                         large

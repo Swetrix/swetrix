@@ -7,20 +7,17 @@ import { useTranslation, Trans } from 'react-i18next'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
-import { generateSSOAuthURL, getInstalledExtensions, getJWTBySSOHash, login, submit2FA } from '~/api'
+import { generateSSOAuthURL, getJWTBySSOHash, login, submit2FA } from '~/api'
 import GithubAuth from '~/components/GithubAuth'
 import GoogleAuth from '~/components/GoogleAuth'
 import { withAuthentication, auth } from '~/hoc/protected'
 import { isSelfhosted, REFERRAL_COOKIE, TRIAL_DAYS } from '~/lib/constants'
 import { SSOProvider } from '~/lib/models/Auth'
-import { authActions } from '~/lib/reducers/auth'
-import UIActions from '~/lib/reducers/ui'
-import { useAppDispatch } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
 import { setAccessToken, removeAccessToken } from '~/utils/accessToken'
-import { shouldShowLowEventsBanner } from '~/utils/auth'
 import { deleteCookie, getCookie } from '~/utils/cookie'
 import { delay, openBrowserWindow } from '~/utils/generic'
 import { setRefreshToken, removeRefreshToken } from '~/utils/refreshToken'
@@ -33,14 +30,9 @@ interface SigninForm {
   dontRemember: boolean
 }
 
-interface SigninProps {
-  ssrTheme: string
-}
-
 const HASH_CHECK_FREQUENCY = 1000
 
-const Signin = ({ ssrTheme }: SigninProps) => {
-  const dispatch = useAppDispatch()
+const Signin = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { t } = useTranslation('common')
@@ -59,6 +51,7 @@ const Signin = ({ ssrTheme }: SigninProps) => {
   const [isTwoFARequired, setIsTwoFARequired] = useState(searchParams.get('show_2fa_screen') === 'true')
   const [twoFACode, setTwoFACode] = useState('')
   const [twoFACodeError, setTwoFACodeError] = useState<string | null>(null)
+  const { setUser, setTotalMonthlyEvents, setIsAuthenticated } = useAuth()
 
   const validate = () => {
     const allErrors = {} as {
@@ -125,23 +118,17 @@ const Signin = ({ ssrTheme }: SigninProps) => {
           if (user.isTwoFactorAuthenticationEnabled) {
             setAccessToken(accessToken, true)
             setRefreshToken(refreshToken)
-            dispatch(authActions.mergeUser(user))
+            setUser(user)
             setIsTwoFARequired(true)
             setIsLoading(false)
             return
           }
 
-          dispatch(authActions.authSuccessful(user))
+          setUser(user)
+          setIsAuthenticated(true)
+          setTotalMonthlyEvents(totalMonthlyEvents)
           setAccessToken(accessToken, false)
           setRefreshToken(refreshToken)
-
-          if (shouldShowLowEventsBanner(totalMonthlyEvents, user.maxEventsCount)) {
-            dispatch(UIActions.setShowNoEventsLeftBanner(true))
-          }
-
-          await loadExtensions()
-
-          dispatch(authActions.finishLoading())
 
           navigate(routes.dashboard)
 
@@ -162,15 +149,6 @@ const Signin = ({ ssrTheme }: SigninProps) => {
     }
   }
 
-  const loadExtensions = async () => {
-    if (isSelfhosted) {
-      return
-    }
-
-    const extensions = await getInstalledExtensions()
-    dispatch(UIActions.setExtensions(extensions))
-  }
-
   const onSubmit = async (data: SigninForm) => {
     if (isLoading) {
       return
@@ -183,33 +161,25 @@ const Signin = ({ ssrTheme }: SigninProps) => {
 
       const { user, accessToken, refreshToken, totalMonthlyEvents } = await login(_omit(data, ['dontRemember']))
 
-      dispatch(authActions.setDontRemember(dontRemember))
-
       if (user.isTwoFactorAuthenticationEnabled) {
         setAccessToken(accessToken, true)
         setRefreshToken(refreshToken, true)
-        dispatch(authActions.mergeUser(user))
+        setUser(user)
         setIsTwoFARequired(true)
         setIsLoading(false)
         return
       }
 
-      dispatch(authActions.authSuccessful(user))
+      setUser(user)
+      setIsAuthenticated(true)
+      setTotalMonthlyEvents(totalMonthlyEvents)
       setAccessToken(accessToken, dontRemember)
       setRefreshToken(refreshToken)
-
-      if (shouldShowLowEventsBanner(totalMonthlyEvents, user.maxEventsCount)) {
-        dispatch(UIActions.setShowNoEventsLeftBanner(true))
-      }
-
-      await loadExtensions()
 
       setIsLoading(false)
     } catch (reason) {
       toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
       setIsLoading(false)
-    } finally {
-      dispatch(authActions.finishLoading())
     }
   }
 
@@ -217,28 +187,30 @@ const Signin = ({ ssrTheme }: SigninProps) => {
     e.preventDefault()
     e.stopPropagation()
 
-    if (!isLoading) {
-      setIsLoading(true)
-
-      try {
-        const { accessToken, refreshToken, user } = await submit2FA(twoFACode)
-        removeAccessToken()
-        removeRefreshToken()
-        setAccessToken(accessToken)
-        setRefreshToken(refreshToken)
-        await loadExtensions()
-        dispatch(authActions.authSuccessful(user))
-      } catch (reason) {
-        if (_isString(reason)) {
-          toast.error(reason)
-        }
-        console.error(`[ERROR] Failed to authenticate with 2FA: ${reason}`)
-        setTwoFACodeError(t('profileSettings.invalid2fa'))
-      }
-
-      setTwoFACode('')
-      setIsLoading(false)
+    if (isLoading) {
+      return
     }
+
+    setIsLoading(true)
+
+    try {
+      const { accessToken, refreshToken, user } = await submit2FA(twoFACode)
+      removeAccessToken()
+      removeRefreshToken()
+      setAccessToken(accessToken)
+      setRefreshToken(refreshToken)
+      setUser(user)
+      setIsAuthenticated(true)
+    } catch (reason) {
+      if (_isString(reason)) {
+        toast.error(reason)
+      }
+      console.error(`[ERROR] Failed to authenticate with 2FA: ${reason}`)
+      setTwoFACodeError(t('profileSettings.invalid2fa'))
+    }
+
+    setTwoFACode('')
+    setIsLoading(false)
   }
 
   const handleInput = ({ target }: { target: HTMLInputElement }) => {
@@ -370,7 +342,7 @@ const Signin = ({ ssrTheme }: SigninProps) => {
               </div>
               <div className='mt-6 grid grid-cols-2 gap-4'>
                 <GoogleAuth onClick={() => onSsoLogin('google')} disabled={isLoading} />
-                <GithubAuth onClick={() => onSsoLogin('github')} ssrTheme={ssrTheme} disabled={isLoading} />
+                <GithubAuth onClick={() => onSsoLogin('github')} disabled={isLoading} />
               </div>
             </div>
           ) : null}

@@ -6,10 +6,8 @@ import FlatpickrLightCss from 'flatpickr/dist/themes/light.css?url'
 import _replace from 'lodash/replace'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Provider } from 'react-redux'
 import type { LinksFunction, LoaderFunctionArgs, HeadersFunction } from 'react-router'
 import {
-  data,
   redirect,
   Links,
   Meta,
@@ -25,18 +23,19 @@ import { ExternalScripts } from 'remix-utils/external-scripts'
 import { LocaleLinks } from '~/components/LocaleLinks'
 import { SEO } from '~/components/SEO'
 import { CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted, I18N_CACHE_BREAKER } from '~/lib/constants'
-import { store } from '~/lib/store'
 import FlatpickerCss from '~/styles/Flatpicker.css?url'
 import FontsCss from '~/styles/fonts.css?url'
 import mainCss from '~/styles/index.css?url'
 import sonnerCss from '~/styles/sonner.css?url'
 import tailwindCss from '~/styles/tailwind.css?url'
 import { trackViews, trackErrors } from '~/utils/analytics'
-import { getCookie, generateCookieString } from '~/utils/cookie'
+import { getCookie } from '~/utils/cookie'
 import { detectTheme, isAuthenticated, isWWW } from '~/utils/server'
 
 import AppWrapper from './App'
 import { detectLanguage } from './i18n'
+import { AuthProvider } from './providers/AuthProvider'
+import { ThemeProvider, useTheme } from './providers/ThemeProvider'
 
 trackViews()
 trackErrors()
@@ -174,7 +173,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   const locale = detectLanguage(request)
-  const [theme, storeThemeToCookie] = detectTheme(request)
+  const theme = detectTheme(request)
   const isAuthed = isAuthenticated(request)
 
   const REMIX_ENV = {
@@ -188,22 +187,29 @@ export async function loader({ request }: LoaderFunctionArgs) {
     PADDLE_CLIENT_SIDE_TOKEN: process.env.PADDLE_CLIENT_SIDE_TOKEN,
   }
 
-  const init = storeThemeToCookie
-    ? {
-        headers: {
-          // 21600 seconds = 6 hours
-          'Set-Cookie': generateCookieString(LS_THEME_SETTING, theme, 21600),
-        },
-      }
-    : undefined
-
-  return data({ locale, url, theme, REMIX_ENV, isAuthed, pathname: urlObject.pathname }, init)
+  return { locale, url, theme, REMIX_ENV, isAuthed, pathname: urlObject.pathname }
 }
 
 export const handle = { i18n: 'common' }
 
+const Body = () => {
+  const { isAuthed } = useLoaderData<typeof loader>()
+  const { theme } = useTheme()
+
+  return (
+    <body className={cx(theme, { 'bg-white': theme === 'light', 'bg-slate-900': theme === 'dark' })}>
+      <AuthProvider initialIsAuthenticated={isAuthed}>
+        <AppWrapper />
+      </AuthProvider>
+      <ScrollRestoration />
+      <ExternalScripts />
+      <Scripts />
+    </body>
+  )
+}
+
 export default function App() {
-  const { locale, url, theme, REMIX_ENV, isAuthed } = useLoaderData<any>()
+  const { locale, url, theme, REMIX_ENV } = useLoaderData<typeof loader>()
   const { i18n } = useTranslation('common')
 
   const urlObject = new URL(url)
@@ -212,17 +218,16 @@ export default function App() {
   useChangeLanguage(locale)
 
   return (
-    <html className={cx('font-sans antialiased', theme)} lang={locale} dir={i18n.dir()}>
+    <html className='font-sans antialiased' lang={locale} dir={i18n.dir()}>
       <head>
         <meta charSet='utf-8' />
         <SEO />
         <meta name='google' content='notranslate' />
         <link rel='icon' type='image/x-icon' href='/favicon.ico' />
-        {/* <meta name='apple-mobile-web-app-title' content='Swetrix' /> */}
-        {/* <meta name='application-name' content='Swetrix' /> */}
         <Meta />
         <meta name='viewport' content='width=device-width,initial-scale=1' />
         <Links />
+        {/* TODO: We should not load Flatpicker styles globally; load them within the FlatPicker component */}
         {theme === 'dark' ? <link rel='stylesheet' href={FlatpickrDarkCss} /> : null}
         {theme === 'light' ? <link rel='stylesheet' href={FlatpickrLightCss} /> : null}
         <LocaleLinks />
@@ -235,14 +240,9 @@ export default function App() {
         />
         <script dangerouslySetInnerHTML={{ __html: `window.REMIX_ENV = ${JSON.stringify(REMIX_ENV)}` }} />
       </head>
-      <body className={cx({ 'bg-white': theme === 'light', 'bg-slate-900': theme === 'dark' })}>
-        <Provider store={store}>
-          <AppWrapper ssrTheme={theme} ssrAuthenticated={isAuthed} />
-        </Provider>
-        <ScrollRestoration />
-        <ExternalScripts />
-        <Scripts />
-      </body>
+      <ThemeProvider initialTheme={theme}>
+        <Body />
+      </ThemeProvider>
     </html>
   )
 }

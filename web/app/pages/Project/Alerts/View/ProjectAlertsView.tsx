@@ -15,22 +15,20 @@ import _values from 'lodash/values'
 import { Trash2Icon, BellRingIcon } from 'lucide-react'
 import { useMemo, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { useNavigate, Link } from 'react-router'
 import { toast } from 'sonner'
 
 import { deleteAlert as deleteAlertApi, getProjectAlerts } from '~/api'
 import { QUERY_METRIC, PLAN_LIMITS, DEFAULT_ALERTS_TAKE } from '~/lib/constants'
 import { Alerts } from '~/lib/models/Alerts'
-import { StateType } from '~/lib/store'
 import PaidFeature from '~/modals/PaidFeature'
+import { useAuth } from '~/providers/AuthProvider'
+import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
 import Pagination from '~/ui/Pagination'
 import routes from '~/utils/routes'
-
-import { useViewProjectContext } from '../../View/ViewProject'
 
 const Separator = ({ className }: { className?: string }) => (
   <svg viewBox='0 0 2 2' className={cx('h-0.5 w-0.5 flex-none fill-gray-400', className)}>
@@ -182,9 +180,9 @@ const AddAlert = ({ handleNewAlert, isLimitReached }: AddAlertProps) => {
 }
 
 const ProjectAlerts = () => {
-  const { projectId } = useViewProjectContext()
+  const { id } = useCurrentProject()
   const { t } = useTranslation()
-  const { user, authenticated } = useSelector((state: StateType) => state.auth)
+  const { user, isAuthenticated } = useAuth()
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
 
   const [isLoading, setIsLoading] = useState<boolean | null>(null)
@@ -198,8 +196,8 @@ const ProjectAlerts = () => {
 
   const navigate = useNavigate()
 
-  const limits = PLAN_LIMITS[user?.planCode] || PLAN_LIMITS.trial
-  const isLimitReached = authenticated && total >= limits?.maxAlerts
+  const limits = PLAN_LIMITS[user?.planCode || 'trial']
+  const isLimitReached = isAuthenticated && total >= limits?.maxAlerts
 
   const loadAlerts = async (take: number, skip: number) => {
     if (isLoading) {
@@ -208,7 +206,7 @@ const ProjectAlerts = () => {
     setIsLoading(true)
 
     try {
-      const result = await getProjectAlerts(projectId, take, skip)
+      const result = await getProjectAlerts(id, take, skip)
       setAlerts(result.results)
       setTotal(result.total)
     } catch (reason: any) {
@@ -253,7 +251,7 @@ const ProjectAlerts = () => {
       return
     }
 
-    navigate(_replace(routes.create_alert, ':pid', projectId))
+    navigate(_replace(routes.create_alert, ':pid', id))
   }
 
   const onDelete = async (id: string) => {
@@ -339,7 +337,7 @@ const ProjectAlerts = () => {
                   key={alert.id}
                   {...alert}
                   openAlert={(id) => {
-                    navigate(_replace(_replace(routes.alert_settings, ':pid', projectId), ':id', id))
+                    navigate(_replace(_replace(routes.alert_settings, ':pid', id), ':id', id))
                   }}
                   deleteAlert={onDelete}
                   queryMetricTMapping={queryMetricTMapping}

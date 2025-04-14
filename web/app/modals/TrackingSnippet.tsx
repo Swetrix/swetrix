@@ -1,6 +1,7 @@
 import { useTranslation, Trans } from 'react-i18next'
 
 import { API_URL, isSelfhosted } from '~/lib/constants'
+import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { Badge } from '~/ui/Badge'
 import Modal from '~/ui/Modal'
 import Textarea from '~/ui/Textarea'
@@ -10,7 +11,6 @@ const API_URL_WITHOUT_TRAILING_SLASH = API_URL.endsWith('/') ? API_URL.slice(0, 
 interface TrackingSnippetProps {
   onClose: () => void
   isOpened: boolean
-  pid: string
 }
 
 const getSnippet = (pid: string) => {
@@ -53,10 +53,11 @@ const getSnippet = (pid: string) => {
 
 const SCRIPT_DOCS_URL = 'https://docs.swetrix.com/install-script'
 
-const TrackingSnippet = ({ onClose, isOpened, pid }: TrackingSnippetProps) => {
+const TrackingSnippet = ({ onClose, isOpened }: TrackingSnippetProps) => {
+  const { id } = useCurrentProject()
   const { t } = useTranslation('common')
 
-  const snippet = getSnippet(pid)
+  const snippet = getSnippet(id)
 
   return (
     <Modal

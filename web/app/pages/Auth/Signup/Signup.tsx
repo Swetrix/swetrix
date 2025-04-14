@@ -3,7 +3,6 @@ import _keys from 'lodash/keys'
 import _size from 'lodash/size'
 import React, { useState, useEffect } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
@@ -12,16 +11,13 @@ import GithubAuth from '~/components/GithubAuth'
 import GoogleAuth from '~/components/GoogleAuth'
 import { HAVE_I_BEEN_PWNED_URL, REFERRAL_COOKIE, TRIAL_DAYS } from '~/lib/constants'
 import { SSOProvider } from '~/lib/models/Auth'
-import { authActions } from '~/lib/reducers/auth'
-import UIActions from '~/lib/reducers/ui'
-import { StateType, useAppDispatch } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import Button from '~/ui/Button'
 import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
 import Tooltip from '~/ui/Tooltip'
-import { getAccessToken, setAccessToken } from '~/utils/accessToken'
+import { setAccessToken } from '~/utils/accessToken'
 import { trackCustom } from '~/utils/analytics'
-import { shouldShowLowEventsBanner } from '~/utils/auth'
 import { deleteCookie, getCookie } from '~/utils/cookie'
 import { delay, openBrowserWindow } from '~/utils/generic'
 import { setRefreshToken } from '~/utils/refreshToken'
@@ -37,15 +33,9 @@ interface SignupForm {
   checkIfLeaked: boolean
 }
 
-interface SignupProps {
-  ssrTheme: string
-}
-
 const HASH_CHECK_FREQUENCY = 1000
 
-const Signup = ({ ssrTheme }: SignupProps) => {
-  const dispatch = useAppDispatch()
-  const { authenticated: reduxAuthenticated, loading } = useSelector((state: StateType) => state.auth)
+const Signup = () => {
   const { t } = useTranslation('common')
   const [form, setForm] = useState<SignupForm>({
     email: '',
@@ -65,8 +55,7 @@ const Signup = ({ ssrTheme }: SignupProps) => {
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
-  const accessToken = getAccessToken()
-  const authenticated = loading ? !!accessToken : reduxAuthenticated
+  const { isAuthenticated, setUser, setTotalMonthlyEvents, setIsAuthenticated } = useAuth()
 
   const validate = () => {
     const allErrors = {} as {
@@ -107,11 +96,11 @@ const Signup = ({ ssrTheme }: SignupProps) => {
   }, [form]) // eslint-disable-line
 
   useEffect(() => {
-    if (authenticated && !beenSubmitted) {
+    if (isAuthenticated && !beenSubmitted) {
       navigate(routes.dashboard)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authenticated, beenSubmitted])
+  }, [isAuthenticated, beenSubmitted])
 
   const onSubmit = async (data: SignupForm) => {
     if (isLoading) {
@@ -136,8 +125,8 @@ const Signup = ({ ssrTheme }: SignupProps) => {
         deleteCookie(REFERRAL_COOKIE)
       }
 
-      dispatch(authActions.authSuccessful(user))
-      dispatch(authActions.setDontRemember(dontRemember))
+      setUser(user)
+      setIsAuthenticated(true)
       setAccessToken(accessToken, dontRemember)
       setRefreshToken(refreshToken)
       setIsLoading(false)
@@ -149,8 +138,6 @@ const Signup = ({ ssrTheme }: SignupProps) => {
     } catch (reason) {
       toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
       setIsLoading(false)
-    } finally {
-      dispatch(authActions.finishLoading())
     }
   }
 
@@ -187,21 +174,17 @@ const Signup = ({ ssrTheme }: SignupProps) => {
           if (user.isTwoFactorAuthenticationEnabled) {
             setAccessToken(accessToken, true)
             setRefreshToken(refreshToken)
-            dispatch(authActions.mergeUser(user))
+            setUser(user)
             navigate(`${routes.signin}?show_2fa_screen=true`)
             setIsLoading(false)
             return
           }
 
-          dispatch(authActions.authSuccessful(user))
+          setUser(user)
+          setIsAuthenticated(true)
+          setTotalMonthlyEvents(totalMonthlyEvents)
           setAccessToken(accessToken, false)
           setRefreshToken(refreshToken)
-
-          if (shouldShowLowEventsBanner(totalMonthlyEvents, user.maxEventsCount)) {
-            dispatch(UIActions.setShowNoEventsLeftBanner(true))
-          }
-
-          dispatch(authActions.finishLoading())
 
           navigate(routes.dashboard)
 
@@ -373,7 +356,7 @@ const Signup = ({ ssrTheme }: SignupProps) => {
                 </div>
                 <div className='mt-6 grid grid-cols-2 gap-4'>
                   <GoogleAuth onClick={() => onSsoLogin('google')} disabled={isLoading} />
-                  <GithubAuth onClick={() => onSsoLogin('github')} ssrTheme={ssrTheme} disabled={isLoading} />
+                  <GithubAuth onClick={() => onSsoLogin('github')} disabled={isLoading} />
                 </div>
               </div>
             </div>

@@ -1,22 +1,16 @@
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { useTranslation, Trans } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { Link, useParams } from 'react-router'
 
 import Header from '~/components/Header'
 import { Lines } from '~/components/marketing/Lines'
-import { isBrowser, REFERRAL_COOKIE_DAYS, REFERRAL_DISCOUNT } from '~/lib/constants'
-import { StateType } from '~/lib/store/index'
+import { REFERRAL_COOKIE_DAYS, REFERRAL_DISCOUNT } from '~/lib/constants'
+import { useTheme } from '~/providers/ThemeProvider'
 import routes from '~/utils/routes'
 
-interface ReferralPageProps {
-  ssrTheme: 'dark' | 'light'
-}
-
-const ReferralPage = ({ ssrTheme }: ReferralPageProps) => {
+const ReferralPage = () => {
   const { t } = useTranslation('common')
-  const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
-  const theme = isBrowser ? reduxTheme : ssrTheme
+  const { theme } = useTheme()
 
   // Referral code
   const { id } = useParams()
@@ -54,7 +48,7 @@ const ReferralPage = ({ ssrTheme }: ReferralPageProps) => {
               }}
             />
           </div>
-          <Header ssrTheme={ssrTheme} authenticated={false} refPage transparent />
+          <Header refPage transparent />
           <div className='relative mx-auto min-h-[740px] pt-10 pb-5 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
             <div className='relative z-20 flex flex-row content-between justify-center lg:justify-start 2xl:mr-[14vw] 2xl:justify-center'>
               <div className='relative px-4 text-left lg:mt-0 lg:mr-14'>

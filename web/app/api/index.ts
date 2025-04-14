@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from 'axios'
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import createAuthRefreshInterceptor from 'axios-auth-refresh'
 import _isArray from 'lodash/isArray'
 import _isEmpty from 'lodash/isEmpty'
@@ -7,16 +7,16 @@ import _map from 'lodash/map'
 import { DEFAULT_ALERTS_TAKE, API_URL } from '~/lib/constants'
 import { Alerts } from '~/lib/models/Alerts'
 import { Auth } from '~/lib/models/Auth'
+import { Metainfo } from '~/lib/models/Metainfo'
 import { Role } from '~/lib/models/Organisation'
-import { Project, Overall, LiveStats, Funnel } from '~/lib/models/Project'
+import { Project, Overall, LiveStats, Funnel, Extension } from '~/lib/models/Project'
+import { Stats } from '~/lib/models/Stats'
 import { Subscriber } from '~/lib/models/Subscriber'
 import { User, FeatureFlag } from '~/lib/models/User'
-import { authActions } from '~/lib/reducers/auth'
-import { store } from '~/lib/store'
 import { Filter, ProjectViewCustomEvent } from '~/pages/Project/View/interfaces/traffic'
-import { getAccessToken, removeAccessToken, setAccessToken } from '~/utils/accessToken'
+import { getAccessToken, setAccessToken } from '~/utils/accessToken'
 import { logout } from '~/utils/auth'
-import { getRefreshToken, removeRefreshToken } from '~/utils/refreshToken'
+import { getRefreshToken } from '~/utils/refreshToken'
 
 const api = axios.create({
   baseURL: API_URL,
@@ -38,8 +38,8 @@ const refreshAuthLogic = (failedRequest: { response: AxiosResponse }) =>
       return Promise.resolve()
     })
     .catch((error) => {
-      store.dispatch(authActions.logout())
       logout()
+      // If user session is invalid, this rejection will be thrown to authMe in AuthProvider and will reset user there too
       return Promise.reject(error)
     })
 
@@ -61,20 +61,15 @@ api.interceptors.request.use(
   },
 )
 
-export const authMe = () =>
-  api
-    .get('user/me')
-    .then(
-      (
-        response,
-      ): {
-        user: User
-        totalMonthlyEvents: number
-      } => response.data,
-    )
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
+export const authMe = (config?: AxiosRequestConfig) =>
+  api.get('user/me', config).then(
+    (
+      response,
+    ): {
+      user: User
+      totalMonthlyEvents: number
+    } => response.data,
+  )
 
 export const logoutApi = (refreshToken: string | null) =>
   axios
@@ -83,11 +78,7 @@ export const logoutApi = (refreshToken: string | null) =>
         Authorization: `Bearer ${refreshToken}`,
       },
     })
-    .then((response) => {
-      removeAccessToken()
-      removeRefreshToken()
-      return response.data
-    })
+    .then((response) => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -888,7 +879,7 @@ export const getLiveVisitors = (pids: string[], password?: string): Promise<Live
 export const getGeneralStats = () =>
   api
     .get('log/generalStats')
-    .then((response) => response.data)
+    .then((response): Stats => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -998,10 +989,17 @@ export const deleteApiKey = () =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getInstalledExtensions = (limit = 100, offset = 0) =>
+export const getInstalledExtensions = (limit = 100, offset = 0, config?: AxiosRequestConfig) =>
   api
-    .get(`/extensions/installed?limit=${limit}&offset=${offset}`)
-    .then((response) => response.data)
+    .get(`/extensions/installed?limit=${limit}&offset=${offset}`, config)
+    .then(
+      (
+        response,
+      ): {
+        count: number
+        extensions: Extension[]
+      } => response.data,
+    )
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -1340,10 +1338,10 @@ export const checkPassword = (pid: string, password: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const getPaymentMetainfo = () =>
+export const getPaymentMetainfo = (config?: AxiosRequestConfig) =>
   api
-    .get('user/metainfo')
-    .then((response) => response.data)
+    .get('user/metainfo', config)
+    .then((response): Metainfo => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -1452,9 +1450,9 @@ export const getBlogPostWithCategory = (category: string, slug: string) =>
       throw error
     })
 
-export const getLastPost = () =>
+export const getLastPost = (config?: AxiosRequestConfig) =>
   api
-    .get('v1/blog/last-post')
+    .get('v1/blog/last-post', config)
     .then(
       (
         response,

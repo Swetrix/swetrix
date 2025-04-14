@@ -1,32 +1,20 @@
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import _map from 'lodash/map'
 import { useTranslation, Trans } from 'react-i18next'
-import { useSelector } from 'react-redux'
-import { Link, useLoaderData } from 'react-router'
+import { Link } from 'react-router'
 
 import Header from '~/components/Header'
 import { ComparisonTable } from '~/components/marketing/ComparisonTable'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
-import { BOOK_A_CALL_URL, DISCORD_URL, isBrowser, LIVE_DEMO_URL } from '~/lib/constants'
-import { StateType } from '~/lib/store'
-import { getAccessToken } from '~/utils/accessToken'
+import { BOOK_A_CALL_URL, DISCORD_URL, LIVE_DEMO_URL } from '~/lib/constants'
+import { useTheme } from '~/providers/ThemeProvider'
 import routesPath from '~/utils/routes'
-
-interface LoaderProps {
-  theme: 'dark' | 'light'
-  isAuth: boolean
-}
 
 const INTEGRATIONS_URL = 'https://docs.swetrix.com/integrations'
 
 const Marketers = () => {
-  const { theme: ssrTheme, isAuth } = useLoaderData<LoaderProps>()
   const { t } = useTranslation('common')
-  const reduxTheme = useSelector((state: StateType) => state.ui.theme.theme)
-  const accessToken = getAccessToken()
-  const { authenticated: reduxAuthenticated, loading } = useSelector((state: StateType) => state.auth)
-  const authenticated = isBrowser ? (loading ? !!accessToken : reduxAuthenticated) : isAuth
-  const theme = isBrowser ? reduxTheme : ssrTheme
+  const { theme } = useTheme()
 
   return (
     <main className='bg-white dark:bg-slate-900'>
@@ -60,7 +48,7 @@ const Marketers = () => {
             }}
           />
         </div>
-        <Header ssrTheme={ssrTheme} authenticated={authenticated} transparent />
+        <Header transparent />
         <div className='relative mx-auto min-h-[740px] pt-10 pb-5 sm:px-3 lg:px-6 lg:pt-24 xl:px-8'>
           <div className='relative z-20 flex flex-col content-between justify-center'>
             <div className='relative mx-auto flex flex-col px-4 text-left'>
@@ -170,7 +158,6 @@ const Marketers = () => {
           dark: '/assets/screenshot_dark.png',
           light: '/assets/screenshot_light.png',
         }}
-        theme={theme}
       />
     </main>
   )

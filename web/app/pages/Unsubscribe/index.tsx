@@ -2,11 +2,10 @@ import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid'
 import _isString from 'lodash/isString'
 import { useState, useEffect, memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSelector } from 'react-redux'
 import { useParams, Link } from 'react-router'
 
 import { unsubscribeFromEmailReports, unsubscribeFromEmailReports3rdParty } from '~/api'
-import { StateType } from '~/lib/store'
+import { useAuth } from '~/providers/AuthProvider'
 import Loader from '~/ui/Loader'
 import routes from '~/utils/routes'
 
@@ -17,7 +16,7 @@ interface UnsubscribeProps {
 const Unsubscribe = ({ type }: UnsubscribeProps) => {
   const { t } = useTranslation('common')
   const { token } = useParams()
-  const { authenticated } = useSelector((state: StateType) => state.auth)
+  const { isAuthenticated } = useAuth()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -78,7 +77,7 @@ const Unsubscribe = ({ type }: UnsubscribeProps) => {
                 </h1>
               </div>
               <div className='mt-8 flex space-x-3 font-mono sm:border-l sm:border-transparent sm:pl-6'>
-                {authenticated ? (
+                {isAuthenticated ? (
                   <Link
                     to={routes.dashboard}
                     className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden'
@@ -119,7 +118,7 @@ const Unsubscribe = ({ type }: UnsubscribeProps) => {
               </h1>
             </div>
             <div className='mt-8 flex space-x-3 font-mono sm:border-l sm:border-transparent sm:pl-6'>
-              {authenticated ? (
+              {isAuthenticated ? (
                 <Link
                   to={routes.dashboard}
                   className='inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-hidden'

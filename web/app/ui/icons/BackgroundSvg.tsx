@@ -1,14 +1,17 @@
 import cx from 'clsx'
 import React from 'react'
 
+import { useTheme } from '~/providers/ThemeProvider'
+
 interface BackgroundSvgProps {
   className?: string
   type: 'shapes' | 'circle' | 'semicircle' | 'twolinecircle' | 'threecircle' | 'twolinecircle2'
   children?: React.ReactNode
-  theme: 'dark' | 'light'
 }
 
-const BackgroundSvg = ({ className, type, children, theme }: BackgroundSvgProps) => {
+const BackgroundSvg = ({ className, type, children }: BackgroundSvgProps) => {
+  const { theme } = useTheme()
+
   if (type === 'shapes') {
     return (
       <svg
