@@ -175,7 +175,6 @@ const Signup = () => {
             setAccessToken(accessToken, true)
             setRefreshToken(refreshToken)
             setUser(user)
-            setTotalMonthlyEvents(totalMonthlyEvents)
             navigate(`${routes.signin}?show_2fa_screen=true`)
             setIsLoading(false)
             return

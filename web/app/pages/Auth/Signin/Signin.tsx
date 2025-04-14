@@ -165,7 +165,6 @@ const Signin = () => {
         setAccessToken(accessToken, true)
         setRefreshToken(refreshToken, true)
         setUser(user)
-        setTotalMonthlyEvents(totalMonthlyEvents)
         setIsTwoFARequired(true)
         setIsLoading(false)
         return
