@@ -1,6 +1,5 @@
 import type i18next from 'i18next'
 import _includes from 'lodash/includes'
-import _split from 'lodash/split'
 import _startsWith from 'lodash/startsWith'
 
 import { TITLE_SUFFIX, SUPPORTED_THEMES, ThemeType } from '~/lib/constants'
@@ -35,16 +34,6 @@ export function detectTheme(request: Request): ThemeType {
   }
 
   return 'light'
-}
-
-export function getProjectTabs(request: Request): string[] {
-  const tabs = new URL(request.url).searchParams.get('tabs')
-
-  if (!tabs) {
-    return []
-  }
-
-  return _split(tabs, ',')
 }
 
 function getAccessToken(request: Request): string | null {

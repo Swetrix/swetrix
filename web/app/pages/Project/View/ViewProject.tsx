@@ -50,7 +50,7 @@ import React, {
 } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, Link, useSearchParams, useLoaderData } from 'react-router'
+import { useNavigate, Link, useSearchParams } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 import { toast } from 'sonner'
 
@@ -249,10 +249,6 @@ const ViewProject = () => {
   const { id, project, preferences, updatePreferences, extensions, mergeProject, allowedToManage } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
 
-  const { tabs: projectQueryTabs } = useLoaderData<{
-    tabs: string[]
-  }>()
-
   const { theme } = useTheme()
 
   const { isAuthenticated, user, isLoading: authLoading } = useAuth()
@@ -279,6 +275,7 @@ const ViewProject = () => {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const isEmbedded = searchParams.get('embedded') === 'true'
+  const projectQueryTabs = searchParams.get('tabs') ? searchParams.get('tabs')?.split(',') : []
 
   const [liveVisitors, setLiveVisitors] = useState(0)
 
