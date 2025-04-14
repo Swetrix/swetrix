@@ -4,13 +4,12 @@ import _replace from 'lodash/replace'
 import _size from 'lodash/size'
 import React, { useState, useEffect, memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useNavigate } from 'react-router'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 
 import { checkPassword } from '~/api'
 import Footer from '~/components/Footer'
 import Header from '~/components/Header'
 import { useRequiredParams } from '~/hooks/useRequiredParams'
-import { useTheme } from '~/providers/ThemeProvider'
 import Button from '~/ui/Button'
 import Input from '~/ui/Input'
 import routes from '~/utils/routes'
@@ -28,7 +27,6 @@ interface ProjectProtectedPasswordProps {
 }
 
 const ProjectProtectedPassword = ({ embedded }: ProjectProtectedPasswordProps) => {
-  const { theme } = useTheme()
   const { t } = useTranslation('common')
   const [form, setForm] = useState<ProjectProtectedPasswordForm>({
     password: '',
@@ -41,6 +39,7 @@ const ProjectProtectedPassword = ({ embedded }: ProjectProtectedPasswordProps) =
   const [beenSubmitted, setBeenSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
 
   const validate = () => {
     const allErrors = {} as {
@@ -66,27 +65,42 @@ const ProjectProtectedPassword = ({ embedded }: ProjectProtectedPasswordProps) =
   }, [form]) // eslint-disable-line
 
   const onSubmit = async (data: ProjectProtectedPasswordForm) => {
-    if (!isLoading) {
-      setIsLoading(true)
-      await checkPassword(pid, data.password)
-        .then((result) => {
-          if (result) {
-            setProjectPassword(pid, data.password)
-            navigate({
-              pathname: _replace(routes.project, ':id', pid),
-              search: `?embedded=${embedded}&theme=${theme}`,
-            })
-            return
-          }
-          setErrors({
-            password: t('apiNotifications.incorrectPassword'),
-          })
-        })
-        .catch(console.error)
-        .finally(() => {
-          setIsLoading(false)
-        })
+    if (isLoading) {
+      return
     }
+
+    setIsLoading(true)
+    await checkPassword(pid, data.password)
+      .then((result) => {
+        if (result) {
+          const searchParamsObj = new URLSearchParams()
+
+          if (searchParams.has('theme')) {
+            searchParamsObj.set('theme', searchParams.get('theme')!)
+          }
+
+          if (searchParams.has('embedded')) {
+            searchParamsObj.set('embedded', searchParams.get('embedded')!)
+          }
+
+          const searchString = searchParamsObj.toString()
+          const search = searchString ? `?${searchString}` : undefined
+
+          setProjectPassword(pid, data.password)
+          navigate({
+            pathname: _replace(routes.project, ':id', pid),
+            search,
+          })
+          return
+        }
+        setErrors({
+          password: t('apiNotifications.incorrectPassword'),
+        })
+      })
+      .catch(console.error)
+      .finally(() => {
+        setIsLoading(false)
+      })
   }
 
   const handleInput = ({ target }: { target: HTMLInputElement }) => {

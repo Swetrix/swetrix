@@ -14,7 +14,6 @@ import { getProjectPreferences, setProjectPreferences } from '../pages/Project/V
 import { CHART_METRICS_MAPPING } from '../pages/Project/View/ViewProject.helpers'
 
 import { useAuth } from './AuthProvider'
-import { useTheme } from './ThemeProvider'
 
 interface CurrentProjectContextType {
   id: string
@@ -44,20 +43,29 @@ export const useProjectPassword = (id: string) => {
   return projectPassword
 }
 
-const useIsEmbedded = () => {
-  const [searchParams] = useSearchParams()
-
-  return searchParams.get('embedded') === 'true'
-}
-
 const useProject = (id: string) => {
-  const { theme } = useTheme()
   const { t } = useTranslation('common')
   const navigate = useNavigate()
   const { isLoading: authLoading } = useAuth()
   const projectPassword = useProjectPassword(id)
-  const isEmbedded = useIsEmbedded()
   const [project, setProject] = useState<Project | null>(null)
+
+  const [searchParams] = useSearchParams()
+
+  const params = useMemo(() => {
+    const searchParamsObj = new URLSearchParams()
+
+    if (searchParams.has('theme')) {
+      searchParamsObj.set('theme', searchParams.get('theme')!)
+    }
+
+    if (searchParams.has('embedded')) {
+      searchParamsObj.set('embedded', searchParams.get('embedded')!)
+    }
+
+    const searchString = searchParamsObj.toString()
+    return searchString ? `?${searchString}` : undefined
+  }, [searchParams])
 
   const onErrorLoading = useCallback(() => {
     if (projectPassword) {
@@ -65,7 +73,7 @@ const useProject = (id: string) => {
         if (res) {
           navigate({
             pathname: _replace(routes.project, ':id', id),
-            search: `?theme=${theme}&embedded=${isEmbedded}`,
+            search: params,
           })
           return
         }
@@ -73,7 +81,7 @@ const useProject = (id: string) => {
         toast.error(t('apiNotifications.incorrectPassword'))
         navigate({
           pathname: _replace(routes.project_protected_password, ':pid', id),
-          search: `?theme=${theme}&embedded=${isEmbedded}`,
+          search: params,
         })
         removeItem(LS_PROJECTS_PROTECTED_KEY)
       })
@@ -82,7 +90,7 @@ const useProject = (id: string) => {
 
     toast.error(t('project.noExist'))
     navigate(routes.dashboard)
-  }, [id, projectPassword, navigate, t, isEmbedded, theme])
+  }, [id, projectPassword, navigate, t, params])
 
   useEffect(() => {
     if (authLoading || project) {
@@ -98,7 +106,7 @@ const useProject = (id: string) => {
         if (result.isPasswordProtected && !result.role && !projectPassword) {
           navigate({
             pathname: _replace(routes.project_protected_password, ':pid', id),
-            search: `?theme=${theme}&embedded=${isEmbedded}`,
+            search: params,
           })
           return
         }
@@ -109,7 +117,7 @@ const useProject = (id: string) => {
         console.error('[ERROR] (getProject)', reason)
         onErrorLoading()
       })
-  }, [authLoading, project, id, projectPassword, navigate, onErrorLoading, isEmbedded, theme])
+  }, [authLoading, project, id, projectPassword, navigate, onErrorLoading, params])
 
   const mergeProject = useCallback((project: Partial<Project>) => {
     setProject((prev) => {
