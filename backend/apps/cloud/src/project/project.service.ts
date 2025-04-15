@@ -17,7 +17,6 @@ import {
   Brackets,
   FindOptionsWhere,
 } from 'typeorm'
-import { customAlphabet } from 'nanoid'
 import handlebars from 'handlebars'
 import puppeteer from 'puppeteer'
 import CryptoJS from 'crypto-js'
@@ -86,24 +85,9 @@ import { OrganisationRole } from '../organisation/entity/organisation-member.ent
 dayjs.extend(utc)
 
 // A list of characters that can be used in a Project ID
-const LEGAL_PID_CHARACTERS =
+export const LEGAL_PID_CHARACTERS =
   '1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm'
-export const generateProjectId = customAlphabet(LEGAL_PID_CHARACTERS, 12)
-
-// const updateProjectRedis = async (id: string, project: Project) => {
-//   const key = getRedisProjectKey(id)
-
-//   try {
-//     await redis.set(
-//       key,
-//       JSON.stringify(project),
-//       'EX',
-//       redisProjectCacheTimeout,
-//     )
-//   } catch {
-//     await redis.del(key)
-//   }
-// }
+export const PID_LENGTH = 12
 
 const DEFAULT_USAGE_INFO = {
   total: 0,

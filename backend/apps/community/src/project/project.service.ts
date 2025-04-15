@@ -7,7 +7,6 @@ import {
   InternalServerErrorException,
   ConflictException,
 } from '@nestjs/common'
-import { customAlphabet } from 'nanoid'
 import _isEmpty from 'lodash/isEmpty'
 import _isString from 'lodash/isString'
 import _size from 'lodash/size'
@@ -48,9 +47,9 @@ import { ProjectViewCustomEventEntity } from './entity/project-view-custom-event
 import { ClickhouseFunnel } from '../common/types'
 
 // A list of characters that can be used in a Project ID
-const LEGAL_PID_CHARACTERS =
+export const LEGAL_PID_CHARACTERS =
   '1234567890QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm'
-export const generateProjectId = customAlphabet(LEGAL_PID_CHARACTERS, 12)
+export const PID_LENGTH = 12
 
 export const deleteProjectRedis = async (id: string) => {
   const key = getRedisProjectKey(id)

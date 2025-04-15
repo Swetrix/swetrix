@@ -53,7 +53,8 @@ import {
   ProjectService,
   processProjectUser,
   deleteProjectRedis,
-  generateProjectId,
+  LEGAL_PID_CHARACTERS,
+  PID_LENGTH,
 } from './project.service'
 import { UserType, PlanCode } from '../user/entities/user.entity'
 import { ActionTokenType } from '../action-tokens/action-token.entity'
@@ -77,7 +78,7 @@ import {
   MAX_FUNNELS,
 } from '../common/constants'
 import { clickhouse } from '../common/integrations/clickhouse'
-import { generateRandomString } from '../common/utils'
+import { generateRandomId, generateRandomString } from '../common/utils'
 import {
   AddSubscriberParamsDto,
   AddSubscriberBodyDto,
@@ -413,10 +414,10 @@ export class ProjectController {
 
     this.projectService.validateProject(projectDTO as ProjectDTO, true)
 
-    let pid = generateProjectId()
+    let pid = generateRandomId(LEGAL_PID_CHARACTERS, PID_LENGTH)
 
     while (!(await this.projectService.isPIDUnique(pid))) {
-      pid = generateProjectId()
+      pid = generateRandomId(LEGAL_PID_CHARACTERS, PID_LENGTH)
     }
 
     try {

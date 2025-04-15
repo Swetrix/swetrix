@@ -1,6 +1,7 @@
 import { xxh3 } from '@node-rs/xxhash'
 import path from 'path'
 import fs from 'fs'
+import crypto from 'crypto'
 import { Reader, CityResponse } from 'maxmind'
 import { HttpException } from '@nestjs/common'
 import timezones from 'countries-and-timezones'
@@ -20,6 +21,17 @@ import { redis, isDevelopment, isProxiedByCloudflare } from './constants'
 */
 export const hash = (content: string): string => {
   return xxh3.xxh128(content).toString(16)
+}
+
+export const generateRandomId = (alphabet: string, size: number) => {
+  const bytes = crypto.randomBytes(size)
+  let id = ''
+
+  for (let i = 0; i < size; i++) {
+    id += alphabet[bytes[i] % alphabet.length]
+  }
+
+  return id
 }
 
 const marketingTips = {

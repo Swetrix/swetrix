@@ -1,7 +1,8 @@
 import { NotFoundException, HttpException } from '@nestjs/common'
 import { xxh3 } from '@node-rs/xxhash'
-import path from 'node:path'
-import fs from 'node:fs'
+import path from 'path'
+import fs from 'fs'
+import crypto from 'crypto'
 import { CityResponse, Reader } from 'maxmind'
 import timezones from 'countries-and-timezones'
 import { v5 as uuidv5 } from 'uuid'
@@ -39,8 +40,22 @@ import { ClickhouseFunnel, ClickhouseSFUser } from './types'
 
 dayjs.extend(utc)
 
+/*
+  Returns 128 bit (a string of 32 chars) hash of the provided string using xxHash algo.
+*/
 export const hash = (content: string): string => {
   return xxh3.xxh128(content).toString(16)
+}
+
+export const generateRandomId = (alphabet: string, size: number) => {
+  const bytes = crypto.randomBytes(size)
+  let id = ''
+
+  for (let i = 0; i < size; i++) {
+    id += alphabet[bytes[i] % alphabet.length]
+  }
+
+  return id
 }
 
 const RATE_LIMIT_REQUESTS_AMOUNT = 3

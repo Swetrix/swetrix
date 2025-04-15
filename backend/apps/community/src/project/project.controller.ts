@@ -43,9 +43,10 @@ import { JwtAccessTokenGuard } from '../auth/guards'
 import { Auth } from '../auth/decorators'
 import { isValidDate } from '../analytics/analytics.service'
 import {
+  LEGAL_PID_CHARACTERS,
+  PID_LENGTH,
   ProjectService,
   deleteProjectRedis,
-  generateProjectId,
 } from './project.service'
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { Pagination } from '../common/pagination/pagination'
@@ -78,6 +79,7 @@ import {
   updateProjectViewClickhouse,
   getProjectClickhouse,
   getFunnelClickhouse,
+  generateRandomId,
 } from '../common/utils'
 import { Funnel } from './entity/funnel.entity'
 import { ProjectViewEntity } from './entity/project-view.entity'
@@ -200,10 +202,10 @@ export class ProjectController {
 
     this.projectService.validateProject(projectDTO as ProjectDTO, true)
 
-    let pid = generateProjectId()
+    let pid = generateRandomId(LEGAL_PID_CHARACTERS, PID_LENGTH)
 
     while (!this.projectService.isPIDUnique(projects, pid)) {
-      pid = generateProjectId()
+      pid = generateRandomId(LEGAL_PID_CHARACTERS, PID_LENGTH)
     }
 
     const project = new Project()
