@@ -106,7 +106,7 @@ const ErrorTracking = () => {
                       {() => (
                         <Link
                           className='ml-1 inline-flex items-center space-x-1 text-sm leading-6 font-semibold text-slate-700 hover:underline dark:text-slate-300'
-                          to={`blog/${lastBlogPost.handle}`}
+                          to={`/blog/${lastBlogPost.handle}`}
                         >
                           <small className='text-sm'>{lastBlogPost.title}</small>
                           <ChevronRightIcon className='h-4 w-4 text-slate-500' aria-hidden='true' />
