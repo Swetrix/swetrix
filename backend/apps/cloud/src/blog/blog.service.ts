@@ -14,7 +14,6 @@ import fs from 'fs/promises'
 import { AppLoggerService } from '../logger/logger.service'
 import { BLOG_POSTS_PATH, BLOG_POSTS_ROOT, redis } from '../common/constants'
 
-// eslint-disable-next-line
 const parseFrontMatter = require('front-matter')
 
 const REDIS_SITEMAP_KEY = 'blog-sitemap'
@@ -56,7 +55,7 @@ const getFileNames = async (category?: string): Promise<string[]> => {
     } else {
       files = (await fs.readdir(BLOG_POSTS_PATH)) as string[]
     }
-  } catch (_) {
+  } catch {
     return []
   }
 
@@ -98,7 +97,7 @@ const getArticlesMetaData = async () => {
 
   try {
     dir = await fs.readdir(BLOG_POSTS_PATH)
-  } catch (_) {
+  } catch {
     return null
   }
 
@@ -212,7 +211,7 @@ export class BlogService {
       const directory = directories[i]
 
       // set to true for infinite depth directory look-up
-      // eslint-disable-next-line
+
       const _files = await this.getSitemapFileNames(
         directory,
         infiniteRecursive,

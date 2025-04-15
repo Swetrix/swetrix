@@ -366,7 +366,7 @@ export class AnalyticsService {
     try {
       const { hostname } = new URL(origin)
       return hostname || null
-    } catch (error) {
+    } catch {
       return null
     }
   }
@@ -783,7 +783,7 @@ export class AnalyticsService {
       }
 
       return pages
-    } catch (reason) {
+    } catch {
       throw new UnprocessableEntityException(
         'Cannot process the provided array of pages',
       )
@@ -1256,9 +1256,8 @@ export class AnalyticsService {
     timezone?: string,
     filters?: string,
   ): Promise<IOverall> {
-    // eslint-disable-next-line
     let _from: string
-    // eslint-disable-next-line
+
     let _to: string
 
     if (_isEmpty(period) || ['today', 'yesterday', 'custom'].includes(period)) {
@@ -1539,9 +1538,8 @@ export class AnalyticsService {
     filters?: string,
     measure: PerfMeasure = 'median',
   ): Promise<IOverallPerformance> {
-    // eslint-disable-next-line
     let _from: string
-    // eslint-disable-next-line
+
     let _to: string
 
     if (_isEmpty(period) || period === 'custom') {
@@ -2872,7 +2870,7 @@ export class AnalyticsService {
       const res = await this.getTimeBucketForAllTime(pid, period, timezone)
 
       diff = res.diff
-      // eslint-disable-next-line prefer-destructuring
+
       newTimebucket = _includes(res.timeBucket, timeBucket)
         ? timeBucket
         : res.timeBucket[0]
@@ -2973,7 +2971,7 @@ export class AnalyticsService {
       const res = await this.getTimeBucketForAllTime(pid, period, timezone)
 
       diff = res.diff
-      // eslint-disable-next-line prefer-destructuring
+
       newTimebucket = _includes(res.timeBucket, timeBucket)
         ? timeBucket
         : res.timeBucket[0]
@@ -3244,7 +3242,6 @@ export class AnalyticsService {
         LIMIT 1;
       `
 
-      // eslint-disable-next-line prefer-destructuring
       details = (
         await clickhouse
           .query({
@@ -3271,7 +3268,6 @@ export class AnalyticsService {
         .endOf('minute')
         .format('YYYY-MM-DD HH:mm:ss')
 
-      // eslint-disable-next-line
       timeBucket =
         dayjs(to).diff(dayjs(from), 'hour') > 1
           ? TimeBucketType.HOUR
@@ -3567,7 +3563,6 @@ export class AnalyticsService {
     let result
 
     try {
-      // eslint-disable-next-line prefer-destructuring
       result = (
         await clickhouse
           .query({
@@ -3645,9 +3640,8 @@ export class AnalyticsService {
     from?: string,
     to?: string,
   ) {
-    // eslint-disable-next-line
     let _from = from
-    // eslint-disable-next-line
+
     let _to = to
 
     if (_isEmpty(period) || ['today', 'yesterday', 'custom'].includes(period)) {

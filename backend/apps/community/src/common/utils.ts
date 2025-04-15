@@ -596,7 +596,7 @@ const findProjectViewsClickhouse = async (projectId: string) => {
 
     for (let i = 0; i < _size(data); ++i) {
       const view: any = data[i]
-      // eslint-disable-next-line no-await-in-loop
+
       const customEvents = await findProjectViewCustomEventsClickhouse(view.id)
 
       result.push({
@@ -739,7 +739,6 @@ const PRODUCTION_GEOIP_DB_PATH = path.join(
   'dbip-city-lite.mmdb',
 )
 
-// eslint-disable-next-line
 let lookup: Reader<CityResponse> = {
   // @ts-ignore
   get: dummyLookup,

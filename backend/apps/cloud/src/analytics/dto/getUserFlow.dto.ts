@@ -4,7 +4,6 @@ import { DEFAULT_TIMEZONE } from '../../user/entities/user.entity'
 import { ValidatePeriod } from '../decorators/validate-period.decorator'
 import { PID_REGEX } from '../../common/constants'
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export class GetUserFlowDto {
   @ApiProperty({
     example: 'aUn1quEid-3',

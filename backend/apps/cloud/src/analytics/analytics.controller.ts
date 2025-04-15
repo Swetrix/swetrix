@@ -99,9 +99,7 @@ export const DEFAULT_MEASURE = 'median'
 
 // Silent 200 response for bots
 // https://github.com/Swetrix/swetrix/issues/371
-const BOT_RESPONSE = {
-  message: 'Bot traffic detected, request is ignored',
-}
+const BOT_RESPONSE = { message: 'Bot traffic detected, request is ignored' }
 
 // Performance object validator: none of the values cannot be bigger than 1000 * 60 * 5 (5 minutes) and are >= 0
 const MAX_PERFORMANCE_VALUE = 1000 * 60 * 5
@@ -143,7 +141,7 @@ const getPIDsArray = (pids, pid) => {
 
   try {
     pids = JSON.parse(pids)
-  } catch (reason) {
+  } catch {
     throw new UnprocessableEntityException(
       "Cannot process the provided array of Project ID's",
     )
@@ -248,7 +246,7 @@ export class AnalyticsController {
       )
 
       diff = res.diff
-      // eslint-disable-next-line prefer-destructuring
+
       newTimebucket = _includes(res.timeBucket, timeBucket)
         ? timeBucket
         : res.timeBucket[0]
@@ -404,11 +402,7 @@ export class AnalyticsController {
       safeTimezone,
     )
 
-    const params = {
-      pid,
-      groupFrom,
-      groupTo,
-    }
+    const params = { pid, groupFrom, groupTo }
 
     let funnel: IFunnel[] = []
     let totalPageviews: number = 0
@@ -428,10 +422,7 @@ export class AnalyticsController {
 
     await Promise.all(promises)
 
-    return {
-      funnel,
-      totalPageviews,
-    }
+    return { funnel, totalPageviews }
   }
 
   @Get('meta')
@@ -551,14 +542,7 @@ export class AnalyticsController {
 
     await this.analyticsService.checkBillingAccess(pid)
 
-    const paramsData = {
-      params: {
-        pid,
-        groupFrom,
-        groupTo,
-        ...filtersParams,
-      },
-    }
+    const paramsData = { params: { pid, groupFrom, groupTo, ...filtersParams } }
 
     const result = await this.analyticsService.groupChartByTimeBucket(
       timeBucket,
@@ -571,10 +555,7 @@ export class AnalyticsController {
       mode,
     )
 
-    return {
-      ...result,
-      appliedFilters,
-    }
+    return { ...result, appliedFilters }
   }
 
   @Get('performance')
@@ -617,7 +598,7 @@ export class AnalyticsController {
       )
 
       diff = res.diff
-      // eslint-disable-next-line prefer-destructuring
+
       newTimeBucket = _includes(res.timeBucket, timeBucket)
         ? timeBucket
         : res.timeBucket[0]
@@ -639,14 +620,7 @@ export class AnalyticsController {
 
     const subQuery = `FROM performance WHERE pid = {pid:FixedString(12)} ${filtersQuery} AND created BETWEEN {groupFrom:String} AND {groupTo:String}`
 
-    const paramsData = {
-      params: {
-        pid,
-        groupFrom,
-        groupTo,
-        ...filtersParams,
-      },
-    }
+    const paramsData = { params: { pid, groupFrom, groupTo, ...filtersParams } }
 
     const result = await this.analyticsService.groupPerfByTimeBucket(
       newTimeBucket,
@@ -705,14 +679,7 @@ export class AnalyticsController {
 
     await this.analyticsService.checkBillingAccess(pid)
 
-    const paramsData = {
-      params: {
-        pid,
-        groupFrom,
-        groupTo,
-        ...filtersParams,
-      },
-    }
+    const paramsData = { params: { pid, groupFrom, groupTo, ...filtersParams } }
 
     const chart = await this.analyticsService.getPerfChartData(
       timeBucket,
@@ -724,10 +691,7 @@ export class AnalyticsController {
       measure,
     )
 
-    return {
-      chart,
-      appliedFilters,
-    }
+    return { chart, appliedFilters }
   }
 
   @Get('captcha')
@@ -781,19 +745,11 @@ export class AnalyticsController {
     const [filtersQuery, filtersParams, appliedFilters] =
       this.analyticsService.getFiltersQuery(filters, DataType.ANALYTICS)
 
-    const params = {
-      pid,
-      groupFrom,
-      groupTo,
-      ...filtersParams,
-    }
+    const params = { pid, groupFrom, groupTo, ...filtersParams }
 
     const flow = await this.analyticsService.getUserFlow(params, filtersQuery)
 
-    return {
-      ...flow,
-      appliedFilters,
-    }
+    return { ...flow, appliedFilters }
   }
 
   @Get('birdseye')
@@ -832,7 +788,7 @@ export class AnalyticsController {
     try {
       await Promise.allSettled(validationPromises)
     } catch {
-      // eslint-disable-next-line no-empty
+      //
     }
 
     if (_isEmpty(validPids)) {
@@ -883,7 +839,7 @@ export class AnalyticsController {
     try {
       await Promise.allSettled(validationPromises)
     } catch {
-      // eslint-disable-next-line no-empty
+      //
     }
 
     if (_isEmpty(validPids)) {
@@ -965,11 +921,7 @@ export class AnalyticsController {
       const projects = _toNumber(await redis.get(REDIS_PROJECTS_COUNT_KEY))
       const events = _toNumber(await redis.get(REDIS_EVENTS_COUNT_KEY))
 
-      return {
-        users,
-        projects,
-        events,
-      }
+      return { users, projects, events }
     }
 
     return this.analyticsService.getGeneralStats()
@@ -1000,8 +952,9 @@ export class AnalyticsController {
 
     try {
       await Promise.allSettled(validationPromises)
-      // eslint-disable-next-line no-empty
-    } catch {}
+    } catch {
+      //
+    }
 
     if (_isEmpty(validPids)) {
       throw new HttpException(
@@ -1160,9 +1113,7 @@ export class AnalyticsController {
         table: 'errors',
         format: 'JSONEachRow',
         values: [transformed],
-        clickhouse_settings: {
-          async_insert: 1,
-        },
+        clickhouse_settings: { async_insert: 1 },
       })
     } catch (reason) {
       this.logger.error(reason)
@@ -1280,9 +1231,7 @@ export class AnalyticsController {
         table: 'customEV',
         format: 'JSONEachRow',
         values: [transformed],
-        clickhouse_settings: {
-          async_insert: 1,
-        },
+        clickhouse_settings: { async_insert: 1 },
       })
     } catch (reason) {
       this.logger.error(reason)
@@ -1434,9 +1383,7 @@ export class AnalyticsController {
         table: 'analytics',
         format: 'JSONEachRow',
         values: [transformed],
-        clickhouse_settings: {
-          async_insert: 1,
-        },
+        clickhouse_settings: { async_insert: 1 },
       })
 
       if (!_isEmpty(perfTransformed)) {
@@ -1444,9 +1391,7 @@ export class AnalyticsController {
           table: 'performance',
           format: 'JSONEachRow',
           values: [perfTransformed],
-          clickhouse_settings: {
-            async_insert: 1,
-          },
+          clickhouse_settings: { async_insert: 1 },
         })
       }
     } catch (reason) {
@@ -1480,9 +1425,7 @@ export class AnalyticsController {
       return res.end(TRANSPARENT_GIF_BUFFER, 'binary')
     }
 
-    const logDTO: PageviewsDto = {
-      pid,
-    }
+    const logDTO: PageviewsDto = { pid }
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
@@ -1535,9 +1478,7 @@ export class AnalyticsController {
         table: 'analytics',
         format: 'JSONEachRow',
         values: [transformed],
-        clickhouse_settings: {
-          async_insert: 1,
-        },
+        clickhouse_settings: { async_insert: 1 },
       })
     } catch (reason) {
       this.logger.error(reason)
@@ -1583,7 +1524,6 @@ export class AnalyticsController {
         timezone,
       )
 
-      // eslint-disable-next-line prefer-destructuring
       timeBucket = res.timeBucket[0]
       diff = res.diff
     } else {
@@ -1621,12 +1561,7 @@ export class AnalyticsController {
       customEVFilterApplied,
     )
 
-    return {
-      sessions,
-      appliedFilters,
-      take,
-      skip,
-    }
+    return { sessions, appliedFilters, take, skip }
   }
 
   @Get('errors')
@@ -1673,7 +1608,6 @@ export class AnalyticsController {
         timezone,
       )
 
-      // eslint-disable-next-line prefer-destructuring
       timeBucket = res.timeBucket[0]
       diff = res.diff
     } else {
@@ -1711,12 +1645,7 @@ export class AnalyticsController {
       skip,
     )
 
-    return {
-      errors,
-      appliedFilters,
-      take,
-      skip,
-    }
+    return { errors, appliedFilters, take, skip }
   }
 
   @Get('get-error')
@@ -1754,7 +1683,6 @@ export class AnalyticsController {
         timezone,
       )
 
-      // eslint-disable-next-line prefer-destructuring
       timeBucket = res.timeBucket[0]
       diff = res.diff
     } else {
@@ -1853,7 +1781,6 @@ export class AnalyticsController {
         timezone,
       )
 
-      // eslint-disable-next-line prefer-destructuring
       newTimeBucket = _includes(res.timeBucket, timeBucket)
         ? timeBucket
         : res.timeBucket[0]
@@ -1874,14 +1801,7 @@ export class AnalyticsController {
       diff,
     )
 
-    const paramsData = {
-      params: {
-        pid,
-        groupFrom,
-        groupTo,
-        ...filtersParams,
-      },
-    }
+    const paramsData = { params: { pid, groupFrom, groupTo, ...filtersParams } }
 
     const result: any = await this.analyticsService.groupCustomEVByTimeBucket(
       newTimeBucket,
@@ -1897,8 +1817,9 @@ export class AnalyticsController {
     if (filters) {
       try {
         customEventss = JSON.parse(customEvents)
-        // eslint-disable-next-line no-empty
-      } catch {}
+      } catch {
+        //
+      }
     }
 
     if (customEventss.length > 0) {
@@ -1911,10 +1832,6 @@ export class AnalyticsController {
       result.chart = {}
     }
 
-    return {
-      ...result,
-      appliedFilters,
-      timeBucket: timeBucketForAllTime,
-    }
+    return { ...result, appliedFilters, timeBucket: timeBucketForAllTime }
   }
 }

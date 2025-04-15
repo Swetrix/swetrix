@@ -148,7 +148,6 @@ const executeChunkedQueries = async (
       const pidChunk = pids.slice(i, i + CHUNK_SIZE)
       const query = generatePlanUsageQueryForUser(user, getFromDate, getToDate)
 
-      // eslint-disable-next-line no-await-in-loop
       const { data } = await clickhouse
         .query({ query, query_params: { pids: pidChunk } })
         .then(resultSet => resultSet.json<CHPlanUsage>())

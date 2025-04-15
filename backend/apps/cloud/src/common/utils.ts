@@ -201,7 +201,6 @@ const PRODUCTION_GEOIP_DB_PATH = path.join(
   'dbip-city-lite.mmdb',
 )
 
-// eslint-disable-next-line
 let lookup: Reader<CityResponse> = {
   // @ts-ignore
   get: dummyLookup,

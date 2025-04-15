@@ -80,7 +80,6 @@ export class ProjectExtraService {
     let total = 0
 
     for (const chunk of chunks) {
-      // eslint-disable-next-line no-await-in-loop
       const result = await clickhouse.query({
         query,
         query_params: {
@@ -90,7 +89,6 @@ export class ProjectExtraService {
         format: 'JSONEachRow',
       })
 
-      // eslint-disable-next-line no-await-in-loop
       const chunkResults = await result.json()
       allResults = allResults.concat(chunkResults)
 
@@ -118,7 +116,6 @@ export class ProjectExtraService {
         SELECT count() as total FROM hostStats
       `
 
-      // eslint-disable-next-line no-await-in-loop
       const countResult = await clickhouse.query({
         query: countQuery,
         query_params: {
@@ -128,7 +125,6 @@ export class ProjectExtraService {
         format: 'JSONEachRow',
       })
 
-      // eslint-disable-next-line no-await-in-loop
       const countData = await countResult.json<{ total: number }>()
       total += countData[0]?.total || 0
     }
@@ -526,7 +522,6 @@ export class ProjectExtraService {
     let total = 0
 
     for (const chunk of chunks) {
-      // eslint-disable-next-line no-await-in-loop
       const result = await clickhouse.query({
         query,
         query_params: {
@@ -536,7 +531,6 @@ export class ProjectExtraService {
         format: 'JSONEachRow',
       })
 
-      // eslint-disable-next-line no-await-in-loop
       const chunkResults = await result.json()
       allResults = allResults.concat(chunkResults)
 
@@ -546,7 +540,6 @@ export class ProjectExtraService {
     }
 
     for (const chunk of chunks) {
-      // eslint-disable-next-line no-await-in-loop
       const countResult = await clickhouse.query({
         query: countQuery,
         query_params: {
@@ -556,7 +549,6 @@ export class ProjectExtraService {
         format: 'JSONEachRow',
       })
 
-      // eslint-disable-next-line no-await-in-loop
       const countData = await countResult.json<{ total: number }>()
       total += countData[0]?.total || 0
     }

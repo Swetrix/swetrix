@@ -17,7 +17,6 @@ export enum ChartRenderMode {
   CUMULATIVE = 'cumulative',
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export class GetDataDto {
   @ApiProperty({
     example: 'aUn1quEid-3',

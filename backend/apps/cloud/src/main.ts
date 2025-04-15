@@ -33,7 +33,6 @@ async function bootstrap() {
     SwaggerModule.setup('api', app, document)
   }
 
-  // eslint-disable-next-line consistent-return
   app.use(async (req, res, next) => {
     res.header(
       'Cross-Origin-Embedder-Policy',
@@ -51,7 +50,6 @@ async function bootstrap() {
     res.header('Access-Control-Allow-Headers', 'Authorization, *')
 
     if (req.method === 'OPTIONS') {
-      // eslint-disable-next-line @typescript-eslint/return-await
       return await res.sendStatus(204)
     }
 

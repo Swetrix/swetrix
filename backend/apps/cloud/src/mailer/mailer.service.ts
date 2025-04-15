@@ -131,14 +131,12 @@ interface Params {
 }
 
 handlebars.registerHelper('ifEquals', function ifEquals(arg1, arg2, options) {
-  // eslint-disable-next-line eqeqeq
   return arg1 == arg2 ? options.fn(this) : options.inverse(this)
 })
 
 handlebars.registerHelper(
   'ifNotEquals',
   function ifNotEquals(arg1, arg2, options) {
-    // eslint-disable-next-line eqeqeq
     return arg1 != arg2 ? options.fn(this) : options.inverse(this)
   },
 )

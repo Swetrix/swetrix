@@ -3,7 +3,6 @@ import { IsNotEmpty, Matches } from 'class-validator'
 import { DEFAULT_TIMEZONE } from '../../user/entities/user.entity'
 import { PID_REGEX } from '../../common/constants'
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export class GetSessionDto {
   @ApiProperty({
     example: 'aUn1quEid-3',

@@ -1,4 +1,4 @@
-/* eslint-disable no-param-reassign, no-prototype-builtins */
+/* eslint-disable no-prototype-builtins */
 import crypto from 'crypto'
 import Validator from 'sns-payload-validator'
 import {

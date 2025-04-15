@@ -179,7 +179,7 @@ export class CaptchaService {
     try {
       const decrypted = decryptString(token, secretKey)
       parsed = JSON.parse(decrypted)
-    } catch (e) {
+    } catch {
       throw new BadRequestException('Could not decrypt token')
     }
 

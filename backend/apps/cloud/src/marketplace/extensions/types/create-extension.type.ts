@@ -1,3 +1,4 @@
+import { type Express } from 'express'
 import { ExtensionVersionType } from '../dtos'
 
 export type CreateExtensionType = {

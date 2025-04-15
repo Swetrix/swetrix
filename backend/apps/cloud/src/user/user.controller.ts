@@ -973,7 +973,6 @@ export class UserController {
 
     let refCode = generateRefCode()
 
-    // eslint-disable-next-line no-await-in-loop
     while (!(await this.userService.isRefCodeUnique(refCode))) {
       refCode = generateRefCode()
     }

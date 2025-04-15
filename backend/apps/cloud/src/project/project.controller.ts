@@ -1,4 +1,3 @@
-/* eslint-disable no-await-in-loop */
 import {
   Controller,
   Body,
@@ -1053,7 +1052,7 @@ export class ProjectController {
 
           try {
             this.projectService.allowedToManage(project, uid, inviter.roles)
-          } catch (reason) {
+          } catch {
             this.logger.warn(`User ${uid} not allowed to manage project ${pid}`)
             failedProjectIds.push({
               projectId: pid,
