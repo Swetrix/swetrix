@@ -2,7 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common'
 import svgCaptcha from 'svg-captcha'
 import CryptoJS from 'crypto-js'
 import _toLower from 'lodash/toLower'
-import UAParser from 'ua-parser-js'
+import { UAParser } from '@ua-parser-js/pro-business'
 import _values from 'lodash/values'
 import _includes from 'lodash/includes'
 import dayjs from 'dayjs'
@@ -100,17 +100,24 @@ export class CaptchaService {
 
   async logCaptchaPass(
     pid: string,
-    userAgent: string,
+    headers: string,
     timestamp: number,
     ip: string,
   ) {
-    const ua = UAParser(userAgent)
-    const dv = ua.device.type || 'desktop'
-    const br = ua.browser.name
-    const os = ua.os.name
+    const ua = await UAParser(headers).withClientHints()
+    const deviceType = ua.device.type || 'desktop'
+    const browserName = ua.browser.name
+    const osName = ua.os.name
 
     const { country } = getGeoDetails(ip)
-    const transformed = captchaTransformer(pid, dv, br, os, country, timestamp)
+    const transformed = captchaTransformer(
+      pid,
+      deviceType,
+      browserName,
+      osName,
+      country,
+      timestamp,
+    )
 
     try {
       await clickhouse.insert({

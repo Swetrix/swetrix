@@ -1,7 +1,5 @@
-/* eslint-disable */
 const { faker } = require('@faker-js/faker')
 const _ = require('lodash')
-const chalk = require('chalk')
 
 const { clickhouse, dbName } = require('../../migrations/clickhouse/setup')
 
@@ -110,6 +108,12 @@ const CITIES = [
   'Sendai',
   'Kobe', // Japan
 ]
+
+const chalk = {
+  green: text => `\x1b[32m${text}\x1b[0m`,
+  red: text => `\x1b[31m${text}\x1b[0m`,
+  cyan: text => `\x1b[36m${text}\x1b[0m`,
+}
 
 const insertData = async (pid, rowCount, processedRecords, table) => {
   try {
@@ -411,7 +415,7 @@ const main = () => {
     ),
   )
 
-  const arguments = [
+  const fnArgs = [
     pid,
     rowCount,
     // Date.parse(`${_.join(_.split(beginDate, '@'), 'T')}.000Z`),
@@ -421,19 +425,19 @@ const main = () => {
   ]
 
   if (mode === 'analytics') {
-    generateAnalyticsData(...arguments)
+    generateAnalyticsData(...fnArgs)
   }
 
   if (mode === 'custom_events') {
-    generateCustomEventsData(...arguments)
+    generateCustomEventsData(...fnArgs)
   }
 
   if (mode === 'performance') {
-    generatePerformanceData(...arguments)
+    generatePerformanceData(...fnArgs)
   }
 
   if (mode === 'captcha') {
-    generateCaptchaData(...arguments)
+    generateCaptchaData(...fnArgs)
   }
 }
 

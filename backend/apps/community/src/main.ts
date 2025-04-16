@@ -41,6 +41,11 @@ async function bootstrap() {
     res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH')
     res.header('Access-Control-Allow-Headers', 'Authorization, *')
 
+    const getHighEntropyValues =
+      'Sec-CH-UA-Full-Version-List, Sec-CH-UA-Mobile, Sec-CH-UA-Model, Sec-CH-UA-Platform, Sec-CH-UA-Platform-Version, Sec-CH-UA-Arch, Sec-CH-UA-Bitness, Sec-CH-UA-Form-Factors'
+    res.header('Accept-CH', getHighEntropyValues)
+    res.header('Critical-CH', getHighEntropyValues)
+
     if (req.method === 'OPTIONS') {
       return await res.sendStatus(204)
     }

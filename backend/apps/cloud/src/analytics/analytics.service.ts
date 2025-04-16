@@ -101,6 +101,8 @@ import { ErrorDto } from './dto/error.dto'
 import { GetPagePropertyMetaDto } from './dto/get-page-property-meta.dto'
 import { ProjectViewCustomEventMetaValueType } from '../project/entity/project-view-custom-event.entity'
 import { ProjectViewCustomEventDto } from '../project/dto/create-project-view.dto'
+import { UAParser } from '@ua-parser-js/pro-business'
+import { extensions } from './utils/ua-parser'
 
 dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
@@ -2755,6 +2757,21 @@ export class AnalyticsService {
     }
 
     return `${major}.${minor}`
+  }
+
+  async getRequestInformation(headers: any) {
+    const ua = await UAParser(headers, extensions).withClientHints()
+
+    return {
+      deviceType: ua.device.type || 'desktop',
+      browserName: ua.browser.name,
+      browserVersion: this.extractSoftwareVersion(
+        ua.browser.version,
+        ua.browser.name,
+      ),
+      osName: ua.os.name,
+      osVersion: this.extractSoftwareVersion(ua.os.version),
+    }
   }
 
   extractCaptchaChartData(result, x: string[]): any {
