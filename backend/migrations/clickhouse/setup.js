@@ -1,8 +1,10 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-
 const { createClient } = require('@clickhouse/client')
-const chalk = require('chalk')
 require('dotenv').config()
+
+const chalk = {
+  green: text => `\x1b[32m${text}\x1b[0m`,
+  red: text => `\x1b[31m${text}\x1b[0m`,
+}
 
 const clickhouse = createClient({
   url: `${process.env.CLICKHOUSE_HOST}:${process.env.CLICKHOUSE_PORT}`,
@@ -48,7 +50,6 @@ const databaselessQueriesRunner = async queries => {
 
     if (query) {
       try {
-        // eslint-disable-next-line no-await-in-loop
         await clickhouseNoDatabase.command({
           query,
         })
@@ -80,7 +81,6 @@ const queriesRunner = async (queries, log = true, params = {}) => {
 
     if (query) {
       try {
-        // eslint-disable-next-line no-await-in-loop
         await clickhouse.command({
           ...params,
           query,
