@@ -1,4 +1,3 @@
-import { xxh3 } from '@node-rs/xxhash'
 import path from 'path'
 import fs from 'fs'
 import crypto from 'crypto'
@@ -17,10 +16,15 @@ import _split from 'lodash/split'
 import { redis, isDevelopment, isProxiedByCloudflare } from './constants'
 
 /*
-  Returns 128 bit (a string of 32 chars) hash of the provided string using xxHash algo.
+  Returns a 32-character hash of the provided string using Node.js crypto module.
+  (SHA-256 truncated to 32 chars)
 */
 export const hash = (content: string): string => {
-  return xxh3.xxh128(content).toString(16)
+  return crypto
+    .createHash('sha256')
+    .update(content)
+    .digest('hex')
+    .substring(0, 32)
 }
 
 export const generateRandomId = (alphabet: string, size: number) => {
