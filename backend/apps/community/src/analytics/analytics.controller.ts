@@ -23,7 +23,7 @@ import {
   Response,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
-import UAParser from 'ua-parser-js'
+import { UAParser } from '@ua-parser-js/pro-business'
 
 import { OptionalJwtAccessTokenGuard } from '../auth/guards'
 import { Auth, Public } from '../auth/decorators'
