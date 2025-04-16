@@ -30,7 +30,7 @@
     "@react-router/serve": "^7.5.0",
     "@swetrix/sdk": "^1.1.0",
     "@tailwindcss/vite": "^4.1.4",
-    "@types/ua-parser-js": "^0.7.39",
+    "@ua-parser-js/pro-business": "^2.0.3",
     "axios": "^1.8.4",
     "axios-auth-refresh": "^3.3.6",
     "billboard.js": "^3.15.0",
@@ -68,8 +68,7 @@
     "sonner": "^2.0.3",
     "spacetime": "^7.9.0",
     "swetrix": "^3.6.1",
-    "timezone-soft": "^1.5.2",
-    "ua-parser-js": "^2.0.3"
+    "timezone-soft": "^1.5.2"
   },
   "browserslist": {
     "production": [

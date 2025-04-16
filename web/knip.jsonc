@@ -6,7 +6,6 @@
     "@tailwindcss/typography",
     "tailwindcss",
     "eslint-import-resolver-node",
-    "@types/ua-parser-js",
     "eslint-import-resolver-typescript"
   ],
   "ignoreBinaries": ["flyctl"],
