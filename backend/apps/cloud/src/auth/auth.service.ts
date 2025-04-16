@@ -12,7 +12,7 @@ import { genSalt, hash, compare } from 'bcrypt'
 import { getCountry } from 'countries-and-timezones'
 import { Auth } from 'googleapis'
 import dayjs from 'dayjs'
-import { UAParser } from 'ua-parser-js'
+import { UAParser } from '@ua-parser-js/pro-business'
 import _pick from 'lodash/pick'
 import _split from 'lodash/split'
 import _isEmpty from 'lodash/isEmpty'
@@ -249,7 +249,7 @@ export class AuthService {
   }
 
   private async getHeadersInfo(headers: unknown, ip: string) {
-    const ua = UAParser(headers['user-agent'])
+    const ua = await UAParser(headers).withClientHints()
     const browser = ua.browser.name || 'Unknown'
     const device = ua.device.type || 'Desktop'
     const os = ua.os.name || 'Unknown'

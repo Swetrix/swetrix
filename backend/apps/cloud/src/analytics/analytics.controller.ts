@@ -27,7 +27,6 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common'
-import { UAParser } from '@ua-parser-js/pro-business'
 
 import { OptionalJwtAccessTokenGuard } from '../auth/guards'
 import { Auth, Public } from '../auth/decorators'
@@ -86,7 +85,6 @@ import {
   MAX_METRICS_IN_VIEW,
   ProjectViewCustomEventDto,
 } from '../project/dto/create-project-view.dto'
-import { extensions } from './utils/ua-parser'
 import { GetOverallStatsDto } from './dto/get-overall-stats.dto'
 import { NoscriptDto } from './dto/noscript.dto'
 import { LiveVisitorsDto } from './dto/live-visitors.dto'
@@ -1075,15 +1073,8 @@ export class AnalyticsController {
 
     const { city, region, country } = getGeoDetails(ip, errorDTO.tz)
 
-    const ua = UAParser(userAgent, extensions)
-    const dv = ua.device.type || 'desktop'
-    const br = ua.browser.name
-    const brv = this.analyticsService.extractSoftwareVersion(
-      ua.browser.version,
-      ua.browser.name,
-    )
-    const os = ua.os.name
-    const osv = this.analyticsService.extractSoftwareVersion(ua.os.version)
+    const { deviceType, browserName, browserVersion, osName, osVersion } =
+      await this.analyticsService.getRequestInformation(headers)
 
     const { name, message, lineno, colno, filename } = errorDTO
 
@@ -1092,11 +1083,11 @@ export class AnalyticsController {
       errorDTO.pid,
       this.analyticsService.getHostFromOrigin(headers.origin),
       errorDTO.pg,
-      dv,
-      br,
-      brv,
-      os,
-      osv,
+      deviceType,
+      browserName,
+      browserVersion,
+      osName,
+      osVersion,
       errorDTO.lc,
       country,
       region,
@@ -1186,15 +1177,8 @@ export class AnalyticsController {
 
     const { city, region, country } = getGeoDetails(ip, eventsDTO.tz)
 
-    const ua = UAParser(userAgent, extensions)
-    const dv = ua.device.type || 'desktop'
-    const br = ua.browser.name
-    const brv = this.analyticsService.extractSoftwareVersion(
-      ua.browser.version,
-      ua.browser.name,
-    )
-    const os = ua.os.name
-    const osv = this.analyticsService.extractSoftwareVersion(ua.os.version)
+    const { deviceType, browserName, browserVersion, osName, osVersion } =
+      await this.analyticsService.getRequestInformation(headers)
 
     const [, psid] = await this.analyticsService.generateAndStoreSessionId(
       eventsDTO.pid,
@@ -1208,11 +1192,11 @@ export class AnalyticsController {
       this.analyticsService.getHostFromOrigin(headers.origin),
       eventsDTO.ev,
       eventsDTO.pg,
-      dv,
-      br,
-      brv,
-      os,
-      osv,
+      deviceType,
+      browserName,
+      browserVersion,
+      osName,
+      osVersion,
       eventsDTO.lc,
       eventsDTO.ref,
       eventsDTO.so,
@@ -1310,26 +1294,20 @@ export class AnalyticsController {
     }
 
     const { city, region, country } = getGeoDetails(ip, logDTO.tz)
-    const ua = UAParser(userAgent, extensions)
-    const dv = ua.device.type || 'desktop'
-    const br = ua.browser.name
-    const brv = this.analyticsService.extractSoftwareVersion(
-      ua.browser.version,
-      ua.browser.name,
-    )
-    const os = ua.os.name
-    const osv = this.analyticsService.extractSoftwareVersion(ua.os.version)
+
+    const { deviceType, browserName, browserVersion, osName, osVersion } =
+      await this.analyticsService.getRequestInformation(headers)
 
     const transformed = trafficTransformer(
       psid,
       logDTO.pid,
       this.analyticsService.getHostFromOrigin(headers.origin),
       logDTO.pg,
-      dv,
-      br,
-      brv,
-      os,
-      osv,
+      deviceType,
+      browserName,
+      browserVersion,
+      osName,
+      osVersion,
       logDTO.lc,
       logDTO.ref,
       logDTO.so,
@@ -1361,9 +1339,9 @@ export class AnalyticsController {
         logDTO.pid,
         this.analyticsService.getHostFromOrigin(headers.origin),
         logDTO.pg,
-        dv,
-        br,
-        brv,
+        deviceType,
+        browserName,
+        browserVersion,
         country,
         region,
         city,
@@ -1440,26 +1418,20 @@ export class AnalyticsController {
     await this.analyticsService.processInteractionSD(psid, logDTO.pid)
 
     const { city, region, country } = getGeoDetails(ip)
-    const ua = UAParser(userAgent, extensions)
-    const dv = ua.device.type || 'desktop'
-    const br = ua.browser.name
-    const brv = this.analyticsService.extractSoftwareVersion(
-      ua.browser.version,
-      ua.browser.name,
-    )
-    const os = ua.os.name
-    const osv = this.analyticsService.extractSoftwareVersion(ua.os.version)
+
+    const { deviceType, browserName, browserVersion, osName, osVersion } =
+      await this.analyticsService.getRequestInformation(headers)
 
     const transformed = trafficTransformer(
       psid,
       logDTO.pid,
       this.analyticsService.getHostFromOrigin(headers.origin),
       null,
-      dv,
-      br,
-      brv,
-      os,
-      osv,
+      deviceType,
+      browserName,
+      browserVersion,
+      osName,
+      osVersion,
       null,
       null,
       null,

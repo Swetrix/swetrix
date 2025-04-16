@@ -100,17 +100,24 @@ export class CaptchaService {
 
   async logCaptchaPass(
     pid: string,
-    userAgent: string,
+    headers: string,
     timestamp: number,
     ip: string,
   ) {
-    const ua = UAParser(userAgent)
-    const dv = ua.device.type || 'desktop'
-    const br = ua.browser.name
-    const os = ua.os.name
+    const ua = await UAParser(headers).withClientHints()
+    const deviceType = ua.device.type || 'desktop'
+    const browserName = ua.browser.name
+    const osName = ua.os.name
 
     const { country } = getGeoDetails(ip)
-    const transformed = captchaTransformer(pid, dv, br, os, country, timestamp)
+    const transformed = captchaTransformer(
+      pid,
+      deviceType,
+      browserName,
+      osName,
+      country,
+      timestamp,
+    )
 
     try {
       await clickhouse.insert({

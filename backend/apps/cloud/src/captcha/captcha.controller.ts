@@ -56,8 +56,6 @@ export class CaptchaController {
     @Ip() reqIP,
   ): Promise<any> {
     this.logger.log({ manualDTO: verifyDto }, 'POST /captcha/verify')
-
-    const { 'user-agent': userAgent } = headers
     // todo: add origin checks
 
     const { code, hash, pid } = verifyDto
@@ -90,7 +88,7 @@ export class CaptchaController {
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
     try {
-      await this.captchaService.logCaptchaPass(pid, userAgent, timestamp, ip)
+      await this.captchaService.logCaptchaPass(pid, headers, timestamp, ip)
     } catch (reason) {
       this.logger.error(
         `[CaptchaController -> verify] Failed to log captcha pass: ${reason}`,

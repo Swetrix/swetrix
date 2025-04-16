@@ -5,8 +5,6 @@ const CUSTOM_BROWSERS = [
   [UAParser.BROWSER.NAME, UAParser.BROWSER.VERSION],
 ]
 
-const extensions = {
+export const extensions = {
   browser: CUSTOM_BROWSERS,
 }
-
-export { extensions }
