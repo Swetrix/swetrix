@@ -1,0 +1,1 @@
+ALTER TABLE delete_feedback ADD COLUMN `createdAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6);

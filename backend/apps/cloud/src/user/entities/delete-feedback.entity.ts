@@ -1,4 +1,9 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm'
 
 @Entity()
 export class DeleteFeedback {
@@ -9,4 +14,7 @@ export class DeleteFeedback {
     nullable: true,
   })
   feedback: string
+
+  @CreateDateColumn()
+  createdAt: Date
 }
