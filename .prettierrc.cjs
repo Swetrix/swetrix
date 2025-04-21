@@ -1,4 +1,8 @@
-module.exports = {
+/**
+ * @see https://prettier.io/docs/configuration
+ * @type {import("prettier").Config}
+ */
+const config = {
   printWidth: 120, // max 120 chars in line, code is easy to read
   useTabs: false, // use spaces instead of tabs
   tabWidth: 2, // "visual width" of of the "tab"
@@ -11,3 +15,5 @@ module.exports = {
   bracketSameLine: false, // pretty JSX
   endOfLine: 'lf', // 'lf' for linux, 'crlf' for windows, we need to use 'lf' for git
 }
+
+module.exports = config

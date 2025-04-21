@@ -13,7 +13,10 @@
     "prepublish": "npm run build",
     "build": "rollup -c && npm run tsc",
     "start": "rollup -c -w",
-    "tsc": "tsc -p tsconfig.esnext.json"
+    "tsc": "tsc -p tsconfig.esnext.json",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "exports": {
     ".": {
@@ -46,10 +49,14 @@
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.1.2",
-    "@types/node": "^22.13.14",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.14.1",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
     "rimraf": "^6.0.1",
-    "rollup": "^4.38.0",
-    "typescript": "^5.8.2"
+    "rollup": "^4.40.0",
+    "ts-jest": "^29.3.2",
+    "typescript": "^5.8.3"
   },
   "devEngines": {
     "runtime": {
