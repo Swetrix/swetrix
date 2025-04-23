@@ -25,10 +25,24 @@ ENV REDIS_HOST=localhost \
     CLICKHOUSE_PORT=8123 \
     CLICKHOUSE_DATABASE=analytics
 
+# Authentication mode settings
+ENV OIDC_ENABLED=false \
+    OIDC_ONLY_AUTH=false
+
 # Application configs
 ENV EMAIL=test@test.com \
     PASSWORD=12345678 \
     IS_PRIMARY_NODE=true
+
+# OIDC Configuration (optional)
+ENV OIDC_ISSUER='' \
+    OIDC_CLIENT_ID='' \
+    OIDC_CLIENT_SECRET='' \
+    OIDC_CALLBACK_URL='' \
+    OIDC_AUTH_URL='' \
+    OIDC_TOKEN_URL='' \
+    OIDC_USERINFO_URL='' \
+    OIDC_SCOPE='openid email profile'
 
 # Install and configure timezone
 RUN apk add --no-cache tzdata && \

@@ -498,8 +498,10 @@
       "addedOn": "Added on",
       "continueWithGoogle": "Continue with Google",
       "continueWithGithub": "Continue with Github",
+      "continueWithOIDC": "Continue with OpenID Connect",
       "google": "Google",
       "github": "Github",
+      "oidc": "OpenID Connect",
       "orContinueWith": "Or continue with"
     }
   },
