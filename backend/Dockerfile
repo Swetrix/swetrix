@@ -35,14 +35,9 @@ ENV EMAIL=test@test.com \
     IS_PRIMARY_NODE=true
 
 # OIDC Configuration (optional)
-ENV OIDC_ISSUER='' \
-    OIDC_CLIENT_ID='' \
+ENV OIDC_CLIENT_ID='' \
     OIDC_CLIENT_SECRET='' \
-    OIDC_CALLBACK_URL='' \
-    OIDC_AUTH_URL='' \
-    OIDC_TOKEN_URL='' \
-    OIDC_USERINFO_URL='' \
-    OIDC_SCOPE='openid email profile'
+    OIDC_CALLBACK_URL=''
 
 # Install and configure timezone
 RUN apk add --no-cache tzdata && \

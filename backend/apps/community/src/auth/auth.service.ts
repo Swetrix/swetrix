@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt'
 import { genSalt, hash } from 'bcrypt'
 import _isEmpty from 'lodash/isEmpty'
 import { v4 as uuidv4 } from 'uuid'
+import { decode, JwtPayload } from 'jsonwebtoken'
 
 import {
   saveRefreshTokenClickhouse,
@@ -132,40 +133,117 @@ export class AuthService {
 
   getOidcConfig() {
     return {
-      issuer: this.configService.get('OIDC_ISSUER'),
-      authorizationURL: this.configService.get('OIDC_AUTH_URL'),
-      tokenURL: this.configService.get('OIDC_TOKEN_URL'),
-      userInfoURL: this.configService.get('OIDC_USERINFO_URL'),
+      discoveryURL: this.configService.get('OIDC_DISCOVERY_URL'),
       clientID: this.configService.get('OIDC_CLIENT_ID'),
       clientSecret: this.configService.get('OIDC_CLIENT_SECRET'),
       callbackURL: this.configService.get('OIDC_CALLBACK_URL'),
-      scope: this.configService.get('OIDC_SCOPE') || 'openid email profile',
+      scope: 'openid email profile',
     }
   }
 
-  async generateOidcAuthUrl(redirectUrl?: string) {
-    const uuid = generateOIDCState()
-
-    await redis.set(getOIDCRedisKey(uuid), '', 'EX', REDIS_OIDC_SESSION_TIMEOUT)
-
+  async getOidcDiscovery() {
     const config = this.getOidcConfig()
-    const auth_url = `${config.authorizationURL}?client_id=${config.clientID}&response_type=code&scope=${encodeURIComponent(config.scope)}&redirect_uri=${encodeURIComponent(config.callbackURL)}&state=${uuid}`
+    const discoveryURL = config.discoveryURL
+    const response = await fetch(discoveryURL)
 
-    return {
-      auth_url,
-      uuid,
-      expires_in: REDIS_OIDC_SESSION_TIMEOUT * 1000, // milliseconds
+    if (!response.ok) {
+      throw new BadRequestException('Failed to fetch OIDC discovery document')
     }
+
+    return response.json()
+  }
+
+  async generateOidcAuthUrl(redirectUrl?: string) {
+    try {
+      const uuid = generateOIDCState()
+
+      await redis.set(
+        getOIDCRedisKey(uuid),
+        '',
+        'EX',
+        REDIS_OIDC_SESSION_TIMEOUT,
+      )
+
+      const discovery = await this.getOidcDiscovery()
+
+      const config = this.getOidcConfig()
+
+      return {
+        auth_url: `${discovery.authorization_endpoint}?client_id=${config.clientID}&response_type=code&scope=${encodeURIComponent(config.scope)}&redirect_uri=${encodeURIComponent(config.callbackURL)}&state=${uuid}`,
+        uuid,
+        expires_in: REDIS_OIDC_SESSION_TIMEOUT * 1000, // milliseconds
+      }
+    } catch (reason) {
+      console.error(`[ERROR][AuthService -> generateOidcAuthUrl]: ${reason}`)
+      throw new InternalServerErrorException(
+        'Something went wrong, please try again',
+      )
+    }
+  }
+
+  async getIdToken(tokenData: any, discovery: any): Promise<JwtPayload> {
+    if (!tokenData || !tokenData.id_token) {
+      throw new BadRequestException('ID token missing in token response')
+    }
+
+    const decoded = decode(tokenData.id_token, {
+      complete: true,
+    })
+
+    if (!decoded?.payload || typeof decoded.payload === 'string') {
+      throw new InternalServerErrorException(
+        'Failed to decode ID token or invalid payload format',
+      )
+    }
+
+    const idToken = decoded.payload as JwtPayload
+
+    // 1. Verify signature (jwks_uri from discovery), throw if invalid
+    // TODO: Implement signature verification
+
+    // 2. Verify claims
+    const config = this.getOidcConfig()
+    const now = Math.floor(Date.now() / 1000)
+
+    // Verify Issuer (iss)
+    if (idToken.iss !== discovery.issuer) {
+      throw new BadRequestException('Invalid issuer in ID token')
+    }
+
+    // Verify Audience (aud)
+    const audience = Array.isArray(idToken.aud) ? idToken.aud : [idToken.aud]
+    if (!audience.includes(config.clientID)) {
+      throw new BadRequestException('Invalid audience in ID token')
+    }
+
+    // Verify Expiration (exp)
+    if (idToken.exp < now) {
+      throw new BadRequestException('ID token has expired')
+    }
+
+    // Verify Issued At (iat) - Allow for some clock skew (e.g., 5 minutes)
+    const maxClockSkew = 300 // 5 minutes in seconds
+    // Verify iat is present and is a number before checking
+    if (typeof idToken.iat !== 'number' || idToken.iat > now + maxClockSkew) {
+      throw new BadRequestException(
+        'ID token issued in the future or invalid iat (check clock skew)',
+      )
+    }
+
+    return idToken
   }
 
   async processOidcToken(code: string, state: string) {
     const config = this.getOidcConfig()
 
+    const discovery = await this.getOidcDiscovery()
+
+    console.log('config:', config)
     console.log('processing oidc token')
     console.log('code:', code)
     console.log('state:', state)
 
-    const tokenResponse = await fetch(config.tokenURL, {
+    const tokenResponse = await fetch(discovery.token_endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -182,17 +260,14 @@ export class AuthService {
 
     const tokenData = await tokenResponse.json()
 
-    console.log('tokenData:', tokenData)
+    if (tokenData.error) {
+      throw new BadRequestException(
+        tokenData.error_description || 'Unknown error',
+      )
+    }
 
-    const userInfoResponse = await fetch(config.userInfoURL, {
-      headers: {
-        Authorization: `Bearer ${tokenData.access_token}`,
-      },
-    })
-
-    const userInfo = await userInfoResponse.json()
-
-    console.log('userInfo:', userInfo)
+    // Ideally we want to use id/email from this id token, but for now we only support one user in the system
+    const sdfa = await this.getIdToken(tokenData, discovery)
 
     const dataToStore = JSON.stringify({ id: SELFHOSTED_UUID })
 
