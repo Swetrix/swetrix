@@ -261,7 +261,7 @@ export class AuthService {
     }
 
     // Ideally we want to use id/email from this id token, but for now we only support one user in the system
-    const sdfa = await this.getIdToken(tokenData, discovery)
+    await this.getIdToken(tokenData, discovery)
 
     const dataToStore = JSON.stringify({ id: SELFHOSTED_UUID })
 
