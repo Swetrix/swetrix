@@ -36,6 +36,7 @@ ENV EMAIL=test@test.com \
 
 # OIDC Configuration (optional)
 ENV OIDC_CLIENT_ID='' \
+    OIDC_DISCOVERY_URL='' \
     OIDC_CLIENT_SECRET='' \
     OIDC_CALLBACK_URL=''
 
