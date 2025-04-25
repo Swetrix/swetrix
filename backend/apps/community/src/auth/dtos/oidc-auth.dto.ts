@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsString, IsOptional, IsUrl } from 'class-validator'
+import { IsString, IsOptional } from 'class-validator'
 
 export class OIDCInitiateDto {
   @ApiProperty({
     description: 'Redirect URL after successful authentication',
   })
-  @IsUrl()
+  @IsString()
   redirectUrl: string
 
   @ApiProperty({

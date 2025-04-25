@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsEnum, IsOptional, IsUrl } from 'class-validator'
+import { IsEnum, IsOptional } from 'class-validator'
 
 export enum SSOProviders {
   GOOGLE = 'google',
@@ -13,7 +13,6 @@ export class SSOGenerateDto {
     required: false,
   })
   @IsOptional()
-  @IsUrl()
   redirectUrl: string
 
   @ApiProperty({
