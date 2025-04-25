@@ -237,11 +237,6 @@ export class AuthService {
 
     const discovery = await this.getOidcDiscovery()
 
-    console.log('config:', config)
-    console.log('processing oidc token')
-    console.log('code:', code)
-    console.log('state:', state)
-
     const tokenResponse = await fetch(discovery.token_endpoint, {
       method: 'POST',
       headers: {
