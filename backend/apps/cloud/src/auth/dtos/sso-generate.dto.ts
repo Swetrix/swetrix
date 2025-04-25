@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsEnum } from 'class-validator'
+import { IsEnum, IsOptional, IsUrl } from 'class-validator'
 
 export enum SSOProviders {
   GOOGLE = 'google',
@@ -7,6 +7,15 @@ export enum SSOProviders {
 }
 
 export class SSOGenerateDto {
+  @ApiProperty({
+    description:
+      'Redirect URL after successful authentication; unused. Only set for compatibility with the Community Edition.',
+    required: false,
+  })
+  @IsOptional()
+  @IsUrl()
+  redirectUrl: string
+
   @ApiProperty({
     description: 'SSO provider name',
     enum: SSOProviders,

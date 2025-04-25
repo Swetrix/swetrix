@@ -136,7 +136,6 @@ export class AuthService {
       discoveryURL: this.configService.get('OIDC_DISCOVERY_URL'),
       clientID: this.configService.get('OIDC_CLIENT_ID'),
       clientSecret: this.configService.get('OIDC_CLIENT_SECRET'),
-      callbackURL: this.configService.get('OIDC_CALLBACK_URL'),
       scope: 'openid email profile',
     }
   }
@@ -153,7 +152,7 @@ export class AuthService {
     return response.json()
   }
 
-  async generateOidcAuthUrl(redirectUrl?: string) {
+  async generateOidcAuthUrl(redirectUrl: string) {
     try {
       const uuid = generateOIDCState()
 
@@ -169,7 +168,7 @@ export class AuthService {
       const config = this.getOidcConfig()
 
       return {
-        auth_url: `${discovery.authorization_endpoint}?client_id=${config.clientID}&response_type=code&scope=${encodeURIComponent(config.scope)}&redirect_uri=${encodeURIComponent(config.callbackURL)}&state=${uuid}`,
+        auth_url: `${discovery.authorization_endpoint}?client_id=${config.clientID}&response_type=code&scope=${encodeURIComponent(config.scope)}&redirect_uri=${encodeURIComponent(redirectUrl)}&state=${uuid}`,
         uuid,
         expires_in: REDIS_OIDC_SESSION_TIMEOUT * 1000, // milliseconds
       }
@@ -254,7 +253,7 @@ export class AuthService {
         client_id: config.clientID,
         client_secret: config.clientSecret,
         code,
-        redirect_uri: config.callbackURL,
+        // redirect_uri: config.callbackURL,
       }).toString(),
     })
 

@@ -4,11 +4,9 @@ import { IsString, IsOptional, IsUrl } from 'class-validator'
 export class OIDCInitiateDto {
   @ApiProperty({
     description: 'Redirect URL after successful authentication',
-    required: false,
   })
   @IsUrl()
-  @IsOptional()
-  redirectUrl?: string
+  redirectUrl: string
 
   @ApiProperty({
     description:

@@ -97,7 +97,11 @@ const Signin = () => {
     }
 
     try {
-      const { uuid, auth_url: authUrl, expires_in: expiresIn } = await generateSSOAuthURL(provider)
+      const {
+        uuid,
+        auth_url: authUrl,
+        expires_in: expiresIn,
+      } = await generateSSOAuthURL(provider, `${window.location.origin}${routes.socialised}`)
 
       authWindow.location = authUrl
 
