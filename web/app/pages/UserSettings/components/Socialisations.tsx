@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 
 import { generateSSOAuthURL, linkBySSOHash, unlinkSSO } from '~/api'
 import { SSO_PROVIDERS } from '~/lib/constants'
+import { SSOProvider } from '~/lib/models/Auth'
 import { User } from '~/lib/models/User'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
@@ -63,7 +64,7 @@ const Socialisations = () => {
   const { t } = useTranslation('common')
   const [isLoading, setIsLoading] = useState(false)
 
-  const linkSSO = async (provider: string) => {
+  const linkSSO = async (provider: SSOProvider) => {
     setIsLoading(true)
 
     const authWindow = openBrowserWindow('')
@@ -111,7 +112,7 @@ const Socialisations = () => {
     }
   }
 
-  const onUnlinkSSO = async (provider: string) => {
+  const onUnlinkSSO = async (provider: SSOProvider) => {
     setIsLoading(true)
 
     try {
