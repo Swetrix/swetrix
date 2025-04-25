@@ -1281,9 +1281,9 @@ export const getJWTBySSOHash = async (hash: string, provider: SSOProvider, refCo
     })
 }
 
-export const processSSOTokenCommunityEdition = (code: string, hash: string) =>
+export const processSSOTokenCommunityEdition = (code: string, hash: string, redirectUrl: string) =>
   api
-    .post('v1/auth/oidc/process-token', { code, hash })
+    .post('v1/auth/oidc/process-token', { code, hash, redirectUrl })
     .then((response): unknown => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message

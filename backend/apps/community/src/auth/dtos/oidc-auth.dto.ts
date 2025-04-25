@@ -28,6 +28,12 @@ export class OIDCProcessTokenDto {
   })
   @IsString()
   hash: string
+
+  @ApiProperty({
+    description: 'Redirect URL after successful authentication',
+  })
+  @IsString()
+  redirectUrl: string
 }
 
 export class OIDCGetJWTByHashDto {

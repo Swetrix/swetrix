@@ -63,7 +63,7 @@ const Socialised = () => {
       }
 
       try {
-        await processSSOTokenCommunityEdition(code, state)
+        await processSSOTokenCommunityEdition(code, state, `${window.location.origin}${routes.socialised}`)
       } catch (reason) {
         setIsError(true)
         console.error(`[ERROR] Error while processing OIDC code: ${reason}`)

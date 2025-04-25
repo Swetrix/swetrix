@@ -196,10 +196,10 @@ export class AuthController {
     const ip = getIPFromHeaders(headers) || reqIP || ''
     await checkRateLimit(ip, 'oidc-process-token', 15, 1800)
 
-    const { code, hash } = body
+    const { code, hash, redirectUrl } = body
 
     try {
-      await this.authService.processOidcToken(code, hash)
+      await this.authService.processOidcToken(code, hash, redirectUrl)
     } catch (reason) {
       console.error('[ERROR] OIDC Callback Error:', reason)
       return res

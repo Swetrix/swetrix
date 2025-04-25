@@ -232,7 +232,7 @@ export class AuthService {
     return idToken
   }
 
-  async processOidcToken(code: string, state: string) {
+  async processOidcToken(code: string, state: string, redirectUrl: string) {
     const config = this.getOidcConfig()
 
     const discovery = await this.getOidcDiscovery()
@@ -253,7 +253,7 @@ export class AuthService {
         client_id: config.clientID,
         client_secret: config.clientSecret,
         code,
-        // redirect_uri: config.callbackURL,
+        redirect_uri: redirectUrl,
       }).toString(),
     })
 
