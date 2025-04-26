@@ -25,10 +25,19 @@ ENV REDIS_HOST=localhost \
     CLICKHOUSE_PORT=8123 \
     CLICKHOUSE_DATABASE=analytics
 
+# Authentication mode settings
+ENV OIDC_ENABLED=false \
+    OIDC_ONLY_AUTH=false
+
 # Application configs
 ENV EMAIL=test@test.com \
     PASSWORD=12345678 \
     IS_PRIMARY_NODE=true
+
+# OIDC Configuration (optional)
+ENV OIDC_CLIENT_ID='' \
+    OIDC_DISCOVERY_URL='' \
+    OIDC_CLIENT_SECRET=''
 
 # Install and configure timezone
 RUN apk add --no-cache tzdata && \

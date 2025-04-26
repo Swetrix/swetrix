@@ -16,7 +16,7 @@
 
   /* Minimum Heights */
   --min-height-page: calc(100vh - 74px);
-  --min-height-min-footer: calc(100vh - 148px);
+  --min-height-min-footer: calc(100vh - 157px);
 }
 
 /* Custom Animations */

@@ -5,8 +5,8 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
-import { processSSOToken } from '~/api'
-import { SSO_PROVIDERS } from '~/lib/constants'
+import { processSSOToken, processSSOTokenCommunityEdition } from '~/api'
+import { isSelfhosted, SSO_PROVIDERS } from '~/lib/constants'
 import Loader from '~/ui/Loader'
 import routes from '~/utils/routes'
 
@@ -20,34 +20,34 @@ const Socialised = () => {
     const _location = _replace(window.location.href, `${routes.socialised}#`, `${routes.socialised}?`)
 
     const { searchParams } = new URL(_location)
-    const hash = searchParams.get('state')
+    const state = searchParams.get('state')
     const accessToken = searchParams.get('access_token')
     const code = searchParams.get('code')
-    const provider = _split(hash, ':')[0]
+    const provider = _split(state, ':')[0]
 
     const processCode = async () => {
-      if (!hash || !provider) {
+      if (!state || !provider) {
         setIsError(true)
         return
       }
 
-      let _token
+      let _code
 
       if (provider === SSO_PROVIDERS.GOOGLE) {
-        _token = accessToken
+        _code = accessToken
       }
 
       if (provider === SSO_PROVIDERS.GITHUB) {
-        _token = code
+        _code = code
       }
 
-      if (!_token) {
+      if (!_code) {
         setIsError(true)
         return
       }
 
       try {
-        await processSSOToken(_token, hash)
+        await processSSOToken(_code, state)
       } catch (reason) {
         setIsError(true)
         console.error(`[ERROR] Error while processing Google code: ${reason}`)
@@ -56,8 +56,29 @@ const Socialised = () => {
       }
     }
 
+    const processCodeCommunityEdition = async () => {
+      if (!state || !code) {
+        setIsError(true)
+        return
+      }
+
+      try {
+        await processSSOTokenCommunityEdition(code, state, `${window.location.origin}${routes.socialised}`)
+      } catch (reason) {
+        setIsError(true)
+        console.error(`[ERROR] Error while processing OIDC code: ${reason}`)
+      } finally {
+        setLoading(false)
+      }
+    }
+
     setLoading(true)
-    processCode()
+
+    if (isSelfhosted) {
+      processCodeCommunityEdition()
+    } else {
+      processCode()
+    }
   }, [])
 
   if (loading) {

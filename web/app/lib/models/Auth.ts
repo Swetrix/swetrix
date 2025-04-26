@@ -7,4 +7,4 @@ export interface Auth {
   totalMonthlyEvents: number
 }
 
-export type SSOProvider = 'google' | 'github'
+export type SSOProvider = 'google' | 'github' | 'openid-connect'

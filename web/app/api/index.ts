@@ -6,7 +6,7 @@ import _map from 'lodash/map'
 
 import { DEFAULT_ALERTS_TAKE, API_URL } from '~/lib/constants'
 import { Alerts } from '~/lib/models/Alerts'
-import { Auth } from '~/lib/models/Auth'
+import { Auth, SSOProvider } from '~/lib/models/Auth'
 import { Metainfo } from '~/lib/models/Metainfo'
 import { Role } from '~/lib/models/Organisation'
 import { Project, Overall, LiveStats, Funnel, Extension } from '~/lib/models/Project'
@@ -1227,11 +1227,21 @@ export const confirmTransferProject = (uuid: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const generateSSOAuthURL = (provider: string) =>
-  api
-    .post('v1/auth/sso/generate', {
-      provider,
-    })
+export const generateSSOAuthURL = async (provider: SSOProvider, redirectUrl?: string) => {
+  const payload = {
+    provider,
+    redirectUrl,
+  }
+
+  let authInitiateRequest
+
+  if (provider === 'openid-connect') {
+    authInitiateRequest = api.post('v1/auth/oidc/initiate', payload)
+  } else {
+    authInitiateRequest = api.post('v1/auth/sso/generate', payload)
+  }
+
+  return authInitiateRequest
     .then(
       (
         response,
@@ -1244,10 +1254,18 @@ export const generateSSOAuthURL = (provider: string) =>
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
+}
 
-export const getJWTBySSOHash = (hash: string, provider: string, refCode?: string) =>
-  api
-    .post('v1/auth/sso/hash', { hash, provider, refCode })
+export const getJWTBySSOHash = async (hash: string, provider: SSOProvider, refCode?: string) => {
+  let axiosPost
+
+  if (provider === 'openid-connect') {
+    axiosPost = api.post('v1/auth/oidc/hash', { hash })
+  } else {
+    axiosPost = api.post('v1/auth/sso/hash', { hash, provider, refCode })
+  }
+
+  return axiosPost
     .then(
       (
         response,
@@ -1261,8 +1279,17 @@ export const getJWTBySSOHash = (hash: string, provider: string, refCode?: string
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
+}
 
-export const linkBySSOHash = (hash: string, provider: string) =>
+export const processSSOTokenCommunityEdition = (code: string, hash: string, redirectUrl: string) =>
+  api
+    .post('v1/auth/oidc/process-token', { code, hash, redirectUrl })
+    .then((response): unknown => response.data)
+    .catch((error) => {
+      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
+    })
+
+export const linkBySSOHash = (hash: string, provider: SSOProvider) =>
   api
     .post('v1/auth/sso/link_by_hash', { hash, provider })
     .then((response): unknown => response.data)
@@ -1270,7 +1297,7 @@ export const linkBySSOHash = (hash: string, provider: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const unlinkSSO = (provider: string) =>
+export const unlinkSSO = (provider: SSOProvider) =>
   api
     .delete('v1/auth/sso/unlink', { data: { provider } })
     .then((response): unknown => response.data)

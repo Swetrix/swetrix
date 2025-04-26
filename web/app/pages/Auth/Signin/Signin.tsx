@@ -1,3 +1,4 @@
+import clsx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import _isString from 'lodash/isString'
 import _keys from 'lodash/keys'
@@ -10,6 +11,7 @@ import { toast } from 'sonner'
 import { generateSSOAuthURL, getJWTBySSOHash, login, submit2FA } from '~/api'
 import GithubAuth from '~/components/GithubAuth'
 import GoogleAuth from '~/components/GoogleAuth'
+import OIDCAuth from '~/components/OIDCAuth'
 import { withAuthentication, auth } from '~/hoc/protected'
 import { isSelfhosted, REFERRAL_COOKIE, TRIAL_DAYS } from '~/lib/constants'
 import { SSOProvider } from '~/lib/models/Auth'
@@ -95,7 +97,11 @@ const Signin = () => {
     }
 
     try {
-      const { uuid, auth_url: authUrl, expires_in: expiresIn } = await generateSSOAuthURL(provider)
+      const {
+        uuid,
+        auth_url: authUrl,
+        expires_in: expiresIn,
+      } = await generateSSOAuthURL(provider, `${window.location.origin}${routes.socialised}`)
 
       authWindow.location = authUrl
 
@@ -278,7 +284,7 @@ const Signin = () => {
         </h2>
       </div>
       <div className='mt-10 font-mono sm:mx-auto sm:w-full sm:max-w-[480px]'>
-        <div className='bg-white px-6 py-12 ring-1 ring-gray-200 sm:rounded-lg sm:px-12 dark:bg-slate-800/20 dark:ring-slate-800'>
+        <div className='bg-white px-6 py-12 shadow-xs ring-1 ring-gray-200 sm:rounded-lg sm:px-12 dark:bg-slate-800/20 dark:ring-slate-800'>
           <form className='space-y-6' onSubmit={handleSubmit}>
             <Input
               name='email'
@@ -328,24 +334,28 @@ const Signin = () => {
             </Button>
           </form>
 
-          {!isSelfhosted ? (
-            <div>
-              <div className='relative mt-10'>
-                <div className='absolute inset-0 flex items-center' aria-hidden='true'>
-                  <div className='w-full border-t border-gray-200 dark:border-gray-600' />
-                </div>
-                <div className='relative flex justify-center text-sm leading-6 font-medium'>
-                  <span className='bg-white px-6 text-gray-900 dark:bg-slate-800/20 dark:text-gray-50'>
-                    {t('auth.common.orContinueWith')}
-                  </span>
-                </div>
+          <div>
+            <div className='relative mt-10'>
+              <div className='absolute inset-0 flex items-center' aria-hidden='true'>
+                <div className='w-full border-t border-gray-200 dark:border-gray-600' />
               </div>
-              <div className='mt-6 grid grid-cols-2 gap-4'>
-                <GoogleAuth onClick={() => onSsoLogin('google')} disabled={isLoading} />
-                <GithubAuth onClick={() => onSsoLogin('github')} disabled={isLoading} />
+              <div className='relative flex justify-center text-sm leading-6 font-medium'>
+                <span className='bg-white px-6 text-gray-900 dark:bg-slate-800/20 dark:text-gray-50'>
+                  {t('auth.common.orContinueWith')}
+                </span>
               </div>
             </div>
-          ) : null}
+            <div className={clsx('mt-6 grid gap-4', isSelfhosted ? 'grid-cols-1' : 'grid-cols-2')}>
+              {isSelfhosted ? (
+                <OIDCAuth onClick={() => onSsoLogin('openid-connect')} disabled={isLoading} className='w-full' />
+              ) : (
+                <>
+                  <GoogleAuth onClick={() => onSsoLogin('google')} disabled={isLoading} />
+                  <GithubAuth onClick={() => onSsoLogin('github')} disabled={isLoading} />
+                </>
+              )}
+            </div>
+          </div>
         </div>
 
         {!isSelfhosted ? (

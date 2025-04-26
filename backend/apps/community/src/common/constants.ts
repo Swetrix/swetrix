@@ -37,6 +37,10 @@ const SELFHOSTED_GEOIP_DB_PATH = process.env.IP_GEOLOCATION_DB_PATH
 const UUIDV5_NAMESPACE = '912c64c1-73fd-42b6-859f-785f839a9f68'
 const DEFAULT_SELFHOSTED_UUID = 'deadbeef-dead-beef-dead-beefdeadbeef'
 
+// OIDC configuration
+const OIDC_ENABLED = process.env.OIDC_ENABLED === 'true'
+const OIDC_ONLY_AUTH = process.env.OIDC_ONLY_AUTH === 'true'
+
 const SELFHOSTED_UUID = getSelfhostedUUID()
 
 const ORIGINS_REGEX =
@@ -52,6 +56,7 @@ const getRedisProjectKey = (pid: string) => `pid_${pid}`
 const REDIS_SESSION_SALT_KEY = 'log_salt' // is updated every 24 hours
 const REDIS_USERS_COUNT_KEY = 'stats:users_count'
 const REDIS_PROJECTS_COUNT_KEY = 'stats:projects_count'
+const REDIS_OIDC_SESSION_KEY = 'oidc:session'
 
 // 3600 sec -> 1 hour
 const redisProjectCacheTimeout = 3600
@@ -138,4 +143,7 @@ export {
   PID_REGEX,
   ALL_COLUMNS,
   SELFHOSTED_GEOIP_DB_PATH,
+  OIDC_ENABLED,
+  OIDC_ONLY_AUTH,
+  REDIS_OIDC_SESSION_KEY,
 }
