@@ -9,7 +9,8 @@ import { JwtService } from '@nestjs/jwt'
 import { genSalt, hash } from 'bcrypt'
 import _isEmpty from 'lodash/isEmpty'
 import { v4 as uuidv4 } from 'uuid'
-import { decode, JwtPayload } from 'jsonwebtoken'
+import { decode, JwtPayload, verify } from 'jsonwebtoken'
+import jwksClient from 'jwks-rsa'
 
 import {
   saveRefreshTokenClickhouse,
@@ -197,8 +198,12 @@ export class AuthService {
 
     const idToken = decoded.payload as JwtPayload
 
-    // 1. Verify signature (jwks_uri from discovery), throw if invalid
-    // TODO: Implement signature verification
+    // 1. Verify signature (jwks_uri from discovery)
+    await this.verifySignature(
+      tokenData.id_token,
+      discovery.jwks_uri,
+      decoded.header.kid,
+    )
 
     // 2. Verify claims
     const config = this.getOidcConfig()
@@ -230,6 +235,27 @@ export class AuthService {
     }
 
     return idToken
+  }
+
+  private async verifySignature(
+    token: string,
+    jwksUri: string,
+    kid: string,
+  ): Promise<void> {
+    try {
+      const client = jwksClient({
+        jwksUri,
+        cache: true,
+      })
+
+      const key = await client.getSigningKey(kid)
+      const signingKey = key.getPublicKey()
+
+      verify(token, signingKey)
+    } catch (reason) {
+      console.error(`[ERROR][AuthService -> verifySignature]: ${reason}`)
+      throw new BadRequestException('Invalid token signature')
+    }
   }
 
   async processOidcToken(code: string, state: string, redirectUrl: string) {

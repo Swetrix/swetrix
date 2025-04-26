@@ -67,6 +67,7 @@
     "ip-range-check": "^0.2.0",
     "isbot": "^5.1.26",
     "jsonwebtoken": "^9.0.2",
+    "jwks-rsa": "^3.2.0",
     "lodash": "^4.17.21",
     "maxmind": "^4.3.24",
     "mysql2": "^3.14.0",
