@@ -811,49 +811,47 @@ export class AnalyticsService {
     }
   }
 
-  async getTimeBucketForAllTime(
+  async calculateTimeBucketForAllTime(
     pid: string,
-    period: string,
-    safeTimezone: string,
+    table: 'analytics' | 'customEV' | 'performance' | 'errors',
   ): Promise<{
     timeBucket: TimeBucketType[]
     diff: number
   }> {
-    if (period !== 'all') {
-      return null
-    }
-
-    const { data: from } = await clickhouse
+    const { data: fromData } = await clickhouse
       .query({
-        query:
-          'SELECT created FROM analytics WHERE pid = {pid:FixedString(12)} ORDER BY created ASC LIMIT 1',
+        query: `SELECT min(created) AS firstCreated FROM ${table} WHERE pid = {pid:FixedString(12)}`,
         query_params: { pid },
       })
-      .then(res => res.json<{ created?: string }>())
+      .then(res => res.json<{ firstCreated?: string }>())
 
-    const to = _includes(GMT_0_TIMEZONES, safeTimezone)
-      ? dayjs.utc()
-      : dayjs().tz(safeTimezone)
+    const firstCreated = fromData?.[0]?.firstCreated
 
-    let newTimeBucket = [TimeBucketType.MONTH]
-    let diff = null
-
-    if (from && to) {
-      diff = dayjs(to).diff(dayjs(from?.[0]?.created || to), 'days')
-
-      const tbMap = _find(timeBucketToDays, ({ lt }) => diff <= lt)
-
-      if (_isEmpty(tbMap)) {
-        throw new PreconditionFailedException(
-          "The difference between 'from' and 'to' is greater than allowed",
-        )
+    if (!firstCreated) {
+      return {
+        timeBucket: [TimeBucketType.DAY],
+        diff: 0,
       }
+    }
 
-      newTimeBucket = tbMap?.tb
+    const nowUtc = dayjs.utc()
+    const firstCreatedUtc = dayjs.utc(firstCreated)
+    const diff = nowUtc.diff(firstCreatedUtc, 'days')
+
+    const tbMap = _find(timeBucketToDays, ({ lt }) => diff <= lt)
+
+    if (_isEmpty(tbMap)) {
+      console.error(
+        `[ERROR] calculateTimeBucketForAllTime: Difference ${diff} exceeds allowed limits for pid ${pid}`,
+      )
+      return {
+        timeBucket: [TimeBucketType.YEAR],
+        diff,
+      }
     }
 
     return {
-      timeBucket: newTimeBucket,
+      timeBucket: tbMap.tb,
       diff,
     }
   }
@@ -3197,7 +3195,7 @@ export class AnalyticsService {
     )
 
     if (period === 'all') {
-      const res = await this.getTimeBucketForAllTime(pid, period, timezone)
+      const res = await this.calculateTimeBucketForAllTime(pid, 'customEV')
 
       diff = res.diff
 
@@ -3298,7 +3296,7 @@ export class AnalyticsService {
     }
 
     if (period === 'all') {
-      const res = await this.getTimeBucketForAllTime(pid, period, timezone)
+      const res = await this.calculateTimeBucketForAllTime(pid, 'analytics')
 
       diff = res.diff
 

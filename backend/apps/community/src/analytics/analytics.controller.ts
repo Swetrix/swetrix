@@ -216,10 +216,9 @@ export class AnalyticsController {
     let diff
 
     if (period === 'all') {
-      const res = await this.analyticsService.getTimeBucketForAllTime(
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        period,
-        timezone,
+        'analytics',
       )
 
       diff = res.diff
@@ -340,6 +339,17 @@ export class AnalyticsController {
       headers['x-password'],
     )
 
+    let diff
+
+    if (period === 'all') {
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
+        pid,
+        'analytics',
+      )
+
+      diff = res.diff
+    }
+
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
       from,
@@ -347,6 +357,7 @@ export class AnalyticsController {
       null,
       period,
       safeTimezone,
+      diff,
     )
 
     const params = { pid, groupFrom, groupTo }
@@ -508,10 +519,9 @@ export class AnalyticsController {
     let diff
 
     if (period === 'all') {
-      const res = await this.analyticsService.getTimeBucketForAllTime(
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        period,
-        timezone,
+        'performance',
       )
 
       diff = res.diff
@@ -627,10 +637,9 @@ export class AnalyticsController {
     let diff
 
     if (period === 'all') {
-      const res = await this.analyticsService.getTimeBucketForAllTime(
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        period,
-        timezone,
+        'analytics',
       )
 
       diff = res.diff
@@ -1200,10 +1209,9 @@ export class AnalyticsController {
     let diff
 
     if (period === 'all') {
-      const res = await this.analyticsService.getTimeBucketForAllTime(
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        period,
-        timezone,
+        'analytics',
       )
 
       timeBucket = res.timeBucket[0]
@@ -1305,10 +1313,9 @@ export class AnalyticsController {
     let timeBucketForAllTime
 
     if (period === VALID_PERIODS[VALID_PERIODS.length - 1]) {
-      const res = await this.analyticsService.getTimeBucketForAllTime(
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        period,
-        timezone,
+        'customEV',
       )
 
       newTimeBucket = _includes(res.timeBucket, timeBucket)
@@ -1510,10 +1517,9 @@ export class AnalyticsController {
     let diff
 
     if (period === 'all') {
-      const res = await this.analyticsService.getTimeBucketForAllTime(
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        period,
-        timezone,
+        'errors',
       )
 
       timeBucket = res.timeBucket[0]
@@ -1583,10 +1589,9 @@ export class AnalyticsController {
     let diff
 
     if (period === 'all') {
-      const res = await this.analyticsService.getTimeBucketForAllTime(
+      const res = await this.analyticsService.calculateTimeBucketForAllTime(
         pid,
-        period,
-        timezone,
+        'errors',
       )
 
       timeBucket = res.timeBucket[0]
