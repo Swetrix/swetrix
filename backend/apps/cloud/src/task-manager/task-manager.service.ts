@@ -745,7 +745,10 @@ export class TaskManagerService {
         toSave.push({
           psid,
           pid,
-          duration: Math.floor((Number(last) - Number(start)) / 1000), // convert to seconds
+          duration: Math.max(
+            0,
+            Math.floor((Number(last) - Number(start)) / 1000),
+          ), // convert to seconds, ensure non-negative
         })
         keysToDelete.push(key)
       }
