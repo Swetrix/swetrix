@@ -7,44 +7,44 @@
 */
 
 /* dark theme config */
-html.dark .bb-legend-item text {
+body.dark .bb-legend-item text {
   fill: var(--color-gray-300);
 }
 
-html.dark .bb-axis {
+body.dark .bb-axis {
   fill: var(--color-gray-300);
 }
 
-html.dark .bb-axis .domain {
+body.dark .bb-axis .domain {
   stroke: var(--color-slate-700);
 }
 
-html.dark .bb-axis .tick line {
+body.dark .bb-axis .tick line {
   stroke: var(--color-slate-700);
 }
 
-html.dark .bb-xgrid-focus {
+body.dark .bb-xgrid-focus {
   stroke: var(--color-slate-600);
 }
 
 /* light theme config */
-html.light .bb-legend-item text {
+body.light .bb-legend-item text {
   fill: var(--color-gray-800);
 }
 
-html.light .bb-axis {
+body.light .bb-axis {
   fill: var(--color-gray-700);
 }
 
-html.light .bb-axis .domain {
+body.light .bb-axis .domain {
   stroke: var(--color-gray-300);
 }
 
-html.light .bb-axis .tick line {
+body.light .bb-axis .tick line {
   stroke: var(--color-gray-300);
 }
 
-html.light .bb-xgrid-focus {
+body.light .bb-xgrid-focus {
   stroke: var(--color-gray-300);
 }
 

@@ -107,7 +107,7 @@ const CreateNewPassword = () => {
           </h2>
         </div>
         <div className='mt-10 font-mono sm:mx-auto sm:w-full sm:max-w-[480px]'>
-          <div className='bg-white px-6 py-12 shadow-xs ring-1 ring-gray-200 sm:rounded-lg sm:px-12 dark:bg-slate-800/20 dark:ring-slate-800'>
+          <div className='bg-white px-6 py-12 shadow-xs ring-1 ring-gray-200 sm:rounded-lg sm:px-12 dark:bg-slate-900 dark:ring-slate-800'>
             <form className='space-y-6' onSubmit={handleSubmit}>
               <Input
                 name='password'

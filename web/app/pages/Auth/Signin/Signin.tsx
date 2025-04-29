@@ -284,7 +284,7 @@ const Signin = () => {
         </h2>
       </div>
       <div className='mt-10 font-mono sm:mx-auto sm:w-full sm:max-w-[480px]'>
-        <div className='bg-white px-6 py-12 shadow-xs ring-1 ring-gray-200 sm:rounded-lg sm:px-12 dark:bg-slate-800/20 dark:ring-slate-800'>
+        <div className='bg-white px-6 py-12 shadow-xs ring-1 ring-gray-200 sm:rounded-lg sm:px-12 dark:bg-slate-900 dark:ring-slate-800'>
           <form className='space-y-6' onSubmit={handleSubmit}>
             <Input
               name='email'
@@ -340,7 +340,7 @@ const Signin = () => {
                 <div className='w-full border-t border-gray-200 dark:border-gray-600' />
               </div>
               <div className='relative flex justify-center text-sm leading-6 font-medium'>
-                <span className='bg-white px-6 text-gray-900 dark:bg-slate-800/20 dark:text-gray-50'>
+                <span className='bg-white px-6 text-gray-900 dark:bg-slate-900 dark:text-gray-50'>
                   {t('auth.common.orContinueWith')}
                 </span>
               </div>

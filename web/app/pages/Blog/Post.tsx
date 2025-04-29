@@ -99,7 +99,7 @@ export default function PostSlug() {
                       </li>
                     </ul>
                   </div>
-                  <div className='prose prose-slate mt-6'>
+                  <div className='prose prose-slate dark:prose-invert mt-6'>
                     <div dangerouslySetInnerHTML={{ __html: post.html }} />
                   </div>
                 </article>
