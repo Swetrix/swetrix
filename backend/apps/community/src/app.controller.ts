@@ -3,7 +3,7 @@ import { clickhouse } from './common/integrations/clickhouse'
 
 const DEPLOYMENT_INFORMATION = {
   name: 'Swetrix API',
-  repository: 'https://github.com/swetrix/swetrix-api',
+  repository: 'https://github.com/swetrix/swetrix',
   documentation: 'https://docs.swetrix.com',
   homepage: 'https://swetrix.com',
 }
