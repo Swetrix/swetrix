@@ -21,7 +21,7 @@ const serviceProviders: {
     location: 'Australia',
   },
   {
-    company: 'Wildbit, LLC (Postmark)',
+    company: 'Amazon Web Services, Inc',
     purpose: 'Transactional and marketing emails',
     dataSubjects: 'Customers',
     location: 'United States',
@@ -40,7 +40,7 @@ const serviceProviders: {
   },
   {
     company: 'Fly.io, Inc.',
-    purpose: 'Hosting',
+    purpose: 'Hosting for the customer-facing website',
     dataSubjects: 'Website Visitors, Customers, End Users',
     location: 'United States',
   },
@@ -461,7 +461,7 @@ const Features = () => {
 
         <hr className='mt-10 mb-4 border-gray-200 dark:border-gray-600' />
         <p className='text-lg tracking-tight text-gray-900 dark:text-gray-50'>
-          <i>Last updated: July 23, 2023.</i>
+          <i>Last updated: April 30, 2025.</i>
         </p>
       </div>
     </div>
