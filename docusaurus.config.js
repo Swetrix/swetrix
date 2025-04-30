@@ -14,11 +14,13 @@ module.exports = {
   trailingSlash: false,
   scripts: [
     {
-      src: 'https://swetrix.org/swetrix.js', defer: true,
+      src: 'https://swetrix.org/swetrix.js',
+      defer: true,
     },
     {
-      src: 'js/setupswetrix.js', defer: true,
-    }
+      src: 'js/setupswetrix.js',
+      defer: true,
+    },
   ],
   themeConfig: {
     colorMode: {
@@ -34,7 +36,7 @@ module.exports = {
         target: '_blank',
         style: {
           height: '28px',
-        }
+        },
       },
       items: [
         {
@@ -85,12 +87,16 @@ module.exports = {
           title: 'More',
           items: [
             {
-              label: 'GitHub',
-              href: 'https://github.com/swetrix',
+              label: 'Source code',
+              href: 'https://github.com/Swetrix/swetrix',
             },
             {
-              label: 'Email',
-              href: 'mailto:contact@swetrix.com',
+              label: 'Blog',
+              href: 'https://swetrix.com/blog',
+            },
+            {
+              label: 'Contact us',
+              href: 'https://swetrix.com/contact',
             },
           ],
         },
@@ -126,8 +132,7 @@ module.exports = {
   stylesheets: [
     {
       href: 'https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css',
-      integrity:
-        'sha384-Um5gpz1odJg5Z4HAmzPtgZKdTBHZdw8S29IecapCSB31ligYPhHQZMIlWLYQGVoc',
+      integrity: 'sha384-Um5gpz1odJg5Z4HAmzPtgZKdTBHZdw8S29IecapCSB31ligYPhHQZMIlWLYQGVoc',
       crossorigin: 'anonymous',
     },
   ],
@@ -158,4 +163,4 @@ module.exports = {
   //     },
   //   }
   // },
-};
+}
