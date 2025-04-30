@@ -22,7 +22,7 @@
     "lint:fix": "eslint --c eslint.config.mjs \"{apps/cloud/src,apps/community/src}/**/*.ts\" --fix",
     "lint:tsc": "tsc --noEmit",
     "find-deadcode": "ts-prune",
-    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org my-org-f6 --project swetrix-api ./dist && sentry-cli sourcemaps upload --org my-org-f6 --project swetrix-api ./dist"
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org swetrix --project swetrix-api ./dist && sentry-cli sourcemaps upload --org swetrix --project swetrix-api ./dist"
   },
   "dependencies": {
     "@clickhouse/client": "^1.11.1",
