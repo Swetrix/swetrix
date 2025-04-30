@@ -2758,7 +2758,11 @@ export class AnalyticsService {
   }
 
   async getRequestInformation(headers: any) {
-    const ua = await UAParser(headers, extensions).withClientHints()
+    const ua = await UAParser(
+      headers?.['user-agent'],
+      extensions,
+      headers,
+    ).withClientHints()
 
     return {
       deviceType: ua.device.type || 'desktop',

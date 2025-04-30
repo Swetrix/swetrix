@@ -59,7 +59,7 @@ export class AuthController {
   public async login(
     @Body() body: LoginRequestDto,
     @I18n() i18n: I18nContext,
-    @Headers() headers: unknown,
+    @Headers() headers: Record<string, string>,
     @Ip() reqIP: string,
   ): Promise<LoginResponseDto> {
     // If OIDC-only mode is enabled, disable traditional login
@@ -161,7 +161,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async initiateOidc(
     @Body() body: OIDCInitiateDto,
-    @Headers() headers: unknown,
+    @Headers() headers: Record<string, string>,
     @Ip() reqIP: string,
   ) {
     if (!OIDC_ENABLED) {
@@ -183,7 +183,7 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   async oidcProcessToken(
     @Body() body: OIDCProcessTokenDto,
-    @Headers() headers: unknown,
+    @Headers() headers: Record<string, string>,
     @Ip() reqIP: string,
     @Res() res: Response,
   ) {

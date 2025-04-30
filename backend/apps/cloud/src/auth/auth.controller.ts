@@ -85,7 +85,7 @@ export class AuthController {
   public async register(
     @Body() body: RegisterRequestDto,
     @I18n() i18n: I18nContext,
-    @Headers() headers: unknown,
+    @Headers() headers: Record<string, string>,
     @Ip() requestIp: string,
   ) {
     const ip = getIPFromHeaders(headers) || requestIp || ''
@@ -138,7 +138,7 @@ export class AuthController {
   public async login(
     @Body() body: LoginRequestDto,
     @I18n() i18n: I18nContext,
-    @Headers() headers: unknown,
+    @Headers() headers: Record<string, string>,
     @Ip() requestIp: string,
   ): Promise<LoginResponseDto> {
     const ip = getIPFromHeaders(headers) || requestIp || ''
@@ -213,7 +213,7 @@ export class AuthController {
   public async requestResetPassword(
     @Body() body: RequestResetPasswordDto,
     @I18n() i18n: I18nContext,
-    @Headers() headers: unknown,
+    @Headers() headers: Record<string, string>,
     @Ip() requestIp: string,
   ): Promise<void> {
     const ip = getIPFromHeaders(headers) || requestIp || ''
@@ -464,7 +464,7 @@ export class AuthController {
   @Public()
   async generateAuthURL(
     @Body() body: SSOGenerateDto,
-    @Headers() headers: unknown,
+    @Headers() headers: Record<string, string>,
     @Ip() reqIP: string,
   ): Promise<any> {
     const ip = getIPFromHeaders(headers) || reqIP || ''
@@ -489,7 +489,7 @@ export class AuthController {
   @Public()
   async processSSOToken(
     @Body() body: ProcessSSOCodeDto,
-    @Headers() headers: unknown,
+    @Headers() headers: Record<string, string>,
     @Ip() reqIP: string,
   ): Promise<any> {
     const ip = getIPFromHeaders(headers) || reqIP || ''
@@ -507,7 +507,7 @@ export class AuthController {
   // Validates the authorisation code and returns the JWT tokens
   async getJWTByHash(
     @Body() body: SSOGetJWTByHashDto,
-    @Headers() headers: unknown,
+    @Headers() headers: Record<string, string>,
     @Ip() reqIP: string,
   ): Promise<any> {
     const ip = getIPFromHeaders(headers) || reqIP || ''

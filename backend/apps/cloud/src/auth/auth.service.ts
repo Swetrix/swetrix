@@ -221,7 +221,7 @@ export class AuthService {
 
   public async sendTelegramNotification(
     userId: string,
-    headers: unknown,
+    headers: Record<string, string>,
     ip: string,
   ) {
     const user = await this.userService.findUserById(userId)
@@ -248,8 +248,12 @@ export class AuthService {
     }
   }
 
-  private async getHeadersInfo(headers: unknown, ip: string) {
-    const ua = await UAParser(headers).withClientHints()
+  private async getHeadersInfo(headers: Record<string, string>, ip: string) {
+    const ua = await UAParser(
+      headers?.['user-agent'],
+      undefined,
+      headers,
+    ).withClientHints()
     const browser = ua.browser.name || 'Unknown'
     const device = ua.device.type || 'Desktop'
     const os = ua.os.name || 'Unknown'
@@ -478,7 +482,11 @@ export class AuthService {
     Google SSO section
     --------------------------------
   */
-  async handleExistingUserGoogle(user: User, headers: unknown, ip: string) {
+  async handleExistingUserGoogle(
+    user: User,
+    headers: Record<string, string>,
+    ip: string,
+  ) {
     if (!user.googleId) {
       throw new BadRequestException()
     }
@@ -623,7 +631,7 @@ export class AuthService {
 
   async authenticateSSO(
     ssoHash: string,
-    headers: unknown,
+    headers: Record<string, string>,
     ip: string,
     provider: SSOProviders,
     refCode?: string,
@@ -641,7 +649,7 @@ export class AuthService {
 
   async authenticateGoogle(
     ssoHash: string,
-    headers: unknown,
+    headers: Record<string, string>,
     ip: string,
     refCode?: string,
   ) {
@@ -945,7 +953,11 @@ export class AuthService {
     }
   }
 
-  async handleExistingUserGithub(user: User, headers: unknown, ip: string) {
+  async handleExistingUserGithub(
+    user: User,
+    headers: Record<string, string>,
+    ip: string,
+  ) {
     if (!user.githubId) {
       throw new BadRequestException()
     }
@@ -1032,7 +1044,7 @@ export class AuthService {
 
   async authenticateGithub(
     ssoHash: string,
-    headers: unknown,
+    headers: Record<string, string>,
     ip: string,
     refCode?: string,
   ) {

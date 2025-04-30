@@ -100,11 +100,15 @@ export class CaptchaService {
 
   async logCaptchaPass(
     pid: string,
-    headers: string,
+    headers: Record<string, string>,
     timestamp: number,
     ip: string,
   ) {
-    const ua = await UAParser(headers).withClientHints()
+    const ua = await UAParser(
+      headers?.['user-agent'],
+      undefined,
+      headers,
+    ).withClientHints()
     const deviceType = ua.device.type || 'desktop'
     const browserName = ua.browser.name
     const osName = ua.os.name
