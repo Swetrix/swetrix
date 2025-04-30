@@ -6,8 +6,6 @@ import { CalendarIcon } from 'lucide-react'
 import { Fragment, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { KEY_FOR_ALL_TIME } from '~/lib/constants'
-
 interface PeriodSelectorProps {
   activePeriod: string
   setActivePeriod: (period: string) => void
@@ -49,7 +47,7 @@ export const PeriodSelector = ({ activePeriod, setActivePeriod, isLoading }: Per
       },
       {
         label: t('project.all'),
-        period: KEY_FOR_ALL_TIME,
+        period: 'all',
       },
     ]
   }, [t])

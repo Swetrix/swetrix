@@ -26,7 +26,6 @@ import {
   TimeFormat,
   chartTypes,
   TITLE_SUFFIX,
-  KEY_FOR_ALL_TIME,
   BROWSER_LOGO_MAP,
   OS_LOGO_MAP,
   OS_LOGO_MAP_DARK,
@@ -172,12 +171,11 @@ const ViewCaptcha = () => {
 
       let newTimebucket = timeBucket
 
-      if (period === KEY_FOR_ALL_TIME && !_isEmpty(timeBucketFromResponse)) {
+      if (period === 'all' && !_isEmpty(timeBucketFromResponse)) {
         newTimebucket = _includes(timeBucketFromResponse, timeBucket) ? timeBucket : timeBucketFromResponse[0]
         setPeriodPairs((prev) => {
-          // find in prev state period === KEY_FOR_ALL_TIME and change tbs
           const newPeriodPairs = _map(prev, (item) => {
-            if (item.period === KEY_FOR_ALL_TIME) {
+            if (item.period === 'all') {
               return {
                 ...item,
                 tbs:

@@ -32,8 +32,6 @@ const getCustomLabel = (dates: Date[], t: typeof i18nextT, language?: string): s
   return t('project.custom')
 }
 
-export const KEY_FOR_ALL_TIME = 'all'
-
 export const ALL_PERIODS = ['minute', 'hour', 'day', 'month', 'year']
 
 export interface TBPeriodPairsProps {
@@ -103,7 +101,7 @@ export const tbPeriodPairs = (
   },
   {
     label: t('project.all'),
-    period: KEY_FOR_ALL_TIME,
+    period: 'all',
     tbs: ['month', 'year'],
   },
   {
@@ -178,7 +176,7 @@ export const captchaTbPeriodPairs = (
   },
   {
     label: t('project.all'),
-    period: KEY_FOR_ALL_TIME,
+    period: 'all',
     tbs: ['month', 'year'],
   },
   {
@@ -194,9 +192,9 @@ export const FILTERS_PERIOD_PAIRS = ['1d', '7d', '4w', '3M', '12M', 'custom', 'c
 
 // TODO: add 'custom' later after an issue with it is resolved
 // currently if you select a date range - it will not display errors within the last day of the date range
-export const ERROR_PERIOD_PAIRS = ['1h', '1d', '7d', '4w', '3M', '12M']
+export const ERROR_PERIOD_PAIRS = ['1h', '1d', '7d', '4w', '3M', '12M', 'all']
 
-export const FUNNELS_PERIOD_PAIRS = ['1h', '1d', '7d', '4w', '3M', '12M', 'custom']
+export const FUNNELS_PERIOD_PAIRS = ['1h', '1d', '7d', '4w', '3M', '12M', 'all', 'custom']
 
 export const tbPeriodPairsCompare = (
   t: typeof i18nextT,

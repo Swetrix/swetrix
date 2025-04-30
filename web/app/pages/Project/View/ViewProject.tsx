@@ -101,7 +101,6 @@ import {
   FILTERS_PERIOD_PAIRS,
   LS_IS_ACTIVE_COMPARE_KEY,
   TITLE_SUFFIX,
-  KEY_FOR_ALL_TIME,
   MARKETPLACE_URL,
   BROWSER_LOGO_MAP,
   OS_LOGO_MAP,
@@ -1200,13 +1199,13 @@ const ViewProject = () => {
       let newTimebucket = timeBucket
       sdkInstance?._emitEvent('load', sdkData)
 
-      if (period === KEY_FOR_ALL_TIME && !_isEmpty(data.timeBucket)) {
+      if (period === 'all' && !_isEmpty(data.timeBucket)) {
         // @ts-expect-error
         newTimebucket = _includes(data.timeBucket, timeBucket) ? timeBucket : data.timeBucket[0]
         // @ts-expect-error
         setPeriodPairs((prev) => {
           const newPeriodPairs = _map(prev, (item) => {
-            if (item.period === KEY_FOR_ALL_TIME) {
+            if (item.period === 'all') {
               return {
                 ...item,
                 // @ts-expect-error
@@ -1666,11 +1665,11 @@ const ViewProject = () => {
 
       let newTimebucket = timeBucket
 
-      if (period === KEY_FOR_ALL_TIME && !_isEmpty(dataPerf.timeBucket)) {
+      if (period === 'all' && !_isEmpty(dataPerf.timeBucket)) {
         newTimebucket = _includes(dataPerf.timeBucket, timeBucket) ? timeBucket : dataPerf.timeBucket[0]
         setPeriodPairs((prev) => {
           const newPeriodPairs = _map(prev, (item) => {
-            if (item.period === KEY_FOR_ALL_TIME) {
+            if (item.period === 'all') {
               return {
                 ...item,
                 tbs:
@@ -2635,7 +2634,7 @@ const ViewProject = () => {
     q: '3M',
     l: '12M',
     z: '24M',
-    a: KEY_FOR_ALL_TIME,
+    a: 'all',
     u: 'custom',
     c: 'compare',
   }
