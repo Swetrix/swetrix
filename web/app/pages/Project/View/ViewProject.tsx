@@ -2980,7 +2980,7 @@ const ViewProject = () => {
                             </div>
                             {activeTab === PROJECT_TABS.traffic ? (
                               <Dropdown
-                                header={t('project.views')}
+                                header={t('project.segments')}
                                 onClick={() => loadProjectViews()}
                                 loading={projectViewsLoading || projectViewsLoading === null}
                                 selectItemClassName={
