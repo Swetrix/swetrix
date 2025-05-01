@@ -3001,7 +3001,7 @@ const ViewProject = () => {
                                     !allowedToManage &&
                                       _isEmpty(projectViews) && {
                                         id: 'no-views',
-                                        name: t('project.noViewsYet'),
+                                        name: t('project.noSegmentsYet'),
                                         notClickable: true,
                                       },
                                   ],

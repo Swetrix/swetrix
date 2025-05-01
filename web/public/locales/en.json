@@ -857,7 +857,7 @@
       "filterV": "For \"{{customEventName}}\" aggregate \"{{metricKey}}\" where any value is \"{{metaValue}}\"",
       "filterKV": "For \"{{customEventName}}\" aggregate \"{{metricKey}}\" where key \"{{metaKey}}\" is \"{{metaValue}}\""
     },
-    "noViewsYet": "No views yet",
+    "noSegmentsYet": "No segments yet",
     "metaValueType": {
       "decimal": "Decimal",
       "integer": "Integer",
