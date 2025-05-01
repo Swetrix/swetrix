@@ -412,7 +412,7 @@ const ViewProject = () => {
       return
     }
 
-    toast.success(t('apiNotifications.viewDeleted'))
+    toast.success(t('apiNotifications.segmentDeleted'))
     await loadProjectViews(true)
     setProjectViewDeleting(false)
   }
@@ -2995,7 +2995,7 @@ const ViewProject = () => {
                                     ...projectViews,
                                     allowedToManage && {
                                       id: 'add-a-view',
-                                      name: t('project.addAView'),
+                                      name: t('project.addASegment'),
                                       createView: true,
                                     },
                                     !allowedToManage &&

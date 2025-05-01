@@ -286,7 +286,7 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
     if (!name) {
       setErrors((prev) => ({
         ...prev,
-        name: t('apiNotifications.enterViewName'),
+        name: t('apiNotifications.enterSegmentName'),
       }))
       valid = false
     }
@@ -355,7 +355,7 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
       }}
       onSubmit={onViewCreate}
       submitText={t('common.confirm')}
-      title={t('project.addAView')}
+      title={t('project.addASegment')}
       isLoading={isViewSubmitting}
       message={
         <div className='min-h-[410px]'>
