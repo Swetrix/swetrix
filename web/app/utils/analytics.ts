@@ -1,7 +1,7 @@
 import _includes from 'lodash/includes'
 import * as Swetrix from 'swetrix'
 
-import { isDevelopment, isSelfhosted } from '~/lib/constants'
+import { isBrowser, isDevelopment, isSelfhosted } from '~/lib/constants'
 
 const SWETRIX_PID = 'STEzHcB1rALV'
 
@@ -108,16 +108,21 @@ Swetrix.init(SWETRIX_PID, {
 const BLOG_PAGE_REGEX = /^\/blog\/.+$/
 
 export const trackViews = () => {
-  if (isSelfhosted) {
+  if (isSelfhosted || !isBrowser) {
     return
   }
 
   Swetrix.trackViews({
     callback: ({ pg, ref }) => {
+      const locale = window?.REMIX_ENV?.LOCALE || 'N/A'
+
       const result = {
         pg,
         ref,
-      }
+        meta: {
+          locale,
+        },
+      } as Swetrix.IPageViewPayload
 
       if (pg && BLOG_PAGE_REGEX.test(pg)) {
         return false
@@ -144,7 +149,7 @@ export const trackPageview = (options: Swetrix.IPageviewOptions) => {
 }
 
 export const trackErrors = () => {
-  if (isSelfhosted) {
+  if (isSelfhosted || !isBrowser) {
     return
   }
 
@@ -162,7 +167,7 @@ export const trackErrors = () => {
 }
 
 export const trackCustom = (ev: string, meta?: Swetrix.TrackEventOptions['meta']) => {
-  if (isSelfhosted) {
+  if (isSelfhosted || !isBrowser) {
     return
   }
 

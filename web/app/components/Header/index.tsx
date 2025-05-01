@@ -20,7 +20,7 @@ import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 import utc from 'dayjs/plugin/utc'
 import { type t as i18nextT } from 'i18next'
-import { changeLanguage } from 'i18next'
+import { changeLanguage as changeLanguageI18n } from 'i18next'
 import _map from 'lodash/map'
 import _startsWith from 'lodash/startsWith'
 import { GaugeIcon, ChartPieIcon, BugIcon, PuzzleIcon, PhoneIcon } from 'lucide-react'
@@ -42,6 +42,7 @@ import { useTheme } from '~/providers/ThemeProvider'
 import Dropdown from '~/ui/Dropdown'
 import Flag from '~/ui/Flag'
 import SwetrixLogo from '~/ui/icons/SwetrixLogo'
+import { trackCustom } from '~/utils/analytics'
 import routes from '~/utils/routes'
 
 dayjs.extend(utc)
@@ -82,6 +83,11 @@ const getSolutions = (t: typeof i18nextT) => [
     icon: PuzzleIcon,
   },
 ]
+
+const changeLanguage = (language: string) => {
+  changeLanguageI18n(language)
+  trackCustom('CHANGE_LANGUAGE', { language })
+}
 
 const getCallsToAction = (t: typeof i18nextT) => [
   { name: t('header.watchDemo'), link: 'https://www.youtube.com/watch?v=XBp38fZREIE', icon: SiYoutube },

@@ -185,6 +185,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     DISABLE_MARKETING_PAGES: process.env.DISABLE_MARKETING_PAGES,
     STAGING: process.env.STAGING,
     PADDLE_CLIENT_SIDE_TOKEN: process.env.PADDLE_CLIENT_SIDE_TOKEN,
+    LOCALE: locale,
   }
 
   return { locale, url, theme, REMIX_ENV, isAuthed, pathname: urlObject.pathname }
