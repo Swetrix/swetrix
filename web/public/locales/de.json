@@ -18,12 +18,12 @@
     "quitProjectError": "Es ist ein Fehler beim Verlassen des Projekts aufgetreten",
     "payoutInfoError": "Etwas ist schiefgelaufen bei der Anforderung von Auszahlungsinformationen",
     "quitProject": "Sie haben das Projekt verlassen",
-    "quitOrganisation": "You have quit the organisation",
-    "quitOrganisationError": "Error occurred while quitting the organisation",
+    "quitOrganisation": "Sie haben die Organisation verlassen",
+    "quitOrganisationError": "Fehler beim Verlassen der Organisation",
     "acceptInvitationError": "Beim Akzeptieren der Einladung ist ein Fehler aufgetreten",
     "acceptInvitation": "Die Einladung zum Projekt wurde angenommen",
-    "acceptOrganisationInvitation": "The organisation invitation has been accepted",
-    "acceptOrganisationInvitationError": "Error occurred while accepting the organisation invitation",
+    "acceptOrganisationInvitation": "Die Einladung zur Organisation wurde angenommen",
+    "acceptOrganisationInvitationError": "Fehler beim Akzeptieren der Organisationseinladung",
     "subscriptionUpdated": "Ihr Abonnement wurde aktualisiert",
     "generate2FAError": "Fehler beim Generieren des 2FA-Codes",
     "integrationRemovalError": "Beim Entfernen der Integration ist ein Fehler aufgetreten",
@@ -47,22 +47,22 @@
     "errorCode": "Fehlercode: {{error}}",
     "updateErrorStatusFailed": "Fehler beim Aktualisieren des Fehlerstatus",
     "errorStatusUpdated": "Fehlerstatus wurde aktualisiert",
-    "enterViewName": "Bitte geben Sie einen Namen für die Ansicht an",
+    "enterSegmentName": "Bitte geben Sie einen Segmentnamen ein",
     "inputCannotBeEmpty": "Dieses Eingabefeld darf nicht leer sein",
-    "viewDeleted": "Die Ansicht wurde gelöscht",
-    "organisationCreated": "Organisation has been created",
-    "organisationCreateError": "Error occurred while creating the organisation",
-    "organisationDeleted": "Organisation has been deleted",
-    "projectRemovedFromOrganisation": "The project has been removed from the organisation",
-    "projectAddedToOrganisation": "The project has been added to the organisation",
-    "projectRemoveError": "Error occurred while removing the project from the organisation",
-    "projectAddError": "Error occurred while adding the project to the organisation",
-    "orgUserRemoved": "The user has been removed from the organisation",
-    "orgUserRemoveError": "Error occurred while removing the user from the organisation",
-    "orgSettingsUpdated": "Organisation settings have been updated",
-    "projectAssigned": "The project has been assigned to the organisation",
-    "projectAssignError": "Failed to assign the project to the organisation",
-    "failedToLoadUsageInfo": "Failed to load usage info"
+    "segmentDeleted": "Segment wurde gelöscht",
+    "organisationCreated": "Organisation wurde erstellt",
+    "organisationCreateError": "Fehler beim Erstellen der Organisation",
+    "organisationDeleted": "Organisation wurde gelöscht",
+    "projectRemovedFromOrganisation": "Das Projekt wurde aus der Organisation entfernt",
+    "projectAddedToOrganisation": "Das Projekt wurde der Organisation hinzugefügt",
+    "projectRemoveError": "Fehler beim Entfernen des Projekts aus der Organisation",
+    "projectAddError": "Fehler ist beim Hinzufügen des Projekts zur Organisation aufgetreten",
+    "orgUserRemoved": "Der Benutzer wurde aus der Organisation entfernt",
+    "orgUserRemoveError": "Fehler beim Entfernen des Benutzers aus der Organisation",
+    "orgSettingsUpdated": "Organisationseinstellungen wurden aktualisiert",
+    "projectAssigned": "Das Projekt wurde der Organisation zugewiesen",
+    "projectAssignError": "Fehler bei der Zuordnung des Projekts zur Organisation",
+    "failedToLoadUsageInfo": "Fehler beim Laden der Nutzungsinformationen"
   },
   "common": {
     "features": "Funktionen",
@@ -119,30 +119,30 @@
     "xMembers": "{{number}} Mitglieder",
     "general": "Allgemeines",
     "fixIt": "Fixieren",
-    "errorOccured": "An error occurred: {{error}}",
+    "errorOccured": "Ein Fehler ist aufgetreten: {{error}}",
     "name": "Name",
-    "notSet": "Not set",
-    "remove": "Remove",
-    "pagination": "Showing <0>{{start}}</0> to <0>{{end}}</0> of <0>{{total}}</0> results",
-    "resultsPerPage": "Results per page",
+    "notSet": "Nicht gesetzt",
+    "remove": "Entfernen",
+    "pagination": "Zeige <0>{{start}}</0> bis <0>{{end}}</0> von <0>{{total}}</0> Ergebnissen",
+    "resultsPerPage": "Ergebnisse pro Seite",
     "communityEdition": "Community Edition"
   },
   "featureFlags": {
     "title": "Feature Flags",
-    "description": "Enable or disable experimental features to try out new functionality before it's fully released. Feature flags allow you to test new features and provide feedback.",
-    "updated": "Feature flags updated successfully",
-    "error": "Failed to update feature flags",
+    "description": "Aktivieren oder deaktivieren Sie experimentelle Funktionen, um neue Funktionalitäten auszuprobieren, bevor sie vollständig freigegeben werden. Feature Flags ermöglichen es Ihnen, neue Funktionen zu testen und Feedback zu geben.",
+    "updated": "Feature-Flags erfolgreich aktualisiert",
+    "error": "Fehler beim Aktualisieren der Feature-Flags",
     "dashboard-period-selector": {
-      "title": "Dashboard Period Selector",
-      "description": "Enables the period selector in the dashboard, allowing you to see the number of pageviews for different periods (if this feature flag is disabled, the default period is {{defaultPeriod}} days)."
+      "title": "Dashboard-Zeitauswahl",
+      "description": "Aktiviert die Periodenauswahl im Dashboard, wodurch Sie die Anzahl der Seitenaufrufe für verschiedene Zeiträume sehen können (wenn dieses Feature-Flag deaktiviert ist, beträgt die Standardperiode {{defaultPeriod}} Tage)."
     },
     "dashboard-analytics-tabs": {
-      "title": "Dashboard Analytics Tabs",
-      "description": "Enables analytics tabs in the dashboard, providing different views of your data such as high / low traffic sites, abandoned projects, and more."
+      "title": "Dashboard-Analyse-Tabs",
+      "description": "Aktiviert Analyse-Tabs im Dashboard, die verschiedene Ansichten Ihrer Daten bieten, wie z. B. Sites mit hohem/niedrigem Traffic, aufgegebene Projekte und mehr."
     },
     "dashboard-hostname-cards": {
-      "title": "Dashboard Hostname-based navigation",
-      "description": "Replaces traditional project-based navigation with hostname-based navigation - instead of seeing individual projects, you see the hostnames from the analytics data instead. This is useful if you have a lot of websites and don't want to create a project for each one, so you can create one project and collect all the data in it."
+      "title": "Hostname-basierte Navigation im Dashboard",
+      "description": "Ersetzt die herkömmliche projektbasierte Navigation durch eine hostnamenbasierte Navigation – anstatt einzelne Projekte zu sehen, werden die Hostnamen aus den Analysedaten angezeigt. Dies ist nützlich, wenn Sie viele Websites haben und nicht für jede ein Projekt erstellen möchten, sodass Sie ein Projekt erstellen und alle Daten darin sammeln können."
     }
   },
   "performance": {
@@ -498,14 +498,16 @@
       "addedOn": "Hinzugefügt am",
       "continueWithGoogle": "Weiter mit Google",
       "continueWithGithub": "Weiter mit Github",
+      "continueWithOIDC": "Mit OpenID Connect fortfahren",
       "google": "Google",
       "github": "Github",
+      "oidc": "OpenID Connect",
       "orContinueWith": "Oder weiter mit"
     }
   },
   "profileSettings": {
     "logoutAll": "Von allen Geräten abmelden",
-    "emailChanged": "To confirm the change of your email address, please click the link in the email we sent you to your new email address.",
+    "emailChanged": "Um die Änderung Ihrer E-Mail-Adresse zu bestätigen, klicken Sie bitte auf den Link in der E-Mail, die wir an Ihre neue E-Mail-Adresse gesendet haben.",
     "account": "Konto",
     "general": "Allgemeine Einstellungen",
     "update": "Konto aktualisieren",
@@ -534,22 +536,22 @@
     "noConfLeft": "Leider sind Ihre E-Mail-Bestätigungsanfragen aufgebraucht.\nBitte vergewissern Sie sich, dass Sie in der Lage sind, E-Mails zu empfangen, und überprüfen Sie Ihren Spam-Ordner erneut auf Nachrichten.\nSie können versuchen, eine andere E-Mail-Adresse zu verwenden oder unseren Kundendienst zu kontaktieren.",
     "timezoneDesc": "Dies ist die Zeitzone, in der die Daten angezeigt werden. Sie wird nur zur Visualisierung verwendet.\nEs werden keine Daten auf Basis dieser Einstellung geändert.",
     "quitProject": "Sind Sie sicher, dass Sie dieses Projekt verlassen möchten?",
-    "quitOrganisation": "Are you sure you want to quit this organisation?",
-    "quitEntity": "Quit {{entity}}?",
+    "quitOrganisation": "Sind Sie sicher, dass Sie diese Organisation verlassen möchten?",
+    "quitEntity": "{{entity}} beenden?",
     "shared": "Geteilte Projekte",
     "receiveLoginNotifications": "Anmelde-Benachrichtigungen erhalten",
-    "organisations": "Organisations",
+    "organisations": "Organisationen",
     "organisationsTable": {
       "organisation": "Organisation",
-      "role": "Role",
-      "joinedOn": "Joined on"
+      "role": "Rolle",
+      "joinedOn": "Beigetreten am"
     },
     "sharedTable": {
       "project": "Projekt",
       "role": "Rolle",
       "joinedOn": "Beigetreten am"
     },
-    "noOrganisations": "You are not a member of any organisation yet.",
+    "noOrganisations": "Sie sind noch kein Mitglied einer Organisation.",
     "noSharedProjects": "Niemand teilt bisher ein Projekt mit Ihnen.",
     "2fa": "Zwei-Faktor-Authentifizierungscode (2FA)",
     "2faEnable": "Aktivieren Sie 2FA, um Ihr Konto sicherer zu machen.",
@@ -567,7 +569,7 @@
     "2faDisableHint": "Um die Zwei-Faktor-Authentifizierung zu deaktivieren, geben Sie bitte Ihren 6-stelligen Code oder einen Ihrer Wiederherstellungscodes unten ein.",
     "apiKey": "API-Schlüssel",
     "noApiKey": "Sie haben noch keine API-Schlüssel erstellt.",
-    "selfhostedNoApiKey": "You haven't created any API keys yet. You can do this in your docker compose file by modifying the API_KEY environment variable.",
+    "selfhostedNoApiKey": "Sie haben noch keine API-Schlüssel erstellt. Dies können Sie in Ihrer Docker-Compose-Datei tun, indem Sie die Umgebungsvariable API_KEY ändern.",
     "apiKeyWarning": "Behandeln Sie Ihren API-Schlüssel wie ein Passwort und bewahren Sie ihn geheim auf. Hardcodieren Sie ihn niemals in Ihre Programme und teilen Sie ihn mit niemandem.",
     "addApiKeyBtn": "API-Schlüssel generieren",
     "deleteApiKeyBtn": "API-Schlüssel löschen",
@@ -622,7 +624,7 @@
       "generateRefLink": "Empfehlungslink generieren",
       "referralStats": "Empfehlungsstatistik",
       "activeReferrals": "Aktive Empfehlungen",
-      "noActiveReferrals": "You have no active referrals yet",
+      "noActiveReferrals": "Du hast noch keine aktiven Empfehlungen",
       "trial": "Testempfehlungen",
       "trialDesc": "Testnutzer von Ihnen empfohlen",
       "active": "Aktive Empfehlungen",
@@ -647,58 +649,58 @@
     "alertDeleted": "Der Alarm wurde gelöscht"
   },
   "organisations": {
-    "create": "Create organisation",
-    "organisations": "Organisations",
-    "new": "New organisation",
+    "create": "Organisation erstellen",
+    "organisations": "Organisationen",
+    "new": "Neue Organisation",
     "invite": {
-      "title": "Invite a user to {{organisation}}",
-      "desc": "Enter an email address and a role of the person registered on Swetrix that you want to invite to the organisation. The invitation will expire in {{expiresIn}} hours."
+      "title": "Einen Benutzer zu {{organisation}} einladen",
+      "desc": "Geben Sie eine E-Mail-Adresse und eine Rolle der Person ein, die bei Swetrix registriert ist und die Sie zur Organisation einladen möchten. Die Einladung verfällt in {{expiresIn}} Stunden."
     },
     "role": {
       "owner": {
-        "name": "Owner",
-        "desc": "Can manage the organisation and its members, as well as manage the projects within the organisation."
+        "name": "Inhaber",
+        "desc": "Kann die Organisation und ihre Mitglieder verwalten sowie die Projekte innerhalb der Organisation verwalten."
       },
       "admin": {
-        "name": "Admin",
-        "desc": "Can manage the organisation and its members, as well as manage the projects within the organisation."
+        "name": "Administrator",
+        "desc": "Kann die Organisation und ihre Mitglieder verwalten sowie die Projekte innerhalb der Organisation managen."
       },
       "viewer": {
-        "name": "Viewer",
-        "desc": "Can only access the organisation and its projects without the ability to change any settings."
+        "name": "Betrachter",
+        "desc": "Kann nur auf die Organisation und ihre Projekte zugreifen, ohne Einstellungen ändern zu können."
       }
     },
-    "projects": "Projects",
-    "addProject": "Add project",
-    "noProjectsFound": "No projects found within this organisation",
+    "projects": "Projekte",
+    "addProject": "Projekt hinzufügen",
+    "noProjectsFound": "Keine Projekte in dieser Organisation gefunden",
     "modals": {
       "remove": {
-        "title": "Remove {{project}}?",
-        "message": "Are you sure you want to remove this project from the organisation? Once removed, organisation members will no longer have access to this project unless they are added in the project settings."
+        "title": "{{project}} entfernen?",
+        "message": "Sind Sie sicher, dass Sie dieses Projekt aus der Organisation entfernen wollen? Nach dem Entfernen haben Organisationsmitglieder keinen Zugriff mehr auf dieses Projekt, sofern sie nicht in den Projekteinstellungen hinzugefügt werden."
       },
       "addProject": {
-        "title": "Add project to {{organisation}}",
-        "message": "Select the project you want to add to the organisation. It will be available to all members of the organisation, and the organisation admins will be able to manage the project settings."
+        "title": "Projekt zu {{organisation}} hinzufügen",
+        "message": "Wählen Sie das Projekt aus, das Sie der Organisation hinzufügen möchten. Es wird allen Mitgliedern der Organisation zur Verfügung stehen, und die Administratoren der Organisation können die Projekteinstellungen verwalten."
       },
       "delete": {
-        "title": "Delete {{organisation}}?",
-        "message": "Are you sure you want to delete this organisation?\nAll the data related to the organisation will be deleted from our servers. This action is irreversible."
+        "title": "{{organisation}} löschen?",
+        "message": "Sind Sie sicher, dass Sie diese Organisation löschen möchten?\nAlle mit der Organisation verbundenen Daten werden von unseren Servern gelöscht. Diese Aktion ist unwiderruflich."
       }
     },
-    "projectOwnedBy": "This project is owned by {{email}}",
-    "delete": "Delete organisation"
+    "projectOwnedBy": "Dieses Projekt gehört {{email}}",
+    "delete": "Organisation löschen"
   },
   "dashboard": {
-    "gridView": "Grid view",
-    "listView": "List view",
-    "sortAlphaAsc": "A to Z",
-    "sortAlphaDesc": "Z to A",
-    "sortDateAsc": "Oldest first",
-    "sortDateDesc": "Newest first",
-    "pageviewsDesc": "Most pageviews",
-    "pageviewsAsc": "Least pageviews",
-    "noProjectsForCriteria": "No projects found for the selected criteria",
-    "lastVisitDesc": "Recently visited first",
+    "gridView": "Rasteransicht",
+    "listView": "Listenansicht",
+    "sortAlphaAsc": "A bis Z",
+    "sortAlphaDesc": "Z bis A",
+    "sortDateAsc": "Älteste zuerst",
+    "sortDateDesc": "Neueste zuerst",
+    "pageviewsDesc": "Meiste Seitenaufrufe",
+    "pageviewsAsc": "Die wenigsten Seitenaufrufe",
+    "noProjectsForCriteria": "Keine Projekte für die ausgewählten Kriterien gefunden",
+    "lastVisitDesc": "Zuletzt besucht zuerst",
     "captcha": "CAPTCHA",
     "newProject": "Neues Projekt",
     "newFunnel": "Neuer Trichter",
@@ -707,7 +709,7 @@
     "verifyEmailTitle": "Bitte bestätigen Sie zuerst die E-Mail-Adresse.",
     "verifyEmailDesc": "Um unseren Dienst nutzen und Ihre Projekte erstellen zu können, müssen Sie zunächst Ihre E-Mail-Adresse bestätigen.\n\nEin Link zur Bestätigung Ihres Kontos wurde an die E-Mail-Adresse geschickt, die Sie bei der Registrierung angegeben haben. Wenn er nicht zugestellt wurde, können Sie den Link in Ihren Kontoeinstellungen erneut anfordern.",
     "lowEventsTitle": "Sie haben keine Events mehr!",
-    "lowEventsDesc": "You have used more than 85% of the available events per your tier for this month.\nThat means that in case you use 100% of the available events until the end of the month, access to your reporting dashboard will be restricted.\nTo avoid this we recommend that you update your tier on the Billing page.",
+    "lowEventsDesc": "Sie haben in diesem Monat bereits mehr als 85% der für Ihr Abonnement verfügbaren Events genutzt.\nDas bedeutet, dass wenn Sie bis zum Monatsende 100% der verfügbaren Events verwenden, der Zugriff auf Ihr Reporting-Dashboard eingeschränkt wird.\nUm dies zu vermeiden, empfehlen wir Ihnen, Ihr Abonnement auf der Abrechnungsseite zu aktualisieren.",
     "accountLocked": "Ihr Konto wurde aufgrund eines Rechnungsproblems vorübergehend gesperrt.",
     "accountLockedTitle": "Konto vorübergehend gesperrt",
     "eventsXPercUsed": "Sie haben für diesen Monat mehr als {{amount}}% ihres verfügbaren Event-Kontingents für ihr Abonnement verbraucht.",
@@ -813,19 +815,17 @@
   },
   "notFoundPage": {
     "title": "Seite nicht gefunden",
-    "description": "Sorry, we couldn't find the page you're looking for.\nPlease check the URL in the address bar and try again.",
+    "description": "Leider konnten wir die gesuchte Seite nicht finden.\nBitte überprüfen Sie die URL in der Adressleiste und versuchen Sie es erneut.",
     "goHome": "Zurück auf die Homepage",
     "support": "Support kontaktieren"
   },
   "project": {
     "metadata": "Metadaten",
-    "nextOneHour": "Nächste Stunde",
-    "nextXHours": "Nächste {{x}} Stunden",
     "aiDetailsDesc": "Mit den Schaltflächen oben können Sie eine Schätzung des Verkehrsaufkommens anzeigen, das Sie in den nächsten X Stunden innerhalb einer Stunde erwarten können.",
     "search": "Suche",
-    "views": "Ansichten",
-    "viewName": "Name der Ansicht",
-    "addAView": "Ansicht hinzufügen",
+    "segments": "Segmente",
+    "segmentName": "Segmentname",
+    "addASegment": "Segment hinzufügen",
     "loadMore": "Mehr laden",
     "unknownCountry": "Unbekanntes Land",
     "selectCategory": "Kategorie zum Filtern auswählen",
@@ -857,7 +857,7 @@
       "filterV": "Für das Aggregat \"{{customEventName}}\" gilt \"{{metricKey}}\", wobei jeder Wert \"{{metaValue}}\" ist",
       "filterKV": "Der Wert für das Aggregat \"{{customEventName}}\" mit dem Schlüssel \"{{metaKey}}\" ist \"{{metaValue}}\""
     },
-    "noViewsYet": "Noch keine Ansichten",
+    "noSegmentsYet": "Noch keine Segmente",
     "metaValueType": {
       "decimal": "Dezimalzahl",
       "integer": "Ganzzahl",
@@ -871,7 +871,7 @@
     "noExist": "Das ausgewählte Projekt existiert nicht",
     "geo": "Standortbestimmung",
     "browserInfo": "Browser-Informationen",
-    "urlInfo": "URL information",
+    "urlInfo": "URL-Informationen",
     "osInfo": "Betriebssysteminformationen",
     "campaigns": "Kampagnen",
     "pageviewX": "<span>Seitenansicht</span> <value>{{x}}</value>",
@@ -915,7 +915,7 @@
     },
     "trendlineTotal": "Seitenansichten Trendlinie",
     "noEvContent": "Für den angegebenen Zeitraum wurden keine Ereignisse erfasst. Bitte versuchen Sie einen anderen Zeitraum.",
-    "noEventsFiltersDesc": "No events have been recorded for the specified period or applied filters, please try a different period or change the filters applied.",
+    "noEventsFiltersDesc": "Für den angegebenen Zeitraum oder die angewendeten Filter wurden keine Ereignisse erfasst. Bitte versuchen Sie es mit einem anderen Zeitraum oder ändern Sie die angewendeten Filter.",
     "noCaptchaEv": "Für den angegebenen Zeitraum wurden keine Ereignisse erfasst.\nWenn Sie CAPTCHA noch nicht eingerichtet haben, können Sie sich unsere <url>Docs</url> anschauen, um es einfach in Ihre App zu integrieren.",
     "mapping": {
       "cc": "Land",
@@ -949,7 +949,7 @@
       }
     },
     "redactedPage": "Gespeicherte Seite",
-    "unknownHost": "Unknown host",
+    "unknownHost": "Unbekannter Host",
     "noData": "Keine Daten vorhanden",
     "overview": "Übersicht",
     "weeklyStats": "Wöchentliche Statistik",
@@ -1101,7 +1101,7 @@
     "page": "Seite",
     "reverse": "Umkehren",
     "userFlow": {
-      "title": "User flow",
+      "title": "Benutzerfluss",
       "noData": "Benutzerfluss ist aufgrund fehlender Daten noch nicht verfügbar, oder Sie haben diese Funktion in den Tracking-Skriptparametern deaktiviert"
     },
     "noDateRange": "Bitte geben Sie eine Datumsspanne ein",
@@ -1174,6 +1174,7 @@
     "title": "Einfache, verkehrsbasierte Preisgestaltung",
     "adv": "Probieren Sie Swetrix für {{amount}} Tage auf Ihrer Website aus - völlig kostenlos.\nKeine Kreditkarte erforderlich. Unverbindlich.",
     "currentPlan": "Derzeitiges Abo",
+    "subscribe": "Abonnieren",
     "free": "Gratis",
     "legacy": "Legacy",
     "perMonth": "mo",
@@ -1257,7 +1258,7 @@
     "invitation": "Einladung zum gemeinsamen Projekt",
     "profileSettings": "Profil-Einstellungen",
     "dashboard": "Dashboard",
-    "organisations": "Organisations",
+    "organisations": "Organisationen",
     "docs": "Dokumentation",
     "billing": "Rechnung",
     "contact": "Haben Sie etwas zu fragen?",
@@ -1272,7 +1273,7 @@
     "forMarketers": "Für Vermarkter",
     "forSmbs": "Für kleine Unternehmen",
     "forStartups": "Für Start-ups",
-    "featureFlags": "Feature flags"
+    "featureFlags": "Feature Flags"
   },
   "header": {
     "switchTheme": "Design wechseln",
@@ -1304,7 +1305,7 @@
   "footer": {
     "slogan": "Die besten Apps brauchen den besten Service.",
     "description": "Swetrix ist eine leistungsstarke Analyseplattform, welche die Privatsphäre der Nutzer respektiert.",
-    "madeInHostedIn": "Made in <0></0> / <1></1>, hosted in <2></2>",
+    "madeInHostedIn": "Hergestellt in <0></0> / <1></1>, gehostet in <2></2>",
     "ukraine": "Ukraine",
     "eu": "Europäischen Union",
     "support": "Kundendienst",

@@ -18,19 +18,19 @@
     "quitProjectError": "Сталася помилка при виході з проєкту",
     "payoutInfoError": "Щось пішло не так під час запиту інформації про виплати",
     "quitProject": "Ви покинули проєкт",
-    "quitOrganisation": "You have quit the organisation",
-    "quitOrganisationError": "Error occurred while quitting the organisation",
+    "quitOrganisation": "Ви покинули організацію",
+    "quitOrganisationError": "Сталася помилка при виході з організації",
     "acceptInvitationError": "Помилка під час прийняття запрошення до проєкту",
     "acceptInvitation": "Запрошення до проєкту було прийнято",
-    "acceptOrganisationInvitation": "The organisation invitation has been accepted",
-    "acceptOrganisationInvitationError": "Error occurred while accepting the organisation invitation",
+    "acceptOrganisationInvitation": "Запрошення до організації було прийнято",
+    "acceptOrganisationInvitationError": "Помилка під час прийняття запрошення до організації",
     "subscriptionUpdated": "Ваша підписка була оновлена",
     "generate2FAError": "Сталася помилка під час генерації 2FA-коду",
     "integrationRemovalError": "Сталася помилка під час видалення інтеграції",
-    "integrationSaveError": "Failed to save integration, make sure you've entered a valid input",
+    "integrationSaveError": "Не вдалося зберегти інтеграцію, переконайтеся, що ви ввели дійсні дані",
     "enterACorrectNumber": "Будь ласка, введіть коректне число",
     "numberCantBeNegative": "Число не може бути від'ємним",
-    "numberCantBeBigger": "The number cannot be bigger than {{max}}",
+    "numberCantBeBigger": "Число не може бути більше за {{max}}",
     "invalidToken": "Недійсний токен",
     "transferRequestSent": "Запит на передачу проєкту надіслано",
     "transferProjectReject": "Запит на передачу проєкту був скасований",
@@ -47,27 +47,27 @@
     "errorCode": "Код помилки: {{error}}",
     "updateErrorStatusFailed": "Сталася помилка під час оновлення статусу помилки",
     "errorStatusUpdated": "Статус помилки був оновлений",
-    "enterViewName": "Please enter a view name",
-    "inputCannotBeEmpty": "This input field must not be empty",
-    "viewDeleted": "View has been deleted",
-    "organisationCreated": "Organisation has been created",
-    "organisationCreateError": "Error occurred while creating the organisation",
-    "organisationDeleted": "Organisation has been deleted",
-    "projectRemovedFromOrganisation": "The project has been removed from the organisation",
-    "projectAddedToOrganisation": "The project has been added to the organisation",
-    "projectRemoveError": "Error occurred while removing the project from the organisation",
-    "projectAddError": "Error occurred while adding the project to the organisation",
-    "orgUserRemoved": "The user has been removed from the organisation",
-    "orgUserRemoveError": "Error occurred while removing the user from the organisation",
-    "orgSettingsUpdated": "Organisation settings have been updated",
-    "projectAssigned": "The project has been assigned to the organisation",
-    "projectAssignError": "Failed to assign the project to the organisation",
-    "failedToLoadUsageInfo": "Failed to load usage info"
+    "enterSegmentName": "Будь ласка, введіть назву сегмента",
+    "inputCannotBeEmpty": "Це поле введення не повинно бути порожнім",
+    "segmentDeleted": "Сегмент було видалено",
+    "organisationCreated": "Організацію було створено",
+    "organisationCreateError": "Сталася помилка під час створення організації",
+    "organisationDeleted": "Організацію було видалено",
+    "projectRemovedFromOrganisation": "Проєкт було видалено з організації",
+    "projectAddedToOrganisation": "Проєкт було додано до організації",
+    "projectRemoveError": "Сталася помилка під час видалення проєкту з організації",
+    "projectAddError": "Помилка при додаванні проєкту до організації",
+    "orgUserRemoved": "Користувача було видалено з організації",
+    "orgUserRemoveError": "Сталася помилка під час видалення користувача з організації",
+    "orgSettingsUpdated": "Налаштування організації було оновлено",
+    "projectAssigned": "Проєкт було призначено організації",
+    "projectAssignError": "Не вдалося призначити проєкт організації",
+    "failedToLoadUsageInfo": "Не вдалося завантажити інформацію про використання"
   },
   "common": {
     "features": "Функціонал",
     "docs": "Документація",
-    "bookACall": "Book a call with the founder",
+    "bookACall": "Запланувати дзвінок із засновником",
     "getStarted": "Реєстрація",
     "billing": "Тарифи",
     "pricing": "Ціни",
@@ -119,30 +119,30 @@
     "xMembers": "{{number}} учасників",
     "general": "Загальні",
     "fixIt": "Виправити",
-    "errorOccured": "An error occurred: {{error}}",
-    "name": "Name",
-    "notSet": "Not set",
-    "remove": "Remove",
-    "pagination": "Showing <0>{{start}}</0> to <0>{{end}}</0> of <0>{{total}}</0> results",
-    "resultsPerPage": "Results per page",
-    "communityEdition": "Community Edition"
+    "errorOccured": "Сталася помилка: {{error}}",
+    "name": "Ім'я",
+    "notSet": "Не встановлено",
+    "remove": "Видалити",
+    "pagination": "Показані <0>{{start}}</0>–<0>{{end}}</0> із <0>{{total}}</0> результатів",
+    "resultsPerPage": "Результатів на сторінку",
+    "communityEdition": "Спільнотне видання"
   },
   "featureFlags": {
-    "title": "Feature Flags",
-    "description": "Enable or disable experimental features to try out new functionality before it's fully released. Feature flags allow you to test new features and provide feedback.",
-    "updated": "Feature flags updated successfully",
-    "error": "Failed to update feature flags",
+    "title": "Функції",
+    "description": "Увімкніть або вимкніть експериментальні функції, щоб випробувати нові можливості до їх офіційного запуску. Функції з прапорцями дозволяють тестувати нововведення та надавати відгуки.",
+    "updated": "Експериментальні функції успішно оновлено",
+    "error": "Не вдалося оновити експериментальні функції",
     "dashboard-period-selector": {
-      "title": "Dashboard Period Selector",
-      "description": "Enables the period selector in the dashboard, allowing you to see the number of pageviews for different periods (if this feature flag is disabled, the default period is {{defaultPeriod}} days)."
+      "title": "Вибір дати панелі керування",
+      "description": "Дозволяє вибір періоду на панелі керування, що дозволяє вам бачити кількість переглядів сторінок за різні періоди (якщо ця функція вимкнена, стандартний період становить {{defaultPeriod}} днів)."
     },
     "dashboard-analytics-tabs": {
-      "title": "Dashboard Analytics Tabs",
-      "description": "Enables analytics tabs in the dashboard, providing different views of your data such as high / low traffic sites, abandoned projects, and more."
+      "title": "Вкладки аналітики панелі керування",
+      "description": "Активує вкладки аналітики на панелі керування, надаючи різні перегляди ваших даних, такі як сайти з високим / низьким трафіком, покинуті проєкти тощо."
     },
     "dashboard-hostname-cards": {
-      "title": "Dashboard Hostname-based navigation",
-      "description": "Replaces traditional project-based navigation with hostname-based navigation - instead of seeing individual projects, you see the hostnames from the analytics data instead. This is useful if you have a lot of websites and don't want to create a project for each one, so you can create one project and collect all the data in it."
+      "title": "Навігація за ім'ям хоста панелі управління",
+      "description": "Заміщує традиційну навігацію на основі проєктів навігацією на основі імен хостів — замість того, щоб бачити окремі проєкти, ви бачите імена хостів з аналітичних даних. Це корисно, якщо у вас багато вебсайтів і ви не хочете створювати проєкт для кожного з них, тому можна створити один проєкт і збирати всі дані в ньому."
     }
   },
   "performance": {
@@ -329,10 +329,10 @@
   },
   "main": {
     "ukrSupport": "Підтримайте українську армію в боротьбі з російським вторгненням.",
-    "slogan": "Understand <span>the story</span> behind your customer clicks and scrolls",
-    "description": "Get all the insights you need about your users and website visitors without the hassle of showing cookie banners. Experience intuitive, easy-to-use and GDPR-compliant web analytics without invading the privacy of your visitors.",
-    "understandTheirUsers": "<0>{{amount}}</0> people understand their users",
-    "perfect": "It's perfect for <0>marketers</0>, <1>start-ups</1>, <2>small businesses</2> and virtually any type of business!",
+    "slogan": "Зрозумійте <span>історію</span> за кліками та прокрутками ваших клієнтів",
+    "description": "Отримайте всі необхідні дані про ваших користувачів та відвідувачів сайту без клопоту з cookie банерами. Відчуйте інтуїтивну, легку у використанні та відповідну GDPR вебаналітику без порушення конфіденційності ваших відвідувачів.",
+    "understandTheirUsers": "<0>{{amount}}</0> людей розуміють своїх користувачів",
+    "perfect": "Це ідеально для <0>маркетологів</0>, <1>стартапів</1>, <2>малого бізнесу</2> та практично будь-якого типу бізнесу!",
     "trustedBy": "Довіряють уряди, неурядові організації та інноваційні підприємства",
     "start": "Почніть безкоштовно",
     "startAFreeTrial": "Спробувати безкоштовно",
@@ -340,62 +340,62 @@
     "demoGeoReports": "Так, це стандарт, але ми відстежуємо звідки саме прийшли ваші користувачі.",
     "peopleLoveSwetrix": "Люди 🥰 Swetrix",
     "whyPeopleLoveSwetrix": "Swetrix - це етичний та потужний сервіс. Сотні людей вже мігрували з Google Analytics та інших альтернатив.",
-    "weAreOpensource": "We are <url>open source</url>",
-    "coreFeatures": "Only the features you need",
+    "weAreOpensource": "Ми продукт з <url>відкритим кодом</url>",
+    "coreFeatures": "Тільки функції, які вам потрібні",
     "problem": {
-      "title": "Most people struggle to make sense of their analytics data",
-      "description": "Many web analytics solutions are either too complex and overwhelming, or too simple and don't provide enough insight. Business owners don't understand their customers and lose money.",
-      "step1": "Business owner collects web data",
-      "step2": "Overwhelmed by <u>complex dashboards</u> or limited by oversimplified metrics",
-      "step3": "Makes uninformed decisions, missing opportunities for growth"
+      "title": "Більшість людей мають труднощі з розумінням своїх аналітичних даних",
+      "description": "Багато рішень для веб-аналітики або занадто складні та заплутані, або занадто прості і не надають достатньо інформації. Власники бізнесу не розуміють своїх клієнтів і втрачають гроші.",
+      "step1": "Бізнес-власник збирає дані",
+      "step2": "Перевантажений <u>складними аналітичними панелями</u> або обмежений надмірно спрощеними метриками",
+      "step3": "Приймає необґрунтовані рішення, пропускає можливості для зростання"
     },
-    "butThereIsASolution": "But there is a solution...",
-    "knowYourCustomers": "Know your customers and users",
+    "butThereIsASolution": "Але є рішення...",
+    "knowYourCustomers": "Знайте своїх клієнтів та користувачів",
     "insights": {
-      "title": "Get insights into your traffic",
-      "description": "Swetrix helps you understand everything you need to know about your website traffic. Know how many people are online, what pages are most popular, where are your users from, and more."
+      "title": "Отримайте інсайти щодо вашого трафіку",
+      "description": "Swetrix допомагає вам зрозуміти все, що потрібно знати про трафік вашого вебсайту. Дізнайтеся, скільки людей онлайн, які сторінки найпопулярніші, звідки ваші користувачі та більше."
     },
     "painPoints": {
-      "title": "Understand your site's pain points",
-      "description": "Nobody likes slow websites. Users are more likely to abandon your website if it takes too long to load, stay ahead of these problems and measure insights from real interactions."
+      "title": "Зрозумійте болючі точки вашого сайту",
+      "description": "Ніхто не любить повільні вебсайти. Користувачі з більшою ймовірністю покинуть ваш сайт, якщо він завантажується занадто довго, залишайтеся попереду цих проблем і вимірюйте показники з реальних взаємодій."
     },
     "customisation": {
-      "title": "Complete customisation",
-      "description": "Missing a feature? We will build it :) You can also build your own features or install 3rd party add-ons from our Extensions Marketplace."
+      "title": "Повна кастомізація",
+      "description": "Відсутня певна функція? Ми її створимо :) Ви також можете створювати власні функції або встановлювати сторонні доповнення з нашого Маркетплейсу розширень."
     },
     "integrations": {
-      "title": "Works with any platform",
-      "description": "With dozens of integrations, Swetrix makes it easy to connect your website and know your users, out of the box."
+      "title": "Працює з будь-якою платформою",
+      "description": "З десятками інтеграцій Swetrix полегшує підключення вашого вебсайту та миттєве розуміння ваших користувачів."
     },
     "sessions": {
-      "title": "Session analysis",
-      "description": "Analyse the sessions of your website users and make data-driven decisions."
+      "title": "Аналіз сесій",
+      "description": "Аналізуйте сесії користувачів вашого вебсайту та приймайте рішення на основі даних."
     },
     "cookies": {
-      "title": "Forget about annoying cookie banners",
-      "description": "Swetrix does not use cookies for tracking, so you can forget about all those annoying cookie banners. We collect analytical data anonymously to respect the privacy of your users. We do not collect personal identifiers and do not perform cross-device tracking."
+      "title": "Забудьте про набридливі банери з файлами cookie",
+      "description": "Swetrix не використовує cookie для відстеження, тому ви можете забути про всі ці дратівливі банери cookie. Ми збираємо аналітичні дані анонімно, щоб поважати конфіденційність ваших користувачів. Ми не збираємо особисті ідентифікатори та не здійснюємо міжпристроєве відстеження."
     },
     "utms": {
-      "title": "Analyse marketing campaigns and newsletters",
-      "description": "Use UTMs to tag your ads, social media posts and email campaigns to see how much traffic they generate and how much revenue they bring in."
+      "title": "Аналізуйте маркетингові кампанії та інформаційні розсилки",
+      "description": "Використовуйте UTMs для маркування ваших реклами, публікацій у соцмережах і email-кампаній, щоб побачити, скільки трафіку вони генерують і скільки доходу приносять."
     },
     "funnels": {
-      "title": "User flows & marketing funnels",
-      "description": "Track how users get to your site and know where they go. Study behaviour, visualise and understand your user journey."
+      "title": "Користувацькі шляхи та маркетингові воронки",
+      "description": "Відстежуйте, як користувачі потрапляють на ваш сайт і куди вони йдуть. Вивчайте поведінку, візуалізуйте та розумійте подорож користувача."
     },
     "eCommerce": {
-      "title": "E-commerce & Custom events (really easy to setup)",
-      "description": "Send custom events with custom properties to track user activity or sales. Analyse this data with ease in our intuitive dashboard. Create reusable views to quickly see and spot trends in your sales."
+      "title": "Електронна комерція та користувацькі події (дуже легко налаштувати)",
+      "description": "Надсилайте користувацькі події з користувацькими властивостями для відстеження активності користувачів або продажів. Аналізуйте ці дані легко в нашій інтуїтивно зрозумілій панелі керування. Створюйте повторно використовувані перегляди, щоб швидко бачити та виявляти тенденції у ваших продажах."
     },
     "opensource": [
       {
         "desc": "Встановіть Swetrix на ваші власні сервери - вихідний код доступний для всіх."
       },
       {
-        "desc": "Take part in the development of Swetrix - contribute by suggesting improvements, reporting bugs or developing new features."
+        "desc": "Беріть участь у розвитку Swetrix — вносіть свій внесок, пропонуючи покращення, повідомляючи про помилки або розробляючи нові функції."
       },
       {
-        "desc": "We are a customer-first company, and transparency is our top priority."
+        "desc": "Ми - компанія, яка ставить клієнта на перше місце, а прозорість є нашим найвищим пріоритетом."
       }
     ],
     "timeToDitchGoogleAnalytics": "Настав час <colour>позбутися</colour> Google Аналітики.",
@@ -498,14 +498,16 @@
       "addedOn": "Додано",
       "continueWithGoogle": "Продовжити з Google",
       "continueWithGithub": "Продовжити з Github",
+      "continueWithOIDC": "Продовжити з OpenID Connect",
       "google": "Google",
       "github": "Github",
+      "oidc": "OpenID Connect",
       "orContinueWith": "Або продовжіть з"
     }
   },
   "profileSettings": {
     "logoutAll": "Вийти з усіх пристроїв",
-    "emailChanged": "To confirm the change of your email address, please click the link in the email we sent you to your new email address.",
+    "emailChanged": "Щоб підтвердити зміну вашої електронної адреси, будь ласка, клацніть на посилання у листі, який ми надіслали на вашу нову адресу електронної пошти.",
     "account": "Обліковий запис",
     "general": "Загальні налаштування",
     "update": "Оновити профіль",
@@ -534,22 +536,22 @@
     "noConfLeft": "На жаль, ви вичерпали кількість спроб на підтвердження акаунту.\nПереконайтеся, що ваша ел. пошта може отримувати листи та вони не потрапляють в папку СПАМ.\nВи можете зареєструвати новий акаунт з іншою ел. адресою або звернутися до служби підтримки.",
     "timezoneDesc": "Це налаштування часового поясу, на основі якого відображаються дані. Він використовується лише для візуалізації.\nАналітичні дані не будуть змінені в залежності від цього параметра.",
     "quitProject": "Ви впевнені, що хочете покинути цей проєкт?",
-    "quitOrganisation": "Are you sure you want to quit this organisation?",
-    "quitEntity": "Quit {{entity}}?",
+    "quitOrganisation": "Ви впевнені, що хочете покинути цю організацію?",
+    "quitEntity": "Покинути {{entity}}?",
     "shared": "Спільні проєкти",
     "receiveLoginNotifications": "Отримувати сповіщення про вхід",
-    "organisations": "Organisations",
+    "organisations": "Організації",
     "organisationsTable": {
-      "organisation": "Organisation",
-      "role": "Role",
-      "joinedOn": "Joined on"
+      "organisation": "Організація",
+      "role": "Роль",
+      "joinedOn": "Приєднався"
     },
     "sharedTable": {
       "project": "Проєкт",
       "role": "Роль",
       "joinedOn": "Приєднався"
     },
-    "noOrganisations": "You are not a member of any organisation yet.",
+    "noOrganisations": "Ви ще не є членом жодної організації.",
     "noSharedProjects": "З вами поки що ніхто не ділиться проєктами.",
     "2fa": "Двофакторна автентифікація (2FA)",
     "2faEnable": "Увімкніть 2FA, щоб зробити свій обліковий запис більш захищеним.",
@@ -567,7 +569,7 @@
     "2faDisableHint": "Щоб вимкнути двофакторну аутентифікацію, будь ласка, введіть свій шестизначний код або один з ваших кодів відновлення нижче.",
     "apiKey": "API-ключ",
     "noApiKey": "Ви ще не створили жодного API ключа.",
-    "selfhostedNoApiKey": "You haven't created any API keys yet. You can do this in your docker compose file by modifying the API_KEY environment variable.",
+    "selfhostedNoApiKey": "Ви ще не створили жодного API ключа. Ви можете зробити це у вашому файлі docker compose, змінивши змінну оточення API_KEY.",
     "apiKeyWarning": "Ставтесь до свого API ключа як до пароля і зберігайте його у секреті. Ніколи не прописуйте його у свої програми та не ділитися ним з будь-ким.",
     "addApiKeyBtn": "Створити API-ключ",
     "deleteApiKeyBtn": "Видалити API ключ",
@@ -579,12 +581,12 @@
     "integrationsDesc": "Інтеграція можна використовувати для підʼєднання ваших улюблених месенджерів до Swetrix і безпосередньо отримувати різні сповіщення чи звіти.",
     "integrationsList": {
       "telegram": "Отримуйте сповіщення безпосередньо до Telegram бота.",
-      "slack": "Receive notifications in any Slack channel via webhook.",
-      "discord": "Receive notifications in any Discord channel via webhook.",
+      "slack": "Отримуйте сповіщення у будь-якому каналі Slack через вебхук.",
+      "discord": "Отримуйте сповіщення в будь-якому каналі Discord через вебхук.",
       "tgHint": "Напишіть повідомлення <url>{{username}}</url>, щоб отримати ID вашого чату. Цей бот також буде використовуватися пізніше, щоб відправляти вам сповіщення чи звіти.",
-      "slackHint": "We use Slack incoming webhooks to send notifications into your Slack communication channels. Please create a Slack app and <url>an incoming webhook</url> and paste it into the input field below.",
-      "discordHint": "We use Discord webhooks to send you notifications. Please <url>create a Discord webhook</url> and paste it into the input field below.",
-      "webhookUrl": "Webhook URL"
+      "slackHint": "Ми використовуємо вхідні вебхуки Slack, щоб надсилати сповіщення у ваші канали зв\u00002dязку Slack. Будь ласка, створіть додаток Slack і <url>вхідний вебхук</url> та вставте його у поле вводу нижче.",
+      "discordHint": "Ми використовуємо вебхуки Discord, щоб надсилати вам сповіщення. Будь ласка, <url>створіть вебхук Discord</url> та вставте його у поле нижче.",
+      "webhookUrl": "URL вебхука"
     },
     "socialisations": "Соціалізації",
     "socialisationsDesc": "Функція соціалізації дозволяє зв'язати сторонні облікові записи (наприклад, Google або Twitter) з вашим обліковим записом Swetrix і використовувати їх для входу до Swetrix.",
@@ -622,7 +624,7 @@
       "generateRefLink": "Створити реферальне посилання",
       "referralStats": "Реферальна статистика",
       "activeReferrals": "Активні реферали",
-      "noActiveReferrals": "You have no active referrals yet",
+      "noActiveReferrals": "У вас ще немає активних рефералів",
       "trial": "Пробні реферали",
       "trialDesc": "Пробні користувачі, яких ви запросили",
       "active": "Активні реферали",
@@ -647,58 +649,58 @@
     "alertDeleted": "Сповіщення видалено"
   },
   "organisations": {
-    "create": "Create organisation",
-    "organisations": "Organisations",
-    "new": "New organisation",
+    "create": "Створити організацію",
+    "organisations": "Організації",
+    "new": "Нова організація",
     "invite": {
-      "title": "Invite a user to {{organisation}}",
-      "desc": "Enter an email address and a role of the person registered on Swetrix that you want to invite to the organisation. The invitation will expire in {{expiresIn}} hours."
+      "title": "Запросити користувача до {{organisation}}",
+      "desc": "Введіть електронну адресу та роль особи, зареєстрованої на Swetrix, яку ви хочете запросити до організації. Запрошення буде дійсне протягом {{expiresIn}} годин."
     },
     "role": {
       "owner": {
-        "name": "Owner",
-        "desc": "Can manage the organisation and its members, as well as manage the projects within the organisation."
+        "name": "Власник",
+        "desc": "Може керувати організацією та її учасниками, а також управляти проєктами в межах організації."
       },
       "admin": {
-        "name": "Admin",
-        "desc": "Can manage the organisation and its members, as well as manage the projects within the organisation."
+        "name": "Адміністратор",
+        "desc": "Може керувати організацією та її учасниками, а також керувати проєктами в межах організації."
       },
       "viewer": {
-        "name": "Viewer",
-        "desc": "Can only access the organisation and its projects without the ability to change any settings."
+        "name": "Спостерігач",
+        "desc": "Можливий лише доступ до організації та її проєктів без можливості змінювати будь-які налаштування."
       }
     },
-    "projects": "Projects",
-    "addProject": "Add project",
-    "noProjectsFound": "No projects found within this organisation",
+    "projects": "Проєкти",
+    "addProject": "Додати проєкт",
+    "noProjectsFound": "У цій організації не знайдено проєктів",
     "modals": {
       "remove": {
-        "title": "Remove {{project}}?",
-        "message": "Are you sure you want to remove this project from the organisation? Once removed, organisation members will no longer have access to this project unless they are added in the project settings."
+        "title": "Видалити {{project}}?",
+        "message": "Ви впевнені, що хочете видалити цей проєкт з організації? Після видалення учасники організації більше не матимуть доступу до цього проєкту, якщо їх не додати в налаштуваннях проєкту."
       },
       "addProject": {
-        "title": "Add project to {{organisation}}",
-        "message": "Select the project you want to add to the organisation. It will be available to all members of the organisation, and the organisation admins will be able to manage the project settings."
+        "title": "Додати проєкт до {{organisation}}",
+        "message": "Виберіть проєкт, який хочете додати до організації. Він буде доступний усім учасникам організації, а адміністратори організації зможуть керувати налаштуваннями проєкту."
       },
       "delete": {
-        "title": "Delete {{organisation}}?",
-        "message": "Are you sure you want to delete this organisation?\nAll the data related to the organisation will be deleted from our servers. This action is irreversible."
+        "title": "Видалити {{organisation}}?",
+        "message": "Ви впевнені, що хочете видалити цю організацію?\nВсі дані, пов’язані з організацією, будуть видалені з наших серверів. Цю дію неможливо скасувати."
       }
     },
-    "projectOwnedBy": "This project is owned by {{email}}",
-    "delete": "Delete organisation"
+    "projectOwnedBy": "Цей проєкт належить {{email}}",
+    "delete": "Видалити організацію"
   },
   "dashboard": {
-    "gridView": "Grid view",
-    "listView": "List view",
-    "sortAlphaAsc": "A to Z",
-    "sortAlphaDesc": "Z to A",
-    "sortDateAsc": "Oldest first",
-    "sortDateDesc": "Newest first",
-    "pageviewsDesc": "Most pageviews",
-    "pageviewsAsc": "Least pageviews",
-    "noProjectsForCriteria": "No projects found for the selected criteria",
-    "lastVisitDesc": "Recently visited first",
+    "gridView": "Сітковий вигляд",
+    "listView": "Табличний вигляд",
+    "sortAlphaAsc": "A–Я",
+    "sortAlphaDesc": "Я–А",
+    "sortDateAsc": "Спочатку найстаріші",
+    "sortDateDesc": "Спочатку нові",
+    "pageviewsDesc": "Найпопулярніші",
+    "pageviewsAsc": "Найменш популярні",
+    "noProjectsForCriteria": "Не знайдено проєктів за вибраними критеріями",
+    "lastVisitDesc": "Нещодавно відвідані перші",
     "captcha": "CAPTCHA",
     "newProject": "Новий проєкт",
     "newFunnel": "Нова воронка",
@@ -707,7 +709,7 @@
     "verifyEmailTitle": "Будь ласка, спочатку підтвердіть вашу ел. адресу",
     "verifyEmailDesc": "Щоб почати користуватися нашим сервісом і створювати свої проєкти, вам спочатку потрібно підтвердити свою адресу електронної пошти.\n\nНа адресу електронної пошти, вказану вами при реєстрації, було відправлене посилання для підтвердження акаунту, якщо воно не була доставлене - ви можете запросити посилання повторно в налаштуваннях вашого облікового запису.",
     "lowEventsTitle": "У вас закінчуються події!",
-    "lowEventsDesc": "You have used more than 85% of the available events per your tier for this month.\nThat means that in case you use 100% of the available events until the end of the month, access to your reporting dashboard will be restricted.\nTo avoid this we recommend that you update your tier on the Billing page.",
+    "lowEventsDesc": "Ви використали понад 85% доступних подій у вашому тарифному плані за цей місяць.\nЦе означає, що у разі використання 100% доступних подій до кінця місяця доступ до вашої панелі звітності буде обмежено.\nЩоб цього уникнути, рекомендуємо оновити тариф на сторінці оплати.",
     "accountLocked": "Ваш обліковий запис тимчасово призупинено через проблему з оплатою.",
     "accountLockedTitle": "Обліковий запис тимчасово призупинено",
     "eventsXPercUsed": "Ви використали понад {{amount}}% доступних подій вашого тарифу за цей місяць.",
@@ -813,55 +815,53 @@
   },
   "notFoundPage": {
     "title": "Сторінку не знайдено",
-    "description": "Sorry, we couldn't find the page you're looking for.\nPlease check the URL in the address bar and try again.",
+    "description": "На жаль, ми не змогли знайти сторінку, яку ви шукаєте.\nБудь ласка, перевірте URL-адресу у рядку адреси та спробуйте знову.",
     "goHome": "На головну",
     "support": "Зв'язатися з підтримкою"
   },
   "project": {
     "metadata": "Метадані",
-    "nextOneHour": "Next 1 hour",
-    "nextXHours": "Next {{x}} hours",
-    "aiDetailsDesc": "The buttons above allow you to see an estimate of what kind of traffic you can expect within an hour in the next X hours.",
+    "aiDetailsDesc": "Кнопки вище дозволяють побачити оцінку того, якого виду трафіку можна очікувати протягом наступної години в наступні X годин.",
     "search": "Пошук",
-    "views": "Views",
-    "viewName": "View name",
-    "addAView": "Add a view",
+    "segments": "Сегменти",
+    "segmentName": "Назва сегмента",
+    "addASegment": "Додати сегмент",
     "loadMore": "Завантажити ще",
     "unknownCountry": "Невідома країна",
     "selectCategory": "Виберіть категорію для фільтрування",
-    "selectCategoryOptional": "Select category to filter (optional)",
-    "customEventsAndMetrics": "Custom events and metrics (optional)",
-    "addAMetric": "Add a metric",
-    "customEvent": "Custom event",
+    "selectCategoryOptional": "Виберіть категорію для фільтрування (необов'язково)",
+    "customEventsAndMetrics": "Користувацькі події та показники (необов’язково)",
+    "addAMetric": "Додати метрику",
+    "customEvent": "Користувацька подія",
     "metrics": {
-      "xAvg": "\"{{x}}\" average",
-      "xTotal": "\"{{x}}\" total",
+      "xAvg": "\"{{x}}\" середнє",
+      "xTotal": "\"{{x}}\" загалом",
       "metricKey": {
-        "title": "Custom metric key",
-        "description": "Metadata key to aggregate (for example, \"amount\")."
+        "title": "Ключ метрики",
+        "description": "Ключ метаданих для агрегування (наприклад, \"amount\")."
       },
       "metricType": {
-        "title": "Custom metric type",
-        "description": "Specifies how to interpret the custom metric value. For example, Decimal will convert \"15.99\" to 15.99, while Integer will interpret it as 15."
+        "title": "Тип метрики",
+        "description": "Визначає, як інтерпретувати значення користувацької метрики. Наприклад, режим десяткових чисел перетворить \"15.99\" у 15.99, тоді як режим цілих чисел інтерпретує це як 15."
       },
       "optinalEventKey": {
-        "title": "Event key (optional)",
-        "description": "Custom event metadata key to filter (for example, \"currency\")."
+        "title": "Ключ події (необов\u0002язково)",
+        "description": "Ключ метаданих користувацької події для фільтрування (наприклад, \"currency\")."
       },
       "optinalEventValue": {
-        "title": "Event value (optional)",
-        "description": "Custom event metadata value to filter (for example, \"GBP\")."
+        "title": "Значення події (необов’язково)",
+        "description": "Користувацьке значення метаданих події для фільтрації (наприклад, \"GBP\")."
       },
-      "filterNoKV": "For \"{{customEventName}}\" aggregate \"{{metricKey}}\"",
-      "filterK": "For \"{{customEventName}}\" aggregate \"{{metricKey}}\" where any key is \"{{metaKey}}\"",
-      "filterV": "For \"{{customEventName}}\" aggregate \"{{metricKey}}\" where any value is \"{{metaValue}}\"",
-      "filterKV": "For \"{{customEventName}}\" aggregate \"{{metricKey}}\" where key \"{{metaKey}}\" is \"{{metaValue}}\""
+      "filterNoKV": "Для \"{{customEventName}}\" агрегувати \"{{metricKey}}\"",
+      "filterK": "Для \"{{customEventName}}\" агрегувати \"{{metricKey}}\", де будь-який ключ — \"{{metaKey}}\"",
+      "filterV": "Для \"{{customEventName}}\" агрегувати \"{{metricKey}}\", де будь-яке значення — \"{{metaValue}}\"",
+      "filterKV": "Для \"{{metricKey}}\" агрегувати \"{{customEventName}}\", де ключ \"{{metaKey}}\" дорівнює \"{{metaValue}}\""
     },
-    "noViewsYet": "No views yet",
+    "noSegmentsYet": "Поки що немає сегментів",
     "metaValueType": {
-      "decimal": "Decimal",
-      "integer": "Integer",
-      "text": "Text"
+      "decimal": "Десяткові числа",
+      "integer": "Цілі числа",
+      "text": "Текст"
     },
     "currentFilters": "Застосовані фільтри",
     "advancedFilters": "Розширені фільтри",
@@ -870,12 +870,12 @@
     "overrideCurrentlyFilters": "Перевизначити застосовані фільтри",
     "noExist": "Обраний проєкт не існує",
     "geo": "Геолокація",
-    "browserInfo": "Browser information",
-    "urlInfo": "URL information",
-    "osInfo": "OS information",
+    "browserInfo": "Інформація про браузер",
+    "urlInfo": "Інформація про URL",
+    "osInfo": "Інформація про ОС",
     "campaigns": "Кампанії",
-    "pageviewX": "<span>Pageview</span> <value>{{x}}</value>",
-    "eventX": "<span>Event</span> <value>{{x}}</value>",
+    "pageviewX": "<span>Перегляд сторінки</span> <value>{{x}}</value>",
+    "eventX": "<span>Подія</span> <value>{{x}}</value>",
     "exportData": "Експорт даних",
     "asCSV": "Як CSV",
     "noEvTitle": "Поки що подій немає",
@@ -915,26 +915,26 @@
     },
     "trendlineTotal": "Тренд кількості переглядів",
     "noEvContent": "За вказаний період не було зафіксовано жодної події, будь ласка, спробуйте інший період.",
-    "noEventsFiltersDesc": "No events have been recorded for the specified period or applied filters, please try a different period or change the filters applied.",
+    "noEventsFiltersDesc": "За вказаний період або застосовані фільтри події не зафіксовано, будь ласка, спробуйте інший період або змініть застосовані фільтри.",
     "noCaptchaEv": "За вказаний період часу не було зафіксовано жодної події.\nЯкщо ви ще не інтегрували віджет CAPTCHA в ваш вебсайт, ви можете ознайомитися з <url>документацією</url>, щоб легко це зробити.",
     "mapping": {
       "cc": "Країна",
       "rg": "Область",
       "ct": "Місто",
       "pg": "Сторінка",
-      "host": "Host",
+      "host": "Хост",
       "lc": "Мова",
       "ref": "Джерело",
       "dv": "Тип пристрою",
       "br": "Браузер",
-      "brv": "Browser version",
+      "brv": "Версія браузера",
       "os": "Операційна система",
-      "osv": "OS version",
+      "osv": "Версія ОС",
       "so": "UTM Source",
       "me": "UTM Medium",
       "ca": "UTM Campaign",
-      "te": "UTM Term",
-      "co": "UTM Content"
+      "te": "UTM термін",
+      "co": "UTM вміст"
     },
     "metamapping": {
       "ev": {
@@ -949,7 +949,7 @@
       }
     },
     "redactedPage": "Прихована сторінка",
-    "unknownHost": "Unknown host",
+    "unknownHost": "Невідомий хост",
     "noData": "Немає даних для відображення",
     "overview": "Огляд",
     "weeklyStats": "Тижнева статистика",
@@ -996,14 +996,14 @@
     "barChart": "Гістограма",
     "lineChart": "Лінійний графік",
     "settings": {
-      "organisation": "Organisation",
-      "shields": "Shields",
-      "access": "Access settings",
+      "organisation": "Організація",
+      "shields": "Щити",
+      "access": "Налаштування доступу",
       "botsProtectionLevel": {
-        "title": "Bots protection level",
+        "title": "Рівень захисту від ботів",
         "levels": {
-          "off": "Off: we allow all incoming traffic",
-          "basic": "Basic: we detect bots based on their user agent (Googlebot, Bingbot, curl, etc.)"
+          "off": "Вимкнено: дозволено весь вхідний трафік",
+          "basic": "Базовий: ми визначаємо ботів на основі їх user agent (Googlebot, Bingbot, curl тощо)"
         }
       },
       "verify": "Будь ласка, спочатку підтвердіть вашу ел. адресу",
@@ -1040,8 +1040,8 @@
       "removeUser": "Видалити {{user}}?",
       "people": "Користувачі",
       "inviteCoworkers": "Запросіть своїх колег",
-      "addARecipient": "Add a recipient",
-      "addARecipientDesc": "Enter an email address of the person you want to send reports to. They don't necessarily need to have an account on Swetrix.\nWe will send them your site's reports on a regular basis.",
+      "addARecipient": "Додати одержувача",
+      "addARecipientDesc": "Введіть електронну адресу особи, якій ви хочете надсилати звіти. Вони не обовʼязково повинні мати обліковий запис на Swetrix.\nМи регулярно надсилатимемо їм звіти вашого сайту.",
       "invite": "Запросити",
       "inviteTo": "Запросити користувача до {{project}}",
       "inviteDesc": "Введіть адресу електронної пошти та роль людини, з якою Ви хочете поділитися своїм проєктом.\nМи зв'яжемося з ним через електронну пошту, щоб надати доступ до проєкту.",
@@ -1101,7 +1101,7 @@
     "page": "Сторінка",
     "reverse": "Навпаки",
     "userFlow": {
-      "title": "User flow",
+      "title": "Потік користувача",
       "noData": "Потік користувача поки що не доступний через брак даних, або ви вимкнули цю функцію в параметрах скрипта"
     },
     "noDateRange": "Будь ласка, виберіть проміжок часу",
@@ -1119,11 +1119,11 @@
     "nextBillDateIs": "Наступна дата оплати {{date}}",
     "trialEnds": "Пробний період закінчується {{date}}",
     "cancelSub": "Скасувати підписку",
-    "noActiveSubscription": "You don't have an active subscription.",
-    "noActiveSubscriptionDescription": "Don't worry, we still collect your analytics data. But if you want to continue using Swetrix, please upgrade your account to one of our subscription tiers.",
+    "noActiveSubscription": "У вас немає активної підписки.",
+    "noActiveSubscriptionDescription": "Не хвилюйтеся, ми все ще збираємо ваші аналітичні дані. Але якщо ви хочете продовжувати користуватися Swetrix, будь ласка, оновіть свій обліковий запис до одного з наших тарифних планів.",
     "inactive": "Неактивний",
-    "subscriptionCancelled": "Subscription cancelled",
-    "subscriptionCancelledDescription": "Your subscription is active until {{date}}. After that, you will not be able to access your analytics data. Don't worry, we will still store incoming events and pageviews for your projects in case you change your mind.",
+    "subscriptionCancelled": "Підписку скасовано",
+    "subscriptionCancelledDescription": "Ваша підписка активна до {{date}}. Після цього ви не зможете отримати доступ до своїх аналітичних даних. Не хвилюйтеся, ми все одно зберігатимемо вхідні події та перегляди сторінок для ваших проєктів на випадок, якщо ви передумаєте.",
     "planUsage": "Використання плану",
     "usageOverview": "У цьому місяці ви відстежували події {{tracked}} ({{trackedPerc}}%) від {{maxEvents}} подій у вашому тарифному плані.",
     "breakdown": "Аналіз за типом події:",
@@ -1174,6 +1174,7 @@
     "title": "Просте ціноутворення на основі трафіку",
     "adv": "Спробуйте Swetrix на своєму сайті протягом {{amount}} днів - абсолютно безкоштовно.\nКредитна картка не потрібна. Ніяких зобов'язань.",
     "currentPlan": "Поточний тариф",
+    "subscribe": "Підписатися",
     "free": "Безплатно",
     "legacy": "Застарілий",
     "perMonth": "місяць",
@@ -1257,12 +1258,12 @@
     "invitation": "Запрошення до спільного проєкту",
     "profileSettings": "Налаштування облікового запису",
     "dashboard": "Панель керування",
-    "organisations": "Organisations",
+    "organisations": "Організації",
     "docs": "Документація",
     "billing": "Ціни та тарифи",
     "contact": "Маєте що запитати?",
     "changelog": "Історія змін",
-    "main": "Understand the story behind your customer clicks and scrolls",
+    "main": "Зрозумійте історію за кліками та прокрутками ваших клієнтів",
     "socialisation": "Соціалізація",
     "open": "Open startup",
     "passwordProtected": "Цей проект захищений паролем",
@@ -1272,7 +1273,7 @@
     "forMarketers": "Для маркетологів",
     "forSmbs": "Для малого бізнесу",
     "forStartups": "Для стартапів",
-    "featureFlags": "Feature flags"
+    "featureFlags": "Функції"
   },
   "header": {
     "switchTheme": "Змінити тему",
@@ -1304,7 +1305,7 @@
   "footer": {
     "slogan": "Найкращі додатки потребують найкращих сервісів.",
     "description": "Swetrix - потужна аналітична платформа, яка поважає конфіденційність користувачів.",
-    "madeInHostedIn": "Made in <0></0> / <1></1>, hosted in <2></2>",
+    "madeInHostedIn": "Створено в <0></0> / <1></1>, розміщено в <2></2>",
     "ukraine": "Україні",
     "eu": "Європейському Союзі",
     "support": "Підтримка",
