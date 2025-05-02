@@ -162,8 +162,8 @@
       "desc": "Avec Swetrix, vous pouvez mesurer les métriques clés telles que le temps de chargement global de la page, des analyses détaillées par TTFB, DNS, temps de résolution TLS et autres métriques. Répartissez les données en différents centiles pour voir comment votre site performe pour les personnes ayant des connexions internet rapides et lentes."
     },
     "privacy": {
-      "title": "Privacy-first, facile à utiliser",
-      "desc": "Swetrix est conçu avec une approche axée sur la confidentialité et la transparence. Nous n'utilisons pas de cookies et ne collectons pas d'informations personnelles de nos utilisateurs. Il n'y a pas de suivi entre les sites ou entre les appareils. Les données ne sont jamais vendues aux annonceurs ou à qui que ce soit d'autre. Le tableau de bord Swetrix est très intuitif à utiliser, vous donnant des données en temps réel et une vue claire de votre site web. Il n'y a pas de couches de menus, pas besoin d'exporter vos données dans des rapports personnalisés pour bien les comprendre."
+      "title": "Confidentialité avant tout, facile à utiliser",
+      "desc": "Swetrix est conçu avec une approche axée sur la confidentialité et la transparence. Nous n'utilisons pas de cookies et ne collectons pas d'informations personnelles de nos utilisateurs. Il n'y a pas de suivi entre les sites ou entre les appareils. Les données ne sont jamais vendues aux annonceurs ou à qui que ce soit d'autre.\nLe tableau de bord Swetrix est très intuitif à utiliser, vous donnant des données en temps réel et une vue claire de votre site web. Il n'y a pas de couches de menus, pas besoin d'exporter vos données dans des rapports personnalisés pour bien les comprendre."
     }
   },
   "errors": {
@@ -180,7 +180,7 @@
     },
     "track": {
       "title": "Suivre toutes les erreurs avec un seul outil",
-      "desc": "Avec Swetrix, vous pouvez suivre exactement quels types d'erreurs vos utilisateurs rencontrent et quand. Nous vous donnons également des informations sur les navigateurs, systèmes d'exploitation, appareils et plus encore, rendant la résolution des problèmes encore plus facile."
+      "desc": "Avec Swetrix, vous pouvez suivre exactement quels types derrors vos utilisateurs rencontrent et quand. Nous vous donnons également des informations sur les navigateurs, systèmes d'exploitation, appareils et plus encore, rendant la résolution des problèmes encore plus facile."
     }
   },
   "marketers": {
@@ -329,7 +329,7 @@
   },
   "main": {
     "ukrSupport": "Soutenez l'armée ukrainienne pour combattre l'invasion russe.",
-    "slogan": "<span>Analyse open-source ultime</span> pour satisfaire tous vos besoins.",
+    "slogan": "Découvrez <span>l'histoire</span> que racontent les clics et les défilements de vos clients",
     "description": "Swetrix propose un service d'analyse avancé et personnalisable pour vos applications web.",
     "understandTheirUsers": "<0>{{amount}}</0> personnes comprennent leurs utilisateurs",
     "perfect": "C'est parfait pour <0>les marketeurs</0>, <1>les start-ups</1>, <2>les petites entreprises</2> et pratiquement tout type d'entreprise !",
