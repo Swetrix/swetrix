@@ -124,7 +124,7 @@ const ErrorTracking = () => {
                     className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 sm:mr-6 sm:max-w-[210px] dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600'
                     aria-label={t('titles.signup')}
                   >
-                    <span className='mr-1 text-base font-semibold'>{t('main.startAFreeTrial')}</span>
+                    <span className='mr-1 text-center text-base font-semibold'>{t('main.startAFreeTrial')}</span>
                     <ArrowRightIcon className='mt-[1px] h-4 w-5 transition-transform group-hover:scale-[1.15]' />
                   </Link>
                   <a
