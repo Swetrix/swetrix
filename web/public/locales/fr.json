@@ -1113,7 +1113,7 @@
   "billing": {
     "title": "Facturation & Plans",
     "desc": "Il est gratuit de commencer et d'utiliser nos services.\nSi vous avez besoin de gérer plus de trafic, vous devrez probablement mettre à niveau votre plan.\nVoici une liste des plans disponibles. Pas de frais cachés ou autres BS, tout est clair et transparent !",
-    "contact": "Besoin de suivre plus de {{amount}} millions d'événements par mois ?\nContactez-nous à <mail>{{email}}</mail> pour discuter de vos besoins.",
+    "contact": "Avez-vous plus de {{amount}} millions d'événements par mois ? <url>Contactez-nous</url> pour discuter de vos besoins !",
     "update": "Mettre à jour les détails de paiement",
     "nextBillDate": "Prochaine date de facturation :",
     "nextBillDateIs": "La date de votre prochaine facture est le {{date}}",
