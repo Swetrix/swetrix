@@ -173,7 +173,7 @@ const Feedback = ({ name, title, feedback, logoUrl, photoUrl }: FeedbackProps) =
         </blockquote>
         <figcaption className='mt-10'>
           <img alt='' src={photoUrl} className='mx-auto h-10 w-10 rounded-full' />
-          <div className='mt-4 flex items-center justify-center space-x-3 text-base'>
+          <div className='mt-4 flex flex-col items-center justify-center gap-3 text-base sm:flex-row'>
             <p className='font-semibold text-gray-900 dark:text-gray-50'>{name}</p>
             <svg width={3} height={3} viewBox='0 0 2 2' aria-hidden='true' className='fill-gray-900'>
               <circle r={1} cx={1} cy={1} />
