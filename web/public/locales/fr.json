@@ -18,12 +18,12 @@
     "quitProjectError": "Erreur lors de la sortie du projet",
     "payoutInfoError": "Une erreur s'est produite lors de la demande d'informations de paiement",
     "quitProject": "Vous avez quitté le projet",
-    "quitOrganisation": "You have quit the organisation",
-    "quitOrganisationError": "Error occurred while quitting the organisation",
+    "quitOrganisation": "Vous avez quitté l'organisation",
+    "quitOrganisationError": "Une erreur s'est produite lors du départ de l'organisation",
     "acceptInvitationError": "Erreur lors de l'acceptation de l'invitation au projet",
     "acceptInvitation": "L'invitation au projet a été acceptée",
-    "acceptOrganisationInvitation": "The organisation invitation has been accepted",
-    "acceptOrganisationInvitationError": "Error occurred while accepting the organisation invitation",
+    "acceptOrganisationInvitation": "L'invitation à rejoindre l'organisation a été acceptée",
+    "acceptOrganisationInvitationError": "Une erreur s'est produite lors de l'acceptation de l'invitation à l'organisation",
     "subscriptionUpdated": "Votre abonnement a été mis à jour",
     "generate2FAError": "Erreur lors de la génération du code 2FA",
     "integrationRemovalError": "Erreur lors de la suppression de l'intégration",
@@ -47,22 +47,22 @@
     "errorCode": "Code d'erreur: {{error}}",
     "updateErrorStatusFailed": "Une erreur s'est produite lors de la mise à jour du statut d'erreur",
     "errorStatusUpdated": "Le statut d'erreur a été mis à jour",
-    "enterSegmentName": "Please enter a segment name",
+    "enterSegmentName": "Veuillez saisir un nom de segment",
     "inputCannotBeEmpty": "Ce champ de saisie ne doit pas être vide",
-    "segmentDeleted": "Segment has been deleted",
-    "organisationCreated": "Organisation has been created",
-    "organisationCreateError": "Error occurred while creating the organisation",
-    "organisationDeleted": "Organisation has been deleted",
-    "projectRemovedFromOrganisation": "The project has been removed from the organisation",
-    "projectAddedToOrganisation": "The project has been added to the organisation",
-    "projectRemoveError": "Error occurred while removing the project from the organisation",
-    "projectAddError": "Error occurred while adding the project to the organisation",
-    "orgUserRemoved": "The user has been removed from the organisation",
-    "orgUserRemoveError": "Error occurred while removing the user from the organisation",
-    "orgSettingsUpdated": "Organisation settings have been updated",
-    "projectAssigned": "The project has been assigned to the organisation",
-    "projectAssignError": "Failed to assign the project to the organisation",
-    "failedToLoadUsageInfo": "Failed to load usage info"
+    "segmentDeleted": "Le segment a été supprimé",
+    "organisationCreated": "L'organisation a été créée",
+    "organisationCreateError": "Une erreur s'est produite lors de la création de l'organisation",
+    "organisationDeleted": "L'organisation a été supprimée",
+    "projectRemovedFromOrganisation": "Le projet a été retiré de l'organisation",
+    "projectAddedToOrganisation": "Le projet a été ajouté à l'organisation",
+    "projectRemoveError": "Une erreur s'est produite lors de la suppression du projet de l'organisation",
+    "projectAddError": "Une erreur s'est produite lors de l'ajout du projet à l'organisation",
+    "orgUserRemoved": "L'utilisateur a été retiré de l'organisation",
+    "orgUserRemoveError": "Une erreur s'est produite lors de la suppression de l'utilisateur de l'organisation",
+    "orgSettingsUpdated": "Les paramètres de l’organisation ont été mis à jour",
+    "projectAssigned": "Le projet a été assigné à l'organisation",
+    "projectAssignError": "Échec de l'attribution du projet à l'organisation",
+    "failedToLoadUsageInfo": "Impossible de charger les informations d'utilisation"
   },
   "common": {
     "features": "Fonctionnalités",
@@ -119,30 +119,30 @@
     "xMembers": "{{number}} Membres",
     "general": "Général",
     "fixIt": "Réparer",
-    "errorOccured": "An error occurred: {{error}}",
-    "name": "Name",
-    "notSet": "Not set",
-    "remove": "Remove",
-    "pagination": "Showing <0>{{start}}</0> to <0>{{end}}</0> of <0>{{total}}</0> results",
-    "resultsPerPage": "Results per page",
-    "communityEdition": "Community Edition"
+    "errorOccured": "Une erreur s'est produite : {{error}}",
+    "name": "Nom",
+    "notSet": "Non défini",
+    "remove": "Supprimer",
+    "pagination": "Affichage de <0>{{start}}</0> à <0>{{end}}</0> sur <0>{{total}}</0> résultats",
+    "resultsPerPage": "Résultats par page",
+    "communityEdition": "Édition Communautaire"
   },
   "featureFlags": {
-    "title": "Feature Flags",
-    "description": "Enable or disable experimental features to try out new functionality before it's fully released. Feature flags allow you to test new features and provide feedback.",
-    "updated": "Feature flags updated successfully",
-    "error": "Failed to update feature flags",
+    "title": "Drapeaux de fonctionnalités",
+    "description": "Activer ou désactiver les fonctionnalités expérimentales pour essayer de nouvelles fonctionnalités avant leur sortie complète. Les indicateurs de fonctionnalités vous permettent de tester de nouvelles fonctionnalités et de fournir des commentaires.",
+    "updated": "Les indicateurs de fonctionnalités ont été mis à jour avec succès",
+    "error": "Échec de la mise à jour des drapeaux de fonctionnalités",
     "dashboard-period-selector": {
-      "title": "Dashboard Period Selector",
-      "description": "Enables the period selector in the dashboard, allowing you to see the number of pageviews for different periods (if this feature flag is disabled, the default period is {{defaultPeriod}} days)."
+      "title": "Sélecteur de période du tableau de bord",
+      "description": "Permet le sélecteur de période sur le tableau de bord, vous permettant de voir le nombre de pages vues pour différentes périodes (si ce drapeau de fonctionnalité est désactivé, la période par défaut est de {{defaultPeriod}} jours)."
     },
     "dashboard-analytics-tabs": {
-      "title": "Dashboard Analytics Tabs",
-      "description": "Enables analytics tabs in the dashboard, providing different views of your data such as high / low traffic sites, abandoned projects, and more."
+      "title": "Onglets d'Analyse du Tableau de Bord",
+      "description": "Active les onglets d'analyse dans le tableau de bord, fournissant différentes vues de vos données telles que les sites à trafic élevé/faible, les projets abandonnés et plus encore."
     },
     "dashboard-hostname-cards": {
-      "title": "Dashboard Hostname-based navigation",
-      "description": "Replaces traditional project-based navigation with hostname-based navigation - instead of seeing individual projects, you see the hostnames from the analytics data instead. This is useful if you have a lot of websites and don't want to create a project for each one, so you can create one project and collect all the data in it."
+      "title": "Navigation du tableau de bord basée sur le nom d'hôte",
+      "description": "Remplace la navigation traditionnelle basée sur les projets par une navigation basée sur les noms d'hôtes - au lieu de voir des projets individuels, vous voyez les noms d'hôtes des données d'analyse à la place. Cela est utile si vous avez beaucoup de sites Web et que vous ne souhaitez pas créer un projet pour chacun d'eux, vous pouvez donc créer un projet unique et y collecter toutes les données."
     }
   },
   "performance": {
@@ -190,139 +190,139 @@
       {
         "name": "Intégration et configuration faciles",
         "desc": [
-          "<span>Quick Start:</span> Swetrix provides easy <integrationLink>integration</integrationLink> with your existing systems and quick setup, enabling marketers to start analysing traffic quickly.",
-          "<span>Simple interface:</span> An intuitive interface that does not require deep technical knowledge allows marketers to easily navigate and use the service."
+          "<span>Démarrage Rapide :</span> Swetrix offre une <integrationLink>intégration</integrationLink> facile avec vos systèmes existants et une configuration rapide, permettant aux marketeurs de commencer à analyser le trafic rapidement.",
+          "<span>Interface simple :</span> Une interface intuitive qui ne nécessite pas de connaissances techniques approfondies permet aux marketeurs de naviguer et d'utiliser le service facilement."
         ]
       },
       {
         "name": "Fonctionnalités d'analyse avancées",
         "desc": [
-          "<span>Detailed traffic analysis:</span> Swetrix offers a wide range of metrics to analyse user behaviour, helping marketers make informed decisions.",
-          "<span>Flexible reports:</span> Swetrix provides an ability to customise reports to meet the specific needs of marketers, allowing them to focus on the most important metrics."
+          "<span>Analyse détaillée du trafic :</span> Swetrix propose une large gamme de métriques pour analyser le comportement des utilisateurs, aidant les marketeurs à prendre des décisions éclairées.",
+          "<span>Rapports flexibles :</span> Swetrix offre la possibilité de personnaliser les rapports pour répondre aux besoins spécifiques des marketeurs, leur permettant de se concentrer sur les métriques les plus importantes."
         ]
       },
       {
         "name": "Conformité de la confidentialité et de la réglementation",
         "desc": [
-          "<span>GDPR compliance:</span> Swetrix is GDPR compliant, which ensures safe and legal use of the service.",
-          "<span>Data security:</span> High level of data protection, which is important for marketers who work with sensitive information."
+          "<span>Conformité RGPD :</span> Swetrix est conforme au RGPD, ce qui garantit une utilisation sûre et légale du service.",
+          "<span>Sécurité des données :</span> Niveau élevé de protection des données, ce qui est important pour les marketeurs qui travaillent avec des informations sensibles."
         ]
       },
       {
         "name": "Service client",
         "desc": [
-          "<span>High-quality support:</span> Swetrix provides fast and efficient support to help marketers resolve any questions or issues.",
-          "<span>Educational materials:</span> Access to learning resources and <discordUrl>tips</discordUrl> to help you make the most of the service."
+          "<span>Support de haute qualité :</span> Swetrix fournit un support rapide et efficace pour aider les marketeurs à résoudre toute question ou problème.",
+          "<span>Matériel éducatif :</span> Accès aux ressources d'apprentissage et <discordUrl>conseils</discordUrl> pour vous aider à tirer le meilleur parti du service."
         ]
       },
       {
         "name": "Flexibilité et évolutivité",
         "desc": [
-          "<span>Different pricing plans:</span> Swetrix offers different pricing plans to suit all budgets and needs, allowing marketers to choose the best option.",
-          "<span>Scalability:</span> The ability to expand the functionality of the service in line with business growth and needs."
+          "<span>Différents plans tarifaires :</span> Swetrix propose différents plans tarifaires pour convenir à tous les budgets et besoins, permettant aux marketeurs de choisir la meilleure option.",
+          "<span>Scalabilité :</span> La capacité d'étendre les fonctionnalités du service en fonction de la croissance et des besoins de l'entreprise."
         ]
       },
       {
         "name": "Comparaison avec la concurrence",
         "desc": [
-          "<span>Transparency and trust:</span> Swetrix is open and transparent, which creates trust among users.",
-          "<span>Unique features:</span> Swetrix offers dozens of unique and useful features, and here are some of them.."
+          "<span>Transparence et confiance :</span> Swetrix est ouvert et transparent, ce qui crée de la confiance parmi les utilisateurs.",
+          "<span>Fonctionnalités uniques :</span> Swetrix propose des dizaines de fonctionnalités uniques et utiles, et en voici quelques-unes.."
         ]
       }
     ]
   },
   "startups": {
-    "slogan": "Privacy-focused <span>web analytics</span> tailored for <span>startups</span>",
-    "description": "Swetrix is a comprehensive tool for managing your campaigns, optimising your strategies and analysing your traffic - all in one service, without compromising user privacy.",
+    "slogan": "Axées sur la confidentialité <span>analyses web</span> adaptées pour <span>les startups</span>",
+    "description": "Swetrix est un outil complet pour gérer vos campagnes, optimiser vos stratégies et analyser votre trafic - tout en un seul service, sans compromettre la confidentialité des utilisateurs.",
     "whyUs": [
       {
         "name": "Conformité de la confidentialité et de la réglementation",
         "desc": [
-          "<span>Data security:</span> Swetrix focuses on protecting user data by not using cookies, which ensures a high degree of privacy.",
-          "<span>GDPR compliance:</span> Unlike Google Analytics, Swetrix is GDPR compliant, making it a safe choice for startups that care about legal compliance."
+          "<span>Sécurité des données :</span> Swetrix se concentre sur la protection des données des utilisateurs en n'utilisant pas de cookies, ce qui garantit un haut degré de confidentialité.",
+          "<span>Conformité au RGPD :</span> Contrairement à Google Analytics, Swetrix respecte le RGPD, ce qui en fait un choix sûr pour les startups soucieuses de la conformité légale."
         ]
       },
       {
         "name": "Simplicité et facilité d'utilisation",
         "desc": [
-          "<span>Intuitive interface:</span> Swetrix offers a simple and straightforward interface, making it easy to use even for those without technical experience.",
-          "<span>Easy integration:</span> <integrationLink>Integration</integrationLink> with Swetrix takes a minimum of time and effort, which allows startups to quickly start using the service."
+          "<span>Interface intuitive :</span> Swetrix offre une interface simple et directe, facilitant son utilisation même pour ceux sans expérience technique.",
+          "<span>Intégration facile :</span> <integrationLink>Intégration</integrationLink> avec Swetrix demande un minimum de temps et d'efforts, ce qui permet aux startups de commencer rapidement à utiliser le service."
         ]
       },
       {
         "name": "Concentrez-vous sur les besoins du client",
         "desc": [
-          "<span>Personalised solutions:</span> Swetrix offers flexible settings and the ability to adapt to the individual needs of each startup.",
-          "<span>Customer support:</span> High-quality customer support that helps to quickly resolve any issues and adjustments."
+          "<span>Solutions personnalisées :</span> Swetrix offre des paramètres flexibles et la capacité de s’adapter aux besoins individuels de chaque startup.",
+          "<span>Support client :</span> Un support client de haute qualité qui aide à résoudre rapidement tout problème et ajustement."
         ]
       },
       {
         "name": "Accessibilité et rentabilité",
         "desc": [
-          "<span>Competitive prices:</span> Swetrix offers competitive pricing, which is especially important for startups on a tight budget.",
-          "<span>Free trial period:</span> The possibility of free testing of the service allows startups to evaluate its benefits without financial risks."
+          "<span>Prix compétitifs :</span> Swetrix propose des tarifs compétitifs, ce qui est particulièrement important pour les startups avec un budget serré.",
+          "<span>Période d'essai gratuite :</span> La possibilité de tester gratuitement le service permet aux startups d'évaluer ses avantages sans risques financiers."
         ]
       },
       {
         "name": "Fonctionnalités",
         "desc": [
-          "<span>Advanced traffic analysis:</span> Swetrix provides detailed traffic analysis with a variety of metrics to help startups better understand their users.",
-          "<span>Reports and analytics:</span> Flexible reports and analytics that help you make informed decisions based on data."
+          "<span>Analyse avancée du trafic :</span> Swetrix fournit une analyse détaillée du trafic avec une variété de métriques pour aider les startups à mieux comprendre leurs utilisateurs.",
+          "<span>Rapports et analyses :</span> Rapports et analyses flexibles qui vous aident à prendre des décisions éclairées basées sur les données."
         ]
       },
       {
         "name": "Avantages par rapport à la concurrence",
         "desc": [
-          "<span>Transparency:</span> Unlike some competitors, Swetrix is transparent in its operations, which creates trust among users.",
-          "<span>Focus on privacy:</span> Swetrix focuses on privacy protection, which sets us apart from other solutions on the market."
+          "<span>Transparence :</span> Contrairement à certains concurrents, Swetrix est transparent dans ses opérations, ce qui crée de la confiance parmi les utilisateurs.",
+          "<span>Concentrez-vous sur la confidentialité :</span> Swetrix se concentre sur la protection de la vie privée, ce qui nous distingue des autres solutions sur le marché."
         ]
       }
     ]
   },
   "smbs": {
-    "slogan": "Privacy-focused and easy to use <span>web analytics</span> tailored for <span>small businesses</span>",
-    "description": "Swetrix is an all-in-one web analytics service that will help you as an entrepreneur or small business to track your campaigns, analyse traffic and website performance without compromising user privacy.",
+    "slogan": "Axées sur la confidentialité et faciles à utiliser <span>analyses web</span> adaptées pour les <span>petites entreprises</span>",
+    "description": "Swetrix est un service d'analyse web tout-en-un qui permet aux entrepreneurs et aux petites entreprises de suivre leurs campagnes, d'analyser le trafic et les performances de leur site web sans compromettre la confidentialité des utilisateurs.",
     "whyUs": [
       {
         "name": "Simplicité et efficacité",
         "desc": [
-          "<span>Easy integration and configuration:</span> Swetrix <integrationLink>integrates seamlessly</integrationLink> with your existing systems, allowing you to quickly start using the service without the need for complex technical setup.",
-          "<span>Intuitive interface:</span> A clear and easy-to-use interface that allows managers to quickly get the information they need without any extra effort."
+          "<span>Intégration et configuration faciles :</span> Swetrix <integrationLink>s'intègre parfaitement</integrationLink> à vos systèmes existants, vous permettant de commencer rapidement à utiliser le service sans nécessiter de configuration technique complexe.",
+          "<span>Interface intuitive :</span> Une interface claire et facile à utiliser qui permet aux responsables d’obtenir rapidement les informations dont ils ont besoin sans effort supplémentaire."
         ]
       },
       {
-        "name": "Information availability",
+        "name": "Disponibilité de l'information",
         "desc": [
-          "<span>Real-time:</span> Swetrix provides real-time data (within seconds), which allows managers to respond quickly to changes in customer behaviour and traffic.",
-          "<span>Flexible reports:</span> The ability to customise reports to meet specific business needs to help you make informed decisions."
+          "<span>Temps réel :</span> Swetrix fournit des données en temps réel (en quelques secondes), ce qui permet aux responsables de répondre rapidement aux changements de comportement des clients et au trafic.",
+          "<span>Rapports flexibles :</span> La possibilité de personnaliser les rapports afin de répondre aux besoins spécifiques de votre entreprise et de vous aider à prendre des décisions éclairées."
         ]
       },
       {
-        "name": "Privacy and security",
+        "name": "Confidentialité et sécurité",
         "desc": [
-          "<span>Data protection:</span> Swetrix provides a high degree of confidentiality and data protection, which is critical for executives who want to protect their customers' information.",
-          "<span>Regulatory compliance:</span> Compliance with the GDPR and other regulatory requirements, which guarantees legal security of the service."
+          "<span>Protection des données :</span> Swetrix offre un niveau élevé de confidentialité et de protection des données, ce qui est essentiel pour les dirigeants qui veulent protéger les informations de leurs clients.",
+          "<span>Conformité réglementaire :</span> Respect du RGPD et des autres exigences réglementaires, garantissant la sécurité juridique du service."
         ]
       },
       {
-        "name": "Support and assistance",
+        "name": "Support et assistance",
         "desc": [
-          "<span>High-quality customer support:</span> Swetrix provides fast and efficient support, helping to resolve any issues and problems that managers may face.",
-          "<span>Educational resources:</span> we have a well-developed community on <discordUrl>Discord</discordUrl> and on <twitterUrl>Twitter</twitterUrl>, where we are always happy to help."
+          "<span>Support client de haute qualité :</span> Swetrix fournit un support rapide et efficace pour aider les responsables à résoudre tous les problèmes qu'ils peuvent rencontrer.",
+          "<span>Ressources éducatives :</span> nous avons une communauté bien développée sur <discordUrl>Discord</discordUrl> et sur <twitterUrl>Twitter</twitterUrl>, où nous sommes toujours ravis de vous aider."
         ]
       },
       {
-        "name": "Cost-effective and flexible",
+        "name": "Économique et flexible",
         "desc": [
-          "<span>Affordable prices:</span> Competitive prices that allow managers of small companies to get all the tools they need without significant financial outlays.",
-          "<span>Flexible plans:</span> The ability to choose different tariff plans to suit the size and needs of the company."
+          "<span>Prix abordables :</span> Des prix compétitifs qui permettent aux gestionnaires de petites entreprises d'obtenir tous les outils dont ils ont besoin sans dépenses financières importantes.",
+          "<span>Forfaits flexibles :</span> La possibilité de choisir différents forfaits adaptés à la taille et aux besoins de l'entreprise."
         ]
       },
       {
-        "name": "Analytics and optimisation",
+        "name": "Analyses et optimisation",
         "desc": [
-          "<span>Detailed analytics:</span> Swetrix provides advanced traffic analysis to help managers better understand customer behaviour and optimise business processes.",
-          "<span>Marketing optimisation:</span> The ability to analyse the effectiveness of marketing campaigns and adjust strategies to achieve better results."
+          "<span>Analyses détaillées :</span> Swetrix propose une analyse avancée du trafic pour aider les responsables à mieux comprendre le comportement des clients et optimiser les processus métier.",
+          "<span>Optimisation marketing :</span> Capacité à analyser l’efficacité des campagnes marketing et à ajuster les stratégies pour obtenir de meilleurs résultats."
         ]
       }
     ]
@@ -331,61 +331,61 @@
     "ukrSupport": "Soutenez l'armée ukrainienne pour combattre l'invasion russe.",
     "slogan": "<span>Analyse open-source ultime</span> pour satisfaire tous vos besoins.",
     "description": "Swetrix propose un service d'analyse avancé et personnalisable pour vos applications web.",
-    "understandTheirUsers": "<0>{{amount}}</0> people understand their users",
-    "perfect": "It's perfect for <0>marketers</0>, <1>start-ups</1>, <2>small businesses</2> and virtually any type of business!",
-    "trustedBy": "Trusted by governments, NGOs and innovative enterprises",
+    "understandTheirUsers": "<0>{{amount}}</0> personnes comprennent leurs utilisateurs",
+    "perfect": "C'est parfait pour <0>les marketeurs</0>, <1>les start-ups</1>, <2>les petites entreprises</2> et pratiquement tout type d'entreprise !",
+    "trustedBy": "Approuvé par les gouvernements, les ONG et les entreprises innovantes",
     "start": "Commencez gratuitement",
-    "startAFreeTrial": "Start a free trial",
-    "metric": "Metric",
+    "startAFreeTrial": "Démarrez un essai gratuit",
+    "metric": "Métrique",
     "demoGeoReports": "Oui, c'est un standard. Mais nous suivons exactement d'où viennent vos utilisateurs.",
     "peopleLoveSwetrix": "Les gens 🥰 Swetrix",
-    "whyPeopleLoveSwetrix": "Swetrix is an ethical and powerful service. Hundreds of people have already made the switch from Google Analytics and other alternatives.",
-    "weAreOpensource": "We are <url>open source</url>",
-    "coreFeatures": "Only the features you need",
+    "whyPeopleLoveSwetrix": "Swetrix est un service éthique et puissant. Des centaines de personnes ont déjà abandonné Google Analytics et d'autres solutions pour passer à Swetrix.",
+    "weAreOpensource": "Nous sommes <url>open source</url>",
+    "coreFeatures": "Uniquement les fonctionnalités dont vous avez besoin",
     "problem": {
-      "title": "Most people struggle to make sense of their analytics data",
-      "description": "Many web analytics solutions are either too complex and overwhelming, or too simple and don't provide enough insight. Business owners don't understand their customers and lose money.",
-      "step1": "Business owner collects web data",
-      "step2": "Overwhelmed by <u>complex dashboards</u> or limited by oversimplified metrics",
-      "step3": "Makes uninformed decisions, missing opportunities for growth"
+      "title": "La plupart des gens ont du mal à comprendre leurs données analytiques",
+      "description": "De nombreuses solutions d’analyse Web sont soit trop complexes et accablantes, soit trop simples et n’offrent pas suffisamment d’informations. Les propriétaires d’entreprise ne comprennent pas leurs clients et perdent de l’argent.",
+      "step1": "Le propriétaire d'entreprise collecte des données Web",
+      "step2": "Dépassé par <u>des tableaux de bord complexes</u> ou limité par des indicateurs trop simplistes",
+      "step3": "Prend des décisions non éclairées et manque des opportunités de croissance"
     },
-    "butThereIsASolution": "But there is a solution...",
-    "knowYourCustomers": "Know your customers and users",
+    "butThereIsASolution": "Mais il existe une solution...",
+    "knowYourCustomers": "Connaissez vos clients et vos utilisateurs",
     "insights": {
-      "title": "Get insights into your traffic",
-      "description": "Swetrix helps you understand everything you need to know about your website traffic. Know how many people are online, what pages are most popular, where are your users from, and more."
+      "title": "Obtenez un aperçu de votre trafic",
+      "description": "Swetrix vous aide à tout comprendre sur le trafic de votre site web. Découvrez combien de personnes sont en ligne, quelles pages sont les plus populaires, d'où viennent vos utilisateurs, et bien plus encore."
     },
     "painPoints": {
-      "title": "Understand your site's pain points",
-      "description": "Nobody likes slow websites. Users are more likely to abandon your website if it takes too long to load, stay ahead of these problems and measure insights from real interactions."
+      "title": "Comprenez les points faibles de votre site",
+      "description": "Personne n'aime les sites web lents. Les utilisateurs sont plus susceptibles d'abandonner votre site web s'il met trop de temps à charger ; prenez les devants sur ces problèmes et mesurez les indicateurs issus des interactions réelles."
     },
     "customisation": {
-      "title": "Complete customisation",
-      "description": "Missing a feature? We will build it :) You can also build your own features or install 3rd party add-ons from our Extensions Marketplace."
+      "title": "Personnalisation complète",
+      "description": "Il manque une fonctionnalité ? Nous la développerons :) Vous pouvez également créer vos propres fonctionnalités ou installer des modules complémentaires tiers depuis notre place de marché des extensions."
     },
     "integrations": {
-      "title": "Works with any platform",
-      "description": "With dozens of integrations, Swetrix makes it easy to connect your website and know your users, out of the box."
+      "title": "Fonctionne sur n'importe quelle plateforme",
+      "description": "Avec des dizaines d'intégrations, Swetrix facilite la connexion de votre site web et la connaissance de vos utilisateurs, sans configuration préalable."
     },
     "sessions": {
-      "title": "Session analysis",
-      "description": "Analyse the sessions of your website users and make data-driven decisions."
+      "title": "Analyse de session",
+      "description": "Analysez les sessions des utilisateurs de votre site Web et prenez des décisions fondées sur les données."
     },
     "cookies": {
-      "title": "Forget about annoying cookie banners",
-      "description": "Swetrix does not use cookies for tracking, so you can forget about all those annoying cookie banners. We collect analytical data anonymously to respect the privacy of your users. We do not collect personal identifiers and do not perform cross-device tracking."
+      "title": "Oubliez les bannières de cookies gênantes",
+      "description": "Swetrix n'utilise pas de cookies pour le suivi, vous pouvez donc oublier toutes ces bannières de cookies agaçantes. Nous collectons des données analytiques de manière anonyme afin de respecter la vie privée de vos utilisateurs. Nous ne collectons pas d'identifiants personnels et n'effectuons pas de suivi multi-appareils."
     },
     "utms": {
-      "title": "Analyse marketing campaigns and newsletters",
-      "description": "Use UTMs to tag your ads, social media posts and email campaigns to see how much traffic they generate and how much revenue they bring in."
+      "title": "Analyse des campagnes marketing et des newsletters",
+      "description": "Utilisez les balises UTM pour identifier vos publicités, vos publications sur les réseaux sociaux et vos campagnes par e-mail afin de voir le trafic qu'ils génèrent et les revenus qu'ils apportent."
     },
     "funnels": {
-      "title": "User flows & marketing funnels",
-      "description": "Track how users get to your site and know where they go. Study behaviour, visualise and understand your user journey."
+      "title": "Flux d'utilisateurs & entonnoirs marketing",
+      "description": "Suivez comment les utilisateurs accèdent à votre site et sachez où ils vont. Étudiez le comportement, visualisez et comprenez le parcours de vos utilisateurs."
     },
     "eCommerce": {
-      "title": "E-commerce & Custom events (really easy to setup)",
-      "description": "Send custom events with custom properties to track user activity or sales. Analyse this data with ease in our intuitive dashboard. Create reusable views to quickly see and spot trends in your sales."
+      "title": "Commerce électronique et événements personnalisés (vraiment facile à configurer)",
+      "description": "Envoyez des événements personnalisés avec des propriétés personnalisées pour suivre l'activité des utilisateurs ou les ventes. Analysez ces données facilement dans notre tableau de bord intuitif. Créez des vues réutilisables pour voir rapidement et repérer les tendances de vos ventes."
     },
     "opensource": [
       {
@@ -398,8 +398,8 @@
         "desc": "Vos données sont protégées, toutes les fonctionnalités et corrections sont mises en œuvre en quelques jours par nos développeurs."
       }
     ],
-    "timeToDitchGoogleAnalytics": "It's time <colour>to ditch</colour> Google Analytics.",
-    "whyDitch": "Tired of the frustration, complexity and privacy issues of Google Analytics? We were too. That's why we built Swetrix - the ethical, open source and fully cookieless alternative.",
+    "timeToDitchGoogleAnalytics": "Il est temps de <colour>laisser tomber</colour> Google Analytics.",
+    "whyDitch": "Vous en avez assez de la frustration, de la complexité et des problèmes de confidentialité de Google Analytics ? Nous aussi. C'est pourquoi nous avons créé Swetrix : l'alternative éthique, open source et entièrement sans cookies.",
     "custSupport": "Vous n'avez pas trouvé la réponse que vous cherchez ? Contactez notre équipe de <mail>support client</mail>.",
     "whyUs": "Pourquoi nous",
     "ourStats": "Nos statistiques",
@@ -413,555 +413,555 @@
       "ext": "Extensions personnalisées",
       "gdpr": "Compatible RGPD",
       "usfl": "Flux utilisateur",
-      "funnels": "Funnels",
-      "sessionAnalysis": "Session analysis",
+      "funnels": "Entonnoirs",
+      "sessionAnalysis": "Analyse de session",
       "alrt": "Alertes personnalisées",
       "pbld": "Tableaux de bord publics",
       "shad": "Partage de tableaux de bord",
-      "open": "Open source",
+      "open": "Source ouverte",
       "ckfree": "Analyse sans cookies",
       "api": "API développeur",
       "2fa": "Authentification à deux facteurs"
     }
   },
   "referral": {
-    "desc": "Swetrix is an ethical, open source and completely cookie-less alternative to Google Analytics. It allows you to understand your users' behaviour, monitor your website performance, track your marketing campaigns and much more. All without invading your users' privacy!",
-    "cookieDetails": "If you click on the buttons above, a cookie will be stored for {{days}} days to reward the person who referred you and give you {{discount}}% off your first bill.",
-    "buttons": "Click on these buttons to receive {{discount}}% off your first bill!"
+    "desc": "Swetrix est une alternative éthique, open source et totalement sans cookies à Google Analytics. Il vous permet de comprendre le comportement de vos utilisateurs, de surveiller les performances de votre site web, de suivre vos campagnes marketing et bien plus encore. Le tout sans porter atteinte à la vie privée de vos utilisateurs !",
+    "cookieDetails": "Si vous cliquez sur les boutons ci-dessus, un cookie sera enregistré pendant {{days}} jours pour récompenser la personne qui vous a parrainé et vous offrir {{discount}} % de réduction sur votre première facture.",
+    "buttons": "Cliquez sur ces boutons pour bénéficier de {{discount}} % de réduction sur votre première facture !"
   },
   "unsubscribe": {
-    "success": "You've unsubscribed from analytics email reports"
+    "success": "Vous vous êtes désabonné des rapports d'analyse par e-mail"
   },
   "auth": {
     "recovery": {
-      "title": "Account recovery",
-      "save": "Save new password",
-      "newPassword": "Your new password",
-      "updated": "Your password has been updated"
+      "title": "Récupération de compte",
+      "save": "Enregistrer le nouveau mot de passe",
+      "newPassword": "Votre nouveau mot de passe",
+      "updated": "Votre mot de passe a été mis à jour"
     },
     "forgot": {
-      "sent": "A password reset e-mail has been sent to the specified address",
-      "reset": "Reset password"
+      "sent": "Un e-mail de réinitialisation de mot de passe a été envoyé à l'adresse spécifiée",
+      "reset": "Réinitialiser le mot de passe"
     },
     "signin": {
-      "title": "Sign in to your account",
-      "forgot": "Forgot password?",
-      "button": "Sign in",
-      "2fa": "Two-factor authentication",
-      "2faDesc": "Open the two-factor authentication app on your device to view your authentication code and verify your identity.\nYou can also use your backup code.",
-      "2faUnavailable": "Don't have access to 2FA?\n<ctl>Contact support</ctl>.",
-      "6digitCode": "6-digit authentication code",
-      "notAMember": "Not a member? <url>Start a {{amount}} day free trial</url>"
+      "title": "Se connecter à votre compte",
+      "forgot": "Mot de passe oublié ?",
+      "button": "Se connecter",
+      "2fa": "Authentification à deux facteurs",
+      "2faDesc": "Ouvrez l'application d'authentification à deux facteurs sur votre appareil pour afficher votre code d'authentification et vérifier votre identité.\nVous pouvez également utiliser votre code de secours.",
+      "2faUnavailable": "Vous n'avez pas accès à l'authentification à deux facteurs ?\n<ctl>Contactez le support</ctl>.",
+      "6digitCode": "Code d'authentification à 6 chiffres",
+      "notAMember": "Pas encore membre ? <url>Commencez un essai gratuit de {{amount}} jours</url>"
     },
     "signup": {
-      "button": "Sign up",
-      "tos": "I do accept <tos>Terms and Conditions</tos> and the <pp>Privacy Policy</pp>.",
-      "email": "Email address",
-      "create": "Create your account",
-      "trial": "Start your free {{amount}} day trial",
-      "noCC": "No credit card required.",
-      "alreadyAMember": "Already a member? <url>Sign in</url>"
+      "button": "S'inscrire",
+      "tos": "J'accepte les <tos>Conditions générales</tos> et la <pp>Politique de confidentialité</pp>.",
+      "email": "Adresse e-mail",
+      "create": "Créez votre compte",
+      "trial": "Démarrez votre essai gratuit de {{amount}} jours",
+      "noCC": "Aucune carte de crédit requise.",
+      "alreadyAMember": "Déjà membre ? <url>Connectez-vous</url>"
     },
     "confirm": {
-      "title": "Check your inbox",
-      "linkSent": "We've sent an account confirmation link to {{email}}, please click the link to confirm your email address.",
-      "spam": "Can't see the email? Please check your spam folder.",
-      "wrongEmail": "Wrong email? <url>Create a new account.</url>"
+      "title": "Vérifiez votre boîte de réception",
+      "linkSent": "Nous avons envoyé un lien de confirmation de compte à {{email}}. Veuillez cliquer sur ce lien pour confirmer votre adresse e-mail.",
+      "spam": "Vous ne voyez pas l'e-mail ? Veuillez vérifier votre dossier de courrier indésirable.",
+      "wrongEmail": "Mauvaise adresse e-mail ? <url>Créez un nouveau compte.</url>"
     },
     "verification": {
-      "success": "Your email has been successfully verified!"
+      "success": "Votre e-mail a été vérifié avec succès !"
     },
     "socialisation": {
-      "authSuccess": "Authentication successful",
-      "failed": "Authentication failed",
-      "failedDesc": "An error has occurred while authenticating through a third party service, please try again or contact support.",
-      "successDesc": "You are now authenticated through a 3rd party service and can safely close this page if it didn't close automatically.",
-      "orSingUpWith": "or sign up with"
+      "authSuccess": "Authentification réussie",
+      "failed": "Échec de l'authentification",
+      "failedDesc": "Une erreur s'est produite lors de l'authentification via un service tiers, veuillez réessayer ou contacter le support.",
+      "successDesc": "Vous êtes maintenant authentifié via un service tiers et pouvez fermer cette page en toute sécurité si elle ne s'est pas fermée automatiquement.",
+      "orSingUpWith": "ou inscrivez-vous avec"
     },
     "common": {
-      "signinInstead": "Sign in instead",
-      "signupInstead": "Sign up instead",
-      "password": "Password",
-      "noRemember": "Don't remember me.",
-      "repeat": "Repeat password",
-      "changePassword": "Change password",
-      "hint": "Longer than {{amount}} chars",
-      "xCharsError": "The password has to consist of at least {{amount}} characters.",
-      "noMatchError": "Passwords have to match.",
-      "badEmailError": "Please provide a valid email.",
-      "passwordTooLong": "The provided password is too long, maximum length is {{amount}} characters",
-      "tosError": "You have to accept our TOS and privacy policy in order to use our services.",
-      "email": "Email",
-      "signin": "Sign in",
-      "checkLeakedPassword": "Check if password is leaked",
-      "checkLeakedPasswordDesc": "When enabled we check your password with the <db>{{database}}</db> database. We don't send your password to the service. First we hash your password (using SHA1) and send only the first 5 characters of that hash to the service. The service returns all leaked passwords that start with those 5 characters. At our end we check if one of these matches with your password. We show you a warning if it has been leaked before. We never store your password in plain text.",
-      "addedOn": "Added on",
-      "continueWithGoogle": "Continue with Google",
-      "continueWithGithub": "Continue with Github",
-      "continueWithOIDC": "Continue with OpenID Connect",
+      "signinInstead": "Se connecter plutôt",
+      "signupInstead": "Inscrivez-vous plutôt",
+      "password": "Mot de passe",
+      "noRemember": "Ne pas se souvenir de moi.",
+      "repeat": "Confirmer le mot de passe",
+      "changePassword": "Changer le mot de passe",
+      "hint": "Plus de {{amount}} caractères",
+      "xCharsError": "Le mot de passe doit comporter au moins {{amount}} caractères.",
+      "noMatchError": "Les mots de passe doivent correspondre.",
+      "badEmailError": "Veuillez fournir une adresse e-mail valide.",
+      "passwordTooLong": "Le mot de passe fourni est trop long, la longueur maximale est de {{amount}} caractères",
+      "tosError": "Vous devez accepter nos CGU et notre politique de confidentialité pour utiliser nos services.",
+      "email": "Adresse e-mail",
+      "signin": "Se connecter",
+      "checkLeakedPassword": "Vérifier si le mot de passe a fuité",
+      "checkLeakedPasswordDesc": "Lorsqu'il est activé, nous vérifions votre mot de passe avec la base de données <db>{{database}}</db>. Nous n'envoyons pas votre mot de passe au service. Tout d'abord, nous hachons votre mot de passe (en utilisant SHA1) et n'envoyons que les 5 premiers caractères de ce hachage au service. Le service renvoie tous les mots de passe compromis qui commencent par ces 5 caractères. De notre côté, nous vérifions si l'un d'eux correspond à votre mot de passe. Nous vous affichons un avertissement s'il a déjà été divulgué. Nous ne stockons jamais votre mot de passe en texte clair.",
+      "addedOn": "Ajouté le",
+      "continueWithGoogle": "Continuer avec Google",
+      "continueWithGithub": "Continuer avec GitHub",
+      "continueWithOIDC": "Continuer avec OpenID Connect",
       "google": "Google",
-      "github": "Github",
+      "github": "GitHub",
       "oidc": "OpenID Connect",
-      "orContinueWith": "Or continue with"
+      "orContinueWith": "Ou continuer avec"
     }
   },
   "profileSettings": {
-    "logoutAll": "Log out from all devices",
-    "emailChanged": "To confirm the change of your email address, please click the link in the email we sent you to your new email address.",
-    "account": "Account",
-    "general": "General settings",
-    "update": "Update profile",
-    "email": "Email reports",
-    "timezone": "Timezone preference",
-    "frequency": "How often should we send you an email summary about your websites?",
-    "noLink": "Didn't receive a link to confirm the email address? Request a new one!",
-    "requestExport": "Request data export",
-    "delete": "Delete account",
-    "deactivateConfirmation": "Are you sure you want to deactivate your account?\nAll of your data will be permanently removed from our servers forever.\nThis action cannot be undone.",
-    "deletionFeedbackLabel": "Why are you leaving? (optional)",
-    "deletionFeedback": "We're sad to see you go, could you please tell us why you're leaving so we could improve our service?",
-    "exportConfirmation": "As requested by Art. 20 of General Data Protection Regulation (GDPR) the you have the right to receive your personal data that we store. This report does not include events data per project.\nThe data report will be sent to your email address.\nNote: you can request the data export only once per two weeks.",
-    "dataExport": "Data export",
-    "aDelete": "Delete my account",
-    "qDelete": "Delete your account?",
-    "weekly": "Weekly",
-    "monthly": "Monthly",
-    "never": "Never",
-    "quarterly": "Quarterly",
-    "reportSent": "The GDPR data report has been sent to your email address.",
-    "tryAgainInXDays": "Please, try again later. You can request a GDPR Export only once per {{amount}} days.",
-    "updated": "Your account settings have been updated",
-    "confTimeout": "An email has already been sent, check your mailbox or try again in a few minutes",
-    "confSent": "An account confirmation link has been sent to your email",
-    "noConfLeft": "Unfortunately, you've ran out of your email confirmation requests.\nPlease make sure you are able to receive e-mails and check your SPAM folder again for messages.\nYou may try to use a different email address or contact our customer support service.",
-    "timezoneDesc": "This will be the time zone in which the data is displayed. It's only used for visualization.\nNo data will be modified based on this setting.",
-    "quitProject": "Are you sure you want to quit this project?",
-    "quitOrganisation": "Are you sure you want to quit this organisation?",
-    "quitEntity": "Quit {{entity}}?",
-    "shared": "Shared projects",
-    "receiveLoginNotifications": "Receive login notifications",
+    "logoutAll": "Se déconnecter de tous les appareils",
+    "emailChanged": "Pour confirmer la modification de votre adresse e-mail, veuillez cliquer sur le lien dans l’e-mail que nous vous avons envoyé à votre nouvelle adresse e-mail.",
+    "account": "Compte",
+    "general": "Paramètres généraux",
+    "update": "Mettre à jour le profil",
+    "email": "Rapports par e-mail",
+    "timezone": "Préférence de fuseau horaire",
+    "frequency": "À quelle fréquence devons-nous vous envoyer un résumé par e-mail de vos sites web ?",
+    "noLink": "Vous n'avez pas reçu de lien pour confirmer votre adresse e-mail ? Demandez-en un nouveau !",
+    "requestExport": "Demander l'exportation des données",
+    "delete": "Supprimer le compte",
+    "deactivateConfirmation": "Êtes-vous sûr de vouloir désactiver votre compte ?\nToutes vos données seront définitivement supprimées de nos serveurs.\nCette action est irréversible.",
+    "deletionFeedbackLabel": "Pourquoi partez-vous\u0000? (facultatif)",
+    "deletionFeedback": "Nous sommes désolés de vous voir partir, pourriez-vous nous dire pourquoi vous partez afin que nous puissions améliorer notre service ?",
+    "exportConfirmation": "Conformément à l’art. 20 du Règlement général sur la protection des données (RGPD), vous avez le droit de recevoir vos données personnelles que nous stockons. Ce rapport n’inclut pas les données d’événements par projet.\nLe rapport de données sera envoyé à votre adresse e-mail.\nRemarque : vous ne pouvez demander l’exportation des données qu’une seule fois toutes les deux semaines.",
+    "dataExport": "Exportation des données",
+    "aDelete": "Supprimer mon compte",
+    "qDelete": "Supprimer votre compte ?",
+    "weekly": "Hebdomadaire",
+    "monthly": "Mensuel",
+    "never": "Jamais",
+    "quarterly": "Trimestriel",
+    "reportSent": "Le rapport de données RGPD a été envoyé à votre adresse e-mail.",
+    "tryAgainInXDays": "Veuillez réessayer plus tard. Vous ne pouvez demander une exportation RGPD qu'une fois tous les {{amount}} jours.",
+    "updated": "Les paramètres de votre compte ont été mis à jour",
+    "confTimeout": "Un e-mail a déjà été envoyé, vérifiez votre boîte de réception ou réessayez dans quelques minutes",
+    "confSent": "Un lien de confirmation de compte a été envoyé à votre adresse e-mail",
+    "noConfLeft": "Malheureusement, vous avez épuisé vos demandes de confirmation par e-mail.\nVeuillez vérifier que vous pouvez recevoir des e-mails et consulter de nouveau votre dossier SPAM.\nVous pouvez essayer d'utiliser une autre adresse e-mail ou contacter notre service client.",
+    "timezoneDesc": "Ceci correspondra au fuseau horaire dans lequel les données sont affichées. Il est utilisé uniquement à des fins de visualisation.\nAucune donnée ne sera modifiée en fonction de ce paramètre.",
+    "quitProject": "Êtes-vous sûr de vouloir quitter ce projet ?",
+    "quitOrganisation": "Êtes-vous sûr de vouloir quitter cette organisation ?",
+    "quitEntity": "Quitter {{entity}} ?",
+    "shared": "Projets partagés",
+    "receiveLoginNotifications": "Recevoir des notifications de connexion",
     "organisations": "Organisations",
     "organisationsTable": {
       "organisation": "Organisation",
-      "role": "Role",
-      "joinedOn": "Joined on"
+      "role": "Rôle",
+      "joinedOn": "Date d'adh\u0000sion"
     },
     "sharedTable": {
-      "project": "Project",
-      "role": "Role",
-      "joinedOn": "Joined on"
+      "project": "Projet",
+      "role": "Rôle",
+      "joinedOn": "Date d\u001eadh\u000bsion"
     },
-    "noOrganisations": "You are not a member of any organisation yet.",
-    "noSharedProjects": "Nobody is sharing a project with you yet.",
-    "2fa": "Two-factor authentication (2FA)",
-    "2faEnable": "Enable 2FA to make your account more secure.",
-    "2faEnableBtn": "Enable 2FA",
-    "2faDisableBtn": "Disable 2FA",
-    "2faDesc": "An authenticator app that supports time-based, one-time passwords (TOTP) such as andOTP or Google Authenticator can scan the QR code below to enable 2FA on your Swetrix account:",
-    "2faQRAlt": "Can't scan the QR code?\nUse this secret key instead: {{key}}",
-    "enter2faToEnable": "Enter your one-time code to enable 2FA",
-    "enter2faToDisable": "Enter your one-time code or a recovery code",
-    "yourOneTimeCode": "Your one-time code",
-    "invalid2fa": "Invalid 2FA code, please try again",
-    "2faRecoveryNote": "Important: If you cannot use your authenticator app, because you've deleted the app or lost your device, you'll need a way to access your account and disable 2FA.\n\nYou can use this recovery code to disable 2FA. Write it down and store it in a safe, secure place.",
-    "2faRecoverySaved": "I have saved this recovery code",
-    "2faEnabled": "Two-factor authenticated is enabled on your account.",
-    "2faDisableHint": "To disable two-factor authentication, please enter your 6-digit code or one of your recovery codes below.",
-    "apiKey": "API Key",
-    "noApiKey": "You haven't created any API keys yet.",
-    "selfhostedNoApiKey": "You haven't created any API keys yet. You can do this in your docker compose file by modifying the API_KEY environment variable.",
-    "apiKeyWarning": "Treat your API Key like a password and keep it secret. Never hardcode it into your programs, or share it with anyone.",
-    "addApiKeyBtn": "Generate API Key",
-    "deleteApiKeyBtn": "Delete API Key",
-    "apiKeyDelete": "Delete your API Key?",
-    "apiKeyDeleteConf": "Are you sure you want to delete your API key?\nAll API access via this key will be disabled.",
-    "theme": "Theme",
-    "selectTheme": "Select theme",
-    "integrations": "Integrations",
-    "integrationsDesc": "Integrations can be used to connect your favourite messengers to Swetrix and receive updates such as notifications, reports or alerts directly.",
+    "noOrganisations": "Vous ne faites partie d'aucune organisation pour le moment.",
+    "noSharedProjects": "Personne ne partage encore de projet avec vous.",
+    "2fa": "Authentification à deux facteurs (2FA)",
+    "2faEnable": "Activez l'A2F pour renforcer la sécurité de votre compte.",
+    "2faEnableBtn": "Activer l'A2F",
+    "2faDisableBtn": "Désactiver l'A2F",
+    "2faDesc": "Une application d'authentification prenant en charge les mots de passe à usage unique basés sur le temps (TOTP), tels qu'andOTP ou Google Authenticator, peut scanner le code QR ci-dessous pour activer la 2FA sur votre compte Swetrix :",
+    "2faQRAlt": "Impossible de scanner le code QR ?\nUtilisez plutôt cette clé secrète : {{key}}",
+    "enter2faToEnable": "Saisissez votre code à usage unique pour activer l'A2F",
+    "enter2faToDisable": "Entrez votre code à usage unique ou un code de récupération",
+    "yourOneTimeCode": "Votre code à usage unique",
+    "invalid2fa": "Code A2F invalide, veuillez réessayer",
+    "2faRecoveryNote": "Important : Si vous ne pouvez pas utiliser votre application d'authentification (parce que vous avez supprimé l'application ou perdu votre appareil), vous aurez besoin d'un moyen pour accéder à votre compte et désactiver l'A2F.\n\nVous pouvez utiliser ce code de récupération pour désactiver l'A2F. Notez-le et conservez-le dans un endroit sûr et sécurisé.",
+    "2faRecoverySaved": "J'ai enregistré ce code de récupération",
+    "2faEnabled": "L'authentification à deux facteurs est activée sur votre compte.",
+    "2faDisableHint": "Pour désactiver l’authentification à deux facteurs, veuillez saisir votre code à 6 chiffres ou l’un de vos codes de récupération ci-dessous.",
+    "apiKey": "Clé API",
+    "noApiKey": "Vous n'avez pas encore créé de clés API.",
+    "selfhostedNoApiKey": "Vous n'avez pas encore créé de clés API. Vous pouvez le faire dans votre fichier Docker Compose en modifiant la variable d'environnement API_KEY.",
+    "apiKeyWarning": "Traitez votre clé API comme un mot de passe et conservez-la secrète. Ne l'intégrez jamais en dur dans vos programmes, ni ne la partagez avec quiconque.",
+    "addApiKeyBtn": "Générer une clé API",
+    "deleteApiKeyBtn": "Supprimer la clé API",
+    "apiKeyDelete": "Supprimer votre Clé API ?",
+    "apiKeyDeleteConf": "Êtes-vous sûr de vouloir supprimer votre clé API ?\nTous les accès à l’API via cette clé seront désactivés.",
+    "theme": "Thème",
+    "selectTheme": "Choisir thème",
+    "integrations": "Intégrations",
+    "integrationsDesc": "Les intégrations peuvent être utilisées pour connecter vos messageries préférées à Swetrix et recevoir directement des mises à jour telles que des notifications, des rapports ou des alertes.",
     "integrationsList": {
-      "telegram": "Receive notifications directly into a Telegram bot.",
-      "slack": "Receive notifications in any Slack channel via webhook.",
-      "discord": "Receive notifications in any Discord channel via webhook.",
-      "tgHint": "Write a message to <url>{{username}}</url> to get your chat ID. This bot will be used later to send you notifications or alerts.",
-      "slackHint": "We use Slack incoming webhooks to send notifications into your Slack communication channels. Please create a Slack app and <url>an incoming webhook</url> and paste it into the input field below.",
-      "discordHint": "We use Discord webhooks to send you notifications. Please <url>create a Discord webhook</url> and paste it into the input field below.",
-      "webhookUrl": "Webhook URL"
+      "telegram": "Recevoir des notifications directement dans un bot Telegram.",
+      "slack": "Recevoir des notifications dans n’importe quel canal Slack via webhook.",
+      "discord": "Recevoir des notifications dans n'importe quel canal Discord via un webhook.",
+      "tgHint": "Envoyez un message à <url>{{username}}</url> pour obtenir votre identifiant de chat. Ce bot sera utilisé ultérieurement pour vous envoyer des notifications ou des alertes.",
+      "slackHint": "Nous utilisons les webhooks entrants de Slack pour envoyer des notifications dans vos canaux de communication Slack. Veuillez créer une application Slack et <url>un webhook entrant</url> et le coller dans le champ ci-dessous.",
+      "discordHint": "Nous utilisons les webhooks Discord pour vous envoyer des notifications. Veuillez <url>créer un webhook Discord</url> et le coller dans le champ ci-dessous.",
+      "webhookUrl": "URL du webhook"
     },
-    "socialisations": "Socialisations",
-    "socialisationsDesc": "Socialisation feature allows you to link 3rd party accounts (like Google or Twitter) to your Swetrix account and use them to sign in to Swetrix.",
-    "cantUnlinkSocialisation": "You can't unlink this socialisation because it was used to register your account.",
-    "addIntegration": "Add integration",
-    "removeIntegration": "Remove integration",
-    "chatID": "Chat ID",
-    "12-hour": "12 hour",
-    "24-hour": "24 hour",
-    "timeFormat": "Time notation",
-    "selectTimeFormat": "This will be the time notation used on the chart, it is only used to visualise the data on the chart in 12 hour or 24 hour format.",
+    "socialisations": "Comptes liés",
+    "socialisationsDesc": "La fonctionnalité Comptes liés vous permet de lier des comptes tiers (comme Google ou Twitter) à votre compte Swetrix et de les utiliser pour vous connecter à Swetrix.",
+    "cantUnlinkSocialisation": "Vous ne pouvez pas dissocier ce compte lié car il a été utilisé pour créer votre compte.",
+    "addIntegration": "Ajouter une intégration",
+    "removeIntegration": "Supprimer l'intégration",
+    "chatID": "ID de chat",
+    "12-hour": "12 heures",
+    "24-hour": "24 heures",
+    "timeFormat": "Format de l'heure",
+    "selectTimeFormat": "Il s'agit du format horaire utilisé pour le graphique ; il sert uniquement à visualiser les données au format 12 heures ou 24 heures.",
     "captcha": "CAPTCHA",
-    "selectProject": "Select project",
-    "captchaSecretKey": "CAPTCHA secret key",
-    "generateSecretKey": "Generate secret key",
-    "regenerateSecretKey": "Regenerate secret key",
-    "regenerateSecretKeyTitle": "Regenerate secret key?",
-    "regenerateSecretKeyMessage": "Are you sure you want to regenerate your secret key?\nAll the existing CAPTCHA widgets will stop working and you will need to update them with the new secret key.",
-    "captchaSecretKeyHint": "This is your secret key, it is used to verify the CAPTCHA response on your server. Keep it secret and do not share it with anyone.",
-    "showVisitorsInTitle": "Show live visitors in the page title",
-    "uiSettings": "UI Settings",
+    "selectProject": "Sélectionner un projet",
+    "captchaSecretKey": "Clé secrète du CAPTCHA",
+    "generateSecretKey": "Générer une clé secrète",
+    "regenerateSecretKey": "Régénérer la clé secrète",
+    "regenerateSecretKeyTitle": "Régénérer la clé secrète ?",
+    "regenerateSecretKeyMessage": "Êtes-vous sûr de vouloir régénérer votre clé secrète ?\nTous les widgets CAPTCHA existants cesseront de fonctionner et vous devrez les mettre à jour avec la nouvelle clé secrète.",
+    "captchaSecretKeyHint": "Ceci est votre clé secrète, elle est utilisée pour vérifier la réponse CAPTCHA sur votre serveur. Gardez-la secrète et ne la partagez avec personne.",
+    "showVisitorsInTitle": "Afficher les visiteurs en direct dans le titre de la page",
+    "uiSettings": "Paramètres de l'interface utilisateur",
     "passwordChangeWarningModal": {
-      "title": "You're about to change your password",
-      "body": "You're about to change your password, this will log you out from all devices (including this one) and you will need to log in again with your new password."
+      "title": "Vous êtes sur le point de changer votre mot de passe",
+      "body": "Vous êtes sur le pont de changer votre mot de passe, cela vous déconnectera de tous les appareils (y compris celui-ci) et vous devrez vous reconnecter avec votre nouveau mot de passe."
     },
     "referral": {
-      "title": "Referral program",
-      "desc": "Referral program allows you to earn money by inviting new users to Swetrix.\nYou will receive a part of the subscription fee paid by the invited user and will be able to withdraw it to your PayPal account. Learn more about the referral program at <url>Swetrix Referral Program</url> documentation page.",
-      "referralLink": "Referral link",
-      "payoutEmail": "Referral payout email address",
-      "payoutEmailDesc": "We will send your referral payouts via PayPal to this email address each month. Double check that it is correct.",
-      "payoutEmailUpdated": "Payout email address has been updated",
-      "yourReferralLink": "Your referral link",
-      "referralLinkDesc": "This is your referral link, you can share it with your friends and earn money for each user that signs up and buys a paid plan using it.",
-      "generateRefLink": "Generate referral link",
-      "referralStats": "Referral statistics",
-      "activeReferrals": "Active referrals",
-      "noActiveReferrals": "You have no active referrals yet",
-      "trial": "Trial referrals",
-      "trialDesc": "Trial users referred by you",
-      "active": "Active referrals",
-      "activeDesc": "Paid subscribers referred by you",
-      "paid": "Paid",
-      "paidDesc": "Total amount paid to you",
-      "nextPayout": "Next payout",
-      "nextPayoutDesc": "How much you will get paid next time",
-      "pending": "Pending",
-      "pendingDesc": "Amount of money pending to be paid to you. It takes {{days}} days for the funds to become available.",
+      "title": "Programme de parrainage",
+      "desc": "Le programme de parrainage vous permet de gagner de l'argent en invitant de nouveaux utilisateurs à Swetrix.\nVous recevrez une partie des frais d'abonnement payés par l'utilisateur invité et pourrez la retirer sur votre compte PayPal. Pour en savoir plus sur le programme de parrainage, consultez la page de documentation du <url>Programme de Parrainage Swetrix</url>.",
+      "referralLink": "Lien de parrainage",
+      "payoutEmail": "Adresse e-mail pour les paiements de parrainage",
+      "payoutEmailDesc": "Nous enverrons vos paiements de parrainage via PayPal à cette adresse e-mail chaque mois. Vérifiez qu'elle est correcte.",
+      "payoutEmailUpdated": "L'adresse e-mail de paiement a été mise à jour",
+      "yourReferralLink": "Votre lien de parrainage",
+      "referralLinkDesc": "Ceci est votre lien de parrainage, vous pouvez le partager avec vos amis et gagner de l'argent pour chaque utilisateur qui s'inscrit et achète un abonnement payant en l'utilisant.",
+      "generateRefLink": "Générer le lien de parrainage",
+      "referralStats": "Statistiques de parrainage",
+      "activeReferrals": "Parrainages actifs",
+      "noActiveReferrals": "Vous n'avez pas encore de parrainages actifs",
+      "trial": "Parrainages d'essai",
+      "trialDesc": "Utilisateurs en période d'essai que vous avez parrainés",
+      "active": "Parrainages actifs",
+      "activeDesc": "Abonnés payants que vous avez parrainés",
+      "paid": "Payé",
+      "paidDesc": "Montant total qui vous a été versé",
+      "nextPayout": "Prochain versement",
+      "nextPayoutDesc": "Montant que vous recevrez la prochaine fois",
+      "pending": "En attente",
+      "pendingDesc": "Montant en attente de paiement. Il faut {{days}} jours avant que les fonds soient disponibles.",
       "activeReferralsTable": {
-        "plan": "Referral tier",
-        "yourCut": "Your cut",
-        "yourCutDesc": "You will receive {{amount}}% of the subscription fee paid by the user after all fees. Currently our merchant provider charges us {{fee}} per transaction.",
-        "registrationDate": "Registration date"
+        "plan": "Niveau de parrainage",
+        "yourCut": "Votre part",
+        "yourCutDesc": "Vous recevrez {{amount}} % des frais d’abonnement payés par l’utilisateur après déduction de tous les frais. Actuellement, notre prestataire de paiement nous facture {{fee}} par transaction.",
+        "registrationDate": "Date d'inscription"
       }
     }
   },
   "alertsSettings": {
-    "alertCreated": "The alert has been created",
-    "alertUpdated": "The alert has been updated",
-    "alertDeleted": "The alert has been deleted"
+    "alertCreated": "L'alerte a été créée",
+    "alertUpdated": "L'alerte a été mise à jour",
+    "alertDeleted": "L'alerte a été supprimée"
   },
   "organisations": {
-    "create": "Create organisation",
+    "create": "Créer une organisation",
     "organisations": "Organisations",
-    "new": "New organisation",
+    "new": "Nouvelle organisation",
     "invite": {
-      "title": "Invite a user to {{organisation}}",
-      "desc": "Enter an email address and a role of the person registered on Swetrix that you want to invite to the organisation. The invitation will expire in {{expiresIn}} hours."
+      "title": "Inviter un utilisateur à {{organisation}}",
+      "desc": "Saisissez une adresse e-mail et le rôle de la personne inscrite sur Swetrix que vous souhaitez inviter dans l’organisation. L’invitation expirera dans {{expiresIn}} heures."
     },
     "role": {
       "owner": {
-        "name": "Owner",
-        "desc": "Can manage the organisation and its members, as well as manage the projects within the organisation."
+        "name": "Propriétaire",
+        "desc": "Peut gérer l'organisation et ses membres, ainsi que gérer les projets au sein de l'organisation."
       },
       "admin": {
-        "name": "Admin",
-        "desc": "Can manage the organisation and its members, as well as manage the projects within the organisation."
+        "name": "Administrateur",
+        "desc": "Peut gérer l’organisation et ses membres, ainsi que les projets au sein de l’organisation."
       },
       "viewer": {
-        "name": "Viewer",
-        "desc": "Can only access the organisation and its projects without the ability to change any settings."
+        "name": "Spectateur",
+        "desc": "Peut uniquement accéder à l'organisation et à ses projets sans pouvoir modifier les paramètres."
       }
     },
-    "projects": "Projects",
-    "addProject": "Add project",
-    "noProjectsFound": "No projects found within this organisation",
+    "projects": "Projets",
+    "addProject": "Ajouter un projet",
+    "noProjectsFound": "Aucun projet trouvé dans cette organisation",
     "modals": {
       "remove": {
-        "title": "Remove {{project}}?",
-        "message": "Are you sure you want to remove this project from the organisation? Once removed, organisation members will no longer have access to this project unless they are added in the project settings."
+        "title": "Supprimer {{project}} ?",
+        "message": "Êtes-vous sûr de vouloir supprimer ce projet de l’organisation ? Une fois supprimé, les membres de l’organisation n’auront plus accès à ce projet à moins d’y être ajoutés dans les paramètres du projet."
       },
       "addProject": {
-        "title": "Add project to {{organisation}}",
-        "message": "Select the project you want to add to the organisation. It will be available to all members of the organisation, and the organisation admins will be able to manage the project settings."
+        "title": "Ajouter un projet à {{organisation}}",
+        "message": "Sélectionnez le projet que vous souhaitez ajouter à l’organisation. Il sera disponible pour tous les membres de l’organisation, et les administrateurs de l’organisation pourront gérer les paramètres du projet."
       },
       "delete": {
-        "title": "Delete {{organisation}}?",
-        "message": "Are you sure you want to delete this organisation?\nAll the data related to the organisation will be deleted from our servers. This action is irreversible."
+        "title": "Supprimer {{organisation}} ?",
+        "message": "Êtes-vous sûr de vouloir supprimer cette organisation ?\nToutes les données liées à l'organisation seront supprimées de nos serveurs. Cette action est irréversible."
       }
     },
-    "projectOwnedBy": "This project is owned by {{email}}",
-    "delete": "Delete organisation"
+    "projectOwnedBy": "Ce projet appartient à {{email}}",
+    "delete": "Supprimer l'organisation"
   },
   "dashboard": {
-    "gridView": "Grid view",
-    "listView": "List view",
-    "sortAlphaAsc": "A to Z",
-    "sortAlphaDesc": "Z to A",
-    "sortDateAsc": "Oldest first",
-    "sortDateDesc": "Newest first",
-    "pageviewsDesc": "Most pageviews",
-    "pageviewsAsc": "Least pageviews",
-    "noProjectsForCriteria": "No projects found for the selected criteria",
-    "lastVisitDesc": "Recently visited first",
+    "gridView": "Vue en grille",
+    "listView": "Affichage en liste",
+    "sortAlphaAsc": "A à Z",
+    "sortAlphaDesc": "Z à A",
+    "sortDateAsc": "Les plus anciens en premier",
+    "sortDateDesc": "Plus récents d'abord",
+    "pageviewsDesc": "Le plus de pages vues",
+    "pageviewsAsc": "Le moins de pages vues",
+    "noProjectsForCriteria": "Aucun projet trouvé pour les critères sélectionnés",
+    "lastVisitDesc": "Les plus récemment visités en premier",
     "captcha": "CAPTCHA",
-    "newProject": "New project",
-    "newFunnel": "New funnel",
-    "reloadPage": "Reload page",
-    "newCaptchaProject": "New CAPTCHA project",
-    "verifyEmailTitle": "Please, verify the email address first",
-    "verifyEmailDesc": "To start using our service and creating your projects, you first need to confirm your email address.\n\nA link to confirm your account was sent to the email address you provided during registration, if it was not delivered - you can request the link again in your account settings.",
-    "lowEventsTitle": "You are running out of events!",
-    "lowEventsDesc": "You have used more than 85% of the available events per your tier for this month.\nThat means that in case you use 100% of the available events until the end of the month, access to your reporting dashboard will be restricted.\nTo avoid this we recommend that you update your tier on the Billing page.",
-    "accountLocked": "Your account has been temporarily suspended due to a billing issue.",
-    "accountLockedTitle": "Account temporarily suspended",
-    "eventsXPercUsed": "You have used more than {{amount}}% of the available events per your tier for this month.",
-    "noProjects": "You have not yet created any projects",
-    "createProject": "Create a new project here to start using our service",
-    "active": "Active",
+    "newProject": "Nouveau projet",
+    "newFunnel": "Nouvel entonnoir",
+    "reloadPage": "Recharger la page",
+    "newCaptchaProject": "Nouveau projet CAPTCHA",
+    "verifyEmailTitle": "Veuillez vérifier votre adresse e-mail d'abord",
+    "verifyEmailDesc": "Pour commencer à utiliser notre service et à créer vos projets, vous devez d'abord confirmer votre adresse e-mail.\n\nUn lien pour confirmer votre compte a été envoyé à l'adresse e-mail que vous avez fournie lors de l'inscription ; s'il ne vous est pas parvenu, vous pouvez demander à nouveau le lien dans les paramètres de votre compte.",
+    "lowEventsTitle": "Vos événements sont presque épuisés !",
+    "lowEventsDesc": "Vous avez utilisé plus de 85% des événements inclus dans votre forfait pour ce mois-ci.\nCela signifie que si vous atteignez 100% des événements disponibles d'ici la fin du mois, l'accès à votre tableau de bord sera restreint.\nPour éviter cela, nous vous recommandons de mettre à niveau votre forfait sur la page de Facturation.",
+    "accountLocked": "Votre compte a été temporairement suspendu en raison d'un problème de facturation.",
+    "accountLockedTitle": "Compte temporairement suspendu",
+    "eventsXPercUsed": "Vous avez utilisé plus de {{amount}}% des événements disponibles ce mois-ci selon votre forfait.",
+    "noProjects": "Vous n'avez pas encore créé de projets",
+    "createProject": "Créez un nouveau projet ici pour commencer à utiliser notre service",
+    "active": "Actif",
     "public": "Public",
-    "shared": "Shared",
-    "disabled": "Disabled",
-    "pageviews": "Pageviews",
-    "captchaEvents": "CAPTCHA events",
-    "firstSeen": "First seen",
-    "lastSeen": "Last seen",
-    "atFile": "At {{filename}}, line {{lineno}}, column {{colno}}",
-    "unique": "Unique views",
-    "createdAt": "Created at",
-    "inc": "Increased by",
-    "dec": "Descreased by",
-    "liveVisitors": "Live visitors",
-    "xLiveVisitors": "{{amount}} live visitors",
-    "live": "Live",
-    "bounceRate": "Bounce rate",
-    "viewsPerUnique": "Views per session",
-    "trendlines": "Trend lines",
-    "invitationFor": "Invitation for {{project}}",
-    "invitationDesc": "You have been invited to join the project {{project}}.\nYou can either accept the invitation here or reject it in your account settings.",
-    "sessionDuration": "Session duration",
-    "cumulativeMode": "Cumulative mode",
-    "traffic": "Traffic",
-    "performance": "Performance",
-    "funnels": "Funnels",
+    "shared": "Partagé",
+    "disabled": "Désactivé",
+    "pageviews": "Pages vues",
+    "captchaEvents": "Événements CAPTCHA",
+    "firstSeen": "Vu pour la première fois",
+    "lastSeen": "Vue pour la dernière fois",
+    "atFile": "À {{filename}}, ligne {{lineno}}, colonne {{colno}}",
+    "unique": "Vues uniques",
+    "createdAt": "Créé le",
+    "inc": "Augmenté de",
+    "dec": "Diminué de",
+    "liveVisitors": "Visiteurs en temps réel",
+    "xLiveVisitors": "{{amount}} visiteurs en direct",
+    "live": "En direct",
+    "bounceRate": "Taux de rebond",
+    "viewsPerUnique": "Vues par session",
+    "trendlines": "Lignes de tendance",
+    "invitationFor": "Invitation pour {{project}}",
+    "invitationDesc": "Vous êtes invité(e) à rejoindre le projet {{project}}.\nVous pouvez soit accepter l'invitation ici, soit la refuser dans les paramètres de votre compte.",
+    "sessionDuration": "Durée de la session",
+    "cumulativeMode": "Mode cumulatif",
+    "traffic": "Trafic",
+    "performance": "Performances",
+    "funnels": "Entonnoirs",
     "sessions": "Sessions",
-    "xOccurrences": "{{x}} occurrences",
-    "errors": "Errors",
-    "xPageviews": "{{x}} pageviews",
-    "onePageview": "1 pageview",
-    "alerts": "Alerts",
-    "alertsDesc": "Automated alerts is a powerful tool that allows you to run automated tasks when specific events occur.\nWe can automatically monitor your project for traffic spikes and notify you via Telegram.",
-    "funnelsDesc": "Funnels is a powerful tool that allows you to track the conversion rate of your users through a series of steps.\nThe analysis provided by the marketing funnel gives you the ability to discover potential problems, improve your website, and boost your conversion rate.",
-    "frontend": "Frontend",
-    "backend": "Backend",
-    "network": "Network",
-    "timing": "Timing breakdown",
-    "timingFull": "Timing breakdown (full)",
-    "allocation": "Load time allocation",
+    "xOccurrences": "Occurrences {{x}}",
+    "errors": "Erreurs",
+    "xPageviews": "{{x}} pages vues",
+    "onePageview": "1 page vue",
+    "alerts": "Alertes",
+    "alertsDesc": "Les alertes automatisées sont un outil puissant qui vous permet d'exécuter des tâches automatiques lorsqu'un événement spécifique se produit.\nNous pouvons surveiller automatiquement votre projet pour détecter les pics de trafic et vous notifier via Telegram.",
+    "funnelsDesc": "Entonnoirs est un outil puissant qui vous permet de suivre le taux de conversion de vos utilisateurs à travers une série d’étapes.\nL’analyse fournie par l’entonnoir marketing vous permet de détecter d’éventuels problèmes, d’améliorer votre site Web et d’augmenter votre taux de conversion.",
+    "frontend": "Front-end",
+    "backend": "Back-end",
+    "network": "Réseau",
+    "timing": "Répartition du temps",
+    "timingFull": "Répartition du temps (complète)",
+    "allocation": "Répartition du temps de chargement",
     "dns": "DNS",
-    "conn": "Connection",
-    "tls": "TLS Setup",
-    "ttfb": "Time to first byte (TTFB)",
-    "domLoad": "DOM Content Load",
-    "pageLoad": "Page load time",
-    "render": "Browser render",
-    "response": "Response Time",
-    "average": "Average",
-    "median": "Median",
-    "xPercentile": "{{x}}th percentile"
+    "conn": "Connexion",
+    "tls": "Configuration TLS",
+    "ttfb": "Temps jusqu'au premier octet (TTFB)",
+    "domLoad": "Chargement du contenu DOM",
+    "pageLoad": "Temps de chargement de la page",
+    "render": "Rendu du navigateur",
+    "response": "Temps de réponse",
+    "average": "Moyenne",
+    "median": "Médiane",
+    "xPercentile": "{{x}}e percentile"
   },
   "alert": {
-    "create": "Create an alert",
-    "customEvent": "Custom event name",
-    "add": "Add alert",
-    "delete": "Delete alert",
-    "noNameError": "Please enter a name for the alert.",
-    "queryValueError": "Please fill threshold and the query value has to be a number.",
-    "noIntegration": "You have not configured an integration yet. Create one in your <url>account settings</url>.",
-    "noNotificationChannel": "You do not have a notification channel set up, please set it up to be notified when one of your alerts is triggered.",
-    "lastTriggered": "Last Triggered",
-    "lastTriggeredOn": "Last triggered on {{date}}",
-    "notYetTriggered": "Not yet triggered",
-    "never": "Never",
-    "qDelete": "Delete the alert?",
-    "settingsOf": "Settings of {{name}}",
-    "deleteHint": "This action is irreversible.\nThe alert and all the data related to it will be deleted from our servers.",
-    "name": "Alert name",
-    "metric": "Query metric",
-    "condition": "Trigger when the metric is",
-    "threshold": "Threshold",
-    "time": "During the last",
+    "create": "Créer une alerte",
+    "customEvent": "Nom de l'événement personnalisé",
+    "add": "Ajouter une alerte",
+    "delete": "Supprimer l'alerte",
+    "noNameError": "Veuillez entrer un nom pour l'alerte.",
+    "queryValueError": "Veuillez entrer le seuil et la valeur de la requête doit être un nombre.",
+    "noIntegration": "Vous n'avez pas encore configuré d'intégration. Créez-en une dans vos <url>paramètres du compte</url>.",
+    "noNotificationChannel": "Vous n’avez pas configuré de canal de notification ; veuillez le configurer pour être notifié lorsqu’une de vos alertes est déclenchée.",
+    "lastTriggered": "Dernier déclenchement",
+    "lastTriggeredOn": "Dernier déclenchement le {{date}}",
+    "notYetTriggered": "Pas encore déclenché",
+    "never": "Jamais",
+    "qDelete": "Supprimer l'alerte ?",
+    "settingsOf": "Paramètres de {{name}}",
+    "deleteHint": "Cette action est irréversible.\nL'alerte et toutes les données qui y sont liées seront supprimées de nos serveurs.",
+    "name": "Nom de l'alerte",
+    "metric": "Métrique de requête",
+    "condition": "Déclencher lorsque la métrique est",
+    "threshold": "Seuil",
+    "time": "Au cours des dernières",
     "xMinutes": "{{amount}} minutes",
-    "xHours": "{{amount}} hours",
-    "xHour": "{{amount}} hour",
-    "enabled": "Alert enabled",
-    "enabledHint": "Disabled alerts will not notify you of any events.",
+    "xHours": "{{amount}} heures",
+    "xHour": "{{amount}} heure",
+    "enabled": "Alerte activée",
+    "enabledHint": "Les alertes désactivées ne vous avertiront d'aucun événement.",
     "conditions": {
-      "greater_than": "Greater than",
-      "greater_equal_than": "Greater or equal to",
-      "less_than": "Less than",
-      "less_equal_than": "Less or equal to"
+      "greater_than": "Supérieur à",
+      "greater_equal_than": "Plus grand ou égal à",
+      "less_than": "Inférieur à",
+      "less_equal_than": "Inférieur ou égal à"
     },
     "metrics": {
-      "page_views": "Page views",
-      "unique_page_views": "Unique sessions",
-      "online_users": "Online users",
-      "custom_events": "Custom events"
+      "page_views": "Pages vues",
+      "unique_page_views": "Sessions uniques",
+      "online_users": "Utilisateurs en ligne",
+      "custom_events": "Événements personnalisés"
     }
   },
   "error": {
     "status": {
-      "active": "Active",
-      "resolved": "Resolved",
-      "regressed": "Regressed"
+      "active": "Actif",
+      "resolved": "Résolu",
+      "regressed": "Rétrogradé"
     }
   },
   "notFoundPage": {
-    "title": "Page not found",
-    "description": "Sorry, we couldn't find the page you're looking for.\nPlease check the URL in the address bar and try again.",
-    "goHome": "Go back home",
-    "support": "Contact support"
+    "title": "Page non trouvée",
+    "description": "Désolé, nous n'avons pas trouvé la page que vous recherchez.\nVeuillez vérifier l'URL dans la barre d'adresse et réessayer.",
+    "goHome": "Retour à l'accueil",
+    "support": "Contacter le service client"
   },
   "project": {
-    "metadata": "Metadata",
-    "aiDetailsDesc": "The buttons above allow you to see an estimate of what kind of traffic you can expect within an hour in the next X hours.",
-    "search": "Search",
+    "metadata": "Métadonnées",
+    "aiDetailsDesc": "Les boutons ci-dessus vous permettent d'obtenir une estimation du trafic que vous pouvez attendre sur une période d'une heure au cours des X prochaines heures.",
+    "search": "Rechercher",
     "segments": "Segments",
-    "segmentName": "Segment name",
-    "addASegment": "Add a segment",
-    "loadMore": "Load more",
-    "unknownCountry": "Unknown country",
-    "selectCategory": "Select category to filter",
-    "selectCategoryOptional": "Select category to filter (optional)",
-    "customEventsAndMetrics": "Custom events and metrics (optional)",
-    "addAMetric": "Add a metric",
-    "customEvent": "Custom event",
+    "segmentName": "Nom du segment",
+    "addASegment": "Ajouter un segment",
+    "loadMore": "Afficher plus",
+    "unknownCountry": "Pays inconnu",
+    "selectCategory": "Sélectionner une catégorie à filtrer",
+    "selectCategoryOptional": "Sélectionnez une catégorie à filtrer (facultatif)",
+    "customEventsAndMetrics": "Événements et métriques personnalisés (facultatif)",
+    "addAMetric": "Ajouter une métrique",
+    "customEvent": "Événement personnalisé",
     "metrics": {
-      "xAvg": "\"{{x}}\" average",
-      "xTotal": "\"{{x}}\" total",
+      "xAvg": "Moyenne de {{x}}",
+      "xTotal": "Total de {{x}}",
       "metricKey": {
-        "title": "Custom metric key",
-        "description": "Metadata key to aggregate (for example, \"amount\")."
+        "title": "Clé de métrique personnalisée",
+        "description": "Clé de métadonnée à agréger (par exemple «amount»)."
       },
       "metricType": {
-        "title": "Custom metric type",
-        "description": "Specifies how to interpret the custom metric value. For example, Decimal will convert \"15.99\" to 15.99, while Integer will interpret it as 15."
+        "title": "Type de métrique personnalisé",
+        "description": "Spécifie comment interpréter la valeur de la métrique personnalisée. Par exemple, Décimal convertira \"15.99\" en 15.99, tandis qu’Entier l’interprétera comme 15."
       },
       "optinalEventKey": {
-        "title": "Event key (optional)",
-        "description": "Custom event metadata key to filter (for example, \"currency\")."
+        "title": "Clé d'événement (facultative)",
+        "description": "Clé de métadonnée d'événement personnalisée à filtrer (par exemple, \"currency\")."
       },
       "optinalEventValue": {
-        "title": "Event value (optional)",
-        "description": "Custom event metadata value to filter (for example, \"GBP\")."
+        "title": "Valeur de l'événement (facultative)",
+        "description": "Valeur de métadonnée d'événement personnalisée à filtrer (par exemple, \"EUR\")."
       },
-      "filterNoKV": "For \"{{customEventName}}\" aggregate \"{{metricKey}}\"",
-      "filterK": "For \"{{customEventName}}\" aggregate \"{{metricKey}}\" where any key is \"{{metaKey}}\"",
-      "filterV": "For \"{{customEventName}}\" aggregate \"{{metricKey}}\" where any value is \"{{metaValue}}\"",
-      "filterKV": "For \"{{customEventName}}\" aggregate \"{{metricKey}}\" where key \"{{metaKey}}\" is \"{{metaValue}}\""
+      "filterNoKV": "Pour \"{{customEventName}}\", agréger \"{{metricKey}}\"",
+      "filterK": "Pour \"{{customEventName}}\" agréger \"{{metricKey}}\" où n'importe quelle clé est \"{{metaKey}}\"",
+      "filterV": "Pour l'événement personnalisé \"{{customEventName}}\", agréger la métrique \"{{metricKey}}\" où une valeur est \"{{metaValue}}\"",
+      "filterKV": "Pour \"{{customEventName}}\", agréger \"{{metricKey}}\" où la clé \"{{metaKey}}\" est \"{{metaValue}}\""
     },
-    "noSegmentsYet": "No segments yet",
+    "noSegmentsYet": "Pas encore de segments",
     "metaValueType": {
-      "decimal": "Decimal",
-      "integer": "Integer",
-      "text": "Text"
+      "decimal": "Décimal",
+      "integer": "Entier",
+      "text": "Texte"
     },
-    "currentFilters": "Currently applied filters",
-    "advancedFilters": "Advanced filters",
-    "applyFilters": "Apply filters",
-    "lookingForMore": "Looking for more?",
-    "overrideCurrentlyFilters": "Override currently applied filters",
+    "currentFilters": "Filtres actuellement appliqués",
+    "advancedFilters": "Filtres avancés",
+    "applyFilters": "Appliquer les filtres",
+    "lookingForMore": "Vous en voulez plus ?",
+    "overrideCurrentlyFilters": "Remplacer les filtres actuellement appliqués",
     "noExist": "Le projet sélectionné n'existe pas",
-    "geo": "Geolocation",
-    "browserInfo": "Browser information",
-    "urlInfo": "URL information",
-    "osInfo": "OS information",
-    "campaigns": "Campaigns",
-    "pageviewX": "<span>Pageview</span> <value>{{x}}</value>",
-    "eventX": "<span>Event</span> <value>{{x}}</value>",
+    "geo": "Géolocalisation",
+    "browserInfo": "Informations sur le navigateur",
+    "urlInfo": "Informations sur l'URL",
+    "osInfo": "Informations sur le système d'exploitation",
+    "campaigns": "Campagnes",
+    "pageviewX": "<span>Pages vues</span> <value>{{x}}</value>",
+    "eventX": "<span>Événement</span> <value>{{x}}</value>",
     "exportData": "Exporter les données",
     "asCSV": "En tant que CSV",
     "noEvTitle": "Pas encore d'événements",
-    "noErrorDetails": "No error details",
-    "noErrorDesc": "This error does not exist or has not occurred within the specified time frame.",
-    "noSessionDetails": "No session details",
-    "noSessionDesc": "We could not find a session with the specified session ID.",
+    "noErrorDetails": "Aucun détail d'erreur",
+    "noErrorDesc": "Cette erreur n'existe pas ou ne s'est pas produite dans le délai spécifié.",
+    "noSessionDetails": "Aucun détail de session",
+    "noSessionDesc": "Nous n'avons pas trouvé de session avec l'ID de session spécifié.",
     "showAll": "Afficher toutes les vues",
     "trendlineUnique": "Tendance des visiteurs uniques",
-    "backToFunnels": "Back to funnels list",
-    "backToSessions": "Back to sessions list",
-    "backToErrors": "Back to errors list",
+    "backToFunnels": "Retour à la liste des entonnoirs",
+    "backToSessions": "Retour à la liste des sessions",
+    "backToErrors": "Retour à la liste des erreurs",
     "occurrences": "Occurrences",
-    "visitPage": "Visit {{page}}",
-    "visitors": "Visitors",
-    "events": "Events",
-    "dropoff": "Dropoff",
-    "neverEnteredTheFunnel": "Never entered the funnel",
+    "visitPage": "Visite : {{page}}",
+    "visitors": "Visiteurs",
+    "events": "Événements",
+    "dropoff": "Abandon",
+    "neverEnteredTheFunnel": "Jamais entré dans le tunnel",
     "locked": {
-      "title": "Dashboard locked",
-      "descExceedingTier": "This dashboard is locked because your traffic has exceeded your subscription plan.\nIn order to continue using Swetrix and have access to your stats, you need to upgrade your subscription plan to reflect your usage.",
-      "descTialEnded": "This dashboard is locked because your trial ended.\nIn order to continue using Swetrix and have access to your stats, you need to subscribe to one of our tiers.",
-      "descPaymentFailed": "This dashboard is locked because there was a problem with your last Swetrix subscription payment.\nIn order to continue using Swetrix and have access to your stats, you need to update / confirm your payment details.",
-      "descSharedProject": "This dashboard is locked due to a billing issue of the project owner.\nIn order to continue using Swetrix and have access to the stats, the billing issue must be resolved first.",
-      "descGenericIssue": "This dashboard has been locked and is currently unavailable, please come back later or contact the project owner to resolve the issue.",
-      "descSubCancelled": "This dashboard has been locked because you've cancelled your subscription.\nIn order to continue using Swetrix and have access to your stats, you need to have an active subscription.",
-      "resolve": "We're still counting your stats and we haven't deleted any of your data. Once you have updated your payment information, your dashboard access will be restored immediately.",
-      "manageSubscription": "Manage subscription"
+      "title": "Tableau de bord verrouillé",
+      "descExceedingTier": "Ce tableau de bord est verrouillé car votre trafic a dépassé votre forfait.\nPour continuer à utiliser Swetrix et accéder à vos statistiques, vous devez passer à un forfait supérieur adapté à votre utilisation.",
+      "descTialEnded": "Ce tableau de bord est verrouillé car votre période d'essai est terminée.\nPour continuer à utiliser Swetrix et accéder à vos statistiques, vous devez souscrire à l'un de nos forfaits.",
+      "descPaymentFailed": "Ce tableau de bord est verrouillé car un problème est survenu lors de votre dernier paiement d’abonnement à Swetrix.\nPour continuer à utiliser Swetrix et accéder à vos statistiques, vous devez mettre à jour/confirmer vos informations de paiement.",
+      "descSharedProject": "Ce tableau de bord est bloqué en raison d'un problème de facturation du propriétaire du projet.\nPour continuer à utiliser Swetrix et accéder aux statistiques, le problème de facturation doit d'abord être résolu.",
+      "descGenericIssue": "Ce tableau de bord a été verrouillé et n’est actuellement pas disponible. Veuillez revenir plus tard ou contacter le propriétaire du projet pour résoudre le problème.",
+      "descSubCancelled": "Ce tableau de bord est verrouillé car vous avez résilié votre abonnement.\nPour continuer à utiliser Swetrix et accéder à vos statistiques, vous devez disposer d’un abonnement actif.",
+      "resolve": "Nous continuons à comptabiliser vos statistiques et nous n'avons supprimé aucune de vos données. Une fois que vous aurez mis à jour vos informations de paiement, l'accès à votre tableau de bord sera immédiatement rétabli.",
+      "manageSubscription": "Gérer l'abonnement"
     },
     "waiting": {
-      "title": "Waiting for your first pageview",
-      "desc": "We're waiting for your first pageview! If your integration is set up correctly, you should see it within 1 minute.\n<snippet>Click here</snippet> to view your JavaScript tracking code.\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
+      "title": "En attente de votre première vue de page",
+      "desc": "Nous attendons votre première page vue ! Si votre intégration est configurée correctement, vous devriez la voir apparaître en moins d'une minute.\n<snippet>Cliquez ici</snippet> pour voir votre code de suivi JavaScript.\nCela ne fonctionne toujours pas ? Essayez de <turl>dépanner</turl> votre intégration ou <curl>contactez-nous</curl> pour obtenir de l'aide avec votre configuration."
     },
     "waitingError": {
-      "title": "Waiting for your first error.. hopefully not :)",
-      "desc": "We're waiting for your first error event! If your integration is set up correctly, you should see it within 1 minute when it happens.\n<howto>Click here</howto> to learn how to set up error tracking for your website.\nStill not working? Try <turl>troubleshooting</turl> your integration or <curl>contact us</curl> for help with your setup."
+      "title": "En attente de votre première erreur... espérons que non :)",
+      "desc": "Nous attendons votre premier événement d'erreur ! Si votre intégration est configurée correctement, vous devriez le voir apparaître en moins d'une minute lorsqu'il se produit.\n<howto>Cliquez ici</howto> pour apprendre à configurer le suivi des erreurs pour votre site web.\nCela ne fonctionne toujours pas ? Essayez de <turl>dépanner</turl> votre intégration ou <curl>contactez-nous</curl> pour obtenir de l'aide avec votre configuration."
     },
     "trendlineTotal": "Tendance des pages vues",
     "noEvContent": "Aucun événement n'a été capturé pour la période spécifiée.\nSi vous n'avez pas encore suivi d'événements, vous pouvez consulter notre <url>Documentation</url> pour intégrer facilement le suivi dans votre application.",
-    "noEventsFiltersDesc": "No events have been recorded for the specified period or applied filters, please try a different period or change the filters applied.",
+    "noEventsFiltersDesc": "Aucun événement n'a été capturé pour la période spécifiée ou les filtres appliqués. Veuillez essayer une autre période ou modifier les filtres appliqués.",
     "noCaptchaEv": "Aucun événement n'a été capturé pour la période spécifiée.\nSi vous n'avez pas encore configuré CAPTCHA, vous pouvez consulter notre <url>Documentation</url> pour l'intégrer facilement dans votre application.",
     "mapping": {
       "cc": "Pays",
-      "rg": "Region",
-      "ct": "City",
+      "rg": "Région",
+      "ct": "Ville",
       "pg": "Page",
-      "host": "Host",
-      "lc": "Locale",
+      "host": "Hôte",
+      "lc": "Paramètres régionaux",
       "ref": "Référent",
       "dv": "Type d'appareil",
       "br": "Navigateur",
-      "brv": "Browser version",
+      "brv": "Version du navigateur",
       "os": "Nom du système d'exploitation",
-      "osv": "OS version",
-      "so": "UTM Source",
-      "me": "UTM Medium",
-      "ca": "UTM Campaign",
-      "te": "UTM Term",
-      "co": "UTM Content"
+      "osv": "Version du système d'exploitation",
+      "so": "Source UTM",
+      "me": "Support UTM",
+      "ca": "Campagne UTM",
+      "te": "Terme UTM",
+      "co": "Contenu UTM"
     },
     "metamapping": {
       "ev": {
-        "key": "Event key",
-        "value": "Event value",
-        "dynamicKey": "Event key \"{{key}}\""
+        "key": "Clé de l'événement",
+        "value": "Valeur de l’événement",
+        "dynamicKey": "Clé d'événement \"{{key}}\""
       },
       "tag": {
-        "key": "Property",
-        "value": "Property value",
-        "dynamicKey": "Property \"{{key}}\""
+        "key": "Propriété",
+        "value": "Valeur de la propriété",
+        "dynamicKey": "Propriété \"{{key}}\""
       }
     },
-    "redactedPage": "Redacted page",
-    "unknownHost": "Unknown host",
-    "noData": "No data to display",
+    "redactedPage": "Page expurgée",
+    "unknownHost": "Hôte inconnu",
+    "noData": "Aucune donnée à afficher",
     "overview": "Aperçu",
     "weeklyStats": "Statistiques hebdomadaires",
     "statsFor": "Statistiques pour",
     "event": "Événement",
-    "value": "Value",
+    "value": "Valeur",
     "quantity": "Quantité",
     "conversion": "Conversion",
     "ratio": "Ratio",
     "customEv": "Événements personnalisés",
-    "properties": "Properties",
-    "property": "Property",
+    "properties": "Propriétés",
+    "property": "Propriété",
     "noParamData": "Pas encore de données pour ce paramètre",
     "conflictMetric": "La métrique sélectionnée est en conflit avec une déjà sélectionnée",
     "prev": "Précédent",
@@ -969,8 +969,8 @@
     "unique": "Visiteurs uniques",
     "results": "Résultats",
     "total": "Total des pages vues",
-    "thisHour": "This hour",
-    "all": "All time",
+    "thisHour": "Cette heure",
+    "all": "Tout le temps",
     "today": "Aujourd'hui",
     "yesterday": "Hier",
     "last24h": "Dernières 24 heures",
@@ -983,27 +983,27 @@
     "day": "Jour",
     "week": "Semaine",
     "month": "Mois",
-    "year": "Year",
+    "year": "Année",
     "resetFilters": "Réinitialiser les filtres",
     "exportImgError": "Échec de l'exportation des données en tant qu'image",
     "codeExample": "Ou insérez le code suivant dans votre site web pour suivre vos événements :",
     "metricVis": "Visualisation des métriques",
-    "filters": "Filters",
-    "showResolved": "Show resolved",
-    "resolve": "Resolve",
-    "markAsActive": "Mark as active",
+    "filters": "Filtres",
+    "showResolved": "Afficher les résolus",
+    "resolve": "Résoudre",
+    "markAsActive": "Marquer comme actif",
     "refreshStats": "Actualiser les statistiques",
     "barChart": "Graphique en barres",
     "lineChart": "Graphique en lignes",
     "settings": {
       "organisation": "Organisation",
-      "shields": "Shields",
-      "access": "Access settings",
+      "shields": "Boucliers",
+      "access": "Paramètres d'accès",
       "botsProtectionLevel": {
-        "title": "Bots protection level",
+        "title": "Niveau de protection contre les bots",
         "levels": {
-          "off": "Off: we allow all incoming traffic",
-          "basic": "Basic: we detect bots based on their user agent (Googlebot, Bingbot, curl, etc.)"
+          "off": "Désactivé : nous autorisons tout le trafic entrant",
+          "basic": "Basique : nous détectons les bots en fonction de leur agent utilisateur (Googlebot, Bingbot, curl, etc.)"
         }
       },
       "verify": "Veuillez vérifier votre adresse e-mail d'abord",
@@ -1015,8 +1015,8 @@
       "create": "Créer un nouveau projet",
       "settings": "Paramètres de",
       "name": "Nom du projet",
-      "sharableLink": "Sharable link",
-      "sharableDesc": "To share your dashboard with others, only available if you make your dashboard public or password protected.",
+      "sharableLink": "Lien partageable",
+      "sharableDesc": "Pour partager votre tableau de bord avec d'autres, cette option n'est disponible que si vous le rendez public ou protégé par un mot de passe.",
       "pid": "ID du projet",
       "origins": "Origines autorisées",
       "originsHint": "Une liste d'origines (domaines) autorisées à utiliser le script avec votre ProjectID, séparées par des virgules.\nLaissez vide pour autoriser toutes les origines (paramètre par défaut).\nExemple : cornell.edu, app.example.com, *.gov.ua",
@@ -1040,8 +1040,8 @@
       "removeUser": "Supprimer {{user}} ?",
       "people": "Personnes",
       "inviteCoworkers": "Invitez vos collègues",
-      "addARecipient": "Add a recipient",
-      "addARecipientDesc": "Enter an email address of the person you want to send reports to. They don't necessarily need to have an account on Swetrix.\nWe will send them your site's reports on a regular basis.",
+      "addARecipient": "Ajouter un destinataire",
+      "addARecipientDesc": "Entrez l'adresse e-mail de la personne à qui vous souhaitez envoyer des rapports. Elle n'a pas nécessairement besoin d'avoir un compte sur Swetrix.\nNous lui enverrons régulièrement les rapports de votre site.",
       "invite": "Inviter un utilisateur",
       "inviteTo": "Inviter un utilisateur à {{project}}",
       "inviteDesc": "Entrez une adresse e-mail et un rôle de la personne avec laquelle vous souhaitez partager votre projet.\nNous les contacterons par e-mail pour leur proposer l'accès au projet.",
@@ -1067,16 +1067,16 @@
       "transferHint": "Vous pouvez transférer le projet '{{name}}' à un autre utilisateur.\nCet utilisateur deviendra le propriétaire du projet et pourra gérer les paramètres du projet, ajouter/supprimer des membres et inviter de nouveaux utilisateurs.\nVous serez assigné au projet en tant qu'administrateur. Cependant, le nouveau propriétaire pourra vous retirer du projet.",
       "transfereeEmail": "E-mail du destinataire",
       "reseted": {
-        "selectFilters": "Select filters",
+        "selectFilters": "Sélectionner les filtres",
         "all": "Tout réinitialiser",
         "allHint": "Toutes les données analytiques liées au projet seront définitivement supprimées de nos serveurs, mais le projet lui-même, ses paramètres et l'ID seront toujours disponibles.",
         "partially": "Réinitialiser partiellement",
         "partiallyDesc": "La fonction 'Réinitialiser partiellement' vous permet de réinitialiser les données d'un projet spécifique dans une plage de dates donnée.",
         "partiallyHint": "Pour réinitialiser les données d'un projet spécifique dans une plage de dates, sélectionnez les dates de début et de fin de la plage et le projet que vous souhaitez réinitialiser.\nVérifiez bien que vous avez sélectionné le bon projet et la bonne plage de dates avant de cliquer sur 'Réinitialiser'.\nUne fois que vous cliquez sur 'Réinitialiser', toutes les données associées au projet sélectionné dans la plage de dates sélectionnée seront définitivement supprimées et ne pourront pas être récupérées.",
-        "viaFilters": "Reset via filters",
-        "viaFiltersHint": "The 'Reset via filters' function allows you to reset the data of a specific project within a given date range and with specific filters.",
-        "filtersPlaceholder": "Select filters",
-        "noFilters": "No filters selected or no data for the selected filter type"
+        "viaFilters": "Réinitialiser avec des filtres",
+        "viaFiltersHint": "La fonction 'Réinitialiser via les filtres' vous permet de réinitialiser les données d'un projet spécifique dans une plage de dates donnée et avec des filtres spécifiques.",
+        "filtersPlaceholder": "Sélectionner les filtres",
+        "noFilters": "Aucun filtre sélectionné ou aucune donnée pour le type de filtre sélectionné"
       },
       "protected": "Tableau de bord protégé par mot de passe",
       "protectedHint": "Vous pouvez rendre votre tableau de bord public et protégé par mot de passe. De cette façon, seules les personnes connaissant le mot de passe pourront y accéder.",
@@ -1101,7 +1101,7 @@
     "page": "Page",
     "reverse": "Inverser",
     "userFlow": {
-      "title": "User flow",
+      "title": "Flux utilisateur",
       "noData": "Le flux utilisateur n'est pas encore disponible en raison du manque de données, ou vous avez désactivé cette fonctionnalité dans les paramètres du script de suivi"
     },
     "noDateRange": "Veuillez sélectionner une plage de dates",
@@ -1116,36 +1116,36 @@
     "contact": "Besoin de suivre plus de {{amount}} millions d'événements par mois ?\nContactez-nous à <mail>{{email}}</mail> pour discuter de vos besoins.",
     "update": "Mettre à jour les détails de paiement",
     "nextBillDate": "Prochaine date de facturation :",
-    "nextBillDateIs": "Your next bill date is {{date}}",
+    "nextBillDateIs": "La date de votre prochaine facture est le {{date}}",
     "trialEnds": "La période d'essai se termine le {{date}}",
     "cancelSub": "Annuler l'abonnement",
-    "noActiveSubscription": "You don't have an active subscription.",
-    "noActiveSubscriptionDescription": "Don't worry, we still collect your analytics data. But if you want to continue using Swetrix, please upgrade your account to one of our subscription tiers.",
+    "noActiveSubscription": "Vous n'avez pas d'abonnement actif.",
+    "noActiveSubscriptionDescription": "Ne vous inquiétez pas, nous continuons à collecter vos données d'analyse. Mais si vous souhaitez continuer à utiliser Swetrix, veuillez mettre à niveau votre compte vers l'un de nos forfaits d'abonnement.",
     "inactive": "Inactif",
-    "subscriptionCancelled": "Subscription cancelled",
-    "subscriptionCancelledDescription": "Your subscription is active until {{date}}. After that, you will not be able to access your analytics data. Don't worry, we will still store incoming events and pageviews for your projects in case you change your mind.",
+    "subscriptionCancelled": "Abonnement annulé",
+    "subscriptionCancelledDescription": "Votre abonnement est actif jusqu'au {{date}}. Après cela, vous ne pourrez plus accéder à vos données d'analyse. Ne vous inquiétez pas, nous continuerons à stocker les événements entrants et les pages vues pour vos projets au cas où vous changeriez d'avis.",
     "planUsage": "Utilisation du plan",
     "usageOverview": "Ce mois-ci, vous avez suivi {{tracked}} événements ({{trackedPerc}}%) des {{maxEvents}} événements inclus dans votre plan.",
     "breakdown": "Répartition par type d'événement :",
     "pageviews": "Événements de pages vues : {{quantity}} ({{percentage}}%)",
     "customEvents": "Événements personnalisés : {{quantity}} ({{percentage}}%)",
     "captcha": "Événements CAPTCHA : {{quantity}} ({{percentage}}%)",
-    "errors": "Error events: {{quantity}} ({{percentage}}%)",
+    "errors": "Événements d'erreur : {{quantity}} ({{percentage}}%)",
     "gotoUsage": "Aller à l'utilisation du plan",
-    "confirmNewPlan": "Confirm your new subscription plan",
-    "previewLoadingError": "An error occured while loading the pricing preview, please try again later.\nIf the problem persists, please contact us at <mail>{{email}}</mail>.\nYou can still change your plan, but you won't be able to see the pricing preview at the moment, sorry for that.",
-    "dueNow": "Due now",
-    "dueNowDescription": "You will be charged pro-rated amount for the remaining days of the current billing period.",
-    "negativePayment": "Negative 'Amount' means that you will have a credit balance of {{currency}}{{dueNowAmount}}. You will be billed {{currency}}0.00 on {{dueNowDate}}. Once the credit balance is used up, your recurring billing amount will be {{currency}}{{nextPaymentAmount}} every billing cycle of your subscription plan.",
-    "nextPayment": "Next payment",
-    "subscription": "Subscription",
-    "planUsageDesc": "The plan usage shows the number of events (page views, custom events, CAPTCHA completions) that you have used for the current month.",
-    "xofy": "{{x}} of {{y}}",
-    "resetDate": "The plan usage resets on the first day of each month.",
-    "selectPlan": "Select a subscription plan to unveil full Swetrix potential.",
-    "changePlan": "You can change or cancel your subscription plan at any time here.",
-    "membersNotification": "Pageviews, custom events and CAPTCHA completions are counted towards the limit of the subscription of the account owner. People you invite into your projects don't need a subscription.",
-    "xMonthsFree": "{{amount}} months free"
+    "confirmNewPlan": "Confirmez votre nouveau plan d'abonnement",
+    "previewLoadingError": "Une erreur s'est produite lors du chargement de l'aperçu tarifaire, veuillez réessayer plus tard.\nSi le problème persiste, veuillez nous contacter à <mail>{{email}}</mail>.\nVous pouvez toujours modifier votre forfait, mais vous ne pourrez pas voir l'aperçu tarifaire pour le moment, désolé pour ce désagrément.",
+    "dueNow": "À payer maintenant",
+    "dueNowDescription": "Vous serez facturé au prorata pour les jours restants de la période de facturation en cours.",
+    "negativePayment": "Le « Montant » négatif signifie que vous aurez un solde créditeur de {{currency}}{{dueNowAmount}}. Vous serez facturé {{currency}}0,00 le {{dueNowDate}}. Une fois le solde créditeur épuisé, le montant récurrent de votre facturation sera de {{currency}}{{nextPaymentAmount}} à chaque cycle de votre abonnement.",
+    "nextPayment": "Prochain paiement",
+    "subscription": "Abonnement",
+    "planUsageDesc": "L'utilisation du forfait indique le nombre d'événements (pages vues, événements personnalisés, CAPTCHA complétés) que vous avez utilisés pour le mois en cours.",
+    "xofy": "{{x}} sur {{y}}",
+    "resetDate": "L'utilisation du plan est réinitialisée le premier jour de chaque mois.",
+    "selectPlan": "Sélectionnez un plan d'abonnement pour révéler tout le potentiel de Swetrix.",
+    "changePlan": "Vous pouvez modifier ou annuler votre plan d'abonnement à tout moment ici.",
+    "membersNotification": "Les pages vues, les événements personnalisés et la résolution des CAPTCHA sont pris en compte dans la limite de l'abonnement du propriétaire du compte. Les personnes que vous invitez dans vos projets n'ont pas besoin d'abonnement.",
+    "xMonthsFree": "{{amount}} mois gratuits"
   },
   "modals": {
     "paidFeature": {
@@ -1153,42 +1153,42 @@
       "desc": "Nous nous excusons pour le désagrément, mais vous devez souscrire à un plan payant pour utiliser cette fonctionnalité.\n\nNous réalisons que vous n'êtes peut-être pas encore prêt à acheter un abonnement payant, mais l'acheter vous donnera non seulement accès à cette fonctionnalité, mais aussi à de nombreux autres avantages, tels que l'accès à toutes les autres fonctionnalités payantes, des limites plus élevées sur les visites par mois et le nombre de sites web disponibles, et vous soutiendrez la croissance d'une petite entreprise :)"
     },
     "trackingSnippet": {
-      "title": "Add a Swetrix tracking code to your website",
-      "add": "Add the following snippet into the <bsect></bsect> section of your site.",
-      "docs": "Check our <pdocs>our documentation</pdocs> for details and more integration guides."
+      "title": "Ajoutez un code de suivi Swetrix à votre site web",
+      "add": "Ajoutez l'extrait de code suivant dans la section <bsect></bsect> de votre site.",
+      "docs": "Consultez notre <pdocs>documentation</pdocs> pour plus de détails et d'autres guides d'intégration."
     },
     "funnels": {
-      "addTitle": "Add funnel",
-      "editTitle": "Edit funnel",
-      "name": "Funnel name",
-      "steps": "Funnel steps",
-      "addStep": "Add one more step"
+      "addTitle": "Ajouter un entonnoir",
+      "editTitle": "Modifier l'entonnoir",
+      "name": "Nom de l'entonnoir",
+      "steps": "Étapes de l'entonnoir",
+      "addStep": "Ajouter une étape supplémentaire"
     },
     "shortcuts": {
-      "title": "Keyboard shortcuts",
-      "timebuckets": "Timebuckets selection",
-      "tabs": "Tabs switching"
+      "title": "Raccourcis clavier",
+      "timebuckets": "Sélection des plages horaires",
+      "tabs": "Changement d'onglets"
     }
   },
   "pricing": {
     "title": "Plans tarifaires",
     "adv": "Commencez gratuitement, pas besoin de carte de crédit.\nLorsque votre entreprise grandit, vous pouvez mettre à niveau votre plan à tout moment.",
     "currentPlan": "Plan actuel",
-    "subscribe": "Subscribe",
+    "subscribe": "S'abonner",
     "free": "Gratuit",
     "legacy": "Héritage",
     "perMonth": "mois",
     "perYear": "an",
     "yourPlan": "Votre plan",
     "downgrade": "Rétrograder",
-    "selectPlan": "Select plan:",
+    "selectPlan": "Sélectionnez un forfait :",
     "upgrade": "Mettre à niveau",
     "whatIncl": "Ce qui est inclus",
     "monthlyBilling": "Facturation mensuelle",
     "yearlyBilling": "Facturation annuelle",
     "switchToMonthly": "Passer à la facturation mensuelle",
-    "frequency": "Payment frequency",
-    "eventPerMonth": "Events per month",
+    "frequency": "Fréquence de paiement",
+    "eventPerMonth": "Événements par mois",
     "switchToYearly": "Passer à la facturation annuelle",
     "xTrialDaysLeft": "Il reste {{amount}} jours d'essai",
     "trialEnded": "Essai terminé",
@@ -1197,7 +1197,7 @@
     "tiers": {
       "hobby": "Loisir",
       "freelancer": "Freelance",
-      "startup": "Startup",
+      "startup": "Start-up",
       "enterprise": "Entreprise",
       "trial": "Essai gratuit",
       "upToXEVMo": "Jusqu'à {{amount}} événements par mois",
@@ -1223,14 +1223,14 @@
     "cancelDesc": "Après l'annulation de votre abonnement, aucun nouvel événement ne sera collecté par Swetrix pour vos projets.\nVous pourrez revenir à votre plan actuel à tout moment.\nSi vous avez des questions, vous pouvez toujours nous envoyer un e-mail à {{email}}."
   },
   "contact": {
-    "description": "You can reach us at <mail>{{email}}</mail>, tweet us at <twitter>{{twitterHandle}}</twitter> or talk to us via our <discord>Discord</discord> community. We aim to respond as soon as possible, usually within a day.",
+    "description": "Vous pouvez nous contacter à <mail>{{email}}</mail>, nous envoyer un tweet sur <twitter>{{twitterHandle}}</twitter> ou échanger avec notre communauté <discord>Discord</discord>. Nous nous efforçons de répondre dès que possible, généralement dans la journée.",
     "docs": {
       "title": "Documentation",
-      "desc": "Learn how to integrate Swetrix into your application and find answers to the most common questions"
+      "desc": "Découvrez comment intégrer Swetrix dans votre application et trouvez les réponses aux questions les plus fréquentes"
     },
     "demo": {
-      "title": "Book a demo call",
-      "desc": "Book a demo with our team to see how Swetrix can solve your problems"
+      "title": "Réservez un appel de démonstration",
+      "desc": "Réservez une démonstration avec notre équipe pour voir comment Swetrix peut résoudre vos problèmes"
     }
   },
   "beta": {
@@ -1264,51 +1264,51 @@
     "contact": "Contact",
     "changelog": "Journal des modifications",
     "main": "Analyse open-source ultime pour satisfaire tous vos besoins",
-    "socialisation": "Socialisation",
+    "socialisation": "Comptes liés",
     "open": "Startup ouverte",
     "passwordProtected": "Ce projet est protégé par mot de passe",
-    "confirm": "Check your inbox",
-    "performance": "End user performance monitoring to deliver fast websites",
-    "errors": "End user error tracking tool to deliver bug-free experiences",
-    "forMarketers": "For marketers",
-    "forSmbs": "For small businesses",
-    "forStartups": "For startups",
-    "featureFlags": "Feature flags"
+    "confirm": "Vérifiez votre boîte de réception",
+    "performance": "Contrôle des performances de l'utilisateur final afin de fournir des sites web rapides",
+    "errors": "Outil de suivi des erreurs des utilisateurs finaux pour offrir des expériences sans bug",
+    "forMarketers": "Pour les marketeurs",
+    "forSmbs": "Pour les petites entreprises",
+    "forStartups": "Pour les startups",
+    "featureFlags": "Drapeaux de fonctionnalités"
   },
   "header": {
     "switchTheme": "Changer de thème",
     "dark": "Sombre",
     "light": "Clair",
     "signedInAs": "Connecté en tant que",
-    "watchDemo": "Watch demo",
-    "contactSales": "Contact sales",
+    "watchDemo": "Voir la démo",
+    "contactSales": "Contacter le service commercial",
     "solutions": {
       "title": "Solutions",
       "analytics": {
-        "title": "Analytics",
-        "desc": "Monitor your site's traffic with privacy in mind"
+        "title": "Analyses",
+        "desc": "Suivez le trafic de votre site dans le respect de la vie privée"
       },
       "errors": {
-        "title": "Error tracking",
-        "desc": "Deliver bug-free experiences to your users"
+        "title": "Suivi des erreurs",
+        "desc": "Offrez des expériences sans bugs à vos utilisateurs"
       },
       "captcha": {
         "title": "CAPTCHA",
-        "desc": "Protect your site from bots with privacy-focused captcha"
+        "desc": "Protégez votre site contre les robots avec un captcha axé sur la confidentialité"
       },
       "performance": {
-        "title": "Performance monitoring",
-        "desc": "Analyse your sites key speed metrics"
+        "title": "Surveillance des performances",
+        "desc": "Analysez les métriques clés de vitesse de vos sites"
       }
     }
   },
   "footer": {
     "slogan": "Les meilleures applications ont besoin des meilleurs services.",
     "description": "Swetrix est une plateforme d'analyse puissante qui respecte la vie privée des utilisateurs.",
-    "madeInHostedIn": "Made in <0></0> / <1></1>, hosted in <2></2>",
+    "madeInHostedIn": "Fabriqué dans <0></0> / <1></1>, hébergé dans <2></2>",
     "ukraine": "Ukraine",
     "eu": "Union Européenne",
-    "support": "Support",
+    "support": "Assistance",
     "company": "Entreprise",
     "legal": "Support & Légal",
     "copy": "Swetrix Analytics. Tous droits réservés.",
@@ -1331,6 +1331,6 @@
     "open": "Startup ouverte",
     "about": "À propos de nous",
     "features": "Fonctionnalités",
-    "imprint": "Imprint"
+    "imprint": "Mentions légales"
   }
 }
