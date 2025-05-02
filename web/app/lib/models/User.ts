@@ -58,7 +58,7 @@ export interface User {
   discordWebhookUrl: string | null
   telegramChatId: string | null
   isTelegramChatIdConfirmed: boolean
-  timeFormat: string
+  timeFormat: '12-hour' | '24-hour'
   sharedProjects: SharedProject[]
   registeredWithGoogle: boolean
   googleId: string | null

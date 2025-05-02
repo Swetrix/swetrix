@@ -253,7 +253,7 @@ export const tbsFormatMapper = {
   day: '%d %b',
   month: '%b %Y',
   year: '%Y',
-}
+} as Record<string, string>
 
 export const tbsFormatMapperTooltip = {
   minute: '%I:%M %p',
@@ -261,7 +261,7 @@ export const tbsFormatMapperTooltip = {
   day: '%d %b',
   month: '%b %Y',
   year: '%Y',
-}
+} as Record<string, string>
 
 export const tbsFormatMapperTooltip24h = {
   minute: '%H:%M',
@@ -269,7 +269,7 @@ export const tbsFormatMapperTooltip24h = {
   day: '%d %b',
   month: '%b %Y',
   year: '%Y',
-}
+} as Record<string, string>
 
 export const tbsFormatMapper24h = {
   minute: '%H:%M',
@@ -277,12 +277,12 @@ export const tbsFormatMapper24h = {
   day: '%d %b',
   month: '%b %Y',
   year: '%Y',
-}
+} as Record<string, string>
 
 export const TimeFormat = {
   '12-hour': '12-hour',
   '24-hour': '24-hour',
-}
+} as const
 
 export const PADDLE_JS_URL = 'https://cdn.paddle.com/paddle/paddle.js'
 export const PADDLE_VENDOR_ID = 139393
@@ -405,7 +405,7 @@ export const whitelistWithCC = {
   pl: 'pl-PL',
   de: 'de-DE',
   fr: 'fr-FR',
-}
+} as Record<string, string>
 export const defaultLanguage = 'en'
 export const languages = {
   en: 'English',
@@ -413,7 +413,7 @@ export const languages = {
   pl: 'Polski',
   de: 'Deutsch',
   fr: 'Français',
-}
+} as Record<string, string>
 
 export const languageFlag = {
   en: 'GB',
@@ -421,11 +421,11 @@ export const languageFlag = {
   pl: 'PL',
   fr: 'FR',
   de: 'DE',
-}
+} as Record<string, string>
 
 export const paddleLanguageMapping = {
   uk: 'en',
-}
+} as Record<string, string>
 
 // Increase this counter every time some major change is done within localisation files
 // This will prevent cached version or raw locale strings being displayed in production

@@ -114,7 +114,7 @@ const ViewCaptcha = () => {
 
   const [searchParams] = useSearchParams()
 
-  const timeFormat = useMemo(() => user?.timeFormat || TimeFormat['12-hour'], [user])
+  const timeFormat = useMemo<'12-hour' | '24-hour'>(() => user?.timeFormat || TimeFormat['12-hour'], [user])
   const [ref, size] = useSize() as any
   const rotateXAxias = useMemo(() => size.width > 0 && size.width < 500, [size])
   const [chartType, setChartType] = useState(getItem('chartType') || chartTypes.line)
