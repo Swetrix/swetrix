@@ -115,8 +115,8 @@ export class TelegramService {
   escapeTelegramMarkdown(text?: string | null) {
     if (text === null || text === undefined) return ''
 
-    // Characters to escape for legacy Markdown: _, *, `, [
-    const charsToEscapeRegex = /[_*`[]/g
+    // Characters to escape for legacy Markdown: _, *, `, [, \
+    const charsToEscapeRegex = /[_*`[\]\\]/g
     return text.replace(charsToEscapeRegex, '\\$&')
   }
 
