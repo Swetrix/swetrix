@@ -18,9 +18,17 @@ export class Alert {
 
   @ApiProperty()
   @Column({
+    type: 'boolean',
     default: true,
   })
   active: boolean
+
+  @Column({
+    type: 'boolean',
+    default: true,
+    name: 'alert_on_new_errors_only',
+  })
+  alertOnNewErrorsOnly: boolean
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created: Date

@@ -45,8 +45,10 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
     queryTime: QUERY_TIME.LAST_1_HOUR,
     queryCondition: QUERY_CONDITION.GREATER_THAN,
     queryMetric: QUERY_METRIC.PAGE_VIEWS,
+    queryValue: 10,
     active: true,
     queryCustomEvent: '',
+    alertOnNewErrorsOnly: true,
   })
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -162,6 +164,17 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
     }
   }, [alert])
 
+  useEffect(() => {
+    if (form.queryMetric === QUERY_METRIC.ERRORS) {
+      setForm((prevForm) => ({
+        ...prevForm,
+        queryCondition: undefined,
+        queryValue: undefined,
+        queryTime: undefined,
+      }))
+    }
+  }, [form.queryMetric])
+
   const validate = () => {
     const allErrors: Record<string, string> = {}
 
@@ -173,8 +186,10 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
       allErrors.queryCustomEvent = t('alert.noCustomEventError')
     }
 
-    if (Number.isNaN(_toNumber(form.queryValue))) {
-      allErrors.queryValue = t('alert.queryValueError')
+    if (form.queryMetric !== QUERY_METRIC.ERRORS) {
+      if (form.queryValue === undefined || Number.isNaN(_toNumber(form.queryValue))) {
+        allErrors.queryValue = t('alert.queryValueError')
+      }
     }
 
     const valid = _isEmpty(_keys(allErrors))
@@ -184,8 +199,18 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
   }
 
   const onSubmit = (data: Partial<Alerts>) => {
+    let submissionData = { ...data }
+    if (data.queryMetric === QUERY_METRIC.ERRORS) {
+      submissionData = {
+        ...submissionData,
+        queryCondition: null,
+        queryValue: null,
+        queryTime: null,
+      }
+    }
+
     if (isSettings) {
-      updateAlert(id as string, data)
+      updateAlert(id as string, submissionData)
         .then((res) => {
           navigate(`/projects/${pid}?tab=${PROJECT_TABS.alerts}`)
           setAlert(res)
@@ -195,7 +220,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
           toast.error(reason.message || reason || 'Something went wrong')
         })
     } else {
-      createAlert(data as CreateAlert)
+      createAlert(submissionData as CreateAlert)
         .then(() => {
           navigate(`/projects/${pid}?tab=${PROJECT_TABS.alerts}`)
           toast.success(t('alertsSettings.alertCreated'))
@@ -240,8 +265,18 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
     e.stopPropagation()
     setBeenSubmitted(true)
 
+    let currentForm = { ...form }
+    if (form.queryMetric === QUERY_METRIC.ERRORS) {
+      currentForm = {
+        ...currentForm,
+        queryCondition: null,
+        queryValue: null,
+        queryTime: null,
+      }
+    }
+
     if (validated) {
-      onSubmit(form)
+      onSubmit(currentForm)
     }
   }
 
@@ -369,51 +404,72 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
             error={beenSubmitted ? errors.queryCustomEvent : null}
           />
         ) : null}
-        <div className='mt-4'>
-          <Select
-            id='queryCondition'
-            label={t('alert.condition')}
-            items={_values(queryConditionTMapping)}
-            title={form.queryCondition ? queryConditionTMapping[form.queryCondition] : ''}
-            onSelect={(item) => {
-              const key = _findKey(queryConditionTMapping, (predicate) => predicate === item)
-
-              // @ts-expect-error
-              setForm((prevForm) => ({
-                ...prevForm,
-                queryCondition: key,
+        {form.queryMetric === QUERY_METRIC.ERRORS ? (
+          <Checkbox
+            checked={Boolean(form.alertOnNewErrorsOnly)}
+            onChange={(checked) =>
+              setForm((prev) => ({
+                ...prev,
+                alertOnNewErrorsOnly: checked,
               }))
+            }
+            name='alertOnNewErrorsOnly'
+            classes={{
+              label: 'mt-4',
             }}
-            capitalise
+            label={t('alert.newErrorsOnly')}
+            hint={t('alert.newErrorsOnlyHint')}
           />
-        </div>
-        <Input
-          name='queryValue'
-          label={t('alert.threshold')}
-          value={form.queryValue || ''}
-          placeholder='10'
-          className='mt-4'
-          onChange={handleInput}
-          error={beenSubmitted ? errors.queryValue : null}
-        />
-        <div className='mt-4'>
-          <Select
-            id='queryTime'
-            label={t('alert.time')}
-            items={_values(queryTimeTMapping)}
-            title={form.queryTime ? queryTimeTMapping[form.queryTime] : ''}
-            onSelect={(item) => {
-              const key = _findKey(queryTimeTMapping, (predicate) => predicate === item)
+        ) : null}
+        {form.queryMetric !== QUERY_METRIC.ERRORS ? (
+          <>
+            <div className='mt-4'>
+              <Select
+                id='queryCondition'
+                label={t('alert.condition')}
+                items={_values(queryConditionTMapping)}
+                title={form.queryCondition ? queryConditionTMapping[form.queryCondition] : ''}
+                onSelect={(item) => {
+                  const key = _findKey(queryConditionTMapping, (predicate) => predicate === item)
 
-              // @ts-expect-error
-              setForm((prevForm) => ({
-                ...prevForm,
-                queryTime: key,
-              }))
-            }}
-            capitalise
-          />
-        </div>
+                  // @ts-expect-error
+                  setForm((prevForm) => ({
+                    ...prevForm,
+                    queryCondition: key,
+                  }))
+                }}
+                capitalise
+              />
+            </div>
+            <Input
+              name='queryValue'
+              label={t('alert.threshold')}
+              value={form.queryValue || ''}
+              placeholder='10'
+              className='mt-4'
+              onChange={handleInput}
+              error={beenSubmitted ? errors.queryValue : null}
+            />
+            <div className='mt-4'>
+              <Select
+                id='queryTime'
+                label={t('alert.time')}
+                items={_values(queryTimeTMapping)}
+                title={form.queryTime ? queryTimeTMapping[form.queryTime] : ''}
+                onSelect={(item) => {
+                  const key = _findKey(queryTimeTMapping, (predicate) => predicate === item)
+
+                  // @ts-expect-error
+                  setForm((prevForm) => ({
+                    ...prevForm,
+                    queryTime: key,
+                  }))
+                }}
+                capitalise
+              />
+            </div>
+          </>
+        ) : null}
         {isSettings ? (
           <div className='mt-5 flex items-center justify-between'>
             <Button onClick={() => setShowModal(true)} danger semiSmall>

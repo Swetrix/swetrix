@@ -1,11 +1,20 @@
-import { ApiProperty } from '@nestjs/swagger'
-import { IsEnum, IsNotEmpty, IsOptional, Length } from 'class-validator'
+import { ApiProperty, PartialType } from '@nestjs/swagger'
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  Length,
+  IsBoolean,
+  IsString,
+  IsNumber,
+} from 'class-validator'
 
 export enum QueryMetric {
   PAGE_VIEWS = 'page_views',
   UNIQUE_PAGE_VIEWS = 'unique_page_views',
   ONLINE_USERS = 'online_users',
   CUSTOM_EVENTS = 'custom_events',
+  ERRORS = 'errors',
 }
 
 export enum QueryCondition {
@@ -24,70 +33,53 @@ export enum QueryTime {
   LAST_48_HOURS = 'last_48_hours',
 }
 
-export class AlertDTO {
-  @ApiProperty()
-  @IsNotEmpty()
-  @Length(1, 50)
-  name?: string
-
-  @ApiProperty()
-  @IsOptional()
-  @IsEnum(QueryMetric)
-  queryMetric?: QueryMetric
-
-  @ApiProperty()
-  @IsOptional()
-  queryCondition?: QueryCondition
-
-  @ApiProperty()
-  @IsOptional()
-  queryValue?: number
-
-  @ApiProperty()
-  @IsOptional()
-  queryTime?: QueryTime
-
-  @ApiProperty()
-  @IsOptional()
-  active?: boolean
-
-  @ApiProperty()
-  @IsOptional()
-  queryCustomEvent?: string
-}
-
-export class CreateAlertDTO {
-  @ApiProperty()
-  @IsNotEmpty()
-  pid: string
-
+class AlertBaseDTO {
   @ApiProperty()
   @IsNotEmpty()
   @Length(1, 50)
   name: string
 
-  @ApiProperty()
+  @ApiProperty({ enum: QueryMetric })
   @IsNotEmpty()
   @IsEnum(QueryMetric)
   queryMetric: QueryMetric
 
-  @ApiProperty()
-  @IsNotEmpty()
-  queryCondition: QueryCondition
+  @ApiProperty({ enum: QueryCondition, nullable: true })
+  @IsEnum(QueryCondition)
+  @IsOptional()
+  queryCondition: QueryCondition | null
+
+  @ApiProperty({ nullable: true })
+  @IsNumber()
+  @IsOptional()
+  queryValue: number | null
+
+  @ApiProperty({ enum: QueryTime, nullable: true })
+  @IsEnum(QueryTime)
+  @IsOptional()
+  queryTime: QueryTime | null
 
   @ApiProperty()
-  @IsNotEmpty()
-  queryValue: number
+  @IsBoolean()
+  @IsOptional()
+  active?: boolean
 
   @ApiProperty()
-  @IsNotEmpty()
-  queryTime: QueryTime
-
-  @ApiProperty()
-  @IsNotEmpty()
-  active: boolean
-
-  @ApiProperty()
+  @IsString()
   @IsOptional()
   queryCustomEvent?: string
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsOptional()
+  alertOnNewErrorsOnly?: boolean
 }
+
+export class CreateAlertDTO extends AlertBaseDTO {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  pid: string
+}
+
+export class AlertDTO extends PartialType(AlertBaseDTO) {}
