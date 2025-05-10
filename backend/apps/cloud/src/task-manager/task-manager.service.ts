@@ -1149,29 +1149,29 @@ export class TaskManagerService {
 
         if (alert.alertOnNewErrorsOnly) {
           detailQuery = `
-              SELECT eid, name, message, lineno, colno, filename
-              FROM errors
-              WHERE pid = {pid_val:FixedString(12)} AND eid IN (
-                  SELECT eid
-                  FROM (
-                      SELECT eid, min(created) AS first_seen_for_eid
-                      FROM errors
-                      WHERE pid = {pid_val:FixedString(12)}
-                      GROUP BY eid
-                  )
-                  WHERE first_seen_for_eid >= toDateTime({startTimestampVal:String})
+            SELECT eid, name, message, lineno, colno, filename
+            FROM errors
+            WHERE pid = {pid_val:FixedString(12)} AND eid IN (
+              SELECT eid
+              FROM (
+                SELECT eid, min(created) AS first_seen_for_eid
+                FROM errors
+                WHERE pid = {pid_val:FixedString(12)}
+                GROUP BY eid
               )
-              ORDER BY created DESC
-              LIMIT 1
-            `
+              WHERE first_seen_for_eid >= toDateTime({startTimestampVal:String})
+            )
+            ORDER BY created DESC
+            LIMIT 1
+          `
         } else {
           detailQuery = `
-              SELECT eid, name, message, lineno, colno, filename
-              FROM errors
-              WHERE pid = {pid_val:FixedString(12)} AND created >= toDateTime({startTimestampVal:String})
-              ORDER BY created DESC
-              LIMIT 1
-            `
+            SELECT eid, name, message, lineno, colno, filename
+            FROM errors
+            WHERE pid = {pid_val:FixedString(12)} AND created >= toDateTime({startTimestampVal:String})
+            ORDER BY created DESC
+            LIMIT 1
+          `
         }
         try {
           const { data: errorDetailResult } = await clickhouse
@@ -1180,9 +1180,9 @@ export class TaskManagerService {
           if (errorDetailResult && errorDetailResult.length > 0) {
             errorDetails = errorDetailResult[0] as typeof errorDetails
           }
-        } catch (e) {
+        } catch (reason) {
           this.logger.error(
-            `[CRON WORKER](checkMetricAlerts) Error fetching error details: ${e}`,
+            `[CRON WORKER](checkMetricAlerts) Error fetching error details: ${reason}`,
           )
         }
       }
@@ -1220,7 +1220,16 @@ export class TaskManagerService {
           : getQueryTimeString(alert.queryTime as QueryTime)
 
       let text = ``
-      if (alert.queryMetric === QueryMetric.ERRORS && errorDetails) {
+
+      if (alert.queryMetric === QueryMetric.ERRORS) {
+        if (!errorDetails) {
+          console.error(
+            `[CRON WORKER](checkMetricAlerts) Error details not found for alert ${alert.id}`,
+          )
+          console.error(queryResult)
+          return
+        }
+
         // const clientUrl = this.configService.get('CLIENT_URL')
         // const escapedErrorLink =
         //   this.telegramService.escapeTelegramMarkdownV2(
@@ -1278,21 +1287,21 @@ export class TaskManagerService {
           `Your project *${this.telegramService.escapeTelegramMarkdownV2(projectName)}* has had *${count}${customEventInfo}* ${queryMetricString} in the last *${effectiveQueryTimeString}*\\!`
       }
 
-      if (project.admin && project.admin.isTelegramChatIdConfirmed) {
+      if (project.admin?.isTelegramChatIdConfirmed) {
         this.telegramService.addMessage(project.admin.telegramChatId, text, {
           parse_mode: 'MarkdownV2',
           disable_web_page_preview: true,
         })
       }
 
-      if (project.admin.discordWebhookUrl) {
+      if (project.admin?.discordWebhookUrl) {
         await this.discordService.sendWebhook(
           project.admin.discordWebhookUrl,
           text,
         )
       }
 
-      if (project.admin.slackWebhookUrl) {
+      if (project.admin?.slackWebhookUrl) {
         await this.slackService.sendWebhook(project.admin.slackWebhookUrl, text)
       }
     })
