@@ -1011,10 +1011,9 @@ export class TaskManagerService {
     })
   }
 
-  // @Cron(CronExpression.EVERY_5_MINUTES)
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_5_MINUTES)
   async checkMetricAlerts() {
-    const CRON_INTERVAL_SECONDS = 60
+    const CRON_INTERVAL_SECONDS = 300
 
     const projects = await this.projectService.find({
       where: {
@@ -1071,7 +1070,8 @@ export class TaskManagerService {
       if (alert.queryMetric === QueryMetric.ERRORS) {
         if (alert.alertOnNewErrorsOnly) {
           query = `
-            SELECT count()
+            SELECT
+              count()
             FROM (
               SELECT eid, min(created) as first_seen
               FROM errors
@@ -1081,7 +1081,14 @@ export class TaskManagerService {
             WHERE first_seen >= now() - ${subtractSecondsTimeframe}
           `
         } else {
-          query = `SELECT count() FROM errors WHERE pid = {pid:FixedString(12)} AND created >= now() - ${subtractSecondsTimeframe}`
+          query = `
+            SELECT
+              count()
+            FROM errors
+            WHERE
+              pid = {pid:FixedString(12)}
+              AND created >= now() - ${subtractSecondsTimeframe}
+          `
         }
       } else if (alert.queryMetric === QueryMetric.CUSTOM_EVENTS) {
         query = `
@@ -1164,7 +1171,9 @@ export class TaskManagerService {
           detailQuery = `
             SELECT eid, name, message, lineno, colno, filename
             FROM errors
-            WHERE pid = {pid:FixedString(12)} AND created >= now() - ${subtractSecondsTimeframe}
+            WHERE
+              pid = {pid:FixedString(12)}
+              AND created >= now() - ${subtractSecondsTimeframe}
             ORDER BY created DESC
             LIMIT 1
           `
@@ -1182,8 +1191,6 @@ export class TaskManagerService {
           )
         }
       }
-
-      console.log('errorDetails', errorDetails)
 
       // @ts-expect-error
       await this.alertService.update(alert.id, {
@@ -1429,7 +1436,6 @@ export class TaskManagerService {
       const messages = await this.telegramService.getMessages()
 
       messages.forEach(async message => {
-        console.log('message', message)
         try {
           await this.telegramService.sendMessage(
             message.id,

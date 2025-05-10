@@ -35,7 +35,7 @@ export class Alert {
 
   @ApiProperty()
   @Column({
-    type: 'date',
+    type: 'datetime',
     nullable: true,
     default: null,
   })
