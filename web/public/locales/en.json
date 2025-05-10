@@ -770,6 +770,8 @@
   "alert": {
     "create": "Create an alert",
     "customEvent": "Custom event name",
+    "newErrorsOnly": "Alert on new errors only",
+    "newErrorsOnlyHint": "If enabled, an alert will be triggered only for the first occurrence of a specific error.",
     "add": "Add alert",
     "delete": "Delete alert",
     "noNameError": "Please enter a name for the alert.",
@@ -803,7 +805,8 @@
       "page_views": "Page views",
       "unique_page_views": "Unique sessions",
       "online_users": "Online users",
-      "custom_events": "Custom events"
+      "custom_events": "Custom events",
+      "errors": "Errors"
     }
   },
   "error": {

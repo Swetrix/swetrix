@@ -7,6 +7,7 @@ import { Repository } from 'typeorm'
 import { Context } from './interface/context.interface'
 import { Message } from './entities/message.entity'
 import { UserService } from '../../user/user.service'
+import { ExtraReplyMessage } from 'telegraf/typings/telegram-types'
 
 @Injectable()
 export class TelegramService {
@@ -24,7 +25,7 @@ export class TelegramService {
     )
 
     let text: string
-    let extra: unknown = {}
+    let extra: ExtraReplyMessage = {}
 
     if (!user) {
       text =
@@ -39,6 +40,7 @@ export class TelegramService {
         '\n\n' +
         'After that, you can use the bot to manage your projects.'
       extra = {
+        // @ts-expect-error It's not typed
         disable_web_page_preview: true,
         reply_markup: { remove_keyboard: true },
       }
@@ -90,7 +92,7 @@ export class TelegramService {
     await this.userService.updateUserTelegramId(user.id, null)
   }
 
-  async addMessage(chatId: string, text: string, extra?: unknown) {
+  async addMessage(chatId: string, text: string, extra?: ExtraReplyMessage) {
     await this.messageRepository.save({ chatId, text, extra })
   }
 
@@ -102,11 +104,27 @@ export class TelegramService {
     })
   }
 
+  escapeTelegramMarkdownV2(text?: string | null) {
+    if (text === null || text === undefined) return ''
+
+    // Characters to escape for MarkdownV2: _ * [ ] ( ) ~ ` > # + - = | { } . ! and \ (not requested by Telegram, but CodeQL is complaining)
+    const charsToEscapeRegex = /[_*[\]()~`>#+\-=|{}.!\\]/g
+    return text.replace(charsToEscapeRegex, '\\$&')
+  }
+
+  escapeTelegramMarkdown(text?: string | null) {
+    if (text === null || text === undefined) return ''
+
+    // Characters to escape for legacy Markdown: _, *, `, [, \
+    const charsToEscapeRegex = /[_*`[\]\\]/g
+    return text.replace(charsToEscapeRegex, '\\$&')
+  }
+
   async sendMessage(
     messageId: string,
     chatId: string,
     text: string,
-    extra?: unknown,
+    extra?: ExtraReplyMessage,
   ) {
     if (
       this.configService.get<string>('ENABLE_INTEGRATIONS') !== 'true' &&

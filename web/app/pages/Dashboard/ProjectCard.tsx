@@ -215,11 +215,12 @@ export const ProjectCard = ({ live, project, overallStats, activePeriod, activeT
           </p>
 
           {role !== 'viewer' ? (
-            <Link onClick={(e) => e.stopPropagation()} to={_replace(routes.project_settings, ':id', id)}>
-              <AdjustmentsVerticalIcon
-                className='size-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500'
-                aria-label={`${t('project.settings.settings')} ${name}`}
-              />
+            <Link
+              className='rounded-md p-1 text-gray-800 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-300'
+              onClick={(e) => e.stopPropagation()}
+              to={_replace(routes.project_settings, ':id', id)}
+            >
+              <AdjustmentsVerticalIcon className='size-5' aria-label={`${t('project.settings.settings')} ${name}`} />
             </Link>
           ) : null}
         </div>

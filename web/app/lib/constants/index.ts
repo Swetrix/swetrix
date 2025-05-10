@@ -459,6 +459,7 @@ export const QUERY_METRIC = {
   UNIQUE_PAGE_VIEWS: 'unique_page_views',
   ONLINE_USERS: 'online_users',
   CUSTOM_EVENTS: 'custom_events',
+  ERRORS: 'errors',
 } as const
 
 export const QUERY_CONDITION = {

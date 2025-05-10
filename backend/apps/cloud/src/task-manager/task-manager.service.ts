@@ -1013,6 +1013,8 @@ export class TaskManagerService {
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   async checkMetricAlerts() {
+    const CRON_INTERVAL_SECONDS = 300
+
     const projects = await this.projectService.find({
       where: {
         admin: {
@@ -1035,7 +1037,10 @@ export class TaskManagerService {
     const promises = _map(alerts, async alert => {
       const project = _find(projects, { id: alert.project.id })
 
-      if (alert.lastTriggered !== null) {
+      if (
+        alert.lastTriggered !== null &&
+        alert.queryMetric !== QueryMetric.ERRORS
+      ) {
         const lastTriggered = new Date(alert.lastTriggered)
         const now = new Date()
 
@@ -1044,67 +1049,275 @@ export class TaskManagerService {
         }
       }
 
-      const isUnique = Number(
-        alert.queryMetric === QueryMetric.UNIQUE_PAGE_VIEWS,
-      )
-      const time = getQueryTime(alert.queryTime)
-      const query =
-        alert.queryMetric === QueryMetric.CUSTOM_EVENTS
-          ? `SELECT count() FROM customEV WHERE pid='${project.id}' AND ev={ev:String} AND created >= now() - ${time}`
-          : `SELECT count(${isUnique ? 'DISTINCT psid' : '*'}) FROM analytics WHERE pid='${project.id}' AND created >= now() - ${time}`
+      let query: string
+      const queryParams: Record<string, any> = { pid: project.id }
 
-      const params = {
-        ev: alert.queryCustomEvent,
+      const nowUnix = dayjs.utc().unix()
+      let errorSubtractSeconds = 0
+
+      if (alert.lastTriggered) {
+        errorSubtractSeconds = nowUnix - dayjs.utc(alert.lastTriggered).unix()
+      } else {
+        errorSubtractSeconds =
+          nowUnix - dayjs.utc().subtract(CRON_INTERVAL_SECONDS, 'second').unix()
+      }
+
+      const subtractSecondsTimeframe =
+        alert.queryMetric === QueryMetric.ERRORS
+          ? errorSubtractSeconds
+          : getQueryTime(alert.queryTime as QueryTime)
+
+      if (alert.queryMetric === QueryMetric.ERRORS) {
+        if (alert.alertOnNewErrorsOnly) {
+          query = `
+            SELECT
+              count()
+            FROM (
+              SELECT eid, min(created) as first_seen
+              FROM errors
+              WHERE pid = {pid:FixedString(12)}
+              GROUP BY eid
+            )
+            WHERE first_seen >= now() - ${subtractSecondsTimeframe}
+          `
+        } else {
+          query = `
+            SELECT
+              count()
+            FROM errors
+            WHERE
+              pid = {pid:FixedString(12)}
+              AND created >= now() - ${subtractSecondsTimeframe}
+          `
+        }
+      } else if (alert.queryMetric === QueryMetric.CUSTOM_EVENTS) {
+        query = `
+          SELECT
+            count()
+          FROM customEV
+          WHERE
+            pid = {pid:FixedString(12)}
+            AND ev = {ev:String}
+            AND created >= now() - ${subtractSecondsTimeframe}
+        `
+        queryParams.ev = alert.queryCustomEvent
+      } else {
+        const isUnique = alert.queryMetric === QueryMetric.UNIQUE_PAGE_VIEWS
+        query = `
+          SELECT
+            count(${isUnique ? 'DISTINCT psid' : '*'})
+          FROM analytics
+          WHERE
+            pid = {pid:FixedString(12)}
+            AND created >= now() - ${subtractSecondsTimeframe}
+        `
       }
 
       const { data: queryResult } = await clickhouse
         .query({
           query,
-          query_params: params,
+          query_params: queryParams,
         })
         .then(resultSet => resultSet.json())
 
-      const count = Number(queryResult[0]['count()'])
+      const count = Number(queryResult[0]['count()']) || 0
 
-      if (checkQueryCondition(count, alert.queryValue, alert.queryCondition)) {
-        // @ts-expect-error
-        await this.alertService.update(alert.id, {
-          lastTriggered: new Date(),
+      const conditionMet =
+        alert.queryMetric === QueryMetric.ERRORS
+          ? count > 0
+          : checkQueryCondition(
+              count,
+              alert.queryValue as number,
+              alert.queryCondition as QueryCondition,
+            )
+
+      if (!conditionMet) {
+        return
+      }
+
+      let errorDetails: {
+        eid: string
+        name: string
+        message?: string | null
+        lineno?: number | null
+        colno?: number | null
+        filename?: string | null
+      } | null = null
+
+      if (alert.queryMetric === QueryMetric.ERRORS && count > 0) {
+        let detailQuery: string
+        const detailQueryParams: Record<string, any> = {
+          pid: project.id,
+        }
+
+        if (alert.alertOnNewErrorsOnly) {
+          detailQuery = `
+            SELECT eid, name, message, lineno, colno, filename
+            FROM errors
+            WHERE pid = {pid:FixedString(12)} AND eid IN (
+              SELECT eid
+              FROM (
+                SELECT eid, min(created) AS first_seen_for_eid
+                FROM errors
+                WHERE pid = {pid:FixedString(12)}
+                GROUP BY eid
+              )
+              WHERE first_seen_for_eid >= now() - ${subtractSecondsTimeframe}
+            )
+            ORDER BY created DESC
+            LIMIT 1
+          `
+        } else {
+          detailQuery = `
+            SELECT eid, name, message, lineno, colno, filename
+            FROM errors
+            WHERE
+              pid = {pid:FixedString(12)}
+              AND created >= now() - ${subtractSecondsTimeframe}
+            ORDER BY created DESC
+            LIMIT 1
+          `
+        }
+        try {
+          const { data: errorDetailResult } = await clickhouse
+            .query({ query: detailQuery, query_params: detailQueryParams })
+            .then(resultSet => resultSet.json())
+          if (errorDetailResult && errorDetailResult.length > 0) {
+            errorDetails = errorDetailResult[0] as typeof errorDetails
+          }
+        } catch (reason) {
+          this.logger.error(
+            `[CRON WORKER](checkMetricAlerts) Error fetching error details: ${reason}`,
+          )
+        }
+      }
+
+      // @ts-expect-error
+      await this.alertService.update(alert.id, {
+        lastTriggered: new Date(),
+      })
+
+      let queryMetricString = ''
+      switch (alert.queryMetric) {
+        case QueryMetric.CUSTOM_EVENTS:
+          queryMetricString = 'custom events'
+          break
+        case QueryMetric.UNIQUE_PAGE_VIEWS:
+          queryMetricString = 'unique page views'
+          break
+        case QueryMetric.PAGE_VIEWS:
+          queryMetricString = 'page views'
+          break
+        case QueryMetric.ERRORS:
+          queryMetricString = alert.alertOnNewErrorsOnly
+            ? 'new errors'
+            : 'errors'
+          break
+        default:
+          queryMetricString = alert.queryMetric
+      }
+
+      const effectiveQueryTimeString =
+        alert.queryMetric === QueryMetric.ERRORS
+          ? `${CRON_INTERVAL_SECONDS / 60} minutes`
+          : getQueryTimeString(alert.queryTime as QueryTime)
+
+      let text = ``
+
+      const clientUrl = this.configService.get('CLIENT_URL')
+      const escapedProjectLink = this.telegramService.escapeTelegramMarkdown(
+        `${clientUrl}/projects/${project.id}`,
+      )
+
+      if (alert.queryMetric === QueryMetric.ERRORS) {
+        if (!errorDetails) {
+          console.error(
+            `[CRON WORKER](checkMetricAlerts) Error details not found for alert ${alert.id}`,
+          )
+          console.error(queryResult)
+          return
+        }
+
+        const escapedErrorLink = this.telegramService.escapeTelegramMarkdown(
+          `${clientUrl}/projects/${project.id}?tab=errors&eid=${errorDetails.eid}`,
+        )
+
+        const alertName = this.telegramService.escapeTelegramMarkdown(
+          alert.name,
+        )
+        const projectName = this.telegramService.escapeTelegramMarkdown(
+          project.name,
+        )
+        const errorName = this.telegramService.escapeTelegramMarkdown(
+          errorDetails.name || 'N/A',
+        )
+        const errorMessage = this.telegramService.escapeTelegramMarkdown(
+          errorDetails.message || 'N/A',
+        )
+        const filename = this.telegramService.escapeTelegramMarkdown(
+          errorDetails.filename || 'N/A',
+        )
+
+        let locationInfo = 'Location: Not available'
+        if (
+          errorDetails.filename ||
+          errorDetails.lineno !== null ||
+          errorDetails.colno !== null
+        ) {
+          const ln =
+            errorDetails.lineno !== null
+              ? errorDetails.lineno.toString()
+              : 'N/A'
+          const cn =
+            errorDetails.colno !== null ? errorDetails.colno.toString() : 'N/A'
+          locationInfo = `File: ${filename}, Line: ${ln}, Col: ${cn}`
+        }
+
+        text =
+          `🐞 Error alert *${alertName}* triggered!\n\n` +
+          `Project: [${projectName}](${escapedProjectLink})\n` +
+          `Error: \`${errorName}\`\n` +
+          `Message: \`${errorMessage}\`\n\n` +
+          `${locationInfo}\n\n` +
+          `[View error](${escapedErrorLink})`
+      } else {
+        const alertName = this.telegramService.escapeTelegramMarkdown(
+          alert.name,
+        )
+        const projectName = this.telegramService.escapeTelegramMarkdown(
+          project.name,
+        )
+
+        let customEventInfo = ''
+        if (
+          alert.queryMetric === QueryMetric.CUSTOM_EVENTS &&
+          alert.queryCustomEvent
+        ) {
+          customEventInfo = ` "${alert.queryCustomEvent}"`
+        }
+
+        text =
+          `🔔 Alert *${alertName}* triggered!\n\n` +
+          `Your project [${projectName}](${escapedProjectLink}) has had *${count}${customEventInfo}* ${queryMetricString} in the last *${effectiveQueryTimeString}*!`
+      }
+
+      if (project.admin?.isTelegramChatIdConfirmed) {
+        this.telegramService.addMessage(project.admin.telegramChatId, text, {
+          parse_mode: 'Markdown',
+          // @ts-expect-error It's not typed
+          disable_web_page_preview: true,
         })
+      }
 
-        const queryMetric =
-          alert.queryMetric === QueryMetric.CUSTOM_EVENTS
-            ? 'custom events'
-            : alert.queryMetric === QueryMetric.UNIQUE_PAGE_VIEWS
-              ? 'unique page views'
-              : 'page views'
-        const text = `🔔 Alert *${alert.name}* got triggered!\nYour project *${
-          project.name
-        }* has had *${count}*${
-          alert.queryMetric === QueryMetric.CUSTOM_EVENTS
-            ? ` "${alert.queryCustomEvent}"`
-            : ''
-        } ${queryMetric} in the last ${getQueryTimeString(alert.queryTime)}!`
+      if (project.admin?.discordWebhookUrl) {
+        await this.discordService.sendWebhook(
+          project.admin.discordWebhookUrl,
+          text,
+        )
+      }
 
-        if (project.admin && project.admin.isTelegramChatIdConfirmed) {
-          this.telegramService.addMessage(project.admin.telegramChatId, text, {
-            parse_mode: 'Markdown',
-          })
-        }
-
-        if (project.admin.discordWebhookUrl) {
-          await this.discordService.sendWebhook(
-            project.admin.discordWebhookUrl,
-            text,
-          )
-        }
-
-        if (project.admin.slackWebhookUrl) {
-          await this.slackService.sendWebhook(
-            project.admin.slackWebhookUrl,
-            text,
-          )
-        }
+      if (project.admin?.slackWebhookUrl) {
+        await this.slackService.sendWebhook(project.admin.slackWebhookUrl, text)
       }
     })
 
@@ -1231,10 +1444,11 @@ export class TaskManagerService {
             message.text,
             message.extra,
           )
-        } catch (e) {
+        } catch (reason) {
           this.logger.error(
-            `[CRON WORKER](sendTelegramMessages) Error occured while sending message: ${e}`,
+            `[CRON WORKER](sendTelegramMessages) Error occured while sending message: ${reason}`,
           )
+        } finally {
           await this.telegramService.deleteMessage(message.id)
         }
       })

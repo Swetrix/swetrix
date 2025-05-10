@@ -29,7 +29,13 @@ import { JwtAccessTokenGuard } from '../auth/guards'
 import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { Alert } from './entity/alert.entity'
-import { AlertDTO, CreateAlertDTO } from './dto/alert.dto'
+import {
+  AlertDTO,
+  CreateAlertDTO,
+  QueryMetric,
+  QueryCondition,
+  QueryTime,
+} from './dto/alert.dto'
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { AlertService } from './alert.service'
 
@@ -179,6 +185,22 @@ export class AlertController {
       Object.assign(alert, alertDTO)
       alert = _omit(alert, ['pid'])
 
+      if (alertDTO.queryMetric === QueryMetric.ERRORS) {
+        alert.queryCondition = null
+        alert.queryValue = null
+        alert.queryTime = null
+      } else {
+        if (alertDTO.queryCondition === undefined)
+          alert.queryCondition = QueryCondition.GREATER_THAN
+        if (alertDTO.queryValue === undefined) alert.queryValue = 0
+        if (alertDTO.queryTime === undefined)
+          alert.queryTime = QueryTime.LAST_1_HOUR
+      }
+
+      if (alertDTO.alertOnNewErrorsOnly === undefined) {
+        alert.alertOnNewErrorsOnly = true
+      }
+
       const newAlert = await this.alertService.create(alert)
 
       project.alerts.push(newAlert)
@@ -222,26 +244,44 @@ export class AlertController {
       'You are not allowed to manage this alert',
     )
 
-    alert = {
-      ...alert,
+    const updatePayload: Partial<Alert> = {
       ..._pick(alertDTO, [
         'queryMetric',
-        'queryCondition',
-        'queryValue',
-        'queryTime',
-        'active',
         'name',
         'queryCustomEvent',
+        'alertOnNewErrorsOnly',
+        'active',
       ]),
+    }
+
+    if (alertDTO.queryMetric === QueryMetric.ERRORS) {
+      updatePayload.queryCondition = null
+      updatePayload.queryValue = null
+      updatePayload.queryTime = null
+    } else {
+      if (alertDTO.queryCondition !== undefined)
+        updatePayload.queryCondition = alertDTO.queryCondition
+      if (alertDTO.queryValue !== undefined)
+        updatePayload.queryValue = alertDTO.queryValue
+      if (alertDTO.queryTime !== undefined)
+        updatePayload.queryTime = alertDTO.queryTime
+    }
+
+    if (alertDTO.alertOnNewErrorsOnly !== undefined) {
+      updatePayload.alertOnNewErrorsOnly = alertDTO.alertOnNewErrorsOnly
     }
 
     await this.alertService.update(
       id,
-      _omit(alert, ['project', 'lastTriggered']),
+      _omit(updatePayload, ['project', 'lastTriggered']),
     )
 
+    const updatedAlert = await this.alertService.findOne({ where: { id } })
+    if (!updatedAlert)
+      throw new NotFoundException('Alert not found after update')
+
     return {
-      ..._omit(alert, ['project']),
+      ..._omit(updatedAlert, ['project']),
       pid: alert.project.id,
     }
   }
