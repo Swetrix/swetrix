@@ -24,6 +24,7 @@ import { Alerts } from '~/lib/models/Alerts'
 import PaidFeature from '~/modals/PaidFeature'
 import { useAuth } from '~/providers/AuthProvider'
 import { useCurrentProject } from '~/providers/CurrentProjectProvider'
+import { Badge, type BadgeProps } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
@@ -66,11 +67,19 @@ const NoNotificationChannelSet = () => {
 interface AlertCardProps {
   id: string
   name: string
-  queryMetric: string | number
+  queryMetric: (typeof QUERY_METRIC)[keyof typeof QUERY_METRIC]
   lastTriggered: string | null
   deleteAlert: (id: string) => void
   openAlert: (id: string) => void
   queryMetricTMapping: any
+}
+
+const COLOUR_QUERY_METRIC_MAPPING: Record<(typeof QUERY_METRIC)[keyof typeof QUERY_METRIC], BadgeProps['colour']> = {
+  [QUERY_METRIC.PAGE_VIEWS]: 'yellow',
+  [QUERY_METRIC.UNIQUE_PAGE_VIEWS]: 'indigo',
+  [QUERY_METRIC.ONLINE_USERS]: 'sky',
+  [QUERY_METRIC.CUSTOM_EVENTS]: 'green',
+  [QUERY_METRIC.ERRORS]: 'red',
 }
 
 const AlertCard = ({
@@ -95,14 +104,14 @@ const AlertCard = ({
         className='min-h-[120px] cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 font-mono hover:bg-gray-100 dark:border-slate-800/25 dark:bg-[#162032] dark:hover:bg-slate-800'
       >
         <div className='px-4 py-4'>
-          <div className='flex justify-between'>
+          <div className='flex items-start justify-between'>
             <div>
-              <p className='flex items-baseline gap-x-2 text-lg text-slate-900 dark:text-gray-50'>
+              <p className='text-lg text-slate-900 dark:text-gray-50'>
                 <span className='text-base font-semibold'>{name}</span>
-                <Separator className='self-center' />
-                <span className='text-sm'>{queryMetricTMapping[queryMetric]}</span>
+                <Separator className='mx-2 inline-block align-middle' />
+                <Badge colour={COLOUR_QUERY_METRIC_MAPPING[queryMetric]} label={queryMetricTMapping[queryMetric]} />
               </p>
-              <p className='text-sm text-slate-900 dark:text-gray-50'>
+              <p className='mt-1 text-sm text-slate-900 dark:text-gray-50'>
                 {lastTriggered
                   ? t('alert.lastTriggeredOn', {
                       date:
@@ -113,26 +122,28 @@ const AlertCard = ({
                   : t('alert.notYetTriggered')}
               </p>
             </div>
-            <div className='flex gap-2'>
-              <AdjustmentsVerticalIcon
-                role='button'
-                aria-label={t('common.settings')}
+            <div className='flex items-center gap-2'>
+              <button
                 onClick={(e) => {
                   e.stopPropagation()
                   openAlert(id)
                 }}
-                className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500'
-              />
-              <Trash2Icon
+                aria-label={t('common.settings')}
+                className='rounded-md p-1 text-gray-800 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300'
+              >
+                <AdjustmentsVerticalIcon className='size-5' />
+              </button>
+
+              <button
                 onClick={(e) => {
                   e.stopPropagation()
                   setShowDeleteModal(true)
                 }}
-                role='button'
                 aria-label={t('common.delete')}
-                className='h-6 w-6 text-gray-800 hover:text-gray-900 dark:text-slate-400 dark:hover:text-slate-500'
-                strokeWidth={1.5}
-              />
+                className='rounded-md p-1 text-gray-800 hover:bg-gray-50 hover:text-gray-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300'
+              >
+                <Trash2Icon className='size-5' strokeWidth={1.5} />
+              </button>
             </div>
           </div>
         </div>
