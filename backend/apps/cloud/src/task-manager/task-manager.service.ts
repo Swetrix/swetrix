@@ -1074,7 +1074,7 @@ export class TaskManagerService {
       if (alert.queryMetric === QueryMetric.ERRORS) {
         if (alert.alertOnNewErrorsOnly) {
           query = `
-            SELECT count() AS total_new_errors
+            SELECT count()
             FROM (
               SELECT eid, min(created) as first_seen
               FROM errors
@@ -1087,11 +1087,26 @@ export class TaskManagerService {
           query = `SELECT count() FROM errors WHERE pid = {pid:FixedString(12)} AND created >= toDateTime({startTimestampVal:String})`
         }
       } else if (alert.queryMetric === QueryMetric.CUSTOM_EVENTS) {
-        query = `SELECT count() FROM customEV WHERE pid = {pid:FixedString(12)} AND ev = {ev:String} AND created >= now() - ${timeToUseForOtherMetrics}`
+        query = `
+          SELECT
+            count()
+          FROM customEV
+          WHERE
+            pid = {pid:FixedString(12)}
+            AND ev = {ev:String}
+            AND created >= now() - ${timeToUseForOtherMetrics}
+        `
         queryParams.ev = alert.queryCustomEvent
       } else {
         const isUnique = alert.queryMetric === QueryMetric.UNIQUE_PAGE_VIEWS
-        query = `SELECT count(${isUnique ? 'DISTINCT psid' : '*'}) FROM analytics WHERE pid = {pid:FixedString(12)} AND created >= now() - ${timeToUseForOtherMetrics}`
+        query = `
+          SELECT
+            count(${isUnique ? 'DISTINCT psid' : '*'})
+          FROM analytics
+          WHERE
+            pid = {pid:FixedString(12)}
+            AND created >= now() - ${timeToUseForOtherMetrics}
+        `
       }
 
       const { data: queryResult } = await clickhouse
@@ -1101,9 +1116,7 @@ export class TaskManagerService {
         })
         .then(resultSet => resultSet.json())
 
-      const count = Number(
-        queryResult[0]['count()'] || queryResult[0]['total_new_errors'] || 0,
-      )
+      const count = Number(queryResult[0]['count()']) || 0
 
       const conditionMet =
         alert.queryMetric === QueryMetric.ERRORS
@@ -1114,25 +1127,28 @@ export class TaskManagerService {
               alert.queryCondition as QueryCondition,
             )
 
-      if (conditionMet) {
-        let errorDetails: {
-          eid: string
-          name: string
-          message?: string | null
-          lineno?: number | null
-          colno?: number | null
-          filename?: string | null
-        } | null = null
+      if (!conditionMet) {
+        return
+      }
 
-        if (alert.queryMetric === QueryMetric.ERRORS && count > 0) {
-          let detailQuery: string
-          const detailQueryParams: Record<string, any> = {
-            pid_val: project.id,
-            startTimestampVal: queryParams.startTimestampVal,
-          }
+      let errorDetails: {
+        eid: string
+        name: string
+        message?: string | null
+        lineno?: number | null
+        colno?: number | null
+        filename?: string | null
+      } | null = null
 
-          if (alert.alertOnNewErrorsOnly) {
-            detailQuery = `
+      if (alert.queryMetric === QueryMetric.ERRORS && count > 0) {
+        let detailQuery: string
+        const detailQueryParams: Record<string, any> = {
+          pid_val: project.id,
+          startTimestampVal: queryParams.startTimestampVal,
+        }
+
+        if (alert.alertOnNewErrorsOnly) {
+          detailQuery = `
               SELECT eid, name, message, lineno, colno, filename
               FROM errors
               WHERE pid = {pid_val:FixedString(12)} AND eid IN (
@@ -1148,142 +1164,136 @@ export class TaskManagerService {
               ORDER BY created DESC
               LIMIT 1
             `
-          } else {
-            detailQuery = `
+        } else {
+          detailQuery = `
               SELECT eid, name, message, lineno, colno, filename
               FROM errors
               WHERE pid = {pid_val:FixedString(12)} AND created >= toDateTime({startTimestampVal:String})
               ORDER BY created DESC
               LIMIT 1
             `
+        }
+        try {
+          const { data: errorDetailResult } = await clickhouse
+            .query({ query: detailQuery, query_params: detailQueryParams })
+            .then(resultSet => resultSet.json())
+          if (errorDetailResult && errorDetailResult.length > 0) {
+            errorDetails = errorDetailResult[0] as typeof errorDetails
           }
-          try {
-            const { data: errorDetailResult } = await clickhouse
-              .query({ query: detailQuery, query_params: detailQueryParams })
-              .then(resultSet => resultSet.json())
-            if (errorDetailResult && errorDetailResult.length > 0) {
-              errorDetails = errorDetailResult[0] as typeof errorDetails
-            }
-          } catch (e) {
-            this.logger.error(
-              `[CRON WORKER](checkMetricAlerts) Error fetching error details: ${e}`,
-            )
-          }
+        } catch (e) {
+          this.logger.error(
+            `[CRON WORKER](checkMetricAlerts) Error fetching error details: ${e}`,
+          )
+        }
+      }
+
+      console.log('errorDetails', errorDetails)
+
+      // @ts-expect-error
+      await this.alertService.update(alert.id, {
+        lastTriggered: new Date(),
+      })
+
+      let queryMetricString = ''
+      switch (alert.queryMetric) {
+        case QueryMetric.CUSTOM_EVENTS:
+          queryMetricString = 'custom events'
+          break
+        case QueryMetric.UNIQUE_PAGE_VIEWS:
+          queryMetricString = 'unique page views'
+          break
+        case QueryMetric.PAGE_VIEWS:
+          queryMetricString = 'page views'
+          break
+        case QueryMetric.ERRORS:
+          queryMetricString = alert.alertOnNewErrorsOnly
+            ? 'new errors'
+            : 'errors'
+          break
+        default:
+          queryMetricString = alert.queryMetric
+      }
+
+      const effectiveQueryTimeString =
+        alert.queryMetric === QueryMetric.ERRORS
+          ? `${CRON_INTERVAL_SECONDS / 60} minutes`
+          : getQueryTimeString(alert.queryTime as QueryTime)
+
+      let text = ``
+      if (alert.queryMetric === QueryMetric.ERRORS && errorDetails) {
+        // const clientUrl = this.configService.get('CLIENT_URL')
+        // const escapedErrorLink =
+        //   this.telegramService.escapeTelegramMarkdownV2(
+        //     `${clientUrl}/projects/${project.id}?tab=errors&eid=${errorDetails.eid}`,
+        //   )
+        // const escapedProjectLink =
+        //   this.telegramService.escapeTelegramMarkdownV2(
+        //     `${clientUrl}/projects/${project.id}`,
+        //   )
+
+        // Values are now raw, not pre-escaped
+        const alertName = alert.name
+        const projectName = project.name
+        const errorName = errorDetails.name || 'N/A'
+        const errorMessage = errorDetails.message || 'N/A'
+        const filename = errorDetails.filename || 'N/A'
+
+        let locationInfo = 'Location: Not available'
+        if (
+          errorDetails.filename ||
+          errorDetails.lineno !== null ||
+          errorDetails.colno !== null
+        ) {
+          const ln =
+            errorDetails.lineno !== null
+              ? errorDetails.lineno.toString()
+              : 'N/A'
+          const cn =
+            errorDetails.colno !== null ? errorDetails.colno.toString() : 'N/A'
+          locationInfo = `File: ${filename}, Line: ${ln}, Col: ${cn}`
         }
 
-        console.log('errorDetails', errorDetails)
+        text =
+          `🔔 Alert *${this.telegramService.escapeTelegramMarkdownV2(alertName)}* triggered\\!\n\n` +
+          // `Project: [${this.telegramService.escapeTelegramMarkdownV2(projectName)}]\\(${escapedProjectLink}\\)\n` +
+          `Project: ${projectName}\n` +
+          `Error: ${this.telegramService.escapeTelegramMarkdownV2(errorName)}\n` +
+          `Message: ${this.telegramService.escapeTelegramMarkdownV2(errorMessage)}\n\n` +
+          `${this.telegramService.escapeTelegramMarkdownV2(locationInfo)}\n\n` // +
+        // `[View error](${escapedErrorLink})`
+      } else {
+        const alertName = alert.name
+        const projectName = project.name
 
-        // @ts-expect-error
-        await this.alertService.update(alert.id, {
-          lastTriggered: new Date(),
+        let customEventInfo = ''
+        if (
+          alert.queryMetric === QueryMetric.CUSTOM_EVENTS &&
+          alert.queryCustomEvent
+        ) {
+          customEventInfo = ` "${alert.queryCustomEvent}"`
+        }
+
+        text =
+          `🔔 Alert *${this.telegramService.escapeTelegramMarkdownV2(alertName)}* triggered\\!\n\n` +
+          `Your project *${this.telegramService.escapeTelegramMarkdownV2(projectName)}* has had *${count}${customEventInfo}* ${queryMetricString} in the last *${effectiveQueryTimeString}*\\!`
+      }
+
+      if (project.admin && project.admin.isTelegramChatIdConfirmed) {
+        this.telegramService.addMessage(project.admin.telegramChatId, text, {
+          parse_mode: 'MarkdownV2',
+          disable_web_page_preview: true,
         })
+      }
 
-        let queryMetricString = ''
-        switch (alert.queryMetric) {
-          case QueryMetric.CUSTOM_EVENTS:
-            queryMetricString = 'custom events'
-            break
-          case QueryMetric.UNIQUE_PAGE_VIEWS:
-            queryMetricString = 'unique page views'
-            break
-          case QueryMetric.PAGE_VIEWS:
-            queryMetricString = 'page views'
-            break
-          case QueryMetric.ERRORS:
-            queryMetricString = alert.alertOnNewErrorsOnly
-              ? 'new errors'
-              : 'errors'
-            break
-          default:
-            queryMetricString = alert.queryMetric
-        }
+      if (project.admin.discordWebhookUrl) {
+        await this.discordService.sendWebhook(
+          project.admin.discordWebhookUrl,
+          text,
+        )
+      }
 
-        const effectiveQueryTimeString =
-          alert.queryMetric === QueryMetric.ERRORS
-            ? `${CRON_INTERVAL_SECONDS / 60} minutes`
-            : getQueryTimeString(alert.queryTime as QueryTime)
-
-        let text = ``
-        if (alert.queryMetric === QueryMetric.ERRORS && errorDetails) {
-          // const clientUrl = this.configService.get('CLIENT_URL')
-          // const escapedErrorLink =
-          //   this.telegramService.escapeTelegramMarkdownV2(
-          //     `${clientUrl}/projects/${project.id}?tab=errors&eid=${errorDetails.eid}`,
-          //   )
-          // const escapedProjectLink =
-          //   this.telegramService.escapeTelegramMarkdownV2(
-          //     `${clientUrl}/projects/${project.id}`,
-          //   )
-
-          // Values are now raw, not pre-escaped
-          const alertName = alert.name
-          const projectName = project.name
-          const errorName = errorDetails.name || 'N/A'
-          const errorMessage = errorDetails.message || 'N/A'
-          const filename = errorDetails.filename || 'N/A'
-
-          let locationInfo = 'Location: Not available'
-          if (
-            errorDetails.filename ||
-            errorDetails.lineno !== null ||
-            errorDetails.colno !== null
-          ) {
-            const ln =
-              errorDetails.lineno !== null
-                ? errorDetails.lineno.toString()
-                : 'N/A'
-            const cn =
-              errorDetails.colno !== null
-                ? errorDetails.colno.toString()
-                : 'N/A'
-            locationInfo = `File: ${filename}, Line: ${ln}, Col: ${cn}`
-          }
-
-          text =
-            `🔔 Alert *${this.telegramService.escapeTelegramMarkdownV2(alertName)}* triggered\\!\n\n` +
-            // `Project: [${this.telegramService.escapeTelegramMarkdownV2(projectName)}]\\(${escapedProjectLink}\\)\n` +
-            `Project: ${projectName}\n` +
-            `Error: ${this.telegramService.escapeTelegramMarkdownV2(errorName)}\n` +
-            `Message: ${this.telegramService.escapeTelegramMarkdownV2(errorMessage)}\n\n` +
-            `${this.telegramService.escapeTelegramMarkdownV2(locationInfo)}\n\n` // +
-          // `[View error](${escapedErrorLink})`
-        } else {
-          const alertName = alert.name
-          const projectName = project.name
-
-          let customEventInfo = ''
-          if (
-            alert.queryMetric === QueryMetric.CUSTOM_EVENTS &&
-            alert.queryCustomEvent
-          ) {
-            customEventInfo = ` "${alert.queryCustomEvent}"`
-          }
-
-          text =
-            `🔔 Alert *${this.telegramService.escapeTelegramMarkdownV2(alertName)}* triggered\\!\n\n` +
-            `Your project *${this.telegramService.escapeTelegramMarkdownV2(projectName)}* has had *${count}${customEventInfo}* ${queryMetricString} in the last *${effectiveQueryTimeString}*\\!`
-        }
-
-        if (project.admin && project.admin.isTelegramChatIdConfirmed) {
-          this.telegramService.addMessage(project.admin.telegramChatId, text, {
-            parse_mode: 'MarkdownV2',
-            disable_web_page_preview: true,
-          })
-        }
-
-        if (project.admin.discordWebhookUrl) {
-          await this.discordService.sendWebhook(
-            project.admin.discordWebhookUrl,
-            text,
-          )
-        }
-
-        if (project.admin.slackWebhookUrl) {
-          await this.slackService.sendWebhook(
-            project.admin.slackWebhookUrl,
-            text,
-          )
-        }
+      if (project.admin.slackWebhookUrl) {
+        await this.slackService.sendWebhook(project.admin.slackWebhookUrl, text)
       }
     })
 
