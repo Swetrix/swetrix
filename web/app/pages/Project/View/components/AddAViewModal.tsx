@@ -360,7 +360,7 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
       message={
         <div className='min-h-[410px]'>
           <Input
-            label={t('project.viewName')}
+            label={t('project.segmentName')}
             value={name}
             onChange={({ target }) => {
               setName(target.value)
