@@ -1224,6 +1224,11 @@ export class TaskManagerService {
 
       let text = ``
 
+      const clientUrl = this.configService.get('CLIENT_URL')
+      const escapedProjectLink = this.telegramService.escapeTelegramMarkdown(
+        `${clientUrl}/projects/${project.id}`,
+      )
+
       if (alert.queryMetric === QueryMetric.ERRORS) {
         if (!errorDetails) {
           console.error(
@@ -1233,12 +1238,8 @@ export class TaskManagerService {
           return
         }
 
-        const clientUrl = this.configService.get('CLIENT_URL')
         const escapedErrorLink = this.telegramService.escapeTelegramMarkdown(
           `${clientUrl}/projects/${project.id}?tab=errors&eid=${errorDetails.eid}`,
-        )
-        const escapedProjectLink = this.telegramService.escapeTelegramMarkdown(
-          `${clientUrl}/projects/${project.id}`,
         )
 
         const alertName = this.telegramService.escapeTelegramMarkdown(
@@ -1297,7 +1298,7 @@ export class TaskManagerService {
 
         text =
           `🔔 Alert *${alertName}* triggered!\n\n` +
-          `Your project *${projectName}* has had *${count}${customEventInfo}* ${queryMetricString} in the last *${effectiveQueryTimeString}*!`
+          `Your project [${projectName}](${escapedProjectLink}) has had *${count}${customEventInfo}* ${queryMetricString} in the last *${effectiveQueryTimeString}*!`
       }
 
       if (project.admin?.isTelegramChatIdConfirmed) {
