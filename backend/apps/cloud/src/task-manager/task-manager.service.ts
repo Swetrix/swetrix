@@ -1053,22 +1053,19 @@ export class TaskManagerService {
       let query: string
       const queryParams: Record<string, any> = { pid: project.id }
 
-      let startTimestampForQuery: string
-      if (alert.lastTriggered) {
-        startTimestampForQuery = dayjs
-          .utc(alert.lastTriggered)
-          .format('YYYY-MM-DD HH:mm:ss')
-      } else {
-        startTimestampForQuery = dayjs
-          .utc()
-          .subtract(CRON_INTERVAL_SECONDS, 'second')
-          .format('YYYY-MM-DD HH:mm:ss')
-      }
-      queryParams.startTimestampVal = startTimestampForQuery
+      const nowUnix = dayjs.utc().unix()
+      let errorSubtractSeconds = 0
 
-      const timeToUseForOtherMetrics =
+      if (alert.lastTriggered) {
+        errorSubtractSeconds = nowUnix - dayjs.utc(alert.lastTriggered).unix()
+      } else {
+        errorSubtractSeconds =
+          nowUnix - dayjs.utc().subtract(CRON_INTERVAL_SECONDS, 'second').unix()
+      }
+
+      const subtractSecondsTimeframe =
         alert.queryMetric === QueryMetric.ERRORS
-          ? CRON_INTERVAL_SECONDS
+          ? errorSubtractSeconds
           : getQueryTime(alert.queryTime as QueryTime)
 
       if (alert.queryMetric === QueryMetric.ERRORS) {
@@ -1081,10 +1078,10 @@ export class TaskManagerService {
               WHERE pid = {pid:FixedString(12)}
               GROUP BY eid
             )
-            WHERE first_seen >= toDateTime({startTimestampVal:String})
+            WHERE first_seen >= now() - ${subtractSecondsTimeframe}
           `
         } else {
-          query = `SELECT count() FROM errors WHERE pid = {pid:FixedString(12)} AND created >= toDateTime({startTimestampVal:String})`
+          query = `SELECT count() FROM errors WHERE pid = {pid:FixedString(12)} AND created >= now() - ${subtractSecondsTimeframe}`
         }
       } else if (alert.queryMetric === QueryMetric.CUSTOM_EVENTS) {
         query = `
@@ -1094,7 +1091,7 @@ export class TaskManagerService {
           WHERE
             pid = {pid:FixedString(12)}
             AND ev = {ev:String}
-            AND created >= now() - ${timeToUseForOtherMetrics}
+            AND created >= now() - ${subtractSecondsTimeframe}
         `
         queryParams.ev = alert.queryCustomEvent
       } else {
@@ -1105,7 +1102,7 @@ export class TaskManagerService {
           FROM analytics
           WHERE
             pid = {pid:FixedString(12)}
-            AND created >= now() - ${timeToUseForOtherMetrics}
+            AND created >= now() - ${subtractSecondsTimeframe}
         `
       }
 
@@ -1143,23 +1140,22 @@ export class TaskManagerService {
       if (alert.queryMetric === QueryMetric.ERRORS && count > 0) {
         let detailQuery: string
         const detailQueryParams: Record<string, any> = {
-          pid_val: project.id,
-          startTimestampVal: queryParams.startTimestampVal,
+          pid: project.id,
         }
 
         if (alert.alertOnNewErrorsOnly) {
           detailQuery = `
             SELECT eid, name, message, lineno, colno, filename
             FROM errors
-            WHERE pid = {pid_val:FixedString(12)} AND eid IN (
+            WHERE pid = {pid:FixedString(12)} AND eid IN (
               SELECT eid
               FROM (
                 SELECT eid, min(created) AS first_seen_for_eid
                 FROM errors
-                WHERE pid = {pid_val:FixedString(12)}
+                WHERE pid = {pid:FixedString(12)}
                 GROUP BY eid
               )
-              WHERE first_seen_for_eid >= toDateTime({startTimestampVal:String})
+              WHERE first_seen_for_eid >= now() - ${subtractSecondsTimeframe}
             )
             ORDER BY created DESC
             LIMIT 1
@@ -1168,7 +1164,7 @@ export class TaskManagerService {
           detailQuery = `
             SELECT eid, name, message, lineno, colno, filename
             FROM errors
-            WHERE pid = {pid_val:FixedString(12)} AND created >= toDateTime({startTimestampVal:String})
+            WHERE pid = {pid:FixedString(12)} AND created >= now() - ${subtractSecondsTimeframe}
             ORDER BY created DESC
             LIMIT 1
           `
