@@ -40,7 +40,7 @@ export class TelegramService {
         '\n\n' +
         'After that, you can use the bot to manage your projects.'
       extra = {
-        // @ts-expect-error ??
+        // @ts-expect-error It's not typed
         disable_web_page_preview: true,
         reply_markup: { remove_keyboard: true },
       }
@@ -92,7 +92,7 @@ export class TelegramService {
     await this.userService.updateUserTelegramId(user.id, null)
   }
 
-  async addMessage(chatId: string, text: string, extra?: unknown) {
+  async addMessage(chatId: string, text: string, extra?: ExtraReplyMessage) {
     await this.messageRepository.save({ chatId, text, extra })
   }
 
@@ -109,6 +109,14 @@ export class TelegramService {
 
     // Characters to escape for MarkdownV2: _ * [ ] ( ) ~ ` > # + - = | { } . !
     const charsToEscapeRegex = /[_*[\]()~`>#+\-=|{}.!]/g
+    return text.replace(charsToEscapeRegex, '\\$&')
+  }
+
+  escapeTelegramMarkdown(text?: string | null) {
+    if (text === null || text === undefined) return ''
+
+    // Characters to escape for legacy Markdown: _, *, `, [
+    const charsToEscapeRegex = /[_*`[]/g
     return text.replace(charsToEscapeRegex, '\\$&')
   }
 

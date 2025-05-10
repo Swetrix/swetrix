@@ -1226,22 +1226,29 @@ export class TaskManagerService {
           return
         }
 
-        // const clientUrl = this.configService.get('CLIENT_URL')
-        // const escapedErrorLink =
-        //   this.telegramService.escapeTelegramMarkdownV2(
-        //     `${clientUrl}/projects/${project.id}?tab=errors&eid=${errorDetails.eid}`,
-        //   )
-        // const escapedProjectLink =
-        //   this.telegramService.escapeTelegramMarkdownV2(
-        //     `${clientUrl}/projects/${project.id}`,
-        //   )
+        const clientUrl = this.configService.get('CLIENT_URL')
+        const escapedErrorLink = this.telegramService.escapeTelegramMarkdown(
+          `${clientUrl}/projects/${project.id}?tab=errors&eid=${errorDetails.eid}`,
+        )
+        const escapedProjectLink = this.telegramService.escapeTelegramMarkdown(
+          `${clientUrl}/projects/${project.id}`,
+        )
 
-        // Values are now raw, not pre-escaped
-        const alertName = alert.name
-        const projectName = project.name
-        const errorName = errorDetails.name || 'N/A'
-        const errorMessage = errorDetails.message || 'N/A'
-        const filename = errorDetails.filename || 'N/A'
+        const alertName = this.telegramService.escapeTelegramMarkdown(
+          alert.name,
+        )
+        const projectName = this.telegramService.escapeTelegramMarkdown(
+          project.name,
+        )
+        const errorName = this.telegramService.escapeTelegramMarkdown(
+          errorDetails.name || 'N/A',
+        )
+        const errorMessage = this.telegramService.escapeTelegramMarkdown(
+          errorDetails.message || 'N/A',
+        )
+        const filename = this.telegramService.escapeTelegramMarkdown(
+          errorDetails.filename || 'N/A',
+        )
 
         let locationInfo = 'Location: Not available'
         if (
@@ -1259,16 +1266,19 @@ export class TaskManagerService {
         }
 
         text =
-          `🔔 Alert *${this.telegramService.escapeTelegramMarkdownV2(alertName)}* triggered\\!\n\n` +
-          // `Project: [${this.telegramService.escapeTelegramMarkdownV2(projectName)}]\\(${escapedProjectLink}\\)\n` +
-          `Project: ${projectName}\n` +
-          `Error: ${this.telegramService.escapeTelegramMarkdownV2(errorName)}\n` +
-          `Message: ${this.telegramService.escapeTelegramMarkdownV2(errorMessage)}\n\n` +
-          `${this.telegramService.escapeTelegramMarkdownV2(locationInfo)}\n\n` // +
-        // `[View error](${escapedErrorLink})`
+          `🐞 Error alert *${alertName}* triggered!\n\n` +
+          `Project: [${projectName}](${escapedProjectLink})\n` +
+          `Error: \`${errorName}\`\n` +
+          `Message: \`${errorMessage}\`\n\n` +
+          `${locationInfo}\n\n` +
+          `[View error](${escapedErrorLink})`
       } else {
-        const alertName = alert.name
-        const projectName = project.name
+        const alertName = this.telegramService.escapeTelegramMarkdown(
+          alert.name,
+        )
+        const projectName = this.telegramService.escapeTelegramMarkdown(
+          project.name,
+        )
 
         let customEventInfo = ''
         if (
@@ -1279,13 +1289,14 @@ export class TaskManagerService {
         }
 
         text =
-          `🔔 Alert *${this.telegramService.escapeTelegramMarkdownV2(alertName)}* triggered\\!\n\n` +
-          `Your project *${this.telegramService.escapeTelegramMarkdownV2(projectName)}* has had *${count}${customEventInfo}* ${queryMetricString} in the last *${effectiveQueryTimeString}*\\!`
+          `🔔 Alert *${alertName}* triggered!\n\n` +
+          `Your project *${projectName}* has had *${count}${customEventInfo}* ${queryMetricString} in the last *${effectiveQueryTimeString}*!`
       }
 
       if (project.admin?.isTelegramChatIdConfirmed) {
         this.telegramService.addMessage(project.admin.telegramChatId, text, {
-          parse_mode: 'MarkdownV2',
+          parse_mode: 'Markdown',
+          // @ts-expect-error It's not typed
           disable_web_page_preview: true,
         })
       }
