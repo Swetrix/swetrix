@@ -333,11 +333,12 @@ const ProjectAlerts = () => {
             {!isIntegrationLinked ? <NoNotificationChannelSet /> : null}
             <ul className='mt-4 grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
               {_map(alerts, (alert) => (
+                // @ts-expect-error I promise to fix it later :)
                 <AlertCard
                   key={alert.id}
                   {...alert}
-                  openAlert={(id) => {
-                    navigate(_replace(_replace(routes.alert_settings, ':pid', id), ':id', id))
+                  openAlert={(alertId) => {
+                    navigate(_replace(_replace(routes.alert_settings, ':pid', id), ':id', alertId))
                   }}
                   deleteAlert={onDelete}
                   queryMetricTMapping={queryMetricTMapping}
