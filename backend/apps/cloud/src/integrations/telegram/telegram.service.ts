@@ -107,8 +107,8 @@ export class TelegramService {
   escapeTelegramMarkdownV2(text?: string | null) {
     if (text === null || text === undefined) return ''
 
-    // Characters to escape for MarkdownV2: _ * [ ] ( ) ~ ` > # + - = | { } . !
-    const charsToEscapeRegex = /[_*[\]()~`>#+\-=|{}.!]/g
+    // Characters to escape for MarkdownV2: _ * [ ] ( ) ~ ` > # + - = | { } . ! and \ (not requested by Telegram, but CodeQL is complaining)
+    const charsToEscapeRegex = /[_*[\]()~`>#+\-=|{}.!\\]/g
     return text.replace(charsToEscapeRegex, '\\$&')
   }
 
