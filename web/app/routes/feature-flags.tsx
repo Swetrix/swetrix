@@ -2,7 +2,6 @@ import { Switch } from '@headlessui/react'
 import cx from 'clsx'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
 import { setFeatureFlags } from '~/api'
@@ -10,28 +9,21 @@ import { withAuthentication, auth } from '~/hoc/protected'
 import { FeatureFlag } from '~/lib/models/User'
 import { useAuth } from '~/providers/AuthProvider'
 import Loader from '~/ui/Loader'
-import routes from '~/utils/routes'
 
 const FeatureFlagsPage = () => {
   const { t } = useTranslation('common')
   const { user, isLoading, mergeUser } = useAuth()
   const [flags, setFlags] = useState<FeatureFlag[]>([])
   const [initialised, setInitialised] = useState(false)
-  const navigate = useNavigate()
 
   useEffect(() => {
-    if (isLoading || initialised) {
+    if (isLoading || initialised || !user) {
       return
     }
 
-    if (user) {
-      setFlags(user.featureFlags ?? [])
-      setInitialised(true)
-      return
-    }
-
-    navigate(routes.main)
-  }, [isLoading, user, navigate, initialised])
+    setFlags(user.featureFlags ?? [])
+    setInitialised(true)
+  }, [isLoading, user, initialised])
 
   const handleToggle = async (flag: FeatureFlag) => {
     try {
