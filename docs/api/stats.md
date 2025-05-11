@@ -724,7 +724,8 @@ curl 'https://api.swetrix.com/v1/log/sessions?pid=YOUR_PROJECT_ID&period=7d&take
       "pageviews": 4,
       "sessionStart": "2025-05-11T16:09:06Z",
       "lastActivity": "2025-05-11T17:22:02Z",
-      "isLive": 1
+      "isLive": 1,
+      "sdur": 520
     },
     {
       "psid": "3653378394154006361",
@@ -734,7 +735,8 @@ curl 'https://api.swetrix.com/v1/log/sessions?pid=YOUR_PROJECT_ID&period=7d&take
       "pageviews": 2,
       "sessionStart": "2025-05-11T10:37:12Z",
       "lastActivity": "2025-05-11T10:37:23Z",
-      "isLive": 0
+      "isLive": 0,
+      "sdur": 11
     },
     {
       "psid": "1777747620282809424",
@@ -744,7 +746,8 @@ curl 'https://api.swetrix.com/v1/log/sessions?pid=YOUR_PROJECT_ID&period=7d&take
       "pageviews": 34,
       "sessionStart": "2025-05-10T20:28:29Z",
       "lastActivity": "2025-05-10T22:23:36Z",
-      "isLive": 0
+      "isLive": 0,
+      "sdur": 115
     }
   ],
   "appliedFilters": [],
