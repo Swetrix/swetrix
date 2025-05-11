@@ -108,6 +108,9 @@ dayjs.extend(utc)
 dayjs.extend(dayjsTimezone)
 dayjs.extend(isSameOrBefore)
 
+// 2 minutes
+const LIVE_SESSION_THRESHOLD_SECONDS = 120
+
 const getSessionDurationKey = (psid: string, pid: string) => `sd:${psid}:${pid}`
 
 const SOFTWARE_WITH_PATCH_VERSION = ['GameVault']
@@ -3624,11 +3627,24 @@ export class AnalyticsService {
       chartData = groupedChart.chart
     }
 
+    let isLive = false
+
+    if (!_isEmpty(pages)) {
+      const lastActivityTime = dayjs(pages[pages.length - 1].created)
+
+      const liveThresholdTime = dayjs().subtract(
+        LIVE_SESSION_THRESHOLD_SECONDS,
+        'seconds',
+      )
+      isLive = lastActivityTime.isAfter(liveThresholdTime)
+    }
+
     return {
       pages: this.processPageflow(pages),
       details: {
         ...(details || {}),
         sdur: duration,
+        isLive,
       },
       psid,
       chart: chartData,
@@ -3681,13 +3697,15 @@ export class AnalyticsService {
         any(os) AS os,
         any(br) AS br,
         count() AS pageviews,
-        min(created) AS created
+        min(created) AS sessionStart,
+        max(created) AS lastActivity,
+        if(dateDiff('second', max(created), now()) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive
       FROM
       (
         ${customEVFilterApplied ? customEVSubquery : analyticsSubquery}
       )
       GROUP BY psid
-      ORDER BY created DESC
+      ORDER BY sessionStart DESC
       LIMIT ${take}
       OFFSET ${skip}
     `

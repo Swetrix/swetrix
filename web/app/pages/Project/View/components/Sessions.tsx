@@ -1,4 +1,6 @@
 import { ChevronRightIcon } from '@heroicons/react/24/outline'
+import dayjs from 'dayjs'
+import duration from 'dayjs/plugin/duration'
 import _map from 'lodash/map'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
@@ -6,10 +8,13 @@ import { Link } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 
 import Loader from '~/ui/Loader'
+import { getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
 
 import { Session as SessionType } from '../interfaces/session'
 
 import CCRow from './CCRow'
+
+dayjs.extend(duration)
 
 interface SessionsProps {
   sessions: SessionType[]
@@ -34,14 +39,39 @@ const Session = ({ session, onClick, timeFormat }: SessionProps) => {
     t,
     i18n: { language },
   } = useTranslation('common')
-  const date = new Date(session.created).toLocaleDateString(language, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: 'numeric',
-    hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
-  })
+
+  const lastActivityTime = dayjs(session.lastActivity)
+  const sessionStartTime = dayjs(session.sessionStart)
+
+  let sessionDurationString = ''
+
+  if (!session.isLive) {
+    const diffSeconds = lastActivityTime.diff(sessionStartTime, 'seconds')
+
+    sessionDurationString = getStringFromTime(getTimeFromSeconds(diffSeconds))
+  }
+
+  const dateLineString = session.isLive
+    ? sessionStartTime.toDate().toLocaleDateString(language, {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
+      })
+    : `${sessionStartTime.toDate().toLocaleDateString(language, {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
+      })} - ${lastActivityTime.toDate().toLocaleTimeString(language, {
+        hour: 'numeric',
+        minute: 'numeric',
+        hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
+      })} (${sessionDurationString})`
 
   const psidUrl = new URL(window.location.href)
   psidUrl.searchParams.set('psid', session.psid)
@@ -56,7 +86,6 @@ const Session = ({ session, onClick, timeFormat }: SessionProps) => {
         e.preventDefault()
         e.stopPropagation()
         window.history.pushState({}, '', stringifiedUrl)
-
         onClick(session.psid)
       }}
       to={stringifiedUrl}
@@ -64,10 +93,18 @@ const Session = ({ session, onClick, timeFormat }: SessionProps) => {
       <li className='relative mb-4 flex cursor-pointer justify-between gap-x-6 rounded-lg bg-gray-200/60 px-4 py-4 font-mono hover:bg-gray-200 sm:px-6 dark:bg-[#162032] dark:hover:bg-slate-800'>
         <div className='flex min-w-0 gap-x-4'>
           <div className='min-w-0 flex-auto'>
-            <p className='flex items-center gap-x-2 text-sm leading-6 font-semibold text-gray-900 dark:text-gray-50'>
-              {date}
+            <p className='flex items-center text-sm leading-6 font-semibold tracking-tighter text-gray-900 dark:text-gray-50'>
+              <span>
+                {dateLineString}
+                {session.isLive ? (
+                  <span className='ml-2 inline-flex items-center tracking-normal'>
+                    <span className='mr-1.5 h-2 w-2 animate-pulse rounded-full bg-red-500' />
+                    <span className='text-xs font-medium text-red-500'>{t('dashboard.live').toUpperCase()}</span>
+                  </span>
+                ) : null}
+              </span>
             </p>
-            <p className='mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500 dark:text-gray-300'>
+            <p className='mt-1 flex flex-wrap items-center gap-x-2 text-xs leading-5 text-gray-500 dark:text-gray-300'>
               <span className='flex'>
                 {session.cc ? <CCRow size={18} cc={session.cc} language={language} /> : t('project.unknownCountry')}
               </span>

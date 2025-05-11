@@ -5,7 +5,10 @@ export interface Session {
   br: string | null
   pageviews: number
   created: string
-  active: 1 | 0
+  isLive: 1 | 0
+
+  sessionStart: string
+  lastActivity: string
 }
 
 export interface SessionDetails {
@@ -24,5 +27,7 @@ export interface SessionDetails {
   rg: string | null
   ct: string | null
   dv: string | null
-  sdur: number | null
+
+  sdur?: number
+  isLive?: boolean
 }

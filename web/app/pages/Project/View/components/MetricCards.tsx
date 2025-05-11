@@ -14,7 +14,7 @@ import { nFormatter, getStringFromTime, getTimeFromSeconds } from '~/utils/gener
 
 interface MetricCardProps {
   label: string
-  value: string | number | undefined | null
+  value: React.ReactNode
   goodChangeDirection?: 'up' | 'down'
   change?: number
   type?: 'percent' | 'string'
