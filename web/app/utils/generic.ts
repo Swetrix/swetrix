@@ -51,8 +51,15 @@ export const secondsTillNextMonth = () => {
   return 0 | ((date - now) / 1000)
 }
 
-// Returns an object like { h: 0, m: 0, s: 0 } based on the seconds parameter provided
-export const getTimeFromSeconds = (seconds: any) => {
+type Time = {
+  h: number
+  m: number
+  s: number
+  ms: number
+  negative: boolean
+}
+
+export const getTimeFromSeconds = (seconds: any): Time => {
   const negative = seconds < 0
   const _seconds = Math.abs(seconds)
   const h = 0 | (_seconds / 3600)
@@ -69,7 +76,7 @@ export const getTimeFromSeconds = (seconds: any) => {
   }
 }
 
-export const getStringFromTime = (time: any, showMS?: boolean) => {
+export const getStringFromTime = (time: Time, showMS?: boolean) => {
   const { h, m, s, ms, negative } = time
 
   if (h === 0 && m === 0 && s === 0 && (!showMS || ms === 0)) {

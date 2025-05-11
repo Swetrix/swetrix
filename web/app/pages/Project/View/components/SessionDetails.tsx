@@ -176,12 +176,22 @@ export const SessionDetails = ({ details }: SessionDetailsProps) => {
       />
       <MetricCard
         classes={{
-          value: 'max-md:text-xl md:text-2xl',
+          value: `max-md:text-xl md:text-2xl ${details.isLive ? '!text-red-500 font-semibold' : ''}`,
           label: '[&_span]:!text-slate-800 dark:[&_span]:!text-gray-200',
         }}
         label={t('dashboard.sessionDuration')}
-        value={details.sdur as number}
-        valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value))}
+        value={
+          details.isLive ? (
+            <span className='flex items-center'>
+              <span className='mr-1.5 h-2.5 w-2.5 animate-pulse rounded-full bg-red-500' />
+              {t('dashboard.live').toUpperCase()}
+            </span>
+          ) : details.sdur !== undefined ? (
+            getStringFromTime(getTimeFromSeconds(details.sdur))
+          ) : (
+            'N/A'
+          )
+        }
       />
     </div>
   )
