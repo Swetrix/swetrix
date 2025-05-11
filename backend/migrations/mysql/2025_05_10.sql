@@ -1,5 +1,8 @@
 ALTER TABLE alert ADD COLUMN `alert_on_new_errors_only` tinyint NOT NULL DEFAULT '1';
 
+-- Add errors to the queryMetric enum
+ALTER TABLE alert MODIFY COLUMN `queryMetric` enum('page_views','unique_page_views','online_users','custom_events','errors') DEFAULT NULL AFTER `created`;
+
 -- Change lastTriggered from DATE to DATETIME, preserving the date and setting time to 00:00:00
 -- Step 1: Add a new temporary DATETIME column
 ALTER TABLE alert ADD COLUMN `lastTriggered_temp_dt` DATETIME DEFAULT NULL;

@@ -211,8 +211,8 @@ export class AlertController {
         ...newAlert,
         pid: alertDTO.pid,
       }
-    } catch (e) {
-      console.error('Error while creating alert', e)
+    } catch (reason) {
+      console.error('Error while creating alert', reason)
       throw new BadRequestException('Error occured while creating alert')
     }
   }
