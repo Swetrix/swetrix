@@ -1,3 +1,4 @@
+import cx from 'clsx'
 import _capitalize from 'lodash/capitalize'
 import _size from 'lodash/size'
 import _truncate from 'lodash/truncate'
@@ -176,7 +177,7 @@ export const SessionDetails = ({ details }: SessionDetailsProps) => {
       />
       <MetricCard
         classes={{
-          value: `max-md:text-xl md:text-2xl ${details.isLive ? '!text-red-500 font-semibold' : ''}`,
+          value: cx('max-md:text-xl md:text-2xl', details.isLive ? '!text-red-500 font-semibold' : ''),
           label: '[&_span]:!text-slate-800 dark:[&_span]:!text-gray-200',
         }}
         label={t('dashboard.sessionDuration')}
