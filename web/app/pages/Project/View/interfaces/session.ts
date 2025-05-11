@@ -6,6 +6,7 @@ export interface Session {
   pageviews: number
   created: string
   isLive: 1 | 0
+  sdur?: number
 
   sessionStart: string
   lastActivity: string

@@ -3379,19 +3379,22 @@ export class AnalyticsService {
 
     const query = `
       SELECT
-        psidCasted AS psid,
-        any(cc) AS cc,
-        any(os) AS os,
-        any(br) AS br,
+        events.psidCasted AS psid,
+        any(events.cc) AS cc,
+        any(events.os) AS os,
+        any(events.br) AS br,
         count() AS pageviews,
-        min(created) AS sessionStart,
-        max(created) AS lastActivity,
-        if(dateDiff('second', max(created), now()) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive
+        min(events.created) AS sessionStart,
+        max(events.created) AS lastActivity,
+        if(dateDiff('second', max(events.created), now()) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
+        avg(durations.duration) AS sdur
       FROM
       (
         ${customEVFilterApplied ? customEVSubquery : analyticsSubquery}
-      )
-      GROUP BY psid
+      ) AS events
+      LEFT JOIN session_durations AS durations
+        ON events.psidCasted = CAST(durations.psid, 'String') AND durations.pid = {pid:FixedString(12)}
+      GROUP BY events.psidCasted
       ORDER BY sessionStart DESC
       LIMIT ${take}
       OFFSET ${skip}

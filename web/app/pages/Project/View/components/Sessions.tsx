@@ -2,7 +2,7 @@ import { ChevronRightIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 import _map from 'lodash/map'
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
@@ -40,19 +40,24 @@ const Session = ({ session, onClick, timeFormat }: SessionProps) => {
     i18n: { language },
   } = useTranslation('common')
 
-  const lastActivityTime = dayjs(session.lastActivity)
   const sessionStartTime = dayjs(session.sessionStart)
 
   let sessionDurationString = ''
-
   if (!session.isLive) {
-    const diffSeconds = lastActivityTime.diff(sessionStartTime, 'seconds')
-
-    sessionDurationString = getStringFromTime(getTimeFromSeconds(diffSeconds))
+    if (session.sdur != null && session.sdur > 0) {
+      sessionDurationString = getStringFromTime(getTimeFromSeconds(session.sdur))
+    } else {
+      const diffSeconds = dayjs(session.lastActivity).diff(sessionStartTime, 'seconds')
+      // Only set duration string if it's meaningfully positive
+      if (diffSeconds > 0) {
+        sessionDurationString = getStringFromTime(getTimeFromSeconds(diffSeconds))
+      }
+    }
   }
 
-  const dateLineString = session.isLive
-    ? sessionStartTime.toDate().toLocaleDateString(language, {
+  const dateLineString = useMemo(() => {
+    if (session.isLive) {
+      return sessionStartTime.toDate().toLocaleDateString(language, {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
@@ -60,18 +65,33 @@ const Session = ({ session, onClick, timeFormat }: SessionProps) => {
         minute: 'numeric',
         hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
       })
-    : `${sessionStartTime.toDate().toLocaleDateString(language, {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
-      })} - ${lastActivityTime.toDate().toLocaleTimeString(language, {
-        hour: 'numeric',
-        minute: 'numeric',
-        hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
-      })} (${sessionDurationString})`
+    }
+
+    const startDateTimeStr = sessionStartTime.toDate().toLocaleDateString(language, {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
+    })
+
+    let endDisplayTime
+    if (session.sdur != null && session.sdur > 0) {
+      endDisplayTime = sessionStartTime.add(session.sdur, 'seconds')
+    } else {
+      endDisplayTime = dayjs(session.lastActivity)
+    }
+
+    const endTimeStr = endDisplayTime.toDate().toLocaleTimeString(language, {
+      hour: 'numeric',
+      minute: 'numeric',
+      hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
+    })
+
+    const durationDisplay = sessionDurationString ? ` (${sessionDurationString})` : ''
+    return `${startDateTimeStr} - ${endTimeStr}${durationDisplay}`
+  }, [session, language, timeFormat, sessionDurationString, sessionStartTime])
 
   const psidUrl = new URL(window.location.href)
   psidUrl.searchParams.set('psid', session.psid)
