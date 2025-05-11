@@ -718,30 +718,33 @@ curl 'https://api.swetrix.com/v1/log/sessions?pid=YOUR_PROJECT_ID&period=7d&take
   "sessions": [
     {
       "psid": "14287087333426119778",
-      "active": 1,
-      "cc": null,
+      "cc": "IS",
       "os": "Windows",
       "br": "Firefox",
       "pageviews": 4,
-      "created": "2023-12-20 16:53:59"
+      "sessionStart": "2025-05-11T16:09:06Z",
+      "lastActivity": "2025-05-11T17:22:02Z",
+      "isLive": 1
     },
     {
       "psid": "3653378394154006361",
-      "active": 0,
       "cc": "GB",
-      "os": "Mac OS",
+      "os": "macOS",
       "br": "Safari",
-      "pageviews": 1,
-      "created": "2023-12-16 19:53:27"
+      "pageviews": 2,
+      "sessionStart": "2025-05-11T10:37:12Z",
+      "lastActivity": "2025-05-11T10:37:23Z",
+      "isLive": 0
     },
     {
       "psid": "1777747620282809424",
-      "active": 0,
-      "cc": "GB",
-      "os": "Mac OS",
+      "cc": null,
+      "os": "macOS",
       "br": "Chrome",
-      "pageviews": 3,
-      "created": "2023-12-16 19:53:21"
+      "pageviews": 34,
+      "sessionStart": "2025-05-10T20:28:29Z",
+      "lastActivity": "2025-05-10T22:23:36Z",
+      "isLive": 0
     }
   ],
   "appliedFilters": [],
@@ -806,27 +809,33 @@ curl 'https://api.swetrix.com/v1/log/session?pid=YOUR_PROJECT_ID&psid=SESSION_ID
     {
       "type": "pageview",
       "value": "/",
-      "created": "2023-12-20 16:53:59"
+      "created": "2023-12-20T16:53:59Z"
     },
     {
       "type": "pageview",
       "value": "/signup",
-      "created": "2023-12-20 16:55:03"
+      "created": "2023-12-20T16:55:03Z"
     },
     {
       "type": "event",
       "value": "SIGNUP",
-      "created": "2023-12-20 16:56:11"
+      "created": "2023-12-20T16:56:11Z",
+      "metadata": [
+        {
+          "key": "OAUTH_USED",
+          "value": "true"
+        }
+      ]
     },
     {
       "type": "pageview",
       "value": "/dashboard",
-      "created": "2023-12-20 16:56:13"
+      "created": "2023-12-20T16:56:13Z"
     },
     {
       "type": "pageview",
       "value": "/blog/how-to-do-stuff",
-      "created": "2023-12-20 16:57:32",
+      "created": "2023-12-20T16:57:32Z",
       "metadata": [
         {
           "key": "author",
@@ -837,7 +846,7 @@ curl 'https://api.swetrix.com/v1/log/session?pid=YOUR_PROJECT_ID&psid=SESSION_ID
     {
       "type": "event",
       "value": "SOME_EVENT",
-      "created": "2023-12-20 16:58:01"
+      "created": "2023-12-20T16:58:01Z"
     }
   ],
   "details": {
@@ -856,7 +865,8 @@ curl 'https://api.swetrix.com/v1/log/session?pid=YOUR_PROJECT_ID&psid=SESSION_ID
     "cc": "GB",
     "rg": "England",
     "ct": "Liverpool",
-    "sdur": 242
+    "sdur": 242,
+    "isLive": 0
   },
   "psid": "14287087333426119778",
   "chart": {
