@@ -770,6 +770,8 @@
   "alert": {
     "create": "Alarm einrichten",
     "customEvent": "Eigener Ereignisname",
+    "newErrorsOnly": "Nur bei neuen Fehlern benachrichtigen",
+    "newErrorsOnlyHint": "Wenn aktiviert, wird ein Alarm nur beim ersten Auftreten eines bestimmten Fehlers ausgelöst.",
     "add": "Alert hinzufügen",
     "delete": "Alarm löschen",
     "noNameError": "Bitte benennen Sie die Benachrichtigung.",
@@ -803,7 +805,8 @@
       "page_views": "Seitenaufrufe",
       "unique_page_views": "Eindeutige Sitzungen",
       "online_users": "Online-Benutzer",
-      "custom_events": "Eigene Ereignisse"
+      "custom_events": "Eigene Ereignisse",
+      "errors": "Fehler"
     }
   },
   "error": {

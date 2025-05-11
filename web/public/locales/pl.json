@@ -770,6 +770,8 @@
   "alert": {
     "create": "Utwórz alert",
     "customEvent": "Niestandardowa nazwa zdarzenia",
+    "newErrorsOnly": "Powiadamiaj tylko o nowych błędach",
+    "newErrorsOnlyHint": "Jeśli włączone, powiadomienie zostanie wywołane tylko przy pierwszym wystąpieniu konkretnego błędu.",
     "add": "Dodaj alert",
     "delete": "Usuń alert",
     "noNameError": "Proszę podać nazwę alertu.",
@@ -803,7 +805,8 @@
       "page_views": "Wyświetlenia strony",
       "unique_page_views": "Unikalne sesje",
       "online_users": "Użytkownicy online",
-      "custom_events": "Niestandardowe zdarzenia"
+      "custom_events": "Niestandardowe zdarzenia",
+      "errors": "Błędy"
     }
   },
   "error": {

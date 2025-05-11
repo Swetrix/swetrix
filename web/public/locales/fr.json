@@ -770,6 +770,8 @@
   "alert": {
     "create": "Créer une alerte",
     "customEvent": "Nom de l'événement personnalisé",
+    "newErrorsOnly": "Alerte uniquement sur les nouvelles erreurs",
+    "newErrorsOnlyHint": "Si activé, une alerte ne sera déclenchée que lors de la première occurrence d'une erreur spécifique.",
     "add": "Ajouter une alerte",
     "delete": "Supprimer l'alerte",
     "noNameError": "Veuillez entrer un nom pour l'alerte.",
@@ -803,7 +805,8 @@
       "page_views": "Pages vues",
       "unique_page_views": "Sessions uniques",
       "online_users": "Utilisateurs en ligne",
-      "custom_events": "Événements personnalisés"
+      "custom_events": "Événements personnalisés",
+      "errors": "Erreurs"
     }
   },
   "error": {
