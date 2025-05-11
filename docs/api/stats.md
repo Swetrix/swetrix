@@ -564,12 +564,12 @@ curl 'https://api.swetrix.com/v1/log/captcha/birdseye?pids=["YOUR_PROJECT_ID"]&p
 #### Parameters
 Accepts the same parameters as the [`/log/birdseye` endpoint](#get-v1logbirdseye).
 
-### GET /v1/log/liveVisitors
+### GET /v1/log/live-visitors
 
 This endpoint returns a list of currently active visitors on the specified project. The psid is a unique identifier for the session, which can be used to get more information about the session using the [`/log/session` endpoint](#get-v1logsession).
 
 ```bash
-curl 'https://api.swetrix.com/v1/log/liveVisitors?pid=YOUR_PROJECT_ID'\
+curl 'https://api.swetrix.com/v1/log/live-visitors?pid=YOUR_PROJECT_ID'\
   -H "X-Api-Key: ${SWETRIX_API_KEY}"
 ```
 
