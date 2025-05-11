@@ -335,7 +335,7 @@ const ViewProject = () => {
   const [dateRange, setDateRange] = useState<null | Date[]>(
     preferences.rangeDate ? [new Date(preferences.rangeDate[0]), new Date(preferences.rangeDate[1])] : null,
   )
-  const [activeTab, setActiveTab] = useState(() => {
+  const activeTab = useMemo(() => {
     const tab = searchParams.get('tab') as keyof typeof PROJECT_TABS
 
     if (tab in PROJECT_TABS) {
@@ -343,7 +343,7 @@ const ViewProject = () => {
     }
 
     return PROJECT_TABS.traffic
-  })
+  }, [searchParams])
 
   const [isHotkeysHelpOpened, setIsHotkeysHelpOpened] = useState(false)
 
@@ -1985,7 +1985,9 @@ const ViewProject = () => {
       return
     }
 
-    setActiveTab(key)
+    const newSearchParams = new URLSearchParams(searchParams.toString())
+    newSearchParams.set('tab', key)
+    setSearchParams(newSearchParams)
   }
 
   useEffect(() => {
@@ -2161,11 +2163,6 @@ const ViewProject = () => {
     authLoading,
     project,
   ])
-
-  useEffect(() => {
-    searchParams.set('tab', activeTab)
-    setSearchParams(searchParams)
-  }, [activeTab])
 
   useEffect(() => {
     if (activeTab === PROJECT_TABS.traffic) {
