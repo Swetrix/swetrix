@@ -597,6 +597,17 @@ const ViewProject = () => {
 
   const [showFiltersSearch, setShowFiltersSearch] = useState(false)
 
+  const isConflicted = (conflicts?: string[]) => {
+    if (!conflicts) {
+      return false
+    }
+
+    return _some(conflicts, (conflict) => {
+      const conflictPair = _find(chartMetrics, (metric) => metric.id === conflict)
+      return conflictPair && conflictPair.active
+    })
+  }
+
   const chartMetrics = useMemo(() => {
     return [
       {
@@ -1973,8 +1984,9 @@ const ViewProject = () => {
     const paramName = activeTab === PROJECT_TABS.performance ? `${column}_perf` : column
 
     if (searchParams.get(paramName) !== filter) {
-      searchParams.set(paramName, filter)
-      setSearchParams(searchParams)
+      const newSearchParams = new URLSearchParams(searchParams.toString())
+      newSearchParams.set(paramName, filter)
+      setSearchParams(newSearchParams)
     }
 
     sdkInstance?._emitEvent('filtersupdate', newFilters)
@@ -2384,14 +2396,20 @@ const ViewProject = () => {
 
         if (!onRender && !_includes(timeBucketToDays[index].tb, timeBucket)) {
           eventEmitTimeBucket = timeBucketToDays[index].tb[0]
-          searchParams.set('timeBucket', eventEmitTimeBucket)
+          const newSearchParams = new URLSearchParams(searchParams.toString())
+          newSearchParams.set('timeBucket', eventEmitTimeBucket)
+          newSearchParams.set('period', 'custom')
+          newSearchParams.set('from', dates[0].toISOString())
+          newSearchParams.set('to', dates[1].toISOString())
+          setSearchParams(newSearchParams)
           setTimebucket(eventEmitTimeBucket)
+        } else {
+          const newSearchParams = new URLSearchParams(searchParams.toString())
+          newSearchParams.set('period', 'custom')
+          newSearchParams.set('from', dates[0].toISOString())
+          newSearchParams.set('to', dates[1].toISOString())
+          setSearchParams(newSearchParams)
         }
-
-        searchParams.set('period', 'custom')
-        searchParams.set('from', dates[0].toISOString())
-        searchParams.set('to', dates[1].toISOString())
-        setSearchParams(searchParams)
 
         setPeriodPairs(tbPeriodPairs(t, timeBucketToDays[index].tb, dates, language))
         setPeriod('custom')
@@ -2461,14 +2479,17 @@ const ViewProject = () => {
 
     if (!_includes(newPeriodFull.tbs, timeBucket)) {
       tb = _last(newPeriodFull.tbs) || 'day'
-      searchParams.set('timeBucket', tb)
+      const newSearchParamsTB = new URLSearchParams(searchParams.toString())
+      newSearchParamsTB.set('timeBucket', tb)
+      setSearchParams(newSearchParamsTB)
       setTimebucket(tb)
     }
 
+    const newSearchParams = new URLSearchParams(searchParams.toString())
     if (newPeriod.period !== 'custom') {
-      searchParams.delete('from')
-      searchParams.delete('to')
-      searchParams.set('period', newPeriod.period)
+      newSearchParams.delete('from')
+      newSearchParams.delete('to')
+      newSearchParams.set('period', newPeriod.period)
       updatePreferences({
         period: newPeriod.period,
         timeBucket: tb,
@@ -2483,7 +2504,7 @@ const ViewProject = () => {
       setDateRange(null)
     }
 
-    setSearchParams(searchParams)
+    setSearchParams(newSearchParams)
     sdkInstance?._emitEvent('timeupdate', {
       period: newPeriod.period,
       timeBucket: tb,
@@ -2511,17 +2532,6 @@ const ViewProject = () => {
 
   const openSettingsHandler = () => {
     navigate(_replace(routes.project_settings, ':id', id))
-  }
-
-  const isConflicted = (conflicts?: string[]) => {
-    if (!conflicts) {
-      return false
-    }
-
-    return _some(conflicts, (conflict) => {
-      const conflictPair = _find(chartMetrics, (metric) => metric.id === conflict)
-      return conflictPair && conflictPair.active
-    })
   }
 
   const cleanURLFilters = () => {
