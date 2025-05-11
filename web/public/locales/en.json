@@ -823,7 +823,6 @@
     "support": "Contact support"
   },
   "project": {
-    "minuteUnitShort": "Min",
     "metadata": "Metadata",
     "aiDetailsDesc": "The buttons above allow you to see an estimate of what kind of traffic you can expect within an hour in the next X hours.",
     "search": "Search",
