@@ -786,7 +786,7 @@ export class AnalyticsController {
     return result
   }
 
-  @Get('liveVisitors')
+  @Get('live-visitors')
   @Auth([], true, true)
   async getLiveVisitors(
     @Query() queryParams: LiveVisitorsDto,
@@ -822,12 +822,10 @@ export class AnalyticsController {
           dv,
           br,
           os,
-          cc,
-          created
+          cc
         FROM analytics
         WHERE
           psid IN ({ psids: Array(String) })
-          AND created > ({ createdAfter: String })
           AND pid = ({ pid: FixedString(12) })
         UNION ALL
         SELECT
@@ -835,12 +833,10 @@ export class AnalyticsController {
           dv,
           br,
           os,
-          cc,
-          created
+          cc
         FROM customEV
         WHERE
           psid IN ({ psids: Array(String) })
-          AND created > ({ createdAfter: String })
           AND pid = ({ pid: FixedString(12) })
       )
       GROUP BY psid
@@ -851,10 +847,6 @@ export class AnalyticsController {
         query,
         query_params: {
           psids,
-          createdAfter: dayjs
-            .utc()
-            .subtract(3, 'hours')
-            .format('YYYY-MM-DDTHH:mm:ss'),
           pid,
         },
       })

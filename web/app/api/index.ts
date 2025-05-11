@@ -1014,7 +1014,7 @@ export interface GetLiveVisitorsInfo {
 
 export const getLiveVisitorsInfo = (pid: string, password?: string) =>
   api
-    .get(`log/liveVisitors?pid=${pid}`, {
+    .get(`log/live-visitors?pid=${pid}`, {
       headers: {
         'x-password': password,
       },
