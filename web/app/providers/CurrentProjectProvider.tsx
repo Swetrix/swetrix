@@ -5,7 +5,7 @@ import { useNavigate, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
 import { checkPassword, getInstalledExtensions, getProject } from '~/api'
-import { isSelfhosted, LS_PROJECTS_PROTECTED_KEY, Period } from '~/lib/constants'
+import { isSelfhosted, LS_PROJECTS_PROTECTED_KEY, Period, TimeBucket } from '~/lib/constants'
 import { Extension, type Project } from '~/lib/models/Project'
 import { getItemJSON, removeItem } from '~/utils/localstorage'
 import routes from '~/utils/routes'
@@ -134,7 +134,7 @@ const useProject = (id: string) => {
 
 export type ProjectPreferences = {
   period?: Period
-  timeBucket?: string
+  timeBucket?: TimeBucket
   rangeDate?: Date[]
   customEvents?: any
   metricsVisualisation?: Record<keyof typeof CHART_METRICS_MAPPING, boolean>

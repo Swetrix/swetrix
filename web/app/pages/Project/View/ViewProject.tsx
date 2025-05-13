@@ -109,8 +109,10 @@ import {
   ERROR_PANELS_ORDER,
   ERROR_PERIOD_PAIRS,
   FUNNELS_PERIOD_PAIRS,
-  Period,
+  type Period,
+  type TimeBucket,
   VALID_PERIODS,
+  VALID_TIME_BUCKETS,
 } from '~/lib/constants'
 import { CountryEntry } from '~/lib/models/Entry'
 import { Funnel, AnalyticsFunnel, OverallObject, OverallPerformanceObject } from '~/lib/models/Project'
@@ -178,8 +180,6 @@ import { Panel, Metadata } from './Panels'
 import {
   handleNavigationParams,
   updateFilterState,
-  validTimeBacket,
-  validPeriods,
   parseFiltersFromUrl,
   isFilterValid,
   FILTER_CHART_METRICS_MAPPING_FOR_COMPARE,
@@ -227,7 +227,7 @@ interface ViewProjectContextType {
   // Functions
   setDateRange: Dispatch<SetStateAction<Date[] | null>>
   updatePeriod: (newPeriod: { period: Period; label?: string }) => void
-  updateTimebucket: (newTimebucket: string) => void
+  updateTimebucket: (newTimebucket: TimeBucket) => void
   setPeriodPairs: Dispatch<SetStateAction<TBPeriodPairsProps[]>>
 
   // Refs
@@ -296,7 +296,6 @@ const ViewProject = () => {
   const [isNewFunnelOpened, setIsNewFunnelOpened] = useState(false)
   const [isAddAViewOpened, setIsAddAViewOpened] = useState(false)
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
-  const [timeBucket, setTimebucket] = useState(preferences.timeBucket || periodPairs[4].tbs[1])
   const [chartData, setChartData] = useState<any>({})
   const [mainChart, setMainChart] = useState<any>(null)
   const [dataLoading, setDataLoading] = useState(false)
@@ -344,6 +343,7 @@ const ViewProject = () => {
 
     return PROJECT_TABS.traffic
   }, [searchParams])
+
   const period = useMemo<Period>(() => {
     const urlPeriod = searchParams.get('period') as Period
 
@@ -353,6 +353,20 @@ const ViewProject = () => {
 
     return preferences.period || periodPairs[4].period
   }, [searchParams, preferences.period, periodPairs])
+
+  const timeBucket = useMemo<TimeBucket>(() => {
+    const urlTimeBucket = searchParams.get('timeBucket') as TimeBucket
+
+    if (VALID_TIME_BUCKETS.includes(urlTimeBucket)) {
+      const newPeriodFull = _find(periodPairs, (el) => el.period === period)
+
+      if (newPeriodFull?.tbs?.includes(urlTimeBucket)) {
+        return urlTimeBucket
+      }
+    }
+
+    return preferences.timeBucket || periodPairs[4].tbs[1]
+  }, [searchParams, preferences.timeBucket, periodPairs, period])
 
   const activePeriod = useMemo(() => _find(periodPairs, (p) => p.period === period), [period, periodPairs])
 
@@ -1238,7 +1252,10 @@ const ViewProject = () => {
           })
           return newPeriodPairs
         })
-        setTimebucket(newTimebucket)
+
+        const newSearchParams = new URLSearchParams(searchParams.toString())
+        newSearchParams.set('timeBucket', newTimebucket)
+        setSearchParams(newSearchParams)
       }
 
       // @ts-expect-error
@@ -1704,7 +1721,9 @@ const ViewProject = () => {
           })
           return newPeriodPairs
         })
-        setTimebucket(newTimebucket)
+        const newSearchParams = new URLSearchParams(searchParams.toString())
+        newSearchParams.set('timeBucket', newTimebucket)
+        setSearchParams(newSearchParams)
       }
 
       if (!_isEmpty(dataCompare)) {
@@ -2024,7 +2043,7 @@ const ViewProject = () => {
       try {
         const initialPeriod = (searchParams.get('period') as Period) || preferences.period || '7d'
 
-        if (!_includes(validPeriods, initialPeriod)) {
+        if (!_includes(VALID_PERIODS, initialPeriod)) {
           return
         }
 
@@ -2051,19 +2070,6 @@ const ViewProject = () => {
     }
 
     parsePeriodFilters()
-
-    try {
-      const initialTimeBucket = searchParams.get('timeBucket')
-
-      if (_includes(validTimeBacket, initialTimeBucket)) {
-        const newPeriodFull = _find(periodPairs, (el) => el.period === period)
-        if (_includes(newPeriodFull?.tbs, initialTimeBucket)) {
-          setTimebucket(initialTimeBucket || periodPairs[3].tbs[1])
-        }
-      }
-    } catch {
-      //
-    }
 
     setAreFiltersParsed(true)
   }, [activeTab])
@@ -2409,7 +2415,6 @@ const ViewProject = () => {
         if (!onRender && !_includes(timeBucketToDays[index].tb, timeBucket)) {
           eventEmitTimeBucket = timeBucketToDays[index].tb[0]
           newSearchParams.set('timeBucket', eventEmitTimeBucket)
-          setTimebucket(eventEmitTimeBucket)
         }
 
         newSearchParams.set('from', dates[0].toISOString())
@@ -2487,7 +2492,6 @@ const ViewProject = () => {
       const newSearchParamsTB = new URLSearchParams(searchParams.toString())
       newSearchParamsTB.set('timeBucket', tb)
       setSearchParams(newSearchParamsTB)
-      setTimebucket(tb)
     }
 
     const newSearchParams = new URLSearchParams(searchParams.toString())
@@ -2516,14 +2520,15 @@ const ViewProject = () => {
     })
   }
 
-  const updateTimebucket = (newTimebucket: string) => {
+  const updateTimebucket = (newTimebucket: TimeBucket) => {
     if (dataLoading) {
       return
     }
 
-    searchParams.set('timeBucket', newTimebucket)
-    setSearchParams(searchParams)
-    setTimebucket(newTimebucket)
+    const newSearchParams = new URLSearchParams(searchParams.toString())
+    newSearchParams.set('timeBucket', newTimebucket)
+    setSearchParams(newSearchParams)
+
     updatePreferences({
       timeBucket: newTimebucket,
     })
