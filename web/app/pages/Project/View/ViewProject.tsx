@@ -360,6 +360,7 @@ const ViewProject = () => {
     if (VALID_TIME_BUCKETS.includes(urlTimeBucket)) {
       const newPeriodFull = _find(periodPairs, (el) => el.period === period)
 
+      // todo: if timebucket is invalid for the period, should we update the url right away here?
       if (newPeriodFull?.tbs?.includes(urlTimeBucket)) {
         return urlTimeBucket
       }
