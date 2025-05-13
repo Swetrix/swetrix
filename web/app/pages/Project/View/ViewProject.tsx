@@ -109,6 +109,8 @@ import {
   ERROR_PANELS_ORDER,
   ERROR_PERIOD_PAIRS,
   FUNNELS_PERIOD_PAIRS,
+  Period,
+  VALID_PERIODS,
 } from '~/lib/constants'
 import { CountryEntry } from '~/lib/models/Entry'
 import { Funnel, AnalyticsFunnel, OverallObject, OverallPerformanceObject } from '~/lib/models/Project'
@@ -224,7 +226,7 @@ interface ViewProjectContextType {
 
   // Functions
   setDateRange: Dispatch<SetStateAction<Date[] | null>>
-  updatePeriod: (newPeriod: { period: string; label?: string }) => void
+  updatePeriod: (newPeriod: { period: Period; label?: string }) => void
   updateTimebucket: (newTimebucket: string) => void
   setPeriodPairs: Dispatch<SetStateAction<TBPeriodPairsProps[]>>
 
@@ -294,9 +296,7 @@ const ViewProject = () => {
   const [isNewFunnelOpened, setIsNewFunnelOpened] = useState(false)
   const [isAddAViewOpened, setIsAddAViewOpened] = useState(false)
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
-  const [period, setPeriod] = useState(preferences.period || periodPairs[4].period)
   const [timeBucket, setTimebucket] = useState(preferences.timeBucket || periodPairs[4].tbs[1])
-  const activePeriod = useMemo(() => _find(periodPairs, (p) => p.period === period), [period, periodPairs])
   const [chartData, setChartData] = useState<any>({})
   const [mainChart, setMainChart] = useState<any>(null)
   const [dataLoading, setDataLoading] = useState(false)
@@ -344,6 +344,17 @@ const ViewProject = () => {
 
     return PROJECT_TABS.traffic
   }, [searchParams])
+  const period = useMemo<Period>(() => {
+    const urlPeriod = searchParams.get('period') as Period
+
+    if (VALID_PERIODS.includes(urlPeriod)) {
+      return urlPeriod
+    }
+
+    return preferences.period || periodPairs[4].period
+  }, [searchParams, preferences.period, periodPairs])
+
+  const activePeriod = useMemo(() => _find(periodPairs, (p) => p.period === period), [period, periodPairs])
 
   const [isHotkeysHelpOpened, setIsHotkeysHelpOpened] = useState(false)
 
@@ -2011,7 +2022,7 @@ const ViewProject = () => {
 
     const parsePeriodFilters = () => {
       try {
-        const initialPeriod = searchParams.get('period') || preferences.period || '7d'
+        const initialPeriod = (searchParams.get('period') as Period) || preferences.period || '7d'
 
         if (!_includes(validPeriods, initialPeriod)) {
           return
@@ -2393,26 +2404,20 @@ const ViewProject = () => {
     for (const index in timeBucketToDays) {
       if (timeBucketToDays[index].lt >= days) {
         let eventEmitTimeBucket = timeBucket
+        const newSearchParams = new URLSearchParams(searchParams.toString())
 
         if (!onRender && !_includes(timeBucketToDays[index].tb, timeBucket)) {
           eventEmitTimeBucket = timeBucketToDays[index].tb[0]
-          const newSearchParams = new URLSearchParams(searchParams.toString())
           newSearchParams.set('timeBucket', eventEmitTimeBucket)
-          newSearchParams.set('period', 'custom')
-          newSearchParams.set('from', dates[0].toISOString())
-          newSearchParams.set('to', dates[1].toISOString())
-          setSearchParams(newSearchParams)
           setTimebucket(eventEmitTimeBucket)
-        } else {
-          const newSearchParams = new URLSearchParams(searchParams.toString())
-          newSearchParams.set('period', 'custom')
-          newSearchParams.set('from', dates[0].toISOString())
-          newSearchParams.set('to', dates[1].toISOString())
-          setSearchParams(newSearchParams)
         }
 
+        newSearchParams.set('from', dates[0].toISOString())
+        newSearchParams.set('to', dates[1].toISOString())
+        newSearchParams.set('period', 'custom')
+        setSearchParams(newSearchParams)
+
         setPeriodPairs(tbPeriodPairs(t, timeBucketToDays[index].tb, dates, language))
-        setPeriod('custom')
 
         updatePreferences({
           period: 'custom',
@@ -2468,7 +2473,7 @@ const ViewProject = () => {
     return () => clearInterval(interval)
   }, [project, projectPassword])
 
-  const updatePeriod = (newPeriod: { period: string; label?: string }) => {
+  const updatePeriod = (newPeriod: { period: Period; label?: string }) => {
     if (period === newPeriod.period) {
       return
     }
@@ -2495,7 +2500,6 @@ const ViewProject = () => {
         timeBucket: tb,
         rangeDate: undefined,
       })
-      setPeriod(newPeriod.period)
 
       setCanLoadMoreSessions(false)
       resetSessions()

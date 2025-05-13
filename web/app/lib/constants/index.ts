@@ -36,12 +36,31 @@ export const ALL_PERIODS = ['minute', 'hour', 'day', 'month', 'year']
 
 export interface TBPeriodPairsProps {
   label: string
-  period: string
+  period: Period
   tbs: string[]
   countDays?: number
   dropdownLabel?: string
   isCustomDate?: boolean
 }
+
+export const VALID_PERIODS = [
+  '1h',
+  'today',
+  'yesterday',
+  '1d',
+  '7d',
+  '4w',
+  '3M',
+  '12M',
+  '24M',
+  'all',
+
+  // Extended periods
+  'custom',
+  'compare',
+] as const
+
+export type Period = (typeof VALID_PERIODS)[number]
 
 export const tbPeriodPairs = (
   t: typeof i18nextT,
