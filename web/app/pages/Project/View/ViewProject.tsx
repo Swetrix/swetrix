@@ -392,7 +392,9 @@ const ViewProject = () => {
   const [activeError, setActiveError] = useState<any>(null)
   const [errorLoading, setErrorLoading] = useState(false)
   const [errorStatusUpdating, setErrorStatusUpdating] = useState(false)
-  const [activeEID, setActiveEID] = useState<string | null>(null)
+  const activeEID = useMemo(() => {
+    return searchParams.get('eid')
+  }, [searchParams])
 
   const [activeFunnel, setActiveFunnel] = useState<Funnel | null>(null)
   const [funnelToEdit, setFunnelToEdit] = useState<Funnel | undefined>(undefined)
@@ -1413,22 +1415,6 @@ const ViewProject = () => {
 
     setSessionLoading(false)
   }
-
-  useEffect(() => {
-    if (authLoading) {
-      return
-    }
-
-    const tab = searchParams.get('tab') as string
-
-    if (tab === PROJECT_TABS.errors) {
-      const eid = searchParams.get('eid') as string
-
-      if (eid) {
-        setActiveEID(eid)
-      }
-    }
-  }, [authLoading])
 
   useEffect(() => {
     if (!activePSID) {
@@ -3645,13 +3631,7 @@ const ViewProject = () => {
                         resetActiveTabFilters={resetActiveTabFilters}
                       />
                     ) : null}
-                    <Errors
-                      errors={errors}
-                      onClick={(eidToLoad) => {
-                        setActiveEID(eidToLoad)
-                        setErrorLoading(true)
-                      }}
-                    />
+                    <Errors errors={errors} />
                     {canLoadMoreErrors ? (
                       <button
                         type='button'
@@ -3677,9 +3657,9 @@ const ViewProject = () => {
                       type='button'
                       onClick={() => {
                         setActiveError(null)
-                        setActiveEID(null)
-                        searchParams.delete('eid')
-                        setSearchParams(searchParams)
+                        const newSearchParams = new URLSearchParams(searchParams.toString())
+                        newSearchParams.delete('eid')
+                        setSearchParams(newSearchParams)
                       }}
                       className='mx-auto mt-2 mb-4 flex items-center font-mono text-sm text-gray-900 underline decoration-dashed hover:decoration-solid lg:mx-0 lg:mt-0 dark:text-gray-100'
                     >
