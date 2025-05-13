@@ -380,7 +380,9 @@ const ViewProject = () => {
   const [sessionsLoading, setSessionsLoading] = useState<boolean | null>(null) // null - not loaded, true - loading, false - loaded
   const [activeSession, setActiveSession] = useState<any>(null)
   const [sessionLoading, setSessionLoading] = useState(false)
-  const [activePSID, setActivePSID] = useState<string | null>(null)
+  const activePSID = useMemo(() => {
+    return searchParams.get('psid')
+  }, [searchParams])
 
   // errors
   const [errorsSkip, setErrorsSkip] = useState(0)
@@ -1424,14 +1426,6 @@ const ViewProject = () => {
 
       if (eid) {
         setActiveEID(eid)
-      }
-    }
-
-    if (tab === PROJECT_TABS.sessions) {
-      const psid = searchParams.get('psid') as string
-
-      if (psid) {
-        setActivePSID(psid)
       }
     }
   }, [authLoading])
@@ -2946,7 +2940,9 @@ const ViewProject = () => {
                           <LiveVisitorsDropdown
                             onSessionSelect={(psid) => {
                               setDashboardTab(PROJECT_TABS.sessions)
-                              setActivePSID(psid)
+                              const newSearchParams = new URLSearchParams(searchParams.toString())
+                              newSearchParams.set('psid', psid)
+                              setSearchParams(newSearchParams)
                             }}
                             live={liveVisitors}
                           />
@@ -3576,13 +3572,7 @@ const ViewProject = () => {
                         resetActiveTabFilters={resetActiveTabFilters}
                       />
                     ) : null}
-                    <Sessions
-                      sessions={sessions}
-                      onClick={(psid) => {
-                        setActivePSID(psid)
-                      }}
-                      timeFormat={timeFormat}
-                    />
+                    <Sessions sessions={sessions} timeFormat={timeFormat} />
                     {canLoadMoreSessions ? (
                       <button
                         type='button'
@@ -3608,9 +3598,9 @@ const ViewProject = () => {
                       type='button'
                       onClick={() => {
                         setActiveSession(null)
-                        setActivePSID(null)
-                        searchParams.delete('psid')
-                        setSearchParams(searchParams)
+                        const newSearchParams = new URLSearchParams(searchParams.toString())
+                        newSearchParams.delete('psid')
+                        setSearchParams(newSearchParams)
                       }}
                       className='mx-auto mt-2 mb-4 flex items-center font-mono text-sm text-gray-900 underline decoration-dashed hover:decoration-solid lg:mx-0 dark:text-gray-100'
                     >
