@@ -6,36 +6,39 @@ import _replace from 'lodash/replace'
 import _startsWith from 'lodash/startsWith'
 import _truncate from 'lodash/truncate'
 import { FilterIcon } from 'lucide-react'
-import { memo } from 'react'
+import { memo, MouseEvent, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link, useSearchParams } from 'react-router'
 
 import { getLocaleDisplayName } from '~/utils/generic'
 import countries from '~/utils/isoCountries'
 
+import { isFilterValid } from '../utils/filters'
 import { useViewProjectContext } from '../ViewProject'
 
 interface FilterProps {
   column: string
   filter: string
   isExclusive: boolean
-  onRemoveFilter: (column: string, filter: string) => void
-  onChangeExclusive: (column: string, filter: string, isExclusive: boolean) => void
   tnMapping: Record<string, string>
   canChangeExclusive?: boolean
   removable?: boolean
+  onChangeExclusive?: (e: MouseEvent) => void
+  onRemoveFilter?: (e: MouseEvent) => void
 }
 
 export const Filter = ({
   column,
   filter,
   isExclusive,
-  onRemoveFilter,
-  onChangeExclusive,
   tnMapping,
   canChangeExclusive,
   removable,
+  onChangeExclusive,
+  onRemoveFilter,
 }: FilterProps) => {
   const { dataLoading } = useViewProjectContext()
+  const [searchParams] = useSearchParams()
   const {
     t,
     i18n: { language },
@@ -72,6 +75,24 @@ export const Filter = ({
 
   const truncatedFilter = _truncate(displayFilter)
 
+  const createRemoveFilterPath = () => {
+    const newSearchParams = new URLSearchParams(searchParams.toString())
+    const paramKeyInUrl = isExclusive ? `!${column}` : column
+    newSearchParams.delete(paramKeyInUrl, filter)
+    return { search: newSearchParams.toString() }
+  }
+
+  const createToggleExclusivePath = () => {
+    const newSearchParams = new URLSearchParams(searchParams.toString())
+    const oldParamKey = isExclusive ? `!${column}` : column
+    const newParamKey = isExclusive ? column : `!${column}`
+
+    newSearchParams.delete(oldParamKey, filter)
+    newSearchParams.append(newParamKey, filter)
+
+    return { search: newSearchParams.toString() }
+  }
+
   return (
     <span
       title={truncatedFilter === displayFilter ? undefined : displayFilter}
@@ -85,14 +106,34 @@ export const Filter = ({
       {displayColumn}
       &nbsp;
       {canChangeExclusive ? (
-        <span
-          className={cx('cursor-pointer border-b-2 border-dotted border-blue-400 text-blue-400', {
-            'cursor-wait': dataLoading,
-          })}
-          onClick={() => onChangeExclusive(column, filter, !isExclusive)}
+        <Link
+          to={createToggleExclusivePath()}
+          className={cx(
+            'cursor-pointer border-b-2 border-dotted border-blue-400 text-blue-400 hover:border-blue-500 hover:text-blue-500',
+            {
+              'cursor-wait': dataLoading,
+            },
+          )}
+          onClick={(e: MouseEvent) => {
+            if (dataLoading) {
+              e.preventDefault()
+              return
+            }
+            onChangeExclusive?.(e)
+          }}
+          title={
+            isExclusive
+              ? t('project.toggleFilterToIs', { column: displayColumn, filter: truncatedFilter })
+              : t('project.toggleFilterToIsNot', { column: displayColumn, filter: truncatedFilter })
+          }
+          aria-label={
+            isExclusive
+              ? t('project.toggleFilterToIs', { column: displayColumn, filter: truncatedFilter })
+              : t('project.toggleFilterToIsNot', { column: displayColumn, filter: truncatedFilter })
+          }
         >
           {t(`common.${isExclusive ? 'isNot' : 'is'}`)}
-        </span>
+        </Link>
       ) : (
         <span>{t(`common.${isExclusive ? 'isNot' : 'is'}`)}</span>
       )}
@@ -100,35 +141,62 @@ export const Filter = ({
       {truncatedFilter}
       &quot;
       {removable ? (
-        <button
-          onClick={() => onRemoveFilter(column, filter)}
-          type='button'
+        <Link
+          to={createRemoveFilterPath()}
           className={cx(
             'ml-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-gray-800 hover:bg-gray-300 hover:text-gray-900 focus:bg-gray-300 focus:text-gray-900 focus:outline-hidden dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300 dark:focus:bg-gray-800 dark:focus:text-gray-300',
             {
               'cursor-wait': dataLoading,
             },
           )}
+          title={t('project.removeFilter')}
+          aria-label={t('project.removeFilter')}
+          onClick={(e: MouseEvent) => {
+            if (dataLoading) {
+              e.preventDefault()
+              return
+            }
+            onRemoveFilter?.(e)
+          }}
         >
-          <span className='sr-only'>Remove filter</span>
           <svg className='h-2 w-2' stroke='currentColor' fill='none' viewBox='0 0 8 8'>
             <path strokeLinecap='round' strokeWidth='1.5' d='M1 1l6 6m0-6L1 7' />
           </svg>
-        </button>
+        </Link>
       ) : null}
     </span>
   )
 }
 
 interface FiltersProps {
-  onRemoveFilter: (column: string, filter: string) => void
-  onChangeExclusive: (column: string, filter: string, isExclusive: boolean) => void
   tnMapping: Record<string, string>
-  resetFilters: () => void
 }
 
-const Filters = ({ onRemoveFilter, onChangeExclusive, tnMapping, resetFilters }: FiltersProps) => {
+const Filters = ({ tnMapping }: FiltersProps) => {
   const { dataLoading, filters } = useViewProjectContext()
+  const { t } = useTranslation('common')
+  const [searchParams] = useSearchParams()
+
+  const filterlessSearch = useMemo(() => {
+    const newSearchParams = new URLSearchParams(searchParams.toString())
+
+    const entries = Array.from(searchParams.entries())
+
+    for (const [key] of entries) {
+      let processedKey = key
+      if (key.startsWith('!')) {
+        processedKey = key.substring(1)
+      }
+
+      if (!isFilterValid(processedKey, true)) {
+        continue
+      }
+
+      newSearchParams.delete(key)
+    }
+
+    return newSearchParams.toString()
+  }, [searchParams])
 
   if (_isEmpty(filters)) {
     return null
@@ -143,29 +211,22 @@ const Filters = ({ onRemoveFilter, onChangeExclusive, tnMapping, resetFilters }:
             const { column, filter } = props
             const key = `${column}${filter}`
 
-            return (
-              <Filter
-                key={key}
-                onRemoveFilter={onRemoveFilter}
-                onChangeExclusive={onChangeExclusive}
-                tnMapping={tnMapping}
-                canChangeExclusive
-                removable
-                {...props}
-              />
-            )
+            return <Filter key={key} tnMapping={tnMapping} canChangeExclusive removable {...props} />
           })}
         </div>
       </div>
-      <XMarkIcon
-        className={cx(
-          'box-content size-6 shrink-0 cursor-pointer stroke-2 px-1 text-gray-800 hover:text-gray-600 dark:text-gray-200 dark:hover:text-gray-300',
-          {
-            'cursor-wait': dataLoading,
-          },
-        )}
-        onClick={resetFilters}
-      />
+      <Link
+        title={t('project.resetFilters')}
+        aria-label={t('project.resetFilters')}
+        to={{
+          search: filterlessSearch,
+        }}
+        className={cx({
+          'cursor-wait': dataLoading,
+        })}
+      >
+        <XMarkIcon className='box-content size-6 shrink-0 cursor-pointer stroke-2 px-1 text-gray-800 hover:text-gray-600 dark:text-gray-200 dark:hover:text-gray-300' />
+      </Link>
     </div>
   )
 }

@@ -2,24 +2,24 @@ import { AdjustmentsVerticalIcon, PlusCircleIcon } from '@heroicons/react/24/out
 import cx from 'clsx'
 import _map from 'lodash/map'
 import { Trash2Icon } from 'lucide-react'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link, useSearchParams } from 'react-router'
 
 import { Funnel } from '~/lib/models/Project'
+import { useAuth } from '~/providers/AuthProvider'
 
 interface FunnelsListProps {
   funnels?: any[]
   openFunnelSettings: (funnel?: Funnel) => void
-  openFunnel: (funnel: Funnel) => void
   deleteFunnel: (id: string) => void
   loading: boolean
-  authenticated: boolean
   allowedToManage: boolean
 }
 
 interface FunnelCardProps {
   funnel: Funnel
   openFunnelSettings: (funnel: Funnel) => void
-  openFunnel: (funnel: Funnel) => void
   deleteFunnel: (id: string) => void
   loading: boolean
   allowedToManage: boolean
@@ -29,19 +29,21 @@ interface AddFunnelProps {
   openFunnelSettings: (funnel?: Funnel) => void
 }
 
-const FunnelCard = ({
-  funnel,
-  openFunnelSettings,
-  openFunnel,
-  deleteFunnel,
-  loading,
-  allowedToManage,
-}: FunnelCardProps) => {
+const FunnelCard = ({ funnel, openFunnelSettings, deleteFunnel, loading, allowedToManage }: FunnelCardProps) => {
   const { t } = useTranslation()
+  const [searchParams] = useSearchParams()
+
+  const search = useMemo(() => {
+    const params = new URLSearchParams(searchParams)
+    params.set('funnelId', funnel.id)
+    return params.toString()
+  }, [funnel.id, searchParams])
 
   return (
-    <li
-      onClick={() => openFunnel(funnel)}
+    <Link
+      to={{
+        search,
+      }}
       className='min-h-[120px] cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 dark:border-slate-800/25 dark:bg-[#162032] dark:hover:bg-slate-800'
     >
       <div className='px-4 py-4'>
@@ -78,7 +80,7 @@ const FunnelCard = ({
           </div>
         </div>
       </div>
-    </li>
+    </Link>
   )
 }
 
@@ -104,29 +106,24 @@ const AddFunnel = ({ openFunnelSettings }: AddFunnelProps) => {
   )
 }
 
-const FunnelsList = ({
-  funnels,
-  openFunnelSettings,
-  openFunnel,
-  deleteFunnel,
-  loading,
-  authenticated,
-  allowedToManage,
-}: FunnelsListProps) => (
-  <ul className='mt-4 grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
-    {_map(funnels, (funnel) => (
-      <FunnelCard
-        key={funnel.id}
-        funnel={funnel}
-        deleteFunnel={deleteFunnel}
-        openFunnelSettings={openFunnelSettings}
-        openFunnel={openFunnel}
-        loading={loading}
-        allowedToManage={allowedToManage}
-      />
-    ))}
-    {authenticated && allowedToManage ? <AddFunnel openFunnelSettings={openFunnelSettings} /> : null}
-  </ul>
-)
+const FunnelsList = ({ funnels, openFunnelSettings, deleteFunnel, loading, allowedToManage }: FunnelsListProps) => {
+  const { isAuthenticated } = useAuth()
+
+  return (
+    <div role='list' className='mt-4 grid grid-cols-1 gap-x-6 gap-y-3 lg:grid-cols-3 lg:gap-y-6'>
+      {_map(funnels, (funnel) => (
+        <FunnelCard
+          key={funnel.id}
+          funnel={funnel}
+          deleteFunnel={deleteFunnel}
+          openFunnelSettings={openFunnelSettings}
+          loading={loading}
+          allowedToManage={allowedToManage}
+        />
+      ))}
+      {isAuthenticated && allowedToManage ? <AddFunnel openFunnelSettings={openFunnelSettings} /> : null}
+    </div>
+  )
+}
 
 export default FunnelsList

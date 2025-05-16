@@ -7,7 +7,7 @@ import { CalendarIcon } from 'lucide-react'
 import React, { memo, Fragment, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { ALL_PERIODS } from '~/lib/constants'
+import { VALID_TIME_BUCKETS, TimeBucket } from '~/lib/constants'
 
 interface TBPeriodSelectorProps {
   title: string | number | React.ReactNode
@@ -19,8 +19,8 @@ interface TBPeriodSelectorProps {
     timeBucket?: string
     periods?: string
   }
-  updateTimebucket: (timeBucket: string) => void
-  timeBucket: string
+  updateTimebucket: (timeBucket: TimeBucket) => void
+  timeBucket: TimeBucket
 }
 
 const TBPeriodSelector = ({
@@ -34,8 +34,8 @@ const TBPeriodSelector = ({
 }: TBPeriodSelectorProps) => {
   const { t } = useTranslation('common')
 
-  const periods = useMemo(() => {
-    return _map(ALL_PERIODS, (period: string) => ({
+  const timeBuckets = useMemo(() => {
+    return _map(VALID_TIME_BUCKETS, (period: TimeBucket) => ({
       label: t(`project.${period}`),
       value: period,
       available: _includes(activePeriod?.tbs, period),
@@ -77,7 +77,7 @@ const TBPeriodSelector = ({
                     classes?.timeBucket,
                   )}
                 >
-                  {_map(periods, ({ label, value, available }) => (
+                  {_map(timeBuckets, ({ label, value, available }) => (
                     <PopoverButton
                       key={value}
                       type='button'

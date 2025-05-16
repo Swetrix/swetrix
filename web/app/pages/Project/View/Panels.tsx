@@ -33,6 +33,7 @@ import {
 } from 'lucide-react'
 import React, { memo, useState, useEffect, useMemo, Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link, LinkProps, useNavigate } from 'react-router'
 
 import { PROJECT_TABS } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
@@ -293,10 +294,10 @@ interface MetadataProps {
   properties: Properties
   chartData: any
   filters: Filter[]
-  onFilter: (column: string, filter: any, isExclusive?: boolean) => Promise<void>
   getCustomEventMetadata: (event: string) => Promise<any>
   getPropertyMetadata: (property: string) => Promise<any>
   customTabs: any
+  getFilterLink: (column: string, value: string) => LinkProps['to']
 }
 
 interface CustomEventsProps extends MetadataProps {
@@ -507,10 +508,10 @@ const CustomEvents = ({
   customs,
   chartData,
   filters,
-  onFilter,
   customTabs = [],
   getCustomEventMetadata,
   setActiveTab,
+  getFilterLink,
 }: CustomEventsProps) => {
   const { t } = useTranslation('common')
   const [page, setPage] = useState(0)
@@ -537,6 +538,7 @@ const CustomEvents = ({
     sortByAscend: false,
     sortByDescend: false,
   })
+  const navigate = useNavigate()
 
   useEffect(() => {
     const sizeKeys = _size(keys)
@@ -755,7 +757,8 @@ const CustomEvents = ({
                       data={eventsMetadata[ev]}
                       uniques={uniques}
                       onClick={async (key, value) => {
-                        await onFilter(`ev:key:${key}`, value)
+                        const link = getFilterLink(`ev:key:${key}`, value)
+                        navigate(link)
                         setTriggerEventWhenFiltersChange(ev)
                       }}
                       displayKeyAsHeader
@@ -882,7 +885,10 @@ const CustomEvents = ({
             <tr
               key={ev}
               className='group cursor-pointer text-gray-900 hover:bg-gray-100 dark:text-gray-50 hover:dark:bg-slate-700'
-              onClick={() => onFilter('ev', ev)}
+              onClick={() => {
+                const link = getFilterLink('ev', ev)
+                navigate(link)
+              }}
             >
               <td className='flex items-center text-left'>
                 {ev}
@@ -967,10 +973,10 @@ const CustomEvents = ({
 const PageProperties = ({
   properties,
   chartData,
-  onFilter,
   filters,
   getPropertyMetadata,
   setActiveTab,
+  getFilterLink,
 }: PagePropertiesProps) => {
   const { t } = useTranslation('common')
   const [page, setPage] = useState(0)
@@ -996,6 +1002,7 @@ const PageProperties = ({
     sortByAscend: false,
     sortByDescend: false,
   })
+  const navigate = useNavigate()
 
   useEffect(() => {
     const sizeKeys = _size(keys)
@@ -1201,7 +1208,8 @@ const PageProperties = ({
                       data={details[tag]}
                       uniques={uniques}
                       onClick={async (key, value) => {
-                        await onFilter(`tag:key:${key}`, value)
+                        const link = getFilterLink(`tag:key:${key}`, value)
+                        navigate(link)
                         setTriggerTagWhenFiltersChange(tag)
                       }}
                     />
@@ -1279,7 +1287,10 @@ const PageProperties = ({
             <tr
               key={tag}
               className='group cursor-pointer text-gray-900 hover:bg-gray-100 dark:text-gray-50 hover:dark:bg-slate-700'
-              onClick={() => onFilter('tag:key', tag)}
+              onClick={() => {
+                const link = getFilterLink('tag:key', tag)
+                navigate(link)
+              }}
             >
               <td className='flex items-center text-left'>
                 {tag}
@@ -1371,6 +1382,25 @@ const Metadata = (props: MetadataProps) => {
   return <PageProperties {...props} setActiveTab={setActiveTab} />
 }
 
+interface FilterWrapperProps {
+  children: React.ReactNode
+  as: 'Link' | 'div'
+  to?: LinkProps['to']
+  [key: string]: any
+}
+
+const FilterWrapper = ({ children, as, to, ...props }: FilterWrapperProps) => {
+  if (as === 'Link') {
+    return (
+      <Link {...(props as any)} to={to}>
+        {children}
+      </Link>
+    )
+  }
+
+  return <div {...props}>{children}</div>
+}
+
 interface PanelProps {
   name: React.ReactNode
   data: Entry[]
@@ -1381,9 +1411,9 @@ interface PanelProps {
   icon: any
   id: string
   hideFilters?: boolean
-  onFilter: any
   customTabs?: any
   onFragmentChange?: (arg: number) => void
+  getFilterLink?: (column: string, value: string) => LinkProps['to']
 }
 
 const Panel = ({
@@ -1396,9 +1426,9 @@ const Panel = ({
   icon,
   id,
   hideFilters,
-  onFilter = () => {},
   customTabs = [],
   onFragmentChange = () => {},
+  getFilterLink = () => '',
 }: PanelProps) => {
   const { dataLoading, activeTab } = useViewProjectContext()
   const { t } = useTranslation('common')
@@ -1413,8 +1443,7 @@ const Panel = ({
   const [isReversedUserFlow, setIsReversedUserFlow] = useState(false)
   const canGoPrev = () => page > 0
   const canGoNext = () => page < _floor((_size(entries) - 1) / ENTRIES_PER_PANEL)
-
-  const _onFilter = hideFilters ? () => {} : onFilter
+  const navigate = useNavigate()
 
   useEffect(() => {
     const sizeKeys = _size(entries)
@@ -1460,12 +1489,29 @@ const Panel = ({
         onExpandClick={() => setIsModalOpen(true)}
         customTabs={customTabs}
       >
-        <InteractiveMap data={data} total={total} onClickCountry={(key) => _onFilter(id, key)} />
+        <InteractiveMap
+          data={data}
+          total={total}
+          onClickCountry={(key) => {
+            const link = getFilterLink(id, key)
+            navigate(link)
+          }}
+        />
         <Modal
           onClose={() => setIsModalOpen(false)}
           closeText={t('common.close')}
           isOpened={isModalOpen}
-          message={<InteractiveMap data={data} total={total} onClickCountry={(key) => _onFilter(id, key)} />}
+          message={
+            <InteractiveMap
+              data={data}
+              total={total}
+              onClickCountry={(key) => {
+                const link = getFilterLink(id, key)
+                navigate(link)
+                setIsModalOpen(false)
+              }}
+            />
+          }
           size='large'
         />
       </PanelContainer>
@@ -1573,14 +1619,17 @@ const Panel = ({
           const rowData = rowMapper(entry)
           const valueData = valueMapper(count)
 
+          const link = getFilterLink(id, entryName)
+
           return (
             <Fragment key={`${id}-${entryName}-${Object.values(rest).join('-')}`}>
-              <div
+              <FilterWrapper
+                as={link ? 'Link' : 'div'}
+                to={link}
                 className={cx('mt-[0.32rem] flex justify-between rounded-sm font-mono first:mt-0 dark:text-gray-50', {
                   'group cursor-pointer hover:bg-gray-100 hover:dark:bg-slate-700': !hideFilters && !dataLoading,
                   'cursor-wait': dataLoading,
                 })}
-                onClick={() => _onFilter(id, entryName)}
               >
                 {linkContent ? (
                   <a
@@ -1617,7 +1666,7 @@ const Panel = ({
                     {activeTab === PROJECT_TABS.traffic ? nFormatter(valueData, 1) : valueData}
                   </span>
                 </div>
-              </div>
+              </FilterWrapper>
               <Progress now={perc} />
             </Fragment>
           )

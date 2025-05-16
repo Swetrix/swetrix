@@ -32,8 +32,6 @@ const getCustomLabel = (dates: Date[], t: typeof i18nextT, language?: string): s
   return t('project.custom')
 }
 
-export const ALL_PERIODS = ['minute', 'hour', 'day', 'month', 'year']
-
 export interface TBPeriodPairsProps {
   label: string
   period: Period
