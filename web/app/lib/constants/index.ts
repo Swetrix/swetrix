@@ -67,7 +67,7 @@ export type TimeBucket = (typeof VALID_TIME_BUCKETS)[number]
 export const tbPeriodPairs = (
   t: typeof i18nextT,
   tbs?: TimeBucket[] | null,
-  dates?: Date[],
+  dates?: Date[] | null,
   language?: string,
 ): TBPeriodPairsProps[] => [
   {
@@ -142,7 +142,7 @@ export const tbPeriodPairs = (
 export const captchaTbPeriodPairs = (
   t: typeof i18nextT,
   tbs?: TimeBucket[] | null,
-  dates?: Date[],
+  dates?: Date[] | null,
   language?: string,
 ): TBPeriodPairsProps[] => [
   {

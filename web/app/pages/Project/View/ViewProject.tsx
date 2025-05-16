@@ -37,17 +37,7 @@ import {
   SettingsIcon,
   BanIcon,
 } from 'lucide-react'
-import React, {
-  useState,
-  useEffect,
-  useMemo,
-  useRef,
-  useCallback,
-  createContext,
-  useContext,
-  SetStateAction,
-  Dispatch,
-} from 'react'
+import React, { useState, useEffect, useMemo, useRef, useCallback, createContext, useContext } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, Link, useSearchParams, LinkProps } from 'react-router'
@@ -218,10 +208,8 @@ interface ViewProjectContextType {
   filters: Filter[]
 
   // Functions
-  setDateRange: Dispatch<SetStateAction<Date[] | null>>
   updatePeriod: (newPeriod: { period: Period; label?: string }) => void
   updateTimebucket: (newTimebucket: TimeBucket) => void
-  setPeriodPairs: Dispatch<SetStateAction<TBPeriodPairsProps[]>>
 
   // Refs
   refCalendar: React.MutableRefObject<any>
@@ -254,8 +242,6 @@ const ViewProject = () => {
     i18n: { language },
   } = useTranslation('common')
 
-  const [periodPairs, setPeriodPairs] = useState<TBPeriodPairsProps[]>(tbPeriodPairs(t, undefined, undefined, language))
-
   const [customExportTypes, setCustomExportTypes] = useState<any[]>([])
   const [customPanelTabs, setCustomPanelTabs] = useState<any[]>([])
   const [sdkInstance, setSdkInstance] = useState<any>(null)
@@ -272,8 +258,6 @@ const ViewProject = () => {
   const projectQueryTabs = searchParams.get('tabs') ? searchParams.get('tabs')?.split(',') : []
 
   const [liveVisitors, setLiveVisitors] = useState(0)
-
-  const [areFiltersParsed, setAreFiltersParsed] = useState(false)
 
   const [panelsData, setPanelsData] = useState<{
     types: (keyof Params)[]
@@ -329,9 +313,6 @@ const ViewProject = () => {
   const tnMapping = typeNameMapping(t)
   const refCalendar = useRef(null)
   const refCalendarCompare = useRef(null)
-  const [dateRange, setDateRange] = useState<null | Date[]>(
-    preferences.rangeDate ? [new Date(preferences.rangeDate[0]), new Date(preferences.rangeDate[1])] : null,
-  )
   const activeTab = useMemo(() => {
     const tab = searchParams.get('tab') as keyof typeof PROJECT_TABS
 
@@ -349,22 +330,78 @@ const ViewProject = () => {
       return urlPeriod
     }
 
-    return preferences.period || periodPairs[4].period
-  }, [searchParams, preferences.period, periodPairs])
+    return preferences.period || '7d'
+  }, [searchParams, preferences.period])
+
+  const [dateRangeCompare, setDateRangeCompare] = useState<null | Date[]>(null)
+
+  const dateRange = useMemo<Date[] | null>(() => {
+    if (period !== 'custom') {
+      return null
+    }
+
+    let initialDateRange: Date[] | null = preferences.rangeDate
+      ? [new Date(preferences.rangeDate[0]), new Date(preferences.rangeDate[1])]
+      : null
+
+    const from = searchParams.get('from')
+    const to = searchParams.get('to')
+
+    if (from && to) {
+      const fromDate = new Date(from)
+      const toDate = new Date(to)
+
+      if (fromDate.getDate() && toDate.getDate()) {
+        initialDateRange = [fromDate, toDate]
+      }
+    }
+
+    return initialDateRange
+  }, [period, searchParams, preferences.rangeDate])
+
+  const periodPairs = useMemo<TBPeriodPairsProps[]>(() => {
+    let tbs = null
+
+    if (dateRange) {
+      const days = Math.ceil(Math.abs(dateRange[1].getTime() - dateRange[0].getTime()) / (1000 * 3600 * 24))
+
+      for (const index in timeBucketToDays) {
+        if (timeBucketToDays[index].lt >= days) {
+          tbs = timeBucketToDays[index].tb
+        }
+      }
+    }
+
+    return tbPeriodPairs(t, tbs, dateRange, language)
+  }, [t, language, dateRange])
 
   const timeBucket = useMemo<TimeBucket>(() => {
+    let _timeBucket = preferences.timeBucket || periodPairs[4].tbs[1]
     const urlTimeBucket = searchParams.get('timeBucket') as TimeBucket
 
     if (VALID_TIME_BUCKETS.includes(urlTimeBucket)) {
       const newPeriodFull = _find(periodPairs, (el) => el.period === period)
 
-      // todo: if timebucket is invalid for the period, should we update the url right away here?
       if (newPeriodFull?.tbs?.includes(urlTimeBucket)) {
-        return urlTimeBucket
+        _timeBucket = urlTimeBucket
       }
     }
 
-    return preferences.timeBucket || periodPairs[4].tbs[1]
+    if (dateRange) {
+      const days = Math.ceil(Math.abs(dateRange[1].getTime() - dateRange[0].getTime()) / (1000 * 3600 * 24))
+
+      for (const index in timeBucketToDays) {
+        if (timeBucketToDays[index].lt >= days) {
+          if (!timeBucketToDays[index].tb?.includes(_timeBucket)) {
+            _timeBucket = timeBucketToDays[index].tb[0]
+          }
+
+          break
+        }
+      }
+    }
+
+    return _timeBucket
   }, [searchParams, preferences.timeBucket, periodPairs, period])
 
   const activePeriod = useMemo(() => _find(periodPairs, (p) => p.period === period), [period, periodPairs])
@@ -571,7 +608,6 @@ const ViewProject = () => {
     () => _find(periodPairsCompare, (p) => p.period === activePeriodCompare)?.label,
     [periodPairsCompare, activePeriodCompare],
   )
-  const [dateRangeCompare, setDateRangeCompare] = useState<null | Date[]>(null)
   const [dataChartCompare, setDataChartCompare] = useState<any>({})
   const [overallCompare, setOverallCompare] = useState<Partial<OverallObject>>({})
   const [overallPerformanceCompare, setOverallPerformanceCompare] = useState<Partial<OverallPerformanceObject>>({})
@@ -1251,22 +1287,7 @@ const ViewProject = () => {
       sdkInstance?._emitEvent('load', sdkData)
 
       if (period === 'all' && !_isEmpty(data.timeBucket)) {
-        // @ts-expect-error
-        newTimebucket = _includes(data.timeBucket, timeBucket) ? timeBucket : data.timeBucket[0]
-        // @ts-expect-error
-        setPeriodPairs((prev) => {
-          const newPeriodPairs = _map(prev, (item) => {
-            if (item.period === 'all') {
-              return {
-                ...item,
-                // @ts-expect-error
-                tbs: data.timeBucket.length > 2 ? [data.timeBucket[0], data.timeBucket[1]] : data.timeBucket,
-              }
-            }
-            return item
-          })
-          return newPeriodPairs
-        })
+        newTimebucket = _includes(data.timeBucket, timeBucket) ? timeBucket : (data.timeBucket?.[0] as TimeBucket)
 
         const newSearchParams = new URLSearchParams(searchParams.toString())
         newSearchParams.set('timeBucket', newTimebucket)
@@ -1436,17 +1457,13 @@ const ViewProject = () => {
   }, [period, dateRange, timeBucket, activePSID])
 
   useEffect(() => {
-    if (!areFiltersParsed) {
-      return
-    }
-
     if (!activeEID) {
       setActiveError(null)
       return
     }
 
     loadError(activeEID)
-  }, [period, dateRange, timeBucket, activeEID, filters, areFiltersParsed])
+  }, [period, dateRange, timeBucket, activeEID, filters])
 
   const loadSessions = async (forcedSkip?: number) => {
     if (sessionsLoading) {
@@ -1569,7 +1586,7 @@ const ViewProject = () => {
     setDataLoading(true)
 
     try {
-      let dataPerf: { timeBucket?: any; params?: any; chart?: any }
+      let dataPerf: { timeBucket?: TimeBucket[]; params?: any; chart?: any }
       let from
       let to
       let dataCompare
@@ -1673,22 +1690,9 @@ const ViewProject = () => {
       let newTimebucket = timeBucket
 
       if (period === 'all' && !_isEmpty(dataPerf.timeBucket)) {
-        newTimebucket = _includes(dataPerf.timeBucket, timeBucket) ? timeBucket : dataPerf.timeBucket[0]
-        setPeriodPairs((prev) => {
-          const newPeriodPairs = _map(prev, (item) => {
-            if (item.period === 'all') {
-              return {
-                ...item,
-                tbs:
-                  dataPerf.timeBucket.length > 2
-                    ? [dataPerf.timeBucket[0], dataPerf.timeBucket[1]]
-                    : dataPerf.timeBucket,
-              }
-            }
-            return item
-          })
-          return newPeriodPairs
-        })
+        newTimebucket = _includes(dataPerf.timeBucket, timeBucket)
+          ? timeBucket
+          : (dataPerf.timeBucket?.[0] as TimeBucket)
         const newSearchParams = new URLSearchParams(searchParams.toString())
         newSearchParams.set('timeBucket', newTimebucket)
         setSearchParams(newSearchParams)
@@ -1826,43 +1830,6 @@ const ViewProject = () => {
     setSearchParams(newSearchParams)
   }
 
-  // TODO: DO WE NEED THIS?
-  useEffect(() => {
-    const parsePeriodFilters = () => {
-      try {
-        const initialPeriod = (searchParams.get('period') as Period) || preferences.period || '7d'
-
-        if (!_includes(VALID_PERIODS, initialPeriod)) {
-          return
-        }
-
-        if (initialPeriod === 'custom') {
-          // @ts-expect-error
-          const from = new Date(searchParams.get('from'))
-          // @ts-expect-error
-          const to = new Date(searchParams.get('to'))
-          if (from.getDate() && to.getDate()) {
-            onRangeDateChange([from, to], true)
-            setDateRange([from, to])
-          }
-          return
-        }
-
-        setPeriodPairs(tbPeriodPairs(t, undefined, undefined, language))
-        setDateRange(null)
-        updatePeriod({
-          period: initialPeriod,
-        })
-      } catch {
-        //
-      }
-    }
-
-    parsePeriodFilters()
-
-    setAreFiltersParsed(true)
-  }, [activeTab])
-
   const refreshStats = async () => {
     if (!authLoading && !dataLoading) {
       if (activeTab === PROJECT_TABS.performance) {
@@ -1902,29 +1869,16 @@ const ViewProject = () => {
   }
 
   useEffect(() => {
-    if (!areFiltersParsed || activeTab !== PROJECT_TABS.traffic || authLoading || !project) return
+    if (activeTab !== PROJECT_TABS.traffic || authLoading || !project) return
 
     loadAnalytics()
-  }, [
-    mode,
-    areFiltersParsed,
-    activeTab,
-    customMetrics,
-    filters,
-    authLoading,
-    project,
-    isActiveCompare,
-    dateRange,
-    period,
-    timeBucket,
-  ])
+  }, [mode, activeTab, customMetrics, filters, authLoading, project, isActiveCompare, dateRange, period, timeBucket])
 
   useEffect(() => {
-    if (!areFiltersParsed || activeTab !== PROJECT_TABS.performance || authLoading || !project) return
+    if (activeTab !== PROJECT_TABS.performance || authLoading || !project) return
 
     loadAnalyticsPerf()
   }, [
-    areFiltersParsed,
     activeTab,
     activePerfMeasure,
     activeChartMetricsPerf,
@@ -1944,32 +1898,20 @@ const ViewProject = () => {
   }, [activeFunnel, activeTab, authLoading, project, dateRange, period, timeBucket])
 
   useEffect(() => {
-    if (authLoading || !areFiltersParsed || activeTab !== PROJECT_TABS.sessions || authLoading || !project) {
+    if (authLoading || activeTab !== PROJECT_TABS.sessions || authLoading || !project) {
       return
     }
 
     loadSessions()
-  }, [activeTab, dateRange, filters, id, period, projectPassword, timezone, authLoading, project, areFiltersParsed])
+  }, [activeTab, dateRange, filters, id, period, projectPassword, timezone, authLoading, project])
 
   useEffect(() => {
-    if (authLoading || !areFiltersParsed || activeTab !== PROJECT_TABS.errors || authLoading || !project) {
+    if (authLoading || activeTab !== PROJECT_TABS.errors || authLoading || !project) {
       return
     }
 
     loadErrors()
-  }, [
-    activeTab,
-    errorOptions,
-    dateRange,
-    filters,
-    id,
-    period,
-    projectPassword,
-    timezone,
-    areFiltersParsed,
-    authLoading,
-    project,
-  ])
+  }, [activeTab, errorOptions, dateRange, filters, id, period, projectPassword, timezone, authLoading, project])
 
   useEffect(() => {
     if (activeTab === PROJECT_TABS.traffic) {
@@ -2166,7 +2108,6 @@ const ViewProject = () => {
   }, [sdkInstance, project])
 
   useEffect(() => {
-    setPeriodPairs(tbPeriodPairs(t, undefined, undefined, language))
     setPeriodPairsCompare(tbPeriodPairsCompare(t, undefined, language))
   }, [t, language])
 
@@ -2182,58 +2123,11 @@ const ViewProject = () => {
     setErrorsLoading(null)
   }
 
-  const onRangeDateChange = (dates: Date[], onRender?: boolean) => {
-    const days = Math.ceil(Math.abs(dates[1].getTime() - dates[0].getTime()) / (1000 * 3600 * 24))
-
-    for (const index in timeBucketToDays) {
-      if (timeBucketToDays[index].lt >= days) {
-        let eventEmitTimeBucket = timeBucket
-        const newSearchParams = new URLSearchParams(searchParams.toString())
-
-        if (!onRender && !_includes(timeBucketToDays[index].tb, timeBucket)) {
-          eventEmitTimeBucket = timeBucketToDays[index].tb[0]
-          newSearchParams.set('timeBucket', eventEmitTimeBucket)
-        }
-
-        newSearchParams.set('from', dates[0].toISOString())
-        newSearchParams.set('to', dates[1].toISOString())
-        newSearchParams.set('period', 'custom')
-        setSearchParams(newSearchParams)
-
-        setPeriodPairs(tbPeriodPairs(t, timeBucketToDays[index].tb, dates, language))
-
-        updatePreferences({
-          period: 'custom',
-          timeBucket: timeBucketToDays[index].tb[0],
-          rangeDate: dates,
-        })
-
-        setCanLoadMoreSessions(false)
-        resetSessions()
-        resetErrors()
-
-        sdkInstance?._emitEvent('timeupdate', {
-          period: 'custom',
-          timeBucket: eventEmitTimeBucket,
-          dateRange: dates,
-        })
-
-        break
-      }
-    }
-  }
-
   useEffect(() => {
     if (!_isEmpty(activeChartMetricsCustomEvents)) {
       setActiveChartMetricsCustomEvents([])
     }
   }, [period, filters])
-
-  useEffect(() => {
-    if (dateRange && areFiltersParsed) {
-      onRangeDateChange(dateRange)
-    }
-  }, [dateRange, t, areFiltersParsed])
 
   useEffect(() => {
     if (!project || project.isLocked) {
@@ -2286,8 +2180,6 @@ const ViewProject = () => {
       setCanLoadMoreSessions(false)
       resetSessions()
       resetErrors()
-
-      setDateRange(null)
     }
 
     setSearchParams(newSearchParams)
@@ -2395,6 +2287,13 @@ const ViewProject = () => {
     }
   }
 
+  const resetDateRange = () => {
+    const newSearchParams = new URLSearchParams(searchParams.toString())
+    newSearchParams.delete('from')
+    newSearchParams.delete('to')
+    setSearchParams(newSearchParams)
+  }
+
   /* KEYBOARD SHORTCUTS */
   const generalShortcutsActions = {
     B: () => setChartTypeOnClick(chartTypes.bar),
@@ -2479,7 +2378,8 @@ const ViewProject = () => {
       return
     }
 
-    setDateRange(null)
+    resetDateRange()
+
     updatePeriod(pair)
   })
 
@@ -2661,10 +2561,8 @@ const ViewProject = () => {
             filters,
 
             // Functions
-            setDateRange,
             updatePeriod,
             updateTimebucket,
-            setPeriodPairs,
 
             // Refs
             refCalendar,
@@ -3180,8 +3078,7 @@ const ViewProject = () => {
                                 refCalendar.current.openCalendar()
                               }, 100)
                             } else {
-                              setPeriodPairs(tbPeriodPairs(t, undefined, undefined, language))
-                              setDateRange(null)
+                              resetDateRange()
                               updatePeriod(pair)
                             }
                           }}
@@ -3221,7 +3118,13 @@ const ViewProject = () => {
                         <FlatPicker
                           className='!mx-0'
                           ref={refCalendar}
-                          onChange={setDateRange}
+                          onChange={([from, to]) => {
+                            const newSearchParams = new URLSearchParams(searchParams.toString())
+                            newSearchParams.set('from', from.toISOString())
+                            newSearchParams.set('to', to.toISOString())
+                            newSearchParams.set('period', 'custom')
+                            setSearchParams(newSearchParams)
+                          }}
                           value={dateRange || []}
                           maxDateMonths={MAX_MONTHS_IN_PAST}
                           maxRange={0}

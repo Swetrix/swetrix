@@ -84,12 +84,8 @@ const ViewCaptcha = () => {
     t,
     i18n: { language },
   } = useTranslation('common')
-  const [periodPairs, setPeriodPairs] = useState<TBPeriodPairsProps[]>(
-    captchaTbPeriodPairs(t, undefined, undefined, language),
-  )
   const dashboardRef = useRef(null)
 
-  const [areFiltersParsed, setAreFiltersParsed] = useState(false)
   const [panelsData, setPanelsData] = useState<any>({})
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
@@ -101,8 +97,58 @@ const ViewCaptcha = () => {
       return urlPeriod
     }
 
-    return preferences.period || periodPairs[4].period
-  }, [searchParams, preferences.period, periodPairs])
+    return preferences.period || '7d'
+  }, [searchParams, preferences.period])
+
+  const [chartData, setChartData] = useState<any>({})
+  const [dataLoading, setDataLoading] = useState(false)
+
+  const filters = useMemo<Filter[]>(() => {
+    return parseFilters(searchParams)
+  }, [searchParams])
+
+  const tnMapping = typeNameMapping(t)
+  const refCalendar = useRef(null)
+
+  const dateRange = useMemo<Date[] | null>(() => {
+    if (period !== 'custom') {
+      return null
+    }
+
+    let initialDateRange: Date[] | null = preferences.rangeDate
+      ? [new Date(preferences.rangeDate[0]), new Date(preferences.rangeDate[1])]
+      : null
+
+    const from = searchParams.get('from')
+    const to = searchParams.get('to')
+
+    if (from && to) {
+      const fromDate = new Date(from)
+      const toDate = new Date(to)
+
+      if (fromDate.getDate() && toDate.getDate()) {
+        initialDateRange = [fromDate, toDate]
+      }
+    }
+
+    return initialDateRange
+  }, [period, searchParams, preferences.rangeDate])
+
+  const periodPairs = useMemo<TBPeriodPairsProps[]>(() => {
+    let tbs = null
+
+    if (dateRange) {
+      const days = Math.ceil(Math.abs(dateRange[1].getTime() - dateRange[0].getTime()) / (1000 * 3600 * 24))
+
+      for (const index in timeBucketToDays) {
+        if (timeBucketToDays[index].lt >= days) {
+          tbs = timeBucketToDays[index].tb
+        }
+      }
+    }
+
+    return captchaTbPeriodPairs(t, tbs, dateRange, language)
+  }, [t, language, dateRange])
 
   const timeBucket = useMemo<TimeBucket>(() => {
     const urlTimeBucket = searchParams.get('timeBucket') as TimeBucket
@@ -120,19 +166,6 @@ const ViewCaptcha = () => {
   }, [searchParams, preferences.timeBucket, periodPairs, period])
 
   const activePeriod = useMemo(() => _find(periodPairs, (p) => p.period === period), [period, periodPairs])
-
-  const [chartData, setChartData] = useState<any>({})
-  const [dataLoading, setDataLoading] = useState(false)
-
-  const filters = useMemo<Filter[]>(() => {
-    return parseFilters(searchParams)
-  }, [searchParams])
-
-  const tnMapping = typeNameMapping(t)
-  const refCalendar = useRef(null)
-  const [dateRange, setDateRange] = useState<Date[] | null>(
-    preferences?.rangeDate ? [new Date(preferences.rangeDate[0]), new Date(preferences.rangeDate[1])] : null,
-  )
 
   const timeFormat = useMemo<'12-hour' | '24-hour'>(() => user?.timeFormat || TimeFormat['12-hour'], [user])
   const [ref, size] = useSize() as any
@@ -193,21 +226,6 @@ const ViewCaptcha = () => {
 
       if (period === 'all' && !_isEmpty(timeBucketFromResponse)) {
         newTimebucket = _includes(timeBucketFromResponse, timeBucket) ? timeBucket : timeBucketFromResponse[0]
-        setPeriodPairs((prev) => {
-          const newPeriodPairs = _map(prev, (item) => {
-            if (item.period === 'all') {
-              return {
-                ...item,
-                tbs:
-                  timeBucketFromResponse.length > 2
-                    ? [timeBucketFromResponse[0], timeBucketFromResponse[1]]
-                    : timeBucketFromResponse,
-              }
-            }
-            return item
-          })
-          return newPeriodPairs
-        })
 
         const newSearchParams = new URLSearchParams(searchParams.toString())
         newSearchParams.set('timeBucket', newTimebucket)
@@ -261,12 +279,12 @@ const ViewCaptcha = () => {
   }, [chartData, mainChart])
 
   useEffect(() => {
-    if (!areFiltersParsed || authLoading || !project) return
+    if (authLoading || !project) return
 
     loadCaptcha()
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [areFiltersParsed, filters, authLoading, project, dateRange, period, timeBucket])
+  }, [filters, authLoading, project, dateRange, period, timeBucket])
 
   const getFilterLink = (column: string, value: string): LinkProps['to'] => {
     const isFilterActive = filters.findIndex((filter) => filter.column === column && filter.filter === value) >= 0
@@ -295,85 +313,6 @@ const ViewCaptcha = () => {
     loadCaptcha()
   }
 
-  // TODO: DO WE NEED THIS?
-  useEffect(() => {
-    const parsePeriodFilters = () => {
-      try {
-        const initialPeriod = searchParams.get('period') || preferences?.period || '7d'
-
-        if (!_includes(VALID_PERIODS, initialPeriod)) {
-          return
-        }
-
-        if (initialPeriod === 'custom') {
-          // @ts-expect-error
-          const from = new Date(searchParams.get('from'))
-          // @ts-expect-error
-          const to = new Date(searchParams.get('to'))
-          if (from.getDate() && to.getDate()) {
-            onRangeDateChange([from, to], true)
-            setDateRange([from, to])
-          }
-          return
-        }
-
-        setPeriodPairs(captchaTbPeriodPairs(t, undefined, undefined, language))
-        setDateRange(null)
-        updatePeriod({
-          period: initialPeriod,
-        })
-      } catch {
-        //
-      }
-    }
-
-    parsePeriodFilters()
-
-    setAreFiltersParsed(true)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const onRangeDateChange = (dates: Date[], onRender?: any) => {
-    const days = Math.ceil(Math.abs(dates[1].getTime() - dates[0].getTime()) / (1000 * 3600 * 24))
-
-    const newSearchParams = new URLSearchParams(searchParams.toString())
-
-    // setting allowed time buckets for the specified date range (period)
-
-    for (const index in timeBucketToDays) {
-      if (timeBucketToDays[index].lt >= days) {
-        let eventEmitTimeBucket = timeBucket
-
-        if (!onRender && !_includes(timeBucketToDays[index].tb, timeBucket)) {
-          eventEmitTimeBucket = timeBucketToDays[index].tb[0]
-          newSearchParams.set('timeBucket', eventEmitTimeBucket)
-          setSearchParams(newSearchParams)
-        }
-
-        newSearchParams.set('period', 'custom')
-        newSearchParams.set('from', dates[0].toISOString())
-        newSearchParams.set('to', dates[1].toISOString())
-        setSearchParams(newSearchParams)
-
-        setPeriodPairs(captchaTbPeriodPairs(t, timeBucketToDays[index].tb, dates, language))
-
-        updatePreferences({
-          period: 'custom',
-          timeBucket: timeBucketToDays[index].tb[0],
-          rangeDate: dates,
-        })
-
-        break
-      }
-    }
-  }
-
-  useEffect(() => {
-    if (dateRange && areFiltersParsed) {
-      onRangeDateChange(dateRange)
-    }
-  }, [dateRange, areFiltersParsed]) // eslint-disable-line
-
   const updatePeriod = (newPeriod: any) => {
     const newPeriodFull = _find(periodPairs, (el) => el.period === newPeriod.period)
     let tb: any = timeBucket
@@ -396,9 +335,15 @@ const ViewCaptcha = () => {
         timeBucket: tb,
         rangeDate: undefined,
       })
-      setDateRange(null)
     }
 
+    setSearchParams(newSearchParams)
+  }
+
+  const resetDateRange = () => {
+    const newSearchParams = new URLSearchParams(searchParams.toString())
+    newSearchParams.delete('from')
+    newSearchParams.delete('to')
     setSearchParams(newSearchParams)
   }
 
@@ -455,10 +400,8 @@ const ViewCaptcha = () => {
             filters,
 
             // Functions
-            setDateRange,
             updatePeriod,
             updateTimebucket,
-            setPeriodPairs,
 
             // Refs
             refCalendar,
@@ -554,8 +497,7 @@ const ViewCaptcha = () => {
                             refCalendar.current.openCalendar()
                           }, 100)
                         } else {
-                          setPeriodPairs(captchaTbPeriodPairs(t, undefined, undefined, language))
-                          setDateRange(null)
+                          resetDateRange()
                           updatePeriod(pair)
                         }
                       }}
@@ -573,7 +515,13 @@ const ViewCaptcha = () => {
                     ) : null}
                     <FlatPicker
                       ref={refCalendar}
-                      onChange={(date) => setDateRange(date)}
+                      onChange={([from, to]) => {
+                        const newSearchParams = new URLSearchParams(searchParams.toString())
+                        newSearchParams.set('from', from.toISOString())
+                        newSearchParams.set('to', to.toISOString())
+                        newSearchParams.set('period', 'custom')
+                        setSearchParams(newSearchParams)
+                      }}
                       value={dateRange || []}
                       maxDateMonths={MAX_MONTHS_IN_PAST}
                     />
