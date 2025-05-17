@@ -1,6 +1,6 @@
 import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import _map from 'lodash/map'
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import OutsideClickHandler from 'react-outside-click-handler'
 import { Link } from 'react-router'
@@ -12,58 +12,64 @@ import PulsatingCircle from '~/ui/icons/PulsatingCircle'
 
 import { useCurrentProject, useProjectPassword } from '../../../../providers/CurrentProjectProvider'
 
-interface LiveVisitorsDropdownProps {
-  live: number | string
-  onSessionSelect: (psid: string) => void
-}
-
-const LiveVisitorsDropdown = ({ live, onSessionSelect }: LiveVisitorsDropdownProps) => {
-  const { id } = useCurrentProject()
+const LiveVisitorsDropdown = () => {
+  const { id, liveVisitors, updateLiveVisitors } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
   const { t } = useTranslation()
-  const [show, setShow] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [liveInfo, setLiveInfo] = useState<GetLiveVisitorsInfo[]>([])
 
   const getLiveVisitors = async () => {
+    setIsLoading(true)
+
     try {
-      const info = await getLiveVisitorsInfo(id, projectPassword)
+      // Getting live sessions list and updating live visitors count to make sure it matches the list length
+      const [info] = await Promise.all([getLiveVisitorsInfo(id, projectPassword), updateLiveVisitors()])
       setLiveInfo(info)
     } catch (reason) {
       console.error('[LiveVisitorsDropdown] getLiveVisitors:', reason)
-    } finally {
-      setLoading(false)
     }
+
+    setIsLoading(false)
   }
 
-  useEffect(() => {
-    if (show) {
-      getLiveVisitors()
+  const onOpen = async () => {
+    if (isDropdownVisible) {
+      setIsDropdownVisible(false)
+      return
     }
-  }, [show]) // eslint-disable-line react-hooks/exhaustive-deps
+
+    setIsDropdownVisible(true)
+    await getLiveVisitors()
+  }
 
   return (
-    <OutsideClickHandler onOutsideClick={() => setShow(false)}>
+    <OutsideClickHandler onOutsideClick={() => setIsDropdownVisible(false)}>
       <div
         className='relative flex h-5 cursor-pointer items-center font-mono text-base text-gray-900 dark:text-gray-50'
-        onClick={() => setShow(!show)}
+        onClick={onOpen}
       >
         <PulsatingCircle className='mr-1.5' type='small' />
         <span className='tracking-tighter'>
           {t('dashboard.xLiveVisitors', {
-            amount: live || 0,
+            amount: liveVisitors,
           })}{' '}
         </span>
-        {show ? <ChevronUpIcon className='ml-1 inline h-4 w-4' /> : <ChevronDownIcon className='ml-1 inline h-4 w-4' />}
-        {show ? (
+        {isDropdownVisible ? (
+          <ChevronUpIcon className='ml-1 inline h-4 w-4' />
+        ) : (
+          <ChevronDownIcon className='ml-1 inline h-4 w-4' />
+        )}
+        {isDropdownVisible ? (
           <div
             className={`scrollbar-thin absolute top-3 right-0 z-10 mt-2 max-h-[200px] cursor-auto overflow-y-auto rounded-md border border-black/10 bg-white text-gray-900 dark:border-slate-700/50 dark:bg-slate-900 ${
-              liveInfo.length === 0 ? 'min-w-[200px]' : 'min-w-max'
+              liveInfo.length === 0 || isLoading ? 'min-w-[200px]' : 'min-w-max'
             }`}
           >
             <div className='flex w-full flex-col p-2'>
               <p className='text-sm font-semibold text-gray-900 dark:text-gray-50'>{t('dashboard.liveVisitors')}</p>
-              {loading ? (
+              {isLoading ? (
                 <p className='text-sm text-gray-900 dark:text-gray-50'>{t('common.loading')}</p>
               ) : (
                 <div className='table w-full border-separate border-spacing-y-2'>
@@ -78,13 +84,6 @@ const LiveVisitorsDropdown = ({ live, onSessionSelect }: LiveVisitorsDropdownPro
                         <Link
                           key={psid}
                           className='group table-row cursor-pointer text-sm text-gray-900 dark:text-gray-50'
-                          onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            window.history.pushState({}, '', stringifiedUrl)
-
-                            onSessionSelect(psid)
-                          }}
                           to={stringifiedUrl}
                         >
                           <div className='table-cell rounded-l-lg bg-gray-100 pr-2 align-middle group-hover:bg-gray-200 dark:bg-slate-800 dark:group-hover:bg-slate-700'>
@@ -108,7 +107,7 @@ const LiveVisitorsDropdown = ({ live, onSessionSelect }: LiveVisitorsDropdownPro
             </div>
             <XMarkIcon
               className='absolute top-2 right-2 h-5 w-5 cursor-pointer text-gray-900 dark:text-gray-50'
-              onClick={() => setShow(!show)}
+              onClick={() => setIsDropdownVisible(false)}
             />
           </div>
         ) : null}

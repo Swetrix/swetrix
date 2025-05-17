@@ -46,7 +46,6 @@ import { toast } from 'sonner'
 import {
   getProjectData,
   getOverallStats,
-  getLiveVisitors,
   getPerfData,
   getProjectDataCustomEvents,
   getTrafficCompareData,
@@ -73,7 +72,6 @@ import Header from '~/components/Header'
 import useSize from '~/hooks/useSize'
 import {
   tbPeriodPairs,
-  LIVE_VISITORS_UPDATE_INTERVAL,
   DEFAULT_TIMEZONE,
   CDN_URL,
   isDevelopment,
@@ -234,7 +232,8 @@ export const useViewProjectContext = () => {
 }
 
 const ViewProject = () => {
-  const { id, project, preferences, updatePreferences, extensions, mergeProject, allowedToManage } = useCurrentProject()
+  const { id, project, preferences, updatePreferences, extensions, mergeProject, allowedToManage, liveVisitors } =
+    useCurrentProject()
   const projectPassword = useProjectPassword(id)
 
   const { theme } = useTheme()
@@ -269,8 +268,6 @@ const ViewProject = () => {
 
     return tabs.split(',')
   }, [searchParams])
-
-  const [liveVisitors, setLiveVisitors] = useState(0)
 
   const [panelsData, setPanelsData] = useState<{
     types: (keyof Params)[]
@@ -2165,27 +2162,6 @@ const ViewProject = () => {
     setSessionsLoading(null)
   }
 
-  useEffect(() => {
-    if (!project || project.isLocked) {
-      return
-    }
-
-    const updateLiveVisitors = async () => {
-      const { id: pid } = project
-      const result = await getLiveVisitors([pid], projectPassword)
-
-      setLiveVisitors(result[pid])
-    }
-
-    updateLiveVisitors()
-
-    const interval = setInterval(async () => {
-      await updateLiveVisitors()
-    }, LIVE_VISITORS_UPDATE_INTERVAL)
-
-    return () => clearInterval(interval)
-  }, [project, projectPassword])
-
   const updatePeriod = (newPeriod: { period: Period; label?: string }) => {
     if (period === newPeriod.period) {
       return
@@ -2631,17 +2607,7 @@ const ViewProject = () => {
                           {/* If tab is funnels - then display a funnel name, otherwise a project name */}
                           {activeTab === PROJECT_TABS.funnels ? activeFunnel?.name : project.name}
                         </h2>
-                        {activeTab !== PROJECT_TABS.funnels ? (
-                          <LiveVisitorsDropdown
-                            onSessionSelect={(psid) => {
-                              setDashboardTab(PROJECT_TABS.sessions)
-                              const newSearchParams = new URLSearchParams(searchParams.toString())
-                              newSearchParams.set('psid', psid)
-                              setSearchParams(newSearchParams)
-                            }}
-                            live={liveVisitors}
-                          />
-                        ) : null}
+                        {activeTab !== PROJECT_TABS.funnels ? <LiveVisitorsDropdown /> : null}
                       </div>
                       <div className='mx-auto mt-3 flex w-full max-w-[420px] flex-wrap items-center justify-center space-x-2 gap-y-1 sm:mx-0 sm:w-auto sm:max-w-none sm:flex-nowrap sm:justify-between lg:mt-0'>
                         {activeTab !== PROJECT_TABS.funnels ? (
