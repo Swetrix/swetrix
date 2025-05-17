@@ -1,7 +1,7 @@
-import { CursorArrowRaysIcon } from '@heroicons/react/24/outline'
+import clsx from 'clsx'
 import _map from 'lodash/map'
 import _toUpper from 'lodash/toUpper'
-import { FileTextIcon } from 'lucide-react'
+import { BugIcon, FileTextIcon, MousePointerClickIcon } from 'lucide-react'
 import React from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 
@@ -12,7 +12,7 @@ interface Metadata {
 
 interface PageflowProps {
   pages: {
-    type: 'pageview' | 'event'
+    type: 'pageview' | 'event' | 'error'
     value: string
     created: string
     metadata?: Metadata[]
@@ -21,14 +21,7 @@ interface PageflowProps {
 }
 
 const KeyValue = ({ evKey, evValue }: { evKey: string; evValue: string }) => (
-  <li
-    // Using style until support for break-anywhere is added to Tailwind
-    // https://github.com/tailwindlabs/tailwindcss/pull/12128
-    style={{
-      overflowWrap: 'anywhere',
-    }}
-    className='text-[11px]'
-  >
+  <li className='text-[11px] wrap-anywhere'>
     {evKey}: {evValue}
   </li>
 )
@@ -75,12 +68,20 @@ export const Pageflow = ({ pages, timeFormat }: PageflowProps) => {
                 ) : null}
                 <div className='relative flex space-x-3'>
                   <div>
-                    <span className='flex h-8 w-8 items-center justify-center rounded-full bg-slate-400 dark:bg-slate-800'>
+                    <span
+                      className={clsx('flex h-8 w-8 items-center justify-center rounded-full', {
+                        'bg-slate-400 dark:bg-slate-800': type !== 'error',
+                        'bg-red-400 dark:bg-red-800': type === 'error',
+                      })}
+                    >
                       {type === 'pageview' ? (
                         <FileTextIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
                       ) : null}
                       {type === 'event' ? (
-                        <CursorArrowRaysIcon className='h-5 w-5 text-white' aria-hidden='true' />
+                        <MousePointerClickIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
+                      ) : null}
+                      {type === 'error' ? (
+                        <BugIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
                       ) : null}
                     </span>
                   </div>
@@ -88,7 +89,13 @@ export const Pageflow = ({ pages, timeFormat }: PageflowProps) => {
                     <div className='flex text-sm text-gray-700 dark:text-gray-300'>
                       <Trans
                         t={t}
-                        i18nKey={type === 'pageview' ? 'project.pageviewX' : 'project.eventX'}
+                        i18nKey={
+                          type === 'pageview'
+                            ? 'project.pageviewX'
+                            : type === 'event'
+                              ? 'project.eventX'
+                              : 'project.errorX'
+                        }
                         components={{
                           // @ts-expect-error Children is provided by Trans
                           value: <TransValue metadata={metadata} />,
