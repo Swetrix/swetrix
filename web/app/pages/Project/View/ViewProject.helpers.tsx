@@ -50,6 +50,8 @@ import { AnalyticsFunnel } from '~/lib/models/Project'
 import { getTimeFromSeconds, getStringFromTime, sumArrays, nFormatter } from '~/utils/generic'
 import countries from '~/utils/isoCountries'
 
+import { TrafficLogResponse } from './interfaces/traffic'
+
 const { saveAs } = filesaver
 
 const getAvg = (arr: any) => {
@@ -190,9 +192,9 @@ const CHART_MEASURES_MAPPING_PERF = {
 
 // function to filter the data for the chart
 const getColumns = (
-  chart: Record<string, string[]>,
+  chart: TrafficLogResponse['chart'] & { [key: string]: number[] },
   activeChartMetrics: Record<string, boolean>,
-  compareChart?: Record<string, string[]>,
+  compareChart?: TrafficLogResponse['chart'] & { [key: string]: number[] },
 ) => {
   const { views, bounce, viewsPerUnique, unique, trendlines, sessionDuration, occurrences, avgResponseTime } =
     activeChartMetrics
@@ -242,7 +244,7 @@ const getColumns = (
 
   if (viewsPerUnique) {
     const viewsPerUniqueArray = _map(chart.visits, (el, i) => {
-      if (chart.uniques[i] === '0' || chart.uniques[i] === undefined) {
+      if (chart.uniques[i] === 0 || chart.uniques[i] === undefined) {
         return 0
       }
       return _round(_toNumber(el) / _toNumber(chart.uniques[i]), 1)
@@ -429,7 +431,7 @@ const noRegionPeriods = ['custom', 'yesterday']
 
 // function to get the settings and data for the chart(main diagram)
 const getSettings = (
-  chart: any,
+  chart: TrafficLogResponse['chart'] & { [key: string]: number[] },
   timeBucket: string,
   activeChartMetrics: Record<string, boolean>,
   applyRegions: boolean,
@@ -437,7 +439,7 @@ const getSettings = (
   rotateXAxis: boolean,
   chartType: string,
   customEvents?: Record<string, string[]>,
-  compareChart?: Record<string, string[]>,
+  compareChart?: TrafficLogResponse['chart'] & { [key: string]: number[] },
 ): ChartOptions => {
   const xAxisSize = _size(chart.x)
   const lines: GridLineOptions[] = []
@@ -757,7 +759,7 @@ const getSettingsSession = (
 ): ChartOptions => {
   const xAxisSize = _size(chart.x)
 
-  const columns = getColumns(chart, { views: true }, {})
+  const columns = getColumns(chart, { views: true })
 
   return {
     data: {
@@ -883,7 +885,7 @@ const getSettingsError = (
 ): ChartOptions => {
   const xAxisSize = _size(chart.x)
 
-  const columns = getColumns(chart, { occurrences: true }, {})
+  const columns = getColumns(chart, { occurrences: true })
 
   let regionStart
 

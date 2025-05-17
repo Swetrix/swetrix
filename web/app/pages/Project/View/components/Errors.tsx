@@ -6,11 +6,10 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 
+import { SwetrixError } from '~/lib/models/Project'
 import { Badge } from '~/ui/Badge'
 import Loader from '~/ui/Loader'
 import { getRelativeDateIfPossible } from '~/utils/date'
-
-import { SwetrixError } from '../interfaces/error'
 
 interface ErrorsProps {
   errors: SwetrixError[]

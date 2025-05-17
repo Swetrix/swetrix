@@ -58,7 +58,7 @@ const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 6
 const PANELS_WITH_BARS = ['cc', 'rg', 'ct', 'ce', 'os', 'br', 'dv', 'pg']
 
 // function that checks if there are custom tabs for a specific type
-const checkCustomTabs = (panelID: string, customTabs: any) => {
+const checkCustomTabs = (panelID: string, customTabs: CustomTab[]) => {
   if (_isEmpty(customTabs)) return false
 
   return Boolean(_find(customTabs, (el) => el.panelID === panelID))
@@ -106,7 +106,7 @@ interface PanelContainerProps {
   onExpandClick?: () => void
   activeFragment: number | string
   setActiveFragment: (arg: number) => void
-  customTabs?: any
+  customTabs?: CustomTab[]
   activeTab?: string
   isCustomContent?: boolean
 }
@@ -214,9 +214,7 @@ const PanelContainer = ({
               if (panelID !== type) return null
 
               const onClick = () => {
-                if (onOpen) {
-                  onOpen()
-                }
+                onOpen?.()
                 setActiveFragment(extensionID)
               }
 
@@ -289,6 +287,13 @@ const getPieOptions = (customs: any, uniques: number, t: any) => {
   }
 }
 
+export type CustomTab = {
+  extensionID: string
+  panelID: string
+  onOpen?: () => void
+  tabContent?: string
+}
+
 interface MetadataProps {
   customs: Customs
   properties: Properties
@@ -296,7 +301,7 @@ interface MetadataProps {
   filters: Filter[]
   getCustomEventMetadata: (event: string) => Promise<any>
   getPropertyMetadata: (property: string) => Promise<any>
-  customTabs: any
+  customTabs: CustomTab[]
   getFilterLink: (column: string, value: string) => LinkProps['to']
 }
 
@@ -816,7 +821,7 @@ const CustomEvents = ({
   // Showing custom tabs (Extensions Marketplace)
   // todo: check activeFragment for being equal to customTabs -> extensionID + panelID
   if (!_isEmpty(customTabs) && typeof activeFragment === 'string') {
-    const { tabContent } = _find(customTabs, (tab) => tab.extensionID === activeFragment)
+    const { tabContent } = _find(customTabs, (tab) => tab.extensionID === activeFragment) || ({} as CustomTab)
 
     return (
       <PanelContainer
@@ -1411,7 +1416,7 @@ interface PanelProps {
   icon: any
   id: string
   hideFilters?: boolean
-  customTabs?: any
+  customTabs?: CustomTab[]
   onFragmentChange?: (arg: number) => void
   getFilterLink?: (column: string, value: string) => LinkProps['to']
 }
@@ -1579,7 +1584,7 @@ const Panel = ({
   // Showing custom tabs (Extensions Marketplace)
   // todo: check activeFragment for being equal to customTabs -> extensionID + panelID
   if (!_isEmpty(customTabs) && typeof activeFragment === 'string' && !_isEmpty(data)) {
-    const { tabContent } = _find(customTabs, (tab) => tab.extensionID === activeFragment)
+    const { tabContent } = _find(customTabs, (tab) => tab.extensionID === activeFragment) || ({} as CustomTab)
 
     return (
       <PanelContainer
@@ -1594,7 +1599,7 @@ const Panel = ({
         isCustomContent
       >
         {/* Using this instead of dangerouslySetInnerHTML to support script tags */}
-        <InnerHTML className='absolute overflow-auto' html={tabContent} />
+        {tabContent ? <InnerHTML className='absolute overflow-auto' html={tabContent} /> : null}
       </PanelContainer>
     )
   }

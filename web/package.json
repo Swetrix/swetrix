@@ -28,7 +28,7 @@
     "@react-router/fs-routes": "^7.5.0",
     "@react-router/node": "^7.5.0",
     "@react-router/serve": "^7.5.0",
-    "@swetrix/sdk": "^1.1.0",
+    "@swetrix/sdk": "^1.2.0",
     "@tailwindcss/vite": "^4.1.4",
     "@ua-parser-js/pro-business": "^2.0.3",
     "axios": "^1.8.4",

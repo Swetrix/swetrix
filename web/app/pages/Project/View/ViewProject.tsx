@@ -1,6 +1,6 @@
 import { MagnifyingGlassIcon, ChevronLeftIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
 import SwetrixSDK from '@swetrix/sdk'
-import billboard from 'billboard.js'
+import billboard, { Chart } from 'billboard.js'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import _debounce from 'lodash/debounce'
@@ -104,7 +104,16 @@ import {
   VALID_TIME_BUCKETS,
 } from '~/lib/constants'
 import { CountryEntry } from '~/lib/models/Entry'
-import { Funnel, AnalyticsFunnel, OverallObject, OverallPerformanceObject } from '~/lib/models/Project'
+import {
+  Funnel,
+  AnalyticsFunnel,
+  OverallObject,
+  OverallPerformanceObject,
+  SwetrixError,
+  SwetrixErrorDetails,
+  SessionDetails as SessionDetailsModel,
+  Session,
+} from '~/lib/models/Project'
 import NewFunnel from '~/modals/NewFunnel'
 import ViewProjectHotkeys from '~/modals/ViewProjectHotkeys'
 import { useAuth } from '~/providers/AuthProvider'
@@ -153,8 +162,6 @@ import TBPeriodSelector from './components/TBPeriodSelector'
 import UTMDropdown from './components/UTMDropdown'
 import WaitingForAnError from './components/WaitingForAnError'
 import WaitingForAnEvent from './components/WaitingForAnEvent'
-import { SwetrixError } from './interfaces/error'
-import { Session } from './interfaces/session'
 import {
   Customs,
   Filter,
@@ -165,7 +172,7 @@ import {
   Properties,
   TrafficLogResponse,
 } from './interfaces/traffic'
-import { Panel, Metadata } from './Panels'
+import { Panel, Metadata, type CustomTab } from './Panels'
 import { FILTER_CHART_METRICS_MAPPING_FOR_COMPARE, ERROR_FILTERS_MAPPING, parseFilters } from './utils/filters'
 import {
   onCSVExportClick,
@@ -241,11 +248,10 @@ const ViewProject = () => {
     i18n: { language },
   } = useTranslation('common')
 
-  const [customExportTypes, setCustomExportTypes] = useState<any[]>([])
-  const [customPanelTabs, setCustomPanelTabs] = useState<any[]>([])
-  const [sdkInstance, setSdkInstance] = useState<any>(null)
+  const [customPanelTabs, setCustomPanelTabs] = useState<CustomTab[]>([])
+  const [sdkInstance, setSdkInstance] = useState<SwetrixSDK | null>(null)
 
-  const [activeChartMetricsCustomEvents, setActiveChartMetricsCustomEvents] = useState<any[]>([])
+  const [activeChartMetricsCustomEvents, setActiveChartMetricsCustomEvents] = useState<string[]>([])
 
   const dashboardRef = useRef<HTMLDivElement>(null)
 
@@ -274,14 +280,19 @@ const ViewProject = () => {
     meta?: TrafficMeta[]
     // @ts-expect-error
   }>({})
+  const [customExportTypes, setCustomExportTypes] = useState<
+    { label: string; onClick: (data: typeof panelsData, tFunction: typeof t) => void }[]
+  >([])
   const [overall, setOverall] = useState<Partial<OverallObject>>({})
   const [overallPerformance, setOverallPerformance] = useState<Partial<OverallPerformanceObject>>({})
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
   const [isNewFunnelOpened, setIsNewFunnelOpened] = useState(false)
   const [isAddAViewOpened, setIsAddAViewOpened] = useState(false)
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
-  const [chartData, setChartData] = useState<any>({})
-  const [mainChart, setMainChart] = useState<any>(null)
+
+  // @ts-expect-error
+  const [chartData, setChartData] = useState<TrafficLogResponse['chart'] & { [key: string]: number[] }>({})
+  const [mainChart, setMainChart] = useState<Chart | null>(null)
   const [dataLoading, setDataLoading] = useState(false)
   const [activeChartMetrics, setActiveChartMetrics] = useState<Record<keyof typeof CHART_METRICS_MAPPING, boolean>>({
     [CHART_METRICS_MAPPING.unique]: true,
@@ -418,9 +429,12 @@ const ViewProject = () => {
   // sessions
   const [sessionsSkip, setSessionsSkip] = useState(0)
   const [canLoadMoreSessions, setCanLoadMoreSessions] = useState(false)
-  const [sessions, setSessions] = useState<any[]>([])
+  const [sessions, setSessions] = useState<Session[]>([])
   const [sessionsLoading, setSessionsLoading] = useState<boolean | null>(null) // null - not loaded, true - loading, false - loaded
-  const [activeSession, setActiveSession] = useState<any>(null)
+  const [activeSession, setActiveSession] = useState<{
+    [key: string]: any
+    details: SessionDetailsModel
+  } | null>(null)
   const [sessionLoading, setSessionLoading] = useState(false)
   const activePSID = useMemo(() => {
     return searchParams.get('psid')
@@ -429,9 +443,9 @@ const ViewProject = () => {
   // errors
   const [errorsSkip, setErrorsSkip] = useState(0)
   const [canLoadMoreErrors, setCanLoadMoreErrors] = useState(false)
-  const [errors, setErrors] = useState<any[]>([])
+  const [errors, setErrors] = useState<SwetrixError[]>([])
   const [errorsLoading, setErrorsLoading] = useState<boolean | null>(null) // null - not loaded, true - loading, false - loaded
-  const [activeError, setActiveError] = useState<any>(null)
+  const [activeError, setActiveError] = useState<{ details: SwetrixErrorDetails; [key: string]: any } | null>(null)
   const [errorLoading, setErrorLoading] = useState(false)
   const [errorStatusUpdating, setErrorStatusUpdating] = useState(false)
   const activeEID = useMemo(() => {
@@ -1120,9 +1134,11 @@ const ViewProject = () => {
       let data: TrafficLogResponse & {
         overall?: OverallObject
       }
-      let dataCompare: TrafficLogResponse & {
-        overall?: OverallObject
-      }
+      let dataCompare:
+        | (TrafficLogResponse & {
+            overall?: OverallObject
+          })
+        | null = null
       let from
       let fromCompare: string | undefined
       let to
@@ -1189,6 +1205,8 @@ const ViewProject = () => {
             filters,
             projectPassword,
           )
+
+          // @ts-expect-error
           dataCompare.overall = compareOverall[id]
         }
       }
@@ -1289,14 +1307,11 @@ const ViewProject = () => {
         setSearchParams(newSearchParams)
       }
 
-      // @ts-expect-error
       if (!_isEmpty(dataCompare)) {
-        // @ts-expect-error
         if (!_isEmpty(dataCompare?.chart)) {
           setDataChartCompare(dataCompare.chart)
         }
 
-        // @ts-expect-error
         if (!_isEmpty(dataCompare?.overall)) {
           setOverallCompare(dataCompare.overall)
         }
@@ -1307,7 +1322,7 @@ const ViewProject = () => {
       } else {
         const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
         const bbSettings = getSettings(
-          chart,
+          chart as any,
           newTimebucket,
           activeChartMetrics,
           applyRegions,
@@ -1318,7 +1333,7 @@ const ViewProject = () => {
           // @ts-expect-error
           dataCompare?.chart,
         )
-        setChartData(chart)
+        setChartData(chart as any)
 
         setPanelsData({
           types: _keys(params),
@@ -2028,7 +2043,7 @@ const ViewProject = () => {
   }, [authLoading, project, activeChartMetrics, chartData, chartDataPerf, activeChartMetricsPerf, dataChartCompare])
 
   useEffect(() => {
-    let sdk: any | null = null
+    let sdk: SwetrixSDK | null = null
 
     const filteredExtensions = _filter(extensions, (ext) => _isString(ext.fileURL))
 
@@ -2066,7 +2081,7 @@ const ViewProject = () => {
           onRemoveExportDataRow: (label: any) => {
             setCustomExportTypes((prev) => _filter(prev, (row) => row.label !== label))
           },
-          onAddPanelTab: (extensionID: string, panelID: string, tabContent?: string, onOpen?: (a: any) => void) => {
+          onAddPanelTab: (extensionID: string, panelID: string, tabContent?: string, onOpen?: () => void) => {
             setCustomPanelTabs((prev) => [
               ...prev,
               {
@@ -2789,6 +2804,7 @@ const ViewProject = () => {
                                 labelExtractor={(item) => item.label}
                                 keyExtractor={(item) => item.label}
                                 onSelect={(item, e) => {
+                                  // @ts-expect-error lookingForMore is defined as an exception above
                                   if (item.lookingForMore) {
                                     e?.stopPropagation()
                                     window.open(MARKETPLACE_URL, '_blank')
@@ -3376,7 +3392,7 @@ const ViewProject = () => {
                                   id={countryActiveTab}
                                   getFilterLink={getFilterLink}
                                   name={<CountryDropdown onSelect={setCountryActiveTab} title={ccPanelName} />}
-                                  data={activeError.params[countryActiveTab]}
+                                  data={activeError?.params[countryActiveTab]}
                                   rowMapper={rowMapper}
                                 />
                               )
@@ -3419,7 +3435,7 @@ const ViewProject = () => {
                                   id={browserActiveTab}
                                   getFilterLink={getFilterLink}
                                   name={<BrowserDropdown onSelect={setBrowserActiveTab} title={brPanelName} />}
-                                  data={activeError.params[browserActiveTab]}
+                                  data={activeError?.params[browserActiveTab]}
                                   rowMapper={rowMapper}
                                 />
                               )
@@ -3469,7 +3485,7 @@ const ViewProject = () => {
                                   id={osActiveTab}
                                   getFilterLink={getFilterLink}
                                   name={<OSDropdown onSelect={setOsActiveTab} title={osPanelName} />}
-                                  data={activeError.params[osActiveTab]}
+                                  data={activeError?.params[osActiveTab]}
                                   rowMapper={rowMapper}
                                 />
                               )
@@ -3483,7 +3499,7 @@ const ViewProject = () => {
                                   id={type}
                                   getFilterLink={getFilterLink}
                                   name={panelName}
-                                  data={activeError.params[type]}
+                                  data={activeError?.params[type]}
                                   rowMapper={(entry: { name: keyof typeof deviceIconMapping }) => {
                                     const { name: entryName } = entry
 
@@ -3530,7 +3546,7 @@ const ViewProject = () => {
 
                                     return decodedUri
                                   }}
-                                  data={activeError.params[pageActiveTab]}
+                                  data={activeError?.params[pageActiveTab]}
                                   name={<PageDropdown onSelect={setPageActiveTab} title={tnMapping[pageActiveTab]} />}
                                 />
                               )
@@ -3544,7 +3560,7 @@ const ViewProject = () => {
                                   id={type}
                                   getFilterLink={getFilterLink}
                                   name={panelName}
-                                  data={activeError.params[type]}
+                                  data={activeError?.params[type]}
                                   rowMapper={({ name: entryName }: { name: string }) =>
                                     getLocaleDisplayName(entryName, language)
                                   }
@@ -3559,7 +3575,7 @@ const ViewProject = () => {
                                 id={type}
                                 getFilterLink={getFilterLink}
                                 name={panelName}
-                                data={activeError.params[type]}
+                                data={activeError?.params[type]}
                               />
                             )
                           })

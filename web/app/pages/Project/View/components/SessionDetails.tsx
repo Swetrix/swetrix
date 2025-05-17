@@ -4,9 +4,8 @@ import _size from 'lodash/size'
 import _truncate from 'lodash/truncate'
 import { useTranslation } from 'react-i18next'
 
+import { SessionDetails as Details } from '~/lib/models/Project'
 import { getLocaleDisplayName, getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
-
-import { SessionDetails as Details } from '../interfaces/session'
 
 import CCRow from './CCRow'
 import { MetricCard, MetricCardSelect } from './MetricCards'

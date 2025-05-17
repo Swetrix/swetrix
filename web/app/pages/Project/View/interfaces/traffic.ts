@@ -52,7 +52,7 @@ export interface TrafficMeta {
 
 export interface TrafficLogResponse {
   params?: Params
-  chart?: {
+  chart: {
     x: string[]
     visits: number[]
     uniques: number[]

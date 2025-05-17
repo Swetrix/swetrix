@@ -7,10 +7,9 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 
+import { Session as SessionType } from '~/lib/models/Project'
 import Loader from '~/ui/Loader'
 import { getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
-
-import { Session as SessionType } from '../interfaces/session'
 
 import CCRow from './CCRow'
 
