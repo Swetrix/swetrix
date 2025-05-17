@@ -7,16 +7,18 @@ import { CalendarIcon } from 'lucide-react'
 import React, { memo, Fragment, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { TimeBucket, VALID_TIME_BUCKETS } from '~/lib/constants'
+import { TBPeriodPairsProps, TimeBucket, VALID_TIME_BUCKETS } from '~/lib/constants'
+import { PERIOD_HOTKEYS_MAP } from '~/modals/ViewProjectHotkeys'
+import { Badge } from '~/ui/Badge'
 
 import { useViewProjectContext } from '../ViewProject'
 
 interface TBPeriodSelectorProps {
   title: string | number | React.ReactNode
-  items: any[]
+  items: TBPeriodPairsProps[]
   /* (function): A function that is called when an item is selected. */
-  onSelect: (item: any, e?: React.MouseEvent<HTMLElement>) => void | null
-  activePeriod: any
+  onSelect: (item: TBPeriodPairsProps, e?: React.MouseEvent<HTMLElement>) => void | null
+  activePeriod?: TBPeriodPairsProps
   classes?: {
     timeBucket?: string
     periods?: string
@@ -104,13 +106,14 @@ const TBPeriodSelector = ({ items, title, onSelect, activePeriod, classes }: TBP
                       key={item.label}
                       onClick={(e: React.MouseEvent<HTMLElement>) => onSelect(item, e)}
                       className={cx(
-                        'block cursor-pointer rounded-md px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700',
+                        'flex cursor-pointer items-center justify-between space-x-1 rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700',
                         {
                           'cursor-wait': dataLoading,
                         },
                       )}
                     >
-                      {item.dropdownLabel || item.label}
+                      <span>{item.dropdownLabel || item.label}</span>
+                      <Badge colour='slate' label={PERIOD_HOTKEYS_MAP[item.period]} />
                     </PopoverButton>
                   ))}
                 </ul>

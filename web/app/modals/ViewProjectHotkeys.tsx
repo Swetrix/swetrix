@@ -3,6 +3,7 @@ import _map from 'lodash/map'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { Period } from '~/lib/constants'
 import { Badge } from '~/ui/Badge'
 import Modal from '~/ui/Modal'
 
@@ -16,20 +17,35 @@ interface HotkeysListProps {
   hotkeys: Record<string, string>
 }
 
+export const PERIOD_HOTKEYS_MAP: Record<Period, string> = {
+  '1h': 'H',
+  today: 'T',
+  yesterday: 'Y',
+  '1d': 'D',
+  '7d': 'W',
+  '4w': 'M',
+  '3M': 'Q',
+  '12M': 'L',
+  '24M': 'Z',
+  all: 'A',
+  custom: 'U',
+  compare: 'C',
+}
+
 const getHotkeys = (t: TFunction) => ({
   [t('modals.shortcuts.timebuckets')]: {
-    [t('project.thisHour')]: 'H',
-    [t('project.today')]: 'T',
-    [t('project.yesterday')]: 'Y',
-    [t('project.last24h')]: 'D',
-    [t('project.lastXDays', { amount: 7 })]: 'W',
-    [t('project.lastXWeeks', { amount: 4 })]: 'M',
-    [t('project.lastXMonths', { amount: 3 })]: 'Q',
-    [t('project.lastXMonths', { amount: 12 })]: 'L',
-    [t('project.lastXMonths', { amount: 24 })]: 'Z',
-    [t('project.all')]: 'A',
-    [t('project.compare')]: 'C',
-    [t('project.custom')]: 'U',
+    [t('project.thisHour')]: PERIOD_HOTKEYS_MAP['1h'],
+    [t('project.today')]: PERIOD_HOTKEYS_MAP.today,
+    [t('project.yesterday')]: PERIOD_HOTKEYS_MAP.yesterday,
+    [t('project.last24h')]: PERIOD_HOTKEYS_MAP['1d'],
+    [t('project.lastXDays', { amount: 7 })]: PERIOD_HOTKEYS_MAP['7d'],
+    [t('project.lastXWeeks', { amount: 4 })]: PERIOD_HOTKEYS_MAP['4w'],
+    [t('project.lastXMonths', { amount: 3 })]: PERIOD_HOTKEYS_MAP['3M'],
+    [t('project.lastXMonths', { amount: 12 })]: PERIOD_HOTKEYS_MAP['12M'],
+    [t('project.lastXMonths', { amount: 24 })]: PERIOD_HOTKEYS_MAP['24M'],
+    [t('project.all')]: PERIOD_HOTKEYS_MAP.all,
+    [t('project.compare')]: PERIOD_HOTKEYS_MAP.compare,
+    [t('project.custom')]: PERIOD_HOTKEYS_MAP.custom,
   },
   [t('modals.shortcuts.tabs')]: {
     [t('dashboard.traffic')]: 'Shift + T',
