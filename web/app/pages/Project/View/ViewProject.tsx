@@ -635,7 +635,6 @@ const ViewProject = () => {
 
   useEffect(() => {
     if (!project) {
-      // TODO: Probably should display something like "Loading..."
       return
     }
 
