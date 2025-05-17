@@ -54,6 +54,7 @@ export const Pageflow = ({ pages, timeFormat }: PageflowProps) => {
             month: 'short',
             hour: 'numeric',
             minute: 'numeric',
+            second: 'numeric',
             hourCycle: timeFormat === '12-hour' ? 'h12' : 'h23',
           })
 
