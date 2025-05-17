@@ -4,7 +4,6 @@ import billboard, { Chart } from 'billboard.js'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import _debounce from 'lodash/debounce'
-import _every from 'lodash/every'
 import _filter from 'lodash/filter'
 import _find from 'lodash/find'
 import _findIndex from 'lodash/findIndex'
@@ -1058,11 +1057,7 @@ const ViewProject = () => {
         to = getFormatDate(dateRange[1])
       }
 
-      const isAllActiveChartMetricsCustomEvents = _every(activeChartMetricsCustomEvents, (metric) => {
-        return _includes(_keys(customEventsChartData), metric)
-      })
-
-      if (!isAllActiveChartMetricsCustomEvents) {
+      if (activeChartMetricsCustomEvents.length > 0) {
         if (period === 'custom' && dateRange) {
           data = await getProjectDataCustomEvents(
             id,
@@ -1896,7 +1891,7 @@ const ViewProject = () => {
   }, [mode, activeTab, customMetrics, filters, authLoading, project, isActiveCompare, dateRange, period, timeBucket])
 
   useEffect(() => {
-    if (activeTab !== PROJECT_TABS.traffic || authLoading || !project || activeChartMetricsCustomEvents.length === 0) {
+    if (activeTab !== PROJECT_TABS.traffic || authLoading || !project) {
       return
     }
 
