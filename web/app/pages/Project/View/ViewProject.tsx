@@ -1226,17 +1226,19 @@ const ViewProject = () => {
           projectPassword,
           mode,
         )
-        customEventsChart = await getProjectDataCustomEvents(
-          id,
-          timeBucket,
-          '',
-          filters,
-          from,
-          to,
-          timezone,
-          activeChartMetricsCustomEvents,
-          projectPassword,
-        )
+        if (activeChartMetricsCustomEvents.length > 0) {
+          customEventsChart = await getProjectDataCustomEvents(
+            id,
+            timeBucket,
+            '',
+            filters,
+            from,
+            to,
+            timezone,
+            activeChartMetricsCustomEvents,
+            projectPassword,
+          )
+        }
         rawOverall = await getOverallStats([id], period, from, to, timezone, filters, projectPassword)
       } else {
         data = await getProjectData(
@@ -1251,17 +1253,19 @@ const ViewProject = () => {
           projectPassword,
           mode,
         )
-        customEventsChart = await getProjectDataCustomEvents(
-          id,
-          timeBucket,
-          period,
-          filters,
-          '',
-          '',
-          timezone,
-          activeChartMetricsCustomEvents,
-          projectPassword,
-        )
+        if (activeChartMetricsCustomEvents.length > 0) {
+          customEventsChart = await getProjectDataCustomEvents(
+            id,
+            timeBucket,
+            period,
+            filters,
+            '',
+            '',
+            timezone,
+            activeChartMetricsCustomEvents,
+            projectPassword,
+          )
+        }
         rawOverall = await getOverallStats([id], period, '', '', timezone, filters, projectPassword)
       }
 
@@ -1888,7 +1892,7 @@ const ViewProject = () => {
   }, [mode, activeTab, customMetrics, filters, authLoading, project, isActiveCompare, dateRange, period, timeBucket])
 
   useEffect(() => {
-    if (activeTab !== PROJECT_TABS.traffic || authLoading || !project) {
+    if (activeTab !== PROJECT_TABS.traffic || authLoading || !project || activeChartMetricsCustomEvents.length === 0) {
       return
     }
 
