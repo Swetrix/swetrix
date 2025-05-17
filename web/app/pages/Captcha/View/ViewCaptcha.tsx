@@ -6,7 +6,6 @@ import _find from 'lodash/find'
 import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
-import _last from 'lodash/last'
 import _map from 'lodash/map'
 import _replace from 'lodash/replace'
 import { DownloadIcon, RotateCw, SettingsIcon } from 'lucide-react'
@@ -151,19 +150,38 @@ const ViewCaptcha = () => {
   }, [t, language, dateRange])
 
   const timeBucket = useMemo<TimeBucket>(() => {
+    let _timeBucket = preferences.timeBucket || periodPairs[4].tbs[1]
     const urlTimeBucket = searchParams.get('timeBucket') as TimeBucket
+    const currentPeriodPair = _find(periodPairs, (el) => el.period === period)
 
+    // If the time bucket from preferences is not compatible with the current period, use the first time bucket of the period
+    if (currentPeriodPair && !currentPeriodPair.tbs.includes(urlTimeBucket)) {
+      _timeBucket = currentPeriodPair.tbs[0]
+    }
+
+    // Or use the time bucket from the URL if it's compatible with the current period
     if (VALID_TIME_BUCKETS.includes(urlTimeBucket)) {
-      const newPeriodFull = _find(periodPairs, (el) => el.period === period)
-
-      // todo: if timebucket is invalid for the period, should we update the url right away here?
-      if (newPeriodFull?.tbs?.includes(urlTimeBucket)) {
-        return urlTimeBucket
+      if (currentPeriodPair?.tbs?.includes(urlTimeBucket)) {
+        _timeBucket = urlTimeBucket
       }
     }
 
-    return preferences.timeBucket || periodPairs[4].tbs[1]
-  }, [searchParams, preferences.timeBucket, periodPairs, period])
+    if (dateRange) {
+      const days = Math.ceil(Math.abs(dateRange[1].getTime() - dateRange[0].getTime()) / (1000 * 3600 * 24))
+
+      for (const index in timeBucketToDays) {
+        if (timeBucketToDays[index].lt >= days) {
+          if (!timeBucketToDays[index].tb?.includes(_timeBucket)) {
+            _timeBucket = timeBucketToDays[index].tb[0]
+          }
+
+          break
+        }
+      }
+    }
+
+    return _timeBucket
+  }, [searchParams, preferences.timeBucket, periodPairs, period, dateRange])
 
   const activePeriod = useMemo(() => _find(periodPairs, (p) => p.period === period), [period, periodPairs])
 
@@ -312,29 +330,21 @@ const ViewCaptcha = () => {
     loadCaptcha()
   }
 
-  const updatePeriod = (newPeriod: any) => {
-    const newPeriodFull = _find(periodPairs, (el) => el.period === newPeriod.period)
-    let tb: any = timeBucket
+  // We can assume period provided is never custom, as it's handled separately in the Flatpickr callback function
+  const updatePeriod = ({ period: newPeriod }: { period: Period }) => {
+    if (period === newPeriod) {
+      return
+    }
 
     const newSearchParams = new URLSearchParams(searchParams.toString())
+    newSearchParams.delete('from')
+    newSearchParams.delete('to')
+    newSearchParams.set('period', newPeriod)
 
-    if (_isEmpty(newPeriodFull)) return
-
-    if (!_includes(newPeriodFull.tbs, timeBucket)) {
-      tb = _last(newPeriodFull.tbs)
-      newSearchParams.set('timeBucket', tb)
-    }
-
-    if (newPeriod.period !== 'custom') {
-      newSearchParams.delete('from')
-      newSearchParams.delete('to')
-      newSearchParams.set('period', newPeriod.period)
-      updatePreferences({
-        period: newPeriod.period,
-        timeBucket: tb,
-        rangeDate: undefined,
-      })
-    }
+    updatePreferences({
+      period: newPeriod,
+      rangeDate: undefined,
+    })
 
     setSearchParams(newSearchParams)
   }

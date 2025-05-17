@@ -12,7 +12,6 @@ import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
 import _isString from 'lodash/isString'
 import _keys from 'lodash/keys'
-import _last from 'lodash/last'
 import _map from 'lodash/map'
 import _pickBy from 'lodash/pickBy'
 import _replace from 'lodash/replace'
@@ -393,11 +392,16 @@ const ViewProject = () => {
   const timeBucket = useMemo<TimeBucket>(() => {
     let _timeBucket = preferences.timeBucket || periodPairs[4].tbs[1]
     const urlTimeBucket = searchParams.get('timeBucket') as TimeBucket
+    const currentPeriodPair = _find(periodPairs, (el) => el.period === period)
 
+    // If the time bucket from preferences is not compatible with the current period, use the first time bucket of the period
+    if (currentPeriodPair && !currentPeriodPair.tbs.includes(urlTimeBucket)) {
+      _timeBucket = currentPeriodPair.tbs[0]
+    }
+
+    // Or use the time bucket from the URL if it's compatible with the current period
     if (VALID_TIME_BUCKETS.includes(urlTimeBucket)) {
-      const newPeriodFull = _find(periodPairs, (el) => el.period === period)
-
-      if (newPeriodFull?.tbs?.includes(urlTimeBucket)) {
+      if (currentPeriodPair?.tbs?.includes(urlTimeBucket)) {
         _timeBucket = urlTimeBucket
       }
     }
@@ -2166,44 +2170,31 @@ const ViewProject = () => {
     setSessionsLoading(null)
   }
 
-  const updatePeriod = (newPeriod: { period: Period; label?: string }) => {
-    if (period === newPeriod.period) {
+  // We can assume period provided is never custom, as it's handled separately in the Flatpickr callback function
+  const updatePeriod = ({ period: newPeriod }: { period: Period }) => {
+    if (period === newPeriod) {
       return
     }
 
-    const newPeriodFull = _find(periodPairs, (el) => el.period === newPeriod.period)
-    let tb = timeBucket
-    if (_isEmpty(newPeriodFull)) return
-
-    if (!_includes(newPeriodFull.tbs, timeBucket)) {
-      tb = _last(newPeriodFull.tbs) || 'day'
-      const newSearchParamsTB = new URLSearchParams(searchParams.toString())
-      newSearchParamsTB.set('timeBucket', tb)
-      setSearchParams(newSearchParamsTB)
-    }
-
     const newSearchParams = new URLSearchParams(searchParams.toString())
-    if (newPeriod.period !== 'custom') {
-      newSearchParams.delete('from')
-      newSearchParams.delete('to')
-      newSearchParams.set('period', newPeriod.period)
-      updatePreferences({
-        period: newPeriod.period,
-        timeBucket: tb,
-        rangeDate: undefined,
-      })
+    newSearchParams.delete('from')
+    newSearchParams.delete('to')
+    newSearchParams.set('period', newPeriod)
 
-      setCanLoadMoreSessions(false)
-      resetSessions()
-      resetErrors()
-    }
+    resetSessions()
+    resetErrors()
+
+    updatePreferences({
+      period: newPeriod,
+      rangeDate: undefined,
+    })
+
+    sdkInstance?._emitEvent('timeupdate', {
+      period: newPeriod,
+      dateRange: null,
+    })
 
     setSearchParams(newSearchParams)
-    sdkInstance?._emitEvent('timeupdate', {
-      period: newPeriod.period,
-      timeBucket: tb,
-      dateRange: newPeriod.period === 'custom' ? dateRange : null,
-    })
   }
 
   const updateTimebucket = (newTimebucket: TimeBucket) => {
