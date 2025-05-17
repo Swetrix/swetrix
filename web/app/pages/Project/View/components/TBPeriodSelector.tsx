@@ -68,7 +68,7 @@ const TBPeriodSelector = ({ items, title, onSelect, activePeriod, classes }: TBP
               <div className='overflow-hidden rounded-lg bg-gray-50 p-1 ring-1 ring-black/10 dark:bg-slate-800'>
                 <div
                   className={cx(
-                    'relative z-0 mb-1 flex items-center space-x-5 rounded-md bg-slate-200 px-2 py-3 dark:bg-slate-700',
+                    'relative z-0 mb-1 flex items-center space-x-1 rounded-md bg-gray-200 px-1 py-1.5 dark:bg-slate-700/60',
                     classes?.timeBucket,
                   )}
                 >
@@ -77,21 +77,23 @@ const TBPeriodSelector = ({ items, title, onSelect, activePeriod, classes }: TBP
                       key={value}
                       type='button'
                       onClick={() => {
-                        if (!available || timeBucket === value) {
+                        if (!available || timeBucket === value || dataLoading) {
                           return
                         }
 
                         updateTimebucket(value)
                       }}
                       className={cx(
-                        'relative inline-flex items-center text-sm font-medium tracking-tighter capitalize',
+                        'relative inline-flex items-center rounded px-2 py-1.5 text-sm font-medium tracking-tighter capitalize transition-colors duration-150 ease-in-out',
                         {
-                          'text-gray-900 dark:text-gray-50': timeBucket === value,
-                          'text-gray-700 dark:text-gray-300': available && timeBucket !== value,
+                          'bg-gray-50 font-semibold text-gray-900 dark:bg-slate-800 dark:text-gray-50':
+                            timeBucket === value,
+                          'text-gray-800 hover:bg-gray-300 dark:text-gray-200 dark:hover:bg-slate-800':
+                            available && timeBucket !== value,
                           'text-gray-400 dark:text-gray-500': !available && timeBucket !== value,
                           'cursor-pointer': available && !dataLoading,
                           'cursor-wait': available && dataLoading,
-                          'cursor-default': !available,
+                          'cursor-not-allowed': !available,
                         },
                       )}
                     >
