@@ -9,7 +9,17 @@ import { Alerts } from '~/lib/models/Alerts'
 import { Auth, SSOProvider } from '~/lib/models/Auth'
 import { Metainfo } from '~/lib/models/Metainfo'
 import { Role } from '~/lib/models/Organisation'
-import { Project, Overall, LiveStats, Funnel, Extension } from '~/lib/models/Project'
+import {
+  Project,
+  Overall,
+  LiveStats,
+  Funnel,
+  Extension,
+  SwetrixError,
+  SwetrixErrorDetails,
+  SessionDetails,
+  Session,
+} from '~/lib/models/Project'
 import { Stats } from '~/lib/models/Stats'
 import { Subscriber } from '~/lib/models/Subscriber'
 import { User, FeatureFlag } from '~/lib/models/User'
@@ -633,7 +643,7 @@ export const getSessions = (
         },
       },
     )
-    .then((response) => response.data)
+    .then((response): { sessions: Session[]; take: number; skip: number; appliedFilters: Filter[] } => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -661,7 +671,7 @@ export const getErrors = (
         },
       },
     )
-    .then((response) => response.data)
+    .then((response): { errors: SwetrixError[] } => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -673,7 +683,7 @@ export const getSession = (pid: string, psid: string, timezone = '', password: s
         'x-password': password,
       },
     })
-    .then((response) => response.data)
+    .then((response): { details: SessionDetails; [key: string]: any } => response.data)
     .catch((error) => {
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
@@ -697,7 +707,7 @@ export const getError = (
         },
       },
     )
-    .then((response) => response.data)
+    .then((response): { details: SwetrixErrorDetails; [key: string]: any } => response.data)
     .catch((error) => {
       throw error.response
     })

@@ -6,14 +6,12 @@ import _find from 'lodash/find'
 import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
 import _keys from 'lodash/keys'
-import _last from 'lodash/last'
 import _map from 'lodash/map'
 import _replace from 'lodash/replace'
-import _startsWith from 'lodash/startsWith'
 import { DownloadIcon, RotateCw, SettingsIcon } from 'lucide-react'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate, useSearchParams } from 'react-router'
+import { Link, LinkProps, useSearchParams } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 
 import { getCaptchaData } from '~/api'
@@ -30,9 +28,17 @@ import {
   OS_LOGO_MAP,
   OS_LOGO_MAP_DARK,
   DEFAULT_TIMEZONE,
+  VALID_PERIODS,
+  type Period,
+  TBPeriodPairsProps,
+  TimeBucket,
+  VALID_TIME_BUCKETS,
 } from '~/lib/constants'
+import Filters from '~/pages/Project/View/components/Filters'
+import NoEvents from '~/pages/Project/View/components/NoEvents'
+import { Filter } from '~/pages/Project/View/interfaces/traffic'
 import { Panel } from '~/pages/Project/View/Panels'
-import { parseFiltersFromUrl } from '~/pages/Project/View/utils/filters'
+import { parseFilters } from '~/pages/Project/View/utils/filters'
 import { ViewProjectContext } from '~/pages/Project/View/ViewProject'
 import { deviceIconMapping, onCSVExportClick } from '~/pages/Project/View/ViewProject.helpers'
 import { useAuth } from '~/providers/AuthProvider'
@@ -48,16 +54,11 @@ import routes from '~/utils/routes'
 
 import CCRow from '../../Project/View/components/CCRow'
 
-import Filters from './components/Filters'
-import NoEvents from './components/NoEvents'
 import TBPeriodSelector from './components/TBPeriodSelector'
 import {
   getFormatDate,
   panelIconMapping,
   typeNameMapping,
-  validFilters,
-  validPeriods,
-  validTimeBacket,
   noRegionPeriods,
   getSettings,
   getColumns,
@@ -76,43 +77,113 @@ const ViewCaptcha = () => {
   const { user, isLoading: authLoading } = useAuth()
   const { theme } = useTheme()
 
+  const [searchParams, setSearchParams] = useSearchParams()
+
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
-  const [periodPairs, setPeriodPairs] = useState(captchaTbPeriodPairs(t, undefined, undefined, language))
   const dashboardRef = useRef(null)
-  const navigate = useNavigate()
 
-  const [areFiltersParsed, setAreFiltersParsed] = useState(false)
   const [panelsData, setPanelsData] = useState<any>({})
   const [isPanelsDataEmpty, setIsPanelsDataEmpty] = useState(false)
   const [analyticsLoading, setAnalyticsLoading] = useState(true)
-  const [period, setPeriod] = useState<string>(preferences?.period || periodPairs[4].period)
-  const [timeBucket, setTimebucket] = useState<string>(preferences?.timeBucket || periodPairs[4].tbs[1])
-  const activePeriod: {
-    period: string
-    label: string
-    tbs: string[]
-  } = useMemo(
-    () =>
-      _find(periodPairs, (p) => p.period === period) || {
-        period: periodPairs[3].period,
-        tbs: periodPairs[3].tbs,
-        label: periodPairs[3].label,
-      },
-    [period, periodPairs],
-  )
+
+  const period = useMemo<Period>(() => {
+    const urlPeriod = searchParams.get('period') as Period
+
+    if (VALID_PERIODS.includes(urlPeriod)) {
+      return urlPeriod
+    }
+
+    return preferences.period || '7d'
+  }, [searchParams, preferences.period])
+
   const [chartData, setChartData] = useState<any>({})
   const [dataLoading, setDataLoading] = useState(false)
-  const [filters, setFilters] = useState<any[]>([])
+
+  const filters = useMemo<Filter[]>(() => {
+    return parseFilters(searchParams)
+  }, [searchParams])
+
   const tnMapping = typeNameMapping(t)
   const refCalendar = useRef(null)
-  const [dateRange, setDateRange] = useState<Date[] | null>(
-    preferences?.rangeDate ? [new Date(preferences.rangeDate[0]), new Date(preferences.rangeDate[1])] : null,
-  )
 
-  const [searchParams] = useSearchParams()
+  const dateRange = useMemo<Date[] | null>(() => {
+    if (period !== 'custom') {
+      return null
+    }
+
+    let initialDateRange: Date[] | null = preferences.rangeDate
+      ? [new Date(preferences.rangeDate[0]), new Date(preferences.rangeDate[1])]
+      : null
+
+    const from = searchParams.get('from')
+    const to = searchParams.get('to')
+
+    if (from && to) {
+      const fromDate = new Date(from)
+      const toDate = new Date(to)
+
+      if (fromDate.getDate() && toDate.getDate()) {
+        initialDateRange = [fromDate, toDate]
+      }
+    }
+
+    return initialDateRange
+  }, [period, searchParams, preferences.rangeDate])
+
+  const periodPairs = useMemo<TBPeriodPairsProps[]>(() => {
+    let tbs = null
+
+    if (dateRange) {
+      const days = Math.ceil(Math.abs(dateRange[1].getTime() - dateRange[0].getTime()) / (1000 * 3600 * 24))
+
+      for (const index in timeBucketToDays) {
+        if (timeBucketToDays[index].lt >= days) {
+          tbs = timeBucketToDays[index].tb
+        }
+      }
+    }
+
+    return captchaTbPeriodPairs(t, tbs, dateRange, language)
+  }, [t, language, dateRange])
+
+  const timeBucket = useMemo<TimeBucket>(() => {
+    let _timeBucket = preferences.timeBucket || periodPairs[4].tbs[1]
+    const urlTimeBucket = searchParams.get('timeBucket') as TimeBucket
+    const currentPeriodPair = _find(periodPairs, (el) => el.period === period)
+
+    // If the time bucket from preferences is not compatible with the current period, use the first time bucket of the period
+    if (currentPeriodPair && !currentPeriodPair.tbs.includes(urlTimeBucket)) {
+      _timeBucket = currentPeriodPair.tbs[0]
+    }
+
+    // Or use the time bucket from the URL if it's compatible with the current period
+    if (VALID_TIME_BUCKETS.includes(urlTimeBucket)) {
+      if (currentPeriodPair?.tbs?.includes(urlTimeBucket)) {
+        _timeBucket = urlTimeBucket
+      }
+    }
+
+    if (dateRange) {
+      const days = Math.ceil(Math.abs(dateRange[1].getTime() - dateRange[0].getTime()) / (1000 * 3600 * 24))
+
+      for (const index in timeBucketToDays) {
+        if (timeBucketToDays[index].lt >= days) {
+          if (!timeBucketToDays[index].tb?.includes(_timeBucket)) {
+            _timeBucket = timeBucketToDays[index].tb[0]
+          }
+
+          break
+        }
+      }
+    }
+
+    return _timeBucket
+  }, [searchParams, preferences.timeBucket, periodPairs, period, dateRange])
+
+  const activePeriod = useMemo(() => _find(periodPairs, (p) => p.period === period), [period, periodPairs])
 
   const timeFormat = useMemo<'12-hour' | '24-hour'>(() => user?.timeFormat || TimeFormat['12-hour'], [user])
   const [ref, size] = useSize() as any
@@ -124,7 +195,6 @@ const ViewCaptcha = () => {
 
   useEffect(() => {
     if (!project) {
-      // TODO: Probably should display something like "Loading..."
       return
     }
 
@@ -173,28 +243,16 @@ const ViewCaptcha = () => {
 
       if (period === 'all' && !_isEmpty(timeBucketFromResponse)) {
         newTimebucket = _includes(timeBucketFromResponse, timeBucket) ? timeBucket : timeBucketFromResponse[0]
-        setPeriodPairs((prev) => {
-          const newPeriodPairs = _map(prev, (item) => {
-            if (item.period === 'all') {
-              return {
-                ...item,
-                tbs:
-                  timeBucketFromResponse.length > 2
-                    ? [timeBucketFromResponse[0], timeBucketFromResponse[1]]
-                    : timeBucketFromResponse,
-              }
-            }
-            return item
-          })
-          return newPeriodPairs
-        })
-        setTimebucket(newTimebucket)
+
+        const newSearchParams = new URLSearchParams(searchParams.toString())
+        newSearchParams.set('timeBucket', newTimebucket)
+        setSearchParams(newSearchParams)
       }
 
       if (_isEmpty(params)) {
         setIsPanelsDataEmpty(true)
       } else {
-        const applyRegions = !_includes(noRegionPeriods, activePeriod.period)
+        const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
         const bbSettings: any = getSettings(
           chart,
           newTimebucket,
@@ -238,67 +296,30 @@ const ViewCaptcha = () => {
   }, [chartData, mainChart])
 
   useEffect(() => {
-    if (!areFiltersParsed || authLoading || !project) return
+    if (authLoading || !project) return
 
     loadCaptcha()
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [areFiltersParsed, filters, authLoading, project, dateRange, period, timeBucket])
+  }, [filters, authLoading, project, dateRange, period, timeBucket])
 
-  // this funtion is used for requesting the data from the API when the filter is changed
-  const filterHandler = (column: any, filter: any, isExclusive = false) => {
-    let newFilters
+  const getFilterLink = (column: string, value: string): LinkProps['to'] => {
+    const isFilterActive = filters.findIndex((filter) => filter.column === column && filter.filter === value) >= 0
 
-    if (_find(filters, (f) => f.column === column) /* && f.filter === filter) */) {
-      // selected filter is already included into the filters array -> removing it
-      // removing filter from the state
-      newFilters = _filter(filters, (f) => f.column !== column)
-      setFilters(newFilters)
+    const newSearchParams = new URLSearchParams(searchParams.toString())
+    let searchString = ''
 
-      // removing filter from the page URL
-      // @ts-expect-error
-      const url = new URL(window.location)
-      url.searchParams.delete(column)
-      const { pathname, search } = url
-      navigate(`${pathname}${search}`)
+    if (isFilterActive) {
+      newSearchParams.delete(column)
+      searchString = newSearchParams.toString()
     } else {
-      // selected filter is not present in the filters array -> applying it
-      // sroting filter in the state
-      newFilters = [...filters, { column, filter, isExclusive }]
-      setFilters(newFilters)
-
-      // storing filter in the page URL
-      // @ts-expect-error
-      const url = new URL(window.location)
-      url.searchParams.append(column, filter)
-      const { pathname, search } = url
-      navigate(`${pathname}${search}`)
+      newSearchParams.append(column, value)
+      searchString = newSearchParams.toString()
     }
-  }
 
-  // this function is used for requesting the data from the API when the exclusive filter is changed
-  const onChangeExclusive = (column: any, filter: any, isExclusive: boolean) => {
-    const newFilters = _map(filters, (f) => {
-      if (f.column === column && f.filter === filter) {
-        return {
-          ...f,
-          isExclusive,
-        }
-      }
-
-      return f
-    })
-    setFilters(newFilters)
-
-    // storing exclusive filter in the page URL
-    // @ts-expect-error
-    const url = new URL(window.location)
-
-    url.searchParams.delete(column)
-    url.searchParams.append(column, filter)
-
-    const { pathname, search } = url
-    navigate(`${pathname}${search}`)
+    return {
+      search: searchString,
+    }
   }
 
   const refreshStats = () => {
@@ -309,246 +330,44 @@ const ViewCaptcha = () => {
     loadCaptcha()
   }
 
-  // Parsing initial filters from the address bar
-  useEffect(() => {
-    try {
-      // @ts-expect-error
-      const url = new URL(window.location)
-      const { searchParams } = url
-      const intialTimeBucket: string = searchParams.get('timeBucket') || ''
-      if (!_includes(validTimeBacket, intialTimeBucket)) {
-        return
-      }
-      const newPeriodFull = _find(periodPairs, (el) => el.period === period) || {
-        period: '',
-        tbs: [],
-        label: '',
-      }
-      if (!_includes(newPeriodFull.tbs, intialTimeBucket)) {
-        return
-      }
-      setTimebucket(intialTimeBucket)
-    } catch (reason) {
-      console.error('[ERROR](useEffect) Setting timebucket failed:', reason)
+  // We can assume period provided is never custom, as it's handled separately in the Flatpickr callback function
+  const updatePeriod = ({ period: newPeriod }: { period: Period }) => {
+    if (period === newPeriod) {
+      return
     }
 
-    try {
-      // @ts-expect-error
-      const url = new URL(window.location)
-      const { searchParams } = url
-      const initialPeriod = searchParams.get('period') || preferences?.period || '7d'
-      if (!_includes(validPeriods, initialPeriod)) {
-        return
-      }
+    const newSearchParams = new URLSearchParams(searchParams.toString())
+    newSearchParams.delete('from')
+    newSearchParams.delete('to')
+    newSearchParams.set('period', newPeriod)
 
-      if (initialPeriod === 'custom') {
-        // @ts-expect-error
-        const from = new Date(searchParams.get('from'))
-        // @ts-expect-error
-        const to = new Date(searchParams.get('to'))
-        if (from.getDate() && to.getDate()) {
-          onRangeDateChange([from, to], true)
-          setDateRange([from, to])
-        }
-        return
-      }
+    updatePreferences({
+      period: newPeriod,
+      rangeDate: undefined,
+    })
 
-      setPeriodPairs(captchaTbPeriodPairs(t, undefined, undefined, language))
-      setDateRange(null)
-      updatePeriod({ period: initialPeriod })
-    } catch (reason) {
-      console.error('[ERROR](useEffect) Setting period failed:', reason)
-    }
-
-    try {
-      // @ts-expect-error
-      const url = new URL(window.location)
-      const { searchParams } = url
-      const initialFilters: any[] = []
-      searchParams.forEach((value, key) => {
-        if (!_includes(validFilters, key)) {
-          return
-        }
-
-        const isExclusive = _startsWith(value, '!')
-        initialFilters.push({
-          column: key,
-          filter: isExclusive ? value.substring(1) : value,
-          isExclusive,
-        })
-      })
-      setFilters(initialFilters)
-    } catch (reason) {
-      console.error('[ERROR](useEffect) Setting filters failed:', reason)
-    }
-
-    setAreFiltersParsed(true)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  useEffect(() => {
-    parseFiltersFromUrl('', searchParams, setFilters)
-
-    const parsePeriodFilters = () => {
-      try {
-        const initialPeriod = searchParams.get('period') || preferences?.period || '7d'
-
-        if (!_includes(validPeriods, initialPeriod)) {
-          return
-        }
-
-        if (initialPeriod === 'custom') {
-          // @ts-expect-error
-          const from = new Date(searchParams.get('from'))
-          // @ts-expect-error
-          const to = new Date(searchParams.get('to'))
-          if (from.getDate() && to.getDate()) {
-            onRangeDateChange([from, to], true)
-            setDateRange([from, to])
-          }
-          return
-        }
-
-        setPeriodPairs(captchaTbPeriodPairs(t, undefined, undefined, language))
-        setDateRange(null)
-        updatePeriod({
-          period: initialPeriod,
-        })
-      } catch {
-        //
-      }
-    }
-
-    parsePeriodFilters()
-
-    try {
-      const initialTimeBucket = searchParams.get('timeBucket')
-
-      if (_includes(validTimeBacket, initialTimeBucket)) {
-        const newPeriodFull = _find(periodPairs, (el) => el.period === period)
-        if (_includes(newPeriodFull?.tbs, initialTimeBucket)) {
-          setTimebucket(initialTimeBucket || periodPairs[3].tbs[1])
-        }
-      }
-    } catch {
-      //
-    }
-
-    setAreFiltersParsed(true)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const onRangeDateChange = (dates: Date[], onRender?: any) => {
-    const days = Math.ceil(Math.abs(dates[1].getTime() - dates[0].getTime()) / (1000 * 3600 * 24))
-    // @ts-expect-error
-    const url = new URL(window.location)
-
-    // setting allowed time buckets for the specified date range (period)
-
-    for (const index in timeBucketToDays) {
-      if (timeBucketToDays[index].lt >= days) {
-        let eventEmitTimeBucket = timeBucket
-
-        if (!onRender && !_includes(timeBucketToDays[index].tb, timeBucket)) {
-          eventEmitTimeBucket = timeBucketToDays[index].tb[0]
-          url.searchParams.delete('timeBucket')
-          url.searchParams.append('timeBucket', eventEmitTimeBucket)
-          const { pathname, search } = url
-          navigate(`${pathname}${search}`)
-          setTimebucket(eventEmitTimeBucket)
-        }
-
-        url.searchParams.delete('period')
-        url.searchParams.delete('from')
-        url.searchParams.delete('to')
-        url.searchParams.append('period', 'custom')
-        url.searchParams.append('from', dates[0].toISOString())
-        url.searchParams.append('to', dates[1].toISOString())
-
-        const { pathname, search } = url
-        navigate(`${pathname}${search}`)
-
-        setPeriodPairs(captchaTbPeriodPairs(t, timeBucketToDays[index].tb, dates, language))
-        setPeriod('custom')
-
-        updatePreferences({
-          period: 'custom',
-          timeBucket: timeBucketToDays[index].tb[0],
-          rangeDate: dates,
-        })
-
-        break
-      }
-    }
+    setSearchParams(newSearchParams)
   }
 
-  useEffect(() => {
-    if (dateRange && areFiltersParsed) {
-      onRangeDateChange(dateRange)
-    }
-  }, [dateRange, areFiltersParsed]) // eslint-disable-line
-
-  const updatePeriod = (newPeriod: any) => {
-    const newPeriodFull = _find(periodPairs, (el) => el.period === newPeriod.period)
-    let tb: any = timeBucket
-    // @ts-expect-error
-    const url = new URL(window.location)
-    if (_isEmpty(newPeriodFull)) return
-
-    if (!_includes(newPeriodFull.tbs, timeBucket)) {
-      tb = _last(newPeriodFull.tbs)
-      url.searchParams.delete('timeBucket')
-      url.searchParams.append('timeBucket', tb)
-      setTimebucket(tb)
-    }
-
-    if (newPeriod.period !== 'custom') {
-      url.searchParams.delete('period')
-      url.searchParams.delete('from')
-      url.searchParams.delete('to')
-      url.searchParams.append('period', newPeriod.period)
-      updatePreferences({
-        period: newPeriod.period,
-        timeBucket: tb,
-        rangeDate: undefined,
-      })
-      setPeriod(newPeriod.period)
-      setDateRange(null)
-    }
-    const { pathname, search } = url
-    navigate(`${pathname}${search}`)
+  const resetDateRange = () => {
+    const newSearchParams = new URLSearchParams(searchParams.toString())
+    newSearchParams.delete('from')
+    newSearchParams.delete('to')
+    setSearchParams(newSearchParams)
   }
 
-  const updateTimebucket = (newTimebucket: string) => {
-    // @ts-expect-error
-    const url = new URL(window.location)
-    url.searchParams.delete('timeBucket')
-    url.searchParams.append('timeBucket', newTimebucket)
-    const { pathname, search } = url
-    navigate(`${pathname}${search}`)
-    setTimebucket(newTimebucket)
+  const updateTimebucket = (newTimebucket: TimeBucket) => {
+    if (dataLoading) {
+      return
+    }
+
+    const newSearchParams = new URLSearchParams(searchParams.toString())
+    newSearchParams.set('timeBucket', newTimebucket)
+    setSearchParams(newSearchParams)
+
     updatePreferences({
       timeBucket: newTimebucket,
     })
-  }
-
-  const openSettingsHandler = () => {
-    navigate(_replace(routes.captcha_settings, ':id', id))
-  }
-
-  const resetFilters = () => {
-    // @ts-expect-error
-    const url: URL = new URL(window.location)
-    const { searchParams } = url
-    for (const [key] of Array.from(searchParams.entries())) {
-      if (!_includes(validFilters, key)) {
-        continue
-      }
-      searchParams.delete(key)
-    }
-    const { pathname, search } = url
-    navigate(`${pathname}${search}`)
-    setFilters([])
   }
 
   const exportTypes = [
@@ -590,10 +409,8 @@ const ViewCaptcha = () => {
             filters,
 
             // Functions
-            setDateRange,
             updatePeriod,
             updateTimebucket,
-            setPeriodPairs,
 
             // Refs
             refCalendar,
@@ -689,45 +506,43 @@ const ViewCaptcha = () => {
                             refCalendar.current.openCalendar()
                           }, 100)
                         } else {
-                          setPeriodPairs(captchaTbPeriodPairs(t, undefined, undefined, language))
-                          setDateRange(null)
+                          resetDateRange()
                           updatePeriod(pair)
                         }
                       }}
                     />
                     {project.role === 'admin' || project.role === 'owner' ? (
-                      <button
-                        type='button'
-                        onClick={openSettingsHandler}
+                      <Link
+                        to={_replace(routes.captcha_settings, ':id', id)}
                         className='flex px-3 text-sm font-medium text-gray-700 hover:text-gray-600 dark:text-gray-50 dark:hover:text-gray-200'
                       >
                         <>
                           <SettingsIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
                           {t('common.settings')}
                         </>
-                      </button>
+                      </Link>
                     ) : null}
                     <FlatPicker
                       ref={refCalendar}
-                      onChange={(date) => setDateRange(date)}
+                      onChange={([from, to]) => {
+                        const newSearchParams = new URLSearchParams(searchParams.toString())
+                        newSearchParams.set('from', from.toISOString())
+                        newSearchParams.set('to', to.toISOString())
+                        newSearchParams.set('period', 'custom')
+                        setSearchParams(newSearchParams)
+                      }}
                       value={dateRange || []}
                       maxDateMonths={MAX_MONTHS_IN_PAST}
                     />
                   </div>
                 </div>
                 {analyticsLoading ? <Loader /> : null}
-                {isPanelsDataEmpty ? <NoEvents filters={filters} resetFilters={resetFilters} /> : null}
+                {isPanelsDataEmpty ? <NoEvents filters={filters} /> : null}
                 <div className={cx('pt-4', { hidden: isPanelsDataEmpty || analyticsLoading })}>
                   <div className='h-80'>
                     <div className='h-80 [&_svg]:!overflow-visible' id='captchaChart' />
                   </div>
-                  <Filters
-                    filters={filters}
-                    onRemoveFilter={filterHandler}
-                    onChangeExclusive={onChangeExclusive}
-                    tnMapping={tnMapping}
-                    resetFilters={resetFilters}
-                  />
+                  <Filters tnMapping={tnMapping} />
                   {dataLoading ? (
                     <div className='static mt-4 !bg-transparent' id='loader'>
                       <div className='loader-head dark:!bg-slate-800'>
@@ -758,7 +573,7 @@ const ViewCaptcha = () => {
                                 key={type}
                                 icon={panelIcon}
                                 id={type}
-                                onFilter={filterHandler}
+                                getFilterLink={getFilterLink}
                                 name={panelName}
                                 data={panelsData.data[type]}
                                 rowMapper={rowMapper}
@@ -772,7 +587,7 @@ const ViewCaptcha = () => {
                                 key={type}
                                 icon={panelIcon}
                                 id={type}
-                                onFilter={filterHandler}
+                                getFilterLink={getFilterLink}
                                 name={panelName}
                                 data={panelsData.data[type]}
                                 rowMapper={(entry: { name: keyof typeof deviceIconMapping }) => {
@@ -827,7 +642,7 @@ const ViewCaptcha = () => {
                                 key={type}
                                 icon={panelIcon}
                                 id={type}
-                                onFilter={filterHandler}
+                                getFilterLink={getFilterLink}
                                 name={panelName}
                                 data={panelsData.data[type]}
                                 rowMapper={rowMapper}
@@ -872,7 +687,7 @@ const ViewCaptcha = () => {
                                 key={type}
                                 icon={panelIcon}
                                 id={type}
-                                onFilter={filterHandler}
+                                getFilterLink={getFilterLink}
                                 name={panelName}
                                 data={panelsData.data[type]}
                                 rowMapper={rowMapper}
@@ -885,7 +700,7 @@ const ViewCaptcha = () => {
                               key={type}
                               icon={panelIcon}
                               id={type}
-                              onFilter={filterHandler}
+                              getFilterLink={getFilterLink}
                               name={panelName}
                               data={panelsData.data[type]}
                             />

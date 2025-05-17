@@ -7,10 +7,9 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 
+import { Session as SessionType } from '~/lib/models/Project'
 import Loader from '~/ui/Loader'
 import { getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
-
-import { Session as SessionType } from '../interfaces/session'
 
 import CCRow from './CCRow'
 
@@ -18,13 +17,11 @@ dayjs.extend(duration)
 
 interface SessionsProps {
   sessions: SessionType[]
-  onClick: (psid: string) => void
   timeFormat: '12-hour' | '24-hour'
 }
 
 interface SessionProps {
   session: SessionType
-  onClick: (psid: string) => void
   timeFormat: '12-hour' | '24-hour'
 }
 
@@ -34,7 +31,7 @@ const Separator = () => (
   </svg>
 )
 
-const Session = ({ session, onClick, timeFormat }: SessionProps) => {
+const Session = ({ session, timeFormat }: SessionProps) => {
   const {
     t,
     i18n: { language },
@@ -101,15 +98,7 @@ const Session = ({ session, onClick, timeFormat }: SessionProps) => {
     session.pageviews === 1 ? t('dashboard.onePageview') : t('dashboard.xPageviews', { x: session.pageviews })
 
   return (
-    <Link
-      onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-        e.preventDefault()
-        e.stopPropagation()
-        window.history.pushState({}, '', stringifiedUrl)
-        onClick(session.psid)
-      }}
-      to={stringifiedUrl}
-    >
+    <Link to={stringifiedUrl}>
       <li className='relative mb-4 flex cursor-pointer justify-between gap-x-6 rounded-lg bg-gray-200/60 px-4 py-4 font-mono hover:bg-gray-200 sm:px-6 dark:bg-[#162032] dark:hover:bg-slate-800'>
         <div className='flex min-w-0 gap-x-4'>
           <div className='min-w-0 flex-auto'>
@@ -147,7 +136,7 @@ const Session = ({ session, onClick, timeFormat }: SessionProps) => {
   )
 }
 
-export const Sessions: React.FC<SessionsProps> = ({ sessions, onClick, timeFormat }) => {
+export const Sessions: React.FC<SessionsProps> = ({ sessions, timeFormat }) => {
   return (
     <ClientOnly
       fallback={
@@ -159,7 +148,7 @@ export const Sessions: React.FC<SessionsProps> = ({ sessions, onClick, timeForma
       {() => (
         <ul className='mt-4'>
           {_map(sessions, (session) => (
-            <Session key={session.psid} session={session} onClick={onClick} timeFormat={timeFormat} />
+            <Session key={session.psid} session={session} timeFormat={timeFormat} />
           ))}
         </ul>
       )}

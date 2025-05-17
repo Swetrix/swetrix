@@ -5,7 +5,7 @@ import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
 import { StretchHorizontal as StretchHorizontalIcon, LayoutGrid as LayoutGridIcon } from 'lucide-react'
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLoaderData, useSearchParams } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
@@ -57,10 +57,22 @@ const Dashboard = () => {
 
   const [projects, setProjects] = useState<Project[]>([])
   const [paginationTotal, setPaginationTotal] = useState(0)
-  const [page, setPage] = useState(() => {
+  const page = useMemo(() => {
     const pageParam = searchParams.get('page')
-    return pageParam ? parseInt(pageParam, 10) : 1
-  })
+
+    if (!pageParam) {
+      return 1
+    }
+
+    const parsedPage = parseInt(pageParam, 10)
+
+    if (isNaN(parsedPage)) {
+      return 1
+    }
+
+    return parsedPage
+  }, [searchParams])
+
   const [pageSize, setPageSize] = useState(() => {
     const pageSizeParam = searchParams.get('pageSize')
     return pageSizeParam && PAGE_SIZE_OPTIONS.includes(parseInt(pageSizeParam, 10))
@@ -100,6 +112,12 @@ const Dashboard = () => {
     Object.entries(params).forEach(([key, value]) => {
       newSearchParams.set(key, value)
     })
+    setSearchParams(newSearchParams)
+  }
+
+  const setPage = (newPage: number) => {
+    const newSearchParams = new URLSearchParams(searchParams)
+    newSearchParams.set('page', newPage.toString())
     setSearchParams(newSearchParams)
   }
 

@@ -1,3 +1,5 @@
+import { TimeBucket } from '~/lib/constants'
+
 export interface Filter {
   column: string
   filter: string
@@ -50,7 +52,7 @@ export interface TrafficMeta {
 
 export interface TrafficLogResponse {
   params?: Params
-  chart?: {
+  chart: {
     x: string[]
     visits: number[]
     uniques: number[]
@@ -59,6 +61,6 @@ export interface TrafficLogResponse {
   customs: Customs
   properties: Properties
   appliedFilters?: Filter[]
-  timeBucket?: string[]
+  timeBucket?: TimeBucket[]
   meta?: TrafficMeta[]
 }

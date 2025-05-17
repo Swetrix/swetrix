@@ -6,20 +6,17 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 
+import { SwetrixError } from '~/lib/models/Project'
 import { Badge } from '~/ui/Badge'
 import Loader from '~/ui/Loader'
 import { getRelativeDateIfPossible } from '~/utils/date'
 
-import { SwetrixError } from '../interfaces/error'
-
 interface ErrorsProps {
   errors: SwetrixError[]
-  onClick: (psid: string) => void
 }
 
 interface ErrorItemProps {
   error: SwetrixError
-  onClick: (psid: string) => void
 }
 
 interface SeparatorProps {
@@ -32,7 +29,7 @@ const Separator = ({ className }: SeparatorProps) => (
   </svg>
 )
 
-const ErrorItem = ({ error, onClick }: ErrorItemProps) => {
+const ErrorItem = ({ error }: ErrorItemProps) => {
   const {
     t,
     i18n: { language },
@@ -69,16 +66,7 @@ const ErrorItem = ({ error, onClick }: ErrorItemProps) => {
   const stringifiedUrl = eidUrl.toString()
 
   return (
-    <Link
-      onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-        e.preventDefault()
-        e.stopPropagation()
-        window.history.pushState({}, '', stringifiedUrl)
-
-        onClick(error.eid)
-      }}
-      to={stringifiedUrl}
-    >
+    <Link to={stringifiedUrl}>
       <li className='relative mb-4 flex cursor-pointer justify-between gap-x-6 rounded-lg bg-gray-200/60 px-4 py-4 font-mono hover:bg-gray-200 sm:px-6 dark:bg-[#162032] dark:hover:bg-slate-800'>
         <div className='flex min-w-0 gap-x-4'>
           <div className='min-w-0 flex-auto'>
@@ -122,7 +110,7 @@ const ErrorItem = ({ error, onClick }: ErrorItemProps) => {
   )
 }
 
-export const Errors = ({ errors, onClick }: ErrorsProps) => {
+export const Errors = ({ errors }: ErrorsProps) => {
   return (
     <ClientOnly
       fallback={
@@ -134,7 +122,7 @@ export const Errors = ({ errors, onClick }: ErrorsProps) => {
       {() => (
         <ul className='mt-4'>
           {_map(errors, (error) => (
-            <ErrorItem key={error.eid} error={error} onClick={onClick} />
+            <ErrorItem key={error.eid} error={error} />
           ))}
         </ul>
       )}

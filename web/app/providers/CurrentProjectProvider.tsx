@@ -4,8 +4,14 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router'
 import { toast } from 'sonner'
 
-import { checkPassword, getInstalledExtensions, getProject } from '~/api'
-import { isSelfhosted, LS_PROJECTS_PROTECTED_KEY } from '~/lib/constants'
+import { checkPassword, getInstalledExtensions, getLiveVisitors, getProject } from '~/api'
+import {
+  isSelfhosted,
+  LIVE_VISITORS_UPDATE_INTERVAL,
+  LS_PROJECTS_PROTECTED_KEY,
+  Period,
+  TimeBucket,
+} from '~/lib/constants'
 import { Extension, type Project } from '~/lib/models/Project'
 import { getItemJSON, removeItem } from '~/utils/localstorage'
 import routes from '~/utils/routes'
@@ -23,6 +29,8 @@ interface CurrentProjectContextType {
   allowedToManage: boolean
   updatePreferences: (prefs: ProjectPreferences) => void
   mergeProject: (project: Partial<Project>) => void
+  liveVisitors: number
+  updateLiveVisitors: () => Promise<void>
 }
 
 const CurrentProjectContext = createContext<CurrentProjectContextType | undefined>(undefined)
@@ -32,11 +40,11 @@ interface CurrentProjectProviderProps {
   children: React.ReactNode
 }
 
-export const useProjectPassword = (id: string) => {
+export const useProjectPassword = (id?: string) => {
   const [searchParams] = useSearchParams()
 
   const projectPassword = useMemo(
-    () => searchParams.get('password') || getItemJSON(LS_PROJECTS_PROTECTED_KEY)?.[id] || '',
+    () => searchParams.get('password') || getItemJSON(LS_PROJECTS_PROTECTED_KEY)?.[id || ''] || '',
     [id, searchParams],
   )
 
@@ -133,8 +141,8 @@ const useProject = (id: string) => {
 }
 
 export type ProjectPreferences = {
-  period?: string
-  timeBucket?: string
+  period?: Period
+  timeBucket?: TimeBucket
   rangeDate?: Date[]
   customEvents?: any
   metricsVisualisation?: Record<keyof typeof CHART_METRICS_MAPPING, boolean>
@@ -157,11 +165,43 @@ const useProjectPreferences = (id: string) => {
   return { preferences, updatePreferences }
 }
 
+const useLiveVisitors = (project: Project | null) => {
+  const projectPassword = useProjectPassword(project?.id)
+  const [liveVisitors, setLiveVisitors] = useState(0)
+
+  const updateLiveVisitors = useCallback(async () => {
+    if (!project || project.isLocked) {
+      return
+    }
+
+    const { id: pid } = project
+    const result = await getLiveVisitors([pid], projectPassword)
+    setLiveVisitors(result[pid] || 0)
+  }, [project, projectPassword])
+
+  useEffect(() => {
+    if (!project || project.isLocked) {
+      return
+    }
+
+    updateLiveVisitors()
+
+    const interval = setInterval(async () => {
+      await updateLiveVisitors()
+    }, LIVE_VISITORS_UPDATE_INTERVAL)
+
+    return () => clearInterval(interval)
+  }, [project, updateLiveVisitors])
+
+  return { liveVisitors, updateLiveVisitors }
+}
+
 export const CurrentProjectProvider = ({ children, id }: CurrentProjectProviderProps) => {
   const { project, mergeProject } = useProject(id)
   const { isAuthenticated } = useAuth()
   const { preferences, updatePreferences } = useProjectPreferences(id)
   const [extensions, setExtensions] = useState<Extension[]>([])
+  const { liveVisitors, updateLiveVisitors } = useLiveVisitors(project)
 
   useEffect(() => {
     if (!project || isSelfhosted || !isAuthenticated) {
@@ -191,6 +231,8 @@ export const CurrentProjectProvider = ({ children, id }: CurrentProjectProviderP
         extensions,
         mergeProject,
         allowedToManage: project?.role === 'owner' || project?.role === 'admin',
+        liveVisitors,
+        updateLiveVisitors,
       }}
     >
       {children}

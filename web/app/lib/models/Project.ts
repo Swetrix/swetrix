@@ -58,6 +58,57 @@ export interface Funnel {
   created: string
 }
 
+export interface SwetrixError {
+  eid: string
+  name: string
+  message: string
+  filename: string
+  count: number
+  last_seen: string
+  status: 'active' | 'regressed' | 'fixed' | 'resolved'
+}
+
+export interface SwetrixErrorDetails extends SwetrixError {
+  colno: number
+  lineno: number
+  first_seen: string
+}
+
+export interface Session {
+  psid: string
+  cc: string | null
+  os: string | null
+  br: string | null
+  pageviews: number
+  created: string
+  isLive: 1 | 0
+  sdur?: number
+
+  sessionStart: string
+  lastActivity: string
+}
+
+export interface SessionDetails {
+  cc: string | null
+  os: string | null
+  osv: string | null
+  br: string | null
+  brv: string | null
+  lc: string | null
+  ref: string | null
+  so: string | null
+  me: string | null
+  ca: string | null
+  te: string | null
+  co: string | null
+  rg: string | null
+  ct: string | null
+  dv: string | null
+
+  sdur?: number
+  isLive?: boolean
+}
+
 export interface AnalyticsFunnel {
   value: string
   events: number

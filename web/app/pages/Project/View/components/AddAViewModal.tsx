@@ -403,22 +403,26 @@ const AddAViewModal = ({ onSubmit, showModal, setShowModal, tnMapping, defaultVi
             {_map(activeFilters, ({ filter, column, isExclusive }) => (
               <Filter
                 key={`${column}-${filter}`}
-                onRemoveFilter={(removeColumn, removeFilter) => {
+                onRemoveFilter={(e) => {
+                  e.preventDefault()
+
                   setActiveFilters((prevFilters: any) => {
                     return _filter(
                       prevFilters,
-                      ({ column, filter }) => filter !== removeFilter || column !== removeColumn,
+                      ({ column: prevColumn, filter: prevFilter }) => prevFilter !== filter || prevColumn !== column,
                     )
                   })
                 }}
-                onChangeExclusive={(columnToChange: string, filterToChange: string, isExclusive: boolean) => {
+                onChangeExclusive={(e) => {
+                  e.preventDefault()
+
                   setActiveFilters((prevFilters: any) => {
                     return _map(prevFilters, (item) => {
-                      if (item.column === columnToChange && item.filter === filterToChange) {
+                      if (item.column === column && item.filter === filter) {
                         return {
-                          column: columnToChange,
-                          filter: filterToChange,
-                          isExclusive,
+                          column,
+                          filter,
+                          isExclusive: !isExclusive,
                         }
                       }
 

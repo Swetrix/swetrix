@@ -55,8 +55,9 @@ const CustomMetric = ({ metric, onRemove }: CustomMetricProps) => {
         onClick={onRemove}
         type='button'
         className='ml-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-gray-800 hover:bg-gray-300 hover:text-gray-900 focus:bg-gray-300 focus:text-gray-900 focus:outline-hidden dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-800 dark:hover:text-gray-300 dark:focus:bg-gray-800 dark:focus:text-gray-300'
+        title={t('project.removeFilter')}
+        aria-label={t('project.removeFilter')}
       >
-        <span className='sr-only'>Remove filter</span>
         <svg className='h-2 w-2' stroke='currentColor' fill='none' viewBox='0 0 8 8'>
           <path strokeLinecap='round' strokeWidth='1.5' d='M1 1l6 6m0-6L1 7' />
         </svg>

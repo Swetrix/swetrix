@@ -9,12 +9,9 @@ import Filters from './Filters'
 
 interface NoEventsProps {
   filters: Filter[]
-  filterHandler: (column: string, filter: any) => void
-  onChangeExclusive: (column: string, filter: any, isExclusive: boolean) => void
-  resetActiveTabFilters: () => void
 }
 
-const NoEvents = ({ filters, filterHandler, onChangeExclusive, resetActiveTabFilters }: NoEventsProps) => {
+const NoEvents = ({ filters }: NoEventsProps) => {
   const { t } = useTranslation('common')
   const tnMapping = typeNameMapping(t)
 
@@ -32,12 +29,7 @@ const NoEvents = ({ filters, filterHandler, onChangeExclusive, resetActiveTabFil
   return (
     <>
       <div className='mt-4'>
-        <Filters
-          onRemoveFilter={filterHandler}
-          onChangeExclusive={onChangeExclusive}
-          tnMapping={tnMapping}
-          resetFilters={resetActiveTabFilters}
-        />
+        <Filters tnMapping={tnMapping} />
       </div>
       <div className='mt-5 flex flex-col py-6 sm:px-6 lg:px-8'>
         <div className='mx-auto w-full max-w-7xl text-gray-900 dark:text-gray-50'>

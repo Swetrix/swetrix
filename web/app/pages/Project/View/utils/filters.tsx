@@ -1,10 +1,10 @@
 import _includes from 'lodash/includes'
 import _keys from 'lodash/keys'
 import _reduce from 'lodash/reduce'
-import _replace from 'lodash/replace'
 import _some from 'lodash/some'
 import _startsWith from 'lodash/startsWith'
-import React from 'react'
+
+import { VALID_PERIODS, VALID_TIME_BUCKETS } from '~/lib/constants'
 
 import { ProjectPreferences } from '../../../../providers/CurrentProjectProvider'
 import { Filter } from '../interfaces/traffic'
@@ -15,8 +15,6 @@ export const ERROR_FILTERS_MAPPING = {
 
 export const FILTER_CHART_METRICS_MAPPING_FOR_COMPARE = ['bounce', 'viewsPerUnique', 'trendlines', 'customEvents']
 
-export const validTimeBacket = ['hour', 'day', 'week', 'month']
-export const validPeriods = ['custom', 'today', 'yesterday', '1d', '7d', '4w', '3M', '12M', '24M']
 const validFilters = [
   'host',
   'cc',
@@ -50,7 +48,7 @@ export const filterInvalidPreferences = (
     (prev: string[], curr: string) => {
       const { period, timeBucket } = prefs[curr]
 
-      if (!_includes(validPeriods, period) || !_includes(validTimeBacket, timeBucket)) {
+      if (!_includes(VALID_PERIODS, period) || !_includes(VALID_TIME_BUCKETS, timeBucket)) {
         return prev
       }
 
@@ -83,94 +81,31 @@ export const isFilterValid = (filter: string, checkDynamicFilters = false) => {
   return false
 }
 
-const applyFilters = (items: Filter[], suffix: string, searchParams: URLSearchParams, override: boolean): Filter[] => {
-  const filtersToLoad: Filter[] = []
-  items.forEach((item) => {
-    if (!item.filter) return
+export const parseFilters = (searchParams: URLSearchParams): Filter[] => {
+  const filters: Filter[] = []
 
-    const filters = Array.isArray(item.filter) ? item.filter : [item.filter]
-    if (filters.length === 0) return
+  const entries = Array.from(searchParams.entries())
 
-    const columnSuffix = `${item.column}${suffix}`
+  for (const [key, value] of entries) {
+    let actualColumn = key
 
-    if (override || !searchParams.has(columnSuffix)) {
-      searchParams.delete(columnSuffix)
-      filters.forEach((filter) => searchParams.append(columnSuffix, filter))
+    let isExclusive = false
+
+    if (key.startsWith('!')) {
+      isExclusive = true
+      actualColumn = key.substring(1)
     }
 
-    filtersToLoad.push(item)
-  })
-  return filtersToLoad
-}
+    if (!isFilterValid(actualColumn)) {
+      continue
+    }
 
-export const handleNavigationParams = (
-  items: Filter[],
-  suffix: string,
-  searchParams: URLSearchParams,
-  setSearchParams: React.Dispatch<React.SetStateAction<URLSearchParams>>,
-  override: boolean,
-  stateSetter: React.Dispatch<React.SetStateAction<Filter[]>>,
-  loader: (forceReload: boolean, filters: Filter[]) => void,
-): void => {
-  const filters = applyFilters(items, suffix, searchParams, override)
-  setSearchParams(searchParams)
-  stateSetter(override ? filters : (prev) => [...prev, ...filters])
-  loader(true, filters)
-}
-
-export const updateFilterState = (
-  searchParams: URLSearchParams,
-  setSearchParams: React.Dispatch<React.SetStateAction<URLSearchParams>>,
-  filters: Filter[],
-  newFiltersStateSetter: React.Dispatch<React.SetStateAction<Filter[]>>,
-  column: string,
-  columnSuffix: string,
-  filter: any,
-  isExclusive: boolean,
-) => {
-  const existingFilterIndex = filters.findIndex((f) => f.filter === filter)
-  let updatedFilters: Filter[]
-
-  if (existingFilterIndex > -1) {
-    updatedFilters = filters.filter((_, index) => index !== existingFilterIndex)
-    searchParams.delete(column)
-  } else {
-    updatedFilters = [...filters, { column: columnSuffix, filter, isExclusive }]
-    searchParams.append(column, filter)
-  }
-
-  if (JSON.stringify(updatedFilters) !== JSON.stringify(filters)) {
-    newFiltersStateSetter(updatedFilters)
-    setSearchParams(searchParams)
-  }
-
-  return updatedFilters
-}
-
-export const parseFiltersFromUrl = (
-  keySuffix: string,
-  searchParams: URLSearchParams,
-  setFilters: React.Dispatch<React.SetStateAction<Filter[]>>,
-) => {
-  try {
-    const initialFilters: Filter[] = []
-
-    searchParams.forEach((value, key) => {
-      if (!_includes(key, keySuffix)) return
-
-      const keyWithoutSuffix = _replace(key, keySuffix, '')
-      if (!isFilterValid(keyWithoutSuffix)) return
-
-      const isExclusive = _startsWith(value, '!')
-      initialFilters.push({
-        column: keyWithoutSuffix,
-        filter: isExclusive ? value.substring(1) : value,
-        isExclusive,
-      })
+    filters.push({
+      column: actualColumn,
+      filter: value,
+      isExclusive: isExclusive,
     })
-
-    setFilters(initialFilters)
-  } catch (reason) {
-    console.error(`[ERROR] Parsing filters from URL with suffix ${keySuffix}: ${reason}`)
   }
+
+  return filters
 }

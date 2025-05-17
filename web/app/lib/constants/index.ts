@@ -32,21 +32,42 @@ const getCustomLabel = (dates: Date[], t: typeof i18nextT, language?: string): s
   return t('project.custom')
 }
 
-export const ALL_PERIODS = ['minute', 'hour', 'day', 'month', 'year']
-
 export interface TBPeriodPairsProps {
   label: string
-  period: string
-  tbs: string[]
+  period: Period
+  tbs: TimeBucket[]
   countDays?: number
   dropdownLabel?: string
   isCustomDate?: boolean
 }
 
+export const VALID_PERIODS = [
+  '1h',
+  'today',
+  'yesterday',
+  '1d',
+  '7d',
+  '4w',
+  '3M',
+  '12M',
+  '24M',
+  'all',
+
+  // Extended periods
+  'custom',
+  'compare',
+] as const
+
+export const VALID_TIME_BUCKETS = ['minute', 'hour', 'day', 'month', 'year'] as const
+
+export type Period = (typeof VALID_PERIODS)[number]
+
+export type TimeBucket = (typeof VALID_TIME_BUCKETS)[number]
+
 export const tbPeriodPairs = (
   t: typeof i18nextT,
-  tbs?: string[] | null,
-  dates?: Date[],
+  tbs?: TimeBucket[] | null,
+  dates?: Date[] | null,
   language?: string,
 ): TBPeriodPairsProps[] => [
   {
@@ -109,19 +130,19 @@ export const tbPeriodPairs = (
     dropdownLabel: t('project.custom'),
     isCustomDate: true,
     period: 'custom',
-    tbs: tbs || ['custom'],
+    tbs: tbs || ['month'],
   },
   {
     label: t('project.compare'),
     period: 'compare',
-    tbs: tbs || ['custom'],
+    tbs: tbs || ['month'],
   },
 ]
 
 export const captchaTbPeriodPairs = (
   t: typeof i18nextT,
-  tbs?: string[] | null,
-  dates?: Date[],
+  tbs?: TimeBucket[] | null,
+  dates?: Date[] | null,
   language?: string,
 ): TBPeriodPairsProps[] => [
   {
@@ -184,7 +205,7 @@ export const captchaTbPeriodPairs = (
     dropdownLabel: t('project.custom'),
     isCustomDate: true,
     period: 'custom',
-    tbs: tbs || ['custom'],
+    tbs: tbs || ['month'],
   },
 ]
 
@@ -237,7 +258,7 @@ export const MAX_MONTHS_IN_PAST = 24
 
 export const timeBucketToDays: {
   lt: number
-  tb: string[]
+  tb: TimeBucket[]
 }[] = [
   // { lt: 0, tb: ['minute'] }, // 1 hour
   { lt: 1, tb: ['hour'] }, // 1 days

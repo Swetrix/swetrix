@@ -4,6 +4,7 @@ import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate, useSearchParams } from 'react-router'
 
 import { getFilters, getErrorsFilters } from '~/api'
 import { FILTERS_PANELS_ORDER, ERRORS_FILTERS_PANELS_ORDER } from '~/lib/constants'
@@ -15,11 +16,60 @@ import Select from '~/ui/Select'
 import countries from '~/utils/isoCountries'
 
 import { Filter as FilterType } from '../interfaces/traffic'
+import { isFilterValid } from '../utils/filters'
 
 import { Filter } from './Filters'
 
+export const getFiltersUrlParams = (
+  filters: FilterType[],
+  newFilters: FilterType[],
+  override: boolean,
+  searchParams: URLSearchParams,
+) => {
+  const currentUrlParams = new URLSearchParams(searchParams.toString())
+  const resultingFilters: FilterType[] = []
+
+  if (override) {
+    resultingFilters.push(...filters)
+  } else {
+    // Combining existing (from URL) and new (from modal) filters, removing duplicates
+    const finalUniqueFiltersMap = new Map<string, FilterType>()
+
+    newFilters.forEach((f) => {
+      const mapKey = `${f.isExclusive ? '!' : ''}${f.column}=${f.filter}`
+      finalUniqueFiltersMap.set(mapKey, f)
+    })
+
+    filters.forEach((f) => {
+      const mapKey = `${f.isExclusive ? '!' : ''}${f.column}=${f.filter}`
+      finalUniqueFiltersMap.set(mapKey, f)
+    })
+
+    resultingFilters.push(...Array.from(finalUniqueFiltersMap.values()))
+  }
+
+  const newUrlParams = new URLSearchParams()
+
+  // Preserve non-filter parameters from the current URL
+  for (const [key, value] of currentUrlParams.entries()) {
+    let processedKey = key
+    if (key.startsWith('!')) {
+      processedKey = key.substring(1)
+    }
+    if (!isFilterValid(processedKey, true)) {
+      newUrlParams.append(key, value)
+    }
+  }
+
+  resultingFilters.forEach((f) => {
+    const filterKey = f.isExclusive ? `!${f.column}` : f.column
+    newUrlParams.append(filterKey, f.filter)
+  })
+
+  return newUrlParams
+}
+
 interface SearchFiltersProps {
-  setProjectFilter: (filters: FilterType[], override: boolean) => void
   showModal: boolean
   setShowModal: (show: boolean) => void
   tnMapping: Record<string, string>
@@ -27,7 +77,7 @@ interface SearchFiltersProps {
   type: 'traffic' | 'errors'
 }
 
-const SearchFilters = ({ setProjectFilter, showModal, setShowModal, tnMapping, filters, type }: SearchFiltersProps) => {
+const SearchFilters = ({ showModal, setShowModal, tnMapping, filters, type }: SearchFiltersProps) => {
   const { id } = useCurrentProject()
   const projectPassword = useProjectPassword(id)
   const {
@@ -38,6 +88,8 @@ const SearchFilters = ({ setProjectFilter, showModal, setShowModal, tnMapping, f
   const [searchList, setSearchList] = useState<any[]>([])
   const [activeFilters, setActiveFilters] = useState<FilterType[]>([])
   const [override, setOverride] = useState(false)
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
 
   const getFiltersList = useCallback(
     async (category: string) => {
@@ -75,7 +127,7 @@ const SearchFilters = ({ setProjectFilter, showModal, setShowModal, tnMapping, f
       return
     }
 
-    setActiveFilters((prevFilters: any) => [
+    setActiveFilters((prevFilters: FilterType[]) => [
       ...prevFilters,
       {
         column: filterType,
@@ -94,13 +146,17 @@ const SearchFilters = ({ setProjectFilter, showModal, setShowModal, tnMapping, f
     }, 300)
   }
 
+  const onSubmit = () => {
+    const newUrlParams = getFiltersUrlParams(filters, activeFilters, override, searchParams)
+
+    navigate({ search: newUrlParams.toString() })
+    closeModal()
+  }
+
   return (
     <Modal
       onClose={closeModal}
-      onSubmit={() => {
-        setProjectFilter(activeFilters, override)
-        closeModal()
-      }}
+      onSubmit={onSubmit}
       submitText={t('project.applyFilters')}
       title={t('project.advancedFilters')}
       message={
@@ -120,8 +176,6 @@ const SearchFilters = ({ setProjectFilter, showModal, setShowModal, tnMapping, f
               {_map(filters, ({ column, filter, isExclusive }) => (
                 <Filter
                   key={`${column}-${filter}`}
-                  onChangeExclusive={() => {}}
-                  onRemoveFilter={() => {}}
                   isExclusive={isExclusive}
                   column={column}
                   filter={filter}
@@ -153,22 +207,26 @@ const SearchFilters = ({ setProjectFilter, showModal, setShowModal, tnMapping, f
             {_map(activeFilters, ({ filter, column, isExclusive }) => (
               <Filter
                 key={`${column}-${filter}`}
-                onRemoveFilter={(removeColumn, removeFilter) => {
+                onRemoveFilter={(e) => {
+                  e.preventDefault()
+
                   setActiveFilters((prevFilters: any) => {
                     return _filter(
                       prevFilters,
-                      ({ column, filter }) => filter !== removeFilter || column !== removeColumn,
+                      ({ column: prevColumn, filter: prevFilter }) => prevFilter !== filter || prevColumn !== column,
                     )
                   })
                 }}
-                onChangeExclusive={(columnToChange: string, filterToChange: string, isExclusive: boolean) => {
+                onChangeExclusive={(e) => {
+                  e.preventDefault()
+
                   setActiveFilters((prevFilters: any) => {
                     return _map(prevFilters, (item) => {
-                      if (item.column === columnToChange && item.filter === filterToChange) {
+                      if (item.column === column && item.filter === filter) {
                         return {
-                          column: columnToChange,
-                          filter: filterToChange,
-                          isExclusive,
+                          column,
+                          filter,
+                          isExclusive: !isExclusive,
                         }
                       }
 
