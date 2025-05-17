@@ -120,6 +120,7 @@ export const customEventTransformer = (
 }
 
 export const errorEventTransformer = (
+  psid: string,
   eid: string,
   pid: string,
   host: string | null,
@@ -140,6 +141,7 @@ export const errorEventTransformer = (
   filename: string | null,
 ) => {
   return {
+    psid,
     eid,
     pid,
     host: host || null,
