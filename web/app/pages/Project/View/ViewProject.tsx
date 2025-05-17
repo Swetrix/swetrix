@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { MagnifyingGlassIcon, ChevronLeftIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
 import SwetrixSDK from '@swetrix/sdk'
 import billboard from 'billboard.js'
@@ -255,7 +254,15 @@ const ViewProject = () => {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const isEmbedded = searchParams.get('embedded') === 'true'
-  const projectQueryTabs = searchParams.get('tabs') ? searchParams.get('tabs')?.split(',') : []
+  const projectQueryTabs = useMemo(() => {
+    const tabs = searchParams.get('tabs')
+
+    if (!tabs) {
+      return []
+    }
+
+    return tabs.split(',')
+  }, [searchParams])
 
   const [liveVisitors, setLiveVisitors] = useState(0)
 
@@ -402,7 +409,7 @@ const ViewProject = () => {
     }
 
     return _timeBucket
-  }, [searchParams, preferences.timeBucket, periodPairs, period])
+  }, [searchParams, preferences.timeBucket, periodPairs, period, dateRange])
 
   const activePeriod = useMemo(() => _find(periodPairs, (p) => p.period === period), [period, periodPairs])
 
@@ -592,7 +599,7 @@ const ViewProject = () => {
       _pickBy(preferences.customEvents, (value, keyCustomEvents) =>
         _includes(activeChartMetricsCustomEvents, keyCustomEvents),
       ),
-    [preferences.customEvents, id, activeChartMetricsCustomEvents],
+    [preferences.customEvents, activeChartMetricsCustomEvents],
   )
   const [chartType, setChartType] = useState(getItem('chartType') || chartTypes.line)
 
@@ -624,7 +631,7 @@ const ViewProject = () => {
     }
 
     return findActivePeriod?.countDays || 0
-  }, [isActiveCompare, period])
+  }, [isActiveCompare, period, dateRange, periodPairs])
 
   useEffect(() => {
     if (!project) {
@@ -849,14 +856,6 @@ const ViewProject = () => {
     [t],
   )
 
-  const dataNamesFunnel = useMemo(
-    () => ({
-      dropoff: t('project.dropoff'),
-      events: t('project.visitors'),
-    }),
-    [t],
-  )
-
   // @ts-expect-error
   const tabs: {
     id: keyof typeof PROJECT_TABS | 'settings'
@@ -920,7 +919,7 @@ const ViewProject = () => {
     }
 
     return newTabs
-  }, [t, id, projectQueryTabs, allowedToManage])
+  }, [t, projectQueryTabs, allowedToManage])
 
   const activeTabLabel = useMemo(() => _find(tabs, (tab) => tab.id === activeTab)?.label, [tabs, activeTab])
 
@@ -956,13 +955,16 @@ const ViewProject = () => {
     })
   }
 
-  const switchActiveErrorFilter = useCallback(
-    _debounce((pairID: string) => {
-      setErrorOptions((prev) => ({ ...prev, [pairID]: !prev[pairID] }))
-      resetErrors()
-    }, 0),
-    [],
-  )
+  const resetErrors = () => {
+    setErrorsSkip(0)
+    setErrors([])
+    setErrorsLoading(null)
+  }
+
+  const switchActiveErrorFilter = _debounce((pairID: string) => {
+    setErrorOptions((prev) => ({ ...prev, [pairID]: !prev[pairID] }))
+    resetErrors()
+  }, 0)
 
   const updateStatusInErrors = (status: 'active' | 'resolved') => {
     if (!activeError?.details?.eid) {
@@ -1102,12 +1104,6 @@ const ViewProject = () => {
       setDataLoading(false)
     }
   }
-
-  useEffect(() => {
-    if (activeTab === PROJECT_TABS.traffic) {
-      loadCustomEvents()
-    }
-  }, [activeChartMetricsCustomEvents])
 
   const compareDisable = () => {
     setIsActiveCompare(false)
@@ -1425,7 +1421,7 @@ const ViewProject = () => {
       }
       setErrorLoading(false)
     },
-    [dateRange, id, period, projectPassword, timezone],
+    [dateRange, id, period, projectPassword, timezone, filters],
   )
 
   const loadSession = async (psid: string) => {
@@ -1454,6 +1450,7 @@ const ViewProject = () => {
     }
 
     loadSession(activePSID)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period, dateRange, timeBucket, activePSID])
 
   useEffect(() => {
@@ -1463,6 +1460,7 @@ const ViewProject = () => {
     }
 
     loadError(activeEID)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [period, dateRange, timeBucket, activeEID, filters])
 
   const loadSessions = async (forcedSkip?: number) => {
@@ -1779,7 +1777,10 @@ const ViewProject = () => {
       if (activeTab === PROJECT_TABS.funnels) {
         setMainChart(() => {
           const generate = billboard.generate(bbSettings)
-          generate.data.names(dataNamesFunnel)
+          generate.data.names({
+            dropoff: t('project.dropoff'),
+            events: t('project.visitors'),
+          })
           return generate
         })
       }
@@ -1872,12 +1873,23 @@ const ViewProject = () => {
     if (activeTab !== PROJECT_TABS.traffic || authLoading || !project) return
 
     loadAnalytics()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, activeTab, customMetrics, filters, authLoading, project, isActiveCompare, dateRange, period, timeBucket])
+
+  useEffect(() => {
+    if (activeTab !== PROJECT_TABS.traffic || authLoading || !project) {
+      return
+    }
+
+    loadCustomEvents()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeChartMetricsCustomEvents, activeTab, authLoading, project])
 
   useEffect(() => {
     if (activeTab !== PROJECT_TABS.performance || authLoading || !project) return
 
     loadAnalyticsPerf()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     activeTab,
     activePerfMeasure,
@@ -1895,6 +1907,7 @@ const ViewProject = () => {
     if (activeTab !== PROJECT_TABS.funnels || authLoading || !project) return
 
     loadFunnelsData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeFunnel, activeTab, authLoading, project, dateRange, period, timeBucket])
 
   useEffect(() => {
@@ -1903,6 +1916,7 @@ const ViewProject = () => {
     }
 
     loadSessions()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, dateRange, filters, id, period, projectPassword, timezone, authLoading, project])
 
   useEffect(() => {
@@ -1911,72 +1925,90 @@ const ViewProject = () => {
     }
 
     loadErrors()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, errorOptions, dateRange, filters, id, period, projectPassword, timezone, authLoading, project])
 
   useEffect(() => {
+    if (authLoading || !project || _isEmpty(mainChart)) {
+      return
+    }
+
     if (activeTab === PROJECT_TABS.traffic) {
-      if (
-        (!authLoading && !_isEmpty(chartData) && !_isEmpty(mainChart)) ||
-        (isActiveCompare && !_isEmpty(dataChartCompare) && !_isEmpty(mainChart))
-      ) {
-        if (
-          activeChartMetrics.views ||
-          activeChartMetrics.unique ||
-          activeChartMetrics.viewsPerUnique ||
-          activeChartMetrics.trendlines
-        ) {
-          mainChart.load({
-            columns: getColumns(chartData, activeChartMetrics),
-          })
-        }
-
-        if (
-          activeChartMetrics.bounce ||
-          activeChartMetrics.sessionDuration ||
-          activeChartMetrics.views ||
-          activeChartMetrics.unique ||
-          !activeChartMetrics.bounce ||
-          !activeChartMetrics.sessionDuration
-        ) {
-          const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
-          const bbSettings = getSettings(
-            chartData,
-            timeBucket,
-            activeChartMetrics,
-            applyRegions,
-            timeFormat,
-            rotateXAxis,
-            chartType,
-            customEventsChartData,
-            dataChartCompare,
-          )
-
-          setMainChart(() => {
-            const generate = billboard.generate(bbSettings)
-            generate.data.names(dataNames)
-            return generate
-          })
-        }
-
-        if (!activeChartMetrics.views) {
-          mainChart.unload({
-            ids: 'total',
-          })
-        }
-
-        if (!activeChartMetrics.unique) {
-          mainChart.unload({
-            ids: 'unique',
-          })
-        }
-
-        if (!activeChartMetrics.viewsPerUnique) {
-          mainChart.unload({
-            ids: 'viewsPerUnique',
-          })
-        }
+      if (_isEmpty(chartData)) {
+        return
       }
-    } else if (!authLoading && !_isEmpty(chartDataPerf) && !_isEmpty(mainChart)) {
+
+      if (isActiveCompare && _isEmpty(dataChartCompare)) {
+        return
+      }
+
+      if (
+        activeChartMetrics.views ||
+        activeChartMetrics.unique ||
+        activeChartMetrics.viewsPerUnique ||
+        activeChartMetrics.trendlines
+      ) {
+        mainChart.load({
+          columns: getColumns(chartData, activeChartMetrics),
+        })
+      }
+
+      if (
+        activeChartMetrics.bounce ||
+        activeChartMetrics.sessionDuration ||
+        activeChartMetrics.views ||
+        activeChartMetrics.unique ||
+        !activeChartMetrics.bounce ||
+        !activeChartMetrics.sessionDuration
+      ) {
+        const applyRegions = !_includes(noRegionPeriods, activePeriod?.period)
+        const bbSettings = getSettings(
+          chartData,
+          timeBucket,
+          activeChartMetrics,
+          applyRegions,
+          timeFormat,
+          rotateXAxis,
+          chartType,
+          customEventsChartData,
+          dataChartCompare,
+        )
+
+        setMainChart(() => {
+          const generate = billboard.generate(bbSettings)
+          generate.data.names(dataNames)
+          return generate
+        })
+      }
+
+      if (!activeChartMetrics.views) {
+        mainChart.unload({
+          ids: 'total',
+        })
+      }
+
+      if (!activeChartMetrics.unique) {
+        mainChart.unload({
+          ids: 'unique',
+        })
+      }
+
+      if (!activeChartMetrics.viewsPerUnique) {
+        mainChart.unload({
+          ids: 'viewsPerUnique',
+        })
+      }
+    }
+
+    if (activeTab === PROJECT_TABS.performance) {
+      if (_isEmpty(chartDataPerf)) {
+        return
+      }
+
+      if (isActiveCompare && _isEmpty(dataChartPerfCompare)) {
+        return
+      }
+
       const bbSettings = getSettingsPerf(
         chartDataPerf,
         timeBucket,
@@ -1993,7 +2025,8 @@ const ViewProject = () => {
         return generate
       })
     }
-  }, [authLoading, activeChartMetrics, chartData, chartDataPerf, activeChartMetricsPerf, dataChartCompare])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, project, activeChartMetrics, chartData, chartDataPerf, activeChartMetricsPerf, dataChartCompare])
 
   useEffect(() => {
     let sdk: any | null = null
@@ -2082,6 +2115,7 @@ const ViewProject = () => {
       timeBucket,
       dateRange: period === 'custom' ? dateRange : null,
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sdkInstance])
 
   useEffect(() => {
@@ -2099,7 +2133,7 @@ const ViewProject = () => {
     const { active: isActive, created, public: isPublic, name } = project
 
     sdkInstance?._emitEvent('projectinfo', {
-      id,
+      id: project.id,
       name,
       isActive,
       created,
@@ -2116,18 +2150,6 @@ const ViewProject = () => {
     setSessions([])
     setSessionsLoading(null)
   }
-
-  const resetErrors = () => {
-    setErrorsSkip(0)
-    setErrors([])
-    setErrorsLoading(null)
-  }
-
-  useEffect(() => {
-    if (!_isEmpty(activeChartMetricsCustomEvents)) {
-      setActiveChartMetricsCustomEvents([])
-    }
-  }, [period, filters])
 
   useEffect(() => {
     if (!project || project.isLocked) {
