@@ -1072,6 +1072,14 @@ export class AnalyticsController {
 
     await this.analyticsService.validate(errorDTO, origin, ip)
 
+    const [, psid] = await this.analyticsService.generateAndStoreSessionId(
+      errorDTO.pid,
+      userAgent,
+      ip,
+    )
+
+    await this.analyticsService.processInteractionSD(psid, errorDTO.pid)
+
     const { city, region, country } = getGeoDetails(ip, errorDTO.tz)
 
     const { deviceType, browserName, browserVersion, osName, osVersion } =
@@ -1080,6 +1088,7 @@ export class AnalyticsController {
     const { name, message, lineno, colno, filename } = errorDTO
 
     const transformed = errorEventTransformer(
+      psid,
       this.analyticsService.getErrorID(errorDTO),
       errorDTO.pid,
       this.analyticsService.getHostFromOrigin(headers.origin),

@@ -1,9 +1,4 @@
-import {
-  EnvelopeIcon,
-  ExclamationTriangleIcon,
-  ChevronDownIcon,
-  CursorArrowRaysIcon,
-} from '@heroicons/react/24/outline'
+import { EnvelopeIcon, ExclamationTriangleIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import cx from 'clsx'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
@@ -15,7 +10,7 @@ import _isNull from 'lodash/isNull'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _size from 'lodash/size'
-import { DownloadIcon, MessageSquareTextIcon, MonitorIcon, UserRoundIcon } from 'lucide-react'
+import { DownloadIcon, MessageSquareTextIcon, MonitorIcon, UserRoundIcon, MousePointerClickIcon } from 'lucide-react'
 import React, { useState, useEffect, memo, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router'
@@ -113,7 +108,7 @@ const getTabs = (t: typeof i18next.t) => {
     {
       id: TAB_MAPPING.REFERRALS,
       label: t('profileSettings.referral.title'),
-      icon: CursorArrowRaysIcon,
+      icon: MousePointerClickIcon,
     },
   ]
 }

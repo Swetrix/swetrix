@@ -3481,7 +3481,7 @@ export class AnalyticsService {
         LEFT ARRAY JOIN meta.key, meta.value
         WHERE
           pid = {pid:FixedString(12)}
-          AND psid = {psid:String}
+          AND CAST(analytics.psid AS String) = {psid:String} AND analytics.psid IS NOT NULL
         GROUP BY type, value, created, pid, psid
 
         UNION ALL
@@ -3497,8 +3497,29 @@ export class AnalyticsService {
         LEFT ARRAY JOIN meta.key, meta.value
         WHERE
           pid = {pid:FixedString(12)}
-          AND psid = {psid:String}
+          AND CAST(customEV.psid AS String) = {psid:String} AND customEV.psid IS NOT NULL
         GROUP BY type, value, created, pid, psid
+        
+        UNION ALL
+
+        SELECT
+          'error' AS type,
+          errors.name AS value,
+          toTimeZone(errors.created, '${safeTimezone}') AS created,
+          pid,
+          psid,
+          [
+            tuple('message', COALESCE(errors.message, '')), 
+            tuple('lineno', CAST(COALESCE(errors.lineno, 0), 'String')), 
+            tuple('colno', CAST(COALESCE(errors.colno, 0), 'String')),
+            tuple('filename', COALESCE(errors.filename, ''))
+          ] AS metadata
+        FROM errors
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND errors.psid IS NOT NULL
+          AND CAST(errors.psid AS String) = {psid:String}
+        GROUP BY type, value, created, pid, psid, errors.message, errors.lineno, errors.colno, errors.filename
       )
 
       SELECT
@@ -3660,55 +3681,101 @@ export class AnalyticsService {
     skip = 0,
     customEVFilterApplied = false,
   ): Promise<object | void> {
-    const analyticsSubquery = `
-      SELECT
-        CAST(psid, 'String') AS psidCasted,
-        cc,
-        os,
-        br,
-        toTimeZone(analytics.created, '${safeTimezone}') AS created
-      FROM analytics
-      WHERE
-        pid = {pid:FixedString(12)}
-        AND psid IS NOT NULL
-        AND analytics.created BETWEEN {groupFrom:String} AND {groupTo:String}
-        ${filtersQuery}
-    `
+    const primaryEventsTable = customEVFilterApplied ? 'customEV' : 'analytics'
+    const safeFiltersQuery =
+      filtersQuery &&
+      !filtersQuery.trim().startsWith('AND') &&
+      !filtersQuery.trim().startsWith('OR')
+        ? `AND ${filtersQuery}`
+        : filtersQuery
 
-    const customEVSubquery = `
+    const primaryEventsSubquery = `
       SELECT
-        CAST(psid, 'String') AS psidCasted,
-        cc,
-        os,
-        br,
-        toTimeZone(customEV.created, '${safeTimezone}') AS created
-      FROM customEV
+        CAST(${primaryEventsTable}.psid, 'String') AS psidCasted,
+        ${primaryEventsTable}.pid,
+        ${primaryEventsTable}.cc,
+        ${primaryEventsTable}.os,
+        ${primaryEventsTable}.br,
+        toTimeZone(${primaryEventsTable}.created, '${safeTimezone}') AS created_for_grouping
+      FROM ${primaryEventsTable}
       WHERE
-        pid = {pid:FixedString(12)}
-        AND psid IS NOT NULL
-        AND customEV.created BETWEEN {groupFrom:String} AND {groupTo:String}
-        ${filtersQuery}
+        ${primaryEventsTable}.pid = {pid:FixedString(12)}
+        AND ${primaryEventsTable}.psid IS NOT NULL
+        AND ${primaryEventsTable}.created BETWEEN {groupFrom:String} AND {groupTo:String}
+        ${safeFiltersQuery} 
     `
 
     const query = `
+      WITH distinct_sessions_filtered AS (
+        SELECT
+          psidCasted,
+          pid, 
+          any(cc) AS cc,
+          any(os) AS os,
+          any(br) AS br,
+          min(created_for_grouping) AS sessionStart,
+          max(created_for_grouping) AS lastActivity
+        FROM (${primaryEventsSubquery}) AS primary_events
+        GROUP BY psidCasted, pid
+      ),
+      pageview_counts AS (
+        SELECT 
+          CAST(psid, 'String') AS psidCasted,
+          pid, 
+          count() as count 
+        FROM analytics 
+        WHERE pid = {pid:FixedString(12)} AND psid IS NOT NULL 
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psidCasted, pid
+      ),
+      event_counts AS (
+        SELECT 
+          CAST(psid, 'String') AS psidCasted,
+          pid, 
+          count() as count 
+        FROM customEV 
+        WHERE pid = {pid:FixedString(12)} AND psid IS NOT NULL 
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psidCasted, pid
+      ),
+      error_counts AS (
+        SELECT 
+          CAST(psid, 'String') AS psidCasted,
+          pid, 
+          count() as count 
+        FROM errors 
+        WHERE pid = {pid:FixedString(12)} AND psid IS NOT NULL 
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psidCasted, pid
+      ),
+      session_duration_agg AS (
+        SELECT 
+          CAST(psid AS String) AS psidCasted, 
+          pid, 
+          avg(duration) as avg_duration
+        FROM session_durations 
+        WHERE pid = {pid:FixedString(12)}
+        GROUP BY psidCasted, pid
+      )
       SELECT
-        events.psidCasted AS psid,
-        any(events.cc) AS cc,
-        any(events.os) AS os,
-        any(events.br) AS br,
-        count() AS pageviews,
-        min(events.created) AS sessionStart,
-        max(events.created) AS lastActivity,
-        if(dateDiff('second', max(events.created), now()) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
-        avg(durations.duration) AS sdur
-      FROM
-      (
-        ${customEVFilterApplied ? customEVSubquery : analyticsSubquery}
-      ) AS events
-      LEFT JOIN session_durations AS durations
-        ON events.psidCasted = CAST(durations.psid, 'String') AND durations.pid = {pid:FixedString(12)}
-      GROUP BY events.psidCasted
-      ORDER BY sessionStart DESC
+        dsf.psidCasted AS psid,
+        dsf.cc,
+        dsf.os,
+        dsf.br,
+        COALESCE(pc.count, 0) AS pageviews,
+        COALESCE(ec.count, 0) AS customEvents,
+        COALESCE(errc.count, 0) AS errors,
+        dsf.sessionStart,
+        dsf.lastActivity,
+        if(dateDiff('second', dsf.lastActivity, now()) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
+        sda.avg_duration AS sdur
+      FROM distinct_sessions_filtered dsf
+      LEFT JOIN pageview_counts pc ON dsf.psidCasted = pc.psidCasted AND dsf.pid = pc.pid
+      LEFT JOIN event_counts ec ON dsf.psidCasted = ec.psidCasted AND dsf.pid = ec.pid
+      LEFT JOIN error_counts errc ON dsf.psidCasted = errc.psidCasted AND dsf.pid = errc.pid
+      LEFT JOIN session_duration_agg sda ON dsf.psidCasted = sda.psidCasted AND dsf.pid = sda.pid
+      WHERE dsf.psidCasted IS NOT NULL
+      ORDER BY dsf.sessionStart DESC
       LIMIT ${take}
       OFFSET ${skip}
     `
