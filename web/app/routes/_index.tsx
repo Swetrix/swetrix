@@ -1,11 +1,11 @@
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
-import { CheckIcon, CursorArrowRaysIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
+import { CheckIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
 import { StarIcon } from '@heroicons/react/24/solid'
 import { UAParser } from '@ua-parser-js/pro-business'
 import clsx from 'clsx'
 import { motion } from 'framer-motion'
 import _map from 'lodash/map'
-import { Cookie, FileTextIcon } from 'lucide-react'
+import { Cookie, FileTextIcon, MousePointerClickIcon } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { useTranslation, Trans } from 'react-i18next'
 import type { LoaderFunctionArgs } from 'react-router'
@@ -636,7 +636,7 @@ const FeatureBlocks = () => {
                         {path.startsWith('/') ? (
                           <FileTextIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
                         ) : (
-                          <CursorArrowRaysIcon className='h-5 w-5 text-white' aria-hidden='true' />
+                          <MousePointerClickIcon className='h-5 w-5 text-white' aria-hidden='true' strokeWidth={1.5} />
                         )}
                       </span>
                     </div>
