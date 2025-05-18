@@ -2420,8 +2420,10 @@ const ViewProject = () => {
 
             const newSearchParams = new URLSearchParams(searchParams.toString())
             newSearchParams.set('tab', tab.id)
-            const tabUrl =
-              tab.id === 'settings' ? _replace(routes.project_settings, ':id', id) : newSearchParams.toString()
+            const tabUrl: LinkProps['to'] =
+              tab.id === 'settings'
+                ? _replace(routes.project_settings, ':id', id)
+                : { search: newSearchParams.toString() }
 
             return (
               <Link
