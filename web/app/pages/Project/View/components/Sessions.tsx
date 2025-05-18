@@ -120,7 +120,7 @@ const Session = ({ session, timeFormat }: SessionProps) => {
               <Separator />
               {session.br}
             </p>
-            <p className='mt-1 flex text-xs leading-5 text-gray-500 sm:hidden dark:text-gray-300'>
+            <p className='mt-2 flex text-xs leading-5 text-gray-500 sm:hidden dark:text-gray-300'>
               <span className='mr-2 flex items-center'>
                 <FileTextIcon className='mr-1 size-5' strokeWidth={1.5} /> {session.pageviews}
               </span>
@@ -130,7 +130,7 @@ const Session = ({ session, timeFormat }: SessionProps) => {
                 </span>
               ) : null}
               {session.errors > 0 ? (
-                <span className='flex items-center text-red-500'>
+                <span className='flex items-center text-red-400'>
                   <BugIcon className='mr-1 size-5' strokeWidth={1.5} /> {session.errors}
                 </span>
               ) : null}
@@ -139,17 +139,17 @@ const Session = ({ session, timeFormat }: SessionProps) => {
         </div>
         <div className='flex shrink-0 items-center gap-x-4'>
           <div className='hidden sm:flex sm:flex-col sm:items-end'>
-            <div className='flex items-center text-sm leading-6 text-gray-900 dark:text-gray-50'>
-              <span className='mr-3 flex items-center' title={t('dashboard.xPageviews', { x: session.pageviews })}>
+            <div className='flex items-center gap-x-3 text-sm leading-6 text-gray-900 dark:text-gray-50'>
+              <span className='flex items-center' title={t('dashboard.xPageviews', { x: session.pageviews })}>
                 <FileTextIcon className='mr-1 size-5' strokeWidth={1.5} /> {session.pageviews}
               </span>
               {session.customEvents > 0 ? (
-                <span className='mr-3 flex items-center' title={`${session.customEvents} custom events`}>
+                <span className='flex items-center' title={t('dashboard.xCustomEvents', { x: session.customEvents })}>
                   <MousePointerClickIcon className='mr-1 size-5' strokeWidth={1.5} /> {session.customEvents}
                 </span>
               ) : null}
               {session.errors > 0 ? (
-                <span className='flex items-center text-red-500' title={`${session.errors} errors`}>
+                <span className='flex items-center text-red-500' title={t('dashboard.xErrors', { x: session.errors })}>
                   <BugIcon className='mr-1 size-5' strokeWidth={1.5} /> {session.errors}
                 </span>
               ) : null}
