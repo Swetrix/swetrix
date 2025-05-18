@@ -3141,7 +3141,7 @@ const ViewProject = () => {
                         to={{
                           search: pureSearchParams,
                         }}
-                        className='mx-auto mt-2 mb-4 flex items-center font-mono text-sm text-gray-900 underline decoration-dashed hover:decoration-solid lg:mx-0 dark:text-gray-100'
+                        className='mx-auto mt-2 mb-4 flex max-w-max items-center font-mono text-sm text-gray-900 underline decoration-dashed hover:decoration-solid lg:mx-0 dark:text-gray-100'
                       >
                         <ChevronLeftIcon className='mr-1 size-3' />
                         {t('project.backToFunnels')}
@@ -3245,7 +3245,7 @@ const ViewProject = () => {
                       to={{
                         search: pureSearchParams,
                       }}
-                      className='mx-auto mt-2 mb-4 flex items-center font-mono text-sm text-gray-900 underline decoration-dashed hover:decoration-solid lg:mx-0 dark:text-gray-100'
+                      className='mx-auto mt-2 mb-4 flex max-w-max items-center font-mono text-sm text-gray-900 underline decoration-dashed hover:decoration-solid lg:mx-0 dark:text-gray-100'
                     >
                       <ChevronLeftIcon className='mr-1 size-3' />
                       {t('project.backToSessions')}
@@ -3304,7 +3304,7 @@ const ViewProject = () => {
                       to={{
                         search: pureSearchParams,
                       }}
-                      className='mx-auto mt-2 mb-4 flex items-center font-mono text-sm text-gray-900 underline decoration-dashed hover:decoration-solid lg:mx-0 dark:text-gray-100'
+                      className='mx-auto mt-2 mb-4 flex max-w-max items-center font-mono text-sm text-gray-900 underline decoration-dashed hover:decoration-solid lg:mx-0 dark:text-gray-100'
                     >
                       <ChevronLeftIcon className='mr-1 size-3' />
                       {t('project.backToErrors')}
