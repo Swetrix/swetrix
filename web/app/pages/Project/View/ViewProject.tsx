@@ -3139,15 +3139,32 @@ const ViewProject = () => {
                       </div>
                     </div>
                     {activeTab === PROJECT_TABS.funnels ? (
-                      <Link
-                        to={{
-                          search: pureSearchParams,
-                        }}
-                        className='mx-auto mt-2 mb-4 flex max-w-max items-center font-mono text-sm text-gray-900 underline decoration-dashed hover:decoration-solid lg:mx-0 dark:text-gray-100'
-                      >
-                        <ChevronLeftIcon className='mr-1 size-3' />
-                        {t('project.backToFunnels')}
-                      </Link>
+                      <div className='mx-auto mt-2 mb-4 flex max-w-max items-center space-x-4 lg:mx-0'>
+                        <Link
+                          to={{
+                            search: pureSearchParams,
+                          }}
+                          className='flex items-center font-mono text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
+                        >
+                          <ChevronLeftIcon className='mr-1 size-3' />
+                          {t('project.backToFunnels')}
+                        </Link>
+                        <button
+                          type='button'
+                          title={t('project.refreshStats')}
+                          onClick={refreshStats}
+                          className={cx(
+                            'flex items-center font-mono text-sm text-gray-900 hover:text-gray-600 dark:text-gray-100 dark:hover:text-gray-300',
+                            {
+                              'cursor-not-allowed': authLoading || dataLoading,
+                            },
+                          )}
+                          disabled={authLoading || dataLoading}
+                        >
+                          <RotateCw className='mr-1 size-4' />
+                          {t('project.refresh')}
+                        </button>
+                      </div>
                     ) : null}
                   </>
                 ) : null}
@@ -3243,15 +3260,32 @@ const ViewProject = () => {
                 ) : null}
                 {activeTab === PROJECT_TABS.sessions && activePSID ? (
                   <>
-                    <Link
-                      to={{
-                        search: pureSearchParams,
-                      }}
-                      className='mx-auto mt-2 mb-4 flex max-w-max items-center font-mono text-sm text-gray-900 underline decoration-dashed hover:decoration-solid lg:mx-0 dark:text-gray-100'
-                    >
-                      <ChevronLeftIcon className='mr-1 size-3' />
-                      {t('project.backToSessions')}
-                    </Link>
+                    <div className='mx-auto mt-2 mb-4 flex max-w-max items-center space-x-4 lg:mx-0'>
+                      <Link
+                        to={{
+                          search: pureSearchParams,
+                        }}
+                        className='flex items-center font-mono text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
+                      >
+                        <ChevronLeftIcon className='mr-1 size-3' />
+                        {t('project.backToSessions')}
+                      </Link>
+                      <button
+                        type='button'
+                        title={t('project.refreshStats')}
+                        onClick={refreshStats}
+                        className={cx(
+                          'flex items-center font-mono text-sm text-gray-900 hover:text-gray-600 dark:text-gray-100 dark:hover:text-gray-300',
+                          {
+                            'cursor-not-allowed': authLoading || dataLoading || sessionLoading,
+                          },
+                        )}
+                        disabled={authLoading || dataLoading || sessionLoading}
+                      >
+                        <RotateCw className='mr-1 size-4' />
+                        {t('project.refresh')}
+                      </button>
+                    </div>
                     {activeSession?.details ? <SessionDetails details={activeSession?.details} /> : null}
                     {!_isEmpty(activeSession?.chart) ? (
                       <SessionChart
@@ -3302,15 +3336,32 @@ const ViewProject = () => {
                 ) : null}
                 {activeTab === PROJECT_TABS.errors && activeEID ? (
                   <>
-                    <Link
-                      to={{
-                        search: pureSearchParams,
-                      }}
-                      className='mx-auto mt-2 mb-4 flex max-w-max items-center font-mono text-sm text-gray-900 underline decoration-dashed hover:decoration-solid lg:mx-0 dark:text-gray-100'
-                    >
-                      <ChevronLeftIcon className='mr-1 size-3' />
-                      {t('project.backToErrors')}
-                    </Link>
+                    <div className='mx-auto mt-2 mb-4 flex max-w-max items-center space-x-4 lg:mx-0'>
+                      <Link
+                        to={{
+                          search: pureSearchParams,
+                        }}
+                        className='flex items-center font-mono text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
+                      >
+                        <ChevronLeftIcon className='mr-1 size-3' />
+                        {t('project.backToErrors')}
+                      </Link>
+                      <button
+                        type='button'
+                        title={t('project.refreshStats')}
+                        onClick={refreshStats}
+                        className={cx(
+                          'flex items-center font-mono text-sm text-gray-900 hover:text-gray-600 dark:text-gray-100 dark:hover:text-gray-300',
+                          {
+                            'cursor-not-allowed': authLoading || dataLoading || errorLoading,
+                          },
+                        )}
+                        disabled={authLoading || dataLoading || errorLoading}
+                      >
+                        <RotateCw className='mr-1 size-4' />
+                        {t('project.refresh')}
+                      </button>
+                    </div>
                     {activeError?.details ? <ErrorDetails details={activeError.details} /> : null}
                     {activeError?.chart ? (
                       <ErrorChart

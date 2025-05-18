@@ -1001,6 +1001,7 @@
     "resolve": "Resolve",
     "markAsActive": "Mark as active",
     "refreshStats": "Refresh stats",
+    "refresh": "Refresh",
     "barChart": "Bar chart",
     "lineChart": "Line chart",
     "settings": {
