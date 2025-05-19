@@ -439,6 +439,8 @@ const ViewProject = () => {
   const activePSID = useMemo(() => {
     return searchParams.get('psid')
   }, [searchParams])
+  const [zoomedTimeRange, setZoomedTimeRange] = useState<[Date, Date] | null>(null)
+  const [sessionChartInstance, setSessionChartInstance] = useState<Chart | null>(null)
 
   // errors
   const [errorsSkip, setErrorsSkip] = useState(0)
@@ -2461,6 +2463,21 @@ const ViewProject = () => {
     </div>
   )
 
+  const handleChartZoom = useCallback((domain: [Date, Date] | null) => {
+    setZoomedTimeRange(domain)
+  }, [])
+
+  const handleSessionChartReady = useCallback((chartInst: Chart | null) => {
+    setSessionChartInstance(chartInst)
+  }, [])
+
+  const resetSessionChartZoom = () => {
+    if (sessionChartInstance) {
+      sessionChartInstance.unzoom()
+    }
+    setZoomedTimeRange(null)
+  }
+
   if (authLoading || !project) {
     return (
       <>
@@ -3288,16 +3305,28 @@ const ViewProject = () => {
                     </div>
                     {activeSession?.details ? <SessionDetails details={activeSession?.details} /> : null}
                     {!_isEmpty(activeSession?.chart) ? (
-                      <SessionChart
-                        chart={activeSession?.chart}
-                        timeBucket={activeSession?.timeBucket}
-                        timeFormat={timeFormat}
-                        rotateXAxis={rotateXAxis}
-                        chartType={chartType}
-                        dataNames={dataNames}
-                      />
+                      <div className='relative'>
+                        <SessionChart
+                          chart={activeSession?.chart}
+                          timeBucket={activeSession?.timeBucket}
+                          timeFormat={timeFormat}
+                          rotateXAxis={rotateXAxis}
+                          chartType={chartType}
+                          dataNames={dataNames}
+                          onZoom={handleChartZoom}
+                          onChartReady={handleSessionChartReady}
+                        />
+                        {zoomedTimeRange ? (
+                          <button
+                            onClick={resetSessionChartZoom}
+                            className='absolute top-2 right-0 z-10 rounded border bg-white px-2 py-1 text-xs text-gray-800 hover:bg-gray-100 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
+                          >
+                            {t('project.resetZoom')}
+                          </button>
+                        ) : null}
+                      </div>
                     ) : null}
-                    <Pageflow pages={activeSession?.pages} timeFormat={timeFormat} />
+                    <Pageflow pages={activeSession?.pages} timeFormat={timeFormat} zoomDomain={zoomedTimeRange} />
                     {_isEmpty(activeSession) && sessionLoading ? <Loader /> : null}
                     {activeSession !== null &&
                     _isEmpty(activeSession?.chart) &&

@@ -1,6 +1,6 @@
 import { LanguageIcon, ArrowRightCircleIcon } from '@heroicons/react/24/outline'
 import type { ChartOptions, GridLineOptions } from 'billboard.js'
-import { area, areaSpline, spline, bar, line } from 'billboard.js'
+import { area, areaSpline, spline, bar, line, zoom } from 'billboard.js'
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
 import filesaver from 'file-saver'
@@ -756,6 +756,7 @@ const getSettingsSession = (
   timeFormat: string,
   rotateXAxis: boolean,
   chartType: string,
+  onZoom?: (domain: [Date, Date]) => void,
 ): ChartOptions => {
   const xAxisSize = _size(chart.x)
 
@@ -776,6 +777,12 @@ const getSettingsSession = (
         bounce: 'y2',
         sessionDuration: 'y2',
       },
+    },
+    zoom: {
+      enabled: zoom(),
+      type: 'drag',
+      onzoom: onZoom,
+      resetButton: false, // We render a custom button that also resets pageflow
     },
     transition: {
       duration: 500,

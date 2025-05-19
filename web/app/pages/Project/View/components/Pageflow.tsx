@@ -1,4 +1,5 @@
 import clsx from 'clsx'
+import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import _toUpper from 'lodash/toUpper'
 import { BugIcon, FileTextIcon, MousePointerClickIcon } from 'lucide-react'
@@ -18,6 +19,7 @@ interface PageflowProps {
     metadata?: Metadata[]
   }[]
   timeFormat: '12-hour' | '24-hour'
+  zoomDomain?: [Date, Date] | null
 }
 
 const KeyValue = ({ evKey, evValue }: { evKey: string; evValue: string }) => (
@@ -39,16 +41,31 @@ const TransValue = ({ metadata, children }: { metadata?: Metadata[]; children: R
   </div>
 )
 
-export const Pageflow = ({ pages, timeFormat }: PageflowProps) => {
+export const Pageflow = ({ pages, timeFormat, zoomDomain }: PageflowProps) => {
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
 
+  const filteredPages = zoomDomain
+    ? pages.filter((page) => {
+        const pageTime = new Date(page.created).getTime()
+        return pageTime >= zoomDomain[0].getTime() && pageTime <= zoomDomain[1].getTime()
+      })
+    : pages
+
+  if (zoomDomain && _isEmpty(filteredPages)) {
+    return (
+      <div className='my-4 py-8 text-center font-mono text-gray-800 dark:text-gray-300'>
+        {t('project.noEventsForSelectedPeriod')}
+      </div>
+    )
+  }
+
   return (
     <div className='flow-root font-mono'>
       <ul className='-mb-8'>
-        {_map(pages, ({ value, created, type, metadata }, index) => {
+        {_map(filteredPages, ({ value, created, type, metadata }, index) => {
           const displayCreated = new Date(created).toLocaleDateString(language, {
             day: 'numeric',
             month: 'short',
@@ -61,7 +78,7 @@ export const Pageflow = ({ pages, timeFormat }: PageflowProps) => {
           return (
             <li key={`${value}${created}${index}`}>
               <div className='relative pb-8'>
-                {index !== pages.length - 1 ? (
+                {index !== filteredPages.length - 1 ? (
                   <span
                     className='absolute top-4 left-4 -ml-px h-full w-0.5 bg-slate-200 dark:bg-slate-700'
                     aria-hidden='true'
