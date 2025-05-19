@@ -818,6 +818,7 @@ export const SSO_PROVIDERS = Object.freeze({
 })
 
 export const BROWSER_LOGO_MAP = {
+  Brave: '/assets/browsers/brave_48x48.png',
   Chrome: '/assets/browsers/chrome_48x48.png',
   'Mobile Chrome': '/assets/browsers/chrome_48x48.png',
   Firefox: '/assets/browsers/firefox_48x48.png',
