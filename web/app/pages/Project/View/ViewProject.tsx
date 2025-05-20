@@ -2217,6 +2217,13 @@ const ViewProject = () => {
     navigate(_replace(routes.project_settings, ':id', id))
   }
 
+  const resetSessionChartZoom = () => {
+    if (sessionChartInstance) {
+      sessionChartInstance.unzoom()
+    }
+    setZoomedTimeRange(null)
+  }
+
   const getFilterLink = (column: string, value: string): LinkProps['to'] => {
     const isFilterActive = filters.findIndex((filter) => filter.column === column && filter.filter === value) >= 0
 
@@ -2462,21 +2469,6 @@ const ViewProject = () => {
       </div>
     </div>
   )
-
-  const handleChartZoom = useCallback((domain: [Date, Date] | null) => {
-    setZoomedTimeRange(domain)
-  }, [])
-
-  const handleSessionChartReady = useCallback((chartInst: Chart | null) => {
-    setSessionChartInstance(chartInst)
-  }, [])
-
-  const resetSessionChartZoom = () => {
-    if (sessionChartInstance) {
-      sessionChartInstance.unzoom()
-    }
-    setZoomedTimeRange(null)
-  }
 
   if (authLoading || !project) {
     return (
@@ -3313,8 +3305,9 @@ const ViewProject = () => {
                           rotateXAxis={rotateXAxis}
                           chartType={chartType}
                           dataNames={dataNames}
-                          onZoom={handleChartZoom}
-                          onChartReady={handleSessionChartReady}
+                          onZoom={setZoomedTimeRange}
+                          onChartReady={setSessionChartInstance}
+                          zoomedTimeRange={zoomedTimeRange}
                         />
                         {zoomedTimeRange ? (
                           <button
@@ -3326,7 +3319,7 @@ const ViewProject = () => {
                         ) : null}
                       </div>
                     ) : null}
-                    <Pageflow pages={activeSession?.pages} timeFormat={timeFormat} zoomDomain={zoomedTimeRange} />
+                    <Pageflow pages={activeSession?.pages} timeFormat={timeFormat} zoomedTimeRange={zoomedTimeRange} />
                     {_isEmpty(activeSession) && sessionLoading ? <Loader /> : null}
                     {activeSession !== null &&
                     _isEmpty(activeSession?.chart) &&

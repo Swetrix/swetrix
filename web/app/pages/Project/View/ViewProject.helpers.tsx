@@ -757,6 +757,7 @@ const getSettingsSession = (
   rotateXAxis: boolean,
   chartType: string,
   onZoom?: (domain: [Date, Date]) => void,
+  onresized?: () => void,
 ): ChartOptions => {
   const xAxisSize = _size(chart.x)
 
@@ -791,6 +792,7 @@ const getSettingsSession = (
       auto: true,
       timer: false,
     },
+    onresized,
     axis: {
       x: {
         clipPath: false,

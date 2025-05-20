@@ -19,7 +19,7 @@ interface PageflowProps {
     metadata?: Metadata[]
   }[]
   timeFormat: '12-hour' | '24-hour'
-  zoomDomain?: [Date, Date] | null
+  zoomedTimeRange?: [Date, Date] | null
 }
 
 const KeyValue = ({ evKey, evValue }: { evKey: string; evValue: string }) => (
@@ -41,20 +41,20 @@ const TransValue = ({ metadata, children }: { metadata?: Metadata[]; children: R
   </div>
 )
 
-export const Pageflow = ({ pages, timeFormat, zoomDomain }: PageflowProps) => {
+export const Pageflow = ({ pages, timeFormat, zoomedTimeRange }: PageflowProps) => {
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
 
-  const filteredPages = zoomDomain
+  const filteredPages = zoomedTimeRange
     ? pages.filter((page) => {
         const pageTime = new Date(page.created).getTime()
-        return pageTime >= zoomDomain[0].getTime() && pageTime <= zoomDomain[1].getTime()
+        return pageTime >= zoomedTimeRange[0].getTime() && pageTime <= zoomedTimeRange[1].getTime()
       })
     : pages
 
-  if (zoomDomain && _isEmpty(filteredPages)) {
+  if (zoomedTimeRange && _isEmpty(filteredPages)) {
     return (
       <div className='my-4 py-8 text-center font-mono text-gray-800 dark:text-gray-300'>
         {t('project.noEventsForSelectedPeriod')}
