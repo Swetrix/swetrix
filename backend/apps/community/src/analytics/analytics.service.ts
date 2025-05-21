@@ -1967,6 +1967,24 @@ export class AnalyticsService {
     }
   }
 
+  extractCountsForSessionChart(
+    result: any[],
+    xShifted: string[],
+    countFieldName: string,
+  ): number[] {
+    const counts = Array(xShifted.length).fill(0)
+
+    for (let row = 0; row < _size(result); ++row) {
+      const dateString = this.generateDateString(result[row])
+      const index = xShifted.indexOf(dateString)
+
+      if (index !== -1) {
+        counts[index] = result[row][countFieldName] || 0
+      }
+    }
+    return counts
+  }
+
   extractCustomEventsChartData(queryResult, x: string[]): any {
     const result = {}
 
@@ -2109,8 +2127,6 @@ export class AnalyticsService {
         count() as pageviews
       FROM (
         SELECT
-          pid,
-          psid,
           ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
         FROM analytics
         PREWHERE pid = {pid:FixedString(12)}
@@ -2122,6 +2138,60 @@ export class AnalyticsService {
     `
 
     return baseQuery
+  }
+
+  generateSessionCustomEventsAggregationQuery(
+    timeBucket: TimeBucketType,
+    filtersQuery: string,
+    safeTimezone: string,
+  ): string {
+    const timeBucketFunc = timeBucketConversion[timeBucket]
+    const [selector, groupBy] = this.getGroupSubquery(timeBucket)
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+
+    return `
+      SELECT
+        ${selector},
+        count() as customEventsCount
+      FROM (
+        SELECT
+          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
+        FROM customEV
+        PREWHERE pid = {pid:FixedString(12)}
+        WHERE created BETWEEN ${tzFromDate} AND ${tzToDate}
+        ${filtersQuery}
+      ) as subquery
+      GROUP BY ${groupBy}
+      ORDER BY ${groupBy}
+    `
+  }
+
+  generateSessionErrorsAggregationQuery(
+    timeBucket: TimeBucketType,
+    filtersQuery: string,
+    safeTimezone: string,
+  ): string {
+    const timeBucketFunc = timeBucketConversion[timeBucket]
+    const [selector, groupBy] = this.getGroupSubquery(timeBucket)
+    const tzFromDate = `toTimeZone(parseDateTimeBestEffort({groupFrom:String}), '${safeTimezone}')`
+    const tzToDate = `toTimeZone(parseDateTimeBestEffort({groupTo:String}), '${safeTimezone}')`
+
+    return `
+      SELECT
+        ${selector},
+        count() as errorsCount
+      FROM (
+        SELECT
+          ${timeBucketFunc}(toTimeZone(created, '${safeTimezone}')) as tz_created
+        FROM errors
+        PREWHERE pid = {pid:FixedString(12)}
+        WHERE created BETWEEN ${tzFromDate} AND ${tzToDate}
+        ${filtersQuery}
+      ) as subquery
+      GROUP BY ${groupBy}
+      ORDER BY ${groupBy}
+    `
   }
 
   generateCustomEventsAggregationQuery(
@@ -2528,26 +2598,82 @@ export class AnalyticsService {
   ): Promise<object | void> {
     const { xShifted } = this.generateXAxis(timeBucket, from, to, safeTimezone)
 
-    const query = this.generateSessionAggregationQuery(
+    const pageviewsQuery = this.generateSessionAggregationQuery(
+      timeBucket,
+      filtersQuery,
+      safeTimezone,
+    )
+    const customEventsQuery = this.generateSessionCustomEventsAggregationQuery(
+      timeBucket,
+      filtersQuery,
+      safeTimezone,
+    )
+    const errorsQuery = this.generateSessionErrorsAggregationQuery(
       timeBucket,
       filtersQuery,
       safeTimezone,
     )
 
-    const { data } = await clickhouse
-      .query({
-        query,
-        query_params: paramsData.params,
-      })
-      .then(resultSet => resultSet.json<TrafficCHResponse>())
+    const [pageviewsData, customEventsData, errorsData] = await Promise.all([
+      clickhouse
+        .query({
+          query: pageviewsQuery,
+          query_params: paramsData.params,
+        })
+        .then(resultSet => resultSet.json<any>()),
+      clickhouse
+        .query({
+          query: customEventsQuery,
+          query_params: paramsData.params,
+        })
+        .then(resultSet => resultSet.json<any>()),
+      clickhouse
+        .query({
+          query: errorsQuery,
+          query_params: paramsData.params,
+        })
+        .then(resultSet => resultSet.json<any>()),
+    ])
 
-    const { visits } = this.extractChartData(data, xShifted)
+    const pageviews = this.extractCountsForSessionChart(
+      pageviewsData.data,
+      xShifted,
+      'pageviews',
+    )
+    const customEvents = this.extractCountsForSessionChart(
+      customEventsData.data,
+      xShifted,
+      'customEventsCount',
+    )
+    const errors = this.extractCountsForSessionChart(
+      errorsData.data,
+      xShifted,
+      'errorsCount',
+    )
+
+    const chartOutput: {
+      x: string[]
+      pageviews?: number[]
+      customEvents?: number[]
+      errors?: number[]
+    } = {
+      x: xShifted,
+    }
+
+    if (_some(pageviews, count => count > 0)) {
+      chartOutput.pageviews = pageviews
+    }
+
+    if (_some(customEvents, count => count > 0)) {
+      chartOutput.customEvents = customEvents
+    }
+
+    if (_some(errors, count => count > 0)) {
+      chartOutput.errors = errors
+    }
 
     return Promise.resolve({
-      chart: {
-        x: xShifted,
-        visits,
-      },
+      chart: chartOutput,
     })
   }
 
@@ -3168,7 +3294,8 @@ export class AnalyticsService {
         LEFT ARRAY JOIN meta.key, meta.value
         WHERE
           pid = {pid:FixedString(12)}
-          AND psid = {psid:String}
+          AND analytics.psid IS NOT NULL
+          AND CAST(analytics.psid AS String) = {psid:String}
         GROUP BY type, value, created, pid, psid
 
         UNION ALL
@@ -3184,8 +3311,30 @@ export class AnalyticsService {
         LEFT ARRAY JOIN meta.key, meta.value
         WHERE
           pid = {pid:FixedString(12)}
-          AND psid = {psid:String}
+          AND customEV.psid IS NOT NULL
+          AND CAST(customEV.psid AS String) = {psid:String}
         GROUP BY type, value, created, pid, psid
+        
+        UNION ALL
+
+        SELECT
+          'error' AS type,
+          errors.name AS value,
+          toTimeZone(errors.created, '${safeTimezone}') AS created,
+          pid,
+          psid,
+          [
+            tuple('message', COALESCE(errors.message, '')),
+            tuple('lineno', CAST(COALESCE(errors.lineno, 0), 'String')),
+            tuple('colno', CAST(COALESCE(errors.colno, 0), 'String')),
+            tuple('filename', COALESCE(errors.filename, ''))
+          ] AS metadata
+        FROM errors
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND errors.psid IS NOT NULL
+          AND CAST(errors.psid AS String) = {psid:String}
+        GROUP BY type, value, created, pid, psid, errors.message, errors.lineno, errors.colno, errors.filename
       )
 
       SELECT
@@ -3203,7 +3352,7 @@ export class AnalyticsService {
       FROM analytics
       WHERE
         pid = {pid:FixedString(12)}
-        AND psid = {psid:String}
+        AND CAST(psid, 'String') = {psid:String}
       ORDER BY created ASC
       LIMIT 1;
     `
@@ -3214,7 +3363,7 @@ export class AnalyticsService {
       FROM session_durations
       WHERE
         pid = {pid:FixedString(12)}
-        AND psid = {psid:String}
+        AND CAST(psid, 'String') = {psid:String}
     `
 
     const paramsData = {
@@ -3260,7 +3409,7 @@ export class AnalyticsService {
         FROM analytics
         WHERE
           pid = {pid:FixedString(12)}
-          AND psid = {psid:String}
+          AND CAST(psid, 'String') = {psid:String}
         LIMIT 1;
       `
 
@@ -3299,7 +3448,7 @@ export class AnalyticsService {
         timeBucket,
         from,
         to,
-        'AND psid = {psid:String}',
+        "AND CAST(psid, 'String') = {psid:String}",
         {
           params: {
             ...paramsData.params,
@@ -3347,55 +3496,95 @@ export class AnalyticsService {
     skip = 0,
     customEVFilterApplied = false,
   ): Promise<object | void> {
-    const analyticsSubquery = `
-      SELECT
-        CAST(psid, 'String') AS psidCasted,
-        cc,
-        os,
-        br,
-        toTimeZone(analytics.created, '${safeTimezone}') AS created
-      FROM analytics
-      WHERE
-        pid = {pid:FixedString(12)}
-        AND psid IS NOT NULL
-        AND analytics.created BETWEEN {groupFrom:String} AND {groupTo:String}
-        ${filtersQuery}
-    `
+    const primaryEventsTable = customEVFilterApplied ? 'customEV' : 'analytics'
 
-    const customEVSubquery = `
+    const primaryEventsSubquery = `
       SELECT
-        CAST(psid, 'String') AS psidCasted,
-        cc,
-        os,
-        br,
-        toTimeZone(customEV.created, '${safeTimezone}') AS created
-      FROM customEV
+        CAST(${primaryEventsTable}.psid, 'String') AS psidCasted,
+        ${primaryEventsTable}.pid,
+        ${primaryEventsTable}.cc,
+        ${primaryEventsTable}.os,
+        ${primaryEventsTable}.br,
+        toTimeZone(${primaryEventsTable}.created, '${safeTimezone}') AS created_for_grouping
+      FROM ${primaryEventsTable}
       WHERE
-        pid = {pid:FixedString(12)}
-        AND psid IS NOT NULL
-        AND customEV.created BETWEEN {groupFrom:String} AND {groupTo:String}
-        ${filtersQuery}
+        ${primaryEventsTable}.pid = {pid:FixedString(12)}
+        AND ${primaryEventsTable}.psid IS NOT NULL
+        AND ${primaryEventsTable}.created BETWEEN {groupFrom:String} AND {groupTo:String}
+        ${filtersQuery} 
     `
 
     const query = `
+      WITH distinct_sessions_filtered AS (
+        SELECT
+          psidCasted,
+          pid, 
+          any(cc) AS cc,
+          any(os) AS os,
+          any(br) AS br,
+          min(created_for_grouping) AS sessionStart,
+          max(created_for_grouping) AS lastActivity
+        FROM (${primaryEventsSubquery}) AS primary_events
+        GROUP BY psidCasted, pid
+      ),
+      pageview_counts AS (
+        SELECT 
+          CAST(psid, 'String') AS psidCasted,
+          pid, 
+          count() as count 
+        FROM analytics 
+        WHERE pid = {pid:FixedString(12)} AND psid IS NOT NULL 
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psidCasted, pid
+      ),
+      event_counts AS (
+        SELECT 
+          CAST(psid, 'String') AS psidCasted,
+          pid, 
+          count() as count 
+        FROM customEV 
+        WHERE pid = {pid:FixedString(12)} AND psid IS NOT NULL 
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psidCasted, pid
+      ),
+      error_counts AS (
+        SELECT 
+          CAST(psid, 'String') AS psidCasted,
+          pid, 
+          count() as count 
+        FROM errors 
+        WHERE pid = {pid:FixedString(12)} AND psid IS NOT NULL 
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        GROUP BY psidCasted, pid
+      ),
+      session_duration_agg AS (
+        SELECT 
+          CAST(psid, 'String') AS psidCasted, 
+          pid, 
+          avg(duration) as avg_duration
+        FROM session_durations 
+        WHERE pid = {pid:FixedString(12)}
+        GROUP BY psidCasted, pid
+      )
       SELECT
-        events.psidCasted AS psid,
-        any(events.cc) AS cc,
-        any(events.os) AS os,
-        any(events.br) AS br,
-        count() AS pageviews,
-        min(events.created) AS sessionStart,
-        max(events.created) AS lastActivity,
-        if(dateDiff('second', max(events.created), now()) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
-        avg(durations.duration) AS sdur
-      FROM
-      (
-        ${customEVFilterApplied ? customEVSubquery : analyticsSubquery}
-      ) AS events
-      LEFT JOIN session_durations AS durations
-        ON events.psidCasted = CAST(durations.psid, 'String') AND durations.pid = {pid:FixedString(12)}
-      GROUP BY events.psidCasted
-      ORDER BY sessionStart DESC
+        dsf.psidCasted AS psid,
+        dsf.cc,
+        dsf.os,
+        dsf.br,
+        COALESCE(pc.count, 0) AS pageviews,
+        COALESCE(ec.count, 0) AS customEvents,
+        COALESCE(errc.count, 0) AS errors,
+        dsf.sessionStart,
+        dsf.lastActivity,
+        if(dateDiff('second', dsf.lastActivity, now()) < ${LIVE_SESSION_THRESHOLD_SECONDS}, 1, 0) AS isLive,
+        sda.avg_duration AS sdur
+      FROM distinct_sessions_filtered dsf
+      LEFT JOIN pageview_counts pc ON dsf.psidCasted = pc.psidCasted AND dsf.pid = pc.pid
+      LEFT JOIN event_counts ec ON dsf.psidCasted = ec.psidCasted AND dsf.pid = ec.pid
+      LEFT JOIN error_counts errc ON dsf.psidCasted = errc.psidCasted AND dsf.pid = errc.pid
+      LEFT JOIN session_duration_agg sda ON dsf.psidCasted = sda.psidCasted AND dsf.pid = sda.pid
+      WHERE dsf.psidCasted IS NOT NULL
+      ORDER BY dsf.sessionStart DESC
       LIMIT ${take}
       OFFSET ${skip}
     `

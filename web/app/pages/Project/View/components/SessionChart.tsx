@@ -6,7 +6,9 @@ import { getSettingsSession } from '../ViewProject.helpers'
 interface SessionChartProps {
   chart?: {
     x: string[]
-    visits: number[]
+    pageviews?: number[]
+    customEvents?: number[]
+    errors?: number[]
   }
   timeBucket?: string
   timeFormat: string

@@ -840,6 +840,9 @@ const ViewProject = () => {
     () => ({
       unique: t('project.unique'),
       total: t('project.total'),
+      pageviews: t('project.pageviews'),
+      customEvents: t('project.customEvents'),
+      errors: t('project.errors'),
       bounce: `${t('dashboard.bounceRate')} (%)`,
       viewsPerUnique: t('dashboard.viewsPerUnique'),
       trendlineTotal: t('project.trendlineTotal'),

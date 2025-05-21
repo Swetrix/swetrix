@@ -977,6 +977,9 @@
     "unique": "Unique visitors",
     "results": "Results",
     "total": "Total page views",
+    "pageviews": "Pageviews",
+    "customEvents": "Custom events",
+    "errors": "Errors",
     "thisHour": "This hour",
     "all": "All time",
     "today": "Today",
@@ -1317,8 +1320,6 @@
     "slogan": "The best apps need the best services.",
     "description": "Swetrix is a powerful analytics platform that respects user privacy.",
     "madeInHostedIn": "Made in <0></0> / <1></1>, hosted in <2></2>",
-    "ukraine": "Ukraine",
-    "eu": "European Union",
     "support": "Support",
     "company": "Company",
     "legal": "Support & Legal",
@@ -1342,6 +1343,6 @@
     "open": "Open startup",
     "about": "About us",
     "features": "Features",
-    "imprint": "Imprint"
+    "imprint": "Legal notice"
   }
 }
