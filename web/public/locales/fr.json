@@ -745,7 +745,8 @@
     "xOccurrences": "Occurrences {{x}}",
     "errors": "Erreurs",
     "xPageviews": "{{x}} pages vues",
-    "onePageview": "1 page vue",
+    "xCustomEvents": "{{x}} événements personnalisés",
+    "xErrors": "{{x}} erreurs",
     "alerts": "Alertes",
     "alertsDesc": "Les alertes automatisées sont un outil puissant qui vous permet d'exécuter des tâches automatiques lorsqu'un événement spécifique se produit.\nNous pouvons surveiller automatiquement votre projet pour détecter les pics de trafic et vous notifier via Telegram.",
     "funnelsDesc": "Entonnoirs est un outil puissant qui vous permet de suivre le taux de conversion de vos utilisateurs à travers une série d’étapes.\nL’analyse fournie par l’entonnoir marketing vous permet de détecter d’éventuels problèmes, d’améliorer votre site Web et d’augmenter votre taux de conversion.",
@@ -836,6 +837,9 @@
     "customEventsAndMetrics": "Événements et métriques personnalisés (facultatif)",
     "addAMetric": "Ajouter une métrique",
     "customEvent": "Événement personnalisé",
+    "removeFilter": "Supprimer le filtre",
+    "toggleFilterToIs": "Modifier le filtre de '{{column}} n'est pas \"{{filter}}\"' à '{{column}} est \"{{filter}}\"'",
+    "toggleFilterToIsNot": "Changer le filtre de '{{column}} est \"{{filter}}\"' à '{{column}} n'est pas \"{{filter}}\"'",
     "metrics": {
       "xAvg": "Moyenne de {{x}}",
       "xTotal": "Total de {{x}}",
@@ -879,6 +883,7 @@
     "campaigns": "Campagnes",
     "pageviewX": "<span>Pages vues</span> <value>{{x}}</value>",
     "eventX": "<span>Événement</span> <value>{{x}}</value>",
+    "errorX": "<span>Erreur</span> <value>{{x}}</value>",
     "exportData": "Exporter les données",
     "asCSV": "En tant que CSV",
     "noEvTitle": "Pas encore d'événements",
@@ -972,6 +977,9 @@
     "unique": "Visiteurs uniques",
     "results": "Résultats",
     "total": "Total des pages vues",
+    "pageviews": "Pages vues",
+    "customEvents": "Événements personnalisés",
+    "errors": "Erreurs",
     "thisHour": "Cette heure",
     "all": "Tout le temps",
     "today": "Aujourd'hui",
@@ -996,6 +1004,9 @@
     "resolve": "Résoudre",
     "markAsActive": "Marquer comme actif",
     "refreshStats": "Actualiser les statistiques",
+    "refresh": "Actualiser",
+    "resetZoom": "Réinitialiser le zoom",
+    "noEventsForSelectedPeriod": "Il n'y a pas d'événements pour la période sélectionnée.",
     "barChart": "Graphique en barres",
     "lineChart": "Graphique en lignes",
     "settings": {
@@ -1309,8 +1320,6 @@
     "slogan": "Les meilleures applications ont besoin des meilleurs services.",
     "description": "Swetrix est une plateforme d'analyse puissante qui respecte la vie privée des utilisateurs.",
     "madeInHostedIn": "Fabriqué dans <0></0> / <1></1>, hébergé dans <2></2>",
-    "ukraine": "Ukraine",
-    "eu": "Union Européenne",
     "support": "Assistance",
     "company": "Entreprise",
     "legal": "Support & Légal",
@@ -1334,6 +1343,6 @@
     "open": "Startup ouverte",
     "about": "À propos de nous",
     "features": "Fonctionnalités",
-    "imprint": "Mentions légales"
+    "imprint": "Mention légale"
   }
 }

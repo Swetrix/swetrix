@@ -745,7 +745,8 @@
     "xOccurrences": "{{x}} wystąpienia",
     "errors": "Błędy",
     "xPageviews": "{{x}} odsłon",
-    "onePageview": "1 odsłona",
+    "xCustomEvents": "{{x}} niestandardowych zdarzeń",
+    "xErrors": "{{x}} błędów",
     "alerts": "Alerty",
     "alertsDesc": "Zautomatyzowane alerty to potężne narzędzie, które pozwala uruchomić automatyczne zadania, gdy wystąpią określone zdarzenia.\nMożemy automatycznie monitorować Twój projekt pod kątem skoków ruchu i powiadamiać Cię za pośrednictwem Telegrama.",
     "funnelsDesc": "Lejki to potężne narzędzie, które pozwala śledzić współczynnik konwersji użytkowników na kolejnych etapach.\nAnaliza dostarczana przez marketingowy lejek umożliwia odkrywanie potencjalnych problemów, ulepszanie strony oraz zwiększanie współczynnika konwersji.",
@@ -836,6 +837,9 @@
     "customEventsAndMetrics": "Wydarzenia i metryki niestandardowe (opcjonalnie)",
     "addAMetric": "Dodaj metrykę",
     "customEvent": "Wydarzenie niestandardowe",
+    "removeFilter": "Usuń filtr",
+    "toggleFilterToIs": "Zmień filtr z '{{column}} nie jest \"{{filter}}\"' na '{{column}} jest \"{{filter}}\"'",
+    "toggleFilterToIsNot": "Zmień filtr z '{{column}} jest \"{{filter}}\"' na '{{column}} nie jest \"{{filter}}\"'",
     "metrics": {
       "xAvg": "\"{{x}}\" średnia",
       "xTotal": "\"{{x}}\" łącznie",
@@ -879,6 +883,7 @@
     "campaigns": "Kampanie",
     "pageviewX": "<span>Wyświetlenia strony</span> <value>{{x}}</value>",
     "eventX": "<span>Wydarzenie</span> <value>{{x}}</value>",
+    "errorX": "<span>Błąd</span> <value>{{x}}</value>",
     "exportData": "Eksportuj dane",
     "asCSV": "Jako CSV",
     "noEvTitle": "Brak zdarzeń",
@@ -972,6 +977,9 @@
     "unique": "Unikalni użytkownicy",
     "results": "Wyniki",
     "total": "Łączna liczba odsłon",
+    "pageviews": "Odsłony",
+    "customEvents": "Niestandardowe zdarzenia",
+    "errors": "Błędy",
     "thisHour": "Ta godzina",
     "all": "Cały czas",
     "today": "Dziś",
@@ -996,6 +1004,9 @@
     "resolve": "Rozwiąż",
     "markAsActive": "Oznacz jako aktywne",
     "refreshStats": "Odśwież statystyki",
+    "refresh": "Odśwież",
+    "resetZoom": "Resetuj powiększenie",
+    "noEventsForSelectedPeriod": "Brak zdarzeń dla wybranego przedziału czasowego.",
     "barChart": "Wykres słupkowy",
     "lineChart": "Wykres liniowy",
     "settings": {
@@ -1309,8 +1320,6 @@
     "slogan": "Najlepsze aplikacje potrzebują najlepszych usług.",
     "description": "Swetrix to potężna platforma analityczna, która szanuje prywatność użytkowników.",
     "madeInHostedIn": "Wyprodukowano w <0></0> / <1></1>, hostowane w <2></2>",
-    "ukraine": "Ukrainie",
-    "eu": "Unii Europejskiej",
     "support": "Wsparcie",
     "company": "Firma",
     "legal": "Wsparcie i prawne",
@@ -1334,6 +1343,6 @@
     "open": "Otwórz startup",
     "about": "O nas",
     "features": "Funkcjonalności",
-    "imprint": "Odbitka"
+    "imprint": "Nota prawna"
   }
 }
