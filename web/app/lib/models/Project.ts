@@ -80,6 +80,8 @@ export interface Session {
   os: string | null
   br: string | null
   pageviews: number
+  customEvents: number
+  errors: number
   created: string
   isLive: 1 | 0
   sdur?: number

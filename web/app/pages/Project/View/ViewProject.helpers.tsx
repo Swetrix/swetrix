@@ -1,6 +1,6 @@
 import { LanguageIcon, ArrowRightCircleIcon } from '@heroicons/react/24/outline'
 import type { ChartOptions, GridLineOptions } from 'billboard.js'
-import { area, areaSpline, spline, bar, line } from 'billboard.js'
+import { area, areaSpline, spline, bar, line, zoom } from 'billboard.js'
 import * as d3 from 'd3'
 import dayjs from 'dayjs'
 import filesaver from 'file-saver'
@@ -751,31 +751,58 @@ const getSettings = (
 
 // function to get the settings and data for the session inspector chart
 const getSettingsSession = (
-  chart: any,
+  chartInput:
+    | {
+        x: string[]
+        pageviews?: number[]
+        customEvents?: number[]
+        errors?: number[]
+      }
+    | undefined,
   timeBucket: string,
   timeFormat: string,
   rotateXAxis: boolean,
   chartType: string,
+  onZoom?: (domain: [Date, Date]) => void,
+  onresized?: () => void,
 ): ChartOptions => {
-  const xAxisSize = _size(chart.x)
+  const chartData = chartInput || { x: [] } // Default to an empty chart structure if undefined
+  const xAxisSize = _size(chartData.x)
 
-  const columns = getColumns(chart, { views: true })
+  const columns: any[] = [['x', ..._map(chartData.x, (el) => dayjs(el).toDate())]]
+  const dataTypes: Record<string, any> = {}
+  const dataColors: Record<string, string> = {}
+
+  if (chartData.pageviews && !_isEmpty(chartData.pageviews)) {
+    columns.push(['pageviews', ...chartData.pageviews])
+    dataTypes.pageviews = chartType === chartTypes.line ? area() : bar()
+    dataColors.pageviews = '#D97706'
+  }
+
+  if (chartData.customEvents && !_isEmpty(chartData.customEvents)) {
+    columns.push(['customEvents', ...chartData.customEvents])
+    dataTypes.customEvents = chartType === chartTypes.line ? area() : bar()
+    dataColors.customEvents = '#0d9488'
+  }
+
+  if (chartData.errors && !_isEmpty(chartData.errors)) {
+    columns.push(['errors', ...chartData.errors])
+    dataTypes.errors = chartType === chartTypes.line ? area() : bar()
+    dataColors.errors = '#dc2626'
+  }
 
   return {
     data: {
       x: 'x',
       columns,
-      types: {
-        total: chartType === chartTypes.line ? area() : bar(),
-      },
-      colors: {
-        total: '#D97706',
-        totalCompare: 'rgba(217, 119, 6, 0.4)',
-      },
-      axes: {
-        bounce: 'y2',
-        sessionDuration: 'y2',
-      },
+      types: dataTypes,
+      colors: dataColors,
+    },
+    zoom: {
+      enabled: zoom(),
+      type: 'drag',
+      onzoom: onZoom,
+      resetButton: false, // We render a custom button that also resets pageflow
     },
     transition: {
       duration: 500,
@@ -784,6 +811,7 @@ const getSettingsSession = (
       auto: true,
       timer: false,
     },
+    onresized,
     axis: {
       x: {
         clipPath: false,
@@ -810,6 +838,9 @@ const getSettingsSession = (
     },
     tooltip: {
       contents: (item: any, _: any, __: any, color: any) => {
+        if (!item || _isEmpty(item) || !item[0]) {
+          return ''
+        }
         return `<ul class='font-mono tracking-tighter bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
           <li class='font-semibold'>${
             timeFormat === TimeFormat['24-hour']
@@ -818,22 +849,6 @@ const getSettingsSession = (
           }</li>
           <hr class='border-gray-200 dark:border-gray-600' />
           ${_map(item, (el: { id: string; index: number; name: string; value: string; x: Date }) => {
-            if (el.id === 'sessionDuration') {
-              return `
-              <li class='flex justify-between'>
-                <div class='flex justify-items-start'>
-                  <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:${color(el.id)}></div>
-                  <span>${el.name}</span>
-                </div>
-                <span class='pl-4'>${getStringFromTime(getTimeFromSeconds(el.value))}</span>
-              </li>
-              `
-            }
-
-            if (el.id === 'trendlineUnique' || el.id === 'trendlineTotal') {
-              return ''
-            }
-
             return `
             <li class='flex justify-between'>
               <div class='flex justify-items-start'>
@@ -843,7 +858,7 @@ const getSettingsSession = (
               <span class='pl-4'>${el.value}</span>
             </li>
             `
-          }).join('')}`
+          }).join('')}</ul>`
       },
     },
     point:
@@ -864,7 +879,7 @@ const getSettingsSession = (
           r: 3,
         },
       },
-      hide: ['uniqueCompare', 'totalCompare', 'bounceCompare', 'sessionDurationCompare'],
+      hide: [], // No series hidden by default for session chart
     },
     area: {
       linearGradient: true,

@@ -2,6 +2,7 @@ import { ChevronRightIcon } from '@heroicons/react/24/outline'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 import _map from 'lodash/map'
+import { FileTextIcon, BugIcon, MousePointerClickIcon } from 'lucide-react'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
@@ -94,9 +95,6 @@ const Session = ({ session, timeFormat }: SessionProps) => {
   psidUrl.searchParams.set('psid', session.psid)
   const stringifiedUrl = psidUrl.toString()
 
-  const pageviewCount =
-    session.pageviews === 1 ? t('dashboard.onePageview') : t('dashboard.xPageviews', { x: session.pageviews })
-
   return (
     <Link to={stringifiedUrl}>
       <li className='relative mb-4 flex cursor-pointer justify-between gap-x-6 rounded-lg bg-gray-200/60 px-4 py-4 font-mono hover:bg-gray-200 sm:px-6 dark:bg-[#162032] dark:hover:bg-slate-800'>
@@ -122,12 +120,40 @@ const Session = ({ session, timeFormat }: SessionProps) => {
               <Separator />
               {session.br}
             </p>
-            <p className='mt-1 flex text-xs leading-5 text-gray-500 sm:hidden dark:text-gray-300'>{pageviewCount}</p>
+            <p className='mt-2 flex text-xs leading-5 text-gray-500 sm:hidden dark:text-gray-300'>
+              <span className='mr-2 flex items-center'>
+                <FileTextIcon className='mr-1 size-5' strokeWidth={1.5} /> {session.pageviews}
+              </span>
+              {session.customEvents > 0 ? (
+                <span className='mr-2 flex items-center'>
+                  <MousePointerClickIcon className='mr-1 size-5' strokeWidth={1.5} /> {session.customEvents}
+                </span>
+              ) : null}
+              {session.errors > 0 ? (
+                <span className='flex items-center text-red-400'>
+                  <BugIcon className='mr-1 size-5' strokeWidth={1.5} /> {session.errors}
+                </span>
+              ) : null}
+            </p>
           </div>
         </div>
         <div className='flex shrink-0 items-center gap-x-4'>
           <div className='hidden sm:flex sm:flex-col sm:items-end'>
-            <p className='text-sm leading-6 text-gray-900 dark:text-gray-50'>{pageviewCount}</p>
+            <div className='flex items-center gap-x-3 text-sm leading-6 text-gray-900 dark:text-gray-50'>
+              <span className='flex items-center' title={t('dashboard.xPageviews', { x: session.pageviews })}>
+                <FileTextIcon className='mr-1 size-5' strokeWidth={1.5} /> {session.pageviews}
+              </span>
+              {session.customEvents > 0 ? (
+                <span className='flex items-center' title={t('dashboard.xCustomEvents', { x: session.customEvents })}>
+                  <MousePointerClickIcon className='mr-1 size-5' strokeWidth={1.5} /> {session.customEvents}
+                </span>
+              ) : null}
+              {session.errors > 0 ? (
+                <span className='flex items-center text-red-500' title={t('dashboard.xErrors', { x: session.errors })}>
+                  <BugIcon className='mr-1 size-5' strokeWidth={1.5} /> {session.errors}
+                </span>
+              ) : null}
+            </div>
           </div>
           <ChevronRightIcon className='h-5 w-5 flex-none text-gray-400' aria-hidden='true' />
         </div>

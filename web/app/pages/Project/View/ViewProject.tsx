@@ -439,6 +439,8 @@ const ViewProject = () => {
   const activePSID = useMemo(() => {
     return searchParams.get('psid')
   }, [searchParams])
+  const [zoomedTimeRange, setZoomedTimeRange] = useState<[Date, Date] | null>(null)
+  const [sessionChartInstance, setSessionChartInstance] = useState<Chart | null>(null)
 
   // errors
   const [errorsSkip, setErrorsSkip] = useState(0)
@@ -838,6 +840,9 @@ const ViewProject = () => {
     () => ({
       unique: t('project.unique'),
       total: t('project.total'),
+      pageviews: t('project.pageviews'),
+      customEvents: t('project.customEvents'),
+      errors: t('project.errors'),
       bounce: `${t('dashboard.bounceRate')} (%)`,
       viewsPerUnique: t('dashboard.viewsPerUnique'),
       trendlineTotal: t('project.trendlineTotal'),
@@ -2215,6 +2220,13 @@ const ViewProject = () => {
     navigate(_replace(routes.project_settings, ':id', id))
   }
 
+  const resetSessionChartZoom = () => {
+    if (sessionChartInstance) {
+      sessionChartInstance.unzoom()
+    }
+    setZoomedTimeRange(null)
+  }
+
   const getFilterLink = (column: string, value: string): LinkProps['to'] => {
     const isFilterActive = filters.findIndex((filter) => filter.column === column && filter.filter === value) >= 0
 
@@ -3139,15 +3151,32 @@ const ViewProject = () => {
                       </div>
                     </div>
                     {activeTab === PROJECT_TABS.funnels ? (
-                      <Link
-                        to={{
-                          search: pureSearchParams,
-                        }}
-                        className='mx-auto mt-2 mb-4 flex items-center font-mono text-sm text-gray-900 underline decoration-dashed hover:decoration-solid lg:mx-0 dark:text-gray-100'
-                      >
-                        <ChevronLeftIcon className='mr-1 size-3' />
-                        {t('project.backToFunnels')}
-                      </Link>
+                      <div className='mx-auto mt-2 mb-4 flex max-w-max items-center space-x-4 lg:mx-0'>
+                        <Link
+                          to={{
+                            search: pureSearchParams,
+                          }}
+                          className='flex items-center font-mono text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
+                        >
+                          <ChevronLeftIcon className='mr-1 size-3' />
+                          {t('project.backToFunnels')}
+                        </Link>
+                        <button
+                          type='button'
+                          title={t('project.refreshStats')}
+                          onClick={refreshStats}
+                          className={cx(
+                            'flex items-center font-mono text-sm text-gray-900 hover:text-gray-600 dark:text-gray-100 dark:hover:text-gray-300',
+                            {
+                              'cursor-not-allowed': authLoading || dataLoading,
+                            },
+                          )}
+                          disabled={authLoading || dataLoading}
+                        >
+                          <RotateCw className='mr-1 size-4' />
+                          {t('project.refresh')}
+                        </button>
+                      </div>
                     ) : null}
                   </>
                 ) : null}
@@ -3243,27 +3272,57 @@ const ViewProject = () => {
                 ) : null}
                 {activeTab === PROJECT_TABS.sessions && activePSID ? (
                   <>
-                    <Link
-                      to={{
-                        search: pureSearchParams,
-                      }}
-                      className='mx-auto mt-2 mb-4 flex items-center font-mono text-sm text-gray-900 underline decoration-dashed hover:decoration-solid lg:mx-0 dark:text-gray-100'
-                    >
-                      <ChevronLeftIcon className='mr-1 size-3' />
-                      {t('project.backToSessions')}
-                    </Link>
+                    <div className='mx-auto mt-2 mb-4 flex max-w-max items-center space-x-4 lg:mx-0'>
+                      <Link
+                        to={{
+                          search: pureSearchParams,
+                        }}
+                        className='flex items-center font-mono text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
+                      >
+                        <ChevronLeftIcon className='mr-1 size-3' />
+                        {t('project.backToSessions')}
+                      </Link>
+                      <button
+                        type='button'
+                        title={t('project.refreshStats')}
+                        onClick={refreshStats}
+                        className={cx(
+                          'flex items-center font-mono text-sm text-gray-900 hover:text-gray-600 dark:text-gray-100 dark:hover:text-gray-300',
+                          {
+                            'cursor-not-allowed': authLoading || dataLoading || sessionLoading,
+                          },
+                        )}
+                        disabled={authLoading || dataLoading || sessionLoading}
+                      >
+                        <RotateCw className='mr-1 size-4' />
+                        {t('project.refresh')}
+                      </button>
+                    </div>
                     {activeSession?.details ? <SessionDetails details={activeSession?.details} /> : null}
                     {!_isEmpty(activeSession?.chart) ? (
-                      <SessionChart
-                        chart={activeSession?.chart}
-                        timeBucket={activeSession?.timeBucket}
-                        timeFormat={timeFormat}
-                        rotateXAxis={rotateXAxis}
-                        chartType={chartType}
-                        dataNames={dataNames}
-                      />
+                      <div className='relative'>
+                        <SessionChart
+                          chart={activeSession?.chart}
+                          timeBucket={activeSession?.timeBucket}
+                          timeFormat={timeFormat}
+                          rotateXAxis={rotateXAxis}
+                          chartType={chartType}
+                          dataNames={dataNames}
+                          onZoom={setZoomedTimeRange}
+                          onChartReady={setSessionChartInstance}
+                          zoomedTimeRange={zoomedTimeRange}
+                        />
+                        {zoomedTimeRange ? (
+                          <button
+                            onClick={resetSessionChartZoom}
+                            className='absolute top-2 right-0 z-10 rounded border bg-white px-2 py-1 text-xs text-gray-800 hover:bg-gray-100 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
+                          >
+                            {t('project.resetZoom')}
+                          </button>
+                        ) : null}
+                      </div>
                     ) : null}
-                    <Pageflow pages={activeSession?.pages} timeFormat={timeFormat} />
+                    <Pageflow pages={activeSession?.pages} timeFormat={timeFormat} zoomedTimeRange={zoomedTimeRange} />
                     {_isEmpty(activeSession) && sessionLoading ? <Loader /> : null}
                     {activeSession !== null &&
                     _isEmpty(activeSession?.chart) &&
@@ -3302,15 +3361,32 @@ const ViewProject = () => {
                 ) : null}
                 {activeTab === PROJECT_TABS.errors && activeEID ? (
                   <>
-                    <Link
-                      to={{
-                        search: pureSearchParams,
-                      }}
-                      className='mx-auto mt-2 mb-4 flex items-center font-mono text-sm text-gray-900 underline decoration-dashed hover:decoration-solid lg:mx-0 dark:text-gray-100'
-                    >
-                      <ChevronLeftIcon className='mr-1 size-3' />
-                      {t('project.backToErrors')}
-                    </Link>
+                    <div className='mx-auto mt-2 mb-4 flex max-w-max items-center space-x-4 lg:mx-0'>
+                      <Link
+                        to={{
+                          search: pureSearchParams,
+                        }}
+                        className='flex items-center font-mono text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
+                      >
+                        <ChevronLeftIcon className='mr-1 size-3' />
+                        {t('project.backToErrors')}
+                      </Link>
+                      <button
+                        type='button'
+                        title={t('project.refreshStats')}
+                        onClick={refreshStats}
+                        className={cx(
+                          'flex items-center font-mono text-sm text-gray-900 hover:text-gray-600 dark:text-gray-100 dark:hover:text-gray-300',
+                          {
+                            'cursor-not-allowed': authLoading || dataLoading || errorLoading,
+                          },
+                        )}
+                        disabled={authLoading || dataLoading || errorLoading}
+                      >
+                        <RotateCw className='mr-1 size-4' />
+                        {t('project.refresh')}
+                      </button>
+                    </div>
                     {activeError?.details ? <ErrorDetails details={activeError.details} /> : null}
                     {activeError?.chart ? (
                       <ErrorChart
