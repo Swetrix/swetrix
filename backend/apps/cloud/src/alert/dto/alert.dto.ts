@@ -73,6 +73,11 @@ class AlertBaseDTO {
   @IsBoolean()
   @IsOptional()
   alertOnNewErrorsOnly?: boolean
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsOptional()
+  alertOnEveryCustomEvent?: boolean
 }
 
 export class CreateAlertDTO extends AlertBaseDTO {

@@ -773,6 +773,8 @@
     "customEvent": "Custom event name",
     "newErrorsOnly": "Alert on new errors only",
     "newErrorsOnlyHint": "If enabled, an alert will be triggered only for the first occurrence of a specific error.",
+    "alertOnEveryCustomEvent": "Alert on every custom event",
+    "alertOnEveryCustomEventHint": "If enabled, an alert will be triggered every time the specified custom event occurs.",
     "add": "Add alert",
     "delete": "Delete alert",
     "noNameError": "Please enter a name for the alert.",

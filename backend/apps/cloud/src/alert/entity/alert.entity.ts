@@ -30,6 +30,13 @@ export class Alert {
   })
   alertOnNewErrorsOnly: boolean
 
+  @Column({
+    type: 'boolean',
+    default: false,
+    name: 'alert_on_every_custom_event',
+  })
+  alertOnEveryCustomEvent: boolean
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created: Date
 

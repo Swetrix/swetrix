@@ -1011,9 +1011,10 @@ export class TaskManagerService {
     })
   }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  // @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async checkMetricAlerts() {
-    const CRON_INTERVAL_SECONDS = 300
+    const CRON_INTERVAL_SECONDS = 60 // 300
 
     const projects = await this.projectService.find({
       where: {
@@ -1039,7 +1040,11 @@ export class TaskManagerService {
 
       if (
         alert.lastTriggered !== null &&
-        alert.queryMetric !== QueryMetric.ERRORS
+        alert.queryMetric !== QueryMetric.ERRORS &&
+        !(
+          alert.queryMetric === QueryMetric.CUSTOM_EVENTS &&
+          alert.alertOnEveryCustomEvent
+        )
       ) {
         const lastTriggered = new Date(alert.lastTriggered)
         const now = new Date()
@@ -1053,18 +1058,21 @@ export class TaskManagerService {
       const queryParams: Record<string, any> = { pid: project.id }
 
       const nowUnix = dayjs.utc().unix()
-      let errorSubtractSeconds = 0
+      let lastEventSubtractSeconds = 0
 
       if (alert.lastTriggered) {
-        errorSubtractSeconds = nowUnix - dayjs.utc(alert.lastTriggered).unix()
+        lastEventSubtractSeconds =
+          nowUnix - dayjs.utc(alert.lastTriggered).unix()
       } else {
-        errorSubtractSeconds =
+        lastEventSubtractSeconds =
           nowUnix - dayjs.utc().subtract(CRON_INTERVAL_SECONDS, 'second').unix()
       }
 
       const subtractSecondsTimeframe =
-        alert.queryMetric === QueryMetric.ERRORS
-          ? errorSubtractSeconds
+        alert.queryMetric === QueryMetric.ERRORS ||
+        (alert.queryMetric === QueryMetric.CUSTOM_EVENTS &&
+          alert.alertOnEveryCustomEvent)
+          ? lastEventSubtractSeconds
           : getQueryTime(alert.queryTime as QueryTime)
 
       if (alert.queryMetric === QueryMetric.ERRORS) {
@@ -1125,11 +1133,14 @@ export class TaskManagerService {
       const conditionMet =
         alert.queryMetric === QueryMetric.ERRORS
           ? count > 0
-          : checkQueryCondition(
-              count,
-              alert.queryValue as number,
-              alert.queryCondition as QueryCondition,
-            )
+          : alert.queryMetric === QueryMetric.CUSTOM_EVENTS &&
+              alert.alertOnEveryCustomEvent
+            ? count > 0
+            : checkQueryCondition(
+                count,
+                alert.queryValue as number,
+                alert.queryCondition as QueryCondition,
+              )
 
       if (!conditionMet) {
         return
@@ -1220,7 +1231,10 @@ export class TaskManagerService {
       const effectiveQueryTimeString =
         alert.queryMetric === QueryMetric.ERRORS
           ? `${CRON_INTERVAL_SECONDS / 60} minutes`
-          : getQueryTimeString(alert.queryTime as QueryTime)
+          : alert.queryMetric === QueryMetric.CUSTOM_EVENTS &&
+              alert.alertOnEveryCustomEvent
+            ? `${CRON_INTERVAL_SECONDS / 60} minutes`
+            : getQueryTimeString(alert.queryTime as QueryTime)
 
       let text = ``
 
@@ -1296,9 +1310,18 @@ export class TaskManagerService {
           customEventInfo = ` "${alert.queryCustomEvent}"`
         }
 
-        text =
-          `🔔 Alert *${alertName}* triggered!\n\n` +
-          `Your project [${projectName}](${escapedProjectLink}) has had *${count}${customEventInfo}* ${queryMetricString} in the last *${effectiveQueryTimeString}*!`
+        if (
+          alert.queryMetric === QueryMetric.CUSTOM_EVENTS &&
+          alert.alertOnEveryCustomEvent
+        ) {
+          text =
+            `🔔 Alert *${alertName}* triggered!\n\n` +
+            `Your project [${projectName}](${escapedProjectLink}) has had *${count}${customEventInfo}* ${queryMetricString} occur in the last *${effectiveQueryTimeString}*!`
+        } else {
+          text =
+            `🔔 Alert *${alertName}* triggered!\n\n` +
+            `Your project [${projectName}](${escapedProjectLink}) has had *${count}${customEventInfo}* ${queryMetricString} in the last *${effectiveQueryTimeString}*!`
+        }
       }
 
       if (project.admin?.isTelegramChatIdConfirmed) {
