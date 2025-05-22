@@ -773,6 +773,8 @@
     "customEvent": "Niestandardowa nazwa zdarzenia",
     "newErrorsOnly": "Powiadamiaj tylko o nowych błędach",
     "newErrorsOnlyHint": "Jeśli włączone, powiadomienie zostanie wywołane tylko przy pierwszym wystąpieniu konkretnego błędu.",
+    "alertOnEveryCustomEvent": "Alert przy każdym zdarzeniu niestandardowym",
+    "alertOnEveryCustomEventHint": "Jeśli ta opcja jest włączona, za każdym wystąpieniem wskazanego zdarzenia niestandardowego zostanie wyzwolone powiadomienie.",
     "add": "Dodaj alert",
     "delete": "Usuń alert",
     "noNameError": "Proszę podać nazwę alertu.",

@@ -773,6 +773,8 @@
     "customEvent": "Nom de l'événement personnalisé",
     "newErrorsOnly": "Alerte uniquement sur les nouvelles erreurs",
     "newErrorsOnlyHint": "Si activé, une alerte ne sera déclenchée que lors de la première occurrence d'une erreur spécifique.",
+    "alertOnEveryCustomEvent": "Alerte à chaque événement personnalisé",
+    "alertOnEveryCustomEventHint": "Si activé, une alerte sera déclenchée chaque fois que l’événement personnalisé spécifié se produit.",
     "add": "Ajouter une alerte",
     "delete": "Supprimer l'alerte",
     "noNameError": "Veuillez entrer un nom pour l'alerte.",
