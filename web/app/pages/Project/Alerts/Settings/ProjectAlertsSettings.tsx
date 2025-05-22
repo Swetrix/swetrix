@@ -49,6 +49,7 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
     active: true,
     queryCustomEvent: '',
     alertOnNewErrorsOnly: true,
+    alertOnEveryCustomEvent: false,
   })
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -175,6 +176,17 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
     }
   }, [form.queryMetric])
 
+  useEffect(() => {
+    if (form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS && form.alertOnEveryCustomEvent) {
+      setForm((prevForm) => ({
+        ...prevForm,
+        queryCondition: undefined,
+        queryValue: undefined,
+        queryTime: undefined,
+      }))
+    }
+  }, [form.queryMetric, form.alertOnEveryCustomEvent])
+
   const validate = () => {
     const allErrors: Record<string, string> = {}
 
@@ -186,7 +198,10 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
       allErrors.queryCustomEvent = t('alert.noCustomEventError')
     }
 
-    if (form.queryMetric !== QUERY_METRIC.ERRORS) {
+    if (
+      form.queryMetric !== QUERY_METRIC.ERRORS &&
+      !(form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS && form.alertOnEveryCustomEvent)
+    ) {
       if (form.queryValue === undefined || Number.isNaN(_toNumber(form.queryValue))) {
         allErrors.queryValue = t('alert.queryValueError')
       }
@@ -201,6 +216,13 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
   const onSubmit = (data: Partial<Alerts>) => {
     let submissionData = { ...data }
     if (data.queryMetric === QUERY_METRIC.ERRORS) {
+      submissionData = {
+        ...submissionData,
+        queryCondition: null,
+        queryValue: null,
+        queryTime: null,
+      }
+    } else if (data.queryMetric === QUERY_METRIC.CUSTOM_EVENTS && data.alertOnEveryCustomEvent) {
       submissionData = {
         ...submissionData,
         queryCondition: null,
@@ -267,6 +289,13 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
 
     let currentForm = { ...form }
     if (form.queryMetric === QUERY_METRIC.ERRORS) {
+      currentForm = {
+        ...currentForm,
+        queryCondition: null,
+        queryValue: null,
+        queryTime: null,
+      }
+    } else if (form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS && form.alertOnEveryCustomEvent) {
       currentForm = {
         ...currentForm,
         queryCondition: null,
@@ -404,6 +433,23 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
             error={beenSubmitted ? errors.queryCustomEvent : null}
           />
         ) : null}
+        {form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS ? (
+          <Checkbox
+            checked={Boolean(form.alertOnEveryCustomEvent)}
+            onChange={(checked) =>
+              setForm((prev) => ({
+                ...prev,
+                alertOnEveryCustomEvent: checked,
+              }))
+            }
+            name='alertOnEveryCustomEvent'
+            classes={{
+              label: 'mt-4',
+            }}
+            label={t('alert.alertOnEveryCustomEvent')}
+            hint={t('alert.alertOnEveryCustomEventHint')}
+          />
+        ) : null}
         {form.queryMetric === QUERY_METRIC.ERRORS ? (
           <Checkbox
             checked={Boolean(form.alertOnNewErrorsOnly)}
@@ -421,7 +467,8 @@ const ProjectAlertsSettings = ({ isSettings }: ProjectAlertsSettingsProps) => {
             hint={t('alert.newErrorsOnlyHint')}
           />
         ) : null}
-        {form.queryMetric !== QUERY_METRIC.ERRORS ? (
+        {form.queryMetric !== QUERY_METRIC.ERRORS &&
+        !(form.queryMetric === QUERY_METRIC.CUSTOM_EVENTS && form.alertOnEveryCustomEvent) ? (
           <>
             <div className='mt-4'>
               <Select

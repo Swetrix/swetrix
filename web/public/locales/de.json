@@ -773,6 +773,8 @@
     "customEvent": "Eigener Ereignisname",
     "newErrorsOnly": "Nur bei neuen Fehlern benachrichtigen",
     "newErrorsOnlyHint": "Wenn aktiviert, wird ein Alarm nur beim ersten Auftreten eines bestimmten Fehlers ausgelöst.",
+    "alertOnEveryCustomEvent": "Bei jedem benutzerdefinierten Ereignis Alarm auslösen",
+    "alertOnEveryCustomEventHint": "Wenn aktiviert, wird bei jedem Auftreten des angegebenen benutzerdefinierten Ereignisses ein Alarm ausgelöst.",
     "add": "Alert hinzufügen",
     "delete": "Alarm löschen",
     "noNameError": "Bitte benennen Sie die Benachrichtigung.",

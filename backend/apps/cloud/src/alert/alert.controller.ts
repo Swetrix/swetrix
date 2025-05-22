@@ -189,6 +189,13 @@ export class AlertController {
         alert.queryCondition = null
         alert.queryValue = null
         alert.queryTime = null
+      } else if (
+        alertDTO.queryMetric === QueryMetric.CUSTOM_EVENTS &&
+        alertDTO.alertOnEveryCustomEvent
+      ) {
+        alert.queryCondition = null
+        alert.queryValue = null
+        alert.queryTime = null
       } else {
         if (alertDTO.queryCondition === undefined)
           alert.queryCondition = QueryCondition.GREATER_THAN
@@ -199,6 +206,10 @@ export class AlertController {
 
       if (alertDTO.alertOnNewErrorsOnly === undefined) {
         alert.alertOnNewErrorsOnly = true
+      }
+
+      if (alertDTO.alertOnEveryCustomEvent === undefined) {
+        alert.alertOnEveryCustomEvent = false
       }
 
       const newAlert = await this.alertService.create(alert)
@@ -250,11 +261,19 @@ export class AlertController {
         'name',
         'queryCustomEvent',
         'alertOnNewErrorsOnly',
+        'alertOnEveryCustomEvent',
         'active',
       ]),
     }
 
     if (alertDTO.queryMetric === QueryMetric.ERRORS) {
+      updatePayload.queryCondition = null
+      updatePayload.queryValue = null
+      updatePayload.queryTime = null
+    } else if (
+      alertDTO.queryMetric === QueryMetric.CUSTOM_EVENTS &&
+      alertDTO.alertOnEveryCustomEvent
+    ) {
       updatePayload.queryCondition = null
       updatePayload.queryValue = null
       updatePayload.queryTime = null
@@ -269,6 +288,10 @@ export class AlertController {
 
     if (alertDTO.alertOnNewErrorsOnly !== undefined) {
       updatePayload.alertOnNewErrorsOnly = alertDTO.alertOnNewErrorsOnly
+    }
+
+    if (alertDTO.alertOnEveryCustomEvent !== undefined) {
+      updatePayload.alertOnEveryCustomEvent = alertDTO.alertOnEveryCustomEvent
     }
 
     await this.alertService.update(

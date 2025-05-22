@@ -12,4 +12,5 @@ export interface Alerts {
   active: boolean
   lastTriggered: string | null
   alertOnNewErrorsOnly?: boolean
+  alertOnEveryCustomEvent?: boolean
 }
