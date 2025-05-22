@@ -24,7 +24,9 @@ export class MetadataSizeLimit implements ValidatorConstraintInterface {
     let totalSize = 0
 
     for (let i = 0; i < keys.length; i++) {
-      totalSize += keys[i].length + values[i].length
+      totalSize +=
+        keys[i].length +
+        (values[i] && typeof values[i] === 'string' ? values[i].length : 0)
       if (totalSize > MAX_METADATA_VALUE_LENGTH) {
         return false
       }
