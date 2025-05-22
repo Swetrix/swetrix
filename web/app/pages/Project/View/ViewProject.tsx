@@ -3387,7 +3387,9 @@ const ViewProject = () => {
                         {t('project.refresh')}
                       </button>
                     </div>
-                    {activeError?.details ? <ErrorDetails details={activeError.details} /> : null}
+                    {activeError?.details ? (
+                      <ErrorDetails details={activeError.details} metadata={activeError.metadata} />
+                    ) : null}
                     {activeError?.chart ? (
                       <ErrorChart
                         chart={activeError?.chart}

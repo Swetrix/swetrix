@@ -3348,8 +3348,8 @@ export class AnalyticsService {
     )
 
     const query = `
-      SELECT 
-        meta.key AS key, 
+      SELECT
+        meta.key AS key,
         meta.value AS value,
         count() AS count
       FROM (
@@ -3449,8 +3449,8 @@ export class AnalyticsService {
     )
 
     const query = `
-      SELECT 
-        meta.key AS key, 
+      SELECT
+        meta.key AS key,
         meta.value AS value,
         count() AS count
       FROM (
@@ -3991,6 +3991,7 @@ export class AnalyticsService {
         any(subquery.filename) AS filename,
         any(subquery.colno) AS colno,
         any(subquery.lineno) AS lineno,
+        any(subquery.stackTrace) AS stackTrace,
         count(*) AS count,
         status.status
       FROM (
@@ -4000,11 +4001,14 @@ export class AnalyticsService {
           message,
           filename,
           colno,
-          lineno
+          lineno,
+          stackTrace
         FROM errors
         WHERE pid = {pid:FixedString(12)}
           AND eid = {eid:FixedString(32)}
           AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+        ORDER BY created DESC
+        LIMIT 1 BY eid
       ) AS subquery
       LEFT JOIN (
         SELECT
@@ -4028,6 +4032,27 @@ export class AnalyticsService {
         AND eid = {eid:FixedString(32)};
     `
 
+    const queryMetadata = `
+      SELECT
+        meta.key AS key,
+        meta.value AS value,
+        count() AS count
+      FROM (
+        SELECT
+          meta.key,
+          meta.value
+        FROM errors
+        WHERE
+          pid = {pid:FixedString(12)}
+          AND eid = {eid:FixedString(32)}
+          AND created BETWEEN {groupFrom:String} AND {groupTo:String}
+      )
+      ARRAY JOIN meta.key, meta.value
+      WHERE meta.key != '' AND meta.value != ''
+      GROUP BY key, value
+      ORDER BY count DESC
+    `
+
     const paramsData = {
       params: {
         pid,
@@ -4037,25 +4062,29 @@ export class AnalyticsService {
       },
     }
 
-    const details = (
-      await clickhouse
+    const [details, occurenceDetails, metadata] = await Promise.all([
+      clickhouse
         .query({
           query: queryErrorDetails,
           query_params: paramsData.params,
         })
         .then(resultSet => resultSet.json<any>())
-        .then(({ data }) => data)
-    )[0]
-
-    const occurenceDetails = (
-      await clickhouse
+        .then(({ data }) => data[0]),
+      clickhouse
         .query({
           query: queryFirstLastSeen,
           query_params: paramsData.params,
         })
         .then(resultSet => resultSet.json<any>())
-        .then(({ data }) => data)
-    )[0]
+        .then(({ data }) => data[0]),
+      clickhouse
+        .query({
+          query: queryMetadata,
+          query_params: paramsData.params,
+        })
+        .then(resultSet => resultSet.json<IAggregatedMetadata>())
+        .then(({ data }) => data),
+    ])
 
     const groupedChart = await this.groupErrorsByTimeBucket(
       timeBucket,
@@ -4073,6 +4102,7 @@ export class AnalyticsService {
         ...details,
         ...occurenceDetails,
       },
+      metadata,
       ...groupedChart,
       timeBucket,
     }
