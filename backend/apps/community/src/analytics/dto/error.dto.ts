@@ -102,11 +102,11 @@ export class ErrorDto {
     example:
       'Error: Malformed input\n    at parseInput (convert.js:12:5)\n    at main (app.js:45:12)',
     description: 'Stack trace of the error',
-    maxLength: 5000,
+    maxLength: 7500,
   })
   @IsOptional()
   @IsString()
-  @MaxLength(5000)
+  @MaxLength(7500)
   stackTrace?: string
 
   @ApiProperty({
