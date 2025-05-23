@@ -79,10 +79,12 @@ All of the values are numbers in milliseconds.
 | `message` | `string` | `false` | Error message (e.g. `Malformed input`); Max length is 2000 |
 | `lineno` | `number` | `false` | Line number |
 | `colno` | `number` | `false` | Column number |
+| `stackTrace` | `string` | `false` | Stack trace; Max length is 5000 |
 | `filename` | `number` | `false` | Error message (e.g. `https://example.com/assets/convert.js`); Max length is 1000 |
 | `tz` | `string` | `false` | Visitor's timezone (used as a backup in case IP geolocation fails). I.e. if it's set to `Europe/Kiev` and IP geolocation fails, we will set the country of this entry to `Ukraine`) |
 | `pg` | `string` | `false` | A page that user sent data from (e.g. `/home`) |
 | `lc` | `string` | `false` | A locale of the user (e.g. `en-US` or `uk-UA`) |
+| `meta` | `object` | `false` | A `key` / `value` pair of custom properties for your event, for example `{ level: 'Critical' }`. The values of the object must be strings, the maximum number of keys allowed is 100 and the total length of the keys and values combined must be less than 2000 characters. |
 
 ### Heartbeat event structure
 | Name | Type | Required | Description |
