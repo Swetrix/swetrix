@@ -826,6 +826,9 @@
     "support": "Contact support"
   },
   "project": {
+    "copy": "Copy",
+    "copied": "Copied!",
+    "stackTraceXFrames": "Stack trace ({{x}} frames)",
     "metadata": "Metadata",
     "aiDetailsDesc": "The buttons above allow you to see an estimate of what kind of traffic you can expect within an hour in the next X hours.",
     "search": "Search",
@@ -965,6 +968,7 @@
     "weeklyStats": "Weekly stats",
     "statsFor": "Stats for",
     "event": "Event",
+    "key": "Key",
     "value": "Value",
     "quantity": "Quantity",
     "conversion": "Conversion",

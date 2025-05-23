@@ -826,6 +826,9 @@
     "support": "Contacter le service client"
   },
   "project": {
+    "copy": "Copier",
+    "copied": "Copié !",
+    "stackTraceXFrames": "Pile d'appels ({{x}} cadres)",
     "metadata": "Métadonnées",
     "aiDetailsDesc": "Les boutons ci-dessus vous permettent d'obtenir une estimation du trafic que vous pouvez attendre sur une période d'une heure au cours des X prochaines heures.",
     "search": "Rechercher",
@@ -965,6 +968,7 @@
     "weeklyStats": "Statistiques hebdomadaires",
     "statsFor": "Statistiques pour",
     "event": "Événement",
+    "key": "Clé",
     "value": "Valeur",
     "quantity": "Quantité",
     "conversion": "Conversion",

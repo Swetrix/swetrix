@@ -826,6 +826,9 @@
     "support": "Skontaktuj się z obsługą"
   },
   "project": {
+    "copy": "Kopiuj",
+    "copied": "Skopiowano!",
+    "stackTraceXFrames": "Stos wywołań ({{x}} ramek)",
     "metadata": "Metadane",
     "aiDetailsDesc": "Przyciski powyżej pozwalają zobaczyć szacunkową liczbę ruchu, jakiego można się spodziewać w ciągu godziny w kolejnych X godzinach.",
     "search": "Szukaj",
@@ -965,6 +968,7 @@
     "weeklyStats": "Statystyki tygodniowe",
     "statsFor": "Statystyki dla",
     "event": "Zdarzenie",
+    "key": "Klucz",
     "value": "Wartość",
     "quantity": "Liczba",
     "conversion": "Konwersja",

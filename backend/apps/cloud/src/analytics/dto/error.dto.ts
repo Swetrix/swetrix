@@ -6,8 +6,17 @@ import {
   IsString,
   MaxLength,
   Matches,
+  IsObject,
+  Validate,
 } from 'class-validator'
 import { PID_REGEX } from '../../common/constants'
+import {
+  MAX_METADATA_KEYS,
+  MAX_METADATA_VALUE_LENGTH,
+  MetadataKeysQuantity,
+  MetadataValueType,
+  MetadataSizeLimit,
+} from './events.dto'
 
 export class ErrorDto {
   @ApiProperty({
@@ -88,4 +97,36 @@ export class ErrorDto {
   @IsString()
   @MaxLength(1000)
   filename?: string
+
+  @ApiProperty({
+    example:
+      'Error: Malformed input\n    at parseInput (convert.js:12:5)\n    at main (app.js:45:12)',
+    description: 'Stack trace of the error',
+    maxLength: 7500,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(7500)
+  stackTrace?: string
+
+  @ApiProperty({
+    example: {
+      userId: '12345',
+      feature: 'data-export',
+      environment: 'production',
+    },
+    description: 'Error-related metadata object with string values',
+  })
+  @IsOptional()
+  @IsObject()
+  @Validate(MetadataKeysQuantity, {
+    message: `Metadata object can't have more than ${MAX_METADATA_KEYS} keys`,
+  })
+  @Validate(MetadataValueType, {
+    message: 'All of metadata object values must be strings',
+  })
+  @Validate(MetadataSizeLimit, {
+    message: `Metadata object can't have keys and values with total length more than ${MAX_METADATA_VALUE_LENGTH} characters`,
+  })
+  meta?: Record<string, string>
 }

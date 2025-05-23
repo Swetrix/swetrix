@@ -139,6 +139,8 @@ export const errorEventTransformer = (
   lineno: number | null,
   colno: number | null,
   filename: string | null,
+  stackTrace: string | null,
+  meta: Record<string, string> | null,
 ) => {
   return {
     psid,
@@ -160,6 +162,8 @@ export const errorEventTransformer = (
     lineno: lineno || null,
     colno: colno || null,
     filename: filename || null,
+    stackTrace: stackTrace || null,
+    ...processMetaKV(meta),
     created: dayjs.utc().format('YYYY-MM-DD HH:mm:ss'),
   }
 }

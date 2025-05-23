@@ -126,6 +126,12 @@ const CLICKHOUSE_INIT_QUERIES = [
     ct Nullable(String),
     name String,
     message Nullable(String),
+    stackTrace Nullable(String),
+    meta Nested
+    (
+      key String,
+      value String
+    ),
     lineno Nullable(UInt32),
     colno Nullable(UInt32),
     filename Nullable(String),

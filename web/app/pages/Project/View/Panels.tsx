@@ -104,8 +104,8 @@ interface PanelContainerProps {
   icon?: React.ReactNode
   type: string
   onExpandClick?: () => void
-  activeFragment: number | string
-  setActiveFragment: (arg: number) => void
+  activeFragment?: number | string
+  setActiveFragment?: (arg: number) => void
   customTabs?: CustomTab[]
   activeTab?: string
   isCustomContent?: boolean
@@ -127,7 +127,7 @@ const PanelContainer = ({
 }: PanelContainerProps) => (
   <div
     className={cx(
-      'relative max-h-96 min-h-[17rem] overflow-hidden rounded-lg border border-gray-300 bg-white px-4 pt-5 sm:px-6 dark:border-slate-800/50 dark:bg-slate-800/25',
+      'relative max-h-96 min-h-[17rem] overflow-hidden rounded-lg border border-gray-300 bg-white px-4 pt-5 sm:px-6 dark:border-slate-800/60 dark:bg-slate-800/25',
       {
         'pb-12': !noSwitch,
         'pb-5': noSwitch,
@@ -1753,7 +1753,216 @@ const Panel = ({
   )
 }
 
+interface AggregatedMetadata {
+  key: string
+  value: string
+  count: number
+}
+
+interface MetadataPanelProps {
+  metadata: AggregatedMetadata[]
+}
+
+const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
+  const { t } = useTranslation('common')
+  const [page, setPage] = useState(0)
+  const [sort, setSort] = useState<SortRows>({
+    label: 'count',
+    sortByAscend: false,
+    sortByDescend: false,
+  })
+
+  const currentIndex = page * ENTRIES_PER_PANEL
+  const totalPages = useMemo(() => _ceil(_size(metadata) / ENTRIES_PER_PANEL), [metadata])
+  const canGoPrev = () => page > 0
+  const canGoNext = () => page < _floor((_size(metadata) - 1) / ENTRIES_PER_PANEL)
+
+  const sortedData = useMemo(() => {
+    return [...metadata].sort((a, b) => {
+      if (sort.label === 'count') {
+        return sort.sortByAscend ? a.count - b.count : b.count - a.count
+      }
+
+      if (sort.label === 'value') {
+        return sort.sortByAscend ? a.value.localeCompare(b.value) : b.value.localeCompare(a.value)
+      }
+
+      return sort.sortByAscend ? a.key.localeCompare(b.key) : b.key.localeCompare(a.key)
+    })
+  }, [metadata, sort])
+
+  const metadataToDisplay = useMemo(
+    () => _slice(sortedData, currentIndex, currentIndex + ENTRIES_PER_PANEL),
+    [sortedData, currentIndex],
+  )
+
+  useEffect(() => {
+    const sizeKeys = _size(metadata)
+
+    if (currentIndex > sizeKeys) {
+      setPage(_floor(sizeKeys / ENTRIES_PER_PANEL))
+    }
+  }, [currentIndex, metadata])
+
+  const onPrevious = () => {
+    if (canGoPrev()) {
+      setPage(page - 1)
+    }
+  }
+
+  const onNext = () => {
+    if (canGoNext()) {
+      setPage(page + 1)
+    }
+  }
+
+  const onSortBy = (label: string) => {
+    if (sort.sortByAscend) {
+      setSort({
+        label,
+        sortByAscend: false,
+        sortByDescend: true,
+      })
+      return
+    }
+
+    if (sort.sortByDescend) {
+      setSort({
+        label,
+        sortByAscend: false,
+        sortByDescend: false,
+      })
+      return
+    }
+
+    setSort({
+      label,
+      sortByAscend: true,
+      sortByDescend: false,
+    })
+  }
+
+  if (_isEmpty(metadata)) {
+    return null
+  }
+
+  return (
+    <div className='col-span-full'>
+      <PanelContainer name={t('project.metadata')} type='metadata' noSwitch>
+        <div className='overflow-y-auto font-mono'>
+          <table className='w-full border-separate border-spacing-y-1'>
+            <thead>
+              <tr className='text-sm text-gray-900 dark:text-gray-50'>
+                <th
+                  className='flex w-2/5 cursor-pointer items-center pl-2 text-left hover:opacity-90 sm:w-4/6'
+                  onClick={() => onSortBy('key')}
+                >
+                  {t('project.key')}
+                  <Sort
+                    className='ml-1'
+                    sortByAscend={sort.label === 'key' ? sort.sortByAscend : null}
+                    sortByDescend={sort.label === 'key' ? sort.sortByDescend : null}
+                  />
+                </th>
+                <th className='w-[30%] sm:w-1/6'>
+                  <p
+                    className='flex cursor-pointer items-center justify-end hover:opacity-90'
+                    onClick={() => onSortBy('value')}
+                  >
+                    {t('project.value')}
+                    <Sort
+                      className='ml-1'
+                      sortByAscend={sort.label === 'value' ? sort.sortByAscend : null}
+                      sortByDescend={sort.label === 'value' ? sort.sortByDescend : null}
+                    />
+                    &nbsp;&nbsp;
+                  </p>
+                </th>
+                <th className='w-[30%] pr-2 sm:w-1/6'>
+                  <p
+                    className='flex cursor-pointer items-center justify-end hover:opacity-90'
+                    onClick={() => onSortBy('count')}
+                  >
+                    {t('project.quantity')}
+                    <Sort
+                      className='ml-1'
+                      sortByAscend={sort.label === 'count' ? sort.sortByAscend : null}
+                      sortByDescend={sort.label === 'count' ? sort.sortByDescend : null}
+                    />
+                  </p>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {_map(metadataToDisplay, ({ key, value, count }, index) => (
+                <tr
+                  key={`${key}-${value}-${count}-${index}`}
+                  className='text-sm text-gray-900 even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700'
+                >
+                  <td className='py-1 pl-2 text-left font-mono'>{key}</td>
+                  <td className='py-1 text-right font-mono'>
+                    {value}
+                    &nbsp;&nbsp;
+                  </td>
+                  <td className='py-1 pr-2 text-right'>{count}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {_size(metadata) > ENTRIES_PER_PANEL ? (
+          <div className='absolute bottom-0 w-[calc(100%-2rem)] font-mono sm:w-[calc(100%-3rem)]'>
+            <div className='mb-2 flex justify-between select-none'>
+              <div>
+                <span className='text-xs font-light text-gray-500 lowercase dark:text-gray-200'>
+                  {_size(metadata)} {t('project.results')}
+                </span>
+                <span className='text-xs font-light text-gray-500 dark:text-gray-200'>
+                  . {t('project.page')} {page + 1} / {totalPages}
+                </span>
+              </div>
+              <div className='flex w-[4.5rem] justify-between'>
+                <Button
+                  className={cx(
+                    'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
+                    {
+                      'cursor-not-allowed opacity-50': !canGoPrev(),
+                      'hover:bg-gray-100 hover:dark:bg-slate-700': canGoPrev(),
+                    },
+                  )}
+                  type='button'
+                  onClick={onPrevious}
+                  disabled={!canGoPrev()}
+                  focus={false}
+                >
+                  <ArrowLongLeftIcon className='h-5 w-5' />
+                </Button>
+                <Button
+                  className={cx(
+                    'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
+                    {
+                      'cursor-not-allowed opacity-50': !canGoNext(),
+                      'hover:bg-gray-100 hover:dark:bg-slate-700': canGoNext(),
+                    },
+                  )}
+                  onClick={onNext}
+                  disabled={!canGoNext()}
+                  type='button'
+                  focus={false}
+                >
+                  <ArrowLongRightIcon className='h-5 w-5' />
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </PanelContainer>
+    </div>
+  )
+}
+
 const PanelMemo = memo(Panel) as typeof Panel
 const MetadataMemo = memo(Metadata) as typeof Metadata
+const MetadataPanelMemo = memo(MetadataPanel) as typeof MetadataPanel
 
-export { PanelMemo as Panel, MetadataMemo as Metadata }
+export { PanelMemo as Panel, MetadataMemo as Metadata, MetadataPanelMemo as MetadataPanel }

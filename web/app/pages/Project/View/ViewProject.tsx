@@ -168,7 +168,7 @@ import {
   Properties,
   TrafficLogResponse,
 } from './interfaces/traffic'
-import { Panel, Metadata, type CustomTab } from './Panels'
+import { Panel, Metadata as MetadataGeneric, MetadataPanel, type CustomTab } from './Panels'
 import { FILTER_CHART_METRICS_MAPPING_FOR_COMPARE, ERROR_FILTERS_MAPPING, parseFilters } from './utils/filters'
 import {
   onCSVExportClick,
@@ -3614,6 +3614,7 @@ const ViewProject = () => {
                             )
                           })
                         : null}
+                      {activeError?.metadata ? <MetadataPanel metadata={activeError.metadata} /> : null}
                     </div>
                     {_isEmpty(activeError) && errorLoading ? <Loader /> : null}
                     {!errorLoading && _isEmpty(activeError) ? <NoErrorDetails /> : null}
@@ -3946,7 +3947,7 @@ const ViewProject = () => {
                           })
                         : null}
                       {!_isEmpty(panelsData.data) ? (
-                        <Metadata
+                        <MetadataGeneric
                           customs={panelsData.customs}
                           properties={panelsData.properties}
                           filters={filters}

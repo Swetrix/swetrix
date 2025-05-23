@@ -1085,7 +1085,10 @@ export class AnalyticsController {
     const { deviceType, browserName, browserVersion, osName, osVersion } =
       await this.analyticsService.getRequestInformation(headers)
 
-    const { name, message, lineno, colno, filename } = errorDTO
+    const { name, message, lineno, colno, filename, stackTrace, meta } =
+      errorDTO
+
+    this.analyticsService.validateCustomEVMeta(meta)
 
     const transformed = errorEventTransformer(
       psid,
@@ -1107,6 +1110,8 @@ export class AnalyticsController {
       lineno,
       colno,
       filename,
+      stackTrace,
+      meta,
     )
 
     try {
