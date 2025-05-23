@@ -79,7 +79,7 @@ All of the values are numbers in milliseconds.
 | `message` | `string` | `false` | Error message (e.g. `Malformed input`); Max length is 2000 |
 | `lineno` | `number` | `false` | Line number |
 | `colno` | `number` | `false` | Column number |
-| `stackTrace` | `string` | `false` | Stack trace; Max length is 5000 |
+| `stackTrace` | `string` | `false` | Stack trace; Max length is 7500 |
 | `filename` | `number` | `false` | Error message (e.g. `https://example.com/assets/convert.js`); Max length is 1000 |
 | `tz` | `string` | `false` | Visitor's timezone (used as a backup in case IP geolocation fails). I.e. if it's set to `Europe/Kiev` and IP geolocation fails, we will set the country of this entry to `Ukraine`) |
 | `pg` | `string` | `false` | A page that user sent data from (e.g. `/home`) |
