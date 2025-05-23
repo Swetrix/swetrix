@@ -1,6 +1,6 @@
 {
   "name": "swetrix",
-  "version": "3.6.1",
+  "version": "3.7.0",
   "description": "The JavaScript analytics client for Swetrix Analytics",
   "type": "module",
   "main": "dist/swetrix.cjs.js",
@@ -50,12 +50,12 @@
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.1.2",
     "@types/jest": "^29.5.14",
-    "@types/node": "^22.14.1",
+    "@types/node": "^22.15.21",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "rimraf": "^6.0.1",
-    "rollup": "^4.40.0",
-    "ts-jest": "^29.3.2",
+    "rollup": "^4.41.0",
+    "ts-jest": "^29.3.4",
     "typescript": "^5.8.3"
   },
   "devEngines": {

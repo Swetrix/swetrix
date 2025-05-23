@@ -16,6 +16,7 @@ jest.mock('../src/Lib', () => {
           filename: event.filename,
           lineno: event.lineno,
           colno: event.colno,
+          stackTrace: event.error?.stack,
         }
 
         this.submitError(errorPayload, true)
@@ -29,9 +30,24 @@ jest.mock('../src/Lib', () => {
           filename: payload.filename,
           lineno: payload.lineno,
           colno: payload.colno,
+          stackTrace: payload.stackTrace,
+          meta: payload.meta,
           pg: '/test-page',
           lc: 'en-US',
           tz: 'Europe/London',
+        }
+
+        // Simulate callback behavior if evokeCallback is true and callback exists
+        if (evokeCallback && this.errorsOptions?.callback) {
+          const callbackResult = this.errorsOptions.callback(formattedPayload)
+
+          if (callbackResult === false) {
+            return
+          }
+
+          if (callbackResult && typeof callbackResult === 'object') {
+            Object.assign(formattedPayload, callbackResult)
+          }
         }
 
         this.sendRequest('error', formattedPayload)
@@ -150,5 +166,68 @@ describe('Error Tracking', () => {
 
     // Assert
     expect(mockStop).toHaveBeenCalled()
+  })
+
+  test('trackError should handle meta property', () => {
+    // Arrange
+    const errorPayload = {
+      name: 'ValidationError',
+      message: 'Invalid input provided',
+      filename: 'validation.js',
+      lineno: 15,
+      colno: 5,
+      meta: {
+        userId: 'user123',
+        feature: 'login',
+        environment: 'production',
+      },
+    }
+
+    // Act
+    trackError(errorPayload)
+
+    // Assert
+    expect((libInstance as any).sendRequest).toHaveBeenCalledWith(
+      'error',
+      expect.objectContaining({
+        pid: PROJECT_ID,
+        name: errorPayload.name,
+        message: errorPayload.message,
+        filename: errorPayload.filename,
+        lineno: errorPayload.lineno,
+        colno: errorPayload.colno,
+        meta: errorPayload.meta,
+      }),
+    )
+  })
+
+  test('captureError should automatically extract stackTrace from ErrorEvent', () => {
+    // Arrange
+    const mockError = new Error('Test error message')
+    mockError.stack = 'Error: Test error message\n    at test.js:10:5\n    at Object.run (test.js:5:2)'
+
+    const errorEvent = new ErrorEvent('error', {
+      error: mockError,
+      message: 'Test error message',
+      filename: 'test.js',
+      lineno: 10,
+      colno: 5,
+    })
+
+    // Act
+    ;(libInstance as any).captureError(errorEvent)
+
+    // Assert
+    expect((libInstance as any).submitError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'Error',
+        message: 'Test error message',
+        filename: 'test.js',
+        lineno: 10,
+        colno: 5,
+        stackTrace: mockError.stack,
+      }),
+      true,
+    )
   })
 })

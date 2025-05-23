@@ -156,7 +156,7 @@ var Lib = /** @class */ (function () {
         this.captureError = this.captureError.bind(this);
     }
     Lib.prototype.captureError = function (event) {
-        var _a, _b, _c;
+        var _a, _b, _c, _d;
         if (typeof ((_a = this.errorsOptions) === null || _a === void 0 ? void 0 : _a.sampleRate) === 'number' && this.errorsOptions.sampleRate > Math.random()) {
             return;
         }
@@ -173,6 +173,8 @@ var Lib = /** @class */ (function () {
             // (we want to split error name and message so we could group them together later in dashboard).
             // If message in error object does not exist - lets use a message from the Error event itself.
             message: ((_c = event.error) === null || _c === void 0 ? void 0 : _c.message) || event.message,
+            // Stack trace of the error, if available.
+            stackTrace: (_d = event.error) === null || _d === void 0 ? void 0 : _d.stack,
         }, true);
     };
     Lib.prototype.trackErrors = function (options) {

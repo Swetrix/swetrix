@@ -46,6 +46,10 @@ export interface IErrorEventPayload {
     lineno?: number | null;
     colno?: number | null;
     filename?: string | null;
+    stackTrace?: string | null;
+    meta?: {
+        [key: string]: string;
+    };
 }
 export interface IInternalErrorEventPayload extends IErrorEventPayload {
     lc?: string;

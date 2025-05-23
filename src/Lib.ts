@@ -72,6 +72,10 @@ export interface IErrorEventPayload {
   lineno?: number | null
   colno?: number | null
   filename?: string | null
+  stackTrace?: string | null
+  meta?: {
+    [key: string]: string
+  }
 }
 
 export interface IInternalErrorEventPayload extends IErrorEventPayload {
@@ -208,6 +212,9 @@ export class Lib {
         // (we want to split error name and message so we could group them together later in dashboard).
         // If message in error object does not exist - lets use a message from the Error event itself.
         message: event.error?.message || event.message,
+
+        // Stack trace of the error, if available.
+        stackTrace: event.error?.stack,
       },
       true,
     )
