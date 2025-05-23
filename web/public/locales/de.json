@@ -826,6 +826,9 @@
     "support": "Support kontaktieren"
   },
   "project": {
+    "copy": "Kopieren",
+    "copied": "Kopiert!",
+    "stackTraceXFrames": "Aufrufliste ({{x}} Frames)",
     "metadata": "Metadaten",
     "aiDetailsDesc": "Mit den Schaltflächen oben können Sie eine Schätzung des Verkehrsaufkommens anzeigen, das Sie in den nächsten X Stunden innerhalb einer Stunde erwarten können.",
     "search": "Suche",
@@ -965,6 +968,7 @@
     "weeklyStats": "Wöchentliche Statistik",
     "statsFor": "Statistik für",
     "event": "Ereignis",
+    "key": "Schlüssel",
     "value": "Wert",
     "quantity": "Anzahl",
     "conversion": "Konversionsrate",
