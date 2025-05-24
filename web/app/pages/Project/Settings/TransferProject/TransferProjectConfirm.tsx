@@ -52,9 +52,7 @@ const TransferProjectConfirm = () => {
             <XCircleIcon className='h-12 w-12 text-red-400' aria-hidden='true' />
             <div className='sm:ml-6'>
               <div className='max-w-prose sm:border-l sm:border-gray-200 sm:pl-6'>
-                <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl dark:text-gray-50'>
-                  {error}
-                </h1>
+                <h1 className='text-4xl font-extrabold text-gray-900 sm:text-5xl dark:text-gray-50'>{error}</h1>
               </div>
               <div className='mt-8 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>
                 <Link
@@ -84,7 +82,7 @@ const TransferProjectConfirm = () => {
           <CheckCircleIcon className='h-12 w-12 text-green-500 dark:text-green-400' aria-hidden='true' />
           <div className='sm:ml-6'>
             <div className='max-w-prose sm:border-l sm:border-gray-200 sm:pl-6'>
-              <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl dark:text-gray-50'>
+              <h1 className='text-4xl font-extrabold text-gray-900 sm:text-5xl dark:text-gray-50'>
                 {t('apiNotifications.acceptInvitation')}
               </h1>
             </div>

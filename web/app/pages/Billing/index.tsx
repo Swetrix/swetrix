@@ -216,22 +216,20 @@ const Billing = () => {
       <DashboardLockedBanner />
 
       <div className='mx-auto w-11/12 px-4 pt-12 whitespace-pre-line sm:px-6 md:w-5/6'>
-        <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 dark:text-gray-50'>{t('billing.title')}</h1>
+        <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50'>{t('billing.title')}</h1>
       </div>
 
       <div className='mx-auto mt-5 grid w-11/12 gap-x-10 gap-y-8 px-4 pb-16 whitespace-pre-line sm:px-6 md:w-5/6 lg:grid-cols-2'>
         <div>
-          <h2 id='billing' className='mb-2 text-2xl font-medium tracking-tight text-gray-900 dark:text-gray-50'>
+          <h2 id='billing' className='mb-2 text-2xl font-medium text-gray-900 dark:text-gray-50'>
             {t('billing.subscription')}
           </h2>
-          <p className='mt-1 text-base tracking-tight text-gray-900 dark:text-gray-50'>
+          <p className='mt-1 text-base text-gray-900 dark:text-gray-50'>
             {isSubscriber ? t('billing.selectPlan') : t('billing.changePlan')}
           </p>
-          <p className='max-w-prose text-base tracking-tight text-gray-900 dark:text-gray-50'>
-            {t('billing.membersNotification')}
-          </p>
+          <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>{t('billing.membersNotification')}</p>
           {isSubscriber && nextBillDate ? (
-            <div className='mt-5 max-w-prose rounded-md bg-blue-50 p-4 font-mono dark:bg-blue-600/30'>
+            <div className='mt-5 max-w-prose rounded-md bg-blue-50 p-4 dark:bg-blue-600/30'>
               <div className='flex'>
                 <div className='shrink-0'>
                   <InformationCircleIcon aria-hidden='true' className='h-5 w-5 text-blue-400 dark:text-blue-100' />
@@ -248,7 +246,7 @@ const Billing = () => {
             </div>
           ) : null}
           {cancellationEffectiveDate ? (
-            <div className='mt-5 max-w-prose rounded-md bg-blue-50 p-4 font-mono dark:bg-blue-600/30'>
+            <div className='mt-5 max-w-prose rounded-md bg-blue-50 p-4 dark:bg-blue-600/30'>
               <div className='flex'>
                 <div className='shrink-0'>
                   <InformationCircleIcon aria-hidden='true' className='h-5 w-5 text-blue-400 dark:text-blue-100' />
@@ -270,7 +268,7 @@ const Billing = () => {
             </div>
           ) : null}
           {isTrial && trialMessage ? (
-            <div className='mt-5 max-w-prose rounded-md bg-blue-50 p-4 font-mono dark:bg-blue-600/30'>
+            <div className='mt-5 max-w-prose rounded-md bg-blue-50 p-4 dark:bg-blue-600/30'>
               <div className='flex'>
                 <div className='shrink-0'>
                   <InformationCircleIcon aria-hidden='true' className='h-5 w-5 text-blue-400 dark:text-blue-100' />
@@ -280,7 +278,7 @@ const Billing = () => {
             </div>
           ) : null}
           {isNoSub ? (
-            <div className='mt-5 max-w-prose rounded-md bg-red-50 p-4 font-mono dark:bg-red-600/30'>
+            <div className='mt-5 max-w-prose rounded-md bg-red-50 p-4 dark:bg-red-600/30'>
               <div className='flex'>
                 <div className='shrink-0'>
                   <ExclamationTriangleIcon aria-hidden='true' className='h-5 w-5 text-red-400 dark:text-red-100' />
@@ -319,18 +317,16 @@ const Billing = () => {
         </div>
 
         <div>
-          <h2 id='usage' className='text-2xl font-medium tracking-tight text-gray-900 dark:text-gray-50'>
+          <h2 id='usage' className='text-2xl font-medium text-gray-900 dark:text-gray-50'>
             {t('billing.planUsage')}
           </h2>
-          <p className='mt-1 max-w-prose text-base tracking-tight text-gray-900 dark:text-gray-50'>
-            {t('billing.planUsageDesc')}
-          </p>
+          <p className='mt-1 max-w-prose text-base text-gray-900 dark:text-gray-50'>{t('billing.planUsageDesc')}</p>
 
           {isLoading ? (
             <Loader />
           ) : (
-            <div className='mt-2 text-lg tracking-tight text-gray-900 dark:text-gray-50'>
-              <p className='mb-1 text-base font-medium tracking-tight text-gray-900 dark:text-gray-50'>
+            <div className='mt-2 text-lg text-gray-900 dark:text-gray-50'>
+              <p className='mb-1 text-base font-medium text-gray-900 dark:text-gray-50'>
                 {t('billing.xofy', {
                   x: usageInfo.total || 0,
                   y: maxEventsCount || 0,
@@ -339,7 +335,7 @@ const Billing = () => {
 
               <Tooltip
                 text={
-                  <div className='font-mono'>
+                  <div>
                     <p>
                       {t('billing.usageOverview', {
                         tracked: usageInfo.total || 0,
@@ -399,7 +395,7 @@ const Billing = () => {
                 }
                 className='!h-auto !w-max max-w-max'
               />
-              <p className='mt-1 text-base tracking-tight text-gray-900 dark:text-gray-50'>{t('billing.resetDate')}</p>
+              <p className='mt-1 text-base text-gray-900 dark:text-gray-50'>{t('billing.resetDate')}</p>
             </div>
           )}
         </div>

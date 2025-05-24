@@ -49,11 +49,11 @@ function Select<T>({
       {({ open }) => (
         <>
           {label ? (
-            <Label className='mb-1 block font-mono text-sm font-medium whitespace-pre-line text-gray-700 dark:text-gray-100'>
+            <Label className='mb-1 block text-sm font-medium whitespace-pre-line text-gray-700 dark:text-gray-100'>
               {label}
             </Label>
           ) : null}
-          <div className={cx('relative font-mono', className)}>
+          <div className={cx('relative', className)}>
             <ListboxButton
               className={cx(
                 'relative w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 text-left focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden sm:text-sm dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50',
@@ -134,7 +134,7 @@ function Select<T>({
             </Transition>
           </div>
           {hint ? (
-            <Description className='mt-2 font-mono text-sm whitespace-pre-line text-gray-500 dark:text-gray-300'>
+            <Description className='mt-2 text-sm whitespace-pre-line text-gray-500 dark:text-gray-300'>
               {hint}
             </Description>
           ) : null}

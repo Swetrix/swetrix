@@ -130,7 +130,7 @@ const Socialisations = () => {
   return (
     <>
       <p className='max-w-prose text-base text-gray-900 dark:text-gray-50'>{t('profileSettings.socialisationsDesc')}</p>
-      <div className='mt-2 overflow-hidden bg-white font-mono ring-1 ring-black/10 sm:rounded-md dark:bg-slate-800'>
+      <div className='mt-2 overflow-hidden bg-white ring-1 ring-black/10 sm:rounded-md dark:bg-slate-800'>
         <ul className='divide-y divide-gray-200 dark:divide-slate-700'>
           {_map(AVAILABLE_SSO_PROVIDERS, ({ name, key, icons }) => {
             const [connected, unlinkable] = getStatusByUser(user, key)

@@ -47,11 +47,11 @@ const LiveVisitorsDropdown = () => {
   return (
     <OutsideClickHandler onOutsideClick={() => setIsDropdownVisible(false)}>
       <div
-        className='relative flex h-5 cursor-pointer items-center font-mono text-base text-gray-900 dark:text-gray-50'
+        className='relative flex h-5 cursor-pointer items-center text-base text-gray-900 dark:text-gray-50'
         onClick={onOpen}
       >
         <PulsatingCircle className='mr-1.5' type='small' />
-        <span className='tracking-tighter'>
+        <span>
           {t('dashboard.xLiveVisitors', {
             amount: liveVisitors,
           })}{' '}

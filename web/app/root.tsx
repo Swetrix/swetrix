@@ -24,7 +24,6 @@ import { LocaleLinks } from '~/components/LocaleLinks'
 import { SEO } from '~/components/SEO'
 import { CONTACT_EMAIL, LS_THEME_SETTING, isSelfhosted, I18N_CACHE_BREAKER } from '~/lib/constants'
 import FlatpickerCss from '~/styles/Flatpicker.css?url'
-import FontsCss from '~/styles/fonts.css?url'
 import mainCss from '~/styles/index.css?url'
 import sonnerCss from '~/styles/sonner.css?url'
 import tailwindCss from '~/styles/tailwind.css?url'
@@ -56,7 +55,6 @@ export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: mainCss },
   { rel: 'stylesheet', href: BillboardCss },
   { rel: 'stylesheet', href: FlatpickerCss },
-  { rel: 'stylesheet', href: FontsCss },
 ]
 
 export const headers: HeadersFunction = () => ({
@@ -94,9 +92,7 @@ export function ErrorBoundary() {
             </div>
             <div className='py-8'>
               <div className='text-center'>
-                <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl dark:text-gray-50'>
-                  Uh-oh..
-                </h1>
+                <h1 className='text-4xl font-extrabold text-gray-900 sm:text-5xl dark:text-gray-50'>Uh-oh..</h1>
                 <p className='mt-2 text-base font-medium text-gray-800 dark:text-gray-300'>
                   The app has crashed. We are sorry about that :(
                   <br />

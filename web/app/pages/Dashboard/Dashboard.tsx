@@ -268,14 +268,14 @@ const Dashboard = () => {
             <XCircleIcon className='h-12 w-12 text-red-400' aria-hidden='true' />
             <div className='sm:ml-6'>
               <div className='max-w-prose sm:border-l sm:border-gray-200 sm:pl-6'>
-                <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl dark:text-gray-50'>
+                <h1 className='text-4xl font-extrabold text-gray-900 sm:text-5xl dark:text-gray-50'>
                   {t('apiNotifications.somethingWentWrong')}
                 </h1>
-                <p className='mt-4 font-mono text-2xl font-medium tracking-tight text-gray-700 dark:text-gray-200'>
+                <p className='mt-4 text-2xl font-medium text-gray-700 dark:text-gray-200'>
                   {t('apiNotifications.errorCode', { error })}
                 </p>
               </div>
-              <div className='mt-8 flex space-x-3 font-mono sm:border-l sm:border-transparent sm:pl-6'>
+              <div className='mt-8 flex space-x-3 sm:border-l sm:border-transparent sm:pl-6'>
                 <button
                   type='button'
                   onClick={() => window.location.reload()}
@@ -333,7 +333,7 @@ const Dashboard = () => {
                   )}
                 </h2>
                 {isSearchActive ? (
-                  <div className='hidden w-full max-w-md items-center px-2 pb-1 font-mono sm:ml-5 sm:flex'>
+                  <div className='hidden w-full max-w-md items-center px-2 pb-1 sm:ml-5 sm:flex'>
                     <label htmlFor='simple-search' className='sr-only'>
                       Search
                     </label>
@@ -404,7 +404,7 @@ const Dashboard = () => {
                 <Link
                   to={routes.new_project}
                   onClick={onNewProject}
-                  className='inline-flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-slate-900 px-3 py-2 !pl-2 text-center font-mono text-sm leading-4 font-medium text-white hover:bg-slate-700 focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:outline-hidden dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
+                  className='inline-flex cursor-pointer items-center justify-center rounded-md border border-transparent bg-slate-900 px-3 py-2 !pl-2 text-center text-sm leading-4 font-medium text-white hover:bg-slate-700 focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:outline-hidden dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700'
                 >
                   <FolderPlusIcon className='mr-1 h-5 w-5' />
                   {t('dashboard.newProject')}

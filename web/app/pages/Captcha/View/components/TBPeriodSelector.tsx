@@ -69,7 +69,7 @@ const TBPeriodSelector = ({
             leaveTo='opacity-0 translate-y-1'
           >
             {/* w-56 */}
-            <PopoverPanel className='absolute right-2.5 z-20 mt-3 w-max max-w-sm transform px-4 font-mono sm:px-0 md:left-auto md:transform-none lg:max-w-3xl'>
+            <PopoverPanel className='absolute right-2.5 z-20 mt-3 w-max max-w-sm transform px-4 sm:px-0 md:left-auto md:transform-none lg:max-w-3xl'>
               <div className='overflow-hidden rounded-lg bg-gray-50 p-1 ring-1 ring-black/5 dark:bg-slate-800'>
                 <div
                   className={cx(
@@ -89,7 +89,7 @@ const TBPeriodSelector = ({
                         updateTimebucket(value)
                       }}
                       className={cx(
-                        'relative inline-flex items-center rounded px-2 py-1.5 text-sm font-medium tracking-tighter capitalize transition-colors duration-150 ease-in-out',
+                        'relative inline-flex items-center rounded px-2 py-1.5 text-sm font-medium capitalize transition-colors duration-150 ease-in-out',
                         {
                           'bg-gray-50 font-semibold text-gray-900 dark:bg-slate-800 dark:text-gray-50':
                             timeBucket === value,

@@ -135,7 +135,7 @@ const PanelContainer = ({
     )}
   >
     <div className='mb-2 flex items-center justify-between'>
-      <h3 className='flex items-center font-mono text-lg leading-6 font-semibold text-gray-900 dark:text-gray-50'>
+      <h3 className='flex items-center text-lg leading-6 font-semibold text-gray-900 dark:text-gray-50'>
         {icon ? <span className='mr-1'>{icon}</span> : null}
         {name}
       </h3>
@@ -681,7 +681,7 @@ const CustomEvents = ({
   }, [chartData, customsEventsData, t]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const CustomEventsTable = () => (
-    <div className='overflow-y-auto font-mono'>
+    <div className='overflow-y-auto'>
       <table className='w-full border-separate border-spacing-y-1'>
         <thead>
           <tr className='text-base text-gray-900 dark:text-gray-50'>
@@ -787,7 +787,7 @@ const CustomEvents = ({
         activeFragment={activeFragment}
         onExpandClick={() => setDetailsOpened(true)}
       >
-        <p className='mt-1 font-mono text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
+        <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
       </PanelContainer>
     )
   }
@@ -803,7 +803,7 @@ const CustomEvents = ({
         onExpandClick={() => setDetailsOpened(true)}
       >
         {_isEmpty(chartData) ? (
-          <p className='mt-1 font-mono text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
+          <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
         ) : (
           <Chart options={chartOptions} current='panels-ce' />
         )}
@@ -848,7 +848,7 @@ const CustomEvents = ({
       activeFragment={activeFragment}
       onExpandClick={() => setDetailsOpened(true)}
     >
-      <table className='table-fixed font-mono tracking-tighter'>
+      <table className='table-fixed'>
         <thead>
           <tr className='text-gray-900 dark:text-gray-50'>
             <th
@@ -919,7 +919,7 @@ const CustomEvents = ({
       </table>
       {/* for pagination in tabs */}
       {_size(keys) > ENTRIES_PER_CUSTOM_EVENTS_PANEL ? (
-        <div className='absolute bottom-0 w-[calc(100%-2rem)] font-mono sm:w-[calc(100%-3rem)]'>
+        <div className='absolute bottom-0 w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)]'>
           <div className='mb-2 flex justify-between select-none'>
             <div>
               <span className='text-xs font-light text-gray-500 lowercase dark:text-gray-200'>
@@ -1237,7 +1237,7 @@ const PageProperties = ({
         activeFragment={activeFragment}
         onExpandClick={() => setDetailsOpened(true)}
       >
-        <p className='mt-1 font-mono text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
+        <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
       </PanelContainer>
     )
   }
@@ -1250,7 +1250,7 @@ const PageProperties = ({
       activeFragment={activeFragment}
       onExpandClick={() => setDetailsOpened(true)}
     >
-      <table className='table-fixed tracking-tighter'>
+      <table className='table-fixed'>
         <thead>
           <tr className='text-gray-900 dark:text-gray-50'>
             <th
@@ -1321,7 +1321,7 @@ const PageProperties = ({
       </table>
       {/* for pagination in tabs */}
       {_size(keys) > ENTRIES_PER_CUSTOM_EVENTS_PANEL ? (
-        <div className='absolute bottom-0 w-[calc(100%-2rem)] font-mono sm:w-[calc(100%-3rem)]'>
+        <div className='absolute bottom-0 w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)]'>
           <div className='mb-2 flex justify-between select-none'>
             <div>
               <span className='text-xs font-light text-gray-500 lowercase dark:text-gray-200'>
@@ -1573,7 +1573,7 @@ const Panel = ({
         activeTab={activeTab}
       >
         {_isEmpty(data) ? (
-          <p className='mt-1 font-mono text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
+          <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
         ) : (
           <Chart options={options} current={`Panels-${id}`} />
         )}
@@ -1616,7 +1616,7 @@ const Panel = ({
       activeTab={activeTab}
     >
       {_isEmpty(data) ? (
-        <p className='mt-1 font-mono text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
+        <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
       ) : (
         _map(entriesToDisplay, (entry) => {
           const { count, name: entryName, ...rest } = entry
@@ -1631,7 +1631,7 @@ const Panel = ({
               <FilterWrapper
                 as={link ? 'Link' : 'div'}
                 to={link}
-                className={cx('mt-[0.32rem] flex justify-between rounded-sm font-mono first:mt-0 dark:text-gray-50', {
+                className={cx('mt-[0.32rem] flex justify-between rounded-sm first:mt-0 dark:text-gray-50', {
                   'group cursor-pointer hover:bg-gray-100 hover:dark:bg-slate-700': !hideFilters && !dataLoading,
                   'cursor-wait': dataLoading,
                 })}
@@ -1649,7 +1649,7 @@ const Panel = ({
                     rel='noopener noreferrer nofollow'
                     aria-label={`${rowData} (opens in a new tab)`}
                   >
-                    <span className='flex items-center truncate tracking-tighter'>{rowData}</span>
+                    <span className='flex items-center truncate'>{rowData}</span>
                   </a>
                 ) : (
                   <span
@@ -1660,10 +1660,10 @@ const Panel = ({
                       },
                     )}
                   >
-                    <span className='flex items-center truncate tracking-tighter'>{rowData}</span>
+                    <span className='flex items-center truncate'>{rowData}</span>
                   </span>
                 )}
-                <div className='flex min-w-fit items-center pl-2 tracking-tight'>
+                <div className='flex min-w-fit items-center pl-2'>
                   <span className='mr-1 hidden text-gray-500 group-hover:inline dark:text-gray-200'>
                     ({_round((count / total) * 100, 2)}%)
                   </span>
@@ -1679,7 +1679,7 @@ const Panel = ({
       )}
       {/* for pagination in tabs */}
       {_size(entries) > ENTRIES_PER_PANEL ? (
-        <div className='absolute bottom-0 w-[calc(100%-2rem)] font-mono tracking-tight sm:w-[calc(100%-3rem)]'>
+        <div className='absolute bottom-0 w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)]'>
           <div className='mb-2 flex justify-between select-none'>
             <div>
               <span className='text-xs font-light text-gray-500 lowercase dark:text-gray-200'>
@@ -1849,7 +1849,7 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
   return (
     <div className='col-span-full'>
       <PanelContainer name={t('project.metadata')} type='metadata' noSwitch>
-        <div className='overflow-y-auto font-mono'>
+        <div className='overflow-y-auto'>
           <table className='w-full border-separate border-spacing-y-1'>
             <thead>
               <tr className='text-sm text-gray-900 dark:text-gray-50'>
@@ -1899,8 +1899,8 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
                   key={`${key}-${value}-${count}-${index}`}
                   className='text-sm text-gray-900 even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700'
                 >
-                  <td className='py-1 pl-2 text-left font-mono'>{key}</td>
-                  <td className='py-1 text-right font-mono'>
+                  <td className='py-1 pl-2 text-left'>{key}</td>
+                  <td className='py-1 text-right'>
                     {value}
                     &nbsp;&nbsp;
                   </td>
@@ -1911,7 +1911,7 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
           </table>
         </div>
         {_size(metadata) > ENTRIES_PER_PANEL ? (
-          <div className='absolute bottom-0 w-[calc(100%-2rem)] font-mono sm:w-[calc(100%-3rem)]'>
+          <div className='absolute bottom-0 w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)]'>
             <div className='mb-2 flex justify-between select-none'>
               <div>
                 <span className='text-xs font-light text-gray-500 lowercase dark:text-gray-200'>

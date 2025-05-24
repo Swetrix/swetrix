@@ -45,7 +45,7 @@ const MiniCard = ({ labelTKey, total, percChange }: MiniCardProps) => {
   const statsDidGrowUp = percChange ? percChange >= 0 : false
 
   return (
-    <div className='font-mono tracking-tight'>
+    <div>
       <p className='text-sm text-gray-500 dark:text-gray-300'>{t(labelTKey)}</p>
 
       <div className='flex font-bold'>
@@ -210,9 +210,7 @@ export const ProjectCard = ({ live, project, overallStats, activePeriod, activeT
     >
       <div className={cx('flex flex-col', viewMode === 'list' ? 'flex-1' : 'px-4 py-4')}>
         <div className={cx('flex items-center', viewMode === 'grid' ? 'justify-between' : 'justify-start gap-1')}>
-          <p className='truncate font-mono text-lg font-semibold tracking-tight text-slate-900 dark:text-gray-50'>
-            {name}
-          </p>
+          <p className='truncate text-lg font-semibold text-slate-900 dark:text-gray-50'>{name}</p>
 
           {role !== 'viewer' ? (
             <Link

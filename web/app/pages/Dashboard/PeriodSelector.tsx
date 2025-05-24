@@ -58,7 +58,7 @@ export const PeriodSelector = ({ activePeriod, setActivePeriod, isLoading }: Per
     <Popover className='relative'>
       {({ open }) => (
         <>
-          <PopoverButton className='group inline-flex w-full px-2.5 py-2 font-mono text-sm font-medium text-gray-700 outline-hidden md:px-4 dark:text-gray-50'>
+          <PopoverButton className='group inline-flex w-full px-2.5 py-2 text-sm font-medium text-gray-700 outline-hidden md:px-4 dark:text-gray-50'>
             <CalendarIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
             <span>{period}</span>
             <ChevronDownIcon
@@ -81,7 +81,7 @@ export const PeriodSelector = ({ activePeriod, setActivePeriod, isLoading }: Per
             leaveTo='opacity-0 translate-y-1'
           >
             {/* w-56 */}
-            <PopoverPanel className='absolute right-2.5 z-20 mt-3 w-max max-w-sm transform px-4 font-mono sm:px-0 md:left-auto md:transform-none lg:max-w-3xl'>
+            <PopoverPanel className='absolute right-2.5 z-20 mt-3 w-max max-w-sm transform px-4 sm:px-0 md:left-auto md:transform-none lg:max-w-3xl'>
               <div className='overflow-hidden rounded-lg bg-gray-50 p-1 ring-1 ring-black/10 dark:bg-slate-800'>
                 <ul className='w-full text-left'>
                   {_map(periods, (item) => (

@@ -289,7 +289,7 @@ const People = ({ organisation, reloadOrganisation }: PeopleProps) => {
         {_isEmpty(members) ? (
           <NoPeople />
         ) : (
-          <div className='mt-3 flex flex-col font-mono'>
+          <div className='mt-3 flex flex-col'>
             <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 md:overflow-x-visible lg:-mx-8'>
               <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
                 <div className='ring-1 ring-black/10 md:rounded-lg'>

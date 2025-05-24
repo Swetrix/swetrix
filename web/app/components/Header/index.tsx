@@ -498,7 +498,7 @@ const AuthedHeader = ({
 
   return (
     <header
-      className={cx('relative overflow-x-clip font-mono', {
+      className={cx('relative overflow-x-clip', {
         'border-b border-gray-200 bg-gray-50 dark:border-slate-600/40 dark:bg-slate-900': colourBackground,
       })}
     >
@@ -623,7 +623,7 @@ const NotAuthedHeader = ({
 
   return (
     <header
-      className={cx('relative overflow-x-clip font-mono', {
+      className={cx('relative overflow-x-clip', {
         'border-b border-gray-200 bg-gray-50 dark:border-slate-600/40 dark:bg-slate-900': colourBackground,
       })}
     >
@@ -832,7 +832,7 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
       )}
 
       {/* Mobile header popup */}
-      <Dialog className='font-mono lg:hidden' open={mobileMenuOpen} onClose={setMobileMenuOpen}>
+      <Dialog className='lg:hidden' open={mobileMenuOpen} onClose={setMobileMenuOpen}>
         <div className='fixed inset-0 z-10' />
         <DialogPanel className='fixed inset-y-0 top-0 right-0 z-30 w-full overflow-y-auto border-gray-300/80 bg-gray-100/80 p-4 backdrop-blur-2xl sm:max-w-sm sm:border dark:border-slate-900/80 dark:bg-slate-800/80'>
           <div className='flex items-center justify-between'>

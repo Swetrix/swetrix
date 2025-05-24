@@ -43,7 +43,7 @@ const LockedDashboard = () => {
           <LockClosedIcon className='mb-2 -ml-1.5 h-12 w-auto text-yellow-400 sm:m-0 sm:h-24 dark:text-yellow-600' />
           <div className='sm:ml-6'>
             <div className='sm:border-l sm:border-gray-200 sm:pl-6'>
-              <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl dark:text-gray-50'>
+              <h1 className='text-4xl font-extrabold text-gray-900 sm:text-5xl dark:text-gray-50'>
                 {t('project.locked.title')}
               </h1>
               <p className='mt-1 max-w-prose text-base whitespace-pre-line text-gray-700 dark:text-gray-300'>

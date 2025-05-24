@@ -52,7 +52,7 @@ const Combobox = ({
 
   return (
     <HeadlessCombobox disabled={disabled} value={title} onChange={onSelect}>
-      <div className={cx('relative mt-1 font-mono', className)}>
+      <div className={cx('relative mt-1', className)}>
         <div className='relative w-full cursor-default rounded-lg'>
           <ComboboxInput
             className={cx(

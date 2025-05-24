@@ -44,10 +44,10 @@ export const DitchGoogle = ({ screenshot: { light, dark } }: DitchGoogleProps) =
                 }}
               />
             </h2>
-            <p className='mb-9 font-mono font-medium text-gray-300'>{t('main.whyDitch')}</p>
+            <p className='mb-9 font-medium text-gray-300'>{t('main.whyDitch')}</p>
             <Link
               to={routes.signup}
-              className='group flex h-[50px] w-full max-w-[210px] items-center justify-center rounded-md border border-transparent bg-indigo-600 font-mono text-white transition-all !duration-300 hover:bg-indigo-700 sm:mr-6'
+              className='group flex h-[50px] w-full max-w-[210px] items-center justify-center rounded-md border border-transparent bg-indigo-600 text-white transition-all !duration-300 hover:bg-indigo-700 sm:mr-6'
               aria-label={t('titles.signup')}
             >
               <span className='mr-1 text-center font-semibold'>{t('main.start')}</span>

@@ -101,7 +101,7 @@ const AlertCard = ({
     <>
       <li
         onClick={() => openAlert(id)}
-        className='min-h-[120px] cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 font-mono hover:bg-gray-100 dark:border-slate-800/25 dark:bg-[#162032] dark:hover:bg-slate-800'
+        className='min-h-[120px] cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 dark:border-slate-800/25 dark:bg-[#162032] dark:hover:bg-slate-800'
       >
         <div className='px-4 py-4'>
           <div className='flex items-start justify-between'>
@@ -182,7 +182,7 @@ const AddAlert = ({ handleNewAlert, isLimitReached }: AddAlertProps) => {
         ) : (
           <PlusCircleIcon className='mx-auto h-12 w-12 text-gray-400 group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400' />
         )}
-        <span className='mt-2 block font-mono text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
+        <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
           {t('alert.add')}
         </span>
       </div>
@@ -282,10 +282,10 @@ const ProjectAlerts = () => {
             <XCircleIcon className='h-12 w-12 text-red-400' aria-hidden='true' />
             <div className='sm:ml-6'>
               <div className='max-w-prose sm:border-l sm:border-gray-200 sm:pl-6'>
-                <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl dark:text-gray-50'>
+                <h1 className='text-4xl font-extrabold text-gray-900 sm:text-5xl dark:text-gray-50'>
                   {t('apiNotifications.somethingWentWrong')}
                 </h1>
-                <p className='mt-4 text-2xl font-medium tracking-tight text-gray-700 dark:text-gray-200'>
+                <p className='mt-4 text-2xl font-medium text-gray-700 dark:text-gray-200'>
                   {t('apiNotifications.errorCode', { error })}
                 </p>
               </div>
@@ -328,10 +328,10 @@ const ProjectAlerts = () => {
               <BellRingIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
               <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>
             </div>
-            <p className='mt-2 font-mono text-sm whitespace-pre-wrap text-gray-100'>{t('dashboard.alertsDesc')}</p>
+            <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>{t('dashboard.alertsDesc')}</p>
             <Button
               onClick={handleNewAlert}
-              className='mt-6 rounded-md border border-transparent bg-white px-3 py-2 font-mono text-sm font-medium text-gray-700 hover:bg-indigo-50 md:px-4'
+              className='mt-6 rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-indigo-50 md:px-4'
               secondary
               large
             >

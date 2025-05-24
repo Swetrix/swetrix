@@ -48,7 +48,7 @@ const FunnelCard = ({ funnel, openFunnelSettings, deleteFunnel, loading, allowed
     >
       <div className='px-4 py-4'>
         <div className='flex items-center justify-between'>
-          <p className='truncate font-mono text-base font-semibold text-slate-900 dark:text-gray-50'>{funnel.name}</p>
+          <p className='truncate text-base font-semibold text-slate-900 dark:text-gray-50'>{funnel.name}</p>
           <div className='flex items-center gap-2'>
             <button
               type='button'
@@ -98,7 +98,7 @@ const AddFunnel = ({ openFunnelSettings }: AddFunnelProps) => {
     >
       <div>
         <PlusCircleIcon className='mx-auto h-12 w-12 text-gray-400 group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400' />
-        <span className='mt-2 block font-mono text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
+        <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
           {t('dashboard.newFunnel')}
         </span>
       </div>

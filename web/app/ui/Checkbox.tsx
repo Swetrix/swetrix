@@ -27,7 +27,7 @@ const Checkbox = ({ label, hint, name, onChange, checked, disabled, classes }: C
       >
         <CheckIcon className='hidden size-4 text-white group-data-[checked]:block dark:text-black' />
       </HeadlessCheckbox>
-      <Label className='cursor-pointer font-mono text-sm font-medium text-gray-900 dark:text-gray-200'>{label}</Label>
+      <Label className='cursor-pointer text-sm font-medium text-gray-900 dark:text-gray-200'>{label}</Label>
     </div>
     {hint ? (
       <Description className={cx('mt-1 text-sm text-gray-500 dark:text-gray-300', classes?.hint)}>{hint}</Description>

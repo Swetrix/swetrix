@@ -56,14 +56,14 @@ export const Pageflow = ({ pages, timeFormat, zoomedTimeRange }: PageflowProps) 
 
   if (zoomedTimeRange && _isEmpty(filteredPages)) {
     return (
-      <div className='my-4 py-8 text-center font-mono text-gray-800 dark:text-gray-300'>
+      <div className='my-4 py-8 text-center text-gray-800 dark:text-gray-300'>
         {t('project.noEventsForSelectedPeriod')}
       </div>
     )
   }
 
   return (
-    <div className='flow-root font-mono'>
+    <div className='flow-root'>
       <ul className='-mb-8'>
         {_map(filteredPages, ({ value, created, type, metadata }, index) => {
           const displayCreated = new Date(created).toLocaleDateString(language, {

@@ -33,6 +33,8 @@ import {
   DownloadIcon,
   SettingsIcon,
   BanIcon,
+  ChartColumnIcon,
+  ChartLineIcon,
 } from 'lucide-react'
 import React, { useState, useEffect, useMemo, useRef, useCallback, createContext, useContext } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
@@ -117,8 +119,6 @@ import { useTheme } from '~/providers/ThemeProvider'
 import Checkbox from '~/ui/Checkbox'
 import Dropdown from '~/ui/Dropdown'
 import FlatPicker from '~/ui/Flatpicker'
-import BarChart from '~/ui/icons/BarChart'
-import LineChart from '~/ui/icons/LineChart'
 import Loader from '~/ui/Loader'
 import Select from '~/ui/Select'
 import { trackCustom } from '~/utils/analytics'
@@ -2417,7 +2417,7 @@ const ViewProject = () => {
         />
       </div>
       <div className='hidden sm:block'>
-        <nav className='-mb-px flex space-x-4 overflow-x-auto font-mono' aria-label='Tabs'>
+        <nav className='-mb-px flex space-x-4 overflow-x-auto' aria-label='Tabs'>
           {_map(tabs, (tab) => {
             const isCurrent = tab.id === activeTab
 
@@ -2501,7 +2501,7 @@ const ViewProject = () => {
           })}
         >
           <TabsSelector />
-          <h2 className='mt-2 text-center font-mono text-xl font-bold break-words break-all text-gray-900 sm:text-left dark:text-gray-50'>
+          <h2 className='mt-2 text-center text-xl font-bold break-words break-all text-gray-900 sm:text-left dark:text-gray-50'>
             {project.name}
           </h2>
           <LockedDashboard />
@@ -2522,7 +2522,7 @@ const ViewProject = () => {
           })}
         >
           <TabsSelector />
-          <h2 className='mt-2 text-center font-mono text-xl font-bold break-words break-all text-gray-900 sm:text-left dark:text-gray-50'>
+          <h2 className='mt-2 text-center text-xl font-bold break-words break-all text-gray-900 sm:text-left dark:text-gray-50'>
             {project.name}
           </h2>
           <WaitingForAnEvent />
@@ -2547,7 +2547,7 @@ const ViewProject = () => {
           })}
         >
           <TabsSelector />
-          <h2 className='mt-2 text-center font-mono text-xl font-bold break-words break-all text-gray-900 sm:text-left dark:text-gray-50'>
+          <h2 className='mt-2 text-center text-xl font-bold break-words break-all text-gray-900 sm:text-left dark:text-gray-50'>
             {project.name}
           </h2>
           <WaitingForAnError />
@@ -2607,7 +2607,7 @@ const ViewProject = () => {
                   <>
                     <div className='mt-2 flex flex-col items-center justify-between lg:flex-row'>
                       <div className='flex flex-wrap items-center justify-center gap-x-5 gap-y-2'>
-                        <h2 className='font-mono text-xl font-bold break-words break-all text-gray-900 dark:text-gray-50'>
+                        <h2 className='text-xl font-bold break-words break-all text-gray-900 dark:text-gray-50'>
                           {/* If tab is funnels - then display a funnel name, otherwise a project name */}
                           {activeTab === PROJECT_TABS.funnels ? activeFunnel?.name : project.name}
                         </h2>
@@ -2794,50 +2794,35 @@ const ViewProject = () => {
                               />
                             ) : null}
                             <div
-                              className={cx(
-                                'space-x-2 border-gray-200 sm:mr-3 lg:border-x lg:px-3 dark:border-gray-600',
-                                {
-                                  hidden:
-                                    isPanelsDataEmpty ||
-                                    analyticsLoading ||
-                                    checkIfAllMetricsAreDisabled ||
-                                    activeTab === PROJECT_TABS.sessions ||
-                                    activeTab === PROJECT_TABS.errors,
-                                },
-                              )}
+                              className={cx({
+                                hidden:
+                                  isPanelsDataEmpty ||
+                                  analyticsLoading ||
+                                  checkIfAllMetricsAreDisabled ||
+                                  activeTab === PROJECT_TABS.sessions ||
+                                  activeTab === PROJECT_TABS.errors,
+                              })}
                             >
-                              <button
-                                type='button'
-                                title={t('project.barChart')}
-                                onClick={() => setChartTypeOnClick(chartTypes.bar)}
-                                className={cx(
-                                  'relative rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
-                                  {
-                                    'border border-gray-300 bg-white stroke-white dark:border-slate-800/50 dark:bg-slate-800 dark:stroke-slate-800':
-                                      chartType === chartTypes.bar,
-                                    'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200':
-                                      chartType !== chartTypes.bar,
-                                  },
-                                )}
-                              >
-                                <BarChart className='h-5 w-5 [&_path]:stroke-[3.5%]' />
-                              </button>
-                              <button
-                                type='button'
-                                title={t('project.lineChart')}
-                                onClick={() => setChartTypeOnClick(chartTypes.line)}
-                                className={cx(
-                                  'relative rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
-                                  {
-                                    'border border-gray-300 bg-white stroke-white dark:border-slate-800/50 dark:bg-slate-800 dark:stroke-slate-800':
-                                      chartType === chartTypes.line,
-                                    'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200':
-                                      chartType !== chartTypes.line,
-                                  },
-                                )}
-                              >
-                                <LineChart className='h-5 w-5 [&_path]:stroke-[3.5%]' />
-                              </button>
+                              {chartType === chartTypes.bar ? (
+                                <button
+                                  type='button'
+                                  title={t('project.lineChart')}
+                                  onClick={() => setChartTypeOnClick(chartTypes.line)}
+                                  className='relative rounded-md border border-gray-50/0 bg-gray-50 p-2 text-sm font-medium hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+                                >
+                                  <ChartLineIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
+                                </button>
+                              ) : null}
+                              {chartType === chartTypes.line ? (
+                                <button
+                                  type='button'
+                                  title={t('project.barChart')}
+                                  onClick={() => setChartTypeOnClick(chartTypes.bar)}
+                                  className='relative rounded-md border border-gray-50/0 bg-gray-50 p-2 text-sm font-medium hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+                                >
+                                  <ChartColumnIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
+                                </button>
+                              ) : null}
                             </div>
                           </>
                         ) : null}
@@ -2859,7 +2844,7 @@ const ViewProject = () => {
                               if (pairID === CHART_METRICS_MAPPING.customEvents) {
                                 if (_isEmpty(panelsData.customs)) {
                                   return (
-                                    <span className='flex cursor-not-allowed items-center px-4 py-2 tracking-tighter'>
+                                    <span className='flex cursor-not-allowed items-center px-4 py-2'>
                                       <BanIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
                                       {label}
                                     </span>
@@ -2868,13 +2853,13 @@ const ViewProject = () => {
 
                                 return (
                                   <Dropdown
-                                    menuItemsClassName='max-w-[300px] max-h-[300px] overflow-auto tracking-tighter'
+                                    menuItemsClassName='max-w-[300px] max-h-[300px] overflow-auto'
                                     items={chartMetricsCustomEvents}
                                     title={label}
                                     labelExtractor={(event) => (
                                       <Checkbox
                                         classes={{
-                                          label: cx('tracking-tighter', {
+                                          label: cx({
                                             hidden: analyticsLoading,
                                           }),
                                         }}
@@ -2895,7 +2880,7 @@ const ViewProject = () => {
                                         checked={event.active}
                                       />
                                     )}
-                                    buttonClassName='group-hover:bg-gray-200 dark:group-hover:bg-slate-700 px-4 py-2 inline-flex w-full bg-white text-sm font-medium tracking-tighter text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800'
+                                    buttonClassName='group-hover:bg-gray-200 dark:group-hover:bg-slate-700 px-4 py-2 inline-flex w-full bg-white text-sm font-medium text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800'
                                     keyExtractor={(event) => event.id}
                                     onSelect={(event, e) => {
                                       e?.stopPropagation()
@@ -2912,7 +2897,7 @@ const ViewProject = () => {
                               return (
                                 <Checkbox
                                   classes={{
-                                    label: cx('px-4 py-2 tracking-tighter', { hidden: analyticsLoading }),
+                                    label: cx('px-4 py-2', { hidden: analyticsLoading }),
                                   }}
                                   label={label}
                                   disabled={conflicted}
@@ -2923,7 +2908,7 @@ const ViewProject = () => {
                                 />
                               )
                             }}
-                            buttonClassName='!px-2.5 tracking-tighter'
+                            buttonClassName='!px-2.5'
                             selectItemClassName='group text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 block text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'
                             keyExtractor={(pair) => pair.id}
                             onSelect={({ id: pairID, conflicts }) => {
@@ -3092,7 +3077,7 @@ const ViewProject = () => {
                         />
                         {isActiveCompare && activeTab !== PROJECT_TABS.errors ? (
                           <>
-                            <div className='text-md mx-2 font-mono font-medium whitespace-pre-line text-gray-600 dark:text-gray-200'>
+                            <div className='text-md mx-2 font-medium whitespace-pre-line text-gray-600 dark:text-gray-200'>
                               vs
                             </div>
                             <Dropdown
@@ -3156,7 +3141,7 @@ const ViewProject = () => {
                           to={{
                             search: pureSearchParams,
                           }}
-                          className='flex items-center font-mono text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
+                          className='flex items-center text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
                         >
                           <ChevronLeftIcon className='mr-1 size-3' />
                           {t('project.backToFunnels')}
@@ -3166,7 +3151,7 @@ const ViewProject = () => {
                           title={t('project.refreshStats')}
                           onClick={refreshStats}
                           className={cx(
-                            'flex items-center font-mono text-sm text-gray-900 hover:text-gray-600 dark:text-gray-100 dark:hover:text-gray-300',
+                            'flex items-center text-sm text-gray-900 hover:text-gray-600 dark:text-gray-100 dark:hover:text-gray-300',
                             {
                               'cursor-not-allowed': authLoading || dataLoading,
                             },
@@ -3186,12 +3171,10 @@ const ViewProject = () => {
                       <BellRingIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
                       <p className='text-3xl font-bold'>{t('dashboard.alerts')}</p>
                     </div>
-                    <p className='mt-2 font-mono text-sm whitespace-pre-wrap text-gray-100'>
-                      {t('dashboard.alertsDesc')}
-                    </p>
+                    <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>{t('dashboard.alertsDesc')}</p>
                     <Link
                       to={routes.signup}
-                      className='mt-6 rounded-md border border-transparent bg-white px-3 py-2 font-mono text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
+                      className='mt-6 rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
                       aria-label={t('titles.signup')}
                     >
                       {t('common.getStarted')}
@@ -3221,21 +3204,19 @@ const ViewProject = () => {
                       <FilterIcon className='mr-2 h-8 w-8' strokeWidth={1.5} />
                       <p className='text-3xl font-bold'>{t('dashboard.funnels')}</p>
                     </div>
-                    <p className='mt-2 font-mono text-sm whitespace-pre-wrap text-gray-100'>
-                      {t('dashboard.funnelsDesc')}
-                    </p>
+                    <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>{t('dashboard.funnelsDesc')}</p>
                     {isAuthenticated ? (
                       <button
                         type='button'
                         onClick={() => setIsNewFunnelOpened(true)}
-                        className='mt-6 rounded-md border border-transparent bg-white px-3 py-2 font-mono text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
+                        className='mt-6 rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
                       >
                         {t('dashboard.newFunnel')}
                       </button>
                     ) : (
                       <Link
                         to={routes.signup}
-                        className='mt-6 rounded-md border border-transparent bg-white px-3 py-2 font-mono text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
+                        className='mt-6 rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
                         aria-label={t('titles.signup')}
                       >
                         {t('common.getStarted')}
@@ -3257,7 +3238,7 @@ const ViewProject = () => {
                         title={t('project.loadMore')}
                         onClick={() => loadSessions()}
                         className={cx(
-                          'relative mx-auto mt-2 flex items-center rounded-md border border-gray-50/0 bg-gray-50 p-2 font-mono text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+                          'relative mx-auto mt-2 flex items-center rounded-md border border-gray-50/0 bg-gray-50 p-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
                           {
                             'cursor-not-allowed opacity-50': sessionsLoading || sessionsLoading === null,
                             hidden: sessionsLoading && _isEmpty(sessions),
@@ -3277,7 +3258,7 @@ const ViewProject = () => {
                         to={{
                           search: pureSearchParams,
                         }}
-                        className='flex items-center font-mono text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
+                        className='flex items-center text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
                       >
                         <ChevronLeftIcon className='mr-1 size-3' />
                         {t('project.backToSessions')}
@@ -3287,7 +3268,7 @@ const ViewProject = () => {
                         title={t('project.refreshStats')}
                         onClick={refreshStats}
                         className={cx(
-                          'flex items-center font-mono text-sm text-gray-900 hover:text-gray-600 dark:text-gray-100 dark:hover:text-gray-300',
+                          'flex items-center text-sm text-gray-900 hover:text-gray-600 dark:text-gray-100 dark:hover:text-gray-300',
                           {
                             'cursor-not-allowed': authLoading || dataLoading || sessionLoading,
                           },
@@ -3346,7 +3327,7 @@ const ViewProject = () => {
                         title={t('project.loadMore')}
                         onClick={() => loadErrors()}
                         className={cx(
-                          'relative mx-auto mt-2 flex items-center rounded-md border border-gray-50/0 bg-gray-50 p-2 font-mono text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+                          'relative mx-auto mt-2 flex items-center rounded-md border border-gray-50/0 bg-gray-50 p-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
                           {
                             'cursor-not-allowed opacity-50': errorsLoading,
                             hidden: errorsLoading && _isEmpty(errors),
@@ -3366,7 +3347,7 @@ const ViewProject = () => {
                         to={{
                           search: pureSearchParams,
                         }}
-                        className='flex items-center font-mono text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
+                        className='flex items-center text-sm text-gray-900 underline decoration-dashed hover:decoration-solid dark:text-gray-100'
                       >
                         <ChevronLeftIcon className='mr-1 size-3' />
                         {t('project.backToErrors')}
@@ -3376,7 +3357,7 @@ const ViewProject = () => {
                         title={t('project.refreshStats')}
                         onClick={refreshStats}
                         className={cx(
-                          'flex items-center font-mono text-sm text-gray-900 hover:text-gray-600 dark:text-gray-100 dark:hover:text-gray-300',
+                          'flex items-center text-sm text-gray-900 hover:text-gray-600 dark:text-gray-100 dark:hover:text-gray-300',
                           {
                             'cursor-not-allowed': authLoading || dataLoading || errorLoading,
                           },

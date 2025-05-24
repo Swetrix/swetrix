@@ -43,16 +43,16 @@ const CheckYourInbox = () => {
           <EnvelopeIcon className='mb-2 -ml-1.5 h-12 w-auto text-indigo-500 sm:m-0 sm:h-24 dark:text-indigo-600' />
           <div className='sm:ml-6'>
             <div className='sm:border-l sm:border-gray-200 sm:pl-6'>
-              <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl dark:text-gray-50'>
+              <h1 className='text-4xl font-extrabold text-gray-900 sm:text-5xl dark:text-gray-50'>
                 {t('auth.confirm.title')}
               </h1>
-              <p className='mt-1 max-w-prose font-mono text-base whitespace-pre-line text-gray-700 dark:text-gray-300'>
+              <p className='mt-1 max-w-prose text-base whitespace-pre-line text-gray-700 dark:text-gray-300'>
                 {message}
               </p>
-              <p className='mt-4 max-w-prose font-mono text-sm whitespace-pre-line text-gray-700 dark:text-gray-300'>
+              <p className='mt-4 max-w-prose text-sm whitespace-pre-line text-gray-700 dark:text-gray-300'>
                 {t('auth.confirm.spam')}
               </p>
-              <p className='max-w-prose font-mono text-sm whitespace-pre-line text-gray-700 dark:text-gray-300'>
+              <p className='max-w-prose text-sm whitespace-pre-line text-gray-700 dark:text-gray-300'>
                 <Trans
                   t={t}
                   i18nKey='auth.confirm.wrongEmail'
