@@ -1418,7 +1418,7 @@ const typeNameMapping = (t: typeof i18next.t) => ({
   'ev:value': t('project.metamapping.ev.value'),
 })
 
-const iconClassName = 'w-6 h-6'
+const iconClassName = 'w-5 h-5'
 const panelIconMapping = {
   cc: <MapPinIcon className={iconClassName} strokeWidth={1.5} />,
   pg: <FileTextIcon className={iconClassName} strokeWidth={1.5} />,

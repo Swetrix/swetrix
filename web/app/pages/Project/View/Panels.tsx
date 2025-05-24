@@ -141,68 +141,98 @@ const PanelContainer = ({
       </h3>
       <div className='flex'>
         {checkIfBarsNeeded(type) || checkCustomTabs(type, customTabs) ? (
-          <AlignJustifyIcon
-            className={cx(iconClassName, 'cursor-pointer', {
-              'text-slate-900 dark:text-gray-50': activeFragment === 0,
-              'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 1,
-            })}
+          <button
+            type='button'
             onClick={() => setActiveFragment(0)}
-            strokeWidth={1.5}
-          />
+            aria-label='Switch to bar view'
+            className='rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
+          >
+            <AlignJustifyIcon
+              className={cx(iconClassName, {
+                'text-slate-900 dark:text-gray-50': activeFragment === 0,
+                'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 1,
+              })}
+              strokeWidth={1.5}
+            />
+          </button>
         ) : null}
 
         {/* if it is a Country tab  */}
         {type === 'cc' || type === 'rg' || type === 'ct' ? (
           <>
-            <MapIcon
-              className={cx(iconClassName, 'ml-2 cursor-pointer', {
-                'text-slate-900 dark:text-gray-50': activeFragment === 1,
-                'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
-              })}
+            <button
+              type='button'
               onClick={() => setActiveFragment(1)}
-              strokeWidth={1.5}
-            />
-            <MaximizeIcon
-              className={cx(iconClassName, 'ml-2 cursor-pointer text-slate-400 dark:text-slate-500', {
+              aria-label='Switch to map view'
+              className='ml-1 rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
+            >
+              <MapIcon
+                className={cx(iconClassName, {
+                  'text-slate-900 dark:text-gray-50': activeFragment === 1,
+                  'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
+                })}
+                strokeWidth={1.5}
+              />
+            </button>
+            <button
+              type='button'
+              onClick={onExpandClick}
+              aria-label='Expand view'
+              className={cx('ml-1 rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700', {
                 hidden: activeFragment === 0,
               })}
-              onClick={onExpandClick}
-              strokeWidth={1.5}
-            />
+            >
+              <MaximizeIcon className={cx(iconClassName, 'text-slate-400 dark:text-slate-500')} strokeWidth={1.5} />
+            </button>
           </>
         ) : null}
 
         {type === 'pg' && activeTab !== PROJECT_TABS.performance && activeTab !== PROJECT_TABS.errors ? (
-          <WorkflowIcon
-            className={cx(iconClassName, 'ml-2 cursor-pointer', {
-              'text-slate-900 dark:text-gray-50': activeFragment === 1,
-              'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
-            })}
+          <button
+            type='button'
             onClick={onExpandClick}
-            strokeWidth={1.5}
-          />
+            aria-label='View user flow'
+            className='ml-1 rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
+          >
+            <WorkflowIcon
+              className={cx(iconClassName, {
+                'text-slate-900 dark:text-gray-50': activeFragment === 1,
+                'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
+              })}
+              strokeWidth={1.5}
+            />
+          </button>
         ) : null}
 
         {/* if this tab using Circle showing stats panel */}
         {type === 'ce' || type === 'os' || type === 'br' || type === 'dv' ? (
-          <ChartPieIcon
-            className={cx(iconClassName, 'ml-2 cursor-pointer', {
-              'text-slate-900 dark:text-gray-50': activeFragment === 1,
-              'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
-            })}
+          <button
+            type='button'
             onClick={() => setActiveFragment(1)}
-            strokeWidth={1.5}
-          />
+            aria-label='Switch to pie chart view'
+            className='ml-1 rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
+          >
+            <ChartPieIcon
+              className={cx(iconClassName, {
+                'text-slate-900 dark:text-gray-50': activeFragment === 1,
+                'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
+              })}
+              strokeWidth={1.5}
+            />
+          </button>
         ) : null}
 
         {/* if it is a 'Custom events' tab  */}
         {type === 'ce' || type === 'props' ? (
           <>
-            <MaximizeIcon
-              className={cx(iconClassName, 'ml-2 cursor-pointer text-slate-400 dark:text-slate-500')}
+            <button
+              type='button'
               onClick={onExpandClick}
-              strokeWidth={1.5}
-            />
+              aria-label='Expand view'
+              className='ml-1 rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
+            >
+              <MaximizeIcon className={cx(iconClassName, 'text-slate-400 dark:text-slate-500')} strokeWidth={1.5} />
+            </button>
           </>
         ) : null}
 
@@ -219,15 +249,21 @@ const PanelContainer = ({
               }
 
               return (
-                <PuzzleIcon
+                <button
+                  type='button'
                   key={`${extensionID}-${panelID}`}
-                  className={cx(iconClassName, 'ml-2 cursor-pointer', {
-                    'text-slate-900 dark:text-gray-50': activeFragment === extensionID,
-                    'text-slate-400 dark:text-slate-500': activeFragment === 0,
-                  })}
                   onClick={onClick}
-                  strokeWidth={1.5}
-                />
+                  aria-label='Switch to custom tab'
+                  className='ml-1 rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
+                >
+                  <PuzzleIcon
+                    className={cx(iconClassName, {
+                      'text-slate-900 dark:text-gray-50': activeFragment === extensionID,
+                      'text-slate-400 dark:text-slate-500': activeFragment === 0,
+                    })}
+                    strokeWidth={1.5}
+                  />
+                </button>
               )
             })}
           </>
