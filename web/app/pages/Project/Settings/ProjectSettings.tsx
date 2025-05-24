@@ -184,7 +184,7 @@ const ModalMessage = ({
             <div className='h-2' />
             {filterType && !_isEmpty(filterList) ? (
               <MultiSelect
-                className='max-w-max'
+                className='max-w-96'
                 items={searchList}
                 labelExtractor={(item) => {
                   if (filterType === 'cc') {
