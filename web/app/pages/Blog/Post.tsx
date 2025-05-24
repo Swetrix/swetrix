@@ -45,11 +45,11 @@ export default function PostSlug() {
       <div className='mx-auto max-w-[52rem] px-4 pb-28 sm:px-6 md:px-8 lg:max-w-6xl xl:px-12'>
         <div className='overflow-hidden'>
           <div className='px-4 sm:px-6 md:px-8'>
-            <div className='mx-auto max-w-3xl pb-28'>
+            <div className='mx-auto max-w-4xl pb-28'>
               <main className='bg-gray-50 dark:bg-slate-900'>
                 <Link
                   to='/blog'
-                  className='group mt-10 mb-6 flex font-mono text-sm leading-6 font-semibold text-slate-700 uppercase hover:text-slate-900 dark:text-slate-200 dark:hover:text-white'
+                  className='group mt-10 mb-6 flex text-sm leading-6 font-semibold text-slate-700 uppercase hover:text-slate-900 dark:text-slate-200 dark:hover:text-white'
                 >
                   <svg
                     viewBox='0 -9 3 24'
@@ -67,7 +67,7 @@ export default function PostSlug() {
                   {t('common.goBack')}
                 </Link>
                 <article className='relative'>
-                  <div className='mb-2 font-mono text-sm leading-6 uppercase'>
+                  <div className='mb-2 font-mono text-sm leading-6 font-medium tracking-wide uppercase'>
                     <dl>
                       <dt className='sr-only'>Date</dt>
                       <dd className='text-slate-700 dark:text-slate-400'>
@@ -75,21 +75,28 @@ export default function PostSlug() {
                       </dd>
                     </dl>
                   </div>
-                  <h1 className='text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl dark:text-slate-200'>
+                  <h1 className='inline-block max-w-3xl text-[2.5rem]/10 tracking-tight text-pretty text-gray-950 max-lg:font-medium lg:text-6xl dark:text-gray-200'>
                     {post.title}
                   </h1>
                   <div className='mt-6'>
                     <ul className='-mx-5 -mt-6 flex flex-wrap text-sm leading-6'>
-                      <li className='mt-6 flex items-center px-5 font-medium whitespace-nowrap'>
-                        <div className='text-sm leading-4'>
+                      <li className='mt-6 flex items-center gap-4 px-5 font-medium whitespace-nowrap'>
+                        {post?.nickname ? (
+                          <img
+                            className='size-12 rounded-full'
+                            src={`/assets/blog-authors/${post.nickname}.png`}
+                            alt=''
+                          />
+                        ) : null}
+                        <div className='flex flex-col gap-0.5 text-sm leading-4'>
                           {post?.author ? (
-                            <div className='text-slate-900 dark:text-slate-200'>{post.author}</div>
+                            <div className='font-semibold text-slate-900 dark:text-slate-200'>{post.author}</div>
                           ) : null}
                           {post?.nickname ? (
                             <div className='mt-1'>
                               <a
                                 href={`https://github.com/${post.nickname}`}
-                                className='text-indigo-600 dark:text-indigo-400'
+                                className='text-indigo-600 hover:underline dark:text-indigo-400'
                               >
                                 @{post.nickname}
                               </a>
@@ -99,7 +106,7 @@ export default function PostSlug() {
                       </li>
                     </ul>
                   </div>
-                  <div className='prose prose-slate dark:prose-invert mt-6'>
+                  <div className='prose prose-slate dark:prose-invert mt-6 max-w-4xl'>
                     <div dangerouslySetInnerHTML={{ __html: post.html }} />
                   </div>
                 </article>
