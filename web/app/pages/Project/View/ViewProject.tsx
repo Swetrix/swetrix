@@ -2793,51 +2793,45 @@ const ViewProject = () => {
                                 headless
                               />
                             ) : null}
-                            <div
-                              className={cx(
-                                'space-x-2 border-gray-200 sm:mr-3 lg:border-x lg:px-3 dark:border-gray-600',
-                                {
-                                  hidden:
-                                    isPanelsDataEmpty ||
-                                    analyticsLoading ||
-                                    checkIfAllMetricsAreDisabled ||
-                                    activeTab === PROJECT_TABS.sessions ||
-                                    activeTab === PROJECT_TABS.errors,
-                                },
-                              )}
+                            {/* <button
+                              type='button'
+                              title={t('project.refreshStats')}
+                              onClick={refreshStats}
+                              className='relative rounded-md border border-gray-50/0 bg-gray-50 p-2 text-sm font-medium hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
                             >
-                              <button
-                                type='button'
-                                title={t('project.barChart')}
-                                onClick={() => setChartTypeOnClick(chartTypes.bar)}
-                                className={cx(
-                                  'relative rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
-                                  {
-                                    'border border-gray-300 bg-white stroke-white dark:border-slate-800/50 dark:bg-slate-800 dark:stroke-slate-800':
-                                      chartType === chartTypes.bar,
-                                    'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200':
-                                      chartType !== chartTypes.bar,
-                                  },
-                                )}
-                              >
-                                <BarChart className='h-5 w-5 [&_path]:stroke-[3.5%]' />
-                              </button>
-                              <button
-                                type='button'
-                                title={t('project.lineChart')}
-                                onClick={() => setChartTypeOnClick(chartTypes.line)}
-                                className={cx(
-                                  'relative rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
-                                  {
-                                    'border border-gray-300 bg-white stroke-white dark:border-slate-800/50 dark:bg-slate-800 dark:stroke-slate-800':
-                                      chartType === chartTypes.line,
-                                    'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200':
-                                      chartType !== chartTypes.line,
-                                  },
-                                )}
-                              >
-                                <LineChart className='h-5 w-5 [&_path]:stroke-[3.5%]' />
-                              </button>
+                              <RotateCw className='h-5 w-5 text-gray-700 dark:text-gray-50' />
+                            </button> */}
+
+                            <div
+                              className={cx({
+                                hidden:
+                                  isPanelsDataEmpty ||
+                                  analyticsLoading ||
+                                  checkIfAllMetricsAreDisabled ||
+                                  activeTab === PROJECT_TABS.sessions ||
+                                  activeTab === PROJECT_TABS.errors,
+                              })}
+                            >
+                              {chartType === chartTypes.bar ? (
+                                <button
+                                  type='button'
+                                  title={t('project.lineChart')}
+                                  onClick={() => setChartTypeOnClick(chartTypes.line)}
+                                  className='relative rounded-md border border-gray-50/0 bg-gray-50 p-2 text-sm font-medium hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+                                >
+                                  <LineChart className='h-5 w-5 [&_path]:stroke-[3.5%]' />
+                                </button>
+                              ) : null}
+                              {chartType === chartTypes.line ? (
+                                <button
+                                  type='button'
+                                  title={t('project.barChart')}
+                                  onClick={() => setChartTypeOnClick(chartTypes.bar)}
+                                  className='relative rounded-md border border-gray-50/0 bg-gray-50 p-2 text-sm font-medium hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
+                                >
+                                  <BarChart className='h-5 w-5 [&_path]:stroke-[3.5%]' />
+                                </button>
+                              ) : null}
                             </div>
                           </>
                         ) : null}
