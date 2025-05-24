@@ -125,7 +125,7 @@ const Modal = ({
               <div className='mt-2 text-sm whitespace-pre-line text-gray-600 dark:text-gray-200'>{message}</div>
             </div>
           </div>
-          <div className='px-4 py-3 font-mono sm:flex sm:flex-row-reverse sm:px-0 sm:pb-0'>
+          <div className='px-4 py-3 sm:flex sm:flex-row-reverse sm:px-0 sm:pb-0'>
             {customButtons}
             {submitText ? (
               <button

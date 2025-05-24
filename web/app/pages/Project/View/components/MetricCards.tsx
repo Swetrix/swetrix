@@ -72,14 +72,12 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   classes,
 }) => (
   <div className={cx('flex flex-col', classes?.container)}>
-    <div
-      className={cx('font-mono text-4xl font-bold whitespace-nowrap text-slate-900 dark:text-gray-50', classes?.value)}
-    >
+    <div className={cx('text-4xl font-bold whitespace-nowrap text-slate-900 dark:text-gray-50', classes?.value)}>
       {valueMapper ? valueMapper(value, 'main') : value}
     </div>
     <div
       className={cx(
-        'flex items-center font-mono text-sm font-bold whitespace-nowrap',
+        'flex items-center text-sm font-bold whitespace-nowrap',
         {
           'space-x-2': _isNumber(change),
         },
@@ -116,7 +114,7 @@ export const MetricCardSelect = ({ values, valueMapper, selectLabel, classes }: 
   }
 
   return (
-    <div className={cx('flex flex-col font-mono', classes?.container)}>
+    <div className={cx('flex flex-col', classes?.container)}>
       <div className={cx('text-4xl font-bold whitespace-nowrap text-slate-900 dark:text-gray-50', classes?.value)}>
         {valueMapper ? valueMapper(values[selected], selected) : values[selected].value}
       </div>

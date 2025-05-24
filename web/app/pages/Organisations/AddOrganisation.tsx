@@ -23,7 +23,7 @@ export const AddOrganisation = ({ onClick, sitesCount }: AddOrganisationProps) =
     >
       <div>
         <BuildingOffice2Icon className='mx-auto h-12 w-12 text-gray-400 group-hover:text-gray-500 dark:text-gray-200 group-hover:dark:text-gray-400' />
-        <span className='mt-2 block text-sm font-semibold tracking-tight text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
+        <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
           {t('organisations.new')}
         </span>
       </div>

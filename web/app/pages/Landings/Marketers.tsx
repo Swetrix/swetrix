@@ -63,10 +63,10 @@ const Marketers = () => {
                   }}
                 />
               </h1>
-              <p className='mx-auto mt-4 max-w-6xl text-center font-mono text-base leading-8 text-slate-900 sm:text-xl lg:text-lg xl:text-lg dark:text-slate-300'>
+              <p className='mx-auto mt-4 max-w-6xl text-center text-base leading-8 text-slate-900 sm:text-xl lg:text-lg xl:text-lg dark:text-slate-300'>
                 {t('marketers.description')}
               </p>
-              <div className='mt-10 flex flex-col items-center justify-center font-mono sm:flex-row'>
+              <div className='mt-10 flex flex-col items-center justify-center sm:flex-row'>
                 <Link
                   to={routesPath.signup}
                   className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 sm:mr-6 sm:max-w-[210px] dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600'
@@ -87,7 +87,7 @@ const Marketers = () => {
               </div>
               <a
                 href={BOOK_A_CALL_URL}
-                className='mx-auto mt-8 flex max-w-max items-center border-0 font-mono font-bold text-slate-900 hover:underline dark:text-gray-100'
+                className='mx-auto mt-8 flex max-w-max items-center border-0 font-bold text-slate-900 hover:underline dark:text-gray-100'
                 target='_blank'
                 rel='noopener noreferrer'
                 aria-label={`${t('common.bookACall')} (opens in a new tab)`}
@@ -120,7 +120,7 @@ const Marketers = () => {
           <div key={item.name} className='mb-10 text-slate-900 last:mb-0 dark:text-white'>
             <h2 className='mb-5 text-4xl font-extrabold'>{item.name}</h2>
             {_map(item.desc, (descText) => (
-              <p key={descText} className='mb-5 font-mono text-lg'>
+              <p key={descText} className='mb-5 text-lg'>
                 <Trans
                   t={t}
                   components={{

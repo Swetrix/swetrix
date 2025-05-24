@@ -93,7 +93,7 @@ export const ComparisonTable = ({ className }: ComparisonTableProps) => {
   const { t } = useTranslation('common')
 
   return (
-    <div className={cx('py-20 font-mono text-lg tracking-tight text-gray-50', className)}>
+    <div className={cx('py-20 text-lg text-gray-50', className)}>
       <div className='mt-2 flex flex-col'>
         <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8'>
           <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>

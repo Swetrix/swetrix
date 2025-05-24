@@ -29,9 +29,9 @@ const Teammate = ({ photo, name, role, socials, desc }: TeammateProps) => (
         style={{ aspectRatio: '1 / 1' }}
       />
     </div>
-    <div className='mt-5 mb-4 text-center font-mono md:mt-0 md:mb-0 md:w-3/5 md:text-start'>
-      <p className='mt-2 text-3xl font-bold tracking-tight text-gray-900 lg:mt-0 dark:text-gray-50'>{name}</p>
-      <p className='text-xl tracking-tight text-gray-900 dark:text-gray-50'>{role}</p>
+    <div className='mt-5 mb-4 text-center md:mt-0 md:mb-0 md:w-3/5 md:text-start'>
+      <p className='mt-2 text-3xl font-bold text-gray-900 lg:mt-0 dark:text-gray-50'>{name}</p>
+      <p className='text-xl text-gray-900 dark:text-gray-50'>{role}</p>
       <div className='mt-2 flex justify-center space-x-4 md:justify-start'>
         {_map(socials, (value, key) => (
           <a
@@ -48,7 +48,7 @@ const Teammate = ({ photo, name, role, socials, desc }: TeammateProps) => (
           </a>
         ))}
       </div>
-      <p className='mt-2 text-lg tracking-tight whitespace-pre-line text-gray-900 lg:mt-5 dark:text-gray-50'>{desc}</p>
+      <p className='mt-2 text-lg whitespace-pre-line text-gray-900 lg:mt-5 dark:text-gray-50'>{desc}</p>
     </div>
   </div>
 )
@@ -91,10 +91,10 @@ const About = () => (
   <div>
     <div className='min-h-min-footer bg-gray-50 dark:bg-slate-900'>
       <div className='mx-auto max-w-7xl px-4 pt-12 pb-16 whitespace-pre-line sm:px-6 lg:px-8'>
-        <h1 className='text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>
+        <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50'>
           We're changing the way web analytics is done
         </h1>
-        <p className='mt-2 text-lg tracking-tight text-gray-900 dark:text-gray-50'>
+        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50'>
           Swetrix was launched in August 2021 as a project that focuses on user privacy and transparency, while at the
           same time offering the same functionality as competitors like Google Analytics.
           <br />
@@ -117,7 +117,7 @@ const About = () => (
           transparency.
         </p>
 
-        <h2 className='mt-6 text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>Meet our team</h2>
+        <h2 className='mt-6 text-3xl font-bold text-gray-900 dark:text-gray-50'>Meet our team</h2>
 
         <div className='divide-y divide-gray-300/80 dark:divide-slate-500/50'>
           {_map(team, (el) => (
@@ -126,7 +126,7 @@ const About = () => (
         </div>
 
         <hr className='mt-10 border-gray-200 dark:border-gray-600' />
-        <p className='mt-2 font-mono text-lg tracking-tight text-gray-900 dark:text-gray-50'>
+        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50'>
           If you have read this far, why not&nbsp;
           <a
             href={`mailto:${CONTACT_EMAIL}`}

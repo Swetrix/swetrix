@@ -35,7 +35,7 @@ export const AddProject = ({ onClick, sitesCount, viewMode }: AddProjectProps) =
             viewMode === 'list' ? 'mr-2' : 'mx-auto',
           )}
         />
-        <span className='mt-2 block font-mono text-sm font-semibold tracking-tight text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
+        <span className='mt-2 block text-sm font-semibold text-gray-900 dark:text-gray-50 group-hover:dark:text-gray-400'>
           {t('dashboard.newProject')}
         </span>
       </div>

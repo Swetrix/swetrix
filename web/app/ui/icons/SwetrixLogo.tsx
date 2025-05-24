@@ -27,13 +27,11 @@ const SwetrixLogo = ({ className, lazy, theme: themeOverride }: SwetrixLogoProps
         loading={lazy ? 'lazy' : 'eager'}
       />
       <div className='flex flex-col'>
-        <span
-          className={cx('font-mono text-2xl leading-5 font-bold', theme === 'dark' ? 'text-white' : 'text-indigo-950')}
-        >
+        <span className={cx('text-2xl leading-5 font-bold', theme === 'dark' ? 'text-white' : 'text-indigo-950')}>
           Swetrix
         </span>
         {isSelfhosted ? (
-          <span className={cx('font-mono text-xs font-semibold', theme === 'dark' ? 'text-white' : 'text-indigo-600')}>
+          <span className={cx('text-xs font-semibold', theme === 'dark' ? 'text-white' : 'text-indigo-600')}>
             {t('common.communityEdition')}
           </span>
         ) : null}

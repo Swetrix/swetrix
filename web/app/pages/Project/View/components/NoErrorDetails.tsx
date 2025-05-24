@@ -11,7 +11,7 @@ const NoErrorDetails = () => {
           <BugIcon className='mb-2 -ml-1.5 h-12 w-12 sm:m-0 sm:h-20 sm:w-20' />
           <div className='sm:ml-6'>
             <div className='sm:border-l sm:border-gray-200 sm:pl-6'>
-              <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl dark:text-gray-50'>
+              <h1 className='text-4xl font-extrabold text-gray-900 sm:text-5xl dark:text-gray-50'>
                 {t('project.noErrorDetails')}
               </h1>
               <p className='mt-1 max-w-prose text-base whitespace-pre-line text-gray-700 dark:text-gray-300'>

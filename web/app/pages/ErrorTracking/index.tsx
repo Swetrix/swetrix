@@ -91,7 +91,7 @@ const ErrorTracking = () => {
                     }}
                   />
                 </h1>
-                <div className='mt-2 mb-2 flex items-center overflow-hidden font-mono sm:text-xl lg:text-lg xl:text-lg'>
+                <div className='mt-2 mb-2 flex items-center overflow-hidden sm:text-xl lg:text-lg xl:text-lg'>
                   <p className='rounded-full bg-indigo-500/10 px-3 py-1 text-center text-sm leading-6 font-semibold text-indigo-600 ring-1 ring-indigo-500/20 ring-inset dark:text-indigo-400'>
                     Latest news
                   </p>
@@ -115,10 +115,10 @@ const ErrorTracking = () => {
                     </ClientOnly>
                   )}
                 </div>
-                <p className='font-mono text-base leading-8 text-slate-900 sm:text-xl lg:text-lg xl:text-lg dark:text-slate-300'>
+                <p className='text-base leading-8 text-slate-900 sm:text-xl lg:text-lg xl:text-lg dark:text-slate-300'>
                   {t('errors.description')}
                 </p>
-                <div className='mt-10 flex flex-col items-center font-mono sm:flex-row'>
+                <div className='mt-10 flex flex-col items-center sm:flex-row'>
                   <Link
                     to={routesPath.signup}
                     className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 sm:mr-6 sm:max-w-[210px] dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600'
@@ -182,7 +182,7 @@ const ErrorTracking = () => {
 
         <div className='mx-auto mt-12 max-w-7xl bg-white px-4 pb-16 whitespace-pre-line dark:bg-slate-900'>
           <h2 className='text-4xl font-extrabold text-slate-900 dark:text-white'>{t('errors.fast.title')}</h2>
-          <p className='mt-6 font-mono text-lg text-gray-900 dark:text-gray-50'>
+          <p className='mt-6 text-lg text-gray-900 dark:text-gray-50'>
             <Trans
               t={t}
               i18nKey='errors.fast.desc'
@@ -208,7 +208,7 @@ const ErrorTracking = () => {
               }}
             />
           </p>
-          <ul className='mt-2 list-inside list-disc font-mono text-lg text-gray-900 dark:text-gray-50'>
+          <ul className='mt-2 list-inside list-disc text-lg text-gray-900 dark:text-gray-50'>
             {_map(t('errors.fast.list', { returnObjects: true }), (item) => (
               <li key={item} className='mb-2'>
                 {item}
@@ -217,12 +217,12 @@ const ErrorTracking = () => {
           </ul>
 
           <h2 className='mt-10 text-4xl font-extrabold text-slate-900 dark:text-white'>{t('errors.track.title')}</h2>
-          <p className='mt-6 font-mono text-lg text-gray-900 dark:text-gray-50'>{t('errors.track.desc')}</p>
+          <p className='mt-6 text-lg text-gray-900 dark:text-gray-50'>{t('errors.track.desc')}</p>
 
           <h2 className='mt-10 text-4xl font-extrabold text-slate-900 dark:text-white'>
             {t('performance.privacy.title')}
           </h2>
-          <p className='mt-6 font-mono text-lg text-gray-900 dark:text-gray-50'>{t('performance.privacy.desc')}</p>
+          <p className='mt-6 text-lg text-gray-900 dark:text-gray-50'>{t('performance.privacy.desc')}</p>
         </div>
 
         {/* For now let's hide Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}

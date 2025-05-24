@@ -406,48 +406,44 @@ const OpenStartup = () => {
   return (
     <div className='min-h-page bg-gray-50 dark:bg-slate-900'>
       <div className='mx-auto w-11/12 px-4 pt-12 pb-16 whitespace-pre-line sm:px-6 md:w-4/5 lg:px-8'>
-        <h1 className='text-4xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>{t('titles.open')}</h1>
+        <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50'>{t('titles.open')}</h1>
 
-        <p className='mt-2 text-lg tracking-tight text-gray-900 dark:text-gray-50'>{t('open.desc')}</p>
+        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50'>{t('open.desc')}</p>
 
-        <p className='mt-2 text-lg tracking-tight text-gray-900 dark:text-gray-50'>{t('open.updated')}</p>
+        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50'>{t('open.updated')}</p>
 
-        <h2 className='mt-8 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>
-          {t('open.finance.title')}
-        </h2>
+        <h2 className='mt-8 text-2xl font-bold text-gray-900 dark:text-gray-50'>{t('open.finance.title')}</h2>
 
-        <p className='mt-2 text-lg tracking-tight text-gray-900 dark:text-gray-50'>{t('open.finance.desc')}</p>
+        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50'>{t('open.finance.desc')}</p>
 
         <div className='mt-4 h-80' id='open-startup' />
 
-        <h2 className='mt-8 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50'>
-          {t('open.usage.title')}
-        </h2>
+        <h2 className='mt-8 text-2xl font-bold text-gray-900 dark:text-gray-50'>{t('open.usage.title')}</h2>
 
-        <p className='mt-2 text-lg tracking-tight text-gray-900 dark:text-gray-50'>{t('open.usage.desc')}</p>
+        <p className='mt-2 text-lg text-gray-900 dark:text-gray-50'>{t('open.usage.desc')}</p>
 
-        <p className='text-md mt-2 tracking-tight text-gray-900 dark:text-gray-50'>
+        <p className='text-md mt-2 text-gray-900 dark:text-gray-50'>
           {t('main.users')}
           {': '}
           {users[0]}
           {users[1] ? <span className='text-gray-900 dark:text-indigo-200'>{users[1]}+</span> : null}
         </p>
 
-        <p className='text-md mt-2 tracking-tight text-gray-900 dark:text-gray-50'>
+        <p className='text-md mt-2 text-gray-900 dark:text-gray-50'>
           {t('main.websites')}
           {': '}
           {websites[0]}
           {websites[1] ? <span className='text-gray-900 dark:text-indigo-200'>{websites[1]}+</span> : null}
         </p>
 
-        <p className='text-md mt-2 tracking-tight text-gray-900 dark:text-gray-50'>
+        <p className='text-md mt-2 text-gray-900 dark:text-gray-50'>
           {t('main.pageviews')}
           {': '}
           {events[0]}
           {events[1] ? <span className='text-gray-900 dark:text-indigo-200'>{events[1]}+</span> : null}
         </p>
 
-        <p className='mt-2 text-lg tracking-tight text-gray-900 dark:text-gray-50'>
+        <p className='text-md mt-2 text-gray-900 dark:text-gray-50'>
           <Trans
             t={t}
             i18nKey='open.usage.live'

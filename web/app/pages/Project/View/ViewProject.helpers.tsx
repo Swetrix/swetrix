@@ -604,7 +604,7 @@ const getSettings = (
         }
 
         if (_isEmpty(compareChart)) {
-          return `<ul class='font-mono tracking-tighter bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
+          return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
           <li class='font-semibold'>${
             timeFormat === TimeFormat['24-hour']
               ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
@@ -641,7 +641,7 @@ const getSettings = (
         }
 
         return `
-        <ul class='font-mono tracking-tighter bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
+        <ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
           ${_map(item, (el: { id: string; index: number; name: string; value: string; x: Date }) => {
             const { id, index, name, value, x } = el
 
@@ -841,7 +841,7 @@ const getSettingsSession = (
         if (!item || _isEmpty(item) || !item[0]) {
           return ''
         }
-        return `<ul class='font-mono tracking-tighter bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
           <li class='font-semibold'>${
             timeFormat === TimeFormat['24-hour']
               ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
@@ -965,7 +965,7 @@ const getSettingsError = (
     },
     tooltip: {
       contents: (item: any, _: any, __: any, color: any) => {
-        return `<ul class='font-mono tracking-tighter bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
+        return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
           <li class='font-semibold'>${
             timeFormat === TimeFormat['24-hour']
               ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
@@ -1128,7 +1128,7 @@ const getSettingsFunnels = (funnel: AnalyticsFunnel[], totalPageviews: number, t
         `
 
         return `
-          <div class='font-mono tracking-tighter bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
+          <div class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
             ${title}
             <hr class='border-gray-200 dark:border-gray-600' />
             <table class='table-fixed'>
@@ -1297,7 +1297,7 @@ const getSettingsPerf = (
     tooltip: {
       contents: (item: any, _: any, __: any, color: any) => {
         if (_isEmpty(compareChart)) {
-          return `<ul class='font-mono tracking-tighter bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
+          return `<ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
         <li class='font-semibold'>${
           timeFormat === TimeFormat['24-hour']
             ? d3.timeFormat(tbsFormatMapperTooltip24h[timeBucket])(item[0].x)
@@ -1318,7 +1318,7 @@ const getSettingsPerf = (
         }
 
         return `
-      <ul class='font-mono tracking-tighter bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
+      <ul class='bg-gray-50 dark:text-gray-50 dark:bg-slate-800 rounded-md ring-1 ring-black/10 px-3 py-1'>
         ${_map(item, (el: { id: string; index: number; name: string; value: string; x: Date }) => {
           const { id, index, name, value, x } = el
 

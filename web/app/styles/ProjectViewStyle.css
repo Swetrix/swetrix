@@ -53,7 +53,7 @@ body.light .bb-xgrid-focus {
 }
 
 .bb-axis {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-weight: 500;
   letter-spacing: 0.02em;
 }

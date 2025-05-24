@@ -445,7 +445,7 @@ const UserSettings = () => {
                       key={tab.id}
                       onClick={onClick}
                       className={cx(
-                        'text-md group inline-flex cursor-pointer items-center border-b-2 px-1 py-2 font-mono font-bold whitespace-nowrap',
+                        'text-md group inline-flex cursor-pointer items-center border-b-2 px-1 py-2 font-bold whitespace-nowrap',
                         {
                           'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50': isCurrent,
                           'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
@@ -528,7 +528,7 @@ const UserSettings = () => {
                     <>
                       <span
                         onClick={toggleShowPasswordFields}
-                        className='mt-2 flex max-w-max cursor-pointer items-center font-mono text-sm text-gray-900 hover:underline dark:text-gray-50'
+                        className='mt-2 flex max-w-max cursor-pointer items-center text-sm text-gray-900 hover:underline dark:text-gray-50'
                       >
                         {t('auth.common.changePassword')}
                         <ChevronDownIcon
@@ -626,7 +626,7 @@ const UserSettings = () => {
                       </h3>
                       <div>
                         {!_isEmpty(user?.sharedProjects) ? (
-                          <div className='mt-3 flex flex-col font-mono'>
+                          <div className='mt-3 flex flex-col'>
                             <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8'>
                               <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
                                 <div className='overflow-hidden ring-1 ring-black/10 md:rounded-lg'>
@@ -676,7 +676,7 @@ const UserSettings = () => {
                       </h3>
                       <div>
                         {!_isEmpty(user?.organisationMemberships) ? (
-                          <div className='mt-3 flex flex-col font-mono'>
+                          <div className='mt-3 flex flex-col'>
                             <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8'>
                               <div className='inline-block min-w-full py-2 align-middle md:px-6 lg:px-8'>
                                 <div className='overflow-hidden ring-1 ring-black/10 md:rounded-lg'>

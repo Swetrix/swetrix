@@ -1,6 +1,7 @@
 import _filter from 'lodash/filter'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
+import { ChevronRightIcon } from 'lucide-react'
 import type { LoaderFunction, MetaFunction } from 'react-router'
 import { redirect, Link, useLoaderData } from 'react-router'
 
@@ -57,7 +58,6 @@ export default function Posts() {
 
               return (
                 <article className='group relative' key={post.slug}>
-                  <div className='absolute -inset-x-4 -inset-y-2.5 group-hover:bg-slate-50/70 sm:rounded-2xl md:-inset-x-6 md:-inset-y-4 dark:group-hover:bg-slate-800/50'></div>
                   <svg
                     viewBox='0 0 9 9'
                     className='absolute top-2 right-full mr-6 hidden h-[calc(0.5rem+1px)] w-[calc(0.5rem+1px)] overflow-visible text-slate-200 sm:block md:mr-12 dark:text-slate-600'
@@ -72,15 +72,17 @@ export default function Posts() {
                     />
                   </svg>
                   <div className='relative'>
-                    <h3 className='pt-8 text-base font-semibold tracking-tight text-slate-900 lg:pt-0 dark:text-slate-200'>
-                      {post.title}
-                    </h3>
+                    <Link to={post.slug}>
+                      <h3 className='pt-8 text-base font-semibold text-slate-900 lg:pt-0 dark:text-slate-200'>
+                        {post.title}
+                      </h3>
+                    </Link>
                     {post.intro ? (
-                      <div className='prose prose-slate prose-a:relative prose-a:z-10 mt-2 mb-4 line-clamp-2 font-mono dark:text-slate-400'>
+                      <div className='prose prose-slate mt-2 mb-4 line-clamp-3 text-sm leading-7 dark:text-slate-400'>
                         <p>{post.intro}</p>
                       </div>
                     ) : null}
-                    <dl className='absolute top-0 left-0 font-mono uppercase lg:right-full lg:left-auto lg:mr-[calc(5rem+1px)]'>
+                    <dl className='absolute top-0 left-0 font-mono text-sm font-medium tracking-wide uppercase lg:right-full lg:left-auto lg:mr-[calc(5rem+1px)]'>
                       <dt className='sr-only'>Date</dt>
                       <dd className='text-sm leading-6 whitespace-nowrap dark:text-slate-400'>
                         <time dateTime={post.date}>{post.date}</time>
@@ -88,24 +90,11 @@ export default function Posts() {
                     </dl>
                   </div>
                   <Link
-                    className='flex items-center font-mono text-sm font-medium text-indigo-600 dark:text-gray-50'
+                    className='flex items-center text-sm font-medium text-indigo-500 hover:text-indigo-600 dark:text-gray-50 dark:hover:text-gray-200'
                     to={post.slug}
                   >
-                    <span className='absolute -inset-x-4 -inset-y-2.5 sm:rounded-2xl md:-inset-x-6 md:-inset-y-4'></span>
                     <span className='relative'>Read more</span>
-                    <svg
-                      className='relative mt-px ml-2.5 overflow-visible text-indigo-600 dark:text-gray-50'
-                      width='3'
-                      height='6'
-                      viewBox='0 0 3 6'
-                      fill='none'
-                      stroke='currentColor'
-                      strokeWidth='2'
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                    >
-                      <path d='M0 0L3 3L0 6' />
-                    </svg>
+                    <ChevronRightIcon className='relative mt-px ml-0.5 size-4 overflow-visible' />
                   </Link>
                 </article>
               )

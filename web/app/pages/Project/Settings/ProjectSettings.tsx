@@ -565,10 +565,10 @@ const ProjectSettings = () => {
             <XCircleIcon className='h-12 w-12 text-red-400' aria-hidden='true' />
             <div className='sm:ml-6'>
               <div className='max-w-prose sm:border-l sm:border-gray-200 sm:pl-6'>
-                <h1 className='text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl dark:text-gray-50'>
+                <h1 className='text-4xl font-extrabold text-gray-900 sm:text-5xl dark:text-gray-50'>
                   {t('apiNotifications.somethingWentWrong')}
                 </h1>
-                <p className='mt-4 text-2xl font-medium tracking-tight text-gray-700 dark:text-gray-200'>
+                <p className='mt-4 text-2xl font-medium text-gray-700 dark:text-gray-200'>
                   {t('apiNotifications.errorCode', { error })}
                 </p>
               </div>

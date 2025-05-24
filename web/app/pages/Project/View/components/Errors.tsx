@@ -67,7 +67,7 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
 
   return (
     <Link to={stringifiedUrl}>
-      <li className='relative mb-4 flex cursor-pointer justify-between gap-x-6 rounded-lg bg-gray-200/60 px-4 py-4 font-mono hover:bg-gray-200 sm:px-6 dark:bg-[#162032] dark:hover:bg-slate-800'>
+      <li className='relative mb-4 flex cursor-pointer justify-between gap-x-6 rounded-lg bg-gray-200/60 px-4 py-4 hover:bg-gray-200 sm:px-6 dark:bg-[#162032] dark:hover:bg-slate-800'>
         <div className='flex min-w-0 gap-x-4'>
           <div className='min-w-0 flex-auto'>
             <p className='flex items-baseline gap-x-2 leading-6 font-semibold text-gray-900 dark:text-gray-50'>
@@ -75,7 +75,7 @@ const ErrorItem = ({ error }: ErrorItemProps) => {
               {error.filename ? (
                 <>
                   <Separator className='self-center' />
-                  <span className='mx-1 text-xs font-normal tracking-tighter text-gray-500'>{error.filename}</span>
+                  <span className='mx-1 text-xs font-normal text-gray-500'>{error.filename}</span>
                 </>
               ) : null}
             </p>

@@ -83,9 +83,9 @@ export const ErrorDetails = ({ details }: ErrorDetailsProps) => {
   return (
     <div className='mb-5'>
       <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
-        <div className='flex flex-col font-mono'>
-          <p className='font-bold tracking-tighter text-slate-900 max-md:text-xl md:text-2xl dark:text-gray-50'>{`${details.name}${details.message ? `: ${details.message}` : ''}`}</p>
-          <p className='text-sm font-bold tracking-tighter text-slate-800 dark:text-gray-200'>
+        <div className='flex flex-col'>
+          <p className='font-bold text-slate-900 max-md:text-xl md:text-2xl dark:text-gray-50'>{`${details.name}${details.message ? `: ${details.message}` : ''}`}</p>
+          <p className='text-sm font-bold text-slate-800 dark:text-gray-200'>
             {t('dashboard.atFile', {
               filename: details.filename ?? 'Unknown file',
               lineno: details.lineno ?? 'N/A',
@@ -157,7 +157,7 @@ export const ErrorDetails = ({ details }: ErrorDetailsProps) => {
           {isStackTraceExpanded ? (
             <div className='rounded-lg border border-gray-300 bg-white dark:border-slate-800/60 dark:bg-slate-800/25'>
               <div className='max-h-96 overflow-auto p-4'>
-                <div className='space-y-1 font-mono text-sm leading-relaxed'>
+                <div className='space-y-1 text-sm leading-relaxed'>
                   {stackTraceLines.map((line, index) => (
                     <div key={index} className='flex'>
                       <span className='mt-0.5 mr-3 inline-block w-8 text-right text-xs text-slate-400 select-none dark:text-slate-500'>

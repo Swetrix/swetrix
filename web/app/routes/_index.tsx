@@ -80,11 +80,11 @@ const Problem = () => {
         <h2 className='mb-6 text-4xl font-extrabold text-gray-50 sm:text-5xl sm:leading-none md:mb-8'>
           {t('main.problem.title')}
         </h2>
-        <p className='mx-auto mb-12 max-w-prose font-mono text-base leading-relaxed font-semibold text-gray-100 md:mb-20 md:text-lg'>
+        <p className='mx-auto mb-12 max-w-prose text-base leading-relaxed font-semibold text-gray-100 md:mb-20 md:text-lg'>
           {t('main.problem.description')}
         </p>
 
-        <div className='flex flex-col items-center justify-center gap-6 font-mono text-gray-50 md:flex-row md:items-start'>
+        <div className='flex flex-col items-center justify-center gap-6 text-gray-50 md:flex-row md:items-start'>
           <div className='flex w-full flex-col items-center justify-center gap-2 md:w-56'>
             <span className='text-4xl'>🤔</span>
             <p className='font-semibold'>{t('main.problem.step1')}</p>
@@ -158,7 +158,7 @@ interface FeedbackProps {
 }
 
 const Feedback = ({ name, title, feedback, logoUrl, photoUrl }: FeedbackProps) => (
-  <section className='relative isolate z-10 bg-white px-6 py-24 font-mono sm:py-32 lg:px-8 dark:bg-slate-900'>
+  <section className='relative isolate z-10 bg-white px-6 py-24 sm:py-32 lg:px-8 dark:bg-slate-900'>
     <div className='absolute inset-0 -z-10 bg-[radial-gradient(45rem_50rem_at_top,theme(colors.indigo.100),white)] opacity-20 blur-3xl dark:bg-[radial-gradient(45rem_50rem_at_top,theme(colors.indigo.400),theme(colors.slate.900))]' />
     <div className='absolute inset-y-0 right-1/2 -z-10 mr-16 w-[200%] origin-bottom-left skew-x-[-30deg] border-r-2 border-slate-900/10 bg-white sm:mr-28 lg:mr-0 xl:mr-16 xl:origin-center dark:border-slate-50/50 dark:bg-slate-900' />
     <div className='mx-auto max-w-2xl lg:max-w-4xl'>
@@ -235,10 +235,7 @@ const WeAreOpensource = () => {
         <hr className='my-6 max-w-[346px] border-1 border-slate-300 dark:border-slate-700' />
         <div className='mb-9 w-full max-w-md lg:mb-0'>
           {_map(t('main.opensource', { returnObjects: true }), (item: { desc: string }) => (
-            <p
-              key={item.desc}
-              className='mb-3 flex items-center font-mono text-sm leading-6 text-slate-700 dark:text-gray-300'
-            >
+            <p key={item.desc} className='mb-3 flex items-center text-sm leading-6 text-slate-700 dark:text-gray-300'>
               <span>
                 <CheckIcon className='mr-4 h-6 w-6 text-green-500' />
               </span>
@@ -285,7 +282,7 @@ const Testimonials = () => {
   }, [])
 
   return (
-    <div className='mt-8 flex flex-col items-center justify-center gap-3 font-mono md:flex-row'>
+    <div className='mt-8 flex flex-col items-center justify-center gap-3 md:flex-row'>
       <div className='flex -space-x-5 overflow-hidden'>
         {_map(REVIEWERS, ({ name, image }) => (
           <div
@@ -366,12 +363,8 @@ const FeatureBlock = ({ heading, description, children, className, dark }: Featu
     <div className='relative h-80 shrink-0'>{children}</div>
 
     <div className='relative p-10'>
-      <h3 className='mt-1 text-2xl/8 font-semibold tracking-tight text-gray-950 group-data-[dark]:text-white'>
-        {heading}
-      </h3>
-      <p className='mt-2 max-w-[800px] font-mono text-sm/6 text-gray-800 group-data-[dark]:text-gray-200'>
-        {description}
-      </p>
+      <h3 className='mt-1 text-2xl/8 font-semibold text-gray-950 group-data-[dark]:text-white'>{heading}</h3>
+      <p className='mt-2 max-w-[800px] text-sm/6 text-gray-800 group-data-[dark]:text-gray-200'>{description}</p>
     </div>
   </motion.div>
 )
@@ -440,9 +433,7 @@ const FeatureBlocks = () => {
     <section className='relative mx-auto max-w-7xl bg-white px-6 py-14 lg:px-8 dark:bg-slate-900'>
       <div className='relative mx-auto w-fit'>
         <div>
-          <p className='mb-4 font-mono text-sm font-medium text-slate-800 dark:text-gray-200'>
-            {t('main.butThereIsASolution')}
-          </p>
+          <p className='mb-4 text-sm font-medium text-slate-800 dark:text-gray-200'>{t('main.butThereIsASolution')}</p>
           <h2 className='relative z-20 text-4xl font-extrabold text-slate-900 sm:text-5xl dark:text-white'>
             {t('main.knowYourCustomers')}
           </h2>
@@ -682,7 +673,7 @@ const CoreFeatures = () => {
           className='max-lg:rounded-t-4xl lg:col-span-4 lg:rounded-tl-4xl'
           dark={theme === 'dark'}
         >
-          <div className='relative h-80 overflow-hidden px-10 pt-5 font-mono'>
+          <div className='relative h-80 overflow-hidden px-10 pt-5'>
             <div className='absolute top-2 rotate-2 rounded-xs bg-slate-200 p-4 text-slate-900 opacity-70 transition-opacity group-hover:opacity-90 dark:bg-slate-700 dark:text-gray-50'>
               <p className='mb-4 text-sm'>
                 We use cookies to enhance your experience. By continuing to visit this site you agree to our use of
@@ -840,13 +831,13 @@ const Hero = () => {
                 }}
               />
             </h1>
-            <p className='mx-auto mt-4 max-w-4xl text-center font-mono text-base tracking-tight text-slate-900 sm:text-lg dark:text-slate-300'>
+            <p className='mx-auto mt-4 max-w-4xl text-center text-base text-slate-900 sm:text-lg dark:text-slate-300'>
               {t('main.description')}
             </p>
             <div className='mt-10 flex flex-col items-center justify-center sm:flex-row'>
               <Link
                 to={routesPath.signup}
-                className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 font-mono text-white ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 sm:mr-6 sm:max-w-[210px] dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600'
+                className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 sm:mr-6 sm:max-w-[210px] dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600'
                 aria-label={t('titles.signup')}
               >
                 <span className='mr-1 text-center text-base font-semibold'>{t('main.startAFreeTrial')}</span>
@@ -854,7 +845,7 @@ const Hero = () => {
               </Link>
               <a
                 href={LIVE_DEMO_URL}
-                className='mt-2 flex h-12 w-full items-center justify-center rounded-md bg-transparent font-mono text-slate-900 shadow-xs ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-200 sm:mt-0 sm:max-w-[210px] dark:text-white dark:ring-white/20 dark:hover:bg-gray-800'
+                className='mt-2 flex h-12 w-full items-center justify-center rounded-md bg-transparent text-slate-900 shadow-xs ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-200 sm:mt-0 sm:max-w-[210px] dark:text-white dark:ring-white/20 dark:hover:bg-gray-800'
                 target='_blank'
                 rel='noopener noreferrer'
                 aria-label={`${t('common.liveDemo')} (opens in a new tab)`}

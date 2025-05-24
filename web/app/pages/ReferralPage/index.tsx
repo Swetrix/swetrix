@@ -90,7 +90,7 @@ const ReferralPage = () => {
                     <span className='text-base font-semibold'>{t('common.learnMore')}</span>
                   </Link>
                 </div>
-                <p className='mt-5 text-base font-medium tracking-tighter text-slate-500 dark:text-slate-500'>
+                <p className='mt-5 text-base font-medium text-slate-500 dark:text-slate-500'>
                   {t('referral.cookieDetails', {
                     days: REFERRAL_COOKIE_DAYS,
                     discount: REFERRAL_DISCOUNT,
