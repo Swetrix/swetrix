@@ -84,7 +84,7 @@ const ReferralPage = () => {
                   </Link>
                   <Link
                     to={`/ref/${id}/index#core-analytics`}
-                    className='mt-2 flex h-12 w-full items-center justify-center rounded-md bg-transparent text-slate-900 ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-200 sm:mt-0 sm:max-w-[210px] dark:text-white dark:ring-white/20 dark:hover:bg-gray-800'
+                    className='mt-2 flex h-12 w-full items-center justify-center rounded-md bg-transparent text-slate-900 ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-200/60 sm:mt-0 sm:max-w-[210px] dark:text-white dark:ring-white/20 dark:hover:bg-slate-800/60'
                     aria-label={t('titles.signup')}
                   >
                     <span className='text-base font-semibold'>{t('common.learnMore')}</span>
