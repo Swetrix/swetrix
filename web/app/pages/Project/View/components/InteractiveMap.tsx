@@ -3,7 +3,6 @@ import _map from 'lodash/map'
 import _reduce from 'lodash/reduce'
 import React, { memo, useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useSearchParams } from 'react-router'
 
 import { PROJECT_TABS } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
@@ -32,12 +31,12 @@ interface DataHover {
 type CountryMap = Record<string, number>
 
 const InteractiveMap = ({ data, onClickCountry, total }: InteractiveMapProps) => {
+  const { activeTab } = useViewProjectContext()
   const { dataLoading } = useViewProjectContext()
   const {
     t,
     i18n: { language },
   } = useTranslation('common')
-  const [searchParams] = useSearchParams()
   const [hoverShow, setHoverShow] = useState(false)
   const [dataHover, setDataHover] = useState<DataHover>({} as DataHover)
   const [cursorPosition, setCursorPosition] = useState<CursorPosition>({} as CursorPosition)
@@ -46,7 +45,7 @@ const InteractiveMap = ({ data, onClickCountry, total }: InteractiveMapProps) =>
     [data],
   )
 
-  const isTrafficTab = searchParams.get('tab') === PROJECT_TABS.traffic
+  const isTrafficTab = activeTab === PROJECT_TABS.traffic
 
   const onMouseMove = (e: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
     const rect = e.currentTarget.getBoundingClientRect()
