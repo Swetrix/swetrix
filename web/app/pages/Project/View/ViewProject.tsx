@@ -33,6 +33,8 @@ import {
   DownloadIcon,
   SettingsIcon,
   BanIcon,
+  ChartColumnIcon,
+  ChartLineIcon,
 } from 'lucide-react'
 import React, { useState, useEffect, useMemo, useRef, useCallback, createContext, useContext } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
@@ -117,8 +119,6 @@ import { useTheme } from '~/providers/ThemeProvider'
 import Checkbox from '~/ui/Checkbox'
 import Dropdown from '~/ui/Dropdown'
 import FlatPicker from '~/ui/Flatpicker'
-import BarChart from '~/ui/icons/BarChart'
-import LineChart from '~/ui/icons/LineChart'
 import Loader from '~/ui/Loader'
 import Select from '~/ui/Select'
 import { trackCustom } from '~/utils/analytics'
@@ -2793,15 +2793,6 @@ const ViewProject = () => {
                                 headless
                               />
                             ) : null}
-                            {/* <button
-                              type='button'
-                              title={t('project.refreshStats')}
-                              onClick={refreshStats}
-                              className='relative rounded-md border border-gray-50/0 bg-gray-50 p-2 text-sm font-medium hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
-                            >
-                              <RotateCw className='h-5 w-5 text-gray-700 dark:text-gray-50' />
-                            </button> */}
-
                             <div
                               className={cx({
                                 hidden:
@@ -2819,7 +2810,7 @@ const ViewProject = () => {
                                   onClick={() => setChartTypeOnClick(chartTypes.line)}
                                   className='relative rounded-md border border-gray-50/0 bg-gray-50 p-2 text-sm font-medium hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
                                 >
-                                  <LineChart className='h-5 w-5 [&_path]:stroke-[3.5%]' />
+                                  <ChartLineIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
                                 </button>
                               ) : null}
                               {chartType === chartTypes.line ? (
@@ -2829,7 +2820,7 @@ const ViewProject = () => {
                                   onClick={() => setChartTypeOnClick(chartTypes.bar)}
                                   className='relative rounded-md border border-gray-50/0 bg-gray-50 p-2 text-sm font-medium hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200'
                                 >
-                                  <BarChart className='h-5 w-5 [&_path]:stroke-[3.5%]' />
+                                  <ChartColumnIcon className='h-5 w-5 text-gray-700 dark:text-gray-50' />
                                 </button>
                               ) : null}
                             </div>

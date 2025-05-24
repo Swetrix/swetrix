@@ -46,10 +46,7 @@ import { useCurrentProject } from '~/providers/CurrentProjectProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Dropdown from '~/ui/Dropdown'
 import FlatPicker from '~/ui/Flatpicker'
-import BarChart from '~/ui/icons/BarChart'
-import LineChart from '~/ui/icons/LineChart'
 import Loader from '~/ui/Loader'
-import { getItem, setItem } from '~/utils/localstorage'
 import routes from '~/utils/routes'
 
 import CCRow from '../../Project/View/components/CCRow'
@@ -188,7 +185,6 @@ const ViewCaptcha = () => {
   const timeFormat = useMemo<'12-hour' | '24-hour'>(() => user?.timeFormat || TimeFormat['12-hour'], [user])
   const [ref, size] = useSize() as any
   const rotateXAxias = useMemo(() => size.width > 0 && size.width < 500, [size])
-  const [chartType, setChartType] = useState(getItem('chartType') || chartTypes.line)
   const [mainChart, setMainChart] = useState<any>(null)
 
   const { timezone = DEFAULT_TIMEZONE } = user || {}
@@ -259,7 +255,7 @@ const ViewCaptcha = () => {
           applyRegions,
           timeFormat,
           rotateXAxias,
-          chartTypes.line, // chartType,
+          chartTypes.line,
         )
         setChartData(chart)
 
@@ -379,12 +375,6 @@ const ViewCaptcha = () => {
     },
   ]
 
-  // function set chart type and save to local storage
-  const setChartTypeOnClick = (type: string) => {
-    setItem('chartType', type)
-    setChartType(type)
-  }
-
   if (authLoading || !project) {
     return <PageLoader />
   }
@@ -453,46 +443,6 @@ const ViewCaptcha = () => {
                       buttonClassName='!p-2 rounded-md hover:bg-white border border-gray-50/0 hover:border-gray-300 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:z-10 focus:outline-hidden focus:ring-1 focus:ring-indigo-500 focus:dark:ring-gray-200'
                       headless
                     />
-                    <div
-                      className={cx('space-x-2 border-gray-200 sm:mr-3 lg:border-x lg:px-3 dark:border-gray-600', {
-                        // TODO: Fix a crash when user selects 'bar' chart and refreshes the page:
-                        // Uncaught TypeError: can't access property "create", point5 is undefined
-                        hidden: isPanelsDataEmpty || analyticsLoading || true,
-                      })}
-                    >
-                      <button
-                        type='button'
-                        title={t('project.barChart')}
-                        onClick={() => setChartTypeOnClick(chartTypes.bar)}
-                        className={cx(
-                          'relative rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
-                          {
-                            'border border-gray-300 bg-white stroke-white dark:border-slate-800/50 dark:bg-slate-800 dark:stroke-slate-800':
-                              chartType === chartTypes.bar,
-                            'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200':
-                              chartType !== chartTypes.bar,
-                          },
-                        )}
-                      >
-                        <BarChart className='h-5 w-5 [&_path]:stroke-[3.5%]' />
-                      </button>
-                      <button
-                        type='button'
-                        title={t('project.lineChart')}
-                        onClick={() => setChartTypeOnClick(chartTypes.line)}
-                        className={cx(
-                          'relative rounded-md fill-gray-700 p-2 text-sm font-medium focus:z-10 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:fill-gray-50 focus:dark:border-gray-200 focus:dark:ring-gray-200',
-                          {
-                            'border border-gray-300 bg-white stroke-white dark:border-slate-800/50 dark:bg-slate-800 dark:stroke-slate-800':
-                              chartType === chartTypes.line,
-                            'bg-gray-50 stroke-gray-50 dark:bg-slate-900 dark:stroke-slate-900 [&_svg]:hover:fill-gray-500 [&_svg]:hover:dark:fill-gray-200':
-                              chartType !== chartTypes.line,
-                          },
-                        )}
-                      >
-                        <LineChart className='h-5 w-5 [&_path]:stroke-[3.5%]' />
-                      </button>
-                    </div>
                     <TBPeriodSelector
                       activePeriod={activePeriod}
                       updateTimebucket={updateTimebucket}
