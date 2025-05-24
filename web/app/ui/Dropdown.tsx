@@ -6,6 +6,8 @@ import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import React, { memo, Fragment, Key } from 'react'
 
+import { cn } from '~/utils/generic'
+
 import Spin from './icons/Spin'
 
 interface DropdownProps<T> {
@@ -99,15 +101,12 @@ function Dropdown<T>({
             <MenuItems
               static
               className={cx(
-                'absolute right-0 z-50 mt-2 w-40 min-w-max origin-top-right rounded-md bg-white ring-1 ring-black/10 focus:outline-hidden dark:bg-slate-800',
+                'absolute right-0 z-50 mt-2 w-40 min-w-max origin-top-right rounded-md bg-gray-50 p-1 ring-1 ring-black/10 focus:outline-hidden dark:bg-slate-800',
                 menuItemsClassName,
-                {
-                  'divide-y divide-gray-100 dark:divide-gray-600': header,
-                },
               )}
             >
               {header ? (
-                <p className='px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-50'>{header}</p>
+                <p className='mb-1 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-50'>{header}</p>
               ) : null}
               {loading ? (
                 <div className='px-4 py-2'>
@@ -115,16 +114,12 @@ function Dropdown<T>({
                   <span className='sr-only'>Loading...</span>
                 </div>
               ) : (
-                _map(items, (item, index) => (
+                _map(items, (item) => (
                   <MenuItem key={keyExtractor ? keyExtractor(item, close) : (item as Key)}>
                     <span
-                      className={cx(
-                        selectItemClassName ||
-                          'block cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-slate-700',
-                        {
-                          'rounded-t-md': index === 0 && !header,
-                          'rounded-b-md': index === items.length - 1,
-                        },
+                      className={cn(
+                        'block cursor-pointer rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700',
+                        selectItemClassName,
                       )}
                       role='menuitem'
                       tabIndex={0}

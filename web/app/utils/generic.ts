@@ -1,8 +1,10 @@
+import clsx, { type ClassValue } from 'clsx'
 import _find from 'lodash/find'
 import _map from 'lodash/map'
 import _reduce from 'lodash/reduce'
 import _replace from 'lodash/replace'
 import _round from 'lodash/round'
+import { twMerge } from 'tailwind-merge'
 
 import { isBrowser } from '~/lib/constants'
 
@@ -142,3 +144,7 @@ export const getLocaleDisplayName = (locale: string, language: string): string =
 }
 
 export const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+export const cn = (...args: ClassValue[]) => {
+  return twMerge(clsx(args))
+}

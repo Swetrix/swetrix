@@ -2661,13 +2661,6 @@ const ViewProject = () => {
                                 header={t('project.segments')}
                                 onClick={() => loadProjectViews()}
                                 loading={projectViewsLoading || projectViewsLoading === null}
-                                selectItemClassName={
-                                  !allowedToManage &&
-                                  !(projectViewsLoading || projectViewsLoading === null) &&
-                                  _isEmpty(projectViews)
-                                    ? 'block px-4 py-2 text-sm text-gray-700 dark:border-gray-800 dark:bg-slate-800 dark:text-gray-50'
-                                    : undefined
-                                }
                                 items={_filter(
                                   [
                                     ...projectViews,
@@ -2697,38 +2690,45 @@ const ViewProject = () => {
                                   }
 
                                   return (
-                                    <span
+                                    <div
                                       className={cx('flex items-center justify-between space-x-4', {
                                         'cursor-wait': dataLoading,
                                       })}
                                     >
                                       <span>{item.name}</span>
                                       {allowedToManage ? (
-                                        <span className='flex cursor-pointer space-x-2'>
-                                          <PencilIcon
-                                            className='size-4 hover:text-gray-900 dark:hover:text-gray-50'
+                                        <div className='flex cursor-pointer space-x-1'>
+                                          <button
                                             onClick={(e) => {
                                               e.stopPropagation()
                                               setProjectViewToUpdate(item)
                                               close()
                                               setIsAddAViewOpened(true)
                                             }}
-                                            strokeWidth={1.5}
-                                          />
-                                          <Trash2Icon
-                                            className={cx('size-4 hover:text-gray-900 dark:hover:text-gray-50', {
-                                              'cursor-not-allowed': projectViewDeleting,
-                                            })}
+                                            aria-label={t('common.settings')}
+                                            className='rounded-md p-1 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-slate-800 dark:hover:text-slate-200'
+                                          >
+                                            <PencilIcon className='size-3' />
+                                          </button>
+                                          <button
                                             onClick={(e) => {
                                               e.stopPropagation()
                                               close()
                                               onProjectViewDelete(item.id)
                                             }}
-                                            strokeWidth={1.5}
-                                          />
-                                        </span>
+                                            aria-label={t('common.settings')}
+                                            className={cx(
+                                              'rounded-md p-1 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-slate-800 dark:hover:text-slate-200',
+                                              {
+                                                'cursor-not-allowed': projectViewDeleting,
+                                              },
+                                            )}
+                                          >
+                                            <Trash2Icon className='size-3' />
+                                          </button>
+                                        </div>
                                       ) : null}
-                                    </span>
+                                    </div>
                                   )
                                 }}
                                 keyExtractor={(item) => item.id}
@@ -2909,7 +2909,7 @@ const ViewProject = () => {
                               )
                             }}
                             buttonClassName='!px-2.5'
-                            selectItemClassName='group text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 block text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'
+                            selectItemClassName='p-0'
                             keyExtractor={(pair) => pair.id}
                             onSelect={({ id: pairID, conflicts }) => {
                               switchTrafficChartMetric(pairID, conflicts)
@@ -2971,7 +2971,7 @@ const ViewProject = () => {
                               )
                             }}
                             buttonClassName='!px-2.5'
-                            selectItemClassName='group text-gray-700 dark:text-gray-50 dark:border-gray-800 dark:bg-slate-800 block text-sm cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-700'
+                            selectItemClassName='p-0'
                             keyExtractor={(pair) => pair.id}
                             onSelect={({ id: pairID }) => {
                               switchActiveErrorFilter(pairID)

@@ -68,6 +68,7 @@
     "sonner": "^2.0.3",
     "spacetime": "^7.9.0",
     "swetrix": "^3.6.1",
+    "tailwind-merge": "^3.3.0",
     "timezone-soft": "^1.5.2"
   },
   "browserslist": {
