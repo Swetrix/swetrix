@@ -3407,6 +3407,7 @@ const ViewProject = () => {
                                   icon={panelIcon}
                                   id={countryActiveTab}
                                   getFilterLink={getFilterLink}
+                                  // @ts-expect-error - onSelect not typed
                                   name={<CountryDropdown onSelect={setCountryActiveTab} title={ccPanelName} />}
                                   data={activeError?.params[countryActiveTab]}
                                   rowMapper={rowMapper}
@@ -3695,6 +3696,7 @@ const ViewProject = () => {
                                   icon={panelIcon}
                                   id={countryActiveTab}
                                   getFilterLink={getFilterLink}
+                                  // @ts-expect-error - onSelect not typed
                                   name={<CountryDropdown onSelect={setCountryActiveTab} title={ccPanelName} />}
                                   data={panelsData.data[countryActiveTab]}
                                   customTabs={customTabs}
@@ -3852,6 +3854,7 @@ const ViewProject = () => {
                                   icon={panelIcon}
                                   id={utmActiveTab}
                                   getFilterLink={getFilterLink}
+                                  // @ts-expect-error - onSelect not typed
                                   name={<UTMDropdown onSelect={setUtmActiveTab} title={ccPanelName} />}
                                   data={panelsData.data[utmActiveTab]}
                                   customTabs={customTabs}
@@ -3995,6 +3998,7 @@ const ViewProject = () => {
                                   icon={panelIcon}
                                   id={countryActiveTab}
                                   getFilterLink={getFilterLink}
+                                  // @ts-expect-error - onSelect not typed
                                   name={<CountryDropdown onSelect={setCountryActiveTab} title={ccPanelName} />}
                                   data={panelsDataPerf.data[countryActiveTab]}
                                   customTabs={customTabs}
