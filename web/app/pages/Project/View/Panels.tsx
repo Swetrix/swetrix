@@ -817,6 +817,7 @@ const CustomEvents = ({
   if (_isEmpty(customs)) {
     return (
       <PanelContainer
+        // @ts-expect-error - onSelect not typed
         name={<CustomEventsDropdown onSelect={setActiveTab} title={t('project.customEv')} />}
         type='ce'
         setActiveFragment={setActiveFragment}
@@ -832,6 +833,7 @@ const CustomEvents = ({
   if (activeFragment === 1 && !_isEmpty(chartData)) {
     return (
       <PanelContainer
+        // @ts-expect-error - onSelect not typed
         name={<CustomEventsDropdown onSelect={setActiveTab} title={t('project.customEv')} />}
         type='ce'
         setActiveFragment={setActiveFragment}
@@ -861,6 +863,7 @@ const CustomEvents = ({
 
     return (
       <PanelContainer
+        // @ts-expect-error - onSelect not typed
         name={<CustomEventsDropdown onSelect={setActiveTab} title={t('project.customEv')} />}
         type='ce'
         activeFragment={activeFragment}
@@ -878,6 +881,7 @@ const CustomEvents = ({
   return (
     <PanelContainer
       customTabs={customTabs}
+      // @ts-expect-error - onSelect not typed
       name={<CustomEventsDropdown onSelect={setActiveTab} title={t('project.customEv')} />}
       type='ce'
       setActiveFragment={setActiveFragment}
@@ -1267,6 +1271,7 @@ const PageProperties = ({
   if (_isEmpty(properties)) {
     return (
       <PanelContainer
+        // @ts-expect-error - onSelect not typed
         name={<CustomEventsDropdown onSelect={setActiveTab} title={t('project.properties')} />}
         type='props'
         setActiveFragment={setActiveFragment}
@@ -1280,6 +1285,7 @@ const PageProperties = ({
 
   return (
     <PanelContainer
+      // @ts-expect-error - onSelect not typed
       name={<CustomEventsDropdown onSelect={setActiveTab} title={t('project.properties')} />}
       type='props'
       setActiveFragment={setActiveFragment}
