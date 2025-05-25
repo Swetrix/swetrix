@@ -108,9 +108,7 @@ function Dropdown<T>({
                 menuItemsClassName,
               )}
             >
-              {header ? (
-                <p className='mb-1 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-50'>{header}</p>
-              ) : null}
+              {header ? <p className='mb-1 p-2 text-sm font-medium text-gray-700 dark:text-gray-50'>{header}</p> : null}
               {loading ? (
                 <div className='px-4 py-2'>
                   <Spin className='!ml-0' />
