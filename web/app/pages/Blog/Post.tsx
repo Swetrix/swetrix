@@ -64,7 +64,7 @@ export default function PostSlug() {
                       strokeLinejoin='round'
                     />
                   </svg>
-                  {t('common.goBack')}
+                  {t('common.allPosts')}
                 </Link>
                 <article className='relative'>
                   <div className='mb-2 font-mono text-sm leading-6 font-medium tracking-wide uppercase'>

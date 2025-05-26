@@ -125,7 +125,8 @@
     "remove": "Supprimer",
     "pagination": "Affichage de <0>{{start}}</0> à <0>{{end}}</0> sur <0>{{total}}</0> résultats",
     "resultsPerPage": "Résultats par page",
-    "communityEdition": "Édition Communautaire"
+    "communityEdition": "Édition Communautaire",
+    "allPosts": "Tous les articles"
   },
   "featureFlags": {
     "title": "Drapeaux de fonctionnalités",

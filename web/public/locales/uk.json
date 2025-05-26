@@ -125,7 +125,8 @@
     "remove": "Видалити",
     "pagination": "Показані <0>{{start}}</0>–<0>{{end}}</0> із <0>{{total}}</0> результатів",
     "resultsPerPage": "Результатів на сторінку",
-    "communityEdition": "Спільнотне видання"
+    "communityEdition": "Спільнотне видання",
+    "allPosts": "Усі дописи"
   },
   "featureFlags": {
     "title": "Функції",

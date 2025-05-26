@@ -125,7 +125,8 @@
     "remove": "Usuń",
     "pagination": "Wyświetlanie <0>{{start}}</0> do <0>{{end}}</0> z <0>{{total}}</0> wyników",
     "resultsPerPage": "Wyników na stronę",
-    "communityEdition": "Wersja Społecznościowa"
+    "communityEdition": "Wersja Społecznościowa",
+    "allPosts": "Wszystkie posty"
   },
   "featureFlags": {
     "title": "Flagi funkcji",

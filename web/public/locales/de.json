@@ -125,7 +125,8 @@
     "remove": "Entfernen",
     "pagination": "Zeige <0>{{start}}</0> bis <0>{{end}}</0> von <0>{{total}}</0> Ergebnissen",
     "resultsPerPage": "Ergebnisse pro Seite",
-    "communityEdition": "Community Edition"
+    "communityEdition": "Community Edition",
+    "allPosts": "Alle Beiträge"
   },
   "featureFlags": {
     "title": "Feature Flags",
