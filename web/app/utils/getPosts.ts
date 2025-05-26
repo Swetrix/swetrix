@@ -33,22 +33,14 @@ interface GetPost {
 export async function getPost(slug: string, category?: string): Promise<GetPost | null> {
   let post: any = null
 
-  if (category) {
-    await getBlogPostWithCategory(category, slug)
-      .then((data) => {
-        post = data
-      })
-      .catch((error) => {
-        console.error(error)
-      })
-  } else {
-    await getBlogPost(slug)
-      .then((data) => {
-        post = data
-      })
-      .catch((error) => {
-        console.error(error)
-      })
+  try {
+    if (category) {
+      post = await getBlogPostWithCategory(category, slug)
+    } else {
+      post = await getBlogPost(slug)
+    }
+  } catch {
+    return null
   }
 
   if (!post || _isEmpty(post)) {

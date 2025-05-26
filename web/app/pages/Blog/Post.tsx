@@ -22,7 +22,7 @@ export default function PostSlug() {
   const { t } = useTranslation('common')
 
   useEffect(() => {
-    const meta = post.author
+    const meta = post?.author
       ? {
           author: post.author,
         }
