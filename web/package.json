@@ -20,7 +20,7 @@
     "knip": "knip"
   },
   "dependencies": {
-    "@headlessui/react": "^2.2.1",
+    "@headlessui/react": "^2.2.4",
     "@heroicons/react": "^2.2.0",
     "@icons-pack/react-simple-icons": "^12.6.0",
     "@nivo/sankey": "^0.88.0",
