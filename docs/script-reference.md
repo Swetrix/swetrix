@@ -147,6 +147,8 @@ The data we collect includes the following params if available:
 6. `message` - error message (e.g. Malformed input)
 7. `lineno` / `colno` - on what line and column in your code did the error occur
 8. `filename` - in what file did the error occur
+9. `stackTrace` - the stack trace of the error (e.g. `Uncaught Error\n    at query (:10:11)\n    at database (:6:5)`)
+10. `meta` - an object that contains event-related metadata. You can set it via a `callback` function.
 
 Here's an example of how to use this function with all the available options:
 ```javascript
@@ -159,7 +161,7 @@ swetrix.trackErrors({
 | Name | Description | Default value |
 | --- | --- | --- |
 | sampleRate | A number that indicates how many errors should be sent to the server. Accepts values between 0 and 1. For example, if set to 0.5 - only ~50% of errors will be sent to Swetrix. For testing, we recommend setting this value to 1. For production, you should configure it depending on your needs as each error event counts towards your plan. | `1` |
-| callback | A callback used to edit / prevent sending errors. It accepts an object which contains some information about the error (`name`, `message`, `lineno`, `colno`, `filename`), as well as some regular analytics info (`lc`, `tz`, `pg`).<br />The callback is supposed to return the edited payload or `false` to prevent sending the pageview. If `true` is returned, the payload will be sent as-is. | `undefined` |
+| callback | A callback used to edit / prevent sending errors. It accepts an object which contains some information about the error (`name`, `message`, `lineno`, `colno`, `filename`, `stackTrace`), as well as some regular analytics info (`lc`, `tz`, `pg`, `meta`).<br />The callback is supposed to return the edited payload or `false` to prevent sending the pageview. If `true` is returned, the payload will be sent as-is. | `undefined` |
 
 The `trackErrors` function returns an object with some methods allowing you to alter the behaviour of page tracking:
 ```javascript
@@ -178,6 +180,8 @@ This function takes the following arguments:
 3. (optional) `lineno` - on what line in your code did the error occur (e.g. 1520)
 4. (optional) `colno` - on what column in your code did the error occur (e.g. 26)
 5. (optional) `filename` - in what file did the error occur (e.g. https://example.com/broken.js)
+6. (optional) `stackTrace` - the stack trace of the error (e.g. `Uncaught Error\n    at query (:10:11)\n    at database (:6:5)`)
+7. (optional) `meta` - an object that contains event-related metadata. The values of the object must be strings, the maximum number of keys allowed is `100` and the total length of the values combined must be less than `2000` characters.
 
 Here is an example of how to use this function:
 ```javascript
@@ -187,5 +191,12 @@ swetrix.trackError({
   lineno: 1520,
   colno: 26,
   filename: 'https://example.com/broken.js',
+  stackTrace: `Uncaught Error: Malformed input
+    at query (:10:11)
+    at database (:6:5)
+    at controller (:2:5)`,
+  meta: {
+    level: 'Critical',
+  },
 })
 ```
