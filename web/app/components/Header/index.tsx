@@ -686,7 +686,7 @@ const NotAuthedHeader = ({
               items={whitelist}
               buttonClassName='!py-0 inline-flex items-center [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 font-semibold leading-6 !text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
               title={
-                <>
+                <span className='inline-flex items-center'>
                   <Flag
                     className='mr-1.5 rounded-xs'
                     country={languageFlag[language]}
@@ -695,7 +695,7 @@ const NotAuthedHeader = ({
                     aria-hidden='true'
                   />
                   {languages[language]}
-                </>
+                </span>
               }
               labelExtractor={(lng: string) => (
                 <div className='flex'>
