@@ -10,9 +10,6 @@ export default defineConfig({
   optimizeDeps: {
     include: ['axios-auth-refresh', '@swetrix/sdk'],
   },
-  build: {
-    sourcemap: true,
-  },
   ssr: {
     noExternal: [
       'axios',
