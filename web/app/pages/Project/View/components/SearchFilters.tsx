@@ -30,7 +30,7 @@ export const getFiltersUrlParams = (
   const resultingFilters: FilterType[] = []
 
   if (override) {
-    resultingFilters.push(...filters)
+    resultingFilters.push(...newFilters)
   } else {
     // Combining existing (from URL) and new (from modal) filters, removing duplicates
     const finalUniqueFiltersMap = new Map<string, FilterType>()
