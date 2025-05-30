@@ -2912,8 +2912,16 @@ const ViewProject = () => {
                             buttonClassName='!px-2.5'
                             selectItemClassName='p-0'
                             keyExtractor={(pair) => pair.id}
-                            onSelect={({ id: pairID, conflicts }) => {
+                            onSelect={({ id: pairID, conflicts }, e, close) => {
+                              // For custom events, don't close the dropdown to allow interaction with nested dropdown
+                              if (pairID === CHART_METRICS_MAPPING.customEvents) {
+                                e?.stopPropagation()
+                                e?.preventDefault()
+                                return
+                              }
+
                               switchTrafficChartMetric(pairID, conflicts)
+                              close()
                             }}
                             chevron='mini'
                             headless
