@@ -188,11 +188,7 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
         <div className='xl:grid xl:grid-cols-2 xl:gap-8'>
           <div className='space-y-5 xl:col-span-1'>
             <SwetrixLogo theme='dark' lazy />
-            <p className='text-base text-gray-300'>
-              {t('footer.slogan')}
-              <br />
-              {t('footer.description')}
-            </p>
+            <p className='text-base text-gray-300'>{t('footer.description')}</p>
             <div className='flex text-gray-300'>
               <Trans t={t} i18nKey='footer.madeInHostedIn'>
                 <Flag className='mx-[1ch]' country='GB' size={18} alt='GB' aria-hidden='true' />
