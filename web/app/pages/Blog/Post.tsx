@@ -4,6 +4,7 @@ import { Link, useLoaderData, useLocation } from 'react-router'
 
 import NotFound from '~/pages/NotFound'
 import { trackPageview } from '~/utils/analytics'
+import { type TocItem } from '~/utils/toc'
 
 interface Post {
   slug: string
@@ -14,12 +15,16 @@ interface Post {
   date?: string
   author?: string
   twitter_handle?: string
+  toc: TocItem[]
+  tocEmbedded: boolean
 }
 
 export default function PostSlug() {
   const location = useLocation()
   const post = useLoaderData() as Post
   const { t } = useTranslation('common')
+
+  console.log('post:', post)
 
   useEffect(() => {
     const meta = post?.author
