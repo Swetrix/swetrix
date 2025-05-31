@@ -14,10 +14,8 @@ import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _pickBy from 'lodash/pickBy'
 import _replace from 'lodash/replace'
-import _size from 'lodash/size'
 import _some from 'lodash/some'
 import _toUpper from 'lodash/toUpper'
-import _truncate from 'lodash/truncate'
 import _uniqBy from 'lodash/uniqBy'
 import {
   BugIcon,
@@ -134,6 +132,7 @@ import AddAViewModal from './components/AddAViewModal'
 import BrowserDropdown from './components/BrowserDropdown'
 import CCRow from './components/CCRow'
 import CountryDropdown from './components/CountryDropdown'
+import CustomEventsSubmenu from './components/CustomEventsSubmenu'
 import CustomMetrics from './components/CustomMetrics'
 import { ErrorChart } from './components/ErrorChart'
 import { ErrorDetails } from './components/ErrorDetails'
@@ -190,7 +189,6 @@ import {
   deviceIconMapping,
 } from './ViewProject.helpers'
 
-const CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH = 32
 const SESSIONS_TAKE = 30
 const ERRORS_TAKE = 30
 
@@ -2845,52 +2843,17 @@ const ViewProject = () => {
                                 if (_isEmpty(panelsData.customs)) {
                                   return (
                                     <span className='flex cursor-not-allowed items-center px-4 py-2'>
-                                      <BanIcon className='mr-1 h-5 w-5' strokeWidth={1.5} />
+                                      <BanIcon className='mr-2 h-4 w-4' strokeWidth={1.5} />
                                       {label}
                                     </span>
                                   )
                                 }
 
                                 return (
-                                  <Dropdown
-                                    menuItemsClassName='max-w-[300px] max-h-[300px] overflow-auto'
-                                    items={chartMetricsCustomEvents}
-                                    title={label}
-                                    labelExtractor={(event) => (
-                                      <Checkbox
-                                        classes={{
-                                          label: cx({
-                                            hidden: analyticsLoading,
-                                          }),
-                                        }}
-                                        label={
-                                          _size(event.label) > CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH ? (
-                                            <span title={event.label}>
-                                              {_truncate(event.label, {
-                                                length: CUSTOM_EV_DROPDOWN_MAX_VISIBLE_LENGTH,
-                                              })}
-                                            </span>
-                                          ) : (
-                                            event.label
-                                          )
-                                        }
-                                        onChange={() => {
-                                          switchCustomEventChart(event.id)
-                                        }}
-                                        checked={event.active}
-                                      />
-                                    )}
-                                    className='w-full'
-                                    buttonClassName='group-hover:bg-gray-200 w-full dark:group-hover:bg-slate-700 px-4 py-2 inline-flex justify-start text-sm font-medium text-gray-700 dark:text-gray-50'
-                                    keyExtractor={(event) => event.id}
-                                    onSelect={(event, e) => {
-                                      e?.stopPropagation()
-                                      e?.preventDefault()
-
-                                      switchCustomEventChart(event.id)
-                                    }}
-                                    chevron='mini'
-                                    headless
+                                  <CustomEventsSubmenu
+                                    label={label}
+                                    chartMetricsCustomEvents={chartMetricsCustomEvents}
+                                    switchCustomEventChart={switchCustomEventChart}
                                   />
                                 )
                               }
