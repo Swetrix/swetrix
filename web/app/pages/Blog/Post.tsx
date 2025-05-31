@@ -13,7 +13,7 @@ interface Post {
   intro?: string
   date?: string
   author?: string
-  nickname?: string
+  twitter_handle?: string
 }
 
 export default function PostSlug() {
@@ -81,10 +81,10 @@ export default function PostSlug() {
                   <div className='mt-6'>
                     <ul className='-mx-5 -mt-6 flex flex-wrap text-sm leading-6'>
                       <li className='mt-6 flex items-center gap-4 px-5 font-medium whitespace-nowrap'>
-                        {post?.nickname ? (
+                        {post?.twitter_handle ? (
                           <img
                             className='size-12 rounded-full'
-                            src={`/assets/blog-authors/${post.nickname}.png`}
+                            src={`/assets/blog-authors/${post.twitter_handle}.png`}
                             alt=''
                           />
                         ) : null}
@@ -92,13 +92,13 @@ export default function PostSlug() {
                           {post?.author ? (
                             <div className='font-semibold text-slate-900 dark:text-slate-200'>{post.author}</div>
                           ) : null}
-                          {post?.nickname ? (
+                          {post?.twitter_handle ? (
                             <div className='mt-1'>
                               <a
-                                href={`https://github.com/${post.nickname}`}
+                                href={`https://x.com/${post.twitter_handle}`}
                                 className='text-indigo-600 hover:underline dark:text-indigo-400'
                               >
-                                @{post.nickname}
+                                @{post.twitter_handle}
                               </a>
                             </div>
                           ) : null}

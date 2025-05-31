@@ -27,7 +27,7 @@ interface GetPost {
   intro?: string
   date?: string
   author?: string
-  nickname?: string
+  twitter_handle?: string
 }
 
 export async function getPost(slug: string, category?: string): Promise<GetPost | null> {
@@ -55,6 +55,6 @@ export async function getPost(slug: string, category?: string): Promise<GetPost 
     intro: post.attributes?.intro,
     date: post.attributes?.date,
     author: post.attributes?.author,
-    nickname: post.attributes?.nickname,
+    twitter_handle: post.attributes?.twitter_handle,
   }
 }
