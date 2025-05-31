@@ -9,6 +9,11 @@ Disallow: /password-reset/*
 Disallow: /verify/*
 Disallow: /share/*
 Disallow: /change-email/*
+Disallow: /3rd-party-unsubscribe/*
+Disallow: /captchas/*
+Disallow: /organisation/invite/*
+Disallow: /project/transfer/*
+Disallow: /reports-unsubscribe/*
 `
 
 const SELFHOSTED_ROBOTS = `User-agent: *
