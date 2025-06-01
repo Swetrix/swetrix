@@ -1,4 +1,4 @@
-export interface TocItem {
+interface TocItem {
   id: string
   text: string
   level: number
