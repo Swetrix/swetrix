@@ -1,3 +1,5 @@
+import { Params } from '../interfaces/traffic'
+
 import ProjectDropdown from './ProjectDropdown'
 
 const OPTIONS = [
@@ -14,10 +16,11 @@ const OPTIONS = [
 interface OSDropdownProps {
   onSelect: (value: (typeof OPTIONS)[number]['value']) => void
   title: string
+  data: Params
 }
 
-const OSDropdown = ({ onSelect, title }: OSDropdownProps) => {
-  return <ProjectDropdown title={title} options={OPTIONS} onSelect={onSelect} headerKey='project.osInfo' />
+const OSDropdown = ({ onSelect, title, data }: OSDropdownProps) => {
+  return <ProjectDropdown title={title} options={OPTIONS} onSelect={onSelect} headerKey='project.osInfo' data={data} />
 }
 
 export default OSDropdown

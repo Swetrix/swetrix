@@ -1,3 +1,5 @@
+import { Params } from '../interfaces/traffic'
+
 import ProjectDropdown from './ProjectDropdown'
 
 const OPTIONS = [
@@ -14,10 +16,11 @@ const OPTIONS = [
 interface PageDropdownProps {
   onSelect: (value: (typeof OPTIONS)[number]['value']) => void
   title: string
+  data: Params
 }
 
-const PageDropdown = ({ onSelect, title }: PageDropdownProps) => {
-  return <ProjectDropdown title={title} options={OPTIONS} onSelect={onSelect} headerKey='project.urlInfo' />
+const PageDropdown = ({ onSelect, title, data }: PageDropdownProps) => {
+  return <ProjectDropdown title={title} options={OPTIONS} onSelect={onSelect} headerKey='project.urlInfo' data={data} />
 }
 
 export default PageDropdown

@@ -1,8 +1,11 @@
+import { Params } from '../interfaces/traffic'
+
 import ProjectDropdown from './ProjectDropdown'
 
 interface CountryDropdownProps {
   onSelect: (value: string) => void
   title: string
+  data: Params
 }
 
 const OPTIONS = [
@@ -20,8 +23,8 @@ const OPTIONS = [
   },
 ]
 
-const CountryDropdown = ({ onSelect, title }: CountryDropdownProps) => {
-  return <ProjectDropdown title={title} options={OPTIONS} onSelect={onSelect} headerKey='project.geo' />
+const CountryDropdown = ({ onSelect, title, data }: CountryDropdownProps) => {
+  return <ProjectDropdown title={title} options={OPTIONS} onSelect={onSelect} headerKey='project.geo' data={data} />
 }
 
 export default CountryDropdown

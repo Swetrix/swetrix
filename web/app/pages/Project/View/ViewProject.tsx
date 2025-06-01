@@ -3375,8 +3375,14 @@ const ViewProject = () => {
                                   icon={panelIcon}
                                   id={countryActiveTab}
                                   getFilterLink={getFilterLink}
-                                  // @ts-expect-error - onSelect not typed
-                                  name={<CountryDropdown onSelect={setCountryActiveTab} title={ccPanelName} />}
+                                  name={
+                                    <CountryDropdown
+                                      // @ts-expect-error - onSelect not typed
+                                      onSelect={setCountryActiveTab}
+                                      title={ccPanelName}
+                                      data={activeError?.params}
+                                    />
+                                  }
                                   data={activeError?.params[countryActiveTab]}
                                   rowMapper={rowMapper}
                                 />
@@ -3419,7 +3425,13 @@ const ViewProject = () => {
                                   icon={panelIcon}
                                   id={browserActiveTab}
                                   getFilterLink={getFilterLink}
-                                  name={<BrowserDropdown onSelect={setBrowserActiveTab} title={brPanelName} />}
+                                  name={
+                                    <BrowserDropdown
+                                      onSelect={setBrowserActiveTab}
+                                      title={brPanelName}
+                                      data={activeError?.params}
+                                    />
+                                  }
                                   data={activeError?.params[browserActiveTab]}
                                   rowMapper={rowMapper}
                                 />
@@ -3469,7 +3481,13 @@ const ViewProject = () => {
                                   icon={panelIcon}
                                   id={osActiveTab}
                                   getFilterLink={getFilterLink}
-                                  name={<OSDropdown onSelect={setOsActiveTab} title={osPanelName} />}
+                                  name={
+                                    <OSDropdown
+                                      onSelect={setOsActiveTab}
+                                      title={osPanelName}
+                                      data={activeError?.params}
+                                    />
+                                  }
                                   data={activeError?.params[osActiveTab]}
                                   rowMapper={rowMapper}
                                 />
@@ -3532,7 +3550,13 @@ const ViewProject = () => {
                                     return decodedUri
                                   }}
                                   data={activeError?.params[pageActiveTab]}
-                                  name={<PageDropdown onSelect={setPageActiveTab} title={tnMapping[pageActiveTab]} />}
+                                  name={
+                                    <PageDropdown
+                                      onSelect={setPageActiveTab}
+                                      title={tnMapping[pageActiveTab]}
+                                      data={activeError?.params}
+                                    />
+                                  }
                                 />
                               )
                             }
@@ -3664,8 +3688,14 @@ const ViewProject = () => {
                                   icon={panelIcon}
                                   id={countryActiveTab}
                                   getFilterLink={getFilterLink}
-                                  // @ts-expect-error - onSelect not typed
-                                  name={<CountryDropdown onSelect={setCountryActiveTab} title={ccPanelName} />}
+                                  name={
+                                    <CountryDropdown
+                                      // @ts-expect-error - onSelect not typed
+                                      onSelect={setCountryActiveTab}
+                                      title={ccPanelName}
+                                      data={panelsData.data}
+                                    />
+                                  }
                                   data={panelsData.data[countryActiveTab]}
                                   customTabs={customTabs}
                                   rowMapper={rowMapper}
@@ -3709,7 +3739,13 @@ const ViewProject = () => {
                                   icon={panelIcon}
                                   id={browserActiveTab}
                                   getFilterLink={getFilterLink}
-                                  name={<BrowserDropdown onSelect={setBrowserActiveTab} title={brPanelName} />}
+                                  name={
+                                    <BrowserDropdown
+                                      onSelect={setBrowserActiveTab}
+                                      title={brPanelName}
+                                      data={panelsData.data}
+                                    />
+                                  }
                                   data={panelsData.data[browserActiveTab]}
                                   rowMapper={rowMapper}
                                 />
@@ -3759,7 +3795,9 @@ const ViewProject = () => {
                                   icon={panelIcon}
                                   id={osActiveTab}
                                   getFilterLink={getFilterLink}
-                                  name={<OSDropdown onSelect={setOsActiveTab} title={osPanelName} />}
+                                  name={
+                                    <OSDropdown onSelect={setOsActiveTab} title={osPanelName} data={panelsData.data} />
+                                  }
                                   data={panelsData.data[osActiveTab]}
                                   rowMapper={rowMapper}
                                 />
@@ -3822,8 +3860,14 @@ const ViewProject = () => {
                                   icon={panelIcon}
                                   id={utmActiveTab}
                                   getFilterLink={getFilterLink}
-                                  // @ts-expect-error - onSelect not typed
-                                  name={<UTMDropdown onSelect={setUtmActiveTab} title={ccPanelName} />}
+                                  name={
+                                    <UTMDropdown
+                                      // @ts-expect-error - onSelect not typed
+                                      onSelect={setUtmActiveTab}
+                                      title={ccPanelName}
+                                      data={panelsData.data}
+                                    />
+                                  }
                                   data={panelsData.data[utmActiveTab]}
                                   customTabs={customTabs}
                                   rowMapper={({ name: entryName }) => decodeURIComponent(entryName)}
@@ -3860,7 +3904,11 @@ const ViewProject = () => {
                                     pgActiveFragment === 1 ? (
                                       tnMapping.userFlow
                                     ) : (
-                                      <PageDropdown onSelect={setPageActiveTab} title={tnMapping[pageActiveTab]} />
+                                      <PageDropdown
+                                        onSelect={setPageActiveTab}
+                                        title={tnMapping[pageActiveTab]}
+                                        data={panelsData.data}
+                                      />
                                     )
                                   }
                                   data={panelsData.data[pageActiveTab]}
@@ -3966,8 +4014,14 @@ const ViewProject = () => {
                                   icon={panelIcon}
                                   id={countryActiveTab}
                                   getFilterLink={getFilterLink}
-                                  // @ts-expect-error - onSelect not typed
-                                  name={<CountryDropdown onSelect={setCountryActiveTab} title={ccPanelName} />}
+                                  name={
+                                    <CountryDropdown
+                                      // @ts-expect-error - onSelect not typed
+                                      onSelect={setCountryActiveTab}
+                                      title={ccPanelName}
+                                      data={panelsDataPerf.data}
+                                    />
+                                  }
                                   data={panelsDataPerf.data[countryActiveTab]}
                                   customTabs={customTabs}
                                   rowMapper={rowMapper}
@@ -4026,7 +4080,13 @@ const ViewProject = () => {
                                     entryName ||
                                     (pageActiveTab === 'pg' ? t('project.redactedPage') : t('project.unknownHost'))
                                   }
-                                  name={<PageDropdown onSelect={setPageActiveTab} title={tnMapping[pageActiveTab]} />}
+                                  name={
+                                    <PageDropdown
+                                      onSelect={setPageActiveTab}
+                                      title={tnMapping[pageActiveTab]}
+                                      data={panelsDataPerf.data}
+                                    />
+                                  }
                                 />
                               )
                             }
@@ -4067,7 +4127,13 @@ const ViewProject = () => {
                                   icon={panelIcon}
                                   id={browserActiveTab}
                                   getFilterLink={getFilterLink}
-                                  name={<BrowserDropdown onSelect={setBrowserActiveTab} title={brPanelName} />}
+                                  name={
+                                    <BrowserDropdown
+                                      onSelect={setBrowserActiveTab}
+                                      title={brPanelName}
+                                      data={panelsDataPerf.data}
+                                    />
+                                  }
                                   data={panelsDataPerf.data[browserActiveTab]}
                                   rowMapper={rowMapper}
                                 />

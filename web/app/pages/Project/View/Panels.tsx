@@ -343,10 +343,18 @@ interface MetadataProps {
 
 interface CustomEventsProps extends MetadataProps {
   setActiveTab: React.Dispatch<React.SetStateAction<'customEv' | 'properties'>>
+  dataKeys: {
+    properties: string[]
+    customEv: string[]
+  }
 }
 
 interface PagePropertiesProps extends MetadataProps {
   setActiveTab: React.Dispatch<React.SetStateAction<'customEv' | 'properties'>>
+  dataKeys: {
+    properties: string[]
+    customEv: string[]
+  }
 }
 
 interface SortRows {
@@ -553,6 +561,7 @@ const CustomEvents = ({
   getCustomEventMetadata,
   setActiveTab,
   getFilterLink,
+  dataKeys,
 }: CustomEventsProps) => {
   const { t } = useTranslation('common')
   const [page, setPage] = useState(0)
@@ -818,7 +827,7 @@ const CustomEvents = ({
     return (
       <PanelContainer
         // @ts-expect-error - onSelect not typed
-        name={<CustomEventsDropdown onSelect={setActiveTab} title={t('project.customEv')} />}
+        name={<CustomEventsDropdown onSelect={setActiveTab} title={t('project.customEv')} data={dataKeys} />}
         type='ce'
         setActiveFragment={setActiveFragment}
         activeFragment={activeFragment}
@@ -834,7 +843,7 @@ const CustomEvents = ({
     return (
       <PanelContainer
         // @ts-expect-error - onSelect not typed
-        name={<CustomEventsDropdown onSelect={setActiveTab} title={t('project.customEv')} />}
+        name={<CustomEventsDropdown onSelect={setActiveTab} title={t('project.customEv')} data={dataKeys} />}
         type='ce'
         setActiveFragment={setActiveFragment}
         activeFragment={activeFragment}
@@ -864,7 +873,7 @@ const CustomEvents = ({
     return (
       <PanelContainer
         // @ts-expect-error - onSelect not typed
-        name={<CustomEventsDropdown onSelect={setActiveTab} title={t('project.customEv')} />}
+        name={<CustomEventsDropdown onSelect={setActiveTab} title={t('project.customEv')} data={dataKeys} />}
         type='ce'
         activeFragment={activeFragment}
         setActiveFragment={setActiveFragment}
@@ -882,7 +891,7 @@ const CustomEvents = ({
     <PanelContainer
       customTabs={customTabs}
       // @ts-expect-error - onSelect not typed
-      name={<CustomEventsDropdown onSelect={setActiveTab} title={t('project.customEv')} />}
+      name={<CustomEventsDropdown onSelect={setActiveTab} title={t('project.customEv')} data={dataKeys} />}
       type='ce'
       setActiveFragment={setActiveFragment}
       activeFragment={activeFragment}
@@ -1022,6 +1031,7 @@ const PageProperties = ({
   getPropertyMetadata,
   setActiveTab,
   getFilterLink,
+  dataKeys,
 }: PagePropertiesProps) => {
   const { t } = useTranslation('common')
   const [page, setPage] = useState(0)
@@ -1272,7 +1282,7 @@ const PageProperties = ({
     return (
       <PanelContainer
         // @ts-expect-error - onSelect not typed
-        name={<CustomEventsDropdown onSelect={setActiveTab} title={t('project.properties')} />}
+        name={<CustomEventsDropdown onSelect={setActiveTab} title={t('project.properties')} data={dataKeys} />}
         type='props'
         setActiveFragment={setActiveFragment}
         activeFragment={activeFragment}
@@ -1286,7 +1296,7 @@ const PageProperties = ({
   return (
     <PanelContainer
       // @ts-expect-error - onSelect not typed
-      name={<CustomEventsDropdown onSelect={setActiveTab} title={t('project.properties')} />}
+      name={<CustomEventsDropdown onSelect={setActiveTab} title={t('project.properties')} data={dataKeys} />}
       type='props'
       setActiveFragment={setActiveFragment}
       activeFragment={activeFragment}
@@ -1422,11 +1432,18 @@ const PageProperties = ({
 const Metadata = (props: MetadataProps) => {
   const [activeTab, setActiveTab] = useState<'customEv' | 'properties'>('customEv')
 
+  const dataKeys = useMemo(() => {
+    return {
+      properties: Object.keys(props.properties || {}),
+      customEv: Object.keys(props.customs || {}),
+    }
+  }, [props.properties, props.customs])
+
   if (activeTab === 'customEv') {
-    return <CustomEvents {...props} setActiveTab={setActiveTab} />
+    return <CustomEvents {...props} dataKeys={dataKeys} setActiveTab={setActiveTab} />
   }
 
-  return <PageProperties {...props} setActiveTab={setActiveTab} />
+  return <PageProperties {...props} dataKeys={dataKeys} setActiveTab={setActiveTab} />
 }
 
 interface FilterWrapperProps {

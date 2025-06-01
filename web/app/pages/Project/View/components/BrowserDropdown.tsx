@@ -1,3 +1,5 @@
+import { Params } from '../interfaces/traffic'
+
 import ProjectDropdown from './ProjectDropdown'
 
 const OPTIONS = [
@@ -14,10 +16,13 @@ const OPTIONS = [
 interface BrowserDropdownProps {
   onSelect: (value: (typeof OPTIONS)[number]['value']) => void
   title: string
+  data: Params
 }
 
-const BrowserDropdown = ({ onSelect, title }: BrowserDropdownProps) => {
-  return <ProjectDropdown title={title} options={OPTIONS} onSelect={onSelect} headerKey='project.browserInfo' />
+const BrowserDropdown = ({ onSelect, title, data }: BrowserDropdownProps) => {
+  return (
+    <ProjectDropdown title={title} options={OPTIONS} onSelect={onSelect} headerKey='project.browserInfo' data={data} />
+  )
 }
 
 export default BrowserDropdown

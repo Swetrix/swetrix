@@ -1,8 +1,11 @@
+import { Params } from '../interfaces/traffic'
+
 import ProjectDropdown from './ProjectDropdown'
 
 interface UTMDropdownProps {
   onSelect: (value: string) => void
   title: string
+  data: Params
 }
 
 const OPTIONS = [
@@ -28,8 +31,10 @@ const OPTIONS = [
   },
 ]
 
-const UTMDropdown = ({ onSelect, title }: UTMDropdownProps) => {
-  return <ProjectDropdown title={title} options={OPTIONS} onSelect={onSelect} headerKey='project.campaigns' />
+const UTMDropdown = ({ onSelect, title, data }: UTMDropdownProps) => {
+  return (
+    <ProjectDropdown title={title} options={OPTIONS} onSelect={onSelect} headerKey='project.campaigns' data={data} />
+  )
 }
 
 export default UTMDropdown

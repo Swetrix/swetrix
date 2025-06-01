@@ -1,6 +1,9 @@
 import { useTranslation } from 'react-i18next'
 
+import { Badge } from '~/ui/Badge'
 import Dropdown from '~/ui/Dropdown'
+
+import { Params } from '../interfaces/traffic'
 
 interface ProjectDropdownOption {
   readonly label: string
@@ -12,6 +15,7 @@ interface ProjectDropdownProps<T extends string = string> {
   title: string
   options: readonly ProjectDropdownOption[]
   headerKey: string
+  data: Params
 }
 
 const ProjectDropdown = <T extends string = string>({
@@ -19,6 +23,7 @@ const ProjectDropdown = <T extends string = string>({
   title,
   options,
   headerKey,
+  data,
 }: ProjectDropdownProps<T>) => {
   const { t } = useTranslation()
 
@@ -30,13 +35,19 @@ const ProjectDropdown = <T extends string = string>({
         onSelect(item.value as T)
         close()
       }}
-      labelExtractor={(item) => t(item.label)}
+      selectItemClassName='flex items-center justify-between space-x-4'
+      labelExtractor={(item) => (
+        <>
+          <span>{t(item.label)}</span>
+          {data?.[item.value] ? <Badge colour='slate' label={data[item.value].length.toString()} /> : null}
+        </>
+      )}
       keyExtractor={(item) => item.value}
       header={t(headerKey)}
       headless
       buttonClassName='cursor-pointer !p-0 text-lg font-semibold flex items-center'
       className='relative inline-block'
-      menuItemsClassName='absolute top-4 left-5 z-10 mt-2 max-h-[200px] min-w-[250px] overflow-auto'
+      menuItemsClassName='absolute top-4 left-5 z-10 mt-2 max-h-[200px] !min-w-[220px] overflow-auto'
       chevron='mini'
     />
   )
