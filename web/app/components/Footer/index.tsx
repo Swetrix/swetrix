@@ -72,6 +72,11 @@ const navigation = {
       key: string
       href: string
       internal: boolean
+    } => ({ key: 'data-policy', href: routesPath.dataPolicy, internal: true }),
+    (): {
+      key: string
+      href: string
+      internal: boolean
     } => ({ key: 'cookie', href: routesPath.cookiePolicy, internal: true }),
     (): {
       key: string
