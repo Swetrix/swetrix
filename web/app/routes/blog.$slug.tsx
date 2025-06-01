@@ -1,5 +1,4 @@
 import _isString from 'lodash/isString'
-import _join from 'lodash/join'
 import _last from 'lodash/last'
 import _map from 'lodash/map'
 import { redirect, data } from 'react-router'
@@ -37,16 +36,27 @@ export const sitemap: SitemapFunction = async () => {
     let date: string
 
     if (_isString(file)) {
+      // Standalone post - just the filename
       handle = getSlugFromFilename(file)
       date = getDateFromFilename(file)
     } else {
+      // Array format: ["blog", ...] or ["blog", "category", ...]
       const _file = _last(file) as string
-      handle = _join([...file.slice(0, -1), getSlugFromFilename(_file)], '/')
+
+      if (file.length === 2) {
+        // ["blog", "filename"] - blog post in root
+        handle = `blog/${getSlugFromFilename(_file)}`
+      } else {
+        // ["blog", "category", "filename"] - blog post in subdirectory
+        const category = file[1]
+        handle = `blog/${category}/${getSlugFromFilename(_file)}`
+      }
+
       date = getDateFromFilename(_file)
     }
 
     return {
-      loc: `/blog/${handle}`,
+      loc: `/${handle}`,
       lastmod: date,
       changefreq: 'weekly',
     }

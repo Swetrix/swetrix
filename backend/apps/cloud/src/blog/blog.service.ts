@@ -195,14 +195,39 @@ export class BlogService {
       category ? path.join(BLOG_POSTS_PATH, category) : BLOG_POSTS_PATH,
     )) as string[]
     const directories = _filter(allFiles, file => !_endsWith(file, '.md'))
+    const markdownFiles = _filter(allFiles, file => _endsWith(file, '.md'))
 
-    if (_isEmpty(directories)) {
-      return allFiles
-    }
+    const processedFiles = await Promise.all(
+      _map(markdownFiles, async filename => {
+        const slug = _replace(filename, /\.md$/, '')
 
-    const files = _map(
-      _filter(allFiles, file => _endsWith(file, '.md')),
-      file => _replace(file, /\.md$/, ''),
+        try {
+          const filePath = category
+            ? path.join(BLOG_POSTS_PATH, category, filename)
+            : path.join(BLOG_POSTS_PATH, filename)
+
+          const file = await fs.readFile(filePath)
+          const { attributes }: IParseFontMatter = parseFrontMatter(
+            file.toString(),
+          )
+
+          if (attributes.standalone === true) {
+            return slug
+          }
+
+          if (category) {
+            return ['blog', category, slug]
+          } else {
+            return ['blog', slug]
+          }
+        } catch {
+          if (category) {
+            return ['blog', category, slug]
+          } else {
+            return ['blog', slug]
+          }
+        }
+      }),
     )
 
     let filesInDirectories: any[] = []
@@ -210,19 +235,14 @@ export class BlogService {
     for (let i = 0; i < _size(directories); ++i) {
       const directory = directories[i]
 
-      // set to true for infinite depth directory look-up
-
       const _files = await this.getSitemapFileNames(
         directory,
         infiniteRecursive,
       )
-      filesInDirectories = [
-        ...filesInDirectories,
-        ..._map(_files, file => [directory, _replace(file, /\.md$/, '')]),
-      ]
+      filesInDirectories = [...filesInDirectories, ..._files]
     }
 
-    const sitemap = [...files, ...filesInDirectories]
+    const sitemap = [...processedFiles, ...filesInDirectories]
 
     await redis.set(
       REDIS_SITEMAP_KEY,

@@ -3,12 +3,12 @@ import { marked, type Tokens } from 'marked'
 
 import { getBlogPost, getBlogPostWithCategory } from '~/api'
 
-import { extractTableOfContents, ensureHeaderIds, generateSlug, renderTocAsHtml, type TocItem } from './toc'
+import { extractTableOfContents, ensureHeaderIds, generateSlug, renderTocAsHtml } from './toc'
 
 const renderer = new marked.Renderer()
 
 renderer.link = ({ href, text }: Tokens.Link) => {
-  const url = new URL(href)
+  const url = new URL(href, 'https://swetrix.com')
 
   if (url.hostname !== 'swetrix.com') {
     url.searchParams.set('utm_source', 'swetrix.com')
@@ -32,15 +32,14 @@ interface GetPost {
   title?: string
   html: string
   hidden?: boolean
+  standalone?: boolean
   intro?: string
   date?: string
   author?: string
   twitter_handle?: string
-  toc: TocItem[]
-  tocEmbedded: boolean // Flag to track if TOC was embedded in content
 }
 
-export async function getPost(slug: string, category?: string): Promise<GetPost | null> {
+export async function getPost(slug: string, category?: string, tryStandalone?: boolean): Promise<GetPost | null> {
   let post: any = null
 
   try {
@@ -57,22 +56,21 @@ export async function getPost(slug: string, category?: string): Promise<GetPost 
     return null
   }
 
+  if (!tryStandalone && post.attributes?.standalone) {
+    return null
+  }
+
   const tocPlaceholder = '::TABLE_OF_CONTENTS::'
   const hasTocPlaceholder = post.body.includes(tocPlaceholder)
 
-  // Convert markdown to HTML
   let html = marked(post.body, { renderer }) as string
 
-  // Ensure all headers have IDs for linking
   html = ensureHeaderIds(html)
 
-  // Extract table of contents from the HTML
   const toc = extractTableOfContents(html)
 
-  // If TOC placeholder exists and we have TOC items, replace it with actual TOC HTML
   if (hasTocPlaceholder && toc.length > 0) {
     const tocHtml = renderTocAsHtml(toc)
-    // Replace the placeholder with the actual TOC HTML
     html = html.replace(new RegExp(tocPlaceholder, 'gi'), tocHtml)
   }
 
@@ -85,7 +83,6 @@ export async function getPost(slug: string, category?: string): Promise<GetPost 
     date: post.attributes?.date,
     author: post.attributes?.author,
     twitter_handle: post.attributes?.twitter_handle,
-    toc,
-    tocEmbedded: hasTocPlaceholder && toc.length > 0,
+    standalone: post.attributes?.standalone,
   }
 }

@@ -4,27 +4,23 @@ import { Link, useLoaderData, useLocation } from 'react-router'
 
 import NotFound from '~/pages/NotFound'
 import { trackPageview } from '~/utils/analytics'
-import { type TocItem } from '~/utils/toc'
 
 interface Post {
   slug: string
   title?: string
   html: string
   hidden?: boolean
+  standalone?: boolean
   intro?: string
   date?: string
   author?: string
   twitter_handle?: string
-  toc: TocItem[]
-  tocEmbedded: boolean
 }
 
 export default function PostSlug() {
   const location = useLocation()
   const post = useLoaderData() as Post
   const { t } = useTranslation('common')
-
-  console.log('post:', post)
 
   useEffect(() => {
     const meta = post?.author
@@ -52,25 +48,29 @@ export default function PostSlug() {
           <div className='px-4 sm:px-6 md:px-8'>
             <div className='mx-auto max-w-4xl pb-28'>
               <main className='bg-gray-50 dark:bg-slate-900'>
-                <Link
-                  to='/blog'
-                  className='group mt-10 mb-6 flex text-sm leading-6 font-semibold text-slate-700 uppercase hover:text-slate-900 dark:text-slate-200 dark:hover:text-white'
-                >
-                  <svg
-                    viewBox='0 -9 3 24'
-                    className='mr-3 h-6 w-auto overflow-visible text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'
+                {post.standalone ? (
+                  <div className='mt-10 mb-6' />
+                ) : (
+                  <Link
+                    to='/blog'
+                    className='group mt-10 mb-6 flex text-sm leading-6 font-semibold text-slate-700 uppercase hover:text-slate-900 dark:text-slate-200 dark:hover:text-white'
                   >
-                    <path
-                      d='M3 0L0 3L3 6'
-                      fill='none'
-                      stroke='currentColor'
-                      strokeWidth='2'
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                    />
-                  </svg>
-                  {t('common.allPosts')}
-                </Link>
+                    <svg
+                      viewBox='0 -9 3 24'
+                      className='mr-3 h-6 w-auto overflow-visible text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'
+                    >
+                      <path
+                        d='M3 0L0 3L3 6'
+                        fill='none'
+                        stroke='currentColor'
+                        strokeWidth='2'
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                      />
+                    </svg>
+                    {t('common.allPosts')}
+                  </Link>
+                )}
                 <article className='relative'>
                   <div className='mb-2 font-mono text-sm leading-6 font-medium tracking-wide uppercase'>
                     <dl>
