@@ -56,7 +56,7 @@ export async function getPost(slug: string, category?: string, tryStandalone?: b
     return null
   }
 
-  if (!tryStandalone && post.attributes?.standalone) {
+  if (!!tryStandalone !== !!post.attributes?.standalone) {
     return null
   }
 
