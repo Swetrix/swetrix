@@ -332,7 +332,7 @@ export const LS_CAPTCHA_VIEW_PREFS_SETTING = 'captcha-view-preferences'
 
 export const DEFAULT_TIMEZONE = 'Etc/GMT'
 
-export const DONATE_URL = 'https://ko-fi.com/andriir'
+export const DONATE_URL = 'https://github.com/sponsors/Swetrix'
 export const HAVE_I_BEEN_PWNED_URL = 'https://haveibeenpwned.com/passwords'
 export const LINKEDIN_URL = 'https://www.linkedin.com/company/swetrix/'
 export const GITHUB_URL = 'https://github.com/Swetrix/swetrix'

@@ -35,7 +35,6 @@ const navigation = {
     { key: 'changelog', href: routesPath.changelog, internal: true },
     { key: 'open', href: routesPath.open, internal: true },
     { key: 'status', href: STATUSPAGE_URL },
-    { key: 'donate', href: DONATE_URL },
     { key: 'blog', href: routesPath.blog, internal: true },
   ],
   legal: [
