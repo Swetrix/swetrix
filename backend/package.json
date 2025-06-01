@@ -5,7 +5,7 @@
   "scripts": {
     "deploy": "npm run prebuild && nest build cloud && mv apps/cloud/dist dist",
     "deploy:community": "npm run prebuild && nest build community && mv apps/community/dist dist",
-    "refresh-submodules": "git submodule foreach git pull",
+    "refresh-submodules": "git submodule update --remote -- blog-posts/",
     "init-submodules": "git submodule update --init --recursive",
     "prebuild": "rimraf dist",
     "build": "npm run refresh-submodules && nest build cloud && mv apps/cloud/dist dist && npm run sentry:sourcemaps",
