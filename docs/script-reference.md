@@ -55,7 +55,7 @@ swetrix.track({
 | --- | --- | --- |
 | ev | The event identifier you want to track.<br />This has to be a string, which:<br />1. Contains only English letters (a-Z A-Z), numbers (0-9), underscores (_) and dots (.).<br />2. Is fewer than 64 characters.<br />3. Starts with an English letter. | REQUIRED PARAMETER |
 | unique | If true, only 1 event with the same ID will be saved per user session.<br />The principle of this parameter is similar to page views and unique views. | `false` |
-| meta | An object that contains event-related metadata. The values of the object must be strings, the maximum number of keys allowed is `20` and the total length of the values combined must be less than `1000` characters.<br /> This feature is useful if you want to track additional data about your custom events, for example the custom event name might be `Sign up` and the metadata might be `{ affiliate: 'Yes', footer: 'No' }`. | `{}` |
+| meta | An object that contains event-related metadata. The values of the object must be a primitive type (string, number, boolean, null) which will be converted to a string, the maximum number of keys allowed is `20` and the total length of the values combined must be less than `1000` characters.<br /> This feature is useful if you want to track additional data about your custom events, for example the custom event name might be `Sign up` and the metadata might be `{ affiliate: 'Yes', footer: 'No' }`. | `{}` |
 
 ## trackViews()
 Calling trackViews will result in sending the data about the user to our servers.
@@ -181,7 +181,7 @@ This function takes the following arguments:
 4. (optional) `colno` - on what column in your code did the error occur (e.g. 26)
 5. (optional) `filename` - in what file did the error occur (e.g. https://example.com/broken.js)
 6. (optional) `stackTrace` - the stack trace of the error (e.g. `Uncaught Error\n    at query (:10:11)\n    at database (:6:5)`)
-7. (optional) `meta` - an object that contains event-related metadata. The values of the object must be strings, the maximum number of keys allowed is `100` and the total length of the values combined must be less than `2000` characters.
+7. (optional) `meta` - an object that contains event-related metadata. The values of the object must be a primitive type (string, number, boolean, null) which will be converted to a string, the maximum number of keys allowed is `100` and the total length of the values combined must be less than `2000` characters.
 
 Here is an example of how to use this function:
 ```javascript

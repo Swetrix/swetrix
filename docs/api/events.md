@@ -69,7 +69,7 @@ All of the values are numbers in milliseconds.
 | `so` | `string` | `false` | A source of the pageview (e.g. `ref`, `source` or `utm_source` GET parameter) |
 | `me` | `string` | `false` | A medium of the pageview (e.g. `utm_medium` GET parameter) |
 | `ca` | `string` | `false` | A campaign of the pageview (e.g. `utm_campaign` GET parameter) |
-| `meta` | `object` | `false` | A `key` / `value` pair of custom properties for your event (e.g. if your event is `signup`, you can include `meta` like `{ affiliate: 'Yes', currency: 'GBP' }`). The values of the object must be strings, the maximum number of keys allowed is 100 and the total length of the keys and values combined must be less than 2000 characters. |
+| `meta` | `object` | `false` | A `key` / `value` pair of custom properties for your event (e.g. if your event is `signup`, you can include `meta` like `{ affiliate: 'Yes', currency: 'GBP' }`). The values of the object must be a primitive type (string, number, boolean, null) which will be converted to a string, the maximum number of keys allowed is 100 and the total length of the keys and values combined must be less than 2000 characters. |
 
 ### Error event structure
 | Name | Type | Required | Description |
@@ -84,7 +84,7 @@ All of the values are numbers in milliseconds.
 | `tz` | `string` | `false` | Visitor's timezone (used as a backup in case IP geolocation fails). I.e. if it's set to `Europe/Kiev` and IP geolocation fails, we will set the country of this entry to `Ukraine`) |
 | `pg` | `string` | `false` | A page that user sent data from (e.g. `/home`) |
 | `lc` | `string` | `false` | A locale of the user (e.g. `en-US` or `uk-UA`) |
-| `meta` | `object` | `false` | A `key` / `value` pair of custom properties for your event, for example `{ level: 'Critical' }`. The values of the object must be strings, the maximum number of keys allowed is 100 and the total length of the keys and values combined must be less than 2000 characters. |
+| `meta` | `object` | `false` | A `key` / `value` pair of custom properties for your event, for example `{ level: 'Critical' }`. The values of the object must be a primitive type (string, number, boolean, null) which will be converted to a string, the maximum number of keys allowed is 100 and the total length of the keys and values combined must be less than 2000 characters. |
 
 ### Heartbeat event structure
 | Name | Type | Required | Description |
