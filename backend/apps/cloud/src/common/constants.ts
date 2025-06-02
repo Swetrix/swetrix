@@ -116,6 +116,9 @@ const TRAFFIC_COLUMNS = [
 
 const TRAFFIC_METAKEY_COLUMNS = ['tag:key', 'tag:value']
 
+const ALL_COLUMNS = [...TRAFFIC_COLUMNS, 'ev']
+const CAPTCHA_COLUMNS = ['cc', 'br', 'os', 'dv']
+const PERFORMANCE_COLUMNS = ['cc', 'rg', 'ct', 'host', 'pg', 'dv', 'br', 'brv']
 const ERROR_COLUMNS = [
   'host',
   'pg',
@@ -129,11 +132,6 @@ const ERROR_COLUMNS = [
   'rg',
   'ct',
 ]
-
-const ALL_COLUMNS = [...TRAFFIC_COLUMNS, 'ev']
-
-const CAPTCHA_COLUMNS = ['cc', 'br', 'os', 'dv']
-const PERFORMANCE_COLUMNS = ['cc', 'rg', 'ct', 'host', 'pg', 'dv', 'br', 'brv']
 
 const sentryIgnoreErrors: (string | RegExp)[] = [
   'BadRequestException',

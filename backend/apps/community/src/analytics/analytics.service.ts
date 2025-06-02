@@ -295,6 +295,7 @@ const generateParamsQuery = (
 export enum DataType {
   ANALYTICS = 'analytics',
   PERFORMANCE = 'performance',
+  ERRORS = 'errors',
 }
 
 const isValidOrigin = (origins: string[], origin: string) => {
@@ -483,6 +484,10 @@ export class AnalyticsService {
   getDataTypeColumns(dataType: DataType): string[] {
     if (dataType === DataType.ANALYTICS) {
       return TRAFFIC_COLUMNS
+    }
+
+    if (dataType === DataType.ERRORS) {
+      return ERROR_COLUMNS
     }
 
     return PERFORMANCE_COLUMNS
@@ -935,9 +940,7 @@ export class AnalyticsService {
           !_includes(TRAFFIC_METAKEY_COLUMNS, column) &&
           !_startsWith(column, 'tag:key:')
         ) {
-          throw new UnprocessableEntityException(
-            `The provided filter (${column}) is not supported`,
-          )
+          return prev
         }
 
         const res = []
