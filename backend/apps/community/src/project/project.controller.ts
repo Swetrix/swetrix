@@ -15,6 +15,7 @@ import {
   UnauthorizedException,
   Patch,
   HttpStatus,
+  ParseIntPipe,
 } from '@nestjs/common'
 import { v4 as uuidv4 } from 'uuid'
 import {
@@ -109,9 +110,9 @@ export class ProjectController {
   @Auth([], true)
   async get(
     @CurrentUserId() userId: string,
-    @Query('take') take: number | undefined,
-    @Query('skip') skip: number | undefined,
-    @Query('search') search: string | undefined,
+    @Query('take', new ParseIntPipe({ optional: true })) take?: number,
+    @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
+    @Query('search') search?: string,
     @Query('sort')
     sort?: 'alpha_asc' | 'alpha_desc' | 'date_asc' | 'date_desc',
   ): Promise<Pagination<Project> | Project[] | object> {

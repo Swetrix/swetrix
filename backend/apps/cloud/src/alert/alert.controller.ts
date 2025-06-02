@@ -13,6 +13,7 @@ import {
   BadRequestException,
   HttpException,
   HttpStatus,
+  ParseIntPipe,
 } from '@nestjs/common'
 import { In } from 'typeorm'
 import { ApiTags, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
@@ -86,8 +87,8 @@ export class AlertController {
   async getProjectAlerts(
     @CurrentUserId() userId: string,
     @Param('projectId') projectId: string,
-    @Query('take') take: number | undefined,
-    @Query('skip') skip: number | undefined,
+    @Query('take', new ParseIntPipe({ optional: true })) take?: number,
+    @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
   ) {
     this.logger.log({ userId, projectId, take, skip }, 'GET /alert/:projectId')
 

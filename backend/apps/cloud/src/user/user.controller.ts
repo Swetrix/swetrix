@@ -17,6 +17,7 @@ import {
   Ip,
   Patch,
   NotFoundException,
+  ParseIntPipe,
 } from '@nestjs/common'
 import { Request } from 'express'
 import { ApiTags, ApiQuery, ApiResponse, ApiBearerAuth } from '@nestjs/swagger'
@@ -132,8 +133,8 @@ export class UserController {
   @UseGuards(JwtAccessTokenGuard, RolesGuard)
   @Roles(UserType.ADMIN)
   async get(
-    @Query('take') take: number | undefined,
-    @Query('skip') skip: number | undefined,
+    @Query('take', new ParseIntPipe({ optional: true })) take?: number,
+    @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
   ): Promise<Pagination<User> | User[]> {
     this.logger.log({ take, skip }, 'GET /user')
     return this.userService.paginate({ take, skip })
@@ -899,28 +900,6 @@ export class UserController {
       throw new BadRequestException(reason.message)
     }
   }
-
-  // @ApiBearerAuth()
-  // @Get('payouts/list')
-  // @ApiQuery({ name: 'take', required: false })
-  // @ApiQuery({ name: 'skip', required: false })
-  // @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  // @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  // async getPayoutsList(
-  //   @CurrentUserId() id: string,
-  //   @Query('take') take: number | undefined,
-  //   @Query('skip') skip: number | undefined,
-  // ): Promise<Pagination<Payout> | Payout[]> {
-  //   this.logger.log({ id, take, skip }, 'GET /user/payouts/list')
-
-  //   const user = await this.userService.findOne({ where: { id } })
-
-  //   if (!user) {
-  //     throw new BadRequestException('User not found')
-  //   }
-
-  //   return this.userService.getPayoutsList(user)
-  // }
 
   @ApiBearerAuth()
   @Get('referrals')

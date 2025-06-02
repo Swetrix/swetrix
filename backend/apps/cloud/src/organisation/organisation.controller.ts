@@ -13,6 +13,7 @@ import {
   Query,
   ForbiddenException,
   Patch,
+  ParseIntPipe,
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiQuery, ApiResponse } from '@nestjs/swagger'
 import { isEmpty as _isEmpty, find as _find, trim as _trim } from 'lodash'
@@ -65,9 +66,9 @@ export class OrganisationController {
   @Auth([], true)
   async get(
     @CurrentUserId() userId: string,
-    @Query('take') take: number | undefined,
-    @Query('skip') skip: number | undefined,
-    @Query('search') search: string | undefined,
+    @Query('take', new ParseIntPipe({ optional: true })) take?: number,
+    @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
+    @Query('search') search?: string,
   ): Promise<Pagination<Organisation> | Organisation[] | object> {
     this.logger.log({ userId, take, skip }, 'GET /organisation')
 

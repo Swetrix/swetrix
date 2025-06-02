@@ -21,6 +21,7 @@ import {
   Res,
   UnauthorizedException,
   UnprocessableEntityException,
+  ParseIntPipe,
 } from '@nestjs/common'
 import { Response } from 'express'
 import {
@@ -161,17 +162,16 @@ export class ProjectController {
   @Auth([], true)
   async get(
     @CurrentUserId() userId: string,
-    @Query('take') take: number | undefined,
-    @Query('skip') skip: number | undefined,
-    @Query('search') search: string | undefined,
+    @Query('take', new ParseIntPipe({ optional: true })) take?: number,
+    @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
+    @Query('search') search?: string,
     @Query('mode')
-    mode:
+    mode?:
       | 'default'
       | 'high-traffic'
       | 'low-traffic'
       | 'performance'
-      | 'lost-traffic'
-      | undefined,
+      | 'lost-traffic',
     @Query('period')
     period: '1h' | '1d' | '7d' | '4w' | '3M' | '12M' | '24M' | 'all' = '7d',
     @Query('use-hostname-navigation')
@@ -254,9 +254,9 @@ export class ProjectController {
   @Auth([], true)
   async getAvailableProjectsForOrganization(
     @CurrentUserId() userId: string,
-    @Query('take') take: number | undefined,
-    @Query('skip') skip: number | undefined,
-    @Query('search') search: string | undefined,
+    @Query('take', new ParseIntPipe({ optional: true })) take?: number,
+    @Query('skip', new ParseIntPipe({ optional: true })) skip?: number,
+    @Query('search') search?: string,
   ): Promise<Pagination<Project> | Project[] | object> {
     this.logger.log(
       { userId, take, skip },
