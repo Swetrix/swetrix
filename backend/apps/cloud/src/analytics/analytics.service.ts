@@ -3294,18 +3294,6 @@ export class AnalyticsService {
     return result
   }
 
-  validateCustomEVMeta(meta: any) {
-    if (typeof meta === 'undefined') {
-      return
-    }
-
-    if (_some(_values(meta), val => !_isString(val))) {
-      throw new UnprocessableEntityException(
-        'The provided custom event metadata is incorrect (some values are not strings)',
-      )
-    }
-  }
-
   async getCustomEventMetadata(data: GetCustomEventMetadata): Promise<{
     result: IAggregatedMetadata[]
     appliedFilters: GetFiltersQuery[2]

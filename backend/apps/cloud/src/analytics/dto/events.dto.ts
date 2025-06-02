@@ -11,6 +11,7 @@ import {
   Validate,
   Matches,
 } from 'class-validator'
+import { Transform } from 'class-transformer'
 import { PID_REGEX } from '../../common/constants'
 
 export const MAX_METADATA_KEYS = 100
@@ -41,6 +42,30 @@ export class MetadataKeysQuantity implements ValidatorConstraintInterface {
   validate(metadata: Record<string, string>) {
     return _keys(metadata).length <= MAX_METADATA_KEYS
   }
+}
+
+export function transformMetadataJsonPrimitivesToString(value: any): any {
+  if (!value || typeof value !== 'object') {
+    return value
+  }
+
+  const transformed = { ...value }
+
+  for (const key in transformed) {
+    const val = transformed[key]
+
+    // Convert numbers, booleans, and null to strings
+    if (typeof val === 'number') {
+      transformed[key] = String(val)
+    } else if (typeof val === 'boolean') {
+      transformed[key] = String(val)
+    } else if (val === null) {
+      transformed[key] = 'null'
+    }
+    // Leave objects, arrays, and other types unchanged for later validation to catch
+  }
+
+  return transformed
 }
 
 @ValidatorConstraint()
@@ -148,8 +173,9 @@ export class EventsDto {
   @Validate(MetadataKeysQuantity, {
     message: `Metadata object can't have more than ${MAX_METADATA_KEYS} keys`,
   })
+  @Transform(({ value }) => transformMetadataJsonPrimitivesToString(value))
   @Validate(MetadataValueType, {
-    message: 'All of metadata object values must be strings',
+    message: 'All of metadata object values must be primitive JSON values',
   })
   @Validate(MetadataSizeLimit, {
     message: `Metadata object can't have keys and values with total length more than ${MAX_METADATA_VALUE_LENGTH} characters`,

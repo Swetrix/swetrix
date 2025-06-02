@@ -9,6 +9,7 @@ import {
   IsObject,
   Validate,
 } from 'class-validator'
+import { Transform } from 'class-transformer'
 import { PID_REGEX } from '../../common/constants'
 import {
   MAX_METADATA_KEYS,
@@ -16,6 +17,7 @@ import {
   MetadataKeysQuantity,
   MetadataValueType,
   MetadataSizeLimit,
+  transformMetadataJsonPrimitivesToString,
 } from './events.dto'
 
 export class ErrorDto {
@@ -122,8 +124,9 @@ export class ErrorDto {
   @Validate(MetadataKeysQuantity, {
     message: `Metadata object can't have more than ${MAX_METADATA_KEYS} keys`,
   })
+  @Transform(({ value }) => transformMetadataJsonPrimitivesToString(value))
   @Validate(MetadataValueType, {
-    message: 'All of metadata object values must be strings',
+    message: 'All of metadata object values must be primitive JSON values',
   })
   @Validate(MetadataSizeLimit, {
     message: `Metadata object can't have keys and values with total length more than ${MAX_METADATA_VALUE_LENGTH} characters`,

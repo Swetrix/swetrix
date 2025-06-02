@@ -11,6 +11,8 @@ import {
   Body,
   Query,
   UseGuards,
+  UsePipes,
+  ValidationPipe,
   Get,
   Post,
   Patch,
@@ -170,6 +172,11 @@ const TRANSPARENT_GIF_BUFFER = Buffer.from(
 
 @ApiTags('Analytics')
 @UseGuards(OptionalJwtAccessTokenGuard, RolesGuard)
+@UsePipes(
+  new ValidationPipe({
+    transform: true,
+  }),
+)
 @Controller(['log', 'v1/log'])
 export class AnalyticsController {
   constructor(
@@ -866,8 +873,6 @@ export class AnalyticsController {
 
     const ip = getIPFromHeaders(headers) || reqIP || ''
 
-    this.analyticsService.validateCustomEVMeta(eventsDTO.meta)
-
     const isBot = await this.analyticsService.isBot(eventsDTO.pid, userAgent)
 
     if (isBot) {
@@ -1416,8 +1421,6 @@ export class AnalyticsController {
 
     const { name, message, lineno, colno, filename, stackTrace, meta } =
       errorDTO
-
-    this.analyticsService.validateCustomEVMeta(meta)
 
     const transformed = errorEventTransformer(
       psid,

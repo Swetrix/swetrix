@@ -2944,18 +2944,6 @@ export class AnalyticsService {
     return result
   }
 
-  validateCustomEVMeta(meta: any) {
-    if (typeof meta === 'undefined') {
-      return
-    }
-
-    if (_some(_values(meta), val => !_isString(val))) {
-      throw new UnprocessableEntityException(
-        'The provided custom event metadata is incorrect (some values are not strings)',
-      )
-    }
-  }
-
   async getPageProperties(
     filtersQuery: string,
     params: any,
