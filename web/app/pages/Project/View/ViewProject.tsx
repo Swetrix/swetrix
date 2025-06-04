@@ -118,6 +118,7 @@ import Checkbox from '~/ui/Checkbox'
 import Dropdown from '~/ui/Dropdown'
 import FlatPicker from '~/ui/Flatpicker'
 import Loader from '~/ui/Loader'
+import LoadingBar from '~/ui/LoadingBar'
 import Select from '~/ui/Select'
 import { trackCustom } from '~/utils/analytics'
 import { periodToCompareDate } from '~/utils/compareConvertDate'
@@ -3654,11 +3655,8 @@ const ViewProject = () => {
                       resetMetrics={resetCustomMetrics}
                     />
                     {dataLoading ? (
-                      <div className='static mt-4 !bg-transparent' id='loader'>
-                        <div className='loader-head dark:!bg-slate-800'>
-                          <div className='first dark:!bg-slate-600' />
-                          <div className='second dark:!bg-slate-600' />
-                        </div>
+                      <div className='mt-4'>
+                        <LoadingBar />
                       </div>
                     ) : null}
                     <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
@@ -3980,11 +3978,8 @@ const ViewProject = () => {
                     </div>
                     <Filters tnMapping={tnMapping} />
                     {dataLoading ? (
-                      <div className='static mt-4 !bg-transparent' id='loader'>
-                        <div className='loader-head dark:!bg-slate-800'>
-                          <div className='first dark:!bg-slate-600' />
-                          <div className='second dark:!bg-slate-600' />
-                        </div>
+                      <div className='mt-4'>
+                        <LoadingBar />
                       </div>
                     ) : null}
                     <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
@@ -4164,11 +4159,8 @@ const ViewProject = () => {
                       <div className='mt-5 h-80 md:mt-0' id='dataChart' />
                     </div>
                     {dataLoading ? (
-                      <div className='static mt-4 !bg-transparent' id='loader'>
-                        <div className='loader-head dark:!bg-slate-800'>
-                          <div className='first dark:!bg-slate-600' />
-                          <div className='second dark:!bg-slate-600' />
-                        </div>
+                      <div className='mt-4'>
+                        <LoadingBar />
                       </div>
                     ) : null}
                   </div>

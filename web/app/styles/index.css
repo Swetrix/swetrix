@@ -1,75 +1,30 @@
-.loader-head {
-  background-color: #c6dafc;
-  height: 4px;
-  overflow: hidden;
-  position: relative;
-}
-
-.loader-head .first,
-.loader-head .second {
-  background-color: #4f46e5;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  top: 0;
-  position: absolute;
-  -webkit-transform-origin: left center;
-  -moz-transform-origin: left center;
-  transform-origin: left center;
-  -webkit-transform: scaleX(0);
-  -moz-transform: scaleX(0);
-  transform: scaleX(0);
-}
-
-.loader-head .first {
-  -webkit-animation: first 2s linear infinite;
-  -moz-animation: first 2s linear infinite;
-  animation: first 2s linear infinite;
-}
-
-.loader-head .second {
-  -webkit-animation: second 2s linear infinite;
-  -moz-animation: second 2s linear infinite;
-  animation: second 2s linear infinite;
-}
-
-@keyframes first {
+@keyframes indeterminate1 {
   0% {
-    transform: translate(0) scaleX(0);
+    left: -35%;
+    right: 100%;
   }
-
-  25% {
-    transform: translate(0) scaleX(0.5);
-  }
-
-  50% {
-    transform: translate(25%) scaleX(0.75);
-  }
-
-  75% {
-    transform: translate(100%) scaleX(0);
-  }
-
-  100% {
-    transform: translate(100%) scaleX(0);
-  }
-}
-
-@keyframes second {
-  0% {
-    transform: translate(0) scaleX(0);
-  }
-
   60% {
-    transform: translate(0) scaleX(0);
+    left: 100%;
+    right: -90%;
   }
-
-  80% {
-    transform: translate(0) scaleX(0.6);
-  }
-
   100% {
-    transform: translate(100%) scaleX(0.1);
+    left: 100%;
+    right: -90%;
+  }
+}
+
+@keyframes indeterminate2 {
+  0% {
+    left: -200%;
+    right: 100%;
+  }
+  60% {
+    left: 107%;
+    right: -8%;
+  }
+  100% {
+    left: 107%;
+    right: -8%;
   }
 }
 
