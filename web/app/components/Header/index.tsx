@@ -10,6 +10,8 @@ import {
   MenuItem,
   MenuItems,
   DialogPanel,
+  DisclosureButton,
+  DisclosurePanel,
 } from '@headlessui/react'
 import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { Bars3Icon, XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
@@ -315,30 +317,28 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
 
               <div className='border-b-[1px] border-gray-200 dark:border-slate-700/50'>
                 {/* Language selector */}
-                <Menu as='div'>
+                <Disclosure>
                   {({ open }) => (
                     <>
-                      <div>
-                        <MenuButton className='flex w-full justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-50 hover:dark:bg-slate-800'>
-                          <div className='flex'>
-                            <Flag
-                              className='mr-1.5 rounded-xs'
-                              country={languageFlag[language]}
-                              size={20}
-                              alt=''
-                              aria-hidden='true'
-                            />
-                            {languages[language]}
-                          </div>
-                          <ChevronDownIcon
-                            className={cx(
-                              open ? 'rotate-180' : '',
-                              '-mr-1 ml-2 h-5 w-5 transform-gpu stroke-2 transition-transform',
-                            )}
+                      <DisclosureButton className='flex w-full justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-50 hover:dark:bg-slate-800'>
+                        <div className='flex'>
+                          <Flag
+                            className='mr-1.5 rounded-xs'
+                            country={languageFlag[language]}
+                            size={20}
+                            alt=''
                             aria-hidden='true'
                           />
-                        </MenuButton>
-                      </div>
+                          {languages[language]}
+                        </div>
+                        <ChevronDownIcon
+                          className={cx(
+                            open ? 'rotate-180' : '',
+                            '-mr-1 ml-2 h-5 w-5 transform-gpu stroke-2 transition-transform',
+                          )}
+                          aria-hidden='true'
+                        />
+                      </DisclosureButton>
 
                       <Transition
                         show={open}
@@ -350,37 +350,35 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
                         leaveFrom='transform opacity-100 scale-100'
                         leaveTo='transform opacity-0 scale-95'
                       >
-                        <MenuItems
+                        <DisclosurePanel
                           className='absolute right-0 z-50 mt-1 w-full min-w-max origin-top-right rounded-md bg-white py-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-800 dark:ring-slate-800'
                           static
                         >
                           {_map(whitelist, (lng) => (
-                            <MenuItem key={lng}>
-                              <span
-                                className='block cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-600'
-                                role='menuitem'
-                                tabIndex={0}
-                                onClick={() => changeLanguage(lng)}
-                              >
-                                <div className='flex'>
-                                  <div className='pt-1'>
-                                    <Flag
-                                      className='mr-1.5 rounded-xs'
-                                      country={languageFlag[lng]}
-                                      size={20}
-                                      alt={languageFlag[lng]}
-                                    />
-                                  </div>
-                                  {languages[lng]}
+                            <DisclosureButton
+                              key={lng}
+                              as='span'
+                              className='block cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-600'
+                              onClick={() => changeLanguage(lng)}
+                            >
+                              <div className='flex'>
+                                <div className='pt-1'>
+                                  <Flag
+                                    className='mr-1.5 rounded-xs'
+                                    country={languageFlag[lng]}
+                                    size={20}
+                                    alt={languageFlag[lng]}
+                                  />
                                 </div>
-                              </span>
-                            </MenuItem>
+                                {languages[lng]}
+                              </div>
+                            </DisclosureButton>
                           ))}
-                        </MenuItems>
+                        </DisclosurePanel>
                       </Transition>
                     </>
                   )}
-                </Menu>
+                </Disclosure>
 
                 {isSelfhosted ? (
                   <MenuItem>
