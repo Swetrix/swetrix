@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLoaderData, useLocation } from 'react-router'
 
+import ExitIntentPopup from '~/components/ExitIntentPopup'
 import NotFound from '~/pages/NotFound'
 import { trackPageview } from '~/utils/analytics'
 
@@ -43,6 +44,7 @@ export default function PostSlug() {
 
   return (
     <div className='bg-gray-50 text-gray-700 dark:bg-slate-900 dark:text-gray-300'>
+      <ExitIntentPopup isStandalone={post.standalone} />
       <div className='mx-auto max-w-[52rem] px-4 pb-28 sm:px-6 md:px-8 lg:max-w-6xl xl:px-12'>
         <div className='overflow-hidden'>
           <div className='px-4 sm:px-6 md:px-8'>

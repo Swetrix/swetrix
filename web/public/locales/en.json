@@ -90,6 +90,7 @@
     "settings": "Settings",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
+    "closePopup": "Close popup",
     "learnMore": "Learn more",
     "yes": "Yes",
     "no": "No",
@@ -1322,6 +1323,11 @@
         "desc": "Analyse your sites key speed metrics"
       }
     }
+  },
+  "exitIntentPopup": {
+    "freeTrial": "Free Trial",
+    "title": "Web Analytics without cookies",
+    "desc": "Swetrix helps you to understand your audience and monitor your traffic without compromising your users' privacy."
   },
   "footer": {
     "description": "Swetrix is a powerful analytics platform that respects user privacy.",

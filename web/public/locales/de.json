@@ -90,6 +90,7 @@
     "settings": "Einstellungen",
     "openMenu": "Menü öffnen",
     "closeMenu": "Menü schließen",
+    "closePopup": "Popup schließen",
     "learnMore": "Mehr erfahren",
     "yes": "Ja",
     "no": "Nein",
@@ -1322,6 +1323,11 @@
         "desc": "Analysieren Sie Ihre Seiten Schlüsselgeschwindigkeits-Metriken"
       }
     }
+  },
+  "exitIntentPopup": {
+    "freeTrial": "Kostenlose Testversion",
+    "title": "Webanalyse ohne Cookies",
+    "desc": "Swetrix hilft Ihnen, Ihre Zielgruppe zu verstehen und Ihren Traffic zu überwachen, ohne die Privatsphäre Ihrer Nutzer zu gefährden."
   },
   "footer": {
     "description": "Swetrix ist eine leistungsstarke Analyseplattform, welche die Privatsphäre der Nutzer respektiert.",

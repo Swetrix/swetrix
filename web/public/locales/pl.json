@@ -90,6 +90,7 @@
     "settings": "Ustawienia",
     "openMenu": "Otwórz menu",
     "closeMenu": "Zamknij menu",
+    "closePopup": "Zamknij okno",
     "learnMore": "Dowiedz się więcej",
     "yes": "Tak",
     "no": "Nie",
@@ -1322,6 +1323,11 @@
         "desc": "Analizuj kluczowe metryki prędkości swoich witryn"
       }
     }
+  },
+  "exitIntentPopup": {
+    "freeTrial": "Darmowy okres próbny",
+    "title": "Analityka internetowa bez plików cookie",
+    "desc": "Swetrix pomaga zrozumieć odbiorców i monitorować ruch na stronie, nie naruszając prywatności użytkowników."
   },
   "footer": {
     "description": "Swetrix to potężna platforma analityczna, która szanuje prywatność użytkowników.",
