@@ -272,7 +272,7 @@ const PanelContainer = ({
     </div>
     {/* for other tabs */}
     <div
-      className={cx('flex h-full flex-col', {
+      className={cx('flex h-full flex-col overflow-x-auto', {
         relative: isCustomContent,
       })}
     >
