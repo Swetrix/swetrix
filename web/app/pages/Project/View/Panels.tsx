@@ -481,6 +481,7 @@ const KVTable = ({ listId, data, displayKeyAsHeader, onClick }: KVTableProps) =>
                 className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300'
                 strokeWidth={1.5}
               />
+              <div className='ml-2 h-4 w-4 group-hover:hidden' />
             </td>
             <td className='py-1 text-right'>
               {quantity}
@@ -950,6 +951,7 @@ const CustomEvents = ({
                   className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300'
                   strokeWidth={1.5}
                 />
+                <div className='ml-2 h-4 w-4 group-hover:hidden' />
               </td>
               <td className='text-right'>
                 {customsEventsData[ev]}
@@ -1355,6 +1357,7 @@ const PageProperties = ({
                   className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300'
                   strokeWidth={1.5}
                 />
+                <div className='ml-2 h-4 w-4 group-hover:hidden' />
               </td>
               <td className='text-right'>
                 {processedProperties[tag]}
