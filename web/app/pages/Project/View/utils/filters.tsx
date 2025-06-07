@@ -96,7 +96,7 @@ export const parseFilters = (searchParams: URLSearchParams): Filter[] => {
       actualColumn = key.substring(1)
     }
 
-    if (!isFilterValid(actualColumn)) {
+    if (!isFilterValid(actualColumn, true)) {
       continue
     }
 
