@@ -540,7 +540,7 @@ export class AnalyticsController {
     }
 
     const [filtersQuery, filtersParams, parsedFilters] =
-      this.analyticsService.getFiltersQuery(filters, DataType.PERFORMANCE)
+      this.analyticsService.getFiltersQuery(filters, DataType.PERFORMANCE, true)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
@@ -595,7 +595,7 @@ export class AnalyticsController {
     this.analyticsService.checkIfPerfMeasureIsValid(measure)
 
     const [filtersQuery, filtersParams, parsedFilters] =
-      this.analyticsService.getFiltersQuery(filters, DataType.PERFORMANCE)
+      this.analyticsService.getFiltersQuery(filters, DataType.PERFORMANCE, true)
 
     const safeTimezone = this.analyticsService.getSafeTimezone(timezone)
     const { groupFrom, groupTo } = this.analyticsService.getGroupFromTo(
