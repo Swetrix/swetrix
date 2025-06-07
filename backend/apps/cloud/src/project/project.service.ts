@@ -457,22 +457,15 @@ export class ProjectService {
       .leftJoin('organisationMembers.user', 'organisationUser')
       .where(
         new Brackets(qb => {
-          qb.where('admin.id = :userId', { userId })
+          qb.where('project.adminId = :userId')
             .orWhere(
-              new Brackets(qb2 => {
-                qb2
-                  .where('share.user.id = :userId')
-                  .andWhere('share.confirmed = true')
-              }),
+              'EXISTS (SELECT 1 FROM project_share ps WHERE ps.projectId = project.id AND ps.userId = :userId AND ps.confirmed = true)',
             )
             .orWhere(
-              new Brackets(qb3 => {
-                qb3
-                  .where('organisationMembers.user.id = :userId')
-                  .andWhere('organisationMembers.confirmed = true')
-              }),
+              'EXISTS (SELECT 1 FROM organisation_member om WHERE om.organisationId = project.organisationId AND om.userId = :userId AND om.confirmed = true)',
             )
         }),
+        { userId },
       )
 
     if (search?.trim()) {
