@@ -22,7 +22,7 @@ export interface TrackEventOptions {
     unique?: boolean;
     /** Event-related metadata object with string values. */
     meta?: {
-        [key: string]: string;
+        [key: string]: string | number | boolean | null | undefined;
     };
 }
 export interface IPageViewPayload {
@@ -37,7 +37,7 @@ export interface IPageViewPayload {
     pg?: string | null;
     /** Pageview-related metadata object with string values. */
     meta?: {
-        [key: string]: string;
+        [key: string]: string | number | boolean | null | undefined;
     };
 }
 export interface IErrorEventPayload {
@@ -48,7 +48,7 @@ export interface IErrorEventPayload {
     filename?: string | null;
     stackTrace?: string | null;
     meta?: {
-        [key: string]: string;
+        [key: string]: string | number | boolean | null | undefined;
     };
 }
 export interface IInternalErrorEventPayload extends IErrorEventPayload {
