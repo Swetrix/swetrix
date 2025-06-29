@@ -14,6 +14,7 @@ import {
   OrganisationRole,
 } from './entity/organisation-member.entity'
 import { Pagination, PaginationOptionsInterface } from '../common/pagination'
+import { getRedisProjectKey, redis } from '../common/constants'
 
 @Injectable()
 export class OrganisationService {
@@ -69,6 +70,39 @@ export class OrganisationService {
 
   async deleteMembership(id: string) {
     await this.membershipRepository.delete(id)
+  }
+
+  async deleteOrganisationProjectsFromRedis(organisationId: string) {
+    const organisation = await this.findOne({
+      where: { id: organisationId },
+      relations: ['projects'],
+      select: {
+        id: true,
+        projects: {
+          id: true,
+        },
+      },
+    })
+
+    if (!organisation?.projects?.length) {
+      return
+    }
+
+    for (const project of organisation.projects) {
+      if (!project?.id) {
+        continue
+      }
+
+      const key = getRedisProjectKey(project.id)
+
+      try {
+        await redis.del(key)
+      } catch (reason) {
+        console.error(
+          `Error deleting project ${project.id} from redis: ${reason}`,
+        )
+      }
+    }
   }
 
   validateManageAccess(organisation: Organisation, userId: string) {

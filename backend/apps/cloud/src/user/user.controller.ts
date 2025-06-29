@@ -568,6 +568,12 @@ export class UserController {
     const membership = await this.organisationService.findOneMembership({
       where: { id: actionToken?.newValue || actionId },
       relations: ['user'],
+      select: {
+        id: true,
+        user: {
+          id: true,
+        },
+      },
     })
 
     if (_isEmpty(membership)) {
@@ -611,7 +617,16 @@ export class UserController {
 
     const membership = await this.organisationService.findOneMembership({
       where: { id: actionToken?.newValue || actionId },
-      relations: ['user'],
+      relations: ['user', 'organisation'],
+      select: {
+        id: true,
+        user: {
+          id: true,
+        },
+        organisation: {
+          id: true,
+        },
+      },
     })
 
     if (_isEmpty(membership)) {
@@ -633,6 +648,10 @@ export class UserController {
     if (isActionToken) {
       await this.actionTokensService.delete(actionId)
     }
+
+    await this.organisationService.deleteOrganisationProjectsFromRedis(
+      membership.organisation.id,
+    )
   }
 
   @ApiBearerAuth()
