@@ -3439,7 +3439,7 @@ export class AnalyticsService {
         timeBucket,
         from,
         to,
-        "AND CAST(psid, 'String') = {psid:String}",
+        "AND psid IS NOT NULL AND CAST(psid, 'String') = {psid:String}",
         {
           params: {
             ...paramsData.params,
