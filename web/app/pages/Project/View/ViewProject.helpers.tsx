@@ -797,6 +797,7 @@ const getSettingsSession = (
       columns,
       types: dataTypes,
       colors: dataColors,
+      type: chartType === chartTypes.line ? area() : bar(),
     },
     zoom: {
       enabled: zoom(),
