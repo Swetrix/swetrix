@@ -41,10 +41,11 @@ server {
     proxy_set_header X-Client-IP-Address $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto   $scheme;
 
+    proxy_ssl_server_name      on;
     proxy_buffering            on;
     proxy_pass_request_headers on;
 
-    proxy_pass $swetrix_api_url;
+    proxy_pass $swetrix_api_url$request_uri;
   }
 }
 ```
