@@ -18,7 +18,7 @@ import { toast } from 'sonner'
 import {
   createProject,
   updateProject,
-  deleteCaptchaProject,
+  deleteProject,
   resetCaptchaProject,
   reGenerateCaptchaSecretKey,
   getProject,
@@ -164,7 +164,7 @@ const CaptchaSettings = ({ isSettings }: CaptchaSettingsProps) => {
     if (!projectDeleting) {
       setProjectDeleting(true)
       try {
-        await deleteCaptchaProject(id)
+        await deleteProject(id)
         toast.success(t('project.settings.deleted'))
         navigate(routes.dashboard)
       } catch (reason: any) {

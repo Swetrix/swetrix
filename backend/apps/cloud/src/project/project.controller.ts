@@ -764,54 +764,6 @@ export class ProjectController {
     return secret
   }
 
-  @ApiBearerAuth()
-  @Delete('/captcha/:id')
-  @HttpCode(204)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  @ApiResponse({ status: 204, description: 'Empty body' })
-  async deleteCAPTCHA(
-    @Param('id') id: string,
-    @CurrentUserId() uid: string,
-  ): Promise<any> {
-    this.logger.log({ uid, id }, 'DELETE /project/captcha/:id')
-
-    if (!isValidPID(id)) {
-      throw new BadRequestException(
-        'The provided Project ID (pid) is incorrect',
-      )
-    }
-
-    const user = await this.userService.findOne({ where: { id: uid } })
-    const project = await this.projectService.getFullProject(id)
-
-    if (_isEmpty(project)) {
-      throw new NotFoundException(`Project with ID ${id} does not exist`)
-    }
-
-    this.projectService.allowedToManage(project, uid, user.roles)
-
-    try {
-      await clickhouse.command({
-        query: 'DELETE FROM captcha WHERE pid={pid:FixedString(12)}',
-        query_params: {
-          pid: id,
-        },
-      })
-
-      project.captchaSecretKey = null
-      project.isCaptchaEnabled = false
-      project.isCaptchaProject = false
-
-      await this.projectService.update({ id }, project)
-
-      return 'CAPTCHA project deleted successfully'
-    } catch (e) {
-      this.logger.error(e)
-      return 'Error while deleting your CAPTCHA project'
-    }
-  }
-
   @Delete('/partially/:pid')
   @ApiQuery({
     name: 'from',
@@ -1693,22 +1645,16 @@ export class ProjectController {
       await Promise.all(promises)
 
       await deleteProjectRedis(id)
-    } catch (e) {
-      this.logger.error(e)
+    } catch (reason) {
+      this.logger.error(reason)
       return 'Error while deleting your project'
     }
 
     try {
-      if (project.isCaptchaProject) {
-        project.isAnalyticsProject = false
-        await this.projectService.update({ id }, project)
-      } else {
-        await this.projectService.deleteMultipleShare(`project = "${id}"`)
-        await this.projectService.delete(id)
-        await this.deleteCAPTCHA(id, uid)
-      }
-    } catch (e) {
-      this.logger.error(e)
+      await this.projectService.deleteMultipleShare(`project = "${id}"`)
+      await this.projectService.delete(id)
+    } catch (reason) {
+      this.logger.error(reason)
       return 'Error while deleting your project'
     }
 

@@ -437,14 +437,6 @@ export const deleteProject = (id: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const deleteCaptchaProject = (id: string) =>
-  api
-    .delete(`project/captcha/${id}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 export const resetProject = (id: string) =>
   api
     .delete(`/project/reset/${id}`)
