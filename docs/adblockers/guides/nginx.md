@@ -22,8 +22,8 @@ server {
   # Using the Cloudflare DNS resolver, you can remove this line if you already use a resolver in your config, or change it to a resolver of your choice.
   resolver 1.1.1.1;
 
-  set $swetrix_script_url https://swetrix.org/swetrix.js;
-  set $swetrix_log_url https://api.swetrix.com/log;
+  set $swetrix_script_url  https://swetrix.org/swetrix.js;
+  set $swetrix_api_url https://api.swetrix.com;
 
   location = /script.js {
     proxy_pass $swetrix_script_url;
@@ -36,15 +36,15 @@ server {
     proxy_cache_use_stale updating error timeout invalid_header http_500;
   }
 
-  # Setting the path to /log is optional, you can replace it with anything you want, like /proxy, /endpoint, etc.
-  # Some aggressive adblockers may block requests to paths like /analytics, /collect, /log, etc.
-  location = /log {
-    proxy_set_header Host                  $host;
-    proxy_set_header X-Client-IP-Address   $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto     $scheme;
-    proxy_buffering                        on;
-    proxy_pass_request_headers             on;
-    proxy_pass                             $swetrix_log_url;
+  location /log {
+    proxy_set_header Host                $host;
+    proxy_set_header X-Client-IP-Address $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto   $scheme;
+
+    proxy_buffering            on;
+    proxy_pass_request_headers on;
+
+    proxy_pass $swetrix_api_url;
   }
 }
 ```

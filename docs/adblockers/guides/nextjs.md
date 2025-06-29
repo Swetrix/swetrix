@@ -12,8 +12,8 @@ module.exports = {
   async rewrites() {
     return [
       {
-        source: "/sproxy",
-        destination: "https://api.swetrix.com/log",
+        source: "/sproxy/:path*",
+        destination: "https://api.swetrix.com/log/:path*",
       },
     ];
   },
