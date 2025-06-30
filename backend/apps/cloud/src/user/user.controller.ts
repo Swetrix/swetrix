@@ -343,12 +343,12 @@ export class UserController {
         )
 
         const queries = [
-          `DELETE FROM analytics WHERE pid IN (${pids})`,
-          `DELETE FROM customEV WHERE pid IN (${pids})`,
-          `DELETE FROM performance WHERE pid IN (${pids})`,
-          `DELETE FROM errors WHERE pid IN (${pids})`,
-          `DELETE FROM error_statuses WHERE pid IN (${pids})`,
-          `DELETE FROM captcha WHERE pid IN (${pids})`,
+          `ALTER TABLE analytics DELETE WHERE pid IN (${pids})`,
+          `ALTER TABLE customEV DELETE WHERE pid IN (${pids})`,
+          `ALTER TABLE performance DELETE WHERE pid IN (${pids})`,
+          `ALTER TABLE errors DELETE WHERE pid IN (${pids})`,
+          `ALTER TABLE error_statuses DELETE WHERE pid IN (${pids})`,
+          `ALTER TABLE captcha DELETE WHERE pid IN (${pids})`,
         ]
 
         await this.projectService.deleteMultiple(user.projects.map(el => el.id))
@@ -409,12 +409,12 @@ export class UserController {
           ',',
         )
         const queries = [
-          `DELETE FROM analytics WHERE pid IN (${pids})`,
-          `DELETE FROM customEV WHERE pid IN (${pids})`,
-          `DELETE FROM performance WHERE pid IN (${pids})`,
-          `DELETE FROM errors WHERE pid IN (${pids})`,
-          `DELETE FROM error_statuses WHERE pid IN (${pids})`,
-          `DELETE FROM captcha WHERE pid IN (${pids})`,
+          `ALTER TABLE analytics DELETE WHERE pid IN (${pids})`,
+          `ALTER TABLE customEV DELETE WHERE pid IN (${pids})`,
+          `ALTER TABLE performance DELETE WHERE pid IN (${pids})`,
+          `ALTER TABLE errors DELETE WHERE pid IN (${pids})`,
+          `ALTER TABLE error_statuses DELETE WHERE pid IN (${pids})`,
+          `ALTER TABLE captcha DELETE WHERE pid IN (${pids})`,
         ]
         await this.projectService.deleteMultiple(user.projects.map(el => el.id))
         const promises = _map(queries, async query =>

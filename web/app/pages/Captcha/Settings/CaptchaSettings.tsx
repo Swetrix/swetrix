@@ -19,7 +19,7 @@ import {
   createProject,
   updateProject,
   deleteProject,
-  resetCaptchaProject,
+  resetProject,
   reGenerateCaptchaSecretKey,
   getProject,
 } from '~/api'
@@ -180,7 +180,7 @@ const CaptchaSettings = ({ isSettings }: CaptchaSettingsProps) => {
     if (!projectResetting) {
       setProjectResetting(true)
       try {
-        await resetCaptchaProject(id)
+        await resetProject(id)
         toast.success(t('project.settings.resetted'))
         navigate(routes.dashboard)
       } catch (reason: any) {

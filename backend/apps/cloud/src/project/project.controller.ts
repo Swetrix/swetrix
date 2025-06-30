@@ -662,11 +662,12 @@ export class ProjectController {
     }
 
     const queries = [
-      'DELETE FROM analytics WHERE pid={pid:FixedString(12)}',
-      'DELETE FROM customEV WHERE pid={pid:FixedString(12)}',
-      'DELETE FROM performance WHERE pid={pid:FixedString(12)}',
-      'DELETE FROM errors WHERE pid={pid:FixedString(12)}',
-      'DELETE FROM error_statuses WHERE pid={pid:FixedString(12)}',
+      'ALTER TABLE analytics DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER TABLE customEV DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER TABLE performance DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER TABLE errors DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER TABLE error_statuses DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER TABLE captcha DELETE WHERE pid={pid:FixedString(12)}',
     ]
 
     try {
@@ -680,50 +681,10 @@ export class ProjectController {
       )
 
       await Promise.all(promises)
-      return 'Project resetted successfully'
+      return 'Project reset successfully'
     } catch (e) {
       this.logger.error(e)
       return 'Error while resetting your project'
-    }
-  }
-
-  @ApiBearerAuth()
-  @Delete('/captcha/reset/:id')
-  @HttpCode(204)
-  @UseGuards(JwtAccessTokenGuard, RolesGuard)
-  @Roles(UserType.CUSTOMER, UserType.ADMIN)
-  @ApiResponse({ status: 204, description: 'Empty body' })
-  async resetCAPTCHA(
-    @Param('id') id: string,
-    @CurrentUserId() uid: string,
-  ): Promise<any> {
-    this.logger.log({ uid, id }, 'DELETE /project/captcha/reset/:id')
-    if (!isValidPID(id)) {
-      throw new BadRequestException(
-        'The provided Project ID (pid) is incorrect',
-      )
-    }
-
-    const user = await this.userService.findOne({ where: { id: uid } })
-    const project = await this.projectService.getFullProject(id)
-
-    if (_isEmpty(project)) {
-      throw new NotFoundException(`Project with ID ${id} does not exist`)
-    }
-
-    this.projectService.allowedToManage(project, uid, user.roles)
-
-    try {
-      await clickhouse.command({
-        query: 'DELETE FROM captcha WHERE pid={pid:FixedString(12)}',
-        query_params: {
-          pid: id,
-        },
-      })
-      return 'CAPTCHA project resetted successfully'
-    } catch (e) {
-      this.logger.error(e)
-      return 'Error while resetting your CAPTCHA project'
     }
   }
 
@@ -1624,12 +1585,12 @@ export class ProjectController {
     }
 
     const queries = [
-      'DELETE FROM analytics WHERE pid={pid:FixedString(12)}',
-      'DELETE FROM customEV WHERE pid={pid:FixedString(12)}',
-      'DELETE FROM performance WHERE pid={pid:FixedString(12)}',
-      'DELETE FROM errors WHERE pid={pid:FixedString(12)}',
-      'DELETE FROM error_statuses WHERE pid={pid:FixedString(12)}',
-      'DELETE FROM captcha WHERE pid={pid:FixedString(12)}',
+      'ALTER TABLE analytics DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER TABLE customEV DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER TABLE performance DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER TABLE errors DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER TABLE error_statuses DELETE WHERE pid={pid:FixedString(12)}',
+      'ALTER TABLE captcha DELETE WHERE pid={pid:FixedString(12)}',
     ]
 
     try {

@@ -246,11 +246,11 @@ export class ProjectService {
     to: string,
   ): Promise<void> {
     const queries = [
-      'DELETE FROM analytics WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
-      'DELETE FROM customEV WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
-      'DELETE FROM performance WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
-      'DELETE FROM errors WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
-      'DELETE FROM error_statuses WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
+      'ALTER TABLE analytics DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
+      'ALTER TABLE customEV DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
+      'ALTER TABLE performance DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
+      'ALTER TABLE errors DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
+      'ALTER TABLE error_statuses DELETE WHERE pid = {pid:FixedString(12)} AND created BETWEEN {from:String} AND {to:String}',
     ]
 
     const params = {

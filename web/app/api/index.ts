@@ -445,14 +445,6 @@ export const resetProject = (id: string) =>
       throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
     })
 
-export const resetCaptchaProject = (id: string) =>
-  api
-    .delete(`project/captcha/reset/${id}`)
-    .then((response) => response.data)
-    .catch((error) => {
-      throw _isEmpty(error.response.data?.message) ? error.response.data : error.response.data.message
-    })
-
 export const getProjectData = (
   pid: string,
   tb = 'hour',

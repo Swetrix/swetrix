@@ -236,12 +236,12 @@ export class ProjectController {
 
     try {
       await clickhouse.command({
-        query: `DELETE FROM analytics WHERE pid='${id}'`,
+        query: `ALTER TABLE analytics DELETE WHERE pid='${id}'`,
       })
       await clickhouse.command({
-        query: `DELETE FROM customEV WHERE pid='${id}'`,
+        query: `ALTER TABLE customEV DELETE WHERE pid='${id}'`,
       })
-      return 'Project resetted successfully'
+      return 'Project reset successfully'
     } catch (e) {
       this.logger.error(e)
       return 'Error while resetting your project'
@@ -467,10 +467,10 @@ export class ProjectController {
 
     try {
       await clickhouse.command({
-        query: `DELETE FROM analytics WHERE pid='${id}'`,
+        query: `ALTER TABLE analytics DELETE WHERE pid='${id}'`,
       })
       await clickhouse.command({
-        query: `DELETE FROM customEV WHERE pid='${id}'`,
+        query: `ALTER TABLE customEV DELETE WHERE pid='${id}'`,
       })
       return 'Project deleted successfully'
     } catch (e) {
