@@ -2063,19 +2063,27 @@ export class AnalyticsService {
 
     switch (timeBucket) {
       case TimeBucketType.MINUTE:
+        djsFrom = djsFrom.startOf('minute')
+        format = 'YYYY-MM-DD HH:mm:ss'
+        break
+
       case TimeBucketType.HOUR:
+        djsFrom = djsFrom.startOf('hour')
         format = 'YYYY-MM-DD HH:mm:ss'
         break
 
       case TimeBucketType.DAY:
+        djsFrom = djsFrom.startOf('day')
         format = 'YYYY-MM-DD'
         break
 
       case TimeBucketType.MONTH:
+        djsFrom = djsFrom.startOf('month')
         format = 'YYYY-MM'
         break
 
       case TimeBucketType.YEAR:
+        djsFrom = djsFrom.startOf('year')
         format = 'YYYY'
         break
 
