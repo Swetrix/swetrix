@@ -136,7 +136,7 @@ const UserSettings = () => {
   const [isPaidFeatureOpened, setIsPaidFeatureOpened] = useState(false)
   const [isPasswordChangeModalOpened, setIsPasswordChangeModalOpened] = useState(false)
   const [reportFrequency, setReportFrequency] = useState(user?.reportFrequency)
-  const [formPresetted, setFormPresetted] = useState(false)
+  const [formPreset, setFormPreset] = useState(false)
   const [validated, setValidated] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [beenSubmitted, setBeenSubmitted] = useState(false)
@@ -200,7 +200,7 @@ const UserSettings = () => {
   }, [form]) // eslint-disable-line
 
   useEffect(() => {
-    if (isLoading || !user || formPresetted) {
+    if (isLoading || !user || formPreset) {
       return
     }
 
@@ -211,8 +211,8 @@ const UserSettings = () => {
     }))
     setTimezone(user.timezone || DEFAULT_TIMEZONE)
     setReportFrequency(user.reportFrequency)
-    setFormPresetted(true)
-  }, [isLoading, user, formPresetted])
+    setFormPreset(true)
+  }, [isLoading, user, formPreset])
 
   const handleInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { target } = event

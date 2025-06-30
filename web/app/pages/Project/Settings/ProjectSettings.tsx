@@ -447,7 +447,7 @@ const ProjectSettings = () => {
       } else {
         await resetProject(id)
       }
-      toast.success(t('project.settings.resetted'))
+      toast.success(t('project.settings.projectReset'))
       navigate(routes.dashboard)
     } catch (reason: any) {
       toast.error(reason)

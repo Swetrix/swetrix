@@ -1054,7 +1054,7 @@
       "deleteHint": "Naciskając \"Usuń projekt\" rozumiesz, że ta akcja jest nieodwracalna.\nProjekt i wszystkie związane z nim dane zostaną usunięte z naszych serwerów.",
       "resetHint": "Naciskając \"Zresetuj projekt\" rozumiesz, że ta akcja jest nieodwracalna.\nOdsłony i zdarzenia własne projektu zostaną usunięte z naszych serwerów, ale identyfikator projektu i inne konfiguracje zostaną zachowane.",
       "deleted": "Projekt został usunięty",
-      "resetted": "Projekt został zresetowany",
+      "projectReset": "Projekt został zresetowany",
       "noPeople": "Do tego projektu nie dodano jeszcze żadnych osób.",
       "removeMember": "Usuń użytkownika",
       "removeConfirm": "Czy na pewno chcesz przestać udostępniać swój projekt temu użytkownikowi?",

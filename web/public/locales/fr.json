@@ -1054,7 +1054,7 @@
       "deleteHint": "En appuyant sur 'Supprimer le projet', vous comprenez que cette action est irréversible.\nLe projet et toutes les données qui y sont liées seront supprimés de nos serveurs.",
       "resetHint": "En appuyant sur 'Réinitialiser le projet', vous comprenez que cette action est irréversible.\nLes pages vues et les événements personnalisés du projet seront supprimés de nos serveurs, mais l'identifiant du projet et les autres configurations seront conservés.",
       "deleted": "Le projet a été supprimé",
-      "resetted": "Le projet a été réinitialisé",
+      "projectReset": "Le projet a été réinitialisé",
       "noPeople": "Aucune personne n'a encore été ajoutée à ce projet.",
       "removeMember": "Supprimer le membre",
       "removeConfirm": "Êtes-vous sûr de vouloir arrêter de partager votre projet avec cet utilisateur ?",

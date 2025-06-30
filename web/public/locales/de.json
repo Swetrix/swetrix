@@ -1054,7 +1054,7 @@
       "deleteHint": "Wenn Sie auf \"Projekt löschen\" klicken, verstehen Sie, dass diese Aktion nicht rückgängig zu machen ist.\nDas Projekt und alle damit verbundenen Daten werden von unseren Servern gelöscht.",
       "resetHint": "Wenn Sie \"Projekt zurücksetzen\" drücken, verstehen Sie, dass diese Aktion unumkehrbar ist.\nDie Seitenansichten und benutzerdefinierte Ereignisse des Projekts werden von unseren Servern entfernt, aber die Projektkennung und andere Einstellungen werden beibehalten.",
       "deleted": "Das Projekt wurde gelöscht",
-      "resetted": "Das Projekt wurde zurückgesetzt",
+      "projectReset": "Das Projekt wurde zurückgesetzt",
       "noPeople": "Zu diesem Projekt wurden noch keine Personen hinzugefügt.",
       "removeMember": "Mitglied entfernen",
       "removeConfirm": "Sind Sie sicher, dass Sie das Teilen Ihres Projekts mit diesem Benutzer beenden möchten?",
