@@ -320,7 +320,7 @@ const Testimonials = () => {
         {_map(REVIEWERS, ({ name, image }) => (
           <div
             key={`${name}${image}`}
-            className='relative inline-flex size-12 overflow-hidden rounded-full border-4 border-gray-50 dark:border-slate-900'
+            className='relative inline-flex size-12 overflow-hidden rounded-full border-4 border-gray-50 dark:border-slate-900/90'
           >
             <img alt={name} width='400' height='400' style={{ color: 'transparent' }} src={image} />
           </div>
