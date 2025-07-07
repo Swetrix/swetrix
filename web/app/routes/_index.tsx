@@ -383,7 +383,7 @@ const LiveDemo = () => {
         src={`https://swetrix.com/projects/STEzHcB1rALV?tab=traffic&theme=${theme}&embedded=true`}
         width='100%'
         height='700'
-        className='relative w-full rounded-xl ring-2 ring-gray-900/10 focus:outline-none dark:ring-white/10'
+        className='relative h-[600px] w-full rounded-xl ring-2 ring-gray-900/10 focus:outline-none md:h-[700px] dark:ring-white/10'
         title='Swetrix Analytics Live Demo'
       />
     </div>
