@@ -374,6 +374,22 @@ const Highlighted = ({ children }: { children: React.ReactNode }) => (
   </span>
 )
 
+const LiveDemo = () => {
+  const { theme } = useTheme()
+
+  return (
+    <div className='relative z-20 mx-auto mt-10 block max-w-7xl px-4 md:px-0'>
+      <iframe
+        src={`https://swetrix.com/projects/STEzHcB1rALV?tab=traffic&theme=${theme}&embedded=true`}
+        width='100%'
+        height='700'
+        className='relative w-full rounded-xl ring-2 ring-gray-900/10 focus:outline-none dark:ring-white/10'
+        title='Swetrix Analytics Live Demo'
+      />
+    </div>
+  )
+}
+
 interface FeatureBlockProps {
   heading: string
   description: string
@@ -816,7 +832,6 @@ const CoreFeatures = () => {
 }
 
 const Hero = () => {
-  const { theme } = useTheme()
   const { t } = useTranslation('common')
 
   return (
@@ -894,21 +909,7 @@ const Hero = () => {
             <Lines />
           </div>
         </div>
-        <div className='relative z-20 mx-auto mt-10 block max-w-7xl px-4 md:px-0'>
-          <picture>
-            <source
-              srcSet={theme === 'dark' ? '/assets/screenshot_dark.webp' : '/assets/screenshot_light.webp'}
-              type='image/webp'
-            />
-            <img
-              src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
-              className='relative w-full rounded-xl ring-2 ring-gray-900/10 dark:ring-white/10'
-              width='100%'
-              height='auto'
-              alt='Swetrix Analytics dashboard'
-            />
-          </picture>
-        </div>
+        <LiveDemo />
       </div>
     </div>
   )

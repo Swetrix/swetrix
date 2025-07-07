@@ -16,6 +16,7 @@ import {
   ScrollRestoration,
   isRouteErrorResponse,
   useRouteError,
+  useSearchParams,
 } from 'react-router'
 import { useChangeLanguage } from 'remix-i18next/react'
 import { ExternalScripts } from 'remix-utils/external-scripts'
@@ -208,14 +209,17 @@ const Body = () => {
 export default function App() {
   const { locale, url, theme, REMIX_ENV } = useLoaderData<typeof loader>()
   const { i18n } = useTranslation('common')
+  const [searchParams] = useSearchParams()
 
   const urlObject = new URL(url)
   urlObject.searchParams.delete('lng')
 
   useChangeLanguage(locale)
 
+  const isEmbedded = searchParams.get('embedded') === 'true'
+
   return (
-    <html className='font-sans antialiased' lang={locale} dir={i18n.dir()}>
+    <html className={cx('font-sans antialiased', { 'scrollbar-thin': isEmbedded })} lang={locale} dir={i18n.dir()}>
       <head>
         <meta charSet='utf-8' />
         <SEO />

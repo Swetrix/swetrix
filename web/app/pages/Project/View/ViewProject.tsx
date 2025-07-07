@@ -3144,7 +3144,7 @@ const ViewProject = () => {
                     <p className='mt-2 text-sm whitespace-pre-wrap text-gray-100'>{t('dashboard.alertsDesc')}</p>
                     <Link
                       to={routes.signup}
-                      className='mt-6 rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
+                      className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
                       aria-label={t('titles.signup')}
                     >
                       {t('header.startForFree')}
@@ -3179,14 +3179,14 @@ const ViewProject = () => {
                       <button
                         type='button'
                         onClick={() => setIsNewFunnelOpened(true)}
-                        className='mt-6 rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
+                        className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
                       >
                         {t('dashboard.newFunnel')}
                       </button>
                     ) : (
                       <Link
                         to={routes.signup}
-                        className='mt-6 rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
+                        className='mt-6 block max-w-max rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
                         aria-label={t('titles.signup')}
                       >
                         {t('header.startForFree')}
