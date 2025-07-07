@@ -336,8 +336,7 @@
     "understandTheirUsers": "<0>{{amount}}</0> osób rozumie swoich użytkowników",
     "perfect": "To idealne dla <0>marketingowców</0>, <1>start-upów</1>, <2>małych firm</2> i praktycznie każdego rodzaju działalności!",
     "trustedBy": "Zaufanie rządów, organizacji pozarządowych i innowacyjnych przedsiębiorstw",
-    "start": "Rozpocznij za darmo",
-    "startAFreeTrial": "Rozpocznij bezpłatny okres próbny",
+    "startAXDayFreeTrial": "{{amount}} dni za darmo",
     "metric": "Metryka",
     "demoGeoReports": "Tak, to standard. Ale śledzimy dokładnie, skąd pochodzą twoi użytkownicy.",
     "peopleLoveSwetrix": "Ludzie 🥰 Swetrix",
@@ -345,7 +344,7 @@
     "weAreOpensource": "Jesteśmy <url>otwartoźródłowi</url>",
     "coreFeatures": "Tylko funkcje, których potrzebujesz",
     "problem": {
-      "title": "Większość ludzi ma trudności ze zrozumieniem danych analitycznych",
+      "title": "Masz trudności z analizą swoich danych analitycznych?",
       "description": "Wiele rozwiązań analityki internetowej jest albo zbyt skomplikowanych i przytłaczających, albo zbyt prostych i nie dostarcza wystarczających informacji. Właściciele firm nie rozumieją swoich klientów i tracą pieniądze.",
       "step1": "Właściciel firmy zbiera dane z sieci",
       "step2": "Przytłoczony przez <u>skomplikowane pulpity nawigacyjne</u> lub ograniczony przez zbyt uproszczone wskaźniki",
@@ -354,11 +353,11 @@
     "butThereIsASolution": "Ale jest rozwiązanie...",
     "knowYourCustomers": "Poznaj swoich klientów i użytkowników",
     "insights": {
-      "title": "Zdobądź wgląd w swój ruch",
+      "title": "Poznaj szczegóły ruchu",
       "description": "Swetrix pomaga zrozumieć wszystko, co musisz wiedzieć o ruchu na swojej stronie internetowej. Dowiedz się, ile osób jest online, które strony są najpopularniejsze, skąd pochodzą Twoi użytkownicy i więcej."
     },
     "painPoints": {
-      "title": "Poznaj słabe punkty swojej strony",
+      "title": "Monitoruj szybkość witryny",
       "description": "Nikt nie lubi wolnych stron internetowych. Użytkownicy częściej porzucają Twoją stronę, jeśli jej ładowanie trwa zbyt długo. Wyprzedź te problemy i mierz dane pochodzące z rzeczywistych interakcji."
     },
     "customisation": {
@@ -424,7 +423,10 @@
       "ckfree": "Analityka bez plików cookie",
       "api": "API dla programistów",
       "2fa": "Uwierzytelnianie dwuskładnikowe"
-    }
+    },
+    "freeToTry": "Wypróbuj za darmo",
+    "easyToUse": "Łatwe w użyciu",
+    "privacyFirst": "Prywatność przede wszystkim"
   },
   "referral": {
     "desc": "Swetrix to etyczna, otwartoźródłowa i całkowicie pozbawiona plików cookie alternatywa dla Google Analytics. Pozwala zrozumieć zachowanie użytkowników, monitorować wydajność Twojej strony internetowej, śledzić kampanie marketingowe i wiele więcej. Wszystko to bez naruszania prywatności użytkowników!",
@@ -750,7 +752,7 @@
     "xCustomEvents": "{{x}} niestandardowych zdarzeń",
     "xErrors": "{{x}} błędów",
     "alerts": "Alerty",
-    "alertsDesc": "Zautomatyzowane alerty to potężne narzędzie, które pozwala uruchomić automatyczne zadania, gdy wystąpią określone zdarzenia.\nMożemy automatycznie monitorować Twój projekt pod kątem skoków ruchu i powiadamiać Cię za pośrednictwem Telegrama.",
+    "alertsDesc": "Automatyczne alerty to potężne narzędzie, które pozwala uruchamiać zadania automatyczne, gdy wystąpią określone zdarzenia. Możemy automatycznie monitorować Twój projekt pod kątem skoków ruchu i powiadamiać Cię przez Telegram, Slack lub Discord.",
     "funnelsDesc": "Lejki to potężne narzędzie, które pozwala śledzić współczynnik konwersji użytkowników na kolejnych etapach.\nAnaliza dostarczana przez marketingowy lejek umożliwia odkrywanie potencjalnych problemów, ulepszanie strony oraz zwiększanie współczynnika konwersji.",
     "frontend": "Frontend",
     "backend": "Backend",
@@ -1298,6 +1300,7 @@
     "featureFlags": "Flagi funkcji"
   },
   "header": {
+    "startForFree": "Rozpocznij za darmo",
     "switchTheme": "Motyw przełącznika",
     "dark": "Ciemne",
     "light": "Light",

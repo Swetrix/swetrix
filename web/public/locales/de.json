@@ -336,8 +336,7 @@
     "understandTheirUsers": "<0>{{amount}}</0> Leute verstehen ihre Benutzer",
     "perfect": "Es ist perfekt für <0>Marketingfachleute</0>, <1>Start-ups</1>, <2>kleine Unternehmen</2> und praktisch jede Art von Unternehmen!",
     "trustedBy": "Von Regierungen, NGOs und innovativen Unternehmen anerkannt",
-    "start": "Kostenlos beginnen",
-    "startAFreeTrial": "Kostenlos testen",
+    "startAXDayFreeTrial": "Kostenlose {{amount}} Testtage",
     "metric": "Metrisch",
     "demoGeoReports": "Ja, es ist ein Standard. Aber wir verfolgen genau, wo Ihre Benutzer sind.",
     "peopleLoveSwetrix": "Leute 🥰 Swetrix",
@@ -345,7 +344,7 @@
     "weAreOpensource": "Wir sind <url>Open-Source</url>",
     "coreFeatures": "Nur die Funktionen die Sie benötigen",
     "problem": {
-      "title": "Die meisten Menschen haben Schwierigkeiten, ihre Analysedaten zu verstehen",
+      "title": "Fällt es dir schwer, deine Analysedaten zu verstehen?",
       "description": "Viele Webanalyse-Lösungen sind entweder zu komplex und überwältigend oder zu einfach und bieten nicht genügend Einblicke. Geschäftsinhaber verstehen ihre Kunden nicht und verlieren Geld.",
       "step1": "Geschäftsinhaber sammelt Webdaten",
       "step2": "Überwältigt von <u>komplexen Dashboards</u> oder beschränkt durch übervereinfachte Metriken",
@@ -354,11 +353,11 @@
     "butThereIsASolution": "Aber es gibt eine Lösung...",
     "knowYourCustomers": "Kennen Sie Ihre Kunden und Nutzer",
     "insights": {
-      "title": "Erhalten Sie Einblicke in Ihren Datenverkehr",
+      "title": "Erhalte Traffic-Einblicke",
       "description": "Swetrix hilft Ihnen, alles zu verstehen, was Sie über den Traffic auf Ihrer Website wissen müssen. Sie erfahren, wie viele Personen online sind, welche Seiten am beliebtesten sind, woher Ihre Benutzer kommen und vieles mehr."
     },
     "painPoints": {
-      "title": "Verstehen Sie die Schwachstellen Ihrer Website",
+      "title": "Überwache die Website-Geschwindigkeit",
       "description": "Niemand mag langsame Websites. Benutzer verlassen Ihre Website eher, wenn sie zu lange zum Laden braucht. Seien Sie diesen Problemen einen Schritt voraus und messen Sie Erkenntnisse aus echten Interaktionen."
     },
     "customisation": {
@@ -424,7 +423,10 @@
       "ckfree": "Cookie-freie Analysen",
       "api": "Entwickler-API",
       "2fa": "Zwei-Faktor-Authentifizierung"
-    }
+    },
+    "freeToTry": "Kostenlos testen",
+    "easyToUse": "Einfach zu bedienen",
+    "privacyFirst": "Datenschutz an erster Stelle"
   },
   "referral": {
     "desc": "Swetrix ist eine ethische, quelloffene und komplett Cookieless Alternative zu Google Analytics. Es ermöglicht Ihnen, das Verhalten Ihrer Nutzer zu verstehen, die Leistung Ihrer Website zu überwachen, Ihre Marketing-Kampagnen zu verfolgen und vieles mehr. Alles ohne die Privatsphäre Ihrer Nutzer zu verletzen!",
@@ -750,7 +752,7 @@
     "xCustomEvents": "{{x}} benutzerdefinierte Ereignisse",
     "xErrors": "{{x}} Fehler",
     "alerts": "Alarme",
-    "alertsDesc": "Automatisierte Alarme sind ein leistungsstarkes Tool, mit dem Sie automatisierte Aufgaben ausführen können, wenn bestimmte Ereignisse auftreten.\nWir können Ihr Projekt automatisch auf Stacheln überwachen und Sie per Telegram benachrichtigen.",
+    "alertsDesc": "Automatisierte Warnungen sind ein leistungsstarkes Werkzeug, mit dem du automatisierte Aufgaben ausführen kannst, wenn bestimmte Ereignisse eintreten. Wir können dein Projekt automatisch auf Traffic-Spitzen überwachen und dich über Telegram, Slack oder Discord benachrichtigen.",
     "funnelsDesc": "Trichter ist ein leistungsfähiges Tool, mit dem Sie die Konversionsrate Ihrer Benutzer durch eine Reihe von Schritten verfolgen können.\nDie Analyse des Marketing-Trichters gibt Ihnen die Möglichkeit, potenzielle Probleme zu entdecken, Ihre Website zu verbessern und Ihre Konversionsrate zu erhöhen.",
     "frontend": "Frontend",
     "backend": "Backend",
@@ -1298,6 +1300,7 @@
     "featureFlags": "Feature Flags"
   },
   "header": {
+    "startForFree": "Kostenlos starten",
     "switchTheme": "Design wechseln",
     "dark": "Dunkel",
     "light": "Hell",
