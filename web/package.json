@@ -67,7 +67,7 @@
     "remix-utils": "^8.5.0",
     "sonner": "^2.0.3",
     "spacetime": "^7.9.0",
-    "swetrix": "^3.6.1",
+    "swetrix": "^3.7.1",
     "tailwind-merge": "^3.3.0",
     "timezone-soft": "^1.5.2"
   },
