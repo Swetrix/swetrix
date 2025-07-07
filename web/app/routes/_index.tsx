@@ -881,7 +881,7 @@ const Hero = () => {
                 }}
               />
             </h1>
-            <p className='mx-auto mt-4 max-w-4xl text-center text-base text-slate-900 sm:text-lg dark:text-slate-300'>
+            <p className='mx-auto mt-4 max-w-4xl text-center text-base text-slate-900 sm:text-lg dark:text-slate-200'>
               {t('main.description')}
             </p>
             <div className='mt-10 flex flex-col items-center justify-center sm:flex-row'>
