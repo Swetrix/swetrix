@@ -375,11 +375,14 @@ const Highlighted = ({ children }: { children: React.ReactNode }) => (
 
 const LiveDemo = () => {
   const { theme } = useTheme()
+  const {
+    i18n: { language },
+  } = useTranslation('common')
 
   return (
     <div className='relative z-20 mx-auto mt-10 block max-w-7xl px-4 md:px-0'>
       <iframe
-        src={`https://swetrix.com/projects/STEzHcB1rALV?tab=traffic&theme=${theme}&embedded=true`}
+        src={`https://swetrix.com/projects/STEzHcB1rALV?tab=traffic&theme=${theme}&embedded=true&lng=${language}`}
         width='100%'
         height='700'
         className='relative h-[600px] w-full rounded-xl ring-2 ring-gray-900/10 focus:outline-none md:h-[700px] dark:ring-white/10'
