@@ -17,7 +17,6 @@ import { getGeneralStats, getPaymentMetainfo } from '~/api'
 import Header from '~/components/Header'
 import { ConveyorBelt } from '~/components/marketing/ConveyorBelt'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
-import { Lines } from '~/components/marketing/Lines'
 import { LogoTimeline } from '~/components/marketing/LogoTimeline'
 import { MarketplaceCluster } from '~/components/marketing/MarketplaceCluster'
 import Pricing from '~/components/marketing/Pricing'
@@ -904,9 +903,6 @@ const Hero = () => {
               </a>
             </div>
             <Testimonials />
-          </div>
-          <div className='hidden max-w-md lg:block xl:max-w-lg'>
-            <Lines />
           </div>
         </div>
         <LiveDemo />
