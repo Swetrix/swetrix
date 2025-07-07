@@ -1300,6 +1300,7 @@
     "featureFlags": "Feature flags"
   },
   "header": {
+    "startForFree": "Start for free",
     "switchTheme": "Switch theme",
     "dark": "Dark",
     "light": "Light",

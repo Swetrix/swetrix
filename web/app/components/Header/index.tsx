@@ -206,12 +206,12 @@ const SolutionsMenu = () => {
   )
 }
 
-const ThemeMenu = () => {
+const ThemeMenu = ({ className }: { className?: string }) => {
   const { theme, setTheme } = useTheme()
   const { t } = useTranslation('common')
 
   return (
-    <Menu as='div' className='relative ml-3'>
+    <Menu as='div' className={cx('relative', className)}>
       <div>
         <MenuButton className='flex items-center justify-center text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
           <span className='sr-only'>{t('header.switchTheme')}</span>
@@ -569,7 +569,7 @@ const AuthedHeader = ({
             </div>
           </div>
           <div className='ml-1 hidden flex-wrap items-center justify-center space-y-1 space-x-2 sm:space-y-0 lg:ml-10 lg:flex lg:space-x-4'>
-            <ThemeMenu />
+            <ThemeMenu className='ml-3' />
             <ProfileMenu logoutHandler={logoutHandler} />
           </div>
           <div className='flex items-center justify-center space-x-3 lg:hidden'>
@@ -682,17 +682,15 @@ const NotAuthedHeader = ({
             {/* Language selector */}
             <Dropdown
               items={whitelist}
-              buttonClassName='!py-0 inline-flex items-center [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 font-semibold leading-6 !text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+              buttonClassName='!py-0 !px-2 inline-flex items-center [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 font-semibold leading-6 !text-base text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
               title={
                 <span className='inline-flex items-center'>
                   <Flag
                     className='mr-1.5 rounded-xs'
                     country={languageFlag[language]}
                     size={18}
-                    alt=''
-                    aria-hidden='true'
+                    alt={languages[language]}
                   />
-                  {languages[language]}
                 </span>
               }
               labelExtractor={(lng: string) => (
@@ -717,6 +715,13 @@ const NotAuthedHeader = ({
                   className='flex items-center text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
                 >
                   {t('auth.common.signin')}
+                </Link>
+                <Separator />
+                <Link
+                  to={routes.signup}
+                  className='flex items-center text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'
+                >
+                  {t('header.startForFree')}
                   <ArrowRightIcon className='mt-[1px] ml-1 h-4 w-4 stroke-2' />
                 </Link>
               </>
@@ -1106,7 +1111,7 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                       className='-mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold text-gray-900 hover:bg-gray-300/50 dark:text-gray-50 dark:hover:bg-slate-700/80'
                       aria-label={t('titles.signup')}
                     >
-                      {t('common.getStarted')}
+                      {t('header.startForFree')}
                     </Link>
                   </>
                 )}

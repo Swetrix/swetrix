@@ -3147,7 +3147,7 @@ const ViewProject = () => {
                       className='mt-6 rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
                       aria-label={t('titles.signup')}
                     >
-                      {t('common.getStarted')}
+                      {t('header.startForFree')}
                     </Link>
                   </div>
                 ) : null}
@@ -3189,7 +3189,7 @@ const ViewProject = () => {
                         className='mt-6 rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium text-slate-900 hover:bg-indigo-50 md:px-4'
                         aria-label={t('titles.signup')}
                       >
-                        {t('common.getStarted')}
+                        {t('header.startForFree')}
                       </Link>
                     )}
                   </div>
