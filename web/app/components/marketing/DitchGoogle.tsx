@@ -26,7 +26,7 @@ export const DitchGoogle = () => {
           <div className='mb-8 flex flex-col items-center justify-center gap-4 sm:flex-row'>
             <Link
               to={routes.signup}
-              className='group relative inline-flex items-center justify-center rounded-xl border border-gray-200 bg-gradient-to-r from-indigo-500 to-purple-500 bg-[length:200%] bg-[position:0%_0%] px-10 py-5 text-xl font-semibold text-white shadow-sm transition-all duration-300 hover:bg-[position:100%_100%] hover:shadow-md'
+              className='group relative inline-flex items-center justify-center rounded-xl border border-gray-200 bg-gradient-to-r from-indigo-500 to-purple-500 bg-[length:200%] bg-[position:0%_0%] px-10 py-5 text-xl font-semibold text-white shadow-sm transition-all duration-300 hover:bg-[position:100%_100%] hover:shadow-md dark:border-gray-700 dark:from-indigo-600 dark:to-purple-600'
               aria-label={t('titles.signup')}
             >
               <span className='relative flex items-center'>
