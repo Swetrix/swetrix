@@ -4,7 +4,7 @@ import cx from 'clsx'
 import FlatpickrDarkCss from 'flatpickr/dist/themes/dark.css?url'
 import FlatpickrLightCss from 'flatpickr/dist/themes/light.css?url'
 import _replace from 'lodash/replace'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { LinksFunction, LoaderFunctionArgs, HeadersFunction } from 'react-router'
 import {
@@ -28,7 +28,7 @@ import FlatpickerCss from '~/styles/Flatpicker.css?url'
 import mainCss from '~/styles/index.css?url'
 import sonnerCss from '~/styles/sonner.css?url'
 import tailwindCss from '~/styles/tailwind.css?url'
-import { trackViews, trackErrors } from '~/utils/analytics'
+import { trackViews, trackErrors, trackError } from '~/utils/analytics'
 import { getCookie } from '~/utils/cookie'
 import { detectTheme, isAuthenticated, isWWW } from '~/utils/server'
 
@@ -76,6 +76,25 @@ export const headers: HeadersFunction = () => ({
 export function ErrorBoundary() {
   const error = useRouteError()
   const [crashStackShown, setCrashStackShown] = useState(false)
+
+  useEffect(() => {
+    if (isRouteErrorResponse(error)) {
+      trackError({
+        name: `ErrorBoundary: ${error.status} ${error.statusText}`,
+        message: error.data,
+        lineno: 0,
+        colno: 0,
+      })
+    } else if (error instanceof Error) {
+      trackError({
+        name: `ErrorBoundary: ${error.message}`,
+        message: error.message,
+        lineno: 0,
+        colno: 0,
+        stackTrace: error.stack || '',
+      })
+    }
+  }, [error])
 
   return (
     <html lang='en' className={getCookie(LS_THEME_SETTING) || 'light'}>

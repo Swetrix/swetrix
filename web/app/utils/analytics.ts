@@ -166,6 +166,14 @@ export const trackErrors = () => {
   })
 }
 
+export const trackError = (payload: Swetrix.IErrorEventPayload) => {
+  if (isSelfhosted || !isBrowser) {
+    return
+  }
+
+  Swetrix.trackError(payload)
+}
+
 export const trackCustom = (ev: string, meta?: Swetrix.TrackEventOptions['meta']) => {
   if (isSelfhosted || !isBrowser) {
     return
