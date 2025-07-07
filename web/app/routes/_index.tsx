@@ -77,7 +77,7 @@ const Problem = () => {
   return (
     <section className='bg-gray-100/80 dark:bg-slate-800/50'>
       <div className='mx-auto max-w-7xl px-8 py-16 text-center md:py-32'>
-        <h2 className='mb-6 text-4xl font-extrabold text-slate-900 sm:text-5xl sm:leading-none md:mb-8 dark:text-white'>
+        <h2 className='mb-6 text-4xl font-extrabold text-slate-900 sm:text-5xl sm:leading-none md:mb-12 dark:text-white'>
           {t('main.problem.title')}
         </h2>
         <p className='mx-auto mb-12 max-w-prose text-base leading-relaxed font-semibold text-slate-700 md:mb-20 md:text-lg dark:text-slate-300'>
