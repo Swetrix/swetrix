@@ -336,8 +336,7 @@
     "understandTheirUsers": "<0>{{amount}}</0> people understand their users",
     "perfect": "It's perfect for <0>marketers</0>, <1>start-ups</1>, <2>small businesses</2> and virtually any type of business!",
     "trustedBy": "Trusted by governments, NGOs and innovative enterprises",
-    "start": "Start for free",
-    "startAFreeTrial": "Start a free trial",
+    "startAXDayFreeTrial": "Start a {{amount}}-day free trial",
     "metric": "Metric",
     "demoGeoReports": "Yes, it's a standard. But we keep track of exactly where your users are from as it is.",
     "peopleLoveSwetrix": "People 🥰 Swetrix",
@@ -345,7 +344,7 @@
     "weAreOpensource": "We are <url>open source</url>",
     "coreFeatures": "Only the features you need",
     "problem": {
-      "title": "Most people struggle to make sense of their analytics data",
+      "title": "Do you struggle to make sense of your analytics data?",
       "description": "Many web analytics solutions are either too complex and overwhelming, or too simple and don't provide enough insight. Business owners don't understand their customers and lose money.",
       "step1": "Business owner collects web data",
       "step2": "Overwhelmed by <u>complex dashboards</u> or limited by oversimplified metrics",
@@ -354,11 +353,11 @@
     "butThereIsASolution": "But there is a solution...",
     "knowYourCustomers": "Know your customers and users",
     "insights": {
-      "title": "Get insights into your traffic",
+      "title": "Get traffic insights",
       "description": "Swetrix helps you understand everything you need to know about your website traffic. Know how many people are online, what pages are most popular, where are your users from, and more."
     },
     "painPoints": {
-      "title": "Understand your site's pain points",
+      "title": "Track website speed",
       "description": "Nobody likes slow websites. Users are more likely to abandon your website if it takes too long to load, stay ahead of these problems and measure insights from real interactions."
     },
     "customisation": {
@@ -424,7 +423,10 @@
       "ckfree": "Cookie free analytics",
       "api": "Developer API",
       "2fa": "Two-factor authentication"
-    }
+    },
+    "freeToTry": "Free to try",
+    "easyToUse": "Easy to use",
+    "privacyFirst": "Privacy first"
   },
   "referral": {
     "desc": "Swetrix is an ethical, open source and completely cookie-less alternative to Google Analytics. It allows you to understand your users' behaviour, monitor your website performance, track your marketing campaigns and much more. All without invading your users' privacy!",

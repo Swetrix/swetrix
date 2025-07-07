@@ -124,7 +124,9 @@ const ErrorTracking = () => {
                     className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 sm:mr-6 sm:max-w-[210px] dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600'
                     aria-label={t('titles.signup')}
                   >
-                    <span className='mr-1 text-center text-base font-semibold'>{t('main.startAFreeTrial')}</span>
+                    <span className='mr-1 text-center text-base font-semibold'>
+                      {t('main.startAXDayFreeTrial', { amount: 14 })}
+                    </span>
                     <ArrowRightIcon className='mt-[1px] h-4 w-5 transition-transform group-hover:scale-[1.15]' />
                   </Link>
                   <a
@@ -228,12 +230,7 @@ const ErrorTracking = () => {
         {/* For now let's hide Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
         {!isAuthenticated ? <Pricing authenticated={false} /> : null}
 
-        <DitchGoogle
-          screenshot={{
-            dark: '/assets/screenshot_errors_dark.png',
-            light: '/assets/screenshot_errors_light.png',
-          }}
-        />
+        <DitchGoogle />
 
         {/* Become a developer */}
         <section className='relative bg-white pt-20 pb-44 dark:bg-slate-900'>

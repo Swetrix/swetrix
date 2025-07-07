@@ -194,7 +194,7 @@ const Body = () => {
   const { theme } = useTheme()
 
   return (
-    <body className={cx(theme, { 'bg-white': theme === 'light', 'bg-slate-900': theme === 'dark' })}>
+    <body className={cx(theme, { 'bg-gray-50': theme === 'light', 'bg-slate-900': theme === 'dark' })}>
       <AuthProvider initialIsAuthenticated={isAuthed}>
         <AppWrapper />
       </AuthProvider>

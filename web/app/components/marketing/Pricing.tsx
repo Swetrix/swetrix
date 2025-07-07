@@ -255,7 +255,7 @@ const Pricing = ({ authenticated, isBillingPage, lastEvent }: PricingProps) => {
 
   return (
     <>
-      <div id='pricing' className={cx({ 'bg-white dark:bg-slate-900/75': !authenticated })}>
+      <div id='pricing' className={cx({ 'bg-gray-100/80 dark:bg-slate-800/50': !authenticated })}>
         <div
           className={cx('max-w-max whitespace-pre-line', {
             'px-4 py-24 sm:px-6 lg:px-8': !authenticated,

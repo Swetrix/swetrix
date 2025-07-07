@@ -75,22 +75,22 @@ const Problem = () => {
   const { t } = useTranslation('common')
 
   return (
-    <section className='bg-slate-700'>
+    <section className='bg-gray-100/80 dark:bg-slate-800/50'>
       <div className='mx-auto max-w-7xl px-8 py-16 text-center md:py-32'>
-        <h2 className='mb-6 text-4xl font-extrabold text-gray-50 sm:text-5xl sm:leading-none md:mb-8'>
+        <h2 className='mb-6 text-4xl font-extrabold text-slate-900 sm:text-5xl sm:leading-none md:mb-8 dark:text-white'>
           {t('main.problem.title')}
         </h2>
-        <p className='mx-auto mb-12 max-w-prose text-base leading-relaxed font-semibold text-gray-100 md:mb-20 md:text-lg'>
+        <p className='mx-auto mb-12 max-w-prose text-base leading-relaxed font-semibold text-slate-700 md:mb-20 md:text-lg dark:text-slate-300'>
           {t('main.problem.description')}
         </p>
 
-        <div className='flex flex-col items-center justify-center gap-6 text-gray-50 md:flex-row md:items-start'>
+        <div className='flex flex-col items-center justify-center gap-6 text-slate-900 md:flex-row md:items-start dark:text-white'>
           <div className='flex w-full flex-col items-center justify-center gap-2 md:w-56'>
             <span className='text-4xl'>🤔</span>
             <p className='font-semibold'>{t('main.problem.step1')}</p>
           </div>
           <svg
-            className='w-12 shrink-0 fill-gray-200 opacity-70 max-md:-scale-x-100 md:-rotate-90'
+            className='w-12 shrink-0 fill-slate-400 opacity-70 max-md:-scale-x-100 md:-rotate-90 dark:fill-slate-500'
             viewBox='0 0 138 138'
             fill='none'
             xmlns='http://www.w3.org/2000/svg'
@@ -158,9 +158,8 @@ interface FeedbackProps {
 }
 
 const Feedback = ({ name, title, feedback, logoUrl, photoUrl }: FeedbackProps) => (
-  <section className='relative isolate z-10 bg-white px-6 py-24 sm:py-32 lg:px-8 dark:bg-slate-900'>
+  <section className='relative isolate z-10 bg-gray-50 px-6 py-24 sm:py-32 lg:px-8 dark:bg-slate-900'>
     <div className='absolute inset-0 -z-10 bg-[radial-gradient(45rem_50rem_at_top,theme(colors.indigo.100),white)] opacity-20 blur-3xl dark:bg-[radial-gradient(45rem_50rem_at_top,theme(colors.indigo.400),theme(colors.slate.900))]' />
-    <div className='absolute inset-y-0 right-1/2 -z-10 mr-16 w-[200%] origin-bottom-left skew-x-[-30deg] border-r-2 border-slate-900/10 bg-white sm:mr-28 lg:mr-0 xl:mr-16 xl:origin-center dark:border-slate-50/50 dark:bg-slate-900' />
     <div className='mx-auto max-w-2xl lg:max-w-4xl'>
       <img alt='' src={logoUrl} className='mx-auto h-12' />
       <figure className='mt-10'>
@@ -175,7 +174,7 @@ const Feedback = ({ name, title, feedback, logoUrl, photoUrl }: FeedbackProps) =
           <img alt='' src={photoUrl} className='mx-auto h-10 w-10 rounded-full' />
           <div className='mt-4 flex flex-col items-center justify-center gap-3 text-base sm:flex-row'>
             <p className='font-semibold text-gray-900 dark:text-gray-50'>{name}</p>
-            <svg width={3} height={3} viewBox='0 0 2 2' aria-hidden='true' className='fill-gray-900'>
+            <svg width={3} height={3} viewBox='0 0 2 2' aria-hidden='true' className='fill-gray-900 dark:fill-gray-300'>
               <circle r={1} cx={1} cy={1} />
             </svg>
             <p className='text-gray-600 dark:text-gray-200'>{title}</p>
@@ -414,7 +413,7 @@ const FeatureBlocks = () => {
 
   const { deviceInfo } = useLoaderData<typeof loader>()
 
-  const geo = [
+  const geoOptions = [
     {
       label: t('project.mapping.cc'),
       value: metainfo.country || 'US',
@@ -430,7 +429,7 @@ const FeatureBlocks = () => {
   ]
 
   return (
-    <section className='relative mx-auto max-w-7xl bg-white px-6 py-14 lg:px-8 dark:bg-slate-900'>
+    <section className='relative mx-auto max-w-7xl bg-gray-50 px-6 py-14 lg:px-8 dark:bg-slate-900'>
       <div className='relative mx-auto w-fit'>
         <div>
           <p className='mb-4 text-sm font-medium text-slate-800 dark:text-gray-200'>{t('main.butThereIsASolution')}</p>
@@ -460,7 +459,7 @@ const FeatureBlocks = () => {
           </div>
           <div className='h-80 overflow-hidden'>
             <img
-              className='object-cover object-left transition-transform group-hover:scale-105 max-md:h-full'
+              className='object-cover object-left opacity-60 transition-transform group-hover:scale-105 max-md:h-full'
               src={theme === 'dark' ? '/assets/traffic_part_dark.png' : '/assets/traffic_part_light.png'}
               alt='Swetrix Traffic Dashboard'
             />
@@ -487,7 +486,7 @@ const FeatureBlocks = () => {
           </div>
           <div className='h-80 overflow-hidden'>
             <img
-              className='object-cover object-left transition-transform group-hover:scale-105 max-md:h-full'
+              className='object-cover object-left opacity-60 transition-transform group-hover:scale-105 max-md:h-full'
               src={theme === 'dark' ? '/assets/performance_part_dark.png' : '/assets/performance_part_light.png'}
               alt='Website speed and performance monitoring'
             />
@@ -524,7 +523,7 @@ const FeatureBlocks = () => {
                     value: 'max-md:text-xl md:text-2xl',
                     container: 'rounded-md bg-gray-50 dark:bg-slate-700/60 py-1 px-2 max-w-max',
                   }}
-                  values={geo}
+                  values={geoOptions}
                   selectLabel={t('project.geo')}
                   valueMapper={({ value }, index) => {
                     if (index !== 0) {
@@ -660,7 +659,7 @@ const CoreFeatures = () => {
   const { t } = useTranslation('common')
 
   return (
-    <section className='relative mx-auto max-w-7xl bg-white px-6 py-14 lg:px-8 dark:bg-slate-900'>
+    <section className='relative mx-auto max-w-7xl bg-gray-50 px-6 py-14 lg:px-8 dark:bg-slate-900'>
       <div className='relative mx-auto w-fit'>
         <h2 className='relative z-20 text-4xl font-extrabold text-slate-900 sm:text-5xl dark:text-white'>
           {t('main.coreFeatures')}
@@ -840,7 +839,9 @@ const Hero = () => {
                 className='group flex h-12 w-full items-center justify-center rounded-md bg-slate-900 text-white ring-1 ring-slate-900 transition-all !duration-300 hover:bg-slate-700 sm:mr-6 sm:max-w-[210px] dark:bg-indigo-700 dark:ring-indigo-700 dark:hover:bg-indigo-600'
                 aria-label={t('titles.signup')}
               >
-                <span className='mr-1 text-center text-base font-semibold'>{t('main.startAFreeTrial')}</span>
+                <span className='mr-1 text-center text-base font-semibold'>
+                  {t('main.startAXDayFreeTrial', { amount: 14 })}
+                </span>
                 <ArrowRightIcon className='mt-[1px] h-4 w-5 transition-transform group-hover:scale-[1.15]' />
               </Link>
               <a
@@ -885,7 +886,7 @@ export default function Index() {
 
   return (
     <div className='overflow-hidden'>
-      <main className='bg-white dark:bg-slate-900'>
+      <main className='bg-gray-50 dark:bg-slate-900'>
         <Hero />
 
         <Problem />
@@ -927,12 +928,7 @@ export default function Index() {
 
         <WeAreOpensource />
 
-        <DitchGoogle
-          screenshot={{
-            dark: '/assets/screenshot_dark.png',
-            light: '/assets/screenshot_light.png',
-          }}
-        />
+        <DitchGoogle />
       </main>
     </div>
   )

@@ -78,7 +78,7 @@ const ReferralPage = () => {
                     aria-label={t('titles.signup')}
                   >
                     <span className='mr-1 text-center text-base font-semibold transition-transform group-hover:scale-[1.15]'>
-                      {t('main.startAFreeTrial')}
+                      {t('main.startAXDayFreeTrial', { amount: 14 })}
                     </span>
                     <ArrowRightIcon className='mt-[1px] h-4 w-5' />
                   </Link>

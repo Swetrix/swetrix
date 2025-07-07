@@ -191,7 +191,7 @@ const Performance = () => {
                     aria-label={t('titles.signup')}
                   >
                     <span className='mr-1 text-center text-base font-semibold transition-transform group-hover:scale-[1.15]'>
-                      {t('main.startAFreeTrial')}
+                      {t('main.startAXDayFreeTrial', { amount: 14 })}
                     </span>
                     <ArrowRightIcon className='mt-[1px] h-4 w-5' />
                   </Link>
@@ -291,12 +291,7 @@ const Performance = () => {
         {/* For now let's hide Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
         {isAuthenticated ? null : <Pricing authenticated={false} />}
 
-        <DitchGoogle
-          screenshot={{
-            dark: '/assets/screenshot_perf_dark.png',
-            light: '/assets/screenshot_perf_light.png',
-          }}
-        />
+        <DitchGoogle />
 
         {/* Become a developer */}
         <section className='relative bg-white pt-20 pb-44 dark:bg-slate-900'>
