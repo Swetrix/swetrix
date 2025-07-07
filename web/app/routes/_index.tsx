@@ -149,42 +149,6 @@ const Problem = () => {
   )
 }
 
-interface FeedbackProps {
-  name: string
-  title: string
-  feedback: React.ReactNode
-  logoUrl: string
-  photoUrl: string
-}
-
-const Feedback = ({ name, title, feedback, logoUrl, photoUrl }: FeedbackProps) => (
-  <section className='relative isolate z-10 bg-gray-50 px-6 py-24 sm:py-32 lg:px-8 dark:bg-slate-900'>
-    <div className='absolute inset-0 -z-10 bg-[radial-gradient(45rem_50rem_at_top,theme(colors.indigo.100),white)] opacity-20 blur-3xl dark:bg-[radial-gradient(45rem_50rem_at_top,theme(colors.indigo.400),theme(colors.slate.900))]' />
-    <div className='mx-auto max-w-2xl lg:max-w-4xl'>
-      <img alt='' src={logoUrl} className='mx-auto h-12' />
-      <figure className='mt-10'>
-        <blockquote className='text-center text-xl leading-8 font-semibold text-gray-900 sm:text-2xl sm:leading-9 dark:text-gray-50'>
-          <p>
-            <span>“</span>
-            {feedback}
-            <span>”</span>
-          </p>
-        </blockquote>
-        <figcaption className='mt-10'>
-          <img alt='' src={photoUrl} className='mx-auto h-10 w-10 rounded-full' />
-          <div className='mt-4 flex flex-col items-center justify-center gap-3 text-base sm:flex-row'>
-            <p className='font-semibold text-gray-900 dark:text-gray-50'>{name}</p>
-            <svg width={3} height={3} viewBox='0 0 2 2' aria-hidden='true' className='fill-gray-900 dark:fill-gray-300'>
-              <circle r={1} cx={1} cy={1} />
-            </svg>
-            <p className='text-gray-600 dark:text-gray-200'>{title}</p>
-          </div>
-        </figcaption>
-      </figure>
-    </div>
-  </section>
-)
-
 interface FeedbackHighlightProps {
   children: React.ReactNode
 }
@@ -192,6 +156,76 @@ interface FeedbackHighlightProps {
 const FeedbackHighlight = ({ children }: FeedbackHighlightProps) => (
   <span className='bg-yellow-100/80 dark:bg-yellow-400/40'>{children}</span>
 )
+
+const FeedbackDual = () => {
+  const { theme } = useTheme()
+
+  return (
+    <section className='bg-gray-100/80 py-24 sm:py-32 dark:bg-slate-800/50'>
+      <div className='mx-auto max-w-7xl px-6 lg:px-8'>
+        <div className='mx-auto grid max-w-2xl grid-cols-1 lg:mx-0 lg:max-w-none lg:grid-cols-2'>
+          <div className='flex flex-col pb-10 sm:pb-16 lg:pr-8 lg:pb-0 xl:pr-20'>
+            <img
+              alt='Casterlabs'
+              src={theme === 'dark' ? '/assets/users/casterlabs-dark.svg' : '/assets/users/casterlabs-light.svg'}
+              className='h-12 self-start'
+            />
+            <figure className='mt-10 flex flex-auto flex-col justify-between'>
+              <blockquote className='text-lg/8 text-gray-900 dark:text-gray-100'>
+                <p>
+                  "Swetrix has been a <FeedbackHighlight>game changer for our analytics</FeedbackHighlight>. They've
+                  always been on top of feature requests and bug reports and have been friendly every step of the way. I
+                  can't recommend them enough."
+                </p>
+              </blockquote>
+              <figcaption className='mt-10 flex items-center gap-x-6'>
+                <img
+                  alt=''
+                  src='/assets/users/alex-casterlabs.jpg'
+                  className='size-14 rounded-full bg-gray-50 dark:bg-gray-800'
+                />
+                <div className='text-base'>
+                  <div className='font-semibold text-gray-900 dark:text-gray-100'>Alex Bowles</div>
+                  <div className='mt-1 text-gray-500 dark:text-gray-400'>Co-founder of Casterlabs</div>
+                </div>
+              </figcaption>
+            </figure>
+          </div>
+          <div className='flex flex-col border-t border-gray-900/10 pt-10 sm:pt-16 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8 xl:pl-20 dark:border-gray-100/10'>
+            <img
+              alt='Phalcode'
+              src={theme === 'dark' ? '/assets/users/phalcode-dark.svg' : '/assets/users/phalcode-light.svg'}
+              className='h-8 self-start'
+            />
+            <figure className='mt-10 flex flex-auto flex-col justify-between'>
+              <blockquote className='text-lg/8 text-gray-900 dark:text-gray-100'>
+                <p>
+                  "I was confused by Google Analytics so much that I was getting zero actionable insights. Swetrix
+                  changed everything -{' '}
+                  <FeedbackHighlight>
+                    clean dashboard, instant understanding of user behavior, and features that actually matter
+                  </FeedbackHighlight>
+                  . Finally, analytics that help me make better decisions instead of irritating me."
+                </p>
+              </blockquote>
+              <figcaption className='mt-10 flex items-center gap-x-6'>
+                <img
+                  alt=''
+                  src='/assets/users/alper-phalcode.jpg'
+                  className='size-14 rounded-full bg-gray-50 dark:bg-gray-800'
+                />
+                <div className='text-base'>
+                  <div className='font-semibold text-gray-900 dark:text-gray-100'>Alper Alkan</div>
+                  <div className='mt-1 text-gray-500 dark:text-gray-400'>Co-founder of Phalcode</div>
+                </div>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
 
 const WeAreOpensource = () => {
   const { theme } = useTheme()
@@ -881,7 +915,6 @@ const Hero = () => {
 }
 
 export default function Index() {
-  const { theme } = useTheme()
   const { isAuthenticated } = useAuth()
 
   return (
@@ -893,38 +926,12 @@ export default function Index() {
 
         <FeatureBlocks />
 
-        <Feedback
-          name='Alex Bowles'
-          title='Co-founder of Casterlabs'
-          logoUrl={theme === 'dark' ? '/assets/users/casterlabs-dark.svg' : '/assets/users/casterlabs-light.svg'}
-          photoUrl='/assets/users/alex-casterlabs.jpg'
-          feedback={
-            <span>
-              Swetrix has been a <FeedbackHighlight>game changer for our analytics</FeedbackHighlight>. They've always
-              been on top of feature requests and bug reports and have been friendly every step of the way. I can't
-              recommend them enough.
-            </span>
-          }
-        />
+        <FeedbackDual />
 
         <CoreFeatures />
 
         {/* Hiding the Pricing for authenticated users on the main page as the Paddle script only loads on the Billing page */}
         {!isAuthenticated ? <Pricing authenticated={false} /> : null}
-
-        <Feedback
-          name='Alper Alkan'
-          title='Co-founder of Phalcode'
-          logoUrl={theme === 'dark' ? '/assets/users/phalcode-dark.svg' : '/assets/users/phalcode-light.svg'}
-          photoUrl='/assets/users/alper-phalcode.jpg'
-          feedback={
-            <span>
-              Analytics needs on all of our products are provided by Swetrix only. It's unfathomable how good this
-              service is compared to Google Analytics.
-              <FeedbackHighlight> Swetrix gives me everything I need to know about my websites</FeedbackHighlight>.
-            </span>
-          }
-        />
 
         <WeAreOpensource />
 
