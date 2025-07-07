@@ -20,6 +20,7 @@ import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import { LogoTimeline } from '~/components/marketing/LogoTimeline'
 import { MarketplaceCluster } from '~/components/marketing/MarketplaceCluster'
 import Pricing from '~/components/marketing/Pricing'
+import useBreakpoint from '~/hooks/useBreakpoint'
 import {
   GITHUB_URL,
   LIVE_DEMO_URL,
@@ -379,13 +380,36 @@ const LiveDemo = () => {
     i18n: { language },
   } = useTranslation('common')
 
+  const isMobile = !useBreakpoint('md')
+
+  if (isMobile) {
+    return (
+      <div className='relative z-20 mx-auto mt-10 block max-w-7xl px-4 md:px-0'>
+        <picture>
+          <source
+            srcSet={theme === 'dark' ? '/assets/screenshot_dark.webp' : '/assets/screenshot_light.webp'}
+            type='image/webp'
+          />
+
+          <img
+            src={theme === 'dark' ? '/assets/screenshot_dark.png' : '/assets/screenshot_light.png'}
+            className='relative w-full rounded-xl ring-2 ring-gray-900/10 dark:ring-white/10'
+            width='100%'
+            height='auto'
+            alt='Swetrix Analytics dashboard'
+          />
+        </picture>
+      </div>
+    )
+  }
+
   return (
     <div className='relative z-20 mx-auto mt-10 block max-w-7xl px-4 md:px-0'>
       <iframe
         src={`https://swetrix.com/projects/STEzHcB1rALV?tab=traffic&theme=${theme}&embedded=true&lng=${language}`}
         width='100%'
         height='700'
-        className='relative h-[600px] w-full rounded-xl ring-2 ring-gray-900/10 focus:outline-none md:h-[700px] dark:ring-white/10'
+        className='relative w-full rounded-xl ring-2 ring-gray-900/10 focus:outline-none dark:ring-white/10'
         title='Swetrix Analytics Live Demo'
       />
     </div>
@@ -908,7 +932,16 @@ const Hero = () => {
             <Testimonials />
           </div>
         </div>
-        <LiveDemo />
+
+        <ClientOnly
+          fallback={
+            <div className='relative z-20 mx-auto mt-10 block max-w-7xl px-4 md:px-0'>
+              <div className='relative h-[320px] w-full rounded-xl bg-slate-800/20 ring-2 ring-gray-900/10 md:h-[700px] dark:ring-white/10' />
+            </div>
+          }
+        >
+          {() => <LiveDemo />}
+        </ClientOnly>
       </div>
     </div>
   )
