@@ -1,5 +1,6 @@
 import { clsx } from 'clsx'
 import { motion } from 'framer-motion'
+import { NetworkIcon } from 'lucide-react'
 import React from 'react'
 
 const Circle = ({ size, delay, opacity }: { size: number; delay: number; opacity: string }) => {
@@ -54,11 +55,13 @@ const Logo = ({
   left,
   top,
   hover,
+  children,
 }: {
   src: string
   left: number
   top: number
   hover: { x: number; y: number; rotate: number; delay: number }
+  children?: React.ReactNode
 }) => {
   return (
     <motion.div
@@ -80,7 +83,7 @@ const Logo = ({
       style={{ left, top } as React.CSSProperties}
       className='absolute flex size-16 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-black/5 group-data-[dark]:bg-slate-700/60'
     >
-      <img src={src} alt='' className='size-10' />
+      {children ? children : <img src={src} alt='' className='size-10' />}
     </motion.div>
   )
 }
@@ -102,7 +105,9 @@ export const MarketplaceCluster = () => {
           left={285}
           top={20}
           hover={{ x: 4, y: -5, rotate: 6, delay: 0.3 }}
-        />
+        >
+          <NetworkIcon className='size-10 text-slate-800 dark:text-gray-100' />
+        </Logo>
         <Logo
           src='/assets/marketplace-extensions/toml.png'
           left={255}
@@ -121,12 +126,6 @@ export const MarketplaceCluster = () => {
           top={56}
           hover={{ x: -4, y: -5, rotate: -6, delay: 0.35 }}
         />
-        {/* <Logo
-          src='./logo-cluster/we-work-remotely.svg'
-          left={96}
-          top={176}
-          hover={{ x: -3, y: 5, rotate: 3, delay: 0.15 }}
-        /> */}
       </div>
     </div>
   )
