@@ -1,7 +1,7 @@
 import _includes from 'lodash/includes'
 import * as Swetrix from 'swetrix'
 
-import { isBrowser, isDevelopment, isSelfhosted } from '~/lib/constants'
+import { isBrowser, isDevelopment, isIframe, isSelfhosted } from '~/lib/constants'
 
 const SWETRIX_PID = 'STEzHcB1rALV'
 
@@ -108,7 +108,7 @@ Swetrix.init(SWETRIX_PID, {
 const BLOG_PAGE_REGEX = /^\/blog\/.+$/
 
 export const trackViews = () => {
-  if (isSelfhosted || !isBrowser) {
+  if (isSelfhosted || !isBrowser || isIframe) {
     return
   }
 

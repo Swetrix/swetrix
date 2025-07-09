@@ -369,6 +369,8 @@ export const REFERRAL_DISCOUNT_CODE = 'REFERRAL_DISCOUNT'
 
 export const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefined'
 
+export const isIframe = isBrowser && window.self !== window.top
+
 export type ThemeType = 'dark' | 'light'
 export const SUPPORTED_THEMES = ['light', 'dark']
 
