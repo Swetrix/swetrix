@@ -37,6 +37,7 @@ module.exports = {
         style: {
           height: '28px',
         },
+        className: 'navbar-logo',
       },
       items: [
         {
