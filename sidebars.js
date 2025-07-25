@@ -28,6 +28,7 @@ module.exports = {
       'sitesettings/how-to-invite-users-to-your-website',
       'sitesettings/embed-your-analytics-dashboard-into-your-website',
       'sitesettings/get-analytics-email-reports',
+      'sitesettings/get-traffic-alerts',
       'sitesettings/reset-sites-data',
     ],
     'Billing & Subscription': [
