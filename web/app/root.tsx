@@ -202,6 +202,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     STAGING: process.env.STAGING,
     PADDLE_CLIENT_SIDE_TOKEN: process.env.PADDLE_CLIENT_SIDE_TOKEN,
     LOCALE: locale,
+    COOKIE_DOMAIN: process.env.COOKIE_DOMAIN,
   }
 
   return { locale, url, theme, REMIX_ENV, isAuthed, pathname: urlObject.pathname }

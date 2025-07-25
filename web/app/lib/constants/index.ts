@@ -385,6 +385,8 @@ const isStaging = isBrowser ? window.REMIX_ENV?.STAGING : process.env.STAGING
 const STAGING_API_URL = isBrowser ? window.REMIX_ENV?.API_STAGING_URL : process.env.API_STAGING_URL
 const PRODUCTION_API_URL = isBrowser ? window.REMIX_ENV?.API_URL : process.env.API_URL
 
+export const COOKIE_DOMAIN = (isBrowser ? window.REMIX_ENV?.COOKIE_DOMAIN : process.env.COOKIE_DOMAIN) || 'swetrix.com'
+
 export const isSelfhosted = Boolean(isBrowser ? window.REMIX_ENV?.SELFHOSTED : process.env.__SELFHOSTED)
 
 export const isDisableMarketingPages =
