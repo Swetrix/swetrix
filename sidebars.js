@@ -31,6 +31,12 @@ module.exports = {
       'sitesettings/get-traffic-alerts',
       'sitesettings/reset-sites-data',
     ],
+    'Account settings': [
+      // 'accountsettings/2-factor-authentication',
+      'accountsettings/change-email',
+      'accountsettings/change-password',
+      'accountsettings/delete-account',
+    ],
     'Billing & Subscription': [
       'billing/exceeding-plan-limits',
       'billing/update-subscription',
