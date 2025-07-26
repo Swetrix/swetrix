@@ -58,7 +58,7 @@ const MiniCard = ({ labelTKey, total, percChange }: MiniCardProps) => {
               <p
                 className={cx('flex items-center text-xs', {
                   'text-green-600': statsDidGrowUp,
-                  'text-red-600': !statsDidGrowUp,
+                  'text-slate-600 dark:text-slate-400': !statsDidGrowUp,
                 })}
               >
                 {statsDidGrowUp ? (
@@ -68,7 +68,7 @@ const MiniCard = ({ labelTKey, total, percChange }: MiniCardProps) => {
                   </>
                 ) : (
                   <>
-                    <ChevronDownIcon className='h-4 w-4 shrink-0 self-center text-red-500' />
+                    <ChevronDownIcon className='h-4 w-4 shrink-0 self-center text-slate-500 dark:text-slate-400' />
                     <span className='sr-only'>{t('dashboard.dec')}</span>
                   </>
                 )}
