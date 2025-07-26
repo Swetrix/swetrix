@@ -859,13 +859,13 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                         leaveTo='transform opacity-0 scale-95'
                       >
                         <MenuItems
-                          className='absolute right-0 z-50 mt-1 w-full min-w-max origin-top-right rounded-md bg-white py-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-800 dark:ring-slate-800'
+                          className='absolute right-0 z-50 w-full min-w-max origin-top-right rounded-md bg-white p-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-800 dark:ring-slate-800'
                           static
                         >
                           {_map(whitelist, (lng) => (
                             <MenuItem key={lng}>
                               <span
-                                className='block cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-600'
+                                className='block cursor-pointer rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-600'
                                 role='menuitem'
                                 tabIndex={0}
                                 onClick={() => changeLanguage(lng)}
