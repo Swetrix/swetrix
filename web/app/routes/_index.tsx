@@ -15,6 +15,7 @@ import { ClientOnly } from 'remix-utils/client-only'
 
 import { getGeneralStats, getPaymentMetainfo } from '~/api'
 import Header from '~/components/Header'
+import RemindMeLater from '~/components/RemindMeLater'
 import { ConveyorBelt } from '~/components/marketing/ConveyorBelt'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
 import { LogoTimeline } from '~/components/marketing/LogoTimeline'
@@ -859,6 +860,7 @@ const CoreFeatures = () => {
 
 const Hero = () => {
   const { t } = useTranslation('common')
+  const [isRemindMeLaterOpen, setIsRemindMeLaterOpen] = useState(false)
 
   return (
     <div className='relative isolate overflow-x-clip'>
@@ -929,6 +931,14 @@ const Hero = () => {
                 <span className='text-base font-semibold'>{t('common.liveDemo')}</span>
               </a>
             </div>
+            <div className='mt-4 text-center'>
+              <button
+                onClick={() => setIsRemindMeLaterOpen(true)}
+                className='text-sm text-slate-600 underline decoration-dashed hover:decoration-solid hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+              >
+                Remind me later via email
+              </button>
+            </div>
             <Testimonials />
           </div>
         </div>
@@ -943,6 +953,11 @@ const Hero = () => {
           {() => <LiveDemo />}
         </ClientOnly>
       </div>
+      
+      <RemindMeLater
+        isOpen={isRemindMeLaterOpen}
+        onClose={() => setIsRemindMeLaterOpen(false)}
+      />
     </div>
   )
 }
