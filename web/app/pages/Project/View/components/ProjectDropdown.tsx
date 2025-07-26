@@ -47,7 +47,7 @@ const ProjectDropdown = <T extends string = string>({
       headless
       buttonClassName='cursor-pointer !p-0 text-lg font-semibold flex items-center text-gray-900 dark:text-gray-50'
       className='relative inline-block'
-      menuItemsClassName='absolute top-4 left-5 z-10 mt-2 max-h-[200px] !min-w-[220px] overflow-auto'
+      menuItemsClassName='absolute top-4 left-5 z-20 mt-2 max-h-[200px] !min-w-[220px] overflow-auto'
       chevron='mini'
     />
   )
