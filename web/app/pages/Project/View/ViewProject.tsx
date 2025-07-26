@@ -3350,7 +3350,7 @@ const ViewProject = () => {
                       />
                     ) : null}
                     <Filters tnMapping={tnMapping} />
-                    <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
+                    <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2'>
                       {!_isEmpty(activeError?.params)
                         ? _map(ERROR_PANELS_ORDER, (type: keyof typeof tnMapping) => {
                             const panelName = tnMapping[type]
@@ -3659,7 +3659,7 @@ const ViewProject = () => {
                         <LoadingBar />
                       </div>
                     ) : null}
-                    <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
+                    <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2'>
                       {!_isEmpty(panelsData.types)
                         ? _map(TRAFFIC_PANELS_ORDER, (type: keyof typeof tnMapping) => {
                             const panelName = tnMapping[type]
@@ -3982,7 +3982,7 @@ const ViewProject = () => {
                         <LoadingBar />
                       </div>
                     ) : null}
-                    <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'>
+                    <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2'>
                       {!_isEmpty(panelsDataPerf.types)
                         ? _map(PERFORMANCE_PANELS_ORDER, (type: keyof typeof tnMapping) => {
                             const panelName = tnMapping[type]

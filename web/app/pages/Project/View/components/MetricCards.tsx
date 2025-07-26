@@ -46,13 +46,13 @@ const ChangeBadge = ({ change, type, goodChangeDirection, valueMapper }: Partial
   if (change < 0 && goodChangeDirection === 'down') {
     const label = valueMapper ? valueMapper(change, 'badge') : `${change}${type === 'percent' ? '%' : ''}`
 
-    return <Badge colour='red' label={label} />
+    return <Badge colour='slate' label={label} />
   }
 
   if (change > 0 && goodChangeDirection === 'up') {
     const label = valueMapper ? valueMapper(change, 'badge') : `${change}${type === 'percent' ? '%' : ''}`
 
-    return <Badge colour='red' label={label} />
+    return <Badge colour='slate' label={label} />
   }
 
   if (change > 0 && goodChangeDirection === 'down') {

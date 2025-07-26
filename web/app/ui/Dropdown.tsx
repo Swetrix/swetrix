@@ -1,7 +1,6 @@
 import { Menu, MenuButton, MenuItems, MenuItem, Transition } from '@headlessui/react'
 import { ChevronDownIcon as ChevronDownIconMini } from '@heroicons/react/20/solid'
 import { ChevronDownIcon } from '@heroicons/react/24/solid'
-import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import _map from 'lodash/map'
 import React, { memo, Fragment, Key } from 'react'
@@ -23,7 +22,7 @@ interface DropdownProps<T> {
   selectItemClassName?: string
   menuItemsClassName?: string
   header?: React.ReactNode
-  chevron?: 'regular' | 'mini'
+  chevron?: 'regular' | 'mini' | null
   headless?: boolean
   disabled?: boolean
   onClick?: React.MouseEventHandler<HTMLButtonElement>
@@ -50,7 +49,7 @@ function Dropdown<T>({
   loading,
 }: DropdownProps<T>) {
   return (
-    <Menu as='div' className={cx('relative inline-block text-left', className)}>
+    <Menu as='div' className={cn('relative inline-block text-left', className)}>
       {({ open, close }) => (
         <>
           {!_isEmpty(desc) ? <p className='mb-2 text-sm text-gray-900'>{desc}</p> : null}
@@ -73,7 +72,7 @@ function Dropdown<T>({
             <span>{title}</span>
             {chevron === 'regular' ? (
               <ChevronDownIcon
-                className={cx('-mr-1 ml-2 h-5 w-5 transform-gpu transition-transform', {
+                className={cn('-mr-1 ml-2 h-5 w-5 transform-gpu transition-transform', {
                   'group-hover:text-slate-500 dark:group-hover:text-slate-400': headless,
                   'rotate-180': open,
                 })}
@@ -82,7 +81,7 @@ function Dropdown<T>({
             ) : null}
             {chevron === 'mini' ? (
               <ChevronDownIconMini
-                className={cx('-mr-1 ml-1 h-5 w-5 transform-gpu transition-transform', {
+                className={cn('-mr-1 ml-1 h-5 w-5 transform-gpu transition-transform', {
                   'group-hover:text-slate-500 dark:group-hover:text-slate-400': headless,
                   'rotate-180': open,
                 })}
@@ -103,7 +102,7 @@ function Dropdown<T>({
           >
             <MenuItems
               static
-              className={cx(
+              className={cn(
                 'absolute right-0 z-50 mt-2 w-40 min-w-max origin-top-right rounded-md bg-gray-50 p-1 ring-1 ring-black/10 focus:outline-hidden dark:bg-slate-800',
                 menuItemsClassName,
               )}

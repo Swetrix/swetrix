@@ -17,7 +17,7 @@ import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { Bars3Icon, XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
 import { SiYoutube } from '@icons-pack/react-simple-icons'
-import cx, { clsx } from 'clsx'
+import cx from 'clsx'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 import utc from 'dayjs/plugin/utc'
@@ -108,7 +108,7 @@ const SolutionsMenu = () => {
           <PopoverButton className='inline-flex items-center gap-x-1 text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
             <span>{t('header.solutions.title')}</span>
             <ChevronDownIcon
-              className={clsx('h-3 w-3 stroke-2 transition-all', {
+              className={cx('h-3 w-3 stroke-2 transition-all', {
                 'rotate-180': open,
               })}
               aria-hidden='true'
@@ -211,62 +211,46 @@ const ThemeMenu = ({ className }: { className?: string }) => {
   const { t } = useTranslation('common')
 
   return (
-    <Menu as='div' className={cx('relative', className)}>
-      <div>
-        <MenuButton className='flex items-center justify-center text-base leading-6 font-semibold text-slate-800 hover:text-slate-700 dark:text-slate-200 dark:hover:text-white'>
+    <Dropdown
+      title={
+        <span className='flex items-center justify-center'>
           <span className='sr-only'>{t('header.switchTheme')}</span>
           {theme === 'dark' ? (
             <SunIcon className='h-6 w-6 cursor-pointer text-gray-200 hover:text-gray-300' aria-hidden='true' />
           ) : (
             <MoonIcon className='h-6 w-6 cursor-pointer text-slate-700 hover:text-slate-600' aria-hidden='true' />
           )}
-        </MenuButton>
-      </div>
-      <Transition
-        as={Fragment}
-        enter='transition ease-out duration-100'
-        enterFrom='transform opacity-0 scale-95'
-        enterTo='transform opacity-100 scale-100'
-        leave='transition ease-in duration-75'
-        leaveFrom='transform opacity-100 scale-100'
-        leaveTo='transform opacity-0 scale-95'
-      >
-        <MenuItems className='absolute right-0 z-30 mt-2 w-36 min-w-max origin-top-right rounded-md bg-white py-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-900 dark:ring-slate-800'>
-          <MenuItem>
-            {({ active }) => (
-              <div
-                className={cx(
-                  'flex w-full cursor-pointer px-4 py-2 text-sm font-semibold text-indigo-600 hover:bg-gray-100 dark:text-gray-50 hover:dark:bg-slate-800',
-                  {
-                    'bg-gray-100 dark:bg-slate-800': active,
-                  },
-                )}
-                onClick={() => setTheme('light')}
-              >
-                <SunIcon className='mr-2 h-5 w-5 text-indigo-600 dark:text-gray-200' aria-hidden='true' />
-                {t('header.light')}
-              </div>
-            )}
-          </MenuItem>
-          <MenuItem>
-            {({ active }) => (
-              <div
-                className={cx(
-                  'flex w-full cursor-pointer px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 dark:text-indigo-400 hover:dark:bg-slate-800',
-                  {
-                    'bg-gray-100 dark:bg-slate-800': active,
-                  },
-                )}
-                onClick={() => setTheme('dark')}
-              >
-                <MoonIcon className='mr-2 h-5 w-5 text-gray-200 dark:text-indigo-400' aria-hidden='true' />
-                {t('header.dark')}
-              </div>
-            )}
-          </MenuItem>
-        </MenuItems>
-      </Transition>
-    </Menu>
+        </span>
+      }
+      items={[
+        { key: 'light', label: t('header.light'), icon: SunIcon },
+        { key: 'dark', label: t('header.dark'), icon: MoonIcon },
+      ]}
+      keyExtractor={(item) => item.key}
+      labelExtractor={(item) => (
+        <div
+          className={cx('flex w-full items-center', {
+            'light:text-indigo-600': item.key === 'light',
+            'dark:text-indigo-400': item.key === 'dark',
+          })}
+        >
+          <item.icon
+            className={cx('mr-2 h-5 w-5', {
+              'dark:text-gray-300': item.key === 'light',
+              'light:text-gray-400': item.key === 'dark',
+            })}
+            aria-hidden='true'
+          />
+          {item.label}
+        </div>
+      )}
+      onSelect={(item) => setTheme(item.key as 'light' | 'dark')}
+      className={cx('flex', className)}
+      chevron={null}
+      headless
+      buttonClassName='p-0 md:p-0'
+      selectItemClassName='font-semibold'
+    />
   )
 }
 
@@ -301,167 +285,141 @@ const ProfileMenu = ({ logoutHandler }: { logoutHandler: () => void }) => {
             leaveFrom='transform opacity-100 scale-100'
             leaveTo='transform opacity-0 scale-95'
           >
-            <MenuItems className='absolute right-0 z-30 mt-2 w-60 min-w-max origin-top-right rounded-md bg-white py-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-900 dark:ring-slate-800'>
-              <div className='border-b-[1px] border-gray-200 dark:border-slate-700/50'>
-                <MenuItem>
-                  <p className='truncate px-4 py-2' role='none'>
-                    <span className='block text-xs text-gray-500 dark:text-gray-300' role='none'>
-                      {t('header.signedInAs')}
-                    </span>
-                    <span className='mt-0.5 text-sm font-semibold text-gray-700 dark:text-gray-50' role='none'>
-                      {user?.email}
-                    </span>
-                  </p>
-                </MenuItem>
-              </div>
+            <MenuItems className='absolute right-0 z-30 mt-2 w-60 min-w-max origin-top-right rounded-md bg-white p-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-900 dark:ring-slate-800'>
+              <p className='truncate p-2' role='none'>
+                <span className='block text-xs text-gray-500 dark:text-gray-300' role='none'>
+                  {t('header.signedInAs')}
+                </span>
+                <span className='mt-0.5 text-sm font-semibold text-gray-700 dark:text-gray-50' role='none'>
+                  {user?.email}
+                </span>
+              </p>
+              <div className='my-0.5 w-full border-b-[1px] border-gray-200 dark:border-slate-700/50' />
 
-              <div className='border-b-[1px] border-gray-200 dark:border-slate-700/50'>
-                {/* Language selector */}
-                <Disclosure>
-                  {({ open }) => (
-                    <>
-                      <DisclosureButton className='flex w-full justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-50 hover:dark:bg-slate-800'>
-                        <div className='flex'>
-                          <Flag
-                            className='mr-1.5 rounded-xs'
-                            country={languageFlag[language]}
-                            size={20}
-                            alt=''
-                            aria-hidden='true'
-                          />
-                          {languages[language]}
-                        </div>
-                        <ChevronDownIcon
-                          className={cx(
-                            open ? 'rotate-180' : '',
-                            '-mr-1 ml-2 h-5 w-5 transform-gpu stroke-2 transition-transform',
-                          )}
+              {/* Language selector */}
+              <Disclosure>
+                {({ open }) => (
+                  <>
+                    <DisclosureButton className='flex w-full justify-between rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'>
+                      <div className='flex'>
+                        <Flag
+                          className='mr-1.5 rounded-xs'
+                          country={languageFlag[language]}
+                          size={20}
+                          alt=''
                           aria-hidden='true'
                         />
-                      </DisclosureButton>
+                        {languages[language]}
+                      </div>
+                      <ChevronDownIcon
+                        className={cx(
+                          open ? 'rotate-180' : '',
+                          '-mr-1 ml-2 h-5 w-5 transform-gpu stroke-2 transition-transform',
+                        )}
+                        aria-hidden='true'
+                      />
+                    </DisclosureButton>
 
-                      <Transition
-                        show={open}
-                        as={Fragment}
-                        enter='transition ease-out duration-100'
-                        enterFrom='transform opacity-0 scale-95'
-                        enterTo='transform opacity-100 scale-100'
-                        leave='transition ease-in duration-75'
-                        leaveFrom='transform opacity-100 scale-100'
-                        leaveTo='transform opacity-0 scale-95'
+                    <Transition
+                      show={open}
+                      as={Fragment}
+                      enter='transition ease-out duration-100'
+                      enterFrom='transform opacity-0 scale-95'
+                      enterTo='transform opacity-100 scale-100'
+                      leave='transition ease-in duration-75'
+                      leaveFrom='transform opacity-100 scale-100'
+                      leaveTo='transform opacity-0 scale-95'
+                    >
+                      <DisclosurePanel
+                        className='absolute right-0 z-50 w-full min-w-max origin-top-right rounded-md bg-white p-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-800 dark:ring-slate-800'
+                        static
                       >
-                        <DisclosurePanel
-                          className='absolute right-0 z-50 mt-1 w-full min-w-max origin-top-right rounded-md bg-white py-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-800 dark:ring-slate-800'
-                          static
-                        >
-                          {_map(whitelist, (lng) => (
-                            <DisclosureButton
-                              key={lng}
-                              as='span'
-                              className='block cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-600'
-                              onClick={() => changeLanguage(lng)}
-                            >
-                              <div className='flex'>
-                                <div className='pt-1'>
-                                  <Flag
-                                    className='mr-1.5 rounded-xs'
-                                    country={languageFlag[lng]}
-                                    size={20}
-                                    alt={languageFlag[lng]}
-                                  />
-                                </div>
-                                {languages[lng]}
+                        {_map(whitelist, (lng) => (
+                          <DisclosureButton
+                            key={lng}
+                            as='span'
+                            className='block cursor-pointer rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-600'
+                            onClick={() => changeLanguage(lng)}
+                          >
+                            <div className='flex'>
+                              <div className='pt-1'>
+                                <Flag
+                                  className='mr-1.5 rounded-xs'
+                                  country={languageFlag[lng]}
+                                  size={20}
+                                  alt={languageFlag[lng]}
+                                />
                               </div>
-                            </DisclosureButton>
-                          ))}
-                        </DisclosurePanel>
-                      </Transition>
-                    </>
-                  )}
-                </Disclosure>
-
-                {isSelfhosted ? (
-                  <MenuItem>
-                    {({ active }) => (
-                      <a
-                        href={CONTACT_US_URL}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
-                          'bg-gray-100 dark:bg-slate-800': active,
-                        })}
-                      >
-                        {t('footer.support')}
-                      </a>
-                    )}
-                  </MenuItem>
-                ) : (
-                  <MenuItem>
-                    {({ active }) => (
-                      <Link
-                        to={routes.contact}
-                        className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
-                          'bg-gray-100 dark:bg-slate-800': active,
-                        })}
-                      >
-                        {t('footer.support')}
-                      </Link>
-                    )}
-                  </MenuItem>
+                              {languages[lng]}
+                            </div>
+                          </DisclosureButton>
+                        ))}
+                      </DisclosurePanel>
+                    </Transition>
+                  </>
                 )}
-                {!isSelfhosted ? (
-                  <MenuItem>
-                    {({ active }) => (
-                      <Link
-                        to={routes.billing}
-                        className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
-                          'bg-gray-100 dark:bg-slate-800': active,
-                        })}
-                      >
-                        {t('common.billing')}
-                      </Link>
-                    )}
-                  </MenuItem>
-                ) : null}
-              </div>
+              </Disclosure>
+
+              {isSelfhosted ? (
+                <MenuItem>
+                  <a
+                    href={CONTACT_US_URL}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    className='block rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                  >
+                    {t('footer.support')}
+                  </a>
+                </MenuItem>
+              ) : (
+                <MenuItem>
+                  <Link
+                    to={routes.contact}
+                    className='block rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                  >
+                    {t('footer.support')}
+                  </Link>
+                </MenuItem>
+              )}
+              {!isSelfhosted ? (
+                <MenuItem>
+                  <Link
+                    to={routes.billing}
+                    className='block rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                  >
+                    {t('common.billing')}
+                  </Link>
+                </MenuItem>
+              ) : null}
+
+              <div className='my-0.5 w-full border-b-[1px] border-gray-200 dark:border-slate-700/50' />
 
               <MenuItem>
-                {({ active }) => (
-                  <Link
-                    to={routes.user_settings}
-                    className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
-                      'bg-gray-100 dark:bg-slate-800': active,
-                    })}
-                  >
-                    {t('common.accountSettings')}
-                  </Link>
-                )}
+                <Link
+                  to={routes.user_settings}
+                  className='block rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                >
+                  {t('common.accountSettings')}
+                </Link>
               </MenuItem>
               {!isSelfhosted ? (
                 <MenuItem>
-                  {({ active }) => (
-                    <Link
-                      to={routes.organisations}
-                      className={cx('block px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
-                        'bg-gray-100 dark:bg-slate-800': active,
-                      })}
-                    >
-                      {t('organisations.organisations')}
-                    </Link>
-                  )}
+                  <Link
+                    to={routes.organisations}
+                    className='block rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                  >
+                    {t('organisations.organisations')}
+                  </Link>
                 </MenuItem>
               ) : null}
               <MenuItem>
-                {({ active }) => (
-                  <p
-                    className={cx('cursor-pointer px-4 py-2 text-sm text-gray-700 dark:text-gray-50', {
-                      'bg-gray-100 dark:bg-slate-800': active,
-                    })}
-                    onClick={logoutHandler}
-                  >
-                    {t('common.logout')}
-                  </p>
-                )}
+                <button
+                  type='button'
+                  className='w-full rounded-md p-2 text-left text-sm text-gray-700 hover:bg-gray-200 dark:text-gray-50 dark:hover:bg-slate-700'
+                  onClick={logoutHandler}
+                >
+                  {t('common.logout')}
+                </button>
               </MenuItem>
             </MenuItems>
           </Transition>
@@ -901,13 +859,13 @@ const Header = ({ refPage, transparent }: HeaderProps) => {
                         leaveTo='transform opacity-0 scale-95'
                       >
                         <MenuItems
-                          className='absolute right-0 z-50 mt-1 w-full min-w-max origin-top-right rounded-md bg-white py-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-800 dark:ring-slate-800'
+                          className='absolute right-0 z-50 w-full min-w-max origin-top-right rounded-md bg-white p-1 ring-1 ring-slate-200 focus:outline-hidden dark:bg-slate-800 dark:ring-slate-800'
                           static
                         >
                           {_map(whitelist, (lng) => (
                             <MenuItem key={lng}>
                               <span
-                                className='block cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-600'
+                                className='block cursor-pointer rounded-md p-2 text-sm text-gray-700 hover:bg-gray-200 dark:bg-slate-800 dark:text-gray-50 dark:hover:bg-gray-600'
                                 role='menuitem'
                                 tabIndex={0}
                                 onClick={() => changeLanguage(lng)}

@@ -30,6 +30,7 @@ import {
   WorkflowIcon,
   FilterIcon,
   PuzzleIcon,
+  ScanIcon,
 } from 'lucide-react'
 import React, { memo, useState, useEffect, useMemo, Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -42,7 +43,6 @@ import Chart from '~/ui/Chart'
 import Sort from '~/ui/icons/Sort'
 import Spin from '~/ui/icons/Spin'
 import Modal from '~/ui/Modal'
-import Progress from '~/ui/Progress'
 import { nFormatter } from '~/utils/generic'
 
 import CustomEventsDropdown from './components/CustomEventsDropdown'
@@ -52,8 +52,8 @@ import { Customs, Filter, Properties } from './interfaces/traffic'
 import { useViewProjectContext } from './ViewProject'
 import { iconClassName } from './ViewProject.helpers'
 
-const ENTRIES_PER_PANEL = 5
-const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 6
+const ENTRIES_PER_PANEL = 8
+const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 8
 
 const PANELS_WITH_BARS = ['cc', 'rg', 'ct', 'ce', 'os', 'br', 'dv', 'pg']
 
@@ -100,7 +100,6 @@ const removeDuplicates = (arr: any[], keys: string[]) => {
 interface PanelContainerProps {
   name: React.ReactNode
   children?: React.ReactNode
-  noSwitch?: boolean
   icon?: React.ReactNode
   type: string
   onExpandClick?: () => void
@@ -111,11 +110,9 @@ interface PanelContainerProps {
   isCustomContent?: boolean
 }
 
-// noSwitch - 'previous' and 'next' buttons
 const PanelContainer = ({
   name,
   children,
-  noSwitch,
   icon,
   type,
   activeFragment = 0,
@@ -127,10 +124,9 @@ const PanelContainer = ({
 }: PanelContainerProps) => (
   <div
     className={cx(
-      'relative max-h-96 min-h-[17rem] overflow-hidden rounded-lg border border-gray-300 bg-white px-4 pt-5 sm:px-6 dark:border-slate-800/60 dark:bg-slate-800/25',
+      'h-[26rem] overflow-hidden rounded-lg border border-gray-300 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-800/25',
       {
-        'pb-12': !noSwitch,
-        'pb-5': noSwitch,
+        'col-span-2': type === 'ce',
       },
     )}
   >
@@ -1499,42 +1495,32 @@ const Panel = ({
 }: PanelProps) => {
   const { dataLoading, activeTab } = useViewProjectContext()
   const { t } = useTranslation('common')
-  const [page, setPage] = useState(0)
-  const currentIndex = page * ENTRIES_PER_PANEL
   const total = useMemo(() => _reduce(data, (prev, curr) => prev + curr.count, 0), [data])
-  const totalPages = _ceil(_size(data) / ENTRIES_PER_PANEL)
-  const entries = useMemo(() => _orderBy(data, 'count', 'desc'), [data])
-  const entriesToDisplay = _slice(entries, currentIndex, currentIndex + ENTRIES_PER_PANEL)
   const [activeFragment, setActiveFragment] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isReversedUserFlow, setIsReversedUserFlow] = useState(false)
-  const canGoPrev = () => page > 0
-  const canGoNext = () => page < _floor((_size(entries) - 1) / ENTRIES_PER_PANEL)
+  const [detailsOpened, setDetailsOpened] = useState(false)
+  const [sortedData, setSortedData] = useState(data)
+  const [sort, setSort] = useState<SortRows>({
+    label: 'quantity',
+    sortByAscend: false,
+    sortByDescend: false,
+  })
   const navigate = useNavigate()
 
-  useEffect(() => {
-    const sizeKeys = _size(entries)
-
-    if (currentIndex > sizeKeys) {
-      setPage(_floor(sizeKeys / ENTRIES_PER_PANEL))
-    }
-  }, [currentIndex, entries])
-
-  useEffect(() => {
-    setPage(0)
+  const entriesToDisplay = useMemo(() => {
+    const orderedData = _orderBy(data, 'count', 'desc')
+    return _slice(orderedData, 0, ENTRIES_PER_PANEL)
   }, [data])
 
-  const onPrevious = () => {
-    if (canGoPrev()) {
-      setPage(page - 1)
-    }
-  }
-
-  const onNext = () => {
-    if (canGoNext()) {
-      setPage(page + 1)
-    }
-  }
+  useEffect(() => {
+    setSortedData(data)
+    setSort({
+      label: 'quantity',
+      sortByAscend: false,
+      sortByDescend: false,
+    })
+  }, [data])
 
   const _setActiveFragment = (index: number) => {
     setActiveFragment(index)
@@ -1543,6 +1529,136 @@ const Panel = ({
       onFragmentChange(index)
     }
   }
+
+  const onSortBy = (label: string) => {
+    if (sort.sortByAscend) {
+      const newData = [...sortedData].sort((a, b) => {
+        if (label === 'quantity') return a.count - b.count
+        return b.name.localeCompare(a.name)
+      })
+      setSortedData(newData)
+      setSort({
+        label,
+        sortByAscend: false,
+        sortByDescend: true,
+      })
+      return
+    }
+
+    if (sort.sortByDescend) {
+      setSortedData([...data])
+      setSort({
+        label,
+        sortByAscend: false,
+        sortByDescend: false,
+      })
+      return
+    }
+
+    const newData = [...sortedData].sort((a, b) => {
+      if (label === 'quantity') return b.count - a.count
+      return a.name.localeCompare(b.name)
+    })
+    setSortedData(newData)
+    setSort({
+      label,
+      sortByAscend: true,
+      sortByDescend: false,
+    })
+  }
+
+  const DetailsTable = () => (
+    <div className='max-h-[500px] overflow-y-auto'>
+      <table className='w-full border-separate border-spacing-y-1'>
+        <thead className='sticky top-0 z-10 bg-white dark:bg-slate-900'>
+          <tr className='text-base text-gray-900 dark:text-gray-50'>
+            <th
+              className='flex w-2/5 cursor-pointer items-center pl-2 text-left hover:opacity-90 sm:w-4/6'
+              onClick={() => onSortBy('name')}
+            >
+              {t('project.source')}
+              <Sort
+                className='ml-1'
+                sortByAscend={sort.label === 'name' ? sort.sortByAscend : null}
+                sortByDescend={sort.label === 'name' ? sort.sortByDescend : null}
+              />
+            </th>
+            <th className='w-[30%] sm:w-1/6'>
+              <p
+                className='flex cursor-pointer items-center justify-end hover:opacity-90'
+                onClick={() => onSortBy('quantity')}
+              >
+                {t('project.visitors')}
+                <Sort
+                  className='ml-1'
+                  sortByAscend={sort.label === 'quantity' ? sort.sortByAscend : null}
+                  sortByDescend={sort.label === 'quantity' ? sort.sortByDescend : null}
+                />
+                &nbsp;&nbsp;
+              </p>
+            </th>
+            <th className='w-[30%] pr-2 sm:w-1/6'>
+              <p className='flex items-center justify-end'>{t('project.percentage')}</p>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {_map(sortedData, (entry) => {
+            const { count, name: entryName, ...rest } = entry
+            const perc = _round((count / total) * 100, 2)
+            const rowData = rowMapper(entry)
+            const valueData = valueMapper(count)
+
+            return (
+              <tr
+                key={`${id}-${entryName}-${Object.values(rest).join('-')}`}
+                className='group cursor-pointer text-base text-gray-900 even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700'
+                onClick={() => {
+                  const link = getFilterLink(id, entryName)
+                  if (link) {
+                    navigate(link)
+                    setDetailsOpened(false)
+                  }
+                }}
+              >
+                <td className='flex items-center py-1 pl-2 text-left'>
+                  <span
+                    className={cx('flex items-center truncate', {
+                      capitalize,
+                    })}
+                  >
+                    {linkContent ? (
+                      <a
+                        className='text-blue-600 hover:underline dark:text-blue-500'
+                        href={rowData as string}
+                        target='_blank'
+                        rel='noopener noreferrer nofollow'
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {rowData}
+                      </a>
+                    ) : (
+                      rowData
+                    )}
+                  </span>
+                  <FilterIcon
+                    className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300'
+                    strokeWidth={1.5}
+                  />
+                  <div className='ml-2 h-4 w-4 group-hover:hidden' />
+                </td>
+                <td className='py-1 text-right'>
+                  {activeTab === PROJECT_TABS.traffic ? nFormatter(valueData, 1) : valueData}
+                  &nbsp;&nbsp;
+                </td>
+                <td className='py-1 pr-2 text-right'>{perc}%</td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
+  )
 
   // Showing map of stats a data
   if ((id === 'cc' || id === 'rg' || id === 'ct') && activeFragment === 1 && !_isEmpty(data)) {
@@ -1680,112 +1796,88 @@ const Panel = ({
       {_isEmpty(data) ? (
         <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
       ) : (
-        _map(entriesToDisplay, (entry) => {
-          const { count, name: entryName, ...rest } = entry
-          const perc = _round((count / total) * 100, 2)
-          const rowData = rowMapper(entry)
-          const valueData = valueMapper(count)
-
-          const link = getFilterLink(id, entryName)
-
-          return (
-            <Fragment key={`${id}-${entryName}-${Object.values(rest).join('-')}`}>
-              <FilterWrapper
-                as={link ? 'Link' : 'div'}
-                to={link}
-                className={cx('mt-[0.32rem] flex justify-between rounded-sm first:mt-0 dark:text-gray-50', {
-                  'group cursor-pointer hover:bg-gray-100 hover:dark:bg-slate-700': !hideFilters && !dataLoading,
-                  'cursor-wait': dataLoading,
-                })}
-              >
-                {linkContent ? (
-                  <a
-                    className={cx(
-                      'scrollbar-thin flex flex-1 items-center overflow-hidden text-clip whitespace-nowrap text-blue-600 hover:underline dark:text-blue-500',
-                      {
-                        capitalize,
-                      },
-                    )}
-                    href={rowData as string}
-                    target='_blank'
-                    rel='noopener noreferrer nofollow'
-                    aria-label={`${rowData} (opens in a new tab)`}
-                  >
-                    <span className='flex items-center truncate'>{rowData}</span>
-                  </a>
-                ) : (
-                  <span
-                    className={cx(
-                      'scrollbar-thin flex flex-1 items-center overflow-hidden text-clip whitespace-nowrap',
-                      {
-                        capitalize,
-                      },
-                    )}
-                  >
-                    <span className='flex items-center truncate'>{rowData}</span>
-                  </span>
-                )}
-                <div className='flex min-w-fit items-center pl-2'>
-                  <span className='mr-1 hidden text-gray-500 group-hover:inline dark:text-gray-200'>
-                    ({_round((count / total) * 100, 2)}%)
-                  </span>
-                  <span className='dark:text-gray-50'>
-                    {activeTab === PROJECT_TABS.traffic ? nFormatter(valueData, 1) : valueData}
-                  </span>
-                </div>
-              </FilterWrapper>
-              <Progress now={perc} />
-            </Fragment>
-          )
-        })
-      )}
-      {/* for pagination in tabs */}
-      {_size(entries) > ENTRIES_PER_PANEL ? (
-        <div className='absolute bottom-0 w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)]'>
-          <div className='mb-2 flex justify-between select-none'>
-            <div>
-              <span className='text-xs font-light text-gray-500 lowercase dark:text-gray-200'>
-                {_size(entries)} {t('project.results')}
-              </span>
-              <span className='text-xs font-light text-gray-500 dark:text-gray-200'>
-                . {t('project.page')} {page + 1} / {totalPages}
-              </span>
-            </div>
-            <div className='flex w-[4.5rem] justify-between'>
-              <Button
-                className={cx(
-                  'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
-                  {
-                    'cursor-not-allowed opacity-50': !canGoPrev(),
-                    'hover:bg-gray-100 hover:dark:bg-slate-700': canGoPrev(),
-                  },
-                )}
-                type='button'
-                onClick={onPrevious}
-                disabled={!canGoPrev()}
-                focus={false}
-              >
-                <ArrowLongLeftIcon className='h-5 w-5' />
-              </Button>
-              <Button
-                className={cx(
-                  'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
-                  {
-                    'cursor-not-allowed opacity-50': !canGoNext(),
-                    'hover:bg-gray-100 hover:dark:bg-slate-700': canGoNext(),
-                  },
-                )}
-                onClick={onNext}
-                disabled={!canGoNext()}
-                type='button'
-                focus={false}
-              >
-                <ArrowLongRightIcon className='h-5 w-5' />
-              </Button>
-            </div>
+        <>
+          <div className='mb-2 flex items-center justify-between px-1 py-1'>
+            <span className='text-sm font-medium text-gray-600 dark:text-gray-400'>{t('project.source')}</span>
+            <span className='text-sm font-medium text-gray-600 dark:text-gray-400'>{t('project.visitors')}</span>
           </div>
-        </div>
-      ) : null}
+
+          <div className='space-y-0.5'>
+            {_map(entriesToDisplay, (entry) => {
+              const { count, name: entryName, ...rest } = entry
+              const perc = _round((count / total) * 100, 2)
+              const rowData = rowMapper(entry)
+              const valueData = valueMapper(count)
+
+              const link = getFilterLink(id, entryName)
+
+              return (
+                <FilterWrapper
+                  key={`${id}-${entryName}-${Object.values(rest).join('-')}`}
+                  as={link ? 'Link' : 'div'}
+                  to={link}
+                  className={cx('relative flex items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50', {
+                    'group cursor-pointer hover:bg-gray-50 hover:dark:bg-slate-800': !hideFilters && !dataLoading,
+                    'cursor-wait': dataLoading,
+                  })}
+                >
+                  <div
+                    className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
+                    style={{ width: `${perc}%` }}
+                  />
+
+                  <div className='relative z-10 flex min-w-0 flex-1 items-center'>
+                    {linkContent ? (
+                      <a
+                        className={cx(
+                          'flex items-center truncate text-sm text-blue-600 hover:underline dark:text-blue-500',
+                          {
+                            capitalize,
+                          },
+                        )}
+                        href={rowData as string}
+                        target='_blank'
+                        rel='noopener noreferrer nofollow'
+                        aria-label={`${rowData} (opens in a new tab)`}
+                      >
+                        {rowData}
+                      </a>
+                    ) : (
+                      <span
+                        className={cx('flex items-center truncate text-sm text-gray-900 dark:text-gray-100', {
+                          capitalize,
+                        })}
+                      >
+                        {rowData}
+                      </span>
+                    )}
+                  </div>
+                  <div className='relative z-10 flex min-w-fit items-center justify-end pl-4'>
+                    <span className='mr-2 hidden text-xs text-gray-500 group-hover:inline dark:text-gray-400'>
+                      ({perc}%)
+                    </span>
+                    <span className='text-sm font-medium text-gray-900 dark:text-gray-50'>
+                      {activeTab === PROJECT_TABS.traffic ? nFormatter(valueData, 1) : valueData}
+                    </span>
+                  </div>
+                </FilterWrapper>
+              )
+            })}
+          </div>
+
+          {_size(data) > ENTRIES_PER_PANEL ? (
+            <Button
+              className='mx-auto mt-2 max-w-max border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
+              type='button'
+              onClick={() => setDetailsOpened(true)}
+              focus={false}
+            >
+              <ScanIcon className='mr-1.5 size-4' />
+              <span>{t('common.details')}</span>
+            </Button>
+          ) : null}
+        </>
+      )}
 
       {/* PAGE - User flow modal */}
       {id === 'pg' ? (
@@ -1811,6 +1903,15 @@ const Panel = ({
           size='large'
         />
       ) : null}
+
+      <Modal
+        onClose={() => setDetailsOpened(false)}
+        closeText={t('common.close')}
+        isOpened={detailsOpened}
+        title={`${name} - ${t('common.details')}`}
+        message={<DetailsTable />}
+        size='large'
+      />
     </PanelContainer>
   )
 }
@@ -1910,7 +2011,7 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
 
   return (
     <div className='col-span-full'>
-      <PanelContainer name={t('project.metadata')} type='metadata' noSwitch>
+      <PanelContainer name={t('project.metadata')} type='metadata'>
         <div className='overflow-y-auto'>
           <table className='w-full border-separate border-spacing-y-1'>
             <thead>
