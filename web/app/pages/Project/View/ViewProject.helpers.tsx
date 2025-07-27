@@ -1421,7 +1421,7 @@ const typeNameMapping = (t: typeof i18next.t) => ({
   // Combined panel types
   location: t('project.location'),
   browser: t('project.browser'),
-  device: t('project.device'),
+  devices: t('project.devices'),
   map: t('project.map'),
 })
 

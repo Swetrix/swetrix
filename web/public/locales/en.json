@@ -850,6 +850,10 @@
     "removeFilter": "Remove filter",
     "toggleFilterToIs": "Change filter from '{{column}} is not \"{{filter}}\"' to '{{column}} is \"{{filter}}\"'",
     "toggleFilterToIsNot": "Change filter from '{{column}} is \"{{filter}}\"' to '{{column}} is not \"{{filter}}\"'",
+    "location": "Location",
+    "pages": "Pages",
+    "devices": "Devices",
+    "trafficSources": "Traffic sources",
     "metrics": {
       "xAvg": "\"{{x}}\" average",
       "xTotal": "\"{{x}}\" total",

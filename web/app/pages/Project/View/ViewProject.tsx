@@ -3773,7 +3773,7 @@ const ViewProject = () => {
                               )
                             }
 
-                            if (type === 'device') {
+                            if (type === 'devices') {
                               const deviceTabs = [
                                 { id: 'br', label: t('project.mapping.br'), hasData: !!panelsData.data.br },
                                 { id: 'os', label: t('project.mapping.os'), hasData: !!panelsData.data.os },
@@ -3871,7 +3871,7 @@ const ViewProject = () => {
                                   icon={panelIconMapping.os}
                                   id={deviceActiveTab}
                                   getFilterLink={getFilterLink}
-                                  name={t('project.device')}
+                                  name={t('project.devices')}
                                   tabs={deviceTabs}
                                   onTabChange={(tab) => setDeviceActiveTab(tab as 'br' | 'os' | 'dv')}
                                   activeTabId={deviceActiveTab}
@@ -3963,10 +3963,10 @@ const ViewProject = () => {
                               return (
                                 <Panel
                                   key={trafficSourcesActiveTab}
-                                  icon={panelIconMapping.so}
+                                  icon={panelIconMapping.ref}
                                   id={trafficSourcesActiveTab}
                                   getFilterLink={getFilterLink}
-                                  name='Traffic Sources'
+                                  name={t('project.trafficSources')}
                                   tabs={trafficSourcesTabs}
                                   onTabChange={(tab) =>
                                     setTrafficSourcesActiveTab(tab as 'ref' | 'so' | 'me' | 'ca' | 'te' | 'co')

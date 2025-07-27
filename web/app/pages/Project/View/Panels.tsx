@@ -35,7 +35,7 @@ import { nFormatter } from '~/utils/generic'
 import CustomEventsDropdown from './components/CustomEventsDropdown'
 import { Customs, Filter, Properties } from './interfaces/traffic'
 import { useViewProjectContext } from './ViewProject'
-import { iconClassName } from './ViewProject.helpers'
+import { iconClassName, typeNameMapping } from './ViewProject.helpers'
 
 const ENTRIES_PER_PANEL = 8
 const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 8
@@ -1373,6 +1373,8 @@ const Panel = ({
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
   const navigate = useNavigate()
 
+  const tnMapping = typeNameMapping(t)
+
   const entriesToDisplay = useMemo(() => {
     const orderedData = _orderBy(data, 'count', 'desc')
     return _slice(orderedData, 0, ENTRIES_PER_PANEL)
@@ -1457,7 +1459,7 @@ const Panel = ({
               className='flex w-2/5 cursor-pointer items-center pl-2 text-left hover:opacity-90 sm:w-4/6'
               onClick={() => onSortBy('name')}
             >
-              {t('project.source')}
+              {tnMapping[activeTabId as keyof typeof tnMapping]}
               <Sort
                 className='ml-1'
                 sortByAscend={sort.label === 'name' ? sort.sortByAscend : null}
@@ -1584,7 +1586,9 @@ const Panel = ({
       ) : (
         <>
           <div className='mb-2 flex items-center justify-between px-1 py-1'>
-            <span className='text-sm font-medium text-gray-600 dark:text-gray-400'>{t('project.source')}</span>
+            <span className='text-sm font-medium text-gray-600 dark:text-gray-400'>
+              {tnMapping[activeTabId as keyof typeof tnMapping]}
+            </span>
             <span className='text-sm font-medium text-gray-600 dark:text-gray-400'>{t('project.visitors')}</span>
           </div>
 
