@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react'
+import { useMemo } from 'react'
 
 const RefRow = ({ rowName }: { rowName: string }) => {
   const { isUrl, url } = useMemo(() => {
@@ -41,4 +41,4 @@ const RefRow = ({ rowName }: { rowName: string }) => {
   )
 }
 
-export default memo(RefRow)
+export default RefRow
