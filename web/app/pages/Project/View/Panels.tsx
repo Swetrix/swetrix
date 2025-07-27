@@ -134,14 +134,16 @@ const PanelContainer = ({
                   setActiveFragment(0)
                 }}
                 disabled={tab.hasData === false}
-                className={cx('rounded px-2 py-1 text-xs font-medium whitespace-nowrap transition-colors', {
-                  'bg-slate-900 text-white dark:bg-gray-50 dark:text-slate-900':
-                    activeTabId === tab.id && activeFragment === 0,
-                  'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-300 dark:hover:bg-slate-600':
-                    (activeTabId !== tab.id || activeFragment !== 0) && tab.hasData !== false,
-                  'cursor-not-allowed bg-gray-50 text-gray-400 dark:bg-slate-800 dark:text-gray-600':
-                    tab.hasData === false,
-                })}
+                className={cx(
+                  'relative border-b-2 px-1.5 py-1 text-sm font-bold whitespace-nowrap transition-all duration-200',
+                  {
+                    'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50':
+                      activeTabId === tab.id && activeFragment === 0,
+                    'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
+                      (activeTabId !== tab.id || activeFragment !== 0) && tab.hasData !== false,
+                    'cursor-not-allowed border-transparent text-gray-300 dark:text-gray-600': tab.hasData === false,
+                  },
+                )}
               >
                 {tab.label}
               </button>
