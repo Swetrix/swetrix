@@ -19,15 +19,7 @@ const Flag = ({ country, size = 24, alt, ...props }: FlagProps) => {
     return <span className={props.className}>{country}</span>
   }
 
-  return (
-    <img
-      src={`${FLAGS_PREFIX_PATH}/${countryLower}.svg`}
-      alt={alt || `Flag of ${country}`}
-      {...props}
-      width={size}
-      height={size}
-    />
-  )
+  return <img src={`${FLAGS_PREFIX_PATH}/${countryLower}.svg`} alt={alt || ''} {...props} width={size} height={size} />
 }
 
 export default Flag

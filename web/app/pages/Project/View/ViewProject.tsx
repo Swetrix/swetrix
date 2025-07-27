@@ -3669,22 +3669,27 @@ const ViewProject = () => {
                                 { id: 'map', label: 'Map', hasData: !!panelsData.data.cc },
                               ]
 
-                              const getLocationRowMapper = (activeTab: string) => {
-                                if (activeTab === 'cc' || activeTab === 'rg' || activeTab === 'ct') {
-                                  // eslint-disable-next-line
-                                  return (entry: CountryEntry) => {
-                                    const { name: entryName, cc } = entry
-                                    if (cc) {
-                                      return <CCRow cc={cc} name={entryName} language={language} />
-                                    }
-                                    return <CCRow cc={entryName} language={language} />
-                                  }
+                              const rowMapper = (entry: CountryEntry) => {
+                                const { name: entryName, cc } = entry
+
+                                if (locationActiveTab === 'lc') {
+                                  const entryNameArray = entryName.split('-')
+                                  const displayName = getLocaleDisplayName(entryName, language)
+
+                                  return (
+                                    <CCRow
+                                      cc={entryNameArray[entryNameArray.length - 1]}
+                                      name={displayName}
+                                      language={language}
+                                    />
+                                  )
                                 }
-                                if (activeTab === 'lc') {
-                                  return ({ name: entryName }: { name: string }) =>
-                                    getLocaleDisplayName(entryName, language)
+
+                                if (cc) {
+                                  return <CCRow cc={cc} name={entryName} language={language} />
                                 }
-                                return undefined
+
+                                return <CCRow cc={entryName} language={language} />
                               }
 
                               return (
@@ -3699,7 +3704,7 @@ const ViewProject = () => {
                                   activeTabId={locationActiveTab}
                                   data={panelsData.data[locationActiveTab]}
                                   customTabs={customTabs}
-                                  rowMapper={getLocationRowMapper(locationActiveTab)}
+                                  rowMapper={rowMapper}
                                   customRenderer={
                                     locationActiveTab === 'map'
                                       ? () => {
