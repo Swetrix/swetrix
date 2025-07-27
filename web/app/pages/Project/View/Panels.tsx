@@ -1,5 +1,6 @@
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
 import { ArrowLongRightIcon, ArrowLongLeftIcon } from '@heroicons/react/24/solid'
+import { ChevronRightIcon } from '@heroicons/react/24/outline'
 import { pie } from 'billboard.js'
 import cx from 'clsx'
 import InnerHTML from 'dangerously-set-html-content'
@@ -1466,6 +1467,8 @@ interface PanelProps {
   onTabChange?: (tab: string) => void
   activeTabId?: string
   customRenderer?: () => React.ReactNode
+  versionData?: { [key: string]: Entry[] }
+  getVersionFilterLink?: (parent: string, version: string) => LinkProps['to']
 }
 
 const Panel = ({
@@ -1485,6 +1488,8 @@ const Panel = ({
   onTabChange,
   activeTabId,
   customRenderer,
+  versionData,
+  getVersionFilterLink = () => '',
 }: PanelProps) => {
   const { dataLoading, activeTab } = useViewProjectContext()
   const { t } = useTranslation('common')
@@ -1497,12 +1502,29 @@ const Panel = ({
     sortByAscend: false,
     sortByDescend: false,
   })
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
   const navigate = useNavigate()
 
   const entriesToDisplay = useMemo(() => {
     const orderedData = _orderBy(data, 'count', 'desc')
     return _slice(orderedData, 0, ENTRIES_PER_PANEL)
   }, [data])
+
+  const toggleExpanded = (itemName: string) => {
+    setExpandedItems((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(itemName)) {
+        newSet.delete(itemName)
+      } else {
+        newSet.add(itemName)
+      }
+      return newSet
+    })
+  }
+
+  const hasVersions = (itemName: string) => {
+    return versionData && versionData[itemName] && versionData[itemName].length > 0
+  }
 
   useEffect(() => {
     setSortedData(data)
@@ -1764,59 +1786,135 @@ const Panel = ({
               const perc = _round((count / total) * 100, 2)
               const rowData = rowMapper(entry)
               const valueData = valueMapper(count)
+              const hasVersionsForItem = hasVersions(entryName)
+              const isExpanded = expandedItems.has(entryName)
+              const versions = versionData?.[entryName] || []
 
               const link = getFilterLink(id, entryName)
 
               return (
-                <FilterWrapper
-                  key={`${id}-${entryName}-${Object.values(rest).join('-')}`}
-                  as={link ? 'Link' : 'div'}
-                  to={link}
-                  className={cx('relative flex items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50', {
-                    'group cursor-pointer hover:bg-gray-50 hover:dark:bg-slate-800': !hideFilters && !dataLoading,
-                    'cursor-wait': dataLoading,
-                  })}
-                >
-                  <div
-                    className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
-                    style={{ width: `${perc}%` }}
-                  />
+                <div key={`${id}-${entryName}-${Object.values(rest).join('-')}`} className='space-y-0.5'>
+                  <div className='relative flex items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50'>
+                    <div
+                      className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
+                      style={{ width: `${perc}%` }}
+                    />
 
-                  <div className='relative z-10 flex min-w-0 flex-1 items-center'>
-                    {linkContent ? (
-                      <a
-                        className={cx(
-                          'flex items-center truncate text-sm text-blue-600 hover:underline dark:text-blue-500',
-                          {
-                            capitalize,
-                          },
-                        )}
-                        href={rowData as string}
-                        target='_blank'
-                        rel='noopener noreferrer nofollow'
-                        aria-label={`${rowData} (opens in a new tab)`}
-                      >
-                        {rowData}
-                      </a>
-                    ) : (
-                      <span
-                        className={cx('flex items-center truncate text-sm text-gray-900 dark:text-gray-100', {
-                          capitalize,
+                    <div className='relative z-10 flex min-w-0 flex-1 items-center'>
+                      {hasVersionsForItem && (
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            toggleExpanded(entryName)
+                          }}
+                          className='mr-1 rounded p-0.5 hover:bg-gray-200 dark:hover:bg-slate-600'
+                          aria-label={isExpanded ? 'Collapse versions' : 'Expand versions'}
+                        >
+                          <ChevronRightIcon
+                            className={cx('h-4 w-4 text-gray-500 transition-transform dark:text-gray-400', {
+                              'rotate-90': isExpanded,
+                            })}
+                          />
+                        </button>
+                      )}
+
+                      <FilterWrapper
+                        as={link ? 'Link' : 'div'}
+                        to={link}
+                        className={cx('flex min-w-0 flex-1 items-center', {
+                          'group cursor-pointer': !hideFilters && !dataLoading,
+                          'cursor-wait': dataLoading,
                         })}
                       >
-                        {rowData}
+                        {linkContent ? (
+                          <a
+                            className={cx(
+                              'flex items-center truncate text-sm text-blue-600 hover:underline dark:text-blue-500',
+                              {
+                                capitalize,
+                              },
+                            )}
+                            href={rowData as string}
+                            target='_blank'
+                            rel='noopener noreferrer nofollow'
+                            aria-label={`${rowData} (opens in a new tab)`}
+                          >
+                            {rowData}
+                          </a>
+                        ) : (
+                          <span
+                            className={cx('flex items-center truncate text-sm text-gray-900 dark:text-gray-100', {
+                              capitalize,
+                            })}
+                          >
+                            {rowData}
+                          </span>
+                        )}
+                      </FilterWrapper>
+                    </div>
+                    <div className='relative z-10 flex min-w-fit items-center justify-end pl-4'>
+                      <span className='mr-2 hidden text-xs text-gray-500 group-hover:inline dark:text-gray-400'>
+                        ({perc}%)
                       </span>
-                    )}
+                      <span className='text-sm font-medium text-gray-900 dark:text-gray-50'>
+                        {activeTab === PROJECT_TABS.traffic ? nFormatter(valueData, 1) : valueData}
+                      </span>
+                    </div>
                   </div>
-                  <div className='relative z-10 flex min-w-fit items-center justify-end pl-4'>
-                    <span className='mr-2 hidden text-xs text-gray-500 group-hover:inline dark:text-gray-400'>
-                      ({perc}%)
-                    </span>
-                    <span className='text-sm font-medium text-gray-900 dark:text-gray-50'>
-                      {activeTab === PROJECT_TABS.traffic ? nFormatter(valueData, 1) : valueData}
-                    </span>
-                  </div>
-                </FilterWrapper>
+
+                  {/* Render versions when expanded */}
+                  {hasVersionsForItem && isExpanded && (
+                    <div className='ml-6 space-y-0.5'>
+                      {_map(versions, (versionEntry) => {
+                        const versionPerc = _round((versionEntry.count / total) * 100, 2)
+                        const versionValueData = valueMapper(versionEntry.count)
+                        const versionLink = getVersionFilterLink?.(entryName, versionEntry.name)
+
+                        return (
+                          <FilterWrapper
+                            key={`${id}-${entryName}-${versionEntry.name}`}
+                            as={versionLink ? 'Link' : 'div'}
+                            to={versionLink}
+                            className={cx(
+                              'relative flex items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50',
+                              {
+                                'group cursor-pointer hover:bg-gray-50 hover:dark:bg-slate-800':
+                                  !hideFilters && !dataLoading && versionLink,
+                                'cursor-wait': dataLoading,
+                              },
+                            )}
+                          >
+                            <div
+                              className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
+                              style={{ width: `${versionPerc}%` }}
+                            />
+
+                            <div className='relative z-10 flex min-w-0 flex-1 items-center'>
+                              <span
+                                className={cx('flex items-center truncate text-sm text-gray-700 dark:text-gray-200', {
+                                  capitalize,
+                                })}
+                              >
+                                {versionEntry.name}
+                              </span>
+                            </div>
+                            <div className='relative z-10 flex min-w-fit items-center justify-end pl-4'>
+                              <span className='mr-2 hidden text-xs text-gray-500 group-hover:inline dark:text-gray-400'>
+                                ({versionPerc}%)
+                              </span>
+                              <span className='text-sm font-medium text-gray-700 dark:text-gray-200'>
+                                {activeTab === PROJECT_TABS.traffic
+                                  ? nFormatter(versionValueData, 1)
+                                  : versionValueData}
+                              </span>
+                            </div>
+                          </FilterWrapper>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
               )
             })}
           </div>

@@ -99,7 +99,7 @@ import {
   VALID_PERIODS,
   VALID_TIME_BUCKETS,
 } from '~/lib/constants'
-import { CountryEntry } from '~/lib/models/Entry'
+import { CountryEntry, Entry } from '~/lib/models/Entry'
 import {
   Funnel,
   AnalyticsFunnel,
@@ -597,6 +597,48 @@ const ViewProject = () => {
   const [pageActiveTab, setPageActiveTab] = useState<'pg' | 'host' | 'userFlow'>('pg')
   const [deviceActiveTab, setDeviceActiveTab] = useState<'os' | 'osv' | 'dv'>('os')
   const [utmActiveTab, setUtmActiveTab] = useState<'so' | 'me' | 'ca' | 'te' | 'co'>('so')
+
+  // Create version data mapping for browser and OS panels
+  const createVersionDataMapping = useMemo(() => {
+    const browserVersions: { [key: string]: Entry[] } = {}
+    const osVersions: { [key: string]: Entry[] } = {}
+
+    // Process browser version data
+    if (panelsData.data?.brv) {
+      panelsData.data.brv.forEach((entry: any) => {
+        const { br, name, count } = entry
+        if (!browserVersions[br]) {
+          browserVersions[br] = []
+        }
+        browserVersions[br].push({ name, count })
+      })
+    }
+
+    // Process OS version data  
+    if (panelsData.data?.osv) {
+      panelsData.data.osv.forEach((entry: any) => {
+        const { os, name, count } = entry
+        if (!osVersions[os]) {
+          osVersions[os] = []
+        }
+        osVersions[os].push({ name, count })
+      })
+    }
+
+    return { browserVersions, osVersions }
+  }, [panelsData.data?.brv, panelsData.data?.osv])
+
+  const getVersionFilterLink = (parent: string, version: string, panelType: 'br' | 'os') => {
+    const filterParams = new URLSearchParams(searchParams.toString())
+    
+    if (panelType === 'br') {
+      filterParams.set('filter', `brv:${version}`)
+    } else if (panelType === 'os') {
+      filterParams.set('filter', `osv:${version}`)
+    }
+    
+    return `?${filterParams.toString()}`
+  }
 
   const [chartDataPerf, setChartDataPerf] = useState<any>({})
   const [isPanelsDataEmptyPerf, setIsPanelsDataEmptyPerf] = useState(false)
@@ -3772,6 +3814,8 @@ const ViewProject = () => {
                                   data={panelsData.data[browserActiveTab]}
                                   customTabs={customTabs}
                                   rowMapper={rowMapper}
+                                  versionData={browserActiveTab === 'br' ? createVersionDataMapping.browserVersions : undefined}
+                                  getVersionFilterLink={(parent, version) => getVersionFilterLink(parent, version, 'br')}
                                 />
                               )
                             }
@@ -3853,6 +3897,8 @@ const ViewProject = () => {
                                   customTabs={customTabs}
                                   rowMapper={getDeviceRowMapper(deviceActiveTab)}
                                   capitalize={deviceActiveTab === 'dv'}
+                                  versionData={deviceActiveTab === 'os' ? createVersionDataMapping.osVersions : undefined}
+                                  getVersionFilterLink={(parent, version) => getVersionFilterLink(parent, version, 'os')}
                                 />
                               )
                             }
