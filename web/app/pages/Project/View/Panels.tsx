@@ -1905,7 +1905,7 @@ const Panel = ({
                                   capitalize,
                                 })}
                               >
-                                {versionEntry.name}
+                                {rowMapper ? rowMapper({ ...entry, name: entryName, version: versionEntry.name }) : `${entryName} ${versionEntry.name}`}
                               </span>
                             </div>
                             <div className='relative z-10 flex min-w-fit items-center justify-end pl-4'>

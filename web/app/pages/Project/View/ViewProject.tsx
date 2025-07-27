@@ -635,9 +635,9 @@ const ViewProject = () => {
     const filterParams = new URLSearchParams(searchParams.toString())
 
     if (panelType === 'br') {
-      filterParams.set('filter', `brv:${version}`)
+      filterParams.set('brv', version)
     } else if (panelType === 'os') {
-      filterParams.set('filter', `osv:${version}`)
+      filterParams.set('osv', version)
     }
 
     return `?${filterParams.toString()}`
@@ -3784,17 +3784,18 @@ const ViewProject = () => {
                                 if (activeTab === 'br') {
                                   // eslint-disable-next-line
                                   return (entry: any) => {
-                                    const { name: entryName, br } = entry
+                                    const { name: entryName, version } = entry
                                     const logoKey = entryName
                                     // @ts-expect-error
                                     const logoUrl = BROWSER_LOGO_MAP[logoKey]
+                                    const displayName = version ? `${entryName} ${version}` : entryName
 
                                     if (!logoUrl) {
                                       return (
                                         <>
                                           <GlobeAltIcon className='h-5 w-5' />
                                           &nbsp;
-                                          {entryName}
+                                          {displayName}
                                         </>
                                       )
                                     }
@@ -3803,7 +3804,7 @@ const ViewProject = () => {
                                       <>
                                         <img src={logoUrl} className='h-5 w-5' alt='' />
                                         &nbsp;
-                                        {entryName}
+                                        {displayName}
                                       </>
                                     )
                                   }
@@ -3811,12 +3812,13 @@ const ViewProject = () => {
                                 if (activeTab === 'os') {
                                   // eslint-disable-next-line
                                   return (entry: any) => {
-                                    const { name: entryName, os } = entry
+                                    const { name: entryName, version } = entry
                                     const logoKey = entryName
                                     // @ts-expect-error
                                     const logoPathLight = OS_LOGO_MAP[logoKey]
                                     // @ts-expect-error
                                     const logoPathDark = OS_LOGO_MAP_DARK[logoKey]
+                                    const displayName = version ? `${entryName} ${version}` : entryName
 
                                     let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
                                     logoPath ||= logoPathLight
@@ -3826,7 +3828,7 @@ const ViewProject = () => {
                                         <>
                                           <GlobeAltIcon className='h-5 w-5' />
                                           &nbsp;
-                                          {entryName}
+                                          {displayName}
                                         </>
                                       )
                                     }
@@ -3836,7 +3838,7 @@ const ViewProject = () => {
                                       <>
                                         <img src={logoUrl} className='h-5 w-5 dark:fill-gray-50' alt='' />
                                         &nbsp;
-                                        {entryName}
+                                        {displayName}
                                       </>
                                     )
                                   }
