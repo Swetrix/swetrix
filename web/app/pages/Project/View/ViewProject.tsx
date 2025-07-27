@@ -140,6 +140,7 @@ import { ErrorDetails } from './components/ErrorDetails'
 import { Errors } from './components/Errors'
 import Filters from './components/Filters'
 import FunnelsList from './components/FunnelsList'
+import InteractiveMap from './components/InteractiveMap'
 import LiveVisitorsDropdown from './components/LiveVisitorsDropdown'
 import LockedDashboard from './components/LockedDashboard'
 import { MetricCard, MetricCards, PerformanceMetricCards } from './components/MetricCards'
@@ -155,7 +156,7 @@ import { SessionChart } from './components/SessionChart'
 import { SessionDetails } from './components/SessionDetails'
 import { Sessions } from './components/Sessions'
 import TBPeriodSelector from './components/TBPeriodSelector'
-import UTMDropdown from './components/UTMDropdown'
+import UserFlow from './components/UserFlow'
 import WaitingForAnError from './components/WaitingForAnError'
 import WaitingForAnEvent from './components/WaitingForAnEvent'
 import {
@@ -591,16 +592,11 @@ const ViewProject = () => {
     setFunnelActionLoading(false)
   }
 
-  const [countryActiveTab, setCountryActiveTab] = useState<'cc' | 'rg' | 'ct'>('cc')
-
+  const [locationActiveTab, setLocationActiveTab] = useState<'cc' | 'rg' | 'ct' | 'lc' | 'map'>('cc')
   const [browserActiveTab, setBrowserActiveTab] = useState<'br' | 'brv'>('br')
-
-  const [pageActiveTab, setPageActiveTab] = useState<'pg' | 'host'>('pg')
-  const [pgActiveFragment, setPgActiveFragment] = useState(0)
-
-  const [osActiveTab, setOsActiveTab] = useState<'os' | 'osv'>('os')
-
-  const [utmActiveTab, setUtmActiveTab] = useState<'so' | 'me' | 'ca'>('so')
+  const [pageActiveTab, setPageActiveTab] = useState<'pg' | 'host' | 'userFlow'>('pg')
+  const [deviceActiveTab, setDeviceActiveTab] = useState<'os' | 'osv' | 'dv'>('os')
+  const [utmActiveTab, setUtmActiveTab] = useState<'so' | 'me' | 'ca' | 'te' | 'co'>('so')
 
   const [chartDataPerf, setChartDataPerf] = useState<any>({})
   const [isPanelsDataEmptyPerf, setIsPanelsDataEmptyPerf] = useState(false)
@@ -3358,7 +3354,7 @@ const ViewProject = () => {
                             const panelIcon = panelIconMapping[type]
 
                             if (type === 'cc') {
-                              const ccPanelName = tnMapping[countryActiveTab]
+                              const ccPanelName = tnMapping[locationActiveTab]
 
                               const rowMapper = (entry: CountryEntry) => {
                                 const { name: entryName, cc } = entry
@@ -3372,19 +3368,19 @@ const ViewProject = () => {
 
                               return (
                                 <Panel
-                                  key={countryActiveTab}
+                                  key={locationActiveTab}
                                   icon={panelIcon}
-                                  id={countryActiveTab}
+                                  id={locationActiveTab}
                                   getFilterLink={getFilterLink}
                                   name={
                                     <CountryDropdown
                                       // @ts-expect-error - onSelect not typed
-                                      onSelect={setCountryActiveTab}
+                                      onSelect={setLocationActiveTab}
                                       title={ccPanelName}
                                       data={activeError?.params}
                                     />
                                   }
-                                  data={activeError?.params[countryActiveTab]}
+                                  data={activeError?.params[locationActiveTab]}
                                   rowMapper={rowMapper}
                                 />
                               )
@@ -3440,12 +3436,12 @@ const ViewProject = () => {
                             }
 
                             if (type === 'os') {
-                              const osPanelName = tnMapping[osActiveTab]
+                              const osPanelName = tnMapping[deviceActiveTab]
 
                               const rowMapper = (entry: any) => {
                                 const { name: entryName, os } = entry
 
-                                const logoKey = osActiveTab === 'os' ? entryName : os
+                                const logoKey = deviceActiveTab === 'os' ? entryName : os
 
                                 // @ts-expect-error
                                 const logoPathLight = OS_LOGO_MAP[logoKey]
@@ -3478,18 +3474,18 @@ const ViewProject = () => {
 
                               return (
                                 <Panel
-                                  key={osActiveTab}
+                                  key={deviceActiveTab}
                                   icon={panelIcon}
-                                  id={osActiveTab}
+                                  id={deviceActiveTab}
                                   getFilterLink={getFilterLink}
                                   name={
                                     <OSDropdown
-                                      onSelect={setOsActiveTab}
+                                      onSelect={setDeviceActiveTab}
                                       title={osPanelName}
                                       data={activeError?.params}
                                     />
                                   }
-                                  data={activeError?.params[osActiveTab]}
+                                  data={activeError?.params[deviceActiveTab]}
                                   rowMapper={rowMapper}
                                 />
                               )
@@ -3662,53 +3658,80 @@ const ViewProject = () => {
                     <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2'>
                       {!_isEmpty(panelsData.types)
                         ? _map(TRAFFIC_PANELS_ORDER, (type: keyof typeof tnMapping) => {
-                            const panelName = tnMapping[type]
-                            // @ts-expect-error
-                            const panelIcon = panelIconMapping[type]
                             const customTabs = _filter(customPanelTabs, (tab) => tab.panelID === type)
 
-                            if (type === 'cc') {
-                              const ccPanelName = tnMapping[countryActiveTab]
+                            if (type === 'location') {
+                              const locationTabs = [
+                                { id: 'cc', label: t('project.mapping.cc'), hasData: !!panelsData.data.cc },
+                                { id: 'rg', label: t('project.mapping.rg'), hasData: !!panelsData.data.rg },
+                                { id: 'ct', label: t('project.mapping.ct'), hasData: !!panelsData.data.ct },
+                                { id: 'lc', label: t('project.mapping.lc'), hasData: !!panelsData.data.lc },
+                                { id: 'map', label: 'Map', hasData: !!panelsData.data.cc },
+                              ]
 
-                              const rowMapper = (entry: CountryEntry) => {
-                                const { name: entryName, cc } = entry
-
-                                if (cc) {
-                                  return <CCRow cc={cc} name={entryName} language={language} />
+                              const getLocationRowMapper = (activeTab: string) => {
+                                if (activeTab === 'cc' || activeTab === 'rg' || activeTab === 'ct') {
+                                  // eslint-disable-next-line
+                                  return (entry: CountryEntry) => {
+                                    const { name: entryName, cc } = entry
+                                    if (cc) {
+                                      return <CCRow cc={cc} name={entryName} language={language} />
+                                    }
+                                    return <CCRow cc={entryName} language={language} />
+                                  }
                                 }
-
-                                return <CCRow cc={entryName} language={language} />
+                                if (activeTab === 'lc') {
+                                  return ({ name: entryName }: { name: string }) =>
+                                    getLocaleDisplayName(entryName, language)
+                                }
+                                return undefined
                               }
 
                               return (
                                 <Panel
-                                  key={countryActiveTab}
-                                  icon={panelIcon}
-                                  id={countryActiveTab}
+                                  key={locationActiveTab}
+                                  icon={panelIconMapping.cc}
+                                  id={locationActiveTab}
                                   getFilterLink={getFilterLink}
-                                  name={
-                                    <CountryDropdown
-                                      // @ts-expect-error - onSelect not typed
-                                      onSelect={setCountryActiveTab}
-                                      title={ccPanelName}
-                                      data={panelsData.data}
-                                    />
-                                  }
-                                  data={panelsData.data[countryActiveTab]}
+                                  name={t('project.location')}
+                                  tabs={locationTabs}
+                                  onTabChange={(tab) => setLocationActiveTab(tab as 'cc' | 'rg' | 'ct' | 'lc' | 'map')}
+                                  activeTabId={locationActiveTab}
+                                  data={panelsData.data[locationActiveTab]}
                                   customTabs={customTabs}
-                                  rowMapper={rowMapper}
+                                  rowMapper={getLocationRowMapper(locationActiveTab)}
+                                  customRenderer={
+                                    locationActiveTab === 'map'
+                                      ? () => {
+                                          const countryData = panelsData.data?.cc || []
+                                          const total = countryData.reduce((acc, curr) => acc + curr.count, 0)
+
+                                          return (
+                                            <InteractiveMap
+                                              data={countryData}
+                                              total={total}
+                                              onClickCountry={(key) => {
+                                                const link = getFilterLink(id, key)
+                                                navigate(link)
+                                              }}
+                                            />
+                                          )
+                                        }
+                                      : undefined
+                                  }
                                 />
                               )
                             }
 
-                            if (type === 'br') {
-                              const brPanelName = tnMapping[browserActiveTab]
+                            if (type === 'browser') {
+                              const browserTabs = [
+                                { id: 'br', label: t('project.mapping.br'), hasData: !!panelsData.data.br },
+                                { id: 'brv', label: t('project.mapping.brv'), hasData: !!panelsData.data.brv },
+                              ]
 
                               const rowMapper = (entry: any) => {
                                 const { name: entryName, br } = entry
-
                                 const logoKey = browserActiveTab === 'br' ? entryName : br
-
                                 // @ts-expect-error
                                 const logoUrl = BROWSER_LOGO_MAP[logoKey]
 
@@ -3734,87 +3757,65 @@ const ViewProject = () => {
                               return (
                                 <Panel
                                   key={browserActiveTab}
-                                  icon={panelIcon}
+                                  icon={panelIconMapping.br}
                                   id={browserActiveTab}
                                   getFilterLink={getFilterLink}
-                                  name={
-                                    <BrowserDropdown
-                                      onSelect={setBrowserActiveTab}
-                                      title={brPanelName}
-                                      data={panelsData.data}
-                                    />
-                                  }
+                                  name={t('project.browser')}
+                                  tabs={browserTabs}
+                                  onTabChange={(tab) => setBrowserActiveTab(tab as 'br' | 'brv')}
+                                  activeTabId={browserActiveTab}
                                   data={panelsData.data[browserActiveTab]}
-                                  rowMapper={rowMapper}
-                                />
-                              )
-                            }
-
-                            if (type === 'os') {
-                              const osPanelName = tnMapping[osActiveTab]
-
-                              const rowMapper = (entry: any) => {
-                                const { name: entryName, os } = entry
-
-                                const logoKey = osActiveTab === 'os' ? entryName : os
-
-                                // @ts-expect-error
-                                const logoPathLight = OS_LOGO_MAP[logoKey]
-                                // @ts-expect-error
-                                const logoPathDark = OS_LOGO_MAP_DARK[logoKey]
-
-                                let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
-                                logoPath ||= logoPathLight
-
-                                if (!logoPath) {
-                                  return (
-                                    <>
-                                      <GlobeAltIcon className='h-5 w-5' />
-                                      &nbsp;
-                                      {entryName}
-                                    </>
-                                  )
-                                }
-
-                                const logoUrl = `/${logoPath}`
-
-                                return (
-                                  <>
-                                    <img src={logoUrl} className='h-5 w-5 dark:fill-gray-50' alt='' />
-                                    &nbsp;
-                                    {entryName}
-                                  </>
-                                )
-                              }
-
-                              return (
-                                <Panel
-                                  key={osActiveTab}
-                                  icon={panelIcon}
-                                  id={osActiveTab}
-                                  getFilterLink={getFilterLink}
-                                  name={
-                                    <OSDropdown onSelect={setOsActiveTab} title={osPanelName} data={panelsData.data} />
-                                  }
-                                  data={panelsData.data[osActiveTab]}
-                                  rowMapper={rowMapper}
-                                />
-                              )
-                            }
-
-                            if (type === 'dv') {
-                              return (
-                                <Panel
-                                  key={type}
-                                  icon={panelIcon}
-                                  id={type}
-                                  getFilterLink={getFilterLink}
-                                  name={panelName}
-                                  data={panelsData.data[type]}
                                   customTabs={customTabs}
-                                  rowMapper={(entry: { name: keyof typeof deviceIconMapping }) => {
-                                    const { name: entryName } = entry
+                                  rowMapper={rowMapper}
+                                />
+                              )
+                            }
 
+                            if (type === 'device') {
+                              const deviceTabs = [
+                                { id: 'os', label: t('project.mapping.os'), hasData: !!panelsData.data.os },
+                                { id: 'osv', label: t('project.mapping.osv'), hasData: !!panelsData.data.osv },
+                                { id: 'dv', label: t('project.mapping.dv'), hasData: !!panelsData.data.dv },
+                              ]
+
+                              const getDeviceRowMapper = (activeTab: string) => {
+                                if (activeTab === 'os' || activeTab === 'osv') {
+                                  // eslint-disable-next-line
+                                  return (entry: any) => {
+                                    const { name: entryName, os } = entry
+                                    const logoKey = activeTab === 'os' ? entryName : os
+                                    // @ts-expect-error
+                                    const logoPathLight = OS_LOGO_MAP[logoKey]
+                                    // @ts-expect-error
+                                    const logoPathDark = OS_LOGO_MAP_DARK[logoKey]
+
+                                    let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
+                                    logoPath ||= logoPathLight
+
+                                    if (!logoPath) {
+                                      return (
+                                        <>
+                                          <GlobeAltIcon className='h-5 w-5' />
+                                          &nbsp;
+                                          {entryName}
+                                        </>
+                                      )
+                                    }
+
+                                    const logoUrl = `/${logoPath}`
+                                    return (
+                                      <>
+                                        <img src={logoUrl} className='h-5 w-5 dark:fill-gray-50' alt='' />
+                                        &nbsp;
+                                        {entryName}
+                                      </>
+                                    )
+                                  }
+                                }
+                                if (activeTab === 'dv') {
+                                  // eslint-disable-next-line
+                                  return (entry: { name: keyof typeof deviceIconMapping }) => {
+                                    const { name: entryName } = entry
                                     const icon = deviceIconMapping[entryName]
 
                                     if (!icon) {
@@ -3828,59 +3829,46 @@ const ViewProject = () => {
                                         {entryName}
                                       </>
                                     )
-                                  }}
-                                  capitalize
-                                />
-                              )
-                            }
-
-                            if (type === 'ref') {
-                              return (
-                                <Panel
-                                  key={type}
-                                  icon={panelIcon}
-                                  id={type}
-                                  getFilterLink={getFilterLink}
-                                  name={panelName}
-                                  data={panelsData.data[type]}
-                                  customTabs={customTabs}
-                                  rowMapper={({ name: entryName }) => <RefRow rowName={entryName} />}
-                                />
-                              )
-                            }
-
-                            if (type === 'so') {
-                              const ccPanelName = tnMapping[utmActiveTab]
-
-                              return (
-                                <Panel
-                                  key={utmActiveTab}
-                                  icon={panelIcon}
-                                  id={utmActiveTab}
-                                  getFilterLink={getFilterLink}
-                                  name={
-                                    <UTMDropdown
-                                      // @ts-expect-error - onSelect not typed
-                                      onSelect={setUtmActiveTab}
-                                      title={ccPanelName}
-                                      data={panelsData.data}
-                                    />
                                   }
-                                  data={panelsData.data[utmActiveTab]}
+                                }
+                                return undefined
+                              }
+
+                              return (
+                                <Panel
+                                  key={deviceActiveTab}
+                                  icon={panelIconMapping.os}
+                                  id={deviceActiveTab}
+                                  getFilterLink={getFilterLink}
+                                  name={t('project.device')}
+                                  tabs={deviceTabs}
+                                  onTabChange={(tab) => setDeviceActiveTab(tab as 'os' | 'osv' | 'dv')}
+                                  activeTabId={deviceActiveTab}
+                                  data={panelsData.data[deviceActiveTab]}
                                   customTabs={customTabs}
-                                  rowMapper={({ name: entryName }) => decodeURIComponent(entryName)}
+                                  rowMapper={getDeviceRowMapper(deviceActiveTab)}
+                                  capitalize={deviceActiveTab === 'dv'}
                                 />
                               )
                             }
 
                             if (type === 'pg') {
+                              const pageTabs = [
+                                { id: 'pg', label: t('project.mapping.pg'), hasData: !!panelsData.data.pg },
+                                {
+                                  id: 'host',
+                                  label: t('project.mapping.host'),
+                                  hasData: !!panelsData.data.host,
+                                },
+                                { id: 'userFlow', label: t('project.mapping.userFlow'), hasData: true },
+                              ]
+
                               return (
                                 <Panel
                                   key={pageActiveTab}
-                                  icon={panelIcon}
+                                  icon={panelIconMapping.pg}
                                   id={pageActiveTab}
                                   getFilterLink={getFilterLink}
-                                  onFragmentChange={setPgActiveFragment}
                                   rowMapper={({ name: entryName }) => {
                                     if (!entryName) {
                                       return _toUpper(
@@ -3898,51 +3886,61 @@ const ViewProject = () => {
 
                                     return decodedUri
                                   }}
-                                  name={
-                                    pgActiveFragment === 1 ? (
-                                      tnMapping.userFlow
-                                    ) : (
-                                      <PageDropdown
-                                        onSelect={setPageActiveTab}
-                                        title={tnMapping[pageActiveTab]}
-                                        data={panelsData.data}
-                                      />
-                                    )
-                                  }
+                                  name={t('project.pages')}
+                                  tabs={pageTabs}
+                                  onTabChange={(tab) => setPageActiveTab(tab as 'pg' | 'host' | 'userFlow')}
+                                  activeTabId={pageActiveTab}
                                   data={panelsData.data[pageActiveTab]}
                                   customTabs={customTabs}
+                                  customRenderer={
+                                    pageActiveTab === 'userFlow'
+                                      ? () => <UserFlow isReversed={false} setReversed={() => {}} />
+                                      : undefined
+                                  }
                                 />
                               )
                             }
 
-                            if (type === 'lc') {
+                            if (type === 'ref') {
                               return (
                                 <Panel
                                   key={type}
-                                  icon={panelIcon}
+                                  icon={panelIconMapping[type]}
                                   id={type}
                                   getFilterLink={getFilterLink}
-                                  name={panelName}
+                                  name={tnMapping[type]}
                                   data={panelsData.data[type]}
-                                  rowMapper={({ name: entryName }: { name: string }) =>
-                                    getLocaleDisplayName(entryName, language)
-                                  }
                                   customTabs={customTabs}
+                                  rowMapper={({ name: entryName }) => <RefRow rowName={entryName} />}
                                 />
                               )
                             }
 
-                            return (
-                              <Panel
-                                key={type}
-                                icon={panelIcon}
-                                id={type}
-                                getFilterLink={getFilterLink}
-                                name={panelName}
-                                data={panelsData.data[type]}
-                                customTabs={customTabs}
-                              />
-                            )
+                            if (type === 'so') {
+                              return (
+                                <Panel
+                                  key={utmActiveTab}
+                                  icon={panelIconMapping.so}
+                                  id={utmActiveTab}
+                                  getFilterLink={getFilterLink}
+                                  name={t('project.utm')}
+                                  tabs={[
+                                    { id: 'so', label: t('project.mapping.so'), hasData: !!panelsData.data.so },
+                                    { id: 'me', label: t('project.mapping.me'), hasData: !!panelsData.data.me },
+                                    { id: 'ca', label: t('project.mapping.ca'), hasData: !!panelsData.data.ca },
+                                    { id: 'te', label: t('project.mapping.te'), hasData: !!panelsData.data.te },
+                                    { id: 'co', label: t('project.mapping.co'), hasData: !!panelsData.data.co },
+                                  ]}
+                                  onTabChange={(tab) => setUtmActiveTab(tab as 'so' | 'me' | 'ca' | 'te' | 'co')}
+                                  activeTabId={utmActiveTab}
+                                  data={panelsData.data[utmActiveTab]}
+                                  customTabs={customTabs}
+                                  rowMapper={({ name: entryName }) => decodeURIComponent(entryName)}
+                                />
+                              )
+                            }
+
+                            return null
                           })
                         : null}
                       {!_isEmpty(panelsData.data) ? (
@@ -3991,7 +3989,7 @@ const ViewProject = () => {
                             const customTabs = _filter(customPanelTabs, (tab) => tab.panelID === type)
 
                             if (type === 'cc') {
-                              const ccPanelName = tnMapping[countryActiveTab]
+                              const ccPanelName = tnMapping[locationActiveTab]
 
                               const rowMapper = (entry: CountryEntry) => {
                                 const { name: entryName, cc } = entry
@@ -4005,19 +4003,19 @@ const ViewProject = () => {
 
                               return (
                                 <Panel
-                                  key={countryActiveTab}
+                                  key={locationActiveTab}
                                   icon={panelIcon}
-                                  id={countryActiveTab}
+                                  id={locationActiveTab}
                                   getFilterLink={getFilterLink}
                                   name={
                                     <CountryDropdown
                                       // @ts-expect-error - onSelect not typed
-                                      onSelect={setCountryActiveTab}
+                                      onSelect={setLocationActiveTab}
                                       title={ccPanelName}
                                       data={panelsDataPerf.data}
                                     />
                                   }
-                                  data={panelsDataPerf.data[countryActiveTab]}
+                                  data={panelsDataPerf.data[locationActiveTab]}
                                   customTabs={customTabs}
                                   rowMapper={rowMapper}
                                   // @ts-expect-error

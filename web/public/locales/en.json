@@ -952,7 +952,8 @@
       "me": "UTM Medium",
       "ca": "UTM Campaign",
       "te": "UTM Term",
-      "co": "UTM Content"
+      "co": "UTM Content",
+      "userFlow": "User flow"
     },
     "metamapping": {
       "ev": {

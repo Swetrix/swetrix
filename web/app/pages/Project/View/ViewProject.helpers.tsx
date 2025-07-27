@@ -28,6 +28,7 @@ import {
   MapPinIcon,
   MonitorCog,
   MonitorIcon,
+  ShareIcon,
   SmartphoneIcon,
   TabletIcon,
   TabletSmartphoneIcon,
@@ -1412,11 +1413,16 @@ const typeNameMapping = (t: typeof i18next.t) => ({
   te: t('project.mapping.te'),
   co: t('project.mapping.co'),
   ev: t('project.event'),
-  userFlow: t('main.competitiveFeatures.usfl'),
+  userFlow: t('project.mapping.userFlow'),
   'tag:key': t('project.metamapping.tag.key'),
   'tag:value': t('project.metamapping.tag.value'),
   'ev:key': t('project.metamapping.ev.key'),
   'ev:value': t('project.metamapping.ev.value'),
+  // Combined panel types
+  location: t('project.location'),
+  browser: t('project.browser'),
+  device: t('project.device'),
+  map: t('project.map'),
 })
 
 const iconClassName = 'w-5 h-5'
@@ -1428,6 +1434,7 @@ const panelIconMapping = {
   dv: <TabletSmartphoneIcon className={iconClassName} strokeWidth={1.5} />,
   br: <CompassIcon className={iconClassName} strokeWidth={1.5} />,
   os: <MonitorCog className={iconClassName} strokeWidth={1.5} />,
+  so: <ShareIcon className={iconClassName} strokeWidth={1.5} />,
 }
 
 export const deviceIconMapping = {

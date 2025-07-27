@@ -22,16 +22,7 @@ import _sortBy from 'lodash/sortBy'
 import _sum from 'lodash/sum'
 import _toPairs from 'lodash/toPairs'
 import _values from 'lodash/values'
-import {
-  AlignJustifyIcon,
-  ChartPieIcon,
-  MapIcon,
-  MaximizeIcon,
-  WorkflowIcon,
-  FilterIcon,
-  PuzzleIcon,
-  ScanIcon,
-} from 'lucide-react'
+import { AlignJustifyIcon, ChartPieIcon, MaximizeIcon, FilterIcon, PuzzleIcon, ScanIcon } from 'lucide-react'
 import React, { memo, useState, useEffect, useMemo, Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, LinkProps, useNavigate } from 'react-router'
@@ -46,8 +37,6 @@ import Modal from '~/ui/Modal'
 import { nFormatter } from '~/utils/generic'
 
 import CustomEventsDropdown from './components/CustomEventsDropdown'
-import InteractiveMap from './components/InteractiveMap'
-import UserFlow from './components/UserFlow'
 import { Customs, Filter, Properties } from './interfaces/traffic'
 import { useViewProjectContext } from './ViewProject'
 import { iconClassName } from './ViewProject.helpers'
@@ -106,8 +95,14 @@ interface PanelContainerProps {
   activeFragment?: number | string
   setActiveFragment?: (arg: number) => void
   customTabs?: CustomTab[]
-  activeTab?: string
   isCustomContent?: boolean
+  tabs?: Array<{
+    id: string
+    label: string
+    hasData?: boolean
+  }>
+  onTabChange?: (tab: string) => void
+  activeTabId?: string
 }
 
 const PanelContainer = ({
@@ -118,9 +113,11 @@ const PanelContainer = ({
   activeFragment = 0,
   setActiveFragment = () => {},
   customTabs = [],
-  activeTab,
   isCustomContent,
   onExpandClick = () => {},
+  tabs,
+  onTabChange,
+  activeTabId,
 }: PanelContainerProps) => (
   <div
     className={cx(
@@ -130,140 +127,124 @@ const PanelContainer = ({
       },
     )}
   >
-    <div className='mb-2 flex items-center justify-between'>
+    <div className='mb-2 flex items-center justify-between gap-4'>
       <h3 className='flex items-center text-lg leading-6 font-semibold text-gray-900 dark:text-gray-50'>
         {icon ? <span className='mr-1'>{icon}</span> : null}
         {name}
       </h3>
-      <div className='flex'>
-        {checkIfBarsNeeded(type) || checkCustomTabs(type, customTabs) ? (
-          <button
-            type='button'
-            onClick={() => setActiveFragment(0)}
-            aria-label='Switch to bar view'
-            className='rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
-          >
-            <AlignJustifyIcon
-              className={cx(iconClassName, {
-                'text-slate-900 dark:text-gray-50': activeFragment === 0,
-                'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 1,
-              })}
-              strokeWidth={1.5}
-            />
-          </button>
-        ) : null}
-
-        {/* if it is a Country tab  */}
-        {type === 'cc' || type === 'rg' || type === 'ct' ? (
+      <div className='flex items-center gap-1 overflow-x-auto'>
+        {/* Custom panel tabs */}
+        {tabs && onTabChange ? (
           <>
-            <button
-              type='button'
-              onClick={() => setActiveFragment(1)}
-              aria-label='Switch to map view'
-              className='ml-1 rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
-            >
-              <MapIcon
-                className={cx(iconClassName, {
-                  'text-slate-900 dark:text-gray-50': activeFragment === 1,
-                  'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                type='button'
+                onClick={() => {
+                  onTabChange(tab.id)
+                  // Reset to list view when switching tabs
+                  setActiveFragment(0)
+                }}
+                disabled={tab.hasData === false}
+                className={cx('rounded px-2 py-1 text-xs font-medium whitespace-nowrap transition-colors', {
+                  'bg-slate-900 text-white dark:bg-gray-50 dark:text-slate-900':
+                    activeTabId === tab.id && activeFragment === 0,
+                  'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-slate-700 dark:text-gray-300 dark:hover:bg-slate-600':
+                    (activeTabId !== tab.id || activeFragment !== 0) && tab.hasData !== false,
+                  'cursor-not-allowed bg-gray-50 text-gray-400 dark:bg-slate-800 dark:text-gray-600':
+                    tab.hasData === false,
                 })}
-                strokeWidth={1.5}
-              />
-            </button>
-            <button
-              type='button'
-              onClick={onExpandClick}
-              aria-label='Expand view'
-              className={cx('ml-1 rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700', {
-                hidden: activeFragment === 0,
-              })}
-            >
-              <MaximizeIcon className={cx(iconClassName, 'text-slate-400 dark:text-slate-500')} strokeWidth={1.5} />
-            </button>
+              >
+                {tab.label}
+              </button>
+            ))}
           </>
-        ) : null}
-
-        {type === 'pg' && activeTab !== PROJECT_TABS.performance && activeTab !== PROJECT_TABS.errors ? (
-          <button
-            type='button'
-            onClick={onExpandClick}
-            aria-label='View user flow'
-            className='ml-1 rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
-          >
-            <WorkflowIcon
-              className={cx(iconClassName, {
-                'text-slate-900 dark:text-gray-50': activeFragment === 1,
-                'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
-              })}
-              strokeWidth={1.5}
-            />
-          </button>
-        ) : null}
-
-        {/* if this tab using Circle showing stats panel */}
-        {type === 'ce' || type === 'os' || type === 'br' || type === 'dv' ? (
-          <button
-            type='button'
-            onClick={() => setActiveFragment(1)}
-            aria-label='Switch to pie chart view'
-            className='ml-1 rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
-          >
-            <ChartPieIcon
-              className={cx(iconClassName, {
-                'text-slate-900 dark:text-gray-50': activeFragment === 1,
-                'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
-              })}
-              strokeWidth={1.5}
-            />
-          </button>
-        ) : null}
-
-        {/* if it is a 'Custom events' tab  */}
-        {type === 'ce' || type === 'props' ? (
+        ) : (
+          /* Existing icon buttons for panels without custom tabs */
           <>
-            <button
-              type='button'
-              onClick={onExpandClick}
-              aria-label='Expand view'
-              className='ml-1 rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
-            >
-              <MaximizeIcon className={cx(iconClassName, 'text-slate-400 dark:text-slate-500')} strokeWidth={1.5} />
-            </button>
-          </>
-        ) : null}
+            {checkIfBarsNeeded(type) || checkCustomTabs(type, customTabs) ? (
+              <button
+                type='button'
+                onClick={() => setActiveFragment(0)}
+                aria-label='Switch to bar view'
+                className='rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
+              >
+                <AlignJustifyIcon
+                  className={cx(iconClassName, {
+                    'text-slate-900 dark:text-gray-50': activeFragment === 0,
+                    'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 1,
+                  })}
+                  strokeWidth={1.5}
+                />
+              </button>
+            ) : null}
 
-        {checkCustomTabs(type, customTabs) ? (
-          <>
-            {/* This is a temp fix to prevent multiple tabs of the same extensionID be displayed */}
-            {/* TODO: Investigate the issue and fix it */}
-            {_map(removeDuplicates(customTabs, ['extensionID', 'panelID']), ({ extensionID, panelID, onOpen }) => {
-              if (panelID !== type) return null
+            {/* if this tab using Circle showing stats panel */}
+            {type === 'ce' || type === 'os' || type === 'br' || type === 'dv' ? (
+              <button
+                type='button'
+                onClick={() => setActiveFragment(1)}
+                aria-label='Switch to pie chart view'
+                className='ml-1 rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
+              >
+                <ChartPieIcon
+                  className={cx(iconClassName, {
+                    'text-slate-900 dark:text-gray-50': activeFragment === 1,
+                    'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
+                  })}
+                  strokeWidth={1.5}
+                />
+              </button>
+            ) : null}
 
-              const onClick = () => {
-                onOpen?.()
-                setActiveFragment(extensionID)
-              }
-
-              return (
+            {/* if it is a 'Custom events' tab  */}
+            {type === 'ce' || type === 'props' ? (
+              <>
                 <button
                   type='button'
-                  key={`${extensionID}-${panelID}`}
-                  onClick={onClick}
-                  aria-label='Switch to custom tab'
+                  onClick={onExpandClick}
+                  aria-label='Expand view'
                   className='ml-1 rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
                 >
-                  <PuzzleIcon
-                    className={cx(iconClassName, {
-                      'text-slate-900 dark:text-gray-50': activeFragment === extensionID,
-                      'text-slate-400 dark:text-slate-500': activeFragment === 0,
-                    })}
-                    strokeWidth={1.5}
-                  />
+                  <MaximizeIcon className={cx(iconClassName, 'text-slate-400 dark:text-slate-500')} strokeWidth={1.5} />
                 </button>
-              )
-            })}
+              </>
+            ) : null}
+
+            {checkCustomTabs(type, customTabs) ? (
+              <>
+                {/* This is a temp fix to prevent multiple tabs of the same extensionID be displayed */}
+                {/* TODO: Investigate the issue and fix it */}
+                {_map(removeDuplicates(customTabs, ['extensionID', 'panelID']), ({ extensionID, panelID, onOpen }) => {
+                  if (panelID !== type) return null
+
+                  const onClick = () => {
+                    onOpen?.()
+                    setActiveFragment(extensionID)
+                  }
+
+                  return (
+                    <button
+                      type='button'
+                      key={`${extensionID}-${panelID}`}
+                      onClick={onClick}
+                      aria-label='Switch to custom tab'
+                      className='ml-1 rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
+                    >
+                      <PuzzleIcon
+                        className={cx(iconClassName, {
+                          'text-slate-900 dark:text-gray-50': activeFragment === extensionID,
+                          'text-slate-400 dark:text-slate-500': activeFragment === 0,
+                        })}
+                        strokeWidth={1.5}
+                      />
+                    </button>
+                  )
+                })}
+              </>
+            ) : null}
           </>
-        ) : null}
+        )}
       </div>
     </div>
     {/* for other tabs */}
@@ -1477,6 +1458,14 @@ interface PanelProps {
   customTabs?: CustomTab[]
   onFragmentChange?: (arg: number) => void
   getFilterLink?: (column: string, value: string) => LinkProps['to']
+  tabs?: Array<{
+    id: string
+    label: string
+    hasData?: boolean
+  }>
+  onTabChange?: (tab: string) => void
+  activeTabId?: string
+  customRenderer?: () => React.ReactNode
 }
 
 const Panel = ({
@@ -1492,13 +1481,15 @@ const Panel = ({
   customTabs = [],
   onFragmentChange = () => {},
   getFilterLink = () => '',
+  tabs,
+  onTabChange,
+  activeTabId,
+  customRenderer,
 }: PanelProps) => {
   const { dataLoading, activeTab } = useViewProjectContext()
   const { t } = useTranslation('common')
   const total = useMemo(() => _reduce(data, (prev, curr) => prev + curr.count, 0), [data])
   const [activeFragment, setActiveFragment] = useState(0)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isReversedUserFlow, setIsReversedUserFlow] = useState(false)
   const [detailsOpened, setDetailsOpened] = useState(false)
   const [sortedData, setSortedData] = useState(data)
   const [sort, setSort] = useState<SortRows>({
@@ -1660,47 +1651,6 @@ const Panel = ({
     </div>
   )
 
-  // Showing map of stats a data
-  if ((id === 'cc' || id === 'rg' || id === 'ct') && activeFragment === 1 && !_isEmpty(data)) {
-    return (
-      <PanelContainer
-        name={name}
-        icon={icon}
-        type={id}
-        activeFragment={activeFragment}
-        setActiveFragment={_setActiveFragment}
-        onExpandClick={() => setIsModalOpen(true)}
-        customTabs={customTabs}
-      >
-        <InteractiveMap
-          data={data}
-          total={total}
-          onClickCountry={(key) => {
-            const link = getFilterLink(id, key)
-            navigate(link)
-          }}
-        />
-        <Modal
-          onClose={() => setIsModalOpen(false)}
-          closeText={t('common.close')}
-          isOpened={isModalOpen}
-          message={
-            <InteractiveMap
-              data={data}
-              total={total}
-              onClickCountry={(key) => {
-                const link = getFilterLink(id, key)
-                navigate(link)
-                setIsModalOpen(false)
-              }}
-            />
-          }
-          size='large'
-        />
-      </PanelContainer>
-    )
-  }
-
   // Showing chart of stats a data
   if ((id === 'os' || id === 'br' || id === 'dv') && activeFragment === 1 && !_isEmpty(data)) {
     const tQuantity = t('project.quantity')
@@ -1748,7 +1698,9 @@ const Panel = ({
         setActiveFragment={_setActiveFragment}
         activeFragment={activeFragment}
         customTabs={customTabs}
-        activeTab={activeTab}
+        tabs={tabs}
+        onTabChange={onTabChange}
+        activeTabId={activeTabId}
       >
         {_isEmpty(data) ? (
           <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
@@ -1771,10 +1723,11 @@ const Panel = ({
         type={id}
         activeFragment={activeFragment}
         setActiveFragment={_setActiveFragment}
-        onExpandClick={() => setIsModalOpen(true)}
         customTabs={customTabs}
-        activeTab={activeTab}
         isCustomContent
+        tabs={tabs}
+        onTabChange={onTabChange}
+        activeTabId={activeTabId}
       >
         {/* Using this instead of dangerouslySetInnerHTML to support script tags */}
         {tabContent ? <InnerHTML className='absolute overflow-auto' html={tabContent} /> : null}
@@ -1789,11 +1742,14 @@ const Panel = ({
       type={id}
       activeFragment={activeFragment}
       setActiveFragment={_setActiveFragment}
-      onExpandClick={() => setIsModalOpen(true)}
       customTabs={customTabs}
-      activeTab={activeTab}
+      tabs={tabs}
+      onTabChange={onTabChange}
+      activeTabId={activeTabId}
     >
-      {_isEmpty(data) ? (
+      {customRenderer ? (
+        customRenderer()
+      ) : _isEmpty(data) ? (
         <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
       ) : (
         <>
@@ -1878,31 +1834,6 @@ const Panel = ({
           ) : null}
         </>
       )}
-
-      {/* PAGE - User flow modal */}
-      {id === 'pg' ? (
-        <Modal
-          onClose={() => setIsModalOpen(false)}
-          closeText={t('common.close')}
-          isOpened={isModalOpen}
-          title={t('project.userFlow.title')}
-          customButtons={
-            <button
-              type='button'
-              onClick={() => setIsReversedUserFlow((prev) => !prev)}
-              className='mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm dark:border-none dark:border-gray-600 dark:bg-slate-700 dark:text-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-700'
-            >
-              {t('project.reverse')}
-            </button>
-          }
-          message={
-            <div className='h-[500px] dark:text-gray-800'>
-              <UserFlow isReversed={isReversedUserFlow} setReversed={() => setIsReversedUserFlow((prev) => !prev)} />
-            </div>
-          }
-          size='large'
-        />
-      ) : null}
 
       <Modal
         onClose={() => setDetailsOpened(false)}
