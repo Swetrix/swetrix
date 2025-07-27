@@ -1794,7 +1794,10 @@ const Panel = ({
 
               return (
                 <div key={`${id}-${entryName}-${Object.values(rest).join('-')}`} className='space-y-0.5'>
-                  <div className='relative flex items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50'>
+                  <div className={cx('relative flex items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50', {
+                    'group hover:bg-gray-50 hover:dark:bg-slate-800': !hideFilters && !dataLoading && (link || hasVersionsForItem),
+                    'cursor-wait': dataLoading,
+                  })}>
                     <div
                       className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
                       style={{ width: `${perc}%` }}
@@ -1823,8 +1826,9 @@ const Panel = ({
                         as={link ? 'Link' : 'div'}
                         to={link}
                         className={cx('flex min-w-0 flex-1 items-center', {
-                          'group cursor-pointer': !hideFilters && !dataLoading,
+                          'cursor-pointer': !hideFilters && !dataLoading && link,
                           'cursor-wait': dataLoading,
+                          'ml-5': !hasVersionsForItem, // Add margin when no chevron is present
                         })}
                       >
                         {linkContent ? (
