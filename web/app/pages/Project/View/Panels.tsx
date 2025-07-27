@@ -27,6 +27,7 @@ import { Link, LinkProps, useNavigate } from 'react-router'
 import { PROJECT_TABS } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
 import Button from '~/ui/Button'
+import Dropdown from '~/ui/Dropdown'
 import Sort from '~/ui/icons/Sort'
 import Spin from '~/ui/icons/Spin'
 import Modal from '~/ui/Modal'
@@ -86,11 +87,18 @@ interface PanelContainerProps {
   setActiveFragment?: (arg: number) => void
   customTabs?: CustomTab[]
   isCustomContent?: boolean
-  tabs?: Array<{
-    id: string
-    label: string
-    hasData?: boolean
-  }>
+  tabs?: Array<
+    | {
+        id: string
+        label: string
+        hasData?: boolean
+      }
+    | Array<{
+        id: string
+        label: string
+        hasData?: boolean
+      }>
+  >
   onTabChange?: (tab: string) => void
   activeTabId?: string
 }
@@ -108,109 +116,152 @@ const PanelContainer = ({
   tabs,
   onTabChange,
   activeTabId,
-}: PanelContainerProps) => (
-  <div
-    className={cx(
-      'h-[26rem] overflow-hidden rounded-lg border border-gray-300 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-800/25',
-      {
-        'col-span-2': type === 'ce',
-      },
-    )}
-  >
-    <div className='mb-2 flex items-center justify-between gap-4'>
-      <h3 className='flex items-center text-lg leading-6 font-semibold whitespace-nowrap text-gray-900 dark:text-gray-50'>
-        {icon ? <span className='mr-1'>{icon}</span> : null}
-        {name}
-      </h3>
-      <div className='scrollbar-thin flex items-center gap-1 overflow-x-auto'>
-        {tabs && onTabChange ? (
-          <>
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                type='button'
-                onClick={() => {
-                  onTabChange(tab.id)
-                  setActiveFragment(0)
-                }}
-                disabled={tab.hasData === false}
-                className={cx(
-                  'relative border-b-2 px-1.5 py-1 text-sm font-bold whitespace-nowrap transition-all duration-200',
-                  {
-                    'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50':
-                      activeTabId === tab.id && activeFragment === 0,
-                    'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
-                      (activeTabId !== tab.id || activeFragment !== 0) && tab.hasData !== false,
-                    'cursor-not-allowed border-transparent text-gray-300 dark:text-gray-600': tab.hasData === false,
-                  },
-                )}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </>
-        ) : (
-          <>
-            {/* if it is a 'Custom events' tab  */}
-            {type === 'ce' || type === 'props' ? (
-              <>
-                <button
-                  type='button'
-                  onClick={onExpandClick}
-                  aria-label='Expand view'
-                  className='ml-1 rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
-                >
-                  <MaximizeIcon className={cx(iconClassName, 'text-slate-400 dark:text-slate-500')} strokeWidth={1.5} />
-                </button>
-              </>
-            ) : null}
+}: PanelContainerProps) => {
+  const { t } = useTranslation('common')
 
-            {checkCustomTabs(type, customTabs) ? (
-              <>
-                {/* This is a temp fix to prevent multiple tabs of the same extensionID be displayed */}
-                {/* TODO: Investigate the issue and fix it */}
-                {_map(removeDuplicates(customTabs, ['extensionID', 'panelID']), ({ extensionID, panelID, onOpen }) => {
-                  if (panelID !== type) return null
-
-                  const onClick = () => {
-                    onOpen?.()
-                    setActiveFragment(extensionID)
-                  }
+  return (
+    <div
+      className={cx(
+        'h-[26rem] overflow-hidden rounded-lg border border-gray-300 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-800/25',
+        {
+          'col-span-2': type === 'ce',
+        },
+      )}
+    >
+      <div className='mb-2 flex items-center justify-between gap-4'>
+        <h3 className='flex items-center text-lg leading-6 font-semibold whitespace-nowrap text-gray-900 dark:text-gray-50'>
+          {icon ? <span className='mr-1'>{icon}</span> : null}
+          {name}
+        </h3>
+        <div className='scrollbar-thin flex items-center gap-1'>
+          {tabs && onTabChange ? (
+            <>
+              {tabs.map((tab, index) => {
+                if (Array.isArray(tab)) {
+                  const dropdownTabs = tab
+                  const activeDropdownTab = dropdownTabs.find((t) => t.id === activeTabId)
+                  const dropdownTitle = activeDropdownTab ? activeDropdownTab.label : t('project.campaigns')
 
                   return (
-                    <button
-                      type='button'
-                      key={`${extensionID}-${panelID}`}
-                      onClick={onClick}
-                      aria-label='Switch to custom tab'
-                      className='ml-1 rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
-                    >
-                      <PuzzleIcon
-                        className={cx(iconClassName, {
-                          'text-slate-900 dark:text-gray-50': activeFragment === extensionID,
-                          'text-slate-400 dark:text-slate-500': activeFragment === 0,
-                        })}
-                        strokeWidth={1.5}
-                      />
-                    </button>
+                    <Dropdown
+                      key={`dropdown-${index}`}
+                      title={dropdownTitle}
+                      items={dropdownTabs}
+                      labelExtractor={(item) => item.label}
+                      keyExtractor={(item) => item.id}
+                      onSelect={(item) => {
+                        onTabChange(item.id)
+                        setActiveFragment(0)
+                      }}
+                      buttonClassName={cx(
+                        'relative border-b-2 px-1.5 py-1 text-sm font-bold whitespace-nowrap transition-all duration-200',
+                        {
+                          'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50':
+                            dropdownTabs.some((t) => t.id === activeTabId) && activeFragment === 0,
+                          'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
+                            !dropdownTabs.some((t) => t.id === activeTabId) || activeFragment !== 0,
+                        },
+                      )}
+                      headless
+                      chevron='mini'
+                    />
                   )
-                })}
-              </>
-            ) : null}
-          </>
-        )}
+                }
+
+                return (
+                  <button
+                    key={tab.id}
+                    type='button'
+                    onClick={() => {
+                      onTabChange(tab.id)
+                      setActiveFragment(0)
+                    }}
+                    disabled={tab.hasData === false}
+                    className={cx(
+                      'relative border-b-2 px-1.5 py-1 text-sm font-bold whitespace-nowrap transition-all duration-200',
+                      {
+                        'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50':
+                          activeTabId === tab.id && activeFragment === 0,
+                        'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
+                          (activeTabId !== tab.id || activeFragment !== 0) && tab.hasData !== false,
+                        'cursor-not-allowed border-transparent text-gray-300 dark:text-gray-600': tab.hasData === false,
+                      },
+                    )}
+                  >
+                    {tab.label}
+                  </button>
+                )
+              })}
+            </>
+          ) : (
+            <>
+              {/* if it is a 'Custom events' tab  */}
+              {type === 'ce' || type === 'props' ? (
+                <>
+                  <button
+                    type='button'
+                    onClick={onExpandClick}
+                    aria-label='Expand view'
+                    className='ml-1 rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
+                  >
+                    <MaximizeIcon
+                      className={cx(iconClassName, 'text-slate-400 dark:text-slate-500')}
+                      strokeWidth={1.5}
+                    />
+                  </button>
+                </>
+              ) : null}
+
+              {checkCustomTabs(type, customTabs) ? (
+                <>
+                  {/* This is a temp fix to prevent multiple tabs of the same extensionID be displayed */}
+                  {/* TODO: Investigate the issue and fix it */}
+                  {_map(
+                    removeDuplicates(customTabs, ['extensionID', 'panelID']),
+                    ({ extensionID, panelID, onOpen }) => {
+                      if (panelID !== type) return null
+
+                      const onClick = () => {
+                        onOpen?.()
+                        setActiveFragment(extensionID)
+                      }
+
+                      return (
+                        <button
+                          type='button'
+                          key={`${extensionID}-${panelID}`}
+                          onClick={onClick}
+                          aria-label='Switch to custom tab'
+                          className='ml-1 rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
+                        >
+                          <PuzzleIcon
+                            className={cx(iconClassName, {
+                              'text-slate-900 dark:text-gray-50': activeFragment === extensionID,
+                              'text-slate-400 dark:text-slate-500': activeFragment === 0,
+                            })}
+                            strokeWidth={1.5}
+                          />
+                        </button>
+                      )
+                    },
+                  )}
+                </>
+              ) : null}
+            </>
+          )}
+        </div>
+      </div>
+      {/* for other tabs */}
+      <div
+        className={cx('flex h-full flex-col overflow-x-auto', {
+          relative: isCustomContent,
+        })}
+      >
+        {children}
       </div>
     </div>
-    {/* for other tabs */}
-    <div
-      className={cx('flex h-full flex-col overflow-x-auto', {
-        relative: isCustomContent,
-      })}
-    >
-      {children}
-    </div>
-  </div>
-)
+  )
+}
 
 export type CustomTab = {
   extensionID: string
@@ -1329,11 +1380,18 @@ interface PanelProps {
   customTabs?: CustomTab[]
   onFragmentChange?: (arg: number) => void
   getFilterLink?: (column: string, value: string) => LinkProps['to']
-  tabs?: Array<{
-    id: string
-    label: string
-    hasData?: boolean
-  }>
+  tabs?: Array<
+    | {
+        id: string
+        label: string
+        hasData?: boolean
+      }
+    | Array<{
+        id: string
+        label: string
+        hasData?: boolean
+      }>
+  >
   onTabChange?: (tab: string) => void
   activeTabId?: string
   customRenderer?: () => React.ReactNode
