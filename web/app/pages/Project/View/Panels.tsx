@@ -129,7 +129,7 @@ const PanelContainer = ({
     )}
   >
     <div className='mb-2 flex items-center justify-between gap-4'>
-      <h3 className='flex items-center text-lg leading-6 font-semibold text-gray-900 dark:text-gray-50'>
+      <h3 className='flex items-center text-lg leading-6 font-semibold whitespace-nowrap text-gray-900 dark:text-gray-50'>
         {icon ? <span className='mr-1'>{icon}</span> : null}
         {name}
       </h3>
@@ -1905,7 +1905,9 @@ const Panel = ({
                                   capitalize,
                                 })}
                               >
-                                {rowMapper ? rowMapper({ ...entry, name: entryName, version: versionEntry.name }) : `${entryName} ${versionEntry.name}`}
+                                {rowMapper
+                                  ? rowMapper({ ...entry, name: entryName, version: versionEntry.name })
+                                  : `${entryName} ${versionEntry.name}`}
                               </span>
                             </div>
                             <div className='relative z-10 flex min-w-fit items-center justify-end pl-4'>
