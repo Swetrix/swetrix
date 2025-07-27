@@ -133,7 +133,7 @@ const PanelContainer = ({
           {icon ? <span className='mr-1'>{icon}</span> : null}
           {name}
         </h3>
-        <div className='scrollbar-thin flex items-center gap-1'>
+        <div className='scrollbar-thin flex items-center gap-2.5'>
           {tabs && onTabChange ? (
             <>
               {tabs.map((tab, index) => {
@@ -154,7 +154,7 @@ const PanelContainer = ({
                         setActiveFragment(0)
                       }}
                       buttonClassName={cx(
-                        'relative border-b-2 px-1.5 py-1 text-sm font-bold whitespace-nowrap transition-all duration-200',
+                        'relative border-b-2 md:px-0 py-1 text-sm font-bold whitespace-nowrap transition-all duration-200',
                         {
                           'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50':
                             dropdownTabs.some((t) => t.id === activeTabId) && activeFragment === 0,
@@ -168,6 +168,7 @@ const PanelContainer = ({
                   )
                 }
 
+                // Regular tab button
                 return (
                   <button
                     key={tab.id}
@@ -178,7 +179,7 @@ const PanelContainer = ({
                     }}
                     disabled={tab.hasData === false}
                     className={cx(
-                      'relative border-b-2 px-1.5 py-1 text-sm font-bold whitespace-nowrap transition-all duration-200',
+                      'relative border-b-2 py-1 text-sm font-bold whitespace-nowrap transition-all duration-200',
                       {
                         'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50':
                           activeTabId === tab.id && activeFragment === 0,
