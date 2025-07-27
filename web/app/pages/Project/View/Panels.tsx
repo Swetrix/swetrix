@@ -1,6 +1,6 @@
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
-import { ArrowLongRightIcon, ArrowLongLeftIcon } from '@heroicons/react/24/solid'
 import { ChevronRightIcon } from '@heroicons/react/24/outline'
+import { ArrowLongRightIcon, ArrowLongLeftIcon } from '@heroicons/react/24/solid'
 import { pie } from 'billboard.js'
 import cx from 'clsx'
 import InnerHTML from 'dangerously-set-html-content'
@@ -1794,18 +1794,25 @@ const Panel = ({
 
               return (
                 <div key={`${id}-${entryName}-${Object.values(rest).join('-')}`} className='space-y-0.5'>
-                  <div className={cx('relative flex items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50', {
-                    'group hover:bg-gray-50 hover:dark:bg-slate-800': !hideFilters && !dataLoading && (link || hasVersionsForItem),
-                    'cursor-wait': dataLoading,
-                  })}>
+                  <div
+                    className={cx(
+                      'relative flex items-center justify-between rounded-sm px-1 py-1.5 dark:text-gray-50',
+                      {
+                        'group hover:bg-gray-50 hover:dark:bg-slate-800':
+                          !hideFilters && !dataLoading && (link || hasVersionsForItem),
+                        'cursor-wait': dataLoading,
+                      },
+                    )}
+                  >
                     <div
                       className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
                       style={{ width: `${perc}%` }}
                     />
 
                     <div className='relative z-10 flex min-w-0 flex-1 items-center'>
-                      {hasVersionsForItem && (
+                      {hasVersionsForItem ? (
                         <button
+                          type='button'
                           onClick={(e) => {
                             e.preventDefault()
                             e.stopPropagation()
@@ -1820,7 +1827,7 @@ const Panel = ({
                             })}
                           />
                         </button>
-                      )}
+                      ) : null}
 
                       <FilterWrapper
                         as={link ? 'Link' : 'div'}
@@ -1828,7 +1835,6 @@ const Panel = ({
                         className={cx('flex min-w-0 flex-1 items-center', {
                           'cursor-pointer': !hideFilters && !dataLoading && link,
                           'cursor-wait': dataLoading,
-                          'ml-5': !hasVersionsForItem, // Add margin when no chevron is present
                         })}
                       >
                         {linkContent ? (
@@ -1867,8 +1873,7 @@ const Panel = ({
                     </div>
                   </div>
 
-                  {/* Render versions when expanded */}
-                  {hasVersionsForItem && isExpanded && (
+                  {hasVersionsForItem && isExpanded ? (
                     <div className='ml-6 space-y-0.5'>
                       {_map(versions, (versionEntry) => {
                         const versionPerc = _round((versionEntry.count / total) * 100, 2)
@@ -1917,7 +1922,7 @@ const Panel = ({
                         )
                       })}
                     </div>
-                  )}
+                  ) : null}
                 </div>
               )
             })}
