@@ -3945,11 +3945,13 @@ const ViewProject = () => {
                             if (type === 'traffic-sources') {
                               const trafficSourcesTabs = [
                                 { id: 'ref', label: t('project.mapping.ref'), hasData: !!panelsData.data.ref },
-                                { id: 'so', label: t('project.mapping.so'), hasData: !!panelsData.data.so },
-                                { id: 'me', label: t('project.mapping.me'), hasData: !!panelsData.data.me },
-                                { id: 'ca', label: t('project.mapping.ca'), hasData: !!panelsData.data.ca },
-                                { id: 'te', label: t('project.mapping.te'), hasData: !!panelsData.data.te },
-                                { id: 'co', label: t('project.mapping.co'), hasData: !!panelsData.data.co },
+                                [
+                                  { id: 'so', label: t('project.mapping.so'), hasData: !!panelsData.data.so },
+                                  { id: 'me', label: t('project.mapping.me'), hasData: !!panelsData.data.me },
+                                  { id: 'ca', label: t('project.mapping.ca'), hasData: !!panelsData.data.ca },
+                                  { id: 'te', label: t('project.mapping.te'), hasData: !!panelsData.data.te },
+                                  { id: 'co', label: t('project.mapping.co'), hasData: !!panelsData.data.co },
+                                ]
                               ]
 
                               const getTrafficSourcesRowMapper = (activeTab: string) => {
