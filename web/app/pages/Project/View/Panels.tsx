@@ -1646,7 +1646,7 @@ const Panel = ({
         <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
       ) : (
         <>
-          <div className='mb-2 flex items-center justify-between px-1 py-1'>
+          <div className='mb-1 flex items-center justify-between px-1 py-1'>
             <span className='text-sm font-medium text-gray-600 dark:text-gray-400'>
               {tnMapping[activeTabId as keyof typeof tnMapping]}
             </span>
