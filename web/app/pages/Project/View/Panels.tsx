@@ -1,7 +1,6 @@
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
 import { ChevronRightIcon } from '@heroicons/react/24/outline'
 import { ArrowLongRightIcon, ArrowLongLeftIcon } from '@heroicons/react/24/solid'
-import { pie } from 'billboard.js'
 import cx from 'clsx'
 import InnerHTML from 'dangerously-set-html-content'
 import _ceil from 'lodash/ceil'
@@ -22,8 +21,7 @@ import _slice from 'lodash/slice'
 import _sortBy from 'lodash/sortBy'
 import _sum from 'lodash/sum'
 import _toPairs from 'lodash/toPairs'
-import _values from 'lodash/values'
-import { AlignJustifyIcon, ChartPieIcon, MaximizeIcon, FilterIcon, PuzzleIcon, ScanIcon } from 'lucide-react'
+import { AlignJustifyIcon, MaximizeIcon, FilterIcon, PuzzleIcon, ScanIcon } from 'lucide-react'
 import React, { memo, useState, useEffect, useMemo, Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, LinkProps, useNavigate } from 'react-router'
@@ -31,7 +29,6 @@ import { Link, LinkProps, useNavigate } from 'react-router'
 import { PROJECT_TABS } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
 import Button from '~/ui/Button'
-import Chart from '~/ui/Chart'
 import Sort from '~/ui/icons/Sort'
 import Spin from '~/ui/icons/Spin'
 import Modal from '~/ui/Modal'
@@ -134,7 +131,6 @@ const PanelContainer = ({
         {name}
       </h3>
       <div className='flex items-center gap-1 overflow-x-auto'>
-        {/* Custom panel tabs */}
         {tabs && onTabChange ? (
           <>
             {tabs.map((tab) => (
@@ -143,7 +139,6 @@ const PanelContainer = ({
                 type='button'
                 onClick={() => {
                   onTabChange(tab.id)
-                  // Reset to list view when switching tabs
                   setActiveFragment(0)
                 }}
                 disabled={tab.hasData === false}
@@ -161,7 +156,6 @@ const PanelContainer = ({
             ))}
           </>
         ) : (
-          /* Existing icon buttons for panels without custom tabs */
           <>
             {checkIfBarsNeeded(type) || checkCustomTabs(type, customTabs) ? (
               <button
@@ -174,24 +168,6 @@ const PanelContainer = ({
                   className={cx(iconClassName, {
                     'text-slate-900 dark:text-gray-50': activeFragment === 0,
                     'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 1,
-                  })}
-                  strokeWidth={1.5}
-                />
-              </button>
-            ) : null}
-
-            {/* if this tab using Circle showing stats panel */}
-            {type === 'ce' || type === 'os' || type === 'br' || type === 'dv' ? (
-              <button
-                type='button'
-                onClick={() => setActiveFragment(1)}
-                aria-label='Switch to pie chart view'
-                className='ml-1 rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
-              >
-                <ChartPieIcon
-                  className={cx(iconClassName, {
-                    'text-slate-900 dark:text-gray-50': activeFragment === 1,
-                    'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 0,
                   })}
                   strokeWidth={1.5}
                 />
@@ -258,48 +234,6 @@ const PanelContainer = ({
     </div>
   </div>
 )
-
-// Options for circle chart showing the stats of data
-const getPieOptions = (customs: any, uniques: number, t: any) => {
-  const tQuantity = t('project.quantity')
-  const tConversion = t('project.conversion')
-  const tRatio = t('project.ratio')
-  const quantity = _values(customs)
-  const conversion = _map(quantity, (el) => _round((el / uniques) * 100, 2))
-
-  return {
-    tooltip: {
-      contents: {
-        text: {
-          QUANTITY: _values(customs),
-          CONVERSION: conversion,
-        },
-        template: `
-          <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-700 rounded-md shadow-md px-3 py-1'>
-            {{
-              <li class='flex'>
-                <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:{=COLOR}></div>
-                <span>{=NAME}</span>
-              </li>
-              <hr class='border-gray-200 dark:border-slate-600' />
-              <li class='flex justify-between'>
-                <span>${tQuantity}</span>
-                <span class='pl-4'>{=QUANTITY}</span>
-              </li>
-              <li class='flex justify-between'>
-                <span>${tConversion}</span>
-                <span class='pl-4'>{=CONVERSION}%</span>
-              </li>
-              <li class='flex justify-between'>
-                <span>${tRatio}</span>
-                <span class='pl-4'>{=VALUE}</span>
-              </li>
-            }}
-          </ul>`,
-      },
-    },
-  }
-}
 
 export type CustomTab = {
   extensionID: string
@@ -557,7 +491,6 @@ const CustomEvents = ({
     [keys, currentIndex],
   )
   const uniques = _sum(chartData.uniques)
-  const [chartOptions, setChartOptions] = useState<any>({})
   const [activeFragment, setActiveFragment] = useState(0)
   const totalPages = useMemo(() => _ceil(_size(keys) / ENTRIES_PER_CUSTOM_EVENTS_PANEL), [keys])
   const canGoPrev = () => page > 0
@@ -691,19 +624,6 @@ const CustomEvents = ({
     })
   }
 
-  useEffect(() => {
-    if (!_isEmpty(chartData)) {
-      const options = getPieOptions(customsEventsData, uniques, t)
-      setChartOptions({
-        data: {
-          columns: _map(keys, (ev) => [ev, customsEventsData[ev]]),
-          type: pie(),
-        },
-        ...options,
-      })
-    }
-  }, [chartData, customsEventsData, t]) // eslint-disable-line react-hooks/exhaustive-deps
-
   const CustomEventsTable = () => (
     <div className='overflow-y-auto'>
       <table className='w-full border-separate border-spacing-y-1'>
@@ -813,33 +733,6 @@ const CustomEvents = ({
         onExpandClick={() => setDetailsOpened(true)}
       >
         <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
-      </PanelContainer>
-    )
-  }
-
-  // for showing chart circle of stats a data
-  if (activeFragment === 1 && !_isEmpty(chartData)) {
-    return (
-      <PanelContainer
-        // @ts-expect-error - onSelect not typed
-        name={<CustomEventsDropdown onSelect={setActiveTab} title={t('project.customEv')} data={dataKeys} />}
-        type='ce'
-        setActiveFragment={setActiveFragment}
-        activeFragment={activeFragment}
-        onExpandClick={() => setDetailsOpened(true)}
-      >
-        {_isEmpty(chartData) ? (
-          <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
-        ) : (
-          <Chart options={chartOptions} current='panels-ce' />
-        )}
-        <Modal
-          onClose={onModalClose}
-          isOpened={detailsOpened}
-          title={t('project.customEv')}
-          message={<CustomEventsTable />}
-          size='large'
-        />
       </PanelContainer>
     )
   }
@@ -1672,66 +1565,6 @@ const Panel = ({
       </table>
     </div>
   )
-
-  // Showing chart of stats a data
-  if ((id === 'os' || id === 'br' || id === 'dv') && activeFragment === 1 && !_isEmpty(data)) {
-    const tQuantity = t('project.quantity')
-    const tRatio = t('project.ratio')
-    const columns = _map(data, (el) => [el.name, el.count])
-    const values = _map(data, (el) => valueMapper(el.count))
-
-    const options = {
-      data: {
-        columns,
-        type: pie(),
-      },
-      tooltip: {
-        contents: {
-          text: {
-            QUANTITY: values,
-          },
-          template: `
-            <ul class='bg-gray-100 dark:text-gray-50 dark:bg-slate-700 rounded-md shadow-md px-3 py-1'>
-              {{
-                <li class='flex'>
-                  <div class='w-3 h-3 rounded-xs mt-1.5 mr-2' style=background-color:{=COLOR}></div>
-                  <span>{=NAME}</span>
-                </li>
-                <hr class='border-gray-200 dark:border-slate-600' />
-                <li class='flex justify-between'>
-                  <span>${tQuantity}</span>
-                  <span class='pl-4'>{=QUANTITY}</span>
-                </li>
-                <li class='flex justify-between'>
-                  <span>${tRatio}</span>
-                  <span class='pl-4'>{=VALUE}</span>
-                </li>
-              }}
-            </ul>`,
-        },
-      },
-    }
-
-    return (
-      <PanelContainer
-        name={name}
-        icon={icon}
-        type={id}
-        setActiveFragment={_setActiveFragment}
-        activeFragment={activeFragment}
-        customTabs={customTabs}
-        tabs={tabs}
-        onTabChange={onTabChange}
-        activeTabId={activeTabId}
-      >
-        {_isEmpty(data) ? (
-          <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
-        ) : (
-          <Chart options={options} current={`Panels-${id}`} />
-        )}
-      </PanelContainer>
-    )
-  }
 
   // Showing custom tabs (Extensions Marketplace)
   // todo: check activeFragment for being equal to customTabs -> extensionID + panelID
