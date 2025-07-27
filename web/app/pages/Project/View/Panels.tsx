@@ -122,7 +122,7 @@ const PanelContainer = ({
         {icon ? <span className='mr-1'>{icon}</span> : null}
         {name}
       </h3>
-      <div className='flex items-center gap-1 overflow-x-auto'>
+      <div className='scrollbar-thin flex items-center gap-1 overflow-x-auto'>
         {tabs && onTabChange ? (
           <>
             {tabs.map((tab) => (
