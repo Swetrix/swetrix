@@ -7,9 +7,7 @@ import _ceil from 'lodash/ceil'
 import _find from 'lodash/find'
 import _floor from 'lodash/floor'
 import _fromPairs from 'lodash/fromPairs'
-import _includes from 'lodash/includes'
 import _isEmpty from 'lodash/isEmpty'
-import _isString from 'lodash/isString'
 import _keys from 'lodash/keys'
 import _map from 'lodash/map'
 import _orderBy from 'lodash/orderBy'
@@ -21,7 +19,7 @@ import _slice from 'lodash/slice'
 import _sortBy from 'lodash/sortBy'
 import _sum from 'lodash/sum'
 import _toPairs from 'lodash/toPairs'
-import { AlignJustifyIcon, MaximizeIcon, FilterIcon, PuzzleIcon, ScanIcon } from 'lucide-react'
+import { MaximizeIcon, FilterIcon, PuzzleIcon, ScanIcon } from 'lucide-react'
 import React, { memo, useState, useEffect, useMemo, Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, LinkProps, useNavigate } from 'react-router'
@@ -42,17 +40,11 @@ import { iconClassName } from './ViewProject.helpers'
 const ENTRIES_PER_PANEL = 8
 const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 8
 
-const PANELS_WITH_BARS = ['cc', 'rg', 'ct', 'ce', 'os', 'br', 'dv', 'pg']
-
 // function that checks if there are custom tabs for a specific type
 const checkCustomTabs = (panelID: string, customTabs: CustomTab[]) => {
   if (_isEmpty(customTabs)) return false
 
   return Boolean(_find(customTabs, (el) => el.panelID === panelID))
-}
-
-const checkIfBarsNeeded = (panelID: string) => {
-  return _includes(PANELS_WITH_BARS, panelID)
 }
 
 const removeDuplicates = (arr: any[], keys: string[]) => {
@@ -157,23 +149,6 @@ const PanelContainer = ({
           </>
         ) : (
           <>
-            {checkIfBarsNeeded(type) || checkCustomTabs(type, customTabs) ? (
-              <button
-                type='button'
-                onClick={() => setActiveFragment(0)}
-                aria-label='Switch to bar view'
-                className='rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
-              >
-                <AlignJustifyIcon
-                  className={cx(iconClassName, {
-                    'text-slate-900 dark:text-gray-50': activeFragment === 0,
-                    'text-slate-400 dark:text-slate-500': _isString(activeFragment) || activeFragment === 1,
-                  })}
-                  strokeWidth={1.5}
-                />
-              </button>
-            ) : null}
-
             {/* if it is a 'Custom events' tab  */}
             {type === 'ce' || type === 'props' ? (
               <>
