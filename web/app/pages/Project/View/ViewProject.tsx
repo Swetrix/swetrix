@@ -3700,7 +3700,7 @@ const ViewProject = () => {
                         <LoadingBar />
                       </div>
                     ) : null}
-                    <div className='mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2'>
+                    <div className='mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2'>
                       {!_isEmpty(panelsData.types)
                         ? _map(TRAFFIC_PANELS_ORDER, (type: string) => {
                             const customTabs = _filter(customPanelTabs, (tab) => tab.panelID === type)
@@ -3951,7 +3951,7 @@ const ViewProject = () => {
                                   { id: 'ca', label: t('project.mapping.ca'), hasData: !!panelsData.data.ca },
                                   { id: 'te', label: t('project.mapping.te'), hasData: !!panelsData.data.te },
                                   { id: 'co', label: t('project.mapping.co'), hasData: !!panelsData.data.co },
-                                ]
+                                ],
                               ]
 
                               const getTrafficSourcesRowMapper = (activeTab: string) => {
