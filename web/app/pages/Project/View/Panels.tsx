@@ -1051,8 +1051,6 @@ const Panel = ({
     </div>
   )
 
-  console.log('versionData:', versionData)
-
   return (
     <PanelContainer name={name} icon={icon} type={id} tabs={tabs} onTabChange={onTabChange} activeTabId={activeTabId}>
       {customRenderer ? (
@@ -1081,9 +1079,6 @@ const Panel = ({
               const versions = versionData?.[entryName] || []
 
               const link = getFilterLink(id, entryName)
-
-              console.log('entryName:', entryName)
-              console.log('hasVersionsForItem:', hasVersionsForItem)
 
               return (
                 <div key={`${id}-${entryName}-${Object.values(rest).join('-')}`} className='space-y-0.5'>
