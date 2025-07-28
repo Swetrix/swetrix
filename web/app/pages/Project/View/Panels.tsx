@@ -124,7 +124,7 @@ const PanelContainer = ({
       className={cx(
         'h-[26rem] overflow-hidden rounded-lg border border-gray-300 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-800/25',
         {
-          'col-span-2': type === 'ce',
+          'col-span-2': ['ce', 'props'].includes(type),
         },
       )}
     >
