@@ -595,18 +595,17 @@ const ViewProject = () => {
     setFunnelActionLoading(false)
   }
 
-  const [locationActiveTab, setLocationActiveTab] = useState<'cc' | 'rg' | 'ct' | 'lc' | 'map'>('cc')
-  const [browserActiveTab, setBrowserActiveTab] = useState<'br' | 'brv'>('br')
-  const [pageActiveTab, setPageActiveTab] = useState<'pg' | 'host' | 'userFlow'>('pg')
-  const [deviceActiveTab, setDeviceActiveTab] = useState<'br' | 'os' | 'dv'>('br')
-  const [errorsOsActiveTab, setErrorsOsActiveTab] = useState<'os' | 'osv'>('os')
-  const [trafficSourcesActiveTab, setTrafficSourcesActiveTab] = useState<'ref' | 'so' | 'me' | 'ca' | 'te' | 'co'>(
-    'ref',
-  )
-
   const [panelsActiveTabs, setPanelsActiveTabs] = useState<{
+    location: 'cc' | 'rg' | 'ct' | 'lc' | 'map'
+    page: 'pg' | 'host' | 'userFlow'
+    device: 'br' | 'os' | 'dv'
+    source: 'ref' | 'so' | 'me' | 'ca' | 'te' | 'co'
     metadata: 'ce' | 'props'
   }>({
+    location: 'cc',
+    page: 'pg',
+    device: 'br',
+    source: 'ref',
     metadata: 'ce',
   })
 
@@ -3806,7 +3805,7 @@ const ViewProject = () => {
                               const rowMapper = (entry: CountryEntry) => {
                                 const { name: entryName, cc } = entry
 
-                                if (locationActiveTab === 'lc') {
+                                if (panelsActiveTabs.location === 'lc') {
                                   const entryNameArray = entryName.split('-')
                                   const displayName = getLocaleDisplayName(entryName, language)
 
@@ -3828,18 +3827,23 @@ const ViewProject = () => {
 
                               return (
                                 <Panel
-                                  key={locationActiveTab}
+                                  key={panelsActiveTabs.location}
                                   icon={panelIconMapping.cc}
-                                  id={locationActiveTab}
+                                  id={panelsActiveTabs.location}
                                   getFilterLink={getFilterLink}
                                   name={t('project.location')}
                                   tabs={locationTabs}
-                                  onTabChange={(tab) => setLocationActiveTab(tab as 'cc' | 'rg' | 'ct' | 'lc' | 'map')}
-                                  activeTabId={locationActiveTab}
-                                  data={panelsData.data[locationActiveTab]}
+                                  onTabChange={(tab) =>
+                                    setPanelsActiveTabs({
+                                      ...panelsActiveTabs,
+                                      location: tab as 'cc' | 'rg' | 'ct' | 'lc' | 'map',
+                                    })
+                                  }
+                                  activeTabId={panelsActiveTabs.location}
+                                  data={panelsData.data[panelsActiveTabs.location]}
                                   rowMapper={rowMapper}
                                   customRenderer={
-                                    locationActiveTab === 'map'
+                                    panelsActiveTabs.location === 'map'
                                       ? () => {
                                           const countryData = panelsData.data?.cc || []
                                           const total = countryData.reduce((acc, curr) => acc + curr.count, 0)
@@ -3955,26 +3959,32 @@ const ViewProject = () => {
 
                               return (
                                 <Panel
-                                  key={deviceActiveTab}
+                                  key={panelsActiveTabs.device}
                                   icon={panelIconMapping.os}
-                                  id={deviceActiveTab}
+                                  id={panelsActiveTabs.device}
                                   getFilterLink={getFilterLink}
                                   name={t('project.devices')}
                                   tabs={deviceTabs}
-                                  onTabChange={(tab) => setDeviceActiveTab(tab as 'br' | 'os' | 'dv')}
-                                  activeTabId={deviceActiveTab}
-                                  data={panelsData.data[deviceActiveTab]}
-                                  rowMapper={getDeviceRowMapper(deviceActiveTab)}
-                                  capitalize={deviceActiveTab === 'dv'}
+                                  onTabChange={(tab) =>
+                                    setPanelsActiveTabs({ ...panelsActiveTabs, device: tab as 'br' | 'os' | 'dv' })
+                                  }
+                                  activeTabId={panelsActiveTabs.device}
+                                  data={panelsData.data[panelsActiveTabs.device]}
+                                  rowMapper={getDeviceRowMapper(panelsActiveTabs.device)}
+                                  capitalize={panelsActiveTabs.device === 'dv'}
                                   versionData={
-                                    deviceActiveTab === 'br'
+                                    panelsActiveTabs.device === 'br'
                                       ? createVersionDataMapping.browserVersions
-                                      : deviceActiveTab === 'os'
+                                      : panelsActiveTabs.device === 'os'
                                         ? createVersionDataMapping.osVersions
                                         : undefined
                                   }
                                   getVersionFilterLink={(parent, version) =>
-                                    getVersionFilterLink(parent, version, deviceActiveTab === 'br' ? 'br' : 'os')
+                                    getVersionFilterLink(
+                                      parent,
+                                      version,
+                                      panelsActiveTabs.device === 'br' ? 'br' : 'os',
+                                    )
                                   }
                                 />
                               )
@@ -3993,14 +4003,16 @@ const ViewProject = () => {
 
                               return (
                                 <Panel
-                                  key={pageActiveTab}
+                                  key={panelsActiveTabs.page}
                                   icon={panelIconMapping.pg}
-                                  id={pageActiveTab}
+                                  id={panelsActiveTabs.page}
                                   getFilterLink={getFilterLink}
                                   rowMapper={({ name: entryName }) => {
                                     if (!entryName) {
                                       return _toUpper(
-                                        pageActiveTab === 'pg' ? t('project.redactedPage') : t('project.unknownHost'),
+                                        panelsActiveTabs.page === 'pg'
+                                          ? t('project.redactedPage')
+                                          : t('project.unknownHost'),
                                       )
                                     }
 
@@ -4016,11 +4028,16 @@ const ViewProject = () => {
                                   }}
                                   name={t('project.pages')}
                                   tabs={pageTabs}
-                                  onTabChange={(tab) => setPageActiveTab(tab as 'pg' | 'host' | 'userFlow')}
-                                  activeTabId={pageActiveTab}
-                                  data={panelsData.data[pageActiveTab]}
+                                  onTabChange={(tab) =>
+                                    setPanelsActiveTabs({
+                                      ...panelsActiveTabs,
+                                      page: tab as 'pg' | 'host' | 'userFlow',
+                                    })
+                                  }
+                                  activeTabId={panelsActiveTabs.page}
+                                  data={panelsData.data[panelsActiveTabs.page]}
                                   customRenderer={
-                                    pageActiveTab === 'userFlow'
+                                    panelsActiveTabs.page === 'userFlow'
                                       ? () => <UserFlow isReversed={false} setReversed={() => {}} />
                                       : undefined
                                   }
@@ -4050,18 +4067,21 @@ const ViewProject = () => {
 
                               return (
                                 <Panel
-                                  key={trafficSourcesActiveTab}
+                                  key={panelsActiveTabs.source}
                                   icon={panelIconMapping.ref}
-                                  id={trafficSourcesActiveTab}
+                                  id={panelsActiveTabs.source}
                                   getFilterLink={getFilterLink}
                                   name={t('project.trafficSources')}
                                   tabs={trafficSourcesTabs}
                                   onTabChange={(tab) =>
-                                    setTrafficSourcesActiveTab(tab as 'ref' | 'so' | 'me' | 'ca' | 'te' | 'co')
+                                    setPanelsActiveTabs({
+                                      ...panelsActiveTabs,
+                                      source: tab as 'ref' | 'so' | 'me' | 'ca' | 'te' | 'co',
+                                    })
                                   }
-                                  activeTabId={trafficSourcesActiveTab}
-                                  data={panelsData.data[trafficSourcesActiveTab]}
-                                  rowMapper={getTrafficSourcesRowMapper(trafficSourcesActiveTab)}
+                                  activeTabId={panelsActiveTabs.source}
+                                  data={panelsData.data[panelsActiveTabs.source]}
+                                  rowMapper={getTrafficSourcesRowMapper(panelsActiveTabs.source)}
                                 />
                               )
                             }
@@ -4120,19 +4140,6 @@ const ViewProject = () => {
 
                               const rowMapper = (entry: CountryEntry) => {
                                 const { name: entryName, cc } = entry
-
-                                if (locationActiveTab === 'lc') {
-                                  const entryNameArray = entryName.split('-')
-                                  const displayName = getLocaleDisplayName(entryName, language)
-
-                                  return (
-                                    <CCRow
-                                      cc={entryNameArray[entryNameArray.length - 1]}
-                                      name={displayName}
-                                      language={language}
-                                    />
-                                  )
-                                }
 
                                 if (cc) {
                                   return <CCRow cc={cc} name={entryName} language={language} />
