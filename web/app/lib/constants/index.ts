@@ -249,7 +249,7 @@ export const PERIOD_PAIRS_COMPARE = {
 // the order of panels in the project view
 export const TRAFFIC_PANELS_ORDER = ['location', 'pg', 'devices', 'traffic-sources']
 export const PERFORMANCE_PANELS_ORDER = ['location', 'pg', 'devices']
-export const ERROR_PANELS_ORDER = ['cc', 'pg', 'br', 'os', 'lc', 'dv']
+export const ERROR_PANELS_ORDER = ['location', 'pg', 'devices']
 export const FILTERS_PANELS_ORDER = ['cc', 'pg', 'br', 'os', 'ref', 'lc', 'dv']
 export const ERRORS_FILTERS_PANELS_ORDER = ['cc', 'pg', 'br', 'os', 'lc', 'dv']
 
