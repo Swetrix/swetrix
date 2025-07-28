@@ -798,76 +798,65 @@ const CustomEvents = ({
       activeFragment={activeFragment}
       onExpandClick={() => setDetailsOpened(true)}
     >
-      <table className='table-fixed'>
-        <thead>
-          <tr className='text-gray-900 dark:text-gray-50'>
-            <th
-              className='flex w-4/6 cursor-pointer items-center text-left hover:opacity-90'
-              onClick={() => onSortBy('event')}
-            >
-              {t('project.event')}
-              <Sort
-                className='ml-1'
-                sortByAscend={sort.label === 'event' ? sort.sortByAscend : null}
-                sortByDescend={sort.label === 'event' ? sort.sortByDescend : null}
-              />
-            </th>
-            <th className='w-1/6 text-right'>
-              <p className='flex cursor-pointer items-center hover:opacity-90' onClick={() => onSortBy('quantity')}>
-                {t('project.quantity')}
-                <Sort
-                  className='ml-1'
-                  sortByAscend={sort.label === 'quantity' ? sort.sortByAscend : null}
-                  sortByDescend={sort.label === 'quantity' ? sort.sortByDescend : null}
-                />
-                &nbsp;&nbsp;
-              </p>
-            </th>
-            <th className='w-1/6 text-right'>
-              <p className='flex cursor-pointer items-center hover:opacity-90' onClick={() => onSortBy('conversion')}>
-                {t('project.conversion')}
-                <Sort
-                  className='ml-1'
-                  sortByAscend={sort.label === 'conversion' ? sort.sortByAscend : null}
-                  sortByDescend={sort.label === 'conversion' ? sort.sortByDescend : null}
-                />
-              </p>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {_map(keysToDisplay, (ev) => (
-            <tr
-              key={ev}
-              className='group cursor-pointer text-gray-900 hover:bg-gray-100 dark:text-gray-50 hover:dark:bg-slate-700'
-              onClick={() => {
-                const link = getFilterLink('ev', ev)
-                navigate(link)
-              }}
-            >
-              <td className='flex items-center text-left'>
-                {ev}
-                <FilterIcon
-                  className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300'
-                  strokeWidth={1.5}
-                />
-                <div className='ml-2 h-4 w-4 group-hover:hidden' />
-              </td>
-              <td className='text-right'>
-                {customsEventsData[ev]}
-                &nbsp;&nbsp;
-              </td>
-              <td className='text-right'>
-                {/*
-                  Added a uniques === 0 check because uniques value may be zero and dividing by zero will cause an
-                  Infinity% value to be displayed.
-                */}
-                {uniques === 0 ? 100 : _round((customsEventsData[ev] / uniques) * 100, 2)}%
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <>
+        <div className='mb-1 flex items-center justify-between px-1 py-1'>
+          <span className='w-4/6 text-sm font-medium text-gray-600 dark:text-gray-400'>{t('project.event')}</span>
+          <span className='w-1/6 text-right text-sm font-medium text-gray-600 dark:text-gray-400'>
+            {t('project.quantity')}
+          </span>
+          <span className='w-1/6 text-right text-sm font-medium text-gray-600 dark:text-gray-400'>
+            {t('project.conversion')}
+          </span>
+        </div>
+
+        <div className='space-y-0.5'>
+          {_map(
+            _orderBy(
+              keysToDisplay.map((ev) => ({ key: ev, value: customsEventsData[ev] })),
+              'value',
+              'desc',
+            ),
+            (item) => {
+              const ev = item.key
+              const perc = uniques === 0 ? 100 : _round((customsEventsData[ev] / uniques) * 100, 2)
+              const maxValue = Math.max(...(Object.values(customsEventsData) as number[]))
+              const link = getFilterLink('ev', ev)
+
+              return (
+                <div
+                  key={`${ev}-${item.value}`}
+                  className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 hover:dark:bg-slate-800'
+                  onClick={() => {
+                    navigate(link)
+                  }}
+                >
+                  <div
+                    className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
+                    style={{
+                      width: `${(customsEventsData[ev] / maxValue) * 100}%`,
+                    }}
+                  />
+
+                  <div className='relative z-10 flex w-4/6 min-w-0 items-center'>
+                    <span className='flex items-center truncate text-sm text-gray-900 dark:text-gray-100'>{ev}</span>
+                    <FilterIcon
+                      className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300'
+                      strokeWidth={1.5}
+                    />
+                    <div className='ml-2 h-4 w-4 group-hover:hidden' />
+                  </div>
+                  <div className='relative z-10 w-1/6 text-right'>
+                    <span className='text-sm font-medium text-gray-900 dark:text-gray-50'>{customsEventsData[ev]}</span>
+                  </div>
+                  <div className='relative z-10 w-1/6 text-right'>
+                    <span className='text-sm font-medium text-gray-900 dark:text-gray-50'>{perc}%</span>
+                  </div>
+                </div>
+              )
+            },
+          )}
+        </div>
+      </>
       {/* for pagination in tabs */}
       {_size(keys) > ENTRIES_PER_CUSTOM_EVENTS_PANEL ? (
         <div className='absolute bottom-0 w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)]'>
@@ -1204,76 +1193,66 @@ const PageProperties = ({
       activeFragment={activeFragment}
       onExpandClick={() => setDetailsOpened(true)}
     >
-      <table className='table-fixed'>
-        <thead>
-          <tr className='text-gray-900 dark:text-gray-50'>
-            <th
-              className='flex w-4/6 cursor-pointer items-center text-left hover:opacity-90'
-              onClick={() => onSortBy('event')}
-            >
-              {t('project.property')}
-              <Sort
-                className='ml-1'
-                sortByAscend={sort.label === 'event' ? sort.sortByAscend : null}
-                sortByDescend={sort.label === 'event' ? sort.sortByDescend : null}
-              />
-            </th>
-            <th className='w-1/6 text-right'>
-              <p className='flex cursor-pointer items-center hover:opacity-90' onClick={() => onSortBy('quantity')}>
-                {t('project.quantity')}
-                <Sort
-                  className='ml-1'
-                  sortByAscend={sort.label === 'quantity' ? sort.sortByAscend : null}
-                  sortByDescend={sort.label === 'quantity' ? sort.sortByDescend : null}
-                />
-                &nbsp;&nbsp;
-              </p>
-            </th>
-            <th className='w-1/6 text-right'>
-              <p className='flex cursor-pointer items-center hover:opacity-90' onClick={() => onSortBy('conversion')}>
-                {t('project.conversion')}
-                <Sort
-                  className='ml-1'
-                  sortByAscend={sort.label === 'conversion' ? sort.sortByAscend : null}
-                  sortByDescend={sort.label === 'conversion' ? sort.sortByDescend : null}
-                />
-              </p>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {_map(keysToDisplay, (tag) => (
-            <tr
-              key={tag}
-              className='group cursor-pointer text-gray-900 hover:bg-gray-100 dark:text-gray-50 hover:dark:bg-slate-700'
-              onClick={() => {
-                const link = getFilterLink('tag:key', tag)
-                navigate(link)
-              }}
-            >
-              <td className='flex items-center text-left'>
-                {tag}
-                <FilterIcon
-                  className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300'
-                  strokeWidth={1.5}
-                />
-                <div className='ml-2 h-4 w-4 group-hover:hidden' />
-              </td>
-              <td className='text-right'>
-                {processedProperties[tag]}
-                &nbsp;&nbsp;
-              </td>
-              <td className='text-right'>
-                {/*
-                  Added a uniques === 0 check because uniques value may be zero and dividing by zero will cause an
-                  Infinity% value to be displayed.
-                */}
-                {uniques === 0 ? 100 : _round((processedProperties[tag] / uniques) * 100, 2)}%
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <>
+        <div className='mb-1 flex items-center justify-between px-1 py-1'>
+          <span className='w-4/6 text-sm font-medium text-gray-600 dark:text-gray-400'>{t('project.property')}</span>
+          <span className='w-1/6 text-right text-sm font-medium text-gray-600 dark:text-gray-400'>
+            {t('project.quantity')}
+          </span>
+          <span className='w-1/6 text-right text-sm font-medium text-gray-600 dark:text-gray-400'>
+            {t('project.conversion')}
+          </span>
+        </div>
+
+        <div className='space-y-0.5'>
+          {_map(
+            _orderBy(
+              keysToDisplay.map((tag) => ({ key: tag, value: processedProperties[tag] })),
+              'value',
+              'desc',
+            ),
+            (item) => {
+              const tag = item.key
+              const perc = uniques === 0 ? 100 : _round((processedProperties[tag] / uniques) * 100, 2)
+              const link = getFilterLink('tag:key', tag)
+
+              return (
+                <div
+                  key={`${tag}-${item.value}`}
+                  className='group relative flex cursor-pointer items-center rounded-sm px-1 py-1.5 hover:bg-gray-50 dark:text-gray-50 hover:dark:bg-slate-800'
+                  onClick={() => {
+                    navigate(link)
+                  }}
+                >
+                  <div
+                    className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
+                    style={{
+                      width: `${(processedProperties[tag] / Math.max(...Object.values(processedProperties))) * 100}%`,
+                    }}
+                  />
+
+                  <div className='relative z-10 flex w-4/6 min-w-0 items-center'>
+                    <span className='flex items-center truncate text-sm text-gray-900 dark:text-gray-100'>{tag}</span>
+                    <FilterIcon
+                      className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300'
+                      strokeWidth={1.5}
+                    />
+                    <div className='ml-2 h-4 w-4 group-hover:hidden' />
+                  </div>
+                  <div className='relative z-10 w-1/6 text-right'>
+                    <span className='text-sm font-medium text-gray-900 dark:text-gray-50'>
+                      {processedProperties[tag]}
+                    </span>
+                  </div>
+                  <div className='relative z-10 w-1/6 text-right'>
+                    <span className='text-sm font-medium text-gray-900 dark:text-gray-50'>{perc}%</span>
+                  </div>
+                </div>
+              )
+            },
+          )}
+        </div>
+      </>
       {/* for pagination in tabs */}
       {_size(keys) > ENTRIES_PER_CUSTOM_EVENTS_PANEL ? (
         <div className='absolute bottom-0 w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)]'>
