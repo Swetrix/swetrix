@@ -19,7 +19,7 @@ import _slice from 'lodash/slice'
 import _sortBy from 'lodash/sortBy'
 import _sum from 'lodash/sum'
 import _toPairs from 'lodash/toPairs'
-import { MaximizeIcon, FilterIcon, PuzzleIcon, ScanIcon } from 'lucide-react'
+import { FilterIcon, PuzzleIcon, ScanIcon } from 'lucide-react'
 import React, { memo, useState, useEffect, useMemo, Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, LinkProps, useNavigate } from 'react-router'
@@ -39,7 +39,7 @@ import { useViewProjectContext } from './ViewProject'
 import { iconClassName, typeNameMapping } from './ViewProject.helpers'
 
 const ENTRIES_PER_PANEL = 8
-const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 8
+const ENTRIES_PER_CUSTOM_EVENTS_PANEL = 7
 
 // function that checks if there are custom tabs for a specific type
 const checkCustomTabs = (panelID: string, customTabs: CustomTab[]) => {
@@ -82,7 +82,6 @@ interface PanelContainerProps {
   children?: React.ReactNode
   icon?: React.ReactNode
   type: string
-  onExpandClick?: () => void
   activeFragment?: number | string
   setActiveFragment?: (arg: number) => void
   customTabs?: CustomTab[]
@@ -112,7 +111,6 @@ const PanelContainer = ({
   setActiveFragment = () => {},
   customTabs = [],
   isCustomContent,
-  onExpandClick = () => {},
   tabs,
   onTabChange,
   activeTabId,
@@ -196,23 +194,6 @@ const PanelContainer = ({
             </>
           ) : (
             <>
-              {/* if it is a 'Custom events' tab  */}
-              {type === 'ce' || type === 'props' ? (
-                <>
-                  <button
-                    type='button'
-                    onClick={onExpandClick}
-                    aria-label='Expand view'
-                    className='ml-1 rounded-md p-1 hover:bg-gray-50 dark:hover:bg-slate-700'
-                  >
-                    <MaximizeIcon
-                      className={cx(iconClassName, 'text-slate-400 dark:text-slate-500')}
-                      strokeWidth={1.5}
-                    />
-                  </button>
-                </>
-              ) : null}
-
               {checkCustomTabs(type, customTabs) ? (
                 <>
                   {/* This is a temp fix to prevent multiple tabs of the same extensionID be displayed */}
@@ -521,9 +502,6 @@ const CustomEvents = ({
   )
   const uniques = _sum(chartData.uniques)
   const [activeFragment, setActiveFragment] = useState(0)
-  const totalPages = useMemo(() => _ceil(_size(keys) / ENTRIES_PER_CUSTOM_EVENTS_PANEL), [keys])
-  const canGoPrev = () => page > 0
-  const canGoNext = () => page < _floor((_size(keys) - 1) / ENTRIES_PER_CUSTOM_EVENTS_PANEL)
   const [sort, setSort] = useState<SortRows>({
     label: 'quantity',
     sortByAscend: false,
@@ -561,18 +539,6 @@ const CustomEvents = ({
     setTriggerEventWhenFiltersChange(null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, triggerEventWhenFiltersChange])
-
-  const onPrevious = () => {
-    if (canGoPrev()) {
-      setPage(page - 1)
-    }
-  }
-
-  const onNext = () => {
-    if (canGoNext()) {
-      setPage(page + 1)
-    }
-  }
 
   // is "e" is not set, then details loading is forced and all checks are skipped
   const toggleEventMetadata = (ev: string) => async (e?: React.MouseEvent<HTMLTableRowElement>) => {
@@ -699,7 +665,7 @@ const CustomEvents = ({
           </tr>
         </thead>
         <tbody>
-          {_map(keysToDisplay, (ev) => (
+          {_map(keys, (ev) => (
             <Fragment key={ev}>
               <tr
                 className={cx(
@@ -759,7 +725,6 @@ const CustomEvents = ({
         type='ce'
         setActiveFragment={setActiveFragment}
         activeFragment={activeFragment}
-        onExpandClick={() => setDetailsOpened(true)}
       >
         <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
       </PanelContainer>
@@ -779,7 +744,6 @@ const CustomEvents = ({
         activeFragment={activeFragment}
         setActiveFragment={setActiveFragment}
         customTabs={customTabs}
-        onExpandClick={() => {}}
         isCustomContent
       >
         {/* Using this instead of dangerouslySetInnerHTML to support script tags */}
@@ -796,7 +760,6 @@ const CustomEvents = ({
       type='ce'
       setActiveFragment={setActiveFragment}
       activeFragment={activeFragment}
-      onExpandClick={() => setDetailsOpened(true)}
     >
       <>
         <div className='mb-1 flex items-center justify-between px-1 py-1'>
@@ -856,54 +819,16 @@ const CustomEvents = ({
             },
           )}
         </div>
+        <Button
+          className='mx-auto mt-2 max-w-max border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
+          type='button'
+          onClick={() => setDetailsOpened(true)}
+          focus={false}
+        >
+          <ScanIcon className='mr-1.5 size-4' />
+          <span>{t('common.details')}</span>
+        </Button>
       </>
-      {/* for pagination in tabs */}
-      {_size(keys) > ENTRIES_PER_CUSTOM_EVENTS_PANEL ? (
-        <div className='absolute bottom-0 w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)]'>
-          <div className='mb-2 flex justify-between select-none'>
-            <div>
-              <span className='text-xs font-light text-gray-500 lowercase dark:text-gray-200'>
-                {_size(keys)} {t('project.results')}
-              </span>
-              <span className='text-xs font-light text-gray-500 dark:text-gray-200'>
-                . {t('project.page')} {page + 1} / {totalPages}
-              </span>
-            </div>
-            <div className='flex w-[4.5rem] justify-between'>
-              <Button
-                className={cx(
-                  'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
-                  {
-                    'cursor-not-allowed opacity-50': !canGoPrev(),
-                    'hover:bg-gray-100 hover:dark:bg-slate-700': canGoPrev(),
-                  },
-                )}
-                type='button'
-                onClick={onPrevious}
-                disabled={!canGoPrev()}
-                focus={false}
-              >
-                <ArrowLongLeftIcon className='h-5 w-5' />
-              </Button>
-              <Button
-                className={cx(
-                  'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
-                  {
-                    'cursor-not-allowed opacity-50': !canGoNext(),
-                    'hover:bg-gray-100 hover:dark:bg-slate-700': canGoNext(),
-                  },
-                )}
-                onClick={onNext}
-                disabled={!canGoNext()}
-                type='button'
-                focus={false}
-              >
-                <ArrowLongRightIcon className='h-5 w-5' />
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
       <Modal
         onClose={onModalClose}
         isOpened={detailsOpened}
@@ -940,9 +865,6 @@ const PageProperties = ({
   const uniques = _sum(chartData.uniques)
   const [activeFragment, setActiveFragment] = useState(0)
   const [triggerTagWhenFiltersChange, setTriggerTagWhenFiltersChange] = useState<string | null>(null)
-  const totalPages = useMemo(() => _ceil(_size(keys) / ENTRIES_PER_CUSTOM_EVENTS_PANEL), [keys])
-  const canGoPrev = () => page > 0
-  const canGoNext = () => page < _floor((_size(keys) - 1) / ENTRIES_PER_CUSTOM_EVENTS_PANEL)
   const [sort, setSort] = useState<SortRows>({
     label: 'quantity',
     sortByAscend: false,
@@ -970,18 +892,6 @@ const PageProperties = ({
   useEffect(() => {
     setPage(0)
   }, [chartData])
-
-  const onPrevious = () => {
-    if (canGoPrev()) {
-      setPage(page - 1)
-    }
-  }
-
-  const onNext = () => {
-    if (canGoNext()) {
-      setPage(page + 1)
-    }
-  }
 
   useEffect(() => {
     if (!triggerTagWhenFiltersChange) {
@@ -1118,7 +1028,7 @@ const PageProperties = ({
           </tr>
         </thead>
         <tbody>
-          {_map(keysToDisplay, (tag) => (
+          {_map(keys, (tag) => (
             <Fragment key={tag}>
               <tr
                 className={cx(
@@ -1177,7 +1087,6 @@ const PageProperties = ({
         type='props'
         setActiveFragment={setActiveFragment}
         activeFragment={activeFragment}
-        onExpandClick={() => setDetailsOpened(true)}
       >
         <p className='mt-1 text-base text-gray-700 dark:text-gray-300'>{t('project.noParamData')}</p>
       </PanelContainer>
@@ -1191,7 +1100,6 @@ const PageProperties = ({
       type='props'
       setActiveFragment={setActiveFragment}
       activeFragment={activeFragment}
-      onExpandClick={() => setDetailsOpened(true)}
     >
       <>
         <div className='mb-1 flex items-center justify-between px-1 py-1'>
@@ -1252,54 +1160,16 @@ const PageProperties = ({
             },
           )}
         </div>
+        <Button
+          className='mx-auto mt-2 max-w-max border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
+          type='button'
+          onClick={() => setDetailsOpened(true)}
+          focus={false}
+        >
+          <ScanIcon className='mr-1.5 size-4' />
+          <span>{t('common.details')}</span>
+        </Button>
       </>
-      {/* for pagination in tabs */}
-      {_size(keys) > ENTRIES_PER_CUSTOM_EVENTS_PANEL ? (
-        <div className='absolute bottom-0 w-[calc(100%-2rem)] sm:w-[calc(100%-3rem)]'>
-          <div className='mb-2 flex justify-between select-none'>
-            <div>
-              <span className='text-xs font-light text-gray-500 lowercase dark:text-gray-200'>
-                {_size(keys)} {t('project.results')}
-              </span>
-              <span className='text-xs font-light text-gray-500 dark:text-gray-200'>
-                . {t('project.page')} {page + 1} / {totalPages}
-              </span>
-            </div>
-            <div className='flex w-[4.5rem] justify-between'>
-              <Button
-                className={cx(
-                  'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
-                  {
-                    'cursor-not-allowed opacity-50': !canGoPrev(),
-                    'hover:bg-gray-100 hover:dark:bg-slate-700': canGoPrev(),
-                  },
-                )}
-                type='button'
-                onClick={onPrevious}
-                disabled={!canGoPrev()}
-                focus={false}
-              >
-                <ArrowLongLeftIcon className='h-5 w-5' />
-              </Button>
-              <Button
-                className={cx(
-                  'border border-gray-300 px-1.5 py-0.5 font-light text-gray-500 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200',
-                  {
-                    'cursor-not-allowed opacity-50': !canGoNext(),
-                    'hover:bg-gray-100 hover:dark:bg-slate-700': canGoNext(),
-                  },
-                )}
-                onClick={onNext}
-                disabled={!canGoNext()}
-                type='button'
-                focus={false}
-              >
-                <ArrowLongRightIcon className='h-5 w-5' />
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
       <Modal
         onClose={onModalClose}
         isOpened={detailsOpened}
