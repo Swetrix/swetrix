@@ -1477,7 +1477,6 @@ const SHORTCUTS_GENERAL_LISTENERS = isSelfhosted
 const SHORTCUTS_TIMEBUCKETS_LISTENERS = 'h, t, y, d, w, m, q, l, z, a, u, c'
 
 export {
-  iconClassName,
   getFormatDate,
   panelIconMapping,
   typeNameMapping,
