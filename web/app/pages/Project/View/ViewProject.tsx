@@ -644,36 +644,6 @@ const ViewProject = () => {
     }))
   }
 
-  // Create version data mapping for browser and OS panels
-  const createVersionDataMapping = useMemo(() => {
-    const browserVersions: { [key: string]: Entry[] } = {}
-    const osVersions: { [key: string]: Entry[] } = {}
-
-    // Process browser version data
-    if (panelsData.data?.brv) {
-      panelsData.data.brv.forEach((entry: any) => {
-        const { br, name, count } = entry
-        if (!browserVersions[br]) {
-          browserVersions[br] = []
-        }
-        browserVersions[br].push({ name, count })
-      })
-    }
-
-    // Process OS version data
-    if (panelsData.data?.osv) {
-      panelsData.data.osv.forEach((entry: any) => {
-        const { os, name, count } = entry
-        if (!osVersions[os]) {
-          osVersions[os] = []
-        }
-        osVersions[os].push({ name, count })
-      })
-    }
-
-    return { browserVersions, osVersions }
-  }, [panelsData.data?.brv, panelsData.data?.osv])
-
   const getVersionFilterLink = (parent: string, version: string, panelType: 'br' | 'os') => {
     const filterParams = new URLSearchParams(searchParams.toString())
 
@@ -731,6 +701,54 @@ const ViewProject = () => {
 
     return findActivePeriod?.countDays || 0
   }, [isActiveCompare, period, dateRange, periodPairs])
+
+  const createVersionDataMapping = useMemo(() => {
+    const browserDataSource =
+      activeTab === PROJECT_TABS.errors
+        ? activeError?.params?.brv
+        : activeTab === PROJECT_TABS.performance
+          ? panelsDataPerf.data?.brv
+          : panelsData.data?.brv
+    const osDataSource =
+      activeTab === PROJECT_TABS.errors
+        ? activeError?.params?.osv
+        : activeTab === PROJECT_TABS.performance
+          ? panelsDataPerf.data?.osv
+          : panelsData.data?.osv
+
+    const browserVersions: { [key: string]: Entry[] } = {}
+    const osVersions: { [key: string]: Entry[] } = {}
+
+    if (browserDataSource) {
+      browserDataSource.forEach((entry: any) => {
+        const { br, name, count } = entry
+        if (!browserVersions[br]) {
+          browserVersions[br] = []
+        }
+        browserVersions[br].push({ name, count })
+      })
+    }
+
+    if (osDataSource) {
+      osDataSource.forEach((entry: any) => {
+        const { os, name, count } = entry
+        if (!osVersions[os]) {
+          osVersions[os] = []
+        }
+        osVersions[os].push({ name, count })
+      })
+    }
+
+    return { browserVersions, osVersions }
+  }, [
+    panelsData.data?.brv,
+    panelsData.data?.osv,
+    activeTab,
+    activeError?.params?.brv,
+    activeError?.params?.osv,
+    panelsDataPerf.data?.brv,
+    panelsDataPerf.data?.osv,
+  ])
 
   useEffect(() => {
     if (!project) {
