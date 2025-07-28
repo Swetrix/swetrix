@@ -46,6 +46,7 @@ const InteractiveMap = ({ data, onClickCountry, total }: InteractiveMapProps) =>
   )
 
   const isTrafficTab = activeTab === PROJECT_TABS.traffic
+  const isErrorsTab = activeTab === PROJECT_TABS.errors
 
   const onMouseMove = (e: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
     const rect = e.currentTarget.getBoundingClientRect()
@@ -67,7 +68,7 @@ const InteractiveMap = ({ data, onClickCountry, total }: InteractiveMapProps) =>
                 key={value}
                 id={value}
                 className={cx(
-                  isTrafficTab
+                  isTrafficTab || isErrorsTab
                     ? {
                         'hover:opacity-90': perc > 0,
                         'fill-[#cfd1d4] dark:fill-[#465d7e46]': perc === 0,
@@ -122,14 +123,15 @@ const InteractiveMap = ({ data, onClickCountry, total }: InteractiveMapProps) =>
           >
             <strong>{dataHover.countries}</strong>
             <br />
-            {isTrafficTab ? t('project.unique') : t('dashboard.pageLoad')}: &nbsp;
+            {isTrafficTab ? t('project.unique') : isErrorsTab ? t('project.occurrences') : t('dashboard.pageLoad')}:
+            &nbsp;
             <strong
               className={cx({
                 'dark:text-indigo-400': isTrafficTab || dataHover.data < 5,
                 'dark:text-red-400': !isTrafficTab && dataHover.data >= 5,
               })}
             >
-              {isTrafficTab
+              {isTrafficTab || isErrorsTab
                 ? nFormatter(dataHover.data, 1)
                 : getStringFromTime(getTimeFromSeconds(dataHover.data), true)}
             </strong>
