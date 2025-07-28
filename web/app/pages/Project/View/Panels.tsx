@@ -45,8 +45,6 @@ interface PanelContainerProps {
   children?: React.ReactNode
   icon?: React.ReactNode
   type: string
-  activeFragment?: number | string
-  setActiveFragment?: (arg: number) => void
   tabs?: Array<
     | {
         id: string
@@ -63,17 +61,7 @@ interface PanelContainerProps {
   activeTabId?: string
 }
 
-const PanelContainer = ({
-  name,
-  children,
-  icon,
-  type,
-  activeFragment = 0,
-  setActiveFragment = () => {},
-  tabs,
-  onTabChange,
-  activeTabId,
-}: PanelContainerProps) => {
+const PanelContainer = ({ name, children, icon, type, tabs, onTabChange, activeTabId }: PanelContainerProps) => {
   const { customPanelTabs } = useViewProjectContext()
   const { t } = useTranslation('common')
 
@@ -111,8 +99,12 @@ const PanelContainer = ({
       _find(panelExtensions, (tab) => tab.extensionID === activeTabId) || ({} as CustomTab)
 
     if (extensionID) {
+      // if (!tabContent) {
+      //   return null
+      // }
+
       // Using this instead of dangerouslySetInnerHTML to support script tags
-      return <InnerHTML className='absolute overflow-auto' html={tabContent || ''} />
+      return <InnerHTML className='absolute overflow-auto' html={tabContent} />
     }
 
     return children
@@ -150,15 +142,15 @@ const PanelContainer = ({
                       keyExtractor={(item) => item.id}
                       onSelect={(item) => {
                         onTabChange(item.id)
-                        setActiveFragment(0)
                       }}
                       buttonClassName={cx(
                         'relative border-b-2 md:px-0 py-1 text-sm font-bold whitespace-nowrap transition-all duration-200',
                         {
-                          'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50':
-                            dropdownTabs.some((t) => t.id === activeTabId) && activeFragment === 0,
+                          'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50': dropdownTabs.some(
+                            (t) => t.id === activeTabId,
+                          ),
                           'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
-                            !dropdownTabs.some((t) => t.id === activeTabId) || activeFragment !== 0,
+                            !dropdownTabs.some((t) => t.id === activeTabId),
                         },
                       )}
                       headless
@@ -174,16 +166,14 @@ const PanelContainer = ({
                     type='button'
                     onClick={() => {
                       onTabChange(tab.id)
-                      setActiveFragment(0)
                     }}
                     disabled={tab.hasData === false}
                     className={cx(
                       'relative border-b-2 py-1 text-sm font-bold whitespace-nowrap transition-all duration-200',
                       {
-                        'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50':
-                          activeTabId === tab.id && activeFragment === 0,
+                        'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50': activeTabId === tab.id,
                         'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
-                          (activeTabId !== tab.id || activeFragment !== 0) && tab.hasData !== false,
+                          activeTabId !== tab.id && tab.hasData !== false,
                         'cursor-not-allowed border-transparent text-gray-300 dark:text-gray-600': tab.hasData === false,
                       },
                     )}
@@ -803,7 +793,6 @@ interface PanelProps {
   icon: any
   id: string
   hideFilters?: boolean
-  onFragmentChange?: (arg: number) => void
   getFilterLink?: (column: string, value: string) => LinkProps['to']
   tabs?: Array<
     | {
@@ -834,7 +823,6 @@ const Panel = ({
   icon,
   id,
   hideFilters,
-  onFragmentChange = () => {},
   getFilterLink = () => '',
   tabs,
   onTabChange,
@@ -846,7 +834,6 @@ const Panel = ({
   const { dataLoading, activeTab } = useViewProjectContext()
   const { t } = useTranslation('common')
   const total = useMemo(() => _reduce(data, (prev, curr) => prev + curr.count, 0), [data])
-  const [activeFragment, setActiveFragment] = useState(0)
   const [detailsOpened, setDetailsOpened] = useState(false)
   const [sortedData, setSortedData] = useState(data)
   const [sort, setSort] = useState<SortRows>({
@@ -888,14 +875,6 @@ const Panel = ({
       sortByDescend: false,
     })
   }, [data])
-
-  const _setActiveFragment = (index: number) => {
-    setActiveFragment(index)
-
-    if (onFragmentChange) {
-      onFragmentChange(index)
-    }
-  }
 
   const onSortBy = (label: string) => {
     if (sort.sortByAscend) {
@@ -1028,16 +1007,7 @@ const Panel = ({
   )
 
   return (
-    <PanelContainer
-      name={name}
-      icon={icon}
-      type={id}
-      activeFragment={activeFragment}
-      setActiveFragment={_setActiveFragment}
-      tabs={tabs}
-      onTabChange={onTabChange}
-      activeTabId={activeTabId}
-    >
+    <PanelContainer name={name} icon={icon} type={id} tabs={tabs} onTabChange={onTabChange} activeTabId={activeTabId}>
       {customRenderer ? (
         customRenderer()
       ) : _isEmpty(data) ? (
