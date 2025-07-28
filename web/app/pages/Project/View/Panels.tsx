@@ -854,6 +854,7 @@ interface PanelProps {
   customRenderer?: () => React.ReactNode
   versionData?: { [key: string]: Entry[] }
   getVersionFilterLink?: (parent: string, version: string) => LinkProps['to']
+  valuesHeaderName?: string
 }
 
 const Panel = ({
@@ -873,6 +874,7 @@ const Panel = ({
   customRenderer,
   versionData,
   getVersionFilterLink = () => '',
+  valuesHeaderName,
 }: PanelProps) => {
   const { dataLoading, activeTab } = useViewProjectContext()
   const { t } = useTranslation('common')
@@ -977,7 +979,7 @@ const Panel = ({
                 className='flex cursor-pointer items-center justify-end hover:opacity-90'
                 onClick={() => onSortBy('quantity')}
               >
-                {t('project.visitors')}
+                {valuesHeaderName || t('project.visitors')}
                 <Sort
                   className='ml-1'
                   sortByAscend={sort.label === 'quantity' ? sort.sortByAscend : null}
@@ -1061,7 +1063,9 @@ const Panel = ({
             <span className='text-sm font-medium text-gray-600 dark:text-gray-400'>
               {tnMapping[activeTabId as keyof typeof tnMapping]}
             </span>
-            <span className='text-sm font-medium text-gray-600 dark:text-gray-400'>{t('project.visitors')}</span>
+            <span className='text-sm font-medium text-gray-600 dark:text-gray-400'>
+              {valuesHeaderName || t('project.visitors')}
+            </span>
           </div>
 
           <div className='space-y-0.5'>

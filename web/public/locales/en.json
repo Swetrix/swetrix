@@ -833,6 +833,7 @@
   "project": {
     "copy": "Copy",
     "copied": "Copied!",
+    "percentage": "Percentage",
     "stackTraceXFrames": "Stack trace ({{x}} frames)",
     "metadata": "Metadata",
     "aiDetailsDesc": "The buttons above allow you to see an estimate of what kind of traffic you can expect within an hour in the next X hours.",
@@ -913,6 +914,7 @@
     "occurrences": "Occurrences",
     "visitPage": "Visit {{page}}",
     "visitors": "Visitors",
+    "time": "Time",
     "events": "Events",
     "dropoff": "Dropoff",
     "neverEnteredTheFunnel": "Never entered the funnel",
