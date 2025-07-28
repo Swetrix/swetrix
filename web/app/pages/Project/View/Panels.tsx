@@ -855,6 +855,7 @@ interface PanelProps {
   versionData?: { [key: string]: Entry[] }
   getVersionFilterLink?: (parent: string, version: string) => LinkProps['to']
   valuesHeaderName?: string
+  highlightColour?: 'blue' | 'red'
 }
 
 const Panel = ({
@@ -875,6 +876,7 @@ const Panel = ({
   versionData,
   getVersionFilterLink = () => '',
   valuesHeaderName,
+  highlightColour = 'blue',
 }: PanelProps) => {
   const { dataLoading, activeTab } = useViewProjectContext()
   const { t } = useTranslation('common')
@@ -1093,7 +1095,10 @@ const Panel = ({
                     )}
                   >
                     <div
-                      className='absolute inset-0 rounded-sm bg-blue-50 dark:bg-blue-900/10'
+                      className={cx('absolute inset-0 rounded-sm', {
+                        'bg-blue-50 dark:bg-blue-900/20': highlightColour === 'blue',
+                        'bg-red-50 dark:bg-red-900/20': highlightColour === 'red',
+                      })}
                       style={{ width: `${perc}%` }}
                     />
 

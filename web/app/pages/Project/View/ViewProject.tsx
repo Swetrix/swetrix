@@ -3541,6 +3541,7 @@ const ViewProject = () => {
                                       : undefined
                                   }
                                   valuesHeaderName={t('project.occurrences')}
+                                  highlightColour='red'
                                 />
                               )
                             }
@@ -3667,6 +3668,7 @@ const ViewProject = () => {
                                     )
                                   }
                                   valuesHeaderName={t('project.occurrences')}
+                                  highlightColour='red'
                                 />
                               )
                             }
@@ -3714,6 +3716,7 @@ const ViewProject = () => {
                                   activeTabId={errorsActiveTabs.page}
                                   data={activeError?.params?.[errorsActiveTabs.page] || []}
                                   valuesHeaderName={t('project.occurrences')}
+                                  highlightColour='red'
                                 />
                               )
                             }
