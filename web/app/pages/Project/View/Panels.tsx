@@ -31,6 +31,7 @@ import Dropdown from '~/ui/Dropdown'
 import Sort from '~/ui/icons/Sort'
 import Spin from '~/ui/icons/Spin'
 import Modal from '~/ui/Modal'
+import { trackError } from '~/utils/analytics'
 import { nFormatter } from '~/utils/generic'
 
 import { Customs, Filter, Properties } from './interfaces/traffic'
@@ -59,6 +60,48 @@ interface PanelContainerProps {
   >
   onTabChange?: (tab: string) => void
   activeTabId?: string
+}
+
+class ExtensionErrorBoundary extends React.Component<
+  { children: React.ReactNode; extensionID: string },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode; extensionID: string }) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true }
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    trackError({
+      name: `Extension Error: ${error.name}`,
+      message: error.message,
+      stackTrace: info.componentStack,
+      meta: {
+        extensionID: this.props?.extensionID || 'unknown',
+      },
+    })
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className='text-sm text-red-500'>
+          <p>Something went wrong. Please try again later.</p>
+          <br />
+          <p>
+            <span>Extension ID: </span>
+            <span>{this.props?.extensionID || 'unknown'}</span>
+          </p>
+          <p>If the problem persists, please contact support.</p>
+        </div>
+      )
+    }
+    return this.props.children
+  }
 }
 
 const PanelContainer = ({ name, children, icon, type, tabs, onTabChange, activeTabId }: PanelContainerProps) => {
@@ -99,12 +142,12 @@ const PanelContainer = ({ name, children, icon, type, tabs, onTabChange, activeT
       _find(panelExtensions, (tab) => tab.extensionID === activeTabId) || ({} as CustomTab)
 
     if (extensionID) {
-      // if (!tabContent) {
-      //   return null
-      // }
-
       // Using this instead of dangerouslySetInnerHTML to support script tags
-      return <InnerHTML className='absolute overflow-auto' html={tabContent} />
+      return (
+        <ExtensionErrorBoundary extensionID={extensionID}>
+          <InnerHTML className='absolute overflow-auto' html={tabContent || ''} />
+        </ExtensionErrorBoundary>
+      )
     }
 
     return children
