@@ -122,7 +122,13 @@ import LoadingBar from '~/ui/LoadingBar'
 import Select from '~/ui/Select'
 import { trackCustom } from '~/utils/analytics'
 import { periodToCompareDate } from '~/utils/compareConvertDate'
-import { getTimeFromSeconds, getStringFromTime, getLocaleDisplayName, nLocaleFormatter } from '~/utils/generic'
+import {
+  getTimeFromSeconds,
+  getStringFromTime,
+  getLocaleDisplayName,
+  nLocaleFormatter,
+  removeDuplicates,
+} from '~/utils/generic'
 import { getItem, setItem } from '~/utils/localstorage'
 import routes from '~/utils/routes'
 
@@ -208,6 +214,7 @@ interface ViewProjectContextType {
   dataLoading: boolean
   activeTab: keyof typeof PROJECT_TABS
   filters: Filter[]
+  customPanelTabs: CustomTab[]
 
   // Functions
   updatePeriod: (newPeriod: { period: Period; label?: string }) => void
@@ -600,6 +607,26 @@ const ViewProject = () => {
   const [trafficSourcesActiveTab, setTrafficSourcesActiveTab] = useState<'ref' | 'so' | 'me' | 'ca' | 'te' | 'co'>(
     'ref',
   )
+
+  const [panelsActiveTabs, setPanelsActiveTabs] = useState<{
+    metadata: 'ce' | 'props'
+  }>({
+    metadata: 'ce',
+  })
+
+  const setPanelTab = (
+    panel: keyof typeof panelsActiveTabs,
+    tab: (typeof panelsActiveTabs)[keyof typeof panelsActiveTabs],
+  ) => {
+    const extensionTab = customPanelTabs.find((el) => el.panelID === panel && el.tabContent === tab)
+
+    extensionTab?.onOpen?.()
+
+    setPanelsActiveTabs((prev) => ({
+      ...prev,
+      [panel]: tab,
+    }))
+  }
 
   // Create version data mapping for browser and OS panels
   const createVersionDataMapping = useMemo(() => {
@@ -2101,6 +2128,14 @@ const ViewProject = () => {
         }
       })
 
+      // temp fix until it's deployed so I could change it in SDK and extensions too
+      const processPanelId = (id: string) => {
+        if (id === 'ce') {
+          return 'metadata'
+        }
+        return id
+      }
+
       sdk = new SwetrixSDK(
         processedExtensions,
         {
@@ -2127,20 +2162,27 @@ const ViewProject = () => {
             setCustomExportTypes((prev) => _filter(prev, (row) => row.label !== label))
           },
           onAddPanelTab: (extensionID: string, panelID: string, tabContent?: string, onOpen?: () => void) => {
-            setCustomPanelTabs((prev) => [
-              ...prev,
-              {
-                extensionID,
-                panelID,
-                tabContent,
-                onOpen,
-              },
-            ])
+            const processedPanelID = processPanelId(panelID)
+            setCustomPanelTabs((prev) =>
+              removeDuplicates(
+                [
+                  ...prev,
+                  {
+                    extensionID,
+                    panelID: processedPanelID,
+                    tabContent,
+                    onOpen,
+                  },
+                ],
+                ['extensionID', 'panelID'],
+              ),
+            )
           },
           onUpdatePanelTab: (extensionID: string, panelID: string, tabContent: any) => {
+            const processedPanelID = processPanelId(panelID)
             setCustomPanelTabs((prev) =>
               _map(prev, (row) => {
-                if (row.extensionID === extensionID && row.panelID === panelID) {
+                if (row.extensionID === extensionID && row.panelID === processedPanelID) {
                   return {
                     ...row,
                     tabContent,
@@ -2152,8 +2194,9 @@ const ViewProject = () => {
             )
           },
           onRemovePanelTab: (extensionID: string, panelID: string) => {
+            const processedPanelID = processPanelId(panelID)
             setCustomPanelTabs((prev) =>
-              _filter(prev, (row) => row.extensionID !== extensionID && row.panelID !== panelID),
+              _filter(prev, (row) => row.extensionID !== extensionID && row.panelID !== processedPanelID),
             )
           },
         },
@@ -2615,6 +2658,7 @@ const ViewProject = () => {
             dataLoading,
             activeTab,
             filters,
+            customPanelTabs,
 
             // Functions
             updatePeriod,
@@ -3703,8 +3747,6 @@ const ViewProject = () => {
                     <div className='mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2'>
                       {!_isEmpty(panelsData.types)
                         ? _map(TRAFFIC_PANELS_ORDER, (type: string) => {
-                            const customTabs = _filter(customPanelTabs, (tab) => tab.panelID === type)
-
                             if (type === 'location') {
                               const locationTabs = [
                                 { id: 'cc', label: t('project.mapping.cc'), hasData: !!panelsData.data.cc },
@@ -3748,7 +3790,6 @@ const ViewProject = () => {
                                   onTabChange={(tab) => setLocationActiveTab(tab as 'cc' | 'rg' | 'ct' | 'lc' | 'map')}
                                   activeTabId={locationActiveTab}
                                   data={panelsData.data[locationActiveTab]}
-                                  customTabs={customTabs}
                                   rowMapper={rowMapper}
                                   customRenderer={
                                     locationActiveTab === 'map'
@@ -3876,7 +3917,6 @@ const ViewProject = () => {
                                   onTabChange={(tab) => setDeviceActiveTab(tab as 'br' | 'os' | 'dv')}
                                   activeTabId={deviceActiveTab}
                                   data={panelsData.data[deviceActiveTab]}
-                                  customTabs={customTabs}
                                   rowMapper={getDeviceRowMapper(deviceActiveTab)}
                                   capitalize={deviceActiveTab === 'dv'}
                                   versionData={
@@ -3932,7 +3972,6 @@ const ViewProject = () => {
                                   onTabChange={(tab) => setPageActiveTab(tab as 'pg' | 'host' | 'userFlow')}
                                   activeTabId={pageActiveTab}
                                   data={panelsData.data[pageActiveTab]}
-                                  customTabs={customTabs}
                                   customRenderer={
                                     pageActiveTab === 'userFlow'
                                       ? () => <UserFlow isReversed={false} setReversed={() => {}} />
@@ -3975,7 +4014,6 @@ const ViewProject = () => {
                                   }
                                   activeTabId={trafficSourcesActiveTab}
                                   data={panelsData.data[trafficSourcesActiveTab]}
-                                  customTabs={customTabs}
                                   rowMapper={getTrafficSourcesRowMapper(trafficSourcesActiveTab)}
                                 />
                               )
@@ -3991,9 +4029,10 @@ const ViewProject = () => {
                           filters={filters}
                           getFilterLink={getFilterLink}
                           chartData={chartData}
-                          customTabs={_filter(customPanelTabs, (tab) => tab.panelID === 'ce')}
                           getCustomEventMetadata={getCustomEventMetadata}
                           getPropertyMetadata={_getPropertyMetadata}
+                          onTabChange={(tab) => setPanelTab('metadata', tab as 'ce' | 'props')}
+                          activeTabId={panelsActiveTabs.metadata}
                         />
                       ) : null}
                     </div>
