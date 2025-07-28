@@ -397,6 +397,7 @@ const ViewCaptcha = () => {
             dataLoading,
             activeTab: 'traffic',
             filters,
+            customPanelTabs: [],
 
             // Functions
             updatePeriod,
