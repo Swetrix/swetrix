@@ -32,7 +32,7 @@ module.exports = {
       'sitesettings/reset-sites-data',
     ],
     'Account settings': [
-      // 'accountsettings/2-factor-authentication',
+      'accountsettings/two-factor-authentication',
       'accountsettings/change-email',
       'accountsettings/change-password',
       'accountsettings/delete-account',
