@@ -38,6 +38,7 @@ module.exports = {
       'accountsettings/delete-account',
     ],
     'Billing & Subscription': [
+      'billing/upgrade-from-trial',
       'billing/exceeding-plan-limits',
       'billing/update-subscription',
       'billing/cancel-subscription',
