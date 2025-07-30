@@ -3379,7 +3379,6 @@ const ViewProject = () => {
                           dataNames={dataNames}
                           onZoom={setZoomedTimeRange}
                           onChartReady={setSessionChartInstance}
-                          zoomedTimeRange={zoomedTimeRange}
                         />
                         {zoomedTimeRange ? (
                           <button
