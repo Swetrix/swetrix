@@ -3742,45 +3742,46 @@ const ViewProject = () => {
                 ) : null}
                 {activeTab === PROJECT_TABS.traffic ? (
                   <div className={cx('pt-2', { hidden: isPanelsDataEmpty || analyticsLoading })}>
-                    {!_isEmpty(overall) ? (
-                      <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
-                        <MetricCards
-                          overall={overall}
-                          overallCompare={overallCompare}
-                          activePeriodCompare={activePeriodCompare}
-                        />
-                        {!_isEmpty(panelsData.meta)
-                          ? _map(panelsData.meta, ({ key, current, previous }) => (
-                              <React.Fragment key={key}>
-                                <MetricCard
-                                  label={t('project.metrics.xAvg', { x: key })}
-                                  value={current.avg}
-                                  change={current.avg - previous.avg}
-                                  goodChangeDirection='down'
-                                  valueMapper={(value, type) =>
-                                    `${type === 'badge' && value > 0 ? '+' : ''}${nLocaleFormatter(value)}`
-                                  }
-                                />
-                                <MetricCard
-                                  label={t('project.metrics.xTotal', { x: key })}
-                                  value={current.sum}
-                                  change={current.sum - previous.sum}
-                                  goodChangeDirection='down'
-                                  valueMapper={(value, type) =>
-                                    `${type === 'badge' && value > 0 ? '+' : ''}${nLocaleFormatter(value)}`
-                                  }
-                                />
-                              </React.Fragment>
-                            ))
-                          : null}
-                      </div>
-                    ) : null}
-                    <div
-                      className={cx('h-80', {
-                        hidden: checkIfAllMetricsAreDisabled,
-                      })}
-                    >
-                      <div className='mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible' id='dataChart' />
+                    <div className='overflow-hidden rounded-lg border border-gray-300 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
+                      {!_isEmpty(overall) ? (
+                        <div className='mb-5 flex flex-wrap justify-center gap-5 lg:justify-start'>
+                          <MetricCards
+                            overall={overall}
+                            overallCompare={overallCompare}
+                            activePeriodCompare={activePeriodCompare}
+                          />
+                          {!_isEmpty(panelsData.meta)
+                            ? _map(panelsData.meta, ({ key, current, previous }) => (
+                                <React.Fragment key={key}>
+                                  <MetricCard
+                                    label={t('project.metrics.xAvg', { x: key })}
+                                    value={current.avg}
+                                    change={current.avg - previous.avg}
+                                    goodChangeDirection='down'
+                                    valueMapper={(value, type) =>
+                                      `${type === 'badge' && value > 0 ? '+' : ''}${nLocaleFormatter(value)}`
+                                    }
+                                  />
+                                  <MetricCard
+                                    label={t('project.metrics.xTotal', { x: key })}
+                                    value={current.sum}
+                                    change={current.sum - previous.sum}
+                                    goodChangeDirection='down'
+                                    valueMapper={(value, type) =>
+                                      `${type === 'badge' && value > 0 ? '+' : ''}${nLocaleFormatter(value)}`
+                                    }
+                                  />
+                                </React.Fragment>
+                              ))
+                            : null}
+                        </div>
+                      ) : null}
+                      <div
+                        className={cx('mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible', {
+                          hidden: checkIfAllMetricsAreDisabled,
+                        })}
+                        id='dataChart'
+                      />
                     </div>
                     <Filters tnMapping={tnMapping} />
                     <CustomMetrics
@@ -3793,7 +3794,7 @@ const ViewProject = () => {
                         <LoadingBar />
                       </div>
                     ) : null}
-                    <div className='mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2'>
+                    <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
                       {!_isEmpty(panelsData.types)
                         ? _map(TRAFFIC_PANELS_ORDER, (type: string) => {
                             if (type === 'location') {
@@ -4109,20 +4110,21 @@ const ViewProject = () => {
                   </div>
                 ) : null}
                 {activeTab === PROJECT_TABS.performance ? (
-                  <div className={cx('pt-8 md:pt-4', { hidden: isPanelsDataEmptyPerf || analyticsLoading })}>
-                    {!_isEmpty(overallPerformance) ? (
-                      <PerformanceMetricCards
-                        overall={overallPerformance}
-                        overallCompare={overallPerformanceCompare}
-                        activePeriodCompare={activePeriodCompare}
+                  <div className={cx('pt-2', { hidden: isPanelsDataEmptyPerf || analyticsLoading })}>
+                    <div className='overflow-hidden rounded-lg border border-gray-300 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
+                      {!_isEmpty(overallPerformance) ? (
+                        <PerformanceMetricCards
+                          overall={overallPerformance}
+                          overallCompare={overallPerformanceCompare}
+                          activePeriodCompare={activePeriodCompare}
+                        />
+                      ) : null}
+                      <div
+                        className={cx('mt-5 h-80 md:mt-0 [&_svg]:!overflow-visible', {
+                          hidden: checkIfAllMetricsAreDisabled,
+                        })}
+                        id='dataChart'
                       />
-                    ) : null}
-                    <div
-                      className={cx('h-80', {
-                        hidden: checkIfAllMetricsAreDisabled,
-                      })}
-                    >
-                      <div className='h-80 [&_svg]:!overflow-visible' id='dataChart' />
                     </div>
                     <Filters tnMapping={tnMapping} />
                     {dataLoading ? (
