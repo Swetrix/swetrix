@@ -6,11 +6,9 @@ import { Link } from 'react-router'
 import Header from '~/components/Header'
 import { ComparisonTable } from '~/components/marketing/ComparisonTable'
 import { DitchGoogle } from '~/components/marketing/DitchGoogle'
-import { BOOK_A_CALL_URL, DISCORD_URL, LIVE_DEMO_URL } from '~/lib/constants'
+import { BOOK_A_CALL_URL, DISCORD_URL, INTEGRATIONS_URL, LIVE_DEMO_URL } from '~/lib/constants'
 import { useTheme } from '~/providers/ThemeProvider'
 import routesPath from '~/utils/routes'
-
-const INTEGRATIONS_URL = 'https://docs.swetrix.com/integrations'
 
 const Marketers = () => {
   const { t } = useTranslation('common')

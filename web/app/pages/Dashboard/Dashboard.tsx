@@ -7,7 +7,7 @@ import _size from 'lodash/size'
 import { StretchHorizontal as StretchHorizontalIcon, LayoutGrid as LayoutGridIcon } from 'lucide-react'
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useLoaderData, useSearchParams } from 'react-router'
+import { Link, useLoaderData, useNavigate, useSearchParams } from 'react-router'
 import { ClientOnly } from 'remix-utils/client-only'
 
 import { getProjects, getLiveVisitors, getOverallStats, getOverallStatsCaptcha } from '~/api'
@@ -43,6 +43,7 @@ const DASHBOARD_VIEW = {
 const Dashboard = () => {
   const { viewMode: defaultViewMode } = useLoaderData<any>()
   const { user, isLoading: authLoading } = useAuth()
+  const navigate = useNavigate()
   const showPeriodSelector = useFeatureFlag(FeatureFlag['dashboard-period-selector'])
   const showTabs = useFeatureFlag(FeatureFlag['dashboard-analytics-tabs'])
   const isHostnameNavigationEnabled = useFeatureFlag(FeatureFlag['dashboard-hostname-cards'])
@@ -190,6 +191,14 @@ const Dashboard = () => {
       setIsLoading(false)
     }
   }
+
+  // Redirect to onboarding if user hasn't completed it
+  useEffect(() => {
+    if (user && !user.hasCompletedOnboarding) {
+      navigate(routes.onboarding)
+      return
+    }
+  }, [user, navigate])
 
   useEffect(() => {
     if (authLoading) {

@@ -92,12 +92,6 @@ export const getPageMeta = (t: typeof i18next.t, url?: string, _pathname?: strin
       }
       break
 
-    case routes.confirm_email:
-      result = {
-        title: t('titles.confirm'),
-      }
-      break
-
     case routes.confirm_share:
     case routes.confirm_subcription:
     case routes.transfer_confirm:

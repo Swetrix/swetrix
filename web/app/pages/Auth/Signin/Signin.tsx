@@ -136,7 +136,12 @@ const Signin = () => {
           setAccessToken(accessToken, false)
           setRefreshToken(refreshToken)
 
-          navigate(routes.dashboard)
+          // Redirect to onboarding if user hasn't completed it
+          if (!user.hasCompletedOnboarding) {
+            navigate(routes.onboarding)
+          } else {
+            navigate(routes.dashboard)
+          }
 
           return
         } catch {
@@ -183,6 +188,13 @@ const Signin = () => {
       setRefreshToken(refreshToken)
 
       setIsLoading(false)
+      
+      // Redirect to onboarding if user hasn't completed it
+      if (!user.hasCompletedOnboarding) {
+        navigate(routes.onboarding)
+      } else {
+        navigate(routes.dashboard)
+      }
     } catch (reason) {
       toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
       setIsLoading(false)

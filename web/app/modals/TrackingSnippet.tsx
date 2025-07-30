@@ -13,7 +13,7 @@ interface TrackingSnippetProps {
   isOpened: boolean
 }
 
-const getSnippet = (pid: string) => {
+export const getSnippet = (pid: string) => {
   if (isSelfhosted) {
     return `<script src="https://swetrix.org/swetrix.js" defer></script>
 <script>
@@ -74,7 +74,14 @@ const TrackingSnippet = ({ onClose, isOpened }: TrackingSnippetProps) => {
               }}
             />
           </p>
-          <Textarea className='mt-2 font-mono' value={snippet} rows={17} readOnly />
+          <Textarea
+            classes={{
+              container: 'mt-2 font-mono',
+            }}
+            value={snippet}
+            rows={17}
+            readOnly
+          />
           <p className='mt-4'>
             <Trans
               t={t}

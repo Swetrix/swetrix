@@ -931,7 +931,9 @@ const UserSettings = () => {
           <>
             {t('profileSettings.deactivateConfirmation')}
             <Textarea
-              className='mt-4'
+              classes={{
+                container: 'mt-4',
+              }}
               placeholder={t('profileSettings.deletionFeedback')}
               onChange={(e) => setDeletionFeedback(e.target.value)}
               value={deletionFeedback}

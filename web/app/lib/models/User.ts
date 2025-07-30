@@ -28,6 +28,14 @@ export enum FeatureFlag {
   'dashboard-hostname-cards' = 'dashboard-hostname-cards',
 }
 
+export enum OnboardingStep {
+  WELCOME = 'welcome',
+  CREATE_PROJECT = 'create_project',
+  SETUP_TRACKING = 'setup_tracking',
+  WAITING_FOR_EVENTS = 'waiting_for_events',
+  COMPLETED = 'completed',
+}
+
 export interface User {
   id: string
   roles: string[]
@@ -75,4 +83,6 @@ export interface User {
   dashboardBlockReason: DashboardBlockReason
   isAccountBillingSuspended: boolean
   organisationMemberships: OrganisationMembership[]
+  onboardingStep: OnboardingStep
+  hasCompletedOnboarding: boolean
 }

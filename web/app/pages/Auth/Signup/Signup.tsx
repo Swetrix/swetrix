@@ -134,7 +134,7 @@ const Signup = () => {
       trackCustom('SIGNUP', {
         from: 'Signup page',
       })
-      navigate(routes.confirm_email)
+      navigate(routes.onboarding)
     } catch (reason) {
       toast.error(typeof reason === 'string' ? reason : t('apiNotifications.somethingWentWrong'))
       setIsLoading(false)
@@ -186,7 +186,12 @@ const Signup = () => {
           setAccessToken(accessToken, false)
           setRefreshToken(refreshToken)
 
-          navigate(routes.dashboard)
+          // Redirect to onboarding if user hasn't completed it
+          if (!user.hasCompletedOnboarding) {
+            navigate(routes.onboarding)
+          } else {
+            navigate(routes.dashboard)
+          }
 
           return
         } catch {

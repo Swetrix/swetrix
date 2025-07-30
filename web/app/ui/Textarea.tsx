@@ -1,7 +1,8 @@
 import { Description, Field, Label, Textarea as HeadlessTextarea } from '@headlessui/react'
-import cx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import React, { memo } from 'react'
+
+import { cn } from '~/utils/generic'
 
 interface TextareaProps {
   value: string | number
@@ -9,7 +10,10 @@ interface TextareaProps {
   hint?: string
   placeholder?: string
   onChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
-  className?: string
+  classes?: {
+    container?: string
+    textarea?: string
+  }
   error?: string | boolean
   name?: string
   disabled?: boolean
@@ -22,29 +26,30 @@ const Textarea = ({
   hint,
   placeholder,
   name,
-  className,
   onChange,
   error,
   value,
   disabled,
   readOnly,
   rows = 4,
+  classes,
 }: TextareaProps) => {
   const isError = !_isEmpty(error)
 
   return (
-    <Field as='div' className={className}>
+    <Field as='div' className={classes?.container}>
       {label ? <Label className='flex text-sm font-medium text-gray-900 dark:text-gray-200'>{label}</Label> : null}
       <HeadlessTextarea
         rows={rows}
         name={name}
-        className={cx(
+        className={cn(
           'w-full rounded-md border-0 ring-1 focus:ring-indigo-500 sm:text-sm dark:bg-slate-800 dark:text-gray-50 dark:placeholder-gray-400',
           {
             'text-red-900 placeholder-red-300 ring-red-600': isError,
             'ring-gray-300 dark:ring-slate-800/50': !isError,
             'cursor-text': disabled,
           },
+          classes?.textarea,
         )}
         value={value}
         onChange={onChange}
@@ -61,4 +66,4 @@ const Textarea = ({
   )
 }
 
-export default memo(Textarea)
+export default memo(Textarea) as typeof Textarea
