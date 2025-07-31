@@ -27,6 +27,7 @@ interface DropdownProps<T> {
   disabled?: boolean
   onClick?: React.MouseEventHandler<HTMLButtonElement>
   loading?: boolean
+  position?: 'up' | 'down'
 }
 
 function Dropdown<T>({
@@ -47,6 +48,7 @@ function Dropdown<T>({
   disabled,
   onClick,
   loading,
+  position = 'down',
 }: DropdownProps<T>) {
   return (
     <Menu as='div' className={cn('relative inline-block text-left', className)}>
@@ -103,7 +105,11 @@ function Dropdown<T>({
             <MenuItems
               static
               className={cn(
-                'absolute right-0 z-50 mt-2 w-40 min-w-max origin-top-right rounded-md bg-gray-50 p-1 ring-1 ring-black/10 focus:outline-hidden dark:bg-slate-800',
+                'absolute right-0 z-50 w-40 min-w-max rounded-md bg-gray-50 p-1 ring-1 ring-black/10 focus:outline-hidden dark:bg-slate-800',
+                {
+                  'mt-2 origin-top-right': position === 'down',
+                  'bottom-full mb-2 origin-bottom-right': position === 'up',
+                },
                 menuItemsClassName,
               )}
             >
