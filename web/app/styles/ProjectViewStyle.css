@@ -4,6 +4,7 @@
   .bb-axis - [fill] text
   .bb-legend-item text - [fill] text underneath the chart
   .bb-xgrid-focus - line which shows on chart on hover
+  .bb-ygrid - grid lines
 */
 
 /* dark theme config */
@@ -46,6 +47,14 @@ body.light .bb-axis .tick line {
 
 body.light .bb-xgrid-focus {
   stroke: var(--color-gray-300);
+}
+
+body.light .bb-ygrid {
+  stroke: var(--color-gray-200);
+}
+
+body.dark .bb-ygrid {
+  stroke: var(--color-slate-800);
 }
 
 .bb-xgrid-focus {

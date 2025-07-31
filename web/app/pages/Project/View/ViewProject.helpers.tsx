@@ -64,6 +64,58 @@ const getSum = (arr: any) => {
   return _reduce(arr, (acc, c) => acc + c, 0)
 }
 
+const calculateOptimalTicks = (data: number[], targetCount: number = 6): number[] => {
+  const min = Math.min(...data.filter((n) => n !== undefined && n !== null))
+  const max = Math.max(...data.filter((n) => n !== undefined && n !== null))
+
+  if (min === max) {
+    return max === 0 ? [0, 1] : [0, max * 1.2]
+  }
+
+  const upperBound = Math.ceil(max * 1.2)
+
+  const roughStep = upperBound / (targetCount - 1)
+
+  let niceStep: number
+  if (roughStep <= 1) {
+    niceStep = 1
+  } else if (roughStep <= 2) {
+    niceStep = 2
+  } else if (roughStep <= 5) {
+    niceStep = 5
+  } else if (roughStep <= 10) {
+    niceStep = 10
+  } else if (roughStep <= 20) {
+    niceStep = 20
+  } else if (roughStep <= 25) {
+    niceStep = 25
+  } else if (roughStep <= 50) {
+    niceStep = 50
+  } else {
+    // For larger numbers, round to nearest 10^n or 5*10^n
+    const magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)))
+    const normalized = roughStep / magnitude
+    if (normalized <= 2) {
+      niceStep = 2 * magnitude
+    } else if (normalized <= 5) {
+      niceStep = 5 * magnitude
+    } else {
+      niceStep = 10 * magnitude
+    }
+  }
+
+  const ticks: number[] = []
+  for (let i = 0; i <= upperBound; i += niceStep) {
+    ticks.push(i)
+  }
+
+  if (ticks[ticks.length - 1] < max) {
+    ticks.push(ticks[ticks.length - 1] + niceStep)
+  }
+
+  return ticks
+}
+
 const trendline = (data: any[]): string[] => {
   const xData = _map(_fill(new Array(_size(data)), 0), (_, i) => i + 1)
   const yData = data
@@ -465,6 +517,20 @@ const getSettings = (
 
   const columns = getColumns(modifiedChart, activeChartMetrics, compareChart)
 
+  // Calculate optimal Y axis ticks based on the data
+  const allYValues: number[] = []
+  if (activeChartMetrics.unique && chart.uniques) {
+    allYValues.push(...chart.uniques.filter((n) => n !== undefined && n !== null))
+  }
+  if (activeChartMetrics.views && chart.visits) {
+    allYValues.push(...chart.visits.filter((n) => n !== undefined && n !== null))
+  }
+  if (activeChartMetrics.occurrences && chart.occurrences) {
+    allYValues.push(...chart.occurrences.filter((n) => n !== undefined && n !== null))
+  }
+
+  const optimalTicks = allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
+
   if (applyRegions) {
     let regionStart
 
@@ -552,6 +618,9 @@ const getSettings = (
       x: {
         lines,
       },
+      y: {
+        show: true,
+      },
     },
     transition: {
       duration: 500,
@@ -579,6 +648,7 @@ const getSettings = (
       y: {
         tick: {
           format: (d: number) => nFormatter(d, 1),
+          values: optimalTicks,
         },
         show: true,
         inner: true,
@@ -791,6 +861,20 @@ const getSettingsSession = (
     dataColors.errors = '#dc2626'
   }
 
+  // Calculate optimal Y axis ticks based on the data
+  const allYValues: number[] = []
+  if (chartData.pageviews && !_isEmpty(chartData.pageviews)) {
+    allYValues.push(...chartData.pageviews.filter((n) => n !== undefined && n !== null))
+  }
+  if (chartData.customEvents && !_isEmpty(chartData.customEvents)) {
+    allYValues.push(...chartData.customEvents.filter((n) => n !== undefined && n !== null))
+  }
+  if (chartData.errors && !_isEmpty(chartData.errors)) {
+    allYValues.push(...chartData.errors.filter((n) => n !== undefined && n !== null))
+  }
+
+  const optimalTicks = allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
+
   return {
     data: {
       x: 'x',
@@ -804,6 +888,11 @@ const getSettingsSession = (
       type: 'drag',
       onzoom: onZoom,
       resetButton: false, // We render a custom button that also resets pageflow
+    },
+    grid: {
+      y: {
+        show: true,
+      },
     },
     transition: {
       duration: 500,
@@ -831,6 +920,7 @@ const getSettingsSession = (
       y: {
         tick: {
           format: (d: number) => nFormatter(d, 1),
+          values: optimalTicks,
         },
         show: true,
         inner: true,
@@ -902,6 +992,13 @@ const getSettingsError = (
 
   const columns = getColumns(chart, { occurrences: true })
 
+  const allYValues: number[] = []
+  if (chart.occurrences) {
+    allYValues.push(...chart.occurrences.filter((n: any) => n !== undefined && n !== null))
+  }
+
+  const optimalTicks = allYValues.length > 0 ? calculateOptimalTicks(allYValues) : undefined
+
   let regionStart
 
   if (xAxisSize > 1) {
@@ -933,6 +1030,11 @@ const getSettingsError = (
         ],
       },
     },
+    grid: {
+      y: {
+        show: true,
+      },
+    },
     transition: {
       duration: 500,
     },
@@ -958,6 +1060,7 @@ const getSettingsError = (
       y: {
         tick: {
           format: (d: number) => nFormatter(d, 1),
+          values: optimalTicks,
         },
         show: true,
         inner: true,
@@ -1261,6 +1364,11 @@ const getSettingsPerf = (
           'backendCompare',
         ],
       ],
+    },
+    grid: {
+      y: {
+        show: true,
+      },
     },
     axis: {
       x: {
