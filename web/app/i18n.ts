@@ -1,7 +1,8 @@
-import { InitOptions } from 'i18next'
+import { InitOptions, changeLanguage as changeLanguageI18n } from 'i18next'
 import _includes from 'lodash/includes'
 
 import { defaultLanguage, I18N_CACHE_BREAKER, whitelist } from '~/lib/constants'
+import { trackCustom } from '~/utils/analytics'
 
 const genericConfig: InitOptions = {
   supportedLngs: whitelist,
@@ -39,6 +40,11 @@ export function detectLanguage(request: Request): string {
 
   // Stage 4: Fallback to default
   return defaultLanguage
+}
+
+export const changeLanguage = (language: string) => {
+  changeLanguageI18n(language)
+  trackCustom('CHANGE_LANGUAGE', { language })
 }
 
 export default genericConfig

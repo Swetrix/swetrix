@@ -1,4 +1,5 @@
 import { MagnifyingGlassIcon, ChevronLeftIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
+import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
 import SwetrixSDK from '@swetrix/sdk'
 import billboard, { Chart } from 'billboard.js'
 import cx from 'clsx'
@@ -68,6 +69,7 @@ import EventsRunningOutBanner from '~/components/EventsRunningOutBanner'
 import Footer from '~/components/Footer'
 import Header from '~/components/Header'
 import useSize from '~/hooks/useSize'
+import { changeLanguage } from '~/i18n'
 import {
   tbPeriodPairs,
   DEFAULT_TIMEZONE,
@@ -98,6 +100,9 @@ import {
   type TimeBucket,
   VALID_PERIODS,
   VALID_TIME_BUCKETS,
+  whitelist,
+  languages,
+  languageFlag,
 } from '~/lib/constants'
 import { CountryEntry, Entry } from '~/lib/models/Entry'
 import {
@@ -116,6 +121,7 @@ import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
 import Checkbox from '~/ui/Checkbox'
 import Dropdown from '~/ui/Dropdown'
+import Flag from '~/ui/Flag'
 import FlatPicker from '~/ui/Flatpicker'
 import Loader from '~/ui/Loader'
 import LoadingBar from '~/ui/LoadingBar'
@@ -237,7 +243,7 @@ const ViewProject = () => {
     useCurrentProject()
   const projectPassword = useProjectPassword(id)
 
-  const { theme } = useTheme()
+  const { theme, setTheme } = useTheme()
 
   const { isAuthenticated, user, isLoading: authLoading } = useAuth()
 
@@ -4353,6 +4359,93 @@ const ViewProject = () => {
                     ) : null}
                   </div>
                 ) : null}
+
+                {isEmbedded ? null : (
+                  <div
+                    className={cx('mt-4 flex w-full items-center justify-between', {
+                      hidden: analyticsLoading || dataLoading,
+                    })}
+                  >
+                    <Dropdown
+                      items={whitelist}
+                      buttonClassName='!py-2 !px-3 inline-flex items-center [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 font-medium !text-sm text-slate-900 dark:text-gray-50'
+                      title={
+                        <span className='inline-flex items-center'>
+                          <Flag
+                            className='mr-2 rounded-xs'
+                            country={languageFlag[language]}
+                            size={16}
+                            alt={languages[language]}
+                          />
+                          {languages[language]}
+                        </span>
+                      }
+                      labelExtractor={(lng: string) => (
+                        <div className='flex items-center'>
+                          <Flag
+                            className='mr-2 rounded-xs'
+                            country={languageFlag[lng]}
+                            size={16}
+                            alt={languageFlag[lng]}
+                          />
+                          {languages[lng]}
+                        </div>
+                      )}
+                      onSelect={(lng: string) => {
+                        changeLanguage(lng)
+                      }}
+                      headless
+                      menuItemsClassName='left-1/2 -translate-x-1/2 origin-bottom'
+                    />
+                    <Dropdown
+                      title={
+                        <span className='flex items-center justify-center'>
+                          <span className='sr-only'>{t('header.switchTheme')}</span>
+                          {theme === 'dark' ? (
+                            <SunIcon
+                              className='h-6 w-6 cursor-pointer text-gray-200 hover:text-gray-300'
+                              aria-hidden='true'
+                            />
+                          ) : (
+                            <MoonIcon
+                              className='h-6 w-6 cursor-pointer text-slate-700 hover:text-slate-600'
+                              aria-hidden='true'
+                            />
+                          )}
+                        </span>
+                      }
+                      items={[
+                        { key: 'light', label: t('header.light'), icon: SunIcon },
+                        { key: 'dark', label: t('header.dark'), icon: MoonIcon },
+                      ]}
+                      keyExtractor={(item) => item.key}
+                      labelExtractor={(item) => (
+                        <div
+                          className={cx('flex w-full items-center', {
+                            'light:text-indigo-600': item.key === 'light',
+                            'dark:text-indigo-400': item.key === 'dark',
+                          })}
+                        >
+                          <item.icon
+                            className={cx('mr-2 h-5 w-5', {
+                              'dark:text-gray-300': item.key === 'light',
+                              'light:text-gray-400': item.key === 'dark',
+                            })}
+                            aria-hidden='true'
+                          />
+                          {item.label}
+                        </div>
+                      )}
+                      onSelect={(item) => setTheme(item.key as 'light' | 'dark')}
+                      className='flex'
+                      chevron={null}
+                      headless
+                      buttonClassName='p-0 md:p-0'
+                      menuItemsClassName='top-5'
+                      selectItemClassName='font-semibold'
+                    />
+                  </div>
+                )}
               </div>
             </div>
             <ViewProjectHotkeys isOpened={isHotkeysHelpOpened} onClose={() => setIsHotkeysHelpOpened(false)} />

@@ -1,3 +1,4 @@
+import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
 import { SiDiscord, SiGithub, SiX } from '@icons-pack/react-simple-icons'
 import _map from 'lodash/map'
 import { SquareArrowOutUpRightIcon } from 'lucide-react'
@@ -5,6 +6,7 @@ import React, { memo } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 
+import { changeLanguage } from '~/i18n'
 import {
   isSelfhosted,
   DONATE_URL,
@@ -19,11 +21,17 @@ import {
   SWETRIX_VS_SIMPLE_ANALYTICS,
   DISCORD_URL,
   CAPTCHA_URL,
+  whitelist,
+  languages,
+  languageFlag,
 } from '~/lib/constants'
 import { useAuth } from '~/providers/AuthProvider'
+import { useTheme } from '~/providers/ThemeProvider'
+import Dropdown from '~/ui/Dropdown'
 import Flag from '~/ui/Flag'
 import LinkedIn from '~/ui/icons/LinkedIn'
 import SwetrixLogo from '~/ui/icons/SwetrixLogo'
+import { cn } from '~/utils/generic'
 import routesPath from '~/utils/routes'
 
 const CONTACT_US_URL = `https://swetrix.com${routesPath.contact}`
@@ -115,6 +123,85 @@ const navigation = {
   ],
 }
 
+const LanguageSelector = () => {
+  const {
+    i18n: { language },
+  } = useTranslation('common')
+
+  return (
+    <Dropdown
+      position='up'
+      items={whitelist}
+      buttonClassName='!py-2 !px-3 inline-flex items-center rounded-md bg-gray-700 hover:bg-gray-600 [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 font-medium !text-sm text-gray-300 hover:text-white border border-gray-600'
+      title={
+        <span className='inline-flex items-center'>
+          <Flag className='mr-2 rounded-xs' country={languageFlag[language]} size={16} alt={languages[language]} />
+          {languages[language]}
+        </span>
+      }
+      labelExtractor={(lng: string) => (
+        <div className='flex items-center'>
+          <Flag className='mr-2 rounded-xs' country={languageFlag[lng]} size={16} alt={languageFlag[lng]} />
+          {languages[lng]}
+        </div>
+      )}
+      onSelect={(lng: string) => {
+        changeLanguage(lng)
+      }}
+      headless
+      menuItemsClassName='left-1/2 -translate-x-1/2 origin-bottom'
+      className='w-full sm:w-auto'
+    />
+  )
+}
+
+const ThemeSelector = () => {
+  const { theme, setTheme } = useTheme()
+  const { t } = useTranslation('common')
+
+  return (
+    <Dropdown
+      position='up'
+      title={
+        <span className='flex items-center'>
+          {theme === 'dark' ? (
+            <MoonIcon className='mr-2 h-4 w-4 text-gray-300' aria-hidden='true' />
+          ) : (
+            <SunIcon className='mr-2 h-4 w-4 text-gray-300' aria-hidden='true' />
+          )}
+          {theme === 'dark' ? t('header.dark') : t('header.light')}
+        </span>
+      }
+      items={[
+        { key: 'light', label: t('header.light'), icon: SunIcon },
+        { key: 'dark', label: t('header.dark'), icon: MoonIcon },
+      ]}
+      keyExtractor={(item) => item.key}
+      labelExtractor={(item) => (
+        <div
+          className={cn('flex w-full items-center', {
+            'light:text-indigo-600': item.key === 'light',
+            'dark:text-indigo-400': item.key === 'dark',
+          })}
+        >
+          <item.icon
+            className={cn('mr-2 h-5 w-5', {
+              'dark:text-gray-300': item.key === 'light',
+              'light:text-gray-400': item.key === 'dark',
+            })}
+            aria-hidden='true'
+          />
+          {item.label}
+        </div>
+      )}
+      onSelect={(item) => setTheme(item.key as 'light' | 'dark')}
+      className='w-full sm:w-auto'
+      headless
+      buttonClassName='!py-2 !px-3 inline-flex items-center rounded-md bg-gray-700 hover:bg-gray-600 [&>svg]:w-4 [&>svg]:h-4 [&>svg]:mr-0 [&>svg]:ml-1 font-medium !text-sm text-gray-300 hover:text-white border border-gray-600'
+    />
+  )
+}
+
 const SelfHostedFooter = () => {
   const { t } = useTranslation('common')
 
@@ -165,6 +252,12 @@ const SelfHostedFooter = () => {
             </a>
           </div>
         </nav>
+        <div className='mt-8 border-t border-gray-200 pt-6 dark:border-slate-800/50'>
+          <div className='flex flex-col justify-center space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4'>
+            <LanguageSelector />
+            <ThemeSelector />
+          </div>
+        </div>
       </div>
     </footer>
   )
@@ -216,18 +309,24 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
                 </a>
               ))}
             </div>
-            <p className='pt-10 text-base text-gray-300'>
-              &copy; {year} {t('footer.copy')}
-            </p>
-            <a
-              href='https://u24.gov.ua/'
-              target='_blank'
-              rel='noreferrer noopener'
-              className='block max-w-max items-center border-b-2 border-transparent text-base text-gray-300 hover:border-gray-300'
-            >
-              {t('main.ukrSupport')}
-              <SquareArrowOutUpRightIcon className='mb-1 ml-1 inline size-4' strokeWidth={1.5} />
-            </a>
+            <div className='flex flex-col space-y-4 pt-10'>
+              <div className='flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4'>
+                <LanguageSelector />
+                <ThemeSelector />
+              </div>
+              <p className='text-base text-gray-300'>
+                &copy; {year} {t('footer.copy')}
+              </p>
+              <a
+                href='https://u24.gov.ua/'
+                target='_blank'
+                rel='noreferrer noopener'
+                className='block max-w-max items-center border-b-2 border-transparent text-base text-gray-300 hover:border-gray-300'
+              >
+                {t('main.ukrSupport')}
+                <SquareArrowOutUpRightIcon className='mb-1 ml-1 inline size-4' strokeWidth={1.5} />
+              </a>
+            </div>
           </div>
           <div className='mt-12 xl:mt-0'>
             <div className='grid grid-cols-2 gap-8 md:grid-cols-3'>
