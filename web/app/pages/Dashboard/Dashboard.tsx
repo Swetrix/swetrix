@@ -193,12 +193,12 @@ const Dashboard = () => {
   }
 
   // Redirect to onboarding if user hasn't completed it
-  useEffect(() => {
-    if (user && !user.hasCompletedOnboarding) {
-      navigate(routes.onboarding)
-      return
-    }
-  }, [user, navigate])
+  // useEffect(() => {
+  //   if (user && !user.hasCompletedOnboarding) {
+  //     navigate(routes.onboarding)
+  //     return
+  //   }
+  // }, [user, navigate])
 
   useEffect(() => {
     if (authLoading) {
