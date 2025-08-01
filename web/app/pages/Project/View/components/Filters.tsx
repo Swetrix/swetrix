@@ -52,7 +52,7 @@ export const Filter = ({
   }
 
   if (column === 'pg') {
-    displayFilter = filter || t('project.redactedPage')
+    displayFilter = filter || t('common.notSet')
   }
 
   if (column === 'lc') {
@@ -203,7 +203,7 @@ const Filters = ({ tnMapping }: FiltersProps) => {
   }
 
   return (
-    <div className='flex items-center justify-between rounded-md border border-gray-300 bg-slate-200 p-1 dark:border-slate-800/50 dark:bg-slate-800/25'>
+    <div className='mt-3 flex items-center justify-between rounded-md border border-gray-300 bg-slate-200 p-1 dark:border-slate-800/50 dark:bg-slate-800/25'>
       <div className='flex items-center'>
         <FilterIcon className='box-content size-6 shrink-0 px-1 text-gray-700 dark:text-gray-200' strokeWidth={1.5} />
         <div className='flex flex-wrap'>
@@ -225,7 +225,7 @@ const Filters = ({ tnMapping }: FiltersProps) => {
           'cursor-wait': dataLoading,
         })}
       >
-        <XMarkIcon className='box-content size-6 shrink-0 cursor-pointer stroke-2 px-1 text-gray-800 hover:text-gray-600 dark:text-gray-200 dark:hover:text-gray-300' />
+        <XMarkIcon className='box-content size-6 shrink-0 cursor-pointer rounded-md stroke-2 p-1 text-gray-800 hover:bg-slate-100 dark:text-gray-200 dark:hover:bg-slate-800/80' />
       </Link>
     </div>
   )

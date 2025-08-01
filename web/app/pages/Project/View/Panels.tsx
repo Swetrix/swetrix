@@ -1,6 +1,7 @@
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/20/solid'
 import { ChevronRightIcon } from '@heroicons/react/24/outline'
 import { ArrowLongRightIcon, ArrowLongLeftIcon } from '@heroicons/react/24/solid'
+import { useVirtualizer, type VirtualItem } from '@tanstack/react-virtual'
 import cx from 'clsx'
 import InnerHTML from 'dangerously-set-html-content'
 import _ceil from 'lodash/ceil'
@@ -20,7 +21,7 @@ import _sortBy from 'lodash/sortBy'
 import _sum from 'lodash/sum'
 import _toPairs from 'lodash/toPairs'
 import { FilterIcon, ScanIcon } from 'lucide-react'
-import React, { memo, useState, useEffect, useMemo, Fragment } from 'react'
+import React, { memo, useState, useEffect, useMemo, Fragment, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, LinkProps, useNavigate } from 'react-router'
 
@@ -50,16 +51,15 @@ interface PanelContainerProps {
     | {
         id: string
         label: string
-        hasData?: boolean
       }
     | Array<{
         id: string
         label: string
-        hasData?: boolean
       }>
   >
   onTabChange?: (tab: string) => void
   activeTabId?: string
+  onDetailsClick?: () => void
 }
 
 class ExtensionErrorBoundary extends React.Component<
@@ -104,7 +104,16 @@ class ExtensionErrorBoundary extends React.Component<
   }
 }
 
-const PanelContainer = ({ name, children, icon, type, tabs, onTabChange, activeTabId }: PanelContainerProps) => {
+const PanelContainer = ({
+  name,
+  children,
+  icon,
+  type,
+  tabs,
+  onTabChange,
+  activeTabId,
+  onDetailsClick,
+}: PanelContainerProps) => {
   const { customPanelTabs } = useViewProjectContext()
   const { t } = useTranslation('common')
 
@@ -123,7 +132,6 @@ const PanelContainer = ({ name, children, icon, type, tabs, onTabChange, activeT
       panelTabs.push({
         id: 'default',
         label: 'Data',
-        hasData: true,
       })
     }
 
@@ -132,7 +140,6 @@ const PanelContainer = ({ name, children, icon, type, tabs, onTabChange, activeT
       ...panelExtensions.map((tab) => ({
         id: tab.extensionID,
         label: 'Addon',
-        hasData: true,
       })),
     ]
   }, [panelExtensions, tabs])
@@ -156,7 +163,7 @@ const PanelContainer = ({ name, children, icon, type, tabs, onTabChange, activeT
   return (
     <div
       className={cx(
-        'h-[26rem] overflow-hidden rounded-lg border border-gray-300 bg-white px-4 py-5 dark:border-slate-800/60 dark:bg-slate-800/25',
+        'overflow-hidden rounded-lg border border-gray-300 bg-white px-4 pt-5 pb-3 dark:border-slate-800/60 dark:bg-slate-800/25',
         {
           'col-span-2': type === 'metadata',
         },
@@ -210,14 +217,12 @@ const PanelContainer = ({ name, children, icon, type, tabs, onTabChange, activeT
                     onClick={() => {
                       onTabChange(tab.id)
                     }}
-                    disabled={tab.hasData === false}
                     className={cx(
                       'relative border-b-2 py-1 text-sm font-bold whitespace-nowrap transition-all duration-200',
                       {
                         'border-slate-900 text-slate-900 dark:border-gray-50 dark:text-gray-50': activeTabId === tab.id,
                         'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-300 dark:hover:text-gray-300':
-                          activeTabId !== tab.id && tab.hasData !== false,
-                        'cursor-not-allowed border-transparent text-gray-300 dark:text-gray-600': tab.hasData === false,
+                          activeTabId !== tab.id,
                       },
                     )}
                   >
@@ -229,7 +234,19 @@ const PanelContainer = ({ name, children, icon, type, tabs, onTabChange, activeT
           ) : null}
         </div>
       </div>
-      <div className='relative flex h-full flex-col overflow-x-auto'>{contentRenderer()}</div>
+      <div className='relative flex h-[19.5rem] flex-col overflow-x-auto'>{contentRenderer()}</div>
+      {onDetailsClick ? (
+        <div className='mt-2 flex items-center justify-center'>
+          <Button
+            className='max-w-max border border-transparent bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-gray-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
+            type='button'
+            onClick={onDetailsClick}
+          >
+            <ScanIcon className='mr-1.5 size-4' />
+            <span>{t('common.details')}</span>
+          </Button>
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -371,19 +388,19 @@ const KVTable = ({ listId, data, displayKeyAsHeader, onClick }: KVTableProps) =>
             }}
             className='group cursor-pointer py-3 text-gray-900 even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700'
           >
-            <td className='flex items-center py-1 pl-2 text-left'>
+            <td className='flex w-2/5 items-center py-1 pl-2 text-left sm:w-4/6'>
               {event}
               <FilterIcon
-                className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300'
+                className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
                 strokeWidth={1.5}
               />
               <div className='ml-2 h-4 w-4 group-hover:hidden' />
             </td>
-            <td className='py-1 text-right'>
+            <td className='w-[30%] py-1 text-right sm:w-1/6'>
               {quantity}
               &nbsp;&nbsp;
             </td>
-            <td className='py-1 pr-2 text-right'>{conversion}%</td>
+            <td className='w-[30%] py-1 pr-2 text-right sm:w-1/6'>{conversion}%</td>
           </tr>
         ))}
       </tbody>
@@ -480,23 +497,14 @@ const Metadata = ({
   })
   const navigate = useNavigate()
 
-  const dataKeys = useMemo(() => {
-    return {
-      properties: Object.keys(properties || {}),
-      customEv: Object.keys(customs || {}),
-    }
-  }, [properties, customs])
-
   const tabs = [
     {
       id: 'ce',
       label: t('project.customEv'),
-      hasData: dataKeys.customEv.length > 0,
     },
     {
       id: 'props',
       label: t('project.properties'),
-      hasData: dataKeys.properties.length > 0,
     },
   ]
 
@@ -679,11 +687,11 @@ const Metadata = ({
                   )}
                   {ev}
                 </td>
-                <td className='py-1 text-right'>
+                <td className='w-[30%] py-1 text-right sm:w-1/6'>
                   {eventsData[ev]}
                   &nbsp;&nbsp;
                 </td>
-                <td className='py-1 pr-2 text-right'>
+                <td className='w-[30%] py-1 pr-2 text-right sm:w-1/6'>
                   {uniques === 0 ? 100 : _round((eventsData[ev] / uniques) * 100, 2)}%
                 </td>
               </tr>
@@ -758,7 +766,7 @@ const Metadata = ({
                   <div className='relative z-10 flex w-4/6 min-w-0 items-center'>
                     <span className='flex items-center truncate text-sm text-gray-900 dark:text-gray-100'>{ev}</span>
                     <FilterIcon
-                      className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300'
+                      className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
                       strokeWidth={1.5}
                     />
                     <div className='ml-2 h-4 w-4 group-hover:hidden' />
@@ -774,15 +782,6 @@ const Metadata = ({
             },
           )}
         </div>
-        <Button
-          className='mx-auto mt-2 max-w-max border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
-          type='button'
-          onClick={() => setDetailsOpened(true)}
-          focus={false}
-        >
-          <ScanIcon className='mr-1.5 size-4' />
-          <span>{t('common.details')}</span>
-        </Button>
         <Modal
           onClose={onModalClose}
           isOpened={detailsOpened}
@@ -801,6 +800,7 @@ const Metadata = ({
       tabs={tabs}
       onTabChange={onTabChange}
       activeTabId={activeTabId}
+      onDetailsClick={() => setDetailsOpened(true)}
     >
       {renderTabContent()}
     </PanelContainer>
@@ -827,7 +827,7 @@ const FilterWrapper = ({ children, as, to, ...props }: FilterWrapperProps) => {
 }
 
 interface PanelProps {
-  name: React.ReactNode
+  name: string
   data: Entry[]
   rowMapper?: (row: any) => React.ReactNode
   valueMapper?: (value: number) => number
@@ -841,12 +841,10 @@ interface PanelProps {
     | {
         id: string
         label: string
-        hasData?: boolean
       }
     | Array<{
         id: string
         label: string
-        hasData?: boolean
       }>
   >
   onTabChange?: (tab: string) => void
@@ -855,73 +853,66 @@ interface PanelProps {
   versionData?: { [key: string]: Entry[] }
   getVersionFilterLink?: (parent: string, version: string) => LinkProps['to']
   valuesHeaderName?: string
-  highlightColour?: 'blue' | 'red'
+  highlightColour?: 'blue' | 'red' | 'orange'
 }
 
-const Panel = ({
-  name,
+interface DetailsTableProps
+  extends Pick<
+    PanelProps,
+    | 'data'
+    | 'id'
+    | 'valuesHeaderName'
+    | 'activeTabId'
+    | 'capitalize'
+    | 'linkContent'
+    | 'rowMapper'
+    | 'valueMapper'
+    | 'getFilterLink'
+  > {
+  total: number
+  closeDetails: () => void
+}
+
+const DetailsTable = ({
   data,
-  rowMapper = (row: Entry): string => row.name,
+  rowMapper = (row: Entry): React.ReactNode => row.name,
   valueMapper = (value: number): number => value,
   capitalize,
   linkContent,
-  icon,
-  id,
-  hideFilters,
   getFilterLink = () => '',
-  tabs,
-  onTabChange,
-  activeTabId,
-  customRenderer,
-  versionData,
-  getVersionFilterLink = () => '',
+  id,
+  total,
   valuesHeaderName,
-  highlightColour = 'blue',
-}: PanelProps) => {
-  const { dataLoading, activeTab } = useViewProjectContext()
+  activeTabId,
+  closeDetails,
+}: DetailsTableProps) => {
   const { t } = useTranslation('common')
-  const total = useMemo(() => _reduce(data, (prev, curr) => prev + curr.count, 0), [data])
-  const [detailsOpened, setDetailsOpened] = useState(false)
+  const { activeTab } = useViewProjectContext()
+  const tnMapping = typeNameMapping(t)
+  const parentRef = useRef<HTMLDivElement>(null)
+  const [search, setSearch] = useState('')
+  const navigate = useNavigate()
   const [sortedData, setSortedData] = useState(data)
   const [sort, setSort] = useState<SortRows>({
     label: 'quantity',
     sortByAscend: false,
     sortByDescend: false,
   })
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
-  const navigate = useNavigate()
-
-  const tnMapping = typeNameMapping(t)
-
-  const entriesToDisplay = useMemo(() => {
-    const orderedData = _orderBy(data, 'count', 'desc')
-    return _slice(orderedData, 0, ENTRIES_PER_PANEL)
-  }, [data])
-
-  const toggleExpanded = (itemName: string) => {
-    setExpandedItems((prev) => {
-      const newSet = new Set(prev)
-      if (newSet.has(itemName)) {
-        newSet.delete(itemName)
-      } else {
-        newSet.add(itemName)
-      }
-      return newSet
+  const filteredData = useMemo(() => {
+    if (!search) return sortedData
+    const searchLower = search.toLowerCase()
+    return sortedData.filter((entry) => {
+      const label = entry?.name?.toLowerCase() || ''
+      return label.includes(searchLower)
     })
-  }
+  }, [search, sortedData])
 
-  const hasVersions = (itemName: string) => {
-    return versionData && versionData[itemName] && versionData[itemName].length > 0
-  }
-
-  useEffect(() => {
-    setSortedData(data)
-    setSort({
-      label: 'quantity',
-      sortByAscend: false,
-      sortByDescend: false,
-    })
-  }, [data])
+  const rowVirtualizer = useVirtualizer({
+    count: filteredData.length,
+    getScrollElement: () => parentRef.current,
+    overscan: 8,
+    estimateSize: () => 36,
+  })
 
   const onSortBy = (label: string) => {
     if (sort.sortByAscend) {
@@ -960,101 +951,190 @@ const Panel = ({
     })
   }
 
-  const DetailsTable = () => (
-    <div className='max-h-[500px] overflow-y-auto'>
-      <table className='w-full border-separate border-spacing-y-1'>
-        <thead className='sticky top-0 z-10 bg-white dark:bg-slate-900'>
-          <tr className='text-base text-gray-900 dark:text-gray-50'>
-            <th
-              className='flex w-2/5 cursor-pointer items-center pl-2 text-left hover:opacity-90 sm:w-4/6'
-              onClick={() => onSortBy('name')}
-            >
-              {tnMapping[activeTabId as keyof typeof tnMapping]}
-              <Sort
-                className='ml-1'
-                sortByAscend={sort.label === 'name' ? sort.sortByAscend : null}
-                sortByDescend={sort.label === 'name' ? sort.sortByDescend : null}
-              />
-            </th>
-            <th className='w-[30%] sm:w-1/6'>
-              <p
-                className='flex cursor-pointer items-center justify-end hover:opacity-90'
-                onClick={() => onSortBy('quantity')}
-              >
-                {valuesHeaderName || t('project.visitors')}
-                <Sort
-                  className='ml-1'
-                  sortByAscend={sort.label === 'quantity' ? sort.sortByAscend : null}
-                  sortByDescend={sort.label === 'quantity' ? sort.sortByDescend : null}
-                />
-                &nbsp;&nbsp;
-              </p>
-            </th>
-            <th className='w-[30%] pr-2 sm:w-1/6'>
-              <p className='flex items-center justify-end'>{t('project.percentage')}</p>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {_map(sortedData, (entry) => {
-            const { count, name: entryName, ...rest } = entry
-            const perc = _round((count / total) * 100, 2)
-            const rowData = rowMapper(entry)
-            const valueData = valueMapper(count)
-
-            return (
-              <tr
-                key={`${id}-${entryName}-${Object.values(rest).join('-')}`}
-                className='group cursor-pointer text-base text-gray-900 even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700'
-                onClick={() => {
-                  const link = getFilterLink(id, entryName)
-                  if (link) {
-                    navigate(link)
-                    setDetailsOpened(false)
-                  }
-                }}
-              >
-                <td className='flex items-center py-1 pl-2 text-left'>
-                  <span
-                    className={cx('flex items-center truncate', {
-                      capitalize,
-                    })}
-                  >
-                    {linkContent ? (
-                      <a
-                        className='text-blue-600 hover:underline dark:text-blue-500'
-                        href={rowData as string}
-                        target='_blank'
-                        rel='noopener noreferrer nofollow'
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {rowData}
-                      </a>
-                    ) : (
-                      rowData
-                    )}
-                  </span>
-                  <FilterIcon
-                    className='ml-2 hidden h-4 w-4 text-gray-500 group-hover:block dark:text-gray-300'
-                    strokeWidth={1.5}
-                  />
-                  <div className='ml-2 h-4 w-4 group-hover:hidden' />
-                </td>
-                <td className='py-1 text-right'>
-                  {activeTab === PROJECT_TABS.traffic ? nFormatter(valueData, 1) : valueData}
-                  &nbsp;&nbsp;
-                </td>
-                <td className='py-1 pr-2 text-right'>{perc}%</td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
-    </div>
-  )
+  useEffect(() => {
+    setSortedData(data)
+    setSort({
+      label: 'quantity',
+      sortByAscend: false,
+      sortByDescend: false,
+    })
+  }, [data])
 
   return (
-    <PanelContainer name={name} icon={icon} type={id} tabs={tabs} onTabChange={onTabChange} activeTabId={activeTabId}>
+    <div>
+      <div className='mb-2'>
+        <input
+          type='text'
+          placeholder={t('project.search')}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className='w-full rounded-md border border-gray-300 bg-white px-2 py-1 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-gray-50'
+        />
+      </div>
+      <div ref={parentRef} className='max-h-[500px] overflow-y-auto'>
+        <table className='w-full border-separate border-spacing-y-1'>
+          <thead className='sticky top-0 z-10 bg-white dark:bg-slate-900'>
+            <tr className='text-base text-gray-900 dark:text-gray-50'>
+              <th
+                className='flex w-2/5 cursor-pointer items-center pl-2 text-left hover:opacity-90 sm:w-4/6'
+                onClick={() => onSortBy('name')}
+              >
+                {tnMapping[activeTabId as keyof typeof tnMapping]}
+                <Sort
+                  className='ml-1'
+                  sortByAscend={sort.label === 'name' ? sort.sortByAscend : null}
+                  sortByDescend={sort.label === 'name' ? sort.sortByDescend : null}
+                />
+              </th>
+              <th className='w-[30%] sm:w-1/6'>
+                <p
+                  className='flex cursor-pointer items-center justify-end hover:opacity-90'
+                  onClick={() => onSortBy('quantity')}
+                >
+                  {valuesHeaderName || t('project.visitors')}
+                  <Sort
+                    className='ml-1'
+                    sortByAscend={sort.label === 'quantity' ? sort.sortByAscend : null}
+                    sortByDescend={sort.label === 'quantity' ? sort.sortByDescend : null}
+                  />
+                  &nbsp;&nbsp;
+                </p>
+              </th>
+              <th className='w-[30%] pr-2 sm:w-1/6'>
+                <p className='flex items-center justify-end'>{t('project.percentage')}</p>
+              </th>
+            </tr>
+          </thead>
+
+          <tbody style={{ position: 'relative', height: `${rowVirtualizer.getTotalSize()}px` }}>
+            {rowVirtualizer.getVirtualItems().map((virtualRow: VirtualItem) => {
+              const entry = filteredData[virtualRow.index]
+              if (!entry) return null
+
+              const { count, name: entryName, ...rest } = entry
+              const perc = _round((count / total) * 100, 2)
+              const rowData = rowMapper(entry)
+              const valueData = valueMapper(count)
+
+              return (
+                <tr
+                  key={`${id}-${entryName}-${Object.values(rest).join('-')}`}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    transform: `translateY(${virtualRow.start}px)`,
+                    width: '100%',
+                    display: 'flex',
+                  }}
+                  className='group cursor-pointer text-base text-gray-900 even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700'
+                  onClick={() => {
+                    const link = getFilterLink(id, entryName)
+                    if (link) {
+                      navigate(link)
+                      closeDetails()
+                    }
+                  }}
+                >
+                  <td className='flex w-2/5 items-center py-1 pl-2 text-left sm:w-4/6'>
+                    <span
+                      className={cx('flex items-center truncate', {
+                        capitalize,
+                      })}
+                    >
+                      {linkContent ? (
+                        <a
+                          className='text-blue-600 hover:underline dark:text-blue-500'
+                          href={rowData as string}
+                          target='_blank'
+                          rel='noopener noreferrer nofollow'
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {rowData}
+                        </a>
+                      ) : (
+                        rowData
+                      )}
+                    </span>
+                    <FilterIcon
+                      className='ml-2 hidden h-4 w-4 shrink-0 text-gray-500 group-hover:block dark:text-gray-300'
+                      strokeWidth={1.5}
+                    />
+                    <div className='ml-2 h-4 w-4 group-hover:hidden' />
+                  </td>
+                  <td className='w-[30%] py-1 text-right sm:w-1/6'>
+                    {activeTab === PROJECT_TABS.traffic ? nFormatter(valueData, 1) : valueData}
+                    &nbsp;&nbsp;
+                  </td>
+                  <td className='w-[30%] py-1 pr-2 text-right sm:w-1/6'>{perc}%</td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+const Panel = ({
+  name,
+  data,
+  rowMapper = (row: Entry): React.ReactNode => row.name,
+  valueMapper = (value: number): number => value,
+  capitalize,
+  linkContent,
+  icon,
+  id,
+  hideFilters,
+  getFilterLink = () => '',
+  tabs,
+  onTabChange,
+  activeTabId,
+  customRenderer,
+  versionData,
+  getVersionFilterLink = () => '',
+  valuesHeaderName,
+  highlightColour = 'blue',
+}: PanelProps) => {
+  const { dataLoading, activeTab } = useViewProjectContext()
+  const { t } = useTranslation('common')
+  const total = useMemo(() => _reduce(data, (prev, curr) => prev + curr.count, 0), [data])
+  const [detailsOpened, setDetailsOpened] = useState(false)
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
+
+  const tnMapping = typeNameMapping(t)
+
+  const entriesToDisplay = useMemo(() => {
+    const orderedData = _orderBy(data, 'count', 'desc')
+    return _slice(orderedData, 0, ENTRIES_PER_PANEL)
+  }, [data])
+
+  const toggleExpanded = (itemName: string) => {
+    setExpandedItems((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(itemName)) {
+        newSet.delete(itemName)
+      } else {
+        newSet.add(itemName)
+      }
+      return newSet
+    })
+  }
+
+  const hasVersions = (itemName: string) => {
+    return versionData && versionData[itemName] && versionData[itemName].length > 0
+  }
+
+  return (
+    <PanelContainer
+      onDetailsClick={_size(data) > ENTRIES_PER_PANEL ? () => setDetailsOpened(true) : undefined}
+      name={name}
+      icon={icon}
+      type={id}
+      tabs={tabs}
+      onTabChange={onTabChange}
+      activeTabId={activeTabId}
+    >
       {customRenderer ? (
         customRenderer()
       ) : _isEmpty(data) ? (
@@ -1098,6 +1178,7 @@ const Panel = ({
                       className={cx('absolute inset-0 rounded-sm', {
                         'bg-blue-50 dark:bg-blue-900/20': highlightColour === 'blue',
                         'bg-red-50 dark:bg-red-900/20': highlightColour === 'red',
+                        'bg-orange-50 dark:bg-orange-900/20': highlightColour === 'orange',
                       })}
                       style={{ width: `${perc}%` }}
                     />
@@ -1222,18 +1303,6 @@ const Panel = ({
               )
             })}
           </div>
-
-          {_size(data) > ENTRIES_PER_PANEL ? (
-            <Button
-              className='mx-auto mt-2 max-w-max border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-slate-800/50 dark:bg-slate-800 dark:text-gray-200 hover:dark:bg-slate-700'
-              type='button'
-              onClick={() => setDetailsOpened(true)}
-              focus={false}
-            >
-              <ScanIcon className='mr-1.5 size-4' />
-              <span>{t('common.details')}</span>
-            </Button>
-          ) : null}
         </>
       )}
 
@@ -1241,8 +1310,22 @@ const Panel = ({
         onClose={() => setDetailsOpened(false)}
         closeText={t('common.close')}
         isOpened={detailsOpened}
-        title={`${name} - ${t('common.details')}`}
-        message={<DetailsTable />}
+        title={name}
+        message={
+          <DetailsTable
+            id={id}
+            total={total}
+            valuesHeaderName={valuesHeaderName || ''}
+            activeTabId={activeTabId || ''}
+            closeDetails={() => setDetailsOpened(false)}
+            data={data}
+            rowMapper={rowMapper as (row: Entry) => string}
+            valueMapper={valueMapper}
+            capitalize={capitalize || false}
+            linkContent={linkContent || false}
+            getFilterLink={getFilterLink as (id: string, name: string) => string}
+          />
+        }
         size='large'
       />
     </PanelContainer>
@@ -1396,11 +1479,11 @@ const MetadataPanel = ({ metadata }: MetadataPanelProps) => {
                   className='text-sm text-gray-900 even:bg-gray-50 hover:bg-gray-100 dark:text-gray-50 dark:even:bg-slate-800 hover:dark:bg-slate-700'
                 >
                   <td className='py-1 pl-2 text-left'>{key}</td>
-                  <td className='py-1 text-right'>
+                  <td className='w-[30%] py-1 text-right sm:w-1/6'>
                     {value}
                     &nbsp;&nbsp;
                   </td>
-                  <td className='py-1 pr-2 text-right'>{count}</td>
+                  <td className='w-[30%] py-1 pr-2 text-right sm:w-1/6'>{count}</td>
                 </tr>
               ))}
             </tbody>

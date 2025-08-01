@@ -909,10 +909,15 @@
     "occurrences": "Occurrences",
     "visitPage": "Visit {{page}}",
     "visitors": "Visitors",
-    "time": "Time",
+    "loadTime": "Load time",
+    "currentTimeX": "Current time: <url>{{time}}</url>",
+    "timezoneX": "Timezone: {{timezone}}",
+    "signInToChange": "Sign in to change it",
+    "changeInSettings": "Change this in your site settings",
     "events": "Events",
     "dropoff": "Dropoff",
     "neverEnteredTheFunnel": "Never entered the funnel",
+    "aggregation": "Aggregation",
     "locked": {
       "title": "Dashboard locked",
       "descExceedingTier": "This dashboard is locked because your traffic has exceeded your subscription plan.\nIn order to continue using Swetrix and have access to your stats, you need to upgrade your subscription plan to reflect your usage.",
@@ -968,7 +973,6 @@
         "dynamicKey": "Property \"{{key}}\""
       }
     },
-    "redactedPage": "Redacted page",
     "unknownHost": "Unknown host",
     "noData": "No data to display",
     "overview": "Overview",

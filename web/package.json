@@ -30,6 +30,7 @@
     "@react-router/serve": "^7.7.1",
     "@swetrix/sdk": "^1.2.0",
     "@tailwindcss/vite": "^4.1.11",
+    "@tanstack/react-virtual": "^3.13.12",
     "@ua-parser-js/pro-business": "^2.0.3",
     "axios": "^1.11.0",
     "axios-auth-refresh": "^3.3.6",
