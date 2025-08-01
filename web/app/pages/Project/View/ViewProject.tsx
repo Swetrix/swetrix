@@ -643,7 +643,7 @@ const ViewProject = () => {
 
   const [panelsActiveTabs, setPanelsActiveTabs] = useState<{
     location: 'cc' | 'rg' | 'ct' | 'lc' | 'map'
-    page: 'pg' | 'host' | 'userFlow'
+    page: 'pg' | 'host' | 'userFlow' | 'entryPage' | 'exitPage'
     device: 'br' | 'os' | 'dv'
     source: 'ref' | 'so' | 'me' | 'ca' | 'te' | 'co'
     metadata: 'ce' | 'props'
@@ -3980,11 +3980,13 @@ const ViewProject = () => {
                             if (type === 'pg') {
                               const pageTabs = [
                                 { id: 'pg', label: t('project.mapping.pg') },
+                                { id: 'entryPage', label: t('project.entryPages') },
+                                { id: 'exitPage', label: t('project.exitPages') },
+                                { id: 'userFlow', label: t('project.mapping.userFlow') },
                                 {
                                   id: 'host',
                                   label: t('project.mapping.host'),
                                 },
-                                { id: 'userFlow', label: t('project.mapping.userFlow') },
                               ]
 
                               return (
@@ -4015,7 +4017,7 @@ const ViewProject = () => {
                                   onTabChange={(tab) =>
                                     setPanelsActiveTabs({
                                       ...panelsActiveTabs,
-                                      page: tab as 'pg' | 'host' | 'userFlow',
+                                      page: tab as 'pg' | 'host' | 'userFlow' | 'entryPage' | 'exitPage',
                                     })
                                   }
                                   activeTabId={panelsActiveTabs.page}

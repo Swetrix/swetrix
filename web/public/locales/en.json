@@ -961,6 +961,8 @@
       "co": "UTM Content",
       "userFlow": "User flow"
     },
+    "entryPages": "Entry pages",
+    "exitPages": "Exit pages",
     "metamapping": {
       "ev": {
         "key": "Event key",
