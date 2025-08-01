@@ -16,7 +16,6 @@ import _map from 'lodash/map'
 import _pickBy from 'lodash/pickBy'
 import _replace from 'lodash/replace'
 import _some from 'lodash/some'
-import _toUpper from 'lodash/toUpper'
 import _uniqBy from 'lodash/uniqBy'
 import {
   BugIcon,
@@ -3611,8 +3610,12 @@ const ViewProject = () => {
                                   getFilterLink={getFilterLink}
                                   rowMapper={({ name: entryName }) => {
                                     if (!entryName) {
-                                      return _toUpper(
-                                        errorsActiveTabs.page === 'pg' ? t('common.notSet') : t('project.unknownHost'),
+                                      return (
+                                        <span className='italic'>
+                                          {panelsActiveTabs.page === 'pg'
+                                            ? t('common.notSet')
+                                            : t('project.unknownHost')}
+                                        </span>
                                       )
                                     }
 
@@ -3997,8 +4000,12 @@ const ViewProject = () => {
                                   getFilterLink={getFilterLink}
                                   rowMapper={({ name: entryName }) => {
                                     if (!entryName) {
-                                      return _toUpper(
-                                        panelsActiveTabs.page === 'pg' ? t('common.notSet') : t('project.unknownHost'),
+                                      return (
+                                        <span className='italic'>
+                                          {panelsActiveTabs.page === 'pg'
+                                            ? t('common.notSet')
+                                            : t('project.unknownHost')}
+                                        </span>
                                       )
                                     }
 
@@ -4327,10 +4334,12 @@ const ViewProject = () => {
                                   getFilterLink={getFilterLink}
                                   rowMapper={({ name: entryName }) => {
                                     if (!entryName) {
-                                      return _toUpper(
-                                        performanceActiveTabs.page === 'pg'
-                                          ? t('common.notSet')
-                                          : t('project.unknownHost'),
+                                      return (
+                                        <span className='italic'>
+                                          {panelsActiveTabs.page === 'pg'
+                                            ? t('common.notSet')
+                                            : t('project.unknownHost')}
+                                        </span>
                                       )
                                     }
 
