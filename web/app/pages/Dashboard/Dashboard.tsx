@@ -101,8 +101,6 @@ const Dashboard = () => {
     return sortParam && Object.values(SORT_OPTIONS).includes(sortParam as any) ? sortParam : SORT_OPTIONS.ALPHA_ASC
   })
 
-  const periodPairs = tbPeriodPairs(t)
-
   const pageAmount = Math.ceil(paginationTotal / pageSize)
 
   // This search represents what's inside the search input
@@ -238,7 +236,7 @@ const Dashboard = () => {
       if (!projectIds.length || isHostnameNavigationEnabled) return
 
       try {
-        const timeBucket = periodPairs.find((p) => p.period === activePeriod)?.tbs[0] || ''
+        const timeBucket = tbPeriodPairs(t).find((p) => p.period === activePeriod)?.tbs[0] || ''
         const stats = await getOverallStats(projectIds, timeBucket, activePeriod)
         setOverallStats((prev) => ({ ...prev, ...stats }))
       } catch (reason) {
@@ -270,7 +268,7 @@ const Dashboard = () => {
     const interval = setInterval(updateLiveVisitors, LIVE_VISITORS_UPDATE_INTERVAL)
 
     return () => clearInterval(interval)
-  }, [projects, activePeriod, isHostnameNavigationEnabled, periodPairs]) // Reset interval when projects change
+  }, [projects, activePeriod, isHostnameNavigationEnabled, t]) // Reset interval when projects change
 
   if (error && isLoading === false) {
     return (
