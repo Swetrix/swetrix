@@ -1347,6 +1347,7 @@ const ViewProject = () => {
             )) || {}
           const compareOverall = await getOverallStats(
             [id],
+            timeBucket,
             'custom',
             fromCompare,
             toCompare,
@@ -1391,7 +1392,7 @@ const ViewProject = () => {
             projectPassword,
           )
         }
-        rawOverall = await getOverallStats([id], period, from, to, timezone, filters, projectPassword)
+        rawOverall = await getOverallStats([id], timeBucket, period, from, to, timezone, filters, projectPassword)
       } else {
         data = await getProjectData(
           id,
@@ -1418,7 +1419,7 @@ const ViewProject = () => {
             projectPassword,
           )
         }
-        rawOverall = await getOverallStats([id], period, '', '', timezone, filters, projectPassword)
+        rawOverall = await getOverallStats([id], timeBucket, period, '', '', timezone, filters, projectPassword)
       }
 
       customEventsChart = customEventsChart?.chart ? customEventsChart.chart.events : customEventsChartData
@@ -1834,7 +1835,7 @@ const ViewProject = () => {
 
       if (period === 'custom' && dateRange) {
         dataPerf = await getPerfData(id, timeBucket, '', filters, from, to, timezone, measure, projectPassword)
-        rawOverall = await getOverallStats([id], period, from, to, timezone, filters, projectPassword)
+        rawOverall = await getOverallStats([id], timeBucket, period, from, to, timezone, filters, projectPassword)
       } else {
         dataPerf = await getPerfData(id, timeBucket, period, filters, '', '', timezone, measure, projectPassword)
         rawOverall = await getPerformanceOverallStats([id], period, '', '', timezone, filters, measure, projectPassword)

@@ -500,6 +500,7 @@ export class AnalyticsService {
     period: string,
     safeTimezone: string,
     diff?: number,
+    checkTimebucket = true,
   ): IGetGroupFromTo {
     let groupFrom: dayjs.Dayjs
     let groupTo: dayjs.Dayjs
@@ -530,27 +531,10 @@ export class AnalyticsService {
         )
       }
 
-      if (!_isEmpty(timeBucket)) {
+      if (!_isEmpty(timeBucket) && checkTimebucket) {
         checkIfTBAllowed(timeBucket, from, to)
       }
 
-      // TODO:
-      // THE FOLLOWING CODE SHOULD BE TIMEZONE SPECIFIC BUT HAS SOME ISSUES WITH DATE SHIFTS
-      // IT SHOULD BE REFACTORED AND USED IN THE FUTURE
-      // if (from === to) {
-      //   // When from and to are the same we need to return timezone specific data for 1 specified day
-      //   groupFrom = dayjs.tz(from, safeTimezone).startOf('d')
-      //   groupTo = groupFrom.endOf('d')
-      //   groupFromUTC = groupFrom.utc().format(formatFrom)
-      //   groupToUTC = groupTo.utc().format(formatTo)
-      // } else {
-      //   groupFrom = dayjs.tz(from, safeTimezone)
-      //   groupTo = dayjs.tz(to, safeTimezone)
-      //   groupFromUTC = groupFrom.utc().startOf(timeBucket).format(formatFrom)
-      //   groupToUTC = groupTo.utc().endOf(timeBucket).format(formatTo)
-      // }
-
-      // THIS SHOULD BE REPLACED BY THE CODE ABOVE WHEN IT'S FIXED
       if (from === to) {
         groupFrom = dayjs.tz(from, safeTimezone).startOf('d')
         groupTo = dayjs.tz(from, safeTimezone).endOf('d')
@@ -592,7 +576,7 @@ export class AnalyticsService {
         groupTo = djsNow
       }
 
-      if (!_isEmpty(timeBucket)) {
+      if (!_isEmpty(timeBucket) && checkTimebucket) {
         checkIfTBAllowed(
           timeBucket,
           groupFrom.format(formatFrom),
@@ -1256,30 +1240,26 @@ export class AnalyticsService {
 
   async getAnalyticsSummary(
     pids: string[],
+    timeBucket?: string,
     period?: string,
     from?: string,
     to?: string,
     timezone?: string,
     filters?: string,
   ): Promise<IOverall> {
-    let _from: string
+    const safeTimezone = this.getSafeTimezone(timezone)
 
-    let _to: string
-
-    if (_isEmpty(period) || ['today', 'yesterday', 'custom'].includes(period)) {
-      const safeTimezone = this.getSafeTimezone(timezone)
-
-      const { groupFrom, groupTo } = this.getGroupFromTo(
-        from,
-        to,
-        ['today', 'yesterday'].includes(period) ? TimeBucketType.HOUR : null,
-        period,
-        safeTimezone,
-      )
-
-      _from = groupFrom
-      _to = groupTo
-    }
+    const { groupFromUTC, groupToUTC } = this.getGroupFromTo(
+      from,
+      to,
+      ['today', 'yesterday', 'custom'].includes(period)
+        ? TimeBucketType.HOUR
+        : (timeBucket as TimeBucketType) || TimeBucketType.DAY,
+      period,
+      safeTimezone,
+      undefined,
+      false,
+    )
 
     const result = {}
 
@@ -1359,30 +1339,13 @@ export class AnalyticsService {
           return
         }
 
-        let now: string
-        let periodFormatted: string
-        let periodSubtracted: string
-
-        if (_from && _to) {
-          // diff may be 0 (when selecting data for 1 day), so let's make it 1 to grab some data for the prev day as well
-          const diff = dayjs(_to).diff(dayjs(_from), 'days') || 1
-
-          now = _to
-          periodFormatted = _from
-          periodSubtracted = dayjs(_from)
-            .subtract(diff, 'days')
-            .format('YYYY-MM-DD HH:mm:ss')
-        } else {
-          const amountToSubtract = parseInt(period, 10)
-          const unit = _replace(period, /[0-9]/g, '') as dayjs.ManipulateType
-
-          now = dayjs.utc().format('YYYY-MM-DD HH:mm:ss')
-          const periodRaw = dayjs.utc().subtract(amountToSubtract, unit)
-          periodFormatted = periodRaw.format('YYYY-MM-DD HH:mm:ss')
-          periodSubtracted = periodRaw
-            .subtract(amountToSubtract, unit)
-            .format('YYYY-MM-DD HH:mm:ss')
-        }
+        const periodSubtracted = dayjs
+          .utc(groupToUTC)
+          .subtract(
+            dayjs.utc(groupFromUTC).diff(dayjs.utc(groupToUTC), 'minutes'),
+            'minutes',
+          )
+          .format('YYYY-MM-DD HH:mm:ss')
 
         let queryCurrent = `
           WITH analytics_counts AS (
@@ -1393,7 +1356,7 @@ export class AnalyticsService {
             FROM analytics
             WHERE
               pid = {pid:FixedString(12)}
-              AND created BETWEEN {periodFormatted:String} AND {now:String}
+              AND created BETWEEN {groupFromUTC:String} AND {groupToUTC:String}
               ${filtersQuery}
           ),
           duration_avg AS (
@@ -1404,7 +1367,7 @@ export class AnalyticsService {
               SELECT DISTINCT psid
               FROM analytics
               WHERE pid = {pid:FixedString(12)}
-              AND created BETWEEN {periodFormatted:String} AND {now:String}
+              AND created BETWEEN {groupFromUTC:String} AND {groupToUTC:String}
               ${filtersQuery}
             )
           )
@@ -1423,7 +1386,7 @@ export class AnalyticsService {
             FROM analytics
             WHERE
               pid = {pid:FixedString(12)}
-              AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}
+              AND created BETWEEN {periodSubtracted:String} AND {groupFromUTC:String}
               ${filtersQuery}
           ),
           duration_avg AS (
@@ -1434,7 +1397,7 @@ export class AnalyticsService {
               SELECT DISTINCT psid
               FROM analytics
               WHERE pid = {pid:FixedString(12)}
-              AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}
+              AND created BETWEEN {periodSubtracted:String} AND {groupFromUTC:String}
               ${filtersQuery}
             )
           )
@@ -1450,7 +1413,7 @@ export class AnalyticsService {
             FROM customEV
             WHERE
               pid = {pid:FixedString(12)}
-              AND created BETWEEN {periodFormatted:String} AND {now:String}
+              AND created BETWEEN {groupFromUTC:String} AND {groupToUTC:String}
               ${filtersQuery}
           `
           queryPrevious = `
@@ -1458,7 +1421,7 @@ export class AnalyticsService {
             FROM customEV
             WHERE
               pid = {pid:FixedString(12)}
-              AND created BETWEEN {periodSubtracted:String} AND {periodFormatted:String}
+              AND created BETWEEN {periodSubtracted:String} AND {groupFromUTC:String}
               ${filtersQuery}
           `
         }
@@ -1470,9 +1433,9 @@ export class AnalyticsService {
             query,
             query_params: {
               pid,
-              periodFormatted,
+              groupFromUTC,
+              groupToUTC,
               periodSubtracted,
-              now,
               ...filtersParams,
             },
           })

@@ -790,6 +790,7 @@ export const getCaptchaData = (pid: string, tb = 'hour', period = '3d', filters:
 
 export const getOverallStats = (
   pids: string[],
+  tb: string,
   period: string,
   from = '',
   to = '',
@@ -801,7 +802,7 @@ export const getOverallStats = (
     .get(
       `log/birdseye?pids=[${_map(pids, (pid) => `"${pid}"`).join(
         ',',
-      )}]&period=${period}&from=${from}&to=${to}&timezone=${timezone}&filters=${JSON.stringify(filters)}`,
+      )}]&timeBucket=${tb}&period=${period}&from=${from}&to=${to}&timezone=${timezone}&filters=${JSON.stringify(filters)}`,
       {
         headers: {
           'x-password': password,

@@ -17,7 +17,7 @@ import { withAuthentication, auth } from '~/hoc/protected'
 import useBreakpoint from '~/hooks/useBreakpoint'
 import useDebounce from '~/hooks/useDebounce'
 import useFeatureFlag from '~/hooks/useFeatureFlag'
-import { isSelfhosted, LIVE_VISITORS_UPDATE_INTERVAL } from '~/lib/constants'
+import { isSelfhosted, LIVE_VISITORS_UPDATE_INTERVAL, tbPeriodPairs } from '~/lib/constants'
 import { Overall, Project } from '~/lib/models/Project'
 import { FeatureFlag } from '~/lib/models/User'
 import { useAuth } from '~/providers/AuthProvider'
@@ -100,6 +100,8 @@ const Dashboard = () => {
     const sortParam = searchParams.get('sort')
     return sortParam && Object.values(SORT_OPTIONS).includes(sortParam as any) ? sortParam : SORT_OPTIONS.ALPHA_ASC
   })
+
+  const periodPairs = tbPeriodPairs(t)
 
   const pageAmount = Math.ceil(paginationTotal / pageSize)
 
@@ -236,7 +238,8 @@ const Dashboard = () => {
       if (!projectIds.length || isHostnameNavigationEnabled) return
 
       try {
-        const stats = await getOverallStats(projectIds, activePeriod)
+        const timeBucket = periodPairs.find((p) => p.period === activePeriod)?.tbs[0] || ''
+        const stats = await getOverallStats(projectIds, timeBucket, activePeriod)
         setOverallStats((prev) => ({ ...prev, ...stats }))
       } catch (reason) {
         console.error('Failed to fetch overall stats:', reason)
@@ -267,7 +270,7 @@ const Dashboard = () => {
     const interval = setInterval(updateLiveVisitors, LIVE_VISITORS_UPDATE_INTERVAL)
 
     return () => clearInterval(interval)
-  }, [projects, activePeriod, isHostnameNavigationEnabled]) // Reset interval when projects change
+  }, [projects, activePeriod, isHostnameNavigationEnabled, periodPairs]) // Reset interval when projects change
 
   if (error && isLoading === false) {
     return (
