@@ -1250,6 +1250,9 @@ const ViewProject = () => {
         rotateXAxis,
         chartType,
         events,
+        undefined,
+        onMainChartZoom,
+        shouldEnableZoom,
       )
       setMainChart(() => {
         const generate = billboard.generate(bbSettings)
@@ -1482,6 +1485,8 @@ const ViewProject = () => {
           customEventsChart,
           // @ts-expect-error
           dataCompare?.chart,
+          onMainChartZoom,
+          shouldEnableZoom,
         )
         setChartData(chart as any)
 
@@ -1882,6 +1887,8 @@ const ViewProject = () => {
           chartType,
           timeFormat,
           dataCompare?.chart,
+          onMainChartZoom,
+          shouldEnableZoom,
         )
         setChartDataPerf(chartPerf)
 
@@ -2136,6 +2143,8 @@ const ViewProject = () => {
           chartType,
           customEventsChartData,
           dataChartCompare,
+          onMainChartZoom,
+          shouldEnableZoom,
         )
 
         setMainChart(() => {
@@ -2181,6 +2190,8 @@ const ViewProject = () => {
         chartType,
         timeFormat,
         dataChartPerfCompare,
+        onMainChartZoom,
+        shouldEnableZoom,
       )
 
       setMainChart(() => {
@@ -2388,6 +2399,34 @@ const ViewProject = () => {
     setZoomedTimeRange(null)
   }
 
+  const onMainChartZoom = (domain: [Date, Date] | null) => {
+    if (!domain) {
+      return
+    }
+
+    const [from, to] = domain
+    const newSearchParams = new URLSearchParams(searchParams.toString())
+
+    // Format dates based on time bucket precision
+    let fromFormatted = from.toISOString().split('T')[0] + 'T00:00:00.000Z'
+    let toFormatted = to.toISOString().split('T')[0] + 'T23:59:59.999Z'
+
+    newSearchParams.set('from', fromFormatted)
+    newSearchParams.set('to', toFormatted)
+    newSearchParams.set('period', 'custom')
+    setSearchParams(newSearchParams)
+  }
+
+  const shouldEnableZoom = useMemo(() => {
+    if (period !== 'custom' || !dateRange) {
+      return true
+    }
+
+    // Enable zoom only if the range is more than 1 day
+    const daysDiff = Math.ceil((dateRange[1].getTime() - dateRange[0].getTime()) / (1000 * 3600 * 24))
+    return daysDiff > 1
+  }, [period, dateRange])
+
   const getFilterLink = (column: string, value: string): LinkProps['to'] => {
     const isFilterActive = filters.findIndex((filter) => filter.column === column && filter.filter === value) >= 0
 
@@ -2434,6 +2473,8 @@ const ViewProject = () => {
         type,
         customEventsChartData,
         dataChartCompare,
+        onMainChartZoom,
+        shouldEnableZoom,
       )
 
       setMainChart(() => {
@@ -2452,6 +2493,8 @@ const ViewProject = () => {
         type,
         timeFormat,
         dataChartPerfCompare,
+        onMainChartZoom,
+        shouldEnableZoom,
       )
 
       setMainChart(() => {

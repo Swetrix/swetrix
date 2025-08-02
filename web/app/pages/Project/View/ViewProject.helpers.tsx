@@ -498,6 +498,8 @@ const getSettings = (
   chartType: string,
   customEvents?: Record<string, string[]>,
   compareChart?: TrafficLogResponse['chart'] & { [key: string]: number[] },
+  onZoom?: (domain: [Date, Date] | null) => void,
+  enableZoom?: boolean,
 ): ChartOptions => {
   const xAxisSize = _size(chart.x)
   const lines: GridLineOptions[] = []
@@ -821,6 +823,15 @@ const getSettings = (
     bar: {
       linearGradient: true,
     },
+    zoom:
+      onZoom && enableZoom !== false
+        ? {
+            enabled: zoom(),
+            type: 'drag',
+            onzoom: onZoom,
+            resetButton: false,
+          }
+        : undefined,
     bindto: '#dataChart',
   }
 }
@@ -1290,6 +1301,8 @@ const getSettingsPerf = (
   chartType: string,
   timeFormat: string,
   compareChart?: Record<string, string[]>,
+  onZoom?: (domain: [Date, Date] | null) => void,
+  enableZoom?: boolean,
 ): ChartOptions => {
   const xAxisSize = _size(chart.x)
 
@@ -1501,6 +1514,15 @@ const getSettingsPerf = (
     bar: {
       linearGradient: true,
     },
+    zoom:
+      onZoom && enableZoom !== false
+        ? {
+            enabled: zoom(),
+            type: 'drag',
+            onzoom: onZoom,
+            resetButton: false,
+          }
+        : undefined,
     bindto: '#dataChart',
   }
 }
