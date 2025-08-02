@@ -2799,6 +2799,7 @@ const ViewProject = () => {
           }}
         >
           <>
+            {dataLoading ? <LoadingBar /> : null}
             {!isEmbedded ? <Header /> : null}
             <EventsRunningOutBanner />
             <div
@@ -3730,11 +3731,6 @@ const ViewProject = () => {
                       onRemoveMetric={(id) => onRemoveCustomMetric(id)}
                       resetMetrics={resetCustomMetrics}
                     />
-                    {dataLoading ? (
-                      <div className='mt-4'>
-                        <LoadingBar />
-                      </div>
-                    ) : null}
                     <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
                       {!_isEmpty(panelsData.types)
                         ? _map(TRAFFIC_PANELS_ORDER, (type: string) => {
@@ -4031,11 +4027,6 @@ const ViewProject = () => {
                       />
                     </div>
                     <Filters tnMapping={tnMapping} />
-                    {dataLoading ? (
-                      <div className='mt-4'>
-                        <LoadingBar />
-                      </div>
-                    ) : null}
                     <div className='mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2'>
                       {!_isEmpty(panelsDataPerf.types)
                         ? _map(PERFORMANCE_PANELS_ORDER, (type: keyof typeof tnMapping) => {
@@ -4204,11 +4195,6 @@ const ViewProject = () => {
                     <div className='h-80'>
                       <div className='mt-5 h-80 md:mt-0' id='dataChart' />
                     </div>
-                    {dataLoading ? (
-                      <div className='mt-4'>
-                        <LoadingBar />
-                      </div>
-                    ) : null}
                   </div>
                 ) : null}
 
