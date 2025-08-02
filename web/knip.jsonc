@@ -5,12 +5,10 @@
     "@tailwindcss/forms",
     "@tailwindcss/typography",
     "tailwindcss",
-    "eslint-import-resolver-node",
-    "eslint-import-resolver-typescript"
+    "eslint-import-resolver-node"
   ],
   "ignoreBinaries": ["flyctl"],
   "ignore": ["./ecosystem.config.js", "./app/routes.ts", "./react-router.config.ts", "./app/routes/[robots.txt].tsx"],
-  "entry": ["./app/root.tsx"],
   "project": ["./app/**/*.{js,ts,tsx,jsx,cjs}"],
   "paths": {
     "~/*": ["./app/*"]

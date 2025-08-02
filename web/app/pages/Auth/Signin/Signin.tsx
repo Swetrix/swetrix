@@ -188,7 +188,7 @@ const Signin = () => {
       setRefreshToken(refreshToken)
 
       setIsLoading(false)
-      
+
       // Redirect to onboarding if user hasn't completed it
       if (!user.hasCompletedOnboarding) {
         navigate(routes.onboarding)

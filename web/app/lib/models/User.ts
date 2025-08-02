@@ -28,7 +28,7 @@ export enum FeatureFlag {
   'dashboard-hostname-cards' = 'dashboard-hostname-cards',
 }
 
-export enum OnboardingStep {
+enum OnboardingStep {
   WELCOME = 'welcome',
   CREATE_PROJECT = 'create_project',
   SETUP_TRACKING = 'setup_tracking',
