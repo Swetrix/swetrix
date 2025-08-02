@@ -2554,6 +2554,18 @@ export class AnalyticsService {
 
     const { visits, uniques, sdur } = this.extractChartData(data, xShifted)
 
+    // Propagate the previous cumulative value forward for empty buckets
+    if (mode === ChartRenderMode.CUMULATIVE) {
+      for (let i = 1; i < visits.length; ++i) {
+        if (visits[i] === 0) {
+          visits[i] = visits[i - 1]
+        }
+        if (uniques[i] === 0) {
+          uniques[i] = uniques[i - 1]
+        }
+      }
+    }
+
     return Promise.resolve({
       chart: {
         x: xShifted,
