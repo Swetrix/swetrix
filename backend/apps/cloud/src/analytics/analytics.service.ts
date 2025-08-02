@@ -244,6 +244,8 @@ export const getLowestPossibleTimeBucket = (
   return _head(tbMap.tb)
 }
 
+const EXCLUDE_NULL_FOR = ['so', 'me', 'ca', 'te', 'co']
+
 const generateParamsQuery = (
   col: string,
   subQuery: string,
@@ -278,19 +280,19 @@ const generateParamsQuery = (
       return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} GROUP BY ${columnsQuery}`
     }
 
-    return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
+    return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} GROUP BY ${columnsQuery}`
   }
 
   if (type === 'errors') {
-    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} GROUP BY ${columnsQuery}`
   }
 
   if (type === 'captcha') {
-    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${col}`
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} GROUP BY ${col}`
   }
 
   if (customEVFilterApplied) {
-    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} GROUP BY ${columnsQuery}`
   }
 
   if (col === 'pg' || col === 'host') {
@@ -298,10 +300,10 @@ const generateParamsQuery = (
   }
 
   if (isPageInclusiveFilterSet) {
-    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} ${EXCLUDE_NULL_FOR.includes(col) ? `AND ${col} IS NOT NULL` : ''} GROUP BY ${columnsQuery}`
   }
 
-  return `SELECT ${columnsQuery}, count(DISTINCT psid) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
+  return `SELECT ${columnsQuery}, count(DISTINCT psid) as count ${subQuery} ${EXCLUDE_NULL_FOR.includes(col) ? `AND ${col} IS NOT NULL` : ''} GROUP BY ${columnsQuery}`
 }
 
 export enum DataType {
@@ -2631,7 +2633,6 @@ export class AnalyticsService {
         entry_page as name,
         count() as count
       FROM session_first_pages
-      WHERE entry_page IS NOT NULL
       GROUP BY entry_page
       ORDER BY count DESC
     `
@@ -2662,7 +2663,6 @@ export class AnalyticsService {
         exit_page as name,
         count() as count
       FROM session_last_pages
-      WHERE exit_page IS NOT NULL
       GROUP BY exit_page
       ORDER BY count DESC
     `

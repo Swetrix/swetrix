@@ -236,6 +236,8 @@ const checkIfTBAllowed = (
   }
 }
 
+const EXCLUDE_NULL_FOR = ['so', 'me', 'ca', 'te', 'co']
+
 const generateParamsQuery = (
   col: string,
   subQuery: string,
@@ -270,15 +272,15 @@ const generateParamsQuery = (
       return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} GROUP BY ${columnsQuery}`
     }
 
-    return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
+    return `SELECT ${columnsQuery}, round(divide(${fn}(pageLoad), 1000), 2) as count ${subQuery} GROUP BY ${columnsQuery}`
   }
 
   if (type === 'errors') {
-    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} GROUP BY ${columnsQuery}`
   }
 
   if (customEVFilterApplied) {
-    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} GROUP BY ${columnsQuery}`
   }
 
   if (col === 'pg' || col === 'host') {
@@ -286,10 +288,10 @@ const generateParamsQuery = (
   }
 
   if (isPageInclusiveFilterSet) {
-    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
+    return `SELECT ${columnsQuery}, count(*) as count ${subQuery} GROUP BY ${columnsQuery}`
   }
 
-  return `SELECT ${columnsQuery}, count(DISTINCT psid) as count ${subQuery} AND ${col} IS NOT NULL GROUP BY ${columnsQuery}`
+  return `SELECT ${columnsQuery}, count(DISTINCT psid) as count ${subQuery} ${EXCLUDE_NULL_FOR.includes(col) ? `AND ${col} IS NOT NULL` : ''} GROUP BY ${columnsQuery}`
 }
 
 export enum DataType {
@@ -2405,19 +2407,93 @@ export class AnalyticsService {
     }
   }
 
+  async getEntryPages(
+    subQuery: string,
+    paramsData: any,
+  ): Promise<{ name: string; count: number }[]> {
+    const query = `
+      WITH session_first_pages AS (
+        SELECT 
+          psid,
+          argMin(pg, created) as entry_page
+        ${subQuery}
+        GROUP BY psid
+      )
+      SELECT
+        entry_page as name,
+        count() as count
+      FROM session_first_pages
+      GROUP BY entry_page
+      ORDER BY count DESC
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: paramsData.params,
+      })
+      .then(resultSet => resultSet.json<any>())
+
+    return data || []
+  }
+
+  async getExitPages(
+    subQuery: string,
+    paramsData: any,
+  ): Promise<{ name: string; count: number }[]> {
+    const query = `
+      WITH session_last_pages AS (
+        SELECT
+          psid,
+          argMax(pg, created) as exit_page
+        ${subQuery}
+        GROUP BY psid
+      )
+      SELECT
+        exit_page as name,
+        count() as count
+      FROM session_last_pages
+      GROUP BY exit_page
+      ORDER BY count DESC
+    `
+
+    const { data } = await clickhouse
+      .query({
+        query,
+        query_params: paramsData.params,
+      })
+      .then(resultSet => resultSet.json<any>())
+
+    return data || []
+  }
+
   async groupParamsByTimeBucket(
     subQuery: string,
     paramsData: any,
     customEVFilterApplied: boolean,
     parsedFilters: Array<{ [key: string]: string }>,
   ): Promise<object | void> {
-    return this.generateParams(
-      parsedFilters,
-      subQuery,
-      customEVFilterApplied,
-      paramsData,
-      'traffic',
-    )
+    const [params, entryPage, exitPage] = await Promise.all([
+      this.generateParams(
+        parsedFilters,
+        subQuery,
+        customEVFilterApplied,
+        paramsData,
+        'traffic',
+      ),
+      customEVFilterApplied
+        ? Promise.resolve([])
+        : this.getEntryPages(subQuery, paramsData),
+      customEVFilterApplied
+        ? Promise.resolve([])
+        : this.getExitPages(subQuery, paramsData),
+    ])
+
+    return {
+      ...params,
+      entryPage,
+      exitPage,
+    }
   }
 
   async groupChartByTimeBucket(

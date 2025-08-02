@@ -128,7 +128,8 @@
     "resultsPerPage": "Results per page",
     "communityEdition": "Community Edition",
     "allPosts": "All posts",
-    "details": "Details"
+    "details": "Details",
+    "unknown": "Unknown"
   },
   "featureFlags": {
     "title": "Feature Flags",
@@ -826,6 +827,7 @@
     "support": "Contact support"
   },
   "project": {
+    "directNone": "Direct / None",
     "copy": "Copy",
     "copied": "Copied!",
     "percentage": "Percentage",

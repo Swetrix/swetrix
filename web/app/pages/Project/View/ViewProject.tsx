@@ -1,4 +1,4 @@
-import { MagnifyingGlassIcon, ChevronLeftIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
+import { MagnifyingGlassIcon, ChevronLeftIcon } from '@heroicons/react/24/outline'
 import { MoonIcon, SunIcon } from '@heroicons/react/24/solid'
 import SwetrixSDK from '@swetrix/sdk'
 import billboard, { Chart } from 'billboard.js'
@@ -91,9 +91,6 @@ import {
   LS_IS_ACTIVE_COMPARE_KEY,
   TITLE_SUFFIX,
   MARKETPLACE_URL,
-  BROWSER_LOGO_MAP,
-  OS_LOGO_MAP,
-  OS_LOGO_MAP_DARK,
   TBPeriodPairsProps,
   ERROR_PANELS_ORDER,
   ERROR_PERIOD_PAIRS,
@@ -198,7 +195,7 @@ import {
   SHORTCUTS_GENERAL_LISTENERS,
   SHORTCUTS_TIMEBUCKETS_LISTENERS,
   CHART_MEASURES_MAPPING_PERF,
-  deviceIconMapping,
+  getDeviceRowMapper,
 } from './ViewProject.helpers'
 
 const SESSIONS_TAKE = 30
@@ -3416,7 +3413,7 @@ const ViewProject = () => {
                                   )
                                 }
 
-                                if (cc) {
+                                if (cc !== undefined) {
                                   return <CCRow cc={cc} name={entryName} language={language} />
                                 }
 
@@ -3473,91 +3470,6 @@ const ViewProject = () => {
                                 { id: 'dv', label: t('project.mapping.dv') },
                               ]
 
-                              const getDeviceRowMapper = (activeTab: string) => {
-                                if (activeTab === 'br') {
-                                  // eslint-disable-next-line
-                                  return (entry: any) => {
-                                    const { name: entryName, version } = entry
-                                    const logoKey = entryName
-                                    // @ts-expect-error
-                                    const logoUrl = BROWSER_LOGO_MAP[logoKey]
-                                    const displayName = version ? `${entryName} ${version}` : entryName
-
-                                    if (!logoUrl) {
-                                      return (
-                                        <>
-                                          <GlobeAltIcon className='h-5 w-5' />
-                                          &nbsp;
-                                          {displayName}
-                                        </>
-                                      )
-                                    }
-
-                                    return (
-                                      <>
-                                        <img src={logoUrl} className='h-5 w-5' alt='' />
-                                        &nbsp;
-                                        {displayName}
-                                      </>
-                                    )
-                                  }
-                                }
-                                if (activeTab === 'os') {
-                                  // eslint-disable-next-line
-                                  return (entry: any) => {
-                                    const { name: entryName, version } = entry
-                                    const logoKey = entryName
-                                    // @ts-expect-error
-                                    const logoPathLight = OS_LOGO_MAP[logoKey]
-                                    // @ts-expect-error
-                                    const logoPathDark = OS_LOGO_MAP_DARK[logoKey]
-                                    const displayName = version ? `${entryName} ${version}` : entryName
-
-                                    let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
-                                    logoPath ||= logoPathLight
-
-                                    if (!logoPath) {
-                                      return (
-                                        <>
-                                          <GlobeAltIcon className='h-5 w-5' />
-                                          &nbsp;
-                                          {displayName}
-                                        </>
-                                      )
-                                    }
-
-                                    const logoUrl = `/${logoPath}`
-                                    return (
-                                      <>
-                                        <img src={logoUrl} className='h-5 w-5 dark:fill-gray-50' alt='' />
-                                        &nbsp;
-                                        {displayName}
-                                      </>
-                                    )
-                                  }
-                                }
-                                if (activeTab === 'dv') {
-                                  // eslint-disable-next-line
-                                  return (entry: { name: keyof typeof deviceIconMapping }) => {
-                                    const { name: entryName } = entry
-                                    const icon = deviceIconMapping[entryName]
-
-                                    if (!icon) {
-                                      return entryName
-                                    }
-
-                                    return (
-                                      <>
-                                        {icon}
-                                        &nbsp;
-                                        {entryName}
-                                      </>
-                                    )
-                                  }
-                                }
-                                return undefined
-                              }
-
                               return (
                                 <Panel
                                   key={errorsActiveTabs.device}
@@ -3571,7 +3483,7 @@ const ViewProject = () => {
                                   }
                                   activeTabId={errorsActiveTabs.device}
                                   data={activeError?.params?.[errorsActiveTabs.device] || []}
-                                  rowMapper={getDeviceRowMapper(errorsActiveTabs.device)}
+                                  rowMapper={getDeviceRowMapper(errorsActiveTabs.device, theme, t)}
                                   capitalize={errorsActiveTabs.device === 'dv'}
                                   versionData={
                                     errorsActiveTabs.device === 'br'
@@ -3795,7 +3707,13 @@ const ViewProject = () => {
                               const rowMapper = (entry: CountryEntry) => {
                                 const { name: entryName, cc } = entry
 
+                                console.log('entry:', entry)
+
                                 if (panelsActiveTabs.location === 'lc') {
+                                  if (entryName === null) {
+                                    return <CCRow cc={null} language={language} />
+                                  }
+
                                   const entryNameArray = entryName.split('-')
                                   const displayName = getLocaleDisplayName(entryName, language)
 
@@ -3808,7 +3726,7 @@ const ViewProject = () => {
                                   )
                                 }
 
-                                if (cc) {
+                                if (cc !== undefined) {
                                   return <CCRow cc={cc} name={entryName} language={language} />
                                 }
 
@@ -3862,91 +3780,6 @@ const ViewProject = () => {
                                 { id: 'dv', label: t('project.mapping.dv') },
                               ]
 
-                              const getDeviceRowMapper = (activeTab: string) => {
-                                if (activeTab === 'br') {
-                                  // eslint-disable-next-line
-                                  return (entry: any) => {
-                                    const { name: entryName, version } = entry
-                                    const logoKey = entryName
-                                    // @ts-expect-error
-                                    const logoUrl = BROWSER_LOGO_MAP[logoKey]
-                                    const displayName = version ? `${entryName} ${version}` : entryName
-
-                                    if (!logoUrl) {
-                                      return (
-                                        <>
-                                          <GlobeAltIcon className='h-5 w-5' />
-                                          &nbsp;
-                                          {displayName}
-                                        </>
-                                      )
-                                    }
-
-                                    return (
-                                      <>
-                                        <img src={logoUrl} className='h-5 w-5' alt='' />
-                                        &nbsp;
-                                        {displayName}
-                                      </>
-                                    )
-                                  }
-                                }
-                                if (activeTab === 'os') {
-                                  // eslint-disable-next-line
-                                  return (entry: any) => {
-                                    const { name: entryName, version } = entry
-                                    const logoKey = entryName
-                                    // @ts-expect-error
-                                    const logoPathLight = OS_LOGO_MAP[logoKey]
-                                    // @ts-expect-error
-                                    const logoPathDark = OS_LOGO_MAP_DARK[logoKey]
-                                    const displayName = version ? `${entryName} ${version}` : entryName
-
-                                    let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
-                                    logoPath ||= logoPathLight
-
-                                    if (!logoPath) {
-                                      return (
-                                        <>
-                                          <GlobeAltIcon className='h-5 w-5' />
-                                          &nbsp;
-                                          {displayName}
-                                        </>
-                                      )
-                                    }
-
-                                    const logoUrl = `/${logoPath}`
-                                    return (
-                                      <>
-                                        <img src={logoUrl} className='h-5 w-5 dark:fill-gray-50' alt='' />
-                                        &nbsp;
-                                        {displayName}
-                                      </>
-                                    )
-                                  }
-                                }
-                                if (activeTab === 'dv') {
-                                  // eslint-disable-next-line
-                                  return (entry: { name: keyof typeof deviceIconMapping }) => {
-                                    const { name: entryName } = entry
-                                    const icon = deviceIconMapping[entryName]
-
-                                    if (!icon) {
-                                      return entryName
-                                    }
-
-                                    return (
-                                      <>
-                                        {icon}
-                                        &nbsp;
-                                        {entryName}
-                                      </>
-                                    )
-                                  }
-                                }
-                                return undefined
-                              }
-
                               return (
                                 <Panel
                                   key={panelsActiveTabs.device}
@@ -3960,7 +3793,7 @@ const ViewProject = () => {
                                   }
                                   activeTabId={panelsActiveTabs.device}
                                   data={panelsData.data[panelsActiveTabs.device]}
-                                  rowMapper={getDeviceRowMapper(panelsActiveTabs.device)}
+                                  rowMapper={getDeviceRowMapper(panelsActiveTabs.device, theme, t)}
                                   capitalize={panelsActiveTabs.device === 'dv'}
                                   versionData={
                                     panelsActiveTabs.device === 'br'
@@ -4002,9 +3835,9 @@ const ViewProject = () => {
                                     if (!entryName) {
                                       return (
                                         <span className='italic'>
-                                          {panelsActiveTabs.page === 'pg'
-                                            ? t('common.notSet')
-                                            : t('project.unknownHost')}
+                                          {panelsActiveTabs.page === 'host'
+                                            ? t('project.unknownHost')
+                                            : t('common.notSet')}
                                         </span>
                                       )
                                     }
@@ -4174,7 +4007,7 @@ const ViewProject = () => {
                               const rowMapper = (entry: CountryEntry) => {
                                 const { name: entryName, cc } = entry
 
-                                if (cc) {
+                                if (cc !== undefined) {
                                   return <CCRow cc={cc} name={entryName} language={language} />
                                 }
 
@@ -4232,57 +4065,6 @@ const ViewProject = () => {
                                 { id: 'dv', label: t('project.mapping.dv') },
                               ]
 
-                              const getDeviceRowMapper = (activeTab: string) => {
-                                if (activeTab === 'br') {
-                                  // eslint-disable-next-line
-                                  return (entry: any) => {
-                                    const { name: entryName, version } = entry
-                                    const logoKey = entryName
-                                    // @ts-expect-error
-                                    const logoUrl = BROWSER_LOGO_MAP[logoKey]
-                                    const displayName = version ? `${entryName} ${version}` : entryName
-
-                                    if (!logoUrl) {
-                                      return (
-                                        <>
-                                          <GlobeAltIcon className='h-5 w-5' />
-                                          &nbsp;
-                                          {displayName}
-                                        </>
-                                      )
-                                    }
-
-                                    return (
-                                      <>
-                                        <img src={logoUrl} className='h-5 w-5' alt='' />
-                                        &nbsp;
-                                        {displayName}
-                                      </>
-                                    )
-                                  }
-                                }
-                                if (activeTab === 'dv') {
-                                  // eslint-disable-next-line
-                                  return (entry: { name: keyof typeof deviceIconMapping }) => {
-                                    const { name: entryName } = entry
-                                    const icon = deviceIconMapping[entryName]
-
-                                    if (!icon) {
-                                      return entryName
-                                    }
-
-                                    return (
-                                      <>
-                                        {icon}
-                                        &nbsp;
-                                        {entryName}
-                                      </>
-                                    )
-                                  }
-                                }
-                                return undefined
-                              }
-
                               return (
                                 <Panel
                                   key={performanceActiveTabs.device}
@@ -4299,7 +4081,7 @@ const ViewProject = () => {
                                   }
                                   activeTabId={performanceActiveTabs.device}
                                   data={panelsDataPerf.data[performanceActiveTabs.device]}
-                                  rowMapper={getDeviceRowMapper(performanceActiveTabs.device)}
+                                  rowMapper={getDeviceRowMapper(performanceActiveTabs.device, theme, t)}
                                   capitalize={performanceActiveTabs.device === 'dv'}
                                   // @ts-expect-error
                                   valueMapper={(value) => getStringFromTime(getTimeFromSeconds(value), true)}

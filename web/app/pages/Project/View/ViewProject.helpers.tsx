@@ -21,6 +21,8 @@ import _startsWith from 'lodash/startsWith'
 import _toNumber from 'lodash/toNumber'
 import _toString from 'lodash/toString'
 import {
+  CircleQuestionMark,
+  GlobeIcon,
   CompassIcon,
   CpuIcon,
   FileTextIcon,
@@ -45,6 +47,9 @@ import {
   tbsFormatMapperTooltip24h,
   PROJECT_TABS,
   isSelfhosted,
+  BROWSER_LOGO_MAP,
+  OS_LOGO_MAP,
+  OS_LOGO_MAP_DARK,
 } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
 import { AnalyticsFunnel } from '~/lib/models/Project'
@@ -1581,6 +1586,124 @@ const SHORTCUTS_GENERAL_LISTENERS = isSelfhosted
   : _SHORTCUTS_GENERAL_LISTENERS + ',alt+f,alt+ƒ'
 
 const SHORTCUTS_TIMEBUCKETS_LISTENERS = 'h, t, y, d, w, m, q, l, z, a, u, c'
+
+export const getDeviceRowMapper = (activeTab: string, theme: string, t: typeof i18next.t) => {
+  if (activeTab === 'br') {
+    // eslint-disable-next-line
+    return (entry: any) => {
+      const { name: entryName, version } = entry
+      const logoKey = entryName
+      // @ts-expect-error
+      const logoUrl = BROWSER_LOGO_MAP[logoKey]
+      const displayName = version ? `${entryName} ${version}` : entryName
+
+      if (entryName === null) {
+        return (
+          <>
+            <GlobeIcon className='h-5 w-5' strokeWidth={1.5} />
+            &nbsp;
+            <span className='italic'>{t('common.unknown')}</span>
+          </>
+        )
+      }
+
+      if (!logoUrl) {
+        return (
+          <>
+            <GlobeIcon className='h-5 w-5' strokeWidth={1.5} />
+            &nbsp;
+            {displayName}
+          </>
+        )
+      }
+
+      return (
+        <>
+          <img src={logoUrl} className='h-5 w-5' alt='' />
+          &nbsp;
+          {displayName}
+        </>
+      )
+    }
+  }
+
+  if (activeTab === 'os') {
+    // eslint-disable-next-line
+    return (entry: any) => {
+      const { name: entryName, version } = entry
+      const logoKey = entryName
+      // @ts-expect-error
+      const logoPathLight = OS_LOGO_MAP[logoKey]
+      // @ts-expect-error
+      const logoPathDark = OS_LOGO_MAP_DARK[logoKey]
+      const displayName = version ? `${entryName} ${version}` : entryName
+
+      let logoPath = theme === 'dark' ? logoPathDark : logoPathLight
+      logoPath ||= logoPathLight
+
+      if (entryName === null) {
+        return (
+          <>
+            <GlobeIcon className='h-5 w-5' strokeWidth={1.5} />
+            &nbsp;
+            <span className='italic'>{t('common.unknown')}</span>
+          </>
+        )
+      }
+
+      if (!logoPath) {
+        return (
+          <>
+            <GlobeIcon className='h-5 w-5' strokeWidth={1.5} />
+            &nbsp;
+            {displayName}
+          </>
+        )
+      }
+
+      const logoUrl = `/${logoPath}`
+      return (
+        <>
+          <img src={logoUrl} className='h-5 w-5 dark:fill-gray-50' alt='' />
+          &nbsp;
+          {displayName}
+        </>
+      )
+    }
+  }
+
+  if (activeTab === 'dv') {
+    // eslint-disable-next-line
+    return (entry: { name: keyof typeof deviceIconMapping }) => {
+      const { name: entryName } = entry
+      const icon = deviceIconMapping[entryName]
+
+      if (entryName === null) {
+        return (
+          <>
+            <CircleQuestionMark className='h-5 w-5' strokeWidth={1.5} />
+            &nbsp;
+            <span className='italic'>{t('common.unknown')}</span>
+          </>
+        )
+      }
+
+      if (!icon) {
+        return entryName
+      }
+
+      return (
+        <>
+          {icon}
+          &nbsp;
+          {entryName}
+        </>
+      )
+    }
+  }
+
+  return undefined
+}
 
 export {
   getFormatDate,
