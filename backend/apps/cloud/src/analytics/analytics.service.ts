@@ -142,7 +142,7 @@ const timeBucketToDays = [
     lt: 28,
     tb: [TimeBucketType.DAY, TimeBucketType.MONTH],
   }, // 4 weeks
-  { lt: 366, tb: [TimeBucketType.MONTH] }, // 12 months
+  { lt: 366, tb: [TimeBucketType.DAY, TimeBucketType.MONTH] }, // 12 months
   { lt: 732, tb: [TimeBucketType.MONTH] }, // 24 months
   { lt: 1464, tb: [TimeBucketType.MONTH, TimeBucketType.YEAR] }, // 48 months
   { lt: 99999, tb: [TimeBucketType.YEAR] },

@@ -106,13 +106,13 @@ export const tbPeriodPairs = (
   {
     label: t('project.lastXMonths', { amount: 3 }),
     period: '3M',
-    tbs: ['month'],
+    tbs: ['day', 'month'],
     countDays: 90,
   },
   {
     label: t('project.lastXMonths', { amount: 12 }),
     period: '12M',
-    tbs: ['month'],
+    tbs: ['day', 'month'],
     countDays: 365,
   },
   {
@@ -264,7 +264,7 @@ export const timeBucketToDays: {
   { lt: 1, tb: ['hour'] }, // 1 days
   { lt: 7, tb: ['hour', 'day'] }, // 7 days
   { lt: 28, tb: ['day'] }, // 4 weeks
-  { lt: 366, tb: ['month'] }, // 12 months
+  { lt: 366, tb: ['day', 'month'] }, // 12 months
   { lt: 732, tb: ['month'] }, // 24 months
 ]
 
