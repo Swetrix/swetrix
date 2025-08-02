@@ -2602,7 +2602,7 @@ const ViewProject = () => {
   })
 
   const TabsSelector = () => (
-    <div>
+    <div className='mb-[1px]'>
       <div className='sm:hidden'>
         <Select
           items={tabs}
@@ -2819,7 +2819,7 @@ const ViewProject = () => {
                 (activeTab !== PROJECT_TABS.sessions || !activePSID) &&
                 (activeFunnel || activeTab !== PROJECT_TABS.funnels) ? (
                   <>
-                    <div className='mt-2 flex flex-col items-center justify-between lg:flex-row'>
+                    <div className='top-0 z-20 flex flex-col items-center justify-between bg-gray-50/50 py-2 backdrop-blur-md lg:sticky lg:flex-row dark:bg-slate-900/50'>
                       <div className='flex flex-wrap items-center justify-center gap-x-5 gap-y-2'>
                         <h2 className='text-xl font-bold break-words break-all text-gray-900 dark:text-gray-50'>
                           {/* If tab is funnels - then display a funnel name, otherwise a project name */}
@@ -2835,7 +2835,7 @@ const ViewProject = () => {
                               title={t('project.refreshStats')}
                               onClick={refreshStats}
                               className={cx(
-                                'relative rounded-md border border-gray-50/0 bg-gray-50 p-2 text-sm font-medium hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+                                'relative rounded-md border border-transparent p-2 text-sm font-medium hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
                                 {
                                   'cursor-not-allowed opacity-50': authLoading || dataLoading,
                                 },
@@ -2861,7 +2861,7 @@ const ViewProject = () => {
                                   setShowFiltersSearch(true)
                                 }}
                                 className={cx(
-                                  'relative rounded-md border border-gray-50/0 bg-gray-50 p-2 text-sm font-medium hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+                                  'relative rounded-md border border-transparent p-2 text-sm font-medium hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
                                   {
                                     'cursor-not-allowed opacity-50': authLoading || dataLoading,
                                   },
@@ -3077,7 +3077,7 @@ const ViewProject = () => {
                             title={t('project.refreshStats')}
                             onClick={refreshStats}
                             className={cx(
-                              'relative rounded-md border border-gray-50/0 bg-gray-50 p-2 text-sm font-medium hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+                              'relative rounded-md border border-transparent p-2 text-sm font-medium hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
                               {
                                 'cursor-not-allowed opacity-50': authLoading || dataLoading,
                               },
@@ -3287,7 +3287,7 @@ const ViewProject = () => {
                         title={t('project.loadMore')}
                         onClick={() => loadSessions()}
                         className={cx(
-                          'relative mx-auto mt-2 flex items-center rounded-md border border-gray-50/0 bg-gray-50 p-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+                          'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
                           {
                             'cursor-not-allowed opacity-50': sessionsLoading || sessionsLoading === null,
                             hidden: sessionsLoading && _isEmpty(sessions),
@@ -3375,7 +3375,7 @@ const ViewProject = () => {
                         title={t('project.loadMore')}
                         onClick={() => loadErrors()}
                         className={cx(
-                          'relative mx-auto mt-2 flex items-center rounded-md border border-gray-50/0 bg-gray-50 p-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
+                          'relative mx-auto mt-2 flex items-center rounded-md border border-transparent p-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:bg-white focus:z-10 focus:ring-1 focus:ring-indigo-500 focus:outline-hidden dark:bg-slate-900 dark:text-gray-50 hover:dark:border-slate-800/50 dark:hover:bg-slate-800 focus:dark:ring-gray-200',
                           {
                             'cursor-not-allowed opacity-50': errorsLoading,
                             hidden: errorsLoading && _isEmpty(errors),
@@ -3617,7 +3617,7 @@ const ViewProject = () => {
                   <NoEvents filters={filters} />
                 ) : null}
                 {activeTab === PROJECT_TABS.traffic ? (
-                  <div className={cx('pt-2', { hidden: isPanelsDataEmpty || analyticsLoading })}>
+                  <div className={cx({ hidden: isPanelsDataEmpty || analyticsLoading })}>
                     <div className='relative overflow-hidden rounded-lg border border-gray-300 bg-white p-4 dark:border-slate-800/60 dark:bg-slate-800/25'>
                       <div className='absolute top-2 right-2 flex items-center gap-2'>
                         <Dropdown
