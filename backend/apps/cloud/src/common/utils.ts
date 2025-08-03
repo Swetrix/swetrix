@@ -243,6 +243,7 @@ export const getGeoDetails = (ip: string, tz?: string): IPGeoDetails => {
   const country = data?.country?.iso_code || null
   // TODO: Add city overrides, for example, Colinton -> Edinburgh, etc.
   const city = data?.city?.names?.en || null
+  // TODO: Store ISO code, not region name
   const region = data?.subdivisions?.[0]?.names?.en || null
 
   if (country) {

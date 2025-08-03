@@ -37,7 +37,7 @@ import {
   PercentIcon,
   KeyboardIcon,
 } from 'lucide-react'
-import React, { useState, useEffect, useMemo, useRef, useCallback, createContext, useContext } from 'react'
+import React, { useState, useEffect, useMemo, useRef, useCallback, createContext, useContext, lazy, Suspense } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, Link, useSearchParams, LinkProps } from 'react-router'
@@ -149,7 +149,7 @@ import { ErrorDetails } from './components/ErrorDetails'
 import { Errors } from './components/Errors'
 import Filters from './components/Filters'
 import FunnelsList from './components/FunnelsList'
-import InteractiveMap from './components/InteractiveMap'
+const InteractiveMap = lazy(() => import('./components/InteractiveMap'))
 import LiveVisitorsDropdown from './components/LiveVisitorsDropdown'
 import LockedDashboard from './components/LockedDashboard'
 import { MetricCard, MetricCards, PerformanceMetricCards } from './components/MetricCards'
@@ -3485,18 +3485,33 @@ const ViewProject = () => {
                                     errorsActiveTabs.location === 'map'
                                       ? () => {
                                           const countryData = activeError?.params?.cc || []
+                                          const regionData = activeError?.params?.rg || []
                                           // @ts-expect-error
                                           const total = countryData.reduce((acc, curr) => acc + curr.count, 0)
 
                                           return (
-                                            <InteractiveMap
-                                              data={countryData}
-                                              total={total}
-                                              onClickCountry={(key) => {
-                                                const link = getFilterLink(id, key)
-                                                navigate(link)
-                                              }}
-                                            />
+                                            <Suspense
+                                              fallback={
+                                                <div className='flex items-center justify-center h-full'>
+                                                  <div className='flex flex-col items-center gap-2'>
+                                                    <div className='h-8 w-8 rounded-full border-2 border-blue-400 border-t-transparent animate-spin'></div>
+                                                    <span className='text-sm text-neutral-600 dark:text-neutral-300'>
+                                                      Loading map...
+                                                    </span>
+                                                  </div>
+                                                </div>
+                                              }
+                                            >
+                                              <InteractiveMap
+                                                data={countryData}
+                                                regionData={regionData}
+                                                total={total}
+                                                onClickCountry={(key) => {
+                                                  const link = getFilterLink(id, key)
+                                                  navigate(link)
+                                                }}
+                                              />
+                                            </Suspense>
                                           )
                                         }
                                       : undefined
@@ -3793,17 +3808,32 @@ const ViewProject = () => {
                                     panelsActiveTabs.location === 'map'
                                       ? () => {
                                           const countryData = panelsData.data?.cc || []
+                                          const regionData = panelsData.data?.rg || []
                                           const total = countryData.reduce((acc, curr) => acc + curr.count, 0)
 
                                           return (
-                                            <InteractiveMap
-                                              data={countryData}
-                                              total={total}
-                                              onClickCountry={(key) => {
-                                                const link = getFilterLink(id, key)
-                                                navigate(link)
-                                              }}
-                                            />
+                                            <Suspense
+                                              fallback={
+                                                <div className='flex items-center justify-center h-full'>
+                                                  <div className='flex flex-col items-center gap-2'>
+                                                    <div className='h-8 w-8 rounded-full border-2 border-blue-400 border-t-transparent animate-spin'></div>
+                                                    <span className='text-sm text-neutral-600 dark:text-neutral-300'>
+                                                      Loading map...
+                                                    </span>
+                                                  </div>
+                                                </div>
+                                              }
+                                            >
+                                              <InteractiveMap
+                                                data={countryData}
+                                                regionData={regionData}
+                                                total={total}
+                                                onClickCountry={(key) => {
+                                                  const link = getFilterLink(id, key)
+                                                  navigate(link)
+                                                }}
+                                              />
+                                            </Suspense>
                                           )
                                         }
                                       : undefined
@@ -4071,18 +4101,33 @@ const ViewProject = () => {
                                     performanceActiveTabs.location === 'map'
                                       ? () => {
                                           const countryData = panelsDataPerf.data?.cc || []
+                                          const regionData = panelsDataPerf.data?.rg || []
                                           // @ts-expect-error
                                           const total = countryData.reduce((acc, curr) => acc + curr.count, 0)
 
                                           return (
-                                            <InteractiveMap
-                                              data={countryData}
-                                              total={total}
-                                              onClickCountry={(key) => {
-                                                const link = getFilterLink(id, key)
-                                                navigate(link)
-                                              }}
-                                            />
+                                            <Suspense
+                                              fallback={
+                                                <div className='flex items-center justify-center h-full'>
+                                                  <div className='flex flex-col items-center gap-2'>
+                                                    <div className='h-8 w-8 rounded-full border-2 border-blue-400 border-t-transparent animate-spin'></div>
+                                                    <span className='text-sm text-neutral-600 dark:text-neutral-300'>
+                                                      Loading map...
+                                                    </span>
+                                                  </div>
+                                                </div>
+                                              }
+                                            >
+                                              <InteractiveMap
+                                                data={countryData}
+                                                regionData={regionData}
+                                                total={total}
+                                                onClickCountry={(key) => {
+                                                  const link = getFilterLink(id, key)
+                                                  navigate(link)
+                                                }}
+                                              />
+                                            </Suspense>
                                           )
                                         }
                                       : undefined

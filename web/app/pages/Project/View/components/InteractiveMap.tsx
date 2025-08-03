@@ -1,144 +1,349 @@
-import cx from 'clsx'
-import _map from 'lodash/map'
-import _reduce from 'lodash/reduce'
-import React, { memo, useState, useMemo } from 'react'
+import { scalePow } from 'd3-scale'
+import { Feature, GeoJsonObject } from 'geojson'
+import { Layer } from 'leaflet'
+import 'leaflet/dist/leaflet.css'
+import _round from 'lodash/round'
+import React, { memo, useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { GeoJSON, MapContainer, useMapEvent } from 'react-leaflet'
+import { ClientOnly } from 'remix-utils/client-only'
 
 import { PROJECT_TABS } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
-import countriesList from '~/utils/countries'
 import { getTimeFromSeconds, getStringFromTime, nFormatter } from '~/utils/generic'
-import countries from '~/utils/isoCountries'
+import { loadCountriesGeoData, loadRegionsGeoData } from '~/utils/geoData'
 
 import { useViewProjectContext } from '../ViewProject'
 
 interface InteractiveMapProps {
   data: Entry[]
+  regionData?: Entry[]
   onClickCountry: (country: string) => void
   total: number
 }
 
-interface CursorPosition {
-  pageX: number
-  pageY: number
+interface TooltipContent {
+  name: string
+  code: string
+  count: number
+  percentage: number
+  perCapita?: number
 }
 
-interface DataHover {
-  countries: string
-  data: number
+interface TooltipPosition {
+  x: number
+  y: number
 }
 
-type CountryMap = Record<string, number>
+const InteractiveMapCore = ({ data, regionData, onClickCountry, total }: InteractiveMapProps) => {
+  const { t } = useTranslation('common')
+  const { activeTab, dataLoading } = useViewProjectContext()
 
-const InteractiveMap = ({ data, onClickCountry, total }: InteractiveMapProps) => {
-  const { activeTab } = useViewProjectContext()
-  const { dataLoading } = useViewProjectContext()
-  const {
-    t,
-    i18n: { language },
-  } = useTranslation('common')
-  const [hoverShow, setHoverShow] = useState(false)
-  const [dataHover, setDataHover] = useState<DataHover>({} as DataHover)
-  const [cursorPosition, setCursorPosition] = useState<CursorPosition>({} as CursorPosition)
-  const countryMap: CountryMap = useMemo(
-    () => _reduce(data, (prev, curr) => ({ ...prev, [curr.cc || curr.name]: curr.count }), {}),
-    [data],
-  )
+  const [countriesGeoData, setCountriesGeoData] = useState<GeoJsonObject | null>(null)
+  const [regionsGeoData, setRegionsGeoData] = useState<GeoJsonObject | null>(null)
+  const [filteredRegionsGeoData, setFilteredRegionsGeoData] = useState<GeoJsonObject | null>(null)
+  const [mapView, setMapView] = useState<'countries' | 'regions'>('countries')
+  const [tooltipContent, setTooltipContent] = useState<TooltipContent | null>(null)
+  const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition>({ x: 0, y: 0 })
+  const [hoveredId, setHoveredId] = useState<string | null>(null)
+
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const isTrafficTab = activeTab === PROJECT_TABS.traffic
   const isErrorsTab = activeTab === PROJECT_TABS.errors
 
-  const onMouseMove = (e: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
-    const rect = e.currentTarget.getBoundingClientRect()
-    const pageX = e.clientX - rect.left
-    const pageY = e.clientY - rect.top
-    setCursorPosition({ pageX, pageY })
+  useEffect(() => {
+    const loadGeoData = async () => {
+      try {
+        const [countries, regions] = await Promise.all([
+          loadCountriesGeoData(),
+          Promise.resolve(null), // loadRegionsGeoData()
+        ])
+        setCountriesGeoData(countries)
+        setRegionsGeoData(regions)
+        setFilteredRegionsGeoData(regions)
+      } catch (reason) {
+        console.error('Failed to load geographic data:', reason)
+      }
+    }
+
+    loadGeoData()
+  }, [])
+
+  const dataLookup = useMemo<Map<string, any>>(() => {
+    const lookup = new Map()
+    const currentData = mapView === 'countries' ? data : regionData
+
+    if (!currentData) return lookup
+
+    currentData.forEach((item) => {
+      const key = mapView === 'countries' ? item.cc || item.name : item.name
+      if (key) {
+        lookup.set(key.toLowerCase(), item)
+        // For regions, only add exact name matches to avoid conflicts
+        // Don't create word-based lookups that can cause multiple regions to match the same data
+      }
+    })
+
+    return lookup
+  }, [data, regionData, mapView])
+
+  const colorScale = useMemo(() => {
+    if (mapView === 'countries' && !data) return () => '#eee'
+    if (mapView === 'regions' && !regionData) return () => '#eee'
+
+    const dataToUse = mapView === 'countries' ? data : regionData
+    const values = dataToUse?.map((d) => d.count) || [0]
+    const maxValue = Math.max(...values)
+
+    return scalePow<string>()
+      .exponent(0.4)
+      .domain([0, maxValue])
+      .range(['hsla(220, 70%, 50%, 0.05)', 'hsla(220, 70%, 50%, 0.8)'])
+  }, [data, regionData, mapView])
+
+  const findDataForFeature = useCallback(
+    (feature: Feature | undefined) => {
+      if (!feature?.properties) return null
+
+      const props = feature.properties
+      const isCountryView = mapView === 'countries'
+
+      if (isCountryView) {
+        const found = dataLookup.get(props.iso_a2?.toLowerCase() || '')
+        if (found) return { data: found, key: found.cc || found.name }
+      } else {
+        const { name } = props
+        if (name) {
+          const found = dataLookup.get(name.toLowerCase() || '')
+          if (found) return { data: found, key: found.name }
+
+          // For regions, also try some common name variations but avoid fuzzy matching
+          // TODO: Replace is with ISO code lookup later
+          const variations = [
+            name.toLowerCase().trim(),
+            name.toLowerCase().replace(/\s+/g, ''),
+            name
+              .toLowerCase()
+              .replace(/oblast|province|region|state/g, '')
+              .trim(),
+          ]
+
+          for (const variation of variations) {
+            if (variation && variation.length > 1) {
+              const found = dataLookup.get(variation)
+              if (found) return { data: found, key: found.name }
+            }
+          }
+        }
+      }
+
+      return null
+    },
+    [mapView, dataLookup],
+  )
+
+  const handleStyle = useCallback(
+    (feature: Feature | undefined) => {
+      const result = findDataForFeature(feature)
+      const metricValue = result?.data?.count || 0
+      const matchedKey = result?.key
+
+      // Create a unique identifier for each geographic feature to prevent cross-highlighting
+      const featureId =
+        mapView === 'regions'
+          ? `${feature?.properties?.name || ''}_${feature?.properties?.iso_3166_2 || feature?.properties?.admin || ''}`
+          : matchedKey
+
+      let color: string
+      if (metricValue > 0) {
+        color = colorScale(metricValue)
+      } else {
+        color = 'rgba(180, 180, 180, 0.3)'
+      }
+
+      return {
+        color: mapView === 'regions' ? '#666666' : '#ffffff',
+        weight: mapView === 'regions' ? 0.8 : 0.5,
+        fill: true,
+        fillColor: color,
+        fillOpacity: hoveredId === featureId ? 0.9 : metricValue > 0 ? 0.7 : 0.3,
+        opacity: 1,
+      }
+    },
+    [mapView, colorScale, hoveredId, findDataForFeature],
+  )
+
+  const handleEachFeature = useCallback(
+    (feature: Feature, layer: Layer) => {
+      layer.on({
+        mouseover: () => {
+          if (hoverTimeoutRef.current) {
+            clearTimeout(hoverTimeoutRef.current)
+          }
+
+          hoverTimeoutRef.current = setTimeout(() => {
+            const result = findDataForFeature(feature)
+
+            if (result) {
+              const featureId =
+                mapView === 'regions'
+                  ? `${feature?.properties?.name || ''}_${feature?.properties?.iso_3166_2 || feature?.properties?.admin || ''}`
+                  : result.key
+
+              setHoveredId(featureId)
+
+              const name = feature.properties?.['name'] || result.key
+              const count = result.data?.count || 0
+              const percentage = total > 0 ? _round((count / total) * 100, 2) : 0
+
+              if (count > 0 || name) {
+                setTooltipContent({
+                  name: name || 'Unknown',
+                  code: result.key || '',
+                  count,
+                  percentage,
+                  perCapita: 0,
+                })
+              }
+            }
+          }, 50)
+        },
+        mouseout: () => {
+          if (hoverTimeoutRef.current) {
+            clearTimeout(hoverTimeoutRef.current)
+          }
+          setHoveredId(null)
+          setTooltipContent(null)
+        },
+        click: () => {
+          const result = findDataForFeature(feature)
+          if (result?.key) {
+            onClickCountry(result.key)
+          }
+        },
+      })
+    },
+    [findDataForFeature, total, onClickCountry, mapView],
+  )
+
+  const MapEventHandler = () => {
+    const map = useMapEvent('zoomend', () => {
+      // const currentZoom = map.getZoom()
+      // const newMapView = currentZoom >= 4 ? 'regions' : 'countries'
+      // if (newMapView !== mapView) {
+      //   setMapView(newMapView)
+      //   setTooltipContent(null)
+      // }
+    })
+    return null
   }
 
-  return (
-    <div className='relative'>
-      <svg id='map' viewBox='0 0 1050 650' className='h-full w-full' onMouseMove={onMouseMove}>
-        <g>
-          {_map(countriesList, (key, value) => {
-            const ccData = countryMap[value] || 0
-            const perc = (ccData / total) * 100 || 0
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (tooltipContent) {
+        setTooltipPosition({
+          x: e.clientX,
+          y: e.clientY,
+        })
+      }
+    },
+    [tooltipContent],
+  )
 
-            return (
-              <path
-                key={value}
-                id={value}
-                className={cx(
-                  isTrafficTab || isErrorsTab
-                    ? {
-                        'hover:opacity-90': perc > 0,
-                        'fill-[#cfd1d4] dark:fill-[#465d7e46]': perc === 0,
-                        'fill-[#92b2e7] dark:fill-[#292d77]': perc > 0 && perc < 3,
-                        'fill-[#6f9be3] dark:fill-[#363391]': perc >= 3 && perc < 10,
-                        'fill-[#5689db] dark:fill-[#4842be]': perc >= 10 && perc < 20,
-                        'fill-[#3b82f6] dark:fill-[#6357ff]': perc >= 20,
-                      }
-                    : {
-                        'hover:opacity-90': ccData > 0,
-                        'fill-[#cfd1d4] dark:fill-[#465d7e46]': ccData === 0,
-                        'fill-[#92b2e7] dark:fill-[#292d77]': ccData > 0 && ccData < 1,
-                        'fill-[#6f9be3] dark:fill-[#363391]': ccData >= 1 && ccData < 2,
-                        'fill-[#5689db] dark:fill-[#4842be]': ccData >= 2 && ccData < 3,
-                        'fill-[#3b82f6] dark:fill-[#6357ff]': ccData >= 3 && ccData < 5,
-                        'fill-[#f78a8a]': ccData >= 5 && ccData < 7,
-                        'fill-[#f76b6b]': ccData >= 7 && ccData < 10,
-                        'fill-[#f74b4b]': ccData >= 10,
-                      },
-                  {
-                    'cursor-pointer': Boolean(ccData) && !dataLoading,
-                    'cursor-wait': dataLoading,
-                  },
-                )}
-                d={key.d}
-                onClick={() => perc !== 0 && onClickCountry(value)}
-                onMouseEnter={() => {
-                  if (ccData) {
-                    setHoverShow(true)
-                    setDataHover({
-                      countries: countries.getName(value, language) as string,
-                      data: ccData,
-                    })
-                  }
-                }}
-                onMouseLeave={() => {
-                  setHoverShow(false)
-                }}
-              />
-            )
-          })}
-        </g>
-      </svg>
-      <div>
-        {hoverShow && cursorPosition ? (
-          <div
-            className='absolute z-30 rounded-md border bg-gray-100 p-1 text-xs dark:bg-slate-900 dark:text-gray-200'
-            style={{
-              top: cursorPosition.pageY + 20,
-              left: cursorPosition.pageX - 20,
-            }}
-          >
-            <strong>{dataHover.countries}</strong>
-            <br />
-            {isTrafficTab ? t('project.unique') : isErrorsTab ? t('project.occurrences') : t('dashboard.pageLoad')}:
-            &nbsp;
-            <strong
-              className={cx({
-                'dark:text-indigo-400': isTrafficTab || dataHover.data < 5,
-                'dark:text-red-400': !isTrafficTab && dataHover.data >= 5,
-              })}
-            >
-              {isTrafficTab || isErrorsTab
-                ? nFormatter(dataHover.data, 1)
-                : getStringFromTime(getTimeFromSeconds(dataHover.data), true)}
-            </strong>
+  return (
+    <div className='relative h-full w-full' onMouseMove={handleMouseMove}>
+      {dataLoading ? (
+        <div className='absolute inset-0 z-10 flex items-center justify-center bg-neutral-900/30 backdrop-blur-sm'>
+          <div className='flex flex-col items-center gap-2'>
+            <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent'></div>
+            <span className='text-sm text-neutral-300'>{t('project.loadingMapData')}</span>
           </div>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
+
+      {countriesGeoData || regionsGeoData ? (
+        <MapContainer
+          preferCanvas={true}
+          attributionControl={false}
+          zoomControl={false}
+          center={[40, 3]}
+          zoom={1}
+          minZoom={1}
+          maxZoom={8}
+          style={{
+            height: '100%',
+            background: 'transparent',
+            cursor: 'default',
+            outline: 'none',
+            zIndex: 1,
+          }}
+        >
+          <MapEventHandler />
+
+          {countriesGeoData && mapView === 'countries' ? (
+            <GeoJSON data={countriesGeoData} style={handleStyle} onEachFeature={handleEachFeature} />
+          ) : null}
+
+          {filteredRegionsGeoData && mapView === 'regions' ? (
+            <GeoJSON
+              data={filteredRegionsGeoData}
+              style={handleStyle}
+              onEachFeature={handleEachFeature}
+              pathOptions={{
+                interactive: true,
+                bubblingMouseEvents: false,
+              }}
+            />
+          ) : null}
+        </MapContainer>
+      ) : null}
+
+      {tooltipContent ? (
+        <div
+          className='pointer-events-none fixed z-50 rounded-md border bg-gray-100 p-2 text-sm text-gray-900 shadow-lg dark:bg-slate-900 dark:text-white'
+          style={{
+            left: tooltipPosition.x,
+            top: tooltipPosition.y - 10,
+            transform: 'translate(-50%, -100%)',
+          }}
+        >
+          <div className='flex items-center gap-1 font-medium'>
+            <strong>{tooltipContent.name}</strong>
+          </div>
+          <div>
+            <span className='font-bold text-blue-600 dark:text-blue-400'>
+              {isTrafficTab || isErrorsTab
+                ? nFormatter(tooltipContent.count, 1)
+                : getStringFromTime(getTimeFromSeconds(tooltipContent.count), true)}
+            </span>{' '}
+            <span className='text-gray-600 dark:text-gray-300'>
+              ({tooltipContent.percentage.toFixed(1)}%)
+              {isTrafficTab ? ' visitors' : isErrorsTab ? ' occurrences' : ' avg load time'}
+            </span>
+          </div>
+        </div>
+      ) : null}
     </div>
+  )
+}
+
+const InteractiveMap = ({ data, regionData, onClickCountry, total }: InteractiveMapProps) => {
+  const { t } = useTranslation('common')
+
+  return (
+    <ClientOnly
+      fallback={
+        <div className='relative flex h-full w-full items-center justify-center'>
+          <div className='flex flex-col items-center gap-2'>
+            <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent'></div>
+            <span className='text-sm text-neutral-600 dark:text-neutral-300'>{t('project.loadingMapData')}</span>
+          </div>
+        </div>
+      }
+    >
+      {() => <InteractiveMapCore data={data} regionData={regionData} onClickCountry={onClickCountry} total={total} />}
+    </ClientOnly>
   )
 }
 
