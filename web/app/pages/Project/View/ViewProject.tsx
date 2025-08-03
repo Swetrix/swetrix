@@ -37,7 +37,17 @@ import {
   PercentIcon,
   KeyboardIcon,
 } from 'lucide-react'
-import React, { useState, useEffect, useMemo, useRef, useCallback, createContext, useContext, lazy, Suspense } from 'react'
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+  createContext,
+  useContext,
+  lazy,
+  Suspense,
+} from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, Link, useSearchParams, LinkProps } from 'react-router'
@@ -3492,9 +3502,9 @@ const ViewProject = () => {
                                           return (
                                             <Suspense
                                               fallback={
-                                                <div className='flex items-center justify-center h-full'>
+                                                <div className='flex h-full items-center justify-center'>
                                                   <div className='flex flex-col items-center gap-2'>
-                                                    <div className='h-8 w-8 rounded-full border-2 border-blue-400 border-t-transparent animate-spin'></div>
+                                                    <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent'></div>
                                                     <span className='text-sm text-neutral-600 dark:text-neutral-300'>
                                                       Loading map...
                                                     </span>
@@ -3814,9 +3824,9 @@ const ViewProject = () => {
                                           return (
                                             <Suspense
                                               fallback={
-                                                <div className='flex items-center justify-center h-full'>
+                                                <div className='flex h-full items-center justify-center'>
                                                   <div className='flex flex-col items-center gap-2'>
-                                                    <div className='h-8 w-8 rounded-full border-2 border-blue-400 border-t-transparent animate-spin'></div>
+                                                    <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent'></div>
                                                     <span className='text-sm text-neutral-600 dark:text-neutral-300'>
                                                       Loading map...
                                                     </span>
@@ -4108,9 +4118,9 @@ const ViewProject = () => {
                                           return (
                                             <Suspense
                                               fallback={
-                                                <div className='flex items-center justify-center h-full'>
+                                                <div className='flex h-full items-center justify-center'>
                                                   <div className='flex flex-col items-center gap-2'>
-                                                    <div className='h-8 w-8 rounded-full border-2 border-blue-400 border-t-transparent animate-spin'></div>
+                                                    <div className='h-8 w-8 animate-spin rounded-full border-2 border-blue-400 border-t-transparent'></div>
                                                     <span className='text-sm text-neutral-600 dark:text-neutral-300'>
                                                       Loading map...
                                                     </span>
