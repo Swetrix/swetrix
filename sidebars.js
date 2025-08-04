@@ -26,6 +26,7 @@ module.exports = {
     'Site settings': [
       'sitesettings/how-to-access-site-settings',
       'sitesettings/how-to-invite-users-to-your-website',
+      'sitesettings/how-to-transfer-ownership-of-your-website',
       'sitesettings/embed-your-analytics-dashboard-into-your-website',
       'sitesettings/get-analytics-email-reports',
       'sitesettings/get-traffic-alerts',
