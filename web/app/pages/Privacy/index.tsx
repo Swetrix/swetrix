@@ -49,7 +49,7 @@ const serviceProviders: {
 const Features = () => {
   return (
     <div className='bg-gray-50 dark:bg-slate-900'>
-      <div className='mx-auto w-11/12 px-4 pt-12 pb-16 sm:px-6 md:w-4/5 lg:px-8'>
+      <div className='mx-auto px-4 pt-12 pb-16 sm:px-6 md:w-4/5 lg:px-8'>
         <h1 className='text-4xl font-bold text-gray-900 dark:text-gray-50'>Privacy Policy</h1>
         <p className='text-md mt-4 text-gray-900 dark:text-gray-50'>
           This Swetrix Privacy Policy (“Policy”, "Privacy Policy") outlines the personal information that we gather, how

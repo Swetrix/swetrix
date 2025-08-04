@@ -214,11 +214,11 @@ const Billing = () => {
     <div className='min-h-page bg-gray-50 dark:bg-slate-900'>
       <DashboardLockedBanner />
 
-      <div className='mx-auto w-11/12 px-4 pt-12 whitespace-pre-line sm:px-6 md:w-5/6'>
+      <div className='mx-auto px-4 pt-12 whitespace-pre-line sm:px-6 md:w-5/6'>
         <h1 className='text-4xl font-extrabold text-gray-900 dark:text-gray-50'>{t('billing.title')}</h1>
       </div>
 
-      <div className='mx-auto mt-5 grid w-11/12 gap-x-10 gap-y-8 px-4 pb-16 whitespace-pre-line sm:px-6 md:w-5/6 lg:grid-cols-2'>
+      <div className='mx-auto mt-5 grid gap-x-10 gap-y-8 px-4 pb-16 whitespace-pre-line sm:px-6 md:w-5/6 lg:grid-cols-2'>
         <div>
           <h2 id='billing' className='mb-2 text-2xl font-medium text-gray-900 dark:text-gray-50'>
             {t('billing.subscription')}

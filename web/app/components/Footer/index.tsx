@@ -281,7 +281,7 @@ const Footer = ({ showDBIPMessage }: FooterProps) => {
       <h2 id='footer-heading' className='sr-only'>
         Footer
       </h2>
-      <div className='w-11/12 px-4 pt-8 pb-5 sm:px-6 lg:px-8'>
+      <div className='px-4 pt-8 pb-5 sm:px-6 lg:px-8'>
         <div className='xl:grid xl:grid-cols-2 xl:gap-8'>
           <div className='space-y-5 xl:col-span-1'>
             <SwetrixLogo theme='dark' lazy />
