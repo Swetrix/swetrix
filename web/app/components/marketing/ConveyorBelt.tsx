@@ -1,9 +1,9 @@
-import clsx from 'clsx'
+import { cn } from '~/utils/generic'
 
 const Logo = ({ label, className }: { label: string; className: string }) => {
   return (
     <div
-      className={clsx(
+      className={cn(
         className,
         'absolute top-[calc(50%-1rem)] flex items-center gap-2 px-3 py-1 whitespace-nowrap',
         'bg-gray-700 bg-gradient-to-t from-50% ring-1 ring-white/10 ring-inset',

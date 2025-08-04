@@ -1,4 +1,4 @@
-import clsx, { type ClassValue } from 'clsx'
+import { clsx, type ClassValue } from 'clsx'
 import _find from 'lodash/find'
 import _map from 'lodash/map'
 import _reduce from 'lodash/reduce'

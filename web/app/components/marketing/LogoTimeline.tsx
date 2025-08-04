@@ -12,8 +12,9 @@ import {
   SiWix,
   SiWordpress,
 } from '@icons-pack/react-simple-icons'
-import clsx from 'clsx'
 import React from 'react'
+
+import { cn } from '~/utils/generic'
 
 const Row = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -28,7 +29,7 @@ const Row = ({ children }: { children: React.ReactNode }) => {
 const Logo = ({ label, icon, className }: { label: string; icon: React.ReactNode; className: string }) => {
   return (
     <div
-      className={clsx(
+      className={cn(
         className,
         'absolute top-2 flex items-center gap-2 px-3 py-1 whitespace-nowrap',
         'rounded-full bg-gradient-to-t from-gray-800 from-50% to-gray-700 ring-1 ring-white/10 ring-inset',

@@ -1,4 +1,3 @@
-import clsx from 'clsx'
 import _isEmpty from 'lodash/isEmpty'
 import _isString from 'lodash/isString'
 import _keys from 'lodash/keys'
@@ -21,7 +20,7 @@ import Checkbox from '~/ui/Checkbox'
 import Input from '~/ui/Input'
 import { setAccessToken, removeAccessToken } from '~/utils/accessToken'
 import { deleteCookie, getCookie } from '~/utils/cookie'
-import { delay, openBrowserWindow } from '~/utils/generic'
+import { cn, delay, openBrowserWindow } from '~/utils/generic'
 import { setRefreshToken, removeRefreshToken } from '~/utils/refreshToken'
 import routes from '~/utils/routes'
 import { isValidEmail, isValidPassword, MIN_PASSWORD_CHARS } from '~/utils/validator'
@@ -357,7 +356,7 @@ const Signin = () => {
                 </span>
               </div>
             </div>
-            <div className={clsx('mt-6 grid gap-4', isSelfhosted ? 'grid-cols-1' : 'grid-cols-2')}>
+            <div className={cn('mt-6 grid gap-4', isSelfhosted ? 'grid-cols-1' : 'grid-cols-2')}>
               {isSelfhosted ? (
                 <OIDCAuth onClick={() => onSsoLogin('openid-connect')} disabled={isLoading} className='w-full' />
               ) : (

@@ -2,7 +2,6 @@ import { ArrowRightIcon } from '@heroicons/react/20/solid'
 import { CheckIcon, GlobeAltIcon } from '@heroicons/react/24/outline'
 import { StarIcon } from '@heroicons/react/24/solid'
 import { UAParser } from '@ua-parser-js/pro-business'
-import clsx from 'clsx'
 import { motion } from 'framer-motion'
 import _map from 'lodash/map'
 import { Cookie, FileTextIcon, MousePointerClickIcon } from 'lucide-react'
@@ -36,7 +35,7 @@ import CCRow from '~/pages/Project/View/components/CCRow'
 import { MetricCard, MetricCardSelect } from '~/pages/Project/View/components/MetricCards'
 import { useAuth } from '~/providers/AuthProvider'
 import { useTheme } from '~/providers/ThemeProvider'
-import { getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
+import { cn, getStringFromTime, getTimeFromSeconds } from '~/utils/generic'
 import routesPath from '~/utils/routes'
 
 export const sitemap: SitemapFunction = () => ({
@@ -430,7 +429,7 @@ const FeatureBlock = ({ heading, description, children, className, dark }: Featu
     whileHover='active'
     variants={{ idle: {}, active: {} }}
     data-dark={dark ? 'true' : undefined}
-    className={clsx(
+    className={cn(
       'group relative flex flex-col overflow-hidden rounded-lg bg-white ring-1 ring-black/5 data-[dark]:bg-slate-800 data-[dark]:ring-white/15',
       className,
     )}
