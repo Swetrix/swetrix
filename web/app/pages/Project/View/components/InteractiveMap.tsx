@@ -5,12 +5,14 @@ import 'leaflet/dist/leaflet.css'
 import _round from 'lodash/round'
 import React, { memo, useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+// eslint-disable-next-line
 import { GeoJSON, MapContainer, useMapEvent } from 'react-leaflet'
 import { ClientOnly } from 'remix-utils/client-only'
 
 import { PROJECT_TABS } from '~/lib/constants'
 import { Entry } from '~/lib/models/Entry'
 import { getTimeFromSeconds, getStringFromTime, nFormatter } from '~/utils/generic'
+// eslint-disable-next-line
 import { loadCountriesGeoData, loadRegionsGeoData } from '~/utils/geoData'
 
 import { useViewProjectContext } from '../ViewProject'
@@ -42,6 +44,7 @@ const InteractiveMapCore = ({ data, regionData, onClickCountry, total }: Interac
   const [countriesGeoData, setCountriesGeoData] = useState<GeoJsonObject | null>(null)
   const [regionsGeoData, setRegionsGeoData] = useState<GeoJsonObject | null>(null)
   const [filteredRegionsGeoData, setFilteredRegionsGeoData] = useState<GeoJsonObject | null>(null)
+  // eslint-disable-next-line
   const [mapView, setMapView] = useState<'countries' | 'regions'>('countries')
   const [tooltipContent, setTooltipContent] = useState<TooltipContent | null>(null)
   const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition>({ x: 0, y: 0 })
@@ -228,14 +231,14 @@ const InteractiveMapCore = ({ data, regionData, onClickCountry, total }: Interac
   )
 
   const MapEventHandler = () => {
-    const map = useMapEvent('zoomend', () => {
-      // const currentZoom = map.getZoom()
-      // const newMapView = currentZoom >= 4 ? 'regions' : 'countries'
-      // if (newMapView !== mapView) {
-      //   setMapView(newMapView)
-      //   setTooltipContent(null)
-      // }
-    })
+    // const map = useMapEvent('zoomend', () => {
+    // const currentZoom = map.getZoom()
+    // const newMapView = currentZoom >= 4 ? 'regions' : 'countries'
+    // if (newMapView !== mapView) {
+    //   setMapView(newMapView)
+    //   setTooltipContent(null)
+    // }
+    // })
     return null
   }
 
