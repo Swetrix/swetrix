@@ -11,7 +11,7 @@ const Terms = () => {
           in Edinburgh, the United Kingdom, company number{' '}
           <a
             href='https://find-and-update.company-information.service.gov.uk/company/SC797389'
-            className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+            className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
             target='_blank'
             rel='noreferrer'
           >
@@ -274,7 +274,7 @@ const Terms = () => {
           If you have any questions you can contact us by sending us an email at&nbsp;
           <a
             href={`mailto:${CONTACT_EMAIL}`}
-            className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+            className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
           >
             {CONTACT_EMAIL}
           </a>

@@ -41,20 +41,14 @@ const Contact = () => {
               mail: (
                 <a
                   href={`mailto:${CONTACT_EMAIL}`}
-                  className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                  className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
                 />
               ),
               twitter: (
-                <a
-                  href={TWITTER_URL}
-                  className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
-                />
+                <a href={TWITTER_URL} className='font-medium text-indigo-600 hover:underline dark:text-indigo-400' />
               ),
               discord: (
-                <a
-                  href={DISCORD_URL}
-                  className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
-                />
+                <a href={DISCORD_URL} className='font-medium text-indigo-600 hover:underline dark:text-indigo-400' />
               ),
             }}
           />

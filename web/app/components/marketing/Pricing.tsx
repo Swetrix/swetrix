@@ -29,6 +29,7 @@ import { Badge } from '~/ui/Badge'
 import Button from '~/ui/Button'
 import Loader from '~/ui/Loader'
 import Modal from '~/ui/Modal'
+import { cn } from '~/utils/generic'
 import routes from '~/utils/routes'
 
 const getPaidFeatures = (t: any, tier: any) => {
@@ -354,16 +355,24 @@ const Pricing = ({ authenticated, isBillingPage, lastEvent }: PricingProps) => {
                 {() => (
                   <div className='flex flex-wrap justify-between'>
                     <p className='mt-2 sm:mt-0'>
-                      <span className='text-4xl font-bold text-[#4D4D4D] dark:text-gray-50'>
-                        {currency.symbol}
-                        {billingFrequency === BillingFrequency.monthly
-                          ? selectedTier.price[currencyCode]?.monthly
-                          : selectedTier.price[currencyCode]?.yearly}
-                      </span>
-                      &nbsp;
-                      <span className='text-base font-medium text-gray-500 dark:text-gray-400'>
-                        /{t(billingFrequency === BillingFrequency.monthly ? 'pricing.perMonth' : 'pricing.perYear')}
-                      </span>
+                      {selectedTier.planCode === 'trial' && user?.planCode === 'trial' ? (
+                        <span className='text-2xl leading-10 font-bold text-[#4D4D4D] dark:text-gray-50'>
+                          {t('pricing.tiers.trial')}
+                        </span>
+                      ) : (
+                        <>
+                          <span className='text-4xl font-bold text-[#4D4D4D] dark:text-gray-50'>
+                            {currency.symbol}
+                            {billingFrequency === BillingFrequency.monthly
+                              ? selectedTier.price[currencyCode]?.monthly
+                              : selectedTier.price[currencyCode]?.yearly}
+                          </span>
+                          &nbsp;
+                          <span className='text-base font-medium text-gray-500 dark:text-gray-400'>
+                            /{t(billingFrequency === BillingFrequency.monthly ? 'pricing.perMonth' : 'pricing.perYear')}
+                          </span>
+                        </>
+                      )}
                     </p>
 
                     {authenticated ? (
@@ -371,7 +380,9 @@ const Pricing = ({ authenticated, isBillingPage, lastEvent }: PricingProps) => {
                         // @ts-expect-error TODO fix this later
                         onClick={() => (downgrade ? downgradeHandler(selectedTier) : onPlanChange(selectedTier))}
                         type='button'
-                        className='mt-2 sm:mt-0'
+                        className={cn('mt-2 sm:mt-0', {
+                          hidden: selectedTier.planCode === 'trial',
+                        })}
                         loading={planCodeLoading === selectedTier.planCode}
                         disabled={
                           planCodeLoading !== null ||
@@ -426,7 +437,7 @@ const Pricing = ({ authenticated, isBillingPage, lastEvent }: PricingProps) => {
                 url: (
                   <Link
                     to={routes.contact}
-                    className='leading-6 font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+                    className='leading-6 font-semibold text-indigo-600 hover:underline dark:text-indigo-400'
                     aria-label={t('footer.tos')}
                   />
                 ),
@@ -487,7 +498,7 @@ const Pricing = ({ authenticated, isBillingPage, lastEvent }: PricingProps) => {
                       <a
                         title={`Email us at ${CONTACT_EMAIL}`}
                         href={`mailto:${CONTACT_EMAIL}`}
-                        className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400'
+                        className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
                       />
                     ),
                   }}

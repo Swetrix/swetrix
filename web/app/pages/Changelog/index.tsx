@@ -52,10 +52,7 @@ const changelog = [
     changes: [
       <>
         Introducing:{' '}
-        <Link
-          to={routes.errorTracking}
-          className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
-        >
+        <Link to={routes.errorTracking} className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'>
           Client-side error tracking
         </Link>
         . Now you can analyse what kind or errors happen on your website, when they happen and how often. All of that
@@ -190,10 +187,7 @@ const changelog = [
       'Added an ability to compare statistics over time periods - now you can compare the current period with the previous one, or select a custom date range to compare.',
       <>
         Swetrix is now an Open Startup, we{' '}
-        <Link
-          to={routes.open}
-          className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
-        >
+        <Link to={routes.open} className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'>
           publish
         </Link>
         our finance and technical metrics.
@@ -264,7 +258,7 @@ const changelog = [
         Introducing a new service:{' '}
         <a
           href={CAPTCHA_URL}
-          className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+          className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
           target='_blank'
           rel='noopener noreferrer'
         >
@@ -274,7 +268,7 @@ const changelog = [
         from bots. Read more about it in our{' '}
         <a
           href={DOCS_CAPTCHA_URL}
-          className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+          className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
           target='_blank'
           rel='noopener noreferrer'
         >
@@ -316,7 +310,7 @@ const changelog = [
         Released a public{' '}
         <a
           href={`${DOCS_URL}/statistics-api`}
-          className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+          className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
           target='_blank'
           rel='noopener noreferrer'
         >
@@ -334,10 +328,7 @@ const changelog = [
       'Added a Polish translation.',
       <>
         Added a{' '}
-        <Link
-          to={routes.cookiePolicy}
-          className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
-        >
+        <Link to={routes.cookiePolicy} className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'>
           Cookie policy
         </Link>
         .
@@ -358,7 +349,7 @@ const changelog = [
         Got rid of our custom documentation page and migrated to Docusaurus insted. Check it out at{' '}
         <a
           href={DOCS_URL}
-          className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+          className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
           target='_blank'
           rel='noopener noreferrer'
         >
@@ -375,10 +366,7 @@ const changelog = [
         Added notification channels integrations. Now you can connect your Telegram account to our official bot and
         receive notifications (e.g. when someone logins into your account), set up custom project alerts and much more!
         You can set up the integration in your{' '}
-        <Link
-          to={INTEGRATIONS_LINK}
-          className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
-        >
+        <Link to={INTEGRATIONS_LINK} className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'>
           account settings
         </Link>
         .
@@ -402,7 +390,7 @@ const changelog = [
         Added the comparisons column to the footer. There&apos;s only{' '}
         <a
           href={SWETRIX_VS_GOOGLE}
-          className='font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+          className='font-medium text-indigo-600 hover:underline dark:text-indigo-400'
           target='_blank'
           rel='noopener noreferrer'
           aria-label='Swetrix to Google Analytics comparison (opens in a new tab)'

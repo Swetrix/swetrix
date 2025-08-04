@@ -146,7 +146,7 @@ const NewFunnel = ({ onClose, onSubmit, isOpened, funnel, loading }: NewFunnelPr
               onClick={() => {
                 setSteps([...steps, null])
               }}
-              className='mt-2 cursor-pointer text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-500'
+              className='mt-2 cursor-pointer text-indigo-600 hover:underline dark:text-indigo-400'
             >
               + {t('modals.funnels.addStep')}
             </button>
