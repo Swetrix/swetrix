@@ -356,12 +356,12 @@ const Pricing = ({ authenticated, isBillingPage, lastEvent }: PricingProps) => {
                   <div className='flex flex-wrap justify-between'>
                     <p className='mt-2 sm:mt-0'>
                       {selectedTier.planCode === 'trial' && user?.planCode === 'trial' ? (
-                        <span className='text-2xl leading-10 font-bold text-[#4D4D4D] dark:text-gray-50'>
+                        <span className='text-2xl leading-10 font-bold text-slate-900 dark:text-gray-50'>
                           {t('pricing.tiers.trial')}
                         </span>
                       ) : (
                         <>
-                          <span className='text-4xl font-bold text-[#4D4D4D] dark:text-gray-50'>
+                          <span className='text-4xl font-bold text-slate-900 dark:text-gray-50'>
                             {currency.symbol}
                             {billingFrequency === BillingFrequency.monthly
                               ? selectedTier.price[currencyCode]?.monthly
