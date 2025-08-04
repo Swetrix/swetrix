@@ -37,6 +37,7 @@ module.exports = {
       'accountsettings/change-email',
       'accountsettings/change-password',
       'accountsettings/delete-account',
+      'accountsettings/other-settings',
     ],
     'Billing & Subscription': [
       'billing/upgrade-from-trial',
