@@ -916,7 +916,7 @@
     "currentTimeX": "Current time: <url>{{time}}</url>",
     "timezoneX": "Timezone: {{timezone}}",
     "signInToChange": "Sign in to change it",
-    "changeInSettings": "Change this in your site settings",
+    "changeInSettings": "Change this in your account settings",
     "events": "Events",
     "dropoff": "Dropoff",
     "neverEnteredTheFunnel": "Never entered the funnel",
